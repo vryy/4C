@@ -326,8 +326,8 @@ void XFEM::svdcmp(
 
 bool XFEM::solveLinearSystemWithSVD(
     Epetra_SerialDenseMatrix&   U,
-    const Epetra_SerialDenseVector&   b,
-    Epetra_SerialDenseVector&   x,
+    const BlitzVec&             b,
+    BlitzVec&                   x,
     const int dim)
 {
     Epetra_SerialDenseMatrix V(dim, dim);
@@ -335,7 +335,6 @@ bool XFEM::solveLinearSystemWithSVD(
     Epetra_SerialDenseVector W(dim);
     
     // initialize vectors and matrices
-    x.Scale(0.0);
     W.Scale(0.0);
     V.Scale(0.0);
     
@@ -346,7 +345,7 @@ bool XFEM::solveLinearSystemWithSVD(
     
     //test_svdcmp( A, U, W, V, 3);
        
-    
+    x = 0.0;
     for(int i = 0; i < dim; i++ )
     {
         for(int  k = 0; k < dim; k++ )
@@ -357,7 +356,7 @@ bool XFEM::solveLinearSystemWithSVD(
                 if( fabs(W[j]) > 1e-7 )
                     svdtemp += V[i][j]*U[k][j] / W[j];
             }
-            x[i] += svdtemp * b[k];
+            x(i) += svdtemp * b(k);
         }
     }
     
@@ -376,14 +375,14 @@ bool XFEM::solveLinearSystemWithSVD(
         b1[i] = 0.0;
         for(int  k = 0; k < dim; k++ )
         {  
-            b1[i] += A[i][k]*x[k];
+            b1[i] += A[i][k]*x(k);
         }
-        printf("b = %f\t  b1 = %f\n", b[i], b1[i]);
+        printf("b = %f\t  b1 = %f\n", b(i), b1[i]);
     }
     printf("\n");
     
     for(int i = 0; i < dim; i++ )
-        printf("x = %f\t", x[i]);
+        printf("x = %f\t", x(i));
         
     printf("\n");
     */
@@ -488,17 +487,17 @@ void XFEM::test_svdcmp(
  *----------------------------------------------------------------------*/
 bool XFEM::gaussElimination(    
     Epetra_SerialDenseMatrix&   A,
-    Epetra_SerialDenseVector&   b,
-    Epetra_SerialDenseVector&   x,
+    BlitzVec&                   b,
+    BlitzVec&                   x,
     const bool                  do_piv,
     const int                   dim,    
     const int                   order)
 {
     bool solution = true;
 
-    //printf("A[0][] = %8e %8e %8e | %8e\n", A[0][0],A[0][1],A[0][2],b[0]);
-    //printf("A[1][] = %8e %8e %8e | %8e\n", A[1][0],A[1][1],A[1][2],b[1]);
-    //printf("A[2][] = %8e %8e %8e | %8e\n\n", A[2][0],A[2][1],A[2][2],b[2]);
+    //printf("A[0][] = %8e %8e %8e | %8e\n", A[0][0],A[0][1],A[0][2],b(0));
+    //printf("A[1][] = %8e %8e %8e | %8e\n", A[1][0],A[1][1],A[1][2],b(1));
+    //printf("A[2][] = %8e %8e %8e | %8e\n\n", A[2][0],A[2][1],A[2][2],b(2));
 if(dim > 1)
 {
 
@@ -511,7 +510,7 @@ if(dim > 1)
             for (int i=k+1;i<dim;i++)
             {
                 A[i][k] = A[i][k] * A[k][k];
-                x[i] = A[i][k];
+                x(i) = A[i][k];
 
                 for (int j=k+1;j<dim;j++)
                 {
@@ -521,7 +520,7 @@ if(dim > 1)
 
             for (int i=k+1;i<dim;i++)
             {
-                b[i]=b[i]-x[i]*b[k];
+                b(i) = b(i) - x(i)*b(k);
             }
         }
     }
@@ -541,13 +540,13 @@ if(dim > 1)
                 double tmp[4];    // check changed
                 for (int j=0;j<dim;j++)
                     tmp[j] = A[pivot][j];
-                tmp[dim] = b[pivot];
+                tmp[dim] = b(pivot);
                 for (int j=0;j<dim;j++)
                     A[pivot][j] = A[k][j];
-                b[pivot] = b[k];
+                b(pivot) = b(k);
                 for (int j=0;j<dim;j++)
                     A[k][j] = tmp[j];
-                b[k] = tmp[dim];
+                b(k) = tmp[dim];
             }
 
             A[k][k]=1./A[k][k];
@@ -557,7 +556,7 @@ if(dim > 1)
             for (int i=k+1;i<dim;i++)
             {
                 A[i][k] = A[i][k] * A[k][k];
-                x[i] = A[i][k];
+                x(i) = A[i][k];
 
                 for (int j=k+1;j<dim;j++)
                 {
@@ -567,29 +566,29 @@ if(dim > 1)
 
             for (int i=k+1;i<dim;i++)
             {
-                b[i]=b[i]-x[i]*b[k];
+                b(i) = b(i) - x(i)*b(k);
             }
-            //printf("A[0][] = %8e %8e %8e | %8e\n", A[0][0],A[0][1],A[0][2],b[0]);
-            //printf("A[1][] = %8e %8e %8e | %8e\n", A[1][0],A[1][1],A[1][2],b[1]);
-            //printf("A[2][] = %8e %8e %8e | %8e\n\n", A[2][0],A[2][1],A[2][2],b[2]);
+            //printf("A[0][] = %8e %8e %8e | %8e\n", A[0][0],A[0][1],A[0][2],b(0));
+            //printf("A[1][] = %8e %8e %8e | %8e\n", A[1][0],A[1][1],A[1][2],b(1));
+            //printf("A[2][] = %8e %8e %8e | %8e\n\n", A[2][0],A[2][1],A[2][2],b(2));
         }
     }
 
 
     /* backward substitution */
-    x[dim-1]=b[dim-1]*A[dim-1][dim-1];
+    x(dim-1) = b(dim-1) * A[dim-1][dim-1];
 
     for (int i=dim-2;i>=0;i--)
     {
         for (int j=dim-1;j>i;j--)
         {
-            b[i]-=A[i][j]*x[j];
+            b(i)-=A[i][j]*x(j);
         }
-        x[i]=b[i]*A[i][i];
+        x(i)=b(i)*A[i][i];
     }
 
     //for (i=0;i<dim;i++)
-    //    printf("%8e ",x[i]);
+    //    printf("%8e ",x(i));
     //printf("\n");
     
     double det = 1.0;
@@ -610,9 +609,9 @@ else
         printf("singular \n");
         solution = false;
     }
-    x[0] = b[0]/A[0][0];
+    x(0) = b(0)/A[0][0];
     
-    printf("x = %f\n", x[0]);
+    printf("x = %f\n", x(0));
 }
     
  

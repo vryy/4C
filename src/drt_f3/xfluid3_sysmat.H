@@ -2020,16 +2020,16 @@ void Sysmat(
             assembler.template Vector<Vely>(shp, -timefacfac*tau_times_n(1));
             assembler.template Vector<Velz>(shp, -timefacfac*tau_times_n(2));
             
-//            if (pstab)
-//            {
-//                // symmetric part from partial integration of stress term
-//                /*
-//                               /                 \
-//                              |                   |
-//                              | nabla q , tau * n |
-//                              |                   |
-//                               \                 /
-//                */
+            if (pstab)
+            {
+                // symmetric part from partial integration of stress term
+                /*
+                               /                 \
+                              |                   |
+                              | nabla q , tau * n |
+                              |                   |
+                               \                 /
+                */
 //                assembler.template Matrix<Pres,Sigmaxx>(shp_dx, -tau_Mp*normalvec(0), shp_sigma);
 //                assembler.template Matrix<Pres,Sigmaxy>(shp_dx, -tau_Mp*normalvec(1), shp_sigma);
 //                assembler.template Matrix<Pres,Sigmaxz>(shp_dx, -tau_Mp*normalvec(2), shp_sigma);
@@ -2046,7 +2046,7 @@ void Sysmat(
 //                assembler.template Vector<Pres>(shp_dx, tau_Mp*tau_times_n(0));
 //                assembler.template Vector<Pres>(shp_dy, tau_Mp*tau_times_n(1));
 //                assembler.template Vector<Pres>(shp_dz, tau_Mp*tau_times_n(2));
-//            }
+            }
             
             /*
                            /         \
@@ -2055,13 +2055,13 @@ void Sysmat(
                           |           |
                            \         /
             */
-//            assembler.template Matrix<Velx,Pres>(shp, -timefacfac*normalvec(0), shp);
-//            assembler.template Matrix<Vely,Pres>(shp, -timefacfac*normalvec(1), shp);
-//            assembler.template Matrix<Velz,Pres>(shp, -timefacfac*normalvec(2), shp);
-//            
-//            assembler.template Vector<Velx>(shp, timefacfac*normalvec(0)*press);
-//            assembler.template Vector<Vely>(shp, timefacfac*normalvec(1)*press);
-//            assembler.template Vector<Velz>(shp, timefacfac*normalvec(2)*press);  
+            assembler.template Matrix<Velx,Pres>(shp, -fac*normalvec(0), shp);
+            assembler.template Matrix<Vely,Pres>(shp, -fac*normalvec(1), shp);
+            assembler.template Matrix<Velz,Pres>(shp, -fac*normalvec(2), shp);
+            
+            assembler.template Vector<Velx>(shp, fac*normalvec(0)*press);
+            assembler.template Vector<Vely>(shp, fac*normalvec(1)*press);
+            assembler.template Vector<Velz>(shp, fac*normalvec(2)*press);  
 
         } // end loop over gauss points
     } // end loop over boundary integration cells

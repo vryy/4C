@@ -20,7 +20,6 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
 #include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
 #include "Teuchos_RefCountPtr.hpp"
 #include "xfem.H"
 
@@ -43,34 +42,14 @@ namespace XFEM
     \return sum of two Epetra_SerialDenseVectors
     */
     template<int length>
-    inline Epetra_SerialDenseVector addTwoVectors(   
-        const Epetra_SerialDenseVector&   v1,
-        const Epetra_SerialDenseVector&   v2)
+    inline BlitzVec addTwoVectors(   
+        const BlitzVec&   v1,
+        const BlitzVec&   v2)
     {   
-        Epetra_SerialDenseVector vResult(length);
-        dsassert(v1.Length() == length, "not of proper length!");
-        dsassert(v2.Length() == length, "not of proper length!");
-
-        for(int i = 0; i < length; ++i)
-            vResult[i] = v1[i] + v2[i];
-     
-        return vResult;
-    }    
-       
+        return BlitzVec(v1 + v2);
+    }  
     
-    /*!
-    \brief Returns the sum of two vector<double>
-
-    \param v1 (in) :    arbitrary vector<double>
-    \param v2 (in) :    arbitrary vector<double>
-    \return sum of two vector<double>
-    */
-//    vector<double> addTwoVectors(   
-//        const vector<double>&   v1,
-//        const vector<double>&   v2
-//        );
     
-                                          
     /*!
     \brief Returns the difference of Epetra_SerialDenseVectors v1 - v2
     \param v1 (in) : Epetra_SerialDenseVector      
@@ -78,51 +57,32 @@ namespace XFEM
     \return difference of Epetra_SerialDenseVectors v1 - v2
     */
     template<int length>
-    inline Epetra_SerialDenseVector subtractsTwoVectors( 
-        const Epetra_SerialDenseVector& v1,
-        const Epetra_SerialDenseVector& v2)
+    inline BlitzVec subtractsTwoVectors( 
+        const BlitzVec& v1,
+        const BlitzVec& v2)
     {   
-        Epetra_SerialDenseVector vResult(length);
-        dsassert(v1.Length() == length, "not of proper length!");
-        dsassert(v2.Length() == length, "not of proper length!");
-        for(int i = 0; i < length; ++i)
-            vResult[i] = v1[i] - v2[i];
-     
-        return vResult;
+        return BlitzVec(v1 - v2);
     }
     
-    
     /*!
-    \brief Returns the difference of two vector<double> v1 - v2
-    \param v1 (in) : arbitrary vector<double>       
-    \param v2 (in) : arbitrary vector<double>
-    \return difference of two vector<double> v1 - v2
+    \brief computes the cross product of two BlitzVecs a x b
+    \param a (in) : arbitrary BlitzVec     
+    \param b (in) : arbitrary BlitzVec
+    \return cross product of two BlitzVecs a x b
     */
-//    vector<double> subtractsTwoVectors(
-//        const vector <double>&   v1,
-//        const vector <double>&   v2
-//        );
-    
-    
-    /*!
-    \brief computes the cross product of two Epetra_SerialDenseVectors a x b
-    \param a (in) : arbitrary Epetra_SerialDenseVector     
-    \param b (in) : arbitrary Epetra_SerialDenseVector
-    \return cross product of two Epetra_SerialDenseVectors a x b
-    */
-    Epetra_SerialDenseVector computeCrossProduct(
-        const Epetra_SerialDenseVector& a,
-        const Epetra_SerialDenseVector& b
+    BlitzVec computeCrossProduct(
+        const BlitzVec& a,
+        const BlitzVec& b
         );
     
      
     /*!
-    \brief normalizes a Epetra_SerialDenseVector
-    \param v (in) : Epetra_SerialDenseVector
-    \return normalized Epetra_SerialDenseVector 
+    \brief normalizes a BlitzVec
+    \param v (in) : BlitzVec
+    \return normalized BlitzVec 
     */   
     void normalizeVector(
-        Epetra_SerialDenseVector&     v
+        BlitzVec&     v
         );
     
     
@@ -179,20 +139,6 @@ namespace XFEM
            in current coordinates with respect to a given element
 
     \param element          (in)        : element
-    \param xsi              (in/out)    : vector of element coordinates/
-                                          vector of current coordinates
-    */
-    void elementToCurrentCoordinates( 
-        const DRT::Element*         element, 
-        Epetra_SerialDenseVector&   xsi
-        ); 
-    
-    
-    /*!
-    \brief transforms a point in element coordinates to a point
-           in current coordinates with respect to a given element
-
-    \param element          (in)        : element
     \param eleCoord         (in)    	: vector of element coordinates
     \return                               vector of current coordinates
     */
@@ -200,39 +146,20 @@ namespace XFEM
         const DRT::Element*  element, 
         const BlitzVec&      eleCoord
         );
-
-
-    /*!
-    \brief transforms a point in element coordinates to a point
-           in current coordinates with respect to a given surfaceElement
-           based on given nodal coordinates
-
-    \param surfacElement    (in)        : surfaceElement
-    \param xsi              (in/out)    : vector of element coordinates/
-                                          vector of current coordinates
-    \param surfaceNodes     (in)        : nodal coordinates of the surface element
-    */
-    void elementToCurrentCoordinates(   
-        const DRT::Element*                         surfaceElement, 
-        Epetra_SerialDenseVector&                   xsi,
-        const vector <Epetra_SerialDenseVector>&    surfaceNodes
-        ); 
-
     
     /*!
     \brief transforms a point in element coordinates to a point
-           in current coordinates with respect to a given plane
-           based on given nodal coordinates
-    
-    \param xsi          (in/out)    : vector of element coordinates/
-                                      vector of current coordinates
-    \param plane        (in)        : quad4 surface element
+           in current coordinates with respect to a given element
+
+    \param element          (in)        : element
+    \param eleCoord         (in)        : vector of element coordinates
+    \return                               vector of current coordinates
     */
-//    void elementToCurrentCoordinates(  
-//        Epetra_SerialDenseVector&                   xsi,
-//        const vector<Epetra_SerialDenseVector>&     plane
-//        );
-    
+    void elementToCurrentCoordinatesInPlace(   
+        const DRT::Element*  element, 
+        BlitzVec&      eleCoord
+        );
+
     
     /*!
     \brief transforms a point in current coordinates to a point
@@ -242,9 +169,9 @@ namespace XFEM
     \param xsi              (in/out)    : vector of current coordinates/
                                           vector of element coordinates
     */
-    void currentToElementCoordinates(
+    BlitzVec currentToElementCoordinatesExact(
             const DRT::Element*         element,
-            Epetra_SerialDenseVector&   xsi
+            const BlitzVec&             x
             );
     
     
@@ -260,22 +187,8 @@ namespace XFEM
     */  
     bool currentToElementCoordinates(
         const DRT::Element*                 element,
-        const Epetra_SerialDenseVector&     x,
-        Epetra_SerialDenseVector&           xsi
-        );
-    
-    
-    /*!
-   	\brief transforms a point in current coordinates to a point
-           in element coordinates with respect to a given element
-        
-    \param element          (in)        : element
-    \param xsi              (in/out)    : vector of current coordinates/
-                                          vector of element coordinates
-    */
-    void elementToCurrentCoordinates(
-        const DRT::Element*     element,
-        vector<double>& xsi
+        const BlitzVec&                     x,
+        BlitzVec&                           xsi
         );
     
     
@@ -359,20 +272,20 @@ namespace XFEM
      /*!
      \brief compares two points (overloaded method)
  
-     \param point1       (in)    : first point   (Epetra_SerialDenseVector)
-     \param point2       (in)    : second point  (Epetra_SerialDenseVector)
+     \param point1       (in)    : first point   (BlitzVec)
+     \param point2       (in)    : second point  (BlitzVec)
      \return true if both points equal each other, false otherwise
      */
      template <int length>
      inline bool comparePoints(    
-         const Epetra_SerialDenseVector&     point1,
-         const Epetra_SerialDenseVector&     point2) 
+         const BlitzVec&     point1,
+         const BlitzVec&     point2) 
      {   
          bool equal = true;
-         dsassert(point1.Length() == length, "not of proper length!");
-         dsassert(point2.Length() == length, "not of proper length!");
-         for(int i = 0; i < point1.Length() ; i++)
-             if(fabs(point1[i] - point2[i]) > TOL7)
+         dsassert(point1.size() == length, "not of proper length!");
+         dsassert(point2.size() == length, "not of proper length!");
+         for(int i = 0; i < length ; i++)
+             if(fabs(point1(i) - point2(i)) > TOL7)
              {
                  equal = false;
                  break;
@@ -391,7 +304,7 @@ namespace XFEM
     \return true if node is within the XAABB or false otherwise
     */
     bool isPositionWithinXAABB(
-            const Epetra_SerialDenseVector&    pos,
+            const BlitzVec&                    pos,
             const Epetra_SerialDenseMatrix&    XAABB
             );
     
@@ -406,8 +319,8 @@ namespace XFEM
     \return true if node is within the XAABB or false otherwise
     */
     bool isLineWithinXAABB(
-            const Epetra_SerialDenseVector&    pos1,
-            const Epetra_SerialDenseVector&    pos2,
+            const BlitzVec&                    pos1,
+            const BlitzVec&                    pos2,
             const Epetra_SerialDenseMatrix&    XAABB
             );
     
@@ -419,9 +332,9 @@ namespace XFEM
     \param element              (in)        : element 
     \param x                    (in)        : node in current coordinates
     */  
-    bool checkPositionWithinElement(    
+    bool checkPositionWithinElement(  
         const DRT::Element*                 element,
-        const Epetra_SerialDenseVector&     x
+        const BlitzVec&                     x
         );   
     
     
@@ -434,7 +347,7 @@ namespace XFEM
     */  
     bool PositionWithinDiscretization(  
         const RCP<DRT::Discretization>      dis,
-        const Epetra_SerialDenseVector&     x);
+        const BlitzVec&                     x);
     
     
     /*!
@@ -442,7 +355,7 @@ namespace XFEM
            The nonlinear system of equation is solved with help of the Newton-method.
     */  
     bool PositionWithinCondition(
-            const blitz::Array<double,1>&     x,                     ///< node in current coordinates
+            const BlitzVec&                   x,                     ///< node in current coordinates
             const int                         xfem_condition_label, 
             const RCP<DRT::Discretization>    cutterdis              ///< mesh
         );
@@ -491,18 +404,7 @@ namespace XFEM
     \return  true if point lies on the surface element, false otherwise
     */  
     bool checkPositionWithinElementParameterSpace(
-            const BlitzVec                         eleCoord, ///< position in element coordinates
-            const DRT::Element::DiscretizationType distype   ///< shape of the surface element
-            );
-    
-    
-    /*!
-    \brief checks if a position in element coordinates lies within a certain Element parameter space
-
-    \return  true if point lies on the surface element, false otherwise
-    */  
-    bool checkPositionWithinElementParameterSpace(
-            const Epetra_SerialDenseVector         eleCoord, ///< position in element coordinates
+            const BlitzVec&                        eleCoord, ///< position in element coordinates
             const DRT::Element::DiscretizationType distype   ///< shape of the surface element
             );
     
@@ -590,7 +492,7 @@ namespace XFEM
     \return true if the position is within the XAABB, false otherwise
     */
     bool PositionInXAABB(
-            const Epetra_SerialDenseVector&    pos,
+            const BlitzVec&                    pos,
             const Epetra_SerialDenseMatrix&    XAABB
             );
     

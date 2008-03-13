@@ -619,12 +619,12 @@ bool Intersection::collectInternalPoints(
     const int                       nodeId)
 {
     // current nodal position
-    Epetra_SerialDenseVector x(3);
-    x[0] = node->X()[0];
-    x[1] = node->X()[1];
-    x[2] = node->X()[2];
+    BlitzVec x(3);
+    x(0) = node->X()[0];
+    x(1) = node->X()[1];
+    x(2) = node->X()[2];
     
-    Epetra_SerialDenseVector xsi(3);
+    BlitzVec xsi(3);
     currentToElementCoordinates(xfemElement, x, xsi);
     const bool nodeWithinElement = checkPositionWithinElementParameterSpace(xsi, xfemElement->Shape());
     // debugNodeWithinElement(xfemElement,node, xsi, elemId ,nodeId, nodeWithinElement);  
@@ -660,7 +660,7 @@ bool Intersection::collectInternalPoints(
  *----------------------------------------------------------------------*/
 bool Intersection::checkIfOnBoundary(
         const DRT::Element::DiscretizationType  xfemDistype,
-        const Epetra_SerialDenseVector&         xsi,    
+        const BlitzVec&                         xsi,    
         InterfacePoint&                         ip
         ) const
 {
@@ -715,16 +715,14 @@ bool Intersection::collectIntersectionPoints(
     bool&                           xfemIntersection
     ) const
 {
-    Epetra_SerialDenseVector xsi(3);
-    Epetra_SerialDenseVector upLimit(3);
-    Epetra_SerialDenseVector loLimit(3);
-  
-    for(int i = 0; i < 3; i++)
-    {
-       upLimit[i]  =  1.0;  
-       loLimit[i]  = -1.0;
-       // extend for triangle
-    }
+    BlitzVec xsi(3);  xsi = 0.0;
+    
+    BlitzVec upLimit(3);
+    BlitzVec loLimit(3);
+    
+    // for hex elements
+    upLimit  =  1.0;  
+    loLimit  = -1.0;
     
     const bool intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
                                         
@@ -750,18 +748,19 @@ bool Intersection::collectIntersectionPoints(
 bool Intersection::computeCurveSurfaceIntersection( 
     const DRT::Element*               surfaceElement,
     const DRT::Element*               lineElement,
-    Epetra_SerialDenseVector&         xsi,
-    const Epetra_SerialDenseVector&   upLimit,
-    const Epetra_SerialDenseVector&   loLimit) const
+    BlitzVec&                         xsi,
+    const BlitzVec&                   upLimit,
+    const BlitzVec&                   loLimit) const
 {
     bool intersection = true;
     int iter = 0;
     const int maxiter = 30;
     double residual = 1.0;
     Epetra_SerialDenseMatrix A(3,3);
-    Epetra_SerialDenseVector b(3);
-    Epetra_SerialDenseVector dx(3);
-    dx = xsi;
+    BlitzVec b(3);   b  = 0.0;
+    BlitzVec dx(3);  dx = 0.0;
+    blitz::firstIndex i;
+    dx = xsi.copy();
  
     updateRHSForCSI( b, xsi, surfaceElement, lineElement);
               
@@ -776,16 +775,14 @@ bool Intersection::computeCurveSurfaceIntersection(
                 intersection = false;
                 break;
             } 
-            //for(int i = 0; i < 3; i++)  dx[i] = 0.0;
-            dx.Scale(0.0);
+            dx = 0.0;
             iter++;
             printf("SINGULAR\n");
         }
         
-        //xsi = addTwoVectors(xsi,dx);
         xsi += dx;
         updateRHSForCSI( b, xsi, surfaceElement, lineElement);
-        residual = b.Norm2(); 
+        residual = sqrt(blitz::sum(b(i)*b(i))); 
         iter++;
         
         if(iter >= maxiter )
@@ -797,8 +794,8 @@ bool Intersection::computeCurveSurfaceIntersection(
     
     if(intersection)
     {
-        if( (xsi[0] > (upLimit[0]+TOL7)) || (xsi[1] > (upLimit[1]+TOL7)) || (xsi[2] > (upLimit[2]+TOL7))  || 
-            (xsi[0] < (loLimit[0]-TOL7)) || (xsi[1] < (loLimit[1]-TOL7)) || (xsi[2] < (loLimit[2]-TOL7))) 
+        if( (xsi(0) > (upLimit(0)+TOL7)) || (xsi(1) > (upLimit(1)+TOL7)) || (xsi(2) > (upLimit(2)+TOL7))  || 
+            (xsi(0) < (loLimit(0)-TOL7)) || (xsi(1) < (loLimit(1)-TOL7)) || (xsi(2) < (loLimit(2)-TOL7))) 
                 intersection = false;
     }
            
@@ -812,7 +809,7 @@ bool Intersection::computeCurveSurfaceIntersection(
  |          of a Singular Value Decomposition (SVD)                     |
  *----------------------------------------------------------------------*/
 bool Intersection::computeSingularCSI(
-    Epetra_SerialDenseVector&   xsi,
+    BlitzVec&   xsi,
     const DRT::Element*         lineElement,
     const DRT::Element*         surfaceElement) const
 {
@@ -821,8 +818,9 @@ bool Intersection::computeSingularCSI(
     const int maxiter = 5;
     double residual = 1.0;
     Epetra_SerialDenseMatrix A(3,3);
-    Epetra_SerialDenseVector b(3);
-    Epetra_SerialDenseVector dx(3);
+    BlitzVec b(3);   b  = 0.0;
+    BlitzVec dx(3);  dx = 0.0;
+    blitz::firstIndex i;
  
     updateRHSForCSI( b, xsi, surfaceElement, lineElement);
               
@@ -833,15 +831,13 @@ bool Intersection::computeSingularCSI(
         if(solveLinearSystemWithSVD(A, b, dx, 3))
         {
             singular = false;
-            //xsi = addTwoVectors(xsi,dx);
             xsi += dx;
             break;
         }
         
-        //xsi = addTwoVectors(xsi,dx); 
         xsi += dx;
         updateRHSForCSI( b, xsi, surfaceElement, lineElement);
-        residual = b.Norm2(); 
+        residual = sqrt(blitz::sum(b(i)*b(i))); 
         iter++;
         
         if(iter >= maxiter )
@@ -860,7 +856,7 @@ bool Intersection::computeSingularCSI(
  |          of a curve-surface intersection (CSI)                       |
  *----------------------------------------------------------------------*/
 void Intersection::updateAForCSI(  	Epetra_SerialDenseMatrix&         A,
-                                    const Epetra_SerialDenseVector&   xsi,
+                                    const BlitzVec&   xsi,
                                     const DRT::Element*               surfaceElement,
                                     const DRT::Element*               lineElement) const
 {	
@@ -869,7 +865,7 @@ void Intersection::updateAForCSI(  	Epetra_SerialDenseMatrix&         A,
    	
    	A.Scale(0.0);
  
-    const BlitzMat surfaceDeriv1(shape_function_2D_deriv1(xsi[0], xsi[1], surfaceElement->Shape()));
+    const BlitzMat surfaceDeriv1(shape_function_2D_deriv1(xsi(0), xsi(1), surfaceElement->Shape()));
     const DRT::Node*const* surfaceElementNodes = surfaceElement->Nodes();
     for(int inode=0; inode<numNodesSurface; inode++)
     {
@@ -881,7 +877,7 @@ void Intersection::updateAForCSI(  	Epetra_SerialDenseMatrix&         A,
 		}
     }	
    
-    const BlitzMat lineDeriv1(shape_function_1D_deriv1(xsi[2], lineElement->Shape()));
+    const BlitzMat lineDeriv1(shape_function_1D_deriv1(xsi(2), lineElement->Shape()));
     const DRT::Node*const* lineElementNodes = lineElement->Nodes();
     for(int inode=0; inode<numNodesLine; inode++)
     {   
@@ -901,32 +897,32 @@ void Intersection::updateAForCSI(  	Epetra_SerialDenseMatrix&         A,
  |          a curve-surface intersection (CSI)                          |
  *----------------------------------------------------------------------*/
 void Intersection::updateRHSForCSI( 
-    Epetra_SerialDenseVector&         b,
-    const Epetra_SerialDenseVector&   xsi,
+    BlitzVec&         b,
+    const BlitzVec&   xsi,
     const DRT::Element*               surfaceElement,
     const DRT::Element*               lineElement) const
 {
     const int numNodesSurface = surfaceElement->NumNode();
     const int numNodesLine = lineElement->NumNode();
  		
-    b.Scale(0.0);
+    b = 0.0;
     
-    const BlitzVec surfaceFunct(shape_function_2D( xsi[0], xsi[1], surfaceElement->Shape()));
+    const BlitzVec surfaceFunct(shape_function_2D( xsi(0), xsi(1), surfaceElement->Shape()));
     const DRT::Node*const* surfaceElementNodes = surfaceElement->Nodes();
     for(int i=0; i<numNodesSurface; i++)
     {
         const double* x = surfaceElementNodes[i]->X();
    	    for(int dim=0; dim<3; dim++)
-			b[dim] -= x[dim] * surfaceFunct(i);
+			b(dim) -= x[dim] * surfaceFunct(i);
     }
 
-    const BlitzVec lineFunct(shape_function_1D( xsi[2], lineElement->Shape()));
+    const BlitzVec lineFunct(shape_function_1D( xsi(2), lineElement->Shape()));
     const DRT::Node*const* lineElementNodes = lineElement->Nodes();
     for(int i=0; i<numNodesLine; i++)
     {
        const double* x = lineElementNodes[i]->X();
 	   for(int dim=0; dim<3; dim++)   
-			b[dim] += x[dim] * lineFunct(i);
+			b(dim) += x[dim] * lineFunct(i);
     }
 }
 
@@ -942,26 +938,25 @@ int Intersection::computeNewStartingPoint(
     const DRT::Element*                lineElement,
     const int                          surfaceId,
     const int                          lineId,
-    const Epetra_SerialDenseVector&    xsiOld,
-    const Epetra_SerialDenseVector&    upLimit,
-    const Epetra_SerialDenseVector&    loLimit,
+    const BlitzVec&    xsiOld,
+    const BlitzVec&    upLimit,
+    const BlitzVec&    loLimit,
     std::vector<InterfacePoint>&       interfacePoints,
     const bool                         lines
     ) const
 {	
     bool interval = true;
 	int numInterfacePoints = 0;
-	Epetra_SerialDenseVector xsi(3);
+	BlitzVec xsi(3);
 	
-    //printf("xsi = %f   %f   %f\n", fabs(xsi[0]), fabs(xsi[1]), fabs(xsi[2]) ); 
-    //printf("lolimit = %f   %f   %f\n", fabs(loLimit[0]), fabs(loLimit[1]), fabs(loLimit[2]) ); 
-    //printf("uplimit = %f   %f   %f\n", fabs(upLimit[0]), fabs(upLimit[1]), fabs(upLimit[2]) ); 
+    //printf("xsi = %f   %f   %f\n", fabs(xsi(0)), fabs(xsi(1)), fabs(xsi(2)) ); 
+    //printf("lolimit = %f   %f   %f\n", fabs(loLimit(0)), fabs(loLimit(1)), fabs(loLimit(2)) ); 
+    //printf("uplimit = %f   %f   %f\n", fabs(upLimit(0)), fabs(upLimit(1)), fabs(upLimit(2)) ); 
     
     if(comparePoints<3>(upLimit, loLimit))
         interval = false;
         
-	for(int i = 0; i < 3; i++)
-		xsi[i] = (double) (( upLimit[i] + loLimit[i] )/2.0);
+    xsi = 0.5 * (upLimit + loLimit);
          
 	bool intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
     
@@ -985,9 +980,9 @@ int Intersection::computeNewStartingPoint(
 int Intersection::addIntersectionPoint(
     const DRT::Element*             surfaceElement,
     const DRT::Element*             lineElement,
-    const Epetra_SerialDenseVector&	xsi,
-    const Epetra_SerialDenseVector& upLimit,
-    const Epetra_SerialDenseVector& loLimit,
+    const BlitzVec&	xsi,
+    const BlitzVec& upLimit,
+    const BlitzVec& loLimit,
     std::vector<InterfacePoint>& 	interfacePoints,
     const int                       surfaceId,
     const int                       lineId,							  
@@ -1003,15 +998,15 @@ int Intersection::addIntersectionPoint(
         ip.nsurf = 1;
         ip.surfaces[0] = surfaceId;
          
-        getLineCoordinates(lineId, xsi[2], ip.coord, surfaceElement->Shape());
+        getLineCoordinates(lineId, xsi(2), ip.coord, surfaceElement->Shape());
     }
     else
     {
         ip.nsurf = 2;
         ip.surfaces[0] = eleLinesSurfaces_[lineId][0];
         ip.surfaces[1] = eleLinesSurfaces_[lineId][1];
-        ip.coord[0] = xsi[0]; 
-        ip.coord[1] = xsi[1]; 
+        ip.coord[0] = xsi(0); 
+        ip.coord[1] = xsi(1); 
     }
     
     ip.coord[2] = 0.0; 
@@ -1030,8 +1025,8 @@ int Intersection::addIntersectionPoint(
       
     if(!alreadyInList)      
     {
-        vector< Epetra_SerialDenseVector >  upperLimits(8, Epetra_SerialDenseVector(3));
-        vector< Epetra_SerialDenseVector >  lowerLimits(8, Epetra_SerialDenseVector(3));
+        vector< BlitzVec >  upperLimits(8, BlitzVec(3));
+        vector< BlitzVec >  lowerLimits(8, BlitzVec(3));
         createNewLimits(xsi, upLimit, loLimit, upperLimits, lowerLimits);
         
         interfacePoints.push_back(ip);  
@@ -1053,11 +1048,11 @@ int Intersection::addIntersectionPoint(
  |          computation of all intersection points                      |
  *----------------------------------------------------------------------*/  
 void Intersection::createNewLimits(
-    const Epetra_SerialDenseVector&         xsi, 
-    const Epetra_SerialDenseVector&         upLimit,
-    const Epetra_SerialDenseVector&         loLimit,
-    vector< Epetra_SerialDenseVector >&     upperLimits, 
-    vector< Epetra_SerialDenseVector >&     lowerLimits) const
+    const BlitzVec&         xsi, 
+    const BlitzVec&         upLimit,
+    const BlitzVec&         loLimit,
+    vector< BlitzVec >&     upperLimits, 
+    vector< BlitzVec >&     lowerLimits) const
 {
     
 
@@ -1077,44 +1072,44 @@ void Intersection::createNewLimits(
  */     
 
     // upper left corner of surface with lower part of line
-    upperLimits[0][0] = xsi[0];         lowerLimits[0][0] = loLimit[0]; 
-    upperLimits[0][1] = upLimit[1];     lowerLimits[0][1] = xsi[1];
-    upperLimits[0][2] = xsi[2];         lowerLimits[0][2] = loLimit[2];
+    upperLimits[0](0) = xsi(0);         lowerLimits[0](0) = loLimit(0);
+    upperLimits[0](1) = upLimit(1);     lowerLimits[0](1) = xsi(1);
+    upperLimits[0](2) = xsi(2);         lowerLimits[0](2) = loLimit(2);
     
     // upper left corner of surface with upper part of line
-    upperLimits[1][0] = xsi[0];         lowerLimits[1][0] = loLimit[0]; 
-    upperLimits[1][1] = upLimit[1];     lowerLimits[1][1] = xsi[1];
-    upperLimits[1][2] = upLimit[2];     lowerLimits[1][2] = xsi[2];
+    upperLimits[1](0) = xsi(0);         lowerLimits[1](0) = loLimit(0);
+    upperLimits[1](1) = upLimit(1);     lowerLimits[1](1) = xsi(1);
+    upperLimits[1](2) = upLimit(2);     lowerLimits[1](2) = xsi(2);
     
     // upper right corner of surface with lower part of line
-    upperLimits[2][0] = upLimit[0];     lowerLimits[2][0] = xsi[0]; 
-    upperLimits[2][1] = upLimit[1];     lowerLimits[2][1] = xsi[1];
-    upperLimits[2][2] = xsi[2];         lowerLimits[2][2] = loLimit[2];
+    upperLimits[2](0) = upLimit(0);     lowerLimits[2](0) = xsi(0);
+    upperLimits[2](1) = upLimit(1);     lowerLimits[2](1) = xsi(1);
+    upperLimits[2](2) = xsi(2);         lowerLimits[2](2) = loLimit(2);
     
     // upper right corner of surface with upper part of line
-    upperLimits[3][0] = upLimit[0];     lowerLimits[3][0] = xsi[0]; 
-    upperLimits[3][1] = upLimit[1];     lowerLimits[3][1] = xsi[1];
-    upperLimits[3][2] = upLimit[2];     lowerLimits[3][2] = xsi[2];
+    upperLimits[3](0) = upLimit(0);     lowerLimits[3](0) = xsi(0);
+    upperLimits[3](1) = upLimit(1);     lowerLimits[3](1) = xsi(1);
+    upperLimits[3](2) = upLimit(2);     lowerLimits[3](2) = xsi(2);
 
     // lower right corner of surface with lower part of line
-    upperLimits[4][0] = upLimit[0];     lowerLimits[4][0] = xsi[0]; 
-    upperLimits[4][1] = xsi[1];         lowerLimits[4][1] = loLimit[1];
-    upperLimits[4][2] = xsi[2];         lowerLimits[4][2] = loLimit[2];
+    upperLimits[4](0) = upLimit(0);     lowerLimits[4](0) = xsi(0);
+    upperLimits[4](1) = xsi(1);         lowerLimits[4](1) = loLimit(1);
+    upperLimits[4](2) = xsi(2);         lowerLimits[4](2) = loLimit(2);
     
     // lower right corner of surface with upper part of line
-    upperLimits[5][0] = upLimit[0];     lowerLimits[5][0] = xsi[0]; 
-    upperLimits[5][1] = xsi[1];         lowerLimits[5][1] = loLimit[1];
-    upperLimits[5][2] = upLimit[2];     lowerLimits[5][2] = xsi[2];
+    upperLimits[5](0) = upLimit(0);     lowerLimits[5](0) = xsi(0);
+    upperLimits[5](1) = xsi(1);         lowerLimits[5](1) = loLimit(1);
+    upperLimits[5](2) = upLimit(2);     lowerLimits[5](2) = xsi(2);
     
     // lower left corner of surface with lower part of line
-    upperLimits[6][0] = xsi[0];         lowerLimits[6][0] = loLimit[0];
-    upperLimits[6][1] = xsi[1];         lowerLimits[6][1] = loLimit[1];
-    upperLimits[6][2] = xsi[2];         lowerLimits[6][2] = loLimit[2];
+    upperLimits[6](0) = xsi(0);         lowerLimits[6](0) = loLimit(0);
+    upperLimits[6](1) = xsi(1);         lowerLimits[6](1) = loLimit(1);
+    upperLimits[6](2) = xsi(2);         lowerLimits[6](2) = loLimit(2);
     
     // lower left corner of surface with upper part of line
-    upperLimits[7][0] = xsi[0];         lowerLimits[7][0] = loLimit[0];
-    upperLimits[7][1] = xsi[1];         lowerLimits[7][1] = loLimit[1];
-    upperLimits[7][2] = upLimit[2];     lowerLimits[7][2] = xsi[2];
+    upperLimits[7](0) = xsi(0);         lowerLimits[7](0) = loLimit(0);
+    upperLimits[7](1) = xsi(1);         lowerLimits[7](1) = loLimit(1);
+    upperLimits[7](2) = upLimit(2);     lowerLimits[7](2) = xsi(2);
 }
 
 
@@ -1144,13 +1139,13 @@ void Intersection::computeConvexHull(
     {
         midpoint = computeMidpoint(interfacePoints);
         // transform it into current coordinates
-        Epetra_SerialDenseVector    curCoord(3);
+        BlitzVec    eleCoordSurf(2);
         for(int j = 0; j < 2; j++)
-            curCoord[j]  = midpoint.coord[j];            
-        elementToCurrentCoordinates(surfaceElement, curCoord);    
-        currentToElementCoordinates(xfemElement, curCoord);    
+            eleCoordSurf(j)  = midpoint.coord[j];            
+        const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));    
+        const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));    
         for(int j = 0; j < 3; j++)
-            midpoint.coord[j] = curCoord[j]; 
+            midpoint.coord[j] = eleCoordVol(j); 
      
         // store coordinates in 
         // points has numInterfacePoints*dim-dimensional components
@@ -1168,13 +1163,13 @@ void Intersection::computeConvexHull(
             }
             // printf("\n");
             // transform interface points into current coordinates
-            Epetra_SerialDenseVector    curCoord(3);
+            BlitzVec  eleCoordSurf(2);
             for(int j = 0; j < 2; j++)      
-                curCoord[j]  = ipoint->coord[j];   
-            elementToCurrentCoordinates(surfaceElement, curCoord);  
-            currentToElementCoordinates(xfemElement, curCoord);
+                eleCoordSurf(j)  = ipoint->coord[j];   
+            const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));    
+            const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));
             for(int j = 0; j < 3; j++)         
-                ipoint->coord[j] = curCoord[j];
+                ipoint->coord[j] = eleCoordVol(j);
                 
         }     
       
@@ -1195,13 +1190,13 @@ void Intersection::computeConvexHull(
                 for(int k = 0; k < 2; k++)  
                     vertex[k] = point[k];
                                 
-                Epetra_SerialDenseVector    curCoord(3);
+                BlitzVec  eleCoordSurf(2);
                 for(int m = 0; m < 2; m++)
-                    curCoord[m]  = vertex[m];           
-                elementToCurrentCoordinates(surfaceElement, curCoord); 
-                currentToElementCoordinates(xfemElement, curCoord);    
+                    eleCoordSurf(m)  = vertex[m];           
+                const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));    
+                const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));     
                 for(int m = 0; m < 3; m++)
-                    vertex[m] = curCoord[m];
+                    vertex[m] = eleCoordVol(m);
                                                 
                 vertices.push_back(vertex);
             }                
@@ -1223,15 +1218,15 @@ void Intersection::computeConvexHull(
         for(vector<InterfacePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint)
         {
             // transform interface points into current coordinates
-            Epetra_SerialDenseVector    curCoord(3);
+            BlitzVec  eleCoordSurf(2);
             for(int j = 0; j < 2; j++)         
-                curCoord[j]  = ipoint->coord[j];   
-            elementToCurrentCoordinates(surfaceElement, curCoord); 
-            currentToElementCoordinates(xfemElement, curCoord);   
+                eleCoordSurf(j)  = ipoint->coord[j];   
+            const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));    
+            const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));  
             for(int j = 0; j < 3; j++)      
             {   
-                ipoint->coord[j] = curCoord[j];
-                vertex[j] = curCoord[j];
+                ipoint->coord[j] = eleCoordVol(j);
+                vertex[j] = eleCoordVol(j);
             }
             vertices.push_back(vertex);
         }              
@@ -1832,7 +1827,7 @@ void Intersection::recoverCurvedInterface(
 {
     vector<int>                                     order(3,0);
     vector<int>                                     tetraCornerIndices(4,0); 
-    vector< Epetra_SerialDenseVector >             	tetraCornerNodes(4, Epetra_SerialDenseVector(3));
+    vector< BlitzVec >             	                tetraCornerNodes(4, BlitzVec(3));
     BoundaryIntCells                     			listBoundaryICPerElement;
     
     
@@ -1913,8 +1908,8 @@ void Intersection::liftAllSteinerPoints(
         const DRT::Element*                             xfemElement,
         tetgenio&                                       out)
 {
-    Epetra_SerialDenseVector edgePoint(3);
-    Epetra_SerialDenseVector oppositePoint(3);
+    BlitzVec edgePoint(3);      edgePoint = 0.0;
+    BlitzVec oppositePoint(3);  oppositePoint = 0.0;
     vector< vector <int> > adjacentFacesList;
     vector< vector <int> > adjacentFacemarkerList;
     
@@ -2024,18 +2019,18 @@ int Intersection::decideSteinerCase(
         int&                            cutterIndex,  
         const vector< vector <int> >&   adjacentFacesList,
         const vector< vector <int> >&   adjacentFacemarkerList,
-        Epetra_SerialDenseVector&       edgePoint,
-        Epetra_SerialDenseVector&       oppositePoint,
+        BlitzVec&                       edgePoint,
+        BlitzVec&                       oppositePoint,
         const DRT::Element*             xfemElement, 
         const tetgenio&                 out) const
 {
     const int pointIndex = adjacentFacesList[steinerIndex][0];
 
-    Epetra_SerialDenseVector    x(3);
+    BlitzVec    x(3);
     for(int k=0; k<3; k++)
-        x[k]   = out.pointlist[pointIndex*3 + k];
+        x(k)   = out.pointlist[pointIndex*3 + k];
    
-    Epetra_SerialDenseVector    xsi(3);
+    BlitzVec    xsi(3);
     currentToElementCoordinates(xfemElement, x, xsi);
     
     InterfacePoint emptyIp;
@@ -2092,38 +2087,38 @@ void Intersection::liftSteinerPointOnSurface(
         )
 {
     // get Steiner point coordinates
-    Epetra_SerialDenseVector    Steinerpoint(3);
+    BlitzVec    Steinerpoint(3);
     for(int j=0; j<3; ++j)
     {
-        Steinerpoint[j] = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
+        Steinerpoint(j) = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
     }
-    elementToCurrentCoordinates(xfemElement, Steinerpoint);   
+    elementToCurrentCoordinatesInPlace(xfemElement, Steinerpoint);
     
-    Epetra_SerialDenseVector    averageNormal(3);
-    averageNormal.Scale(0.0);
+    BlitzVec    averageNormal(3);
+    averageNormal = 0.0;
     
     const int length = (int) ( ( (double) (adjacentFacesList[steinerIndex].size()-1))*0.5 );
-    vector<Epetra_SerialDenseVector> normals(length);
+    vector<BlitzVec> normals(length);
     
     for(int j = 0; j < length; ++j)
     {
         const int pointIndex1 = adjacentFacesList[steinerIndex][1 + 2*j];
         const int pointIndex2 = adjacentFacesList[steinerIndex][1 + 2*j + 1];
 
-        Epetra_SerialDenseVector    p1(3);
-        Epetra_SerialDenseVector    p2(3);
+        BlitzVec    p1(3);
+        BlitzVec    p2(3);
         for(int k = 0; k < 3; ++k)
         {
-            p1[k] =  out.pointlist[pointIndex1*3 + k];
-            p2[k] =  out.pointlist[pointIndex2*3 + k];
+            p1(k) =  out.pointlist[pointIndex1*3 + k];
+            p2(k) =  out.pointlist[pointIndex2*3 + k];
         }
-        elementToCurrentCoordinates(xfemElement, p1);   
-        elementToCurrentCoordinates(xfemElement, p2);   
+        elementToCurrentCoordinatesInPlace(xfemElement, p1);   
+        elementToCurrentCoordinatesInPlace(xfemElement, p2);   
 
-        const Epetra_SerialDenseVector n1 = subtractsTwoVectors<3>(p1, Steinerpoint);
-        const Epetra_SerialDenseVector n2 = subtractsTwoVectors<3>(p2, Steinerpoint);
+        const BlitzVec n1(subtractsTwoVectors<3>(p1, Steinerpoint));
+        const BlitzVec n2(subtractsTwoVectors<3>(p2, Steinerpoint));
     
-        Epetra_SerialDenseVector normal = computeCrossProduct( n1, n2);
+        BlitzVec normal(computeCrossProduct( n1, n2));
         normalizeVector(normal);
         
         averageNormal += normal;
@@ -2132,14 +2127,14 @@ void Intersection::liftSteinerPointOnSurface(
     }
 
     // compute average normal
-    averageNormal.Scale(1.0 / ((double)length));
+    averageNormal /= ((double)length);
     
     const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
     
-    vector<Epetra_SerialDenseVector> plane(4, Epetra_SerialDenseVector(3));
-    plane[0] = addTwoVectors<3>(Steinerpoint, averageNormal);               
-    plane[1] = subtractsTwoVectors<3>(Steinerpoint, averageNormal);
-    Epetra_SerialDenseVector xsi(3);
+    vector<BlitzVec> plane(2, BlitzVec(3));
+    plane[0] = Steinerpoint + averageNormal;               
+    plane[1] = Steinerpoint - averageNormal;
+    BlitzVec xsi(3); xsi = 0.0;
     const bool intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker],false);
     if(intersected)
     {
@@ -2150,13 +2145,13 @@ void Intersection::liftSteinerPointOnSurface(
     {
         // loop over all individual normals
         bool intersected = false;
-        vector<Epetra_SerialDenseVector>::const_iterator normalptr;
+        vector<BlitzVec>::const_iterator normalptr;
         for(normalptr = normals.begin(); normalptr != normals.end(); ++normalptr )
         {
-            vector<Epetra_SerialDenseVector> plane(4, Epetra_SerialDenseVector(3)); // TODO: why size 4???
-            plane[0] = addTwoVectors<3>(Steinerpoint, *normalptr);               
-            plane[1] = subtractsTwoVectors<3>(Steinerpoint, *normalptr);
-            Epetra_SerialDenseVector xsi(3);
+            vector<BlitzVec> plane(2, BlitzVec(3)); // TODO: why size 4???
+            plane[0] = Steinerpoint + (*normalptr);               
+            plane[1] = Steinerpoint - (*normalptr);
+            BlitzVec xsi(3);  xsi = 0.0;
             intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker], false);
             if(intersected)
             {
@@ -2181,39 +2176,39 @@ void Intersection::liftSteinerPointOnSurface(
  *----------------------------------------------------------------------*/
 void Intersection::liftSteinerPointOnEdge(
     const int                         steinerIndex,
-    int                         lineIndex,     // TODO:??????????????? why is this an argument to this function? 
+    int                               lineIndex,     // TODO:??????????????? why is this an argument to this function? 
     const int                         cutterIndex,   
-    Epetra_SerialDenseVector&   edgePoint,
-    Epetra_SerialDenseVector&   oppositePoint,
+    BlitzVec&                         edgePoint,
+    BlitzVec&                         oppositePoint,
     const vector< vector <int> >&     adjacentFacesList,
-    const DRT::Element*         xfemElement, 
-    tetgenio&                   out)
+    const DRT::Element*               xfemElement, 
+    tetgenio&                         out)
 {
     // get Steiner point coordinates
-    Epetra_SerialDenseVector    Steinerpoint(3);
+    BlitzVec    Steinerpoint(3);
     for(int j=0; j<3; j++)
-        Steinerpoint[j] = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
+        Steinerpoint(j) = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
     
-    elementToCurrentCoordinates(xfemElement, Steinerpoint);   
-    elementToCurrentCoordinates(xfemElement, edgePoint);   
-    elementToCurrentCoordinates(xfemElement, oppositePoint);  
+    elementToCurrentCoordinatesInPlace(xfemElement, Steinerpoint);
+    elementToCurrentCoordinatesInPlace(xfemElement, edgePoint);
+    elementToCurrentCoordinatesInPlace(xfemElement, oppositePoint);
      
-    const Epetra_SerialDenseVector r1 = subtractsTwoVectors<3>( edgePoint, Steinerpoint);
-    const Epetra_SerialDenseVector r2 = subtractsTwoVectors<3>( oppositePoint, Steinerpoint);
+    const BlitzVec r1(subtractsTwoVectors<3>( edgePoint, Steinerpoint));
+    const BlitzVec r2(subtractsTwoVectors<3>( oppositePoint, Steinerpoint));
 
-    Epetra_SerialDenseVector n1 = computeCrossProduct( r1, r2);
-    Epetra_SerialDenseVector n2 = computeCrossProduct( r1, n1);
+    BlitzVec n1(computeCrossProduct( r1, r2));
+    BlitzVec n2(computeCrossProduct( r1, n1));
     
     normalizeVector(n1);
     normalizeVector(n2);
 
-    vector<Epetra_SerialDenseVector> plane(4, Epetra_SerialDenseVector(3));      
+    vector<BlitzVec> plane(4, BlitzVec(3));      
     plane[0] = addTwoVectors<3>(Steinerpoint, n1);               
     plane[1] = subtractsTwoVectors<3>(Steinerpoint, n1);
     plane[2] = addTwoVectors<3>(plane[1], n2);
     plane[3] = addTwoVectors<3>(plane[0], n2);
      
-    Epetra_SerialDenseVector xsi(3);
+    BlitzVec xsi(3);  xsi = 0.0;
     const bool intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[cutterIndex]);
     
     if(intersected)
@@ -2293,12 +2288,17 @@ void Intersection::liftSteinerPointOnBoundary(
     }
         
     // compute normal through Steiner point lying in the boundary triangle
-    vector <Epetra_SerialDenseVector> plane(5, Epetra_SerialDenseVector(3)); 
-    computeIntersectionNormal( adjacentFacesList[steinerIndex][0], edgeIndex, oppositeIndex, plane,
+    vector <BlitzVec> plane(5, BlitzVec(3));
+    plane[0] = 0.0;
+    plane[1] = 0.0;
+    plane[2] = 0.0;
+    plane[3] = 0.0;
+    plane[4] = 0.0;
+    computeIntersectionNormalC( adjacentFacesList[steinerIndex][0], edgeIndex, oppositeIndex, plane,
                                xfemElement, out);
                
     // compute intersection normal on boundary
-    Epetra_SerialDenseVector xsi(3);
+    BlitzVec xsi(3);  xsi = 0.0;
     const bool intersected = computeRecoveryNormal(xsi, plane, intersectingCutterElements_[faceIndex], true);
     
     if(intersected)
@@ -2362,7 +2362,7 @@ void Intersection::getTetrahedronInformation(
  |          of the xfem-element                                         |
  *----------------------------------------------------------------------*/  
 void Intersection::getTetrahedronNodes(
-        vector<Epetra_SerialDenseVector>&       tetraCornerNodes,
+        vector<BlitzVec>&                       tetraCornerNodes,
         const vector<int>&                      tetraCornerIndices,
         const DRT::Element*                     xfemElement,
         const tetgenio&                         out
@@ -2372,9 +2372,9 @@ void Intersection::getTetrahedronNodes(
     for(int i = 0; i < 4; i++)
     {
         for(int j = 0; j < 3; j++)
-            tetraCornerNodes[i][j] = out.pointlist[tetraCornerIndices[i]*3+j];
+            tetraCornerNodes[i](j) = out.pointlist[tetraCornerIndices[i]*3+j];
         
-        elementToCurrentCoordinates(xfemElement, tetraCornerNodes[i]);   
+        elementToCurrentCoordinatesInPlace(xfemElement, tetraCornerNodes[i]);   
     }
 }
 
@@ -2391,7 +2391,7 @@ void Intersection::computeHigherOrderPoint(
         const int                                 faceMarker, 
         const int                                 globalHigherOrderIndex, 
         const vector<int>&                        tetraCornerIndices, 
-        const vector<Epetra_SerialDenseVector>&   tetraCornerNodes, 
+        const vector<BlitzVec>&                   tetraCornerNodes, 
         const DRT::Element*                       xfemElement, 
         tetgenio&                           out
         )
@@ -2402,8 +2402,14 @@ void Intersection::computeHigherOrderPoint(
     int                                     lineIndex               = -1;
     int                                     adjacentFaceMarker      = -1;
     int                                     adjacentFaceIndex       = -1;  
-    Epetra_SerialDenseVector                xsi(3);                
-    vector < Epetra_SerialDenseVector >     plane(5, Epetra_SerialDenseVector(3)); 
+    BlitzVec                xsi(3);
+    xsi = 0.0;
+    vector < BlitzVec >     plane(5, BlitzVec(3));
+    plane[0] = 0.0;
+    plane[1] = 0.0;
+    plane[2] = 0.0;
+    plane[3] = 0.0;
+    plane[4] = 0.0;
                          
          
     findAdjacentFace(  tetraCornerIndices[index1], tetraCornerIndices[index2], 
@@ -2415,7 +2421,7 @@ void Intersection::computeHigherOrderPoint(
     // edge lies within the xfem element
     if(adjacentFaceMarker  > -1)
     {
-        computeIntersectionNormal(  tetraCornerIndices[index1], tetraCornerIndices[index2], faceIndex, 
+        computeIntersectionNormalB(  tetraCornerIndices[index1], tetraCornerIndices[index2], faceIndex, 
                                     adjacentFaceIndex, globalHigherOrderIndex, plane, xfemElement, out);   
                                    
         // higher order node lies within the cutter element
@@ -2453,7 +2459,14 @@ void Intersection::computeHigherOrderPoint(
                                                                                   
         //printf("oppo = %d\n", oppositeIndex);
         
-        computeIntersectionNormal(  true,  index1, index2, oppositeIndex, globalHigherOrderIndex,   
+        vector < BlitzVec >     plane(5, BlitzVec(3));
+        plane[0] = 0.0;
+        plane[1] = 0.0;
+        plane[2] = 0.0;
+        plane[3] = 0.0;
+        plane[4] = 0.0;
+        
+        computeIntersectionNormalA(  true,  index1, index2, oppositeIndex, globalHigherOrderIndex,   
                                     tetraCornerIndices, tetraCornerNodes, plane, xfemElement, out);
                                
         intersected = computeRecoveryNormal(    xsi, plane, intersectingCutterElements_[faceMarker], 
@@ -2490,6 +2503,7 @@ void Intersection::computeHigherOrderPoint(
     else 
     {
         countMissedPoints_++;
+        cout << "faceMarker = " << faceMarker << endl;
         dserror("NO INTERSECTION POINT FOUND!!!!! adjacentFaceMarker = %d\n", adjacentFaceMarker);
     }
 
@@ -2525,8 +2539,8 @@ vector<int> Intersection::getPointIndices(
  |          line  and a surface                    RCI                  |           
  *----------------------------------------------------------------------*/
 bool Intersection::computeRecoveryNormal( 
-    Epetra_SerialDenseVector&                   xsi,
-    const vector<Epetra_SerialDenseVector>&     normal,
+    BlitzVec&                                   xsi,
+    const vector<BlitzVec>&                     normal,
     const DRT::Element*                         cutterElement,
     const bool                                  onBoundary
     ) const
@@ -2537,10 +2551,13 @@ bool Intersection::computeRecoveryNormal(
     const int                   maxiter = 50;
     double                      residual = 1.0;
     Epetra_SerialDenseMatrix    A(3,3);
-    Epetra_SerialDenseVector    b(3);
-    Epetra_SerialDenseVector    dx(3);
+    BlitzVec    b(3);
+    BlitzVec    dx(3);
+    b = 0.0;
+    dx = 0.0;
+    blitz::firstIndex i;
     
-    xsi.Scale(0.0);
+    xsi = 0.0;
     updateRHSForRCINormal( b, xsi, normal, cutterElement, onBoundary);
                                 
     while(residual > TOL14)
@@ -2556,9 +2573,8 @@ bool Intersection::computeRecoveryNormal(
             break;  
         }
         
-        //xsi = addTwoVectors(xsi,dx);
         xsi += dx;
-        //printf("dx0 = %20.16f\t, dx1 = %20.16f\t, dx2 = %20.16f\n", dx[0], dx[1], dx[2]);
+        //printf("dx0 = %20.16f\t, dx1 = %20.16f\t, dx2 = %20.16f\n", dx(0), dx(1), dx(2));
         if(iter >= maxiter)
         {   
             intersection = false;
@@ -2566,15 +2582,15 @@ bool Intersection::computeRecoveryNormal(
         }       
         
         updateRHSForRCINormal( b, xsi, normal, cutterElement, onBoundary); 
-        residual = b.Norm2(); 
+        residual = sqrt(blitz::sum(b(i)*b(i))); 
         iter++;
         
-        //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14);
+        //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
     } 
     
-    if( (fabs(xsi[0])-1.0) > TOL7  || (fabs(xsi[1])-1.0) > TOL7 )    // line coordinate may be bigger than 1
+    if( (fabs(xsi(0))-1.0) > TOL7  || (fabs(xsi(1))-1.0) > TOL7 )    // line coordinate may be bigger than 1
     {
-        //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14);
+        //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
         intersection = false;
     }
         
@@ -2591,22 +2607,20 @@ bool Intersection::computeRecoveryNormal(
  *----------------------------------------------------------------------*/
 void Intersection::updateAForRCINormal(   
     Epetra_SerialDenseMatrix&                   A,
-    const Epetra_SerialDenseVector&             xsi,
-    const vector<Epetra_SerialDenseVector>&     normal,
+    const BlitzVec&                             xsi,
+    const vector<BlitzVec>&                     normal,
     const DRT::Element*                         surfaceElement,
     const bool                                  onBoundary
     ) const
 {   
     const int numNodesSurface = surfaceElement->NumNode();
-    //Epetra_SerialDenseMatrix surfaceDeriv1(2,numNodesSurface);
     
     A.Scale(0.0);
-    //shape_function_2D_deriv1( surfaceDeriv1, xsi[0], xsi[1], surfaceElement->Shape());
-    const BlitzMat surfaceDeriv1(shape_function_2D_deriv1( xsi[0], xsi[1], surfaceElement->Shape()));
+    const BlitzMat surfaceDeriv1(shape_function_2D_deriv1( xsi(0), xsi(1), surfaceElement->Shape()));
    
-    //printf("num of nodes surfaces = %d\n", numOfNodesSurface);
     if(!onBoundary)
     {
+        dsassert(normal.size() >= 2, "mismatch in length");
         for(int i=0; i<numNodesSurface; i++)
         {
             const double* pos = surfaceElement->Nodes()[i]->X();
@@ -2620,14 +2634,12 @@ void Intersection::updateAForRCINormal(
         }
         
         for(int dim=0; dim<3; dim++)
-            A[dim][2] = (-1.0) * ( normal[0][dim] * (-0.5) + normal[1][dim] * 0.5 );  
+            A[dim][2] = (-1.0) * ( normal[0](dim) * (-0.5) + normal[1](dim) * 0.5 );  
     }
     else
     {
-//        const int numNodesLine = 3;   
-//        Epetra_SerialDenseMatrix lineDeriv1(1,numNodesLine);
-//        shape_function_1D_deriv1(lineDeriv1, xsi[2], DRT::Element::line3);
-        const BlitzMat lineDeriv1(shape_function_1D_deriv1( xsi[2], DRT::Element::line3));
+        const int numNodesLine = 3;
+        const BlitzMat lineDeriv1(shape_function_1D_deriv1( xsi(2), DRT::Element::line3));
      
         for(int i=0; i<numNodesSurface; i++)
         {
@@ -2641,13 +2653,13 @@ void Intersection::updateAForRCINormal(
             }
         }
         
-        for(int dim=0; dim<3; dim++)    
-            for(int i = 0; i < 3; i++)
+        for(int i = 0; i < numNodesLine; i++)
+            for(int dim=0; dim<3; dim++)    
             {
                 int index = i;
                 if(i > 1)   index = 4;
                 //A[dim][2] += (-1.0) * normal[index][dim] * lineDeriv1[i][0]; 
-                A[dim][2] += (-1.0) * normal[index][dim] * lineDeriv1(0,i);
+                A[dim][2] += (-1.0) * normal[index](dim) * lineDeriv1(0,i);
             }  
     }
 }
@@ -2661,42 +2673,40 @@ void Intersection::updateAForRCINormal(
  |          (line-surface intersection)                                 |   
  *----------------------------------------------------------------------*/
 void Intersection::updateRHSForRCINormal( 
-    Epetra_SerialDenseVector&                   b,
-    const Epetra_SerialDenseVector&             xsi,    
-    const vector<Epetra_SerialDenseVector>&     normal,
+    BlitzVec&                   b,
+    const BlitzVec&             xsi,    
+    const vector<BlitzVec>&     normal,
     const DRT::Element*                         surfaceElement,
     const bool                                  onBoundary
     ) const
 {
     const int numNodesSurface = surfaceElement->NumNode();
-    Epetra_SerialDenseVector surfaceFunct(numNodesSurface);
-  
-    b.Scale(0.0);  
-    shape_function_2D( surfaceFunct, xsi[0], xsi[1], surfaceElement->Shape());     
-  
+    const BlitzVec surfaceFunct(shape_function_2D( xsi(0), xsi(1), surfaceElement->Shape()));
+    
+    b = 0.0;
     if(!onBoundary)
     {
+        dsassert(normal.size() >= 2, "mismatch in length");
         for(int i=0; i<numNodesSurface; i++)
         {
             const DRT::Node* node = surfaceElement->Nodes()[i];
             for(int dim=0; dim<3; dim++)    
-                b[dim] += (-1.0) * node->X()[dim] * surfaceFunct[i];
+                b(dim) += (-1.0) * node->X()[dim] * surfaceFunct(i);
         }
             
         for(int dim=0; dim<3; dim++)
-            b[dim] += normal[0][dim] * 0.5*(1.0 - xsi[2]) + normal[1][dim] * 0.5*(1.0 + xsi[2]);
+            b(dim) += normal[0](dim) * 0.5*(1.0 - xsi(2)) + normal[1](dim) * 0.5*(1.0 + xsi(2));
     }
     else
     {
         const int numNodesLine = 3;
-        Epetra_SerialDenseVector lineFunct(numNodesLine);
-        shape_function_1D( lineFunct, xsi[2], DRT::Element::line3);
+        const BlitzVec lineFunct(shape_function_1D( xsi(2), DRT::Element::line3));
        
         for(int i=0; i<numNodesSurface; i++)
         {
             const DRT::Node* node = surfaceElement->Nodes()[i];
             for(int dim=0; dim<3; dim++)
-                b[dim] += (-1.0) * node->X()[dim] * surfaceFunct[i];
+                b(dim) += (-1.0) * node->X()[dim] * surfaceFunct(i);
         }
         
        
@@ -2706,7 +2716,7 @@ void Intersection::updateRHSForRCINormal(
                 int index = i;
                 if(i > 1)   index = 4;
                 
-                b[dim] += normal[index][dim] * lineFunct[i]; 
+                b(dim) += normal[index](dim) * lineFunct(i);
             } 
     }
 }
@@ -2719,8 +2729,8 @@ void Intersection::updateRHSForRCINormal(
  *----------------------------------------------------------------------*/
 bool Intersection::computeRecoveryPlane( 
         int&                                        lineIndex,
-        Epetra_SerialDenseVector&                   xsi,
-        const vector<Epetra_SerialDenseVector>&     plane,
+        BlitzVec&                                   xsi,
+        const vector<BlitzVec>&                     plane,
         DRT::Element*                               surfaceElement
         ) const
 {
@@ -2747,11 +2757,12 @@ bool Intersection::computeRecoveryPlane(
         double                      residual = 1.0;
         DRT::Element*               lineElement = surfaceElement->Lines()[i];
         Epetra_SerialDenseMatrix    A(3,3);
-        Epetra_SerialDenseVector    b(3);
-        Epetra_SerialDenseVector    dx(3);
+        BlitzVec    b(3);   b  = 0.0;
+        BlitzVec    dx(3);  dx = 0.0;
+        blitz::firstIndex j;
       
         intersection = true;
-        xsi.Scale(0.0); 
+        xsi = 0.0; 
         
         updateRHSForRCIPlane( b, xsi, plane, lineElement);
                         
@@ -2775,12 +2786,12 @@ bool Intersection::computeRecoveryPlane(
             xsi += dx;
   
             updateRHSForRCIPlane( b, xsi, plane, lineElement);
-            residual = b.Norm2(); 
+            residual = sqrt(blitz::sum(b(j)*b(j))); 
             iter++;
         } 
     
-        if( (fabs(xsi[2])-1.0) > TOL7 )     // planes coordinate may be bigger than 1
-        {   printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0], xsi[1], xsi[2], residual, TOL14);
+        if( (fabs(xsi(2))-1.0) > TOL7 )     // planes coordinate may be bigger than 1
+        {   printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
             intersection = false;
         }  
         
@@ -2804,8 +2815,8 @@ bool Intersection::computeRecoveryPlane(
  *----------------------------------------------------------------------*/
 void Intersection::updateAForRCIPlane(   
         Epetra_SerialDenseMatrix&                   A,
-        const Epetra_SerialDenseVector&             xsi,
-        const vector<Epetra_SerialDenseVector>&     plane,
+        const BlitzVec&             xsi,
+        const vector<BlitzVec>&     plane,
         const DRT::Element*                         lineElement,
         const DRT::Element*                         surfaceElement
         ) const
@@ -2814,11 +2825,13 @@ void Intersection::updateAForRCIPlane(
     const int numNodesSurface = 4;
 //    Epetra_SerialDenseMatrix surfaceDeriv(2, numNodesSurface);
 //    Epetra_SerialDenseMatrix lineDeriv(1,numNodesLine);
-//    shape_function_2D_deriv1(surfaceDeriv,  xsi[0],  xsi[1], DRT::Element::quad4);
-//    shape_function_1D_deriv1(lineDeriv, xsi[2], lineElement->Shape());
+//    shape_function_2D_deriv1(surfaceDeriv,  xsi(0),  xsi(1), DRT::Element::quad4);
+//    shape_function_1D_deriv1(lineDeriv, xsi(2), lineElement->Shape());
     
-    const BlitzMat surfaceDeriv(shape_function_2D_deriv1(xsi[0],  xsi[1], DRT::Element::quad4));
-    const BlitzMat lineDeriv(shape_function_1D_deriv1(xsi[2], lineElement->Shape()));
+    const BlitzMat surfaceDeriv(shape_function_2D_deriv1(xsi(0),  xsi(1), DRT::Element::quad4));
+    const BlitzMat lineDeriv(shape_function_1D_deriv1(xsi(2), lineElement->Shape()));
+    
+    dsassert((int)plane.size() >= numNodesSurface, "plane array has to have size numNodesSurface ( = 4)!");
     
     A.Scale(0.0);
     for(int dim=0; dim<3; dim++)
@@ -2826,8 +2839,8 @@ void Intersection::updateAForRCIPlane(
         {
 //            A[dim][0] += plane[i][dim] * surfaceDeriv[i][0];
 //            A[dim][1] += plane[i][dim] * surfaceDeriv[i][1]; // ???????????????bug??????????? new version gives slighlty different results
-            A[dim][0] += plane[i][dim] * surfaceDeriv(0,i);
-            A[dim][1] += plane[i][dim] * surfaceDeriv(1,i);
+            A[dim][0] += plane[i](dim) * surfaceDeriv(0,i);
+            A[dim][1] += plane[i](dim) * surfaceDeriv(1,i);
         }
         
     for(int i=0; i<numNodesLine; i++)
@@ -2848,25 +2861,25 @@ void Intersection::updateAForRCIPlane(
  |          (curve-plane intersection)                                  |   
  *----------------------------------------------------------------------*/
 void Intersection::updateRHSForRCIPlane( 
-    Epetra_SerialDenseVector&                   b,
-    const Epetra_SerialDenseVector&             xsi,    
-    const vector <Epetra_SerialDenseVector>&    plane,
+    BlitzVec&                   b,
+    const BlitzVec&             xsi,    
+    const vector <BlitzVec>&    plane,
     const DRT::Element*                         lineElement
     ) const
 {
     const int numNodesLine    = lineElement->NumNode();
     const int numNodesSurface = 4;
-//    Epetra_SerialDenseVector surfaceFunct(numNodesSurface);
-//    Epetra_SerialDenseVector lineFunct(numNodesLine);
    
-    const BlitzVec surfaceFunct(shape_function_2D( xsi[0], xsi[1], DRT::Element::quad4 )); 
-    const BlitzVec lineFunct(shape_function_1D( xsi[2], lineElement->Shape()));
+    const BlitzVec surfaceFunct(shape_function_2D( xsi(0), xsi(1), DRT::Element::quad4 )); 
+    const BlitzVec lineFunct(shape_function_1D( xsi(2), lineElement->Shape()));
     
-    b.Scale(0.0);
+    dsassert((int)plane.size() >= numNodesSurface, "plane array has to have size numNodesSurface ( = 4)!");
+    
+    b = 0.0;
     for(int dim=0; dim<3; dim++)
         for(int i=0; i<numNodesSurface; i++)
         {
-            b[dim] -= plane[i][dim] * surfaceFunct(i);
+            b(dim) -= plane[i](dim) * surfaceFunct(i);
         }
     
     const DRT::Node*const* lineNodes = lineElement->Nodes();
@@ -2875,7 +2888,7 @@ void Intersection::updateRHSForRCIPlane(
         const double* pos = lineNodes[i]->X();
         for(int dim=0; dim<3; dim++)    
         {
-            b[dim] +=  pos[dim]  * lineFunct(i);        
+            b(dim) +=  pos[dim]  * lineFunct(i);
         }
     }
 }
@@ -2886,64 +2899,64 @@ void Intersection::updateRHSForRCIPlane(
  |  RCI:    computes the normal to the interface edge of     u.may 08/07|
  |          the tetrahedron facet lying within this facet               |
  *----------------------------------------------------------------------*/  
-void Intersection::computeIntersectionNormal( 
+void Intersection::computeIntersectionNormalA( 
     const bool                              onBoundary,
     const int                               index1,
     const int                               index2,
     const int                               oppositePointIndex,
     const int                               globalHigherOrderIndex, 
     const vector<int>&                      tetraCornerIndices,
-    const vector<Epetra_SerialDenseVector>& tetraCornerNodes,
-    vector<Epetra_SerialDenseVector>&       plane,
+    const vector<BlitzVec>&                 tetraCornerNodes,
+    vector<BlitzVec>&                       plane,
     const DRT::Element*                     xfemElement,
     const tetgenio&                         out) const
 {            
     
-    Epetra_SerialDenseVector  p1(3);
-    Epetra_SerialDenseVector  p2(3);
-    Epetra_SerialDenseVector  p3(3);        
+    BlitzVec  p1(3); p1 = 0.0;
+    BlitzVec  p2(3); p2 = 0.0;
+    BlitzVec  p3(3); p3 = 0.0;
     
     
     if(!onBoundary)
     {
         for(int i=0; i<3; i++)
         {    
-            p1[i] = tetraCornerNodes[3][i];
-            p2[i] = tetraCornerNodes[index1][i];
-            p3[i] = tetraCornerNodes[index2][i];             
+            p1(i) = tetraCornerNodes[3](i);
+            p2(i) = tetraCornerNodes[index1](i);
+            p3(i) = tetraCornerNodes[index2](i);             
         }
     }
     else
     {
         for(int i=0; i<3; i++)
         {
-            p1[i] = out.pointlist[oppositePointIndex*3          + i];
-            p2[i] = out.pointlist[tetraCornerIndices[index1]*3  + i];
-            p3[i] = out.pointlist[tetraCornerIndices[index2]*3  + i];                       
+            p1(i) = out.pointlist[oppositePointIndex*3          + i];
+            p2(i) = out.pointlist[tetraCornerIndices[index1]*3  + i];
+            p3(i) = out.pointlist[tetraCornerIndices[index2]*3  + i];                       
         }
     }
                  
     // compute direction vectors of the plane 
-    Epetra_SerialDenseVector  r1 = subtractsTwoVectors<3>(p1, p2);
-    Epetra_SerialDenseVector  r2 = subtractsTwoVectors<3>(p3, p2);
+    const BlitzVec  r1(subtractsTwoVectors<3>(p1, p2));
+    const BlitzVec  r2(subtractsTwoVectors<3>(p3, p2));
  
     // normal of the plane
-    Epetra_SerialDenseVector  n = computeCrossProduct(r1, r2);
+    BlitzVec  n(computeCrossProduct(r1, r2));
     normalizeVector(n);
  
     // direction vector of the intersection line
-    Epetra_SerialDenseVector  r = computeCrossProduct(n, r2);  
+    BlitzVec  r(computeCrossProduct(n, r2));  
     normalizeVector(r);
  
     // computes the start point of the line
-    Epetra_SerialDenseVector  m = computeLineMidpoint(p2, p3);
+    BlitzVec  m(computeLineMidpoint(p2, p3));
     
     if(!onBoundary)
         m = computeLineMidpoint(p2, p3);
     else
     {
         for(int i = 0; i < 3; i++)
-            m[i] = out.pointlist[globalHigherOrderIndex*3+i];
+            m(i) = out.pointlist[globalHigherOrderIndex*3+i];
     }
     
     // compute nodes of the normal to the interface edge of the tetrahedron
@@ -2956,10 +2969,10 @@ void Intersection::computeIntersectionNormal(
     if(onBoundary)
     {
         for(int i = 0; i < 4; i++)
-            elementToCurrentCoordinates(xfemElement, plane[i]);
+            elementToCurrentCoordinatesInPlace(xfemElement, plane[i]);
         
-        elementToCurrentCoordinates(xfemElement, m);
-          
+        elementToCurrentCoordinatesInPlace(xfemElement, m);
+        dsassert(plane.size() == 5, "plane array has to be of size 5 here!");
         plane[4] = m;
       
     }
@@ -2971,13 +2984,13 @@ void Intersection::computeIntersectionNormal(
  |  RCI:    computes the normal to the interface edge of     u.may 11/07|
  |          two adjacent triangular faces                               |
  *----------------------------------------------------------------------*/  
-void Intersection::computeIntersectionNormal( 
+void Intersection::computeIntersectionNormalB( 
         const int                                 index1,
         const int                                 index2, 
         const int                                 faceIndex,
         const int                                 adjacentFaceIndex,
         const int                                 globalHigherOrderIndex,
-        vector<Epetra_SerialDenseVector>&         plane,
+        vector<BlitzVec>&                         plane,
         const DRT::Element*                       xfemElement,
         const tetgenio&                           out
         ) const
@@ -3000,46 +3013,47 @@ void Intersection::computeIntersectionNormal(
             break;
         }
          
-     // compute averageNormal of two faces
-     Epetra_SerialDenseVector p1(3);
-     Epetra_SerialDenseVector p2(3);
-     Epetra_SerialDenseVector p3(3);
-     Epetra_SerialDenseVector p4(3);
+    // compute averageNormal of two faces
+    BlitzVec p1(3);
+    BlitzVec p2(3);
+    BlitzVec p3(3);
+    BlitzVec p4(3);
      
     for(int i=0; i<3; i++)
     {
-        p1[i] = out.pointlist[index1*3 + i];
-        p2[i] = out.pointlist[index2*3 + i];
-        p3[i] = out.pointlist[oppositePointIndex*3 + i];              
-        p4[i] = out.pointlist[adjacentOppositePointIndex*3 + i];                       
+        p1(i) = out.pointlist[index1*3 + i];
+        p2(i) = out.pointlist[index2*3 + i];
+        p3(i) = out.pointlist[oppositePointIndex*3 + i];              
+        p4(i) = out.pointlist[adjacentOppositePointIndex*3 + i];                       
     }
     
-    elementToCurrentCoordinates(xfemElement, p1);  
-    elementToCurrentCoordinates(xfemElement, p2);  
-    elementToCurrentCoordinates(xfemElement, p3);  
-    elementToCurrentCoordinates(xfemElement, p4);  
+    elementToCurrentCoordinatesInPlace(xfemElement, p1);  
+    elementToCurrentCoordinatesInPlace(xfemElement, p2);  
+    elementToCurrentCoordinatesInPlace(xfemElement, p3);  
+    elementToCurrentCoordinatesInPlace(xfemElement, p4);  
     
-    Epetra_SerialDenseVector r1 = subtractsTwoVectors<3>(p1,p2);
-    Epetra_SerialDenseVector r2 = subtractsTwoVectors<3>(p3,p2);
-    Epetra_SerialDenseVector r3 = subtractsTwoVectors<3>(p4,p2);
+    const BlitzVec r1(subtractsTwoVectors<3>(p1,p2));
+    const BlitzVec r2(subtractsTwoVectors<3>(p3,p2));
+    const BlitzVec r3(subtractsTwoVectors<3>(p4,p2));
     
-    Epetra_SerialDenseVector n1 = computeCrossProduct(r2, r1);
-    Epetra_SerialDenseVector n2 = computeCrossProduct(r1, r3);
+    BlitzVec n1(computeCrossProduct(r2, r1));
+    BlitzVec n2(computeCrossProduct(r1, r3));
     
-    Epetra_SerialDenseVector averageNormal = addTwoVectors<3>(n1, n2);
-    Epetra_SerialDenseVector rPlane = computeCrossProduct(n1, r1);
+    BlitzVec averageNormal(addTwoVectors<3>(n1, n2));
+    BlitzVec rPlane(computeCrossProduct(n1, r1));
     
-    for(int i = 0; i < 3; i++)
-        averageNormal[i] = 0.5*averageNormal[i];
+//    for(int i = 0; i < 3; i++)
+//        averageNormal(i) = 0.5*averageNormal(i);
+    averageNormal *= 0.5;
         
     normalizeVector(averageNormal);
     normalizeVector(rPlane);
  
-    Epetra_SerialDenseVector m(3);
+    BlitzVec m(3);
     for(int i = 0; i < 3; i++)
-        m[i] = out.pointlist[globalHigherOrderIndex*3+i];
+        m(i) = out.pointlist[globalHigherOrderIndex*3+i];
 
-    elementToCurrentCoordinates(xfemElement, m);  
+    elementToCurrentCoordinatesInPlace(xfemElement, m);  
     
     // compute nodes of the normal to the interface edge of the tetrahedron
     plane[0] = addTwoVectors<3>(m, averageNormal);               
@@ -3050,7 +3064,7 @@ void Intersection::computeIntersectionNormal(
    /* for(int i = 0; i < 4; i++)
     {
         for(int j = 0; j < 3 ; j++)
-            printf("plane = %f\t", plane[i][j]);
+            printf("plane = %f\t", plane[i](j));
     
         printf("\n");
     }
@@ -3063,37 +3077,37 @@ void Intersection::computeIntersectionNormal(
  |  RCI:    computes the normal to the interface edge of     u.may 08/07|
  |          the tetrahedron facet lying within this facet               |
  *----------------------------------------------------------------------*/  
-void Intersection::computeIntersectionNormal( 
+void Intersection::computeIntersectionNormalC( 
     const int                               steinerIndex,
     const int                               edgeIndex,
     const int                               oppositeIndex,
-    vector<Epetra_SerialDenseVector>&       plane,
+    vector<BlitzVec>&                       plane,
     const DRT::Element*                     xfemElement,
     const tetgenio&                         out) const
 {            
     
-    Epetra_SerialDenseVector  p1(3);
-    Epetra_SerialDenseVector  p2(3);
-    Epetra_SerialDenseVector  p3(3);        
+    BlitzVec  p1(3);
+    BlitzVec  p2(3);
+    BlitzVec  p3(3);        
     
   
     for(int i=0; i<3; i++)
     {
-        p1[i] = out.pointlist[oppositeIndex*3  + i];
-        p2[i] = out.pointlist[steinerIndex*3   + i];
-        p3[i] = out.pointlist[edgeIndex*3      + i];                       
+        p1(i) = out.pointlist[oppositeIndex*3  + i];
+        p2(i) = out.pointlist[steinerIndex*3   + i];
+        p3(i) = out.pointlist[edgeIndex*3      + i];                       
     }
            
     // compute direction vectors of the plane 
-    Epetra_SerialDenseVector  r1 = subtractsTwoVectors<3>(p1, p2);
-    Epetra_SerialDenseVector  r2 = subtractsTwoVectors<3>(p3, p2);
+    BlitzVec  r1(subtractsTwoVectors<3>(p1, p2));
+    BlitzVec  r2(subtractsTwoVectors<3>(p3, p2));
  
     // normal of the plane
-    Epetra_SerialDenseVector  n = computeCrossProduct(r1, r2);
+    BlitzVec  n(computeCrossProduct(r1, r2));
     normalizeVector(n);
  
     // direction vector of the intersection line
-    Epetra_SerialDenseVector  r = computeCrossProduct(n, r2);  
+    BlitzVec  r(computeCrossProduct(n, r2));  
     normalizeVector(r);
  
     // compute nodes of the normal to the interface edge of the tetrahedron
@@ -3104,10 +3118,10 @@ void Intersection::computeIntersectionNormal(
     
     
     for(int i = 0; i < 4; i++)
-        elementToCurrentCoordinates(xfemElement, plane[i]);
+        elementToCurrentCoordinatesInPlace(xfemElement, plane[i]);
     
-    elementToCurrentCoordinates(xfemElement, p2);
-      
+    elementToCurrentCoordinatesInPlace(xfemElement, p2);
+    dsassert(plane.size() == 5, "plane array is to small");
     plane[4] = p2;
 }
 
@@ -3116,14 +3130,14 @@ void Intersection::computeIntersectionNormal(
 /*----------------------------------------------------------------------*
  |  RCI:    computes the midpoint of a line                  u.may 08/07|
  *----------------------------------------------------------------------*/  
-Epetra_SerialDenseVector Intersection::computeLineMidpoint( 
-    const Epetra_SerialDenseVector& p1, 
-    const Epetra_SerialDenseVector& p2) const
+BlitzVec Intersection::computeLineMidpoint( 
+    const BlitzVec& p1, 
+    const BlitzVec& p2) const
 {
-    Epetra_SerialDenseVector midpoint(3);
+    BlitzVec midpoint(3);
     
     for(int i=0; i<3; i++)
-        midpoint[i] = (p1[i] + p2[i])*0.5;
+        midpoint(i) = (p1(i) + p2(i))*0.5;
         
     return midpoint;
 }
@@ -3211,8 +3225,8 @@ bool Intersection::findCommonFaceEdge(
         const int                           faceIndex1, 
         const int                           faceIndex2, 
         const vector<int>&                  adjacentFacesList,
-        Epetra_SerialDenseVector&           edgePoint,
-        Epetra_SerialDenseVector&           oppositePoint,
+        BlitzVec&                           edgePoint,
+        BlitzVec&                           oppositePoint,
         const tetgenio&                     out
         ) const
 {
@@ -3229,8 +3243,8 @@ bool Intersection::findCommonFaceEdge(
                 
                 for(int k = 0; k < 3; k++)
                 {
-                    edgePoint[k]        = out.pointlist[adjacentFacesList[faceIndex1*2+i+1]*3 + k];
-                    oppositePoint[k]    = out.pointlist[adjacentFacesList[faceIndex1*2+index+1]*3 + k];
+                    edgePoint(k)        = out.pointlist[adjacentFacesList[faceIndex1*2+i+1]*3 + k];
+                    oppositePoint(k)    = out.pointlist[adjacentFacesList[faceIndex1*2+index+1]*3 + k];
                 }
                 edgeFound = true;
                 break;
@@ -3330,30 +3344,30 @@ bool Intersection::findCommonCutterLine(
 int Intersection::findIntersectingSurfaceEdge(
         const DRT::Element*                       xfemElement,
         DRT::Element*                             cutterElement,
-        const Epetra_SerialDenseVector&           edgeNode1,
-        const Epetra_SerialDenseVector&           edgeNode2) const
+        const BlitzVec&                           edgeNode1,
+        const BlitzVec&                           edgeNode2) const
 {
 
     int lineIndex = -1;
-    Epetra_SerialDenseVector x1(1);
-    Epetra_SerialDenseVector x2(1);
+    BlitzVec x1(1);
+    BlitzVec x2(1);
     
-    Epetra_SerialDenseVector node1(edgeNode1);
-    Epetra_SerialDenseVector node2(edgeNode2);
+    BlitzVec node1 = edgeNode1;
+    BlitzVec node2 = edgeNode2;
       
-    elementToCurrentCoordinates(xfemElement, node1);
-    elementToCurrentCoordinates(xfemElement, node2);
+    elementToCurrentCoordinatesInPlace(xfemElement, node1);
+    elementToCurrentCoordinatesInPlace(xfemElement, node2);
     
-    x1[0] = node1[0];
-    x2[0] = node2[0];
+    x1(0) = node1(0);
+    x2(0) = node2(0);
     
     DRT::Element** lines = cutterElement->Lines();
     for(int i = 0; i < cutterElement->NumLine(); i++)
     {
         const DRT::Element*  lineElement = lines[i];
 
-        Epetra_SerialDenseVector xsi1(1);
-        Epetra_SerialDenseVector xsi2(1);
+        BlitzVec xsi1(1);
+        BlitzVec xsi2(1);
         currentToElementCoordinates( lineElement, x1, xsi1);
         currentToElementCoordinates( lineElement, x2, xsi2);
         
@@ -3386,34 +3400,36 @@ void Intersection::storeHigherOrderNode(
     const bool                                  normal,
     const int                                   globalHigherOrderIndex,
     const int                                   lineIndex, 
-    Epetra_SerialDenseVector&                   xsi, 
+    BlitzVec&                                   xsi, 
     DRT::Element*                               surfaceElement, 
     const DRT::Element*                         xfemElement, 
     tetgenio&                                   out
     ) const
 {
+    BlitzVec curr(3);
     
-    Epetra_SerialDenseVector xsiLine(3);
-    for(int i = 0; i < 3; i++)
-        xsiLine[i] = 0.0;
-        
-    if(normal)     elementToCurrentCoordinates(surfaceElement, xsi);
+    if(normal)
+    {
+        BlitzVec xsiSurf(2);
+        xsiSurf(0) = xsi(0);
+        xsiSurf(1) = xsi(1);
+        curr = elementToCurrentCoordinates(surfaceElement, xsiSurf);
+    }
     else           
     {   
-        xsiLine[0] = xsi[2];
+        BlitzVec xsiLine(1);
+        xsiLine(0) = xsi(2);
         const DRT::Element* lineele = surfaceElement->Lines()[lineIndex];
-        elementToCurrentCoordinates(lineele, xsiLine);
-        for(int i=0; i<3; i++)
-            xsi[i] = xsiLine[i];
+        curr = elementToCurrentCoordinates(lineele, xsiLine);
     }       
-    currentToElementCoordinates(xfemElement, xsi); // ??????????????????
+    xsi = currentToElementCoordinatesExact(xfemElement, curr);
     
     //printf("xsiold0 = %20.16f\t, xsiold1 = %20.16f\t, xsiold2 = %20.16f\n", out.pointlist[index*3], out.pointlist[index*3+1], out.pointlist[index*3+2]);
     
     for(int i = 0; i < 3; i++)
-        out.pointlist[globalHigherOrderIndex*3+i]   = xsi[i];  
+        out.pointlist[globalHigherOrderIndex*3+i]   = xsi(i);  
    
-    //printf("xsi0    = %20.16f\t, xsi1    = %20.16f\t, xsi2    = %20.16f\n", xsi[0], xsi[1], xsi[2]);
+    //printf("xsi0    = %20.16f\t, xsi1    = %20.16f\t, xsi2    = %20.16f\n", xsi(0), xsi(1), xsi(2));
     //printf("\n");
 }
 
@@ -3483,11 +3499,11 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     domainCoord[cornerIndex][1] = eleCoordDomainCorner(1);
     domainCoord[cornerIndex][2] = eleCoordDomainCorner(2);
     
-    const BlitzVec physCoordCorner = elementToCurrentCoordinates(xfemElement, eleCoordDomainCorner);
+    const BlitzVec physCoordCorner(elementToCurrentCoordinates(xfemElement, eleCoordDomainCorner));
     
     //domainCoord.push_back(trinodes);
     
-    const BlitzVec eleCoordBoundaryCorner = CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordCorner);
+    const BlitzVec eleCoordBoundaryCorner(CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordCorner));
     
 //    cout << "physcood = " << physCoord << "    ";
 //    cout << "elecood = " << eleCoord << endl;
@@ -3511,11 +3527,11 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     domainCoord[cornerIndex+3][1] = eleCoordDomaninHO(1);
     domainCoord[cornerIndex+3][2] = eleCoordDomaninHO(2);
     
-    const BlitzVec physCoordHO = elementToCurrentCoordinates(xfemElement, eleCoordDomaninHO);
+    const BlitzVec physCoordHO(elementToCurrentCoordinates(xfemElement, eleCoordDomaninHO));
     
     //domainCoord.push_back(trinodes); 
     
-    const BlitzVec eleCoordBoundaryHO = CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordHO);
+    const BlitzVec eleCoordBoundaryHO(CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordHO));
     
 //    cout << "physcood = " << physCoord << "    ";
 //    cout << "elecood = " << eleCoord << endl;
@@ -3601,7 +3617,7 @@ void Intersection::debugXAABBIntersection(
 void Intersection::debugNodeWithinElement(
         const DRT::Element* element,
         const DRT::Node* node,
-        const Epetra_SerialDenseVector& xsi,
+        const BlitzVec& xsi,
         const int noE,
         const int noN,
         const bool within
@@ -3609,10 +3625,10 @@ void Intersection::debugNodeWithinElement(
 {
     const int numnodes = element->NumNode();
     vector<int> actParams(1,0);
-    Epetra_SerialDenseVector funct(numnodes);
+    BlitzVec funct(numnodes);
     Epetra_SerialDenseMatrix emptyM;
-    Epetra_SerialDenseVector emptyV;
-    Epetra_SerialDenseVector x(3);
+    BlitzVec emptyV;
+    BlitzVec x(3);
     DRT::Discretization dummyDis("dummy discretization", null);
     ParameterList params;
       
@@ -3652,7 +3668,7 @@ void Intersection::debugNodeWithinElement(
     cout << endl;
     cout << endl;
     cout << "XSI :";
-    cout << "   r = " << xsi[0] << "     s = " <<  xsi[1] << "     t = "  << xsi[2] << endl;
+    cout << "   r = " << xsi(0) << "     s = " <<  xsi(1) << "     t = "  << xsi(2) << endl;
     cout << endl; 
     cout << endl;
     cout << "CURRENT COORDINATES :";
@@ -3684,14 +3700,14 @@ void Intersection::debugTetgenDataStructure(
     cout << endl;
     cout << "POINT LIST " << " :" << endl;
     cout << endl;
-    Epetra_SerialDenseVector xsi(3);
+    BlitzVec xsi(3);
     for(unsigned int i = 0; i < pointList_.size(); i++)
     {
         for(int j = 0; j< 3; j++)
         {
             xsi[j] = pointList_[i].coord[j];
         }
-        elementToCurrentCoordinates(element, xsi);
+        elementToCurrentCoordinatesInPlace(element, xsi);
         
         cout << i << ".th point:   ";
         for(int j = 0; j< 3; j++)
@@ -3841,7 +3857,7 @@ void Intersection::printTetViewOutputPLC(
     
     FILE *outFile;
     char filename[100];
-    Epetra_SerialDenseVector xsi(3);
+    BlitzVec xsi(3);
 
     sprintf(filename, "tetgenPLC%d.node", index);
    
@@ -3854,9 +3870,9 @@ void Intersection::printTetViewOutputPLC(
         for(int j = 0; j < 3; j++)
             xsi[j] = in.pointlist[i*3 + j];
         
-        elementToCurrentCoordinates(xfemElement, xsi);
+        elementToCurrentCoordinatesInPlace(xfemElement, xsi);
         
-        fprintf(outFile, "%d  %.16g  %.16g  %.16g", i, xsi[0], xsi[1], xsi[2]);
+        fprintf(outFile, "%d  %.16g  %.16g  %.16g", i, xsi(0), xsi(1), xsi(2));
     
         for (int j = 0; j < in.numberofpointattributes; j++) 
         {

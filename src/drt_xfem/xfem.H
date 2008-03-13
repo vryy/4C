@@ -15,7 +15,6 @@ Maintainer: Axel Gerstenberger
 #define XFEM_H
 
 #include <blitz/array.h>
-#include "Epetra_SerialDenseVector.h"
 
 //! namespace for all xfem related stuff
 namespace XFEM
@@ -46,16 +45,6 @@ namespace XFEM
         // doesn't work... why?
         // BlitzVec blitz_x(x, blitz::shape(3), blitz::duplicateData);
         return blitz_x;
-    }
-    
-    inline Epetra_SerialDenseVector toEpetraArray(const double* x)
-    {
-        Epetra_SerialDenseVector epetra_x(3);
-        epetra_x(0) = x[0];
-        epetra_x(1) = x[1];
-        epetra_x(2) = x[2];
-
-        return epetra_x;
     }
 
 }

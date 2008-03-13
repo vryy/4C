@@ -61,8 +61,8 @@ namespace XFEM
     */          
     bool solveLinearSystemWithSVD(
         Epetra_SerialDenseMatrix&   U,
-        const Epetra_SerialDenseVector&   b,
-        Epetra_SerialDenseVector&   x,
+        const BlitzVec&             b,
+        BlitzVec&                   x,
         const int dim
         );
      
@@ -96,8 +96,8 @@ namespace XFEM
     \return true if matrix is not singular , false if matrix is singular
     */
     bool gaussElimination(  Epetra_SerialDenseMatrix&   A,
-                            Epetra_SerialDenseVector&   b,
-                            Epetra_SerialDenseVector&   x,
+                            BlitzVec&                   b,
+                            BlitzVec&                   x,
                             const bool                  do_piv,
                             const int                   dim,
                             const int                   order

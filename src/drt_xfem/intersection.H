@@ -22,7 +22,6 @@ Maintainer: Ursula Mayer
 #include "../io/io_drt.H"
 #include "tetgen.h"
 #include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
 #include "Teuchos_RefCountPtr.hpp"
 
  
@@ -269,7 +268,7 @@ class Intersection
         */  
         bool checkIfOnBoundary(
                 const DRT::Element::DiscretizationType  xfemDistype, ///< shape of the volume element
-                const Epetra_SerialDenseVector&         xsi,
+                const BlitzVec&                         xsi,
                 InterfacePoint&                         ip
                 ) const;
         
@@ -315,9 +314,9 @@ class Intersection
             const DRT::Element*             lineElement,
             const int                       surfaceId,
             const int                       lineId,
-            const Epetra_SerialDenseVector& xsiOld,
-            const Epetra_SerialDenseVector& upLimit,
-            const Epetra_SerialDenseVector& loLimit,
+            const BlitzVec& xsiOld,
+            const BlitzVec& upLimit,
+            const BlitzVec& loLimit,
             std::vector<InterfacePoint>&    interfacePoints,
             const bool                      lines
             ) const;
@@ -338,9 +337,9 @@ class Intersection
         bool computeCurveSurfaceIntersection(       
             const DRT::Element*               surfaceElement,
             const DRT::Element*               lineElement,
-            Epetra_SerialDenseVector&         xsi,
-            const Epetra_SerialDenseVector&   upLimit,
-            const Epetra_SerialDenseVector&   loLimit
+            BlitzVec&         xsi,
+            const BlitzVec&   upLimit,
+            const BlitzVec&   loLimit
             ) const;
         
         
@@ -353,7 +352,7 @@ class Intersection
         return true if resulting system is singular , false otherwise
         */                                               
         bool computeSingularCSI(
-            Epetra_SerialDenseVector&   xsi,
+            BlitzVec&   xsi,
             const DRT::Element*         lineElement,
             const DRT::Element*         surfaceElement
             ) const;
@@ -370,7 +369,7 @@ class Intersection
 	  	*/							
         void updateAForCSI( 
             Epetra_SerialDenseMatrix&         A,
-            const Epetra_SerialDenseVector&   xsi,
+            const BlitzVec&   xsi,
             const DRT::Element*               surfaceElement,
             const DRT::Element*               lineElement
             ) const;
@@ -386,8 +385,8 @@ class Intersection
         \param lineElement       (in)       : line element
         */                          	 					
         void updateRHSForCSI(   
-            Epetra_SerialDenseVector&         b,
-            const Epetra_SerialDenseVector&   xsi,
+            BlitzVec&         b,
+            const BlitzVec&   xsi,
             const DRT::Element*               surfaceElement,
             const DRT::Element*               lineElement
             ) const;
@@ -410,9 +409,9 @@ class Intersection
   		int addIntersectionPoint(
             const DRT::Element*             surfaceElement,
             const DRT::Element*             lineElement,
-  		    const Epetra_SerialDenseVector&	xsi,
-            const Epetra_SerialDenseVector& upLimit,
-            const Epetra_SerialDenseVector& loLimit,
+  		    const BlitzVec&	xsi,
+            const BlitzVec& upLimit,
+            const BlitzVec& loLimit,
             std::vector<InterfacePoint>& 	interfacePoints,
             const int                      	surfaceId,
             const int                       lineId,
@@ -430,11 +429,11 @@ class Intersection
         \param lowerLimits      (out)       : list of lower limits of new ranges
         */              
         void createNewLimits(
-            const Epetra_SerialDenseVector&         xsi, 
-            const Epetra_SerialDenseVector&         upLimit,
-            const Epetra_SerialDenseVector&         loLimit,
-            vector< Epetra_SerialDenseVector >&     upperLimits, 
-            vector< Epetra_SerialDenseVector >&     lowerLimits
+            const BlitzVec&         xsi, 
+            const BlitzVec&         upLimit,
+            const BlitzVec&         loLimit,
+            vector<BlitzVec>&       upperLimits, 
+            vector<BlitzVec>&       lowerLimits
             ) const;		   							
         
         
@@ -625,8 +624,8 @@ class Intersection
             int&                              cutterIndex,  
             const vector< vector <int> >&     adjacentFacesList,
             const vector< vector <int> >&     adjacentFacemarkerList,
-            Epetra_SerialDenseVector&         edgePoint,
-            Epetra_SerialDenseVector&         oppositePoint,
+            BlitzVec&         edgePoint,
+            BlitzVec&         oppositePoint,
             const DRT::Element*               xfemElement, 
             const tetgenio&                   out
             ) const;   
@@ -667,8 +666,8 @@ class Intersection
             const int                         steinerIndex,
             int                               lineIndex, // TODO: ???????  why not const, if input ????????
             const int                         cutterIndex,   
-            Epetra_SerialDenseVector&         edgePoint,
-            Epetra_SerialDenseVector&         oppositePoint,
+            BlitzVec&         edgePoint,
+            BlitzVec&         oppositePoint,
             const vector< vector <int> >&     adjacentFacesList,
             const DRT::Element*               xfemElement, 
             tetgenio&                         out
@@ -724,7 +723,7 @@ class Intersection
         \param out                  (in)    : output data structure of TetGen
         */
         void getTetrahedronNodes(
-            vector<Epetra_SerialDenseVector>&       tetraCornerNodes,
+            vector<BlitzVec>&       tetraCornerNodes,
             const vector<int>&                      tetraCornerIndices,
             const DRT::Element*                     xfemElement,
             const tetgenio&                         out
@@ -750,7 +749,7 @@ class Intersection
                 const int                                 faceMarker, 
                 const int                                 globalHigherOrderIndex, 
                 const vector<int>&                        tetraCornerIndices, 
-                const vector<Epetra_SerialDenseVector>&   tetraCornerNodes, 
+                const vector<BlitzVec>&   tetraCornerNodes, 
                 const DRT::Element*                       xfemElement, 
                 tetgenio&                                 out
             );
@@ -785,11 +784,11 @@ class Intersection
         \return true if normal intersects with cutter element or false otherwise
         */      
         bool computeRecoveryNormal( 
-            Epetra_SerialDenseVector&                   xsi,
-            const vector<Epetra_SerialDenseVector>&     normal,
-            const DRT::Element*                         cutterElement,
-            const bool                                  onBoundary
-            ) const;
+                BlitzVec&                                   xsi,
+                const vector<BlitzVec>&                     normal,
+                const DRT::Element*                         cutterElement,
+                const bool                                  onBoundary
+                ) const;
         
         
         /*!
@@ -806,8 +805,8 @@ class Intersection
         */      
         void updateAForRCINormal(   
             Epetra_SerialDenseMatrix&                   A,
-            const Epetra_SerialDenseVector&             xsi,
-            const vector<Epetra_SerialDenseVector>&     normal,
+            const BlitzVec&             xsi,
+            const vector<BlitzVec>&     normal,
             const DRT::Element*                         surfaceElement,
             const bool                                  onBoundary
             ) const;
@@ -826,9 +825,9 @@ class Intersection
                                                 element boundary
         */                         
         void updateRHSForRCINormal( 
-            Epetra_SerialDenseVector&                   b,
-            const Epetra_SerialDenseVector&             xsi,    
-            const vector<Epetra_SerialDenseVector>&     normal,
+                BlitzVec&                   b,
+            const BlitzVec&             xsi,    
+            const vector<BlitzVec>&     normal,
             const DRT::Element*                         surfaceElement,
             const bool                                  onBoundary
             ) const;           
@@ -848,8 +847,8 @@ class Intersection
         */      
         bool computeRecoveryPlane( 
             int&                                        lineIndex,
-            Epetra_SerialDenseVector&                   xsi,
-            const vector<Epetra_SerialDenseVector>&     plane,
+            BlitzVec&                   xsi,
+            const vector<BlitzVec>&     plane,
             DRT::Element*                               surfaceElement
             ) const;
             
@@ -867,8 +866,8 @@ class Intersection
         */         
         void updateAForRCIPlane(   
             Epetra_SerialDenseMatrix&                   A,
-            const Epetra_SerialDenseVector&             xsi,
-            const vector<Epetra_SerialDenseVector>&     plane,
+            const BlitzVec&             xsi,
+            const vector<BlitzVec>&     plane,
             const DRT::Element*                         lineElement,
             const DRT::Element*                         surfaceElement
             ) const;
@@ -886,9 +885,9 @@ class Intersection
         \param lineElement      (in)        :   line element
         */                       
         void updateRHSForRCIPlane( 
-            Epetra_SerialDenseVector&                   b,
-            const Epetra_SerialDenseVector&             xsi,    
-            const vector <Epetra_SerialDenseVector>&    plane,
+                BlitzVec&                   b,
+            const BlitzVec&             xsi,    
+            const vector <BlitzVec>&    plane,
             const DRT::Element*                         lineElement
             ) const;
             
@@ -911,15 +910,15 @@ class Intersection
         \param xfemElement              (in)    : xfem element
         \param out                      (in)    : output data structure of tetGen
         */    
-        void computeIntersectionNormal( 
+        void computeIntersectionNormalA( 
             const bool                              onBoundary,
             const int                               index1,
             const int                               index2,
             const int                               oppositePointIndex,
             const int                               globalHigherOrderIndex, 
             const vector<int>&                      tetraCornerIndices,
-            const vector<Epetra_SerialDenseVector>& tetraCornerNodes,
-            vector<Epetra_SerialDenseVector>&       plane,
+            const vector<BlitzVec>&                 tetraCornerNodes,
+            vector<BlitzVec>&                       plane,
             const DRT::Element*                     xfemElement,
             const tetgenio&                         out
             ) const;
@@ -937,13 +936,13 @@ class Intersection
         \param xfemElement              (in)    : xfem element
         \param out                      (in)    : output data structure of tetGen
         */    
-        void computeIntersectionNormal(  
+        void computeIntersectionNormalB(  
                 const int                                 index1,
                 const int                                 index2, 
                 const int                                 faceIndex,
                 const int                                 adjacentFaceIndex,
                 const int                                 globalHigherOrderIndex,
-                vector<Epetra_SerialDenseVector>&         plane,
+                vector<BlitzVec>&                         plane,
                 const DRT::Element*                       xfemElement,
                 const tetgenio&                           out
                 ) const;    
@@ -960,11 +959,11 @@ class Intersection
         \param xfemElement              (in)    : xfem element
         \param out                      (in)    : output data structure of tetGen
         */    
-        void computeIntersectionNormal( 
+        void computeIntersectionNormalC( 
                 const int                               steinerIndex,
                 const int                               edgeIndex,
                 const int                               oppositeIndex,
-                vector<Epetra_SerialDenseVector>&       plane,
+                vector<BlitzVec>&       plane,
                 const DRT::Element*                     xfemElement,
                 const tetgenio&                         out
                 ) const;
@@ -977,9 +976,9 @@ class Intersection
         \param p2       (in)    : point 2
         \return mid point of a line
         */    
-        Epetra_SerialDenseVector computeLineMidpoint(  
-            const Epetra_SerialDenseVector& p1,
-            const Epetra_SerialDenseVector& p2
+        BlitzVec computeLineMidpoint(  
+            const BlitzVec& p1,
+            const BlitzVec& p2
             ) const;      
            
            
@@ -1019,8 +1018,8 @@ class Intersection
                 const int                     faceIndex1, 
                 const int                     faceIndex2, 
                 const vector<int>&            adjacentFacesList,
-                Epetra_SerialDenseVector&     edgePoint,
-                Epetra_SerialDenseVector&     oppositePoint,
+                BlitzVec&     edgePoint,
+                BlitzVec&     oppositePoint,
                 const tetgenio&               out
                 ) const;
             
@@ -1075,8 +1074,8 @@ class Intersection
         int findIntersectingSurfaceEdge(
             const DRT::Element*                       xfemElement,
             DRT::Element*                             cutterElement,
-            const Epetra_SerialDenseVector&           edgeNode1,
-            const Epetra_SerialDenseVector&           edgeNode2
+            const BlitzVec&           edgeNode1,
+            const BlitzVec&           edgeNode2
             ) const;
     
     
@@ -1097,7 +1096,7 @@ class Intersection
             const bool                                  normal,
             const int                                   globalHigherOrderIndex,
             const int                                   lineIndex, 
-            Epetra_SerialDenseVector&                   xsi,
+            BlitzVec&                   xsi,
             DRT::Element*                               surfaceElement,
             const DRT::Element*                         xfemElement, 
             tetgenio&                                   out
@@ -1175,7 +1174,7 @@ class Intersection
         void debugNodeWithinElement(    
             const DRT::Element*               element,
             const DRT::Node*                  node,
-            const Epetra_SerialDenseVector&   xsi,
+            const BlitzVec&   xsi,
             const int                         noE,
             const int                         noN,
             const bool                        within
@@ -1195,7 +1194,7 @@ class Intersection
         void debugCurveSurfaceIntersection(     
             const DRT::Element*         surfaceElement,    
             const DRT::Element*         lineElement,
-            Epetra_SerialDenseVector&   xsi,
+            BlitzVec&   xsi,
             int                         noSE,
             int                         noLE,
             bool                        within

@@ -258,7 +258,7 @@ namespace UTILS
          dserror("discretization type not yet implemented");    
          return -1;
      }
-  };
+  }
  
    /*!
   \brief Returns the number of corner nodes
@@ -322,7 +322,7 @@ namespace UTILS
   \return map with all surfaces adjacent to each node
   */                                           
   vector< vector<int> > getEleNodeNumbering_nodes_surfaces(  
-    const DRT::Element::DiscretizationType&     distype     ///< discretization type
+    const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
   /*!
@@ -332,7 +332,7 @@ namespace UTILS
   \return map of reference coordinates for all nodes
   */
   vector< vector< double > > getEleNodeNumbering_nodes_reference( 
-    const DRT::Element::DiscretizationType&     distype     ///< discretization type
+    const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
   /*!
@@ -340,9 +340,9 @@ namespace UTILS
   \      is lying on for each discretization type
   */
   int getSurfaces(
-    const Epetra_SerialDenseVector&             rst,        ///< point in reference coordinates
+    const blitz::Array<double,1>&               rst,        ///< point in reference coordinates
     int*                                        surfaces,   ///< surfaces the point is lying on
-    const DRT::Element::DiscretizationType&     distype     ///< discretization type
+    const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
   /*!
@@ -350,9 +350,9 @@ namespace UTILS
   \      according to the node Id for each discretization type
   */
   void getNodeCoordinates(
-    int                                         nodeId,     ///< node ID
+    const int                                   nodeId,     ///< node ID
     double*                                     coord,      ///< coordinates
-    const DRT::Element::DiscretizationType&     distype     ///< discretization type
+    const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
   /*!
@@ -360,10 +360,10 @@ namespace UTILS
   \      according to the line Id for each discretization type
   */
   void getLineCoordinates(
-    int                                         lineId,     ///< line ID
-    double                                      lineCoord,  ///< line coordinate
+    const int                                   lineId,     ///< line ID
+    const double                                lineCoord,  ///< line coordinate
     double*                                     coord,      ///< coordinates
-    const DRT::Element::DiscretizationType&     distype     ///< discretization type
+    const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
     
   /*!
@@ -375,7 +375,7 @@ namespace UTILS
   int getHigherOrderIndex(
     const int                                   index1,     ///< index of corner node
     const int                                   index2,     ///< index of corner node
-    const DRT::Element::DiscretizationType&     distype     ///< discretization type
+    const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
   /*!

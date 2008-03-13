@@ -102,7 +102,7 @@ void XFEM::createDofMap(
         if ( not (elementDomainIntCellMap.count(actele->Id()) >= 1))
         {
             const int* nodeidptrs = actele->NodeIds();
-            const Epetra_SerialDenseVector nodalpos = toEpetraArray(actele->Nodes()[0]->X());
+            const BlitzVec nodalpos(toBlitzArray(actele->Nodes()[0]->X()));
             
             const bool in_solid = XFEM::PositionWithinDiscretization(cutterdis, nodalpos);
             

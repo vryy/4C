@@ -31,99 +31,18 @@ inline static double SQR(double a)
 
 
 /*----------------------------------------------------------------------*
- |  ML:     adds two Epetra_SerialDenseVector                u.may 06/07|
- *----------------------------------------------------------------------*/
-//Epetra_SerialDenseVector XFEM::addTwoVectors(   
-//    const Epetra_SerialDenseVector&   v1,
-//    const Epetra_SerialDenseVector&   v2)
-//{   
-//    Epetra_SerialDenseVector vResult(v1.Length());
-//    
-//    dsassert(v1.Length() == v2.Length(), "both vectors need to have the same size\n"); 
-//
-//    for(int i = 0; i < v1.Length(); ++i)
-//        vResult[i] = v1[i] + v2[i];
-// 
-//    return vResult;
-//}
-    
-    
-   
-/*----------------------------------------------------------------------*
- |  ML:     adds two vector<double>                          u.may 06/07|
- *----------------------------------------------------------------------*/
-//vector<double> XFEM::addTwoVectors(
-//    const vector<double>&   v1,
-//    const vector<double>&   v2)
-//{   
-//    vector<double> vResult(v1.size());
-//    
-//    dsassert(v1.size() == v2.size(), "both vectors need to have the same size\n");
-//
-//    for(unsigned int i = 0; i < v1.size(); ++i)
-//        vResult[i] = v1[i] + v2[i];
-// 
-//    return vResult;
-//}
-    
-    
-
-/*----------------------------------------------------------------------*
- |  ML:     subtracts one Epetra_SerialDenseVector from   u.may 06/07   |
- |          another Epetra_SerialDenseVector.                           |
- |          The result is stored in v1                                  |
- *----------------------------------------------------------------------*/
-//Epetra_SerialDenseVector XFEM::subtractsTwoVectors( 
-//    const Epetra_SerialDenseVector& v1,
-//    const Epetra_SerialDenseVector& v2)
-//{   
-//    
-//    Epetra_SerialDenseVector vResult(v1.Length());
-//    
-//    dsassert(v1.Length() == v2.Length(), "both vectors need to have the same size\n"); 
-//
-//    for(int i = 0; i < v1.Length(); i++)
-//        vResult[i] = v1[i] - v2[i];
-// 
-//    return vResult;
-//}
-
-    
-
-/*----------------------------------------------------------------------*
- |  ML :    subtracts one vector<double> from another        u.may 06/07|
- |          vector<double> . The result is stored in v1.                |
- *----------------------------------------------------------------------*/
-//vector<double> XFEM::subtractsTwoVectors(   
-//    const vector <double>& v1,
-//    const vector <double>& v2)
-//{   
-//    vector <double>  vResult(v1.size());
-//    
-//    if(v1.size() != v2.size())
-//        dserror("both vectors need to have the same size\n"); 
-//
-//    for(unsigned int i = 0; i < v1.size(); i++)
-//        vResult[i] = v1[i] - v2[i];
-// 
-//    return vResult;
-//}
-
-
-
-/*----------------------------------------------------------------------*
  |  ML:     computes the cross product                       u.may 08/07|
- |          of 2 Epetra_SerialDenseVector c = a x b                     |
+ |          of 2 BlitzVec c = a x b                     |
  *----------------------------------------------------------------------*/  
-Epetra_SerialDenseVector XFEM::computeCrossProduct(
-    const Epetra_SerialDenseVector& a,
-    const Epetra_SerialDenseVector& b)
+BlitzVec XFEM::computeCrossProduct(
+    const BlitzVec& a,
+    const BlitzVec& b)
 {
-    Epetra_SerialDenseVector c(3);
+    BlitzVec c(3);
    
-    c[0] = a[1]*b[2] - a[2]*b[1];
-    c[1] = a[2]*b[0] - a[0]*b[2];
-    c[2] = a[0]*b[1] - a[1]*b[0];
+    c(0) = a(1)*b(2) - a(2)*b(1);
+    c(1) = a(2)*b(0) - a(0)*b(2);
+    c(2) = a(0)*b(1) - a(1)*b(0);
     
     return c;
 }
@@ -131,13 +50,14 @@ Epetra_SerialDenseVector XFEM::computeCrossProduct(
 
 
 /*----------------------------------------------------------------------*
- |  ML:     normalizes a Epetra_SerialDenseVector            u.may 08/07|
+ |  ML:     normalizes a BlitzVec            u.may 08/07|
  *----------------------------------------------------------------------*/  
 void XFEM::normalizeVector(   
-    Epetra_SerialDenseVector&     v)
+    BlitzVec&     v)
 {
-    const double norm = v.Norm2();
-    v.Scale(1.0/norm);
+    blitz::firstIndex i;
+    const double norm = sqrt(blitz::sum(v(i)*v(i)));
+    v /= norm;
     return;
 }
 
@@ -224,58 +144,13 @@ double XFEM::pythagoras(
  | GM:      transforms a node in element coordinates       u.may 07/07|
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
-void XFEM::elementToCurrentCoordinates(   
-    const DRT::Element* element,
-    Epetra_SerialDenseVector& xsi) 
-{
-    const int numNodes = element->NumNode();
-    BlitzVec funct(numNodes);
-    
-    switch(getDimension(element->Shape()))
-    {
-        case 1:
-        {
-            shape_function_1D(funct, xsi[0], element->Shape());
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D(funct, xsi[0], xsi[1], element->Shape());
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], element->Shape());
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }          
-        
-    xsi.Scale(0.0);
-    
-    const DRT::Node*const* nodes = element->Nodes();
-    for(int i=0; i<numNodes; i++)
-    {
-        const double* pos = nodes[i]->X();
-        for(int j=0; j<3; j++)
-            xsi[j] += pos[j] * funct(i);
-    }
-}
-
-
-
-/*----------------------------------------------------------------------*
- | GM:      transforms a node in element coordinates       u.may 07/07|
- |          into current coordinates                                    |
- *----------------------------------------------------------------------*/  
 BlitzVec XFEM::elementToCurrentCoordinates(   
         const DRT::Element* element,
         const BlitzVec&     eleCoord) 
 {
     const int numNodes = element->NumNode();
     BlitzVec funct(numNodes);
-    BlitzVec physCoord(numNodes);
+    BlitzVec physCoord(3);
     
     switch(getDimension(element->Shape()))
     {
@@ -298,7 +173,7 @@ BlitzVec XFEM::elementToCurrentCoordinates(
             dserror("dimension of the element is not correct");
     }          
         
-    physCoord = 0;
+    physCoord = 0.0;
     
     for(int i=0; i<numNodes; i++)
     {
@@ -315,110 +190,65 @@ BlitzVec XFEM::elementToCurrentCoordinates(
  | GM:      transforms a node in element coordinates       u.may 07/07|
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
-void XFEM::elementToCurrentCoordinates(   
-    const DRT::Element* 	element, 
-    vector<double>& xsi) 
+void XFEM::elementToCurrentCoordinatesInPlace(   
+        const DRT::Element* element,
+        BlitzVec&           eleCoord) 
 {
-	const int dim = getDimension(element->Shape());
     const int numNodes = element->NumNode();
-    Epetra_SerialDenseVector funct(numNodes);
+    BlitzVec funct(numNodes);
+    dsassert(eleCoord.size() == 3, "inplace coordinate transfer only in 3d!");
     
-    switch(dim)
+    switch(getDimension(element->Shape()))
     {
         case 1:
         {
-            shape_function_1D(funct, xsi[0], element->Shape());
+            shape_function_1D(funct,eleCoord(0), element->Shape());
             break;
         }
         case 2:
         {
-            shape_function_2D(funct, xsi[0], xsi[1], element->Shape());
+            shape_function_2D(funct, eleCoord(0), eleCoord(1), element->Shape());
             break;
         }
         case 3:
         {
-            shape_function_3D(funct, xsi[0], xsi[1], xsi[2], element->Shape());
+            shape_function_3D(funct, eleCoord(0), eleCoord(1), eleCoord(2), element->Shape());
             break;
         }
         default:
             dserror("dimension of the element is not correct");
     }          
         
-    for(int i = 0; i<3; i++)
-    	xsi[i] = 0.0;
-    
+    eleCoord = 0.0;
     for(int i=0; i<numNodes; i++)
     {
         const DRT::Node* node = element->Nodes()[i];
         for(int j=0; j<3; j++)
-            xsi[j] += node->X()[j] * funct(i);
+            eleCoord(j) += node->X()[j] * funct(i);
     }
 }
-
-
-
-/*----------------------------------------------------------------------*
- | GM:      transforms a node in element coordinates       u.may 07/07|
- |          into current coordinates                                    |
- *----------------------------------------------------------------------*/  
-void XFEM::elementToCurrentCoordinates(   
-    const DRT::Element*                         surfaceElement, 
-    Epetra_SerialDenseVector&                   xsi,
-    const vector<Epetra_SerialDenseVector>&     surfaceNodes)
-{
-    const int numNodes = surfaceElement->NumNode();
-    const BlitzVec funct(shape_function_2D(xsi[0], xsi[1], surfaceElement->Shape()));
-       
-    xsi.Scale(0.0); 
-    for(int i=0; i<numNodes; i++)     
-        for(int j=0; j<3; j++)
-            xsi[j] += surfaceNodes[i][j] * funct(i);
-    
-}
-
-
-
-/*----------------------------------------------------------------------*
- | GM:      transforms a node in element coordinates       u.may 07/07|
- |          into current coordinates                                    |
- *----------------------------------------------------------------------*/  
-//void XFEM::elementToCurrentCoordinates(  
-//    Epetra_SerialDenseVector&                   xsi,
-//    const vector<Epetra_SerialDenseVector>&     plane) 
-//{
-//    const int numNodes = 4;
-//    Epetra_SerialDenseVector funct(numNodes);
-//    
-//    shape_function_2D(funct, xsi[0], xsi[1], DRT::Element::quad4);
-//    
-//    xsi.Scale(0.0);
-//    for(int i=0; i<numNodes; i++)
-//        for(int j=0; j<3; j++)   
-//            xsi[j] += plane[i][j] * funct(i);
-//    
-//}
-
-
 
 /*----------------------------------------------------------------------*
  | GM:  transforms a node in current coordinates            u.may 07/07 |
  |      into element coordinates                                        |
  *----------------------------------------------------------------------*/  
-void XFEM::currentToElementCoordinates(   
+BlitzVec XFEM::currentToElementCoordinatesExact(   
     const DRT::Element*               element, 
-    Epetra_SerialDenseVector&   xsi) 
+    const BlitzVec&                   x) 
 {
-    // copy xsi into x, cause xsi input is the current coordinate
-    Epetra_SerialDenseVector x(xsi);
+    dsassert(x.size() == 3, "current coordinates have to be 3!");
+    const int dim = DRT::UTILS::getDimension(element->Shape());
     
+    BlitzVec xsi(dim);
     currentToElementCoordinates(element, x, xsi);
    
     // rounding 1 and -1 to be exact for the CDT
     for(int j = 0; j < 3; j++)
     {
-        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] < 0)    xsi[j] = -1.0;
-        if( fabs((fabs(xsi[j])-1.0)) < TOL7 &&  xsi[j] > 0)    xsi[j] =  1.0;      
-    }  
+        if( fabs((fabs(xsi(j))-1.0)) < TOL7 &&  xsi(j) < 0)    xsi(j) = -1.0;
+        if( fabs((fabs(xsi(j))-1.0)) < TOL7 &&  xsi(j) > 0)    xsi(j) =  1.0;      
+    }
+    return xsi;
 }     
 
 
@@ -434,14 +264,14 @@ void XFEM::currentToElementCoordinates(
 template <DRT::Element::DiscretizationType DISTYPE>
 void updateAForNWE(   
     Epetra_SerialDenseMatrix&           A,
-    const Epetra_SerialDenseVector&     xsi,
+    const BlitzVec&                     xsi,
     const BlitzMat&                     xyze
     )                                                  
 {   
     const int numNodes = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
     const int dim = DRT::UTILS::getDimension<DISTYPE>();
     
-    const blitz::Array<double,2> deriv1(shape_function_deriv1<DISTYPE,Epetra_SerialDenseVector>(xsi));
+    const BlitzMat deriv1(shape_function_deriv1<DISTYPE,BlitzVec>(xsi));
     
     A.Scale(0.0);
     for(int inode=0; inode<numNodes; inode++) 
@@ -468,25 +298,25 @@ void updateAForNWE(
 */
 template <DRT::Element::DiscretizationType DISTYPE>
 void updateRHSForNWE( 
-    Epetra_SerialDenseVector&           b,
-    const Epetra_SerialDenseVector&     xsi,
-    const Epetra_SerialDenseVector&     x,
-    const BlitzMat&                     xyze)                                                  
+        BlitzVec&           b,
+        const BlitzVec&     xsi,
+        const BlitzVec&     x,
+        const BlitzMat&     xyze)                                                  
 {
     const int numNodes = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
     const int dim = DRT::UTILS::getDimension<DISTYPE>();
     
-    const BlitzVec funct(shape_function<DISTYPE,Epetra_SerialDenseVector>(xsi));
+    const BlitzVec funct(shape_function<DISTYPE,BlitzVec>(xsi));
     
-    b.Scale(0.0);
+    b = 0.0;
     for(int inode=0; inode<numNodes; inode++)
     {
         for(int isd=0; isd<dim; isd++)
-            b[isd] -= xyze(isd,inode) * funct(inode);
+            b(isd) -= xyze(isd,inode) * funct(inode);
     }
       
     for(int isd=0; isd<dim; isd++)
-        b[isd] += x[isd];
+        b(isd) += x(isd);
 }
 
 
@@ -503,8 +333,8 @@ void updateRHSForNWE(
 template <DRT::Element::DiscretizationType DISTYPE>
 bool currentToElementCoordinatesT(  
     const DRT::Element*                 element,
-    const Epetra_SerialDenseVector&     x,
-    Epetra_SerialDenseVector&           xsi)
+    const BlitzVec&                     x,
+    BlitzVec&                           xsi)
 {
     if(element->Shape() != DISTYPE) dserror("this is a bug when calling the wrong instance of this templated function!");
     bool nodeWithinElement = true;
@@ -513,12 +343,13 @@ bool currentToElementCoordinatesT(
     double residual = 1.0;
     
     Epetra_SerialDenseMatrix A(dim,dim);
-    Epetra_SerialDenseVector b(dim);
-    Epetra_SerialDenseVector dx(dim);
+    BlitzVec b(dim);   b  = 0.0;
+    BlitzVec dx(dim);  dx = 0.0;
+    blitz::firstIndex i;
     
     const BlitzMat xyze(PositionArrayBlitzT<DISTYPE>(element));
     
-    xsi.Scale(0.0);
+    xsi = 0.0;
             
     updateRHSForNWE<DISTYPE>(b, xsi, x, xyze);
     
@@ -533,10 +364,10 @@ bool currentToElementCoordinatesT(
             break;
         }   
         
-        //xsi = addTwoVectors(xsi,dx);
         xsi += dx;
         updateRHSForNWE<DISTYPE>(b, xsi, x, xyze);
-        residual = b.Norm2();
+        
+        residual = sqrt(blitz::sum(b(i)*b(i)));
         iter++; 
         
         if(iter >= maxiter)
@@ -546,7 +377,7 @@ bool currentToElementCoordinatesT(
         }   
     }
     return nodeWithinElement;
-};
+}
 
 /*----------------------------------------------------------------------*
  | GM:  transforms a node in current coordinates            u.may 12/07 |
@@ -554,8 +385,8 @@ bool currentToElementCoordinatesT(
  *----------------------------------------------------------------------*/
 bool XFEM::currentToElementCoordinates(  
     const DRT::Element*                 element,
-    const Epetra_SerialDenseVector&     x,
-    Epetra_SerialDenseVector&           xsi)
+    const BlitzVec&                     x,
+    BlitzVec&                           xsi)
 {
     bool nodeWithinElement = false;
     switch (element->Shape())
@@ -580,7 +411,7 @@ bool XFEM::currentToElementCoordinates(
         nodeWithinElement = false;
     }   
     //printf("iter = %d\n", iter);
-    //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
+    //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0),xsi(1),xsi(2), residual, TOL14);
     return nodeWithinElement;
 }
 
@@ -589,7 +420,7 @@ bool XFEM::currentToElementCoordinates(
  |  ICS:    checks if a position is within an XAABB          u.may 06/07|
  *----------------------------------------------------------------------*/
 bool XFEM::isPositionWithinXAABB(    
-    const Epetra_SerialDenseVector&    pos,
+    const BlitzVec&                    pos,
     const Epetra_SerialDenseMatrix&    XAABB)
 {
     const int nsd = 3;
@@ -616,8 +447,8 @@ bool XFEM::isPositionWithinXAABB(
  |  ICS:    checks if a pos is within an XAABB               u.may 06/07|
  *----------------------------------------------------------------------*/
 bool XFEM::isLineWithinXAABB(    
-    const Epetra_SerialDenseVector&    pos1,
-    const Epetra_SerialDenseVector&    pos2,
+    const BlitzVec&                    pos1,
+    const BlitzVec&                    pos2,
     const Epetra_SerialDenseMatrix&    XAABB)
 {
     const int nsd = 3;
@@ -625,7 +456,7 @@ bool XFEM::isLineWithinXAABB(
     int isd = -1;
     
     for(isd=0; isd<nsd; isd++)
-        if(fabs(pos1[isd]-pos2[isd]) > TOL7)
+        if(fabs(pos1(isd)-pos2(isd)) > TOL7)
             break;
     
     for(int ksd = 0; ksd < nsd; ksd++)
@@ -635,7 +466,7 @@ bool XFEM::isLineWithinXAABB(
             double min = XAABB(ksd,0) - TOL7;
             double max = XAABB(ksd,1) + TOL7;
    
-            if((pos1[ksd] < min)||(pos1[ksd] > max))
+            if((pos1(ksd) < min)||(pos1(ksd) > max))
                 isWithin = false;
             
         }
@@ -649,8 +480,8 @@ bool XFEM::isLineWithinXAABB(
         const double min = XAABB(isd,0) - TOL7;
         const double max = XAABB(isd,1) + TOL7;
                             
-        if( ((pos1[isd] < min) && (pos2[isd] > max)) ||  
-            ((pos2[isd] < min) && (pos1[isd] > max)) )
+        if( ((pos1(isd) < min) && (pos2(isd) > max)) ||  
+            ((pos2(isd) < min) && (pos1(isd) > max)) )
             isWithin = true;
     }
     return isWithin;
@@ -662,17 +493,16 @@ bool XFEM::isLineWithinXAABB(
  *----------------------------------------------------------------------*/
 bool XFEM::checkPositionWithinElement(  
     const DRT::Element*                 element,
-    const Epetra_SerialDenseVector&     x)
+    const BlitzVec&                     x)
 {
-    Epetra_SerialDenseVector xsi(getDimension(element->Shape()));
-            
+    BlitzVec xsi(getDimension(element->Shape()));
     bool nodeWithinElement = currentToElementCoordinates(element, x, xsi);
     //printf("iter = %d\n", iter);
-    //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
+    //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0),xsi(1),xsi(2), residual, TOL14);
     
     nodeWithinElement = checkPositionWithinElementParameterSpace(xsi,element->Shape());
 //    for(int i=0; i<dim; i++)
-//        if( (fabs(xsi[i])-1.0) > TOL7)     
+//        if( (fabs(xsi(i))-1.0) > TOL7)     
 //        {    
 //            nodeWithinElement = false;
 //            break;
@@ -687,7 +517,7 @@ bool XFEM::checkPositionWithinElement(
  *----------------------------------------------------------------------*/
 bool XFEM::PositionWithinDiscretization(  
     const RCP<DRT::Discretization>      dis,
-    const Epetra_SerialDenseVector&     x)
+    const BlitzVec&                     x)
 {
     bool nodeWithinMesh = false;
     
@@ -714,13 +544,13 @@ bool XFEM::PositionWithinDiscretization(
  |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
  *----------------------------------------------------------------------*/
 bool XFEM::PositionWithinCondition(
-        const blitz::Array<double,1>&       x_in,
+        const BlitzVec&                     x_in,
         const int                           xfem_condition_label, 
         const RCP<DRT::Discretization>      cutterdis
     )
 {
     const int nsd = 3;
-    Epetra_SerialDenseVector x(nsd);
+    BlitzVec x(nsd);
     for (int isd = 0; isd < nsd; ++isd) {
         x(isd) = x_in(isd);
     }
@@ -768,7 +598,7 @@ bool XFEM::searchForNearestPointOnSurface(
 	
 	if(pointWithinElement)
 	{
-		const BlitzVec x_surface_phys = elementToCurrentCoordinates(surfaceElement, eleCoord);
+		const BlitzVec x_surface_phys(elementToCurrentCoordinates(surfaceElement, eleCoord));
 		normal = x_surface_phys - physCoord;
 		distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
 	}
@@ -838,7 +668,7 @@ BlitzVec XFEM::CurrentToSurfaceElementCoordinates(
  * checks if a position in element coordinates lies within a certain surfaceElement
  */  
 bool XFEM::checkPositionWithinElementParameterSpace(
-        const BlitzVec                         eleCoord,
+        const BlitzVec&                        eleCoord,
         const DRT::Element::DiscretizationType distype
         )
 {
@@ -865,37 +695,6 @@ bool XFEM::checkPositionWithinElementParameterSpace(
     return nodeWithinElement;
 }
 
-
-/*
- * checks if a position in element coordinates lies within a certain surfaceElement
- */  
-bool XFEM::checkPositionWithinElementParameterSpace(
-        const Epetra_SerialDenseVector         eleCoord,
-        const DRT::Element::DiscretizationType distype
-        )
-{
-    if (distype != DRT::Element::line2 and
-            distype != DRT::Element::line3 and
-            distype != DRT::Element::quad4 and 
-            distype != DRT::Element::quad8 and 
-            distype != DRT::Element::quad9 and
-            distype != DRT::Element::hex8 and
-            distype != DRT::Element::hex20 and 
-            distype != DRT::Element::hex27)
-        dserror("function only defined for rectangular element types at the moment");
-    
-    bool nodeWithinElement = true;
-    
-    // loop over r and s (local coordinates)
-    for(int i=0; i<DRT::UTILS::getDimension(distype); i++)
-        if( (fabs(eleCoord[i])-1.0) > TOL7)     
-        {    
-            nodeWithinElement = false;
-            break;
-        }
-    
-    return nodeWithinElement;
-}
 
 /*----------------------------------------------------------------------*
  |  RQI:    updates the Jacobian for the computation         u.may 01/08|
@@ -1094,16 +893,16 @@ bool XFEM::intersectionOfXAABB(
   /*====================================================================*/
     
     bool intersection =  false;
-    std::vector < Epetra_SerialDenseVector > nodes(8, Epetra_SerialDenseVector(3));
+    std::vector < BlitzVec > nodes(8, BlitzVec(3));
     
-    nodes[0][0] = cutterXAABB(0,0); nodes[0][1] = cutterXAABB(1,0); nodes[0][2] = cutterXAABB(2,0); // node 0   
-    nodes[1][0] = cutterXAABB(0,1); nodes[1][1] = cutterXAABB(1,0); nodes[1][2] = cutterXAABB(2,0); // node 1
-    nodes[2][0] = cutterXAABB(0,1); nodes[2][1] = cutterXAABB(1,1); nodes[2][2] = cutterXAABB(2,0); // node 2
-    nodes[3][0] = cutterXAABB(0,0); nodes[3][1] = cutterXAABB(1,1); nodes[3][2] = cutterXAABB(2,0); // node 3
-    nodes[4][0] = cutterXAABB(0,0); nodes[4][1] = cutterXAABB(1,0); nodes[4][2] = cutterXAABB(2,1); // node 4
-    nodes[5][0] = cutterXAABB(0,1); nodes[5][1] = cutterXAABB(1,0); nodes[5][2] = cutterXAABB(2,1); // node 5
-    nodes[6][0] = cutterXAABB(0,1); nodes[6][1] = cutterXAABB(1,1); nodes[6][2] = cutterXAABB(2,1); // node 6
-    nodes[7][0] = cutterXAABB(0,0); nodes[7][1] = cutterXAABB(1,1); nodes[7][2] = cutterXAABB(2,1); // node 7
+    nodes[0](0) = cutterXAABB(0,0); nodes[0](1) = cutterXAABB(1,0); nodes[0](2) = cutterXAABB(2,0); // node 0   
+    nodes[1](0) = cutterXAABB(0,1); nodes[1](1) = cutterXAABB(1,0); nodes[1](2) = cutterXAABB(2,0); // node 1
+    nodes[2](0) = cutterXAABB(0,1); nodes[2](1) = cutterXAABB(1,1); nodes[2](2) = cutterXAABB(2,0); // node 2
+    nodes[3](0) = cutterXAABB(0,0); nodes[3](1) = cutterXAABB(1,1); nodes[3](2) = cutterXAABB(2,0); // node 3
+    nodes[4](0) = cutterXAABB(0,0); nodes[4](1) = cutterXAABB(1,0); nodes[4](2) = cutterXAABB(2,1); // node 4
+    nodes[5](0) = cutterXAABB(0,1); nodes[5](1) = cutterXAABB(1,0); nodes[5](2) = cutterXAABB(2,1); // node 5
+    nodes[6](0) = cutterXAABB(0,1); nodes[6](1) = cutterXAABB(1,1); nodes[6](2) = cutterXAABB(2,1); // node 6
+    nodes[7](0) = cutterXAABB(0,0); nodes[7](1) = cutterXAABB(1,1); nodes[7](2) = cutterXAABB(2,1); // node 7
     
     for (int i = 0; i < 8; i++)
         if(isPositionWithinXAABB(nodes[i], xfemXAABB))
@@ -1128,14 +927,14 @@ bool XFEM::intersectionOfXAABB(
     
     if(!intersection)
     {
-        nodes[0][0] = xfemXAABB(0,0);   nodes[0][1] = xfemXAABB(1,0);   nodes[0][2] = xfemXAABB(2,0);   // node 0   
-        nodes[1][0] = xfemXAABB(0,1);   nodes[1][1] = xfemXAABB(1,0);   nodes[1][2] = xfemXAABB(2,0);   // node 1
-        nodes[2][0] = xfemXAABB(0,1);   nodes[2][1] = xfemXAABB(1,1);   nodes[2][2] = xfemXAABB(2,0);   // node 2
-        nodes[3][0] = xfemXAABB(0,0);   nodes[3][1] = xfemXAABB(1,1);   nodes[3][2] = xfemXAABB(2,0);   // node 3
-        nodes[4][0] = xfemXAABB(0,0);   nodes[4][1] = xfemXAABB(1,0);   nodes[4][2] = xfemXAABB(2,1);   // node 4
-        nodes[5][0] = xfemXAABB(0,1);   nodes[5][1] = xfemXAABB(1,0);   nodes[5][2] = xfemXAABB(2,1);   // node 5
-        nodes[6][0] = xfemXAABB(0,1);   nodes[6][1] = xfemXAABB(1,1);   nodes[6][2] = xfemXAABB(2,1);   // node 6
-        nodes[7][0] = xfemXAABB(0,0);   nodes[7][1] = xfemXAABB(1,1);   nodes[7][2] = xfemXAABB(2,1);   // node 7
+        nodes[0](0) = xfemXAABB(0,0);   nodes[0](1) = xfemXAABB(1,0);   nodes[0](2) = xfemXAABB(2,0);   // node 0   
+        nodes[1](0) = xfemXAABB(0,1);   nodes[1](1) = xfemXAABB(1,0);   nodes[1](2) = xfemXAABB(2,0);   // node 1
+        nodes[2](0) = xfemXAABB(0,1);   nodes[2](1) = xfemXAABB(1,1);   nodes[2](2) = xfemXAABB(2,0);   // node 2
+        nodes[3](0) = xfemXAABB(0,0);   nodes[3](1) = xfemXAABB(1,1);   nodes[3](2) = xfemXAABB(2,0);   // node 3
+        nodes[4](0) = xfemXAABB(0,0);   nodes[4](1) = xfemXAABB(1,0);   nodes[4](2) = xfemXAABB(2,1);   // node 4
+        nodes[5](0) = xfemXAABB(0,1);   nodes[5](1) = xfemXAABB(1,0);   nodes[5](2) = xfemXAABB(2,1);   // node 5
+        nodes[6](0) = xfemXAABB(0,1);   nodes[6](1) = xfemXAABB(1,1);   nodes[6](2) = xfemXAABB(2,1);   // node 6
+        nodes[7](0) = xfemXAABB(0,0);   nodes[7](1) = xfemXAABB(1,1);   nodes[7](2) = xfemXAABB(2,1);   // node 7
     
         for (int i = 0; i < 8; i++)
             if(isPositionWithinXAABB(nodes[i], cutterXAABB))

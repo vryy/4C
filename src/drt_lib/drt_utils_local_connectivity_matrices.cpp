@@ -506,7 +506,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
  |  every node for each discretization type                             |
  *----------------------------------------------------------------------*/   
 vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(    
-    const DRT::Element::DiscretizationType&     distype)
+    const DRT::Element::DiscretizationType      distype)
 {
     int nNode;
     int nSurf;
@@ -551,7 +551,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(
  |  every surface for each discretization type                          |
  *----------------------------------------------------------------------*/   
 vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(   
-    const DRT::Element::DiscretizationType&     distype)
+    const DRT::Element::DiscretizationType      distype)
 {
 
     int nNode;
@@ -639,9 +639,9 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/   
 int DRT::UTILS::getSurfaces(    
-    const Epetra_SerialDenseVector&             rst,
+    const blitz::Array<double,1>&               rst,
     int*                                        surfaces,
-    const DRT::Element::DiscretizationType&     distype)
+    const DRT::Element::DiscretizationType      distype)
 {
 
     int countSurf = 0;
@@ -649,20 +649,20 @@ int DRT::UTILS::getSurfaces(
     
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
-        if(fabs(rst[0]-1.0) < TOL)      surfaces[countSurf++] = 2;        
-        if(fabs(rst[0]+1.0) < TOL)      surfaces[countSurf++] = 4;        
-        if(fabs(rst[1]-1.0) < TOL)      surfaces[countSurf++] = 3;        
-        if(fabs(rst[1]+1.0) < TOL)      surfaces[countSurf++] = 1;        
-        if(fabs(rst[2]-1.0) < TOL)      surfaces[countSurf++] = 5;        
-        if(fabs(rst[2]+1.0) < TOL)      surfaces[countSurf++] = 0;     
+        if(fabs(rst(0)-1.0) < TOL)      surfaces[countSurf++] = 2;        
+        if(fabs(rst(0)+1.0) < TOL)      surfaces[countSurf++] = 4;        
+        if(fabs(rst(1)-1.0) < TOL)      surfaces[countSurf++] = 3;        
+        if(fabs(rst(1)+1.0) < TOL)      surfaces[countSurf++] = 1;        
+        if(fabs(rst(2)-1.0) < TOL)      surfaces[countSurf++] = 5;        
+        if(fabs(rst(2)+1.0) < TOL)      surfaces[countSurf++] = 0;     
     }
     else if(distype == DRT::Element::tet4 ||  distype == DRT::Element::tet10 )
     {
-        double tetcoord = rst[0]+rst[1]+rst[2];
-        if(fabs(rst[1])         < TOL)  surfaces[countSurf++] = 0;        
+        const double tetcoord = rst(0)+rst(1)+rst(2);
+        if(fabs(rst(1))         < TOL)  surfaces[countSurf++] = 0;        
         if(fabs(tetcoord-1.0)   < TOL)  surfaces[countSurf++] = 1;       
-        if(fabs(rst[0])         < TOL)  surfaces[countSurf++] = 2;        
-        if(fabs(rst[2])         < TOL)  surfaces[countSurf++] = 3;          
+        if(fabs(rst(0))         < TOL)  surfaces[countSurf++] = 2;        
+        if(fabs(rst(2))         < TOL)  surfaces[countSurf++] = 3;          
     }
     else
         dserror("discretization type not yet implemented");
@@ -676,9 +676,9 @@ int DRT::UTILS::getSurfaces(
  |  system of the cutter element                                        |
  |  according to the node ID for each discretization type               |
  *----------------------------------------------------------------------*/   
-void DRT::UTILS::getNodeCoordinates(    int                                         nodeId,
+void DRT::UTILS::getNodeCoordinates(    const int                                   nodeId,
                                         double*                                     coord,
-                                        const DRT::Element::DiscretizationType&     distype)
+                                        const DRT::Element::DiscretizationType      distype)
 {
 
     if(distype == DRT::Element::quad4 ||  distype == DRT::Element::quad8 || distype == DRT::Element::quad9)
@@ -752,10 +752,10 @@ void DRT::UTILS::getNodeCoordinates(    int                                     
  |  according to the line ID for each discretization type               |
  *----------------------------------------------------------------------*/   
 void DRT::UTILS::getLineCoordinates(    
-    int                                         lineId,
-    double                                      lineCoord,
+    const int                                   lineId,
+    const double                                lineCoord,
     double*                                     coord,
-    const DRT::Element::DiscretizationType&     distype)
+    const DRT::Element::DiscretizationType      distype)
 {
 
     if(distype == DRT::Element::quad4 ||  distype == DRT::Element::quad8 || distype == DRT::Element::quad9)
@@ -836,7 +836,7 @@ void DRT::UTILS::getLineCoordinates(
 int DRT::UTILS::getHigherOrderIndex(
     const int                                   index1, 
     const int                                   index2,
-    const DRT::Element::DiscretizationType&     distype )
+    const DRT::Element::DiscretizationType      distype )
 {
 
     int higherOrderIndex = 0;
