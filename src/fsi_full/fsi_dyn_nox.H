@@ -34,7 +34,7 @@ extern "C"
 #include "../solver/solver.h"
 #include "fsi_prototypes.h"
 #include "../io/io.h"
-};
+}
 
 
 /*----------------------------------------------------------------------*/

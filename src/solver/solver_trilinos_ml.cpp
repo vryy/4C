@@ -47,7 +47,7 @@ extern "C"
 {
 #include "../fluid2_pro/fluid2pro.h"
 #include "../fluid3_pro/fluid3pro.h"
-};
+}
 
 using namespace std;
 using namespace Teuchos;
