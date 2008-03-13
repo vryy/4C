@@ -31,11 +31,11 @@ template <XFEM::PHYSICS::Field field> int getFieldNumber()
 {
     dserror("this field does not belong to the 3d fluid");
     return -1;
-}; 
-template <> int getFieldNumber<XFEM::PHYSICS::Velx>() {return 0;};
-template <> int getFieldNumber<XFEM::PHYSICS::Vely>() {return 1;};
-template <> int getFieldNumber<XFEM::PHYSICS::Velz>() {return 2;};
-template <> int getFieldNumber<XFEM::PHYSICS::Pres>() {return 3;};
+}
+template <> int getFieldNumber<XFEM::PHYSICS::Velx>() {return 0;}
+template <> int getFieldNumber<XFEM::PHYSICS::Vely>() {return 1;}
+template <> int getFieldNumber<XFEM::PHYSICS::Velz>() {return 2;}
+template <> int getFieldNumber<XFEM::PHYSICS::Pres>() {return 3;}
 
 
 //! for the viscous stress, replace shear stress components with symmetric part
@@ -43,10 +43,10 @@ template <XFEM::PHYSICS::Field FIELD>
 XFEM::PHYSICS::Field mangle()
 {
     return FIELD;
-}; 
-template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Sigmayx>() {return XFEM::PHYSICS::Sigmaxy;};
-template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Sigmazx>() {return XFEM::PHYSICS::Sigmaxz;};
-template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Sigmazy>() {return XFEM::PHYSICS::Sigmayz;};
+}
+template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Sigmayx>() {return XFEM::PHYSICS::Sigmaxy;}
+template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Sigmazx>() {return XFEM::PHYSICS::Sigmaxz;}
+template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Sigmazy>() {return XFEM::PHYSICS::Sigmayz;}
 
 
 template <DRT::Element::DiscretizationType DISTYPE, 
@@ -115,7 +115,7 @@ public:
             }
             ui++;
         }
-    };
+    }
     
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
@@ -131,7 +131,7 @@ public:
             eforce_(*testpos) += fac*testshape(vi);
             vi++;
         }
-    };
+    }
     
 private:
     // don't want = operator and cctor
@@ -185,7 +185,7 @@ public:
                 estif_(testpos, trialpos) += testshape(vi)*multiply ;
             }
         }
-    };
+    }
     
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
@@ -200,7 +200,7 @@ public:
             const int testpos = 4*vi + getFieldNumber<testfield>();
             eforce_(testpos) += fac*testshape(vi);
         }
-    };
+    }
     
 private:
     // don't want = operator and cctor

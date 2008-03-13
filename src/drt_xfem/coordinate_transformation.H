@@ -48,7 +48,7 @@ namespace XFEM
       // translate position into from cell coordinates to element coordinates
       const BlitzVec pos_xsi_domain(blitz::sum(funct(j)*xyze_cell(i,j),j));
       return pos_xsi_domain;
-  };
+  }
   //! map position from eta to xi space
   template<> 
   XFEM::PosXiDomain mapEtaToXi3D<XFEM::standard_assembly>(
@@ -56,7 +56,7 @@ namespace XFEM
           const XFEM::PosEtaDomain&  pos_eta)
   {   
       return pos_eta;
-  };
+  }
 
   
   
@@ -87,7 +87,7 @@ namespace XFEM
                          xjm(0,1)*xjm(1,0)*xjm(2,2);
 
       return det;
-  };
+  }
   //! get determinante between eta and xi space
   template<>
   double detEtaToXi3D<XFEM::standard_assembly>(
@@ -95,7 +95,7 @@ namespace XFEM
           const XFEM::PosEtaDomain&  pos_eta)
   {   
       return 1.0;
-  };
+  }
   
   
   /////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ namespace XFEM
       // translate position into from cell coordinates to element coordinates
       const BlitzVec pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
       return pos_xsi_boundary;
-  };
+  }
   
   //! map position from eta^\boundary to xi^\domain space
   XFEM::PosXiDomain mapEtaBToXiD(
@@ -139,7 +139,7 @@ namespace XFEM
       // translate position into from cell coordinates to element coordinates
       const BlitzVec pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
       return pos_xsi_boundary;
-  };
+  }
 
   
   
@@ -164,7 +164,7 @@ double detEtaBToXiB(
     const double det = xjm(0, 0)*xjm(1, 1) - xjm(0, 1)*xjm(1, 0);
 
     return det;
-};
+}
 
 }
 
