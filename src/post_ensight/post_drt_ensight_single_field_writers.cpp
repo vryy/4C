@@ -39,6 +39,10 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   {
     PostStress("gauss_stresses_xyz", stresstype_);
   }
+  if (straintype_!="none")
+  {
+    PostStress("gauss_strains_xyz", straintype_);
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -85,7 +89,7 @@ void StructureEnsightWriter::PostStress(const string groupname, const string str
 
   else
   {
-    dserror("Unknown stress type");
+    dserror("Unknown stress/strain type");
   }
 
   return;
@@ -96,7 +100,24 @@ void StructureEnsightWriter::PostStress(const string groupname, const string str
 void StructureEnsightWriter::WriteNodalStress(const string groupname,
                                               PostResult& result)
 {
-  string name="nodal_stresses_xyz";
+  string name;
+  string out;
+
+  if (groupname=="gauss_stresses_xyz")
+  {
+    name="nodal_stresses_xyz";
+    out="stresses";
+  }
+  else if (groupname=="gauss_strains_xyz")
+  {
+    name="nodal_strains_xyz";
+    out="strains";
+  }
+  else
+  {
+    dserror("trying to write something that is not a stress or a strain");
+    exit(1);            // especially for Axel ;-)
+  }
 
   // new for file continuation
   bool multiple_files = false;
@@ -115,7 +136,7 @@ void StructureEnsightWriter::WriteNodalStress(const string groupname,
   int stepsize = 0;
 
   if (myrank_==0)
-    cout<<"writing node-based stresses" << endl;
+    cout<<"writing node-based " << out << endl;
 
   // store information for later case file creation
   variableresulttypemap_[name] = "node";
@@ -259,7 +280,24 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
 void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
                                                       PostResult& result)
 {
-  string name="center_stresses_xyz";
+  string name;
+  string out;
+
+  if (groupname=="gauss_stresses_xyz")
+  {
+    name="center_stresses_xyz";
+    out="stresses";
+  }
+  else if (groupname=="gauss_strains_xyz")
+  {
+    name="center_strains_xyz";
+    out="strains";
+  }
+  else
+  {
+    dserror("trying to write something that is not a stress or a strain");
+    exit(1);            // especially for Axel ;-)
+  }
 
   // new for file continuation
   bool multiple_files = false;
@@ -278,7 +316,7 @@ void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
   int stepsize = 0;
 
   if (myrank_==0)
-    cout<<"writing element-based center stresses" << endl;
+    cout<<"writing element-based center " << out << endl;
 
   // store information for later case file creation
   variableresulttypemap_[name] = "element";
@@ -350,7 +388,7 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
   dis->Evaluate(p,null,null,null,null,null);
   if (elestress==null)
   {
-    dserror("vector containing element center stresses not available");
+    dserror("vector containing element center stresses/strains not available");
   }
 
   //--------------------------------------------------------------------

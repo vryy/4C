@@ -272,6 +272,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter("STRUCT_STRESS_SMO","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("STRUCT_SM_DISP","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("STRUCT_SM_STRESS","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter("STRUCT_STRAIN","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("FLUID_SOL","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("FLUID_STRESS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("FLUID_VIS","No","",yesnotuple,yesnovalue,&io);
@@ -406,7 +407,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "determines the material parameter for the hyperpolyconvex material",
                                yesnotuple,yesnovalue,
                                &sdyn);
-  
+
   SetValidTimeAdaptivityParameters(sdyn);
 
   /*----------------------------------------------------------------------*/

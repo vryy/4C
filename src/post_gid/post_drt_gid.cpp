@@ -102,7 +102,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
 
     break;
   default:
-    dserror("output of gauss point stresses in GiD needs to be implemented for this element type");
+    dserror("output of gauss point stresses/strains in GiD needs to be implemented for this element type");
   }
 
   //double time = map_read_real(result->group(), "time");
@@ -111,7 +111,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   ostringstream buf;
   buf << fieldnames[field->type()] << "_" << result_name;
 
-  const RefCountPtr<std::map<int,RefCountPtr<Epetra_SerialDenseMatrix> > > stressmap
+  const RefCountPtr<std::map<int,RefCountPtr<Epetra_SerialDenseMatrix> > > map
     = result->read_result_serialdensematrix(result_name);
 
   double v[6];
@@ -123,7 +123,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   for (int k = 0; k < field->num_elements(); ++k)
   {
     DRT::Element* n = field->discretization()->lRowElement(k);
-    RefCountPtr<Epetra_SerialDenseMatrix> data = (*stressmap)[n->Id()];
+    RefCountPtr<Epetra_SerialDenseMatrix> data = (*map)[n->Id()];
 
     for (int gp = 0; gp < data->M(); ++gp)
     {
@@ -500,6 +500,10 @@ int main(int argc, char** argv)
       if (map_has_map(result.group(), "gauss_stresses_xyz"))
       {
         write_serialdensematrix_result("gauss_stresses_xyz", field, &result);
+      }
+      if (map_has_map(result.group(), "gauss_strains_xyz"))
+      {
+        write_serialdensematrix_result("gauss_strains_xyz", field, &result);
       }
     }
   }

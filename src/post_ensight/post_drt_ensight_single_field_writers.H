@@ -27,8 +27,9 @@ class StructureEnsightWriter : public EnsightWriter
 public:
   StructureEnsightWriter(PostField* field,
                          string filename,
-                         string stresstype="none") :
-  EnsightWriter(field, filename), stresstype_(stresstype)
+                         string stresstype="none",
+                         string straintype="none") :
+  EnsightWriter(field, filename), stresstype_(stresstype), straintype_(straintype)
   {
   }
 
@@ -60,6 +61,7 @@ protected:
                                     const int numdf) const;
 
   string stresstype_;
+  string straintype_;
 };
 
 /*----------------------------------------------------------------------*/

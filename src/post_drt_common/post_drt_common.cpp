@@ -92,7 +92,8 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   CLP.setOption("step",&step_,"number of time steps to jump");
   CLP.setOption("file",&file,"control file to open");
   CLP.setOption("output",&output,"output file name [defaults to control file name]");
-  CLP.setOption("stresstype",&stresstype_,"stress output type [cxyz or ndxyz]");
+  CLP.setOption("stresstype",&stresstype_,"stress output type [cxyz or ndxyz or both]");
+  CLP.setOption("straintype",&straintype_,"strain output type [cxyz or ndxyz or both]");
 
   CommandLineProcessor::EParseCommandLineReturn
     parseReturn = CLP.parse(argc,argv);
@@ -125,6 +126,11 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   if (stresstype_=="")
   {
     stresstype_ = "none";
+  }
+
+  if (straintype_=="")
+  {
+    straintype_ = "none";
   }
 
   result_group_ = vector<MAP*>();

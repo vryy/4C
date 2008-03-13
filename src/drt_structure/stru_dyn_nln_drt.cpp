@@ -193,6 +193,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
       genalphaparams.set<bool>  ("io structural stress",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"));
       genalphaparams.set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
+      genalphaparams.set<bool>  ("io structural strain",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRAIN"));
 
       genalphaparams.set<int>   ("restart",probtype.get<int>("RESTART"));
       genalphaparams.set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
@@ -200,7 +201,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<bool>  ("print to screen",true);
       genalphaparams.set<bool>  ("print to err",true);
       genalphaparams.set<FILE*> ("err file",allfiles.out_err);
-      
+
       genalphaparams.set<bool>  ("inv_analysis",Teuchos::getIntegralValue<int>(sdyn,"INV_ANALYSIS"));
 
       switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
@@ -244,16 +245,16 @@ void dyn_nlnstructural_drt()
 
       // create the time integrator
       bool contact = genalphaparams.get("contact",false);
-      bool inv_analysis = genalphaparams.get("inv_analysis",false);   
+      bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator = null;
-      if (!contact && !inv_analysis) 
+      if (!contact && !inv_analysis)
         tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
       else {
         if (!inv_analysis)
           tintegrator = rcp(new ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
-        else 
+        else
           tintegrator = rcp(new Inv_analysis(genalphaparams,*actdis,solver,output));
-      }      
+      }
 
       // do restart if demanded from input file
       // note that this changes time and step in genalphaparams
@@ -269,7 +270,7 @@ void dyn_nlnstructural_drt()
 
       // integrate in time and space
       tintegrator->Integrate();
-      
+
       // test results
       {
         DRT::ResultTestManager testmanager(actdis->Comm());

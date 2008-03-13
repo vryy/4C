@@ -147,6 +147,9 @@ public:
   //! returns stress type
   string stresstype() { return stresstype_; }
 
+  //! returns strain type
+  string straintype() { return straintype_; }
+
   //@}
 
 private:
@@ -200,6 +203,9 @@ private:
 
   /* stress output type optionally set by command line argument */
   string stresstype_;
+
+   /* strain output type optionally set by command line argument */
+  string straintype_;
 
   //! MAP pointers into the control file map.
   // We don't own these pointers, so no reference counting.
@@ -320,14 +326,14 @@ public:
   //
   // \returns vector with timesteps when the specific solution was written
   vector<double> get_result_times(const string& fieldname, const string& groupname);
-  
+
   //! goes to the next result block in the slice
   //
   // Automatically opens new result files.
   //
   // \returns 1 if a new result block has been found, otherwise returns 0
   int next_result();
-  
+
   //! goes to the next result block in the slice containing the specific result vector >name<
   //
   // Automatically opens new result files.

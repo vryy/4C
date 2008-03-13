@@ -75,7 +75,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,time);
+      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,time);
     }
     break;
 
@@ -89,7 +89,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,time);
+      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,time);
     }
     break;
 
@@ -113,43 +113,51 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,time);
+      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,time);
     }
     break;
-    // evaluate stresses at gauss points
+    // evaluate stresses and strains at gauss points
     case calc_struct_stress:{
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      RCP<vector<char> > data = params.get<RCP<vector<char> > >("stress", null);
+      RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
+      RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      if (data==null) dserror("Cannot get stress 'data'");
+      if (stressdata==null) dserror("Cannot get stress 'data'");
+      if (straindata==null) dserror("Cannot get strain 'data'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       Epetra_SerialDenseMatrix stress(NUMGPT_WEG6,NUMSTR_WEG6);
-      sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,time);
-      AddtoPack(*data, stress);
+      Epetra_SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
+      sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time);
+      AddtoPack(*stressdata, stress);
+      AddtoPack(*straindata, strain);
     }
     break;
 
-    // postprocess stresses at gauss points
+    // postprocess stresses/strains at gauss points
+
+    // note that in the following, quantities are always referred to as
+    // "stresses" etc. although they might also apply to strains
+    // (depending on what this routine is called for from the post filter)
     case postprocess_stress:{
 
       const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
         params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
       if (gpstressmap==null)
-        dserror("no gp stress map available for postprocessing");
+        dserror("no gp stress/strain map available for postprocessing");
       string stresstype = params.get<string>("stresstype","ndxyz");
       int gid = Id();
       RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
 
       if (stresstype=="ndxyz") {
-        // extrapolate stresses at Gauss points to nodes
+        // extrapolate stresses/strains at Gauss points to nodes
         Epetra_SerialDenseMatrix nodalstresses(NUMNOD_WEG6,NUMSTR_WEG6);
         soweg6_expol(*gpstress,nodalstresses);
 
-        // average nodal stresses between elements
+        // average nodal stresses/strains between elements
         // -> divide by number of adjacent elements
         vector<int> numadjele(NUMNOD_WEG6);
 
@@ -172,7 +180,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       else if (stresstype=="cxyz") {
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
         if (elestress==null)
-          dserror("No element stress vector available");
+          dserror("No element stress/strain vector available");
         const Epetra_BlockMap elemap = elestress->Map();
         int lid = elemap.LID(Id());
         if (lid!=-1) {
@@ -185,11 +193,11 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
         }
       }
       else if (stresstype=="cxyz_ndxyz") {
-        // extrapolate stresses at Gauss points to nodes
+        // extrapolate stresses/strains at Gauss points to nodes
         Epetra_SerialDenseMatrix nodalstresses(NUMNOD_WEG6,NUMSTR_WEG6);
         soweg6_expol(*gpstress,nodalstresses);
 
-        // average nodal stresses between elements
+        // average nodal stresses/strains between elements
         // -> divide by number of adjacent elements
         vector<int> numadjele(NUMNOD_WEG6);
 
@@ -210,7 +218,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
         }
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
         if (elestress==null)
-          dserror("No element stress vector available");
+          dserror("No element stress/strain vector available");
         const Epetra_BlockMap elemap = elestress->Map();
         int lid = elemap.LID(Id());
         if (lid!=-1) {
@@ -223,7 +231,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
         }
       }
       else{
-        dserror("unknown type of stress output on element level");
+        dserror("unknown type of stress/strain output on element level");
       }
     }
     break;
@@ -272,6 +280,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
       Epetra_SerialDenseVector* force,          // element internal force vector
       Epetra_SerialDenseMatrix* elestress,      // element stresses
+      Epetra_SerialDenseMatrix* elestrain,      // strains at GP
       const double              time)           // current absolute time
 {
 
@@ -342,7 +351,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     solve_for_inverseJac.SetMatrix(jac);            // set A=jac
     solve_for_inverseJac.SetVectors(N_XYZ,deriv_gp);// set X=N_XYZ, B=deriv_gp
     solve_for_inverseJac.FactorWithEquilibration(true);
-    int err2 = solve_for_inverseJac.Factor();        
+    int err2 = solve_for_inverseJac.Factor();
     int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
     if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
 
@@ -364,6 +373,12 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
 
+    // return gp strains (only in case of stress/strain output)
+    if (elestress != NULL){
+      for (int i = 0; i < NUMSTR_WEG6; ++i) {
+        (*elestrain)(gp,i) = glstrain(i);
+      }
+    }
 
     /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
@@ -429,13 +444,13 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     if (force != NULL && stiffmatrix != NULL) {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       (*force).Multiply('T','N',detJ * (*weights)(gp),bop,stress,1.0);
-  
+
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Epetra_SerialDenseMatrix cb(NUMSTR_WEG6,NUMDOF_WEG6);
       cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
       (*stiffmatrix).Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);
-  
+
       // integrate `geometric' stiffness matrix and add to keu *****************
       Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
       sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
@@ -543,7 +558,7 @@ int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
       && (dis.lColElement(i)->Type() != DRT::Element::element_so_shw6))continue;
     DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_weg6* failed");
-    
+
     if (!actele->donerewinding_) {
       const bool rewind = DRT::UTILS::checkRewinding3D(actele);
 
@@ -567,7 +582,7 @@ int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
   // fill complete again to reconstruct element-node pointers,
   // but without element init, etc.
   dis.FillComplete(false,false,false);
-  
+
   return 0;
 }
 

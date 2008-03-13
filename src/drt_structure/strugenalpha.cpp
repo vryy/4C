@@ -3009,6 +3009,7 @@ void StruGenAlpha::UpdateandOutput()
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
   bool   iostress      = params_.get<bool>  ("io structural stress"   ,false);
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
+  bool   iostrain      = params_.get<bool>  ("io structural strain"   ,false);
 
   int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
 
@@ -3119,7 +3120,9 @@ void StruGenAlpha::UpdateandOutput()
     p.set("total time",timen);
     p.set("delta time",dt);
     Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
+    Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
+    p.set("strain", strain);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);
@@ -3129,6 +3132,10 @@ void StruGenAlpha::UpdateandOutput()
     if (!isdatawritten) output_.NewStep(istep, timen);
     isdatawritten = true;
     output_.WriteVector("gauss_stresses_xyz",*stress,*discret_.ElementColMap());
+    if (iostrain)
+    {
+      output_.WriteVector("gauss_strains_xyz",*strain,*discret_.ElementColMap());
+    }
   }
 
   //---------------------------------------------------------- print out

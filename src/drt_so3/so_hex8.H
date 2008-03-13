@@ -422,6 +422,7 @@ protected:
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
                                  Epetra_SerialDenseMatrix* stresses,
+                                 Epetra_SerialDenseMatrix* elestrain,
                                  const double              time);
 
   void soh8_expol(Epetra_SerialDenseMatrix& stresses,

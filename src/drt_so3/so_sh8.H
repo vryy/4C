@@ -25,7 +25,7 @@ Maintainer: Moritz Frenzel
 #ifdef CCADISCRET
 
 #ifndef SO_SH8_H
-#define SO_SH8_H 
+#define SO_SH8_H
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_SerialDenseVector.h"
@@ -227,6 +227,7 @@ private:
                          Epetra_SerialDenseMatrix* massmatrix,
                          Epetra_SerialDenseVector* force,
                          Epetra_SerialDenseMatrix* elestress,
+                         Epetra_SerialDenseMatrix* elestrain,
                          const double              time);
 
   void sosh8_anssetup(const int numsp,              // number of sampling points
@@ -242,12 +243,12 @@ private:
                        Epetra_SerialDenseMatrix& TinvT);    // corr. T^{-T}
 
   ThicknessDirection sosh8_findthickdir();
-  
+
   void sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8]);
-  
+
   void sosh8_setcylinderfiberdirection(const Epetra_SerialDenseMatrix xrefe);
 
- 
+
 }; // class So_sh8
 
 

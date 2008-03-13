@@ -859,31 +859,6 @@ void IO::DiscretizationWriter::WriteVector(const string name,
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteStressVector(const string name,
-                                                 Teuchos::RCP<Epetra_Vector> normalstresses,
-                                                 Teuchos::RCP<Epetra_Vector> shearstresses)
-{
-  const Epetra_Map* nodemap = dis_->NodeRowMap();
-  Teuchos::RefCountPtr<Epetra_MultiVector> stresses = Teuchos::rcp(new Epetra_MultiVector(*nodemap, 6));
-
-  const int numnodes = dis_->NumMyRowNodes();
-
-  for (int i=0;i<numnodes;++i)
-  {
-    (*((*stresses)(0)))[i] = (*normalstresses)[3*i];
-    (*((*stresses)(1)))[i] = (*normalstresses)[3*i+1];
-    (*((*stresses)(2)))[i] = (*normalstresses)[3*i+2];
-    (*((*stresses)(3)))[i] = (*shearstresses)[3*i];
-    (*((*stresses)(4)))[i] = (*shearstresses)[3*i+1];
-    (*((*stresses)(5)))[i] = (*shearstresses)[3*i+2];
-  }
-
-  WriteVector(name, stresses, nodevector);
-}
-
-
 /*----------------------------------------------------------------------*
  *                                                          a.ger 11/07 *
  *----------------------------------------------------------------------*/

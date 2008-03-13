@@ -121,7 +121,7 @@ public:
 
 
 private:
-  
+
   // don't want = operator
   So_shw6& operator = (const So_shw6& old);
 
@@ -165,6 +165,7 @@ private:
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
                                  Epetra_SerialDenseMatrix* elestress,
+                                 Epetra_SerialDenseMatrix* elestrain,
                                  const double              time);
 
   void soshw6_anssetup(

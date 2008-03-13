@@ -307,7 +307,7 @@ protected:
   vector<RefCountPtr<DRT::ELEMENTS::Sow6Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::ELEMENTS::Sow6Line*>              lineptrs_;
-  
+
   //! some distypes need rewinding of NodeIds due to bad input from mesher
   //! flag whether process of rewinding is done
   bool                                            donerewinding_;
@@ -325,6 +325,7 @@ protected:
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
                                  Epetra_SerialDenseMatrix* elestress,
+                                 Epetra_SerialDenseMatrix* elestrain,
                                  const double              time);
 
   void sow6_mat_sel(Epetra_SerialDenseVector* stress,
