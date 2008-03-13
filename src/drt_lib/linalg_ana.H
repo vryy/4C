@@ -246,6 +246,13 @@ when writing algorithms with ANA:
          receive notification of failure but just wrong results.
          Safeguarding against illegal in-place operations is yet to be implemented.
          
+<pre>
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15239
+</pre>
+
 */
 namespace ANA
 {
@@ -849,6 +856,7 @@ public:
 
   OperatorInverse(const OperatorInverse& old) :
   reset_(old.reset_),
+  defaultsolver_(old.defaultsolver_),
   solver_(old.solver_),
   op_(old.op_)
   {}

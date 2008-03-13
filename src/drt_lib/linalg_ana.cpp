@@ -175,6 +175,12 @@ void LINALG::ANA::LC_Operator_times_lcsv::Set(LINALG::ANA::Vector& v, const doub
 #if DEBUGGING_ANA
   cout << "LINALG::ANA::LC_Operator_times_lcsv::Set(LINALG::ANA::Vector& v, const double& scale)" << endl; fflush(stdout);
 #endif
+#ifdef DEBUG
+  if (!v.Map().SameAs(op_->OperatorRangeMap())) 
+    dserror("Range maps don't match - fatal");
+  if (!right_.Vector().Map().SameAs(op_->OperatorDomainMap())) 
+    dserror("Domain maps don't match - fatal");
+#endif
   int err = op_->Apply(right_.Vector(),v);
   if (err) dserror("LightWeightOperatorBase::Apply returned err=%d",err);
   if (scale*right_.Scalar() != 1.0) v.Scale(scale*right_.Scalar());
@@ -183,6 +189,12 @@ void LINALG::ANA::LC_Operator_times_lcsv::Update(LINALG::ANA::Vector& v, const d
 {
 #if DEBUGGING_ANA
   cout << "LINALG::ANA::LC_Operator_times_lcsv::Update(LINALG::ANA::Vector& v, const double& scale)" << endl; fflush(stdout);
+#endif
+#ifdef DEBUG
+  if (!v.Map().SameAs(op_->OperatorRangeMap())) 
+    dserror("Range maps don't match - fatal");
+  if (!right_.Vector().Map().SameAs(op_->OperatorDomainMap())) 
+    dserror("Domain maps don't match - fatal");
 #endif
   LINALG::ANA::Vector tmp(op_->OperatorRangeMap(),false);
   int err = op_->Apply(right_.Vector(),tmp);
@@ -197,6 +209,12 @@ void LINALG::ANA::LC_Operator_times_lc::Set(LINALG::ANA::Vector& v, const double
 #if DEBUGGING_ANA
   cout << "LINALG::ANA::LC_Operator_times_lc::Set(LINALG::ANA::Vector& v, const double& scale)" << endl; fflush(stdout);
 #endif
+#ifdef DEBUG
+  if (!v.Map().SameAs(op_->OperatorRangeMap())) 
+    dserror("Range maps don't match - fatal");
+  if (!right_.RangeMap().SameAs(op_->OperatorDomainMap())) 
+    dserror("Domain maps don't match - fatal");
+#endif
   LINALG::ANA::Vector tmp(right_.RangeMap(),false);
   right_.Set(tmp,scale);
   int err = op_->Apply(tmp,v);
@@ -206,6 +224,12 @@ void LINALG::ANA::LC_Operator_times_lc::Update(LINALG::ANA::Vector& v, const dou
 {
 #if DEBUGGING_ANA
   cout << "LINALG::ANA::LC_Operator_times_lc::Update(LINALG::ANA::Vector& v, const double& scale)" << endl; fflush(stdout);
+#endif
+#ifdef DEBUG
+  if (!v.Map().SameAs(op_->OperatorRangeMap())) 
+    dserror("Range maps don't match - fatal");
+  if (!right_.RangeMap().SameAs(op_->OperatorDomainMap())) 
+    dserror("Domain maps don't match - fatal");
 #endif
   LINALG::ANA::Vector tmp1(right_.RangeMap(),false);
   right_.Set(tmp1,1.0);
