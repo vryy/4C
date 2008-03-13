@@ -16,6 +16,8 @@ Maintainer: Moritz Frenzel
 #include <cstdlib>
 #include <iostream>
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
@@ -50,13 +52,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-
-/*----------------------------------------------------------------------*
- |                                                         maf 05/07    |
- | structure of flags to control output                                 |
- | defined in out_global.c                                              |
- *----------------------------------------------------------------------*/
-extern struct _IO_FLAGS     ioflags;
 
 /*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
@@ -100,6 +95,7 @@ void stru_static_drt()
   // set some pointers and variables
   // -------------------------------------------------------------------
   SOLVAR*         actsolv  = &solv[0];
+  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
 
   //-----------------------------------------------------create a solver
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
@@ -231,7 +227,7 @@ void stru_static_drt()
 
   //---------------------------------------------- do "stress" calculation
   int mod_stress = istep % statvar->resevry_stress;
-  if (!mod_stress && ioflags.struct_stress==1)
+  if (!mod_stress && Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS")==1)
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -241,7 +237,9 @@ void stru_static_drt()
     p.set("total time",timen);
     p.set("delta time",dt);
     Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
+    Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
+    p.set("strain", strain);
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("residual displacement",zeros);
@@ -249,6 +247,10 @@ void stru_static_drt()
     actdis->Evaluate(p,null,null,null,null,null);
     actdis->ClearState();
     output.WriteVector("gauss_stresses_xyz",*stress,*(actdis->ElementColMap()));
+    if (Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRAIN")==1)
+    {
+      output.WriteVector("gauss_strains_xyz",*strain,*(actdis->ElementColMap()));
+    }
   }
 
   //---------------------------------------------end of output initial state
@@ -437,7 +439,7 @@ void stru_static_drt()
 
     //----------------------------------------------------- output results
     int mod_disp   = istep % statvar->resevry_disp;
-    if (!mod_disp && ioflags.struct_disp==1 && !isdatawritten)
+    if (!mod_disp && Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP")==1 && !isdatawritten)
     {
       output.NewStep(istep, time);
       output.WriteVector("displacement", dis);
@@ -447,7 +449,7 @@ void stru_static_drt()
 
     //---------------------------------------------- do stress calculation
     int mod_stress = istep % statvar->resevry_stress;
-    if (!mod_stress && ioflags.struct_stress==1)
+    if (!mod_stress && Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS")==1)
     {
       // create the parameters for the discretization
       ParameterList p;
@@ -457,7 +459,9 @@ void stru_static_drt()
       p.set("total time",timen);
       p.set("delta time",dt);
       Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
+      Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
       p.set("stress", stress);
+      p.set("strain", strain);
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("residual displacement",zeros);
@@ -467,6 +471,10 @@ void stru_static_drt()
       if (!isdatawritten) output.NewStep(istep, timen);
       isdatawritten = true;
       output.WriteVector("gauss_stresses_xyz",*stress,*(actdis->ElementColMap()));
+      if (Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRAIN")==1)
+      {
+        output.WriteVector("gauss_strains_xyz",*strain,*(actdis->ElementColMap()));
+      }
     }
 
 //

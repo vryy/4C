@@ -59,13 +59,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure of flags to control output                                 |
- | defined in out_global.c                                              |
- *----------------------------------------------------------------------*/
-extern struct _IO_FLAGS     ioflags;
-
-/*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
  | defined in solver_control.c                                          |
  |                                                                      |
