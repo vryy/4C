@@ -120,7 +120,7 @@ void Inv_analysis::get_surfneum_nodes(vector<DRT::Condition*> surfneumConditions
        } 
     }
     return;	    
-};
+}
 
 
 
@@ -130,9 +130,9 @@ void Inv_analysis::get_final_displacment(const RefCountPtr<Epetra_Vector> disp)
   vector<double> final_disp_x;
   vector<double> final_disp_y;
   vector<double> final_disp_z;
-  double sum_x;
-  double sum_y;
-  double sum_z;
+  double sum_x = 0.0;
+  double sum_y = 0.0;
+  double sum_z = 0.0;
 
   for (unsigned int i=0; i<surfneum_nodes_.size(); i++) {
     final_disp_x.push_back((*disp)[surfneum_nodes_[i]*3]);
