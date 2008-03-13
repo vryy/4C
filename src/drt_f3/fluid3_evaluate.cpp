@@ -2952,7 +2952,7 @@ int DRT::ELEMENTS::Fluid3Register::Initialize(DRT::Discretization& dis)
       if (rewind) {
         if (distype==DRT::Element::tet4){
           int iel = actele->NumNode();
-          int new_nodeids[iel];
+          vector<int> new_nodeids(iel);
           const int* old_nodeids;
           old_nodeids = actele->NodeIds();
           // rewinding of nodes to arrive at mathematically positive element
@@ -2960,11 +2960,11 @@ int DRT::ELEMENTS::Fluid3Register::Initialize(DRT::Discretization& dis)
           new_nodeids[1] = old_nodeids[2];
           new_nodeids[2] = old_nodeids[1];
           new_nodeids[3] = old_nodeids[3];
-          actele->SetNodeIds(iel, new_nodeids);
+          actele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else if (distype==DRT::Element::hex8){
           int iel = actele->NumNode();
-          int new_nodeids[iel];
+          vector<int> new_nodeids(iel);
           const int* old_nodeids;
           old_nodeids = actele->NodeIds();
           // rewinding of nodes to arrive at mathematically positive element
@@ -2976,11 +2976,11 @@ int DRT::ELEMENTS::Fluid3Register::Initialize(DRT::Discretization& dis)
           new_nodeids[5] = old_nodeids[1];
           new_nodeids[6] = old_nodeids[2];
           new_nodeids[7] = old_nodeids[3];
-          actele->SetNodeIds(iel, new_nodeids);
+          actele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else if (distype==DRT::Element::wedge6){
           int iel = actele->NumNode();
-          int new_nodeids[iel];
+          vector<int> new_nodeids(iel);
           const int* old_nodeids;
           old_nodeids = actele->NodeIds();
           // rewinding of nodes to arrive at mathematically positive element
@@ -2990,11 +2990,11 @@ int DRT::ELEMENTS::Fluid3Register::Initialize(DRT::Discretization& dis)
           new_nodeids[3] = old_nodeids[0];
           new_nodeids[4] = old_nodeids[1];
           new_nodeids[5] = old_nodeids[2];
-          actele->SetNodeIds(iel, new_nodeids);
+          actele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else if (distype == DRT::Element::pyramid5){
           int iel = actele->NumNode();
-          int new_nodeids[iel];
+          vector<int> new_nodeids(iel);
           const int* old_nodeids;
           old_nodeids = actele->NodeIds();
           // rewinding of nodes to arrive at mathematically positive element
@@ -3004,7 +3004,7 @@ int DRT::ELEMENTS::Fluid3Register::Initialize(DRT::Discretization& dis)
           new_nodeids[0] = old_nodeids[0];
           new_nodeids[2] = old_nodeids[2];
           new_nodeids[4] = old_nodeids[4];
-          actele->SetNodeIds(iel, new_nodeids);
+          actele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else dserror("no rewinding scheme for this type of fluid3");
       }

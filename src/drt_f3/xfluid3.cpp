@@ -266,15 +266,15 @@ void DRT::ELEMENTS::XFluid3::CreateLinesTet(const int& nline,
 {
     for(int iline=0;iline<nline;iline++)
     {
-        int nodeids[nnode];
-        DRT::Node* nodes[nnode];
+        vector<int> nodeids(nnode);
+        vector<DRT::Node*> nodes(nnode);
 
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_lines[iline][inode]];
              nodes[inode]   = Nodes()[eleNodeNumbering_tet10_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::ELEMENTS::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,NULL,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::XFluid3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],NULL,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }
@@ -286,15 +286,15 @@ void DRT::ELEMENTS::XFluid3::CreateLinesHex(const int& nline,
 {
     for(int iline=0;iline<nline;iline++)
     {
-        int nodeids[nnode];
-        DRT::Node* nodes[nnode];
+        vector<int> nodeids(nnode);
+        vector<DRT::Node*> nodes(nnode);
 
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_lines[iline][inode]];
              nodes[inode]   = Nodes()[eleNodeNumbering_hex27_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::ELEMENTS::XFluid3Line(iline,Owner(),nnode,nodeids,nodes,NULL,this,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::XFluid3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],NULL,this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }
@@ -349,15 +349,15 @@ void DRT::ELEMENTS::XFluid3::CreateSurfacesTet(const int& nsurf,
 {
     for(int isurf=0;isurf<nsurf;isurf++)
     {
-        int nodeids[nnode];
-        DRT::Node* nodes[nnode];
+        vector<int> nodeids(nnode);
+        vector<DRT::Node*> nodes(nnode);
 
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_surfaces[isurf][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_tet10_surfaces[isurf][inode]];
         }
-        surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }
@@ -369,15 +369,15 @@ void DRT::ELEMENTS::XFluid3::CreateSurfacesHex(const int& nsurf,
 {
     for(int isurf=0;isurf<nsurf;isurf++)
     {
-        int nodeids[nnode];
-        DRT::Node* nodes[nnode];
+        vector<int> nodeids(nnode);
+        vector<DRT::Node*> nodes(nnode);
 
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_surfaces[isurf][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_hex27_surfaces[isurf][inode]];
         }
-        surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }
@@ -400,8 +400,8 @@ void DRT::ELEMENTS::XFluid3::CreateSurfaceWedge(
             else
                 nnode=quadsurfacenodes;
 
-            int nodeids[nnode];
-            DRT::Node* nodes[nnode];
+            vector<int> nodeids(nnode);
+            vector<DRT::Node*> nodes(nnode);
 
             for (int inode=0; inode<nnode; inode++)
             {
@@ -415,7 +415,7 @@ void DRT::ELEMENTS::XFluid3::CreateSurfaceWedge(
                     nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                     nodes[  inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                 }
-                surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+                surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
                 surfaceptrs_[isurf] = surfaces_[isurf].get();
             }
         }
@@ -434,8 +434,8 @@ void DRT::ELEMENTS::XFluid3::CreateSurfaceWedge(
             else
                 nnode=quadsurfacenodes;
 
-            int nodeids[nnode];
-            DRT::Node* nodes[nnode];
+            vector<int> nodeids(nnode);
+            vector<DRT::Node*> nodes(nnode);
             for (int inode=0; inode<nnode; inode++)
             {
                 if (isurf < 2)
@@ -448,7 +448,7 @@ void DRT::ELEMENTS::XFluid3::CreateSurfaceWedge(
                     nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                     nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                 }
-                surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+                surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
                 surfaceptrs_[isurf] = surfaces_[isurf].get();
             }
         }

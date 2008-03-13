@@ -233,15 +233,15 @@ void DRT::ELEMENTS::SoDisp::CreateSurfacesTet(const int& nsurf,
 {
     for(int isurf=0;isurf<nsurf;isurf++)
     {
-        int nodeids[nnode];
-        DRT::Node* nodes[nnode];
+        vector<int> nodeids(nnode);
+        vector<DRT::Node*> nodes(nnode);
 
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_surfaces[isurf][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_tet10_surfaces[isurf][inode]];
         }
-        surfaces_[isurf] = rcp(new DRT::ELEMENTS::SoDispSurface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaces_[isurf] = rcp(new DRT::ELEMENTS::SoDispSurface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }
@@ -253,15 +253,15 @@ void DRT::ELEMENTS::SoDisp::CreateSurfacesHex(const int& nsurf,
 {
     for(int isurf=0;isurf<nsurf;isurf++)
     {
-        int nodeids[nnode];
-        DRT::Node* nodes[nnode];
+        vector<int> nodeids(nnode);
+        vector<DRT::Node*> nodes(nnode);
 
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_surfaces[isurf][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_hex27_surfaces[isurf][inode]];
         }
-        surfaces_[isurf] = rcp(new DRT::ELEMENTS::SoDispSurface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaces_[isurf] = rcp(new DRT::ELEMENTS::SoDispSurface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }
@@ -477,7 +477,7 @@ int DRT::ELEMENTS::SoDispRegister::Initialize(DRT::Discretization& dis)
       if (rewind) {
         if (distype==DRT::Element::tet4){
           const int iel = actele->NumNode();
-          int new_nodeids[iel];
+          vector<int> new_nodeids(iel);
           const int* old_nodeids;
           old_nodeids = actele->NodeIds();
           // rewinding of nodes to arrive at mathematically positive element
@@ -485,11 +485,11 @@ int DRT::ELEMENTS::SoDispRegister::Initialize(DRT::Discretization& dis)
           new_nodeids[1] = old_nodeids[2];
           new_nodeids[2] = old_nodeids[1];
           new_nodeids[3] = old_nodeids[3];
-          actele->SetNodeIds(iel, new_nodeids);
+          actele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else if (distype==DRT::Element::hex8){
           const int iel = actele->NumNode();
-          int new_nodeids[iel];
+          vector<int> new_nodeids(iel);
           const int* old_nodeids;
           old_nodeids = actele->NodeIds();
           // rewinding of nodes to arrive at mathematically positive element
@@ -501,11 +501,11 @@ int DRT::ELEMENTS::SoDispRegister::Initialize(DRT::Discretization& dis)
           new_nodeids[5] = old_nodeids[1];
           new_nodeids[6] = old_nodeids[2];
           new_nodeids[7] = old_nodeids[3];
-          actele->SetNodeIds(iel, new_nodeids);
+          actele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else if (distype==DRT::Element::wedge6){
           const int iel = actele->NumNode();
-          int new_nodeids[iel];
+          vector<int> new_nodeids(iel);
           const int* old_nodeids;
           old_nodeids = actele->NodeIds();
           // rewinding of nodes to arrive at mathematically positive element
@@ -515,11 +515,11 @@ int DRT::ELEMENTS::SoDispRegister::Initialize(DRT::Discretization& dis)
           new_nodeids[3] = old_nodeids[0];
           new_nodeids[4] = old_nodeids[1];
           new_nodeids[5] = old_nodeids[2];
-          actele->SetNodeIds(iel, new_nodeids);
+          actele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else if (distype == DRT::Element::pyramid5){
           const int iel = actele->NumNode();
-          int new_nodeids[iel];
+          vector<int> new_nodeids(iel);
           const int* old_nodeids;
           old_nodeids = actele->NodeIds();
           // rewinding of nodes to arrive at mathematically positive element
@@ -529,7 +529,7 @@ int DRT::ELEMENTS::SoDispRegister::Initialize(DRT::Discretization& dis)
           new_nodeids[0] = old_nodeids[0];
           new_nodeids[2] = old_nodeids[2];
           new_nodeids[4] = old_nodeids[4];
-          actele->SetNodeIds(iel, new_nodeids);
+          actele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else dserror("no rewinding scheme for this type of fluid3");
       }

@@ -166,15 +166,15 @@ void DRT::ELEMENTS::Ale3::CreateSurfacesTet(const int& nsurf,
 {
     for(int isurf=0;isurf<nsurf;isurf++)
     {
-        int nodeids[nnode];
-        DRT::Node* nodes[nnode];
+        vector<int> nodeids(nnode);
+        vector<DRT::Node*> nodes(nnode);
 
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_surfaces[isurf][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_tet10_surfaces[isurf][inode]];
         }
-        surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }
@@ -186,15 +186,15 @@ void DRT::ELEMENTS::Ale3::CreateSurfacesHex(const int& nsurf,
 {
     for(int isurf=0;isurf<nsurf;isurf++)
     {
-        int nodeids[nnode];
-        DRT::Node* nodes[nnode];
+        vector<int> nodeids(nnode);
+        vector<DRT::Node*> nodes(nnode);
 
         for (int inode=0;inode<nnode;inode++)
         {
              nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_surfaces[isurf][inode]];
              nodes[inode]   = Nodes()[  eleNodeNumbering_hex27_surfaces[isurf][inode]];
         }
-        surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+        surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
         surfaceptrs_[isurf] = surfaces_[isurf].get();
     }
 }
@@ -214,8 +214,8 @@ void DRT::ELEMENTS::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedget
         else
             nnode=quadsurfacenodes;
 
-        int nodeids[nnode];
-        DRT::Node* nodes[nnode];
+        vector<int> nodeids(nnode);
+        vector<DRT::Node*> nodes(nnode);
 
         for (int inode=0; inode<nnode;inode++)
         {
@@ -229,7 +229,7 @@ void DRT::ELEMENTS::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedget
                 nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                 nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
             }
-            surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+            surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
             surfaceptrs_[isurf] = surfaces_[isurf].get();
         }
     }
@@ -248,8 +248,8 @@ void DRT::ELEMENTS::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedget
         else
             nnode=quadsurfacenodes;
 
-        int nodeids[nnode];
-        DRT::Node* nodes[nnode];
+        vector<int> nodeids(nnode);
+        vector<DRT::Node*> nodes(nnode);
         for (int inode=0; inode<nnode;inode++)
         {
             if (isurf < 2)
@@ -262,7 +262,7 @@ void DRT::ELEMENTS::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedget
                 nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
                 nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
             }
-            surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,nodeids,nodes,this,isurf));
+            surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
             surfaceptrs_[isurf] = surfaces_[isurf].get();
         }
     }
