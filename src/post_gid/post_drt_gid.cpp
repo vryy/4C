@@ -310,11 +310,10 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndMesh();
     break;
   case DRT::Element::quad4:
-    // Let's assume there are only shell8_4_22 elements
-    GiD_BeginGaussPoint("shell8_4_22", GiD_Quadrilateral, "shell8_4_22", 4, 0, 1);
+    GiD_BeginGaussPoint("quad4", GiD_Quadrilateral, "quad4", 4, 0, 1);
     GiD_EndGaussPoint();
 
-    GiD_BeginMesh("shell8_4_22",GiD_3D,GiD_Quadrilateral,4);
+    GiD_BeginMesh("quad4",GiD_3D,GiD_Quadrilateral,4);
     // We have ony one mesh, so it's the first
     GiD_BeginCoordinates();
     for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
@@ -342,7 +341,6 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndMesh();
     break;
   case DRT::Element::quad8:
-    // Let's assume there are only shell8_4_22 elements
     GiD_BeginGaussPoint("quad8", GiD_Quadrilateral, "quad8", 9, 0, 1);
     GiD_EndGaussPoint();
 
