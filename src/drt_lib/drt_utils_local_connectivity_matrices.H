@@ -239,7 +239,7 @@ namespace UTILS
   \return number of nodes of the discretization type
   */  
   template <DRT::Element::DiscretizationType DISTYPE>
-  int getNumberOfElementNodes()
+  inline int getNumberOfElementNodes()
   {
      switch(DISTYPE)
      {

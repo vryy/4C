@@ -41,12 +41,11 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	map< int, set< DRT::Element* > >::iterator paar;
 	for (paar = cutterElementMap.begin(); paar != cutterElementMap.end(); ++paar)
     {
-	    std::set< DRT::Element* > elements = paar->second;
-	    for (std::set< DRT::Element* >::iterator eleptr = elements.begin(); eleptr != elements.end(); ++eleptr)
+	    const std::set< DRT::Element* > elements = paar->second;
+	    for (std::set< DRT::Element* >::const_iterator eleptr = elements.begin(); eleptr != elements.end(); ++eleptr)
         {
 	        DRT::Element* ele = (*eleptr);
-            const int boundary_ele_gid = ele->Id();
-            boundaryElements_.insert(make_pair(boundary_ele_gid, ele));
+            boundaryElements_.insert(make_pair(ele->Id(), ele));
         }
     }
 	cutterNodeMap_.clear();

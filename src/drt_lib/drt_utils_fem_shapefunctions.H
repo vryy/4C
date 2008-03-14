@@ -228,10 +228,10 @@ namespace UTILS
   \return shape function values
   */
   blitz::Array<double, 1> shape_function_3D(
-    const double                            r,       ///< r coordinate
-    const double                            s,       ///< s coordinate
-    const double                            t,       ///< t coordinate
-    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    const double&                            r,       ///< r coordinate
+    const double&                            s,       ///< s coordinate
+    const double&                            t,       ///< t coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
 
   /*!
@@ -240,10 +240,10 @@ namespace UTILS
   \return shape function derivative values
   */
   blitz::Array<double, 2> shape_function_3D_deriv1(
-    const double                            r,       ///< r coordinate
-    const double                            s,       ///< s coordinate
-    const double                            t,       ///< t coordinate
-    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    const double&                            r,       ///< r coordinate
+    const double&                            s,       ///< s coordinate
+    const double&                            t,       ///< t coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
 
   /*!
@@ -252,10 +252,10 @@ namespace UTILS
   \return shape function derivative values
   */
   blitz::Array<double, 2> shape_function_3D_deriv2(
-    const double                            r,       ///< r coordinate
-    const double                            s,       ///< s coordinate
-    const double                            t,       ///< t coordinate
-    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    const double&                            r,       ///< r coordinate
+    const double&                            s,       ///< s coordinate
+    const double&                            t,       ///< t coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
   
   /*!
@@ -264,9 +264,9 @@ namespace UTILS
   \return shape function values
   */
   blitz::Array<double, 1> shape_function_2D(
-    const double                            r,       ///< r coordinate
-    const double                            s,       ///< s coordinate
-    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    const double&                            r,       ///< r coordinate
+    const double&                            s,       ///< s coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
 
   /*!
@@ -275,9 +275,9 @@ namespace UTILS
   \return shape function derivative values
   */
   blitz::Array<double, 2> shape_function_2D_deriv1(
-    const double                            r,       ///< r coordinate
-    const double                            s,       ///< s coordinate
-    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    const double&                            r,       ///< r coordinate
+    const double&                            s,       ///< s coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
 
   /*!
@@ -286,9 +286,9 @@ namespace UTILS
   \return shape function derivative values
   */
   blitz::Array<double, 2> shape_function_2D_deriv2(
-    const double                            r,       ///< r coordinate
-    const double                            s,       ///< s coordinate
-    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    const double&                            r,       ///< r coordinate
+    const double&                            s,       ///< s coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
   
   /*!
@@ -297,8 +297,8 @@ namespace UTILS
   \return shape function values
   */
   blitz::Array<double, 1> shape_function_1D(
-    const double                            r,       ///< r coordinate
-    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    const double&                            r,       ///< r coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
 
   /*!
@@ -307,8 +307,8 @@ namespace UTILS
   \return shape function derivative values
   */
   blitz::Array<double, 2> shape_function_1D_deriv1(
-    const double                            r,       ///< r coordinate
-    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    const double&                            r,       ///< r coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
 
   /*!
@@ -317,8 +317,8 @@ namespace UTILS
   \return shape function derivative values
   */
   blitz::Array<double, 2> shape_function_1D_deriv2(
-    const double                            r,       ///< r coordinate
-    const DRT::Element::DiscretizationType  distype  ///< distuinguish between DiscretizationType
+    const double&                            r,       ///< r coordinate
+    const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
     );
   
   //////////////////////////////////////////////////////////////////
@@ -426,6 +426,106 @@ namespace UTILS
             dserror("dimension of the element is not correct");
             exit(1);
     }
+  }
+  
+  //////////////////////////////////////////////////////////////////
+  // versions that return the shape function and derivatives as return argument
+  // allows to declare them const when they are used
+
+  //
+  // shape functions
+  //
+  template<DRT::Element::DiscretizationType distype, class T>
+  void shape_function(
+          const T& xsi,
+          blitz::Array<double, 1>& f
+          )
+  {
+    switch(DRT::UTILS::getDimension<distype>())
+    {
+        case 1:
+        {
+            shape_function_1D(f, xsi(0), distype);
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D(f, xsi(0), xsi(1), distype);
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D(f, xsi(0), xsi(1), xsi(2), distype);
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }
+    return;
+  }
+
+  //
+  // first natural derivative of shape functions
+  //
+  template<DRT::Element::DiscretizationType distype, class T>
+  void shape_function_deriv1(
+          const T& xsi,
+          blitz::Array<double, 2>& d
+          )
+  {
+    switch(DRT::UTILS::getDimension<distype>())
+    {
+        case 1:
+        {
+            shape_function_1D_deriv1(d, xsi(0), distype);
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D_deriv1(d, xsi(0), xsi(1), distype);
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D_deriv1(d, xsi(0), xsi(1), xsi(2), distype);
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }
+    return;
+  }
+
+  //
+  // Second natural derivative of shape functions
+  //
+  template<DRT::Element::DiscretizationType distype, class T>
+  void shape_function_deriv2(
+          const T& xsi,
+          blitz::Array<double, 2>& d2
+          )
+  {
+    switch(DRT::UTILS::getDimension<distype>())
+    {
+        case 1:
+        {
+            shape_function_1D_deriv2(d2, xsi(0), distype);
+            break;
+        }
+        case 2:
+        {
+            shape_function_2D_deriv2(d2, xsi(0), xsi(1), distype);
+            break;
+        }
+        case 3:
+        {
+            shape_function_3D_deriv2(d2, xsi(0), xsi(1), xsi(2), distype);
+            break;
+        }
+        default:
+            dserror("dimension of the element is not correct");
+    }
+    return;
   }
 
 } // namespace UTILS

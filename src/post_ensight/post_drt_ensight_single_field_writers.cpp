@@ -1018,6 +1018,7 @@ vector<double> computeScalarCellNodeValues(
 
   // cell corner nodes
   //const blitz::Array<double,2> cellnodeposvectors = cell.NodalPosXYZ(ele);
+  blitz::Array<double,1> enr_funct(numparam);
   for (int inen = 0; inen < nen_cell; ++inen)
   {
     //const blitz::Array<double,1> cellnodepos = cellnodeposvectors(_,inen);
@@ -1029,7 +1030,6 @@ vector<double> computeScalarCellNodeValues(
       nodalPosXiDomain(2,inen),
       ele.Shape()));
 
-    blitz::Array<double,1> enr_funct(numparam);
     XFEM::ComputeEnrichedShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
     // interpolate value
     cellvalues[inen] = blitz::sum(elementvalues * enr_funct);

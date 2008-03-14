@@ -163,7 +163,7 @@ namespace UTILS
    *
    * this function does just that, so we don't have the associated loop repeated too often
    *
-   * Note: return value optimization avoids copying the array
+   * Note: array is defined as 3 x numnode
    *
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
    *
@@ -171,8 +171,9 @@ namespace UTILS
    * \date 02/08
    */
   template <DRT::Element::DiscretizationType distype>
-  blitz::Array<double,2> PositionArrayBlitzT(
-          const DRT::Element* ele
+  void fillPositionArrayBlitzT(
+          const DRT::Element*      ele,
+          blitz::Array<double,2>&  xyze
           )
   {
       if (distype != ele->Shape())
@@ -181,7 +182,6 @@ namespace UTILS
       }
       const int numnode = getNumberOfElementNodes<distype>();
 
-      blitz::Array<double,2> xyze(3,numnode,blitz::ColumnMajorArray<2>());
       const Node*const* nodes = ele->Nodes();
       if (nodes == NULL)
       {
@@ -194,7 +194,7 @@ namespace UTILS
           xyze(1,inode) = x[1];
           xyze(2,inode) = x[2];
       }
-      return xyze;
+      return;
   }
 
   /*!

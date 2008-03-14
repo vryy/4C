@@ -26,21 +26,16 @@ namespace XFEM
 {
 
 
-//#define                 SIGN(a,b) ((b) >= 0.0 ? fabs(a) : -fabs(a))
 inline double XSIGN(const double a, const double b)
 {
     return (b >= 0.0 ? fabs(a) : -fabs(a));
 }
 
-//static double           maxarg1,maxarg2;
-//#define                 FMAX(a,b) (maxarg1=(a),maxarg2=(b),(maxarg1) > (maxarg2) ? (maxarg1) : (maxarg2))
 inline double XFMAX(const double maxarg1, const double maxarg2)
 {
     return (maxarg1 > maxarg2 ? (maxarg1) : (maxarg2));
 }
 
-//static int              iminarg1,iminarg2;
-//#define                 IMIN(a,b) (iminarg1=(a),iminarg2=(b),(iminarg1) < (iminarg2) ? (iminarg1) : (iminarg2))
 inline int XIMIN(const int iminarg1, const int iminarg2)
 {
     return (iminarg1 < iminarg2 ? (iminarg1) : (iminarg2));
@@ -63,12 +58,12 @@ inline int XIMIN(const int iminarg1, const int iminarg2)
 \param W    (out)           : V matrix (not its transpose)
 */ 
 template <int n, int m>
-void svdcmp(
+static void svdcmp(
     BlitzMat&  A, 
     BlitzVec&  W, 
     BlitzMat&  V)
 {
-    BlitzVec rv1(n);
+    static BlitzVec rv1(n);
 
     //Householder reduction to bidiagonal form.
     double g = 0.0;
@@ -85,7 +80,7 @@ void svdcmp(
             {
                 scale += fabs(A(k,i));
             }
-            if (scale)
+            if (scale != 0.0)
             {
                 double s = 0.0;
                 for (int k=i;k<m;++k)
@@ -333,15 +328,15 @@ void svdcmp(
     \tparam dim  (in)            : dimension of the square system matrix
     */
     template<int dim>
-    bool solveLinearSystemWithSVD(
+    inline bool solveLinearSystemWithSVD(
         BlitzMat&                   U,  ///< (in/out)        : system matrix / matrix U
         const BlitzVec&             b,  ///< (in)            : right-hand-side
         BlitzVec&                   x   ///< (out)           : solution vector
         )
     {
-        BlitzMat V(dim, dim);
-        BlitzMat A(dim, dim);
-        BlitzVec W(dim);
+        static BlitzMat V(dim, dim);
+        static BlitzMat A(dim, dim);
+        static BlitzVec W(dim);
         
         // initialize vectors and matrices
         W = 0.0;
@@ -419,16 +414,17 @@ void svdcmp(
     /*!
     \brief computes a Gaussian elimination for a linear system of equations
 
-    \param do_piv   (in)    : do_piv = true does pivoting, do_piv = false does not do pivoting
-    \param dim      (in)    : dimension of the matrix
-    \param order    (in)    : ???
+    \tparam do_piv   (in)    : do_piv = true does pivoting, do_piv = false does not do pivoting
+    \tparam dim      (in)    : dimension of the matrix
+    \tparam order    (in)    : ???
     \return true if matrix is not singular , false if matrix is singular
     */
     template<bool do_piv, int dim, int order>
-    bool gaussElimination(  BlitzMat&                   A,  ///< (in)    : system matrix
-                            BlitzVec&                   b,  ///< (in)    : right-hand-side
-                            BlitzVec&                   x   ///< (out)   : solution vector
-                            )
+    inline bool gaussElimination(
+            BlitzMat&                   A,  ///< (in)    : system matrix
+            BlitzVec&                   b,  ///< (in)    : right-hand-side
+            BlitzVec&                   x   ///< (out)   : solution vector
+            )
     {
         bool solution = true;
     
@@ -474,7 +470,7 @@ void svdcmp(
                     /* copy pivot row to current row */
                     if (pivot != k)
                     {
-                        BlitzVec tmp(4);    // check changed
+                        static BlitzVec tmp(4);    // check changed
                         for (int j=0;j<dim;j++)
                             tmp(j) = A(pivot,j);
                         tmp(dim) = b(pivot);

@@ -25,6 +25,27 @@ Maintainer: Axel Gerstenberger
 using namespace std;
 using namespace XFEM;
 
+
+//! little helper function
+static inline BlitzMat ConvertPosArrayToBlitz(
+        const vector<vector<double> >&         pos_array,
+        const DRT::Element::DiscretizationType distype,
+        const int                              dim
+        )
+{
+    const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
+    BlitzMat pos_array_blitz(dim,numnode,blitz::ColumnMajorArray<2>());
+    for (int inode=0; inode<numnode; ++inode)
+    {
+        for (int isd=0; isd<dim; ++isd)
+        {
+            pos_array_blitz(isd,inode) = pos_array[inode][isd];
+        }
+    }    
+    return pos_array_blitz;
+}
+
+
 //
 //  ctor
 //

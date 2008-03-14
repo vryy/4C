@@ -500,7 +500,7 @@ template<XFEM::AssemblyType>
 int getNumParam(
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field     field,
-        const int numnode)
+        const int)
 {
     return dofman.NumDofPerField(field);
 }
@@ -636,9 +636,13 @@ void Sysmat(
 {
     // number of nodes for element
     const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
-      
+    
+    // dimension for 3d fluid element
+    const int nsd = 3;
+    
     // get node coordinates of the current element
-    const BlitzMat xyze(DRT::UTILS::PositionArrayBlitzT<DISTYPE>(ele));
+    static BlitzMat xyze(nsd, numnode);
+    DRT::UTILS::fillPositionArrayBlitzT<DISTYPE>(ele, xyze);
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
@@ -1819,7 +1823,7 @@ void Sysmat(
             
             // shape functions and their first derivatives
             const BlitzVec funct(DRT::UTILS::shape_function<DISTYPE,BlitzVec>(posXiDomain));
-            const BlitzMat deriv(DRT::UTILS::shape_function_deriv1<DISTYPE,BlitzVec>(posXiDomain));
+            //const BlitzMat deriv(DRT::UTILS::shape_function_deriv1<DISTYPE,BlitzVec>(posXiDomain));
       
             const BlitzVec funct_stress(DRT::UTILS::shape_function_3D(posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype));
 

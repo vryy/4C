@@ -229,6 +229,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
     //dserror("halt, nur bis hier");
 }
 
+#if 0
 void getCutterElementPlusNodes(
         map< int, set< DRT::Element* > >& cutterElementMap,
         map< int, RCP<DRT::Node> >&  cutterNodeMap
@@ -236,6 +237,7 @@ void getCutterElementPlusNodes(
 {
     
 }
+#endif
 
 
 /*----------------------------------------------------------------------*
@@ -715,10 +717,11 @@ bool Intersection::collectIntersectionPoints(
     bool&                           xfemIntersection
     ) const
 {
-    BlitzVec xsi(3);  xsi = 0.0;
+    static BlitzVec xsi(3);
+    xsi = 0.0;
     
-    BlitzVec upLimit(3);
-    BlitzVec loLimit(3);
+    static BlitzVec upLimit(3);
+    static BlitzVec loLimit(3);
     
     // for hex elements
     upLimit  =  1.0;  
@@ -756,11 +759,9 @@ bool Intersection::computeCurveSurfaceIntersection(
     int iter = 0;
     const int maxiter = 30;
     double residual = 1.0;
-    BlitzMat A(3,3);
-    BlitzVec b(3);   b  = 0.0;
-    BlitzVec dx(3);  dx = 0.0;
-    blitz::firstIndex i;
-    dx = xsi.copy();
+    static BlitzMat A(3,3);
+    static BlitzVec b(3);
+    static BlitzVec dx(3);
  
     updateRHSForCSI( b, xsi, surfaceElement, lineElement);
               
@@ -770,7 +771,7 @@ bool Intersection::computeCurveSurfaceIntersection(
         
         if(!gaussElimination<true, 3, 1>(A, b, dx))
         {    
-            if(computeSingularCSI(xsi, lineElement, surfaceElement));
+            if(computeSingularCSI(xsi, lineElement, surfaceElement))
             {
                 intersection = false;
                 break;
@@ -820,7 +821,6 @@ bool Intersection::computeSingularCSI(
     BlitzMat A(3,3);
     BlitzVec b(3);
     BlitzVec dx(3);
-    blitz::firstIndex i;
  
     updateRHSForCSI( b, xsi, surfaceElement, lineElement);
               
@@ -869,7 +869,7 @@ void Intersection::updateAForCSI(  	BlitzMat&         A,
     const DRT::Node*const* surfaceElementNodes = surfaceElement->Nodes();
     for(int inode=0; inode<numNodesSurface; inode++)
     {
-        const double* x = surfaceElementNodes[inode] ->X();
+        const double* x = surfaceElementNodes[inode]->X();
         for(int isd=0; isd<3; isd++)
 		{
 			A(isd,0) += x[isd] * surfaceDeriv1(0,inode);
@@ -1139,13 +1139,15 @@ void Intersection::computeConvexHull(
     {
         midpoint = computeMidpoint(interfacePoints);
         // transform it into current coordinates
-        BlitzVec    eleCoordSurf(2);
-        for(int j = 0; j < 2; j++)
-            eleCoordSurf(j)  = midpoint.coord[j];            
-        const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));    
-        const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));    
-        for(int j = 0; j < 3; j++)
-            midpoint.coord[j] = eleCoordVol(j); 
+        {
+            BlitzVec    eleCoordSurf(2);
+            for(int j = 0; j < 2; j++)
+                eleCoordSurf(j)  = midpoint.coord[j];            
+            const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));    
+            const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));    
+            for(int j = 0; j < 3; j++)
+                midpoint.coord[j] = eleCoordVol(j);
+        }
      
         // store coordinates in 
         // points has numInterfacePoints*dim-dimensional components
@@ -1163,13 +1165,15 @@ void Intersection::computeConvexHull(
             }
             // printf("\n");
             // transform interface points into current coordinates
-            BlitzVec  eleCoordSurf(2);
-            for(int j = 0; j < 2; j++)      
-                eleCoordSurf(j)  = ipoint->coord[j];   
-            const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));    
-            const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));
-            for(int j = 0; j < 3; j++)         
-                ipoint->coord[j] = eleCoordVol(j);
+            {
+                BlitzVec  eleCoordSurf(2);
+                for(int j = 0; j < 2; j++)      
+                    eleCoordSurf(j)  = ipoint->coord[j];   
+                const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));    
+                const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));
+                for(int j = 0; j < 3; j++)         
+                    ipoint->coord[j] = eleCoordVol(j);
+            }
                 
         }     
       
@@ -1189,14 +1193,15 @@ void Intersection::computeConvexHull(
                 double* point  = SETelemt_(facet->vertices, j, vertexT)->point;
                 for(int k = 0; k < 2; k++)  
                     vertex[k] = point[k];
-                                
-                BlitzVec  eleCoordSurf(2);
-                for(int m = 0; m < 2; m++)
-                    eleCoordSurf(m)  = vertex[m];           
-                const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));    
-                const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));     
-                for(int m = 0; m < 3; m++)
-                    vertex[m] = eleCoordVol(m);
+                {
+                    BlitzVec  eleCoordSurf(2);
+                    for(int m = 0; m < 2; m++)
+                        eleCoordSurf(m)  = vertex[m];           
+                    const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));    
+                    const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));     
+                    for(int m = 0; m < 3; m++)
+                        vertex[m] = eleCoordVol(m);
+                }
                                                 
                 vertices.push_back(vertex);
             }                
@@ -1218,15 +1223,17 @@ void Intersection::computeConvexHull(
         for(vector<InterfacePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint)
         {
             // transform interface points into current coordinates
-            BlitzVec  eleCoordSurf(2);
-            for(int j = 0; j < 2; j++)         
-                eleCoordSurf(j)  = ipoint->coord[j];   
-            const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));    
-            const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));  
-            for(int j = 0; j < 3; j++)      
-            {   
-                ipoint->coord[j] = eleCoordVol(j);
-                vertex[j] = eleCoordVol(j);
+            {
+                BlitzVec  eleCoordSurf(2);
+                for(int j = 0; j < 2; j++)         
+                    eleCoordSurf(j)  = ipoint->coord[j];   
+                const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));    
+                const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));  
+                for(int j = 0; j < 3; j++)      
+                {   
+                    ipoint->coord[j] = eleCoordVol(j);
+                    vertex[j] = eleCoordVol(j);
+                }
             }
             vertices.push_back(vertex);
         }              
@@ -2132,10 +2139,10 @@ void Intersection::liftSteinerPointOnSurface(
     
     const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
     
+    BlitzVec xsi(3);
     vector<BlitzVec> plane(2, BlitzVec(3));
     plane[0] = Steinerpoint + averageNormal;               
     plane[1] = Steinerpoint - averageNormal;
-    BlitzVec xsi(3); xsi = 0.0;
     const bool intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker],false);
     if(intersected)
     {
@@ -2152,7 +2159,6 @@ void Intersection::liftSteinerPointOnSurface(
             vector<BlitzVec> plane(2, BlitzVec(3)); // TODO: why size 4???
             plane[0] = Steinerpoint + (*normalptr);               
             plane[1] = Steinerpoint - (*normalptr);
-            BlitzVec xsi(3);  xsi = 0.0;
             intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker], false);
             if(intersected)
             {
@@ -2239,7 +2245,6 @@ void Intersection::liftSteinerPointOnBoundary(
 {
     int edgeIndex = 0;
     int oppositeIndex = 0;
-    int faceIndex = 0;
     int facemarkerIndex = 0;
    
     // find egde on boundary
@@ -2249,13 +2254,13 @@ void Intersection::liftSteinerPointOnBoundary(
         edgeIndex = adjacentFacesList[steinerIndex][i];
         if(out.pointmarkerlist[edgeIndex] == 3)
         {
-            edgeFound = true;
+            edgeFound = true;  // TODO:  why is this calculated?
             facemarkerIndex = (int) (i+1)/2;
             break;
         }
     }   
         
-    faceIndex = adjacentFacemarkerList[steinerIndex][facemarkerIndex];
+    int faceIndex = adjacentFacemarkerList[steinerIndex][facemarkerIndex];
     // locate triangle on boundary
     bool oppositeFound = false;
     for(int i = 0; i < out.numberoftrifaces; i++)
@@ -2299,7 +2304,7 @@ void Intersection::liftSteinerPointOnBoundary(
                                xfemElement, out);
                
     // compute intersection normal on boundary
-    BlitzVec xsi(3);  xsi = 0.0;
+    BlitzVec xsi(3);
     const bool intersected = computeRecoveryNormal(xsi, plane, intersectingCutterElements_[faceIndex], true);
     
     if(intersected)
@@ -2556,7 +2561,6 @@ bool Intersection::computeRecoveryNormal(
     BlitzVec    dx(3);
     b = 0.0;
     dx = 0.0;
-    blitz::firstIndex i;
     
     xsi = 0.0;
     updateRHSForRCINormal( b, xsi, normal, cutterElement, onBoundary);
@@ -2635,7 +2639,7 @@ void Intersection::updateAForRCINormal(
         }
         
         for(int dim=0; dim<3; dim++)
-            A(dim,2) = (-1.0) * ( normal[0](dim) * (-0.5) + normal[1](dim) * 0.5 );  
+            A(dim,2) -= 0.5*( -normal[0](dim) + normal[1](dim));  
     }
     else
     {
@@ -2660,7 +2664,7 @@ void Intersection::updateAForRCINormal(
                 int index = i;
                 if(i > 1)   index = 4;
                 //A[dim][2] += (-1.0) * normal[index][dim] * lineDeriv1[i][0]; 
-                A(dim,2) += (-1.0) * normal[index](dim) * lineDeriv1(0,i);
+                A(dim,2) -= normal[index](dim) * lineDeriv1(0,i);
             }  
     }
 }
@@ -2692,11 +2696,11 @@ void Intersection::updateRHSForRCINormal(
         {
             const DRT::Node* node = surfaceElement->Nodes()[i];
             for(int dim=0; dim<3; dim++)    
-                b(dim) += (-1.0) * node->X()[dim] * surfaceFunct(i);
+                b(dim) -= node->X()[dim] * surfaceFunct(i);
         }
             
         for(int dim=0; dim<3; dim++)
-            b(dim) += normal[0](dim) * 0.5*(1.0 - xsi(2)) + normal[1](dim) * 0.5*(1.0 + xsi(2));
+            b(dim) += 0.5*(normal[0](dim)*(1.0 - xsi(2)) + normal[1](dim)*(1.0 + xsi(2)));
     }
     else
     {
@@ -2707,7 +2711,7 @@ void Intersection::updateRHSForRCINormal(
         {
             const DRT::Node* node = surfaceElement->Nodes()[i];
             for(int dim=0; dim<3; dim++)
-                b(dim) += (-1.0) * node->X()[dim] * surfaceFunct(i);
+                b(dim) -= node->X()[dim] * surfaceFunct(i);
         }
         
        
@@ -2907,9 +2911,9 @@ void Intersection::computeIntersectionNormalA(
     const tetgenio&                         out) const
 {            
     
-    BlitzVec  p1(3); p1 = 0.0;
-    BlitzVec  p2(3); p2 = 0.0;
-    BlitzVec  p3(3); p3 = 0.0;
+    BlitzVec  p1(3);
+    BlitzVec  p2(3);
+    BlitzVec  p3(3);
     
     
     if(!onBoundary)
@@ -2944,7 +2948,7 @@ void Intersection::computeIntersectionNormalA(
     normalizeVectorInPLace(r);
  
     // computes the start point of the line
-    BlitzVec  m(computeLineMidpoint(p2, p3));
+    BlitzVec  m(3);
     
     if(!onBoundary)
         m = computeLineMidpoint(p2, p3);
@@ -3133,6 +3137,7 @@ BlitzVec Intersection::computeLineMidpoint(
     
     for(int i=0; i<3; i++)
         midpoint(i) = (p1(i) + p2(i))*0.5;
+//    midpoint = 0.5*(p1 + p2);
         
     return midpoint;
 }

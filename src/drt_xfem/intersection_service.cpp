@@ -225,7 +225,7 @@ BlitzVec XFEM::currentToElementCoordinatesExact(
 \param element           (in)       : element 
 */  
 template <DRT::Element::DiscretizationType DISTYPE>
-void updateAForNWE(   
+static inline void updateAForNWE(
     BlitzMat&                           A,
     const BlitzVec&                     xsi,
     const BlitzMat&                     xyze
@@ -233,22 +233,13 @@ void updateAForNWE(
 {   
     const int numNodes = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
     const int dim = DRT::UTILS::getDimension<DISTYPE>();
+    static BlitzMat deriv1(dim,numNodes);
+    shape_function_deriv1<DISTYPE,BlitzVec>(xsi, deriv1);
     
-    const BlitzMat deriv1(shape_function_deriv1<DISTYPE,BlitzVec>(xsi));
-    
-    A = 0.0;
-    for(int inode=0; inode<numNodes; inode++) 
-    {
-        for(int isd=0; isd<dim; ++isd)
-        {
-            for(int jsd=0; jsd<dim; ++jsd)
-                A(isd,jsd) += xyze(isd,inode) * deriv1(jsd,inode);
-        }
-    }
-//    blitz::firstIndex isd;
-//    blitz::secondIndex jsd;
-//    blitz::thirdIndex inode;
-//    A = blitz::sum(xyze(isd,inode) * deriv1(jsd,inode), inode);
+    blitz::firstIndex isd;
+    blitz::secondIndex jsd;
+    blitz::thirdIndex inode;
+    A = blitz::sum(xyze(isd,inode) * deriv1(jsd,inode), inode);
 }
 
 
@@ -264,26 +255,19 @@ void updateAForNWE(
 \param element           (in)       : element
 */
 template <DRT::Element::DiscretizationType DISTYPE>
-void updateRHSForNWE( 
+static inline void updateRHSForNWE(
         BlitzVec&           b,
         const BlitzVec&     xsi,
         const BlitzVec&     x,
         const BlitzMat&     xyze)                                                  
 {
     const int numNodes = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
-    const int dim = DRT::UTILS::getDimension<DISTYPE>();
+    static BlitzVec funct(numNodes);
+    shape_function<DISTYPE,BlitzVec>(xsi, funct);
     
-    const BlitzVec funct(shape_function<DISTYPE,BlitzVec>(xsi));
-    
-    b = 0.0;
-    for(int inode=0; inode<numNodes; inode++)
-    {
-        for(int isd=0; isd<dim; isd++)
-            b(isd) -= xyze(isd,inode) * funct(inode);
-    }
-      
-    for(int isd=0; isd<dim; isd++)
-        b(isd) += x(isd);
+    blitz::firstIndex isd;
+    blitz::secondIndex inode;
+    b = x(isd) - blitz::sum(xyze(isd,inode) * funct(inode), inode);
 }
 
 
@@ -298,24 +282,25 @@ void updateRHSForNWE(
 \param xsi                  (inout)     : node in element coordinates
 */  
 template <DRT::Element::DiscretizationType DISTYPE, int dim>
-bool currentToElementCoordinatesT(  
+static inline bool currentToElementCoordinatesT(
     const DRT::Element*                 element,
     const BlitzVec&                     x,
     BlitzVec&                           xsi)
 {
-    if(element->Shape() != DISTYPE) dserror("this is a bug when calling the wrong instance of this templated function!");
+    dsassert(element->Shape() == DISTYPE, "this is a bug in currentToElementCoordinatesT!");
     bool nodeWithinElement = true;
     //const int dim = DRT::UTILS::getDimension<DISTYPE>();
     const int maxiter = 20;
     double residual = 1.0;
     
-    BlitzMat A(dim,dim);
-    BlitzVec b(dim);   b  = 0.0;
-    BlitzVec dx(dim);  dx = 0.0;
-    blitz::firstIndex i;
+    static BlitzMat A(dim,dim);
+    static BlitzVec b(dim);
+    static BlitzVec dx(dim);
     
-    const BlitzMat xyze(PositionArrayBlitzT<DISTYPE>(element));
+    static BlitzMat xyze(3, DRT::UTILS::getNumberOfElementNodes<DISTYPE>());
+    fillPositionArrayBlitzT<DISTYPE>(element, xyze);
     
+    // initial guess
     xsi = 0.0;
             
     updateRHSForNWE<DISTYPE>(b, xsi, x, xyze);
@@ -704,7 +689,7 @@ BlitzVec XFEM::updateFForMap3To2(
         const DRT::Element* surfaceElement)                                                  
 {   
     BlitzVec F(3);
-    F = 0;
+    F = 0.0;
     
     const int numNodes = surfaceElement->NumNode();
     const BlitzVec funct(shape_function_2D(xsi(0), xsi(1), surfaceElement->Shape()));
@@ -741,7 +726,7 @@ void XFEM::updateAForMap3To2(
     
     const BlitzMat deriv2(shape_function_2D_deriv2(xsi(0), xsi(1), surfaceElement->Shape()));
 	blitz::Array<double, 3> tensor3Ord(3,2,2, blitz::ColumnMajorArray<3>());		
-    tensor3Ord = 0;
+    tensor3Ord = 0.0;
    
 	for(int inode=0; inode<numNodes; inode++) 	
 	{
