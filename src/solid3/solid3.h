@@ -380,7 +380,7 @@ typedef enum _SO3_MAT_ROBINSON_STATE
 {
   so3_mat_robinson_state_vague = 0,
   so3_mat_robinson_state_elastic,
-  so3_mat_robinson_state_inelastic,
+  so3_mat_robinson_state_inelastic
 } SO3_MAT_ROBINSON_STATE;
 
 
