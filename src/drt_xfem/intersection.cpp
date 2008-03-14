@@ -743,17 +743,165 @@ bool Intersection::collectIntersectionPoints(
 }
 
 
+/*!
+\brief updates the systemmatrix at the corresponding element coordinates 
+       for the computation of curve surface intersections
 
-/*----------------------------------------------------------------------*
- |  CLI:    computes the intersection between a              u.may 06/07|
- |          curve and a surface                    (CSI)                |
- *----------------------------------------------------------------------*/
-bool Intersection::computeCurveSurfaceIntersection( 
+\param A                 (out)      : system matrix
+\param xsi               (in)       : vector of element coordinates
+\param surfaceElement    (in)       : surface element
+\param lineElement       (in)       : line element
+*/
+template<DRT::Element::DiscretizationType surftype,
+         DRT::Element::DiscretizationType linetype>
+void updateAForCSI(
+        BlitzMat&         A,
+        const BlitzVec&   xsi,
+        const DRT::Element*               surfaceElement,
+        const DRT::Element*               lineElement
+        )
+{   
+    const int numNodesSurface = DRT::UTILS::getNumberOfElementNodes<surftype>();
+    const int numNodesLine = DRT::UTILS::getNumberOfElementNodes<linetype>();
+    
+    A = 0.0;
+ 
+    static BlitzMat surfaceDeriv1(2, numNodesSurface);
+    shape_function_2D_deriv1(surfaceDeriv1, xsi(0), xsi(1), surftype);
+    const DRT::Node*const* surfaceElementNodes = surfaceElement->Nodes();
+    for(int inode=0; inode<numNodesSurface; inode++)
+    {
+        const double* x = surfaceElementNodes[inode]->X();
+        for(int isd=0; isd<3; isd++)
+        {
+            A(isd,0) += x[isd] * surfaceDeriv1(0,inode);
+            A(isd,1) += x[isd] * surfaceDeriv1(1,inode);
+        }
+    }   
+   
+    static BlitzMat lineDeriv1(2, numNodesLine);
+    shape_function_1D_deriv1(lineDeriv1, xsi(2), linetype);
+    const DRT::Node*const* lineElementNodes = lineElement->Nodes();
+    for(int inode=0; inode<numNodesLine; inode++)
+    {   
+        const double* x = lineElementNodes[inode]->X();
+        for(int isd=0; isd<3; isd++)
+        {
+            A(isd,2) -= x[isd] * lineDeriv1(0,inode);
+        }   
+    }
+}
+
+   
+
+/*!
+\brief updates the rhs at the corresponding element coordinates 
+       for the computation of curve surface intersections
+
+\param b                 (out)      : right-hand-side
+\param xsi               (in)       : vector of element coordinates
+\param surfaceElement    (in)       : surface element
+\param lineElement       (in)       : line element
+*/
+template<DRT::Element::DiscretizationType surftype,
+         DRT::Element::DiscretizationType linetype>
+void updateRHSForCSI( 
+        BlitzVec&         b,
+        const BlitzVec&   xsi,
+        const DRT::Element*               surfaceElement,
+        const DRT::Element*               lineElement
+        )
+{
+    const int numNodesSurface = DRT::UTILS::getNumberOfElementNodes<surftype>();
+    const int numNodesLine = DRT::UTILS::getNumberOfElementNodes<linetype>();
+        
+    b = 0.0;
+    
+    static BlitzVec surfaceFunct(numNodesSurface);
+    shape_function_2D(surfaceFunct, xsi(0), xsi(1), surftype);
+    //const BlitzVec surfaceFunct(shape_function_2D( xsi(0), xsi(1), surfaceElement->Shape()));
+    const DRT::Node*const* surfaceElementNodes = surfaceElement->Nodes();
+    for(int i=0; i<numNodesSurface; i++)
+    {
+        const double* x = surfaceElementNodes[i]->X();
+        for(int dim=0; dim<3; dim++)
+            b(dim) -= x[dim] * surfaceFunct(i);
+    }
+
+    static BlitzVec lineFunct(numNodesLine);
+    shape_function_1D(lineFunct, xsi(2), linetype);
+    //const BlitzVec lineFunct(shape_function_1D( xsi(2), lineElement->Shape()));
+    const DRT::Node*const* lineElementNodes = lineElement->Nodes();
+    for(int i=0; i<numNodesLine; i++)
+    {
+       const double* x = lineElementNodes[i]->X();
+       for(int dim=0; dim<3; dim++)   
+            b(dim) += x[dim] * lineFunct(i);
+    }
+}
+
+
+/*!
+    \brief solves a singular system of equations
+
+\param xsi              (in/out)    : vector of element domain coordinates
+\param lineElement      (in)        : line element
+\param surfaceElement   (in)        : surface element
+return true if resulting system is singular , false otherwise
+*/     
+template<DRT::Element::DiscretizationType surftype,
+         DRT::Element::DiscretizationType linetype>
+bool computeSingularCSI(
+        BlitzVec&   xsi,
+        const DRT::Element*         surfaceElement,
+        const DRT::Element*         lineElement
+        )
+{
+    bool singular = false;
+    int iter = 0;
+    const int maxiter = 5;
+    double residual = 1.0;
+    static BlitzMat A(3,3);
+    static BlitzVec b(3);
+    static BlitzVec dx(3);
+ 
+    updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, lineElement);
+              
+    while(residual > TOL14)
+    {   
+        updateAForCSI<surftype,linetype>( A, xsi, surfaceElement, lineElement);
+        
+        if(solveLinearSystemWithSVD<3>(A, b, dx))
+        {
+            singular = false;
+            xsi += dx;
+            break;
+        }
+        
+        xsi += dx;
+        updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, lineElement);
+        residual = Norm2(b); 
+        iter++;
+        
+        if(iter >= maxiter )
+        {
+            singular = true;
+            break;    
+        }
+    } 
+    return singular;            
+}
+
+
+template<DRT::Element::DiscretizationType surftype,
+         DRT::Element::DiscretizationType linetype>
+bool computeCurveSurfaceIntersectionT( 
     const DRT::Element*               surfaceElement,
     const DRT::Element*               lineElement,
     BlitzVec&                         xsi,
     const BlitzVec&                   upLimit,
-    const BlitzVec&                   loLimit) const
+    const BlitzVec&                   loLimit
+    )
 {
     bool intersection = true;
     int iter = 0;
@@ -763,15 +911,15 @@ bool Intersection::computeCurveSurfaceIntersection(
     static BlitzVec b(3);
     static BlitzVec dx(3);
  
-    updateRHSForCSI( b, xsi, surfaceElement, lineElement);
+    updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, lineElement);
               
     while(residual > TOL14)
     {   
-        updateAForCSI( A, xsi, surfaceElement, lineElement);
+        updateAForCSI<surftype,linetype>( A, xsi, surfaceElement, lineElement);
         
         if(!gaussElimination<true, 3, 1>(A, b, dx))
         {    
-            if(computeSingularCSI(xsi, lineElement, surfaceElement))
+            if(computeSingularCSI<surftype,linetype>(xsi, surfaceElement, lineElement))
             {
                 intersection = false;
                 break;
@@ -782,7 +930,7 @@ bool Intersection::computeCurveSurfaceIntersection(
         }
         
         xsi += dx;
-        updateRHSForCSI( b, xsi, surfaceElement, lineElement);
+        updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, lineElement);
         residual = Norm2(b); 
         iter++;
         
@@ -804,127 +952,65 @@ bool Intersection::computeCurveSurfaceIntersection(
 }
 
 
-
 /*----------------------------------------------------------------------*
- |  CLI:    solves a singular linear system with the hel     u.may 12/07| 
- |          of a Singular Value Decomposition (SVD)                     |
+ |  CLI:    computes the intersection between a              u.may 06/07|
+ |          curve and a surface                    (CSI)                |
  *----------------------------------------------------------------------*/
-bool Intersection::computeSingularCSI(
-    BlitzVec&   xsi,
-    const DRT::Element*         lineElement,
-    const DRT::Element*         surfaceElement) const
-{
-    bool singular = false;
-    int iter = 0;
-    const int maxiter = 5;
-    double residual = 1.0;
-    BlitzMat A(3,3);
-    BlitzVec b(3);
-    BlitzVec dx(3);
- 
-    updateRHSForCSI( b, xsi, surfaceElement, lineElement);
-              
-    while(residual > TOL14)
-    {   
-        updateAForCSI( A, xsi, surfaceElement, lineElement);
-        
-        if(solveLinearSystemWithSVD<3>(A, b, dx))
-        {
-            singular = false;
-            xsi += dx;
-            break;
-        }
-        
-        xsi += dx;
-        updateRHSForCSI( b, xsi, surfaceElement, lineElement);
-        residual = Norm2(b); 
-        iter++;
-        
-        if(iter >= maxiter )
-        {
-            singular = true;
-            break;    
-        }
-    } 
-    return singular;            
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  CLI:    updates the systemmatrix for the computation     u.may 06/07| 
- |          of a curve-surface intersection (CSI)                       |
- *----------------------------------------------------------------------*/
-void Intersection::updateAForCSI(  	BlitzMat&         A,
-                                    const BlitzVec&   xsi,
-                                    const DRT::Element*               surfaceElement,
-                                    const DRT::Element*               lineElement) const
-{	
-	const int numNodesSurface = surfaceElement->NumNode();
-   	const int numNodesLine = lineElement->NumNode();
-   	
-   	A = 0.0;
- 
-    const BlitzMat surfaceDeriv1(shape_function_2D_deriv1(xsi(0), xsi(1), surfaceElement->Shape()));
-    const DRT::Node*const* surfaceElementNodes = surfaceElement->Nodes();
-    for(int inode=0; inode<numNodesSurface; inode++)
-    {
-        const double* x = surfaceElementNodes[inode]->X();
-        for(int isd=0; isd<3; isd++)
-		{
-			A(isd,0) += x[isd] * surfaceDeriv1(0,inode);
-			A(isd,1) += x[isd] * surfaceDeriv1(1,inode);
-		}
-    }	
-   
-    const BlitzMat lineDeriv1(shape_function_1D_deriv1(xsi(2), lineElement->Shape()));
-    const DRT::Node*const* lineElementNodes = lineElement->Nodes();
-    for(int inode=0; inode<numNodesLine; inode++)
-    {   
-        const double* x = lineElementNodes[inode]->X();
-        for(int isd=0; isd<3; isd++)
-        {
-            A(isd,2) -= x[isd] * lineDeriv1(0,inode);
-        }   
-    }
-}
-
-   
-
-/*----------------------------------------------------------------------*
- |  CLI:    updates the right-hand-side for the              u.may 06/07|
- |          computation of                                              |
- |          a curve-surface intersection (CSI)                          |
- *----------------------------------------------------------------------*/
-void Intersection::updateRHSForCSI( 
-    BlitzVec&         b,
-    const BlitzVec&   xsi,
+bool Intersection::computeCurveSurfaceIntersection( 
     const DRT::Element*               surfaceElement,
-    const DRT::Element*               lineElement) const
+    const DRT::Element*               lineElement,
+    BlitzVec&                         xsi,
+    const BlitzVec&                   upLimit,
+    const BlitzVec&                   loLimit) const
 {
-    const int numNodesSurface = surfaceElement->NumNode();
-    const int numNodesLine = lineElement->NumNode();
- 		
-    b = 0.0;
-    
-    const BlitzVec surfaceFunct(shape_function_2D( xsi(0), xsi(1), surfaceElement->Shape()));
-    const DRT::Node*const* surfaceElementNodes = surfaceElement->Nodes();
-    for(int i=0; i<numNodesSurface; i++)
+    if (lineElement->Shape() == DRT::Element::line2)
     {
-        const double* x = surfaceElementNodes[i]->X();
-   	    for(int dim=0; dim<3; dim++)
-			b(dim) -= x[dim] * surfaceFunct(i);
+        switch (surfaceElement->Shape())
+        {
+        case DRT::Element::quad4:
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line2>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+        case DRT::Element::quad8:
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line2>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+        case DRT::Element::quad9:
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line2>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+        case DRT::Element::tri3:
+            return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line2>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+        case DRT::Element::tri6:
+            return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line2>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+        default:
+            dserror("template not instatiated yet");
+            return false;
+        };
     }
-
-    const BlitzVec lineFunct(shape_function_1D( xsi(2), lineElement->Shape()));
-    const DRT::Node*const* lineElementNodes = lineElement->Nodes();
-    for(int i=0; i<numNodesLine; i++)
+    else if (lineElement->Shape() == DRT::Element::line3)
     {
-       const double* x = lineElementNodes[i]->X();
-	   for(int dim=0; dim<3; dim++)   
-			b(dim) += x[dim] * lineFunct(i);
+        switch (surfaceElement->Shape())
+        {
+        case DRT::Element::quad4:
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line3>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+        case DRT::Element::quad8:
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line3>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+        case DRT::Element::quad9:
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line3>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+        case DRT::Element::tri3:
+            return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line3>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+        case DRT::Element::tri6:
+            return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line3>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+        default:
+            dserror("template not instatiated yet");
+            return false;
+        };
     }
+    return true;
 }
+
+
+
+
+
+
+
+
 
 
 

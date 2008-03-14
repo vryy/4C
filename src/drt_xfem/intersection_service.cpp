@@ -502,10 +502,11 @@ bool XFEM::PositionWithinCondition(
     )
 {
     const int nsd = 3;
-    BlitzVec x(nsd);
-    for (int isd = 0; isd < nsd; ++isd) {
-        x(isd) = x_in(isd);
-    }
+    static BlitzVec x(nsd);
+//    for (int isd = 0; isd < nsd; ++isd) {
+//        x(isd) = x_in(isd);
+//    }
+    x = x_in;
 
     // TODO: use label to identify the surface/xfem condition
     
