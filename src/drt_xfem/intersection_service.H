@@ -58,7 +58,7 @@ namespace XFEM
         const BlitzVec&     v)
     {
         blitz::firstIndex i;
-        return sqrt(blitz::sum(v(i)*v(i)));
+        return std::sqrt(blitz::sum(v(i)*v(i)));
     }
      
     /*!
@@ -99,10 +99,9 @@ namespace XFEM
         const double  b
         )
     {
-        if (a == 0.0 and b == 0.0)
-            return 0.0;
-        else
-            return sqrt(SQR(a)+SQR(b));
+        //note: sqrt(0.0) is properly defined and returns 0.0 as expected
+        //      no check for zero needed
+        return sqrt(SQR(a)+SQR(b));
     }
     
     
@@ -206,7 +205,7 @@ namespace XFEM
     \return true if both points equal each other, false otherwise
     */
     template<int length>
-    bool comparePoints(
+    inline bool comparePoints(
         const double*     point1,
         const double*     point2) 
     {   
@@ -214,7 +213,6 @@ namespace XFEM
             if(fabs(point1[i] - point2[i]) > TOL7)
             {
                 return false;
-                break;
             }
         return true;
     }
@@ -237,7 +235,6 @@ namespace XFEM
             if(fabs(point1[i] - point2[i]) > TOL7)
             {
                 return false;
-                break;
             }
         return true;
     }
@@ -261,7 +258,6 @@ namespace XFEM
              if(fabs(point1[i] - point2[i]) > TOL7)
              {
                  return false;
-                 break;
              }
          return true;
      }
@@ -285,7 +281,6 @@ namespace XFEM
              if(fabs(point1(i) - point2(i)) > TOL7)
              {
                  return false;
-                 break;
              }
          return true;
      }
