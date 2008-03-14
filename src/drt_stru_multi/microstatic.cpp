@@ -458,6 +458,7 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
   int    updevrydisp   = params_->get<int>   ("io disp every nstep"    ,1);
   bool   iostress      = params_->get<bool>  ("io structural stress"   ,false);
   int    updevrystress = params_->get<int>   ("io stress every nstep"  ,10);
+  bool   iostrain      = params_.get<bool>  ("io structural strain"   ,false);
   int    writeresevry  = params_->get<int>   ("write restart every"    ,0);
 
   bool isdatawritten = false;
@@ -500,7 +501,9 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
     p.set("total time",time);
     p.set("delta time",dt);
     Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
+    Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
+    p.set("strain", strain);
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("residual displacement",zeros_);
@@ -510,6 +513,10 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
     if (!isdatawritten) output->NewStep(istep, time);
     isdatawritten = true;
     output->WriteVector("gauss_stresses_xyz",*stress,*discret_->ElementColMap());
+    if (iostrain)
+    {
+      output_.WriteVector("gauss_strains_xyz",*strain,*discret_.ElementColMap());
+    }
   }
 
   return;
