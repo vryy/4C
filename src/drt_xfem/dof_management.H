@@ -70,13 +70,13 @@ public:
     
     bool operator <(const FieldEnr& rhs) const
     {
-        if (getField() < rhs.getField())
+        if (field_ < rhs.field_)
             return true;
-        else if (getField() > rhs.getField())
+        else if (field_ > rhs.field_)
             return false;
         else
         {
-            if (getEnrichment() < rhs.getEnrichment())
+            if (enr_ < rhs.enr_)
                 return true;
             else
                 return false;
@@ -85,7 +85,7 @@ public:
     
     bool operator ==(const FieldEnr& rhs) const
     {
-        if (getField() == rhs.getField() and getEnrichment() == rhs.getEnrichment())
+        if (field_ == rhs.field_ and getEnrichment() == rhs.getEnrichment())
             return true;
         else
             return false;
@@ -93,15 +93,19 @@ public:
     
     bool operator !=(const FieldEnr& rhs) const
     {
-        return (!(*this == rhs));
+//        return (!(*this == rhs));
+        if (field_ != rhs.field_ or getEnrichment() != rhs.getEnrichment())
+            return true;
+        else
+            return false;
     }
     
 
 private:
     // physical field variable to be enriched
-    PHYSICS::Field field_;
+    const PHYSICS::Field field_;
     // specific enrichment for this physical field
-    Enrichment enr_;
+    const Enrichment enr_;
 
 }; // class FieldEnr
 

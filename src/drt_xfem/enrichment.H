@@ -82,21 +82,30 @@ public:
 
     bool operator ==(const Enrichment& rhs) const
     {
-        if (XFEMConditionLabel() == rhs.XFEMConditionLabel() and Type() == rhs.Type())
+        if ((xfemconditionlabel_ == rhs.xfemconditionlabel_) and (type_ == rhs.type_))
             return true;
         else
             return false;
     };
     
+    bool operator !=(const Enrichment& rhs) const
+    {
+        //return (!(*this == rhs));
+        if ((xfemconditionlabel_ != rhs.xfemconditionlabel_) or (type_ != rhs.type_))
+            return true;
+        else
+            return false;
+    }
+    
     bool operator <(const Enrichment& rhs) const
     {
-        if (XFEMConditionLabel() < rhs.XFEMConditionLabel())
+        if (xfemconditionlabel_ < rhs.xfemconditionlabel_)
             return true;
-        else if (XFEMConditionLabel() > rhs.XFEMConditionLabel())
+        else if (xfemconditionlabel_ > rhs.xfemconditionlabel_)
             return false;
         else
         {
-            if (Type() < rhs.Type())
+            if (type_ < rhs.type_)
                 return true;
             else
                 return false;
@@ -119,9 +128,9 @@ public:
 private:
     // a global id used to distuinguish several surfaces within one element
     // might become or contain reference to a certain condition
-    int xfemconditionlabel_;
+    const int xfemconditionlabel_;
     // the specific type of enrichment
-    EnrType type_;
+    const EnrType type_;
 }; // class Enrichment
 
 }
