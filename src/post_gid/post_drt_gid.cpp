@@ -80,8 +80,9 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
 void write_serialdensematrix_result(string result_name, PostField* field,
                                     PostResult* result)
 {
-  CHAR* componentnames[] = { "xx", "yy", "zz", "xy", "yz", "xz"};
   CHAR* gaussname;
+  int numdim;
+  int numstress;
 
   // This implementation depends (like the rest of this GiD-filter) on
   // the assumption that there are only elements of one type in the mesh
@@ -93,6 +94,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   {
   case DRT::Element::hex8:
     gaussname = "so_hex8";
+    numdim=3;
 
     // Note:
     // Here no mapping between baci's and GiD definition of Gauss
@@ -114,11 +116,26 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   const RefCountPtr<std::map<int,RefCountPtr<Epetra_SerialDenseMatrix> > > map
     = result->read_result_serialdensematrix(result_name);
 
-  double v[6];
-
-  GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Matrix,
-                    GiD_OnGaussPoints, gaussname, NULL, 6,
+  if (numdim==3)
+  {
+    CHAR* componentnames[] = { "xx", "yy", "zz", "xy", "yz", "xz"};
+    numstress=6;
+    GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Matrix,
+                    GiD_OnGaussPoints, gaussname, NULL, numstress,
                     componentnames);
+  }
+  else if (numdim==2)
+  {
+    CHAR* componentnames[] = { "xx", "yy", "xy"};
+    numstress=3;
+    GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Matrix,
+                    GiD_OnGaussPoints, gaussname, NULL, numstress,
+                    componentnames);
+  }
+  else
+    dserror("Stress output only supported for 2D and 3D problems");
+
+  double v[numstress];
 
   for (int k = 0; k < field->num_elements(); ++k)
   {
@@ -127,14 +144,19 @@ void write_serialdensematrix_result(string result_name, PostField* field,
 
     for (int gp = 0; gp < data->M(); ++gp)
     {
-      for (int i = 0; i < 6; ++i)
+      for (int i = 0; i < numstress; ++i)
       {
         // The order of the result vector is defined by the map. It is
         // NOT ordered by global dof numbers.
         // If this turns out to be too slow, we have to change it.
         v[i] = (*data)(gp,i);
       }
-      GiD_Write3DMatrix(n->Id()+1,v[0],v[1],v[2],v[3],v[4],v[5]);
+      if (numdim==3)
+        GiD_Write3DMatrix(n->Id()+1,v[0],v[1],v[2],v[3],v[4],v[5]);
+      else if (numdim==2)
+        GiD_Write2DMatrix(n->Id()+1,v[0],v[1],v[2]);
+      else
+        dserror("Stress output only supported for 2D and 3D problems");
     }
   }
   GiD_EndResult();

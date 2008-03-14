@@ -1177,6 +1177,17 @@ int GiD_Write3DMatrix( int id,
     gid_write_values(&ResultFile, id, 6, Sxx, Syy, Szz, Sxy, Syz, Sxz);
 }
 
+int GiD_Write2DMatrix( int id,
+                       double Sxx, double Syy, double Sxy )
+{
+  /* check state */
+  assert(CheckState(POST_RESULT_VALUES, level_res));
+
+  return flag_isgroup ?
+    gid_buffer_write_values(&buffer_values, id, 3, Sxx, Syy, Sxy) :
+    gid_write_values(&ResultFile, id, 3, Sxx, Syy, Sxy);
+}
+
 int GiD_WritePlainDefMatrix( int id, double Sxx, double Syy, double Sxy, double Szz )
 {
   /* check state */
