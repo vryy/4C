@@ -458,7 +458,7 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
   int    updevrydisp   = params_->get<int>   ("io disp every nstep"    ,1);
   bool   iostress      = params_->get<bool>  ("io structural stress"   ,false);
   int    updevrystress = params_->get<int>   ("io stress every nstep"  ,10);
-  bool   iostrain      = params_.get<bool>  ("io structural strain"   ,false);
+  bool   iostrain      = params_->get<bool>  ("io structural strain"   ,false);
   int    writeresevry  = params_->get<int>   ("write restart every"    ,0);
 
   bool isdatawritten = false;
@@ -515,7 +515,7 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
     output->WriteVector("gauss_stresses_xyz",*stress,*discret_->ElementColMap());
     if (iostrain)
     {
-      output_.WriteVector("gauss_strains_xyz",*strain,*discret_.ElementColMap());
+      output->WriteVector("gauss_strains_xyz",*strain,*discret_->ElementColMap());
     }
   }
 
