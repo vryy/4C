@@ -258,13 +258,13 @@ public:
   \brief Get number of solver calls done on this solver
 
   */
-  inline const int Ncall() const { return ncall_; }
+  inline int Ncall() const { return ncall_; }
 
   /*!
   \brief Get the factored_ flag indicating whether system has been factorized before
 
   */
-  inline const bool IsFactored() const { return factored_; }
+  inline bool IsFactored() const { return factored_; }
 
   //@}
 

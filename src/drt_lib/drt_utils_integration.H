@@ -107,9 +107,9 @@ public:
         return s.str();
     }
     
-    inline const Vec Position() const { return position_; }
+    inline Vec Position() const { return position_; }
     
-    inline const double Weight() const { return weight_; }
+    inline double Weight() const { return weight_; }
     
 private:
     const Vec position_;

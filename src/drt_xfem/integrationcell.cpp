@@ -76,7 +76,7 @@ IntCell::~IntCell()
 //
 // Print method
 //
-const std::string IntCell::toString() const
+std::string IntCell::toString() const
 {
   return "";
 }
@@ -130,7 +130,7 @@ DomainIntCell::DomainIntCell(
     return;   
 }
      
-const string DomainIntCell::toString() const
+string DomainIntCell::toString() const
 {
     stringstream s;
     s << "DomainIntCell" << endl;
@@ -183,7 +183,7 @@ vector<vector<double> > DomainIntCell::GetDefaultCoordinates(
 //
 // return the center of the cell in physical coordinates
 //
-const BlitzVec DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
+BlitzVec DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
     // number of space dimensions
     const int nsd = 3;
@@ -256,7 +256,7 @@ BoundaryIntCell::BoundaryIntCell(
     return;   
 }
      
-const string BoundaryIntCell::toString() const
+string BoundaryIntCell::toString() const
 {
     stringstream s;
     s << "BoundaryIntCell" << endl;

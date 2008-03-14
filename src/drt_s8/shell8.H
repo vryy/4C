@@ -473,8 +473,8 @@ private:
                         const int init,
                         const double factor);
 
-  const double s8_localcoordsofnode(const int node, const int flag,
-                                    const int numnode) const;
+  double s8_localcoordsofnode(const int node, const int flag,
+                              const int numnode) const;
 
   void s8_shapefunctions(vector<double>& funct, Epetra_SerialDenseMatrix& deriv,
                                const double r, const double s, const int numnode,

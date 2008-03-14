@@ -730,7 +730,7 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(ParameterList& params,
     curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
   // get type of condition
-  LoadType ltype;
+  LoadType ltype = neum_none;
   const string* type = condition.Get<string>("type");
   if      (*type == "neum_live")          ltype = neum_live;
   else if (*type == "neum_live_FSI")      ltype = neum_live_FSI;
@@ -3426,8 +3426,8 @@ void DRT::ELEMENTS::Shell8::s8_integration_points(struct _S8_DATA& data)
 /*----------------------------------------------------------------------*
  |  local coords of nodal point (private)                    mwgee 12/06|
  *----------------------------------------------------------------------*/
-const double DRT::ELEMENTS::Shell8::s8_localcoordsofnode(const int node, const int flag,
-                                                         const int numnode) const
+double DRT::ELEMENTS::Shell8::s8_localcoordsofnode(const int node, const int flag,
+                                                   const int numnode) const
 {
   const double node489[9][2] = {{1.0,1.0},{-1.0,1.0},{-1.0,-1.0},{1.0,-1.0},
                                 {0.0,1.0},{-1.0,0.0},{0.0,-1.0},{1.0,0.0},{0.0,0.0}};
