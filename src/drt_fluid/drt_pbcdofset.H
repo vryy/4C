@@ -43,14 +43,6 @@ using namespace std;
 #include "../headers/define_sizes.h"
 
 /*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
-
-class DRT::Discretization;
-
-
-/*!
 \class PBCDofSet
 
 \brief A set of degrees of freedom
