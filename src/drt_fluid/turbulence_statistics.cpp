@@ -391,7 +391,7 @@ TurbulenceStatistics::TurbulenceStatistics(
     s.append(".flow_statistic");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for turbulent channel flow (first an second order moments)\n\n";
+    (*log) << "# Flow statistics for turbulent channel flow (first-- and second-order moments)\n\n";
 
     log->flush();
 
@@ -1088,39 +1088,6 @@ void TurbulenceStatistics::DumpStatistics(int step)
   //----------------------------------------------------------------------
   // the sums are divided by the number of samples to get the time average
   int aux = numele_*numsamp_;
-  for(unsigned i=0; i<planecoordinates_->size(); ++i)
-  {
-
-    (*sumu_)[i]   /=aux;
-    (*sumv_)[i]   /=aux;
-    (*sumw_)[i]   /=aux;
-    (*sump_)[i]   /=aux;
-
-    (*sumuv_)[i]  /=aux;
-    (*sumuw_)[i]  /=aux;
-    (*sumvw_)[i]  /=aux;
-
-    (*sumsqu_)[i] /=aux;
-    (*sumsqv_)[i] /=aux;
-    (*sumsqw_)[i] /=aux;
-    (*sumsqp_)[i] /=aux;
-
-    (*pointsumu_)[i]   /=numsamp_;
-    (*pointsumv_)[i]   /=numsamp_;
-    (*pointsumw_)[i]   /=numsamp_;
-    (*pointsump_)[i]   /=numsamp_;
-
-    (*pointsumsqu_)[i] /=numsamp_;
-    (*pointsumsqv_)[i] /=numsamp_;
-    (*pointsumsqw_)[i] /=numsamp_;
-    (*pointsumsqp_)[i] /=numsamp_;
-  }
-
-  sumforceu_/=numsamp_;
-  sumforcev_/=numsamp_;
-  sumforcew_/=numsamp_;
-
-
 
   //----------------------------------------------------------------------
   // evaluate area to calculate u_tau, l_tau (and tau_W)
@@ -1144,17 +1111,17 @@ void TurbulenceStatistics::DumpStatistics(int step)
   if      (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
     flowdirection=0;
-    ltau = visc_/sqrt(sumforceu_/area);
+    ltau = visc_/sqrt(sumforceu_/(area*numsamp_));
   }
   else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
   {
     flowdirection=1;
-    ltau = visc_/sqrt(sumforcev_/area);
+    ltau = visc_/sqrt(sumforcev_/(area*numsamp_));
   }
   else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
   {
     flowdirection=2;
-    ltau = visc_/sqrt(sumforcew_/area);
+    ltau = visc_/sqrt(sumforcew_/(area*numsamp_));
   }
   else
   {
@@ -1176,9 +1143,9 @@ void TurbulenceStatistics::DumpStatistics(int step)
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
     (*log) << "# (u_tau)^2 = tau_W/rho : ";
-    (*log) << "   " << setw(11) << setprecision(4) << sumforceu_/area;
-    (*log) << "   " << setw(11) << setprecision(4) << sumforcev_/area;
-    (*log) << "   " << setw(11) << setprecision(4) << sumforcew_/area;
+    (*log) << "   " << setw(11) << setprecision(4) << sumforceu_/(area*numsamp_);
+    (*log) << "   " << setw(11) << setprecision(4) << sumforcev_/(area*numsamp_);
+    (*log) << "   " << setw(11) << setprecision(4) << sumforcew_/(area*numsamp_);
     (*log) << &endl;
 
     (*log) << "#     y            y+";
@@ -1191,25 +1158,25 @@ void TurbulenceStatistics::DumpStatistics(int step)
     {
       (*log) <<  " "  << setw(11) << setprecision(4) << (*planecoordinates_)[i];
       (*log) << "   " << setw(11) << setprecision(4) << (*planecoordinates_)[i]/ltau;
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumu_)   [i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumv_)   [i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sumw_)   [i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*sump_)   [i];
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqu_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqv_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqw_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumuv_) [i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumuw_) [i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumvw_) [i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*sumsqp_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumu_)   [i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumv_)   [i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumw_)   [i];
-      (*log) << "   " << setw(11) << setprecision(4) << (*pointsump_)   [i];
-      (*log) << "   " << setw(11) << setprecision(4) << ((*pointsumsqu_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*pointsumsqv_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*pointsumsqw_)[i]);
-      (*log) << "   " << setw(11) << setprecision(4) << ((*pointsumsqp_)[i]);
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumu_)  [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumv_)  [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumw_)  [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sump_)  [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqu_)[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqv_)[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqw_)[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumuv_) [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumuw_) [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumvw_) [i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*sumsqp_)[i]/aux;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumu_)  [i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumv_)  [i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumw_)  [i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsump_)  [i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqu_)[i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqv_)[i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqw_)[i]/numsamp_;
+      (*log) << "   " << setw(11) << setprecision(4) << (*pointsumsqp_)[i]/numsamp_;
       (*log) << "   \n";
     }
     log->flush();
