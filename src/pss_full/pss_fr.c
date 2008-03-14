@@ -783,7 +783,7 @@ checks for a keyword in actual line of input_file
 \sa frdouble_n() , frint_n() , frint() , frchar()
 
 ------------------------------------------------------------------------*/
-void frchk(const const char string[], INT *ierr)
+void frchk(const char string[], INT *ierr)
 {
 char *foundit = NULL;
 
