@@ -21,7 +21,6 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_element.H"
 #include "../io/io_drt.H"
 #include "tetgen.h"
-#include "Epetra_SerialDenseMatrix.h"
 #include "Teuchos_RefCountPtr.hpp"
 
  
@@ -266,7 +265,7 @@ class Intersection
         \param ip                   (in)        : interface point
         \return true if the node is lying on a boundary false otherwise
         */  
-        bool checkIfOnBoundary(
+        bool setInterfacePointBoundaryStatus(
                 const DRT::Element::DiscretizationType  xfemDistype, ///< shape of the volume element
                 const BlitzVec&                         xsi,
                 InterfacePoint&                         ip
@@ -368,7 +367,7 @@ class Intersection
 	  	\param lineElement       (in) 		: line element
 	  	*/							
         void updateAForCSI( 
-            Epetra_SerialDenseMatrix&         A,
+            BlitzMat&         A,
             const BlitzVec&   xsi,
             const DRT::Element*               surfaceElement,
             const DRT::Element*               lineElement
@@ -804,7 +803,7 @@ class Intersection
                                                 element boundary
         */      
         void updateAForRCINormal(   
-            Epetra_SerialDenseMatrix&                   A,
+            BlitzMat&                   A,
             const BlitzVec&             xsi,
             const vector<BlitzVec>&     normal,
             const DRT::Element*                         surfaceElement,
@@ -865,7 +864,7 @@ class Intersection
         \param surfaceElement   (in)        :   surface element
         */         
         void updateAForRCIPlane(   
-            Epetra_SerialDenseMatrix&                   A,
+            BlitzMat&                   A,
             const BlitzVec&             xsi,
             const vector<BlitzVec>&     plane,
             const DRT::Element*                         lineElement,
@@ -1152,8 +1151,8 @@ class Intersection
         \param noX               (in)    : id of the xfem element
         */                        
         void debugXAABBIntersection( 
-            const Epetra_SerialDenseMatrix    cutterXAABB,
-            const Epetra_SerialDenseMatrix    xfemXAABB,
+            const BlitzMat    cutterXAABB,
+            const BlitzMat    xfemXAABB,
             const DRT::Element*               cutterElement,
             const DRT::Element*               xfemElement,
             const int                         noC,
@@ -1275,8 +1274,8 @@ class Intersection
        
        void debugXAABBs(
         const int							id,
-       	const Epetra_SerialDenseMatrix&     cutterXAABB, 
-       	const Epetra_SerialDenseMatrix&     xfemXAABB
+       	const BlitzMat&                     cutterXAABB, 
+       	const BlitzMat&                     xfemXAABB
        	) const;
                                                
 };

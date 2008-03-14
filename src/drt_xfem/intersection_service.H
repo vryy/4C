@@ -19,7 +19,6 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
-#include "Epetra_SerialDenseMatrix.h"
 #include "Teuchos_RefCountPtr.hpp"
 #include "xfem.H"
 
@@ -32,36 +31,10 @@ namespace XFEM
 
     //! tolerance 1e-7 
     const double                 TOL7 = 1e-7;
-
     
-    /*!
-    \brief Returns the sum of two Epetra_SerialDenseVectors
-
-    \param v1 (in) : arbitrary Epetra_SerialDenseVector
-    \param v2 (in) : arbitrary Epetra_SerialDenseVector
-    \return sum of two Epetra_SerialDenseVectors
-    */
-    template<int length>
-    inline BlitzVec addTwoVectors(   
-        const BlitzVec&   v1,
-        const BlitzVec&   v2)
-    {   
-        return BlitzVec(v1 + v2);
-    }  
-    
-    
-    /*!
-    \brief Returns the difference of Epetra_SerialDenseVectors v1 - v2
-    \param v1 (in) : Epetra_SerialDenseVector      
-    \param v2 (in) : Epetra_SerialDenseVector
-    \return difference of Epetra_SerialDenseVectors v1 - v2
-    */
-    template<int length>
-    inline BlitzVec subtractsTwoVectors( 
-        const BlitzVec& v1,
-        const BlitzVec& v2)
-    {   
-        return BlitzVec(v1 - v2);
+    inline double SQR(double a)
+    {
+        return a * a;
     }
     
     /*!
@@ -75,15 +48,41 @@ namespace XFEM
         const BlitzVec& b
         );
     
-     
+    
     /*!
-    \brief normalizes a BlitzVec
+    \brief calculate quadratic norm
     \param v (in) : BlitzVec
     \return normalized BlitzVec 
     */   
-    void normalizeVector(
-        BlitzVec&     v
-        );
+    inline double Norm2(   
+        const BlitzVec&     v)
+    {
+        blitz::firstIndex i;
+        return sqrt(blitz::sum(v(i)*v(i)));
+    }
+     
+    /*!
+    \brief normalizes a vector, such that the resulting length is 1
+    \return normalized BlitzVec 
+    */   
+    inline void normalizeVectorInPLace(
+        BlitzVec&     v ///< vector to normalize
+        )
+    {
+        v /= Norm2(v);
+        return;
+    }
+    
+    /*!
+    \brief normalizes a vector, such that the resulting length is 1
+    \return normalized BlitzVec 
+    */   
+    inline BlitzVec normalizeVector(
+        const BlitzVec&     v ///< vector to normalize
+        )
+    {
+        return BlitzVec(v/Norm2(v));
+    }
     
     
     /*!
@@ -95,10 +94,16 @@ namespace XFEM
     \param b    (in)        : b
     \return result of the Theorem of Pythagoras
     */    
-    double pythagoras(
+    inline double pythagoras(
         const double  a, 
         const double  b
-        );
+        )
+    {
+        if (a == 0.0 and b == 0.0)
+            return 0.0;
+        else
+            return sqrt(SQR(a)+SQR(b));
+    }
     
     
 //    /*!
@@ -205,16 +210,13 @@ namespace XFEM
         const double*     point1,
         const double*     point2) 
     {   
-        bool equal = true;
-                 
         for(int i = 0; i < length; i++)
             if(fabs(point1[i] - point2[i]) > TOL7)
             {
-                equal = false;
+                return false;
                 break;
             }
-      
-        return equal;
+        return true;
     }
     
     
@@ -230,16 +232,14 @@ namespace XFEM
         const vector<double>&     point1,
         const double*             point2) 
     {   
-        bool equal = true;
         dsassert(point1.size() == length, "not of proper length!");
         for(unsigned int i = 0; i < point1.size() ; ++i)
             if(fabs(point1[i] - point2[i]) > TOL7)
             {
-                equal = false;
+                return false;
                 break;
             }
-        
-        return equal;
+        return true;
     }
      
      
@@ -255,17 +255,15 @@ namespace XFEM
          const vector<double>& point1,
          const vector<double>& point2) 
      {   
-         bool equal = true;
          dsassert(point1.size() == length, "not of proper length!");
          dsassert(point2.size() == length, "not of proper length!");
          for(unsigned int i = 0; i < length ; ++i)
              if(fabs(point1[i] - point2[i]) > TOL7)
              {
-                 equal = false;
+                 return false;
                  break;
              }
-       
-         return equal;
+         return true;
      }
      
      
@@ -281,17 +279,15 @@ namespace XFEM
          const BlitzVec&     point1,
          const BlitzVec&     point2) 
      {   
-         bool equal = true;
          dsassert(point1.size() == length, "not of proper length!");
          dsassert(point2.size() == length, "not of proper length!");
          for(int i = 0; i < length ; i++)
              if(fabs(point1(i) - point2(i)) > TOL7)
              {
-                 equal = false;
+                 return false;
                  break;
              }
-       
-         return equal;
+         return true;
      }
      
      
@@ -299,13 +295,11 @@ namespace XFEM
     \brief Checks if a node is within an 
            extended axis-aligned bounding box (XAABB)
 
-    \param node (in)        : node to be checked
-    \param XAABB (in)       : extended axis-aligned bouning box
     \return true if node is within the XAABB or false otherwise
     */
     bool isPositionWithinXAABB(
-            const BlitzVec&                    pos,
-            const Epetra_SerialDenseMatrix&    XAABB
+            const BlitzVec&                    pos,    ///< node to be checked
+            const BlitzMat&                    XAABB   ///< extended axis-aligned bouning box
             );
     
     
@@ -313,15 +307,12 @@ namespace XFEM
     \brief Checks if a straightline with 2 nodes is within an 
            extended axis-aligned bounding box (XAABB)
 
-    \param node1 (in)       : node to be checked
-    \param node2 (in)       : node to be checked
-    \param XAABB (in)       : extended axis-aligned bouning box
     \return true if node is within the XAABB or false otherwise
     */
     bool isLineWithinXAABB(
-            const BlitzVec&                    pos1,
-            const BlitzVec&                    pos2,
-            const Epetra_SerialDenseMatrix&    XAABB
+            const BlitzVec&                    pos1, ///< node to be checked
+            const BlitzVec&                    pos2, ///< node to be checked
+            const BlitzMat&                    XAABB ///< extended axis-aligned bouning box
             );
     
     
@@ -466,7 +457,7 @@ namespace XFEM
     \param  element          (in)      : element
     \return extended axis-aligned bounding box  (XAABB) for an element
     */
-    Epetra_SerialDenseMatrix computeFastXAABB( 
+    BlitzMat computeFastXAABB( 
             const DRT::Element*   element
             );
     
@@ -479,21 +470,8 @@ namespace XFEM
     \return true if the XAABB's intersect or false otherwise
     */
     bool intersectionOfXAABB(
-            const Epetra_SerialDenseMatrix&    cutterXAABB,
-            const Epetra_SerialDenseMatrix&    xfemXAABB
-            );
-    
-    
-    /*!
-    \brief checks if a position is within an extended axis aligned bounding boxe
-
-    \param pos     (in)         : position
-    \param XAABB   (in)         : XAABB of the xfem element
-    \return true if the position is within the XAABB, false otherwise
-    */
-    bool PositionInXAABB(
-            const BlitzVec&                    pos,
-            const Epetra_SerialDenseMatrix&    XAABB
+            const BlitzMat&    cutterXAABB,
+            const BlitzMat&    xfemXAABB
             );
     
 }

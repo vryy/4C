@@ -192,26 +192,20 @@ const BlitzVec DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele)
     const BlitzMat physcoord = this->NodalPosXYZ(ele);
     
     // center in local coordinates
-    const vector<double> localcenterpos = DRT::UTILS::getLocalCenterPosition(this->Shape());
-
+    const BlitzVec localcenterpos = DRT::UTILS::getLocalCenterPosition(this->Shape());
+    dsassert(localcenterpos.size() == nsd, "localcenterpos should be a 3d position vector!");
     // shape functions
     const BlitzVec funct(DRT::UTILS::shape_function_3D(
-            localcenterpos[0],
-            localcenterpos[1],
-            localcenterpos[2],
+            localcenterpos(0),
+            localcenterpos(1),
+            localcenterpos(2),
             this->Shape()));
     
     //interpolate position to x-space
-    BlitzVec x_interpol(nsd);
-    x_interpol = 0.0;
-    for (int inen = 0; inen < this->NumNode();++inen)
-    {
-        for (int isd=0;isd < nsd;++isd )
-        {
-            x_interpol(isd) += physcoord(isd,inen) * funct(inen);
-        }
-    }
-    // return position
+    blitz::firstIndex isd;
+    blitz::secondIndex inode;
+    const BlitzVec x_interpol(blitz::sum(physcoord(isd,inode)*funct(inode),inode));
+    
     return x_interpol;
 }
 

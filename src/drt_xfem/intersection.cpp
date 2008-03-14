@@ -97,7 +97,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
         DRT::Element* xfemElement = xfemdis->lColElement(k);
         initializeXFEM(k, xfemElement);  
         
-        const Epetra_SerialDenseMatrix xfemXAABB = computeFastXAABB(xfemElement);
+        const BlitzMat xfemXAABB = computeFastXAABB(xfemElement);
             
         startPointList();
         
@@ -117,7 +117,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
                 DRT::Element*  cutterElement = iterGeo->second.get();
                 if(cutterElement == NULL) dserror("geometry does not obtain elements");
             	
-                const Epetra_SerialDenseMatrix    cutterXAABB = computeFastXAABB(cutterElement);   
+                const BlitzMat    cutterXAABB(computeFastXAABB(cutterElement));   
                   
                 const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);   
               
@@ -537,13 +537,13 @@ void Intersection::getCutterElementsInParallel(
                 const int actCutterId = actCutter->Id() + cutterIdAdd;
   				count++;
   				
-  				const Epetra_SerialDenseMatrix    cutterXAABB = computeFastXAABB(actCutter);
+  				const BlitzMat cutterXAABB(computeFastXAABB(actCutter));
                 
   				for(int k = 0; k < xfemdis->NumMyColElements(); k++)
     			{      
         			const DRT::Element* xfemElement = xfemdis->lColElement(k);
        				initializeXFEM(k, xfemElement);
-  					const Epetra_SerialDenseMatrix    xfemXAABB = computeFastXAABB(xfemElement);
+  					const BlitzMat    xfemXAABB(computeFastXAABB(xfemElement));
             		const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
             		//debugXAABBIntersection( cutterXAABB, xfemXAABB, actCutter, xfemElement, i, k);
                      
@@ -637,7 +637,7 @@ bool Intersection::collectInternalPoints(
         numInternalPoints++;
         
         // check if node lies on the boundary of the xfem element
-        if(checkIfOnBoundary(xfemElement->Shape(), xsi, ip))
+        if(setInterfacePointBoundaryStatus(xfemElement->Shape(), xsi, ip))
             numBoundaryPoints++;
                                    
         // intersection coordinates in the surface 
@@ -658,7 +658,7 @@ bool Intersection::collectInternalPoints(
  |  CLI:    checks if a node that lies within an element     u.may 06/07|
  |          lies on one of its surfaces or nodes                        |                                           
  *----------------------------------------------------------------------*/
-bool Intersection::checkIfOnBoundary(
+bool Intersection::setInterfacePointBoundaryStatus(
         const DRT::Element::DiscretizationType  xfemDistype,
         const BlitzVec&                         xsi,    
         InterfacePoint&                         ip
@@ -756,7 +756,7 @@ bool Intersection::computeCurveSurfaceIntersection(
     int iter = 0;
     const int maxiter = 30;
     double residual = 1.0;
-    Epetra_SerialDenseMatrix A(3,3);
+    BlitzMat A(3,3);
     BlitzVec b(3);   b  = 0.0;
     BlitzVec dx(3);  dx = 0.0;
     blitz::firstIndex i;
@@ -768,7 +768,7 @@ bool Intersection::computeCurveSurfaceIntersection(
     {   
         updateAForCSI( A, xsi, surfaceElement, lineElement);
         
-        if(!gaussElimination(A, b, dx, true, 3, 1))
+        if(!gaussElimination<true, 3, 1>(A, b, dx))
         {    
             if(computeSingularCSI(xsi, lineElement, surfaceElement));
             {
@@ -782,7 +782,7 @@ bool Intersection::computeCurveSurfaceIntersection(
         
         xsi += dx;
         updateRHSForCSI( b, xsi, surfaceElement, lineElement);
-        residual = sqrt(blitz::sum(b(i)*b(i))); 
+        residual = Norm2(b); 
         iter++;
         
         if(iter >= maxiter )
@@ -817,9 +817,9 @@ bool Intersection::computeSingularCSI(
     int iter = 0;
     const int maxiter = 5;
     double residual = 1.0;
-    Epetra_SerialDenseMatrix A(3,3);
-    BlitzVec b(3);   b  = 0.0;
-    BlitzVec dx(3);  dx = 0.0;
+    BlitzMat A(3,3);
+    BlitzVec b(3);
+    BlitzVec dx(3);
     blitz::firstIndex i;
  
     updateRHSForCSI( b, xsi, surfaceElement, lineElement);
@@ -828,7 +828,7 @@ bool Intersection::computeSingularCSI(
     {   
         updateAForCSI( A, xsi, surfaceElement, lineElement);
         
-        if(solveLinearSystemWithSVD(A, b, dx, 3))
+        if(solveLinearSystemWithSVD<3>(A, b, dx))
         {
             singular = false;
             xsi += dx;
@@ -837,7 +837,7 @@ bool Intersection::computeSingularCSI(
         
         xsi += dx;
         updateRHSForCSI( b, xsi, surfaceElement, lineElement);
-        residual = sqrt(blitz::sum(b(i)*b(i))); 
+        residual = Norm2(b); 
         iter++;
         
         if(iter >= maxiter )
@@ -855,7 +855,7 @@ bool Intersection::computeSingularCSI(
  |  CLI:    updates the systemmatrix for the computation     u.may 06/07| 
  |          of a curve-surface intersection (CSI)                       |
  *----------------------------------------------------------------------*/
-void Intersection::updateAForCSI(  	Epetra_SerialDenseMatrix&         A,
+void Intersection::updateAForCSI(  	BlitzMat&         A,
                                     const BlitzVec&   xsi,
                                     const DRT::Element*               surfaceElement,
                                     const DRT::Element*               lineElement) const
@@ -863,7 +863,7 @@ void Intersection::updateAForCSI(  	Epetra_SerialDenseMatrix&         A,
 	const int numNodesSurface = surfaceElement->NumNode();
    	const int numNodesLine = lineElement->NumNode();
    	
-   	A.Scale(0.0);
+   	A = 0.0;
  
     const BlitzMat surfaceDeriv1(shape_function_2D_deriv1(xsi(0), xsi(1), surfaceElement->Shape()));
     const DRT::Node*const* surfaceElementNodes = surfaceElement->Nodes();
@@ -872,8 +872,8 @@ void Intersection::updateAForCSI(  	Epetra_SerialDenseMatrix&         A,
         const double* x = surfaceElementNodes[inode] ->X();
         for(int isd=0; isd<3; isd++)
 		{
-			A[isd][0] += x[isd] * surfaceDeriv1(0,inode);
-			A[isd][1] += x[isd] * surfaceDeriv1(1,inode);
+			A(isd,0) += x[isd] * surfaceDeriv1(0,inode);
+			A(isd,1) += x[isd] * surfaceDeriv1(1,inode);
 		}
     }	
    
@@ -884,7 +884,7 @@ void Intersection::updateAForCSI(  	Epetra_SerialDenseMatrix&         A,
         const double* x = lineElementNodes[inode]->X();
         for(int isd=0; isd<3; isd++)
         {
-            A[isd][2] -= x[isd] * lineDeriv1(0,inode);
+            A(isd,2) -= x[isd] * lineDeriv1(0,inode);
         }   
     }
 }
@@ -1520,7 +1520,8 @@ void Intersection::computeCDT(
     //printTetViewOutputPLC( element, element->Id(), in);
     
     // recover curved interface for higher order meshes
-    const bool curvedInterface = true;
+    //cout << "no recovery..." << endl;
+    const bool curvedInterface = false;
     if(curvedInterface)
         recoverCurvedInterface(element, boundaryintcells, out);
  
@@ -2034,7 +2035,7 @@ int Intersection::decideSteinerCase(
     currentToElementCoordinates(xfemElement, x, xsi);
     
     InterfacePoint emptyIp;
-    if(checkIfOnBoundary(xfemElement-> Shape(), xsi, emptyIp))
+    if(setInterfacePointBoundaryStatus(xfemElement-> Shape(), xsi, emptyIp))
         out.pointmarkerlist[pointIndex] = 3;    // on xfem boundary  
     else
         out.pointmarkerlist[pointIndex] = 2;    // not on xfem boundary
@@ -2115,11 +2116,11 @@ void Intersection::liftSteinerPointOnSurface(
         elementToCurrentCoordinatesInPlace(xfemElement, p1);   
         elementToCurrentCoordinatesInPlace(xfemElement, p2);   
 
-        const BlitzVec n1(subtractsTwoVectors<3>(p1, Steinerpoint));
-        const BlitzVec n2(subtractsTwoVectors<3>(p2, Steinerpoint));
+        const BlitzVec n1(p1 - Steinerpoint);
+        const BlitzVec n2(p2 - Steinerpoint);
     
         BlitzVec normal(computeCrossProduct( n1, n2));
-        normalizeVector(normal);
+        normalizeVectorInPLace(normal);
         
         averageNormal += normal;
             
@@ -2193,20 +2194,20 @@ void Intersection::liftSteinerPointOnEdge(
     elementToCurrentCoordinatesInPlace(xfemElement, edgePoint);
     elementToCurrentCoordinatesInPlace(xfemElement, oppositePoint);
      
-    const BlitzVec r1(subtractsTwoVectors<3>( edgePoint, Steinerpoint));
-    const BlitzVec r2(subtractsTwoVectors<3>( oppositePoint, Steinerpoint));
+    const BlitzVec r1(edgePoint - Steinerpoint);
+    const BlitzVec r2(oppositePoint - Steinerpoint);
 
     BlitzVec n1(computeCrossProduct( r1, r2));
     BlitzVec n2(computeCrossProduct( r1, n1));
     
-    normalizeVector(n1);
-    normalizeVector(n2);
+    normalizeVectorInPLace(n1);
+    normalizeVectorInPLace(n2);
 
     vector<BlitzVec> plane(4, BlitzVec(3));      
-    plane[0] = addTwoVectors<3>(Steinerpoint, n1);               
-    plane[1] = subtractsTwoVectors<3>(Steinerpoint, n1);
-    plane[2] = addTwoVectors<3>(plane[1], n2);
-    plane[3] = addTwoVectors<3>(plane[0], n2);
+    plane[0] = Steinerpoint + n1;               
+    plane[1] = Steinerpoint - n1;
+    plane[2] = plane[1] + n2;
+    plane[3] = plane[0] + n2;
      
     BlitzVec xsi(3);  xsi = 0.0;
     const bool intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[cutterIndex]);
@@ -2550,7 +2551,7 @@ bool Intersection::computeRecoveryNormal(
     int                         countSingular = 0;
     const int                   maxiter = 50;
     double                      residual = 1.0;
-    Epetra_SerialDenseMatrix    A(3,3);
+    BlitzMat    A(3,3);
     BlitzVec    b(3);
     BlitzVec    dx(3);
     b = 0.0;
@@ -2564,7 +2565,7 @@ bool Intersection::computeRecoveryNormal(
     {   
         updateAForRCINormal( A, xsi, normal, cutterElement, onBoundary);
          
-        if(!solveLinearSystemWithSVD(A, b, dx, 3))
+        if(!solveLinearSystemWithSVD<3>(A, b, dx))
             countSingular++;
     
         if(countSingular > 5)
@@ -2582,7 +2583,7 @@ bool Intersection::computeRecoveryNormal(
         }       
         
         updateRHSForRCINormal( b, xsi, normal, cutterElement, onBoundary); 
-        residual = sqrt(blitz::sum(b(i)*b(i))); 
+        residual = Norm2(b); 
         iter++;
         
         //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
@@ -2606,7 +2607,7 @@ bool Intersection::computeRecoveryNormal(
  |          (line-surface intersection)                                 |   
  *----------------------------------------------------------------------*/
 void Intersection::updateAForRCINormal(   
-    Epetra_SerialDenseMatrix&                   A,
+    BlitzMat&                                   A,
     const BlitzVec&                             xsi,
     const vector<BlitzVec>&                     normal,
     const DRT::Element*                         surfaceElement,
@@ -2615,7 +2616,7 @@ void Intersection::updateAForRCINormal(
 {   
     const int numNodesSurface = surfaceElement->NumNode();
     
-    A.Scale(0.0);
+    A = 0.0;
     const BlitzMat surfaceDeriv1(shape_function_2D_deriv1( xsi(0), xsi(1), surfaceElement->Shape()));
    
     if(!onBoundary)
@@ -2628,13 +2629,13 @@ void Intersection::updateAForRCINormal(
             {
 //                A[dim][0] += node->X()[dim] * surfaceDeriv1[i][0];
 //                A[dim][1] += node->X()[dim] * surfaceDeriv1[i][1];
-                A[dim][0] += pos[dim] * surfaceDeriv1(0, i);
-                A[dim][1] += pos[dim] * surfaceDeriv1(1, i);
+                A(dim,0) += pos[dim] * surfaceDeriv1(0, i);
+                A(dim,1) += pos[dim] * surfaceDeriv1(1, i);
             }
         }
         
         for(int dim=0; dim<3; dim++)
-            A[dim][2] = (-1.0) * ( normal[0](dim) * (-0.5) + normal[1](dim) * 0.5 );  
+            A(dim,2) = (-1.0) * ( normal[0](dim) * (-0.5) + normal[1](dim) * 0.5 );  
     }
     else
     {
@@ -2648,8 +2649,8 @@ void Intersection::updateAForRCINormal(
             {
 //                A[dim][0] += node->X()[dim] * surfaceDeriv1[i][0];
 //                A[dim][1] += node->X()[dim] * surfaceDeriv1[i][1]; // TODO: was this a bug??? switched indices
-                A[dim][0] += pos[dim] * surfaceDeriv1(0,i);
-                A[dim][1] += pos[dim] * surfaceDeriv1(1,i);
+                A(dim,0) += pos[dim] * surfaceDeriv1(0,i);
+                A(dim,1) += pos[dim] * surfaceDeriv1(1,i);
             }
         }
         
@@ -2659,7 +2660,7 @@ void Intersection::updateAForRCINormal(
                 int index = i;
                 if(i > 1)   index = 4;
                 //A[dim][2] += (-1.0) * normal[index][dim] * lineDeriv1[i][0]; 
-                A[dim][2] += (-1.0) * normal[index](dim) * lineDeriv1(0,i);
+                A(dim,2) += (-1.0) * normal[index](dim) * lineDeriv1(0,i);
             }  
     }
 }
@@ -2734,11 +2735,10 @@ bool Intersection::computeRecoveryPlane(
         DRT::Element*                               surfaceElement
         ) const
 {
-    bool    intersection = true;
-    int     begin, end;
     const int     numLines = surfaceElement->NumLine();
    
     // run over all lines (curves)
+    int     begin, end;
     if(lineIndex == -1)
     {
         begin = 0;
@@ -2750,16 +2750,16 @@ bool Intersection::computeRecoveryPlane(
         end   = lineIndex + 1;
     }
     
+    bool    intersection = true;
     for(int i = begin; i < end; i++)
     {
         int                         iter = 0;
         const int                   maxiter = 50;
         double                      residual = 1.0;
         DRT::Element*               lineElement = surfaceElement->Lines()[i];
-        Epetra_SerialDenseMatrix    A(3,3);
-        BlitzVec    b(3);   b  = 0.0;
+        BlitzMat    A(3,3);
+        BlitzVec    b(3);
         BlitzVec    dx(3);  dx = 0.0;
-        blitz::firstIndex j;
       
         intersection = true;
         xsi = 0.0; 
@@ -2770,7 +2770,7 @@ bool Intersection::computeRecoveryPlane(
         {   
             updateAForRCIPlane( A, xsi, plane, lineElement, surfaceElement);
             
-            if(!gaussElimination(A, b, dx, true, 3, 1))
+            if(!gaussElimination<true, 3, 1>(A, b, dx))
             {
                 intersection = false;
                 break;  
@@ -2782,11 +2782,10 @@ bool Intersection::computeRecoveryPlane(
                 break;
             }       
         
-            //xsi = addTwoVectors(xsi, dx);
             xsi += dx;
   
             updateRHSForRCIPlane( b, xsi, plane, lineElement);
-            residual = sqrt(blitz::sum(b(j)*b(j))); 
+            residual = Norm2(b); 
             iter++;
         } 
     
@@ -2814,7 +2813,7 @@ bool Intersection::computeRecoveryPlane(
  |          (curve-plane intersection)                                  |   
  *----------------------------------------------------------------------*/
 void Intersection::updateAForRCIPlane(   
-        Epetra_SerialDenseMatrix&                   A,
+        BlitzMat&                   A,
         const BlitzVec&             xsi,
         const vector<BlitzVec>&     plane,
         const DRT::Element*                         lineElement,
@@ -2823,24 +2822,20 @@ void Intersection::updateAForRCIPlane(
 {   
     const int numNodesLine = lineElement->NumNode();
     const int numNodesSurface = 4;
-//    Epetra_SerialDenseMatrix surfaceDeriv(2, numNodesSurface);
-//    Epetra_SerialDenseMatrix lineDeriv(1,numNodesLine);
-//    shape_function_2D_deriv1(surfaceDeriv,  xsi(0),  xsi(1), DRT::Element::quad4);
-//    shape_function_1D_deriv1(lineDeriv, xsi(2), lineElement->Shape());
     
     const BlitzMat surfaceDeriv(shape_function_2D_deriv1(xsi(0),  xsi(1), DRT::Element::quad4));
     const BlitzMat lineDeriv(shape_function_1D_deriv1(xsi(2), lineElement->Shape()));
     
     dsassert((int)plane.size() >= numNodesSurface, "plane array has to have size numNodesSurface ( = 4)!");
     
-    A.Scale(0.0);
+    A = 0.0;
     for(int dim=0; dim<3; dim++)
         for(int i=0; i<numNodesSurface; i++)
         {
 //            A[dim][0] += plane[i][dim] * surfaceDeriv[i][0];
 //            A[dim][1] += plane[i][dim] * surfaceDeriv[i][1]; // ???????????????bug??????????? new version gives slighlty different results
-            A[dim][0] += plane[i](dim) * surfaceDeriv(0,i);
-            A[dim][1] += plane[i](dim) * surfaceDeriv(1,i);
+            A(dim,0) += plane[i](dim) * surfaceDeriv(0,i);
+            A(dim,1) += plane[i](dim) * surfaceDeriv(1,i);
         }
         
     for(int i=0; i<numNodesLine; i++)
@@ -2848,7 +2843,7 @@ void Intersection::updateAForRCIPlane(
         const DRT::Node* node = lineElement->Nodes()[i];
         for(int dim=0; dim<3; dim++)
 //            A[dim][2] += (-1.0) * node->X()[dim] * lineDeriv[i][0];
-            A[dim][2] += (-1.0) * node->X()[dim] * lineDeriv(0,i);   
+            A(dim,2) -= node->X()[dim] * lineDeriv(0,i);   
     }        
 }
 
@@ -2937,16 +2932,16 @@ void Intersection::computeIntersectionNormalA(
     }
                  
     // compute direction vectors of the plane 
-    const BlitzVec  r1(subtractsTwoVectors<3>(p1, p2));
-    const BlitzVec  r2(subtractsTwoVectors<3>(p3, p2));
+    const BlitzVec  r1(p1 - p2);
+    const BlitzVec  r2(p3 - p2);
  
     // normal of the plane
     BlitzVec  n(computeCrossProduct(r1, r2));
-    normalizeVector(n);
+    normalizeVectorInPLace(n);
  
     // direction vector of the intersection line
     BlitzVec  r(computeCrossProduct(n, r2));  
-    normalizeVector(r);
+    normalizeVectorInPLace(r);
  
     // computes the start point of the line
     BlitzVec  m(computeLineMidpoint(p2, p3));
@@ -2960,10 +2955,10 @@ void Intersection::computeIntersectionNormalA(
     }
     
     // compute nodes of the normal to the interface edge of the tetrahedron
-    plane[0] = addTwoVectors<3>(m, r);               
-    plane[1] = subtractsTwoVectors<3>(m, r);
-    plane[2] = addTwoVectors<3>(plane[1], n);               
-    plane[3] = addTwoVectors<3>(plane[0], n);
+    plane[0] = m + r;               
+    plane[1] = m - r;
+    plane[2] = plane[1] + n;               
+    plane[3] = plane[0] + n;
     
     
     if(onBoundary)
@@ -3032,22 +3027,22 @@ void Intersection::computeIntersectionNormalB(
     elementToCurrentCoordinatesInPlace(xfemElement, p3);  
     elementToCurrentCoordinatesInPlace(xfemElement, p4);  
     
-    const BlitzVec r1(subtractsTwoVectors<3>(p1,p2));
-    const BlitzVec r2(subtractsTwoVectors<3>(p3,p2));
-    const BlitzVec r3(subtractsTwoVectors<3>(p4,p2));
+    const BlitzVec r1(p1 - p2);
+    const BlitzVec r2(p3 - p2);
+    const BlitzVec r3(p4 - p2);
     
     BlitzVec n1(computeCrossProduct(r2, r1));
     BlitzVec n2(computeCrossProduct(r1, r3));
     
-    BlitzVec averageNormal(addTwoVectors<3>(n1, n2));
+    BlitzVec averageNormal(n1 + n2);
     BlitzVec rPlane(computeCrossProduct(n1, r1));
     
 //    for(int i = 0; i < 3; i++)
 //        averageNormal(i) = 0.5*averageNormal(i);
     averageNormal *= 0.5;
         
-    normalizeVector(averageNormal);
-    normalizeVector(rPlane);
+    normalizeVectorInPLace(averageNormal);
+    normalizeVectorInPLace(rPlane);
  
     BlitzVec m(3);
     for(int i = 0; i < 3; i++)
@@ -3056,10 +3051,10 @@ void Intersection::computeIntersectionNormalB(
     elementToCurrentCoordinatesInPlace(xfemElement, m);  
     
     // compute nodes of the normal to the interface edge of the tetrahedron
-    plane[0] = addTwoVectors<3>(m, averageNormal);               
-    plane[1] = subtractsTwoVectors<3>(m, averageNormal);
-    plane[2] = addTwoVectors<3>(plane[1], rPlane);               
-    plane[3] = addTwoVectors<3>(plane[0], rPlane);
+    plane[0] = m + averageNormal;               
+    plane[1] = m - averageNormal;
+    plane[2] = plane[1] + rPlane;               
+    plane[3] = plane[0] + rPlane;
     
    /* for(int i = 0; i < 4; i++)
     {
@@ -3099,22 +3094,22 @@ void Intersection::computeIntersectionNormalC(
     }
            
     // compute direction vectors of the plane 
-    BlitzVec  r1(subtractsTwoVectors<3>(p1, p2));
-    BlitzVec  r2(subtractsTwoVectors<3>(p3, p2));
+    BlitzVec  r1(p1 - p2);
+    BlitzVec  r2(p3 - p2);
  
     // normal of the plane
     BlitzVec  n(computeCrossProduct(r1, r2));
-    normalizeVector(n);
+    normalizeVectorInPLace(n);
  
     // direction vector of the intersection line
     BlitzVec  r(computeCrossProduct(n, r2));  
-    normalizeVector(r);
+    normalizeVectorInPLace(r);
  
     // compute nodes of the normal to the interface edge of the tetrahedron
-    plane[0] = addTwoVectors<3>(p2, r);               
-    plane[1] = subtractsTwoVectors<3>(p2, r);
-    plane[2] = addTwoVectors<3>(plane[1], n);               
-    plane[3] = addTwoVectors<3>(plane[0], n);
+    plane[0] = p2 + r;               
+    plane[1] = p2 - r;
+    plane[2] = plane[1] + n;               
+    plane[3] = plane[0] + n;
     
     
     for(int i = 0; i < 4; i++)
@@ -3550,8 +3545,8 @@ void Intersection::addCellsToBoundaryIntCellsMap(
  |  DB:     Debug only                                       u.may 06/07|
  *----------------------------------------------------------------------*/  
 void Intersection::debugXAABBIntersection(
-        const Epetra_SerialDenseMatrix cutterXAABB, 
-        const Epetra_SerialDenseMatrix xfemXAABB,
+        const BlitzMat cutterXAABB, 
+        const BlitzMat xfemXAABB,
         const DRT::Element* cutterElement,
         const DRT::Element* xfemElement,
         const int noC,
@@ -3626,7 +3621,7 @@ void Intersection::debugNodeWithinElement(
     const int numnodes = element->NumNode();
     vector<int> actParams(1,0);
     BlitzVec funct(numnodes);
-    Epetra_SerialDenseMatrix emptyM;
+    BlitzMat emptyM;
     BlitzVec emptyV;
     BlitzVec x(3);
     DRT::Discretization dummyDis("dummy discretization", null);
@@ -3966,8 +3961,8 @@ void Intersection::debugIntersection(
 
 void Intersection::debugXAABBs(
 	const int							id,
-	const Epetra_SerialDenseMatrix&     cutterXAABB, 
-	const Epetra_SerialDenseMatrix&     xfemXAABB) const
+	const BlitzMat&     cutterXAABB, 
+	const BlitzMat&     xfemXAABB) const
 {
 	char filename[100];
 	sprintf(filename, "element_XAABB%d.pos", id);

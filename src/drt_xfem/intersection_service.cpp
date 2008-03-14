@@ -24,15 +24,9 @@ using namespace XFEM;
 using namespace DRT::UTILS;
 
 
-inline static double SQR(double a)
-{
-    return a * a;
-}
-
-
 /*----------------------------------------------------------------------*
  |  ML:     computes the cross product                       u.may 08/07|
- |          of 2 BlitzVec c = a x b                     |
+ |          of 2 vectors c = a x b                                      |
  *----------------------------------------------------------------------*/  
 BlitzVec XFEM::computeCrossProduct(
     const BlitzVec& a,
@@ -45,37 +39,6 @@ BlitzVec XFEM::computeCrossProduct(
     c(2) = a(0)*b(1) - a(1)*b(0);
     
     return c;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  ML:     normalizes a BlitzVec            u.may 08/07|
- *----------------------------------------------------------------------*/  
-void XFEM::normalizeVector(   
-    BlitzVec&     v)
-{
-    blitz::firstIndex i;
-    const double norm = sqrt(blitz::sum(v(i)*v(i)));
-    v /= norm;
-    return;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |    theorem of pythagoras                                 u.may 09/07 |
- |    computes ( a^2 + b^2 ) ^ (1/2)                                    |
- |    (modified from NUMERICAL RECIPES)                                 |
- *----------------------------------------------------------------------*/  
-double XFEM::pythagoras(
-    const double  a, 
-    const double  b)
-{
-    if (a == 0.0 and b == 0.0)
-        return 0.0;
-    else
-        return sqrt(SQR(a)+SQR(b));
 }
 
 
@@ -263,7 +226,7 @@ BlitzVec XFEM::currentToElementCoordinatesExact(
 */  
 template <DRT::Element::DiscretizationType DISTYPE>
 void updateAForNWE(   
-    Epetra_SerialDenseMatrix&           A,
+    BlitzMat&                           A,
     const BlitzVec&                     xsi,
     const BlitzMat&                     xyze
     )                                                  
@@ -273,15 +236,19 @@ void updateAForNWE(
     
     const BlitzMat deriv1(shape_function_deriv1<DISTYPE,BlitzVec>(xsi));
     
-    A.Scale(0.0);
+    A = 0.0;
     for(int inode=0; inode<numNodes; inode++) 
     {
         for(int isd=0; isd<dim; ++isd)
         {
             for(int jsd=0; jsd<dim; ++jsd)
-                A[isd][jsd] += xyze(isd,inode) * deriv1(jsd,inode);
+                A(isd,jsd) += xyze(isd,inode) * deriv1(jsd,inode);
         }
-    }      
+    }
+//    blitz::firstIndex isd;
+//    blitz::secondIndex jsd;
+//    blitz::thirdIndex inode;
+//    A = blitz::sum(xyze(isd,inode) * deriv1(jsd,inode), inode);
 }
 
 
@@ -330,7 +297,7 @@ void updateRHSForNWE(
 \param x                    (in)        : node in current coordinates (x, y, z)
 \param xsi                  (inout)     : node in element coordinates
 */  
-template <DRT::Element::DiscretizationType DISTYPE>
+template <DRT::Element::DiscretizationType DISTYPE, int dim>
 bool currentToElementCoordinatesT(  
     const DRT::Element*                 element,
     const BlitzVec&                     x,
@@ -338,11 +305,11 @@ bool currentToElementCoordinatesT(
 {
     if(element->Shape() != DISTYPE) dserror("this is a bug when calling the wrong instance of this templated function!");
     bool nodeWithinElement = true;
-    const int dim = DRT::UTILS::getDimension<DISTYPE>();
+    //const int dim = DRT::UTILS::getDimension<DISTYPE>();
     const int maxiter = 20;
     double residual = 1.0;
     
-    Epetra_SerialDenseMatrix A(dim,dim);
+    BlitzMat A(dim,dim);
     BlitzVec b(dim);   b  = 0.0;
     BlitzVec dx(dim);  dx = 0.0;
     blitz::firstIndex i;
@@ -358,7 +325,7 @@ bool currentToElementCoordinatesT(
     {   
         updateAForNWE<DISTYPE>( A, xsi, xyze);
    
-        if(!gaussElimination(A, b, dx, true, dim, 1))
+        if(!gaussElimination<true, dim, 1>(A, b, dx))
         {
             nodeWithinElement = false;
             break;
@@ -367,7 +334,7 @@ bool currentToElementCoordinatesT(
         xsi += dx;
         updateRHSForNWE<DISTYPE>(b, xsi, x, xyze);
         
-        residual = sqrt(blitz::sum(b(i)*b(i)));
+        residual = Norm2(b);
         iter++; 
         
         if(iter >= maxiter)
@@ -392,19 +359,19 @@ bool XFEM::currentToElementCoordinates(
     switch (element->Shape())
     {
     case DRT::Element::hex8:
-        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::hex8>(element, x, xsi);
+        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::hex8, 3>(element, x, xsi);
         break;
     case DRT::Element::hex20:
-        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::hex20>(element, x, xsi);
+        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::hex20, 3>(element, x, xsi);
         break;
     case DRT::Element::hex27:
-        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::hex27>(element, x, xsi);
+        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::hex27, 3>(element, x, xsi);
         break;
     case DRT::Element::line2:
-        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::line2>(element, x, xsi);
+        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::line2, 1>(element, x, xsi);
         break;
     case DRT::Element::line3:
-        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::line3>(element, x, xsi);
+        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::line3, 1>(element, x, xsi);
         break;
     default:
         dserror("add your distype to this switch!");
@@ -421,7 +388,7 @@ bool XFEM::currentToElementCoordinates(
  *----------------------------------------------------------------------*/
 bool XFEM::isPositionWithinXAABB(    
     const BlitzVec&                    pos,
-    const Epetra_SerialDenseMatrix&    XAABB)
+    const BlitzMat&                    XAABB)
 {
     const int nsd = 3;
     bool isWithin = true;
@@ -449,7 +416,7 @@ bool XFEM::isPositionWithinXAABB(
 bool XFEM::isLineWithinXAABB(    
     const BlitzVec&                    pos1,
     const BlitzVec&                    pos2,
-    const Epetra_SerialDenseMatrix&    XAABB)
+    const BlitzMat&                    XAABB)
 {
     const int nsd = 3;
     bool isWithin = true;
@@ -463,8 +430,8 @@ bool XFEM::isLineWithinXAABB(
     {
         if(ksd != isd)
         {
-            double min = XAABB(ksd,0) - TOL7;
-            double max = XAABB(ksd,1) + TOL7;
+            const double min = XAABB(ksd,0) - TOL7;
+            const double max = XAABB(ksd,1) + TOL7;
    
             if((pos1(ksd) < min)||(pos1(ksd) > max))
                 isWithin = false;
@@ -797,19 +764,20 @@ void XFEM::updateAForMap3To2(
  |  ICS:    computes an extended axis-aligned bounding box   u.may 06/07|
  |          XAABB for a given element                                   |
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix XFEM::computeFastXAABB( 
+BlitzMat XFEM::computeFastXAABB( 
     const DRT::Element* element)
 {
     const int nsd = 3;
-    Epetra_SerialDenseMatrix XAABB(nsd, 2);
+    BlitzMat XAABB(nsd, 2);
     
+    // first node
     const double* pos = element->Nodes()[0]->X();
     for(int dim=0; dim<nsd; ++dim)
     {
         XAABB(dim, 0) = pos[dim] - TOL7;
         XAABB(dim, 1) = pos[dim] + TOL7;
     }
-    
+    // remaining node
     for(int i=1; i<element->NumNode(); ++i)
     {
         const double* posEle = element->Nodes()[i]->X();
@@ -829,8 +797,8 @@ Epetra_SerialDenseMatrix XFEM::computeFastXAABB(
     const double halfMaxDistance = 0.5*maxDistance;
     for(int dim=0; dim<nsd; ++dim)
     {
-        XAABB(dim, 0) = XAABB(dim, 0) - halfMaxDistance;
-        XAABB(dim, 1) = XAABB(dim, 1) + halfMaxDistance;
+        XAABB(dim, 0) -= halfMaxDistance;
+        XAABB(dim, 1) += halfMaxDistance;
     }   
     
     /*
@@ -848,8 +816,8 @@ Epetra_SerialDenseMatrix XFEM::computeFastXAABB(
  |  ICS:    checks if two XAABB's intersect                  u.may 06/07|
  *----------------------------------------------------------------------*/
 bool XFEM::intersectionOfXAABB(  
-    const Epetra_SerialDenseMatrix&     cutterXAABB, 
-    const Epetra_SerialDenseMatrix&     xfemXAABB)
+    const BlitzMat&     cutterXAABB, 
+    const BlitzMat&     xfemXAABB)
 {
     
   /*====================================================================*/

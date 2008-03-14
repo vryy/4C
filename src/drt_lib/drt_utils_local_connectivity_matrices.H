@@ -440,7 +440,7 @@ namespace UTILS
   \brief    Returns the geometric center of the element in local coordinates
             
   */   
-  std::vector<double> getLocalCenterPosition(
+  blitz::Array<double,1> getLocalCenterPosition(
     const DRT::Element::DiscretizationType   distype     ///< shape of the element
     );
 

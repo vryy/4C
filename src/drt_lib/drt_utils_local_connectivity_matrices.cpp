@@ -1006,42 +1006,37 @@ bool DRT::UTILS::checkRewinding3D(const DRT::Element* ele)
  |  Returns the geometric center of the element in local coordinates    |     
  |                                                           a.ger 12/07|
  *----------------------------------------------------------------------*/
-std::vector<double> DRT::UTILS::getLocalCenterPosition(
+blitz::Array<double,1> DRT::UTILS::getLocalCenterPosition(
         const DRT::Element::DiscretizationType   distype     ///< shape of the element
         )
 {
-    vector<double> pos(3);
+    const int dim = getDimension(distype);
+    blitz::Array<double,1> pos(dim);
     switch(distype)
     {
         case DRT::Element::line2 :  case DRT::Element::line3 :
         {
-            pos[0] = 0.0;
+            pos = 0.0;
             break;
         }
         case DRT::Element::quad4 : case DRT::Element::quad8 : case DRT::Element::quad9 :
         {
-            pos[0] = 0.0;
-            pos[1] = 0.0;
+            pos = 0.0;
             break;
         }
         case DRT::Element::tri3 : case DRT::Element::tri6 :
         {
-            pos[0] = 1.0/3.0;
-            pos[1] = 1.0/3.0;
+            pos = 1.0/3.0;
             break;
         }
         case DRT::Element::hex8 : case DRT::Element::hex20 : case DRT::Element::hex27 :
         {
-            pos[0] = 0.0;
-            pos[1] = 0.0;
-            pos[2] = 0.0;
+            pos = 0.0;
             break;
         }
         case DRT::Element::tet4 : case DRT::Element::tet10 :
         {
-            pos[0] = 1.0/4.0;
-            pos[1] = 1.0/4.0;
-            pos[2] = 1.0/4.0;
+            pos = 1.0/4.0;
             break;
         }   
         default:
