@@ -258,7 +258,7 @@ public:
                               Epetra_SerialDenseVector& elevec1);
   
   void Arbeit(double& A,double& AN,double& AM,double& AQ, double& xv);
-  void Thermik(double& kT);
+  void Thermik(double& kT, double& crosssec, double& mominer);
                               
   //@}
 

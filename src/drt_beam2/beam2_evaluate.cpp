@@ -25,6 +25,9 @@ Maintainer: Christian Cyron
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 
+//externally defined structure for material data
+extern struct _MATERIAL  *mat;
+
 
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -439,8 +442,7 @@ x_verschiebung = disp[numdf];
   / function instead of e.g. beam2_input.cpp or within the Beam2Register class since it is not/
   / sure that structure _MATERIAL is declared within those scopes properly whereas it is within/
   / the evaluation functions */
-  
-  extern struct _MATERIAL  *mat;
+
   // get the material law
   MATERIAL* currmat = &(mat[material_-1]);
   double ym;
@@ -612,9 +614,11 @@ void DRT::ELEMENTS::Beam2::Arbeit(double& A,double& AN,double& AM,double& AQ, do
   	xv = x_verschiebung;
 	return;
   } 
-void DRT::ELEMENTS::Beam2::Thermik(double& kT)
+void DRT::ELEMENTS::Beam2::Thermik(double& kT, double& crosssec, double& mominer)
   {	
 	kT = thermalenergy_;
+	crosssec = crosssec_;
+	mominer = mominer_;
 	return;
   } 
 
