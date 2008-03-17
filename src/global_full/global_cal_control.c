@@ -74,6 +74,7 @@ extern struct _FIELD      *sm_field;
 #include "../drt_fluid/condif_drt.H"
 #include "../drt_fsi/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
+#include "../drt_elch/elch_dyn.H"
 #endif
 
 /*----------------------------------------------------------------------*
@@ -310,10 +311,18 @@ case prb_tsi:
 #ifndef CCADISCRET
   tsi_dyn();
 #else
-  dserror("dyn_fsi(0) with DRT not yet impl.");
+  dserror("tsi_dyn() with DRT not yet impl.");
 #endif
   break;
 #endif
+
+case prb_elch:
+#ifndef CCADISCRET
+  dserror("Electrochemistry module not available in CCARAT")
+#else
+  elch_dyn();
+#endif
+  break;
 
 default:
   dserror("solution of unknown problemtyp requested");
