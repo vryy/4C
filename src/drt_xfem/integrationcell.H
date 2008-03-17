@@ -90,7 +90,7 @@ public:
     \brief Destructor
 
     */
-    virtual ~IntCell();
+    ~IntCell();
 
     /*!  = operator
      * create true copy -> allows to have constant instance members
@@ -235,28 +235,22 @@ public:
 
     /*!
      \brief Standard Constructor
-
-     \param coordinates      : coordinates of the integrationcell
-     \param distype      : coordinates of the integrationcell
      */
     explicit BoundaryIntCell(
-            const DRT::Element::DiscretizationType    distype,
-            const int                                 surface_ele_gid,
-            const vector<vector<double> >&            domainCoordinates,
-            const vector<vector<double> >&            boundaryCoordinates
+            const DRT::Element::DiscretizationType  distype,            ///< shape of the integration cell
+            const int                               surface_ele_gid,    ///< global id of the boundary element (cutter)
+            const vector<vector<double> >&          domainCoordinates,  ///< coordinates of the integrationcell in xsi_domain
+            const vector<vector<double> >&          boundaryCoordinates ///< coordinates of the integrationcell in xsi_boundary
             );
 
     /*!
      \brief Standard Constructor
-
-     \param coordinates      : coordinates of the integrationcell
-     \param distype      : coordinates of the integrationcell
      */
     explicit BoundaryIntCell(
-            const DRT::Element::DiscretizationType    distype,
-            const int                                 surface_ele_gid,
-            const BlitzMat&                           domainCoordinates,
-            const BlitzMat&                           boundaryCoordinates
+            const DRT::Element::DiscretizationType  distype,             ///< shape of the integration cell
+            const int                               surface_ele_gid,     ///< global id of the boundary element (cutter)
+            const BlitzMat&                         domainCoordinates,   ///< coordinates of the integrationcell in xsi_domain
+            const BlitzMat&                         boundaryCoordinates  ///< coordinates of the integrationcell in xsi_boundary
             );
     
     /*!
