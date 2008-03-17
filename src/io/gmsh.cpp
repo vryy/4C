@@ -273,7 +273,8 @@ string IO::GMSH::disToString(
         const std::string&                     s, 
         const double                           scalar, 
         const RefCountPtr<DRT::Discretization> dis,
-        const map<int, DomainIntCells >&       elementDomainIntCellsMap)
+        const map<int, DomainIntCells >&       elementDomainIntCellsMap,
+        const map<int, BoundaryIntCells >&     elementBoundaryIntCellsMap)
 {
     stringstream gmshfilecontent;
     gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {" << endl;
@@ -287,6 +288,12 @@ string IO::GMSH::disToString(
             for(XFEM::DomainIntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell )
             {
                 gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXYZ(*actele), scalar, cell->Shape()) << endl;
+            }
+            const BoundaryIntCells bcells = elementBoundaryIntCellsMap.find(id)->second;
+            for(XFEM::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell )
+            {
+                cout << bcell->toString() << endl;
+                gmshfilecontent << IO::GMSH::cellToString(bcell->NodalPosXYZ(*actele), scalar, bcell->Shape()) << endl;
             }
         }
         else

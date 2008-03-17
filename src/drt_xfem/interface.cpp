@@ -35,7 +35,8 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	        elementalBoundaryIntCells_,
 	        cutterElementMap,
 	        cutterNodeMap);
-	std::cout << "numcuttedelements = " << elementalDomainIntCells_.size() << endl;
+	std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
+	std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
   
 	boundaryElements_.clear();
 	map< int, set< DRT::Element* > >::iterator paar;
@@ -54,10 +55,10 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	  
 	  
 	  
-#if 0
+#if 1
 	  // debug: write both meshes to file in Gmsh format
 	  std::ofstream f_system("elements_coupled_system.pos");
-	  f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_);
+	  f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
 	  f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis);
 	  {
 	      stringstream gmshfilecontent;

@@ -70,7 +70,8 @@ std::string disToString(
         const std::string&                     s,
         const double                           scalar,
         const RCP<DRT::Discretization>         dis,
-        const map<int,XFEM::DomainIntCells >&  elementDomainIntCellsMap);
+        const map<int,XFEM::DomainIntCells >&  elementDomainIntCellsMap,
+        const map<int,XFEM::BoundaryIntCells >&  elementBoundaryIntCellsMap);
 
 std::string getConfigString(const int numview);
 
