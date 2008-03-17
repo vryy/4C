@@ -318,7 +318,7 @@ case prb_tsi:
 
 case prb_elch:
 #ifndef CCADISCRET
-  dserror("Electrochemistry module not available in CCARAT")
+  dserror("Electrochemistry module not available in CCARAT");
 #else
   elch_dyn();
 #endif
