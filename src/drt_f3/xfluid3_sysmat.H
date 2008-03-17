@@ -1911,7 +1911,7 @@ void Sysmat(
             const BlitzVec velint(blitz::sum(shp(j)*evelnp(i,j),j));
             
             // get pressure
-            const double press(blitz::sum(shp*eprenp));
+            //const double press(blitz::sum(shp*eprenp));
 
             // get viscous stress unknowns
             BlitzMat sigma(3,3);
@@ -2059,13 +2059,13 @@ void Sysmat(
                           |           |
                            \         /
             */
-            assembler.template Matrix<Velx,Pres>(shp, -fac*normalvec(0), shp);
-            assembler.template Matrix<Vely,Pres>(shp, -fac*normalvec(1), shp);
-            assembler.template Matrix<Velz,Pres>(shp, -fac*normalvec(2), shp);
-            
-            assembler.template Vector<Velx>(shp, fac*normalvec(0)*press);
-            assembler.template Vector<Vely>(shp, fac*normalvec(1)*press);
-            assembler.template Vector<Velz>(shp, fac*normalvec(2)*press);  
+//            assembler.template Matrix<Velx,Pres>(shp, -timefacfac*normalvec(0), shp);
+//            assembler.template Matrix<Vely,Pres>(shp, -timefacfac*normalvec(1), shp);
+//            assembler.template Matrix<Velz,Pres>(shp, -timefacfac*normalvec(2), shp);
+//            
+//            assembler.template Vector<Velx>(shp, timefacfac*normalvec(0)*press);
+//            assembler.template Vector<Vely>(shp, timefacfac*normalvec(1)*press);
+//            assembler.template Vector<Velz>(shp, timefacfac*normalvec(2)*press);  
 
         } // end loop over gauss points
     } // end loop over boundary integration cells
