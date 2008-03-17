@@ -319,7 +319,7 @@ private:
   //! Preconditioner (currently an ML, Ifpack, MLAPI or SIMPLER operator)
   RCP<Epetra_Operator>      P_;
   //! system of equations used for preconditioning used by P_ only
-  RCP<Epetra_CrsMatrix>     Pmatrix_;
+  RCP<Epetra_RowMatrix>     Pmatrix_;
   //! initial guess and solution
   RCP<Epetra_Vector>        x_;
   //! right hand side vector

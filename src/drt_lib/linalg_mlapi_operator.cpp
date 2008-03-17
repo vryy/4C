@@ -24,15 +24,17 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-LINALG::AMG_Operator::AMG_Operator(RCP<Epetra_CrsMatrix> A, 
+LINALG::AMG_Operator::AMG_Operator(RCP<Epetra_RowMatrix> A, 
                                    ParameterList& params, 
                                    const bool compute) :
 Epetra_Operator(),
 label_("LINALG::AMG_Operator"),
 params_(params),
-Ainput_(A),
 nlevel_(0)
 {
+  Epetra_CrsMatrix* tmp = dynamic_cast<Epetra_CrsMatrix*>(A.get());
+  if (!tmp) dserror("Expected Epetra_CrsMatrix");
+  Ainput_ = rcp(tmp,false);
   SetupNonSymStab();
   return;
 }

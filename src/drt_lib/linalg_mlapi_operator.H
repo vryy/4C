@@ -76,7 +76,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  explicit AMG_Operator(RCP<Epetra_CrsMatrix> A, 
+  explicit AMG_Operator(RCP<Epetra_RowMatrix> A, 
                         ParameterList& params, 
                         const bool compute);
 

@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 #include "linalg_solver.H"
 #include "linalg_mlapi_operator.H"
 #include "simpler_operator.H"
+#include "linalg_downwindmatrix.H"
 #include "linalg_systemmatrix.H"
 
 extern "C"
@@ -402,8 +403,10 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   // get type of preconditioner and build either Ifpack or ML
   // if we have an ifpack parameter list, we do ifpack
   // if we have an ml parameter list we do ml
+  // if we have a downwinding flag we downwind
   bool doifpack = Params().isSublist("IFPACK Parameters");
   bool doml     = Params().isSublist("ML Parameters");
+  bool dwind    = azlist.get<bool>("downwinding",false);
   if (!A)
   {
     doifpack = false;
@@ -710,140 +713,6 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     params.set("solver","lapack");
     params.set("symmetric",false);
   break;
-#if 0
-  case vm3://=========================================================== VM3
-  {
-    params.set("solver","vm3");
-    ParameterList& mllist = params.sublist("ML Parameters");
-    ML_Epetra::SetDefaults("SA",mllist);
-    AZVAR* azvar = actsolv->azvar;
-    mllist.set("output"                          ,azvar->mlprint);
-    if (azvar->mlprint==10)
-      mllist.set("print unused"                  ,1);
-    else
-    mllist.set("print unused"                  ,-2);
-    mllist.set("increasing or decreasing"        ,"increasing");
-    mllist.set("coarse: max size"                ,azvar->mlcsize);
-    mllist.set("max levels"                      ,azvar->mlmaxlevel);
-    mllist.set("smoother: pre or post"           ,"both");
-    mllist.set("aggregation: use tentative restriction",true);
-    mllist.set("aggregation: threshold"          ,azvar->ml_threshold);
-    mllist.set("aggregation: damping factor"     ,azvar->mldamp_prolong);
-    mllist.set("aggregation: nodes per aggregate",azvar->mlaggsize);
-    switch (azvar->mlcoarsentype)
-    {
-      case 0:  mllist.set("aggregation: type","Uncoupled");  break;
-      case 1:  mllist.set("aggregation: type","METIS");      break;
-      case 2:  mllist.set("aggregation: type","VBMETIS");    break;
-      case 3:  mllist.set("aggregation: type","MIS");        break;
-      default: dserror("Unknown type of coarsening for ML"); break;
-    }
-    // set ml smoothers -> write ml list
-    for (int i=0; i<azvar->mlmaxlevel-1; ++i)
-    {
-      char levelstr[11];
-      sprintf(levelstr,"(level %d)",i);
-      int type;
-      double damp;
-      if (i==0)
-      {
-        type = azvar->mlsmotype_fine;
-        damp = azvar->mldamp_fine;
-      }
-      else if (i < azvar->mlmaxlevel-1)
-      {
-        type = azvar->mlsmotype_med;
-        damp = azvar->mldamp_med;
-      }
-      else
-      {
-        type = azvar->mlsmotype_coarse;
-        damp = azvar->mldamp_coarse;
-      }
-      switch (type)
-      {
-      case 0:
-        mllist.set("smoother: type"                   ,"symmetric Gauss-Seidel");
-        mllist.set("smoother: sweeps"                 ,azvar->mlsmotimes[i]);
-        mllist.set("smoother: damping factor"         ,damp);
-      break;
-      case 1:
-        mllist.set("smoother: type"                    ,"Jacobi");
-        mllist.set("smoother: sweeps"                  ,azvar->mlsmotimes[i]);
-        mllist.set("smoother: damping factor"          ,damp);
-      break;
-      case 2:
-        mllist.set("smoother: type "+(string)levelstr                    ,"MLS");
-        mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,azvar->mlsmotimes[i]);
-      break;
-      case 3:
-        mllist.set("smoother: type "+(string)levelstr                    ,"MLS");
-        mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,-azvar->mlsmotimes[i]);
-      break;
-      case 4:
-        mllist.set("smoother: type "+(string)levelstr                    ,"IFPACK");
-        mllist.set("smoother: ifpack type "+(string)levelstr             ,"ILU");
-        mllist.set("smoother: ifpack overlap "+(string)levelstr          ,0);
-        mllist.sublist("smoother: ifpack list").set("fact: level-of-fill",azvar->mlsmotimes[i]);
-        mllist.sublist("smoother: ifpack list").set("schwarz: reordering type","rcm");
-      break;
-      case 5:
-        mllist.set("smoother: type "+(string)levelstr,"Amesos-KLU");
-      break;
-#ifdef PARALLEL
-      case 6:
-        mllist.set("smoother: type "+(string)levelstr,"Amesos-Superludist");
-      break;
-#endif
-      default: dserror("Unknown type of smoother for ML"); break;
-      } // switch (type)
-    } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
-    // set coarse grid solver
-    const int coarse = azvar->mlmaxlevel-1;
-    switch (azvar->mlsmotype_coarse)
-    {
-      case 0:
-        mllist.set("coarse: type"          ,"symmetric Gauss-Seidel");
-        mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
-        mllist.set("coarse: damping factor",azvar->mldamp_coarse);
-      break;
-      case 1:
-        mllist.set("coarse: type"          ,"Jacobi");
-        mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
-        mllist.set("coarse: damping factor",azvar->mldamp_coarse);
-      break;
-      case 2:
-        mllist.set("coarse: type"                ,"MLS");
-        mllist.set("coarse: MLS polynomial order",azvar->mlsmotimes[coarse]);
-      break;
-      case 3:
-        mllist.set("coarse: type"                ,"MLS");
-        mllist.set("coarse: MLS polynomial order",-azvar->mlsmotimes[coarse]);
-      break;
-      case 4:
-        mllist.set("coarse: type"          ,"IFPACK");
-        mllist.set("coarse: ifpack type"   ,"ILU");
-        mllist.set("coarse: ifpack overlap",0);
-        mllist.sublist("coarse: ifpack list").set("fact: level-of-fill",azvar->mlsmotimes[coarse]);
-        mllist.sublist("coarse: ifpack list").set("schwarz: reordering type","rcm");
-      break;
-      case 5:
-        mllist.set("coarse: type","Amesos-KLU");
-      break;
-      case 6:
-        mllist.set("coarse: type","Amesos-Superludist");
-      break;
-      default: dserror("Unknown type of coarse solver for ML"); break;
-    } // switch (azvar->mlsmotype_coarse)
-    // default values for nullspace
-    mllist.set("PDE equations",1);
-    mllist.set("null space: dimension",1);
-    mllist.set("null space: type","pre-computed");
-    mllist.set("null space: add default vectors",false);
-    mllist.set<double*>("null space: vectors",NULL);
-  }
-  break;
-#endif
   case aztec_msr://================================================= AztecOO
   {
     params.set("solver","aztec");
@@ -886,17 +755,32 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","ILU");
     break;
-    case azprec_Jacobi:
-      azlist.set("AZ_precond",AZ_Jacobi);
-    break;
     case azprec_Neumann:
       azlist.set("AZ_precond",AZ_Neumann);
     break;
     case azprec_Least_Squares:
       azlist.set("AZ_precond",AZ_ls);
     break;
+    case azprec_Jacobi:
+      // using ifpack
+      azlist.set("AZ_precond",AZ_user_precond);
+      azlist.set("preconditioner","point relaxation");
+    break;
     case azprec_SymmGaussSeidel:
-      azlist.set("AZ_precond",AZ_sym_GS);
+      // using ifpack 
+      azlist.set("AZ_precond",AZ_user_precond);
+      azlist.set("preconditioner","point relaxation");
+    break;
+    case azprec_GaussSeidel:
+      // using ifpack 
+      azlist.set("AZ_precond",AZ_user_precond);
+      azlist.set("preconditioner","point relaxation");
+    break;
+    case azprec_DownwindGaussSeidel:
+      // using ifpack 
+      azlist.set("AZ_precond",AZ_user_precond);
+      azlist.set("preconditioner","point relaxation");
+      azlist.set<bool>("downwinding",true);
     break;
     case azprec_LU:
       // using ifpack
@@ -946,15 +830,32 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
     if (azvar->azprectyp == azprec_ILU  ||
         azvar->azprectyp == azprec_ILUT ||
         azvar->azprectyp == azprec_ICC  ||
-        azvar->azprectyp == azprec_LU   )
+        azvar->azprectyp == azprec_LU   ||
+        azvar->azprectyp == azprec_SymmGaussSeidel ||
+        azvar->azprectyp == azprec_GaussSeidel ||
+        azvar->azprectyp == azprec_DownwindGaussSeidel ||
+        azvar->azprectyp == azprec_Jacobi)
     {
       ParameterList& ifpacklist = params.sublist("IFPACK Parameters");
+      ifpacklist.set("relaxation: damping factor",azvar->azomega);
       ifpacklist.set("fact: drop tolerance",azvar->azdrop);
       ifpacklist.set("fact: level-of-fill",azvar->azgfill);
       ifpacklist.set("fact: ilut level-of-fill",azvar->azfill);
       ifpacklist.set("schwarz: combine mode","Add"); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
       ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
       ifpacklist.set("amesos: solver type", "Amesos_Klu"); // can be "Amesos_Klu", "Amesos_Umfpack", "Amesos_Superlu"
+      if (azvar->azprectyp == azprec_SymmGaussSeidel)
+        ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
+      if (azvar->azprectyp == azprec_GaussSeidel)
+        ifpacklist.set("relaxation: type","Gauss-Seidel");
+      if (azvar->azprectyp == azprec_DownwindGaussSeidel)
+      {
+        // in case of downwinding prevent ifpack from again reordering
+        ifpacklist.set("schwarz: reordering type","none");
+        ifpacklist.set("relaxation: type","Gauss-Seidel");
+      }
+      if (azvar->azprectyp == azprec_Jacobi)
+        ifpacklist.set("relaxation: type","Jacobi");
     }
     //------------------------------------- set parameters for ML if used
     if (azvar->azprectyp == azprec_ML       ||
@@ -1025,25 +926,36 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
         }
         switch (type)
         {
-        case 0:
+        case 0: // SGS
           mllist.set("smoother: type "+(string)levelstr                    ,"symmetric Gauss-Seidel");
           mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
           mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
         break;
-        case 1:
+        case 7: // GS
+          mllist.set("smoother: type "+(string)levelstr                    ,"Gauss-Seidel");
+          mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
+          mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
+        break;
+        case 8: // DGS
+          mllist.set("smoother: type "+(string)levelstr                    ,"Gauss-Seidel");
+          mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
+          mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
+          azlist.set<bool>("downwinding",true);
+        break;
+        case 1: // Jacobi
           mllist.set("smoother: type "+(string)levelstr                    ,"Jacobi");
           mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
           mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
         break;
-        case 2:
+        case 2: // Chebychev
           mllist.set("smoother: type "+(string)levelstr                    ,"MLS");
           mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,azvar->mlsmotimes[i]);
         break;
-        case 3:
+        case 3: // MLS
           mllist.set("smoother: type (level 0)"                            ,"MLS");
           mllist.set("smoother: MLS polynomial order "+(string)levelstr    ,-azvar->mlsmotimes[i]);
         break;
-        case 4:
+        case 4: // Ifpack's ILU
         {
           mllist.set("smoother: type "+(string)levelstr,"ILU");
           mllist.set("smoother: ifpack type "+(string)levelstr,"ILU");
@@ -1054,15 +966,15 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
           ifpacklist.set("schwarz: reordering type","rcm");
         }
         break;
-        case 5:
+        case 5: // Amesos' KLU
           mllist.set("smoother: type "+(string)levelstr,"Amesos-KLU");
         break;
 #ifdef PARALLEL
-        case 6:
+        case 6: // Amesos' SuperLU_Dist
           mllist.set("smoother: type "+(string)levelstr,"Amesos-Superludist");
         break;
 #endif
-        default: dserror("Unknown type of smoother for ML"); break;
+        default: dserror("Unknown type of smoother for ML: tuple %d",type); break;
         } // switch (type)
       } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
       // set coarse grid solver
@@ -1073,6 +985,17 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
           mllist.set("coarse: type"          ,"symmetric Gauss-Seidel");
           mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
           mllist.set("coarse: damping factor",azvar->mldamp_coarse);
+        break;
+        case 7:
+          mllist.set("coarse: type"          ,"Gauss-Seidel");
+          mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
+          mllist.set("coarse: damping factor",azvar->mldamp_coarse);
+        break;
+        case 8:
+          mllist.set("coarse: type"          ,"Gauss-Seidel");
+          mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
+          mllist.set("coarse: damping factor",azvar->mldamp_coarse);
+          azlist.set<bool>("downwinding",true);
         break;
         case 1:
           mllist.set("coarse: type"          ,"Jacobi");

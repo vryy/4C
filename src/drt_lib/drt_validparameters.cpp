@@ -1007,7 +1007,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
       "Neumann",
       "ICC",
       "LU",
-      "RILU").append("BILU").append("ML").append("MLFLUID").append("MLFLUID2").append("MLAPI"),
+      "RILU").append("BILU").append("ML").append("MLFLUID").append("MLFLUID2").append("MLAPI").append("GaussSeidel").append("DownwindGaussSeidel"),
     //tuple<EAztecPreconditioner>(
     tuple<_AZPRECTYP>(
       azprec_none,
@@ -1020,7 +1020,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
       azprec_Neumann,
       azprec_ICC,
       azprec_LU,
-      azprec_RILU).append(azprec_BILU).append(azprec_ML).append(azprec_MLfluid).append(azprec_MLfluid2).append(azprec_MLAPI),
+      azprec_RILU).append(azprec_BILU).append(azprec_ML).append(azprec_MLfluid).append(azprec_MLfluid2).append(azprec_MLAPI).append(azprec_GaussSeidel).append(azprec_DownwindGaussSeidel),
     &list
     );
   IntParameter(
@@ -1158,20 +1158,20 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
 
   setStringToIntegralParameter(
     "ML_SMOOTHERFINE","ILU","",
-    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu"),
-    tuple<int>(0,1,2,3,4,5,6),
+    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS"),
+    tuple<int>(0,1,2,3,4,5,6,7,8),
     &list);
 
   setStringToIntegralParameter(
     "ML_SMOOTHERMED","ILU","",
-    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu"),
-    tuple<int>(0,1,2,3,4,5,6),
+    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS"),
+    tuple<int>(0,1,2,3,4,5,6,7,8),
     &list);
 
   setStringToIntegralParameter(
     "ML_SMOOTHERCOARSE","KLU","",
-    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu"),
-    tuple<int>(0,1,2,3,4,5,6),
+    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS"),
+    tuple<int>(0,1,2,3,4,5,6,7,8),
     &list);
 
   // unused
