@@ -138,6 +138,7 @@ OBJS_DRT      = \
                 src/drt_lib/linalg_solver_spooles.o \
                 src/drt_lib/linalg_mlapi_operator.o \
                 src/drt_lib/simpler_operator.o \
+                src/drt_lib/linalg_downwindmatrix.o \
 		src/drt_lib/input_material_ccadiscret.o
 #-------------------------------------------------------structural drivers
 OBJS_DRT_STRUCTURE      = \
