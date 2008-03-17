@@ -391,7 +391,7 @@ TurbulenceStatistics::TurbulenceStatistics(
     s.append(".flow_statistic");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# Flow statistics for turbulent channel flow (first-- and second-order moments)\n\n";
+    (*log) << "# Flow statistics for turbulent channel flow (first- and second-order moments)\n\n";
 
     log->flush();
 

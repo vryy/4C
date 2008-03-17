@@ -443,7 +443,10 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 
   // reset iteration counter, initialize max iteration counter
   itenum_  = 0;
-  itemax_  = params_.get<int>   ("max nonlin iter steps");
+  // currently default for turbulent channel flow: only one iteration before sampling
+  if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
+    itemax_  = 1;
+  else itemax_  = params_.get<int>   ("max nonlin iter steps");
 
   // stop nonlinear iteration when both increment-norms are below this
   // bound
@@ -832,7 +835,8 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
       output_.WriteMesh(step_,time_);
 
       
-      if(special_flow_ == "channel_flow_of_height_2"  && dumperiod_ == 0)
+      if(special_flow_ == "channel_flow_of_height_2" &&
+         step_>=samstart_ && step_<=samstop_  && dumperiod_ == 0)
       {
         turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
         turbulencestatistics_->ClearStatistics();
@@ -862,7 +866,8 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     // they contain history variables (the time dependent subscales)
     output_.WriteMesh(step_,time_);
 
-    if(special_flow_ == "channel_flow_of_height_2"  && dumperiod_ == 0)
+    if(special_flow_ == "channel_flow_of_height_2" &&
+       step_>=samstart_ && step_<=samstop_  && dumperiod_ == 0)
     {
       turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
       turbulencestatistics_->ClearStatistics();
@@ -870,7 +875,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
   }
 
   // dumping of turbulence statistics if required
-  if (special_flow_ != "no"  && dumperiod_ != 0)
+  if (special_flow_ != "no"  && step_>=samstart_ && step_<=samstop_ && dumperiod_ != 0)
   {
     int samstep = step_-samstart_+1;
     double dsamstep=samstep;
@@ -1465,6 +1470,13 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& badestn
   {
     stopnonliniter=true;
     this->GenAlphaEchoToScreen("print nonlin iter converged");
+  }
+
+  // currently default: only one iteration before sampling
+  if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
+  {
+    stopnonliniter=true;
+    this->GenAlphaEchoToScreen("print warning, only one iteration before sampling");
   }
 
   // warn if itemax is reached without convergence, but proceed to
@@ -2659,6 +2671,15 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
 
       printf("+--------------------------------------------------------------------------------------------+\n");
       printf("| >>>>>> not converged in itemax steps! matrix of last step not recomputed (invalid)         |\n");
+      printf("+--------------------------------------------------------------------------------------------+\n");
+    }
+    else if (what_to_print == "print warning, only one iteration before sampling")
+    {
+      //--------------------------------------------------------------------
+      /* output of warning if no convergence was achieved */
+
+      printf("+--------------------------------------------------------------------------------------------+\n");
+      printf("| >>>>>> only one iteration before sampling! matrix of last step not recomputed (invalid)         |\n");
       printf("+--------------------------------------------------------------------------------------------+\n");
     }
     else if("print nonlin iter converged")

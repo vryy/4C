@@ -1683,7 +1683,7 @@ void XFluidImplicitTimeInt::Output()
   }
 
   // dumping of turbulence statistics if required
-  if (special_flow_ == "lid_driven_cavity")
+  if (special_flow_ == "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
   //if (special_flow_ != "no")
   {
     int samstep = step_-samstart_+1;
