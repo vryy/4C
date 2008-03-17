@@ -234,7 +234,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Fluid_Structure_Interaction_XFEM",
                                  "Ale",
                                  "Thermal_Structure_Interaction",
-                                 "Structure_Multiscale"),
+                                 "Structure_Multiscale",
+                                 "Electrochemistry"),
                                tuple<PROBLEM_TYP>(
                                  prb_structure,
                                  prb_fluid,
@@ -244,7 +245,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  prb_fsi_xfem,
                                  prb_ale,
                                  prb_tsi,
-                                 prb_struct_multi),
+                                 prb_struct_multi,
+                                 prb_elch),
                                &type);
   IntParameter("NUMFIELD",1,"",&type);
   setStringToIntegralParameter("TIMETYP","Dynamic","",

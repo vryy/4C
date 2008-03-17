@@ -255,6 +255,11 @@ void DRT::Problem::InputControl()
     genprob.numtf = 1;  /* thermal field index */
     break;
   }
+  case prb_elch:
+  {
+    genprob.numff = 0; /* fluid field index */
+    break;
+  }
   default:
     dserror("problem type %d unknown", genprob.probtyp);
   }
@@ -428,6 +433,18 @@ void DRT::Problem::InputControl()
 
     solv[genprob.numsf].fieldtyp = structure;
     InputSolverControl("STRUCT SOLVER",&(solv[genprob.numsf]));
+    break;
+  }
+
+  /* for electrochemistry (ELCH)*/
+  case prb_elch:
+  {
+    if (genprob.numfld!=1) dserror("numfld != 1 for Electrochemistry Problem");
+    solver_.resize(genprob.numfld);
+    solv = &solver_[0];
+
+    solv[genprob.numff].fieldtyp = fluid;
+    InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
     break;
   }
 
@@ -895,6 +912,26 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     break;
   } // end of else if (genprob.probtyp==prb_struct_multi)
+  
+  case prb_elch:
+  {
+    // allocate and input general old stuff....
+    if (genprob.numfld!=1) dserror("numfld != 1 for Electrochemistry problem");
+    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+    field[genprob.numff].fieldtyp = fluid;
+
+    // obsolete
+    field[genprob.numff].ndis = DiscretisationParams().get<int>("NUMFLUIDDIS");
+
+    fluiddis = rcp(new DRT::Discretization("Fluid",reader.Comm()));
+    AddDis(genprob.numff, fluiddis);
+
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.Read();
+    break;
+  } // end of else if (genprob.probtyp==prb_elch)
+
   default:
     dserror("Type of problem unknown");
   }
