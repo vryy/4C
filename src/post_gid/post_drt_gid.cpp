@@ -146,7 +146,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Matrix,
                       GiD_OnGaussPoints, gaussname, NULL, 6, componentnames);
   
-  double v[numstress];
+  vector<double> v(6);
 
   for (int k = 0; k < field->num_elements(); ++k)
   {
