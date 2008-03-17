@@ -454,21 +454,23 @@ typedef enum _AZSOLVERTYP
  *----------------------------------------------------------------------*/
 typedef enum _AZPRECTYP
 {
-                       azprec_none,              /* no preconditioning */
-                       azprec_ILUT,              /* incomplete LU fact. with numerical drop tolerance */
-                       azprec_ILU,               /* incomplete LU fact. with fill in levels */
-                       azprec_Jacobi,            /* Jacobi preconditioning */
-                       azprec_Neumann,           /* neumann polynomials */
-                       azprec_Least_Squares,     /* least squares something */
-                       azprec_SymmGaussSeidel,   /* symmetric n-step gauss-seidel preconditioner */
-                       azprec_LU,                /* ? */
-                       azprec_RILU,              /* relaxed incomplete LU */
-                       azprec_BILU,              /* block incomplete LU (only with matrix in DVBR format*/
-                       azprec_ICC,               /* incomplete cholesky */
-                       azprec_MLfluid,           /* ML for Fluids */
-                       azprec_MLfluid2,          /* energy optimal unsymmetric ML for Fluids */
-                       azprec_MLAPI,             /* experimental mlapi preconditioner */
-                       azprec_ML                 /* standard ML for structures */
+                       azprec_none,               /* no preconditioning */
+                       azprec_ILUT,               /* incomplete LU fact. with numerical drop tolerance */
+                       azprec_ILU,                /* incomplete LU fact. with fill in levels */
+                       azprec_Jacobi,             /* Jacobi preconditioning */
+                       azprec_Neumann,            /* neumann polynomials */
+                       azprec_Least_Squares,      /* least squares something */
+                       azprec_SymmGaussSeidel,    /* symmetric n-step gauss-seidel preconditioner */
+                       azprec_GaussSeidel,        /* symmetric n-step gauss-seidel preconditioner */
+                       azprec_DownwindGaussSeidel,/* symmetric n-step gauss-seidel preconditioner */
+                       azprec_LU,                 /* ? */
+                       azprec_RILU,               /* relaxed incomplete LU */
+                       azprec_BILU,               /* block incomplete LU (only with matrix in DVBR format*/
+                       azprec_ICC,                /* incomplete cholesky */
+                       azprec_MLfluid,            /* ML for Fluids */
+                       azprec_MLfluid2,           /* energy optimal unsymmetric ML for Fluids */
+                       azprec_MLAPI,              /* experimental mlapi preconditioner */
+                       azprec_ML                  /* standard ML for structures */
 } AZPRECTYP;
 /*----------------------------------------------------------------------*
  | enum HYPREPRECTYP                                       m.gee 10/01  |
