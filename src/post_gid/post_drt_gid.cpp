@@ -81,6 +81,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
                                     PostResult* result)
 {
   CHAR* gaussname;
+  CHAR* componentnames[] = { "xx", "yy", "zz", "xy", "yz", "xz"};
   int numdim;
   int numstress;
 
@@ -103,6 +104,28 @@ void write_serialdensematrix_result(string result_name, PostField* field,
     // http://gid.cimne.upc.es/support_team/gid_toc/gid_toc.html
 
     break;
+  case DRT::Element::quad4:
+      gaussname = "quad4";
+      numdim=2;
+
+      // Note:
+      // Here no mapping between baci's and GiD definition of Gauss
+      // points is necessary since they are equal.
+      // The GiD convention can be found at
+      // http://gid.cimne.upc.es/support_team/gid_toc/gid_toc.html
+
+      break;
+  case DRT::Element::quad9:
+      gaussname = "quad9";
+      numdim=2;
+
+      // Note:
+      // Here no mapping between baci's and GiD definition of Gauss
+      // points is necessary since they are equal.
+      // The GiD convention can be found at
+      // http://gid.cimne.upc.es/support_team/gid_toc/gid_toc.html
+
+      break;
   default:
     dserror("output of gauss point stresses/strains in GiD needs to be implemented for this element type");
   }
@@ -116,25 +139,13 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   const RefCountPtr<std::map<int,RefCountPtr<Epetra_SerialDenseMatrix> > > map
     = result->read_result_serialdensematrix(result_name);
 
-  if (numdim==3)
-  {
-    CHAR* componentnames[] = { "xx", "yy", "zz", "xy", "yz", "xz"};
-    numstress=6;
-    GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Matrix,
-                    GiD_OnGaussPoints, gaussname, NULL, numstress,
-                    componentnames);
-  }
-  else if (numdim==2)
-  {
-    CHAR* componentnames[] = { "xx", "yy", "xy"};
-    numstress=3;
-    GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Matrix,
-                    GiD_OnGaussPoints, gaussname, NULL, numstress,
-                    componentnames);
-  }
-  else
-    dserror("Stress output only supported for 2D and 3D problems");
+  if (numdim==3) numstress=6;
+  else if (numdim==2) numstress=3;
+  else dserror("Stress output only supported for 2D and 3D problems");
 
+  GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Matrix,
+                      GiD_OnGaussPoints, gaussname, NULL, 6, componentnames);
+  
   double v[numstress];
 
   for (int k = 0; k < field->num_elements(); ++k)
@@ -154,7 +165,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
       if (numdim==3)
         GiD_Write3DMatrix(n->Id()+1,v[0],v[1],v[2],v[3],v[4],v[5]);
       else if (numdim==2)
-        GiD_Write2DMatrix(n->Id()+1,v[0],v[1],v[2]);
+        GiD_Write3DMatrix(n->Id()+1,v[0],v[1],0.0,v[2],0.0,0.0);
       else
         dserror("Stress output only supported for 2D and 3D problems");
     }
