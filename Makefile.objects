@@ -1107,4 +1107,5 @@ OBJS_DRT_TIMADA = src/drt_timada/timeadaptivity.o \
                   src/drt_timada/ta_zienkiewiczxie.o
 #               inverse analysis
 OBJS_INV_ANALYSIS = src/drt_inv_analysis/inv_analysis.o 
-
+#               electrochemistry
+OBJS_DRT_ELCH = src/drt_elch/elch_dyn.o
