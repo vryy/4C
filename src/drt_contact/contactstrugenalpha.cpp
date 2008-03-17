@@ -1052,6 +1052,7 @@ void ContactStruGenAlpha::UpdateandOutput()
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
   bool   iostress      = params_.get<bool>  ("io structural stress"   ,false);
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
+  bool   iostrain      = params_.get<bool>  ("io structural strain"   ,false);
 
   int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
 
@@ -1099,40 +1100,17 @@ void ContactStruGenAlpha::UpdateandOutput()
     discret_.Evaluate(p,null,null,null,null,null);
   }
 
-  //---------------------------------------------- do stress calculation
-  if (updevrystress && !istep%updevrystress && iostress)
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_stress");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",false);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    // set vector values needed by elements
-    discret_.ClearState();
-    discret_.SetState("residual displacement",zeros_);
-    discret_.SetState("displacement",dis_);
-    discret_.Evaluate(p,null,null,null,null,null);
-    discret_.ClearState();
-  }
-
   //------------------------------------------------- write restart step
   bool isdatawritten = false;
   if (writeresevry && istep%writeresevry==0)
   {
+    output_.WriteMesh(istep,timen);
     output_.NewStep(istep, timen);
     output_.WriteVector("displacement",dis_);
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
-    output_.WriteMesh(istep,timen);
+    
     isdatawritten = true;
 
     // write restart information for contact
@@ -1162,7 +1140,34 @@ void ContactStruGenAlpha::UpdateandOutput()
     output_.WriteVector("acceleration",acc_);
     isdatawritten = true;
   }
-
+  
+  //---------------------------------------------- do stress calculation
+  if (updevrystress && istep%updevrystress==0 && iostress)
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_stress");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
+    Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
+    p.set("stress", stress);
+    p.set("strain", strain);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",zeros_);
+    discret_.SetState("displacement",dis_);
+    discret_.Evaluate(p,null,null,null,null,null);
+    discret_.ClearState();
+    if (!isdatawritten) output_.NewStep(istep, timen);
+    isdatawritten = true;
+    output_.WriteVector("gauss_stresses_xyz",*stress,*discret_.ElementColMap());
+    if (iostrain)
+      output_.WriteVector("gauss_strains_xyz",*strain,*discret_.ElementColMap());
+  }
+    
   //---------------------------------------------------------- print out
   if (!myrank_)
   {

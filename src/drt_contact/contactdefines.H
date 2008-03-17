@@ -19,12 +19,12 @@ Maintainer: Alexander Popp
 //#define CONTACTDIMOUTPUT       /* flag for output of global matrix dim. */
 //#define CONTACTCHECKHUEEBER    /* flag for S.Hüeber's quad. conv. check */ 
 
-#define CONTACTPROJTOL 0.05      /* projection tol. for overlap decision */
+#define CONTACTPROJTOL 0.01      /* projection tol. for overlap decision */
 #define CONTACTPROJLIM 1.0e-12   /* no problems with exact node projections */
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton   */
 #define CONTACTCONVTOL 1.0e-12   /* convergence tolerance for local Newton */
 #define CONTACTNGP 5             /* no. Gauss points for integration */
-#define CONTACTCRITDIST 1        /* critical distance for potential contact */
+#define CONTACTCRITDIST 0.5      /* critical distance for potential contact */
 
 // FIXME: Might be better to have critdist = f(element length)
 

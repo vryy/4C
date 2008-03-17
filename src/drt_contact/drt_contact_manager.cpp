@@ -18,7 +18,9 @@ Maintainer: Michael Gee
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
 #include "contactdefines.H"
+#include "../drt_lib/linalg_ana.H"
 
+using namespace LINALG::ANA;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -941,8 +943,8 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& kteff,
   /**********************************************************************/
   /* Update Lagrange multipliers                                        */
   /**********************************************************************/
-  //invd->Multiply(false,*fsmod,*z_);
-  z_->Update(1.0,*fsmod,0.0);
+  //invd->Multiply(false,*fsmod,*z_); // approximate update
+  z_->Update(1.0,*fsmod,0.0);         // full update (see below) 
 
   return;
 }

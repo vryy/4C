@@ -1177,7 +1177,7 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
     /*
 #ifdef DEBUG
     // alternative computation of weighted gap (via definition)
-    //****************************************** check of g-vector *******
+    // ***************************************** check of g-vector *******
     if (cnode->Active())
     {
       double gact = 0.0;

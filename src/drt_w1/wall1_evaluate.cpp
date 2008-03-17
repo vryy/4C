@@ -72,7 +72,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
+      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
     }
     break;
     case Wall1::calc_struct_nlnstiffmass:
@@ -86,12 +86,33 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
+      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
     }
     break;
     case calc_struct_update_istep:
     {
       ;// there is nothing to do here at the moment
+    }
+    break;
+    case calc_struct_stress:
+    {
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
+      RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      if (stressdata==null) dserror("Cannot get stress 'data'");
+      if (straindata==null) dserror("Cannot get strain 'data'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
+      Epetra_SerialDenseMatrix stress(intpoints.nquad,NUMSTR_W1);
+      Epetra_SerialDenseMatrix strain(intpoints.nquad,NUMSTR_W1);
+      w1_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat);
+      AddtoPack(*stressdata, stress);
+      AddtoPack(*straindata, strain);
     }
     break;
     default:
@@ -217,12 +238,14 @@ return 0;
  |  evaluate the element (private)                            mgit 03/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
-                                            vector<double>&           disp,
-                                            vector<double>&           residual,
-                                            Epetra_SerialDenseMatrix* stiffmatrix,
-                                            Epetra_SerialDenseMatrix* massmatrix,
-                                            Epetra_SerialDenseVector* force,
-                                            struct _MATERIAL*         material)
+                                           vector<double>&           disp,
+                                           vector<double>&           residual,
+                                           Epetra_SerialDenseMatrix* stiffmatrix,
+                                           Epetra_SerialDenseMatrix* massmatrix,
+                                           Epetra_SerialDenseVector* force,
+                                           Epetra_SerialDenseMatrix* elestress,
+                                           Epetra_SerialDenseMatrix* elestrain,
+                                           struct _MATERIAL*         material)
 {
   const int numnode = NumNode();
   const int numdf   = 2;
@@ -403,12 +426,45 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
     } // --------------------------------------------------------- EAS
 
    w1_call_matgeononl(strain,stress,C,numeps,material);
+   
+   // return gp strains (only in case of stress/strain output)
+   if (elestress != NULL)
+   {
+     for (int i = 0; i < NUMSTR_W1; ++i)
+       (*elestrain)(ip,i) = strain(i);
+   }
+   
+   // return gp stresses (only in case of stress/strain output)
+   if (elestress != NULL)
+   {
+     double detf = F[0]*F[1]-F[2]*F[3];
+     Epetra_SerialDenseMatrix defgrad(2,2);
+     Epetra_SerialDenseMatrix pkstress(2,2);
+     defgrad(0,0) = F[0];
+     defgrad(0,1) = F[2];
+     defgrad(1,0) = F[3];
+     defgrad(1,1) = F[1];
+     pkstress(0,0)= stress(0,0);
+     pkstress(0,1)= stress(0,2);
+     pkstress(1,0)= stress(0,2);
+     pkstress(1,1)= stress(1,1);
+
+     Epetra_SerialDenseMatrix temp(2,2);
+     Epetra_SerialDenseMatrix cauchy(2,2);
+     temp.Multiply('N','T',1.0,pkstress,defgrad,0.0);
+     cauchy.Multiply('N','N',1/detf,defgrad,temp,0.0);
+    
+     (*elestress)(ip,0) = pkstress(0,0);
+     (*elestress)(ip,1) = pkstress(1,1);
+     (*elestress)(ip,2) = pkstress(0,1);
+   }
+       
    /*---------------------- geometric part of stiffness matrix kg ---*/
-   w1_kg(*stiffmatrix,boplin,stress,fac,nd,numeps);
+   if (stiffmatrix) w1_kg(*stiffmatrix,boplin,stress,fac,nd,numeps);
    /*------------------ elastic+displacement stiffness matrix keu ---*/
-   w1_keu(*stiffmatrix,b_cure,C,fac,nd,numeps);
+   if (stiffmatrix) w1_keu(*stiffmatrix,b_cure,C,fac,nd,numeps);
    /*--------------- nodal forces fi from integration of stresses ---*/
-     if (force) w1_fint(stress,b_cure,*force,fac,nd);
+   if (force) w1_fint(stress,b_cure,*force,fac,nd);
 
       ngauss++;
   } // for (int ip=0; ip<totngp; ++ip)

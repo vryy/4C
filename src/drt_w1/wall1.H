@@ -34,6 +34,9 @@ using namespace Teuchos;
 #define MAXNOD_WALL1 (9)  /* maximum of element nodes : max quad9 */
 #endif
 
+// parameters which are fixed for Wall1
+const int NUMSTR_W1 = 3;      // number of strains/stresses
+
 // forward declarations
 struct _MATERIAL;
 struct _W1_DATA;
@@ -343,6 +346,8 @@ private:
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force,
+                       Epetra_SerialDenseMatrix* elestress, 
+                       Epetra_SerialDenseMatrix* elestrain,
                        struct _MATERIAL*         material);
 
  // void w1_integration_points(struct _W1_DATA& data); 
