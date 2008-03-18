@@ -2,6 +2,12 @@
 
 #include "fsi_fluid.H"
 
+// further includes for FluidBaseAlgorithm:
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_validparameters.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -10,6 +16,24 @@
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
+/*----------------------------------------------------------------------*
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | defined in solver_control.c                                          |
+ |                                                                      |
+ |                                                       m.gee 11/00    |
+ *----------------------------------------------------------------------*/
+extern struct _SOLVAR  *solv;
+
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -641,6 +665,202 @@ Teuchos::RCP<Epetra_Vector> FSI::FluidGenAlphaAdapter::RelaxationSolve(Teuchos::
 Teuchos::RCP<DRT::ResultTest> FSI::FluidGenAlphaAdapter::CreateFieldTest()
 {
   return Teuchos::rcp(new FluidResultTest(fluid_));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::FluidBaseAlgorithm::FluidBaseAlgorithm()
+{
+  SetupFluid();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::FluidBaseAlgorithm::~FluidBaseAlgorithm()
+{
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidBaseAlgorithm::SetupFluid()
+{
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FSI::FluidBaseAlgorithm::SetupFluid");
+  Teuchos::TimeMonitor monitor(*t);
+
+  // -------------------------------------------------------------------
+  // access the discretization
+  // -------------------------------------------------------------------
+  RCP<DRT::Discretization> actdis = null;
+  actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+
+  // -------------------------------------------------------------------
+  // set degrees of freedom in the discretization
+  // -------------------------------------------------------------------
+  if (!actdis->Filled()) actdis->FillComplete();
+
+  // -------------------------------------------------------------------
+  // context for output and restart
+  // -------------------------------------------------------------------
+  RCP<IO::DiscretizationWriter> output =
+    rcp(new IO::DiscretizationWriter(actdis));
+  output->WriteMesh(0,0.0);
+
+  // -------------------------------------------------------------------
+  // set some pointers and variables
+  // -------------------------------------------------------------------
+  SOLVAR        *actsolv  = &solv[genprob.numff];
+
+  //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
+  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+
+  if ((actdis->Comm()).MyPID()==0)
+    DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
+
+  // -------------------------------------------------------------------
+  // create a solver
+  // -------------------------------------------------------------------
+  RCP<ParameterList> solveparams = rcp(new ParameterList());
+  RCP<LINALG::Solver> solver =
+    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+  solver->TranslateSolverParameters(*solveparams,actsolv);
+  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+
+  // -------------------------------------------------------------------
+  // create a fluid nonlinear time integrator
+  // -------------------------------------------------------------------
+  RCP<ParameterList> fluidtimeparams = rcp(new ParameterList());
+
+  FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
+
+  if (iop == timeint_one_step_theta || iop == timeint_bdf2)
+  {
+    // number of degrees of freedom
+    fluidtimeparams->set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
+    // the default time step size
+    fluidtimeparams->set<double>           ("time step size"           ,fsidyn.get<double>("TIMESTEP"));
+    // max. sim. time
+    fluidtimeparams->set<double>           ("total time"               ,fsidyn.get<double>("MAXTIME"));
+    // parameter for time-integration
+    fluidtimeparams->set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
+    // which kind of time-integration
+    fluidtimeparams->set<FLUID_TIMEINTTYPE>("time int algo"            ,iop);
+    // bound for the number of timesteps
+    fluidtimeparams->set<int>              ("max number timesteps"     ,fsidyn.get<int>("NUMSTEP"));
+    // number of steps with start algorithm
+    fluidtimeparams->set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
+    // parameter for start algo
+    fluidtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
+    // parameter for grid velocity interpolation
+    fluidtimeparams->set<int>              ("order gridvel"            ,fdyn.get<int>("GRIDVEL"));
+
+
+    // ---------------------------------------------- nonlinear iteration
+    // set linearisation scheme
+    fluidtimeparams->set<bool>("Use reaction terms for linearisation",
+                               Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
+    // maximum number of nonlinear iteration steps
+    fluidtimeparams->set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
+    // stop nonlinear iteration when both incr-norms are below this bound
+    fluidtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
+
+    // ----------------------------------------------- restart and output
+    // restart
+    fluidtimeparams->set                 ("write restart every"       ,fsidyn.get<int>("RESTARTEVRY"));
+    // solution output
+    fluidtimeparams->set                 ("write solution every"      ,fsidyn.get<int>("UPRES"));
+    // flag for writing stresses
+    fluidtimeparams->set                 ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
+
+    //--------------------------------------------------
+    // evaluate error for test flows with analytical solutions
+    int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
+    fluidtimeparams->set                  ("eval err for analyt sol"   ,init);
+
+    fluidtimeparams->set<FILE*>("err file",allfiles.out_err);
+
+    //--------------------------------------------------
+    // create all vectors and variables associated with the time
+    // integration (call the constructor)
+    // the only parameter from the list required here is the number of
+    // velocity degrees of freedom
+    fluid_ = rcp(new FluidAdapter(actdis, solver, fluidtimeparams, output));
+  }
+  else if (iop == timeint_gen_alpha)
+  {
+    // -------------------------------------- number of degrees of freedom
+    // number of degrees of freedom
+    fluidtimeparams->set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
+
+    // ------------------------------------------------ basic scheme, i.e.
+    // --------------------- solving nonlinear or linearised flow equation
+    fluidtimeparams->set<int>("type of nonlinear solve" ,
+                             Teuchos::getIntegralValue<int>(fdyn,"DYNAMICTYP"));
+
+    // -------------------------------------------------- time integration
+    // the default time step size
+    fluidtimeparams->set<double>           ("time step size"           ,fsidyn.get<double>("TIMESTEP"));
+    // maximum simulation time
+    fluidtimeparams->set<double>           ("total time"               ,fsidyn.get<double>("MAXTIME"));
+    // maximum number of timesteps
+    fluidtimeparams->set<int>              ("max number timesteps"     ,fsidyn.get<int>("NUMSTEP"));
+
+    // ---------------------------------------------- nonlinear iteration
+    // set linearisation scheme
+    fluidtimeparams->set<bool>("Use reaction terms for linearisation",
+                              Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
+    // maximum number of nonlinear iteration steps
+    fluidtimeparams->set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
+    // stop nonlinear iteration when both incr-norms are below this bound
+    fluidtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
+    // set convergence check
+    fluidtimeparams->set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
+
+    // ----------------------------------------------- restart and output
+    // restart
+    fluidtimeparams->set                  ("write restart every"       ,fsidyn.get<int>("RESTARTEVRY"));
+    // solution output
+    fluidtimeparams->set                  ("write solution every"      ,fsidyn.get<int>("UPRES"));
+    // flag for writing stresses
+    fluidtimeparams->set                  ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
+    // ---------------------------------------------------- lift and drag
+    fluidtimeparams->set<int>("liftdrag",Teuchos::getIntegralValue<int>(fdyn,"LIFTDRAG"));
+
+    // -----------evaluate error for test flows with analytical solutions
+    int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
+    fluidtimeparams->set                  ("eval err for analyt sol"   ,init);
+
+    // -----------------------sublist containing stabilization parameters
+    fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
+
+    // --------------------------sublist containing turbulence parameters
+    {
+      fluidtimeparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+
+      fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
+    }
+
+    // -------------------------------------------------------------------
+    // parameter alpha_M for for generalized-alpha scheme
+    fluidtimeparams->set<double>           ("alpha_M"                  ,fdyn.get<double>("ALPHA_M"));
+    // parameter alpha_F for for generalized-alpha scheme
+    fluidtimeparams->set<double>           ("alpha_F"                  ,fdyn.get<double>("ALPHA_F"));
+
+    //--------------------------------------------------
+    // create all vectors and variables associated with the time
+    // integration (call the constructor)
+    // the only parameter from the list required here is the number of
+    // velocity degrees of freedom
+    fluid_ = rcp(new FluidGenAlphaAdapter(actdis, solver, fluidtimeparams, output));
+  }
+  else
+  {
+    dserror("Unknown time integration for FSI fluid\n");
+  }
+  return;
 }
 
 #endif

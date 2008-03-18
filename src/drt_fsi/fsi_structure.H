@@ -301,6 +301,32 @@ namespace FSI {
 
     //@}
   };
+
+
+  /// structure field solver
+  class StructureBaseAlgorithm
+  {
+  public:
+
+    /// constructor
+    explicit StructureBaseAlgorithm();
+
+    /// virtual destructor to support polymorph destruction
+    virtual ~StructureBaseAlgorithm();
+
+    /// structural field solver
+    Structure& StructureField() { return *structure_; }
+    const Structure& StructureField() const { return *structure_; }
+
+  private:
+
+    /// setup structure algorithm
+    void SetupStructure();
+
+    /// structural field solver
+    Teuchos::RCP<Structure> structure_; 
+  };
+
 }
 
 #endif

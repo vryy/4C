@@ -41,11 +41,19 @@ namespace FSI
     \note Right now we have partitioned FSI implemented using NOX::Epetra and
     monolithic FSI implemented using NOX::Thyra. These are closely linked and
     will be even more so in the future.
+    IMPORTANT:
+    The order of calling the three BaseAlgorithm-constructors is
+    important here! In here control file entries are written. And these
+    entries define the order in which the filters handle the 
+    Discretizations, which in turn defines the dof number ordering of the
+    Discretizations.
 
     \author u.kue
     \date 02/08
    */
-  class Algorithm
+  class Algorithm : public StructureBaseAlgorithm, 
+                    public FluidBaseAlgorithm,
+                    public AleBaseAlgorithm
   {
   public:
 
@@ -60,18 +68,6 @@ namespace FSI
 
     /// communicator
     const Epetra_Comm& Comm() const { return comm_; }
-
-    /// structural field solver
-    Structure& StructureField() { return *structure_; }
-    const Structure& StructureField() const { return *structure_; }
-
-    /// fluid field solver
-    Fluid& FluidField() { return *fluid_; }
-    const Fluid& FluidField() const { return *fluid_; }
-
-    /// ale field solver
-    Ale& AleField() { return *ale_; }
-    const Ale& AleField() const { return *ale_; }
 
   protected:
 
@@ -126,15 +122,6 @@ namespace FSI
 
   private:
 
-    /// setup structure algorithm
-    void SetupStructure();
-
-    /// setup fluid algorithm
-    void SetupFluid();
-
-    /// setup ale algorithm
-    void SetupAle();
-
     /// coupling of structure and fluid at the interface
     Coupling               coupsf_;
 
@@ -143,15 +130,6 @@ namespace FSI
 
     /// coupling of fluid and ale
     Coupling               coupfa_;
-
-    /// structural field solver
-    Teuchos::RCP<Structure> structure_;
-
-    /// fluid field solver
-    Teuchos::RCP<Fluid>     fluid_;
-
-    /// ale field solver
-    Teuchos::RCP<Ale>       ale_;
 
     /// comunication (mainly for screen output)
     Epetra_Comm& comm_;

@@ -17,6 +17,11 @@ Maintainer: Ulrich Kuettler
 
 #include "fsi_ale.H"
 
+// further includes for AleBaseAlgorithm:
+#include "../drt_lib/drt_globalproblem.H"
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_Time.hpp>
+
 using namespace std;
 using namespace Teuchos;
 
@@ -28,6 +33,24 @@ using namespace Teuchos;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
+/*----------------------------------------------------------------------*
+ | global variable *solv, vector of lenght numfld of structures SOLVAR  |
+ | defined in solver_control.c                                          |
+ |                                                                      |
+ |                                                       m.gee 11/00    |
+ *----------------------------------------------------------------------*/
+extern struct _SOLVAR  *solv;
+
+/*!----------------------------------------------------------------------
+\brief file pointers
+
+<pre>                                                         m.gee 8/00
+This structure struct _FILES allfiles is defined in input_control_global.c
+and the type is in standardtypes.h
+It holds all file pointers and some variables needed for the FRSYSTEM
+</pre>
+*----------------------------------------------------------------------*/
+extern struct _FILES  allfiles;
 
 
 /*----------------------------------------------------------------------*
@@ -271,6 +294,75 @@ void FSI::AleLinear::ReadRestart(int step)
   step_ = reader.ReadInt("step");
 
   reader.ReadVector(dispnp_, "dispnp");
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::AleBaseAlgorithm::AleBaseAlgorithm()
+{
+  SetupAle();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::AleBaseAlgorithm::~AleBaseAlgorithm()
+{
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::AleBaseAlgorithm::SetupAle()
+{
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FSI::AleBaseAlgorithm::SetupAle");
+  Teuchos::TimeMonitor monitor(*t);
+
+  // -------------------------------------------------------------------
+  // access the discretization
+  // -------------------------------------------------------------------
+  RCP<DRT::Discretization> actdis = null;
+  actdis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
+
+  // -------------------------------------------------------------------
+  // set degrees of freedom in the discretization
+  // -------------------------------------------------------------------
+  if (!actdis->Filled()) actdis->FillComplete();
+
+  // -------------------------------------------------------------------
+  // context for output and restart
+  // -------------------------------------------------------------------
+  RCP<IO::DiscretizationWriter> output =
+    rcp(new IO::DiscretizationWriter(actdis));
+  output->WriteMesh(0,0.0);
+
+  // -------------------------------------------------------------------
+  // set some pointers and variables
+  // -------------------------------------------------------------------
+  SOLVAR        *actsolv  = &solv[genprob.numaf];
+
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+
+  // -------------------------------------------------------------------
+  // create a solver
+  // -------------------------------------------------------------------
+  RCP<ParameterList> solveparams = rcp(new ParameterList());
+  RCP<LINALG::Solver> solver =
+    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+  solver->TranslateSolverParameters(*solveparams,actsolv);
+  actdis->ComputeNullSpaceIfNecessary(*solveparams);
+
+  RCP<ParameterList> params = rcp(new ParameterList());
+  params->set<int>("numstep",    fsidyn.get<int>("NUMSTEP"));
+  params->set<double>("maxtime", fsidyn.get<double>("MAXTIME"));
+  params->set<double>("dt",      fsidyn.get<double>("TIMESTEP"));
+
+  // ----------------------------------------------- restart and output
+  // restart
+  params->set<int>("write restart every", fsidyn.get<int>("RESTARTEVRY"));
+
+  ale_ = rcp(new AleLinear(actdis, solver, params, output));
 }
 
 

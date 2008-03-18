@@ -445,6 +445,31 @@ namespace FSI {
     Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
   };
 
+
+  /// fluid field solver
+  class FluidBaseAlgorithm
+  {
+  public:
+
+    /// constructor
+    explicit FluidBaseAlgorithm();
+
+    /// virtual destructor to support polymorph destruction
+    virtual ~FluidBaseAlgorithm();
+
+    /// fluid field solver
+    Fluid& FluidField() { return *fluid_; }
+    const Fluid& FluidField() const { return *fluid_; }
+
+  private:
+
+    /// setup fluid algorithm
+    void SetupFluid();
+
+    /// fluid field solver
+    Teuchos::RCP<Fluid> fluid_;
+  };
+
 }
 
 #endif

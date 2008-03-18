@@ -259,6 +259,32 @@ private:
   //@}
 
 };
+
+
+/// ale field solver
+class AleBaseAlgorithm
+{
+public:
+
+  /// constructor
+  explicit AleBaseAlgorithm();
+
+  /// virtual destructor to support polymorph destruction
+  virtual ~AleBaseAlgorithm();
+
+  /// ale field solver
+  Ale& AleField() { return *ale_; }
+  const Ale& AleField() const { return *ale_; }
+
+private:
+
+  /// setup fluid algorithm
+  void SetupAle();
+
+  /// fluid field solver
+  Teuchos::RCP<Ale> ale_;
+};
+
 }
 
 #endif
