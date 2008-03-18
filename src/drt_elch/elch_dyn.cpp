@@ -6,15 +6,13 @@
 
 #ifdef PARALLEL
 #include <mpi.h>
-#endif
-
-#ifdef PARALLEL
 #include <Epetra_MpiComm.h>
 #else
 #include <Epetra_SerialComm.h>
 #endif
 
 #include "elch_dyn.H"
+#include "elch_algorithm.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -29,13 +27,22 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 void elch_dyn()
 {
+
+// create a communicator
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
 #else
   Epetra_SerialComm comm;
 #endif
 
+if (comm.MyPID() == 0)
 cout<<"ELCH problemtype under development..."<<endl;
+
+Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm));
+//elch->FluidField()->Update();
+
+// summarize performance measurements
+Teuchos::TimeMonitor::summarize();
 
 } // elch_dyn()
 

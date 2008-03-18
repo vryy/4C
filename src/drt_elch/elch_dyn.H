@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file elch_dyn.H
-\brief Control routine for Electrochemistry (time) integration.
+\brief Control routine for Electrochemistry module.
 
 
 <pre>
@@ -28,6 +28,6 @@ void elch_dyn();
 }
 #endif
 
-#endif
+#endif /* #ifndef ELCH_DYN_H */
 
-#endif
+#endif /* #ifdef CCADISCRET */
