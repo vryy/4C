@@ -221,6 +221,17 @@ void FSI::AleLinear::Integrate()
   while (step_ < numstep_-1 and time_ <= maxtime_)
   {
     PrepareTimeStep();
+
+    // set fixed nodes
+    ParameterList eleparams;
+    eleparams.set("total time", time_);
+    eleparams.set("delta time", dt_);
+    discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,dirichtoggle_);
+
+    EvaluateElements();
+
+    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
+
     Solve();
     Update();
     Output();

@@ -102,12 +102,13 @@ void dyn_ale_drt()
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
   RefCountPtr<ParameterList> params = rcp(new ParameterList());
-  params->set<int>("nstep", adyn.get<int>("NUMSTEP"));
+  params->set<int>("numstep", adyn.get<int>("NUMSTEP"));
   params->set<double>("maxtime", adyn.get<double>("MAXTIME"));
   params->set<double>("dt", adyn.get<double>("TIMESTEP"));
 
   FSI::AleLinear ale(actdis, solver, params, output);
 
+  ale.BuildSystemMatrix();
   ale.Integrate();
 
   // do the result test
