@@ -27,7 +27,6 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 void elch_dyn()
 {
-
 // create a communicator
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
@@ -35,13 +34,11 @@ void elch_dyn()
   Epetra_SerialComm comm;
 #endif
 
-if (comm.MyPID() == 0)
-cout<<"ELCH problemtype under development..."<<endl;
-
 Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm));
-//elch->FluidField()->Update();
+// everything is solved in here
+elch->TimeLoop();
 
-// summarize performance measurements
+// summarize the performance measurements
 Teuchos::TimeMonitor::summarize();
 
 } // elch_dyn()

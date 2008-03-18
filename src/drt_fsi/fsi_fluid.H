@@ -452,7 +452,7 @@ namespace FSI {
   public:
 
     /// constructor
-    explicit FluidBaseAlgorithm();
+    explicit FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn);
 
     /// virtual destructor to support polymorph destruction
     virtual ~FluidBaseAlgorithm();
@@ -463,8 +463,9 @@ namespace FSI {
 
   private:
 
-    /// setup fluid algorithm
-    void SetupFluid();
+    /// setup fluid algorithm (overriding some fluid parameters with 
+    /// values specified in given problem-dependent ParameterList)
+    void SetupFluid(const Teuchos::ParameterList& prbdyn);
 
     /// fluid field solver
     Teuchos::RCP<Fluid> fluid_;

@@ -3,7 +3,7 @@
 
 #include "elch_algorithm.H"
 
-//#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_globalproblem.H"
 //#include "../drt_lib/drt_validparameters.H"
 //#include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -38,9 +38,16 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ELCH::Algorithm::Algorithm(Epetra_Comm& comm)
-  :  FluidBaseAlgorithm(),
-     comm_(comm)
+  :  FluidBaseAlgorithm(DRT::Problem::Instance()->FluidDynamicParams()),
+     comm_(comm),
+     step_(0),
+     time_(0.0)
 {
+    const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
+    // maximum simulation time
+    maxtime_=fluiddyn.get<double>("MAXTIME");
+    // maximum number of timesteps
+    nstep_ = fluiddyn.get<int>("NUMSTEP");
 }
 
 
@@ -49,6 +56,57 @@ ELCH::Algorithm::Algorithm(Epetra_Comm& comm)
 ELCH::Algorithm::~Algorithm()
 {
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ELCH::Algorithm::TimeLoop()
+{
+  if (Comm().MyPID() == 0)
+  cout<<"ELCH problemtype under development..."<<endl;
+
+  while (step_< nstep_ and time_<maxtime_)
+  {
+    PrepareTimeStep();
+    FluidField().NonlinearSolve();
+    Update();
+    Output();
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ELCH::Algorithm::PrepareTimeStep()
+{
+  step_ += 1;
+  time_ += dt_;
+
+  FluidField().PrepareTimeStep();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ELCH::Algorithm::Update()
+{
+  FluidField().Update();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ELCH::Algorithm::Output()
+{
+  // Note: The order is important here! In here control file entries are
+  // written. And these entries define the order in which the filters handle
+  // the Discretizations, which in turn defines the dof number ordering of the
+  // Discretizations.
+  FluidField().Output();
+
+  FluidField().LiftDrag();
+}
+
 
 
 #endif // CCADISCRET

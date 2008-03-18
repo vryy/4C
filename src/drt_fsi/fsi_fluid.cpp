@@ -670,9 +670,9 @@ Teuchos::RCP<DRT::ResultTest> FSI::FluidGenAlphaAdapter::CreateFieldTest()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::FluidBaseAlgorithm::FluidBaseAlgorithm()
+FSI::FluidBaseAlgorithm::FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
 {
-  SetupFluid();
+  SetupFluid(prbdyn);
 }
 
 /*----------------------------------------------------------------------*/
@@ -683,7 +683,7 @@ FSI::FluidBaseAlgorithm::~FluidBaseAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidBaseAlgorithm::SetupFluid()
+void FSI::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdyn)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FSI::FluidBaseAlgorithm::SetupFluid");
   Teuchos::TimeMonitor monitor(*t);
@@ -715,7 +715,6 @@ void FSI::FluidBaseAlgorithm::SetupFluid()
   const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   if ((actdis->Comm()).MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
@@ -741,15 +740,15 @@ void FSI::FluidBaseAlgorithm::SetupFluid()
     // number of degrees of freedom
     fluidtimeparams->set<int>              ("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
     // the default time step size
-    fluidtimeparams->set<double>           ("time step size"           ,fsidyn.get<double>("TIMESTEP"));
+    fluidtimeparams->set<double>           ("time step size"           ,prbdyn.get<double>("TIMESTEP"));
     // max. sim. time
-    fluidtimeparams->set<double>           ("total time"               ,fsidyn.get<double>("MAXTIME"));
+    fluidtimeparams->set<double>           ("total time"               ,prbdyn.get<double>("MAXTIME"));
     // parameter for time-integration
     fluidtimeparams->set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
     // which kind of time-integration
     fluidtimeparams->set<FLUID_TIMEINTTYPE>("time int algo"            ,iop);
     // bound for the number of timesteps
-    fluidtimeparams->set<int>              ("max number timesteps"     ,fsidyn.get<int>("NUMSTEP"));
+    fluidtimeparams->set<int>              ("max number timesteps"     ,prbdyn.get<int>("NUMSTEP"));
     // number of steps with start algorithm
     fluidtimeparams->set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
     // parameter for start algo
@@ -769,9 +768,9 @@ void FSI::FluidBaseAlgorithm::SetupFluid()
 
     // ----------------------------------------------- restart and output
     // restart
-    fluidtimeparams->set                 ("write restart every"       ,fsidyn.get<int>("RESTARTEVRY"));
+    fluidtimeparams->set                 ("write restart every"       ,prbdyn.get<int>("RESTARTEVRY"));
     // solution output
-    fluidtimeparams->set                 ("write solution every"      ,fsidyn.get<int>("UPRES"));
+    fluidtimeparams->set                 ("write solution every"      ,prbdyn.get<int>("UPRES"));
     // flag for writing stresses
     fluidtimeparams->set                 ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
 
@@ -802,11 +801,11 @@ void FSI::FluidBaseAlgorithm::SetupFluid()
 
     // -------------------------------------------------- time integration
     // the default time step size
-    fluidtimeparams->set<double>           ("time step size"           ,fsidyn.get<double>("TIMESTEP"));
+    fluidtimeparams->set<double>           ("time step size"           ,prbdyn.get<double>("TIMESTEP"));
     // maximum simulation time
-    fluidtimeparams->set<double>           ("total time"               ,fsidyn.get<double>("MAXTIME"));
+    fluidtimeparams->set<double>           ("total time"               ,prbdyn.get<double>("MAXTIME"));
     // maximum number of timesteps
-    fluidtimeparams->set<int>              ("max number timesteps"     ,fsidyn.get<int>("NUMSTEP"));
+    fluidtimeparams->set<int>              ("max number timesteps"     ,prbdyn.get<int>("NUMSTEP"));
 
     // ---------------------------------------------- nonlinear iteration
     // set linearisation scheme
@@ -821,9 +820,9 @@ void FSI::FluidBaseAlgorithm::SetupFluid()
 
     // ----------------------------------------------- restart and output
     // restart
-    fluidtimeparams->set                  ("write restart every"       ,fsidyn.get<int>("RESTARTEVRY"));
+    fluidtimeparams->set                  ("write restart every"       ,prbdyn.get<int>("RESTARTEVRY"));
     // solution output
-    fluidtimeparams->set                  ("write solution every"      ,fsidyn.get<int>("UPRES"));
+    fluidtimeparams->set                  ("write solution every"      ,prbdyn.get<int>("UPRES"));
     // flag for writing stresses
     fluidtimeparams->set                  ("write stresses"            ,Teuchos::getIntegralValue<int>(ioflags,"FLUID_STRESS"));
     // ---------------------------------------------------- lift and drag

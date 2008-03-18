@@ -51,15 +51,41 @@ namespace ELCH
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
 
+    /// outer level ELCH time loop
+    void TimeLoop();
+
     /// communicator
     const Epetra_Comm& Comm() const { return comm_; }
 
   protected:
 
+    /// time step size
+    double Dt() const { return dt_; }
+
+    /// step number
+    int Step() const { return step_; }
+
+    /// start a new time step
+    void PrepareTimeStep();
+
+    /// take current results for converged and save for next time step
+    void Update();
+
+    /// write output
+    void Output();
+
   private:
 
     /// communication (mainly for screen output)
     Epetra_Comm& comm_;
+
+    //! @name Time stepping variables
+    int step_;
+    int nstep_;
+    double time_;
+    double maxtime_;
+    double dt_;
+    //@}
 
   };
 
