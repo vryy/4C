@@ -82,18 +82,12 @@ public:
             const BlitzVec&     trialshape
             ) const
     {
-        const std::vector<int> testdof  = dofman_.LocalDofPosPerField(mangle<testfield>());
-        const std::vector<int> trialdof = dofman_.LocalDofPosPerField(mangle<trialfield>());
+        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField(mangle<testfield>());
+        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField(mangle<trialfield>());
         
 //        const int numparamtest  = testdof.size();
 //        const int numparamtrial = trialdof.size();
-        
-        //std::cout << "numparamtrial " << numparamtrial << endl;
-//        for (std::vector<int>::const_iterator pos = trialdof.begin(); pos != trialdof.end(); ++pos)
-//        {
-//            std::cout << "pos = " << (*pos) << endl;
-//        }
-
+//        
 //        for (int ui=0; ui<numparamtrial; ++ui)
 //        {
 //            const int trialpos = trialdof[ui];
@@ -124,7 +118,15 @@ public:
             const double        fac
             ) const
     {
-        const std::vector<int> testdof = dofman_.LocalDofPosPerField(mangle<testfield>());
+        const std::vector<int>& testdof = dofman_.LocalDofPosPerField(mangle<testfield>());
+        
+//        const int numparamtest  = testdof.size();
+//        
+//        for (int vi=0; vi<numparamtest; ++vi)
+//        {
+//            const int testpos = testdof[vi];
+//            eforce_(testpos) += fac*testshape(vi);
+//        }
         int vi = 0;
         for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
         {

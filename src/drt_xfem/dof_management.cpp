@@ -290,7 +290,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         {
             //DRT::Element* actele = ih->xfemdis()->lColElement(i);
             const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
-            const blitz::Array<double,1> pos(toBlitzArray(actnode->X()));
+            const BlitzVec pos(toBlitzArray(actnode->X()));
             const int node_gid = actnode->Id();
             
             double val = 0.0;
@@ -320,7 +320,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
         {
             const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
-            const blitz::Array<double,1> pos(toBlitzArray(actnode->X()));
+            const BlitzVec pos(toBlitzArray(actnode->X()));
             const int node_gid = actnode->Id();
             
             double val = 0.0;
@@ -356,7 +356,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
         {
             const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
-            const blitz::Array<double,1> pos(toBlitzArray(actnode->X()));
+            const BlitzVec pos(toBlitzArray(actnode->X()));
             const int node_gid = actnode->Id();
             
             double val = 0.0;
@@ -392,7 +392,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
         {
             const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
-            const blitz::Array<double,1> pos(toBlitzArray(actnode->X()));
+            const BlitzVec pos(toBlitzArray(actnode->X()));
             const int node_gid = actnode->Id();
             
             double val = 0.0;
@@ -526,7 +526,7 @@ XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
             break;
         }
         const int gid = nodeids[inode];
-        std::set<XFEM::FieldEnr> fields = eleDofManager_.FieldEnrSetPerNode(gid);
+        const std::set<XFEM::FieldEnr>& fields = eleDofManager_.FieldEnrSetPerNode(gid);
         if (fields.size() != 4)
         {
             assembly_type = XFEM::xfem_assembly;

@@ -73,17 +73,6 @@ namespace XFEM
         return;
     }
     
-    /*!
-    \brief normalizes a vector, such that the resulting length is 1
-    \return normalized BlitzVec 
-    */   
-    inline BlitzVec normalizeVector(
-        const BlitzVec&     v ///< vector to normalize
-        )
-    {
-        return BlitzVec(v/Norm2(v));
-    }
-    
     
     /*!
     \brief  computes the Theorem of Pythagoras
@@ -205,7 +194,7 @@ namespace XFEM
     \return true if both points equal each other, false otherwise
     */
     template<int length>
-    inline bool comparePoints(
+    bool comparePoints(
         const double*     point1,
         const double*     point2) 
     {   
@@ -226,7 +215,7 @@ namespace XFEM
      \return true if both points equal each other, false otherwise
      */
     template <int length>
-    inline bool comparePoints(   
+    bool comparePoints(   
         const vector<double>&     point1,
         const double*             point2) 
     {   
@@ -248,7 +237,7 @@ namespace XFEM
      \return true if both points equal each other, false otherwise
      */
      template <int length>
-     inline bool comparePoints(   
+     bool comparePoints(   
          const vector<double>& point1,
          const vector<double>& point2) 
      {   
@@ -271,7 +260,7 @@ namespace XFEM
      \return true if both points equal each other, false otherwise
      */
      template <int length>
-     inline bool comparePoints(    
+     bool comparePoints(    
          const BlitzVec&     point1,
          const BlitzVec&     point2) 
      {   
@@ -404,10 +393,11 @@ namespace XFEM
     
     \return Jacobian matrix
     */         
-    BlitzMat updateJacobianForMap3To2(   
-        const BlitzVec&	xsi,
-        const DRT::Element*            	surfaceElement
-        );      
+    void updateJacobianForMap3To2(   
+            BlitzMat&              Jacobi,
+            const BlitzVec&	       xsi,
+            const DRT::Element*    surfaceElement
+            );      
     
    
     /*!
@@ -419,11 +409,12 @@ namespace XFEM
     \param x         		(in)      	: physical coordinates      
     \param surface element	(in)       	: surface element
     */    
-    BlitzVec updateFForMap3To2(   
-        const BlitzVec&                 xsi,
-        const BlitzVec&	                x,
-        const DRT::Element*            	surfaceElement
-        );
+    void updateFForMap3To2(   
+            BlitzVec&                       F,
+            const BlitzVec&                 xsi,
+            const BlitzVec&	                x,
+            const DRT::Element*            	surfaceElement
+            );
     
     
     /*!

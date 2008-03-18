@@ -31,8 +31,8 @@ namespace XFEM
  */
 enum AssemblyType
 {
-    xfem_assembly,
-    standard_assembly
+    standard_assembly,
+    xfem_assembly
 };
 
 /*!
@@ -63,7 +63,7 @@ public:
         return field_;
     };
 
-    Enrichment getEnrichment() const
+    const Enrichment& getEnrichment() const
     {
         return enr_;
     };
@@ -143,19 +143,19 @@ public:
      * \return set with enriched fields
      * 
      */
-    std::set<FieldEnr> FieldEnrSetPerNode(const int gid) const
+    const std::set<FieldEnr>& FieldEnrSetPerNode(const int gid) const
     {
         map<int, const set<FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
         if (tmp == nodalDofSet_.end()){
             cout << gid << endl;
             // let this always be here so we can recognize errors early
             dserror("FieldEnrSetPerNode: global node id not found!");
-            return std::set<FieldEnr>();
+            //return std::set<FieldEnr>();
         }
         return tmp->second;
     };
     
-    inline std::set<FieldEnr> FieldEnrSetPerElement() const
+    inline const std::set<FieldEnr>& FieldEnrSetPerElement() const
     {
         return elementDofs_;
     };
@@ -174,13 +174,13 @@ public:
         return tmp->second;
     };
     
-    /// function that returns element specific number of dofs or the given default number
+    //! function that returns element specific number of dofs or the given default number
     inline int NumDofPerElement() const
     {
         return elementDofs_.size()*numVirtualNodes_;
     };
     
-    /// function that returns element specific number of dofs or the given default number
+    //! function that returns element specific number of dofs or the given default number
     inline int NumVirtualNodes() const
     {
         return numVirtualNodes_;
@@ -199,19 +199,14 @@ public:
         return tmp->second;
     };
     
-    /// return a list of local positions in a array of dofs
-    inline std::vector<int> LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
+    //! return reference to list of local positions in a array of dofs
+    inline const std::vector<int>& LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
     {
-        std::map<XFEM::PHYSICS::Field, vector<int> >::const_iterator tmp = paramsLocalEntries_.find(field);
-        if (tmp == paramsLocalEntries_.end()){
-            //cout << XFEM::PHYSICS::physVarToString(field) << endl;
-            return vector<int>(0);
-        }
-        return tmp->second;
+        return paramsLocalEntries_.find(field)->second;
     };
     
     //! return unique enrichments for this proc
-    inline std::set<XFEM::Enrichment> getUniqueEnrichments() const
+    inline const std::set<XFEM::Enrichment>& getUniqueEnrichments() const
     {
         return unique_enrichments_;
     }
@@ -305,7 +300,7 @@ public:
             ) const;
     
     //! return unique enrichments for this proc
-    inline std::set<XFEM::Enrichment> getUniqueEnrichments() const
+    inline const std::set<XFEM::Enrichment>& getUniqueEnrichments() const
     {
         return unique_enrichments_;
     }

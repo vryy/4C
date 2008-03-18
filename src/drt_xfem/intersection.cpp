@@ -54,7 +54,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
                                         map< int, DomainIntCells >&   			domainintcells,
                                         map< int, BoundaryIntCells >&   		boundaryintcells,
                                         map< int, set< DRT::Element* > >&    cutterElementMap,  ///< int is the xfem element global id
-                                        map< int, RCP<DRT::Node> >&     cutterNodeMap      ///< int is the xfem element global id
+                                        map< int, RCP<DRT::Node> >&     cutterNodeMap      ///< int is the node global id
                                         )
 {
     
@@ -819,7 +819,7 @@ void updateRHSForCSI(
     
     static BlitzVec surfaceFunct(numNodesSurface);
     shape_function_2D(surfaceFunct, xsi(0), xsi(1), surftype);
-    //const BlitzVec surfaceFunct(shape_function_2D( xsi(0), xsi(1), surfaceElement->Shape()));
+    
     const DRT::Node*const* surfaceElementNodes = surfaceElement->Nodes();
     for(int i=0; i<numNodesSurface; i++)
     {
@@ -830,7 +830,7 @@ void updateRHSForCSI(
 
     static BlitzVec lineFunct(numNodesLine);
     shape_function_1D(lineFunct, xsi(2), linetype);
-    //const BlitzVec lineFunct(shape_function_1D( xsi(2), lineElement->Shape()));
+    
     const DRT::Node*const* lineElementNodes = lineElement->Nodes();
     for(int i=0; i<numNodesLine; i++)
     {
@@ -2896,8 +2896,6 @@ void Intersection::updateAForRCIPlane(
     for(int dim=0; dim<3; dim++)
         for(int i=0; i<numNodesSurface; i++)
         {
-//            A[dim][0] += plane[i][dim] * surfaceDeriv[i][0];
-//            A[dim][1] += plane[i][dim] * surfaceDeriv[i][1]; // ???????????????bug??????????? new version gives slighlty different results
             A(dim,0) += plane[i](dim) * surfaceDeriv(0,i);
             A(dim,1) += plane[i](dim) * surfaceDeriv(1,i);
         }

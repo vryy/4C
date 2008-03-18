@@ -774,7 +774,7 @@ for (int isd = 0; isd < nsd; ++isd)
     {
       const int elegid = elementmap->GID(iele);
       const DRT::Element* const actele = dis->gElement(elegid);
-      const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, actele->Shape());
+      const XFEM::DomainIntCells& domainintcells = ih->GetDomainIntCells(elegid, actele->Shape());
       for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
       {
         if (cell->Shape() == distypeiter)
@@ -835,7 +835,7 @@ void XFluidEnsightWriter::WriteCells(
     for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
     {
       const int elegid = elementmap->GID(iele);
-      const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, dis->gElement(elegid)->Shape());
+      const XFEM::DomainIntCells& domainintcells = ih->GetDomainIntCells(elegid, dis->gElement(elegid)->Shape());
       for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
       {
         if (cell->Shape() == distypeiter)
@@ -899,7 +899,7 @@ NumElePerDisType XFluidEnsightWriter::GetNumElePerDisType(
   for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
   {
     const int elegid = elementmap->GID(iele);
-    const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, dis->gElement(elegid)->Shape());
+    const XFEM::DomainIntCells& domainintcells = ih->GetDomainIntCells(elegid, dis->gElement(elegid)->Shape());
     for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
     {
       // update counter for current distype
@@ -1141,13 +1141,13 @@ void XFluidEnsightWriter::WriteNodalResultStep(
         DRT::UTILS::ExtractMyValues(*data,myvelnp,lm);
 
         const int numparam = eledofman.NumDofPerField(field);
-        const vector<int> dofpos = eledofman.LocalDofPosPerField(field);
+        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
         //cout << XFEM::PHYSICS::physVarToString(field) << ": numparam = " << numparam << ": lm.size() = " << lm.size() << endl;
 
         blitz::Array<double,1> elementvalues(numparam);
         for (int iparam=0; iparam<numparam; ++iparam)   elementvalues(iparam) = myvelnp[dofpos[iparam]];
 
-        const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, actele->Shape());
+        const XFEM::DomainIntCells& domainintcells = ih->GetDomainIntCells(elegid, actele->Shape());
         for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           if (cell->Shape() == distypeiter)
@@ -1190,7 +1190,7 @@ int XFluidEnsightWriter::NumNodesPerField(
   for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
   {
     const int elegid = elementmap->GID(iele);
-    const XFEM::DomainIntCells domainintcells = ih->GetDomainIntCells(elegid, dis->gElement(elegid)->Shape());
+    const XFEM::DomainIntCells& domainintcells = ih->GetDomainIntCells(elegid, dis->gElement(elegid)->Shape());
     for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
     {
       switch (cell->Shape())

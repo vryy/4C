@@ -27,7 +27,7 @@ using namespace XFEM;
 
 
 //! little helper function
-static inline BlitzMat ConvertPosArrayToBlitz(
+static BlitzMat ConvertPosArrayToBlitz(
         const vector<vector<double> >&         pos_array,
         const DRT::Element::DiscretizationType distype,
         const int                              dim

@@ -113,7 +113,7 @@ BlitzVec XFEM::elementToCurrentCoordinates(
 {
     const int numNodes = element->NumNode();
     BlitzVec funct(numNodes);
-    BlitzVec physCoord(3);
+    static BlitzVec physCoord(3);
     
     switch(getDimension(element->Shape()))
     {
@@ -571,7 +571,7 @@ BlitzVec XFEM::CurrentToSurfaceElementCoordinates(
    	    )
 {
 	bool nodeWithinElement = true;
-    
+    	
     BlitzVec eleCoord(2);
     eleCoord = 0.0;
     
@@ -585,9 +585,12 @@ BlitzVec XFEM::CurrentToSurfaceElementCoordinates(
   	    iter++;
   	    
         // compute Jacobian, f and b
-  	    const BlitzMat Jacobi(updateJacobianForMap3To2(eleCoord, surfaceElement));
-        const BlitzVec F(updateFForMap3To2(eleCoord, physCoord, surfaceElement));
-        BlitzVec b(blitz::sum(-Jacobi(j,i)*F(j),j));
+  	    static BlitzMat Jacobi(3,2,blitz::ColumnMajorArray<2>());
+  	    static BlitzVec F(3);
+  	    updateJacobianForMap3To2(Jacobi, eleCoord, surfaceElement);
+        updateFForMap3To2(F, eleCoord, physCoord, surfaceElement);
+        static BlitzVec b(2);
+        b = blitz::sum(-Jacobi(j,i)*F(j),j);
      
         const double residual = sqrt(b(0)*b(0)+b(1)*b(1));
         if (residual < TOL14)
@@ -597,11 +600,11 @@ BlitzVec XFEM::CurrentToSurfaceElementCoordinates(
         }  
   	    
         // compute system matrix A
-        BlitzMat A(2,2,blitz::ColumnMajorArray<2>());
+        static BlitzMat A(2,2,blitz::ColumnMajorArray<2>());
   		updateAForMap3To2(A, Jacobi, F, eleCoord, surfaceElement);
   	
-  		BlitzVec dx(2);
-  		dx = 0;
+  		static BlitzVec dx(2);
+  		dx = 0.0;
         if(!gaussEliminationEpetra(A, b, dx))
         {
             nodeWithinElement = false;
@@ -654,12 +657,13 @@ bool XFEM::checkPositionWithinElementParameterSpace(
  |          whether a point in the 3-dim physical space lies            |
  | 			on a surface element 										|                 
  *----------------------------------------------------------------------*/
-BlitzMat XFEM::updateJacobianForMap3To2(   
-    const BlitzVec&	                xsi,
-    const DRT::Element*             surfaceElement)                                                  
+void XFEM::updateJacobianForMap3To2(   
+        BlitzMat&                       Jacobi,
+        const BlitzVec&	                xsi,
+        const DRT::Element*             surfaceElement
+        )                                                  
 {   
-    BlitzMat Jacobi(3,2,blitz::ColumnMajorArray<2>());
-    Jacobi = 0;
+    Jacobi = 0.0;
     
     const int numNodes = surfaceElement->NumNode();
     const BlitzMat deriv1(shape_function_2D_deriv1(xsi(0), xsi(1), surfaceElement->Shape()));
@@ -674,7 +678,7 @@ BlitzMat XFEM::updateJacobianForMap3To2(
             }
         }
     } 
-    return Jacobi;
+    return;
 }
 
 
@@ -684,14 +688,14 @@ BlitzMat XFEM::updateJacobianForMap3To2(
  |          for the computation, whether a point in the 3-dim physical 	|
  |			space lies on a surface element 							|                 
  *----------------------------------------------------------------------*/
-BlitzVec XFEM::updateFForMap3To2(   
+void XFEM::updateFForMap3To2(
+        BlitzVec&           F,
         const BlitzVec&	    xsi,
         const BlitzVec&	    x,
-        const DRT::Element* surfaceElement)                                                  
+        const DRT::Element* surfaceElement
+        )                                                  
 {   
-    BlitzVec F(3);
     F = 0.0;
-    
     const int numNodes = surfaceElement->NumNode();
     const BlitzVec funct(shape_function_2D(xsi(0), xsi(1), surfaceElement->Shape()));
     for(int inode=0; inode<numNodes; inode++) 
@@ -702,7 +706,7 @@ BlitzVec XFEM::updateFForMap3To2(
     }   
     
     F -= x;
-    return F;
+    return;
 }
 
 

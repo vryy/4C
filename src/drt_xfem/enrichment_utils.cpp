@@ -41,8 +41,7 @@ std::map<XFEM::Enrichment, double> computeEnrvalMap(
         enrset.begin(); enriter != enrset.end(); ++enriter)
     {
         const double enrval = enriter->EnrValue(actpos, ih->cutterdis(), approachdirection);
-        const XFEM::Enrichment enr = *enriter;
-        enrvals.insert(make_pair(enr, enrval));
+        enrvals.insert(make_pair((*enriter), enrval));
     }
     return enrvals;
 }
@@ -65,11 +64,11 @@ void XFEM::ComputeEnrichedShapefunction(
 {
     
     // compute enrichment values for all available enrichemnts in this dofmap (saves lots of time)
-    std::map<XFEM::Enrichment, double> enrvals = computeEnrvalMap(
+    std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
             ih,
             dofman.getUniqueEnrichments(),
             actpos,
-            approachdirection);
+            approachdirection));
     
     const DRT::Node*const* nodes = ele.Nodes();
     
@@ -77,9 +76,9 @@ void XFEM::ComputeEnrichedShapefunction(
     for (int inode=0; inode<ele.NumNode(); ++inode)
     {
         const int gid = nodes[inode]->Id();
-        //const blitz::Array<double,1> nodalpos(toBlitzArray(nodes[inode]->X()));
+        //const BlitzVec nodalpos(toBlitzArray(nodes[inode]->X()));
 
-        const std::set<XFEM::FieldEnr> enrfieldset = dofman.FieldEnrSetPerNode(gid);
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
 
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
@@ -116,13 +115,13 @@ void XFEM::ComputeEnrichedShapefunction(
 {
     
     // compute enrichment values for all available enrichemnts in this dofmap (saves lots of time)
-    std::map<XFEM::Enrichment, double> enrvals = computeEnrvalMap(
+    std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
             ih,
             dofman.getUniqueEnrichments(),
             actpos,
-            approachdirection);
+            approachdirection));
     
-    const blitz::Range _  = blitz::Range::all();
+    blitz::Range _  = blitz::Range::all();
     
     const DRT::Node*const* nodes = ele.Nodes();
     
@@ -130,9 +129,9 @@ void XFEM::ComputeEnrichedShapefunction(
     for (int inode=0; inode<ele.NumNode(); ++inode)
     {
         const int gid = nodes[inode]->Id();
-//        const blitz::Array<double,1> nodalpos(toBlitzArray(nodes[inode]->X()));
+//        const BlitzVec nodalpos(toBlitzArray(nodes[inode]->X()));
 
-        const std::set<XFEM::FieldEnr> enrfieldset = dofman.FieldEnrSetPerNode(gid);
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
 
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
@@ -171,13 +170,13 @@ void XFEM::ComputeEnrichedShapefunction(
 {
     
     // compute enrichment values for all available enrichemnts in this dofmap (saves lots of time)
-    std::map<XFEM::Enrichment, double> enrvals = computeEnrvalMap(
+    std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
             ih,
             dofman.getUniqueEnrichments(),
             actpos,
-            approachdirection);
+            approachdirection));
     
-    const blitz::Range _  = blitz::Range::all();
+    blitz::Range _  = blitz::Range::all();
     
     const DRT::Node*const* nodes = ele.Nodes();
     
@@ -185,9 +184,9 @@ void XFEM::ComputeEnrichedShapefunction(
     for (int inode=0; inode<ele.NumNode(); ++inode)
     {
         const int gid = nodes[inode]->Id();
-//        const blitz::Array<double,1> nodalpos(toBlitzArray(nodes[inode]->X()));
+//        const BlitzVec nodalpos(toBlitzArray(nodes[inode]->X()));
 
-        const std::set<XFEM::FieldEnr> enrfieldset = dofman.FieldEnrSetPerNode(gid);
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
 
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
@@ -224,16 +223,16 @@ void XFEM::ComputeEnrichedStressShapefunction(
 {
     
     // compute enrichment values for all available enrichemnts in this dofmap (saves lots of time)
-    std::map<XFEM::Enrichment, double> enrvals = computeEnrvalMap(
+    std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
             ih,
             dofman.getUniqueEnrichments(),
             actpos,
-            approachdirection);
+            approachdirection));
     
     int dofcounter = 0;
     for (int inode = 0; inode < dofman.NumVirtualNodes(); ++inode)
     {
-        const std::set<XFEM::FieldEnr> enrfieldset = dofman.FieldEnrSetPerElement();
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerElement();
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {
@@ -267,18 +266,18 @@ void XFEM::ComputeEnrichedStressShapefunction(
 {
     
     // compute enrichment values for all available enrichemnts in this dofmap (saves lots of time)
-    std::map<XFEM::Enrichment, double> enrvals = computeEnrvalMap(
+    std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
             ih,
             dofman.getUniqueEnrichments(),
             actpos,
-            approachdirection);
+            approachdirection));
     
-    const blitz::Range _  = blitz::Range::all();
+    blitz::Range _  = blitz::Range::all();
     
     int dofcounter = 0;
     for (int inode = 0; inode < dofman.NumVirtualNodes(); ++inode)
     {
-        const std::set<XFEM::FieldEnr> enrfieldset = dofman.FieldEnrSetPerElement();
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerElement();
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {
