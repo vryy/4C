@@ -119,13 +119,13 @@ DRT::ELEMENTS::Fluid3Impl::Fluid3Impl(int iel)
     csvelint_(3),
     fsvelint_(3),
     csconvint_(3),
-    gridvelint_(3),
+    convvelint_(3),
     gradp_(3),
     tau_(3),
     viscs2_(3,3,iel_,blitz::ColumnMajorArray<3>()),
     conv_c_(iel_),
-    conv_g_(iel_),
-    conv_r_(3,3,iel_,blitz::ColumnMajorArray<3>()),
+    //conv_g_(iel_),
+    //conv_r_(3,3,iel_,blitz::ColumnMajorArray<3>()),
     rhsint_(3),
     conv_old_(3),
     conv_s_(3),
@@ -172,10 +172,11 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
 {
   // set element data
   const DRT::Element::DiscretizationType distype = ele->Shape();
+  const int numnode = iel_;
 
   // get node coordinates and number of elements per node
   DRT::Node** nodes = ele->Nodes();
-  for (int inode=0; inode<iel_; inode++)
+  for (int inode=0; inode<numnode; inode++)
   {
     const double* x = nodes[inode]->X();
     xyze_(0,inode) = x[0];
@@ -204,13 +205,6 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
   blitz::firstIndex i;    // Placeholder for the first index
   blitz::secondIndex j;   // Placeholder for the second index
   blitz::thirdIndex k;    // Placeholder for the third index
-//   blitz::fourthIndex l;   // Placeholder for the fourth index
-
-  blitz::Range _  = blitz::Range::all();
-//   blitz::Range ux = blitz::Range(0, 4*iel_-4, 4);
-//   blitz::Range uy = blitz::Range(1, 4*iel_-3, 4);
-//   blitz::Range uz = blitz::Range(2, 4*iel_-2, 4);
-//   blitz::Range p  = blitz::Range(3, 4*iel_-1, 4);
 
   // stabilization parameter
   // This has to be done before anything else is calculated because
@@ -289,15 +283,16 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     }
 
     // inverse of jacobian
-    xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
-    xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
-    xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
-    xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
-    xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
-    xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
-    xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
-    xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
-    xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
+    double idet = 1./det;
+    xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))*idet;
+    xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))*idet;
+    xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))*idet;
+    xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))*idet;
+    xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))*idet;
+    xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))*idet;
+    xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))*idet;
+    xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))*idet;
+    xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))*idet;
 
     // compute global derivates
     derxy_ = blitz::sum(xji_(i,k)*deriv_(k,j),k);
@@ -327,8 +322,8 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
 
     // get fine-scale velocity (np,i) derivatives at integration point
-    if (fssgv != Fluid3::fssgv_no  && fssgv != Fluid3::fssgv_scale_similarity) 
-         fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
+    if (fssgv != Fluid3::fssgv_no  && fssgv != Fluid3::fssgv_scale_similarity)
+      fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
     else fsvderxy_ = 0.;
 
     // get values at integration point required for scale-similarity model
@@ -349,14 +344,17 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
       csconvint_ = blitz::sum(funct_(j)*cseconvnp(i,j),j);
     }
 
-    // get grid velocity at integration point
+    // get convective velocity at integration point
+    // We handle the ale case very implicitely here using the (possible mesh
+    // movement dependent) convective velocity. This avoids a lot of ale terms
+    // we used to calculate.
     if (ele->is_ale_)
     {
-      gridvelint_ = blitz::sum(funct_(j)*egridv(i,j),j);
+      convvelint_ = velint_ - blitz::sum(funct_(j)*egridv(i,j),j);
     }
     else
     {
-      gridvelint_ = 0.;
+      convvelint_ = velint_;
     }
 
     // get pressure gradients
@@ -392,12 +390,19 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     /*----------------- get numerical representation of single operators ---*/
 
     /* Convective term  u_old * grad u_old: */
-    conv_old_ = blitz::sum(vderxy_(i, j)*velint_(j), j);
+    conv_old_ = blitz::sum(vderxy_(i, j)*convvelint_(j), j);
 
-    /* Viscous term  div epsilon(u_old) */
-    visc_old_(0) = vderxy2_(0,0) + 0.5 * (vderxy2_(0,1) + vderxy2_(1,3) + vderxy2_(0,2) + vderxy2_(2,4));
-    visc_old_(1) = vderxy2_(1,1) + 0.5 * (vderxy2_(1,0) + vderxy2_(0,3) + vderxy2_(1,2) + vderxy2_(2,5));
-    visc_old_(2) = vderxy2_(2,2) + 0.5 * (vderxy2_(2,0) + vderxy2_(0,4) + vderxy2_(2,1) + vderxy2_(1,5));
+    if (higher_order_ele)
+    {
+      /* Viscous term  div epsilon(u_old) */
+      visc_old_(0) = vderxy2_(0,0) + 0.5 * (vderxy2_(0,1) + vderxy2_(1,3) + vderxy2_(0,2) + vderxy2_(2,4));
+      visc_old_(1) = vderxy2_(1,1) + 0.5 * (vderxy2_(1,0) + vderxy2_(0,3) + vderxy2_(1,2) + vderxy2_(2,5));
+      visc_old_(2) = vderxy2_(2,2) + 0.5 * (vderxy2_(2,0) + vderxy2_(0,4) + vderxy2_(2,1) + vderxy2_(1,5));
+    }
+    else
+    {
+      visc_old_ = 0;
+    }
 
     /* Reactive term  u:  funct */
     /* linearise convective term */
@@ -405,18 +410,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     /*--- convective part u_old * grad (funct) --------------------------*/
     /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
        with  N .. form function matrix                                   */
-    conv_c_ = blitz::sum(derxy_(j,i)*velint_(j), j);
-
-    /*--- convective grid part u_G * grad (funct) -----------------------*/
-    /* u_old_x * N,x  +  u_old_y * N,y   with  N .. form function matrix */
-    if (ele->is_ale_)
-    {
-      conv_g_ = - blitz::sum(derxy_(j,i) * gridvelint_(j), j);
-    }
-    else
-    {
-      conv_g_ = 0.0;
-    }
+    conv_c_ = blitz::sum(derxy_(j,i)*convvelint_(j), j);
 
     /*--- reactive part funct * grad (u_old) ----------------------------*/
     /* /                                     \
@@ -427,7 +421,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
        |  u_old_z,x   u_old_z,y   u_old_z,z  |
        \                                     /
        with  N .. form function matrix                                   */
-    conv_r_ = vderxy_(i, j)*funct_(k);
+    //conv_r_ = vderxy_(i, j)*funct_(k);
 
     /*--- viscous term  - grad * epsilon(u): ----------------------------*/
     /*   /                                                \
@@ -441,15 +435,22 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
          with N_x .. x-line of N
          N_y .. y-line of N                                             */
 
-    viscs2_(0,0,_) = 0.5 * (2.0 * derxy2_(0,_) + derxy2_(1,_) + derxy2_(2,_));
-    viscs2_(0,1,_) = 0.5 *  derxy2_(3,_);
-    viscs2_(0,2,_) = 0.5 *  derxy2_(4,_);
-    viscs2_(1,0,_) = 0.5 *  derxy2_(3,_);
-    viscs2_(1,1,_) = 0.5 * (derxy2_(0,_) + 2.0 * derxy2_(1,_) + derxy2_(2,_));
-    viscs2_(1,2,_) = 0.5 *  derxy2_(5,_);
-    viscs2_(2,0,_) = 0.5 *  derxy2_(4,_);
-    viscs2_(2,1,_) = 0.5 *  derxy2_(5,_);
-    viscs2_(2,2,_) = 0.5 * (derxy2_(0,_) + derxy2_(1,_) + 2.0 * derxy2_(2,_));
+    if (higher_order_ele)
+    {
+      for (int _=0; _<numnode; ++_) viscs2_(0,0,_) = 0.5 * (2.0 * derxy2_(0,_) + derxy2_(1,_) + derxy2_(2,_));
+      for (int _=0; _<numnode; ++_) viscs2_(0,1,_) = 0.5 *  derxy2_(3,_);
+      for (int _=0; _<numnode; ++_) viscs2_(0,2,_) = 0.5 *  derxy2_(4,_);
+      for (int _=0; _<numnode; ++_) viscs2_(1,0,_) = 0.5 *  derxy2_(3,_);
+      for (int _=0; _<numnode; ++_) viscs2_(1,1,_) = 0.5 * (derxy2_(0,_) + 2.0 * derxy2_(1,_) + derxy2_(2,_));
+      for (int _=0; _<numnode; ++_) viscs2_(1,2,_) = 0.5 *  derxy2_(5,_);
+      for (int _=0; _<numnode; ++_) viscs2_(2,0,_) = 0.5 *  derxy2_(4,_);
+      for (int _=0; _<numnode; ++_) viscs2_(2,1,_) = 0.5 *  derxy2_(5,_);
+      for (int _=0; _<numnode; ++_) viscs2_(2,2,_) = 0.5 * (derxy2_(0,_) + derxy2_(1,_) + 2.0 * derxy2_(2,_));
+    }
+    else
+    {
+      viscs2_ = 0;
+    }
 
     /* pressure gradient term derxy, funct without or with integration   *
      * by parts, respectively                                            */
@@ -457,12 +458,6 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     {
       // evaluate residual once for all stabilisation right hand sides
       res_old_ = velint_-rhsint_+timefac*(conv_old_+gradp_-2*visceff*visc_old_);
-
-      if (ele->is_ale_)
-      {
-        // correct convection with grid velocity
-        res_old_ -= timefac*blitz::sum(vderxy_(i, j)*gridvelint_(j), j);
-      }
 
       /*
         This is the operator
@@ -475,52 +470,63 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
 
       */
 
-      if(cross    == Fluid3::cross_stress_stab ||
+      if (cross    == Fluid3::cross_stress_stab ||
          reynolds == Fluid3::reynolds_stress_stab_only_rhs)
-      conv_resM_ =  blitz::sum(res_old_(j)*derxy_(j,i),j);
+        conv_resM_ =  blitz::sum(res_old_(j)*derxy_(j,i),j);
 
+      //----------------------------------------------------------------------
       //----------------------------------------------------------------------
       //                            GALERKIN PART
 
-      for (int ui=0; ui<iel_; ++ui)
+      for (int ui=0; ui<numnode; ++ui)
       {
-        for (int vi=0; vi<iel_; ++vi)
+        double v = fac*funct_(ui)
+#if 1
+                   + timefacfac*conv_c_(ui)
+#endif
+                   ;
+        for (int vi=0; vi<numnode; ++vi)
         {
 
           /* inertia (contribution to mass matrix) */
           /*
 
-                               /        \
-                              |          |
-                              |  Du , v  |
-                              |          |
-                               \        /
+          /          \
+          |          |
+          |  Du , v  |
+          |          |
+          \          /
           */
-          estif(vi*4, ui*4)         += fac*funct_(ui)*funct_(vi) ;
-          estif(vi*4 + 1, ui*4 + 1) += fac*funct_(ui)*funct_(vi) ;
-          estif(vi*4 + 2, ui*4 + 2) += fac*funct_(ui)*funct_(vi) ;
 
           /* convection, convective part */
           /*
 
-                       /                       \
-                      |  / n+1       \          |
-                      | | u   o nabla | Du , v  |
-                      |  \ (i)       /          |
-                       \                       /
+          /                         \
+          |  / n+1       \          |
+          | | u   o nabla | Du , v  |
+          |  \ (i)       /          |
+          \                         /
 
           */
-          estif(vi*4, ui*4)         += timefacfac*funct_(vi)*conv_c_(ui) ;
-          estif(vi*4 + 1, ui*4 + 1) += timefacfac*funct_(vi)*conv_c_(ui) ;
-          estif(vi*4 + 2, ui*4 + 2) += timefacfac*funct_(vi)*conv_c_(ui) ;
+          double v2 = v*funct_(vi) ;
+          estif(vi*4, ui*4)         += v2;
+          estif(vi*4 + 1, ui*4 + 1) += v2;
+          estif(vi*4 + 2, ui*4 + 2) += v2;
+        }
+      }
 
-          /* Viskosit�tsterm */
+      for (int ui=0; ui<numnode; ++ui)
+      {
+        for (int vi=0; vi<numnode; ++vi)
+        {
+
+          /* Viskositaetsterm */
           /*
-                        /                        \
-                       |       /  \         / \   |
-                       |  eps | Du | , eps | v |  |
-                       |       \  /         \ /   |
-                        \                        /
+            /                          \
+            |       /  \         / \   |
+            |  eps | Du | , eps | v |  |
+            |       \  /         \ /   |
+            \                          /
           */
           estif(vi*4, ui*4)         += visceff*timefacfac*(2.0*derxy_(0, ui)*derxy_(0, vi)
                                                            +
@@ -544,118 +550,123 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
                                                            +
                                                            2.0*derxy_(2, ui)*derxy_(2, vi)) ;
 
+        }
+      }
+
+      for (int ui=0; ui<numnode; ++ui)
+      {
+        double v = -timefacfac*funct_(ui);
+        for (int vi=0; vi<numnode; ++vi)
+        {
           /* Druckterm */
           /*
 
-                          /                \
-                         |                  |
-                         |  Dp , nabla o v  |
-                         |                  |
-                          \                /
+          /                  \
+          |                  |
+          |  Dp , nabla o v  |
+          |                  |
+          \                  /
           */
 
-          estif(vi*4, ui*4 + 3)     += -(timefacfac*funct_(ui)*derxy_(0, vi)) ;
-          estif(vi*4 + 1, ui*4 + 3) += -(timefacfac*funct_(ui)*derxy_(1, vi)) ;
-          estif(vi*4 + 2, ui*4 + 3) += -(timefacfac*funct_(ui)*derxy_(2, vi)) ;
-
-
-          /* Divergenzfreiheit */
-          /*
-                         /                \
-                        |                  |
-                        | nabla o Du  , q  |
-                        |                  |
-                         \                /
-          */
-          estif(vi*4 + 3, ui*4)     += timefacfac*funct_(vi)*derxy_(0, ui) ;
-          estif(vi*4 + 3, ui*4 + 1) += timefacfac*funct_(vi)*derxy_(1, ui) ;
-          estif(vi*4 + 3, ui*4 + 2) += timefacfac*funct_(vi)*derxy_(2, ui) ;
+          estif(vi*4, ui*4 + 3)     += (v*derxy_(0, vi)) ;
+          estif(vi*4 + 1, ui*4 + 3) += (v*derxy_(1, vi)) ;
+          estif(vi*4 + 2, ui*4 + 3) += (v*derxy_(2, vi)) ;
 
         }
       }
 
-      if (ele->is_ale_)
+      for (int vi=0; vi<numnode; ++vi)
       {
-        for (int vi=0; vi<iel_; ++vi)
+        double v = timefacfac*funct_(vi);
+        for (int ui=0; ui<numnode; ++ui)
         {
-          for (int ui=0; ui<iel_; ++ui)
-          {
 
-            /*  reduced convection through grid motion
-
-
-                       /                      \
-                      |  /          \          |
-                    - | | u  o nabla | Du , v  |
-                      |  \ G        /          |
-                       \                      /
-
-            */
-            estif(vi*4, ui*4)         += timefacfac*funct_(vi)*conv_g_(ui) ;
-            estif(vi*4 + 1, ui*4 + 1) += timefacfac*funct_(vi)*conv_g_(ui) ;
-            estif(vi*4 + 2, ui*4 + 2) += timefacfac*funct_(vi)*conv_g_(ui)  ;
-          }
-
+          /* Divergenzfreiheit */
+          /*
+            /                  \
+            |                  |
+            | nabla o Du  , q  |
+            |                  |
+            \                  /
+          */
+          estif(vi*4 + 3, ui*4)     += v*derxy_(0, ui) ;
+          estif(vi*4 + 3, ui*4 + 1) += v*derxy_(1, ui) ;
+          estif(vi*4 + 3, ui*4 + 2) += v*derxy_(2, ui) ;
         }
-      } // end if is_ale
+      }
 
       if (newton)
       {
-        for (int ui=0; ui<iel_; ++ui)
+        for (int vi=0; vi<numnode; ++vi)
         {
-          for (int vi=0; vi<iel_; ++vi)
+          double v = timefacfac*funct_(vi);
+          for (int ui=0; ui<numnode; ++ui)
           {
 
             /*  convection, reactive part
 
-                   /                         \
-                  |  /          \   n+1       |
-                  | | Du o nabla | u     , v  |
-                  |  \          /   (i)       |
-                   \                         /
+            /                           \
+            |  /          \   n+1       |
+            | | Du o nabla | u     , v  |
+            |  \          /   (i)       |
+            \                           /
             */
-            estif(vi*4, ui*4)         += timefacfac*funct_(vi)*conv_r_(0, 0, ui) ;
-            estif(vi*4, ui*4 + 1)     += timefacfac*funct_(vi)*conv_r_(0, 1, ui) ;
-            estif(vi*4, ui*4 + 2)     += timefacfac*funct_(vi)*conv_r_(0, 2, ui) ;
-            estif(vi*4 + 1, ui*4)     += timefacfac*funct_(vi)*conv_r_(1, 0, ui) ;
-            estif(vi*4 + 1, ui*4 + 1) += timefacfac*funct_(vi)*conv_r_(1, 1, ui) ;
-            estif(vi*4 + 1, ui*4 + 2) += timefacfac*funct_(vi)*conv_r_(1, 2, ui) ;
-            estif(vi*4 + 2, ui*4)     += timefacfac*funct_(vi)*conv_r_(2, 0, ui) ;
-            estif(vi*4 + 2, ui*4 + 1) += timefacfac*funct_(vi)*conv_r_(2, 1, ui) ;
-            estif(vi*4 + 2, ui*4 + 2) += timefacfac*funct_(vi)*conv_r_(2, 2, ui) ;
+            estif(vi*4, ui*4)         += v*vderxy_(0, 0)*funct_(ui) ;
+            estif(vi*4, ui*4 + 1)     += v*vderxy_(0, 1)*funct_(ui) ;
+            estif(vi*4, ui*4 + 2)     += v*vderxy_(0, 2)*funct_(ui) ;
+            estif(vi*4 + 1, ui*4)     += v*vderxy_(1, 0)*funct_(ui) ;
+            estif(vi*4 + 1, ui*4 + 1) += v*vderxy_(1, 1)*funct_(ui) ;
+            estif(vi*4 + 1, ui*4 + 2) += v*vderxy_(1, 2)*funct_(ui) ;
+            estif(vi*4 + 2, ui*4)     += v*vderxy_(2, 0)*funct_(ui) ;
+            estif(vi*4 + 2, ui*4 + 1) += v*vderxy_(2, 1)*funct_(ui) ;
+            estif(vi*4 + 2, ui*4 + 2) += v*vderxy_(2, 2)*funct_(ui) ;
           }
         }
       }
 
-      for (int vi=0; vi<iel_; ++vi)
+      for (int vi=0; vi<numnode; ++vi)
       {
         /* inertia */
-        eforce(vi*4)     += -(fac*funct_(vi)*velint_(0)) ;
-        eforce(vi*4 + 1) += -(fac*funct_(vi)*velint_(1)) ;
-        eforce(vi*4 + 2) += -(fac*funct_(vi)*velint_(2)) ;
+        double v = -fac*funct_(vi);
+        eforce(vi*4)     += (v*velint_(0)) ;
+        eforce(vi*4 + 1) += (v*velint_(1)) ;
+        eforce(vi*4 + 2) += (v*velint_(2)) ;
+      }
 
+#if 1
+      for (int vi=0; vi<numnode; ++vi)
+      {
         /* convection */
-        eforce(vi*4)     += -(timefacfac*(velint_(0)*conv_r_(0, 0, vi)
-                                          +
-                                          velint_(1)*conv_r_(0, 1, vi)
-                                          +
-                                          velint_(2)*conv_r_(0, 2, vi))) ;
-        eforce(vi*4 + 1) += -(timefacfac*(velint_(0)*conv_r_(1, 0, vi)
-                                          +
-                                          velint_(1)*conv_r_(1, 1, vi)
-                                          +
-                                          velint_(2)*conv_r_(1, 2, vi))) ;
-        eforce(vi*4 + 2) += -(timefacfac*(velint_(0)*conv_r_(2, 0, vi)
-                                          +
-                                          velint_(1)*conv_r_(2, 1, vi)
-                                          +
-                                          velint_(2)*conv_r_(2, 2, vi))) ;
+        double v = -timefacfac*funct_(vi);
+        eforce(vi*4)     += (v*(convvelint_(0)*vderxy_(0, 0)
+                                +
+                                convvelint_(1)*vderxy_(0, 1)
+                                +
+                                convvelint_(2)*vderxy_(0, 2))) ;
+        eforce(vi*4 + 1) += (v*(convvelint_(0)*vderxy_(1, 0)
+                                +
+                                convvelint_(1)*vderxy_(1, 1)
+                                +
+                                convvelint_(2)*vderxy_(1, 2))) ;
+        eforce(vi*4 + 2) += (v*(convvelint_(0)*vderxy_(2, 0)
+                                +
+                                convvelint_(1)*vderxy_(2, 1)
+                                +
+                                convvelint_(2)*vderxy_(2, 2))) ;
+      }
+#endif
 
+      for (int vi=0; vi<numnode; ++vi)
+      {
         /* pressure */
-        eforce(vi*4)     += press*timefacfac*derxy_(0, vi) ;
-        eforce(vi*4 + 1) += press*timefacfac*derxy_(1, vi) ;
-        eforce(vi*4 + 2) += press*timefacfac*derxy_(2, vi) ;
+        double v = press*timefacfac;
+        eforce(vi*4)     += v*derxy_(0, vi) ;
+        eforce(vi*4 + 1) += v*derxy_(1, vi) ;
+        eforce(vi*4 + 2) += v*derxy_(2, vi) ;
+      }
 
+      for (int vi=0; vi<numnode; ++vi)
+      {
         /* viscosity */
         eforce(vi*4)     += -(visceff*timefacfac*(2.0*derxy_(0, vi)*vderxy_(0, 0)
                                                   +
@@ -684,111 +695,113 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
                                                   derxy_(1, vi)*vderxy_(2, 1)
                                                   +
                                                   2.0*derxy_(2, vi)*vderxy_(2, 2))) ;
+      }
 
-        // source term of the right hand side
-        eforce(vi*4)     += fac*funct_(vi)*rhsint_(0) ;
-        eforce(vi*4 + 1) += fac*funct_(vi)*rhsint_(1) ;
-        eforce(vi*4 + 2) += fac*funct_(vi)*rhsint_(2) ;
-
-        // continuity equation
-        eforce(vi*4 + 3) += -(timefacfac*(conv_r_(0, 0, vi)
-                                          +
-                                          conv_r_(1, 1, vi)
-                                          +
-                                          conv_r_(2, 2, vi))) ;
-      } // vi
-
-      if (ele->is_ale_)
+      for (int vi=0; vi<numnode; ++vi)
       {
-        for (int vi=0; vi<iel_; ++vi)
-        {
-          eforce(vi*4)     += timefacfac*(gridvelint_(0)*conv_r_(0, 0, vi)
-                                          +
-                                          gridvelint_(1)*conv_r_(0, 1, vi)
-                                          +
-                                          gridvelint_(2)*conv_r_(0, 2, vi)) ;
-          eforce(vi*4 + 1) += timefacfac*(gridvelint_(0)*conv_r_(1, 0, vi)
-                                          +
-                                          gridvelint_(1)*conv_r_(1, 1, vi)
-                                          +
-                                          gridvelint_(2)*conv_r_(1, 2, vi)) ;
-          eforce(vi*4 + 2) += timefacfac*(gridvelint_(0)*conv_r_(2, 0, vi)
-                                          +
-                                          gridvelint_(1)*conv_r_(2, 1, vi)
-                                          +
-                                          gridvelint_(2)*conv_r_(2, 2, vi)) ;
-        } // vi
+        // source term of the right hand side
+        double v = fac*funct_(vi);
+        eforce(vi*4)     += v*rhsint_(0) ;
+        eforce(vi*4 + 1) += v*rhsint_(1) ;
+        eforce(vi*4 + 2) += v*rhsint_(2) ;
+      }
+
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        // continuity equation
+        eforce(vi*4 + 3) += -(timefacfac*funct_(vi)*(vderxy_(0, 0)
+                                                     +
+                                                     vderxy_(1, 1)
+                                                     +
+                                                     vderxy_(2, 2))) ;
       }
 
       //----------------------------------------------------------------------
+      //----------------------------------------------------------------------
       //                 PRESSURE STABILISATION PART
 
-      if(pspg == Fluid3::pstab_use_pspg)
+      if (pspg == Fluid3::pstab_use_pspg)
       {
-        for (int ui=0; ui<iel_; ++ui)
+        for (int ui=0; ui<numnode; ++ui)
         {
-          for (int vi=0; vi<iel_; ++vi)
+          double v = timetauMp*funct_(ui)
+#if 1
+                     + ttimetauMp*conv_c_(ui)
+#endif
+                     ;
+          for (int vi=0; vi<numnode; ++vi)
           {
 
             /* pressure stabilisation: inertia */
             /*
-                        /              \
-                       |                |
-                       |  Du , nabla q  |
-                       |                |
-                        \              /
+              /              \
+              |                |
+              |  Du , nabla q  |
+              |                |
+              \              /
             */
-
-            estif(vi*4 + 3, ui*4)     += timetauMp*funct_(ui)*derxy_(0, vi) ;
-            estif(vi*4 + 3, ui*4 + 1) += timetauMp*funct_(ui)*derxy_(1, vi) ;
-            estif(vi*4 + 3, ui*4 + 2) += timetauMp*funct_(ui)*derxy_(2, vi) ;
-
             /* pressure stabilisation: convection, convective part */
             /*
 
-                      /                            \
-                     |  / n+1       \               |
-                     | | u   o nabla | Du , nabla q |
-                     |  \ (i)       /               |
-                      \                            /
+            /                            \
+            |  / n+1       \               |
+            | | u   o nabla | Du , nabla q |
+            |  \ (i)       /               |
+            \                            /
 
             */
-            estif(vi*4 + 3, ui*4)     += ttimetauMp*conv_c_(ui)*derxy_(0, vi) ;
-            estif(vi*4 + 3, ui*4 + 1) += ttimetauMp*conv_c_(ui)*derxy_(1, vi) ;
-            estif(vi*4 + 3, ui*4 + 2) += ttimetauMp*conv_c_(ui)*derxy_(2, vi) ;
 
+            estif(vi*4 + 3, ui*4)     += v*derxy_(0, vi) ;
+            estif(vi*4 + 3, ui*4 + 1) += v*derxy_(1, vi) ;
+            estif(vi*4 + 3, ui*4 + 2) += v*derxy_(2, vi) ;
+          }
+        }
 
-            /* pressure stabilisation: viscosity (-L_visc_u) */
-            /*
-                     /                              \
-                    |               /  \             |
-                    |  nabla o eps | Du | , nabla q  |
-                    |               \  /             |
-                     \                              /
-            */
-            estif(vi*4 + 3, ui*4)     -= 2.0*visceff*ttimetauMp*(derxy_(0, vi)*viscs2_(0, 0, ui)
-                                                                 +
-                                                                 derxy_(1, vi)*viscs2_(0, 1, ui)
-                                                                 +
-                                                                 derxy_(2, vi)*viscs2_(0, 2, ui)) ;
-            estif(vi*4 + 3, ui*4 + 1) -= 2.0*visceff*ttimetauMp*(derxy_(0, vi)*viscs2_(0, 1, ui)
-                                                                 +
-                                                                 derxy_(1, vi)*viscs2_(1, 1, ui)
-                                                                 +
-                                                                 derxy_(2, vi)*viscs2_(1, 2, ui)) ;
-            estif(vi*4 + 3, ui*4 + 2) -= 2.0*visceff*ttimetauMp*(derxy_(0, vi)*viscs2_(0, 2, ui)
-                                                                 +
-                                                                 derxy_(1, vi)*viscs2_(1, 2, ui)
-                                                                 +
-                                                                 derxy_(2, vi)*viscs2_(2, 2, ui)) ;
+        if (higher_order_ele)
+        {
+          for (int ui=0; ui<numnode; ++ui)
+          {
+            for (int vi=0; vi<numnode; ++vi)
+            {
 
+              /* pressure stabilisation: viscosity (-L_visc_u) */
+              /*
+                /                              \
+                |               /  \             |
+                |  nabla o eps | Du | , nabla q  |
+                |               \  /             |
+                \                              /
+              */
+              estif(vi*4 + 3, ui*4)     -= 2.0*visceff*ttimetauMp*(derxy_(0, vi)*viscs2_(0, 0, ui)
+                                                                   +
+                                                                   derxy_(1, vi)*viscs2_(0, 1, ui)
+                                                                   +
+                                                                   derxy_(2, vi)*viscs2_(0, 2, ui)) ;
+              estif(vi*4 + 3, ui*4 + 1) -= 2.0*visceff*ttimetauMp*(derxy_(0, vi)*viscs2_(0, 1, ui)
+                                                                   +
+                                                                   derxy_(1, vi)*viscs2_(1, 1, ui)
+                                                                   +
+                                                                   derxy_(2, vi)*viscs2_(1, 2, ui)) ;
+              estif(vi*4 + 3, ui*4 + 2) -= 2.0*visceff*ttimetauMp*(derxy_(0, vi)*viscs2_(0, 2, ui)
+                                                                   +
+                                                                   derxy_(1, vi)*viscs2_(1, 2, ui)
+                                                                   +
+                                                                   derxy_(2, vi)*viscs2_(2, 2, ui)) ;
+            }
+          }
+        }
+
+        for (int ui=0; ui<numnode; ++ui)
+        {
+          for (int vi=0; vi<numnode; ++vi)
+          {
             /* pressure stabilisation: pressure( L_pres_p) */
             /*
-                        /                    \
-                       |                      |
-                       |  nabla Dp , nabla q  |
-                       |                      |
-                        \                    /
+              /                    \
+              |                      |
+              |  nabla Dp , nabla q  |
+              |                      |
+              \                    /
             */
             estif(vi*4 + 3, ui*4 + 3) += ttimetauMp*(derxy_(0, ui)*derxy_(0, vi)
                                                      +
@@ -796,70 +809,47 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
                                                      +
                                                      derxy_(2, ui)*derxy_(2, vi)) ;
 
-
           } // vi
         } // ui
 
-        if (ele->is_ale_)
-        {
-          for (int vi=0; vi<iel_; ++vi)
-          {
-            for (int ui=0; ui<iel_; ++ui)
-            {
-              /*  reduced convection through grid motion
-
-
-                       /                          \
-                      |  /          \              |
-                    - | | u  o nabla | Du , grad q |
-                      |  \ G        /              |
-                       \                          /
-
-              */
-              estif(vi*4 + 3, ui*4)     += ttimetauMp*conv_g_(ui)*derxy_(0, vi) ;
-              estif(vi*4 + 3, ui*4 + 1) += ttimetauMp*conv_g_(ui)*derxy_(1, vi) ;
-              estif(vi*4 + 3, ui*4 + 2) += ttimetauMp*conv_g_(ui)*derxy_(2, vi) ;
-            }// ui
-          }//vi
-        } // end if is_ale
-
         if (newton)
         {
-          for (int ui=0; ui<iel_; ++ui)
+          for (int ui=0; ui<numnode; ++ui)
           {
-            for (int vi=0; vi<iel_; ++vi)
+            double v = ttimetauMp*funct_(ui);
+            for (int vi=0; vi<numnode; ++vi)
             {
               /*  pressure stabilisation: convection, reactive part
 
-                  /                             \
-                 |  /          \   n+1           |
-                 | | Du o nabla | u     , grad q |
-                 |  \          /   (i)           |
-                  \                             /
+              /                             \
+              |  /          \   n+1           |
+              | | Du o nabla | u     , grad q |
+              |  \          /   (i)           |
+              \                             /
 
               */
-              estif(vi*4 + 3, ui*4)     += ttimetauMp*(derxy_(0, vi)*conv_r_(0, 0, ui)
-                                                       +
-                                                       derxy_(1, vi)*conv_r_(1, 0, ui)
-                                                       +
-                                                       derxy_(2, vi)*conv_r_(2, 0, ui)) ;
-              estif(vi*4 + 3, ui*4 + 1) += ttimetauMp*(derxy_(0, vi)*conv_r_(0, 1, ui)
-                                                       +
-                                                       derxy_(1, vi)*conv_r_(1, 1, ui)
-                                                       +
-                                                       derxy_(2, vi)*conv_r_(2, 1, ui)) ;
-              estif(vi*4 + 3, ui*4 + 2) += ttimetauMp*(derxy_(0, vi)*conv_r_(0, 2, ui)
-                                                       +
-                                                       derxy_(1, vi)*conv_r_(1, 2, ui)
-                                                       +
-                                                       derxy_(2, vi)*conv_r_(2, 2, ui)) ;
+              estif(vi*4 + 3, ui*4)     += v*(derxy_(0, vi)*vderxy_(0, 0)
+                                              +
+                                              derxy_(1, vi)*vderxy_(1, 0)
+                                              +
+                                              derxy_(2, vi)*vderxy_(2, 0)) ;
+              estif(vi*4 + 3, ui*4 + 1) += v*(derxy_(0, vi)*vderxy_(0, 1)
+                                              +
+                                              derxy_(1, vi)*vderxy_(1, 1)
+                                              +
+                                              derxy_(2, vi)*vderxy_(2, 1)) ;
+              estif(vi*4 + 3, ui*4 + 2) += v*(derxy_(0, vi)*vderxy_(0, 2)
+                                              +
+                                              derxy_(1, vi)*vderxy_(1, 2)
+                                              +
+                                              derxy_(2, vi)*vderxy_(2, 2)) ;
 
             } // vi
           } // ui
         } // if newton
 
 
-        for (int vi=0; vi<iel_; ++vi)
+        for (int vi=0; vi<numnode; ++vi)
         {
           // pressure stabilisation
           eforce(vi*4 + 3) -= timetauMp*(res_old_(0)*derxy_(0, vi)
@@ -871,703 +861,511 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
       }
 
       //----------------------------------------------------------------------
+      //----------------------------------------------------------------------
       //                     SUPG STABILISATION PART
 
       if(supg == Fluid3::convective_stab_supg)
       {
-        for (int ui=0; ui<iel_; ++ui)
+#if 1
+        for (int ui=0; ui<numnode; ++ui)
         {
-          for (int vi=0; vi<iel_; ++vi)
+          double v = timetauM*funct_(ui) + ttimetauM*conv_c_(ui);
+          for (int vi=0; vi<numnode; ++vi)
           {
             /* supg stabilisation: inertia  */
             /*
-                      /                        \
-                     |        / n+1       \     |
-                     |  Du , | u   o nabla | v  |
-                     |        \ (i)       /     |
-                      \                        /
+              /                        \
+              |        / n+1       \     |
+              |  Du , | u   o nabla | v  |
+              |        \ (i)       /     |
+              \                        /
             */
-            estif(vi*4, ui*4)         += timetauM*funct_(ui)*conv_c_(vi);
-            estif(vi*4 + 1, ui*4 + 1) += timetauM*funct_(ui)*conv_c_(vi);
-            estif(vi*4 + 2, ui*4 + 2) += timetauM*funct_(ui)*conv_c_(vi);
 
             /* supg stabilisation: convective part ( L_conv_u) */
 
             /*
 
-                 /                                           \
-                |    / n+1        \        / n+1        \     |
-                |   | u    o nabla | Du , | u    o nabla | v  |
-                |    \ (i)        /        \ (i)        /     |
-                 \                                           /
+            /                                           \
+            |    / n+1        \        / n+1        \     |
+            |   | u    o nabla | Du , | u    o nabla | v  |
+            |    \ (i)        /        \ (i)        /     |
+            \                                           /
 
             */
 
-            estif(vi*4, ui*4)         += ttimetauM*conv_c_(ui)*conv_c_(vi) ;
-            estif(vi*4 + 1, ui*4 + 1) += ttimetauM*conv_c_(ui)*conv_c_(vi) ;
-            estif(vi*4 + 2, ui*4 + 2) += ttimetauM*conv_c_(ui)*conv_c_(vi) ;
+            estif(vi*4, ui*4)         += v*conv_c_(vi);
+            estif(vi*4 + 1, ui*4 + 1) += v*conv_c_(vi);
+            estif(vi*4 + 2, ui*4 + 2) += v*conv_c_(vi);
+          }
+        }
+
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          double v = ttimetauM*conv_c_(vi);
+          for (int ui=0; ui<numnode; ++ui)
+          {
 
             /* supg stabilisation: pressure part  ( L_pres_p) */
             /*
-                      /                              \
-                     |              / n+1       \     |
-                     |  nabla Dp , | u   o nabla | v  |
-                     |              \ (i)       /     |
-                      \                              /
+              /                              \
+              |              / n+1       \     |
+              |  nabla Dp , | u   o nabla | v  |
+              |              \ (i)       /     |
+              \                              /
             */
-            estif(vi*4, ui*4 + 3)     += ttimetauM*conv_c_(vi)*derxy_(0, ui) ;
-            estif(vi*4 + 1, ui*4 + 3) += ttimetauM*conv_c_(vi)*derxy_(1, ui) ;
-            estif(vi*4 + 2, ui*4 + 3) += ttimetauM*conv_c_(vi)*derxy_(2, ui) ;
+            estif(vi*4, ui*4 + 3)     += v*derxy_(0, ui) ;
+            estif(vi*4 + 1, ui*4 + 3) += v*derxy_(1, ui) ;
+            estif(vi*4 + 2, ui*4 + 3) += v*derxy_(2, ui) ;
+          }
+        }
 
-            /* supg stabilisation: viscous part  (-L_visc_u) */
-            /*
-                  /                                        \
-                 |               /  \    / n+1        \     |
-                 |  nabla o eps | Du |, | u    o nabla | v  |
-                 |               \  /    \ (i)        /     |
-                  \                                        /
-            */
-            estif(vi*4, ui*4)         -= 2.0*visceff*ttimetauM*conv_c_(vi)*viscs2_(0, 0, ui) ;
-            estif(vi*4, ui*4 + 1)     -= 2.0*visceff*ttimetauM*conv_c_(vi)*viscs2_(0, 1, ui) ;
-            estif(vi*4, ui*4 + 2)     -= 2.0*visceff*ttimetauM*conv_c_(vi)*viscs2_(0, 2, ui) ;
-            estif(vi*4 + 1, ui*4)     -= 2.0*visceff*ttimetauM*conv_c_(vi)*viscs2_(0, 1, ui) ;
-            estif(vi*4 + 1, ui*4 + 1) -= 2.0*visceff*ttimetauM*conv_c_(vi)*viscs2_(1, 1, ui) ;
-            estif(vi*4 + 1, ui*4 + 2) -= 2.0*visceff*ttimetauM*conv_c_(vi)*viscs2_(1, 2, ui) ;
-            estif(vi*4 + 2, ui*4)     -= 2.0*visceff*ttimetauM*conv_c_(vi)*viscs2_(0, 2, ui) ;
-            estif(vi*4 + 2, ui*4 + 1) -= 2.0*visceff*ttimetauM*conv_c_(vi)*viscs2_(1, 2, ui) ;
-            estif(vi*4 + 2, ui*4 + 2) -= 2.0*visceff*ttimetauM*conv_c_(vi)*viscs2_(2, 2, ui) ;
-
-
-          } // vi
-        } // ui
-
-        if (ele->is_ale_)
+        if (higher_order_ele)
         {
-          for (int vi=0; vi<iel_; ++vi)
+          for (int vi=0; vi<numnode; ++vi)
           {
-            for (int ui=0; ui<iel_; ++ui)
+            double v = 2.0*visceff*ttimetauM*conv_c_(vi);
+            for (int ui=0; ui<numnode; ++ui)
             {
 
+              // Keine zweiten Ableitungen hier!
 
-              estif(vi*4, ui*4)         += ttimetauM*conv_g_(ui)*conv_c_(vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += ttimetauM*conv_g_(ui)*conv_c_(vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += ttimetauM*conv_g_(ui)*conv_c_(vi) ;
-
-
+              /* supg stabilisation: viscous part  (-L_visc_u) */
               /*
-                      /                       \
-                     |        /          \     |
-                     |  Du , | u  o nabla | v  |
-                     |        \ G        /     |
-                      \                       /
+                /                                        \
+                |               /  \    / n+1        \     |
+                |  nabla o eps | Du |, | u    o nabla | v  |
+                |               \  /    \ (i)        /     |
+                \                                        /
               */
+              estif(vi*4, ui*4)         -= v*viscs2_(0, 0, ui) ;
+              estif(vi*4 + 1, ui*4)     -= v*viscs2_(0, 1, ui) ;
+              estif(vi*4 + 2, ui*4)     -= v*viscs2_(0, 2, ui) ;
 
-              estif(vi*4, ui*4)         += timetauM*funct_(ui)*conv_g_(vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += timetauM*funct_(ui)*conv_g_(vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += timetauM*funct_(ui)*conv_g_(vi) ;
+              estif(vi*4, ui*4 + 1)     -= v*viscs2_(0, 1, ui) ;
+              estif(vi*4 + 1, ui*4 + 1) -= v*viscs2_(1, 1, ui) ;
+              estif(vi*4 + 2, ui*4 + 1) -= v*viscs2_(1, 2, ui) ;
 
-              /*
-
-                 /                                         \
-                |    / n+1        \        /          \     |
-                |   | u    o nabla | Du , | u  o nabla | v  |
-                |    \ (i)        /        \ G        /     |
-                 \                                         /
-
-              */
-              estif(vi*4, ui*4)         += ttimetauM*conv_c_(ui)*conv_g_(vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += ttimetauM*conv_c_(ui)*conv_g_(vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += ttimetauM*conv_c_(ui)*conv_g_(vi) ;
-
-              /*
-                      /                             \
-                     |              /          \     |
-                     |  nabla Dp , | u  o nabla | v  |
-                     |              \ G        /     |
-                      \                             /
-              */
-              estif(vi*4, ui*4 + 3)     += ttimetauM*derxy_(0, ui)*conv_g_(vi) ;
-              estif(vi*4 + 1, ui*4 + 3) += ttimetauM*derxy_(1, ui)*conv_g_(vi) ;
-              estif(vi*4 + 2, ui*4 + 3) += ttimetauM*derxy_(2, ui)*conv_g_(vi) ;
-
-              /*
-                  /                                      \
-                 |               /  \    /          \     |
-                 |  nabla o eps | Du |, | u  o nabla | v  |
-                 |               \  /    \ G        /     |
-                  \                                      /
-              */
-              estif(vi*4, ui*4)         -= 2.0*visceff*ttimetauM*viscs2_(0, 0, ui)*conv_g_(vi) ;
-              estif(vi*4, ui*4 + 1)     -= 2.0*visceff*ttimetauM*viscs2_(0, 1, ui)*conv_g_(vi) ;
-              estif(vi*4, ui*4 + 2)     -= 2.0*visceff*ttimetauM*viscs2_(0, 2, ui)*conv_g_(vi) ;
-              estif(vi*4 + 1, ui*4)     -= 2.0*visceff*ttimetauM*viscs2_(0, 1, ui)*conv_g_(vi) ;
-              estif(vi*4 + 1, ui*4 + 1) -= 2.0*visceff*ttimetauM*viscs2_(1, 1, ui)*conv_g_(vi) ;
-              estif(vi*4 + 1, ui*4 + 2) -= 2.0*visceff*ttimetauM*viscs2_(1, 2, ui)*conv_g_(vi) ;
-              estif(vi*4 + 2, ui*4)     -= 2.0*visceff*ttimetauM*viscs2_(0, 2, ui)*conv_g_(vi) ;
-              estif(vi*4 + 2, ui*4 + 1) -= 2.0*visceff*ttimetauM*viscs2_(1, 2, ui)*conv_g_(vi) ;
-              estif(vi*4 + 2, ui*4 + 2) -= 2.0*visceff*ttimetauM*viscs2_(2, 2, ui)*conv_g_(vi) ;
-
-              /*
-
-                 /                                       \
-                |    /          \        /          \     |
-                |   | u  o nabla | Du , | u  o nabla | v  |
-                |    \ G        /        \ G        /     |
-                 \                                       /
-
-              */
-              estif(vi*4, ui*4)         += ttimetauM*conv_g_(ui)*conv_g_(vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += ttimetauM*conv_g_(ui)*conv_g_(vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += ttimetauM*conv_g_(ui)*conv_g_(vi) ;
-            }// ui
-          }//vi
-
-
-          if (newton)
-          {
-            for (int vi=0; vi<iel_; ++vi)
-            {
-              for (int ui=0; ui<iel_; ++ui)
-              {
-                /*
-                       /                                         \
-                      |    /          \   n+1    /          \     |
-                      |   | u  o nabla | u    , | Du o nabla | v  |
-                      |    \ G        /   (i)    \          /     |
-                       \                                         /
-
-                */
-                estif(vi*4, ui*4)         += ttimetauM*( - gridvelint_(0)*derxy_(0, vi)*conv_r_(0, 0, ui)
-                                                         - gridvelint_(1)*derxy_(0, vi)*conv_r_(0, 1, ui)
-                                                         - gridvelint_(2)*derxy_(0, vi)*conv_r_(0, 2, ui)) ;
-                estif(vi*4, ui*4 + 1)     += ttimetauM*( - gridvelint_(0)*derxy_(1, vi)*conv_r_(0, 0, ui)
-                                                         - gridvelint_(1)*derxy_(1, vi)*conv_r_(0, 1, ui)
-                                                         - gridvelint_(2)*derxy_(1, vi)*conv_r_(0, 2, ui)) ;
-                estif(vi*4, ui*4 + 2)     += ttimetauM*( - gridvelint_(0)*derxy_(2, vi)*conv_r_(0, 0, ui)
-                                                         - gridvelint_(1)*derxy_(2, vi)*conv_r_(0, 1, ui)
-                                                         - gridvelint_(2)*derxy_(2, vi)*conv_r_(0, 2, ui)) ;
-                estif(vi*4 + 1, ui*4)     += ttimetauM*( - gridvelint_(0)*derxy_(0, vi)*conv_r_(1, 0, ui)
-                                                         - gridvelint_(1)*derxy_(0, vi)*conv_r_(1, 1, ui)
-                                                         - gridvelint_(2)*derxy_(0, vi)*conv_r_(1, 2, ui)) ;
-                estif(vi*4 + 1, ui*4 + 1) += ttimetauM*( - gridvelint_(0)*derxy_(1, vi)*conv_r_(1, 0, ui)
-                                                         - gridvelint_(1)*derxy_(1, vi)*conv_r_(1, 1, ui)
-                                                         - gridvelint_(2)*derxy_(1, vi)*conv_r_(1, 2, ui)) ;
-                estif(vi*4 + 1, ui*4 + 2) += ttimetauM*( - gridvelint_(0)*derxy_(2, vi)*conv_r_(1, 0, ui)
-                                                         - gridvelint_(1)*derxy_(2, vi)*conv_r_(1, 1, ui)
-                                                         - gridvelint_(2)*derxy_(2, vi)*conv_r_(1, 2, ui)) ;
-                estif(vi*4 + 2, ui*4)     += ttimetauM*( - gridvelint_(0)*derxy_(0, vi)*conv_r_(2, 0, ui)
-                                                         - gridvelint_(1)*derxy_(0, vi)*conv_r_(2, 1, ui)
-                                                         - gridvelint_(2)*derxy_(0, vi)*conv_r_(2, 2, ui)) ;
-                estif(vi*4 + 2, ui*4 + 1) += ttimetauM*( - gridvelint_(0)*derxy_(1, vi)*conv_r_(2, 0, ui)
-                                                         - gridvelint_(1)*derxy_(1, vi)*conv_r_(2, 1, ui)
-                                                         - gridvelint_(2)*derxy_(1, vi)*conv_r_(2, 2, ui)) ;
-                estif(vi*4 + 2, ui*4 + 2) += ttimetauM*( - gridvelint_(0)*derxy_(2, vi)*conv_r_(2, 0, ui)
-                                                         - gridvelint_(1)*derxy_(2, vi)*conv_r_(2, 1, ui)
-                                                         - gridvelint_(2)*derxy_(2, vi)*conv_r_(2, 2, ui)) ;
-
-                /*
-                       /                                         \
-                      |    /          \   n+1    /          \     |
-                      |   | Du o nabla | u    , | u  o nabla | v  |
-                      |    \          /   (i)    \ G        /     |
-                       \                                         /
-                */
-                estif(vi*4, ui*4)         += ttimetauM*conv_r_(0, 0, ui)*conv_g_(vi) ;
-                estif(vi*4, ui*4 + 1)     += ttimetauM*conv_r_(0, 1, ui)*conv_g_(vi) ;
-                estif(vi*4, ui*4 + 2)     += ttimetauM*conv_r_(0, 2, ui)*conv_g_(vi) ;
-                estif(vi*4 + 1, ui*4)     += ttimetauM*conv_r_(1, 0, ui)*conv_g_(vi) ;
-                estif(vi*4 + 1, ui*4 + 1) += ttimetauM*conv_r_(1, 1, ui)*conv_g_(vi) ;
-                estif(vi*4 + 1, ui*4 + 2) += ttimetauM*conv_r_(1, 2, ui)*conv_g_(vi) ;
-                estif(vi*4 + 2, ui*4)     += ttimetauM*conv_r_(2, 0, ui)*conv_g_(vi) ;
-                estif(vi*4 + 2, ui*4 + 1) += ttimetauM*conv_r_(2, 1, ui)*conv_g_(vi) ;
-                estif(vi*4 + 2, ui*4 + 2) += ttimetauM*conv_r_(2, 2, ui)*conv_g_(vi) ;
-              }// ui
-            }//vi
-          } // end if newton
-        } // end if is_ale
-
-
-
+              estif(vi*4, ui*4 + 2)     -= v*viscs2_(0, 2, ui) ;
+              estif(vi*4 + 1, ui*4 + 2) -= v*viscs2_(1, 2, ui) ;
+              estif(vi*4 + 2, ui*4 + 2) -= v*viscs2_(2, 2, ui) ;
+            }
+          }
+        }
+#endif
 
         if (newton)
         {
-          for (int ui=0; ui<iel_; ++ui)
+          for (int ui=0; ui<numnode; ++ui)
           {
-            for (int vi=0; vi<iel_; ++vi)
+            double v = timetauM*funct_(ui);
+            for (int vi=0; vi<numnode; ++vi)
             {
               /* supg stabilisation: inertia, linearisation of testfunction  */
               /*
-                         /                           \
-                        |   n+1      /          \     |
-                        |  u      , | Du o nabla | v  |
-                        |   (i)      \          /     |
-                         \                           /
+                /                           \
+                |   n+1      /          \     |
+                |  u      , | Du o nabla | v  |
+                |   (i)      \          /     |
+                \                           /
 
               */
-              estif(vi*4, ui*4)         += timetauM*funct_(ui)*velint_(0)*derxy_(0, vi) ;
-              estif(vi*4, ui*4 + 1)     += timetauM*funct_(ui)*velint_(0)*derxy_(1, vi) ;
-              estif(vi*4, ui*4 + 2)     += timetauM*funct_(ui)*velint_(0)*derxy_(2, vi) ;
-              estif(vi*4 + 1, ui*4)     += timetauM*funct_(ui)*velint_(1)*derxy_(0, vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += timetauM*funct_(ui)*velint_(1)*derxy_(1, vi) ;
-              estif(vi*4 + 1, ui*4 + 2) += timetauM*funct_(ui)*velint_(1)*derxy_(2, vi) ;
-              estif(vi*4 + 2, ui*4)     += timetauM*funct_(ui)*velint_(2)*derxy_(0, vi) ;
-              estif(vi*4 + 2, ui*4 + 1) += timetauM*funct_(ui)*velint_(2)*derxy_(1, vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += timetauM*funct_(ui)*velint_(2)*derxy_(2, vi) ;
+              estif(vi*4, ui*4)         += v*velint_(0)*derxy_(0, vi) ;
+              estif(vi*4 + 1, ui*4)     += v*velint_(1)*derxy_(0, vi) ;
+              estif(vi*4 + 2, ui*4)     += v*velint_(2)*derxy_(0, vi) ;
 
+              estif(vi*4, ui*4 + 1)     += v*velint_(0)*derxy_(1, vi) ;
+              estif(vi*4 + 1, ui*4 + 1) += v*velint_(1)*derxy_(1, vi) ;
+              estif(vi*4 + 2, ui*4 + 1) += v*velint_(2)*derxy_(1, vi) ;
 
-              /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
-              /*
-                       /                                           \
-                      |    / n+1        \   n+1    /          \     |
-                      |   | u    o nabla | u    , | Du o nabla | v  |
-                      |    \ (i)        /   (i)    \          /     |
-                       \                                           /
+              estif(vi*4, ui*4 + 2)     += v*velint_(0)*derxy_(2, vi) ;
+              estif(vi*4 + 1, ui*4 + 2) += v*velint_(1)*derxy_(2, vi) ;
+              estif(vi*4 + 2, ui*4 + 2) += v*velint_(2)*derxy_(2, vi) ;
+            }
+          }
 
-                       /                                           \
-                      |    /          \   n+1    / n+1        \     |
-                      |   | Du o nabla | u    , | u    o nabla | v  |
-                      |    \          /   (i)    \ (i)        /     |
-                       \                                           /
-              */
-              estif(vi*4, ui*4)         += ttimetauM*(conv_c_(vi)*conv_r_(0, 0, ui)
-                                                      +
-                                                      velint_(0)*derxy_(0, vi)*conv_r_(0, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(0, vi)*conv_r_(0, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(0, vi)*conv_r_(0, 2, ui)) ;
-              estif(vi*4, ui*4 + 1)     += ttimetauM*(conv_c_(vi)*conv_r_(0, 1, ui)
-                                                      +
-                                                      velint_(0)*derxy_(1, vi)*conv_r_(0, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(1, vi)*conv_r_(0, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(1, vi)*conv_r_(0, 2, ui)) ;
-              estif(vi*4, ui*4 + 2)     += ttimetauM*(conv_c_(vi)*conv_r_(0, 2, ui)
-                                                      +
-                                                      velint_(0)*derxy_(2, vi)*conv_r_(0, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(2, vi)*conv_r_(0, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(2, vi)*conv_r_(0, 2, ui)) ;
-              estif(vi*4 + 1, ui*4)     += ttimetauM*(conv_c_(vi)*conv_r_(1, 0, ui)
-                                                      +
-                                                      velint_(0)*derxy_(0, vi)*conv_r_(1, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(0, vi)*conv_r_(1, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(0, vi)*conv_r_(1, 2, ui)) ;
-              estif(vi*4 + 1, ui*4 + 1) += ttimetauM*(conv_c_(vi)*conv_r_(1, 1, ui)
-                                                      +
-                                                      velint_(0)*derxy_(1, vi)*conv_r_(1, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(1, vi)*conv_r_(1, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(1, vi)*conv_r_(1, 2, ui)) ;
-              estif(vi*4 + 1, ui*4 + 2) += ttimetauM*(conv_c_(vi)*conv_r_(1, 2, ui)
-                                                      +
-                                                      velint_(0)*derxy_(2, vi)*conv_r_(1, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(2, vi)*conv_r_(1, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(2, vi)*conv_r_(1, 2, ui)) ;
-              estif(vi*4 + 2, ui*4)     += ttimetauM*(conv_c_(vi)*conv_r_(2, 0, ui)
-                                                      +
-                                                      velint_(0)*derxy_(0, vi)*conv_r_(2, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(0, vi)*conv_r_(2, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(0, vi)*conv_r_(2, 2, ui)) ;
-              estif(vi*4 + 2, ui*4 + 1) += ttimetauM*(conv_c_(vi)*conv_r_(2, 1, ui)
-                                                      +
-                                                      velint_(0)*derxy_(1, vi)*conv_r_(2, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(1, vi)*conv_r_(2, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(1, vi)*conv_r_(2, 2, ui)) ;
-              estif(vi*4 + 2, ui*4 + 2) += ttimetauM*(conv_c_(vi)*conv_r_(2, 2, ui)
-                                                      +
-                                                      velint_(0)*derxy_(2, vi)*conv_r_(2, 0, ui)
-                                                      +
-                                                      velint_(1)*derxy_(2, vi)*conv_r_(2, 1, ui)
-                                                      +
-                                                      velint_(2)*derxy_(2, vi)*conv_r_(2, 2, ui)) ;
+#if 1
+          {
+            double v0 = convvelint_(0)*vderxy_(0, 0) + convvelint_(1)*vderxy_(0, 1) + convvelint_(2)*vderxy_(0, 2);
+            double v1 = convvelint_(0)*vderxy_(1, 0) + convvelint_(1)*vderxy_(1, 1) + convvelint_(2)*vderxy_(1, 2);
+            double v2 = convvelint_(0)*vderxy_(2, 0) + convvelint_(1)*vderxy_(2, 1) + convvelint_(2)*vderxy_(2, 2);
 
+            for (int ui=0; ui<numnode; ++ui)
+            {
+              double v = ttimetauM*funct_(ui);
+              for (int vi=0; vi<numnode; ++vi)
+              {
+
+                /* supg stabilisation: reactive part of convection and linearisation of testfunction ( L_conv_u) */
+                /*
+                  /                                           \
+                  |    / n+1        \   n+1    /          \     |
+                  |   | u    o nabla | u    , | Du o nabla | v  |
+                  |    \ (i)        /   (i)    \          /     |
+                  \                                           /
+
+                  /                                           \
+                  |    /          \   n+1    / n+1        \     |
+                  |   | Du o nabla | u    , | u    o nabla | v  |
+                  |    \          /   (i)    \ (i)        /     |
+                  \                                           /
+                */
+                estif(vi*4, ui*4)         += (conv_c_(vi)*vderxy_(0, 0) + v0*derxy_(0, vi))*v;
+                estif(vi*4 + 1, ui*4)     += (conv_c_(vi)*vderxy_(1, 0) + v1*derxy_(0, vi))*v;
+                estif(vi*4 + 2, ui*4)     += (conv_c_(vi)*vderxy_(2, 0) + v2*derxy_(0, vi))*v;
+
+                estif(vi*4, ui*4 + 1)     += (conv_c_(vi)*vderxy_(0, 1) + v0*derxy_(1, vi))*v;
+                estif(vi*4 + 1, ui*4 + 1) += (conv_c_(vi)*vderxy_(1, 1) + v1*derxy_(1, vi))*v;
+                estif(vi*4 + 2, ui*4 + 1) += (conv_c_(vi)*vderxy_(2, 1) + v2*derxy_(1, vi))*v;
+
+                estif(vi*4, ui*4 + 2)     += (conv_c_(vi)*vderxy_(0, 2) + v0*derxy_(2, vi))*v;
+                estif(vi*4 + 1, ui*4 + 2) += (conv_c_(vi)*vderxy_(1, 2) + v1*derxy_(2, vi))*v;
+                estif(vi*4 + 2, ui*4 + 2) += (conv_c_(vi)*vderxy_(2, 2) + v2*derxy_(2, vi))*v;
+              }
+            }
+          }
+#endif
+
+          for (int ui=0; ui<numnode; ++ui)
+          {
+            double v = ttimetauM*funct_(ui);
+            for (int vi=0; vi<numnode; ++vi)
+            {
 
               /* supg stabilisation: pressure part, linearisation of test function  ( L_pres_p) */
               /*
-                            /                               \
-                           |         n+1    /          \     |
-                           |  nabla p    , | Du o nabla | v  |
-                           |         (i)    \          /     |
-                            \                               /
+                /                               \
+                |         n+1    /          \     |
+                |  nabla p    , | Du o nabla | v  |
+                |         (i)    \          /     |
+                \                               /
               */
-              estif(vi*4, ui*4)         += ttimetauM*funct_(ui)*gradp_(0)*derxy_(0, vi) ;
-              estif(vi*4, ui*4 + 1)     += ttimetauM*funct_(ui)*gradp_(0)*derxy_(1, vi) ;
-              estif(vi*4, ui*4 + 2)     += ttimetauM*funct_(ui)*gradp_(0)*derxy_(2, vi) ;
-              estif(vi*4 + 1, ui*4)     += ttimetauM*funct_(ui)*gradp_(1)*derxy_(0, vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += ttimetauM*funct_(ui)*gradp_(1)*derxy_(1, vi) ;
-              estif(vi*4 + 1, ui*4 + 2) += ttimetauM*funct_(ui)*gradp_(1)*derxy_(2, vi) ;
-              estif(vi*4 + 2, ui*4)     += ttimetauM*funct_(ui)*gradp_(2)*derxy_(0, vi) ;
-              estif(vi*4 + 2, ui*4 + 1) += ttimetauM*funct_(ui)*gradp_(2)*derxy_(1, vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += ttimetauM*funct_(ui)*gradp_(2)*derxy_(2, vi) ;
+              estif(vi*4, ui*4)         += v*gradp_(0)*derxy_(0, vi) ;
+              estif(vi*4 + 1, ui*4)     += v*gradp_(1)*derxy_(0, vi) ;
+              estif(vi*4 + 2, ui*4)     += v*gradp_(2)*derxy_(0, vi) ;
 
+              estif(vi*4, ui*4 + 1)     += v*gradp_(0)*derxy_(1, vi) ;
+              estif(vi*4 + 1, ui*4 + 1) += v*gradp_(1)*derxy_(1, vi) ;
+              estif(vi*4 + 2, ui*4 + 1) += v*gradp_(2)*derxy_(1, vi) ;
 
-              /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
-              /*
-                      /                                         \
-                     |               / n+1 \    /          \     |
-                     |  nabla o eps | u     |, | Du o nabla | v  |
-                     |               \ (i) /    \          /     |
-                      \                                         /
-              */
-              estif(vi*4, ui*4)         -= 2.0*visceff*ttimetauM*funct_(ui)*visc_old_(0)*derxy_(0, vi) ;
-              estif(vi*4, ui*4 + 1)     -= 2.0*visceff*ttimetauM*funct_(ui)*visc_old_(0)*derxy_(1, vi) ;
-              estif(vi*4, ui*4 + 2)     -= 2.0*visceff*ttimetauM*funct_(ui)*visc_old_(0)*derxy_(2, vi) ;
-              estif(vi*4 + 1, ui*4)     -= 2.0*visceff*ttimetauM*funct_(ui)*visc_old_(1)*derxy_(0, vi) ;
-              estif(vi*4 + 1, ui*4 + 1) -= 2.0*visceff*ttimetauM*funct_(ui)*visc_old_(1)*derxy_(1, vi) ;
-              estif(vi*4 + 1, ui*4 + 2) -= 2.0*visceff*ttimetauM*funct_(ui)*visc_old_(1)*derxy_(2, vi) ;
-              estif(vi*4 + 2, ui*4)     -= 2.0*visceff*ttimetauM*funct_(ui)*visc_old_(2)*derxy_(0, vi) ;
-              estif(vi*4 + 2, ui*4 + 1) -= 2.0*visceff*ttimetauM*funct_(ui)*visc_old_(2)*derxy_(1, vi) ;
-              estif(vi*4 + 2, ui*4 + 2) -= 2.0*visceff*ttimetauM*funct_(ui)*visc_old_(2)*derxy_(2, vi) ;
+              estif(vi*4, ui*4 + 2)     += v*gradp_(0)*derxy_(2, vi) ;
+              estif(vi*4 + 1, ui*4 + 2) += v*gradp_(1)*derxy_(2, vi) ;
+              estif(vi*4 + 2, ui*4 + 2) += v*gradp_(2)*derxy_(2, vi) ;
 
+            }
+          }
+
+          if (higher_order_ele)
+          {
+            for (int ui=0; ui<numnode; ++ui)
+            {
+              double v = 2.0*visceff*ttimetauM*funct_(ui);
+              for (int vi=0; vi<numnode; ++vi)
+              {
+
+                /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
+                /*
+                  /                                           \
+                  |               / n+1 \    /          \     |
+                  |  nabla o eps | u     |, | Du o nabla | v  |
+                  |               \ (i) /    \          /     |
+                  \                                           /
+                */
+                estif(vi*4, ui*4)         -= v*visc_old_(0)*derxy_(0, vi) ;
+                estif(vi*4 + 1, ui*4)     -= v*visc_old_(1)*derxy_(0, vi) ;
+                estif(vi*4 + 2, ui*4)     -= v*visc_old_(2)*derxy_(0, vi) ;
+
+                estif(vi*4, ui*4 + 1)     -= v*visc_old_(0)*derxy_(1, vi) ;
+                estif(vi*4 + 1, ui*4 + 1) -= v*visc_old_(1)*derxy_(1, vi) ;
+                estif(vi*4 + 2, ui*4 + 1) -= v*visc_old_(2)*derxy_(1, vi) ;
+
+                estif(vi*4, ui*4 + 2)     -= v*visc_old_(0)*derxy_(2, vi) ;
+                estif(vi*4 + 1, ui*4 + 2) -= v*visc_old_(1)*derxy_(2, vi) ;
+                estif(vi*4 + 2, ui*4 + 2) -= v*visc_old_(2)*derxy_(2, vi) ;
+
+              }
+            }
+          }
+
+          for (int ui=0; ui<numnode; ++ui)
+          {
+            double v = -timetauM*funct_(ui);
+            for (int vi=0; vi<numnode; ++vi)
+            {
 
               /* supg stabilisation: bodyforce part, linearisation of test function */
 
               /*
-                          /                             \
-                         |              /          \     |
-                         |  rhsint   , | Du o nabla | v  |
-                         |              \          /     |
-                          \                             /
+                /                             \
+                |              /          \     |
+                |  rhsint   , | Du o nabla | v  |
+                |              \          /     |
+                \                             /
 
               */
-              estif(vi*4    , ui*4)     += -(timetauM*funct_(ui)*derxy_(0, vi)*rhsint_(0)) ;
-              estif(vi*4    , ui*4 + 1) += -(timetauM*funct_(ui)*derxy_(1, vi)*rhsint_(0)) ;
-              estif(vi*4    , ui*4 + 2) += -(timetauM*funct_(ui)*derxy_(2, vi)*rhsint_(0)) ;
-              estif(vi*4 + 1, ui*4)     += -(timetauM*funct_(ui)*derxy_(0, vi)*rhsint_(1)) ;
-              estif(vi*4 + 1, ui*4 + 1) += -(timetauM*funct_(ui)*derxy_(1, vi)*rhsint_(1)) ;
-              estif(vi*4 + 1, ui*4 + 2) += -(timetauM*funct_(ui)*derxy_(2, vi)*rhsint_(1)) ;
-              estif(vi*4 + 2, ui*4)     += -(timetauM*funct_(ui)*derxy_(0, vi)*rhsint_(2)) ;
-              estif(vi*4 + 2, ui*4 + 1) += -(timetauM*funct_(ui)*derxy_(1, vi)*rhsint_(2)) ;
-              estif(vi*4 + 2, ui*4 + 2) += -(timetauM*funct_(ui)*derxy_(2, vi)*rhsint_(2)) ;
+              estif(vi*4    , ui*4)     += (v*derxy_(0, vi)*rhsint_(0)) ;
+              estif(vi*4 + 1, ui*4)     += (v*derxy_(0, vi)*rhsint_(1)) ;
+              estif(vi*4 + 2, ui*4)     += (v*derxy_(0, vi)*rhsint_(2)) ;
+
+              estif(vi*4    , ui*4 + 1) += (v*derxy_(1, vi)*rhsint_(0)) ;
+              estif(vi*4 + 1, ui*4 + 1) += (v*derxy_(1, vi)*rhsint_(1)) ;
+              estif(vi*4 + 2, ui*4 + 1) += (v*derxy_(1, vi)*rhsint_(2)) ;
+
+              estif(vi*4    , ui*4 + 2) += (v*derxy_(2, vi)*rhsint_(0)) ;
+              estif(vi*4 + 1, ui*4 + 2) += (v*derxy_(2, vi)*rhsint_(1)) ;
+              estif(vi*4 + 2, ui*4 + 2) += (v*derxy_(2, vi)*rhsint_(2)) ;
 
             } // vi
           } // ui
         } // if newton
 
-        for (int vi=0; vi<iel_; ++vi)
+#if 1
+        // NOTE: Here we have a difference to the previous version of this
+        // element!  Before we did not care for the mesh velocity in this
+        // term. This seems unreasonable and wrong.
+        for (int vi=0; vi<numnode; ++vi)
         {
           // supg stabilisation
-          eforce(vi*4)     += -(timetauM*conv_c_(vi)*res_old_(0)) ;
-          eforce(vi*4 + 1) += -(timetauM*conv_c_(vi)*res_old_(1)) ;
-          eforce(vi*4 + 2) += -(timetauM*conv_c_(vi)*res_old_(2)) ;
+          double v = -timetauM*conv_c_(vi);
+          eforce(vi*4)     += (v*res_old_(0)) ;
+          eforce(vi*4 + 1) += (v*res_old_(1)) ;
+          eforce(vi*4 + 2) += (v*res_old_(2)) ;
         }
+#endif
       }
 
 
       //----------------------------------------------------------------------
+      //----------------------------------------------------------------------
       //                       STABILISATION, VISCOUS PART
-      if(vstab != Fluid3::viscous_stab_none)
+
+      if (higher_order_ele)
       {
-      const double two_visc_timefac = vstabfac*2.0*visc*timetauMp;
-      // viscous stabilization either on left hand side or on right hand side
-      if(vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_usfem)
-      {
-        const double two_visc_ttimefac = vstabfac*2.0*visc*ttimetauMp;
-        const double four_visc2_ttimefac = vstabfac*4.0*visceff*visc*ttimetauMp;
-        // viscous stabilization on left hand side
-        for (int ui=0; ui<iel_; ++ui)
+        if(vstab != Fluid3::viscous_stab_none)
         {
-          for (int vi=0; vi<iel_; ++vi)
+          const double two_visc_timefac = vstabfac*2.0*visc*timetauMp;
+
+          // viscous stabilization either on left hand side or on right hand side
+          if (vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_usfem)
           {
-            /* viscous stabilisation, inertia part */
-            /*
-                        /                  \
-                       |                    |
-                   +/- |  Du , div eps (v)  |
-                       |                    |
-                        \                  /
-            */
-            estif(vi*4, ui*4)         += two_visc_timefac*funct_(ui)*viscs2_(0, 0, vi) ;
-            estif(vi*4, ui*4 + 1)     += two_visc_timefac*funct_(ui)*viscs2_(0, 1, vi) ;
-            estif(vi*4, ui*4 + 2)     += two_visc_timefac*funct_(ui)*viscs2_(0, 2, vi) ;
-            estif(vi*4 + 1, ui*4)     += two_visc_timefac*funct_(ui)*viscs2_(0, 1, vi) ;
-            estif(vi*4 + 1, ui*4 + 1) += two_visc_timefac*funct_(ui)*viscs2_(1, 1, vi) ;
-            estif(vi*4 + 1, ui*4 + 2) += two_visc_timefac*funct_(ui)*viscs2_(1, 2, vi) ;
-            estif(vi*4 + 2, ui*4)     += two_visc_timefac*funct_(ui)*viscs2_(0, 2, vi) ;
-            estif(vi*4 + 2, ui*4 + 1) += two_visc_timefac*funct_(ui)*viscs2_(1, 2, vi) ;
-            estif(vi*4 + 2, ui*4 + 2) += two_visc_timefac*funct_(ui)*viscs2_(2, 2, vi) ;
+            const double two_visc_ttimefac = vstabfac*2.0*visc*ttimetauMp;
+            const double four_visc2_ttimefac = vstabfac*4.0*visceff*visc*ttimetauMp;
 
-            /* viscous stabilisation, convective part */
-            /*
-                 /                                \
-                |  / n+1       \                   |
-            +/- | | u   o nabla | Du , div eps (v) |
-                |  \ (i)       /                   |
-                 \                                /
-            */
-            estif(vi*4, ui*4)         += two_visc_ttimefac*conv_c_(ui)*viscs2_(0, 0, vi) ;
-            estif(vi*4, ui*4 + 1)     += two_visc_ttimefac*conv_c_(ui)*viscs2_(0, 1, vi) ;
-            estif(vi*4, ui*4 + 2)     += two_visc_ttimefac*conv_c_(ui)*viscs2_(0, 2, vi) ;
-            estif(vi*4 + 1, ui*4)     += two_visc_ttimefac*conv_c_(ui)*viscs2_(0, 1, vi) ;
-            estif(vi*4 + 1, ui*4 + 1) += two_visc_ttimefac*conv_c_(ui)*viscs2_(1, 1, vi) ;
-            estif(vi*4 + 1, ui*4 + 2) += two_visc_ttimefac*conv_c_(ui)*viscs2_(1, 2, vi) ;
-            estif(vi*4 + 2, ui*4)     += two_visc_ttimefac*conv_c_(ui)*viscs2_(0, 2, vi) ;
-            estif(vi*4 + 2, ui*4 + 1) += two_visc_ttimefac*conv_c_(ui)*viscs2_(1, 2, vi) ;
-            estif(vi*4 + 2, ui*4 + 2) += two_visc_ttimefac*conv_c_(ui)*viscs2_(2, 2, vi) ;
-
-
-            /* viscous stabilisation, pressure part ( L_pres_p) */
-            /*
-                     /                        \
-                    |                          |
-               +/-  |  nabla Dp , div eps (v)  |
-                    |                          |
-                     \                        /
-            */
-            estif(vi*4, ui*4 + 3)     += two_visc_ttimefac*(derxy_(0, ui)*viscs2_(0, 0, vi)
-                                                              +
-                                                              derxy_(1, ui)*viscs2_(0, 1, vi)
-                                                              +
-                                                              derxy_(2, ui)*viscs2_(0, 2, vi)) ;
-            estif(vi*4 + 1, ui*4 + 3) += two_visc_ttimefac*(derxy_(0, ui)*viscs2_(0, 1, vi)
-                                                              +
-                                                              derxy_(1, ui)*viscs2_(1, 1, vi)
-                                                              +
-                                                              derxy_(2, ui)*viscs2_(1, 2, vi)) ;
-            estif(vi*4 + 2, ui*4 + 3) += two_visc_ttimefac*(derxy_(0, ui)*viscs2_(0, 2, vi)
-                                                              +
-                                                              derxy_(1, ui)*viscs2_(1, 2, vi)
-                                                              +
-                                                              derxy_(2, ui)*viscs2_(2, 2, vi)) ;
-
-            /* viscous stabilisation, viscous part (-L_visc_u) */
-            /*
-               /                                 \
-              |               /  \                |
-         -/+  |  nabla o eps | Du | , div eps (v) |
-              |               \  /                |
-               \                                 /
-            */
-            estif(vi*4, ui*4)         -= four_visc2_ttimefac*(viscs2_(0, 0, ui)*viscs2_(0, 0, vi)
-                                                                     +
-                                                                     viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
-                                                                     +
-                                                                     viscs2_(0, 2, ui)*viscs2_(0, 2, vi)) ;
-            estif(vi*4, ui*4 + 1)     -= four_visc2_ttimefac*(viscs2_(0, 0, vi)*viscs2_(0, 1, ui)
-                                                                     +
-                                                                     viscs2_(0, 1, vi)*viscs2_(1, 1, ui)
-                                                                     +
-                                                                     viscs2_(0, 2, vi)*viscs2_(1, 2, ui)) ;
-            estif(vi*4, ui*4 + 2)     -= four_visc2_ttimefac*(viscs2_(0, 0, vi)*viscs2_(0, 2, ui)
-                                                                     +
-                                                                     viscs2_(0, 1, vi)*viscs2_(1, 2, ui)
-                                                                     +
-                                                                     viscs2_(0, 2, vi)*viscs2_(2, 2, ui)) ;
-            estif(vi*4 + 1, ui*4)     -= four_visc2_ttimefac*(viscs2_(0, 0, ui)*viscs2_(0, 1, vi)
-                                                                     +
-                                                                     viscs2_(0, 1, ui)*viscs2_(1, 1, vi)
-                                                                     +
-                                                                     viscs2_(0, 2, ui)*viscs2_(1, 2, vi)) ;
-            estif(vi*4 + 1, ui*4 + 1) -= four_visc2_ttimefac*(viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
-                                                                     +
-                                                                     viscs2_(1, 1, ui)*viscs2_(1, 1, vi)
-                                                                     +
-                                                                     viscs2_(1, 2, ui)*viscs2_(1, 2, vi)) ;
-            estif(vi*4 + 1, ui*4 + 2) -= four_visc2_ttimefac*(viscs2_(0, 1, vi)*viscs2_(0, 2, ui)
-                                                                     +
-                                                                     viscs2_(1, 1, vi)*viscs2_(1, 2, ui)
-                                                                     +
-                                                                     viscs2_(1, 2, vi)*viscs2_(2, 2, ui)) ;
-            estif(vi*4 + 2, ui*4)     -= four_visc2_ttimefac*(viscs2_(0, 0, ui)*viscs2_(0, 2, vi)
-                                                                     +
-                                                                     viscs2_(0, 1, ui)*viscs2_(1, 2, vi)
-                                                                     +
-                                                                     viscs2_(0, 2, ui)*viscs2_(2, 2, vi)) ;
-            estif(vi*4 + 2, ui*4 + 1) -= four_visc2_ttimefac*(viscs2_(0, 1, ui)*viscs2_(0, 2, vi)
-                                                                     +
-                                                                     viscs2_(1, 1, ui)*viscs2_(1, 2, vi)
-                                                                     +
-                                                                     viscs2_(1, 2, ui)*viscs2_(2, 2, vi)) ;
-            estif(vi*4 + 2, ui*4 + 2) -= four_visc2_ttimefac*(viscs2_(0, 2, ui)*viscs2_(0, 2, vi)
-                                                                     +
-                                                                     viscs2_(1, 2, ui)*viscs2_(1, 2, vi)
-                                                                     +
-                                                                     viscs2_(2, 2, ui)*viscs2_(2, 2, vi)) ;
-          } // vi
-        } // ui
-
-        if (ele->is_ale_)
-        {
-          for (int vi=0; vi<iel_; ++vi)
-          {
-            for (int ui=0; ui<iel_; ++ui)
+            // viscous stabilization on left hand side
+            for (int ui=0; ui<numnode; ++ui)
             {
+              double v = two_visc_timefac*funct_(ui)
+#if 1
+                         + two_visc_ttimefac*conv_c_(ui)
+#endif
+                         ;
+              for (int vi=0; vi<numnode; ++vi)
+              {
+                /* viscous stabilisation, inertia part */
+                /*
+                  /                    \
+                  |                    |
+              +/- |  Du , div eps (v)  |
+                  |                    |
+                  \                    /
+                */
+                /* viscous stabilisation, convective part */
+                /*
+                  /                                  \
+                  |  / n+1       \                   |
+              +/- | | u   o nabla | Du , div eps (v) |
+                  |  \ (i)       /                   |
+                  \                                  /
+                */
+                estif(vi*4, ui*4)         += v*viscs2_(0, 0, vi) ;
+                estif(vi*4 + 1, ui*4)     += v*viscs2_(0, 1, vi) ;
+                estif(vi*4 + 2, ui*4)     += v*viscs2_(0, 2, vi) ;
 
-              /*  reduced convection through grid motion
+                estif(vi*4, ui*4 + 1)     += v*viscs2_(0, 1, vi) ;
+                estif(vi*4 + 1, ui*4 + 1) += v*viscs2_(1, 1, vi) ;
+                estif(vi*4 + 2, ui*4 + 1) += v*viscs2_(1, 2, vi) ;
 
+                estif(vi*4, ui*4 + 2)     += v*viscs2_(0, 2, vi) ;
+                estif(vi*4 + 1, ui*4 + 2) += v*viscs2_(1, 2, vi) ;
+                estif(vi*4 + 2, ui*4 + 2) += v*viscs2_(2, 2, vi) ;
+              }
+            }
 
-                       /                                   \
-                      |  /          \                       |
-                  +/- | | u  o nabla | Du ,  nabla o eps (v)|
-                      |  \ G        /                       |
-                       \                                   /
-
-              */
-
-              estif(vi*4, ui*4)         += two_visc_ttimefac*conv_g_(ui)*viscs2_(0, 0, vi) ;
-              estif(vi*4, ui*4 + 1)     += two_visc_ttimefac*conv_g_(ui)*viscs2_(0, 1, vi) ;
-              estif(vi*4, ui*4 + 2)     += two_visc_ttimefac*conv_g_(ui)*viscs2_(0, 2, vi) ;
-              estif(vi*4 + 1, ui*4)     += two_visc_ttimefac*conv_g_(ui)*viscs2_(0, 1, vi) ;
-              estif(vi*4 + 1, ui*4 + 1) += two_visc_ttimefac*conv_g_(ui)*viscs2_(1, 1, vi) ;
-              estif(vi*4 + 1, ui*4 + 2) += two_visc_ttimefac*conv_g_(ui)*viscs2_(1, 2, vi) ;
-              estif(vi*4 + 2, ui*4)     += two_visc_ttimefac*conv_g_(ui)*viscs2_(0, 2, vi) ;
-              estif(vi*4 + 2, ui*4 + 1) += two_visc_ttimefac*conv_g_(ui)*viscs2_(1, 2, vi) ;
-              estif(vi*4 + 2, ui*4 + 2) += two_visc_ttimefac*conv_g_(ui)*viscs2_(2, 2, vi) ;
-            }// ui
-          }//vi
-        } // end if is_ale
-
-
-        if (newton)
-        {
-          for (int ui=0; ui<iel_; ++ui)
-          {
-            for (int vi=0; vi<iel_; ++vi)
+            for (int ui=0; ui<numnode; ++ui)
             {
-              /* viscous stabilisation, reactive part of convection */
-              /*
-                   /                                 \
-                  |  /          \   n+1               |
-              +/- | | Du o nabla | u    , div eps (v) |
-                  |  \          /   (i)               |
-                   \                                 /
-              */
-              estif(vi*4, ui*4)         += two_visc_ttimefac*(viscs2_(0, 0, vi)*conv_r_(0, 0, ui)
-                                                                +
-                                                                viscs2_(0, 1, vi)*conv_r_(1, 0, ui)
-                                                                +
-                                                                viscs2_(0, 2, vi)*conv_r_(2, 0, ui)) ;
-              estif(vi*4, ui*4 + 1)     += two_visc_ttimefac*(viscs2_(0, 0, vi)*conv_r_(0, 1, ui)
-                                                                +
-                                                                viscs2_(0, 1, vi)*conv_r_(1, 1, ui)
-                                                                +
-                                                                viscs2_(0, 2, vi)*conv_r_(2, 1, ui)) ;
-              estif(vi*4, ui*4 + 2)     += two_visc_ttimefac*(viscs2_(0, 0, vi)*conv_r_(0, 2, ui)
-                                                                +
-                                                                viscs2_(0, 1, vi)*conv_r_(1, 2, ui)
-                                                                +
-                                                                viscs2_(0, 2, vi)*conv_r_(2, 2, ui)) ;
-              estif(vi*4 + 1, ui*4)     += two_visc_ttimefac*(viscs2_(0, 1, vi)*conv_r_(0, 0, ui)
-                                                                +
-                                                                viscs2_(1, 1, vi)*conv_r_(1, 0, ui)
-                                                                +
-                                                                viscs2_(1, 2, vi)*conv_r_(2, 0, ui)) ;
-              estif(vi*4 + 1, ui*4 + 1) += two_visc_ttimefac*(viscs2_(0, 1, vi)*conv_r_(0, 1, ui)
-                                                                +
-                                                                viscs2_(1, 1, vi)*conv_r_(1, 1, ui)
-                                                                +
-                                                                viscs2_(1, 2, vi)*conv_r_(2, 1, ui)) ;
-              estif(vi*4 + 1, ui*4 + 2) += two_visc_ttimefac*(viscs2_(0, 1, vi)*conv_r_(0, 2, ui)
-                                                                +
-                                                                viscs2_(1, 1, vi)*conv_r_(1, 2, ui)
-                                                                +
-                                                                viscs2_(1, 2, vi)*conv_r_(2, 2, ui)) ;
-              estif(vi*4 + 2, ui*4)     += two_visc_ttimefac*(viscs2_(0, 2, vi)*conv_r_(0, 0, ui)
-                                                                +
-                                                                viscs2_(1, 2, vi)*conv_r_(1, 0, ui)
-                                                                +
-                                                                viscs2_(2, 2, vi)*conv_r_(2, 0, ui)) ;
-              estif(vi*4 + 2, ui*4 + 1) += two_visc_ttimefac*(viscs2_(0, 2, vi)*conv_r_(0, 1, ui)
-                                                                +
-                                                                viscs2_(1, 2, vi)*conv_r_(1, 1, ui)
-                                                                +
-                                                                viscs2_(2, 2, vi)*conv_r_(2, 1, ui)) ;
-              estif(vi*4 + 2, ui*4 + 2) += two_visc_ttimefac*(viscs2_(0, 2, vi)*conv_r_(0, 2, ui)
-                                                                +
-                                                                viscs2_(1, 2, vi)*conv_r_(1, 2, ui)
-                                                                +
-                                                                viscs2_(2, 2, vi)*conv_r_(2, 2, ui)) ;
-            } // vi
-          } // ui
-        } // if newton
-        } // end if viscous stabilization on left hand side
+              for (int vi=0; vi<numnode; ++vi)
+              {
 
-        for (int vi=0; vi<iel_; ++vi)
-        {
+                /* viscous stabilisation, pressure part ( L_pres_p) */
+                /*
+                  /                          \
+                  |                          |
+             +/-  |  nabla Dp , div eps (v)  |
+                  |                          |
+                  \                          /
+                */
+                estif(vi*4, ui*4 + 3)     += two_visc_ttimefac*(derxy_(0, ui)*viscs2_(0, 0, vi)
+                                                                +
+                                                                derxy_(1, ui)*viscs2_(0, 1, vi)
+                                                                +
+                                                                derxy_(2, ui)*viscs2_(0, 2, vi)) ;
+                estif(vi*4 + 1, ui*4 + 3) += two_visc_ttimefac*(derxy_(0, ui)*viscs2_(0, 1, vi)
+                                                                +
+                                                                derxy_(1, ui)*viscs2_(1, 1, vi)
+                                                                +
+                                                                derxy_(2, ui)*viscs2_(1, 2, vi)) ;
+                estif(vi*4 + 2, ui*4 + 3) += two_visc_ttimefac*(derxy_(0, ui)*viscs2_(0, 2, vi)
+                                                                +
+                                                                derxy_(1, ui)*viscs2_(1, 2, vi)
+                                                                +
+                                                                derxy_(2, ui)*viscs2_(2, 2, vi)) ;
 
-          /* viscous stabilisation */
-          eforce(vi*4)     -= two_visc_timefac*(res_old_(0)*viscs2_(0, 0, vi)
-                                                   +
-                                                   res_old_(1)*viscs2_(0, 1, vi)
-                                                   +
-                                                   res_old_(2)*viscs2_(0, 2, vi)) ;
-          eforce(vi*4 + 1) -= two_visc_timefac*(res_old_(0)*viscs2_(0, 1, vi)
-                                                   +
-                                                   res_old_(1)*viscs2_(1, 1, vi)
-                                                   +
-                                                   res_old_(2)*viscs2_(1, 2, vi)) ;
-          eforce(vi*4 + 2) -= two_visc_timefac*(res_old_(0)*viscs2_(0, 2, vi)
-                                                   +
-                                                   res_old_(1)*viscs2_(1, 2, vi)
-                                                   +
-                                                   res_old_(2)*viscs2_(2, 2, vi)) ;
+              }
+            }
+
+            for (int ui=0; ui<numnode; ++ui)
+            {
+              for (int vi=0; vi<numnode; ++vi)
+              {
+                /* viscous stabilisation, viscous part (-L_visc_u) */
+                /*
+                  /                                 \
+                  |               /  \                |
+             -/+  |  nabla o eps | Du | , div eps (v) |
+                  |               \  /                |
+                  \                                 /
+                */
+                estif(vi*4, ui*4)         -= four_visc2_ttimefac*(viscs2_(0,0,ui)*viscs2_(0,0,vi)+viscs2_(0,1,ui)*viscs2_(0,1,vi)+viscs2_(0,2,ui)*viscs2_(0,2,vi)) ;
+                estif(vi*4 + 1, ui*4)     -= four_visc2_ttimefac*(viscs2_(0,0,ui)*viscs2_(0,1,vi)+viscs2_(0,1,ui)*viscs2_(1,1,vi)+viscs2_(0,2,ui)*viscs2_(1,2,vi)) ;
+                estif(vi*4 + 2, ui*4)     -= four_visc2_ttimefac*(viscs2_(0,0,ui)*viscs2_(0,2,vi)+viscs2_(0,1,ui)*viscs2_(1,2,vi)+viscs2_(0,2,ui)*viscs2_(2,2,vi)) ;
+
+                estif(vi*4, ui*4 + 1)     -= four_visc2_ttimefac*(viscs2_(0,0,vi)*viscs2_(0,1,ui)+viscs2_(0,1,vi)*viscs2_(1,1,ui)+viscs2_(0,2,vi)*viscs2_(1,2,ui)) ;
+                estif(vi*4 + 1, ui*4 + 1) -= four_visc2_ttimefac*(viscs2_(0,1,ui)*viscs2_(0,1,vi)+viscs2_(1,1,ui)*viscs2_(1,1,vi)+viscs2_(1,2,ui)*viscs2_(1,2,vi)) ;
+                estif(vi*4 + 2, ui*4 + 1) -= four_visc2_ttimefac*(viscs2_(0,1,ui)*viscs2_(0,2,vi)+viscs2_(1,1,ui)*viscs2_(1,2,vi)+viscs2_(1,2,ui)*viscs2_(2,2,vi)) ;
+
+                estif(vi*4, ui*4 + 2)     -= four_visc2_ttimefac*(viscs2_(0,0,vi)*viscs2_(0,2,ui)+viscs2_(0,1,vi)*viscs2_(1,2,ui)+viscs2_(0,2,vi)*viscs2_(2,2,ui)) ;
+                estif(vi*4 + 1, ui*4 + 2) -= four_visc2_ttimefac*(viscs2_(0,1,vi)*viscs2_(0,2,ui)+viscs2_(1,1,vi)*viscs2_(1,2,ui)+viscs2_(1,2,vi)*viscs2_(2,2,ui)) ;
+                estif(vi*4 + 2, ui*4 + 2) -= four_visc2_ttimefac*(viscs2_(0,2,ui)*viscs2_(0,2,vi)+viscs2_(1,2,ui)*viscs2_(1,2,vi)+viscs2_(2,2,ui)*viscs2_(2,2,vi)) ;
+              } // vi
+            } // ui
+
+            if (newton)
+            {
+              for (int ui=0; ui<numnode; ++ui)
+              {
+                double v = two_visc_ttimefac*funct_(ui);
+                for (int vi=0; vi<numnode; ++vi)
+                {
+                  /* viscous stabilisation, reactive part of convection */
+                  /*
+                    /                                   \
+                    |  /          \   n+1               |
+                +/- | | Du o nabla | u    , div eps (v) |
+                    |  \          /   (i)               |
+                    \                                   /
+                  */
+                  estif(vi*4, ui*4)         += v*(viscs2_(0,0,vi)*vderxy_(0,0)+
+                                                  viscs2_(0,1,vi)*vderxy_(1,0)+
+                                                  viscs2_(0,2,vi)*vderxy_(2,0)) ;
+                  estif(vi*4 + 1, ui*4)     += v*(viscs2_(0,1,vi)*vderxy_(0,0)+
+                                                  viscs2_(1,1,vi)*vderxy_(1,0)+
+                                                  viscs2_(1,2,vi)*vderxy_(2,0)) ;
+                  estif(vi*4 + 2, ui*4)     += v*(viscs2_(0,2,vi)*vderxy_(0,0)+
+                                                  viscs2_(1,2,vi)*vderxy_(1,0)+
+                                                  viscs2_(2,2,vi)*vderxy_(2,0)) ;
+
+                  estif(vi*4, ui*4 + 1)     += v*(viscs2_(0,0,vi)*vderxy_(0,1)+
+                                                  viscs2_(0,1,vi)*vderxy_(1,1)+
+                                                  viscs2_(0,2,vi)*vderxy_(2,1)) ;
+                  estif(vi*4 + 1, ui*4 + 1) += v*(viscs2_(0,1,vi)*vderxy_(0,1)+
+                                                  viscs2_(1,1,vi)*vderxy_(1,1)+
+                                                  viscs2_(1,2,vi)*vderxy_(2,1)) ;
+                  estif(vi*4 + 2, ui*4 + 1) += v*(viscs2_(0,2,vi)*vderxy_(0,1)+
+                                                  viscs2_(1,2,vi)*vderxy_(1,1)+
+                                                  viscs2_(2,2,vi)*vderxy_(2,1)) ;
+
+                  estif(vi*4, ui*4 + 2)     += v*(viscs2_(0,0,vi)*vderxy_(0,2)+
+                                                  viscs2_(0,1,vi)*vderxy_(1,2)+
+                                                  viscs2_(0,2,vi)*vderxy_(2,2)) ;
+                  estif(vi*4 + 1, ui*4 + 2) += v*(viscs2_(0,1,vi)*vderxy_(0,2)+
+                                                  viscs2_(1,1,vi)*vderxy_(1,2)+
+                                                  viscs2_(1,2,vi)*vderxy_(2,2)) ;
+                  estif(vi*4 + 2, ui*4 + 2) += v*(viscs2_(0,2,vi)*vderxy_(0,2)+
+                                                  viscs2_(1,2,vi)*vderxy_(1,2)+
+                                                  viscs2_(2,2,vi)*vderxy_(2,2)) ;
+                } // vi
+              } // ui
+            } // if newton
+          } // end if viscous stabilization on left hand side
+
+          for (int vi=0; vi<numnode; ++vi)
+          {
+
+            /* viscous stabilisation */
+            eforce(vi*4)     -= two_visc_timefac*(res_old_(0)*viscs2_(0, 0, vi)+res_old_(1)*viscs2_(0, 1, vi)+res_old_(2)*viscs2_(0, 2, vi)) ;
+            eforce(vi*4 + 1) -= two_visc_timefac*(res_old_(0)*viscs2_(0, 1, vi)+res_old_(1)*viscs2_(1, 1, vi)+res_old_(2)*viscs2_(1, 2, vi)) ;
+            eforce(vi*4 + 2) -= two_visc_timefac*(res_old_(0)*viscs2_(0, 2, vi)+res_old_(1)*viscs2_(1, 2, vi)+res_old_(2)*viscs2_(2, 2, vi)) ;
+          }
         }
       }
 
+      //----------------------------------------------------------------------
       //----------------------------------------------------------------------
       //                     STABILISATION, CONTINUITY PART
 
-      if(cstab == Fluid3::continuity_stab_yes)
+      if (cstab == Fluid3::continuity_stab_yes)
       {
         const double timefac_timefac_tau_C=timefac*timefac*tau_C;
         const double timefac_timefac_tau_C_divunp=timefac_timefac_tau_C*(vderxy_(0, 0)+vderxy_(1, 1)+vderxy_(2, 2));
 
-        for (int ui=0; ui<iel_; ++ui)
+        for (int ui=0; ui<numnode; ++ui)
         {
-          for (int vi=0; vi<iel_; ++vi)
+          double v0 = timefac_timefac_tau_C*derxy_(0, ui);
+          double v1 = timefac_timefac_tau_C*derxy_(1, ui);
+          double v2 = timefac_timefac_tau_C*derxy_(2, ui);
+          for (int vi=0; vi<numnode; ++vi)
           {
             /* continuity stabilisation on left hand side */
             /*
-                       /                        \
-                      |                          |
-                      | nabla o Du  , nabla o v  |
-                      |                          |
-                       \                        /
+              /                          \
+              |                          |
+              | nabla o Du  , nabla o v  |
+              |                          |
+              \                          /
             */
-            estif(vi*4, ui*4)         += timefac_timefac_tau_C*derxy_(0, ui)*derxy_(0, vi) ;
-            estif(vi*4, ui*4 + 1)     += timefac_timefac_tau_C*derxy_(0, vi)*derxy_(1, ui) ;
-            estif(vi*4, ui*4 + 2)     += timefac_timefac_tau_C*derxy_(0, vi)*derxy_(2, ui) ;
-            estif(vi*4 + 1, ui*4)     += timefac_timefac_tau_C*derxy_(0, ui)*derxy_(1, vi) ;
-            estif(vi*4 + 1, ui*4 + 1) += timefac_timefac_tau_C*derxy_(1, ui)*derxy_(1, vi) ;
-            estif(vi*4 + 1, ui*4 + 2) += timefac_timefac_tau_C*derxy_(1, vi)*derxy_(2, ui) ;
-            estif(vi*4 + 2, ui*4)     += timefac_timefac_tau_C*derxy_(0, ui)*derxy_(2, vi) ;
-            estif(vi*4 + 2, ui*4 + 1) += timefac_timefac_tau_C*derxy_(1, ui)*derxy_(2, vi) ;
-            estif(vi*4 + 2, ui*4 + 2) += timefac_timefac_tau_C*derxy_(2, ui)*derxy_(2, vi) ;
+            estif(vi*4, ui*4)         += v0*derxy_(0, vi) ;
+            estif(vi*4 + 1, ui*4)     += v0*derxy_(1, vi) ;
+            estif(vi*4 + 2, ui*4)     += v0*derxy_(2, vi) ;
+
+            estif(vi*4, ui*4 + 1)     += v1*derxy_(0, vi) ;
+            estif(vi*4 + 1, ui*4 + 1) += v1*derxy_(1, vi) ;
+            estif(vi*4 + 2, ui*4 + 1) += v1*derxy_(2, vi) ;
+
+            estif(vi*4, ui*4 + 2)     += v2*derxy_(0, vi) ;
+            estif(vi*4 + 1, ui*4 + 2) += v2*derxy_(1, vi) ;
+            estif(vi*4 + 2, ui*4 + 2) += v2*derxy_(2, vi) ;
           }
         }
 
-        for (int vi=0; vi<iel_; ++vi)
+        for (int vi=0; vi<numnode; ++vi)
         {
           /* continuity stabilisation on right hand side */
           eforce(vi*4)     += -timefac_timefac_tau_C_divunp*derxy_(0, vi) ;
           eforce(vi*4 + 1) += -timefac_timefac_tau_C_divunp*derxy_(1, vi) ;
           eforce(vi*4 + 2) += -timefac_timefac_tau_C_divunp*derxy_(2, vi) ;
         }
-
       }
 
-      if(cross == Fluid3::cross_stress_stab_only_rhs || cross == Fluid3::cross_stress_stab)
+      if (cross == Fluid3::cross_stress_stab_only_rhs || cross == Fluid3::cross_stress_stab)
       {
-        if(cross == Fluid3::cross_stress_stab)
+        if (cross == Fluid3::cross_stress_stab)
         {
           //----------------------------------------------------------------------
           //     STABILIZATION, CROSS-STRESS PART (RESIDUAL-BASED VMM)
 
-          for (int ui=0; ui<iel_; ++ui)
+          for (int ui=0; ui<numnode; ++ui)
           {
-            for (int vi=0; vi<iel_; ++vi)
+            double v = ttimetauM*conv_resM_(ui);
+            for (int vi=0; vi<numnode; ++vi)
             {
               /* cross-stress part on lhs */
               /*
@@ -1578,14 +1376,15 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
                          |  \            /          |
                           \                        /
               */
-              estif(vi*4    , ui*4    ) -= ttimetauM*conv_resM_(ui)*funct_(vi) ;
-              estif(vi*4 + 1, ui*4 + 1) -= ttimetauM*conv_resM_(ui)*funct_(vi) ;
-              estif(vi*4 + 2, ui*4 + 2) -= ttimetauM*conv_resM_(ui)*funct_(vi) ;
+              double v2 = v*funct_(vi);
+              estif(vi*4    , ui*4    ) -= v2 ;
+              estif(vi*4 + 1, ui*4 + 1) -= v2 ;
+              estif(vi*4 + 2, ui*4 + 2) -= v2 ;
             }
           }
         } // end cross-stress part on left hand side
 
-        for (int vi=0; vi<iel_; ++vi)
+        for (int vi=0; vi<numnode; ++vi)
         {
           /* cross-stress part on rhs */
           /*
@@ -1596,25 +1395,26 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
                          |  \            /  (i)      |
                           \                         /
           */
-          eforce(vi*4)     += ttimetauM*(res_old_(0)*vderxy_(0,0)
-                                        +res_old_(1)*vderxy_(0,1)
-                                        +res_old_(2)*vderxy_(0,2))*funct_(vi);
-          eforce(vi*4 + 1) += ttimetauM*(res_old_(0)*vderxy_(1,0)
-                                        +res_old_(1)*vderxy_(1,1)
-                                        +res_old_(2)*vderxy_(1,2))*funct_(vi);
-          eforce(vi*4 + 2) += ttimetauM*(res_old_(0)*vderxy_(2,0)
-                                        +res_old_(1)*vderxy_(2,1)
-                                        +res_old_(2)*vderxy_(2,2))*funct_(vi);
+          double v = ttimetauM*funct_(vi);
+          eforce(vi*4)     += v*(res_old_(0)*vderxy_(0,0) +
+                                 res_old_(1)*vderxy_(0,1) +
+                                 res_old_(2)*vderxy_(0,2));
+          eforce(vi*4 + 1) += v*(res_old_(0)*vderxy_(1,0) +
+                                 res_old_(1)*vderxy_(1,1) +
+                                 res_old_(2)*vderxy_(1,2));
+          eforce(vi*4 + 2) += v*(res_old_(0)*vderxy_(2,0) +
+                                 res_old_(1)*vderxy_(2,1) +
+                                 res_old_(2)*vderxy_(2,2));
         }
       } // end cross-stress part on right hand side
 
-      if(reynolds == Fluid3::reynolds_stress_stab_only_rhs)
+      if (reynolds == Fluid3::reynolds_stress_stab_only_rhs)
       {
         const double ttimetauMtauM = ttimetauM*tau_M/fac;
         //----------------------------------------------------------------------
         //     STABILIZATION, REYNOLDS-STRESS PART (RESIDUAL-BASED VMM)
 
-        for (int vi=0; vi<iel_; ++vi)
+        for (int vi=0; vi<numnode; ++vi)
         {
           /* Reynolds-stress part on rhs */
           /*
@@ -1625,9 +1425,10 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
                  |                               |
                   \                             /
           */
-          eforce(vi*4)     += ttimetauMtauM*conv_resM_(vi)*res_old_(0);
-          eforce(vi*4 + 1) += ttimetauMtauM*conv_resM_(vi)*res_old_(1);
-          eforce(vi*4 + 2) += ttimetauMtauM*conv_resM_(vi)*res_old_(2);
+          double v = ttimetauMtauM*conv_resM_(vi);
+          eforce(vi*4)     += v*res_old_(0);
+          eforce(vi*4 + 1) += v*res_old_(1);
+          eforce(vi*4 + 2) += v*res_old_(2);
         }
       } // end Reynolds-stress part on right hand side
 
@@ -1638,11 +1439,12 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
         //----------------------------------------------------------------------
         //     SCALE-SIMILARITY TERM (ON RIGHT HAND SIDE)
 
-        for (int vi=0; vi<iel_; ++vi)
+        for (int vi=0; vi<numnode; ++vi)
         {
-          eforce(vi*4)     -= timefacfac*(csconvint_(0) - conv_s_(0))*funct_(vi);
-          eforce(vi*4 + 1) -= timefacfac*(csconvint_(1) - conv_s_(1))*funct_(vi);
-          eforce(vi*4 + 2) -= timefacfac*(csconvint_(2) - conv_s_(2))*funct_(vi);
+          double v = timefacfac*funct_(vi);
+          eforce(vi*4)     -= v*(csconvint_(0) - conv_s_(0));
+          eforce(vi*4 + 1) -= v*(csconvint_(1) - conv_s_(1));
+          eforce(vi*4 + 2) -= v*(csconvint_(2) - conv_s_(2));
         }
       }
 
@@ -1651,7 +1453,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
         //----------------------------------------------------------------------
         //     FINE-SCALE SUBGRID-VISCOSITY TERM (ON RIGHT HAND SIDE)
 
-        for (int vi=0; vi<iel_; ++vi)
+        for (int vi=0; vi<numnode; ++vi)
         {
           /* fine-scale subgrid-viscosity term on right hand side */
           /*

@@ -183,13 +183,13 @@ namespace ELEMENTS
     blitz::Array<double,1> csvelint_;
     blitz::Array<double,1> fsvelint_;
     blitz::Array<double,1> csconvint_;
-    blitz::Array<double,1> gridvelint_;
+    blitz::Array<double,1> convvelint_;
     blitz::Array<double,1> gradp_;
     blitz::Array<double,1> tau_;
     blitz::Array<double,3> viscs2_; /* viscous term including 2nd derivatives */
     blitz::Array<double,1> conv_c_; /* linearisation of convect, convective part */
-    blitz::Array<double,1> conv_g_; /* linearisation of convect, grid part */
-    blitz::Array<double,3> conv_r_; /* linearisation of convect, reactive part */
+    //blitz::Array<double,1> conv_g_; /* linearisation of convect, grid part */
+    //blitz::Array<double,3> conv_r_; /* linearisation of convect, reactive part */
     blitz::Array<double,1> rhsint_; /* total right hand side terms at int.-point */
     blitz::Array<double,1> conv_old_;
     blitz::Array<double,1> conv_s_; /* convective part of scale-similarity term */
