@@ -21,6 +21,8 @@ Maintainer: Markus Gitterle
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
+#include "Epetra_SerialDenseVector.h"
+#include "Epetra_SerialDenseMatrix.h"
 using namespace std;
 using namespace Teuchos;
 
@@ -286,7 +288,8 @@ private:
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
-    calc_struct_update_istep
+    calc_struct_update_istep,
+    calc_struct_update_genalpha_imrlike
   };
 
   enum DimensionalReduction

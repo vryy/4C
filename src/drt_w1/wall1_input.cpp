@@ -112,9 +112,10 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
   if (ierr==1)
   {
 	
-	iseas_=true;
+    iseas_=true;
     // EAS enhanced deformation gradient parameters
-    Epetra_SerialDenseMatrix alpha(4,1);
+    Epetra_SerialDenseMatrix alpha(4,1);  // if you change '4' here, then do it for alphao as well
+    Epetra_SerialDenseMatrix alphao(4,1);
 
 //    alpha (0,0)=1;
 //    alpha (1,0)=2;
@@ -130,6 +131,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
     
     // save EAS data into element container easdata_
     data_.Add("alpha",alpha);
+    data_.Add("alphao",alphao);
     data_.Add("feas",feas);
     data_.Add("invKaa",invKaa);
     data_.Add("Kda",Kda);

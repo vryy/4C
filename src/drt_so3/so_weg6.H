@@ -283,6 +283,7 @@ protected:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
+    calc_struct_update_genalpha_imrlike,
     postprocess_stress
   };
 

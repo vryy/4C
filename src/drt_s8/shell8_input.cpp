@@ -183,10 +183,12 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   for (int i=0; i<5; ++i) nhyb_ += eas_[i];
   // create arrays alfa, Dtildinv, Lt, Rtild in data_
   vector<double> alfa(nhyb_);
+  vector<double> alfao(nhyb_);
   vector<double> Rtild(nhyb_);
   for (int i=0; i<nhyb_; ++i) 
   {
     alfa[i] = 0.0;
+    alfao[i] = 0.0;
     Rtild[i] = 0.0;
   }
   Epetra_SerialDenseMatrix Dtildinv;
@@ -194,6 +196,7 @@ bool DRT::ELEMENTS::Shell8::ReadElement()
   Dtildinv.Shape(nhyb_,nhyb_);
   Lt.Shape(nhyb_,nnode*6);
   data_.Add("alfa",alfa);
+  data_.Add("alfao",alfao);
   data_.Add("Rtild",Rtild);
   data_.Add("Dtildinv",Dtildinv);                                                  
   data_.Add("Lt",Lt);                                                  

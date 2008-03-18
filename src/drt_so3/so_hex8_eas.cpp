@@ -37,8 +37,10 @@ using namespace LINALG; // our linear algebra
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_easinit()
 {
-  // EAS enhanced strain parameters
+  // EAS enhanced strain parameters at currently investigated load/time step
   Epetra_SerialDenseMatrix alpha(neas_,1);
+  // EAS enhanced strain parameters of last converged load/time step
+  Epetra_SerialDenseMatrix alphao(neas_,1);
   // EAS portion of internal forces, also called enhacement vector s or Rtilde
   Epetra_SerialDenseVector feas(neas_);
   // EAS matrix K_{alpha alpha}, also called Dtilde
@@ -48,6 +50,7 @@ void DRT::ELEMENTS::So_hex8::soh8_easinit()
   
   // save EAS data into element container easdata_
   data_.Add("alpha",alpha);
+  data_.Add("alphao",alphao);
   data_.Add("feas",feas);
   data_.Add("invKaa",invKaa);
   data_.Add("Kda",Kda);

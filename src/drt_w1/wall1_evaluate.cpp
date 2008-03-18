@@ -24,6 +24,8 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_element.H"
 
@@ -59,6 +61,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
   else if (action=="calc_struct_eleload")       act = Wall1::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Wall1::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Wall1::calc_struct_update_istep;
+  else if (action=="calc_struct_update_genalpha_imrlike")  act = Wall1::calc_struct_update_genalpha_imrlike;
   else dserror("Unknown type of action for Wall1");
 
   // get the material law
@@ -91,7 +94,31 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
     break;
     case calc_struct_update_istep:
     {
-      ;// there is nothing to do here at the moment
+      // do something with internal EAS, etc parameters
+      if (iseas_)
+      {
+        Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
+        Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        Epetra_BLAS::Epetra_BLAS blas;
+        blas.COPY((*alphao).M()*(*alphao).N(), (*alpha).A(), (*alphao).A());  // alphao := alpha
+      }
+    }
+    break;
+    case calc_struct_update_genalpha_imrlike:
+    {
+      // do something with internal EAS, etc parameters
+      // this depends on the applied solution technique (static, generalised-alpha, 
+      // or other time integrators)
+      if (iseas_)
+      {
+        double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
+        Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1-alphaf}
+        Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        Epetra_BLAS::Epetra_BLAS blas;
+        blas.SCAL((*alphao).M()*(*alphao).N(), -alphaf/(1.0-alphaf), (*alphao).A());  // alphao *= -alphaf/(1.0-alphaf)
+        blas.AXPY((*alphao).M()*(*alphao).N(), 1.0/(1.0-alphaf), (*alpha).A(), (*alphao).A());  // alphao += 1.0/(1.0-alphaf) * alpha
+        blas.COPY((*alpha).M()*(*alpha).N(), (*alphao).A(), (*alpha).A());  // alpha := alphao
+      }
     }
     break;
     case calc_struct_stress:

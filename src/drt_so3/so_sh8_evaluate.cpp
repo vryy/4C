@@ -60,6 +60,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_eleload")       act = So_hex8::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = So_hex8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = So_hex8::calc_struct_update_istep;
+  else if (action=="calc_struct_update_genalpha_imrlike")  act = So_hex8::calc_struct_update_genalpha_imrlike;
   else if (action=="calc_homog_stressdens")     act = So_hex8::calc_homog_stressdens;
   else if (action=="postprocess_stress")        act = So_hex8::postprocess_stress;
   else dserror("Unknown type of action for So_hex8");
@@ -246,7 +247,25 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
     break;
 
     case calc_struct_update_istep: {
-      ;// there is nothing to do here at the moment
+      // do something with internal EAS, etc parameters
+      Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
+      Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+      Epetra_BLAS::Epetra_BLAS blas;
+      blas.COPY((*alphao).M()*(*alphao).N(), (*alpha).A(), (*alphao).A());  // alphao := alpha
+    }
+    break;
+
+    case calc_struct_update_genalpha_imrlike: {
+      // do something with internal EAS, etc parameters
+      // this depends on the applied solution technique (static, generalised-alpha, 
+      // or other time integrators)
+      double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
+      Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1-alphaf}
+      Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+      Epetra_BLAS::Epetra_BLAS blas;
+      blas.SCAL((*alphao).M()*(*alphao).N(), -alphaf/(1.0-alphaf), (*alphao).A());  // alphao *= -alphaf/(1.0-alphaf)
+      blas.AXPY((*alphao).M()*(*alphao).N(), 1.0/(1.0-alphaf), (*alpha).A(), (*alphao).A());  // alphao += 1.0/(1.0-alphaf) * alpha
+      blas.COPY((*alpha).M()*(*alpha).N(), (*alphao).A(), (*alpha).A());  // alpha := alphao
     }
     break;
 

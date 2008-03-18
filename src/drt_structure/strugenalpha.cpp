@@ -298,6 +298,7 @@ void StruGenAlpha::ConstantPredictor()
     p.set("delta time",dt);
     // set vector values needed by elements
     discret_.ClearState();
+    disi_->PutScalar(0.0);
     discret_.SetState("residual displacement",disi_);
 #ifdef STRUGENALPHA_FINTLIKETR
     discret_.SetState("displacement",disn_);
@@ -473,6 +474,7 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
     p.set("delta time",dt);
     // set vector values needed by elements
     discret_.ClearState();
+    disi_->PutScalar(0.0);
     discret_.SetState("residual displacement",disi_);
 #ifdef STRUGENALPHA_FINTLIKETR
     discret_.SetState("displacement",disn_);
@@ -712,6 +714,7 @@ void StruGenAlpha::ConsistentPredictor()
     p.set("delta time",dt);
     // set vector values needed by elements
     discret_.ClearState();
+    disi_->PutScalar(0.0);
     discret_.SetState("residual displacement",disi_);
 #ifdef STRUGENALPHA_FINTLIKETR
     discret_.SetState("displacement",disn_);
@@ -1016,6 +1019,11 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 
       // set vector values needed by elements
       discret_.ClearState();
+#ifdef STRUGENALPHA_FINTLIKETR
+#else
+      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
+      disi_->Scale(1.-alphaf);
+#endif
       discret_.SetState("residual displacement",disi_);
 #ifdef STRUGENALPHA_FINTLIKETR
       discret_.SetState("displacement",disn_);
@@ -1224,6 +1232,11 @@ void StruGenAlpha::FullNewton()
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
+#ifdef STRUGENALPHA_FINTLIKETR
+#else
+      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
+      disi_->Scale(1.-alphaf);
+#endif
       discret_.SetState("residual displacement",disi_);
 #ifdef STRUGENALPHA_FINTLIKETR
       discret_.SetState("displacement",disn_);
@@ -1617,6 +1630,11 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
+#ifdef STRUGENALPHA_FINTLIKETR
+#else
+      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
+      disi_->Scale(1.-alphaf);
+#endif
       discret_.SetState("residual displacement",disi_);
       discret_.SetState("displacement",dism_);
       //discret_.SetState("velocity",velm_); // not used at the moment
@@ -1831,6 +1849,11 @@ void StruGenAlpha::ModifiedNewton()
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
+#ifdef STRUGENALPHA_FINTLIKETR
+#else
+      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
+      disi_->Scale(1.-alphaf);
+#endif
       discret_.SetState("residual displacement",disi_);
 #ifdef STRUGENALPHA_FINTLIKETR
       discret_.SetState("displacement",disn_);
@@ -2062,6 +2085,11 @@ void StruGenAlpha::MatrixFreeNewton()
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
+#ifdef STRUGENALPHA_FINTLIKETR
+#else
+      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
+      disi_->Scale(1.-alphaf);
+#endif
       discret_.SetState("residual displacement",disi_);
       discret_.SetState("displacement",dism_);
       //discret_.SetState("velocity",velm_); // not used at the moment
@@ -2584,6 +2612,11 @@ void StruGenAlpha::PTC()
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
+#ifdef STRUGENALPHA_FINTLIKETR
+#else
+      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
+      disi_->Scale(1.-alphaf);
+#endif
       discret_.SetState("residual displacement",disi_);
       discret_.SetState("displacement",dism_);
       //discret_.SetState("velocity",velm_); // not used at the moment
@@ -2760,6 +2793,8 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
+      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
+      disi->Scale(1.-alphaf);
       discret_.SetState("residual displacement",disi);
       discret_.SetState("displacement",dism);
       //discret_.SetState("velocity",velm); // not used at the moment
@@ -2878,6 +2913,8 @@ void StruGenAlpha::computeFmatrixfree(const Epetra_Vector& x, Epetra_Vector& F)
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
+      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
+      disi->Scale(1.-alphaf);
       discret_.SetState("residual displacement",disi);
       discret_.SetState("displacement",dism);
       //discret_.SetState("velocity",velm); // not used at the moment
@@ -3045,16 +3082,31 @@ void StruGenAlpha::UpdateandOutput()
 #endif
 
   //------ update anything that needs to be updated at the element level
+#ifdef STRUGENALPHA_FINTLIKETR
   {
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
-    p.set("action","calc_struct_update_istep");
+    p.set("action","calc_struct_update_istep"); 
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
     discret_.Evaluate(p,null,null,null,null,null);
   }
+#else
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    //p.set("action","calc_struct_update_istep");
+    p.set("action","calc_struct_update_genalpha_imrlike"); 
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    discret_.Evaluate(p,null,null,null,null,null);
+  }
+#endif
 
   //----------------- update surface stress history variables if present
   if (surf_stress_man_!=null)
