@@ -98,7 +98,7 @@ void genalpha_setparalist
   const double toldisp,
   const bool ioflags_struct_disp,
   const int updevry_disp,
-  const bool ioflags_struct_stress,
+  const STRUCT_STRESS_TYP ioflags_struct_stress,
   const int updevry_stress,
   const int restart,
   const int res_write_evry,
@@ -128,7 +128,23 @@ void genalpha_setparalist
 
   params.set<bool>("io structural disp", ioflags_struct_disp);
   params.set<int>("io disp every nstep", updevry_disp);
-  params.set<bool>("io structural stress", ioflags_struct_stress);
+
+  // stress output options
+  switch(ioflags_struct_stress)
+  {
+  case struct_stress_none:
+    params.set<string>("io structural stress", "none");
+    break;
+  case struct_stress_cauchy:
+    params.set<string>("io structural stress", "cauchy");
+    break;
+  case struct_stress_pk:
+    params.set<string>("io structural stress", "2PK");
+    break;
+  default:
+    params.set<string>("io structural stress", "none");
+    break;
+  }
   params.set<int>("io stress every nstep", updevry_stress);
 
   params.set<int>("restart", restart);
@@ -285,7 +301,7 @@ void stru_genalpha_zienxie_drt()
     sdyn.get<double>("TOLDISP"),
     Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"),
     sdyn.get<int>("RESEVRYDISP"),
-    Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"),
+    Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"),
     sdyn.get<int>("RESEVRYSTRS"),
     probtype.get<int>("RESTART"),
     sdyn.get<int>("RESTARTEVRY"),

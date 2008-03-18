@@ -275,10 +275,8 @@ void DRT::Problem::InputControl()
   ioflags.output_gid = Teuchos::getIntegralValue<int>(io,"OUTPUT_GID");
   ioflags.output_bin = Teuchos::getIntegralValue<int>(io,"OUTPUT_BIN");
   ioflags.struct_disp = Teuchos::getIntegralValue<int>(io,"STRUCT_DISP");
-  ioflags.struct_stress = Teuchos::getIntegralValue<int>(io,"STRUCT_STRESS");
-  ioflags.struct_stress_smo = Teuchos::getIntegralValue<int>(io,"STRUCT_STRESS_SMO");
+//   ioflags.struct_stress = Teuchos::getIntegralValue<int>(io,"STRUCT_STRESS");
   ioflags.struct_sm_disp = Teuchos::getIntegralValue<int>(io,"STRUCT_SM_DISP");
-  ioflags.struct_sm_stress = Teuchos::getIntegralValue<int>(io,"STRUCT_SM_STRESS");
   ioflags.fluid_sol = Teuchos::getIntegralValue<int>(io,"FLUID_SOL");
   ioflags.fluid_stress = Teuchos::getIntegralValue<int>(io,"FLUID_STRESS");
   ioflags.fluid_vis = Teuchos::getIntegralValue<int>(io,"FLUID_VIS");

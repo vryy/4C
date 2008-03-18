@@ -145,7 +145,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
 
   GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Matrix,
                       GiD_OnGaussPoints, gaussname, NULL, 6, componentnames);
-  
+
   vector<double> v(numstress,0.0);
 
   for (int k = 0; k < field->num_elements(); ++k)
@@ -528,13 +528,17 @@ int main(int argc, char** argv)
       {
         write_vector_result("acceleration", field, &result);
       }
-      if (map_has_map(result.group(), "gauss_stresses_xyz"))
+      if (map_has_map(result.group(), "gauss_cauchy_stresses_xyz"))
       {
-        write_serialdensematrix_result("gauss_stresses_xyz", field, &result);
+        write_serialdensematrix_result("gauss_cauchy_stresses_xyz", field, &result);
       }
-      if (map_has_map(result.group(), "gauss_strains_xyz"))
+      if (map_has_map(result.group(), "gauss_2PK_stresses_xyz"))
       {
-        write_serialdensematrix_result("gauss_strains_xyz", field, &result);
+        write_serialdensematrix_result("gauss_2PK_stresses_xyz", field, &result);
+      }
+      if (map_has_map(result.group(), "gauss_GL_strains_xyz"))
+      {
+        write_serialdensematrix_result("gauss_GL_strains_xyz", field, &result);
       }
     }
   }

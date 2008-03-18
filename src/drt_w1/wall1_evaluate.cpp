@@ -137,7 +137,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
       const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
       Epetra_SerialDenseMatrix stress(intpoints.nquad,NUMSTR_W1);
       Epetra_SerialDenseMatrix strain(intpoints.nquad,NUMSTR_W1);
-      w1_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat);
+      bool cauchy = params.get<bool>("cauchy", false);
+      w1_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy);
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -185,14 +186,14 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
 
   // no. of nodes on this surface
   const int iel = NumNode();
-  
+
   const DiscretizationType distype = this->Shape();
 
   const int numdf = 2;
 
-  // gaussian points 
+  // gaussian points
   const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
-  
+
   //  vector<double>* thick = data_.Get<vector<double> >("thick");
   //  if (!thick) dserror("Cannot find vector of nodal thickness");
 
@@ -202,7 +203,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
   double xrefe[2][MAXNOD_WALL1];
   double xcure[2][MAXNOD_WALL1];
 
- 
+
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<iel; ++k)
   {
@@ -224,14 +225,14 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList& params,
   {
     /*================================== gaussian point and weight at it */
 
-	  
+
 	const double e1 = intpoints.qxg[ip][0];
 	const double e2 = intpoints.qxg[ip][1];
-	const double wgt = intpoints.qwgt[ip];	  
-	  
+	const double wgt = intpoints.qwgt[ip];
+
     /*-------------------- shape functions at gp e1,e2 on mid surface */
     //w1_shapefunctions(funct,deriv,e1,e2,iel,1);
-    
+
     DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
     DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
     /*--------------------------------------- compute jacobian Matrix */
@@ -272,7 +273,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
                                            Epetra_SerialDenseVector* force,
                                            Epetra_SerialDenseMatrix* elestress,
                                            Epetra_SerialDenseMatrix* elestrain,
-                                           struct _MATERIAL*         material)
+                                           struct _MATERIAL*         material,
+                                           const bool                cauchy)
 {
   const int numnode = NumNode();
   const int numdf   = 2;
@@ -302,27 +304,27 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   stress.Shape(4,4);
   Epetra_SerialDenseMatrix C;
   C.Shape(4,4);
-  
+
    // for eas, in any case declare variables, sizes etc. only in eascase
   Epetra_SerialDenseMatrix* alpha;  // EAS alphas
-  Epetra_SerialDenseMatrix F_enh;   // EAS matrix F_enh 
+  Epetra_SerialDenseMatrix F_enh;   // EAS matrix F_enh
   F_enh.Shape(4,1);
-  Epetra_SerialDenseVector F_tot;   // EAS vektor F_tot 
+  Epetra_SerialDenseVector F_tot;   // EAS vektor F_tot
   F_tot.Shape(4,1);
   Epetra_SerialDenseMatrix M;       // EAS matrix M at current GP
   M.Shape(4,4);
   Epetra_SerialDenseMatrix xjm0;    // Jacobian Matrix (origin)
   xjm0.Shape(2,2);
-  Epetra_SerialDenseVector F0;      // Deformation Gradient (origin) 
+  Epetra_SerialDenseVector F0;      // Deformation Gradient (origin)
   F0.Size(4);
   Epetra_SerialDenseMatrix boplin0; // B operator (origin)
-  boplin0.Shape(4,2*numnode);       
+  boplin0.Shape(4,2*numnode);
   Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
   Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
   double detJ0;                     // detJ(origin)
   Epetra_SerialDenseMatrix T0invT;  // trafo matrix
 
-  
+
   // ------------------------------------ check calculation of mass matrix
   int imass=0;
   double density=0.0;
@@ -359,12 +361,12 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   /*------- get integraton data ---------------------------------------- */
 
   const int iel = numnode;
-  
+
   const DiscretizationType distype = this->Shape();
-  
-  // gaussian points 
+
+  // gaussian points
   const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule_);
-  
+
   /*----------------------------------------------------- geometry update */
   for (int k=0; k<iel; ++k)
   {
@@ -376,9 +378,9 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
     xcure[1][k] = xrefe[1][k] + disp[k*numdf+1];
 
   }
-  
+
   if (iseas_ == true) // has to be completed
-    { 
+    {
       /*
   	** EAS Update of alphas:
   	** the current alphas are (re-)evaluated out of
@@ -387,13 +389,13 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
   	** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
   	*/
   	alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
-  	
+
   //    // get stored EAS history
   //    oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
   //    oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
   //    oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
   //    if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
-     
+
       /* evaluation of EAS variables (which are constant for the following):
       ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
       ** -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
@@ -402,21 +404,21 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
       w1_eassetup(boplin0,F0,xjm0,detJ0,T0invT,xrefe,xcure,distype);
     }
  //   else {cout << "Warning: Wall_Element without EAS" << endl;}
-    
+
 
   /*=================================================== integration loops */
   for (int ip=0; ip<intpoints.nquad; ++ip)
   {
     /*================================== gaussian point and weight at it */
-	  
+
 	const double e1 = intpoints.qxg[ip][0];
 	const double e2 = intpoints.qxg[ip][1];
 	const double wgt = intpoints.qwgt[ip];
-	    
+
     // shape functions and their derivatives
     DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
     DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
- 
+
     /*--------------------------------------- compute jacobian Matrix */
     w1_jacobianmatrix(xrefe,deriv,xjm,&det,iel);
     /*------------------------------------ integration factor  -------*/
@@ -439,53 +441,62 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
    w1_boplin(boplin,deriv,xjm,det,iel);
     /*----------------- calculate defgrad F, Green-Lagrange-strain --*/
    w1_defgrad(F,strain,xrefe,xcure,boplin,iel);
-   
+
    /*-calculate defgrad F in matrix notation and Blin in curent conf.*/
    w1_boplin_cure(b_cure,boplin,F,numeps,nd);
-   
-   // EAS technology: "enhance the deformation gradient"  ---- --- EAS  
+
+   // EAS technology: "enhance the deformation gradient"  ---- --- EAS
     if (iseas_ == true){
-      /*-----calculate the enhanced deformation gradient ------------*/	
+      /*-----calculate the enhanced deformation gradient ------------*/
       w1_call_defgrad_enh(F_enh,xjm0,xjm,detJ0,det,F0,*alpha,e1,e2);
-      
+
       /*-----total deformation gradient, Green-Lagrange-strain-------*/
       w1_call_defgrad_tot(F_enh,F_tot,F0,strain);
     } // --------------------------------------------------------- EAS
 
    w1_call_matgeononl(strain,stress,C,numeps,material);
-   
+
    // return gp strains (only in case of stress/strain output)
    if (elestress != NULL)
    {
      for (int i = 0; i < NUMSTR_W1; ++i)
        (*elestrain)(ip,i) = strain(i);
    }
-   
+
    // return gp stresses (only in case of stress/strain output)
    if (elestress != NULL)
    {
-     double detf = F[0]*F[1]-F[2]*F[3];
-     Epetra_SerialDenseMatrix defgrad(2,2);
-     Epetra_SerialDenseMatrix pkstress(2,2);
-     defgrad(0,0) = F[0];
-     defgrad(0,1) = F[2];
-     defgrad(1,0) = F[3];
-     defgrad(1,1) = F[1];
-     pkstress(0,0)= stress(0,0);
-     pkstress(0,1)= stress(0,2);
-     pkstress(1,0)= stress(0,2);
-     pkstress(1,1)= stress(1,1);
+     if (!cauchy)
+     {
+       (*elestress)(ip,0) = stress(0,0);
+       (*elestress)(ip,1) = stress(1,1);
+       (*elestress)(ip,2) = stress(0,2);
+     }
+     else
+     {
+       double detf = F[0]*F[1]-F[2]*F[3];
+       Epetra_SerialDenseMatrix defgrad(2,2);
+       Epetra_SerialDenseMatrix pkstress(2,2);
+       defgrad(0,0) = F[0];
+       defgrad(0,1) = F[2];
+       defgrad(1,0) = F[3];
+       defgrad(1,1) = F[1];
+       pkstress(0,0)= stress(0,0);
+       pkstress(0,1)= stress(0,2);
+       pkstress(1,0)= stress(0,2);
+       pkstress(1,1)= stress(1,1);
 
-     Epetra_SerialDenseMatrix temp(2,2);
-     Epetra_SerialDenseMatrix cauchy(2,2);
-     temp.Multiply('N','T',1.0,pkstress,defgrad,0.0);
-     cauchy.Multiply('N','N',1/detf,defgrad,temp,0.0);
-    
-     (*elestress)(ip,0) = pkstress(0,0);
-     (*elestress)(ip,1) = pkstress(1,1);
-     (*elestress)(ip,2) = pkstress(0,1);
+       Epetra_SerialDenseMatrix temp(2,2);
+       Epetra_SerialDenseMatrix cauchy(2,2);
+       temp.Multiply('N','T',1.0,pkstress,defgrad,0.0);
+       cauchy.Multiply('N','N',1/detf,defgrad,temp,0.0);
+
+       (*elestress)(ip,0) = cauchy(0,0);
+       (*elestress)(ip,1) = cauchy(1,1);
+       (*elestress)(ip,2) = cauchy(0,1);
+     }
    }
-       
+
    /*---------------------- geometric part of stiffness matrix kg ---*/
    if (stiffmatrix) w1_kg(*stiffmatrix,boplin,stress,fac,nd,numeps);
    /*------------------ elastic+displacement stiffness matrix keu ---*/
@@ -604,7 +615,7 @@ void DRT::ELEMENTS::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
      F[2] += boplin(2,2*inode)   * (xcure[0][inode] - xrefe[0][inode]);
      F[3] += boplin(3,2*inode+1) * (xcure[1][inode] - xrefe[1][inode]);
   } /* end of loop over nodes */
-  
+
   /*-----------------------calculate Green-Lagrange strain ---------------*/
   strain[0]=0.5 * (F[0] * F[0] + F[3] * F[3] - 1.0);
   strain[1]=0.5 * (F[2] * F[2] + F[1] * F[1] - 1.0);
@@ -872,15 +883,15 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
 		  Epetra_SerialDenseMatrix& xjm0,     // jacobian matrix at origin
 		  double& detJ0,                      // det of Jacobian at origin
           Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
-          double xrefe[2][MAXNOD_WALL1],      // material element coords 
+          double xrefe[2][MAXNOD_WALL1],      // material element coords
           double xcure[2][MAXNOD_WALL1],      // current element coords
-          const DRT::Element::DiscretizationType& distype)      
+          const DRT::Element::DiscretizationType& distype)
 
 {
-  // derivatives at origin	
+  // derivatives at origin
    Epetra_SerialDenseMatrix deriv0;
    deriv0.Shape(2,NumNode());
-   
+
    DRT::UTILS::shape_function_2D_deriv1(deriv0,0.0,0.0,distype);
 
   // compute jacobian matrix at origin
@@ -895,12 +906,12 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
 
   /*------------------------------------------ determinant of jacobian ---*/
   detJ0 = xjm0[0][0]* xjm0[1][1] - xjm0[1][0]* xjm0[0][1];
-  
+
   if (detJ0<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
-  
-  
+
+
   //compute boplin at origin (boplin0)
-  
+
   int inode0;
   int dnode0;
   double dum0;
@@ -929,9 +940,9 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
     boplin0(2,dnode0+0) = boplin0(1,dnode0+1);
     boplin0(3,dnode0+1) = boplin0(0,dnode0+0);
   }
-  
-  
-  //compute deformation gradient at origin (F0) 
+
+
+  //compute deformation gradient at origin (F0)
 
   /*------------------calculate defgrad --------- (Summenschleife->+=) ---*
   defgrad looks like:
@@ -954,7 +965,7 @@ void DRT::ELEMENTS::Wall1::w1_eassetup(
      F0[3] += boplin0(3,2*inode+1) * (xcure[1][inode] - xrefe[1][inode]);
   } /* end of loop over nodes */
 
- 	
+
   return;
 } // end of w1_eassetup
 
@@ -971,60 +982,60 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
 		  Epetra_SerialDenseVector F0,
 		  Epetra_SerialDenseMatrix alpha,
 		  double e1,
-		  double e2)     
+		  double e2)
 {
- 
-  // EAS 
-	
+
+  // EAS
+
   /* eas is the EAS interpolation of 4 modes, based on
-  ** 
+  **
   **     M1 = r 0    M2 = 0 s    M3 = 0 0    M4 = 0 0
   **          0 0         0 0         r 0         0 s
-  ** 
-  ** 
-  **     M = M1*alpha1 + M2*alpha2 + M3*alpha3 + M4*alpha4    
-  ** 
+  **
+  **
+  **     M = M1*alpha1 + M2*alpha2 + M3*alpha3 + M4*alpha4
+  **
   */
-  
+
   Epetra_SerialDenseMatrix M;
   M.Shape(2,2);
-  
+
   Epetra_SerialDenseMatrix M_temp;
   M_temp.Shape(2,2);
-    
+
   Epetra_SerialDenseMatrix A;
   A.Shape(2,2);
-  
-   
+
+
   // fill up 4 EAS matrices at each gp
-  
+
   M(0,0) = e1*alpha(0,0);
   M(0,1) = e2*alpha(1,0);
   M(1,0) = e1*alpha(2,0);
   M(1,1) = e2*alpha(3,0);
-  
+
   // inverse of jacobian matrix at element origin
   double dum;
   Epetra_SerialDenseMatrix xjm_inv0;
   xjm_inv0.Shape(2,2);
-  
+
   dum = 1.0/det;
   xjm_inv0(0,0) = xjm0(1,1)* dum;
   xjm_inv0(0,1) =-xjm0(0,1)* dum;
   xjm_inv0(1,0) =-xjm0(1,0)* dum;
   xjm_inv0(1,1) = xjm0(0,0)* dum;
-  
+
   M_temp.Multiply('N','T',1.0,M,xjm_inv0,0.0);
   A.Multiply('T','N',detJ0/det,xjm0,M_temp,0.0);
-  
-  
+
+
   // enhanced deformation gradient at origin (four rows, one column)
-  
+
   F_enh(0,0)=A(0,0)*F0(0)+A(1,0)*F0(2);
   F_enh(1,0)=A(1,1)*F0(1)+A(0,1)*F0(3);
   F_enh(2,0)=A(0,1)*F0(0)+A(1,1)*F0(2);
   F_enh(3,0)=A(1,0)*F0(1)+A(0,0)*F0(3);
- 
+
   return;
 } // end of w1_call_fenh
 
@@ -1035,14 +1046,14 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_tot(
 		  Epetra_SerialDenseMatrix F_enh,
 		  Epetra_SerialDenseVector& F_tot,
 		  Epetra_SerialDenseVector F,
-		  Epetra_SerialDenseVector& strain)     
+		  Epetra_SerialDenseVector& strain)
 {
- 
+
   F_tot(0) = F(0)+F_enh(0,0);
   F_tot(1) = F(1)+F_enh(1,0);
   F_tot(2) = F(3)+F_enh(2,0);
   F_tot(3) = F(4)+F_enh(3,0);
- 
+
   /*-----------------------calculate Green-Lagrange strain ------------*/
   strain[0]=0.5 * (F_tot[0] * F_tot[0] + F_tot[3] * F_tot[3] - 1.0);
   strain[1]=0.5 * (F_tot[2] * F_tot[2] + F_tot[1] * F_tot[1] - 1.0);
@@ -1050,7 +1061,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_tot(
   strain[3]=strain[2];
 
   dserror("EAS_Wall element not yet implemented");
-    
+
   return;
 } // end of w1_call_defgrad_tot
 

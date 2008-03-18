@@ -153,7 +153,23 @@ void FSI::Algorithm::SetupStructure()
 
   genalphaparams->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
   genalphaparams->set<int>   ("io disp every nstep",fsidyn.get<int>("UPRES"));
-  genalphaparams->set<bool>  ("io structural stress",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"));
+//   genalphaparams->set<bool>  ("io structural stress",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"));
+  switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
+  {
+  case struct_stress_none:
+    genalphaparams->set<string>("io structural stress", "none");
+    break;
+  case struct_stress_cauchy:
+    genalphaparams->set<string>("io structural stress", "cauchy");
+    break;
+  case struct_stress_pk:
+    genalphaparams->set<string>("io structural stress", "2PK");
+    break;
+  default:
+    genalphaparams->set<string>("io structural stress", "none");
+    break;
+  }
+
   genalphaparams->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
 
   genalphaparams->set<int>   ("restart",probtype.get<int>("RESTART"));

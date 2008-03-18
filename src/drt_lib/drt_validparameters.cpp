@@ -270,11 +270,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter("OUTPUT_BIN","No","",yesnotuple,yesnovalue,&io);
 
   setStringToIntegralParameter("STRUCT_DISP","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter("STRUCT_STRESS","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter("STRUCT_STRESS","No","",
+                               tuple<std::string>("No","no","NO",
+                                                  "Yes","yes","YES",
+                                                  "Cauchy","cauchy",
+                                                  "2PK", "2pk"),
+                               tuple<STRUCT_STRESS_TYP>(struct_stress_none,struct_stress_none,struct_stress_none,
+                                                        struct_stress_pk,struct_stress_pk,struct_stress_pk,
+                                                        struct_stress_cauchy,struct_stress_cauchy,
+                                                        struct_stress_pk,struct_stress_pk),
+                               &io);
   setStringToIntegralParameter("STRUCT_STRESS_SMO","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter("STRUCT_STRAIN","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("STRUCT_SM_DISP","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("STRUCT_SM_STRESS","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter("STRUCT_STRAIN","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("FLUID_SOL","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("FLUID_STRESS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("FLUID_VIS","No","",yesnotuple,yesnovalue,&io);

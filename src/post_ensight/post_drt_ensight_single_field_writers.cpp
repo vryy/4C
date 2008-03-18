@@ -37,11 +37,15 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteElementResults(field);
   if (stresstype_!="none")
   {
-    PostStress("gauss_stresses_xyz", stresstype_);
+    // although appearing here twice, only one function call to PostStress
+    // is really postprocessing Gauss point stresses, since only _either_
+    // Cauchy _or_ 2nd Piola-Kirchhoff stresses are written during simulation!
+    PostStress("gauss_cauchy_stresses_xyz", stresstype_);
+    PostStress("gauss_2PK_stresses_xyz", stresstype_);
   }
   if (straintype_!="none")
   {
-    PostStress("gauss_strains_xyz", straintype_);
+    PostStress("gauss_GL_strains_xyz", straintype_);
   }
 }
 
@@ -103,15 +107,20 @@ void StructureEnsightWriter::WriteNodalStress(const string groupname,
   string name;
   string out;
 
-  if (groupname=="gauss_stresses_xyz")
+  if (groupname=="gauss_2PK_stresses_xyz")
   {
-    name="nodal_stresses_xyz";
-    out="stresses";
+    name="nodal_2PK_stresses_xyz";
+    out="2nd Piola-Kirchhoff stresses";
   }
-  else if (groupname=="gauss_strains_xyz")
+  else if (groupname=="gauss_cauchy_stresses_xyz")
   {
-    name="nodal_strains_xyz";
-    out="strains";
+    name="nodal_cauchy_stresses_xyz";
+    out="Cauchy stresses";
+  }
+  else if (groupname=="gauss_GL_strains_xyz")
+  {
+    name="nodal_GL_strains_xyz";
+    out="Green-Lagrange strains";
   }
   else
   {
@@ -283,15 +292,20 @@ void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
   string name;
   string out;
 
-  if (groupname=="gauss_stresses_xyz")
+  if (groupname=="gauss_2PK_stresses_xyz")
   {
-    name="center_stresses_xyz";
-    out="stresses";
+    name="element_2PK_stresses_xyz";
+    out="2nd Piola-Kirchhoff stresses";
   }
-  else if (groupname=="gauss_strains_xyz")
+  else if (groupname=="gauss_cauchy_stresses_xyz")
   {
-    name="center_strains_xyz";
-    out="strains";
+    name="element_cauchy_stresses_xyz";
+    out="Cauchy stresses";
+  }
+  else if (groupname=="gauss_GL_strains_xyz")
+  {
+    name="element_GL_strains_xyz";
+    out="Green-Lagrange strains";
   }
   else
   {

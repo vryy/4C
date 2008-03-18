@@ -227,7 +227,23 @@ void stru_static_drt()
 
   //---------------------------------------------- do "stress" calculation
   int mod_stress = istep % statvar->resevry_stress;
-  if (!mod_stress && Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS")==1)
+  string iostress;
+  switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
+  {
+  case struct_stress_none:
+    iostress = "none";
+    break;
+  case struct_stress_cauchy:
+    iostress = "cauchy";
+    break;
+  case struct_stress_pk:
+    iostress = "2PK";
+    break;
+  default:
+    iostress = "none";
+    break;
+  }
+  if (!mod_stress && iostress!="none")
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -240,13 +256,28 @@ void stru_static_drt()
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
+    if (iostress == "cauchy")   // output of Cauchy stresses instead of 2PK stresses
+    {
+      p.set("cauchy", true);
+    }
+    else
+    {
+      p.set("cauchy", false);
+    }
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("residual displacement",zeros);
     actdis->SetState("displacement",dis);
     actdis->Evaluate(p,null,null,null,null,null);
     actdis->ClearState();
-    output.WriteVector("gauss_stresses_xyz",*stress,*(actdis->ElementColMap()));
+    if (iostress == "cauchy")
+    {
+      output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementColMap()));
+    }
+    else
+    {
+      output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
+    }
     if (Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRAIN")==1)
     {
       output.WriteVector("gauss_strains_xyz",*strain,*(actdis->ElementColMap()));
@@ -449,7 +480,23 @@ void stru_static_drt()
 
     //---------------------------------------------- do stress calculation
     int mod_stress = istep % statvar->resevry_stress;
-    if (!mod_stress && Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS")==1)
+    string iostress;
+    switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
+    {
+    case struct_stress_none:
+      iostress = "none";
+      break;
+    case struct_stress_cauchy:
+      iostress = "cauchy";
+      break;
+    case struct_stress_pk:
+      iostress = "2PK";
+      break;
+    default:
+      iostress = "none";
+      break;
+    }
+    if (!mod_stress && iostress!="none")
     {
       // create the parameters for the discretization
       ParameterList p;
@@ -462,6 +509,14 @@ void stru_static_drt()
       Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
       p.set("stress", stress);
       p.set("strain", strain);
+      if (iostress=="cauchy")   // output of Cauchy stresses instead of 2PK stresses
+      {
+        p.set("cauchy", true);
+      }
+      else
+      {
+        p.set("cauchy", false);
+      }
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("residual displacement",zeros);
@@ -470,7 +525,14 @@ void stru_static_drt()
       actdis->ClearState();
       if (!isdatawritten) output.NewStep(istep, timen);
       isdatawritten = true;
-      output.WriteVector("gauss_stresses_xyz",*stress,*(actdis->ElementColMap()));
+      if (iostress=="cauchy")
+      {
+        output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementColMap()));
+      }
+      else
+      {
+        output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
+      }
       if (Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRAIN")==1)
       {
         output.WriteVector("gauss_strains_xyz",*strain,*(actdis->ElementColMap()));

@@ -133,6 +133,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       Epetra_SerialDenseMatrix stress(NUMGPT_WEG6,NUMSTR_WEG6);
       Epetra_SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
+      bool cauchy = params.get<bool>("cauchy", false);
+      if (cauchy) dserror("Output of Cauchy stresses not (yet) implemented for solid shell wedge6");
       soshw6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time);
       cout << "gpstress: " << stress << endl;
       AddtoPack(*stressdata, stress);

@@ -78,7 +78,7 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   \param id : A unique global id
   */
   Wall1(int id, int owner);
@@ -87,16 +87,16 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of a Element
-  
+
   */
   Wall1(const Wall1& old);
 
   /*!
   \brief Deep copy this instance of Wall1 and return pointer to the copy
-  
+
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
-  
+
   */
   DRT::Element* Clone() const;
 
@@ -109,7 +109,7 @@ public:
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine() const 
+  virtual int NumLine() const
   {if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4; else return 3;}
 
   /*!
@@ -119,19 +119,19 @@ public:
 
   /*!
   \brief Get vector of ptrs to the lines of this element
-  
+
   */
   virtual DRT::Element** Lines();
 
   /*!
   \brief Get vector of ptrs to the surfaces of this element
-  
+
   */
   virtual DRT::Element** Surfaces();
 
   /*!
   \brief Return unique ParObject id
-  
+
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
@@ -139,15 +139,15 @@ public:
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -163,11 +163,11 @@ public:
 
   //! @name Acess methods
 
-  
+
   /*!
   \brief Get number of degrees of freedom of a certain node
          (implements pure virtual DRT::Element)
-  
+
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
   number of degrees of freedom per node along the way for each of it's nodes
@@ -178,10 +178,10 @@ public:
   /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
-  
+
   The element decides how many element degrees of freedom it has.
   It can redecide along the way of a simulation.
-  
+
   \note Element degrees of freedom mentioned here are dofs that are visible
         at the level of the total system of equations. Purely internal
         element dofs that are condensed internally should NOT be considered.
@@ -195,7 +195,7 @@ public:
 
   /*!
   \brief Allocate and return an ElementRegister class
-  
+
   Every implementation of DRT::Element must also implement
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
@@ -217,29 +217,29 @@ public:
 
   /*!
   \brief Evaluate an element
-  
+
   Evaluate Wall1 element stiffness, mass, internal forces etc
-  
+
   \param params (in/out): ParameterList for communication between control routine
                           and elements
-  \param elemat1 (out)  : matrix to be filled by element. If NULL on input, 
+  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
                           the controling method does not epxect the element to fill
                           this matrix.
-  \param elemat2 (out)  : matrix to be filled by element. If NULL on input, 
+  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
                           the controling method does not epxect the element to fill
                           this matrix.
-  \param elevec1 (out)  : vector to be filled by element. If NULL on input, 
+  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
                           the controlling method does not epxect the element
-                          to fill this vector 
-  \param elevec2 (out)  : vector to be filled by element. If NULL on input, 
+                          to fill this vector
+  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
                           the controlling method does not epxect the element
-                          to fill this vector 
-  \param elevec3 (out)  : vector to be filled by element. If NULL on input, 
+                          to fill this vector
+  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
                           the controlling method does not epxect the element
-                          to fill this vector 
+                          to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params, 
+  int Evaluate(ParameterList& params,
                DRT::Discretization&      discretization,
                vector<int>&              lm,
                Epetra_SerialDenseMatrix& elemat1,
@@ -251,25 +251,25 @@ public:
 
   /*!
   \brief Evaluate a Neumann boundary condition
-  
+
   this method evaluates a surfaces Neumann condition on the wall element
-  
+
   \param params (in/out)    : ParameterList for communication between control routine
                               and elements
   \param discretization (in): A reference to the underlying discretization
   \param condition (in)     : The condition to be evaluated
   \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input, 
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params, 
+  virtual int EvaluateNeumann(ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
-  
-  
+
+
   //@}
 
 
@@ -294,17 +294,17 @@ private:
 
   enum DimensionalReduction
   {
-    plane_none, 
+    plane_none,
     plane_stress,
     plane_strain
   };
 
-  //! type of stresses to be calculatecd in postprocessing 
+  //! type of stresses to be calculatecd in postprocessing
   enum StressType
   {
     w1_none,
     w1_xy,
-    w1_rs 
+    w1_rs
   };
 
 //  //! couptyp for thermo-structure-interaction
@@ -313,15 +313,15 @@ private:
 //    tsi_coup_none,
 //    tsi_coup_thermconf,
 //    tsi_coup_thermcreate
-//  }; 
+//  };
 
   //! container containing all kind of wall1 thisandthat
-  DRT::Container                                  data_;      
+  DRT::Container                                  data_;
 
   //! number of the material law
-  int                                             material_; 
-  //! element thickness 
-  double                                          thickness_; 
+  int                                             material_;
+  //! element thickness
+  double                                          thickness_;
   //! gaussian points
   DRT::UTILS::GaussRule2D                         gaussrule_;
   //! problem type
@@ -331,36 +331,37 @@ private:
   //! eas or not
   bool                                              iseas_;
   //! vector of surfaces of this element (length 1)
-  vector<DRT::Element*>                           surfaces_;  
+  vector<DRT::Element*>                           surfaces_;
   //! vector of lines adjacent to this element (wall1: 3 or 4 lines)
-  vector<RefCountPtr<DRT::ELEMENTS::Wall1Line> >  lines_;     
+  vector<RefCountPtr<DRT::ELEMENTS::Wall1Line> >  lines_;
   //! vector of lines adjacent to this element (wall1: 3 or 4 lines)
   vector<DRT::ELEMENTS::Wall1Line*>               lineptrs_;
 
 //  //! thermo-structure-interaction couptype
 //  ThermoStructureType                         tsi_couptyp_;
-  
-  
+
+
   // internal calculation methods
 
-  void w1_nlnstiffmass(vector<int>&              lm, 
-                       vector<double>&           disp, 
+  void w1_nlnstiffmass(vector<int>&              lm,
+                       vector<double>&           disp,
                        vector<double>&           residual,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force,
-                       Epetra_SerialDenseMatrix* elestress, 
+                       Epetra_SerialDenseMatrix* elestress,
                        Epetra_SerialDenseMatrix* elestrain,
-                       struct _MATERIAL*         material);
+                       struct _MATERIAL*         material,
+                       const bool                cauchy=false);
 
- // void w1_integration_points(struct _W1_DATA& data); 
+ // void w1_integration_points(struct _W1_DATA& data);
 
- // void w1_gpdom(int& totngp, 
+ // void w1_gpdom(int& totngp,
  //               double** gpcr, double** gpcs,
  //               double** gpwr);
- 
+
 //  void w1_shapefunctions(vector<double>& funct, Epetra_SerialDenseMatrix& deriv,
-//                               const double r, const double s, const int numnode, 
+//                               const double r, const double s, const int numnode,
 //                               const int doderiv) const;
 
   void w1_jacobianmatrix(double xrefe[2][MAXNOD_WALL1], const Epetra_SerialDenseMatrix& deriv,
@@ -371,13 +372,13 @@ private:
   void w1_boplin(Epetra_SerialDenseMatrix& boplin,
                  Epetra_SerialDenseMatrix& deriv,
                  Epetra_SerialDenseMatrix& xjm,
-                 double& det,  
+                 double& det,
                  const int iel);
 
   void w1_defgrad(Epetra_SerialDenseVector& F,
-                  Epetra_SerialDenseVector& strain, 
+                  Epetra_SerialDenseVector& strain,
                   const double xrefe[][MAXNOD_WALL1],
-                  const double xcure[][MAXNOD_WALL1], 
+                  const double xcure[][MAXNOD_WALL1],
                   Epetra_SerialDenseMatrix& boplin,
                   const int iel);
 
@@ -385,11 +386,11 @@ private:
                       Epetra_SerialDenseMatrix& boplin,
                       Epetra_SerialDenseVector& F,
                       int numeps,
-                      int nd);  
+                      int nd);
 
   void w1_call_matgeononl(Epetra_SerialDenseVector& strain,
                           Epetra_SerialDenseMatrix& stress,
-                          Epetra_SerialDenseMatrix& C,                    
+                          Epetra_SerialDenseMatrix& C,
                           const int numeps,
                           struct _MATERIAL* material);
 
@@ -405,22 +406,22 @@ private:
               Epetra_SerialDenseMatrix& C,
               double fac,
               int nd,
-              int numeps);  
-  
+              int numeps);
+
   void w1_fint(Epetra_SerialDenseMatrix& stress,
                Epetra_SerialDenseMatrix& b_cure,
                Epetra_SerialDenseVector& intforce,
                double fac,
-               int nd);	
-  
+               int nd);
+
   void w1_eassetup(Epetra_SerialDenseMatrix& boplin0,
 		           Epetra_SerialDenseVector& F0,
 		           Epetra_SerialDenseMatrix& xjm0,
-		           double& detJ0,                      
-                   Epetra_SerialDenseMatrix& T0invT,   
+		           double& detJ0,
+                   Epetra_SerialDenseMatrix& T0invT,
                    double xrefe[2][MAXNOD_WALL1],
                    double xcure[2][MAXNOD_WALL1],
-                   const DRT::Element::DiscretizationType& distype);  
+                   const DRT::Element::DiscretizationType& distype);
 
   void w1_call_defgrad_enh(Epetra_SerialDenseMatrix& F_enh,
   		                   Epetra_SerialDenseMatrix xjm0,
@@ -430,26 +431,26 @@ private:
   		                   Epetra_SerialDenseVector F0,
   		                   Epetra_SerialDenseMatrix alpha,
   		                   double e1,
-  		                   double e2); 
-  
+  		                   double e2);
+
   void w1_call_defgrad_tot(Epetra_SerialDenseMatrix F_enh,
   		                   Epetra_SerialDenseVector& F_tot,
   		                   Epetra_SerialDenseVector F,
-  		                   Epetra_SerialDenseVector& strain);  
+  		                   Epetra_SerialDenseVector& strain);
 
   // don't want = operator
   Wall1& operator = (const Wall1& old);
-  
-  
+
+
   void CreateLinesTri(const int& nline,
                       const int& nnode);
-  
+
   void CreateLinesQuad(const int& nline,
                        const int& nnode);
-  
+
   // set number of gauss points to element shape default
    DRT::UTILS::GaussRule2D getGaussrule(int* ngp);
-  
+
 
 }; // class Wall1
 
@@ -475,7 +476,7 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   */
   Wall1Register(DRT::Element::ElementType etype);
 
@@ -483,22 +484,22 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of an Wall1Register
-  
+
   */
   Wall1Register(const DRT::ELEMENTS::Wall1Register& old);
 
   /*!
   \brief Deep copy this instance of Wall1Register and return pointer to the copy
-  
+
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
-  
+
   */
   DRT::ELEMENTS::Wall1Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
-  
+
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
@@ -506,15 +507,15 @@ public:
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -541,7 +542,7 @@ public:
 
   /*!
   \brief Call Element init routines
-  
+
   The method performs all steps needed to init the Wall1 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */
@@ -566,7 +567,7 @@ private:
 
 \brief An element representing a line edge of a Wall1 element
 
-\note This is a pure Neumann boundary condition element. It's only 
+\note This is a pure Neumann boundary condition element. It's only
       purpose is to evaluate line Neumann boundary conditions that might be
       adjacent to a parent wall1 element. It therefore does not implement
       the DRT::Element::Evaluate method and does not have its own ElementRegister class.
@@ -581,7 +582,7 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   \param id : A unique global id
   \param owner: Processor owning this line
   \param nnode: Number of nodes attached to this element
@@ -597,16 +598,16 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of a Element
-  
+
   */
   Wall1Line(const Wall1Line& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
-  
+
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
-  
+
   */
   DRT::Element* Clone() const;
 
@@ -619,7 +620,7 @@ public:
 
   /*!
   \brief Return unique ParObject id
-  
+
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
@@ -627,15 +628,15 @@ public:
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -651,26 +652,26 @@ public:
 
   //! @name Acess methods
 
-  
+
   /*!
   \brief Get number of degrees of freedom of a certain node
          (implements pure virtual DRT::Element)
-  
+
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const 
+  virtual int NumDofPerNode(const DRT::Node& node) const
   {return 2;}
 
   /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
-  
+
   The element decides how many element degrees of freedom it has.
   It can redecide along the way of a simulation.
-  
+
   \note Element degrees of freedom mentioned here are dofs that are visible
         at the level of the total system of equations. Purely internal
         element dofs that are condensed internally should NOT be considered.
@@ -684,7 +685,7 @@ public:
 
   /*!
   \brief Allocate and return a ElementRegister class
-  
+
   Every implementation of DRT::Element must also implement
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
@@ -697,19 +698,19 @@ public:
 
   /*!
   \brief Evaluate a Neumann boundary condition
-  
+
   this method evaluates a line Neumann condition on the wall element
-  
+
   \param params (in/out)    : ParameterList for communication between control routine
                               and elements
   \param discretization (in): A reference to the underlying discretization
   \param condition (in)     : The condition to be evaluated
   \param lm (in)            : location vector of this element
-  \param elevec1 (out)      : vector to be filled by element. If NULL on input, 
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params, 
+  virtual int EvaluateNeumann(ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
@@ -718,20 +719,20 @@ public:
   //@}
 
 private:
-	
+
   // don't want = operator
   Wall1Line& operator = (const Wall1Line& old);
-  
+
   //! The parent element of this line
-  DRT::ELEMENTS::Wall1* parent_;  
+  DRT::ELEMENTS::Wall1* parent_;
   //! The local line number of this line w.r.t to the parent_ element
-  int                    lline_;   
-  
+  int                    lline_;
+
   // compute infintesimal line element dr for integration along the line
   double  w1_substitution(const Epetra_SerialDenseMatrix& xyze,
 		                  const Epetra_SerialDenseMatrix& deriv,
 		                  const int iel);
-  
+
   // set number of gauss points to element shape default
    DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 

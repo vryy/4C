@@ -135,7 +135,7 @@ void ContactStruGenAlpha::ConsistentPredictor()
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
   //                         + alpha_f * F_{ext;n}
   fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
-  
+
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
@@ -170,12 +170,12 @@ void ContactStruGenAlpha::ConsistentPredictor()
   //     + F_int(D_{n+1-alpha_f})
   //     + F_c(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
-  
+
   // FIXME: Strictly speaking we have to include the contact forces
   // here as well, but it does not matter for the following calculations,
   // so maybe we could just remove it and don't care about the wrong
   // predictor res-norm...?
-  
+
   // add mid-inertial force
   mass_->Multiply(false,*accm_,*finert_);
   fresm_->Update(1.0,*finert_,0.0);
@@ -195,11 +195,11 @@ void ContactStruGenAlpha::ConsistentPredictor()
     Epetra_Vector fresmcopy(*fresm_);
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
   }
-  
+
   // add contact forces
   RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
   if (fc!=null) fresm_->Update(-1.0,*fc,1.0);
-  
+
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0e6;
 
@@ -220,7 +220,7 @@ void ContactStruGenAlpha::ConsistentPredictor()
 
   // remove contact forces from equilibrium again
   if (fc!=null) fresm_->Update(1.0,*fc,1.0);
-  
+
   return;
 } // ContactStruGenAlpha::ConsistentPredictor()
 
@@ -338,7 +338,7 @@ void ContactStruGenAlpha::ConstantPredictor()
   //     + F_int(D_{n+1-alpha_f})
   //     + F_c(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
-  
+
   // FIXME: Strictly speaking we have to include the contact forces
   // here as well, but it does not matter for the following calculations,
   // so maybe we could just remove it and don't care about the wrong
@@ -363,7 +363,7 @@ void ContactStruGenAlpha::ConstantPredictor()
     Epetra_Vector fresmcopy(*fresm_);
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
   }
-  
+
   // add contact forces
   RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
   if (fc!=null) fresm_->Update(-1.0,*fc,1.0);
@@ -388,7 +388,7 @@ void ContactStruGenAlpha::ConstantPredictor()
 
   // remove contact forces from equilibrium again
   if (fc!=null) fresm_->Update(1.0,*fc,1.0);
-    
+
   return;
 } // StruGenAlpha::ConstantPredictor()
 
@@ -445,12 +445,12 @@ void ContactStruGenAlpha::FullNewton()
       stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
     }
     stiff_->Complete();
-    
+
     //-------------------------make contact modifications to lhs and rhs
     {
       contactmanager_->Initialize(numiter);
       contactmanager_->SetState("displacement",dism_);
-      
+
       // (almost) all contact stuff is done here!
       contactmanager_->Evaluate(stiff_,fresm_,numiter);
     }
@@ -470,7 +470,7 @@ void ContactStruGenAlpha::FullNewton()
     {
       contactmanager_->RecoverDisp(disi_);
     }
-   
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -546,7 +546,7 @@ void ContactStruGenAlpha::FullNewton()
       damp_->Multiply(false,*velm_,*fvisc_);
       fresm_->Update(1.0,*fvisc_,1.0);
     }
-    
+
     // add static mid-balance
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
@@ -560,15 +560,15 @@ void ContactStruGenAlpha::FullNewton()
     contactmanager_->ContactForces(fresm_);
     RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
     if (fc!=null) fresm_->Update(-1.0,*fc,1.0);
-   
+
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
 
     fresm_->Norm2(&fresmnorm);
-    
+
     //remove contact forces from equilibrium again
     if (fc!=null) fresm_->Update(1.0,*fc,1.0);
-    
+
     // a short message
     if (!myrank_ && (printscreen || printerr))
     {
@@ -664,16 +664,16 @@ void ContactStruGenAlpha::PTC()
     if (damping)
       stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
     stiff_->Complete();
-    
+
     //-------------------------make contact modifications to lhs and rhs
     {
       contactmanager_->Initialize(numiter);
       contactmanager_->SetState("displacement",dism_);
-              
+
       // (almost) all contact stuff is done here!
       contactmanager_->Evaluate(stiff_,fresm_,numiter);
     }
-          
+
     //------------------------------- do ptc modification to effective LHS
     {
       RCP<Epetra_Vector> tmp = LINALG::CreateVector(stiff_->RowMap(),false);
@@ -683,7 +683,7 @@ void ContactStruGenAlpha::PTC()
       diag->Update(1.0,*tmp,1.0);
       stiff_->ReplaceDiagonalValues(*diag);
     }
-  
+
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
@@ -699,7 +699,7 @@ void ContactStruGenAlpha::PTC()
     {
       contactmanager_->RecoverDisp(disi_);
     }
-        
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -787,7 +787,7 @@ void ContactStruGenAlpha::PTC()
     contactmanager_->ContactForces(fresm_);
     RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
     fresm_->Update(-1.0,*fc,1.0);
-    
+
     // compute inf norm of residual
     double np;
     fresm_->NormInf(&np);
@@ -796,10 +796,10 @@ void ContactStruGenAlpha::PTC()
     disi_->Norm2(&disinorm);
 
     fresm_->Norm2(&fresmnorm);
-    
+
     //remove contact forces from equilibrium again
     fresm_->Update(1.0,*fc,1.0);
-        
+
     // a short message
     if (!myrank_ and (printscreen or printerr))
     {
@@ -884,7 +884,7 @@ void ContactStruGenAlpha::UpdateandOutput()
 
   bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
-  bool   iostress      = params_.get<bool>  ("io structural stress"   ,false);
+  string iostress      = params_.get<string>("io structural stress"   ,"none");
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
   bool   iostrain      = params_.get<bool>  ("io structural strain"   ,false);
 
@@ -944,7 +944,7 @@ void ContactStruGenAlpha::UpdateandOutput()
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
-    
+
     isdatawritten = true;
 
     // write restart information for contact
@@ -954,7 +954,7 @@ void ContactStruGenAlpha::UpdateandOutput()
     output_.WriteVector("fcontact",fc);
     output_.WriteVector("lagrmult",zold);
     output_.WriteVector("activetoggle",activetoggle);
-        
+
     if (discret_.Comm().MyPID()==0 && printscreen)
     {
       cout << "====== Restart written in step " << istep << endl;
@@ -976,9 +976,9 @@ void ContactStruGenAlpha::UpdateandOutput()
     output_.WriteVector("acceleration",acc_);
     isdatawritten = true;
   }
-  
+
   //---------------------------------------------- do stress calculation
-  if (updevrystress && istep%updevrystress==0 && iostress)
+  if (updevrystress && istep%updevrystress==0 && iostress!="none")
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -991,6 +991,14 @@ void ContactStruGenAlpha::UpdateandOutput()
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
+    if (iostress == "cauchy")   // output of Cauchy stresses instead of 2PK stresses
+    {
+      p.set("cauchy", true);
+    }
+    else
+    {
+      p.set("cauchy", false);
+    }
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);
@@ -999,11 +1007,14 @@ void ContactStruGenAlpha::UpdateandOutput()
     discret_.ClearState();
     if (!isdatawritten) output_.NewStep(istep, timen);
     isdatawritten = true;
-    output_.WriteVector("gauss_stresses_xyz",*stress,*discret_.ElementColMap());
+    if (iostress == "cauchy")
+      output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementColMap());
+    else
+      output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementColMap());
     if (iostrain)
-      output_.WriteVector("gauss_strains_xyz",*strain,*discret_.ElementColMap());
+      output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
   }
-    
+
   //---------------------------------------------------------- print out
   if (!myrank_)
   {
@@ -1054,24 +1065,24 @@ void ContactStruGenAlpha::Integrate()
     for (int i=step; i<nstep; ++i)
     {
       contactmanager_->ActiveSetConverged() = false;
-      
+
       // LOOP2: active set strategy
       while (contactmanager_->ActiveSetConverged()==false)
       {
         // predictor step
         if      (predictor==1) ConstantPredictor();
         else if (predictor==2) ConsistentPredictor();
-        
+
         // LOOP3: nonlinear iteration (Newton)
         FullNewton();
-        
+
         // update of active set
         contactmanager_->UpdateActiveSet();
       }
       UpdateandOutput();
     }
   }
-  
+
   // PTC as nonlinear iteration scheme
   else if (equil=="ptc")
   {
@@ -1079,24 +1090,24 @@ void ContactStruGenAlpha::Integrate()
     for (int i=step; i<nstep; ++i)
     {
       contactmanager_->ActiveSetConverged() = false;
-      
+
       // LOOP2: active set strategy
       while (contactmanager_->ActiveSetConverged()==false)
       {
         // predictor step
         if      (predictor==1) ConstantPredictor();
         else if (predictor==2) ConsistentPredictor();
-        
+
         // LOOP3: nonlinear iteration (PTC)
         PTC();
-        
+
         // update of active set
         contactmanager_->UpdateActiveSet();
       }
       UpdateandOutput();
     }
   }
-  
+
   // other types of nonlinear iteration schemes
   else dserror("Unknown type of equilibrium iteration");
 
@@ -1127,13 +1138,13 @@ void ContactStruGenAlpha::ReadRestart(int step)
   RCP<Epetra_Vector> fc = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
   RCP<Epetra_Vector> zold = rcp(new Epetra_Vector(*(contactmanager_->SlaveRowDofs())));
   RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(contactmanager_->SlaveRowNodes())));
-  reader.ReadVector(fc,"fcontact");  
+  reader.ReadVector(fc,"fcontact");
   reader.ReadVector(zold,"lagrmult");
   reader.ReadVector(activetoggle,"activetoggle");
   contactmanager_->GetContactForces()=fc;
   contactmanager_->LagrMultOld()=zold;
   contactmanager_->ReadRestart(activetoggle);
- 
+
   // override current time and step with values from file
   params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);

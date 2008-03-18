@@ -115,11 +115,15 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
     break;
     case calc_struct_stress:
     {
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      s8stress(actmat,mydisp);
+      // disabled stress output for shell8 temporarily since it does
+      // not match the new stress output framework
+      dserror("stress output for shell8 currently not supported");
+
+//       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+//       if (disp==null) dserror("Cannot get state vectors 'displacement'");
+//       vector<double> mydisp(lm.size());
+//       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+//       s8stress(actmat,mydisp);
     }
     break;
     case calc_struct_eleload:
@@ -135,7 +139,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
       {
         vector<double>* alfa = data_.GetMutable<vector<double> >("alfa");  // Alpha_{n+1}
         vector<double>* alfao = data_.GetMutable<vector<double> >("alfao");  // Alpha_n
-        for (int i=0; i<nhyb_; ++i) 
+        for (int i=0; i<nhyb_; ++i)
         {
           (*alfao)[i] = (*alfa)[i];
         }
@@ -150,7 +154,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
         vector<double>* alfa = data_.GetMutable<vector<double> >("alfa");  // Alpha_{n+1}
         vector<double>* alfao = data_.GetMutable<vector<double> >("alfao");  // Alpha_n
         double alphaf = params.get<double>("alpha f", 0.0);  // alpha_f
-        for (int i=0; i<nhyb_; ++i) 
+        for (int i=0; i<nhyb_; ++i)
         {
           (*alfao)[i] *= -alphaf/(1.0-alphaf);
           (*alfao)[i] += 1.0/(1.0-alphaf) * (*alfa)[i];
@@ -493,7 +497,7 @@ void DRT::ELEMENTS::Shell8::VisNames(map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
-  
+
   // see whether we have Forces and Moments
   const Epetra_SerialDenseMatrix* gp_stress = data_.Get<Epetra_SerialDenseMatrix>("Forces");
   if (!gp_stress) return; // no stresses present
@@ -501,23 +505,23 @@ void DRT::ELEMENTS::Shell8::VisNames(map<string,int>& names)
   {
     string forcename;
     string momentname;
-    if (forcetype_==s8_xyz) 
+    if (forcetype_==s8_xyz)
     {
       forcename = "ForcesXYZ";
       momentname = "MomentsXYZ";
     }
-    else if (forcetype_==s8_rst) 
+    else if (forcetype_==s8_rst)
     {
       forcename = "ForcesRST";
       momentname = "MomentsRST";
     }
-    else if (forcetype_==s8_rst_ortho) 
+    else if (forcetype_==s8_rst_ortho)
     {
       forcename = "ForcesRST_Orth";
       momentname = "MomentsRST_Orth";
     }
     else dserror("Unknown type of force in shell8 element");
-    
+
     names[forcename]  = 9; // use nonsymm. tensor to visualize forces
     names[momentname] = 9; // use nonsymm. tensor to visualize moments
     return;
@@ -531,22 +535,22 @@ void DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisData(name,data);
-  
+
   // these are the names shell8 recognizes, do nothing for everything else
-  if (name != "ForcesXYZ"      && name != "MomentsXYZ" && 
+  if (name != "ForcesXYZ"      && name != "MomentsXYZ" &&
       name != "ForcesRST"      && name != "MomentsRST" &&
       name != "ForcesRST_Orth" && name != "MomentsRST_Orth") return;
-  
+
   if ((int)data.size()!=9) dserror("size mismatch");
-  
+
   // see whether we have Forces and Moments
   const Epetra_SerialDenseMatrix* gp_stress = data_.Get<Epetra_SerialDenseMatrix>("Forces");
   if (!gp_stress) return; // no stresses present, do nothing
-  
+
   // Need to average the values of the gaussian point
   const int nforce = gp_stress->M(); // first dimension is # of forces and moments
   const int ngauss = gp_stress->N(); // second dimension is # gaussian point
-  
+
   Epetra_SerialDenseMatrix centervalues(nforce,1);
   for (int i=0; i<nforce; ++i)
   {
@@ -554,7 +558,7 @@ void DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
       centervalues(i,0) += (*gp_stress)(i,j);
     centervalues(i,0) /= ngauss;
   }
-  
+
   if (name == "ForcesXYZ" || name == "ForcesRST" || name == "ForcesRST_Orth")
   {
     data[0] = centervalues(0,0);  // N11
@@ -580,7 +584,7 @@ void DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
     data[8] = centervalues(11,0); // M23
   }
   else dserror("weirdo impossible case????");
-  
+
   return;
 }
 
@@ -3823,7 +3827,7 @@ int DRT::ELEMENTS::Shell8Register::Initialize(DRT::Discretization& dis)
 
 
   //------------------------------------ do directors at nodes Bischoff style
-  const int MAXELEHARDCODED = 6;  
+  const int MAXELEHARDCODED = 6;
   map<int,vector<double> > a3map;
   Epetra_SerialDenseMatrix collaverdir(3,MAXELEHARDCODED);
   // loop my row nodes and build a3map

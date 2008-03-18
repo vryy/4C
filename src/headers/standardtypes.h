@@ -194,11 +194,14 @@ INT               output_gid;         /* write output to *.flavia.res */
 INT               output_bin;         /* write output to binary */
 
 INT               struct_disp;        /* write structural displacements */
+#ifndef CCADISCRET
 INT               struct_stress;      /* write structural stress */
 INT               struct_stress_smo;  /* write structural smoothed/unsmoothed stresses */
+#endif
 INT               struct_sm_disp;     /* write structural submesh displacements to .microres */
+#ifndef CCADISCRET
 INT               struct_sm_stress;   /* write structural submesh stresses to .microres */
-
+#endif
 INT               fluid_sol;          /* write fluid vel/pre */
 INT               fluid_stress;       /* write fluid stresses */
 INT               fluid_vis;          /* write fluid solution to pss-file for VISUAL2 */

@@ -3044,7 +3044,7 @@ void StruGenAlpha::UpdateandOutput()
 
   bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
-  bool   iostress      = params_.get<bool>  ("io structural stress"   ,false);
+  string iostress      = params_.get<string>("io structural stress"   ,"none");
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
   bool   iostrain      = params_.get<bool>  ("io structural strain"   ,false);
 
@@ -3162,7 +3162,7 @@ void StruGenAlpha::UpdateandOutput()
   }
 
   //------------------------------------- do stress calculation and output
-  if (updevrystress and !(istep%updevrystress) and iostress)
+  if (updevrystress and !(istep%updevrystress) and iostress!="none")
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -3175,6 +3175,14 @@ void StruGenAlpha::UpdateandOutput()
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
+    if (iostress == "cauchy")   // output of Cauchy stresses instead of 2PK stresses
+    {
+      p.set("cauchy", true);
+    }
+    else
+    {
+      p.set("cauchy", false);
+    }
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);
@@ -3183,10 +3191,17 @@ void StruGenAlpha::UpdateandOutput()
     discret_.ClearState();
     if (!isdatawritten) output_.NewStep(istep, timen);
     isdatawritten = true;
-    output_.WriteVector("gauss_stresses_xyz",*stress,*discret_.ElementColMap());
+    if (iostress == "cauchy")
+    {
+      output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementColMap());
+    }
+    else
+    {
+      output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementColMap());
+    }
     if (iostrain)
     {
-      output_.WriteVector("gauss_strains_xyz",*strain,*discret_.ElementColMap());
+      output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
     }
   }
 
@@ -3431,8 +3446,9 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<double>("tolerance displacements",1.0e-07);
   params.set<bool>  ("io structural disp"     ,false);
   params.set<int>   ("io disp every nstep"    ,10);
-  params.set<bool>  ("io structural stress"   ,false);
+  params.set<string>("io structural stress"   ,"none");
   params.set<int>   ("io disp every nstep"    ,10);
+  params.set<bool>  ("io structural strain"   ,false);
   params.set<int>   ("restart"                ,0);
   params.set<int>   ("write restart every"    ,0);
   params.set<bool>  ("contact"                ,false);
