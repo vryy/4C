@@ -342,55 +342,6 @@ class Intersection
             ) const;
         
         
-        /*!
-            \brief solves a singular system of equations
-    
-        \param xsi              (in/out)    : vector of element domain coordinates
-        \param lineElement      (in)        : line element
-        \param surfaceElement   (in)        : surface element
-        return true if resulting system is singular , false otherwise
-        */                                               
-        bool computeSingularCSI(
-            BlitzVec&   xsi,
-            const DRT::Element*         lineElement,
-            const DRT::Element*         surfaceElement
-            ) const;
-            
-                 
-		/*!
-	  	\brief updates the systemmatrix at the corresponding element coordinates 
-               for the computation of curve surface intersections
-	
-		\param A  				 (out)		: system matrix
-		\param xsi				 (in)	    : vector of element coordinates
-	  	\param surfaceElement    (in) 		: surface element
-	  	\param lineElement       (in) 		: line element
-	  	*/							
-        void updateAForCSI( 
-            BlitzMat&         A,
-            const BlitzVec&   xsi,
-            const DRT::Element*               surfaceElement,
-            const DRT::Element*               lineElement
-            ) const;
-		
-          	            
-        /*!
-        \brief updates the rhs at the corresponding element coordinates 
-               for the computation of curve surface intersections
-   
-        \param b                 (out)      : right-hand-side
-        \param xsi               (in)       : vector of element coordinates
-        \param surfaceElement    (in)       : surface element
-        \param lineElement       (in)       : line element
-        */                          	 					
-        void updateRHSForCSI(   
-            BlitzVec&         b,
-            const BlitzVec&   xsi,
-            const DRT::Element*               surfaceElement,
-            const DRT::Element*               lineElement
-            ) const;
-        
-            
   		/*!
 	  	\brief adds an intersection point to the list of interface points
 	
