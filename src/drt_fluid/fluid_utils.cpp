@@ -77,7 +77,7 @@ void FLUID_UTILS::SetupFluidSplit(const DRT::Discretization& dis,
 // -------------------------------------------------------------------
 void FLUID_UTILS::SetupXFluidSplit(
         const DRT::Discretization& dis,
-        RCP<XFEM::DofManager> dofman,
+        const RCP<XFEM::DofManager> dofman,
         LINALG::MapExtractor& extractor)
 {
     // -------------------------------------------------------------------

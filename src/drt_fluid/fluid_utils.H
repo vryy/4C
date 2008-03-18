@@ -64,9 +64,9 @@ void SetupFluidSplit(const DRT::Discretization& dis,
   \date 03/08
  */
 void SetupXFluidSplit(
-        const DRT::Discretization& dis,       ///< fluid discretization
-        RCP<XFEM::DofManager>      dofman,    ///< information about the dofs per node
-        LINALG::MapExtractor&      extractor  ///< ready made map splitter
+        const DRT::Discretization&   dis,       ///< fluid discretization
+        const RCP<XFEM::DofManager>  dofman,    ///< information about the dofs per node
+        LINALG::MapExtractor&        extractor  ///< ready made map splitter
         );
 
 }
