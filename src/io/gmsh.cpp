@@ -292,7 +292,6 @@ string IO::GMSH::disToString(
             const BoundaryIntCells bcells = elementBoundaryIntCellsMap.find(id)->second;
             for(XFEM::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell )
             {
-                cout << bcell->toString() << endl;
                 gmshfilecontent << IO::GMSH::cellToString(bcell->NodalPosXYZ(*actele), scalar, bcell->Shape()) << endl;
             }
         }
