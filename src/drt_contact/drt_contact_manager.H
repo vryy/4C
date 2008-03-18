@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "drt_contact_interface.H"
 #include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_ana.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -93,6 +94,18 @@ public:
   inline DRT::Discretization& Discret() const { return discret_;};
   
   /*!
+  \brief Return global slave dof row map
+  
+  */
+  inline const RCP<Epetra_Map> SlaveRowDofs() {return gsdofrowmap_; }
+  
+  /*!
+  \brief Return global slave dof row map
+    
+  */
+  inline const RCP<Epetra_Map> SlaveRowNodes() {return gsnoderowmap_; }
+  
+  /*!
   \brief Return convergence status of active set loop
       
   */
@@ -126,7 +139,7 @@ public:
   \brief Write restart information for contact
   
   */
-  void WriteRestart(RCP<Epetra_Vector>& activetoggle);
+  RCP<Epetra_Vector> WriteRestart();
   
   /*!
   \brief Read restart information for contact
@@ -150,7 +163,7 @@ public:
   \brief Evaluate contact
     
   */
-  void Evaluate(RCP<LINALG::SparseMatrix>& kteff, RCP<Epetra_Vector>& feff, int numiter);
+  void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
   
   /*!
   \brief Transform displacement increment vector

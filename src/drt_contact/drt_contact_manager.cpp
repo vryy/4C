@@ -18,9 +18,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
 #include "contactdefines.H"
-#include "../drt_lib/linalg_ana.H"
-
-using namespace LINALG::ANA;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -423,9 +420,9 @@ void CONTACT::Manager::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  write restart information for contact (public)            popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::WriteRestart(RCP<Epetra_Vector>& activetoggle)
+RCP<Epetra_Vector> CONTACT::Manager::WriteRestart()
 {
-  activetoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
+  RCP<Epetra_Vector> activetoggle = rcp(new Epetra_Vector(*gsnoderowmap_));
   
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -443,7 +440,7 @@ void CONTACT::Manager::WriteRestart(RCP<Epetra_Vector>& activetoggle)
     }
   }
   
-  return;
+  return activetoggle;
 }
 
 /*----------------------------------------------------------------------*
@@ -451,6 +448,39 @@ void CONTACT::Manager::WriteRestart(RCP<Epetra_Vector>& activetoggle)
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::ReadRestart(const RCP<Epetra_Vector> activetoggle)
 {
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // loop over all slave nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      if ((*activetoggle)[j]==1)
+      {
+        int gid = interface_[i]->SlaveRowNodes()->GID(j);
+        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        CNode* cnode = static_cast<CNode*>(node);
+      
+        // set value active / inactive in cnode
+        cnode->Active()=true;
+      }
+    }
+  }
+  
+  // update active sets of all interfaces
+  for (int i=0;i<(int)interface_.size();++i)
+  {
+    interface_[i]->BuildActiveSet();
+    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes());
+    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs());
+    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs());;
+    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs());;
+  }
+  
+  // update flag for global contact status
+  if (gactivenodes_->NumGlobalElements())
+    IsInContact()=true;
+  
   return;
 }
 
@@ -502,8 +532,8 @@ void CONTACT::Manager::SetState(const string& statename,
 /*----------------------------------------------------------------------*
  |  evaluate contact (public)                                 popp 11/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& kteff,
-                                RCP<Epetra_Vector>& feff, int numiter)
+void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
+                                RCP<Epetra_Vector> feff, int numiter)
 { 
   // FIXME: Currently only the old LINALG::Multiply method is used,
   // because there are still problems with the transposed version of
@@ -936,8 +966,8 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix>& kteff,
   /**********************************************************************/
   /* Replace kteff and feff by kteffnew and feffnew                   */
   /**********************************************************************/
-  kteff = kteffnew;
-  feff = feffnew;
+  *kteff = *kteffnew;
+  *feff = *feffnew;
   //LINALG::PrintSparsityToPostscript(*(kteff->EpetraMatrix()));
   
   /**********************************************************************/
@@ -1145,15 +1175,6 @@ void CONTACT::Manager::UpdateActiveSet()
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
     IsInContact()=true;
-  
-  // create empty maps, if active set = null
-  if (gactivenodes_==null)
-  {
-    gactivenodes_ = rcp(new Epetra_Map(0,0,Comm()));
-    gactivedofs_ = rcp(new Epetra_Map(0,0,Comm()));
-    gactiven_ = rcp(new Epetra_Map(0,0,Comm()));
-    gactivet_ = rcp(new Epetra_Map(0,0,Comm()));
-  }
   
   // store Lagrange multipliers zold_ if active set converged
   if (activesetconv_) zold_=rcp(new Epetra_Vector(*z_));

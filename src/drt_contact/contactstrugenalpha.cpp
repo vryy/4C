@@ -15,7 +15,6 @@ Maintainer: Alexander Popp
 #include "contactstrugenalpha.H"
 #include "iostream"
 
-//#define CHECKTANGENT
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/07|
@@ -550,9 +549,7 @@ void ContactStruGenAlpha::FullNewton()
     
     // add static mid-balance
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
-#ifdef CHECKTANGENT
-    RCP<Epetra_Vector> fresmall = rcp(new Epetra_Vector(*fresm_)); 
-#endif // #ifdef CHECKTANGENT
+
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
@@ -571,169 +568,6 @@ void ContactStruGenAlpha::FullNewton()
     
     //remove contact forces from equilibrium again
     if (fc!=null) fresm_->Update(1.0,*fc,1.0);
-    
-#ifdef CHECKTANGENT
-    //DEBUG
-    int step = params_.get<int>("step",0);
-    if (step==94 && fresmnorm < 1.0e-8 && disinorm < 1.0e-8)
-    {
-      cout << "CHECKING TANGENT......." << endl;
-      
-      stiff_->Complete();
-      
-      contactmanager_->Initialize();
-      contactmanager_->SetState("displacement",dism_);
-      contactmanager_->Evaluate(stiff_,fresmall);
-      
-      double delta = 1.0e-6;
-      int num = discret_.DofRowMap()->NumMyElements();
-      
-      RCP<Epetra_Vector> reffres = rcp(new Epetra_Vector(*fresmall));
-      RCP<LINALG::SparseMatrix> refstiff = rcp(new LINALG::SparseMatrix(*stiff_));
-      Epetra_SerialDenseMatrix fdstiff(num,num);
-      
-      for (int i=0;i<num;++i)
-      {
-        cout << "i = " << i << endl;
-        RCP<Epetra_Vector> thisdis = rcp(new Epetra_Vector(*dism_));
-        disi_->PutScalar(0.0);
-        (*disi_)[i]=delta;
-        contactmanager_->RecoverDisp(disi_);
-        thisdis->Update(1.0,*disi_,1.0);
-        
-        // velocities
-    #ifndef STRUGENALPHA_INCRUPDT
-        // iterative
-        // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-        //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-        velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
-    #else
-        // incremental (required for constant predictor)
-        velm_->Update(1.0,*thisdis,-1.0,*dis_,0.0);
-        velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-                      (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
-                      gamma/(beta*dt));
-    #endif
-        // accelerations
-    #ifndef STRUGENALPHA_INCRUPDT
-        // iterative
-        // A_{n+1-alpha_m} := A_{n+1-alpha_m}
-        //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-        accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
-    #else
-        // incremental (required for constant predictor)
-        accm_->Update(1.0,*thisdis,-1.0,*dis_,0.0);
-        accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
-                      (2.*beta-1.+alpham)/(2.*beta),*acc_,
-                      (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-    #endif
-
-        //---------------------------- compute internal forces and stiffness
-        {
-          // zero out stiffness
-          stiff_->Zero();
-          // create the parameters for the discretization
-          ParameterList p;
-          // action for elements
-          p.set("action","calc_struct_nlnstiff");
-          // choose what to assemble
-          p.set("assemble matrix 1",true);
-          p.set("assemble matrix 2",false);
-          p.set("assemble vector 1",true);
-          p.set("assemble vector 2",false);
-          p.set("assemble vector 3",false);
-          // other parameters that might be needed by the elements
-          p.set("total time",timen);
-          p.set("delta time",dt);
-          // set vector values needed by elements
-          discret_.ClearState();
-          discret_.SetState("residual displacement",disi_);
-          discret_.SetState("displacement",thisdis);
-          //discret_.SetState("velocity",velm_); // not used at the moment
-          fint_->PutScalar(0.0);  // initialise internal force vector
-          discret_.Evaluate(p,stiff_,null,fint_,null,null);
-          discret_.ClearState();
-          // do NOT finalize the stiffness matrix to add masses to it later
-        }
-
-        //------------------------------------------ compute residual forces
-        // Res = M . A_{n+1-alpha_m}
-        //     + C . V_{n+1-alpha_f}
-        //     + F_int(D_{n+1-alpha_f})
-        //      + F_c(D_{n+1-alpha_f})
-        //     - F_{ext;n+1-alpha_f}
-        // add inertia mid-forces
-        mass_->Multiply(false,*accm_,*finert_);
-        fresm_->Update(1.0,*finert_,0.0);
-        // add viscous mid-forces
-        if (damping)
-        {
-          //RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-          damp_->Multiply(false,*velm_,*fvisc_);
-          fresm_->Update(1.0,*fvisc_,1.0);
-        }
-        
-        // add static mid-balance
-        fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
-            
-        // blank residual DOFs that are on Dirichlet BC
-        //{
-        //  Epetra_Vector fresmcopy(*fresm_);
-        //  fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-       // }
-        
-        stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-        if (damping)
-        {
-          stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
-        }
-        stiff_->Complete();
-        
-        contactmanager_->Initialize();
-        contactmanager_->SetState("displacement",thisdis);
-        
-        contactmanager_->Evaluate(stiff_,fresm_);
-        
-        for (int j=0;j<num;j++)
-        {
-          double val = ((*fresm_)[j]-(*reffres)[j]) / delta;
-          if (abs(val)>1.0e-6) fdstiff(j,i) = val;
-        }
-        
-        
-      }
-      
-      for (int i=0;i<refstiff->EpetraMatrix()->NumMyRows();++i)
-      {
-        
-        int numentries = 0;
-        double* values;
-        int* indices;
-        refstiff->EpetraMatrix()->ExtractMyRowView(i,numentries,values,indices);
-        for (int j=0;j<num;++j)
-        {
-          bool found = false;
-          double myval = 0.0;
-          for (int k=0;k<numentries;++k)
-          {
-            if (j==indices[k])
-            {
-              found = true;
-              myval = values[k];
-            }
-          }
-          
-        
-          cout << "(" << i << "," << j << "): MyTangent: " << myval;
-          cout << "\tFDTangent: " << fdstiff(i,j) << endl;
-        }
-      }
-      
-      cout << "FINISHED CHECK OF TANGENT!" << endl;
-      exit(0);
-    }
-    // END DEBUG
-#endif // #ifdef CHECKTANGENT
     
     // a short message
     if (!myrank_ && (printscreen || printerr))
@@ -1114,11 +948,13 @@ void ContactStruGenAlpha::UpdateandOutput()
     isdatawritten = true;
 
     // write restart information for contact
-    if (contactmanager_->IsInContact())
-    {
-    //----------------------not yet implemented-------------------------//
-    }
-    
+    RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
+    RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
+    RCP<Epetra_Vector> activetoggle = contactmanager_->WriteRestart();
+    output_.WriteVector("fcontact",fc);
+    output_.WriteVector("lagrmult",zold);
+    output_.WriteVector("activetoggle",activetoggle);
+        
     if (discret_.Comm().MyPID()==0 && printscreen)
     {
       cout << "====== Restart written in step " << istep << endl;
@@ -1287,7 +1123,18 @@ void ContactStruGenAlpha::ReadRestart(int step)
   reader.ReadVector(fext_,"fexternal");
   reader.ReadMesh(step);
 
-  // iverride current time and step with values from file
+  // read restart information for contact
+  RCP<Epetra_Vector> fc = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  RCP<Epetra_Vector> zold = rcp(new Epetra_Vector(*(contactmanager_->SlaveRowDofs())));
+  RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(contactmanager_->SlaveRowNodes())));
+  reader.ReadVector(fc,"fcontact");  
+  reader.ReadVector(zold,"lagrmult");
+  reader.ReadVector(activetoggle,"activetoggle");
+  contactmanager_->GetContactForces()=fc;
+  contactmanager_->LagrMultOld()=zold;
+  contactmanager_->ReadRestart(activetoggle);
+ 
+  // override current time and step with values from file
   params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);
 
