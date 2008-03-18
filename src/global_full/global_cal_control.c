@@ -266,6 +266,12 @@ case prb_fluid_xfem:
 #endif
   break;
 
+#ifdef CCADISCRET
+  case prb_fluid_ale:
+    fluid_ale_drt();
+    break;
+#endif
+  
 #ifdef D_FSI
 case prb_fsi:
 case prb_pfsi:

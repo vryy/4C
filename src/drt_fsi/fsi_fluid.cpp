@@ -458,7 +458,7 @@ Teuchos::RCP<DRT::Discretization> FSI::FluidGenAlphaAdapter::Discretization()
 void FSI::FluidGenAlphaAdapter::PrepareTimeStep()
 {
   fluid_.GenAlphaIncreaseTimeAndStep();
-  
+
   fluid_.GenAlphaEchoToScreen("print time algorithm info");
   fluid_.GenAlphaPredictNewSolutionValues();
   fluid_.GenAlphaApplyDirichletAndNeumann();
@@ -483,9 +483,9 @@ void FSI::FluidGenAlphaAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> vel) 
     incvel->Update(-1.0,*fluid_.Velnp(),1.0);
     fluid_.ExternIncrementOfVelnp(incvel);
   }
-  
+
   fluid_.GenAlphaComputeIntermediateSol();
-  
+
   fluid_.GenAlphaAssembleResidualAndMatrix();
 }
 
@@ -735,6 +735,16 @@ void FSI::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdyn)
 
   FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
 
+  // -----------------------sublist containing stabilization parameters
+  fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
+
+  // --------------------------sublist containing turbulence parameters
+  {
+    fluidtimeparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+
+    fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
+  }
+
   if (iop == timeint_one_step_theta || iop == timeint_bdf2)
   {
     // number of degrees of freedom
@@ -831,16 +841,6 @@ void FSI::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdyn)
     // -----------evaluate error for test flows with analytical solutions
     int init = Teuchos::getIntegralValue<int>(fdyn,"INITIALFIELD");
     fluidtimeparams->set                  ("eval err for analyt sol"   ,init);
-
-    // -----------------------sublist containing stabilization parameters
-    fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
-
-    // --------------------------sublist containing turbulence parameters
-    {
-      fluidtimeparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
-
-      fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
-    }
 
     // -------------------------------------------------------------------
     // parameter alpha_M for for generalized-alpha scheme

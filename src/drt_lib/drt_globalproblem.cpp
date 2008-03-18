@@ -235,6 +235,12 @@ void DRT::Problem::InputControl()
       genprob.numaf=2;
     break;
   }
+  case prb_fluid_ale:
+  {
+    genprob.numff=0;
+    genprob.numaf=1;
+    break;
+  }
   case prb_condif:
     genprob.numff=0;
     break;
@@ -359,6 +365,30 @@ void DRT::Problem::InputControl()
       InputSolverControl("FLUID PRESSURE SOLVER",&(solv[genprob.numfld]));
     }
 
+    break;
+  }
+  case prb_fluid_ale:
+  {
+    dsassert(genprob.numfld == 2, "numfld != 2 for fluid problem on ale mesh");
+
+    solver_.resize(genprob.numfld);
+    solv = &solver_[0];
+
+    solv[genprob.numff].fieldtyp = fluid;
+    InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
+
+    solv[genprob.numaf].fieldtyp = ale;
+    InputSolverControl("ALE SOLVER",&(solv[genprob.numaf]));
+
+    // additional pressure solver for SIMPLE(R)
+    const ParameterList& fluiddyn = FluidDynamicParams();
+    int simple = getIntegralValue<int>(fluiddyn,"SIMPLER");
+    if (simple)
+    {
+      solver_.resize(genprob.numfld+1);
+      solv = &solver_[0];
+      InputSolverControl("FLUID PRESSURE SOLVER",&(solv[genprob.numfld]));
+    }
     break;
   }
   case prb_fluid_xfem:
@@ -799,6 +829,32 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     nodereader.Read();
     break;
   }
+  case prb_fluid_ale:
+  {
+    // allocate and input general old stuff....
+    if (genprob.numfld!=2) dserror("numfld != 2 for fluid problem on ale");
+    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+    field[genprob.numff].fieldtyp = fluid;
+    field[genprob.numaf].fieldtyp = ale;
+
+    // obsolete
+    field[genprob.numff].ndis = DiscretisationParams().get<int>("NUMFLUIDDIS");
+    field[genprob.numaf].ndis = DiscretisationParams().get<int>("NUMALEDIS");
+
+    fluiddis = rcp(new DRT::Discretization("Fluid",reader.Comm()));
+    aledis = rcp(new DRT::Discretization("Ale",reader.Comm()));
+
+    AddDis(genprob.numff, fluiddis);
+    AddDis(genprob.numaf, aledis);
+
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+
+    nodereader.Read();
+    break;
+  }
   case prb_fluid_pm:
   {
     dserror("prb_fluid_pm not yet impl.");
@@ -910,7 +966,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     break;
   } // end of else if (genprob.probtyp==prb_struct_multi)
-  
+
   case prb_elch:
   {
     // allocate and input general old stuff....

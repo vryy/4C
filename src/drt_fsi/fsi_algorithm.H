@@ -41,17 +41,18 @@ namespace FSI
     \note Right now we have partitioned FSI implemented using NOX::Epetra and
     monolithic FSI implemented using NOX::Thyra. These are closely linked and
     will be even more so in the future.
-    IMPORTANT:
-    The order of calling the three BaseAlgorithm-constructors is
-    important here! In here control file entries are written. And these
-    entries define the order in which the filters handle the 
-    Discretizations, which in turn defines the dof number ordering of the
-    Discretizations.
+
+    \warning The order of calling the three BaseAlgorithm-constructors (that
+    is the order in which we list the base classes) is important here! In the
+    constructors control file entries are written. And these entries define
+    the order in which the filters handle the Discretizations, which in turn
+    defines the dof number ordering of the Discretizations... Don't get
+    confused. Just always list structure, fluid, ale. In that order.
 
     \author u.kue
     \date 02/08
    */
-  class Algorithm : public StructureBaseAlgorithm, 
+  class Algorithm : public StructureBaseAlgorithm,
                     public FluidBaseAlgorithm,
                     public AleBaseAlgorithm
   {
