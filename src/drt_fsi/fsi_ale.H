@@ -278,7 +278,7 @@ public:
 
 private:
 
-  /// setup fluid algorithm
+  /// setup ale algorithm
   void SetupAle();
 
   /// fluid field solver
