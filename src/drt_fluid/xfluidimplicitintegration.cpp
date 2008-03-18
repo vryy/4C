@@ -24,7 +24,6 @@ Maintainer: Axel Gerstenberger
 #include <stdio.h>
 
 #include "xfluidimplicitintegration.H"
-#include "vm3_solver.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
@@ -33,6 +32,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_mapextractor.H"
 #include "fluid_utils.H"
+#include "vm3_solver.H"
 
 // Include special fluid3 evaluator. This makes the fluid3 element known to
 // the algorithm. However, all details are hidden. All that the algorithm
@@ -404,8 +404,8 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // -------------------------------------------------------------------
   if (fssgv_ != "No")
   {
-    csvelnp_ = LINALG::CreateVector(*dofrowmap,true);
-    fsvelnp_ = LINALG::CreateVector(*dofrowmap,true);
+    csvelnp_  = LINALG::CreateVector(*dofrowmap,true);
+    fsvelnp_  = LINALG::CreateVector(*dofrowmap,true);
     convnp_   = LINALG::CreateVector(*dofrowmap,true);
     csconvnp_ = LINALG::CreateVector(*dofrowmap,true);
     fsconvnp_ = LINALG::CreateVector(*dofrowmap,true);
@@ -1054,11 +1054,11 @@ void XFluidImplicitTimeInt::NonlinearSolve()
             fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
         {
           vm3_solver_->Separate(csconvnp_,fsconvnp_,convnp_);
-          discret_->SetState("csconvnp",csconvnp_);
           discret_->SetState("csvelnp",csvelnp_);
+          discret_->SetState("csconvnp",csconvnp_);
         }
 
-        // set fine-scale vector
+        // set coarse- and fine-scale vectors
         discret_->SetState("fsvelnp",fsvelnp_);
 
         // end time measurement for avm3
