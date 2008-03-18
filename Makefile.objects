@@ -144,8 +144,7 @@ OBJS_DRT      = \
 OBJS_DRT_STRUCTURE      = \
                 src/drt_structure/stru_dyn_nln_drt.o \
                 src/drt_structure/strugenalpha.o \
-                src/drt_structure/stru_genalpha_drt.o \
-		src/drt_structure/stru_genalpha_zienxie_drt.o \
+                src/drt_structure/stru_genalpha_zienxie_drt.o \
                 src/drt_structure/stru_static_drt.o \
                 src/drt_structure/stru_resulttest.o
 #----------------------------------------------------- drt version contact
