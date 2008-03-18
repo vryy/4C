@@ -53,7 +53,23 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	cutterNodeMap_ = cutterNodeMap;
 	  
 	  
-	  
+	// sanity check, whether, we realy have integration cells in the map
+	for (std::map<int,DomainIntCells>::const_iterator 
+	        tmp = elementalDomainIntCells_.begin();
+	        tmp != elementalDomainIntCells_.end();
+	        ++tmp)
+	{
+        dsassert(tmp->second.empty() == false, "this is a bug!");
+    }
+	
+    // sanity check, whether, we realy have integration cells in the map
+    for (std::map<int,BoundaryIntCells>::const_iterator 
+            tmp = elementalBoundaryIntCells_.begin();
+            tmp != elementalBoundaryIntCells_.end();
+            ++tmp)
+    {
+        dsassert(tmp->second.empty() == false, "this is a bug!");
+    }
 	  
 #if 1
 	  // debug: write both meshes to file in Gmsh format
@@ -66,7 +82,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	      for (int i=0; i<xfemdis->NumMyColElements(); ++i)
 	      {
 	          DRT::Element* actele = xfemdis->lColElement(i);
-	          XFEM::DomainIntCells elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
+	          const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
 	          XFEM::DomainIntCells::const_iterator cell;
 	          for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
 	          {
@@ -116,12 +132,8 @@ XFEM::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
         // create default set with one dummy DomainIntCell of proper size
         XFEM::DomainIntCells cells;
         cells.push_back(XFEM::DomainIntCell(distype));
-        // avoid empty vector
-        dsassert(cells.empty() == false, "this is a bug!");
         return cells;
     }
-    // avoid empty vector
-    dsassert(tmp->second.empty() == false, "this is a bug!");
     return tmp->second;
 }
 
@@ -161,5 +173,6 @@ bool XFEM::InterfaceHandle::ElementIntersected(
     }
 }
 
+//const XFEM::InterfaceHandle::emptyBoundaryIntCells_ = XFEM::BoundaryIntCells(0);
 
 #endif  // #ifdef CCADISCRET

@@ -113,7 +113,7 @@ private:
     map<int, DRT::Element* > boundaryElements_;
     
     //! store all additional nodes for the cutter elements that are not already on this proc
-    map< int, RCP<DRT::Node> > cutterNodeMap_;
+    map<int, RCP<DRT::Node> > cutterNodeMap_;
 
 };
 
