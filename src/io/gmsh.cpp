@@ -359,7 +359,7 @@ int IO::GMSH::distypeToGmshNumNode(const DRT::Element::DiscretizationType distyp
 }
 
 
-string IO::GMSH::trifaceToString(const double scalar, const vector< vector <double> >& triface)
+string IO::GMSH::trifaceToString(const double scalar, const vector<vector<double> >& triface)
 {  
     const DRT::Element::DiscretizationType distype = DRT::Element::tri3;
     const int numnode = distypeToGmshNumNode(distype);
@@ -391,7 +391,7 @@ string IO::GMSH::trifaceToString(const double scalar, const vector< vector <doub
 
 
 
-string IO::GMSH::XAABBToString(const double scalar, const vector< vector <double> >& XAABB)
+string IO::GMSH::XAABBToString(const double scalar, const vector<vector<double> >& XAABB)
 {  
     const DRT::Element::DiscretizationType distype = DRT::Element::hex8;
     const int numnode = distypeToGmshNumNode(distype);

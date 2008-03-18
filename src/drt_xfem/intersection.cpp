@@ -1612,11 +1612,8 @@ void Intersection::computeCDT(
     //debugTetgenOutput(in, out, element, elementIds);
     //printTetViewOutputPLC( element, element->Id(), in);
     
-    // recover curved interface for higher order meshes
-    //cout << "no recovery..." << endl;
-    const bool curvedInterface = false;
-    if(curvedInterface)
-        recoverCurvedInterface(element, boundaryintcells, out);
+    // store interface triangles (+ recovery of higher order meshes)
+    recoverCurvedInterface(element, boundaryintcells, out);
  
     //if(element->Id()==388)
     //	debugFaceMarker(element->Id(), out);
@@ -1919,16 +1916,12 @@ void Intersection::recoverCurvedInterface(
         tetgenio&                       out
         )
 {
-    vector<int>                                     order(3,0);
-    vector<int>                                     tetraCornerIndices(4,0); 
-    vector< BlitzVec >             	                tetraCornerNodes(4, BlitzVec(3));
     BoundaryIntCells                     			listBoundaryICPerElement;
     
-    
     // list of point markers , if already visited = 1 , if not = 0
-    vector<int> visitedPointIndexList(out.numberofpoints);      
-    for(int i = 0; i<out.numberofpoints; ++i)
-        visitedPointIndexList[i] = 0;
+    vector<int> visitedPointIndexList(out.numberofpoints,0);      
+//    for(int i = 0; i<out.numberofpoints; ++i)
+//        visitedPointIndexList[i] = 0;
         
     // lifts all corner points into the curved interface
     liftAllSteinerPoints(xfemElement, out);
@@ -1943,8 +1936,10 @@ void Intersection::recoverCurvedInterface(
         if(faceMarker > -1)
         {        
             const int tetIndex = out.adjtetlist[i*2];
-            //printf("tetIndex = %d\n", tetIndex); 
-
+            //printf("tetIndex = %d\n", tetIndex);
+            vector<int>             order(3,0);
+            vector<int>             tetraCornerIndices(4,0);
+            vector<BlitzVec>        tetraCornerNodes(4, BlitzVec(3));
             getTetrahedronInformation(tetIndex, i, tetraCornerIndices, order, out );
             getTetrahedronNodes(tetraCornerNodes, tetraCornerIndices, xfemElement, out);
             
@@ -1978,7 +1973,6 @@ void Intersection::recoverCurvedInterface(
             	for(int jj=0; jj < 3; jj++)
             		printf("boundary = %f\n",boundaryCoord[ii][jj]);
             	*/
-            //const int ele_gid = 1; //TODO: put in the correct number
             const int ele_gid = intersectingCutterElements_[faceMarker]->Id();
             listBoundaryICPerElement.push_back(BoundaryIntCell(DRT::Element::tri6, ele_gid, domainCoord, boundaryCoord));        
          
@@ -2004,8 +1998,8 @@ void Intersection::liftAllSteinerPoints(
 {
     BlitzVec edgePoint(3);      edgePoint = 0.0;
     BlitzVec oppositePoint(3);  oppositePoint = 0.0;
-    vector< vector <int> > adjacentFacesList;
-    vector< vector <int> > adjacentFacemarkerList;
+    vector< vector<int> > adjacentFacesList;
+    vector< vector<int> > adjacentFacemarkerList;
     
     locateSteinerPoints(adjacentFacesList, adjacentFacemarkerList, out);
     
@@ -2050,8 +2044,8 @@ void Intersection::liftAllSteinerPoints(
  |          faces and face markers                                      |   
  *----------------------------------------------------------------------*/
 void Intersection::locateSteinerPoints(
-    vector< vector <int> >&     adjacentFacesList,
-    vector< vector <int> >&     adjacentFacemarkerList,
+    vector< vector<int> >&     adjacentFacesList,
+    vector< vector<int> >&     adjacentFacemarkerList,
     const tetgenio&             out
     ) const
 {
@@ -2111,8 +2105,8 @@ int Intersection::decideSteinerCase(
         const int                       steinerIndex,
         int&                            lineIndex, 
         int&                            cutterIndex,  
-        const vector< vector <int> >&   adjacentFacesList,
-        const vector< vector <int> >&   adjacentFacemarkerList,
+        const vector< vector<int> >&   adjacentFacesList,
+        const vector< vector<int> >&   adjacentFacemarkerList,
         BlitzVec&                       edgePoint,
         BlitzVec&                       oppositePoint,
         const DRT::Element*             xfemElement, 
@@ -2174,8 +2168,8 @@ int Intersection::decideSteinerCase(
  *----------------------------------------------------------------------*/
 void Intersection::liftSteinerPointOnSurface(
         const int                       steinerIndex,
-        const vector< vector <int> >&   adjacentFacesList,
-        const vector< vector <int> >&   adjacentFacemarkerList,
+        const vector< vector<int> >&    adjacentFacesList,
+        const vector< vector<int> >&    adjacentFacemarkerList,
         const DRT::Element*             xfemElement, 
         tetgenio&                       out
         )
@@ -2192,7 +2186,8 @@ void Intersection::liftSteinerPointOnSurface(
     averageNormal = 0.0;
     
     const int length = (int) ( ( (double) (adjacentFacesList[steinerIndex].size()-1))*0.5 );
-    vector<BlitzVec> normals(length);
+    vector<BlitzVec> normals;
+    normals.reserve(length);
     
     for(int j = 0; j < length; ++j)
     {
@@ -2217,7 +2212,7 @@ void Intersection::liftSteinerPointOnSurface(
         
         averageNormal += normal;
             
-        normals[j] = normal;
+        normals.push_back(normal);
     }
 
     // compute average normal
@@ -2226,9 +2221,9 @@ void Intersection::liftSteinerPointOnSurface(
     const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
     
     BlitzVec xsi(3);
-    vector<BlitzVec> plane(2, BlitzVec(3));
-    plane[0] = Steinerpoint + averageNormal;               
-    plane[1] = Steinerpoint - averageNormal;
+    vector<BlitzVec> plane;
+    plane.push_back(BlitzVec(Steinerpoint + averageNormal));               
+    plane.push_back(BlitzVec(Steinerpoint - averageNormal));
     const bool intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker],false);
     if(intersected)
     {
@@ -2242,9 +2237,9 @@ void Intersection::liftSteinerPointOnSurface(
         vector<BlitzVec>::const_iterator normalptr;
         for(normalptr = normals.begin(); normalptr != normals.end(); ++normalptr )
         {
-            vector<BlitzVec> plane(2, BlitzVec(3)); // TODO: why size 4???
-            plane[0] = Steinerpoint + (*normalptr);               
-            plane[1] = Steinerpoint - (*normalptr);
+            vector<BlitzVec> plane;
+            plane.push_back(BlitzVec(Steinerpoint + (*normalptr)));               
+            plane.push_back(BlitzVec(Steinerpoint - (*normalptr)));
             intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker], false);
             if(intersected)
             {
@@ -2273,7 +2268,7 @@ void Intersection::liftSteinerPointOnEdge(
     const int                         cutterIndex,   
     BlitzVec&                         edgePoint,
     BlitzVec&                         oppositePoint,
-    const vector< vector <int> >&     adjacentFacesList,
+    const vector< vector<int> >&     adjacentFacesList,
     const DRT::Element*               xfemElement, 
     tetgenio&                         out)
 {
@@ -2295,11 +2290,11 @@ void Intersection::liftSteinerPointOnEdge(
     normalizeVectorInPLace(n1);
     normalizeVectorInPLace(n2);
 
-    vector<BlitzVec> plane(4, BlitzVec(3));      
-    plane[0] = Steinerpoint + n1;               
-    plane[1] = Steinerpoint - n1;
-    plane[2] = plane[1] + n2;
-    plane[3] = plane[0] + n2;
+    vector<BlitzVec> plane;
+    plane.push_back(BlitzVec(Steinerpoint + n1));               
+    plane.push_back(BlitzVec(Steinerpoint - n1));
+    plane.push_back(BlitzVec(plane[1] + n2));
+    plane.push_back(BlitzVec(plane[0] + n2));
      
     BlitzVec xsi(3);  xsi = 0.0;
     const bool intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[cutterIndex]);
@@ -2323,8 +2318,8 @@ void Intersection::liftSteinerPointOnEdge(
  *----------------------------------------------------------------------*/
 void Intersection::liftSteinerPointOnBoundary( 
         const int                         steinerIndex, 
-        const vector< vector <int> >&     adjacentFacesList, 
-        const vector< vector <int> >&     adjacentFacemarkerList, 
+        const vector< vector<int> >&      adjacentFacesList, 
+        const vector< vector<int> >&      adjacentFacemarkerList, 
         const DRT::Element*               xfemElement, 
         tetgenio&                         out
         )
@@ -2380,12 +2375,7 @@ void Intersection::liftSteinerPointOnBoundary(
     }
         
     // compute normal through Steiner point lying in the boundary triangle
-    vector <BlitzVec> plane(5, BlitzVec(3));
-    plane[0] = 0.0;
-    plane[1] = 0.0;
-    plane[2] = 0.0;
-    plane[3] = 0.0;
-    plane[4] = 0.0;
+    vector<BlitzVec> plane;
     computeIntersectionNormalC( adjacentFacesList[steinerIndex][0], edgeIndex, oppositeIndex, plane,
                                xfemElement, out);
                
@@ -2496,13 +2486,6 @@ void Intersection::computeHigherOrderPoint(
     int                                     adjacentFaceIndex       = -1;  
     BlitzVec                xsi(3);
     xsi = 0.0;
-    vector < BlitzVec >     plane(5, BlitzVec(3));
-    plane[0] = 0.0;
-    plane[1] = 0.0;
-    plane[2] = 0.0;
-    plane[3] = 0.0;
-    plane[4] = 0.0;
-                         
          
     findAdjacentFace(  tetraCornerIndices[index1], tetraCornerIndices[index2], 
                        faceMarker, adjacentFaceMarker, faceIndex, adjacentFaceIndex, out); 
@@ -2513,6 +2496,7 @@ void Intersection::computeHigherOrderPoint(
     // edge lies within the xfem element
     if(adjacentFaceMarker  > -1)
     {
+        vector<BlitzVec>        plane;
         computeIntersectionNormalB(  tetraCornerIndices[index1], tetraCornerIndices[index2], faceIndex, 
                                     adjacentFaceIndex, globalHigherOrderIndex, plane, xfemElement, out);   
                                    
@@ -2551,12 +2535,7 @@ void Intersection::computeHigherOrderPoint(
                                                                                   
         //printf("oppo = %d\n", oppositeIndex);
         
-        vector < BlitzVec >     plane(5, BlitzVec(3));
-        plane[0] = 0.0;
-        plane[1] = 0.0;
-        plane[2] = 0.0;
-        plane[3] = 0.0;
-        plane[4] = 0.0;
+        vector<BlitzVec>     plane;
         
         computeIntersectionNormalA(  true,  index1, index2, oppositeIndex, globalHigherOrderIndex,   
                                     tetraCornerIndices, tetraCornerNodes, plane, xfemElement, out);
@@ -2717,8 +2696,6 @@ void Intersection::updateAForRCINormal(
             const double* pos = surfaceElement->Nodes()[i]->X();
             for(int dim=0; dim<3; dim++)
             {
-//                A[dim][0] += node->X()[dim] * surfaceDeriv1[i][0];
-//                A[dim][1] += node->X()[dim] * surfaceDeriv1[i][1];
                 A(dim,0) += pos[dim] * surfaceDeriv1(0, i);
                 A(dim,1) += pos[dim] * surfaceDeriv1(1, i);
             }
@@ -2737,8 +2714,6 @@ void Intersection::updateAForRCINormal(
             const double* pos = surfaceElement->Nodes()[i]->X();
             for(int dim=0; dim<3; dim++)
             {
-//                A[dim][0] += node->X()[dim] * surfaceDeriv1[i][0];
-//                A[dim][1] += node->X()[dim] * surfaceDeriv1[i][1]; // TODO: was this a bug??? switched indices
                 A(dim,0) += pos[dim] * surfaceDeriv1(0,i);
                 A(dim,1) += pos[dim] * surfaceDeriv1(1,i);
             }
@@ -2749,7 +2724,6 @@ void Intersection::updateAForRCINormal(
             {
                 int index = i;
                 if(i > 1)   index = 4;
-                //A[dim][2] += (-1.0) * normal[index][dim] * lineDeriv1[i][0]; 
                 A(dim,2) -= normal[index](dim) * lineDeriv1(0,i);
             }  
     }
@@ -2948,8 +2922,8 @@ void Intersection::updateAForRCIPlane(
 void Intersection::updateRHSForRCIPlane( 
     BlitzVec&                   b,
     const BlitzVec&             xsi,    
-    const vector <BlitzVec>&    plane,
-    const DRT::Element*                         lineElement
+    const vector<BlitzVec>&     plane,
+    const DRT::Element*         lineElement
     ) const
 {
     const int numNodesLine    = lineElement->NumNode();
@@ -3045,10 +3019,12 @@ void Intersection::computeIntersectionNormalA(
     }
     
     // compute nodes of the normal to the interface edge of the tetrahedron
-    plane[0] = m + r;               
-    plane[1] = m - r;
-    plane[2] = plane[1] + n;               
-    plane[3] = plane[0] + n;
+    plane.clear();
+    plane.reserve(5);
+    plane.push_back(BlitzVec(m + r));               
+    plane.push_back(BlitzVec(m - r));
+    plane.push_back(BlitzVec(plane[1] + n));               
+    plane.push_back(BlitzVec(plane[0] + n));
     
     
     if(onBoundary)
@@ -3057,9 +3033,7 @@ void Intersection::computeIntersectionNormalA(
             elementToCurrentCoordinatesInPlace(xfemElement, plane[i]);
         
         elementToCurrentCoordinatesInPlace(xfemElement, m);
-        dsassert(plane.size() == 5, "plane array has to be of size 5 here!");
-        plane[4] = m;
-      
+        plane.push_back(BlitzVec(m));
     }
 }
 
@@ -3141,10 +3115,12 @@ void Intersection::computeIntersectionNormalB(
     elementToCurrentCoordinatesInPlace(xfemElement, m);  
     
     // compute nodes of the normal to the interface edge of the tetrahedron
-    plane[0] = m + averageNormal;               
-    plane[1] = m - averageNormal;
-    plane[2] = plane[1] + rPlane;               
-    plane[3] = plane[0] + rPlane;
+    plane.clear();
+    plane.reserve(4);
+    plane.push_back(BlitzVec(m + averageNormal));               
+    plane.push_back(BlitzVec(m - averageNormal));
+    plane.push_back(BlitzVec(plane[1] + rPlane));               
+    plane.push_back(BlitzVec(plane[0] + rPlane));
     
    /* for(int i = 0; i < 4; i++)
     {
@@ -3196,18 +3172,18 @@ void Intersection::computeIntersectionNormalC(
     normalizeVectorInPLace(r);
  
     // compute nodes of the normal to the interface edge of the tetrahedron
-    plane[0] = p2 + r;               
-    plane[1] = p2 - r;
-    plane[2] = plane[1] + n;               
-    plane[3] = plane[0] + n;
-    
+    plane.clear();
+    plane.reserve(5);
+    plane.push_back(BlitzVec(p2 + r));               
+    plane.push_back(BlitzVec(p2 - r));
+    plane.push_back(BlitzVec(plane[1] + n));               
+    plane.push_back(BlitzVec(plane[0] + n));
     
     for(int i = 0; i < 4; i++)
         elementToCurrentCoordinatesInPlace(xfemElement, plane[i]);
     
     elementToCurrentCoordinatesInPlace(xfemElement, p2);
-    dsassert(plane.size() == 5, "plane array is to small");
-    plane[4] = p2;
+    plane.push_back(BlitzVec(p2));
 }
 
 
@@ -4033,7 +4009,8 @@ void Intersection::debugXFEMConditions(
 
 void Intersection::debugIntersection(
 		const DRT::Element*			xfemElement,
-		vector <DRT::Element*> 	cutterElements) const
+		vector<DRT::Element*>       cutterElements
+		) const
 {
 	
 	ofstream f_system("intersection.pos");
@@ -4060,7 +4037,7 @@ void Intersection::debugXAABBs(
 	   
 	ofstream f_system(filename);
 	f_system << "View \" XAABB " << " \" {" << endl;
-	std::vector < std::vector <double> > nodes(8, vector<double> (3, 0.0));
+	std::vector<std::vector<double> > nodes(8, vector<double> (3, 0.0));
 	
 	//cutterXAABB
 	nodes[0][0] = cutterXAABB(0,0);	nodes[0][1] = cutterXAABB(1,0);	nodes[0][2] = cutterXAABB(2,0);	// node 0	

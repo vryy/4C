@@ -120,31 +120,31 @@ class Intersection
         int                                 countMissedPoints_;
         
          //! vector of nodes for each surface of a single element
-        vector< vector <int> >              eleNumberingSurfaces_;
+        vector<vector<int> >              eleNumberingSurfaces_;
         
         //! vector of adjacent surfaces for each node of a single element
-        vector< vector <int> >              eleNodesSurfaces_;
+        vector<vector<int> >              eleNodesSurfaces_;
         
         //! vector of adjacent surfaces for each line of a single element
-        vector< vector <int> >              eleLinesSurfaces_;
+        vector<vector<int> >              eleLinesSurfaces_;
         
         //! nodal element coordinate
-        vector< vector <double> >           eleRefCoordinates_;
+        vector<vector<double> >           eleRefCoordinates_;
         
         //! list of interface points to be stored in the Tetgen data structure
-        vector< InterfacePoint >            pointList_;
+        vector<InterfacePoint >            pointList_;
     
         //! list of segments to be stored in the Tetgen data structure
-        vector< vector<int> >               segmentList_;                 
+        vector<vector<int> >               segmentList_;                 
     
         //! list of single points on a xfem surface to be stored in the Tetgen data structure
-        vector< vector<int> >               surfacePointList_;                
+        vector<vector<int> >               surfacePointList_;                
     
         //! list of triangles to be stored in the Tetgen data structure
-        vector< vector<int> >               triangleList_;
+        vector<vector<int> >               triangleList_;
        
         //! list of intersecting cutter elements
-        vector< DRT::Element* >             intersectingCutterElements_; 
+        vector<DRT::Element* >             intersectingCutterElements_; 
         
         //! list of face markers numbered in the order of the intersected surface elments
         vector<int>                         faceMarker_; 
@@ -596,8 +596,8 @@ class Intersection
         \param out                      (in)     :   output data structure of TetGen
         */     
         void locateSteinerPoints(
-            vector< vector <int> >&     adjacentFacesList,
-            vector< vector <int> >&     adjacentFacemarkerList,
+            vector< vector<int> >&      adjacentFacesList,
+            vector< vector<int> >&      adjacentFacemarkerList,
             const tetgenio&             out
             ) const;
          
@@ -621,8 +621,8 @@ class Intersection
             const int                         steinerIndex,
             int&                              lineIndex, 
             int&                              cutterIndex,  
-            const vector< vector <int> >&     adjacentFacesList,
-            const vector< vector <int> >&     adjacentFacemarkerList,
+            const vector< vector<int> >&      adjacentFacesList,
+            const vector< vector<int> >&      adjacentFacemarkerList,
             BlitzVec&         edgePoint,
             BlitzVec&         oppositePoint,
             const DRT::Element*               xfemElement, 
@@ -640,12 +640,12 @@ class Intersection
         \param out                      (in)     :   output data structure of TetGen
         */     
         void liftSteinerPointOnSurface(
-            const int                   steinerIndex,
-            const vector< vector <int> >&     adjacentFacesList,
-            const vector< vector <int> >&     adjacentFacemarkerList,
-            const DRT::Element*         xfemElement, 
-            tetgenio&                   out
-            ); 
+                const int                     steinerIndex,
+                const vector<vector<int> >&   adjacentFacesList,
+                const vector<vector<int> >&   adjacentFacemarkerList,
+                const DRT::Element*           xfemElement, 
+                tetgenio&                     out
+                ); 
         
         
         /*!
@@ -665,9 +665,9 @@ class Intersection
             const int                         steinerIndex,
             int                               lineIndex, // TODO: ???????  why not const, if input ????????
             const int                         cutterIndex,   
-            BlitzVec&         edgePoint,
-            BlitzVec&         oppositePoint,
-            const vector< vector <int> >&     adjacentFacesList,
+            BlitzVec&                         edgePoint,
+            BlitzVec&                         oppositePoint,
+            const vector<vector<int> >&       adjacentFacesList,
             const DRT::Element*               xfemElement, 
             tetgenio&                         out
             );
@@ -684,8 +684,8 @@ class Intersection
         */       
         void liftSteinerPointOnBoundary( 
                 const int                         steinerIndex, 
-                const vector< vector <int> >&     adjacentFacesList, 
-                const vector< vector <int> >&     adjacentFacemarkerList, 
+                const vector<vector<int> >&       adjacentFacesList, 
+                const vector<vector<int> >&       adjacentFacemarkerList, 
                 const DRT::Element*               xfemElement, 
                 tetgenio&                         out
                 );
@@ -885,10 +885,10 @@ class Intersection
         */                       
         void updateRHSForRCIPlane( 
                 BlitzVec&                   b,
-            const BlitzVec&             xsi,    
-            const vector <BlitzVec>&    plane,
-            const DRT::Element*                         lineElement
-            ) const;
+                const BlitzVec&             xsi,    
+                const vector<BlitzVec>&     plane,
+                const DRT::Element*         lineElement
+                ) const;
             
                            
         /*!
@@ -1268,9 +1268,9 @@ class Intersection
        	) const;
        
        void debugIntersection(
-       		const DRT::Element*			xfemElement,
-       		vector <DRT::Element*> 	cutterElements
-       		) const;
+       		    const DRT::Element*	     xfemElement,
+       		    vector<DRT::Element*>    cutterElements
+       		    ) const;
        
        void debugXAABBs(
         const int							id,

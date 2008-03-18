@@ -847,7 +847,7 @@ bool XFEM::intersectionOfXAABB(
   /*====================================================================*/
     
     bool intersection =  false;
-    std::vector < BlitzVec > nodes(8, BlitzVec(3));
+    std::vector<BlitzVec> nodes(8, BlitzVec(3));
     
     nodes[0](0) = cutterXAABB(0,0); nodes[0](1) = cutterXAABB(1,0); nodes[0](2) = cutterXAABB(2,0); // node 0   
     nodes[1](0) = cutterXAABB(0,1); nodes[1](1) = cutterXAABB(1,0); nodes[1](2) = cutterXAABB(2,0); // node 1
