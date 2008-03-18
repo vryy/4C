@@ -116,6 +116,14 @@ int main(
         fluidwriter.WriteFiles();
         break;
     }
+    case prb_elch:
+    {
+        string basename = problem.outname();
+        PostField* fluidfield = problem.get_discretization(0);
+        FluidEnsightWriter fluidwriter(fluidfield, basename);
+        fluidwriter.WriteFiles();
+        break;
+    }
     default:
         dserror("problem type %d not yet supported", problem.Problemtype());
     }
