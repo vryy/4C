@@ -77,7 +77,8 @@ namespace XFEM
       // get shape function derivative
       const BlitzMat deriv(DRT::UTILS::shape_function_3D_deriv1(pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape()));
       // get jacobian matrix ...
-      const BlitzMat xjm(blitz::sum(deriv(i,k)*xyze_cell(j,k),k));
+      static BlitzMat xjm(3,3);
+      xjm = blitz::sum(deriv(i,k)*xyze_cell(j,k),k);
       // ...and its determinante
       const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                          xjm(0,1)*xjm(1,2)*xjm(2,0)+
