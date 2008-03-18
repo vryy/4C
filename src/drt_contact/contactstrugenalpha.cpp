@@ -155,6 +155,7 @@ void ContactStruGenAlpha::ConsistentPredictor()
     p.set("delta time",dt);
     // set vector values needed by elements
     discret_.ClearState();
+    disi_->PutScalar(0.0);
     discret_.SetState("residual displacement",disi_);
     discret_.SetState("displacement",dism_);
     //discret_.SetState("velocity",velm_); // not used at the moment
@@ -196,7 +197,24 @@ void ContactStruGenAlpha::ConsistentPredictor()
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
   }
 
+  //------------------------------------------------------------ contact
+  RCP<Epetra_Vector> zm = contactmanager_->LagrMult();
+  RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
+  
+  // update of mid-point LM (equal to last end-point)
+  zm->Update(1.0,*zn,0.0);
+  
+  // evaluate Mortar coupling matrices for contact forces 
+  {
+    contactmanager_->Initialize(0);
+    contactmanager_->SetState("displacement",dism_);
+        
+    // (almost) all contact stuff is done here!
+    contactmanager_->EvaluateMortar();
+  }
+      
   // add contact forces
+  contactmanager_->ContactForces(fresm_);
   RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
   if (fc!=null) fresm_->Update(-1.0,*fc,1.0);
 
@@ -323,6 +341,7 @@ void ContactStruGenAlpha::ConstantPredictor()
     p.set("delta time",dt);
     // set vector values needed by elements
     discret_.ClearState();
+    disi_->PutScalar(0.0);
     discret_.SetState("residual displacement",disi_);
     discret_.SetState("displacement",dism_);
     //discret_.SetState("velocity",velm_); // not used at the moment
@@ -364,7 +383,24 @@ void ContactStruGenAlpha::ConstantPredictor()
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
   }
 
+  //------------------------------------------------------------ contact
+  RCP<Epetra_Vector> zm = contactmanager_->LagrMult();
+  RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
+  
+  // update of mid-point LM (equal to last end-point)
+  zm->Update(1.0,*zn,0.0);
+  
+  // evaluate Mortar coupling matrices for contact forces 
+  {
+    contactmanager_->Initialize(0);
+    contactmanager_->SetState("displacement",dism_);
+        
+    // (almost) all contact stuff is done here!
+    contactmanager_->EvaluateMortar();
+  }
+      
   // add contact forces
+  contactmanager_->ContactForces(fresm_);
   RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
   if (fc!=null) fresm_->Update(-1.0,*fc,1.0);
 
@@ -521,6 +557,8 @@ void ContactStruGenAlpha::FullNewton()
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
+      // scale IncD_{n+1} to obtain mid residual displacements IncD_{n+1-alphaf}
+      disi_->Scale(1.-alphaf);
       discret_.SetState("residual displacement",disi_);
       discret_.SetState("displacement",dism_);
       //discret_.SetState("velocity",velm_); // not used at the moment
@@ -750,6 +788,8 @@ void ContactStruGenAlpha::PTC()
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_.ClearState();
+      // scale IncD_{n+1} to obtain mid residual displacements IncD_{n+1-alphaf}
+      disi_->Scale(1.-alphaf);
       discret_.SetState("residual displacement",disi_);
       discret_.SetState("displacement",dism_);
       //discret_.SetState("velocity",velm_); // not used at the moment
@@ -915,13 +955,30 @@ void ContactStruGenAlpha::UpdateandOutput()
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0,*fextn_,0.0);
-
+  
+  //--------------------------------- update contact Lagrange multipliers
+  RCP<Epetra_Vector> zm = contactmanager_->LagrMult();
+  RCP<Epetra_Vector> zoldm = contactmanager_->LagrMultOld();
+  RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
+  
+  cout << *zoldm;
+  
+  // Lagrange multipliers at end-point
+  // z_{n+1} = 1./(1.-alphaf) * z_{n+1-alpha_f} - alphaf/(1.-alphaf) * z_n
+  zn->Update(1./(1.-alphaf),*zm,-alphaf/(1.-alphaf));
+  
+  // Lagrange multipliers at generalized mid-point
+  // we need these for checking the active set in the next time step
+  zoldm->Update(1.0,*zm,0.0);
+  cout << *zm;
+  cout << *zn;
   //----- update anything that needs to be updated at the element level
   {
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
-    p.set("action","calc_struct_update_istep");
+    // p.set("action","calc_struct_update_istep");
+    p.set("action","calc_struct_update_genalpha_imrlike");
     // choose what to assemble
     p.set("assemble matrix 1",false);
     p.set("assemble matrix 2",false);
@@ -931,6 +988,7 @@ void ContactStruGenAlpha::UpdateandOutput()
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     discret_.Evaluate(p,null,null,null,null,null);
   }
 
@@ -946,13 +1004,11 @@ void ContactStruGenAlpha::UpdateandOutput()
     output_.WriteVector("fexternal",fext_);
 
     isdatawritten = true;
-
+    
     // write restart information for contact
-    RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
-    RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
     RCP<Epetra_Vector> activetoggle = contactmanager_->WriteRestart();
-    output_.WriteVector("fcontact",fc);
-    output_.WriteVector("lagrmult",zold);
+    output_.WriteVector("lagrmultend",zn);
+    output_.WriteVector("lagrmultold",zoldm);
     output_.WriteVector("activetoggle",activetoggle);
 
     if (discret_.Comm().MyPID()==0 && printscreen)
@@ -1135,14 +1191,14 @@ void ContactStruGenAlpha::ReadRestart(int step)
   reader.ReadMesh(step);
 
   // read restart information for contact
-  RCP<Epetra_Vector> fc = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-  RCP<Epetra_Vector> zold = rcp(new Epetra_Vector(*(contactmanager_->SlaveRowDofs())));
+  RCP<Epetra_Vector> zn = rcp(new Epetra_Vector(*(contactmanager_->SlaveRowDofs())));
+  RCP<Epetra_Vector> zoldm = rcp(new Epetra_Vector(*(contactmanager_->SlaveRowDofs())));
   RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(contactmanager_->SlaveRowNodes())));
-  reader.ReadVector(fc,"fcontact");
-  reader.ReadVector(zold,"lagrmult");
+  reader.ReadVector(zn,"lagrmultend");
+  reader.ReadVector(zoldm,"lagrmultold");
   reader.ReadVector(activetoggle,"activetoggle");
-  contactmanager_->GetContactForces()=fc;
-  contactmanager_->LagrMultOld()=zold;
+  contactmanager_->LagrMultEnd()=zn;
+  contactmanager_->LagrMultOld()=zoldm;
   contactmanager_->ReadRestart(activetoggle);
 
   // override current time and step with values from file

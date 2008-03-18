@@ -118,16 +118,22 @@ public:
   inline RCP<Epetra_Vector>& GetContactForces() { return fc_; }
   
   /*!
-  \brief Return Lagrange multiplier vector
+  \brief Return Lagrange multiplier vector (mid-point)
     
   */
   inline RCP<Epetra_Vector>& LagrMult() { return z_; }
   
   /*!
-  \brief Return old Lagrange multiplier vector
+  \brief Return old Lagrange multiplier vector (mid-point)
       
   */
   inline RCP<Epetra_Vector>& LagrMultOld() { return zold_; }
+  
+  /*!
+  \brief Return Lagrange multiplier vector (end-point)
+        
+  */
+  inline RCP<Epetra_Vector>& LagrMultEnd() { return zn_; }
   
   /*!
   \brief Return current global contact status
@@ -159,6 +165,12 @@ public:
   */
   void SetState(const string& statename, const RCP<Epetra_Vector> vec);
   
+  /*!
+  \brief Evaluate contact Mortar matrices D,M only
+      
+  */
+  void EvaluateMortar();
+    
   /*!
   \brief Evaluate contact
     
@@ -228,8 +240,9 @@ protected:
   RCP<LINALG::SparseMatrix>          nmatrix_;        // global Matrix N of active node normals
   RCP<LINALG::SparseMatrix>          tmatrix_;        // global Matrix T of active node tangents
   
-  RCP<Epetra_Vector>                 z_;              // vector of current Lagrange multipliers
-  RCP<Epetra_Vector>                 zold_;           // vector of last time step Lagrange multipliers
+  RCP<Epetra_Vector>                 z_;              // vector of Lagrange multipliers (mid-point)
+  RCP<Epetra_Vector>                 zold_;           // vector of last time step Lagrange multipliers (mid-point)
+  RCP<Epetra_Vector>                 zn_;             // vector of agrange multipliers (end-point)
   RCP<Epetra_Vector>                 incrjump_;       // incremental displacement jump (slave dofs)
   RCP<Epetra_Vector>                 fc_;             // vector of current contact forces
   bool                               isincontact_;    // flag indicatoing global contact status

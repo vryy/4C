@@ -379,8 +379,9 @@ isincontact_(false)
   gactivet_ = rcp(new Epetra_Map(0,0,Comm()));
   
   // setup Lagrange muliplier vectors
-  zold_       = rcp(new Epetra_Vector(*gsdofrowmap_));
   z_          = rcp(new Epetra_Vector(*gsdofrowmap_));
+  zold_       = rcp(new Epetra_Vector(*gsdofrowmap_));
+  zn_         = rcp(new Epetra_Vector(*gsdofrowmap_));
   		
   return;
 }
@@ -526,6 +527,24 @@ void CONTACT::Manager::SetState(const string& statename,
   {
     interface_[i]->SetState(statename,vec);
   }
+  return;
+}
+/*----------------------------------------------------------------------*
+ |  evaluate contact Mortar matrices D,M only (public)        popp 03/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::EvaluateMortar()
+{ 
+  // call interfaces to evaluate Mortar coupling
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->Evaluate();
+    interface_[i]->AssembleDMG(*dmatrix_,*mmatrix_,*g_);
+  }
+    
+  // FillComplete() global Mortar matrices
+  dmatrix_->Complete();
+  mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
+    
   return;
 }
 
@@ -1126,16 +1145,16 @@ void CONTACT::Manager::UpdateActiveSet()
         }
         
         // check for tensile contact forces
-        //if (nz<0) // no averaging of Lagrange multipliers
-        if ((0.5*nz+0.5*nzold)<0) // averaging of Lagrange multipliers
+        if (nz<0) // no averaging of Lagrange multipliers
+        //if ((0.5*nz+0.5*nzold)<0) // averaging of Lagrange multipliers
         {
           cnode->Active() = false;
           activesetconv_ = false;
         }
         
-        cout << "ACTIVE: " << i << " " << j << " " << gid << " "
-             << nz << " " << nzold << " " << 0.5*nz+0.5*nzold
-             << " " << cnode->Getg() << endl;  
+        //cout << "ACTIVE: " << i << " " << j << " " << gid << " "
+        //     << nz << " " << nzold << " " << 0.5*nz+0.5*nzold
+        //     << " " << cnode->Getg() << endl;  
       }
       
     }
@@ -1175,9 +1194,6 @@ void CONTACT::Manager::UpdateActiveSet()
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
     IsInContact()=true;
-  
-  // store Lagrange multipliers zold_ if active set converged
-  if (activesetconv_) zold_=rcp(new Epetra_Vector(*z_));
   
 #ifdef DEBUG
   // visualization with gmsh
