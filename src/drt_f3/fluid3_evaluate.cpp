@@ -1099,7 +1099,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           stabstrtoact_["vstab_gls_rhs"  ]=viscous_stab_gls_only_rhs;
           stabstrtoact_["vstab_usfem"    ]=viscous_stab_usfem;
           stabstrtoact_["vstab_usfem_rhs"]=viscous_stab_usfem_only_rhs;
-          stabstrtoact_["no_ctab"        ]=continuity_stab_none;
+          stabstrtoact_["no_cstab"       ]=continuity_stab_none;
           stabstrtoact_["cstab_qs"       ]=continuity_stab_yes;
           stabstrtoact_["cstab_td"       ]=continuity_stab_td;
           stabstrtoact_["no_cross"       ]=cross_stress_stab_none;
