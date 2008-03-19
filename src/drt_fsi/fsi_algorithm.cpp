@@ -45,7 +45,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*/
 FSI::Algorithm::Algorithm(Epetra_Comm& comm)
 : StructureBaseAlgorithm(),
-  FluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
+  FluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),true),
   AleBaseAlgorithm(),
   comm_(comm)
 {

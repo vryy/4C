@@ -47,8 +47,9 @@ FSI::Fluid::~Fluid()
 FSI::FluidAdapter::FluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
                                  Teuchos::RCP<LINALG::Solver> solver,
                                  Teuchos::RCP<ParameterList> params,
-                                 Teuchos::RCP<IO::DiscretizationWriter> output)
-  : fluid_(dis, *solver, *params, *output, true),
+                                 Teuchos::RCP<IO::DiscretizationWriter> output,
+                                 bool isale)
+  : fluid_(dis, *solver, *params, *output, isale),
     dis_(dis),
     solver_(solver),
     params_(params),
@@ -363,8 +364,9 @@ FSI::FluidGenAlphaAdapter::FluidGenAlphaAdapter(
   Teuchos::RCP<DRT::Discretization>      dis,
   Teuchos::RCP<LINALG::Solver>           solver,
   Teuchos::RCP<ParameterList>            params,
-  Teuchos::RCP<IO::DiscretizationWriter> output)
-  : fluid_ (dis, *solver, *params, *output, true),
+  Teuchos::RCP<IO::DiscretizationWriter> output,
+  bool                                   isale)
+  : fluid_ (dis, *solver, *params, *output, isale),
     dis_   (dis),
     solver_(solver),
     params_(params),
@@ -670,9 +672,9 @@ Teuchos::RCP<DRT::ResultTest> FSI::FluidGenAlphaAdapter::CreateFieldTest()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::FluidBaseAlgorithm::FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
+FSI::FluidBaseAlgorithm::FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn, bool isale)
 {
-  SetupFluid(prbdyn);
+  SetupFluid(prbdyn, isale);
 }
 
 /*----------------------------------------------------------------------*/
@@ -683,7 +685,7 @@ FSI::FluidBaseAlgorithm::~FluidBaseAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdyn)
+void FSI::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdyn, bool& isale)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FSI::FluidBaseAlgorithm::SetupFluid");
   Teuchos::TimeMonitor monitor(*t);
@@ -796,7 +798,7 @@ void FSI::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdyn)
     // integration (call the constructor)
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-    fluid_ = rcp(new FluidAdapter(actdis, solver, fluidtimeparams, output));
+    fluid_ = rcp(new FluidAdapter(actdis, solver, fluidtimeparams, output, isale));
   }
   else if (iop == timeint_gen_alpha)
   {
@@ -853,7 +855,7 @@ void FSI::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdyn)
     // integration (call the constructor)
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-    fluid_ = rcp(new FluidGenAlphaAdapter(actdis, solver, fluidtimeparams, output));
+    fluid_ = rcp(new FluidGenAlphaAdapter(actdis, solver, fluidtimeparams, output, isale));
   }
   else
   {

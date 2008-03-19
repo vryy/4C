@@ -27,14 +27,17 @@ Maintainer: Georg Bauer
 //#include "fsi_ale.H"
 
 
+/*!
+\brief ELCH: namespace of the electrochemistry module in BACI
 
+*/
 namespace ELCH
 {
 
   /// ELCH algorithm base
   /*!
 
-    Base class of ELCH algorithms. Derives from fluid BaseAlgorithm.
+    Base class of ELCH algorithms. Derives from FluidBaseAlgorithm.
     There can (and will) be different subclasses that implement 
     different coupling schemes.
 
@@ -64,6 +67,9 @@ namespace ELCH
 
     /// step number
     int Step() const { return step_; }
+
+    /// tests if there are more time steps to do
+    bool NotFinished() { return step_ < nstep_ and time_ <= maxtime_; }
 
     /// start a new time step
     void PrepareTimeStep();

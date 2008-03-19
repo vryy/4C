@@ -38,11 +38,12 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ELCH::Algorithm::Algorithm(Epetra_Comm& comm)
-  :  FluidBaseAlgorithm(DRT::Problem::Instance()->FluidDynamicParams()),
+  :  FluidBaseAlgorithm(DRT::Problem::Instance()->FluidDynamicParams(),false),
      comm_(comm),
      step_(0),
      time_(0.0)
 {
+    // taking time loop control parameters out of fluid dynamics section
     const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
     // maximum simulation time
     maxtime_=fluiddyn.get<double>("MAXTIME");
@@ -62,16 +63,40 @@ ELCH::Algorithm::~Algorithm()
 /*----------------------------------------------------------------------*/
 void ELCH::Algorithm::TimeLoop()
 {
-  if (Comm().MyPID() == 0)
-  cout<<"ELCH problemtype under development..."<<endl;
-
-  while (step_< nstep_ and time_<maxtime_)
+    // print out the ELCH module logo
+    if (Comm().MyPID() == 0)
+    {
+        cout<<"    _____ _     _____  _   _  "<<endl;
+        cout<<"   |  ___| |   /  __ \\| | | | "<<endl;
+        cout<<"   | |__ | |   | /  \\/| |_| | "<<endl;
+        cout<<"   |  __|| |   | |    |  _  | "<<endl;
+        cout<<"   | |___| |___| \\__/\\| | | | "<<endl;
+        cout<<"   \\____/\\_____/\\____/\\_| |_/ "<<endl;
+        cout<<"                               "<<endl;
+        // more at http://www.ascii-art.de under entry "moose" (or "elk")
+        cout<<"       ___            ___  "<<endl;
+        cout<<"      /   \\          /   \\ "<<endl;
+        cout<<"      \\_   \\        /  __/ "<<endl;
+        cout<<"       _\\   \\      /  /__  "<<endl;
+        cout<<"       \\___  \\____/   __/  "<<endl;
+        cout<<"           \\_       _/     "<<endl;
+        cout<<"             | @ @  \\_     "<<endl;
+        cout<<"             |             "<<endl;
+        cout<<"           _/     /\\       "<<endl;
+        cout<<"          /o)  (o/\\ \\_     "<<endl;
+        cout<<"          \\_____/ /        "<<endl;
+        cout<<"            \\____/         "<<endl;
+        cout<<"                           "<<endl;
+    }
+  
+  // time loop
+  while (NotFinished())
   {
     PrepareTimeStep();
     FluidField().NonlinearSolve();
     Update();
     Output();
-  }
+  } // time loop
 }
 
 
@@ -106,7 +131,6 @@ void ELCH::Algorithm::Output()
 
   FluidField().LiftDrag();
 }
-
 
 
 #endif // CCADISCRET

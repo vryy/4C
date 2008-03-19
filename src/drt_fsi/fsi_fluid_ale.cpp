@@ -12,7 +12,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidAleAlgorithm::FluidAleAlgorithm(Epetra_Comm& comm)
-  : FluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
+  : FluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),true),
     AleBaseAlgorithm(),
     comm_(comm)
 {

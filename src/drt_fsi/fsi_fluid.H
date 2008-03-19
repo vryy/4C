@@ -242,7 +242,8 @@ namespace FSI {
     FluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
                  Teuchos::RCP<LINALG::Solver> solver,
                  Teuchos::RCP<ParameterList> params,
-                 Teuchos::RCP<IO::DiscretizationWriter> output);
+                 Teuchos::RCP<IO::DiscretizationWriter> output,
+                 bool isale);
 
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const;
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const;
@@ -363,7 +364,8 @@ namespace FSI {
       Teuchos::RCP<DRT::Discretization>      dis,
       Teuchos::RCP<LINALG::Solver>           solver,
       Teuchos::RCP<ParameterList>            params,
-      Teuchos::RCP<IO::DiscretizationWriter> output
+      Teuchos::RCP<IO::DiscretizationWriter> output,
+      bool isale
       );
 
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const;
@@ -452,7 +454,7 @@ namespace FSI {
   public:
 
     /// constructor
-    explicit FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn);
+    explicit FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn, bool isale);
 
     /// virtual destructor to support polymorph destruction
     virtual ~FluidBaseAlgorithm();
@@ -465,7 +467,7 @@ namespace FSI {
 
     /// setup fluid algorithm (overriding some fluid parameters with 
     /// values specified in given problem-dependent ParameterList)
-    void SetupFluid(const Teuchos::ParameterList& prbdyn);
+    void SetupFluid(const Teuchos::ParameterList& prbdyn, bool& isale);
 
     /// fluid field solver
     Teuchos::RCP<Fluid> fluid_;
