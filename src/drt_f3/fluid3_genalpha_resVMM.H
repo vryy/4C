@@ -255,6 +255,7 @@ namespace DRT
                    blitz::Array<double,1>&                               mean_res_sq,
                    blitz::Array<double,1>&                               mean_sacc_sq);
 
+      static Fluid3GenalphaResVMM* Impl(DRT::ELEMENTS::Fluid3* ele);
 
     private:
       ///  Get the nodal values of the bodyforce. The values are stored in edeadnf
@@ -347,7 +348,7 @@ namespace DRT
       // ------------
       //! the stabilisation parameters tauM,tauMp and tauC
       blitz::Array<double,1> tau_;
-             //! matrix of subscale velocities in gausspoints of this element, time n+alphaF
+      //! matrix of subscale velocities in gausspoints of this element, time n+alphaF
       blitz::Array<double,1> svelaf_;
       //! Convective term, most recent iteration value
       blitz::Array<double,1> convaf_old_;

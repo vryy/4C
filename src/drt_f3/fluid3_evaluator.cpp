@@ -682,7 +682,6 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::Evaluate(DRT::EGROUP::OtherElements& 
 {
   Teuchos::TimeMonitor monitor(*otherelementtime_);
   PlainEvaluate(elements);
-  //BlockEvaluate(elements,2);
 }
 
 
@@ -691,7 +690,7 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::Evaluate(DRT::EGROUP::OtherElements& 
 void DRT::ELEMENTS::Fluid3SystemEvaluator::Evaluate(DRT::EGROUP::AlignedHex8& elements)
 {
   Teuchos::TimeMonitor monitor(*alignedhex8time_);
-#if 0
+#if 1
   PlainEvaluate(elements);
 #else
   BlockHex8Evaluate(elements);

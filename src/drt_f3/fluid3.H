@@ -713,9 +713,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
   //! convert string to stabilisation action
   StabilisationAction ConvertStringToStabAction (const string& action) const;
 
-  /// Residual based genalpha implementation class for fluid element
-  Fluid3GenalphaResVMM* GenalphaResVMM();
-
   /// Internal implementation class for fluid element -- stationary formulation
   Fluid3Stationary* StationaryImpl();
 

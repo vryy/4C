@@ -32,6 +32,66 @@ Maintainer: Peter Gamnitzer
 #include <Epetra_LAPACK.h>
 
 
+DRT::ELEMENTS::Fluid3GenalphaResVMM* DRT::ELEMENTS::Fluid3GenalphaResVMM::Impl(DRT::ELEMENTS::Fluid3* ele)
+{
+  switch (ele->NumNode())
+  {
+  case 8:
+  {
+    static Fluid3GenalphaResVMM* f8;
+    if (f8==NULL)
+      f8 = new Fluid3GenalphaResVMM(8);
+    return f8;
+  }
+  case 20:
+  {
+    static Fluid3GenalphaResVMM* f20;
+    if (f20==NULL)
+      f20 = new Fluid3GenalphaResVMM(20);
+    return f20;
+  }
+  case 27:
+  {
+    static Fluid3GenalphaResVMM* f27;
+    if (f27==NULL)
+      f27 = new Fluid3GenalphaResVMM(27);
+    return f27;
+  }
+  case 4:
+  {
+    static Fluid3GenalphaResVMM* f4;
+    if (f4==NULL)
+      f4 = new Fluid3GenalphaResVMM(4);
+    return f4;
+  }
+  case 10:
+  {
+    static Fluid3GenalphaResVMM* f10;
+    if (f10==NULL)
+      f10 = new Fluid3GenalphaResVMM(10);
+    return f10;
+  }
+  case 6:
+  {
+    static Fluid3GenalphaResVMM* f6;
+    if (f6==NULL)
+      f6 = new Fluid3GenalphaResVMM(6);
+    return f6;
+  }
+  case 15:
+  {
+    static Fluid3GenalphaResVMM* f15;
+    if (f15==NULL)
+      f15 = new Fluid3GenalphaResVMM(15);
+    return f15;
+  }
+  default:
+    dserror("node number %d not supported", ele->NumNode());
+  }
+  return NULL;
+}
+
+
 /*----------------------------------------------------------------------*
   |  constructor allocating arrays whose sizes may depend on the number |
   | of nodes of the element                                             |
@@ -1512,7 +1572,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     // j : direction of derivative x/y/z
     //
     // get fine-scale velocity (np,i) derivatives at integration point
-    if (fssgv != Fluid3::fssgv_no  && fssgv != Fluid3::fssgv_scale_similarity) 
+    if (fssgv != Fluid3::fssgv_no  && fssgv != Fluid3::fssgv_scale_similarity)
          fsvderxyaf_ = blitz::sum(derxy_(j,k)*fsevelaf(i,k),k);
     else fsvderxyaf_ = 0.;
 
