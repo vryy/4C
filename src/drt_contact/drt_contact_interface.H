@@ -375,6 +375,12 @@ public:
                           LINALG::SparseMatrix& tglobal);
   
   /*!
+  \brief Initialize active set of this interface (t=0)
+        
+  */
+  virtual bool InitializeActiveSet();
+    
+  /*!
   \brief Build active set (nodes / dofs) of this interface
       
   */

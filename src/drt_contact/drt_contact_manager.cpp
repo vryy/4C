@@ -372,12 +372,16 @@ isincontact_(false)
   gndofrowmap_ = LINALG::SplitMap(*(discret_.DofRowMap()),*gsdofrowmap_);
   gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_,*gmdofrowmap_);
   
-  // setup global active node/dof maps
-  gactivenodes_ = rcp(new Epetra_Map(0,0,Comm()));
-  gactivedofs_ = rcp(new Epetra_Map(0,0,Comm()));
-  gactiven_ = rcp(new Epetra_Map(0,0,Comm()));
-  gactivet_ = rcp(new Epetra_Map(0,0,Comm()));
-  
+  // initialize active sets of all interfaces
+  for (int i=0;i<(int)interface_.size();++i)
+  {
+    interface_[i]->InitializeActiveSet();
+    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes());
+    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs());
+    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs());
+    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs());
+  }
+    
   // setup Lagrange muliplier vectors
   z_          = rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_       = rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -1145,16 +1149,16 @@ void CONTACT::Manager::UpdateActiveSet()
         }
         
         // check for tensile contact forces
-        if (nz<0) // no averaging of Lagrange multipliers
-        //if ((0.5*nz+0.5*nzold)<0) // averaging of Lagrange multipliers
+        //if (nz<0) // no averaging of Lagrange multipliers
+        if ((0.5*nz+0.5*nzold)<0) // averaging of Lagrange multipliers
         {
           cnode->Active() = false;
           activesetconv_ = false;
         }
         
-        //cout << "ACTIVE: " << i << " " << j << " " << gid << " "
-        //     << nz << " " << nzold << " " << 0.5*nz+0.5*nzold
-        //     << " " << cnode->Getg() << endl;  
+        cout << "ACTIVE: " << i << " " << j << " " << gid << " "
+             << nz << " " << nzold << " " << 0.5*nz+0.5*nzold
+             << " " << cnode->Getg() << endl;  
       }
       
     }
@@ -1187,8 +1191,8 @@ void CONTACT::Manager::UpdateActiveSet()
     interface_[i]->BuildActiveSet();
     gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes());
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs());
-    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs());;
-    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs());;
+    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs());
+    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs());
   }
   
   // update flag for global contact status

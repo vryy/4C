@@ -26,6 +26,9 @@ Maintainer: Alexander Popp
 #define CONTACTNGP 5             /* no. Gauss points for integration */
 #define CONTACTCRITDIST 0.5      /* critical distance for potential contact */
 
+#define CONTACTINITIALSET 0      /* flag for initialization of active set */
+                                 /* 0=empty, 1=full, 2=user-defined      */
+
 // FIXME: Might be better to have critdist = f(element length)
 
 

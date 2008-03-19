@@ -1342,6 +1342,120 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
 }
 
 /*----------------------------------------------------------------------*
+ |  initialize active set (nodes / dofs)                      popp 03/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::InitializeActiveSet()
+{
+  // display warning for user-specific case
+  if (CONTACTINITIALSET==2 && comm_.MyPID()==0)
+  {
+    cout << "***************************************************\n"
+         << "* WARNING: User-defined active set initialization *\n"
+         << "*          Is this still what you want...?        *\n"
+         << "***************************************************\n\n";
+  }     
+  // define local variables
+  int countnodes = 0;
+  int countdofs = 0;
+  vector<int> mynodegids(snoderowmap_->NumMyElements());
+  vector<int> mydofgids(sdofrowmap_->NumMyElements());
+  
+  // loop over all slave nodes
+  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+    const int numdof = cnode->NumDof();
+    
+    // *******************************************************************
+    // INITIALIZATION OF THE ACTIVE SET (t=0)
+    // Later this will be the point where we have IF ACTIVE (see below)
+    // but here for initialization of the active set, it is our choice!
+    // The following cases can be thought of:
+    // 0) Empty active set
+    //    -> this means everything is identical to BuildActiveSet
+    //     -> for unconstrained static problems this doesn't work!
+    // 1) Full active set
+    //    -> all slave nodes are set active, no IF here at all
+    // 2) Partial active set
+    //    -> this is problem-specific and the node-Ids have to be known
+    // ********************************************************************
+    
+    switch(CONTACTINITIALSET)
+    {
+    // EMPTY: no assumption on initial active set
+    case 0:
+      if (cnode->Active())
+      {
+        cnode->Active()=true;
+        mynodegids[countnodes] = cnode->Id();
+        ++countnodes;
+        
+        for (int j=0;j<numdof;++j)
+        {
+          mydofgids[countdofs] = cnode->Dofs()[j];
+          ++countdofs;
+        }
+      }
+      break;
+      
+     // FULL: all slave nodes are assumed to be active
+    case 1:
+      cnode->Active()=true;
+      mynodegids[countnodes] = cnode->Id();
+      ++countnodes;
+        
+      for (int j=0;j<numdof;++j)
+      {
+        mydofgids[countdofs] = cnode->Dofs()[j];
+        ++countdofs;
+      }
+      break;
+    
+    // USER-DEFINED: some slave nodes are assumed to be active
+    case 2:
+      if (cnode->Id()==909 || cnode->Id()==936 || cnode->Id()==888)
+      {
+        cnode->Active()=true;
+        mynodegids[countnodes] = cnode->Id();
+        ++countnodes;
+        
+        for (int j=0;j<numdof;++j)
+        {
+          mydofgids[countdofs] = cnode->Dofs()[j];
+          ++countdofs;
+        }
+      }
+      break;
+    
+    default:
+      dserror("ERROR: InitializeActiveSet: Invalid value for CONTACTINITIALSET!");
+      break;
+    }
+  }
+  
+  // resize the temporary vectors
+  mynodegids.resize(countnodes);
+  mydofgids.resize(countdofs);
+  
+  // communicate countnodes and countdofs among procs
+  int gcountnodes, gcountdofs;
+  Comm().SumAll(&countnodes,&gcountnodes,1);
+  Comm().SumAll(&countdofs,&gcountdofs,1);
+  
+  // create active node map and active dof map
+  activenodes_ = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
+  activedofs_  = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
+  
+  // split active dofs into Ndofs and Tdofs
+  SplitActiveDofs();
+  
+  return true;
+}
+
+/*----------------------------------------------------------------------*
  |  build active set (nodes / dofs)                           popp 02/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Interface::BuildActiveSet()

@@ -961,8 +961,6 @@ void ContactStruGenAlpha::UpdateandOutput()
   RCP<Epetra_Vector> zoldm = contactmanager_->LagrMultOld();
   RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
   
-  cout << *zoldm;
-  
   // Lagrange multipliers at end-point
   // z_{n+1} = 1./(1.-alphaf) * z_{n+1-alpha_f} - alphaf/(1.-alphaf) * z_n
   zn->Update(1./(1.-alphaf),*zm,-alphaf/(1.-alphaf));
@@ -970,8 +968,7 @@ void ContactStruGenAlpha::UpdateandOutput()
   // Lagrange multipliers at generalized mid-point
   // we need these for checking the active set in the next time step
   zoldm->Update(1.0,*zm,0.0);
-  cout << *zm;
-  cout << *zn;
+
   //----- update anything that needs to be updated at the element level
   {
     // create the parameters for the discretization
