@@ -52,8 +52,8 @@ private:
   /// our fluid algorithmus
 //  FluidImplicitTimeInt& fluid_;
 
-  RCP<DRT::Discretization> fluiddis_;
-  RCP<Epetra_Vector>       mysol_;
+  RefCountPtr<DRT::Discretization> fluiddis_;
+  RefCountPtr<Epetra_Vector>       mysol_;
 };
 
 

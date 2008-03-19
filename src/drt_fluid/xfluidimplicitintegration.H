@@ -94,6 +94,7 @@ public:
   */
   ~XFluidImplicitTimeInt();
 
+
   /*!
   \brief do explicit predictor step to start nonlinear iteration from
          a better initial value
@@ -134,6 +135,12 @@ public:
 
   */
   void NonlinearSolve();
+  
+  /*!
+  \brief compute Interface
+
+  */
+  void ComputeInterfaceAndSetDOFs(RCP<DRT::Discretization> cutterdiscret);
 
   /*!
   \brief solve linearised fluid

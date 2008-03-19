@@ -450,7 +450,10 @@ private:
   blitz::Array<double,1>                        sub_pre_old_;
 
   //! store information about the unknowns of this element
-  XFEM::ElementDofManager                         eleDofManager_;
+  XFEM::ElementDofManager                       eleDofManager_;
+  
+  //! store information about the intersection handle
+  RCP<XFEM::InterfaceHandle>                    ih_;
 
   // internal calculation methods
 

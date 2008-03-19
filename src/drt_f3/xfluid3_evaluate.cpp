@@ -132,27 +132,15 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
     //--------------------------------------------------
       case calc_fluid_systemmat_and_residual:
       {
-          // do no calculation, if not needed
-          if (lm.size() == 0)
-              break;
-          
-          // first task is to compare that the dofs fit to the current state of the dofmanager
-          // get access to global dofman
-          const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
-          if (globaldofman == null) dserror("hey, you did not give me a globaldofmanager (says xfluid3 evaluate)!!!");
-          
-          // check for outdated dof information
-          globaldofman->checkForConsistency((*this), eleDofManager_);
-          
-          // get access to interface information
-          const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
-          if (ih==null)  dserror("hey, you did not give the InterfaceHandle");
-          
-          // need current velocity/pressure and history vector
-          RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-          if (velnp==null)  dserror("Cannot get state vector 'velnp'");
-          RCP<const Epetra_Vector> hist  = discretization.GetState("hist");
-          if (hist==null)   dserror("Cannot get state vectors 'hist'");
+        // do no calculation, if not needed
+        if (lm.size() == 0)
+            break;
+        
+        // need current velocity/pressure and history vector
+        RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+        if (velnp==null)  dserror("Cannot get state vector 'velnp'");
+        RCP<const Epetra_Vector> hist  = discretization.GetState("hist");
+        if (hist==null)   dserror("Cannot get state vectors 'hist'");
 
         // extract local values from the global vectors
         vector<double> myvelnp(lm.size());
@@ -201,7 +189,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         //--------------------------------------------------
         XFLUID::callSysmat(assembly_type,
-                this, ih, eleDofManager_, myvelnp, myhist, estif, eforce,
+                this, ih_, eleDofManager_, myvelnp, myhist, estif, eforce,
                 actmat, time, timefac, newton, pstab, supg, vstab, cstab, true);
 
         // This is a very poor way to transport the density to the
@@ -273,23 +261,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       break;
       case calc_fluid_stationary_systemmat_and_residual:
       {
-          //cout << endl << "Processing element with GiD id = " << (this->Id()+1) <<":" << endl;
-
           // do no calculation, if not needed
           if (lm.size() == 0)
               break;
-          
-          // first task is to compare that the dofs fit to the current state of the dofmanager
-          // get access to global dofman
-          const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
-          if (globaldofman == null) dserror("hey, you did not give me a globaldofmanager (says xfluid3 evaluate)!!!");
-          
-          // check for outdated dof information
-          globaldofman->checkForConsistency((*this), eleDofManager_);
-          
-          // get access to interface information
-          const RCP<XFEM::InterfaceHandle> ih = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
-          if (ih==null)  dserror("hey, you did not give the InterfaceHandle");
           
           // need current velocity/pressure 
           RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
@@ -330,7 +304,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           
           // calculate element coefficient matrix and rhs
           XFLUID::callSysmat(assembly_type,
-                  this, ih, eleDofManager_, locval, locval_hist, estif, eforce,
+                  this, ih_, eleDofManager_, locval, locval_hist, estif, eforce,
                   actmat, pseudotime, 1.0, newton, pstab, supg, vstab, cstab, false);
 
           // This is a very poor way to transport the density to the
@@ -348,6 +322,9 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           
           // create local copy of information about dofs
           eleDofManager_ = globaldofman->constructElementDofManager((*this), numvirtualnodes);
+          
+          // store pointer to interface handle
+          ih_ = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
           break;
       }
       default:

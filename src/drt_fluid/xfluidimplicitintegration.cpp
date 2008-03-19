@@ -29,8 +29,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_function.H"
 #include "../drt_xfem/interface.H"
 #include "../drt_xfem/dof_management.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_mapextractor.H"
 #include "fluid_utils.H"
 #include "vm3_solver.H"
 
@@ -545,7 +543,7 @@ void XFluidImplicitTimeInt::TimeLoop()
   while (step_<stepmax_ and time_<maxtime_)
   {
     PrepareTimeStep();
-
+    ComputeInterfaceAndSetDOFs(cutterdiscret_);
     switch (dyntype)
     {
     case 0:
@@ -845,6 +843,40 @@ void XFluidImplicitTimeInt::PrepareTimeStep()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(RCP<DRT::Discretization> cutterdiscret)
+{
+  // compute Intersection
+  RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret));
+
+  // apply enrichments
+  RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
+
+  // tell elements about the dofs and the integration
+  {
+      ParameterList eleparams;
+      eleparams.set("action","store_xfem_info");
+      eleparams.set("dofmanager",dofmanager);
+      eleparams.set("interfacehandle",ih);
+      eleparams.set("assemble matrix 1",false);
+      eleparams.set("assemble matrix 2",false);
+      eleparams.set("assemble vector 1",false);
+      eleparams.set("assemble vector 2",false);
+      eleparams.set("assemble vector 3",false);
+      discret_->Evaluate(eleparams,null,null,null,null,null);
+  }
+  
+  discret_->FillComplete();
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | contains the nonlinear iteration loop                     gammi 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::NonlinearSolve()
 {
   // time measurement: nonlinear iteration --- start TimeMonitor tm3
@@ -870,31 +902,6 @@ void XFluidImplicitTimeInt::NonlinearSolve()
   dtsolve_ = 0;
   dtele_   = 0;
   double   tcpu;
-
-  // compute Intersection
-  RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret_));
-
-  // apply enrichments
-  RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
-
-  // tell elements about the dofs and the integration
-  {
-      ParameterList eleparams;
-      eleparams.set("action","store_xfem_info");
-      eleparams.set("dofmanager",dofmanager);
-      eleparams.set("assemble matrix 1",false);
-      eleparams.set("assemble matrix 2",false);
-      eleparams.set("assemble vector 1",false);
-      eleparams.set("assemble vector 2",false);
-      eleparams.set("assemble vector 3",false);
-      discret_->Evaluate(eleparams,null,null,null,null,null);
-  }
-
-
-  // ensure that degrees of freedom in the discretization have been set
-  //discret_->FillComplete(); ????
-
-  discret_->ComputeNullSpaceIfNecessary(solver_.Params());
 
   if (myrank_ == 0)
   {
@@ -997,10 +1004,6 @@ void XFluidImplicitTimeInt::NonlinearSolve()
         discret_->SetState("dispnp", dispnp_);
         discret_->SetState("gridv", gridv_);
       }
-
-      // give elements (read-) access to the interfacehandle and dofmanager
-      eleparams.set("interfacehandle",ih);
-      eleparams.set("dofmanager",dofmanager);
 
       //----------------------------------------------------------------------
       // decide whether VM3-based solution approach or standard approach
@@ -2194,6 +2197,8 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
       printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
     }
 
+   ComputeInterfaceAndSetDOFs(cutterdiscret_);
+   
     // -------------------------------------------------------------------
     //         evaluate dirichlet and neumann boundary conditions
     // -------------------------------------------------------------------
