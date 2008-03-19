@@ -11,22 +11,10 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::FluidAleAlgorithm::FluidAleAlgorithm(Epetra_Comm& comm)
-  : FluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),true),
-    AleBaseAlgorithm(),
-    comm_(comm)
+FSI::FluidAleAdapter::FluidAleAdapter(const Teuchos::ParameterList& prbdyn)
+  : fluid_(prbdyn,true),
+    ale_()
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
-  if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fsidyn);
-
-  step_ = 0;
-  time_ = 0.;
-  dt_ = fsidyn.get<double>("TIMESTEP");
-  nstep_ = fsidyn.get<int>("NUMSTEP");
-  maxtime_ = fsidyn.get<double>("MAXTIME");
-
   FSI::Coupling& coupfa = FluidAleCoupling();
 
   // the fluid-ale coupling always matches
@@ -42,6 +30,96 @@ FSI::FluidAleAlgorithm::FluidAleAlgorithm(Epetra_Comm& comm)
 
   // the ale matrix is build just once
   AleField().BuildSystemMatrix();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAleAdapter::PrepareTimeStep()
+{
+  FluidField().PrepareTimeStep();
+  AleField().PrepareTimeStep();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAleAdapter::Update()
+{
+  FluidField().Update();
+  AleField().Update();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAleAdapter::Output()
+{
+  FluidField().Output();
+  AleField().Output();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::FluidAleAdapter::NonlinearSolve()
+{
+  AleField().Solve();
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
+  FluidField().ApplyMeshDisplacement(fluiddisp);
+  FluidField().NonlinearSolve();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> FSI::FluidAleAdapter::CreateFieldTest()
+{
+  return FluidField().CreateFieldTest();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupfa_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupfa_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::GeneralFluidBaseAlgorithm::GeneralFluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
+{
+  // here we could do some decision what kind of generalized fluid to build
+  fluid_ = Teuchos::rcp(new FluidAleAdapter(prbdyn));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::FluidAleAlgorithm::FluidAleAlgorithm(Epetra_Comm& comm)
+  : GeneralFluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
+    comm_(comm)
+{
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+
+  if (comm_.MyPID()==0)
+    DRT::INPUT::PrintDefaultParameters(std::cout, fsidyn);
+
+  step_ = 0;
+  time_ = 0.;
+  dt_ = fsidyn.get<double>("TIMESTEP");
+  nstep_ = fsidyn.get<int>("NUMSTEP");
+  maxtime_ = fsidyn.get<double>("MAXTIME");
 }
 
 
@@ -80,8 +158,7 @@ void FSI::FluidAleAlgorithm::PrepareTimeStep()
               << "     STEP = " YELLOW_LIGHT << setw(4) << step_ << END_COLOR "/" << setw(4) << nstep_
               << "\n\n";
 
-  FluidField().    PrepareTimeStep();
-  AleField().      PrepareTimeStep();
+  FluidField().PrepareTimeStep();
 }
 
 
@@ -89,11 +166,6 @@ void FSI::FluidAleAlgorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::Solve()
 {
-  AleField().Solve();
-
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
-  FluidField().ApplyMeshDisplacement(fluiddisp);
-
   FluidField().NonlinearSolve();
 }
 
@@ -102,8 +174,7 @@ void FSI::FluidAleAlgorithm::Solve()
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::Update()
 {
-  FluidField().    Update();
-  AleField().      Update();
+  FluidField().Update();
 }
 
 
@@ -111,24 +182,7 @@ void FSI::FluidAleAlgorithm::Update()
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::Output()
 {
-  FluidField().    Output();
-  AleField().      Output();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAleAlgorithm::AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const
-{
-  return coupfa_.SlaveToMaster(iv);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAleAlgorithm::AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
-{
-  return coupfa_.SlaveToMaster(iv);
+  FluidField().Output();
 }
 
 #endif

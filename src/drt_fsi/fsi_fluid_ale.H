@@ -15,9 +15,140 @@
 namespace FSI
 {
 
+  /// generalized fluid adapter base
+  /*!
+
+    The generalized fluid is a fluid on a variable domain. The domain could be
+    deforming (thus the fluid is solved on an ale mesh) or could be cut using
+    xfem. Nevermind, the outside world sees a general fluid interface.
+
+    \author u.kue
+    \date 03/08
+   */
+  class GeneralFluid
+  {
+  public:
+
+    /// virtual destructor to get polymorph destruction
+    virtual ~GeneralFluid() {}
+
+    //! @name Time step helpers
+
+    /// start new time step
+    virtual void PrepareTimeStep() = 0;
+
+    /// evaluate elements with given displacement
+    //virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const = 0;
+
+    /// update at time step end
+    virtual void Update() = 0;
+
+    /// output results
+    virtual void Output() = 0;
+
+    /// read restart information for given time step
+    //virtual void ReadRestart(int step) = 0;
+
+    /// current time value
+    //virtual double Time() = 0;
+
+    /// current time step
+    //virtual int Step() = 0;
+
+    /// calculation (and output) of lift&drag
+    //virtual void LiftDrag() = 0;
+
+    //@}
+
+    //! @name Solver calls
+
+    /// nonlinear solve
+    virtual void NonlinearSolve() = 0;
+
+    /// linear fluid solve with just a interface load
+    //virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) = 0;
+
+    /// get the linear solver object used for this field
+    //virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
+
+    //@}
+
+    /// create result test for encapulated fluid algorithm
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+  };
+
+
+  /// fluid on ale
+  class FluidAleAdapter : public GeneralFluid
+  {
+  public:
+
+    FluidAleAdapter(const Teuchos::ParameterList& prbdyn);
+
+    /// fluid field
+    Fluid& FluidField() { return fluid_.FluidField(); }
+    const Fluid& FluidField() const { return fluid_.FluidField(); }
+
+    /// ale field
+    Ale& AleField() { return ale_.AleField(); }
+    const Ale& AleField() const { return ale_.AleField(); }
+
+    virtual void PrepareTimeStep();
+    virtual void Update();
+    virtual void Output();
+
+    virtual void NonlinearSolve();
+
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
+  protected:
+
+    //! @name Transfer helpers
+
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
+
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+
+    //@}
+
+    Coupling& FluidAleCoupling()             { return coupfa_; }
+    const Coupling& FluidAleCoupling() const { return coupfa_; }
+
+  private:
+
+    FluidBaseAlgorithm fluid_;
+    AleBaseAlgorithm ale_;
+
+    /// coupling of fluid and ale
+    Coupling               coupfa_;
+
+  };
+
+
+  /// base of all algorithms that use a fluid on a variable domain
+  class GeneralFluidBaseAlgorithm
+  {
+  public:
+
+    /// constructor
+    explicit GeneralFluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn);
+
+    /// virtual destructor to support polymorph destruction
+    virtual ~GeneralFluidBaseAlgorithm() {}
+
+    /// fluid field solver
+    GeneralFluid& FluidField() { return *fluid_; }
+    const GeneralFluid& FluidField() const { return *fluid_; }
+
+  private:
+
+    /// fluid field solver
+    Teuchos::RCP<GeneralFluid> fluid_;
+  };
+
+
   /// Fluid on Ale test algorithm
-  class FluidAleAlgorithm : public FluidBaseAlgorithm,
-                            public AleBaseAlgorithm
+  class FluidAleAlgorithm : public GeneralFluidBaseAlgorithm
   {
   public:
     explicit FluidAleAlgorithm(Epetra_Comm& comm);
@@ -57,22 +188,7 @@ namespace FSI
 
     //@}
 
-    //! @name Transfer helpers
-
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
-
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
-
-    //@}
-
-    Coupling& FluidAleCoupling()       { return coupfa_; }
-
-    const Coupling& FluidAleCoupling()       const { return coupfa_; }
-
   private:
-
-    /// coupling of fluid and ale
-    Coupling               coupfa_;
 
     /// comunication (mainly for screen output)
     Epetra_Comm& comm_;
