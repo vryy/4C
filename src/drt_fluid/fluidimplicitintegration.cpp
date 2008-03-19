@@ -350,18 +350,18 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // -------------------------------------------------------------------
   // initialize turbulence-statistics evaluation
   // -------------------------------------------------------------------
-  if (special_flow_ == "lid_driven_cavity")
-  //if (special_flow_ != "no")
+  //if (special_flow_ == "lid_driven_cavity")
+  if (special_flow_ != "no")
   {
     // parameters for sampling/dumping period
     samstart_  = modelparams->get<int>("SAMPLING_START",1);
     samstop_   = modelparams->get<int>("SAMPLING_STOP",1);
     dumperiod_ = modelparams->get<int>("DUMPING_PERIOD",1);
 
-    //if (special_flow_ == "lid_driven_cavity")
+    if (special_flow_ == "lid_driven_cavity")
       turbulencestatistics_ldc_=rcp(new TurbulenceStatisticsLdc(discret_,params_));
-    //else if (special_flow_ == "channel_flow_of_height_2")
-      //turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
+    else if (special_flow_ == "channel_flow_of_height_2")
+      turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
   }
 
   // -------------------------------------------------------------------
@@ -569,13 +569,13 @@ void FluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     // add calculated velocity to mean value calculation (statistics)
     // -------------------------------------------------------------------
-    //if(special_flow_ != "no" && step_>=samstart_ && step_<=samstop_)
-    if(special_flow_ == "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
+    if(special_flow_ != "no" && step_>=samstart_ && step_<=samstop_)
+    //if(special_flow_ == "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
     {
-      //if(special_flow_ == "lid_driven_cavity")
+      if(special_flow_ == "lid_driven_cavity")
         turbulencestatistics_ldc_->DoTimeSample(velnp_);
-      //else if(special_flow_ == "channel_flow_of_height_2")
-        //turbulencestatistics_->DoTimeSample(velnp_,*force_);
+      else if(special_flow_ == "channel_flow_of_height_2")
+        turbulencestatistics_->DoTimeSample(velnp_,*trueresidual_);
     }
 
     // -------------------------------------------------------------------
@@ -1586,8 +1586,8 @@ void FluidImplicitTimeInt::Output()
   }
 
   // dumping of turbulence statistics if required
-  if (special_flow_ == "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
-  //if (special_flow_ != "no")
+  //if (special_flow_ == "lid_driven_cavity" && step_>=samstart_ && step_<=samstop_)
+  if (special_flow_ != "no" && step_>=samstart_ && step_<=samstop_)
   {
     int samstep = step_-samstart_+1;
     double dsamstep=samstep;
@@ -1595,13 +1595,10 @@ void FluidImplicitTimeInt::Output()
 
     if (fmod(dsamstep,ddumperiod)==0)
     {
-      //if (special_flow_ == "lid_driven_cavity")
+      if (special_flow_ == "lid_driven_cavity")
         turbulencestatistics_ldc_->DumpStatistics(step_);
-      //else if (special_flow_ == "channel_flow_of_height_2")
-      //{
-        //turbulencestatistics_->TimeAverageMeansAndOutputOfStatistics(step_);
-        //turbulencestatistics_->ClearStatistics();
-      //}
+      else if (special_flow_ == "channel_flow_of_height_2")
+        turbulencestatistics_->DumpStatistics(step_);
     }
   }
 
