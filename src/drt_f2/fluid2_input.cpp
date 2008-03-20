@@ -45,13 +45,12 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
 {
   // what kind of element is this
   DiscretizationType distype = dis_none;
-  
+
   // read element's nodes
   int   ierr = 0;
   int   nnode = 0;
   int   nodes[27];
   char  buffer[50];
-  int   ngp_[2];
 
   frchk("QUAD4",&ierr);
   if (ierr==1)
@@ -196,35 +195,35 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
 //    }
 //  } // end reading gaussian points for tetrahedral elements
 
-    // read gaussian points and set gaussrule
-//    int myngp[2];
-//    switch (distype)
-//    {
-//    case quad4: case quad8: case quad9:
-//    {
-//        frint_n("GP",myngp,2,&ierr);
-//        dsassert(ierr==1, "Reading of FLUID2 element failed: GP\n");
-//        switch (myngp[0])
-//        {
-//        case 1:
-//            gaussrule_ = intrule_quad_1point;
-//            break;
-//        case 2:
-//            gaussrule_ = intrule_quad_4point;
-//            break;
-//        case 3:
-//            gaussrule_ = intrule_quad_9point;
-//            break;
-//        default:
-//            dserror("Reading of FLUID2 element failed: Gaussrule for quad not supported!\n");
-//        }
-//        break;
-//    }
-//    default:
-//        dserror("Reading of FLUID2 element failed: GP and set gaussrule\n");
-//    } // end switch distype
+  // read gaussian points and set gaussrule
+  int myngp[2];
+  switch (distype)
+  {
+  case quad4: case quad8: case quad9:
+  {
+    frint_n("GP",myngp,2,&ierr);
+    dsassert(ierr==1, "Reading of FLUID2 element failed: GP");
+    switch (myngp[0])
+    {
+    case 1:
+      gaussrule_ = intrule_quad_1point;
+      break;
+    case 2:
+      gaussrule_ = intrule_quad_4point;
+      break;
+    case 3:
+      gaussrule_ = intrule_quad_9point;
+      break;
+    default:
+      dserror("Reading of FLUID2 element failed: Gaussrule for quad not supported!");
+    }
+    break;
+  }
+  default:
+    dserror("Reading of FLUID2 element failed: GP and set gaussrule");
+  } // end switch distype
 
-  
+
 
   // read net algo
   frchar("NA",buffer,&ierr);

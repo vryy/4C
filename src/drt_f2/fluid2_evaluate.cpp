@@ -37,7 +37,7 @@ using namespace DRT::UTILS;
 
 /* ----------------------------------------------------------------------
  |                                                            gammi 02/08|
-  
+
   Depending on the type of the algorithm (the implementation) and the
   element type (tri, quad etc.), the elements allocate common static
   arrays.
@@ -48,7 +48,7 @@ using namespace DRT::UTILS;
   tri3 fluid elements of the same problem have a pointer f3 to
   the 'implementation class' containing all the element arrays for the
   3 noded element.
-  
+
   */
 
 DRT::ELEMENTS::Fluid2GenalphaResVMM* DRT::ELEMENTS::Fluid2::GenalphaResVMM()
@@ -167,7 +167,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
 
     dserror(errorout);
   }
-  
+
   // get the material
   RCP<MAT::Material> mat = Material();
   if (mat->MaterialType()!=m_fluid)
@@ -177,8 +177,8 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
 
   switch(act)
   {
-    case calc_fluid_stationary_systemmat_and_residual: 
-    	//no break here at the moment since we use the same code layout 
+    case calc_fluid_stationary_systemmat_and_residual:
+    	//no break here at the moment since we use the same code layout
     	//for both stationary and instationary problems controlled
     	//by the value of is_stationary.
     	//It is planned to create a separate implementation class for stationary formulation
@@ -291,16 +291,16 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       // --------------------------------------------------
       // extract velocities, pressure and accelerations from the
       // global distributed vectors
-      
+
       // velocity and pressure values (current iterate, n+1)
       RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1      ,trial)");
-      
+
       // velocities    (intermediate time step, n+alpha_F)
       RefCountPtr<const Epetra_Vector> velaf = discretization.GetState("u and p (n+alpha_F,trial)");
-      
+
       // accelerations (intermediate time step, n+alpha_M)
       RefCountPtr<const Epetra_Vector> accam = discretization.GetState("acc     (n+alpha_M,trial)");
-      
+
       if (velnp==null || velaf==null || accam==null)
       {
         dserror("Cannot get state vectors 'velnp', 'velaf'  and/or 'accam'");
@@ -309,10 +309,10 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       // extract local values from the global vectors
       vector<double> myvelnp(lm.size());
       DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-      
+
       vector<double> myvelaf(lm.size());
       DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
-      
+
       vector<double> myaccam(lm.size());
       DRT::UTILS::ExtractMyValues(*accam,myaccam,lm);
 
@@ -332,24 +332,24 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       for (int i=0;i<numnode;++i)
       {
         eprenp(i)   = myvelnp[2+(i*3)];
-        
+
         evelnp(0,i) = myvelnp[0+(i*3)];
         evelnp(1,i) = myvelnp[1+(i*3)];
-        
+
         evelaf(0,i) = myvelaf[0+(i*3)];
         evelaf(1,i) = myvelaf[1+(i*3)];
-        
+
         eaccam(0,i) = myaccam[0+(i*3)];
         eaccam(1,i) = myaccam[1+(i*3)];
       }
-        
+
       if(is_ale_)
       {
         // get most recent displacements
         RefCountPtr<const Epetra_Vector> dispnp
           =
           discretization.GetState("dispnp");
-        
+
         // get intermediate grid velocities
         RefCountPtr<const Epetra_Vector> gridvelaf
           =
@@ -372,7 +372,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         {
           egridvelaf(0,i) = mygridvelaf[0+(i*3)];
           egridvelaf(1,i) = mygridvelaf[1+(i*3)];
-            
+
           edispnp(0,i)    = mydispnp   [0+(i*3)];
           edispnp(1,i)    = mydispnp   [1+(i*3)];
         }
@@ -387,17 +387,17 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       const double gamma  = timelist.get<double>("gamma");
       const double dt     = timelist.get<double>("dt");
       const double time   = timelist.get<double>("time");
-      
+
       // --------------------------------------------------
       // set parameters for nonlinear treatment
-      
+
       const bool newton = params.get<bool>("include reactive terms for linearisation");
 
       // --------------------------------------------------
       // set parameters for stabilisation
       ParameterList& stablist = params.sublist("STABILIZATION");
 
-      
+
       // if not available, define map from string to action
       if(stabstrtoact_.empty())
       {
@@ -432,7 +432,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("CSTAB"));
       StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
       StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
-        
+
       // --------------------------------------------------
       // specify what to compute
       const bool compute_elemat = params.get<bool>("compute element matrix");
@@ -465,6 +465,10 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
                                reynolds,
                                compute_elemat
         );
+
+      // This is a very poor way to transport the density to the
+      // outside world. Is there a better one?
+      params.set("density", actmat->m.fluid->density);
     }
     break;
     case calc_fluid_genalpha_update_for_subscales:
@@ -476,7 +480,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       //  p <- p
       //
       sub_pre_old_ = sub_pre_;
-      
+
       // the old subscale acceleration for the next timestep is calculated
       // on the fly, not stored on the element
       /*
@@ -485,10 +489,10 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
             acc  <-  --------- - acc * |  ---------  |
                      gamma*dt           \   gamma   /
       */
-      
+
       const double dt     = params.get<double>("dt");
       const double gamma  = params.get<double>("gamma");
-      
+
       sub_acc_old_ = (sub_vel_-sub_vel_old_)/(gamma*dt)
                       -
                       sub_acc_old_*(1.0-gamma)/gamma;
