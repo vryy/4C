@@ -5,6 +5,8 @@
 #include "fsi_nox_group.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_validparameters.H"
+
 #include "../drt_lib/drt_colors.H"
 
 #ifdef PARALLEL
@@ -29,15 +31,187 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 extern struct _FILES  allfiles;
 
 
+
+/*----------------------------------------------------------------------*/
+// Note: The order of calling the three BaseAlgorithm-constructors is
+// important here! In here control file entries are written. And these
+// entries define the order in which the filters handle the
+// Discretizations, which in turn defines the dof number ordering of the
+// Discretizations.
+/*----------------------------------------------------------------------*/
+FSI::MonolithicBase::MonolithicBase(Epetra_Comm& comm)
+  : StructureBaseAlgorithm(),
+    FluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),true),
+    AleBaseAlgorithm(),
+    comm_(comm)
+{
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+
+  if (comm_.MyPID()==0)
+    DRT::INPUT::PrintDefaultParameters(std::cout, fsidyn);
+
+  step_ = 0;
+  time_ = 0.;
+  dt_ = fsidyn.get<double>("TIMESTEP");
+  nstep_ = fsidyn.get<int>("NUMSTEP");
+  maxtime_ = fsidyn.get<double>("MAXTIME");
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-//extern Teuchos::RCP<Teuchos::ParameterList> globalparameterlist;
+FSI::MonolithicBase::~MonolithicBase()
+{
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicBase::ReadRestart(int step)
+{
+  StructureField().ReadRestart(step);
+  FluidField().ReadRestart(step);
+  AleField().ReadRestart(step);
+
+  time_ = FluidField().Time();
+  step_ = FluidField().Step();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicBase::PrepareTimeStep()
+{
+  step_ += 1;
+  time_ += dt_;
+
+  if (Comm().MyPID()==0)
+    std::cout << "\n"
+              << method_ << "\n"
+              << "TIME:  "    << std::scientific << time_ << "/" << std::scientific << maxtime_
+              << "     DT = " << std::scientific << dt_
+              << "     STEP = " YELLOW_LIGHT << setw(4) << step_ << END_COLOR "/" << setw(4) << nstep_
+              << "\n"
+              << NOX::Utils::fill(82)
+              << "\n\n";
+
+  StructureField().PrepareTimeStep();
+  FluidField().    PrepareTimeStep();
+  AleField().      PrepareTimeStep();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicBase::Update()
+{
+  StructureField().Update();
+  FluidField().    Update();
+  AleField().      Update();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicBase::Output()
+{
+  // Note: The order is important here! In here control file entries are
+  // written. And these entries define the order in which the filters handle
+  // the Discretizations, which in turn defines the dof number ordering of the
+  // Discretizations.
+  StructureField().Output();
+  FluidField().    Output();
+  AleField().      Output();
+
+  FluidField().LiftDrag();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsa_.MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsa_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsf_.MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupsf_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return coupfa_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupsa_.MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupsa_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupsf_.MasterToSlave(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupsf_.SlaveToMaster(iv);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return coupfa_.SlaveToMaster(iv);
+}
+
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::Monolithic::Monolithic(Epetra_Comm& comm)
-  : Algorithm(comm)
+  : MonolithicBase(comm)
 {
 }
 

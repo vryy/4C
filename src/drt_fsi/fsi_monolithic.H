@@ -3,7 +3,10 @@
 #ifndef FSI_MONOLITHIC_H
 #define FSI_MONOLITHIC_H
 
-#include "fsi_algorithm.H"
+#include "fsi_structure.H"
+#include "fsi_fluid.H"
+#include "fsi_ale.H"
+#include "fsi_coupling.H"
 
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/linalg_mapextractor.H"
@@ -14,6 +17,124 @@
 namespace FSI
 {
 
+  /// monolithic FSI algorithm base
+  /*!
+
+    Base class of FSI algorithms with ALE field. There can (and will) be
+    different subclasses that implement different coupling schemes.
+
+    \note There is the Algorithm class for general purpose FSI algorithms. The
+    difference to this one is that here we know we have an ale field. This
+    simplifies the monolithic implementation. However, in an ideal world
+    monolithic FSI could be done with xfem fluid as well. So keep this class
+    close to Algorithm.
+
+    \warning The order of calling the three BaseAlgorithm-constructors (that
+    is the order in which we list the base classes) is important here! In the
+    constructors control file entries are written. And these entries define
+    the order in which the filters handle the Discretizations, which in turn
+    defines the dof number ordering of the Discretizations... Don't get
+    confused. Just always list structure, fluid, ale. In that order.
+
+    \author u.kue
+    \date 02/08
+   */
+  class MonolithicBase : public StructureBaseAlgorithm,
+                         public FluidBaseAlgorithm,
+                         public AleBaseAlgorithm
+  {
+  public:
+
+    /// create using a Epetra_Comm
+    explicit MonolithicBase(Epetra_Comm& comm);
+
+    /// virtual destructor to support polymorph destruction
+    virtual ~MonolithicBase();
+
+    /// read restart data
+    void ReadRestart(int step);
+
+    /// communicator
+    const Epetra_Comm& Comm() const { return comm_; }
+
+  protected:
+
+    /// time step size
+    double Dt() const { return dt_; }
+
+    /// step number
+    int Step() const { return step_; }
+
+    //! @name Time loop building blocks
+
+    /// tests if there are more time steps to do
+    bool NotFinished() { return step_ < nstep_ and time_ <= maxtime_; }
+
+    /// start a new time step
+    void PrepareTimeStep();
+
+    /// take current results for converged and save for next time step
+    void Update();
+
+    /// write output
+    void Output();
+
+    /// set method name for screen output
+    void SetMethod(std::string method) { method_ = method; }
+
+    //@}
+
+    //! @name Transfer helpers
+
+    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
+
+    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+
+    //@}
+
+    Coupling& StructureFluidCoupling() { return coupsf_; }
+    Coupling& StructureAleCoupling()   { return coupsa_; }
+    Coupling& FluidAleCoupling()       { return coupfa_; }
+
+    const Coupling& StructureFluidCoupling() const { return coupsf_; }
+    const Coupling& StructureAleCoupling()   const { return coupsa_; }
+    const Coupling& FluidAleCoupling()       const { return coupfa_; }
+
+  private:
+
+    /// coupling of structure and fluid at the interface
+    Coupling               coupsf_;
+
+    /// coupling of structure and ale at the interface
+    Coupling               coupsa_;
+
+    /// coupling of fluid and ale
+    Coupling               coupfa_;
+
+    /// comunication (mainly for screen output)
+    Epetra_Comm& comm_;
+
+    /// method name prepared for output
+    std::string method_;
+
+    //! @name Time stepping variables
+    int step_;
+    int nstep_;
+    double time_;
+    double maxtime_;
+    double dt_;
+    //@}
+  };
+
+
   /// base class of all monolithic FSI algorithms
   /*!
 
@@ -22,7 +143,7 @@ namespace FSI
     \author u.kue
     \date 02/08
    */
-  class Monolithic : public Algorithm,
+  class Monolithic : public MonolithicBase,
                      public NOX::Epetra::Interface::Required,
                      public NOX::Epetra::Interface::Jacobian,
                      public NOX::Epetra::Interface::Preconditioner

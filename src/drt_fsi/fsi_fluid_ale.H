@@ -32,6 +32,16 @@ namespace FSI
     /// virtual destructor to get polymorph destruction
     virtual ~GeneralFluid() {}
 
+    //! @name Misc
+
+    /// direct access to discretization
+    virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+
+    /// communication object at the interface
+    virtual const LINALG::MapExtractor& Interface() const = 0;
+
+    //@}
+
     //! @name Time step helpers
 
     /// start new time step
@@ -47,13 +57,7 @@ namespace FSI
     virtual void Output() = 0;
 
     /// read restart information for given time step
-    //virtual void ReadRestart(int step) = 0;
-
-    /// current time value
-    //virtual double Time() = 0;
-
-    /// current time step
-    //virtual int Step() = 0;
+    virtual double ReadRestart(int step) = 0;
 
     /// calculation (and output) of lift&drag
     //virtual void LiftDrag() = 0;
@@ -63,15 +67,36 @@ namespace FSI
     //! @name Solver calls
 
     /// nonlinear solve
-    virtual void NonlinearSolve() = 0;
+    virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp=Teuchos::null,
+                                Teuchos::RCP<Epetra_Vector> ivel=Teuchos::null) = 0;
 
     /// linear fluid solve with just a interface load
-    //virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) = 0;
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
+                                                        double dt) = 0;
 
     /// get the linear solver object used for this field
     //virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;
 
     //@}
+
+    //! @name Extract interface forces
+
+    /// After the fluid solve we need the forces at the FSI interface.
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
+
+    //@}
+
+    //! @name Number of Newton iterations
+    //! For simplified FD MFNK solve we want to temporally limit the
+    /// number of Newton steps inside the fluid solver
+
+    virtual int Itemax() const = 0;
+    virtual void SetItemax(int itemax) = 0;
+
+    //@}
+
+    /// integrate FSI interface shape functions
+    virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() = 0;
 
     /// create result test for encapulated fluid algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
@@ -93,11 +118,24 @@ namespace FSI
     Ale& AleField() { return ale_.AleField(); }
     const Ale& AleField() const { return ale_.AleField(); }
 
+    virtual Teuchos::RCP<DRT::Discretization> Discretization();
+    virtual const LINALG::MapExtractor& Interface() const;
+
     virtual void PrepareTimeStep();
     virtual void Update();
     virtual void Output();
+    virtual double ReadRestart(int step);
 
-    virtual void NonlinearSolve();
+    virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,Teuchos::RCP<Epetra_Vector> ivel);
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
+                                                        double dt);
+
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+
+    virtual int Itemax() const { return FluidField().Itemax(); }
+    virtual void SetItemax(int itemax) { FluidField().SetItemax(itemax); }
+
+    virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape();
 
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
@@ -105,22 +143,33 @@ namespace FSI
 
     //! @name Transfer helpers
 
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
+    /// field transform
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const;
 
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
+    /// field transform
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<const Epetra_Vector> iv) const;
+
+    /// interface transform
+    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const;
+
+    /// interface transform
+    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //@}
 
-    Coupling& FluidAleCoupling()             { return coupfa_; }
-    const Coupling& FluidAleCoupling() const { return coupfa_; }
+    //Coupling& FluidAleFieldCoupling()             { return coupfa_; }
+    //const Coupling& FluidAleFieldCoupling() const { return coupfa_; }
 
   private:
 
     FluidBaseAlgorithm fluid_;
     AleBaseAlgorithm ale_;
 
-    /// coupling of fluid and ale
+    /// coupling of fluid and ale (whole field)
     Coupling               coupfa_;
+
+    /// coupling of fluid and ale (interface only)
+    Coupling               icoupfa_;
 
   };
 

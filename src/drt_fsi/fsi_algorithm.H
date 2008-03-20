@@ -24,8 +24,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_ParameterList.hpp>
 
 #include "fsi_structure.H"
-#include "fsi_fluid.H"
-#include "fsi_ale.H"
+#include "fsi_fluid_ale.H"
 #include "fsi_coupling.H"
 
 
@@ -35,12 +34,13 @@ namespace FSI
   /// FSI algorithm base
   /*!
 
-    Base class of FSI algorithms with ALE field. There can (and will) be
-    different subclasses that implement different coupling schemes.
+    Base class of FSI algorithms with generalized fluid field. There can (and
+    will) be different subclasses that implement different coupling schemes.
 
-    \note Right now we have partitioned FSI implemented using NOX::Epetra and
-    monolithic FSI implemented using NOX::Thyra. These are closely linked and
-    will be even more so in the future.
+    \note The generalized fluid field hides any ale or xfem handling of the
+    variable fluid domain. This is the appropriate base class if direct access
+    to ale or xfem is not required. If a coupling algorithm needs an ale
+    field, MonolithicBase is the better choice for a base class.
 
     \warning The order of calling the three BaseAlgorithm-constructors (that
     is the order in which we list the base classes) is important here! In the
@@ -53,8 +53,7 @@ namespace FSI
     \date 02/08
    */
   class Algorithm : public StructureBaseAlgorithm,
-                    public FluidBaseAlgorithm,
-                    public AleBaseAlgorithm
+                    public GeneralFluidBaseAlgorithm
   {
   public:
 
@@ -99,27 +98,23 @@ namespace FSI
 
     //! @name Transfer helpers
 
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
+    //virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv) const;
+    //virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
 
-    virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
+    //virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
+    //virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
-    virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //@}
 
     Coupling& StructureFluidCoupling() { return coupsf_; }
-    Coupling& StructureAleCoupling()   { return coupsa_; }
-    Coupling& FluidAleCoupling()       { return coupfa_; }
+    //Coupling& StructureAleCoupling()   { return coupsa_; }
 
     const Coupling& StructureFluidCoupling() const { return coupsf_; }
-    const Coupling& StructureAleCoupling()   const { return coupsa_; }
-    const Coupling& FluidAleCoupling()       const { return coupfa_; }
+    //const Coupling& StructureAleCoupling()   const { return coupsa_; }
 
   private:
 
@@ -127,10 +122,7 @@ namespace FSI
     Coupling               coupsf_;
 
     /// coupling of structure and ale at the interface
-    Coupling               coupsa_;
-
-    /// coupling of fluid and ale
-    Coupling               coupfa_;
+    //Coupling               coupsa_;
 
     /// comunication (mainly for screen output)
     Epetra_Comm& comm_;
