@@ -63,32 +63,6 @@ ELCH::Algorithm::~Algorithm()
 /*----------------------------------------------------------------------*/
 void ELCH::Algorithm::TimeLoop()
 {
-    // print out the ELCH module logo
-    if (Comm().MyPID() == 0)
-    {
-        cout<<"    _____ _     _____  _   _  "<<endl;
-        cout<<"   |  ___| |   /  __ \\| | | | "<<endl;
-        cout<<"   | |__ | |   | /  \\/| |_| | "<<endl;
-        cout<<"   |  __|| |   | |    |  _  | "<<endl;
-        cout<<"   | |___| |___| \\__/\\| | | | "<<endl;
-        cout<<"   \\____/\\_____/\\____/\\_| |_/ "<<endl;
-        cout<<"                               "<<endl;
-        // more at http://www.ascii-art.de under entry "moose" (or "elk")
-        cout<<"       ___            ___  "<<endl;
-        cout<<"      /   \\          /   \\ "<<endl;
-        cout<<"      \\_   \\        /  __/ "<<endl;
-        cout<<"       _\\   \\      /  /__  "<<endl;
-        cout<<"       \\___  \\____/   __/  "<<endl;
-        cout<<"           \\_       _/     "<<endl;
-        cout<<"             | @ @  \\_     "<<endl;
-        cout<<"             |             "<<endl;
-        cout<<"           _/     /\\       "<<endl;
-        cout<<"          /o)  (o/\\ \\_     "<<endl;
-        cout<<"          \\_____/ /        "<<endl;
-        cout<<"            \\____/         "<<endl;
-        cout<<"                           "<<endl;
-    }
-  
   // time loop
   while (NotFinished())
   {
@@ -97,6 +71,7 @@ void ELCH::Algorithm::TimeLoop()
     Update();
     Output();
   } // time loop
+
 }
 
 
