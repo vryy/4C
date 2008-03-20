@@ -282,6 +282,8 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     }
   }
 
+  //--------------------------------------------------------------------
+  // do output to screen
   this->GenAlphaEchoToScreen("print start-up info");
 
   // end time measurement for timeloop
@@ -317,10 +319,6 @@ FluidGenAlphaIntegration::~FluidGenAlphaIntegration()
 
 void FluidGenAlphaIntegration::GenAlphaTimeloop()
 {
-  //--------------------------------------------------------------------
-  // do output to screen
-  this->GenAlphaEchoToScreen("print start-up info");
-
 
   // start time measurement for timeloop
   tm2_ref_ = rcp(new TimeMonitor(*timedynloop_));
@@ -1302,97 +1300,50 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
 {
+  
   // -------------------------------------------------------------------
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  // split between accelerations and pressure increments
+  Teuchos::RCP<Epetra_Vector> accinc = velpressplitter_.ExtractOtherVector(increment_);
+  Teuchos::RCP<Epetra_Vector> preinc = velpressplitter_.ExtractCondVector (increment_);
+  
 
-  int numlocdofs = dofrowmap->NumMyElements();
+  // ------------------------------------------------------
+  // update acceleration
+  //
+  //        n+1         n+1
+  //     acc      =  acc    + dacc
+  //        (i+1)       (i)
+  //
+  velpressplitter_.AddOtherVector(accinc,accnp_);
 
-  int*   dof = dofrowmap->MyGlobalElements ();
+  // ------------------------------------------------------
+  // use updated acceleration to update velocity. Since
+  //
+  //    n+1         n            n                 +-   n+1       n -+
+  // vel      =  vel   + dt * acc   + gamma * dt * | acc     - acc   | =
+  //    (i+1)                                      +-   (i+1)       -+
+  //
+  //                n            n                 +-   n+1       n -+
+  //          =  vel   + dt * acc   + gamma * dt * | acc     - acc   | +
+  //                                               +-   (i)         -+
+  //
+  //                                      n+1
+  //             + gamma * dt * dacc = vel     +  gamma * dt * dacc =
+  //                                      (i)
+  //               n+1
+  //          = vel     +   dvel
+  //               (i)
+  accinc->Scale(gamma_*dt_);
+  velpressplitter_.AddOtherVector(accinc,velnp_);
 
-
-  int predof = numdim_+1;
-
-  // loop all dofs on this proc
-  for (int lid=0; lid<numlocdofs; ++lid)
-  {
-    int gid = dof[lid];
-
-    // if the dof is belonging to an acceleration/velocity
-    if ((gid+1)%predof != 0)
-    {
-      // ------------------------------------------------------
-      // update acceleration
-      //
-      //        n+1         n+1
-      //     acc      =  acc    + dacc
-      //        (i+1)       (i)
-      //
-      double dacc = (*increment_)[lid];
-
-      accnp_->SumIntoGlobalValues(1,&dacc,&gid);
-
-      // ------------------------------------------------------
-      // use updated acceleration to update velocity. Since
-      //
-      //    n+1         n            n                 +-   n+1       n -+
-      // vel      =  vel   + dt * acc   + gamma * dt * | acc     - acc   | =
-      //    (i+1)                                      +-   (i+1)       -+
-      //
-      //                n            n                 +-   n+1       n -+
-      //          =  vel   + dt * acc   + gamma * dt * | acc     - acc   | +
-      //                                               +-   (i)         -+
-      //
-      //                                      n+1
-      //             + gamma * dt * dacc = vel     +  gamma * dt * dacc =
-      //                                      (i)
-      //               n+1
-      //          = vel     +   dvel
-      //               (i)
-
-      //
-      double dvel = gamma_*dt_*dacc;
-
-      velnp_->SumIntoGlobalValues(1,&dvel,&gid);
-    }
-    else
-    {
-      // ------------------------------------------------------
-      // update pressure
-      //
-      //         n+1          n+1
-      //     pres      =  pres    + dpres
-      //         (i+1)        (i)
-      //
-
-      double dpres = (*increment_)[lid];
-      velnp_->SumIntoGlobalValues(1,&dpres,&gid);
-
-    }
-  }
-
-#if 0  // DEBUG IO  --- rhs of linear system
-  {
-    const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-
-    int rr;
-
-
-    double* data = residual_->Values();
-    for(rr=0;rr<residual_->MyLength();rr++)
-    {
-      int  gid = dofrowmap->GID(rr);
-
-      if(gid%4==0)
-      printf("%4d vel %22.15e\n",gid,data[rr]);
-    }
-  }
-
-#endif
-
+  // ------------------------------------------------------
+  // update pressure
+  //
+  //         n+1          n+1
+  //     pres      =  pres    + dpres
+  //         (i+1)        (i)
+  //  
+  velpressplitter_.AddCondVector(preinc,velnp_);
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaNonlinearUpdate
@@ -2682,7 +2633,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
       printf("| >>>>>> only one iteration before sampling! matrix of last step not recomputed (invalid)         |\n");
       printf("+--------------------------------------------------------------------------------------------+\n");
     }
-    else if("print nonlin iter converged")
+    else if(what_to_print == "print nonlin iter converged")
     {
       //--------------------------------------------------------------------
       /* close box in case of convergence */
