@@ -24,11 +24,6 @@ Maintainer: Michael Gee
 #include "../io/io_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
-extern struct _FIELD      *field;
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

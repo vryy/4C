@@ -31,12 +31,6 @@ Maintainer: Moritz Frenzel
 
 /*----------------------------------------------------------------------*
  |                                                         maf 05/07    |
- | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
-extern struct _FIELD      *field;
-
-/*----------------------------------------------------------------------*
- |                                                         maf 05/07    |
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/

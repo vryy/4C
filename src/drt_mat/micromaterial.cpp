@@ -13,11 +13,6 @@ using namespace std;
 using namespace Teuchos;
 using namespace IO;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
-extern struct _FIELD      *field;
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
