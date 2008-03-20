@@ -27,11 +27,6 @@ extern "C" /* stuff which is c and is accessed from c++ */
 #include "../headers/standardtypes.h"
 }
 
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
-extern struct _FIELD      *field;
 
 /*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |

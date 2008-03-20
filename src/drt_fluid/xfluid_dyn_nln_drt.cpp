@@ -41,11 +41,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
-extern struct _FIELD      *field;
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
