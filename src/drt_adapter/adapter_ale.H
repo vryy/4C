@@ -261,7 +261,7 @@ private:
 };
 
 
-/// ale field solver
+/// Base class of algorithms that use an ale field
 class AleBaseAlgorithm
 {
 public:

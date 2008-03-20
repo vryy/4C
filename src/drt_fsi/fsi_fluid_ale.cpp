@@ -5,10 +5,11 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidAleAlgorithm::FluidAleAlgorithm(Epetra_Comm& comm)
-  : GeneralFluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
+  : GeneralFluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"),
     comm_(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();

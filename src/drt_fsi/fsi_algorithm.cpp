@@ -44,7 +44,7 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*/
 FSI::Algorithm::Algorithm(Epetra_Comm& comm)
   : StructureBaseAlgorithm(),
-    GeneralFluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
+    GeneralFluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"),
     comm_(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();

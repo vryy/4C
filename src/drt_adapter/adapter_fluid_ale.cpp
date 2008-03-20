@@ -4,14 +4,13 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
 #include "adapter_fluid_ale.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidAleAdapter::FluidAleAdapter(const Teuchos::ParameterList& prbdyn)
+ADAPTER::FluidAleAdapter::FluidAleAdapter(const Teuchos::ParameterList& prbdyn,
+                                          std::string condname)
   : fluid_(prbdyn,true),
     ale_()
 {
@@ -19,7 +18,7 @@ ADAPTER::FluidAleAdapter::FluidAleAdapter(const Teuchos::ParameterList& prbdyn)
                                    FluidField().Interface(),
                                   *AleField().Discretization(),
                                    AleField().Interface(),
-                                  "FSICoupling");
+                                   condname);
 
   //FSI::Coupling& coupfa = FluidAleFieldCoupling();
 
@@ -203,10 +202,11 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::FluidToAle(Teuchos::RCP<co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::GeneralFluidBaseAlgorithm::GeneralFluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
+ADAPTER::GeneralFluidBaseAlgorithm::GeneralFluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
+                                                              std::string condname)
 {
   // here we could do some decision what kind of generalized fluid to build
-  fluid_ = Teuchos::rcp(new FluidAleAdapter(prbdyn));
+  fluid_ = Teuchos::rcp(new FluidAleAdapter(prbdyn,condname));
 }
 
 

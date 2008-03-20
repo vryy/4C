@@ -70,7 +70,7 @@ ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
     restartstep_(0),
     uprestart_(params->get("write restart every", -1))
 {
-  numstep_   = params_->get<int>("numstep");
+  numstep_ = params_->get<int>("numstep");
   maxtime_ = params_->get<double>("maxtime");
   dt_      = params_->get<double>("dt");
 
@@ -91,7 +91,7 @@ ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
 
   if (dirichletcond)
   {
-    // for partitioned FSI the interface becames a Dirichlet boundary
+    // for partitioned FSI the interface becomes a Dirichlet boundary
 
     Teuchos::RCP<Epetra_Vector> idisp = LINALG::CreateVector(*interface_.CondMap(),false);
     idisp->PutScalar(1.0);

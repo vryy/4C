@@ -108,7 +108,8 @@ namespace ADAPTER
   {
   public:
 
-    FluidAleAdapter(const Teuchos::ParameterList& prbdyn);
+    FluidAleAdapter(const Teuchos::ParameterList& prbdyn,
+                    std::string condname);
 
     /// fluid field
     Fluid& FluidField() { return fluid_.FluidField(); }
@@ -180,7 +181,8 @@ namespace ADAPTER
   public:
 
     /// constructor
-    explicit GeneralFluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn);
+    explicit GeneralFluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
+                                       std::string condname);
 
     /// virtual destructor to support polymorph destruction
     virtual ~GeneralFluidBaseAlgorithm() {}
