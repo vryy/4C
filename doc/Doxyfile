@@ -470,6 +470,7 @@ INPUT                  = index.doc \
                          ../src/drt_so3 \
                          ../src/drt_beam2 \
                          ../src/io \
+                         ../src/drt_adapter \
                          ../src/drt_fsi \
                          ../src/drt_ale2 \
                          ../src/drt_ale3 \

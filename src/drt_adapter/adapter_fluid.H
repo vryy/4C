@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_fluid.H
+\file adapter_fluid.H
 
 \brief Fluid field adapter
 
@@ -15,8 +15,8 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#ifndef FSI_FLUID_H
-#define FSI_FLUID_H
+#ifndef ADAPTER_FLUID_H
+#define ADAPTER_FLUID_H
 
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -28,10 +28,11 @@ Maintainer: Ulrich Kuettler
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluidresulttest.H"
 
-#include "fsi_utils.H"
+#include "../drt_fsi/fsi_utils.H"
 
 
-namespace FSI {
+/// Algorithm adapter classes for use in multi-field problems
+namespace ADAPTER {
 
   /// general fluid field interface for FSI
   /*!
@@ -465,7 +466,7 @@ namespace FSI {
 
   private:
 
-    /// setup fluid algorithm (overriding some fluid parameters with 
+    /// setup fluid algorithm (overriding some fluid parameters with
     /// values specified in given problem-dependent ParameterList)
     void SetupFluid(const Teuchos::ParameterList& prbdyn, bool& isale);
 

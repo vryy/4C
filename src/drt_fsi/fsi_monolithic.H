@@ -3,9 +3,10 @@
 #ifndef FSI_MONOLITHIC_H
 #define FSI_MONOLITHIC_H
 
-#include "fsi_structure.H"
-#include "fsi_fluid.H"
-#include "fsi_ale.H"
+#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/adapter_fluid.H"
+#include "../drt_adapter/adapter_ale.H"
+
 #include "fsi_coupling.H"
 
 #include "../drt_lib/linalg_systemmatrix.H"
@@ -39,9 +40,9 @@ namespace FSI
     \author u.kue
     \date 02/08
    */
-  class MonolithicBase : public StructureBaseAlgorithm,
-                         public FluidBaseAlgorithm,
-                         public AleBaseAlgorithm
+  class MonolithicBase : public ADAPTER::StructureBaseAlgorithm,
+                         public ADAPTER::FluidBaseAlgorithm,
+                         public ADAPTER::AleBaseAlgorithm
   {
   public:
 

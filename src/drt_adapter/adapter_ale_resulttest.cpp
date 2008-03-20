@@ -1,6 +1,6 @@
 #ifdef CCADISCRET
 
-#include "fsi_ale_resulttest.H"
+#include "adapter_ale_resulttest.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -19,12 +19,12 @@ extern struct _GENPROB     genprob;
 }
 
 
-FSI::AleResultTest::AleResultTest(AleLinear& ale)
+ADAPTER::AleResultTest::AleResultTest(ADAPTER::AleLinear& ale)
   : ale_(ale)
 {
 }
 
-void FSI::AleResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
+void ADAPTER::AleResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
 {
   if (res->dis != 0)
     dserror("fix me: only one ale discretization supported for testing");
@@ -66,7 +66,7 @@ void FSI::AleResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
   }
 }
 
-bool FSI::AleResultTest::Match(RESULTDESCR* res)
+bool ADAPTER::AleResultTest::Match(RESULTDESCR* res)
 {
   return res->field==ale;
 }

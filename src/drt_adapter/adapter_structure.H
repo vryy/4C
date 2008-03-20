@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_structure.H
+\file adapter_structure.H
 
 \brief Structure field adapter
 
@@ -15,8 +15,8 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#ifndef MFSI_STRUCTURE_H
-#define MFSI_STRUCTURE_H
+#ifndef ADAPTER_STRUCTURE_H
+#define ADAPTER_STRUCTURE_H
 
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -27,10 +27,10 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_structure/strugenalpha.H"
 
-#include "fsi_utils.H"
+#include "../drt_fsi/fsi_utils.H"
 
 
-namespace FSI {
+namespace ADAPTER {
 
   /// general structural field interface
   /*!
@@ -324,7 +324,7 @@ namespace FSI {
     void SetupStructure();
 
     /// structural field solver
-    Teuchos::RCP<Structure> structure_; 
+    Teuchos::RCP<Structure> structure_;
   };
 
 }

@@ -72,7 +72,7 @@ extern struct _FIELD      *sm_field;
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
 #include "../drt_fluid/xfluid_dyn_nln_drt.H"
 #include "../drt_fluid/condif_drt.H"
-#include "../drt_fsi/ale_dyn.H"
+#include "../drt_adapter/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
 #include "../drt_elch/elch_dyn.H"
 #endif

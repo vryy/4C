@@ -23,8 +23,8 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-#include "fsi_structure.H"
-#include "fsi_fluid_ale.H"
+#include "../drt_adapter/adapter_structure.H"
+#include "../drt_adapter/adapter_fluid_ale.H"
 #include "fsi_coupling.H"
 
 
@@ -52,8 +52,8 @@ namespace FSI
     \author u.kue
     \date 02/08
    */
-  class Algorithm : public StructureBaseAlgorithm,
-                    public GeneralFluidBaseAlgorithm
+  class Algorithm : public ADAPTER::StructureBaseAlgorithm,
+                    public ADAPTER::GeneralFluidBaseAlgorithm
   {
   public:
 

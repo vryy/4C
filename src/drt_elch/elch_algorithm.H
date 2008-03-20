@@ -23,7 +23,7 @@ Maintainer: Georg Bauer
 //#include <Teuchos_RCP.hpp>
 //#include <Teuchos_ParameterList.hpp>
 
-#include "../drt_fsi/fsi_fluid.H"
+#include "../drt_adapter/adapter_fluid.H"
 //#include "fsi_ale.H"
 
 
@@ -38,13 +38,13 @@ namespace ELCH
   /*!
 
     Base class of ELCH algorithms. Derives from FluidBaseAlgorithm.
-    There can (and will) be different subclasses that implement 
+    There can (and will) be different subclasses that implement
     different coupling schemes.
 
     \author gjb
     \date 03/08
    */
-  class Algorithm : public FSI::FluidBaseAlgorithm
+  class Algorithm : public ADAPTER::FluidBaseAlgorithm
   {
   public:
 

@@ -2,7 +2,7 @@
 /*!
 \file
 
-\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
+\brief
 
 <pre>
 Maintainer: Ulrich Kuettler
@@ -15,8 +15,8 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#ifndef FSI_ALE_H
-#define FSI_ALE_H
+#ifndef ADAPTER_ALE_H
+#define ADAPTER_ALE_H
 
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -37,10 +37,10 @@ Maintainer: Ulrich Kuettler
 
 #include <set>
 
-#include "fsi_utils.H"
+#include "../drt_fsi/fsi_utils.H"
 
 
-namespace FSI {
+namespace ADAPTER {
 
 
 /// General ALE interface

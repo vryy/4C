@@ -2,8 +2,8 @@
 #ifdef CCADISCRET
 
 #include "ale_dyn.H"
-#include "fsi_ale.H"
-#include "fsi_ale_resulttest.H"
+#include "../drt_adapter/adapter_ale.H"
+#include "adapter_ale_resulttest.H"
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
@@ -101,14 +101,14 @@ void dyn_ale_drt()
   params->set<double>("maxtime", adyn.get<double>("MAXTIME"));
   params->set<double>("dt", adyn.get<double>("TIMESTEP"));
 
-  FSI::AleLinear ale(actdis, solver, params, output);
+  ADAPTER::AleLinear ale(actdis, solver, params, output);
 
   ale.BuildSystemMatrix();
   ale.Integrate();
 
   // do the result test
   DRT::ResultTestManager testmanager(actdis->Comm());
-  testmanager.AddFieldTest(rcp(new FSI::AleResultTest(ale)));
+  testmanager.AddFieldTest(rcp(new ADAPTER::AleResultTest(ale)));
   testmanager.TestAll();
 }
 

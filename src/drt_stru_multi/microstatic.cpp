@@ -25,7 +25,7 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_globalproblem.H"
 #include "../io/io_drt_micro.H"
 
-#include "../drt_mfsi/mfsi_debug.H"
+//#include "../drt_fsi/fsi_debug.H"
 
 using namespace IO;
 
@@ -195,7 +195,7 @@ solver_(solver)
 } // MicroStatic::MicroStatic
 
 
-MFSI::Debug dbg;
+//FSI::Debug dbg;
 
 
 /*----------------------------------------------------------------------*

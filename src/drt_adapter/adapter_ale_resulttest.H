@@ -1,12 +1,12 @@
 #ifdef CCADISCRET
 
-#ifndef FSI_ALE_RESULTTEST_H
-#define FSI_ALE_RESULTTEST_H
+#ifndef ADAPTER_ALE_RESULTTEST_H
+#define ADAPTER_ALE_RESULTTEST_H
 
 #include "../drt_lib/drt_resulttest.H"
-#include "fsi_ale.H"
+#include "../drt_adapter/adapter_ale.H"
 
-namespace FSI {
+namespace ADAPTER {
 
 class AleLinear;
 
@@ -14,7 +14,7 @@ class AleLinear;
 class AleResultTest : public DRT::ResultTest
 {
 public:
-  AleResultTest(AleLinear& ale);
+  AleResultTest(ADAPTER::AleLinear& ale);
 
   /// our version of nodal value tests
   /*!

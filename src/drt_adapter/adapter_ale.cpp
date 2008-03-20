@@ -2,7 +2,7 @@
 /*!
 \file
 
-\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
+\brief
 
 <pre>
 Maintainer: Ulrich Kuettler
@@ -15,7 +15,7 @@ Maintainer: Ulrich Kuettler
 
 #ifdef CCADISCRET
 
-#include "fsi_ale.H"
+#include "adapter_ale.H"
 
 // further includes for AleBaseAlgorithm:
 #include "../drt_lib/drt_globalproblem.H"
@@ -55,7 +55,7 @@ extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
+ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
                           Teuchos::RCP<LINALG::Solver> solver,
                           Teuchos::RCP<ParameterList> params,
                           Teuchos::RCP<IO::DiscretizationWriter> output,
@@ -102,7 +102,7 @@ FSI::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::BuildSystemMatrix(bool full)
+void ADAPTER::AleLinear::BuildSystemMatrix(bool full)
 {
   // build linear matrix once and for all
   if (full)
@@ -123,7 +123,7 @@ void FSI::AleLinear::BuildSystemMatrix(bool full)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const LINALG::SparseMatrix* FSI::AleLinear::InteriorMatrixBlock() const
+const LINALG::SparseMatrix* ADAPTER::AleLinear::InteriorMatrixBlock() const
 {
   LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* bm =
     dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&*sysmat_);
@@ -137,7 +137,7 @@ const LINALG::SparseMatrix* FSI::AleLinear::InteriorMatrixBlock() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const LINALG::SparseMatrix* FSI::AleLinear::InterfaceMatrixBlock() const
+const LINALG::SparseMatrix* ADAPTER::AleLinear::InterfaceMatrixBlock() const
 {
   LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* bm =
     dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&*sysmat_);
@@ -151,7 +151,7 @@ const LINALG::SparseMatrix* FSI::AleLinear::InterfaceMatrixBlock() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::PrepareTimeStep()
+void ADAPTER::AleLinear::PrepareTimeStep()
 {
   step_ += 1;
   time_ += dt_;
@@ -160,7 +160,7 @@ void FSI::AleLinear::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) const
+void ADAPTER::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) const
 {
   // We save the current solution here. This will not change the
   // result of our element call, but the next time somebody asks us we
@@ -178,7 +178,7 @@ void FSI::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::Solve()
+void ADAPTER::AleLinear::Solve()
 {
   // set fixed nodes
   ParameterList eleparams;
@@ -196,7 +196,7 @@ void FSI::AleLinear::Solve()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::Update()
+void ADAPTER::AleLinear::Update()
 {
   dispn_->Update(1.0,*dispnp_,0.0);
 }
@@ -204,7 +204,7 @@ void FSI::AleLinear::Update()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::Output()
+void ADAPTER::AleLinear::Output()
 {
   // We do not need any output -- the fluid writes its
   // displacements itself. But we need restart.
@@ -226,7 +226,7 @@ void FSI::AleLinear::Output()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::Integrate()
+void ADAPTER::AleLinear::Integrate()
 {
   while (step_ < numstep_-1 and time_ <= maxtime_)
   {
@@ -240,7 +240,7 @@ void FSI::AleLinear::Integrate()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::EvaluateElements()
+void ADAPTER::AleLinear::EvaluateElements()
 {
   sysmat_->Zero();
 
@@ -268,7 +268,7 @@ void FSI::AleLinear::EvaluateElements()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
+void ADAPTER::AleLinear::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
   interface_.InsertCondVector(idisp,dispnp_);
 
@@ -279,7 +279,7 @@ void FSI::AleLinear::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idi
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::AleLinear::ExtractDisplacement() const
+Teuchos::RCP<Epetra_Vector> ADAPTER::AleLinear::ExtractDisplacement() const
 {
   // We know that the ale dofs are coupled with their original map. So
   // we just return them here.
@@ -289,7 +289,7 @@ Teuchos::RCP<Epetra_Vector> FSI::AleLinear::ExtractDisplacement() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-// Teuchos::RCP<Epetra_Vector> FSI::AleLinear::StructCondRHS() const
+// Teuchos::RCP<Epetra_Vector> ADAPTER::AleLinear::StructCondRHS() const
 // {
 //   return interface_.ExtractCondVector(dispnp_);
 // }
@@ -297,7 +297,7 @@ Teuchos::RCP<Epetra_Vector> FSI::AleLinear::ExtractDisplacement() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::AleLinear::ReadRestart(int step)
+void ADAPTER::AleLinear::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
@@ -309,7 +309,7 @@ void FSI::AleLinear::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::AleBaseAlgorithm::AleBaseAlgorithm()
+ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm()
 {
   SetupAle();
 }
@@ -317,16 +317,16 @@ FSI::AleBaseAlgorithm::AleBaseAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::AleBaseAlgorithm::~AleBaseAlgorithm()
+ADAPTER::AleBaseAlgorithm::~AleBaseAlgorithm()
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::AleBaseAlgorithm::SetupAle()
+void ADAPTER::AleBaseAlgorithm::SetupAle()
 {
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FSI::AleBaseAlgorithm::SetupAle");
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::AleBaseAlgorithm::SetupAle");
   Teuchos::TimeMonitor monitor(*t);
 
   // -------------------------------------------------------------------

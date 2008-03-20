@@ -6,12 +6,12 @@
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "fsi_fluid_ale.H"
+#include "adapter_fluid_ale.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::FluidAleAdapter::FluidAleAdapter(const Teuchos::ParameterList& prbdyn)
+ADAPTER::FluidAleAdapter::FluidAleAdapter(const Teuchos::ParameterList& prbdyn)
   : fluid_(prbdyn,true),
     ale_()
 {
@@ -41,7 +41,7 @@ FSI::FluidAleAdapter::FluidAleAdapter(const Teuchos::ParameterList& prbdyn)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> FSI::FluidAleAdapter::Discretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::FluidAleAdapter::Discretization()
 {
   return FluidField().Discretization();
 }
@@ -49,7 +49,7 @@ Teuchos::RCP<DRT::Discretization> FSI::FluidAleAdapter::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const LINALG::MapExtractor& FSI::FluidAleAdapter::Interface() const
+const LINALG::MapExtractor& ADAPTER::FluidAleAdapter::Interface() const
 {
   return FluidField().Interface();
 }
@@ -57,7 +57,7 @@ const LINALG::MapExtractor& FSI::FluidAleAdapter::Interface() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAdapter::PrepareTimeStep()
+void ADAPTER::FluidAleAdapter::PrepareTimeStep()
 {
   FluidField().PrepareTimeStep();
   AleField().PrepareTimeStep();
@@ -66,7 +66,7 @@ void FSI::FluidAleAdapter::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAdapter::Update()
+void ADAPTER::FluidAleAdapter::Update()
 {
   FluidField().Update();
   AleField().Update();
@@ -75,7 +75,7 @@ void FSI::FluidAleAdapter::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAdapter::Output()
+void ADAPTER::FluidAleAdapter::Output()
 {
   FluidField().Output();
   AleField().Output();
@@ -86,7 +86,7 @@ void FSI::FluidAleAdapter::Output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::FluidAleAdapter::ReadRestart(int step)
+double ADAPTER::FluidAleAdapter::ReadRestart(int step)
 {
   FluidField().ReadRestart(step);
   AleField().ReadRestart(step);
@@ -96,7 +96,7 @@ double FSI::FluidAleAdapter::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::FluidAleAdapter::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
+void ADAPTER::FluidAleAdapter::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                           Teuchos::RCP<Epetra_Vector> ivel)
 {
   if (idisp!=Teuchos::null)
@@ -105,6 +105,11 @@ void FSI::FluidAleAdapter::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
     AleField().ApplyInterfaceDisplacements(FluidToAle(idisp));
     FluidField().ApplyInterfaceVelocities(ivel);
   }
+
+  // Note: We do not look for moving ale boundaries (outside the coupling
+  // interface) on the fluid side. Thus if you prescribe time variable ale
+  // Dirichlet conditions the according fluid Dirichlet conditions will not
+  // notice.
 
   AleField().Solve();
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDisplacement());
@@ -115,7 +120,7 @@ void FSI::FluidAleAdapter::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                                                   double dt)
 {
   // Here we have a mesh position independent of the
@@ -142,7 +147,7 @@ Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::RelaxationSolve(Teuchos::RCP<E
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::ExtractInterfaceForces()
 {
   return FluidField().ExtractInterfaceForces();
 }
@@ -150,7 +155,7 @@ Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::IntegrateInterfaceShape()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::IntegrateInterfaceShape()
 {
   return FluidField().IntegrateInterfaceShape();
 }
@@ -158,7 +163,7 @@ Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::IntegrateInterfaceShape()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> FSI::FluidAleAdapter::CreateFieldTest()
+Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidAleAdapter::CreateFieldTest()
 {
   return FluidField().CreateFieldTest();
 }
@@ -166,7 +171,7 @@ Teuchos::RCP<DRT::ResultTest> FSI::FluidAleAdapter::CreateFieldTest()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupfa_.SlaveToMaster(iv);
 }
@@ -174,7 +179,7 @@ Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::AleToFluidField(Teuchos::RCP<E
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::AleToFluidField(Teuchos::RCP<const Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::AleToFluidField(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_.SlaveToMaster(iv);
 }
@@ -182,7 +187,7 @@ Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::AleToFluidField(Teuchos::RCP<c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return icoupfa_.MasterToSlave(iv);
 }
@@ -190,7 +195,7 @@ Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::FluidToAle(Teuchos::RCP<Epetra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfa_.MasterToSlave(iv);
 }
@@ -198,92 +203,11 @@ Teuchos::RCP<Epetra_Vector> FSI::FluidAleAdapter::FluidToAle(Teuchos::RCP<const 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::GeneralFluidBaseAlgorithm::GeneralFluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
+ADAPTER::GeneralFluidBaseAlgorithm::GeneralFluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
 {
   // here we could do some decision what kind of generalized fluid to build
   fluid_ = Teuchos::rcp(new FluidAleAdapter(prbdyn));
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-FSI::FluidAleAlgorithm::FluidAleAlgorithm(Epetra_Comm& comm)
-  : GeneralFluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
-    comm_(comm)
-{
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-
-  if (comm_.MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fsidyn);
-
-  step_ = 0;
-  time_ = 0.;
-  dt_ = fsidyn.get<double>("TIMESTEP");
-  nstep_ = fsidyn.get<int>("NUMSTEP");
-  maxtime_ = fsidyn.get<double>("MAXTIME");
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-FSI::FluidAleAlgorithm::~FluidAleAlgorithm()
-{
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::Timeloop()
-{
-  while (NotFinished())
-  {
-    PrepareTimeStep();
-    Solve();
-    Update();
-    Output();
-  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::PrepareTimeStep()
-{
-  step_ += 1;
-  time_ += dt_;
-
-  if (Comm().MyPID()==0)
-    std::cout << "\n"
-              << "TIME:  "    << std::scientific << time_ << "/" << std::scientific << maxtime_
-              << "     DT = " << std::scientific << dt_
-              << "     STEP = " YELLOW_LIGHT << setw(4) << step_ << END_COLOR "/" << setw(4) << nstep_
-              << "\n\n";
-
-  FluidField().PrepareTimeStep();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::Solve()
-{
-  FluidField().NonlinearSolve();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::Update()
-{
-  FluidField().Update();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::FluidAleAlgorithm::Output()
-{
-  FluidField().Output();
-}
 
 #endif
