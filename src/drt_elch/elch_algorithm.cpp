@@ -49,6 +49,16 @@ ELCH::Algorithm::Algorithm(Epetra_Comm& comm)
     maxtime_=fluiddyn.get<double>("MAXTIME");
     // maximum number of timesteps
     nstep_ = fluiddyn.get<int>("NUMSTEP");
+    
+    // -------------------------------------------------------------------
+    // get a vector layout from the fluid discretization to construct matching
+    // vectors and matrices
+    //                 local <-> global dof numbering
+    // -------------------------------------------------------------------
+    RCP<const Epetra_Map> velpresdofrowmap = FluidField().DofRowMap();
+    
+    // velocities at time n+1
+    velnp_        = LINALG::CreateVector(*velpresdofrowmap,true);
 }
 
 
@@ -66,9 +76,21 @@ void ELCH::Algorithm::TimeLoop()
   // time loop
   while (NotFinished())
   {
+    // prepare next time step
     PrepareTimeStep();
+
+    // solve Navier-Stokes system
     FluidField().NonlinearSolve();
+
+    // get new velocity from Navier-Stokes solver
+    velnp_=FluidField().Velnp();
+
+    // solve con-dif-mig equation
+
+    // update all field solvers
     Update();
+
+    // write output to file
     Output();
   } // time loop
 
@@ -105,6 +127,12 @@ void ELCH::Algorithm::Output()
   FluidField().Output();
 
   FluidField().LiftDrag();
+
+  // debug IO
+#if 0
+  // print out velocity-pressure vector
+  cout<<*velnp_<<endl;
+#endif
 }
 
 

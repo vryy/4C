@@ -85,6 +85,9 @@ namespace ELCH
     /// communication (mainly for screen output)
     Epetra_Comm& comm_;
 
+    /// velocities and pressures at time n+1
+    RCP<const Epetra_Vector>    velnp_;
+
     //! @name Time stepping variables
     int step_;
     int nstep_;
