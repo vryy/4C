@@ -38,6 +38,7 @@ using namespace Teuchos;
 
 // parameters which are fixed for Wall1
 const int NUMSTR_W1 = 3;      // number of strains/stresses
+const int neas = 4;      // number of eas parameters
 
 // forward declarations
 struct _MATERIAL;
@@ -319,9 +320,9 @@ private:
   DRT::Container                                  data_;
 
   //! number of the material law
-  int                                             material_;
-  //! element thickness
-  double                                          thickness_;
+  int                                             material_; 
+  //! element thickness 
+  double                                 thickness_; 
   //! gaussian points
   DRT::UTILS::GaussRule2D                         gaussrule_;
   //! problem type
@@ -417,8 +418,7 @@ private:
   void w1_eassetup(Epetra_SerialDenseMatrix& boplin0,
 		           Epetra_SerialDenseVector& F0,
 		           Epetra_SerialDenseMatrix& xjm0,
-		           double& detJ0,
-                   Epetra_SerialDenseMatrix& T0invT,
+		           double& detJ0,                      
                    double xrefe[2][MAXNOD_WALL1],
                    double xcure[2][MAXNOD_WALL1],
                    const DRT::Element::DiscretizationType& distype);
@@ -431,12 +431,55 @@ private:
   		                   Epetra_SerialDenseVector F0,
   		                   Epetra_SerialDenseMatrix alpha,
   		                   double e1,
-  		                   double e2);
-
+  		                   double e2,
+  		                   Epetra_SerialDenseMatrix& G,
+  		                   Epetra_SerialDenseMatrix& W0,
+  		                   Epetra_SerialDenseMatrix boplin0,
+  		                   Epetra_SerialDenseMatrix& Z); 
+  
   void w1_call_defgrad_tot(Epetra_SerialDenseMatrix F_enh,
-  		                   Epetra_SerialDenseVector& F_tot,
+  		                   Epetra_SerialDenseMatrix& F_tot,
   		                   Epetra_SerialDenseVector F,
-  		                   Epetra_SerialDenseVector& strain);
+  		                   Epetra_SerialDenseVector& strain); 
+  
+  void w1_stress_eas(Epetra_SerialDenseMatrix stress,
+		             Epetra_SerialDenseMatrix F_tot,
+  		             Epetra_SerialDenseMatrix& p_stress); 
+  
+  void w1_kdd(Epetra_SerialDenseMatrix boplin,
+              Epetra_SerialDenseMatrix W0,
+              Epetra_SerialDenseMatrix F,
+              Epetra_SerialDenseMatrix C,
+              Epetra_SerialDenseMatrix stress,
+              Epetra_SerialDenseMatrix& FCF,
+              Epetra_SerialDenseMatrix& estif,
+              double fac);
+  
+  void w1_kda(Epetra_SerialDenseMatrix FCF,
+  		      Epetra_SerialDenseMatrix W0,
+  		      Epetra_SerialDenseMatrix boplin,   
+  		      Epetra_SerialDenseMatrix stress,
+              Epetra_SerialDenseMatrix G,
+              Epetra_SerialDenseMatrix Z,
+              Epetra_SerialDenseMatrix& Kda,
+              Epetra_SerialDenseMatrix p_stress,
+              double fac);
+  
+  void w1_kaa(Epetra_SerialDenseMatrix FCF,
+  		      Epetra_SerialDenseMatrix stress,
+              Epetra_SerialDenseMatrix G,
+              Epetra_SerialDenseMatrix& Kaa,
+              double fac);
+  
+  void w1_fint_eas(Epetra_SerialDenseMatrix W0,
+  		           Epetra_SerialDenseMatrix boplin,
+                   Epetra_SerialDenseMatrix G,
+                   Epetra_SerialDenseMatrix p_stress,
+                   Epetra_SerialDenseVector& intforce,
+                   Epetra_SerialDenseVector& feas,
+                   double fac);
+
+
 
   // don't want = operator
   Wall1& operator = (const Wall1& old);

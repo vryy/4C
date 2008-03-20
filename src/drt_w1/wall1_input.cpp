@@ -36,7 +36,7 @@ extern struct _FILES  allfiles;
 #include "wall1.H"
 
 /*----------------------------------------------------------------------*
- |  read element input (public)                              mwgit 03/07|
+ |  read element input (public)                              mgit 03/07|
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Wall1::ReadElement()
 {
@@ -99,7 +99,21 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
   int ngp[2];
   frint_n("GP",ngp,2,&ierr);
   if (ierr!=1) dserror("Reading of WALL1 element failed");
-  gaussrule_ = getGaussrule(ngp); 
+  
+  if ((nnode==4) and ((ngp[0]<2) or (ngp[1]<2))) 
+  {	
+      dserror("Insufficient number of Gauss points");
+  }
+  else if ((nnode==8) and ((ngp[0]<3) or (ngp[1]<3)))   
+  {	  
+  	dserror("Insufficient number of Gauss points");
+  }  
+  else if ((nnode==9) and ((ngp[0]<3) or (ngp[1]<3))) 
+  {   
+     dserror("Insufficient number of Gauss points");
+  }   
+  
+    gaussrule_ = getGaussrule(ngp); 
 
   //read 2D problem type
   frchk("PLANE_STRESS",&ierr);
@@ -111,32 +125,37 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
   frchk("EAS_Model",&ierr);
   if (ierr==1)
   {
-	
     iseas_=true;
-    // EAS enhanced deformation gradient parameters
-    Epetra_SerialDenseMatrix alpha(4,1);  // if you change '4' here, then do it for alphao as well
-    Epetra_SerialDenseMatrix alphao(4,1);
-
-//    alpha (0,0)=1;
-//    alpha (1,0)=2;
-//    alpha (2,0)=3;
-//    alpha (3,0)=4;
-                
-    // EAS portion of internal forces, also called enhacement vector s or Rtilde
-    Epetra_SerialDenseVector feas(4);
-    // EAS matrix K_{alpha alpha}, also called Dtilde
-    Epetra_SerialDenseMatrix invKaa(2,2);
-    // EAS matrix K_{d alpha}
-    Epetra_SerialDenseMatrix Kda(2,2);
     
-    // save EAS data into element container easdata_
-    data_.Add("alpha",alpha);
-    data_.Add("alphao",alphao);
-    data_.Add("feas",feas);
-    data_.Add("invKaa",invKaa);
-    data_.Add("Kda",Kda);
+    if (nnode==9)
+    {
+      dserror("eas-technology not necessary with 9 nodes");
+    }
+    else if (nnode==8)
+    {
+    	dserror("eas-technology not necessary with 8 nodes");	
+    }
+        else
+    {	
+      // EAS enhanced deformation gradient parameters
+      Epetra_SerialDenseMatrix alpha(neas,1);  // if you change '4' here, then do it for alphao as well
+      Epetra_SerialDenseMatrix alphao(neas,1);
 
-  }
+      // EAS portion of internal forces, also called enhacement vector s or Rtilde
+      Epetra_SerialDenseVector feas(neas);
+      // EAS matrix K_{alpha alpha}, also called Dtilde
+      Epetra_SerialDenseMatrix invKaa(neas,neas);
+      // EAS matrix K_{d alpha}
+      Epetra_SerialDenseMatrix Kda(2*NumNode(),neas);
+    
+      // save EAS data into element container easdata_
+      data_.Add("alpha",alpha);
+      data_.Add("alphao",alphao);
+      data_.Add("feas",feas);
+      data_.Add("invKaa",invKaa);
+      data_.Add("Kda",Kda);
+      }
+    }
 
   //read lokal or global stresses
   char buffer [50];
