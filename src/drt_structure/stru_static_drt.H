@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file stru_dyn_nln_drt.H
+\file stru_static_drt.H
 \brief
 
 <pre>
@@ -12,8 +12,8 @@ Maintainer: Moritz Frenzel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef STRU_STA_NLN_DRT_H
-#define STRU_STA_NLN_DRT_H
+#ifndef STRU_STATIC_DRT_H
+#define STRU_STATIC_DRT_H
 
 
 #ifdef __cplusplus /* stuff which is c++ specific */
@@ -29,10 +29,21 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
+#include "../drt_contact/contactdefines.H"
 
 using namespace std;
 
+void synchronize_VolConstraint(const Epetra_Comm& Comm, 
+                               ParameterList& params,
+                               Epetra_SerialDenseVector& vect,
+                               int& mi, int& ma, int & numID);
 
+void setupVolDofrowmaps(RefCountPtr<DRT::Discretization> actdis,
+		  map<int, RCP<Epetra_Map> >& voldofrowmaps,
+		  const int numconstID,
+		  const string& condstring);
+
+void foolfunction();
 
 #endif /* end of #ifdef __cplusplus */
 
@@ -48,15 +59,6 @@ extern "C"
 
 void stru_static_drt();
 
-void synchronize_VolConstraint(const Epetra_Comm& Comm, 
-								ParameterList& params,
-								Epetra_SerialDenseVector& vect,
-								int& mi, int& ma, int & numID);
-
-void setupVolDofrowmaps(RefCountPtr<DRT::Discretization> actdis,
-		  map<int, RCP<Epetra_Map> >& voldofrowmaps,
-		  const int numconstID,
-		  const string& condstring);
 
 #ifdef __cplusplus
 }
@@ -66,6 +68,5 @@ void setupVolDofrowmaps(RefCountPtr<DRT::Discretization> actdis,
 
 
 
-
-#endif  /* #ifndef STRU_STA_NLN_DRT_H */
+#endif  /* #ifndef STRU_STATIC_DRT_H */
 #endif  /* #ifdef CCADISCRET */
