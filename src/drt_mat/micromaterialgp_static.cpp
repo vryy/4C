@@ -82,6 +82,10 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
   RefCountPtr<DRT::Discretization> microdis = microproblem->Dis(0, 0);
   dism_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   dis_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
+  oldalpha_ = Teuchos::rcp(new std::vector<char>());
+  oldfeas_ = Teuchos::rcp(new std::vector<char>());
+  oldKaainv_ = Teuchos::rcp(new std::vector<char>());
+  oldKda_ = Teuchos::rcp(new std::vector<char>());
   microstaticcounter_ += 1;
 
   // if class handling microscale simulations is not yet initialized
@@ -204,8 +208,25 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
 
   params->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
   params->set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
-  params->set<bool>  ("io structural stress",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"));
+
+  switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
+  {
+  case struct_stress_none:
+    params->set<string>("io structural stress", "none");
+    break;
+  case struct_stress_cauchy:
+    params->set<string>("io structural stress", "cauchy");
+    break;
+  case struct_stress_pk:
+    params->set<string>("io structural stress", "2PK");
+    break;
+  default:
+    params->set<string>("io structural stress", "none");
+    break;
+  }
+
   params->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
+  params->set<bool>  ("io structural strain",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRAIN"));
 
   params->set<int>   ("restart",probtype.get<int>("RESTART"));
   params->set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
@@ -223,9 +244,12 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
                                                   const double time,
                                                   string action)
 {
+  // this is a comparison of two doubles, but since timen_ is always a
+  // copy of time as long as we are within a time step, any variation
+  // must be due to an update of macroscale time!
   if (time != timen_)
   {
-    microstatic_->UpdateNewTimeStep(dis_, dism_);
+    microstatic_->UpdateNewTimeStep(dis_, dism_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
   }
 
   // set displacements of last step
@@ -234,7 +258,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   // check if we have to update absolute time and step number
   // in case of restart, timen_ is set to the current total time in
   // the constructor, whereas "time" handed on to this function is
-  // still 0 since the macroscopic update of total time is done after
+  // still 0. since the macroscopic update of total time is done after
   // the initializing phase in which this function is called the first
   // time
   if (time != timen_ && time != 0.)

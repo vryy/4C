@@ -104,13 +104,25 @@ solver_(solver)
   fextn_ = LINALG::CreateVector(*dofrowmap,true);
 
   // dynamic force residual at mid-time R_{n+1-alpha}
-  // also known at out-of-balance-force
+  // also known as out-of-balance-force
   fresm_ = LINALG::CreateVector(*dofrowmap,false);
 
   // dynamic force residual at mid-time R_{n+1-alpha}
   // holding also boundary forces due to Dirichlet/Microboundary
   // conditions
   fresm_dirich_ = LINALG::CreateVector(*dofrowmap,false);
+
+  // -------------------------------------------------------------------
+  // create "empty" EAS history map
+  // -------------------------------------------------------------------
+  const Epetra_Map* elemap = discret_->ElementRowMap();
+//   for (int i=0;i<elemap->NumMyElements();++i)
+//   {
+//     (*oldalpha_)[elemap->GID(i)]=null;
+//     (*oldfeas_)[elemap->GID(i)]=null;
+//     (*oldKaainv_)[elemap->GID(i)]=null;
+//     (*oldKda_)[elemap->GID(i)]=null;
+//   }
 
   // -------------------------------------------------------------------
   // call elements to calculate stiffness and mass
@@ -120,6 +132,7 @@ solver_(solver)
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
+    //p.set("action","calc_struct_nlnstiff_multiscale");
     // other parameters that might be needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
@@ -127,6 +140,25 @@ solver_(solver)
     discret_->ClearState();
     discret_->SetState("residual displacement",zeros_);
     discret_->SetState("displacement",dis_);
+
+//     if (oldalpha_!=null)   // i.e. we have are using EAS and have internal data
+//     {
+//       // provide EAS history of the last step
+//       p.set("oldalpha", oldalpha_);
+//       p.set("oldfeas", oldfeas_);
+//       p.set("oldKaainv", oldKaainv_);
+//       p.set("oldKda", oldKda_);
+//       // provide vector<char>'s to save the EAS history of the current step_
+//       Teuchos::RCP<std::vector<char> > newalpha = Teuchos::rcp(new std::vector<char>());
+//       Teuchos::RCP<std::vector<char> > newfeas = Teuchos::rcp(new std::vector<char>());
+//       Teuchos::RCP<std::vector<char> > newKaainv = Teuchos::rcp(new std::vector<char>());
+//       Teuchos::RCP<std::vector<char> > newKda = Teuchos::rcp(new std::vector<char>());
+//       p.set("newalpha", newalpha);
+//       p.set("newfeas", newfeas);
+//       p.set("newKaainv", newKaainv);
+//       p.set("newKda", newKda);
+//     }
+
     discret_->Evaluate(p,stiff_,null,fint_,null,null);
     discret_->ClearState();
   }
@@ -256,6 +288,25 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
     discret_->SetState("residual displacement",disi_);
     discret_->SetState("displacement",dism_);
     fint_->PutScalar(0.0);  // initialise internal force vector
+
+//     if (oldalpha_!=null)   // i.e. we have are using EAS and have internal data
+//     {
+//       // provide EAS history of the last step
+//       p.set("oldalpha", oldalpha_);
+//       p.set("oldfeas", oldfeas_);
+//       p.set("oldKaainv", oldKaainv_);
+//       p.set("oldKda", oldKda_);
+//       // provide vector<char>'s to save the EAS history of the current step_
+//       Teuchos::RCP<std::vector<char> > newalpha = Teuchos::rcp(new std::vector<char>());
+//       Teuchos::RCP<std::vector<char> > newfeas = Teuchos::rcp(new std::vector<char>());
+//       Teuchos::RCP<std::vector<char> > newKaainv = Teuchos::rcp(new std::vector<char>());
+//       Teuchos::RCP<std::vector<char> > newKda = Teuchos::rcp(new std::vector<char>());
+//       p.set("newalpha", newalpha);
+//       p.set("newfeas", newfeas);
+//       p.set("newKaainv", newKaainv);
+//       p.set("newKda", newKda);
+//     }
+
     discret_->Evaluate(p,stiff_,null,fint_,null,null);
     discret_->ClearState();
 
@@ -324,7 +375,6 @@ void MicroStatic::FullNewton()
   double toldisp   = params_->get<double>("tolerance displacements",1.0e-07);
   double tolres    = params_->get<double>("tolerance residual"     ,1.0e-07);
   //bool printscreen = params_->get<bool>  ("print to screen",true);
-  //double toldisp = 1.0e-08;
 
   //=================================================== equilibrium loop
   int numiter=0;
@@ -352,7 +402,9 @@ void MicroStatic::FullNewton()
 
     //---------------------------------- update mid configuration values
     // displacements
-    // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
+    // note that disi is not Inc_D{n+1} but Inc_D{n+1-alphaf} since everything
+    // on the microscale "lives" exclusively at the pseudo generalized
+    // mid point! This is just a quasi-static problem!
     dism_->Update(1.0,*disi_,1.0);
 
     //---------------------------- compute internal forces and stiffness
@@ -374,9 +426,32 @@ void MicroStatic::FullNewton()
       p.set("delta time",dt);
       // set vector values needed by elements
       discret_->ClearState();
+      // we do not need to scale disi_ here with 1-alphaf (cf. strugenalpha), since
+      // everything on the microscale "lives" at the pseudo generalized midpoint
+      // -> we solve our quasi-static problem there and only update data to the "end"
+      // of the time step after having finished a macroscopic dt
       discret_->SetState("residual displacement",disi_);
       discret_->SetState("displacement",dism_);
       fint_->PutScalar(0.0);  // initialise internal force vector
+
+//       if (oldalpha_!=null)   // i.e. we have are using EAS and have internal data
+//       {
+//         // provide EAS history of the last step
+//         p.set("oldalpha", oldalpha_);
+//         p.set("oldfeas", oldfeas_);
+//         p.set("oldKaainv", oldKaainv_);
+//         p.set("oldKda", oldKda_);
+//         // provide vector<char>'s to save the EAS history of the current step_
+//         Teuchos::RCP<std::vector<char> > newalpha = Teuchos::rcp(new std::vector<char>());
+//         Teuchos::RCP<std::vector<char> > newfeas = Teuchos::rcp(new std::vector<char>());
+//         Teuchos::RCP<std::vector<char> > newKaainv = Teuchos::rcp(new std::vector<char>());
+//         Teuchos::RCP<std::vector<char> > newKda = Teuchos::rcp(new std::vector<char>());
+//         p.set("newalpha", newalpha);
+//         p.set("newfeas", newfeas);
+//         p.set("newKaainv", newKaainv);
+//         p.set("newKda", newKda);
+//       }
+
       discret_->Evaluate(p,stiff_,null,fint_,null,null);
       discret_->ClearState();
 
@@ -456,7 +531,7 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
 
   bool   iodisp        = params_->get<bool>  ("io structural disp"     ,true);
   int    updevrydisp   = params_->get<int>   ("io disp every nstep"    ,1);
-  bool   iostress      = params_->get<bool>  ("io structural stress"   ,false);
+  string iostress      = params_->get<string>("io structural stress"   ,"none");
   int    updevrystress = params_->get<int>   ("io stress every nstep"  ,10);
   bool   iostrain      = params_->get<bool>  ("io structural strain"   ,false);
   int    writeresevry  = params_->get<int>   ("write restart every"    ,0);
@@ -491,7 +566,7 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
   }
 
   //------------------------------------- do stress calculation and output
-  if (updevrystress and !(istep%updevrystress) and iostress)
+  if (updevrystress and !(istep%updevrystress) and iostress!="none")
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -504,6 +579,14 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
+    if (iostress == "cauchy")   // output of Cauchy stresses instead of 2PK stresses
+    {
+      p.set("cauchy", true);
+    }
+    else
+    {
+      p.set("cauchy", false);
+    }
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("residual displacement",zeros_);
@@ -512,10 +595,17 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
     discret_->ClearState();
     if (!isdatawritten) output->NewStep(istep, time);
     isdatawritten = true;
-    output->WriteVector("gauss_stresses_xyz",*stress,*discret_->ElementColMap());
+    if (iostress == "cauchy")
+    {
+      output->WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_->ElementColMap());
+    }
+    else
+    {
+      output->WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_->ElementColMap());
+    }
     if (iostrain)
     {
-      output->WriteVector("gauss_strains_xyz",*strain,*discret_->ElementColMap());
+      output->WriteVector("gauss_GL_strains_xyz",*strain,*discret_->ElementColMap());
     }
   }
 
@@ -547,7 +637,8 @@ void MicroStatic::SetDefaults(ParameterList& params)
   params.set<double>("tolerance displacements",1.0e-07);
   params.set<bool>  ("io structural disp"     ,true);
   params.set<int>   ("io disp every nstep"    ,1);
-  params.set<bool>  ("io structural stress"   ,false);
+  params.set<string>("io structural stress"   ,"none");
+  params.set<bool>  ("io structural strain"   ,false);
   params.set<int>   ("restart"                ,0);
   params.set<int>   ("write restart every"    ,0);
   // takes values "constant" consistent"
@@ -718,7 +809,11 @@ void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
 }
 
 void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
-                                    RefCountPtr<Epetra_Vector> dism)
+                                    RefCountPtr<Epetra_Vector> dism,
+                                    RefCountPtr<std::vector<char> > oldalpha,
+                                    RefCountPtr<std::vector<char> > oldfeas,
+                                    RefCountPtr<std::vector<char> > oldKaainv,
+                                    RefCountPtr<std::vector<char> > oldKda)
 {
   double alphaf = params_->get<double>("alpha f",0.459);
   dis->Update(1.0/(1.0-alphaf), *dism, -alphaf/(1.0-alphaf));
@@ -728,6 +823,26 @@ void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
   {
     surf_stress_man_->Update();
   }
+//   if (oldalpha!=null && oldfeas!=null && oldKaainv!=null && oldKda!=null)
+//   {
+//     int position=0;
+//     const Epetra_Map* elemap = discret_->ElementRowMap();
+//     for (int i=0;i<elemap->NumMyElements();++i)
+//     {
+//       RefCountPtr<Epetra_SerialDenseMatrix> alpha = rcp(new Epetra_SerialDenseMatrix);
+//       DRT::ParObject::ExtractfromPack(position, *oldalpha, *alpha);
+//       (*oldalpha_)[elemap->GID(i)]=alpha;
+//       RefCountPtr<Epetra_SerialDenseMatrix> feas = rcp(new Epetra_SerialDenseMatrix);
+//       DRT::ParObject::ExtractfromPack(position, *oldfeas, *feas);
+//       (*oldfeas_)[elemap->GID(i)]=feas;
+//       RefCountPtr<Epetra_SerialDenseMatrix> kaainv = rcp(new Epetra_SerialDenseMatrix);
+//       DRT::ParObject::ExtractfromPack(position, *oldKaainv, *kaainv);
+//       (*oldKaainv_)[elemap->GID(i)]=kaainv;
+//       RefCountPtr<Epetra_SerialDenseMatrix> kda = rcp(new Epetra_SerialDenseMatrix);
+//       DRT::ParObject::ExtractfromPack(position, *oldKda, *kda);
+//       (*oldKda_)[elemap->GID(i)]=kda;
+//     }
+//   }
 }
 
 void MicroStatic::SetTime(double timen, int istep)

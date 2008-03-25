@@ -110,7 +110,11 @@ public:
 
   */
   void UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
-                         RefCountPtr<Epetra_Vector> dism);
+                         RefCountPtr<Epetra_Vector> dism,
+                         RefCountPtr<std::vector<char> > oldalpha,
+                         RefCountPtr<std::vector<char> > oldfeas,
+                         RefCountPtr<std::vector<char> > oldKaainv,
+                         RefCountPtr<std::vector<char> > oldKda);
 
   /*!
   \brief write update
@@ -209,6 +213,12 @@ protected:
   RefCountPtr<Epetra_Vector>    fextn_;
   RefCountPtr<Epetra_Vector>    fresm_;
   RefCountPtr<Epetra_Vector>    fresm_dirich_;
+
+  //EAS history data
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha_;
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas_;
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv_;
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda_;
 
   RefCountPtr<Epetra_MultiVector> D_;  // D Matrix following Miehe et al., 2002
   RefCountPtr<Epetra_MultiVector> rhs_; // exported transpose of D (pdof -> dofrowmap)

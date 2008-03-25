@@ -78,6 +78,12 @@ private:
   /// my manager of surface stresses
   RefCountPtr<DRT::SurfStressManager> surf_stress_man_;
 
+  // my EAS history data
+  Teuchos::RCP<std::vector<char> > oldalpha_;
+  Teuchos::RCP<std::vector<char> > oldfeas_;
+  Teuchos::RCP<std::vector<char> > oldKaainv_;
+  Teuchos::RCP<std::vector<char> > oldKda_;
+
   /// current absolute time
   double timen_;
 
