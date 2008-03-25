@@ -357,16 +357,18 @@ void contact_stru_static_drt()
         fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
       }
   
-      //----------------------------------------------- build residual norm
+      //----------------------------------------------- build res/disi norm
       double norm;
       fresm->Norm2(&norm);
+      double disinorm = 1.0;
+      
       if (!myrank) cout << " Predictor residual forces " << norm << endl; fflush(stdout);
       
       // reset Newton iteration counter
       numiter=0;
       
       //===========================================start of equilibrium loop
-      while ((norm > statvar->toldisp) && numiter < statvar->maxiter)
+      while (((norm > statvar->tolresid) || (disinorm > statvar->toldisp)) && numiter < statvar->maxiter)
       {  
         //----------------------- apply dirichlet BCs to system of equations
         fresm->Scale(-1.0);     // rhs = -R = -fresm
@@ -442,12 +444,10 @@ void contact_stru_static_drt()
         RCP<Epetra_Vector> fc = contactmanager->GetContactForces();
         if (fc!=null) fresm->Update(1.0,*fc,1.0);
             
-        //---------------------------------------------- build residual norm
-        double disinorm;
-        disi->Norm2(&disinorm);
-  
+        //---------------------------------------------- build res/disi norm
         fresm->Norm2(&norm);
-        
+        disi->Norm2(&disinorm);
+       
         //remove contact forces from equilibrium again
         if (fc!=null) fresm->Update(-1.0,*fc,1.0);
         
@@ -459,8 +459,6 @@ void contact_stru_static_drt()
           fflush(stdout);
           fflush(errfile);
         }
-        // criteria to stop Newton iteration
-        norm = disinorm;
   
         //--------------------------------- increment equilibrium loop index
         ++numiter;
