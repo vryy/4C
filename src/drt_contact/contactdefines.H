@@ -29,8 +29,8 @@ Maintainer: Alexander Popp
 #define CONTACTINITIALSET 0      /* flag for initialization of active set */
                                  /* 0=empty, 1=full, 2=user-defined      */
 
-// FIXME: Might be better to have critdist = f(element length)
-
+// static solution routine
+void contact_stru_static_drt();
 
 #endif  // #ifndef CONTACTDEFINES_H
 #endif  // #ifdef CCADISCRET

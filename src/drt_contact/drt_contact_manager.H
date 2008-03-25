@@ -201,7 +201,7 @@ public:
   flag is kept on false -> another Newton iteration!
   
   */
-  void UpdateActiveSet();
+  void UpdateActiveSet(RCP<Epetra_Vector> dism);
   
   /*!
   \brief Compute contact force vector

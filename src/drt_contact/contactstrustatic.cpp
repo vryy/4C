@@ -1,12 +1,12 @@
 /*!----------------------------------------------------------------------
-\file
-\brief
+\file contactstrustatic.cpp
+\brief Solution routine for nonlinear structural statics with contact
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15264
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -22,11 +22,14 @@ Maintainer: Moritz Frenzel
 #include <mpi.h>
 #endif
 
-#include "stru_static_drt.H"
+#include "contactdefines.H"
+#include "drt_contact_manager.H"
+#include "../drt_structure/stru_static_drt.H"
 #include "../io/io_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_systemmatrix.H"
-#include "stru_resulttest.H"
+#include "../drt_structure/stru_resulttest.H"
+
 
 
 /*----------------------------------------------------------------------*
@@ -63,9 +66,9 @@ extern struct _SOLVAR  *solv;
 extern struct _STATIC_VAR  *statvar;
 
 /*----------------------------------------------------------------------*
-  | structural nonlinear static solution routine             maf 05/07  |
+  | structural nonlinear static with contact                popp 03/08  |
  *----------------------------------------------------------------------*/
-void stru_static_drt()
+void contact_stru_static_drt()
 {
   // -------------------------------------------------------------------
   // access the discretization
@@ -77,24 +80,14 @@ void stru_static_drt()
   if (!actdis->Filled()) actdis->FillComplete();
   
   // -------------------------------------------------------------------
-  // check for contact conditions
+  // get contact conditions
   // -------------------------------------------------------------------
-  // There is no explicit flag in the input-file indicating whether we
-  // want to do nonlinear structural statics with or without contact.
-  // BACI decides based on the input-file only, so if you define at
-  // least ONE contact condition there, you enter the contact case!
-  // -------------------------------------------------------------------
-  bool contact = false;
+  RCP<CONTACT::Manager> contactmanager;
   vector<DRT::Condition*> contactconditions(0);
   actdis->GetCondition("Contact",contactconditions);
-  if (contactconditions.size()) contact=true;
   
-  if (contact)
-  {
-    // leave and call special routine for statics with contact
-    contact_stru_static_drt();
-    return;
-  } 
+  // create contact manager to organize all contact-related things
+  contactmanager = rcp(new CONTACT::Manager(*actdis));
   
   // -------------------------------------------------------------------
   // get a communicator and myrank
@@ -306,85 +299,24 @@ void stru_static_drt()
     //------------------------------------------------------- current time
     // we are at t_{n} == time; the new time is t_{n+1} == time+dt
     timen = time + dt;
-
-    //--------------------------------------------------- predicting state
-    // constant predictor : displacement in domain
-    disn->Update(1.0, *dis, 0.0);
-
-    // eval fint and stiffness matrix at current istep
-    // and apply new displacements at DBCs
-    {
-      // destroy and create new matrix
-      stiff_mat->Zero();
-      // create the parameters for the discretization
-      ParameterList params;
-      // action for elements
-      params.set("action","calc_struct_nlnstiff");
-      // other parameters needed by the elements
-      params.set("total time",timen);  // load factor (pseudo time)
-      params.set("delta time",dt);  // load factor increment (pseudo time increment)
-      // set vector values needed by elements
-      actdis->ClearState();
-      actdis->SetState("residual displacement",disi);
-      // predicted dirichlet values
-      // disn then also holds prescribed new dirichlet displacements
-      actdis->EvaluateDirichlet(params,disn,null,null,dirichtoggle);
-      actdis->SetState("displacement",disn);
-      fint->PutScalar(0.0);  // initialise internal force vector
-      actdis->Evaluate(params,stiff_mat,null,fint,null,null);
-      // predicted rhs
-      fextn->PutScalar(0.0);  // initialize external force vector (load vect)
-      actdis->EvaluateNeumann(params,*fextn); // *fext holds external force vector at current step
-
-      actdis->ClearState();
-      }
-    // complete stiffness matrix
-    stiff_mat->Complete();
-
-    double stiffnorm;
-    stiffnorm = stiff_mat->NormFrobenius();
-
-    // evaluate residual at current istep
-    // R{istep,numiter=0} = F_int{istep,numiter=0} - F_ext{istep}
-    fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
-
-    // blank residual at DOFs on Dirichlet BC
-    {
-      Epetra_Vector fresmcopy(*fresm);
-      fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
-    }
-
-    //------------------------------------------------ build residual norm
-    double norm;
-    fresm->Norm2(&norm);
-    if (!myrank) cout << " Predictor residual forces " << norm << endl; fflush(stdout);
-   //=================================================== equilibrium loop
+    
+    // iteration counter for nonlinear Newton scheme
     int numiter=0;
-    while ((norm > statvar->toldisp) && numiter < statvar->maxiter)
+   
+    // initialize active set convergence status
+    contactmanager->ActiveSetConverged() = false;
+    
+    //============================================ start of active set loop
+    while (contactmanager->ActiveSetConverged()==false)
     {
-      //----------------------- apply dirichlet BCs to system of equations
-      fresm->Scale(-1.0);     // rhs = -R = -fresm
-      disi->PutScalar(0.0);   // Useful? depends on solver and more
-      LINALG::ApplyDirichlettoSystem(stiff_mat,disi,fresm,zeros,dirichtoggle);
-
-      //Do usual newton step
-      // solve for disi
-      // Solve K . IncD = -R  ===>  IncD_{n+1}
-      if (numiter==0)
+      //--------------------------------------------------- predicting state
+      // constant predictor : displacement in domain
+      disn->Update(1.0, *dis, 0.0);
+  
+      // eval fint and stiffness matrix at current istep
+      // and apply new displacements at DBCs
       {
-        solver.Solve(stiff_mat->EpetraMatrix(),disi,fresm,true,true);
-      }
-      else
-      {
-        solver.Solve(stiff_mat->EpetraMatrix(),disi,fresm,true,false);
-      }
-      // update displacements
-      // D_{istep,numiter+1} := D_{istep,numiter} + IncD_{numiter}
-      disn->Update(1.0, *disi, 1.0);
-
-      // compute internal forces and stiffness at current iterate numiter
-      {
-        // zero out stiffness
+        // destroy and create new matrix
         stiff_mat->Zero();
         // create the parameters for the discretization
         ParameterList params;
@@ -396,52 +328,155 @@ void stru_static_drt()
         // set vector values needed by elements
         actdis->ClearState();
         actdis->SetState("residual displacement",disi);
+        // predicted dirichlet values
+        // disn then also holds prescribed new dirichlet displacements
+        actdis->EvaluateDirichlet(params,disn,null,null,dirichtoggle);
         actdis->SetState("displacement",disn);
         fint->PutScalar(0.0);  // initialise internal force vector
         actdis->Evaluate(params,stiff_mat,null,fint,null,null);
-
+        // predicted rhs
+        fextn->PutScalar(0.0);  // initialize external force vector (load vect)
+        actdis->EvaluateNeumann(params,*fextn); // *fext holds external force vector at current step
+  
         actdis->ClearState();
       }
+      
       // complete stiffness matrix
       stiff_mat->Complete();
-
-      // evaluate new residual fresm at current iterate numiter
-      // R{istep,numiter} = F_int{istep,numiter} - F_ext{istep}
+  
+      double stiffnorm;
+      stiffnorm = stiff_mat->NormFrobenius();
+  
+      // evaluate residual at current istep
+      // R{istep,numiter=0} = F_int{istep,numiter=0} - F_ext{istep}
       fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
-
-      // blank residual DOFs which are on Dirichlet BC
+  
+      // blank residual at DOFs on Dirichlet BC
       {
         Epetra_Vector fresmcopy(*fresm);
         fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
       }
-
-      //---------------------------------------------- build residual norm
-      double disinorm;
-      disi->Norm2(&disinorm);
-
+  
+      //----------------------------------------------- build residual norm
+      double norm;
       fresm->Norm2(&norm);
-      // a short message
-      if (!myrank)
-      {
-        printf("numiter %d res-norm %e dis-norm %e \n",numiter+1, norm, disinorm);
-        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, norm, disinorm);
-        fflush(stdout);
-        fflush(errfile);
-      }
-      // criteria to stop Newton iteration
-      norm = disinorm;
+      if (!myrank) cout << " Predictor residual forces " << norm << endl; fflush(stdout);
+      
+      // reset Newton iteration counter
+      numiter=0;
+      
+      //===========================================start of equilibrium loop
+      while ((norm > statvar->toldisp) && numiter < statvar->maxiter)
+      {  
+        //----------------------- apply dirichlet BCs to system of equations
+        fresm->Scale(-1.0);     // rhs = -R = -fresm
+        
+        //-------------------------make contact modifications to lhs and rhs
+        {
+          contactmanager->Initialize(numiter);
+          contactmanager->SetState("displacement",disn);
+  
+          // (almost) all contact stuff is done here!
+          contactmanager->Evaluate(stiff_mat,fresm,numiter);
+        }
+        
+        //----------------------- apply dirichlet BCs to system of equations
+        disi->PutScalar(0.0);   // Useful? depends on solver and more
+        LINALG::ApplyDirichlettoSystem(stiff_mat,disi,fresm,zeros,dirichtoggle);
 
-      //--------------------------------- increment equilibrium loop index
-      ++numiter;
-    } //
-    //============================================= end equilibrium loop
-
-    //-------------------------------- test whether max iterations was hit
-    if (statvar->maxiter == 1 && statvar->nstep == 1)
-      printf("computed 1 step with 1 iteration: STATIC LINEAR SOLUTION\n");
-    else if (numiter==statvar->maxiter)
-      dserror("Newton unconverged in %d iterations",numiter);
-
+        //Do usual newton step
+        // solve for disi
+        // Solve K . IncD = -R  ===>  IncD_{n+1}
+        if (numiter==0)
+        {
+          solver.Solve(stiff_mat->EpetraMatrix(),disi,fresm,true,true);
+        }
+        else
+        {
+          solver.Solve(stiff_mat->EpetraMatrix(),disi,fresm,true,false);
+        }
+        
+        //------------------------------------ transform disi due to contact
+        {
+          contactmanager->RecoverDisp(disi);
+        }
+        
+        // update displacements
+        // D_{istep,numiter+1} := D_{istep,numiter} + IncD_{numiter}
+        disn->Update(1.0, *disi, 1.0);
+  
+        // compute internal forces and stiffness at current iterate numiter
+        {
+          // zero out stiffness
+          stiff_mat->Zero();
+          // create the parameters for the discretization
+          ParameterList params;
+          // action for elements
+          params.set("action","calc_struct_nlnstiff");
+          // other parameters needed by the elements
+          params.set("total time",timen);  // load factor (pseudo time)
+          params.set("delta time",dt);  // load factor increment (pseudo time increment)
+          // set vector values needed by elements
+          actdis->ClearState();
+          actdis->SetState("residual displacement",disi);
+          actdis->SetState("displacement",disn);
+          fint->PutScalar(0.0);  // initialise internal force vector
+          actdis->Evaluate(params,stiff_mat,null,fint,null,null);
+  
+          actdis->ClearState();
+        }
+        // complete stiffness matrix
+        stiff_mat->Complete();
+  
+        // evaluate new residual fresm at current iterate numiter
+        // R{istep,numiter} = F_int{istep,numiter} - F_ext{istep}
+        fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
+  
+        // blank residual DOFs which are on Dirichlet BC
+        {
+          Epetra_Vector fresmcopy(*fresm);
+          fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
+        }
+        // add contact forces
+        contactmanager->ContactForces(fresm);
+        RCP<Epetra_Vector> fc = contactmanager->GetContactForces();
+        if (fc!=null) fresm->Update(1.0,*fc,1.0);
+            
+        //---------------------------------------------- build residual norm
+        double disinorm;
+        disi->Norm2(&disinorm);
+  
+        fresm->Norm2(&norm);
+        
+        //remove contact forces from equilibrium again
+        if (fc!=null) fresm->Update(-1.0,*fc,1.0);
+        
+        // a short message
+        if (!myrank)
+        {
+          printf("numiter %d res-norm %e dis-norm %e \n",numiter+1, norm, disinorm);
+          fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, norm, disinorm);
+          fflush(stdout);
+          fflush(errfile);
+        }
+        // criteria to stop Newton iteration
+        norm = disinorm;
+  
+        //--------------------------------- increment equilibrium loop index
+        ++numiter;
+      } //
+      //============================================= end equilibrium loop
+  
+      //-------------------------------- test whether max iterations was hit
+      if (statvar->maxiter == 1 && statvar->nstep == 1)
+        printf("computed 1 step with 1 iteration: STATIC LINEAR SOLUTION\n");
+      else if (numiter==statvar->maxiter)
+        dserror("Newton unconverged in %d iterations",numiter);
+      
+      contactmanager->UpdateActiveSet(disn);
+    }
+    //================================================ end active set loop
+    
     //---------------------------- determine new end-quantities and update
     // new displacements at t_{n+1} -> t_n
     // D_{n} := D_{n+1}
@@ -463,6 +498,11 @@ void stru_static_drt()
     ++istep;      // load step n := n + 1
     time += dt;   // load factor / pseudo time  t_n := t_{n+1} = t_n + Delta t
 
+    //-------------------------------- update contact Lagrange multipliers
+    RCP<Epetra_Vector> zm = contactmanager->LagrMult();
+    RCP<Epetra_Vector> zoldm = contactmanager->LagrMultOld();
+    zoldm->Update(1.0,*zm,0.0);
+    
     //------------------------------------------------- write restart step
     bool isdatawritten = false;
     if (istep % statvar->resevery_restart==0)
@@ -553,25 +593,6 @@ void stru_static_drt()
       }
     }
 
-//
-//
-//    ofstream f_system("stresses.gmsh");
-//    stringstream gmshfilecontent;
-//    gmshfilecontent << "View \" Solid Elements stresses \" {" << endl;
-//    // plot elements
-//    for (int i=0; i < actdis->NumMyColElements(); ++i)
-//    {
-//      if (actdis->lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
-//      DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(actdis->lColElement(i));
-//      if (!actele) dserror("cast to So_sh8* failed");
-//      // plot elements
-//      gmshfilecontent << IO::GMSH::elementToString(actele->thickdir_, actele) << endl;
-//      Epetra_SerialDenseMatrix* mystresses(8,8);
-//      mystresses = actele->data_.Get<Epetra_SerialDenseMatrix>("Stresses");
-//      cout << *mystresses;
-//    }
-//    gmshfilecontent << "};" << endl;
-
     //---------------------------------------------------------- print out
     if (!myrank)
     {
@@ -594,8 +615,7 @@ void stru_static_drt()
 
   //----------------------------- this is the end my lonely friend the end
   return;
-} // end of stru_static_drt()
-
+} // end of contact_stru_static_drt()
 
 
 #endif  // #ifdef CCADISCRET

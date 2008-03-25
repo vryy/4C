@@ -1130,7 +1130,7 @@ void ContactStruGenAlpha::Integrate()
         FullNewton();
 
         // update of active set
-        contactmanager_->UpdateActiveSet();
+        contactmanager_->UpdateActiveSet(dism_);
       }
       UpdateandOutput();
     }
@@ -1155,7 +1155,7 @@ void ContactStruGenAlpha::Integrate()
         PTC();
 
         // update of active set
-        contactmanager_->UpdateActiveSet();
+        contactmanager_->UpdateActiveSet(dism_);
       }
       UpdateandOutput();
     }

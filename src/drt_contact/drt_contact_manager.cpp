@@ -1092,10 +1092,21 @@ void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::UpdateActiveSet()
+void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> dism)
 {
   // assume that active set has converged and check for opposite
   activesetconv_=true;
+  
+#ifdef CONTACTCHECKHUEEBER
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    RCP<LINALG::SparseMatrix> temp1 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));;
+    RCP<LINALG::SparseMatrix> temp2 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));;
+    interface_[i]->SetState("displacement",dism);
+    interface_[i]->Evaluate();
+    interface_[i]->AssembleDMG(*temp1,*temp2,*g_);
+  }
+#endif
   
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -1130,9 +1141,8 @@ void CONTACT::Manager::UpdateActiveSet()
           activesetconv_ = false;
         }
         
-        //cout << "INACTIVE: " << i << " " << j << " " << gid << " "
-        //     << nincr << " " << (*g_)[g_->Map().LID(gid)] << " "
-        //     << cnode->HasProj() << endl;
+        cout << "INACTIVE: " << i << " " << j << " " << gid << " "
+             << nincr << " " << wgap << " " << cnode->HasProj() << endl;
       }
       
       // check nodes of active set ***************************************
