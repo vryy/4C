@@ -484,8 +484,6 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
     // EAS technology: "enhance the deformation gradient"  ---- --- EAS  
     if (iseas_ == true)
     {
-      if (elestress != NULL)
-    	  dserror("stress output for eas not yet impelemented"); 
       /*-----calculate the enhanced deformation gradient and--------------------
       -----alsoe the operators G, W0 and Z------------------------------------*/
     
@@ -535,11 +533,12 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
            (*elestress)(ip,2) = cauchy(0,1);
          }  
        }
+       
       /*-----first piola-kirchhoff stress vector------------------------------*/
       w1_stress_eas(stress,F_tot,p_stress);
       
       /*-----stiffness matrix kdd---------------------------------------------*/  
-      w1_kdd(boplin,W0,F_tot,C,stress,FCF,*stiffmatrix,fac);
+      if (stiffmatrix) w1_kdd(boplin,W0,F_tot,C,stress,FCF,*stiffmatrix,fac);
       /*-----matrix kda-------------------------------------------------------*/  
       w1_kda(FCF,W0,boplin,stress,G,Z,Kda,p_stress,fac);	
       /*-----matrix kaa-------------------------------------------------------*/  
@@ -623,7 +622,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
 
        
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kad  with Kad=Kda^T
-      (*stiffmatrix).Multiply('N', 'T', -1.0, KdaKaa, Kda, 1.0);
+      if (stiffmatrix) (*stiffmatrix).Multiply('N', 'T', -1.0, KdaKaa, Kda, 1.0);
 
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
       if (force) (*force).Multiply('N', 'N', -1.0, KdaKaa, feas, 1.0);
@@ -639,7 +638,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
           (*oldKda)(i,j) = Kda(i,j);
           (*oldfeas)(j,0) = feas(j);
         }
-   
+
     }
    
     // -------------------------------------------------------------------- EAS
