@@ -294,7 +294,7 @@ void stru_static_drt()
     }
     if (Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRAIN")==1)
     {
-      output.WriteVector("gauss_strains_xyz",*strain,*(actdis->ElementColMap()));
+      output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
     }
   }
 
