@@ -954,13 +954,6 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   if (fssgv_ == "scale_similarity" ||
       fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
   {
-    // choose what to assemble
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",true);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
-
     // action for elements
     eleparams.set("action","calc_convective_stresses");
 
@@ -969,7 +962,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     discret_->SetState("velaf",velaf_);
 
     // element evaluation for getting convective stresses at nodes
-    discret_->Evaluate(eleparams,sysmat_,convaf_);
+    discret_->Evaluate(eleparams,null,convaf_);
     discret_->ClearState();
   }
 
