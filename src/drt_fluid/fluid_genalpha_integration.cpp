@@ -217,7 +217,9 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // maximum simulation time
   endtime_  = params_.get<double>("total time");
 
-  
+  itenum_   = 0;
+  itemax_   = params_.get<int>   ("max nonlin iter steps");
+
   // -------------------------------------------------------------------
   // initialize turbulence-statistics evaluation
   // -------------------------------------------------------------------
@@ -750,13 +752,6 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
     eleparams.set("gamma"  ,gamma_ );
     eleparams.set("dt"     ,dt_    );
 
-    // choose what to assemble --- nothing
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",false);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
-
     // call loop over elements
     discret_->Evaluate(eleparams,null,null,null,null,null);
   }
@@ -832,7 +827,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
       // they contain history variables (the time dependent subscales)
       output_.WriteMesh(step_,time_);
 
-      
+
       if(special_flow_ == "channel_flow_of_height_2" &&
          step_>=samstart_ && step_<=samstop_  && dumperiod_ == 0)
       {
@@ -1300,12 +1295,12 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
 {
-  
+
   // -------------------------------------------------------------------
   // split between accelerations and pressure increments
   Teuchos::RCP<Epetra_Vector> accinc = velpressplitter_.ExtractOtherVector(increment_);
   Teuchos::RCP<Epetra_Vector> preinc = velpressplitter_.ExtractCondVector (increment_);
-  
+
 
   // ------------------------------------------------------
   // update acceleration
@@ -1342,7 +1337,7 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
   //         n+1          n+1
   //     pres      =  pres    + dpres
   //         (i+1)        (i)
-  //  
+  //
   velpressplitter_.AddCondVector(preinc,velnp_);
 
   return;
@@ -1802,12 +1797,6 @@ void FluidGenAlphaIntegration::GenAlphaTakeSample()
 
   // action for elements
   eleparams.set("action","time average for subscales and residual");
-
-      eleparams.set("assemble matrix 1",false);
-      eleparams.set("assemble matrix 2",false);
-      eleparams.set("assemble vector 1",false);
-      eleparams.set("assemble vector 2",false);
-      eleparams.set("assemble vector 3",false);
 
       // other parameters that might be needed by the elements
       {
@@ -2277,12 +2266,12 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         // alpha_F
         cout << "Generalized Alpha parameter: alpha_F = ";
         cout << params_.get<double>("alpha_F");
-        cout << &endl;
+        cout << endl;
 
         // alpha_M
         cout << "                             alpha_M = ";
         cout << params_.get<double>("alpha_M");
-        cout << &endl;
+        cout << endl;
 
         // gamma
         cout << "                             gamma   = ";
@@ -2291,7 +2280,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
                 params_.get<double>("alpha_M")
                 -
                 params_.get<double>("alpha_F");
-        cout << &endl <<&endl;
+        cout << endl << endl;
 
         // linearisation
         if(params_.get<bool>("Use reaction terms for linearisation",false)
@@ -2299,14 +2288,14 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
            true)
         {
           cout << "Linearisation              : ";
-          cout << "Including reactive terms (Newton-like)" <<&endl;
+          cout << "Including reactive terms (Newton-like)" << endl;
         }
         else
         {
           cout << "Linearisation              : ";
-          cout << "Without reactive terms (fixed-point-like)" <<&endl;
+          cout << "Without reactive terms (fixed-point-like)" << endl;
         }
-        cout << &endl;
+        cout << endl;
       }
 
       //--------------------------------------------------------------------
@@ -2317,12 +2306,12 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         // general
         cout << "Stabilization type         : ";
         cout << stabparams->get<string>("STABTYPE");
-        cout << &endl;
+        cout << endl;
 
         // time-dependent subgrid scales
         cout << "                             ";
-        cout << stabparams->get<string>("TDS")<< &endl;
-        cout << &endl;
+        cout << stabparams->get<string>("TDS")<< endl;
+        cout << endl;
 
         // transient term with consistency check for quasistatic subgrid scales
         if(stabparams->get<string>("TDS") == "quasistatic")
@@ -2335,44 +2324,44 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         cout << "                             ";
         cout << "TRANSIENT       = ";
         cout << stabparams->get<string>("TRANSIENT");
-        cout << &endl;
+        cout << endl;
 
         // supg stabilization?
         cout <<  "                             ";
         cout << "SUPG            = ";
         cout << stabparams->get<string>("SUPG")           ;
-        cout << &endl;
+        cout << endl;
 
         // pspg stabilization?
         cout <<  "                             ";
         cout << "PSPG            = ";
         cout << stabparams->get<string>("PSPG")           ;
-        cout << &endl;
+        cout << endl;
 
         // viscous stabilization?
         cout <<  "                             ";
         cout << "VSTAB           = ";
         cout << stabparams->get<string>("VSTAB")          ;
-        cout << &endl;
+        cout << endl;
 
         // least-squares continuity stabilization?
         cout <<  "                             ";
         cout << "CSTAB           = ";
         cout << stabparams->get<string>("CSTAB")          ;
-        cout << &endl;
+        cout << endl;
 
         // resvmm turbulence modeling, cross-stress part?
         cout <<  "                             ";
         cout << "CROSS-STRESS    = ";
         cout << stabparams->get<string>("CROSS-STRESS")   ;
-        cout << &endl;
+        cout << endl;
 
         // resvmm turbulence modeling, Reynolds-stress part?
         cout <<  "                             ";
         cout << "REYNOLDS-STRESS = ";
         cout << stabparams->get<string>("REYNOLDS-STRESS");
-        cout << &endl;
-        cout << &endl;
+        cout << endl;
+        cout << endl;
       }
 
       //--------------------------------------------------------------------
@@ -2398,7 +2387,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
           // including consistecy checks
           cout << "Turbulence approach        : ";
           cout << modelparams->get<string>("TURBULENCE_APPROACH");
-          cout << &endl << &endl;
+          cout << endl << endl;
 
           if(modelparams->get<string>("TURBULENCE_APPROACH")
              ==
@@ -2414,7 +2403,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
 
             cout << "                             ";
             cout << physmodel;
-            cout << &endl;
+            cout << endl;
 
             if (physmodel == "Smagorinsky")
             {
@@ -2434,12 +2423,12 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
               cout << "                             "          ;
               cout << "- Smagorinsky constant:   Cs   = "      ;
               cout << modelparams->get<double>("C_SMAGORINSKY");
-              cout << &endl;
+              cout << endl;
 
               cout << "                             "          ;
               cout << "- viscous length      :   l_tau= "      ;
               cout << modelparams->get<double>("CHANNEL_L_TAU");
-              cout << &endl;
+              cout << endl;
             }
             else if(physmodel == "Dynamic_Smagorinsky")
             {
@@ -2450,7 +2439,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
                 dserror("The dynamic Smagorinsky model is only implemented for a channel flow with \nwall normal direction y");
               }
             }
-            cout << &endl;
+            cout << endl;
           }
 
           if (special_flow_ == "channel_flow_of_height_2")
@@ -2475,11 +2464,11 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
             {
               cout << "                             " ;
               cout << "Volker-style incremental dumping is used (";
-              cout << dumperiod_ << ")" << &endl;
+              cout << dumperiod_ << ")" << endl;
             }
           }
-          cout << &endl;
-          cout << &endl;
+          cout << endl;
+          cout << endl;
         }
 
         //--------------------------------------------------------------------
@@ -2487,7 +2476,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         if (fssgv_ != "No")
         {
           cout << "Fine-scale subgrid-viscosity approach based on AVM3: ";
-          cout << &endl << &endl;
+          cout << endl << endl;
           cout << params_.get<string>("fs subgrid viscosity");
 
           if (fssgv_ == "Smagorinsky_all" || fssgv_ == "Smagorinsky_small" ||
@@ -2496,7 +2485,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
             cout << " with Smagorinsky constant Cs= ";
             cout << modelparams->get<double>("C_SMAGORINSKY") ;
           }
-          cout << &endl << &endl;
+          cout << endl << endl;
         }
 
       }
@@ -2562,7 +2551,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
           printf("(tf=%10.3E)",dtfilter_);
         }
       }
-      cout << &endl;
+      cout << endl;
 
       // reset time increment after output
       dtele_    = 0;
@@ -2590,7 +2579,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
           printf("(tf=%10.3E)",dtfilter_);
         }
       }
-      cout << &endl;
+      cout << endl;
 
       // reset time increments after output
       dtsolve_  = 0;

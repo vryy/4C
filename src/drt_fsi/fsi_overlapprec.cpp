@@ -53,6 +53,8 @@ int FSI::OverlappingBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetr
 
   // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy
 
+  //fluidInnerOp.EpetraMatrix()->Print(cout);
+
   fluidBoundOp.Multiply(false,*sy,*tmpfx);
   fx->Update(-1.0,*tmpfx,1.0);
   fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fy,fx,true);

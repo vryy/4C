@@ -159,6 +159,8 @@ namespace ADAPTER {
 
     virtual double ResidualScaling() const = 0;
 
+    virtual double TimeScaling() const = 0;
+
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const = 0;
 
@@ -276,6 +278,8 @@ namespace ADAPTER {
     /// scaling factor needed to convert the residual to real forces
     virtual double ResidualScaling() const;
 
+    virtual double TimeScaling() const;
+
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const { return interface_; }
 
@@ -378,7 +382,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
 
     virtual void PrepareTimeStep();
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const;
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> dacc) const;
     virtual void Update();
     virtual void Output();
 
@@ -396,6 +400,8 @@ namespace ADAPTER {
 
     /// scaling factor needed to convert the residual to real forces
     virtual double ResidualScaling() const;
+
+    virtual double TimeScaling() const;
 
     /// communication object at the interface
     virtual const LINALG::MapExtractor&  Interface() const { return interface_; }

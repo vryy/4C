@@ -238,18 +238,19 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   LINALG::SparseMatrix& fgi = blockf->Matrix(1,0);
   LINALG::SparseMatrix& fgg = blockf->Matrix(1,1);
 
-  double scale = FluidField().ResidualScaling();
+  double scale     = FluidField().ResidualScaling();
+  double timescale = FluidField().TimeScaling();
 
   // build block matrix
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here.
 
-  AddFluidInterface(scale/Dt(),fgg,*s);
+  AddFluidInterface(scale*timescale,fgg,*s);
 
   mat.Assign(0,0,View,*s);
   mat.Assign(0,1,View,*ConvertFgiRowmap(fgi,scale,s->RowMap()));
 
-  mat.Assign(1,0,View,*ConvertFigColmap(fig,fluidstructcolmap_,s->DomainMap(),1./Dt()));
+  mat.Assign(1,0,View,*ConvertFigColmap(fig,fluidstructcolmap_,s->DomainMap(),timescale));
   mat.Assign(1,1,View,fii);
 
   mat.Assign(2,0,View,*aig_);

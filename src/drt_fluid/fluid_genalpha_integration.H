@@ -458,38 +458,59 @@ public:
   Teuchos::RCP<const Epetra_Map> PressureRowMap()
     { return velpressplitter_.CondMap(); }
 
-  /*
+  /*!
   \brief use increment from external call to update velnp
   (monolithic FSI)
   */
-  void ExternIncrementOfVelnp(Teuchos::RCP<const Epetra_Vector> inc)
+  void ExternIncrementOfVelnp(Teuchos::RCP<const Epetra_Vector> dacc)
     {
-      // copy inc from external Newton to increment_
-      increment_->Update(1.0, *inc, 0.);
+      // copy dacc from external Newton to increment_
+      increment_->Update(1.0, *dacc, 0.);
 
-      // update (u,p) trial
-      velnp_->Update(1.0,*increment_,1.0);
+      // reset velocity, pressure and acceleration to t(n) values because dacc
+      // contains the whole Newton step:
+      //
+      //        +-   n+1       n -+
+      // dacc = | acc     - acc   |
+      //        +-   (i+1)       -+
+      //
+      // along with the pressure values.
+      //
+      // dacc really is nothing but the sum of all solutions of the linear
+      // problems of one time step.
+
+      velnp_->Update(1.0,*veln_ ,0.0);
+      accnp_->Update(1.0,*accn_ ,0.0);
+
+      // normal Newton iteration update
+      //
+      // Note that here the increment_ is the whole Newton increment rather
+      // than the latest increment contribution. However, the update remains
+      // the same.
+      GenAlphaNonlinearUpdate();
       return;
     }
 
-  /*
+  /*!
   \brief get scaling factor for residual --- just the density
   for this generalized alpha implementation
   */
   double ResidualScaling() const { return density_; }
-  /*
+  /*!
   \brief return current time
   */
   double Time() const { return time_; }
-  /*
+  /*!
   \brief return current time step number
   */
   int Step() const { return step_; }
-  /*
+  /// time step
+  double Dt() const { return dt_; }
+  /*!
   \brief return the nonlinear itemax
   */
   int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
-  /*
+  /*!
   \brief set the nonlinear itemax
   */
   void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }

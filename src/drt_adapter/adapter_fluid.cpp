@@ -237,6 +237,14 @@ double ADAPTER::FluidAdapter::ResidualScaling() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+double ADAPTER::FluidAdapter::TimeScaling() const
+{
+  return 1./fluid_.Dt();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidAdapter::ReadRestart(int step)
 {
   fluid_.ReadRestart(step);
@@ -472,22 +480,14 @@ void ADAPTER::FluidGenAlphaAdapter::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlphaAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const
+void ADAPTER::FluidGenAlphaAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> dacc) const
 {
-  // Yes, this is complicated. But we have to be very careful
-  // here. The field solver always expects an increment only. And
-  // there are Dirichlet conditions that need to be preserved. So take
-  // the sum of increments we get from NOX and apply the latest
-  // increment only.
-  if (vel!=Teuchos::null)
+  if (dacc!=Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(*vel));
-    incvel->Update(-1.0,*fluid_.Velnp(),1.0);
-    fluid_.ExternIncrementOfVelnp(incvel);
+    fluid_.ExternIncrementOfVelnp(dacc);
   }
 
   fluid_.GenAlphaComputeIntermediateSol();
-
   fluid_.GenAlphaAssembleResidualAndMatrix();
 }
 
@@ -545,6 +545,15 @@ void ADAPTER::FluidGenAlphaAdapter::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm
 double ADAPTER::FluidGenAlphaAdapter::ResidualScaling() const
 {
   return fluid_.ResidualScaling();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double ADAPTER::FluidGenAlphaAdapter::TimeScaling() const
+{
+  double dt = fluid_.Dt();
+  return 1./dt/dt;
 }
 
 
