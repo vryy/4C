@@ -2,6 +2,7 @@
 \file beam2_evaluate.cpp
 \brief
 
+<pre>
 Maintainer: Christian Cyron
             cyron@lnm.mw.tum.de
             http://www.lnm.mw.tum.de

@@ -15,8 +15,6 @@ namespace ELEMENTS
 class Soshw6Register;
 
 /*!
-\class So_shw6
-
 \brief A C++ 6-node wedge Solid-Shell element inherited from so_weg6
 
 \author frenzel (frenzel@lnm.mw.tum.de)
@@ -189,8 +187,6 @@ private:
 
 
 /*!
-\class Soshw6Register
-
 \brief A register for Solid-Shell wedge6 element
 
 \author frenzel (frenzel@lnm.mw.tum.de)

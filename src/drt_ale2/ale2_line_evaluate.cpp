@@ -1,17 +1,16 @@
-/*!----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+/*!
 \file ale2_line_evaluate.cpp
-\brief
 
 <pre>
-</pre>
 
-*----------------------------------------------------------------------*/
+</pre>
+*/
+//-----------------------------------------------------------------------
 #ifdef D_ALE
 #ifdef CCADISCRET
 
 #include "ale2.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 

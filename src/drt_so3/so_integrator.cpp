@@ -1,9 +1,5 @@
 /*!----------------------------------------------------------------------
-\file so_tet10.H
-
-\class DRT::ELEMENTS::So_tet10
-
-\brief A C++ version of the 10-node tet solid element
+\file so_integrator.cpp
 
 <pre>
 Maintainer: Moritz Frenzel

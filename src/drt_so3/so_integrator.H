@@ -1,7 +1,5 @@
 /*!----------------------------------------------------------------------
-\file so_tet10.H
-
-\class DRT::ELEMENTS::So_tet10
+\file so_integrator.H
 
 \brief A C++ version of the 10-node tet solid element
 
@@ -50,10 +48,7 @@ using namespace Teuchos;
 // forward declarations
 struct _MATERIAL;
 class SoDisp;
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 
@@ -62,8 +57,6 @@ namespace ELEMENTS
 // forward declarations	
 	class SoDisp;
 /*!
-\class DRT::ELEMENTS::So_integrator
-
 \brief A general class agregating all necessery data for discrete integration
 
 <h3>Purpose</h3>

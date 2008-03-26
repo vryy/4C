@@ -23,12 +23,11 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 
 
-typedef blitz::Array<double,1> BlitzVec;
-typedef blitz::Array<double,2> BlitzMat;
-
-
 namespace XFLUID
 {
+
+typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
+typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
 
 //! for each distype there should be an m_k needed for stabilization computation
 template<DRT::Element::DiscretizationType DISTYPE>
@@ -85,9 +84,7 @@ DRT::UTILS::GaussRule3D getIntegrationRuleForStabilization()
 }
 
 
-//
-// calculate stabilization parameter
-//
+//! calculate characteristic element size for stabilization
 template<DRT::Element::DiscretizationType DISTYPE>
 double HK(
         const BlitzMat&                         evelnp,
@@ -132,9 +129,7 @@ double HK(
 }
 
 
-//
-// calculate stabilization parameter
-//
+//! calculate stabilization parameter
 template <DRT::Element::DiscretizationType DISTYPE>
 BlitzVec CalTauStationary(
   const BlitzMat&                         evelnp,

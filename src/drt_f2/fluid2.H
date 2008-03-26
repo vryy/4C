@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file fluid2.H
 
-\class DRT::ELEMENTS::Fluid2
-
-\brief A C++ wrapper for the fluid2 element
-
 <pre>
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
@@ -33,10 +29,8 @@ using namespace Teuchos;
 // forward declarations
 struct _MATERIAL;
 struct _FLUID_DATA;
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
+
 namespace DRT
 {
 // forward declarations
@@ -50,8 +44,6 @@ class Fluid2Line;
 class Fluid2GenalphaResVMM;
 
 /*!
-\class Fluid2
-
 \brief A C++ wrapper for the fluid2 element
 
 \author gammi (gamnitzer@lnm.mw.tum.de)
@@ -504,8 +496,6 @@ private:
 
 
 /*!
-\class Fluid2Register
-
 \brief A register for fluid2 element
 
 \author gammi (gamnitzer@lnm.mw.tum.de)
@@ -605,8 +595,6 @@ private:
 
 
 /*!
-\class Fluid2Line
-
 \brief An element representing a line of a fluid2 element
 
 \note This is a pure Neumann boundary condition element. It's only

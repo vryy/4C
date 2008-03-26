@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file shell8.H
 
-\class DRT::ELEMENTS::Shell8
-
-\brief A C++ wrapper for the shell8 element
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -36,10 +32,7 @@ using namespace Teuchos;
 struct _MATERIAL;
 struct _S8_DATA;
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 // forward declarations
@@ -52,8 +45,6 @@ class Shell8Line;
 class Shell8Register;
 
 /*!
-\class Shell8
-
 \brief A C++ wrapper for the shell8 element
 
 \author gee (gee@lnm.mw.tum.de)
@@ -619,8 +610,6 @@ private:
 
 
 /*!
-\class Shell8Register
-
 \brief A register for shell8 element
 
 \author gee (gee@lnm.mw.tum.de)
@@ -720,8 +709,6 @@ private:
 
 
 /*!
-\class Shell8Line
-
 \brief An element representing a line edge of a shell8 element
 
 \note This is a pure Neumann boundary condition element. It's only

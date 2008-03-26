@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file condif2.H
 
-\class DRT::ELEMENTS::Condif2
-
-\brief A C++ wrapper for the condif2 element
-
 <pre>
 Maintainer: Volker Gravemeier
             vgravem@lnm.mw.tum.de
@@ -33,10 +29,8 @@ using namespace Teuchos;
 // forward declarations
 struct _MATERIAL;
 struct _FLUID_DATA;
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
+
 namespace DRT
 {
 // forward declarations
@@ -49,8 +43,6 @@ namespace ELEMENTS
 class Condif2Line;
 
 /*!
-\class Condif2
-
 \brief A C++ wrapper for the condif2 element
 
 \author vg (vgravem@lnm.mw.tum.de)
@@ -399,8 +391,6 @@ private:
 
 
 /*!
-\class Condif2Register
-
 \brief A register for condif2 element
 
 \author vg (vgravem@lnm.mw.tum.de)
@@ -500,8 +490,6 @@ private:
 
 
 /*!
-\class Condif2Line
-
 \brief An element representing a line of a condif2 element
 
 \note This is a pure Neumann boundary condition element. It's only

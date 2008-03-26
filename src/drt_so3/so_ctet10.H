@@ -1,10 +1,5 @@
 /*!----------------------------------------------------------------------
 \file so_ctet10.H
-
-\class DRT::ELEMENTS::So_ctet10
-
-\brief A C++ version of the 10-node tet solid element
-
 <pre>
 Maintainer: Moritz Frenzel
             frenzel@lnm.mw.tum.de
@@ -54,10 +49,7 @@ using namespace Teuchos;
 // forward declarations
 struct _MATERIAL;
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 // forward declarations
@@ -72,8 +64,6 @@ class Soctet10Line;
 class Soctet10Register;
 
 /*!
-\class So_ctet10
-
 \brief A C++ version of the 10-node tet solid element
 
 \author Alexander Volf (alexander.volf@mytum.de)
@@ -417,8 +407,6 @@ protected:
   
 
 /*!
-\class DRT::ELEMENTS::So_ctet10::Tet_integrator_14point	
-
 \brief A spezialisation of the DRT::ELEMENTS::Discrete_integrator class for the quadratic
 10-node tetrahedra using a  14 point quadrature, it is exaxt for 0-4th order polynomials.
 \author a.vlf
@@ -453,8 +441,6 @@ protected:
 }; // class So_ctet10
 
 /*!
-\class Soctet10Register
-
 \brief A register for tet10 element
 
 \author gee (gee@lnm.mw.tum.de)
@@ -555,8 +541,6 @@ private:
 
 
 /*!
-\class Soctet10Surface
-
 \brief An element representing a surface of a So_ctet10 element
 
 \note This is a pure Neumann boundary condition element. It's only
@@ -762,8 +746,6 @@ private:
 }; // class Soctet10Surface
 
 /*!
-\class Soctet10Line
-
 \brief An element representing a line edge of a So_ctet10 element
 
 \note This is a pure Neumann boundary condition element. It's only

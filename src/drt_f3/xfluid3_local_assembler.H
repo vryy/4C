@@ -23,7 +23,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils.H"
 
 using namespace std;
-using namespace XFEM::PHYSICS;
+using namespace XFEM;
 
 
 //! for non-xfem elements, figure out the order of unknowns per node in the array

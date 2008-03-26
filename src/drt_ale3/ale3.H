@@ -1,3 +1,12 @@
+//-----------------------------------------------------------------------
+/*!
+\file ale3.H
+
+<pre>
+
+</pre>
+*/
+//-----------------------------------------------------------------------
 #ifdef D_ALE
 #ifdef CCADISCRET
 
@@ -31,8 +40,6 @@ class Ale3Surface;
 
 
 /*!
-\class Ale3
-
 \brief A C++ wrapper for the ale3 element
 */
 class Ale3 : public DRT::Element
@@ -316,8 +323,6 @@ private:
 
 
 /*!
-\class Ale3Register
-
 \brief A register for ale3 element
 
 \author gee (gee@lnm.mw.tum.de)
@@ -417,8 +422,6 @@ private:
 
 
 /*!
-\class Ale3Surface
-
 \brief An element representing a surface of a ale3 element
 
 \note This is a pure Neumann boundary condition element. It's only

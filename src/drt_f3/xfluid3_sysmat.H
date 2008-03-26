@@ -495,7 +495,10 @@ BlitzVec computeNormalToBoundaryElement(
   
   
   
-    
+/*! get number of unknowns for this field
+ * use the dofmanager in the general case,
+ * otherwise use a given number numnode
+ */
 template<XFEM::AssemblyType>
 int getNumParam(
         const XFEM::ElementDofManager& dofman,
@@ -2079,7 +2082,12 @@ void Sysmat(
     } // if (ASSTYPE == XFEM::xfem_assembly)
     return;
 }
-  
+
+/*!
+ * \brief entry point for Sysmat call
+ * at one point, one has to call specific template intantiations of Sysmat using the current Shape() of the element.
+ * This is the point.
+ */
 void callSysmat(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,

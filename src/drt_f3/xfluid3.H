@@ -1,8 +1,6 @@
 /*!
 \file xfluid3.H
 
-\class DRT::ELEMENTS::XFluid3
-
 \brief A C++ wrapper for the fluid3 element
 
 This file contains the element specific service routines like
@@ -59,8 +57,6 @@ class XFluid3Line;
 class XFluid3Register;
 
 /*!
-\class XFluid3
-
 \brief A C++ wrapper for the fluid3 element
 
 \author g.bau (bauer@lnm.mw.tum.de)
@@ -717,8 +713,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
 
 
 /*!
-\class XFluid3Register
-
 \brief A register for fluid3 element
 
 \author gee (gee@lnm.mw.tum.de)
@@ -818,8 +812,6 @@ private:
 
 
 /*!
-\class XFluid3Surface
-
 \brief An element representing a surface of a fluid3 element
 
 \note This is a pure Neumann boundary condition element. It's only

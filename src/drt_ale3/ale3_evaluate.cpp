@@ -1,3 +1,12 @@
+//-----------------------------------------------------------------------
+/*!
+\file ale3_evaluate.cpp
+
+<pre>
+
+</pre>
+*/
+//-----------------------------------------------------------------------
 #ifdef D_ALE
 #ifdef CCADISCRET
 
@@ -12,7 +21,6 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/linalg_utils.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 
 using namespace DRT::UTILS;

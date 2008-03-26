@@ -28,10 +28,6 @@ const int NUMDIM_WEG6 = 3;      // number of dimensions
 // forward declarations
 struct _MATERIAL;
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
 namespace DRT
 {
 // forward declarations
@@ -46,8 +42,6 @@ class Sow6Line;
 class Sow6Register;
 
 /*!
-\class So_weg6
-
 \brief A C++ version of the 6-node wedge solid element
 
 \author frenzel (frenzel@lnm.mw.tum.de)
@@ -352,8 +346,6 @@ protected:
 
 
 /*!
-\class Sow6Register
-
 \brief A register for wedge6 element
 
 \author frenzel (frenzel@lnm.mw.tum.de)
@@ -451,8 +443,6 @@ private:
 
 
 /*!
-\class Sow6Surface
-
 \brief An element representing a surface of a So_weg6 element
 
 \note This is a pure Neumann boundary condition element. It's only
@@ -623,8 +613,6 @@ private:
 }; // class Sow6Surface
 
 /*!
-\class Sow6Line
-
 \brief An element representing a line edge of a So_weg6 element
 
 \note This is a pure Neumann boundary condition element. It's only

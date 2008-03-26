@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file beam2.H
 
-\class Beam2
-
-\brief two dimensional nonlinear corotational Euler-Bernoulli beam element
-
 <pre>
 Maintainer: Christian Cyron
             cyron@lnm.mw.tum.de
@@ -44,10 +40,6 @@ using namespace Teuchos;
 // forward declarations
 struct _MATERIAL;
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
 namespace DRT
 {
 
@@ -58,8 +50,6 @@ class Beam2Register;
 namespace ELEMENTS
 {
 /*!
-\class Element
-
 \brief two dimensional nonlinear corotational Euler-Bernoulli beam element
 
 \author cyron (cyron @lnm.mw.tum.de)
@@ -361,8 +351,6 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 //------------- class Beam2Register: -------------------------------------------
 
 /*!
-\class Beam2Register
-
 \brief A register for Beam2 element
 
 \author cyron (cyron@lnm.mw.tum.de)

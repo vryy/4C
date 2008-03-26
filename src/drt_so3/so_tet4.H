@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file so_tet10.H
 
-\class DRT::ELEMENTS::So_tet4
-
-\brief A C++ version of the 4-node tet solid element
-
 <pre>
 Maintainer: Moritz Frenzel
             frenzel@lnm.mw.tum.de
@@ -48,10 +44,6 @@ using namespace Teuchos;
 // forward declarations
 struct _MATERIAL;
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
 namespace DRT
 {
 // forward declarations
@@ -66,8 +58,6 @@ class Sotet4Line;
 class Sotet4Register;
 
 /*!
-\class So_tet4
-
 \brief A C++ version of the 4-node tet solid element
 
 \author Alexander Volf (alexander.volf@mytum.de)
@@ -382,8 +372,6 @@ protected:
 }; // class So_tet4
 
 /*!
-\class Sotet4Register
-
 \brief A register for tet4 element
 
 \author gee (gee@lnm.mw.tum.de)
@@ -484,8 +472,6 @@ private:
 
 
 /*!
-\class Sotet4Surface
-
 \brief An element representing a surface of a So_tet4 element
 
 \note This is a pure Neumann boundary condition element. It's only
@@ -662,8 +648,6 @@ private:
 }; // class Sotet4Surface
 
 /*!
-\class Sotet4Line
-
 \brief An element representing a line edge of a So_tet4 element
 
 \note This is a pure Neumann boundary condition element. It's only

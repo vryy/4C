@@ -38,10 +38,7 @@ const int NUMSTR_DISP = 6;      // number of strains/stresses
 // forward declarations
 struct _MATERIAL;
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 // forward declarations
@@ -56,8 +53,6 @@ class SoDispLine;
 class SoDispRegister;
 
 /*!
-\class SoDisp
-
 \brief A general quadratic displacement based solid element
 
 \author frenzel (frenzel@lnm.mw.tum.de)
@@ -405,8 +400,6 @@ protected:
 
 
 /*!
-\class SoDispRegister
-
 \brief A register for solid3 element
 
 \author frenzel (frenzel@lnm.mw.tum.de)
@@ -503,8 +496,6 @@ private:
 
 
 /*!
-\class SoDispSurface
-
 \brief An element representing a surface of a SoDisp element
 
 \note This is a pure Neumann boundary condition element. It's only
@@ -757,8 +748,6 @@ private:
 }; // class SoDispSurface
 
 /*!
-\class SoDispLine
-
 \brief An element representing a line edge of a SoDisp element
 
 \note This is a pure Neumann boundary condition element. It's only

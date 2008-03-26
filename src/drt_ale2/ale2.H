@@ -1,3 +1,12 @@
+//-----------------------------------------------------------------------
+/*!
+\file ale2.H
+
+<pre>
+
+</pre>
+*/
+//-----------------------------------------------------------------------
 #ifdef D_ALE
 #ifdef CCADISCRET
 
@@ -31,8 +40,6 @@ class Ale2Line;
 
 
 /*!
-\class Ale2
-
 \brief A C++ wrapper for the ale2 element
 */
 class Ale2 : public DRT::Element
@@ -307,8 +314,6 @@ private:
 
 
 /*!
-\class Ale2Register
-
 \brief A register for ale2 element
 
 \author gee (gee@lnm.mw.tum.de)
@@ -414,10 +419,7 @@ private:
 
 
 /*!
-\class Ale2Line
-
 \brief An element representing a line of a ale2 element
-
 */
 class Ale2Line : public DRT::Element
 {

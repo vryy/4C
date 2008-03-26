@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file so_hex8.H
 
-\class DRT::ELEMENTS::So_hex8
-
-\brief A C++ version of the 8-node hex solid element
-
 <pre>
 Maintainer: Moritz Frenzel
             frenzel@lnm.mw.tum.de
@@ -44,10 +40,7 @@ const int NUMDIM_SOH8 = 3;      // number of dimensions
 // forward declarations
 struct _MATERIAL;
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 // forward declarations
@@ -62,8 +55,6 @@ class Soh8Line;
 class Soh8Register;
 
 /*!
-\class So_hex8
-
 \brief A C++ version of the 8-node hex solid element
 
 \author frenzel (frenzel@lnm.mw.tum.de)
@@ -488,8 +479,6 @@ protected:
 
 
 /*!
-\class Soh8Register
-
 \brief A register for shell8 element
 
 \author gee (gee@lnm.mw.tum.de)
@@ -589,8 +578,6 @@ private:
 
 
 /*!
-\class Soh8Surface
-
 \brief An element representing a surface of a So_hex8 element
 
 \note This is a pure Neumann boundary condition element. It's only
@@ -810,8 +797,6 @@ private:
 }; // class Soh8Surface
 
 /*!
-\class Soh8Line
-
 \brief An element representing a line edge of a So_hex8 element
 
 \note This is a pure Neumann boundary condition element. It's only

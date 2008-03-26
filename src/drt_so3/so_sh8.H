@@ -1,18 +1,6 @@
 /*!----------------------------------------------------------------------
 \file so_sh8.H
 
-\class DRT::ELEMENTS::So_sh8
-
-\brief A C++ 8-node Solid-Shell element inherited from so_hex8
-
-The Solid-Shell element technology is based on the work of
-(1) Vu-Quoc, Tan: "Optimal solid shells for non-linear analyses
-                   of multilayer composites", CMAME 2003
-(2) Klinkel, Gruttmann, Wagner: "A robust non-linear solid shell element
-                                 based on a mixed variational fromulation"
-
-Refer also to the Semesterarbeit of Alexander Popp, 2006
-
 <pre>
 Maintainer: Moritz Frenzel
             frenzel@lnm.mw.tum.de
@@ -43,10 +31,6 @@ using namespace Teuchos;
 struct _MATERIAL;
 struct _SOH8_DATA;
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
 namespace DRT
 {
 // forward declarations
@@ -58,9 +42,15 @@ namespace ELEMENTS
 class Sosh8Register;
 
 /*!
-\class So_sh8
-
 \brief A C++ 8-node Solid-Shell element inherited from so_hex8
+
+The Solid-Shell element technology is based on the work of
+(1) Vu-Quoc, Tan: "Optimal solid shells for non-linear analyses
+                   of multilayer composites", CMAME 2003
+(2) Klinkel, Gruttmann, Wagner: "A robust non-linear solid shell element
+                                 based on a mixed variational fromulation"
+
+Refer also to the Semesterarbeit of Alexander Popp, 2006
 
 \author frenzel (frenzel@lnm.mw.tum.de)
 */
@@ -260,8 +250,6 @@ private:
 
 
 /*!
-\class Sosh8Register
-
 \brief A register for Solid-Shell8 element, inherited from Soh8
 
 \author frenzel (frenzel@lnm.mw.tum.de)

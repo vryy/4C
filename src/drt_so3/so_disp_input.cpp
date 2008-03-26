@@ -84,10 +84,10 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
     // The intention of this element is to help debugging the xfem intersection routines.
     // The element is purely displacement based and has not been tested for correct computation
     // It serves solely as higher order geometry input data to XFEM problems
-    if (not allowed_element)
-    {
-        dserror("Only quadratic order for DISP (displacement based) element. LOCKING!\n for linear elements, use EAS enabled elements");
-    }
+//    if (not allowed_element)
+//    {
+//        dserror("Only quadratic order for DISP (displacement based) element. LOCKING!\n for linear elements, use EAS enabled elements");
+//    }
     
     // reduce node numbers by one
     for (int i=0; i<nnode; ++i) nodes[i]--;
