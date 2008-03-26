@@ -10,9 +10,6 @@
 #include "../drt_lib/drt_function.H"
 
 
-extern struct _GENPROB     genprob;
-extern struct _IO_FLAGS     ioflags;
-extern struct _FILES  allfiles;
 
 using namespace std;
 

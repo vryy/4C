@@ -13,12 +13,6 @@
 #include <mpi.h>
 #endif
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-
-
 /*!----------------------------------------------------------------------
 \brief file pointers
 
