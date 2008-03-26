@@ -18,16 +18,6 @@ Here everything related with the preprocess node
 
 #include "pre_element.H"
 
-/*!
-\class PreElement
-
-\brief PreElement is an element class for preprocess handling of elements. It is 
-adopted to DRT::Elements
-
-\author maf (frenzel@lnm.mw.tum.de)
-*/
-
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              maf 01/08|
  *----------------------------------------------------------------------*/

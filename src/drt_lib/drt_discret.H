@@ -44,8 +44,6 @@ namespace DRT
 {
 
 /*!
-\class DRT::Discretization
-
 \brief A class to manage a discretization in parallel
 
 The \ref DRT::Discretization class supports the ostream& operator <<

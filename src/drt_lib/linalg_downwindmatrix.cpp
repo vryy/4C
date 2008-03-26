@@ -1,11 +1,8 @@
 /*!----------------------------------------------------------------------
 \file linalg_downwindmatrix.cpp
 
-\class LINALG::DownwindMatrix
-
 \brief An approximate block factorization preconditioner based on the
        SIMPLE family of methods
-
 
 <pre>
 Maintainer: Michael Gee

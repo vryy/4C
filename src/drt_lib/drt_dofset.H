@@ -28,10 +28,6 @@ using namespace std;
 #include "drt_element.H"
 #include "drt_node.H"
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
 namespace DRT
 {
 
@@ -39,8 +35,6 @@ class Discretization;
 
 
 /*!
-\class DRT::DofSet
-
 \brief A set of degrees of freedom
 
 \note This is an internal class of the discretization module that one

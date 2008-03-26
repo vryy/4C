@@ -31,18 +31,16 @@ using namespace Teuchos;
 namespace EXODUS
 {
 
-/*!
-\class PreElement
+// forward declaration
+class PreNode;
 
+
+/*!
 \brief PreElement is an element class for preprocess handling of elements. It is 
 adopted to DRT::Elements
 
 \author maf (frenzel@lnm.mw.tum.de)
 */
-
-// forward declaration
-class PreNode;
-
 class PreElement
 {
 public:

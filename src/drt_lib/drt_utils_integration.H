@@ -71,8 +71,6 @@ enum GaussRule1D
 };
 
 /*!
- \class IntegrationPoint
-
  \brief a point with a position an an associated weight
 
  */

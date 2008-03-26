@@ -1,3 +1,20 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file neohooke.H
+\brief contains the functions to establish local material law
+       stress-strain law for isotropic material for a 3D hex element
+       following compressible Neo Hookean material law
+       see Holzapfel, Nonlinear Solid Mechanics, pp. 243
+       example input line:
+       MAT 1 MAT_Struct_NeoHooke  YOUNG 100.0 NUE 0.3 DENS 1.0
+<pre>
+Maintainer: Robert Metzke
+            metzke@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15244
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifndef NEOHOOKE_H_
 #define NEOHOOKE_H_
 

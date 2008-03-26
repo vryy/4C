@@ -42,8 +42,6 @@ namespace IO
 {
 
 /*!
-  \class DiscretizationReader
-
   \brief base class of baci restart
 
   \author m.kue
@@ -102,8 +100,6 @@ private:
 
 
 /*!
-  \class DiscretizationWriter
-
   \brief The output context of a discretization
 
   Create an object of this class for every discretization those mesh

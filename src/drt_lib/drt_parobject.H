@@ -1,102 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_parobject.H
 
-\class DRT::ParObject
-
-\brief A pure virtual class with functionality to pack, unpack and communicate
-       classes in parallel.
-
-This class is used to pack information usually stored in a class in a vector<char>.
-This vector<char> can then be used to communicate the contents of a class and to
-read/write binary io. Every class derived from ParObject must basically implement
-the Pack and the Unpack method. There are several methods (mpst of them template specializations)
-to ease the work of packing/unpacking<br><br>
-Here is an example:
-\code
-// stuff in a class 'Fool' that needs to be packed
-int                      i;
-double                   b;
-double*                  vec = new double[50];
-vector<char>             bla;
-Epetra_SerialDenseMatrix matrix;
-\endcode
-This is how it is packed into a vector<char>& data:<br>
-\code
-Fool::Pack (vector< char > &data) const
-{
-  data.resize(0);                       // resize data to zero
-  int tmp = UniqueParObjectId()         // get the unique parobject id
-  AddtoPack(data,tmp);                  // pack this id
-  AddtoPack(data,i);                    // pack i
-  AddtoPack(data,b);                    // pack b
-  AddtoPack(data,vec,50*sizeof(double); // pack vec
-  AddtoPack(data,bla);                  // pack bla
-  AddtoPack(data,matrix);               // pack matrix
-  return;
-}
-\endcode
-Here is how this data can be unpacked again:<br>
-\code
-Fool::Unpack(const vector< char > &data)
-{
-  int position = 0;                      // used to mark current reading position in data
-  int tmp;
-  ExtractfromPack(position,data,tmp);    // unpack the unique id
-  if (tmp != UniqueParObjectId()) dserror("data does not belong to this class");
-  ExtractfromPack(position,data,i);      // extract i
-  ExtractfromPack(position,data,b);      // extract b
-  ExtractfromPack(position,data,bla);    // extract bla
-  ExtractfromPack(position,data,matrix); // extract matrix
-  if (position != (int)data.size()) dserror("Mismatch in size of data");
-  return;
-}
-\endcode
-<br>
-Some remarks:
-
-- Data has to be unpacked the order it was packed
-
-- The first object in every packed data set has to be the unique parobject id, see head of file drt_parobject.H
-
-- The size of data ( data.size() ) must 'fit' exactly
-
-- A class should pack everything it needs to be exatcly recreated on a different processor.
-  this specifically holds for classes used in a Discretization where data might be shifted around processors.
-
-- Every object that carefully implements ParObject can very easily be communicated using the Exporter.
-
-- Every class that carefully implements ParObject can pretty easily be written/read to/from binary io
-
-- A class derived from or more base classes is responsible to also pack and unpack the base classes' data
-  by calling the base class' implementation of Pack/Unpack
-
-- The intention of this class is to pack and communicate rather 'small' units of data. Though possible,
-  it is not meant to be used at the system level to communicate huge data sets such as sparse matrices or
-  vectors of system length. It does therefore not support any Epetra_Vector
-  or Epetra_CrsMatrix objects and is not supposed to in the future either.
-
-<br>
-Here is a list of data types that are currently supported by the existing AddtoPack and ExtractfromPack methods:
-\code
-bool, bool*
-char, char*
-enum, enum*
-int, int*
-double, double*
-float, float*
-string
-vector<char>  // especially useful to pack other packs into a pack, e.g. a class packing its own base class
-vector<int>
-vector<double>
-Epetra_SerialDenseMatrix
-\endcode
-
-Note that trying to pack an unsupported type of data (such as e.g. map<key,T> ) might compile and link but will
-result in the most (or least) funny behavior. Also, this type of bug might be extremely hard to find....
-<br><br>
-Of course, you are welcome to add more specializations to the existing AddtoPack and ExtractfromPack templates.
-If you do so, please update this documentation.
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -209,18 +113,104 @@ using namespace std;
 #define ParObject_DGFluid3InterfaceRegister  (int)88
 #define ParObject_Beam2Register	        (int)89
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 
 /*!
-\class ParObject
-
 \brief A virtual class with functionality to pack, unpack and communicate
        classes in parallel
+
+This class is used to pack information usually stored in a class in a vector<char>.
+This vector<char> can then be used to communicate the contents of a class and to
+read/write binary io. Every class derived from ParObject must basically implement
+the Pack and the Unpack method. There are several methods (mpst of them template specializations)
+to ease the work of packing/unpacking<br><br>
+Here is an example:
+\code
+// stuff in a class 'Fool' that needs to be packed
+int                      i;
+double                   b;
+double*                  vec = new double[50];
+vector<char>             bla;
+Epetra_SerialDenseMatrix matrix;
+\endcode
+This is how it is packed into a vector<char>& data:<br>
+\code
+Fool::Pack (vector< char > &data) const
+{
+  data.resize(0);                       // resize data to zero
+  int tmp = UniqueParObjectId()         // get the unique parobject id
+  AddtoPack(data,tmp);                  // pack this id
+  AddtoPack(data,i);                    // pack i
+  AddtoPack(data,b);                    // pack b
+  AddtoPack(data,vec,50*sizeof(double); // pack vec
+  AddtoPack(data,bla);                  // pack bla
+  AddtoPack(data,matrix);               // pack matrix
+  return;
+}
+\endcode
+Here is how this data can be unpacked again:<br>
+\code
+Fool::Unpack(const vector< char > &data)
+{
+  int position = 0;                      // used to mark current reading position in data
+  int tmp;
+  ExtractfromPack(position,data,tmp);    // unpack the unique id
+  if (tmp != UniqueParObjectId()) dserror("data does not belong to this class");
+  ExtractfromPack(position,data,i);      // extract i
+  ExtractfromPack(position,data,b);      // extract b
+  ExtractfromPack(position,data,bla);    // extract bla
+  ExtractfromPack(position,data,matrix); // extract matrix
+  if (position != (int)data.size()) dserror("Mismatch in size of data");
+  return;
+}
+\endcode
+<br>
+Some remarks:
+
+- Data has to be unpacked the order it was packed
+
+- The first object in every packed data set has to be the unique parobject id, see head of file drt_parobject.H
+
+- The size of data ( data.size() ) must 'fit' exactly
+
+- A class should pack everything it needs to be exatcly recreated on a different processor.
+  this specifically holds for classes used in a Discretization where data might be shifted around processors.
+
+- Every object that carefully implements ParObject can very easily be communicated using the Exporter.
+
+- Every class that carefully implements ParObject can pretty easily be written/read to/from binary io
+
+- A class derived from or more base classes is responsible to also pack and unpack the base classes' data
+  by calling the base class' implementation of Pack/Unpack
+
+- The intention of this class is to pack and communicate rather 'small' units of data. Though possible,
+  it is not meant to be used at the system level to communicate huge data sets such as sparse matrices or
+  vectors of system length. It does therefore not support any Epetra_Vector
+  or Epetra_CrsMatrix objects and is not supposed to in the future either.
+
+<br>
+Here is a list of data types that are currently supported by the existing AddtoPack and ExtractfromPack methods:
+\code
+bool, bool*
+char, char*
+enum, enum*
+int, int*
+double, double*
+float, float*
+string
+vector<char>  // especially useful to pack other packs into a pack, e.g. a class packing its own base class
+vector<int>
+vector<double>
+Epetra_SerialDenseMatrix
+\endcode
+
+Note that trying to pack an unsupported type of data (such as e.g. map<key,T> ) might compile and link but will
+result in the most (or least) funny behavior. Also, this type of bug might be extremely hard to find....
+<br><br>
+Of course, you are welcome to add more specializations to the existing AddtoPack and ExtractfromPack templates.
+If you do so, please update this documentation.
 
 \author gee (gee@lnm.mw.tum.de)
 */

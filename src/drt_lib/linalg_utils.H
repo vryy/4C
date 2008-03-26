@@ -33,10 +33,6 @@ Maintainer: Michael Gee
 using namespace std;
 using namespace Teuchos;
 
-/*!
-\brief LINALG: namespace of the ccarat linear algebra module
-
-*/
 namespace LINALG
 {
   // forward declaration

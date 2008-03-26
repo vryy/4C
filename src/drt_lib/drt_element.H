@@ -1,16 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_element.H
 
-\class DRT::Element
-
-\brief A pure virtual element class
-
-This is the pure virtual base class for all finite elements to be used with
-the DRT::Discretization. Every element (and boundary condition) to be used
-with the discretization management module has to implement this class.
-It implements various basic element methods and
-stores basic information such as element to node connectivity.
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -37,10 +27,7 @@ namespace MAT
   class Material;
 }
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 
@@ -50,8 +37,6 @@ class Node;
 class ElementRegister;
 
 /*!
-\class Element
-
 \brief A virtual class all elements that are used in DRT have to implement
 
 This is the pure virtual base class for all finite elements to be used with

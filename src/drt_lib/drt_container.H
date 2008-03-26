@@ -1,14 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_container.H
 
-\class DRT::Container
-
-\brief A data storage container
-
-You can store arrays of integer, double, and strings in this container
-and access the data by keys. As the Container implements ParObject
-everything stored in here can easily be communicated using the DRT::Exporter.
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -33,18 +25,12 @@ using namespace Teuchos;
 #include "drt_parobject.H"
 #include "drt_dserror.H"
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
 namespace DRT
 {
 
 // forward declarations
 
 /*!
-\class Container
-
 \brief A data storage container
 
 You can store arrays of integer, double, and strings in this container

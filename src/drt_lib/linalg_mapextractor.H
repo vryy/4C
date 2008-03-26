@@ -13,7 +13,10 @@
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 
+/*!
+\brief LINALG: namespace of the ccarat linear algebra module
 
+*/
 namespace LINALG
 {
 

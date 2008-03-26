@@ -35,15 +35,11 @@ namespace EXODUS
 class PreElement;
 
 /*!
-\class PreNode
-
 \brief PreNode is a node class for preprocess handling of nodes. It is 
 adopted to DRT::Node
 
 \author maf (frenzel@lnm.mw.tum.de)
 */
-
-
 class PreNode
 {
 public:

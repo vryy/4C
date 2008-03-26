@@ -29,8 +29,6 @@ namespace DRT
 {
 
   /*!
-    \class ResultTest
-
     \brief Pure virtual base class of all field test classes
 
     The idea is to have a subclass of this for every algorithm class
@@ -79,8 +77,6 @@ namespace DRT
   };
 
   /*!
-    \class ResultTestManager
-
     \brief Manager class of result test framework
 
     You have to create one object of this class to test the results of

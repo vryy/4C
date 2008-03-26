@@ -38,13 +38,10 @@ extern "C" {
 #include "../pss_full/pss_table.h"
 }
 
-/// IO: input/output facility
 namespace IO
 {
 
 /*!
-  \class MicroDiscretizationWriter
-
   \brief The output context of a discretization at microscale
 
   Create an object of this class for every discretization those mesh

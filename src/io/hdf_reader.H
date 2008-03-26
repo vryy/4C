@@ -50,7 +50,6 @@ namespace IO
 {
 
 /*!
-  \class HDFReader
   \brief Helper class that handles the HDF5 files while reading.
 
   After parallel output we need parallel input. Each processor writes
@@ -82,18 +81,19 @@ public:
   //!
   void Close();
 
-  //! read the packed element data from the mesh files
   /*!
-    Note: this function should only be called while the HDFReader reads
-    mesh files
-  */
+   * \brief read the packed element data from the mesh files
+   * \note  this function should only be called while the HDFReader reads
+   *        mesh files
+   */
   RefCountPtr<std::vector<char> > ReadElementData(int step, int new_proc_num, int my_id) const;
 
-  //! read the packed nodal data from the mesh files
+  //! 
   /*!
-    Note: this function should only be called while the HDFReader reads
-    mesh files
-  */
+   * \brief read the packed nodal data from the mesh files
+   * \note: this function should only be called while the HDFReader reads
+   *         mesh files
+   */
   RefCountPtr<std::vector<char> > ReadNodeData(int step, int new_proc_num, int my_id) const;
 
   /*!reads the packed periodic boundary condition data from the mesh files
@@ -137,7 +137,7 @@ public:
 
 private:
 
-  //! reads the dataset 'path' in all the files in the range [start,end)
+  /// reads the dataset 'path' in all the files in the range [start,end)
   /*!
     Here we finally loop all the files the local processor has to read.
     returns all the data in one vector. The data is assumed to by of type char.
@@ -145,7 +145,7 @@ private:
   RefCountPtr<std::vector<char> > ReadCharData(std::string path,
                                                int start, int end) const;
 
-  //! reads the dataset 'path' in all the files in the range [start,end)
+  /// reads the dataset 'path' in all the files in the range [start,end)
   /*!
     Here we finally loop all the files the local processor has to read.
     returns all the data in one vector<int>
@@ -153,7 +153,7 @@ private:
   RefCountPtr<std::vector<int> > ReadIntData(std::string path,
                                              int start, int end) const;
 
-  //! reads the dataset 'path' in all the files in the range [start,end)
+  /// reads the dataset 'path' in all the files in the range [start,end)
   /*!
     Here we finally loop all the files the local processor has to
     read.

@@ -48,10 +48,7 @@ class NodeSet;
 class SideSet;
 
 /*!
-\class Mesh
-
 \brief Mesh will in future store all information necessary to build a mesh
-
 
 \author maf (frenzel@lnm.mw.tum.de)
 */
@@ -174,8 +171,6 @@ private:
 
 
 /*!
-\class ElementBlock
-
 \brief ElementBlock is a set of Elements of same discretization Type
 
 A Element Block is a tiny class storing element-type, name, etc. of a ElementBlock

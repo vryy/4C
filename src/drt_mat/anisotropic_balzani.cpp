@@ -8,7 +8,6 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 </pre>
-
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 

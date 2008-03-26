@@ -325,9 +325,9 @@ namespace UTILS
   // versions that return the shape function and derivatives as return argument
   // allows to declare them const when they are used
 
-  //
-  // shape functions
-  //
+  /*!
+  \brief Fill blitz-vector with with shape function
+  */
   template<DRT::Element::DiscretizationType distype, class T>
   blitz::Array<double, 1> shape_function(
           const T& xsi)
@@ -356,9 +356,9 @@ namespace UTILS
     return f;
   }
 
-  //
-  // first natural derivative of shape functions
-  //
+  /*!
+  \brief Fill a blitz-matrix with with first shape function derivatives
+  */
   template<DRT::Element::DiscretizationType distype, class T>
   blitz::Array<double, 2> shape_function_deriv1(
           const T& xsi)
@@ -392,9 +392,9 @@ namespace UTILS
     }
   }
 
-  //
-  // Second natural derivative of shape functions
-  //
+  /*!
+  \brief Fill a blitz-matrix with with second shape function derivatives
+  */
   template<DRT::Element::DiscretizationType distype, class T>
   blitz::Array<double, 2> shape_function_deriv2(
           const T& xsi)
@@ -429,12 +429,9 @@ namespace UTILS
   }
   
   //////////////////////////////////////////////////////////////////
-  // versions that return the shape function and derivatives as return argument
-  // allows to declare them const when they are used
-
-  //
-  // shape functions
-  //
+  /*!
+  \brief Fill blitz-vector with with shape function
+  */
   template<DRT::Element::DiscretizationType distype, class T>
   void shape_function(
           const T& xsi,
@@ -464,9 +461,9 @@ namespace UTILS
     return;
   }
 
-  //
-  // first natural derivative of shape functions
-  //
+  /*!
+  \brief Fill a blitz-matrix with with first shape function derivatives
+  */
   template<DRT::Element::DiscretizationType distype, class T>
   void shape_function_deriv1(
           const T& xsi,
@@ -496,9 +493,9 @@ namespace UTILS
     return;
   }
 
-  //
-  // Second natural derivative of shape functions
-  //
+  /*!
+  \brief Fill a blitz-matrix with with second shape function derivatives
+  */
   template<DRT::Element::DiscretizationType distype, class T>
   void shape_function_deriv2(
           const T& xsi,

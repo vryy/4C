@@ -40,10 +40,6 @@ namespace LINALG
 }
 
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
 namespace DRT
 {
 /// collection of useful and important but less central stuff

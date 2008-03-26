@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file hyperpolyconvex.H
+\brief
+
+<pre>
+Maintainer: Moritz Frenzel
+            frenzel@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifndef HYPERPOLYCONVEX_H_
 #define HYPERPOLYCONVEX_H_
 #ifdef CCADISCRET

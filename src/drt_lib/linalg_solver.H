@@ -1,14 +1,6 @@
 /*!----------------------------------------------------------------------
 \file linalg_solver.H
 
-\class LINALG::Solver
-
-\brief A general solver interface to Trilinos solvers and spooles
-
-- The input of parameters needs to be completely reworked (hiwi job)
-
-- This class should implement Epetra_Operator in the future
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -90,10 +82,6 @@ struct _SolveMap;
 // forward declarations
 class VM3_Solver;
 
-/*!
-\brief LINALG: namespace of the ccarat linear algebra module
-
-*/
 namespace LINALG
 {
 
@@ -101,9 +89,11 @@ namespace LINALG
 class SparseMatrix;
 
 /*!
-\class Solver
-
 \brief A general solver interface to Trilinos solvers and spooles
+
+- The input of parameters needs to be completely reworked (hiwi job)
+
+- This class should implement Epetra_Operator in the future
 
 \author gee (gee@lnm.mw.tum.de)
 */

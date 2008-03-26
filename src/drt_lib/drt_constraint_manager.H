@@ -1,8 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_constraint_manager.H
 
-\class ConstrManager
-
 \brief Class controlling constraints and containing the necessary data
 
 <pre>
@@ -35,6 +33,9 @@ using namespace Teuchos;
 
 
 
+/*!
+\brief Class controlling constraints and containing the necessary data
+*/
 class ConstrManager
 {
 public:

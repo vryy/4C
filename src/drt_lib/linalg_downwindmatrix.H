@@ -1,9 +1,6 @@
 /*!----------------------------------------------------------------------
 \file linalg_downwindmatrix.H
 
-\class LINALG::DownwindMatrix
-
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -30,18 +27,14 @@ Maintainer: Michael Gee
 using namespace std;
 using namespace Teuchos;
 
-/*!
-\brief LINALG: namespace of the ccarat linear algebra module
-
-*/
 namespace LINALG
 {
 
 /*!
-\class DownwindMatrix
-
-
 \author gee (gee@lnm.mw.tum.de)
+
+\brief An approximate block factorization preconditioner based on the
+       SIMPLE family of methods
 */
 class  DownwindMatrix : public virtual Epetra_RowMatrix
 {

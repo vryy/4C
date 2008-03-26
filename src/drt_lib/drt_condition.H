@@ -1,20 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_condition.H
 
-\class DRT::Condition
-
-\brief A condition of any kind
-
-A condition is mainly used to realize boundary conditions. As the Condition
-class implements DRT::Container it is capable of storing almost any data
-and can be communicated in parallel as it also implements ParObject.
-the container base class of the Condition holds all specific condition data.
-The condition can additionally store a discretization of the condition which is
-driven by the Discretization class that is evaluating this condition.
-The Discretization class is therefore a friend of the Condition and has access to
-the protected methods dealing with the discretization of this condition.
-(I guess this whole comment is not very helpful)
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -37,10 +23,7 @@ using namespace Teuchos;
 #include "drt_container.H"
 #include "drt_dserror.H"
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 
@@ -49,8 +32,6 @@ class Element;
 class Discretization;
 
 /*!
-\class Condition
-
 \brief A condition of any kind
 
 A condition is mainly used to realize boundary conditions. As the Condition

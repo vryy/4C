@@ -1,6 +1,5 @@
 /*!----------------------------------------------------------------------
-\file
-\brief
+\file micromaterialgp_static.cpp
 
 <pre>
 Maintainer: Lena Wiechert

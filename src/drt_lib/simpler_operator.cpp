@@ -1,26 +1,6 @@
 /*!----------------------------------------------------------------------
 \file simpler_operator.cpp
 
-\class LINALG::SIMPLER_Operator
-
-\brief An approximate block factorization preconditioner based on the
-       SIMPLE family of methods
-
-This Operator implements the family of SIMPLE methods such as
-SIMPLE, SIMPLER, SIMPLEC and CheapSIMPLE (a m.gee's variation of SIMPLE)
-
-Literature:<br>
-
-Elman, H., Howle, V.E., Shadid, J., Shuttleworth, R., Tuminaro, R.:  
-A taxonomy and comparison of parallel block multi-level              
-preconditioners for the incomp. Navier-Stokes equations.             
-Sandia technical report SAND2007-2761, 2007,                        
-Also appeared in JCP                                                 
-
-Pernice, M., Tocci, M.D.:                                            
-A Multigrid Preconditioned Newton-Krylov method for the incomp.      
-Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)  
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de

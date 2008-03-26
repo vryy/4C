@@ -1,11 +1,6 @@
 /*!----------------------------------------------------------------------
 \file linalg_serialdensevector.H
 
-\class LINALG::SerialDenseVector
-
-\brief A class that wraps Epetra_SerialDenseVector with minor modifications
-       in the constructor
-
 <pre>
 Maintainer: Moritz Frenzel
             frenzel@lnm.mw.tum.de
@@ -22,16 +17,10 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseVector.h"
 
 
-/*!
-\brief LINALG: namespace of the ccarat linear algebra module
-
-*/
 namespace LINALG
 {
 
 /*!
-\class SerialDenseVector
-
 \brief A class that wraps Epetra_SerialDenseVector with minor modifications
        in the constructor
 

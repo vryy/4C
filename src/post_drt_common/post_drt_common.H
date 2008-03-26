@@ -72,8 +72,6 @@ void distribute_drt_grids();
 
 
 /*!
-  \class PostProblem
-
   \brief Foundation class of the filter
 
   Each filter needs one instance of PostProblem. This sets up the
@@ -216,8 +214,6 @@ private:
 
 
 /*!
-  \class PostField
-
   \brief The representation of one mesh.
 
   Problems with fixed mesh topologies will want to create one instance
@@ -296,8 +292,6 @@ private:
 
 
 /*!
-  \class PostResult
-
   \brief Representation of the results of one time step.
 
   Most filters will loop all time steps from the control file.

@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file hdf_reader.cpp
+
+\brief Helpers to read HDF5 based output.
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/kuettler
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifdef BINIO
 

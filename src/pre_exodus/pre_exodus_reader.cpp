@@ -877,16 +877,6 @@ void EXODUS::Mesh::AddElementBlock(const EXODUS::ElementBlock eblock) const
 }
 
 
-/*!
-\class ElementBlock
-
-\brief ElementBlock is a set of Elements of same discretization Type
-
-A Element Block is a tiny class storing element-type, name, etc. of a ElementBlock
-It implements its printout.
-
-\author maf (frenzel@lnm.mw.tum.de)
-*/
 EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype, map<int,vector<int> > &eleconn, string name)
 {
   distype_ = Distype;

@@ -1,22 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_elementregister.H
 
-\class DRT::ElementRegister
-
-\brief A virtual element register class
-
-This class is used to initialize the finite elements of a specific type
-in a discretization. Usage is as follows:<br>
-Every concrete implementation should also have a concrete implementation
-of the ElementRegister class, if it needs to have an initialization process
-done before calculations on the elements can be performed. The method
-DRT::ElementRegister::Initialize performs this initialization and is
-called from DRT::Discretization::FillComplete ONCE for every type of
-finite element included in a discretization.<br>
-If a finite element does NOT need an initialization process, it may use
-this base class as its ElementRegister as this base class implements a
-dummy Initialize method.
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -37,18 +21,13 @@ using namespace Teuchos;
 #include "drt_element.H"
 
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 
 // forward declarations
 
 /*!
-\class ElementRegister
-
 \brief A virtual element register class
 
 This class is used to initialize the finite elements of a specific type

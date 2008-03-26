@@ -263,8 +263,6 @@ class Vector;
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LCBase
-
 \brief A virtual class implementing an abstract implicit linear combination
        on a vector-valued quantity.
 
@@ -309,8 +307,6 @@ public:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LightWeightOperatorBase
-
 \brief A pure virtual light weight wrapper for a (heavy-weight) Epetra_Operator
 
 \note Intentionally this class does NOT implement Epetra_Operator though it has all methods
@@ -399,8 +395,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LightWeightOperator
-
 \brief A lightweight wrapper for a true heavy Epetra_Operator
 
 \note Intentionally this class does NOT implement Epetra_Operator though it has all methods
@@ -467,8 +461,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class OperatorTransposed
-
 \brief A lightweight wrapper implementing the transposedof a LightWeightOperatorBase
 
 \note Intentionally this class does NOT implement Epetra_Operator though it has all methods
@@ -552,8 +544,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class OperatorScaled
-
 \brief A lightweight wrapper implementing a scalar-scaled LightWeightOperatorBase
 
 \note Intentionally this class does NOT implement Epetra_Operator though it has all methods
@@ -636,8 +626,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class OperatorProduct
-
 \brief A lightweight wrapper implementing an implicit product of 2 LightWeightOperatorBase classes
 
 \note Intentionally this class does NOT implement Epetra_Operator though it has all methods
@@ -717,8 +705,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class OperatorSum
-
 \brief A lightweight wrapper implementing an implicit sum of 2 LightWeightOperatorBase classes
 
 \note Intentionally this class does NOT implement Epetra_Operator though it has all methods
@@ -810,8 +796,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class OperatorInverse
-
 \brief A lightweight wrapper implementing an implicit inverse of a LightWeightOperatorBase
 
 A supplied solver can be used to implement the inverse. If no solver is supplied, this operator
@@ -917,8 +901,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class Vector
-
 \brief A distributed vector class that implements Epetra_Vector
 
 All Epetra_Vector functionality can be used. Additionally, this class overloads a series
@@ -1086,8 +1068,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_lc_plus_lc
-
 \brief Sum of 2 (generic) linear combinations
 
 \sa LCBase
@@ -1135,8 +1115,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_lc_minus_lc
-
 \brief Difference of 2 (generic) linear combinations
 
 \sa LCBase
@@ -1183,8 +1161,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_vec_plus_lc
-
 \brief Sum of a Vector and a generic linear combination
 
 \sa LCBase
@@ -1231,8 +1207,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_vec_minus_lc
-
 \brief Difference of a Vector and a generic linear combination
 
 \sa LCBase
@@ -1279,8 +1253,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_lc_minus_vec
-
 \brief Difference of a generic linear combination and a Vector
 
 \sa LCBase
@@ -1327,8 +1299,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_s_times_vec
-
 \brief Linear combination of a scalar with a Vector
 
 \sa LCBase
@@ -1380,8 +1350,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_s_times_lc
-
 \brief Linear combination of a scalar with a generic linear combination
 
 \sa LCBase
@@ -1427,8 +1395,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_lcsv_plus_lcsv
-
 \brief Sum of 2 linear combinations, specialization of LC_lc_plus_lc
        for performance reasons
 
@@ -1477,8 +1443,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_vec_plus_lcsv
-
 \brief Sum of Vector and a linear combinations, specialization of LC_vec_plus_lc
        for performance reasons
 
@@ -1526,8 +1490,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_lcsv_minus_lcsv
-
 \brief Difference of 2 linear combinations, specialization of LC_lc_minus_lc
        for performance reasons
 
@@ -1575,8 +1537,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_vec_minus_lcsv
-
 \brief Difference of a Vector and a linear combination, specialization of LC_vec_minus_lc
        for performance reasons
 
@@ -1624,8 +1584,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_lcsv_minus_vec
-
 \brief Difference of a linear combination and a Vector, specialization of LC_lc_minus_vec
        for performance reasons
 
@@ -1675,8 +1633,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_vec_pointwise_vec
-
 \brief Element by element product of 2 Vector s, result is a Vector, where
        Result[i] = vec1[i]*vec2[i]
 
@@ -1723,8 +1679,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_vec_pointwise_lc
-
 \brief Element by element product of Vector and generic linear combination, 
        result is a Vector, where Result[i] = vec[i]*right[i]
 
@@ -1773,8 +1727,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_vec_pointwise_lcsv
-
 \brief Element by element product of Vector and linear combination, 
        result is a Vector, where Result[i] = vec[i]*right[i].
        Specialization of LC_vec_pointwise_lc for performance reasons
@@ -1825,8 +1777,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_lc_pointwise_lc
-
 \brief Element by element product of 2 linear combinations, 
        result is a Vector, where Result[i] = left[i]*right[i].
 
@@ -1873,8 +1823,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_lcsv_pointwise_lcsv
-
 \brief Element by element product of 2 linear combinations, 
        result is a Vector, where Result[i] = left[i]*right[i].
        Specialization of LC_lc_pointwise_lc for performance reasons
@@ -1923,8 +1871,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_Operator_times_lcsv
-
 \brief Apply linear operator to linear combination.
        Specialization of LC_Operator_times_lc for performance reasons.
 
@@ -1971,8 +1917,6 @@ private:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*!
-\class LC_Operator_times_lc
-
 \brief Apply linear operator to linear combination.
 
 \sa LCBase, LC_Operator_times_lcsv

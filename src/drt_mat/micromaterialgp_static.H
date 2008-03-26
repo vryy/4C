@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file micromaterial.H
+\file micromaterialgp_static.H
 
 \brief class for handling of micro-macro transitions
 

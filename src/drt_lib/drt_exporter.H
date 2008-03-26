@@ -1,18 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_exporter.H
 
-\class DRT::Exporter
-
-\brief A class to manage explicit mpi communications
-
-The discretization management module uses this class to do most of its
-communication. It is used to redistribute grids and to do point-to-point
-communications. It is therefore the only place on DRT where explicit calls to MPI
-methods are done.<br>
-It has strong capabilities in gathering and scattering information in a collective AND
-an individual way. Whenever you need explicit communication, check this class first before
-implementing your own mpi stuff.
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -42,17 +30,12 @@ Maintainer: Michael Gee
 using namespace std;
 using namespace Teuchos;
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 
 
 /*!
-\class Exporter
-
 \brief A class to manage explicit mpi communications
 
 The discretization management module uses this class to do most of its

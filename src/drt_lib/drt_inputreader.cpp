@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file drt_inputreader.H
+\file drt_inputreader.cpp
 
 \brief Internal classes to read elements and nodes
 

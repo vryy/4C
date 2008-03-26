@@ -1,11 +1,6 @@
 /*!----------------------------------------------------------------------
 \file linalg_serialdensematrix.H
 
-\class LINALG::SerialDenseMatrix
-
-\brief A class that wraps Epetra_SerialDenseMatrix with minor modifications
-       in the constructor
-
 <pre>
 Maintainer: Moritz Frenzel
             frenzel@lnm.mw.tum.de
@@ -22,16 +17,10 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseMatrix.h"
 
 
-/*!
-\brief LINALG: namespace of the ccarat linear algebra module
-
-*/
 namespace LINALG
 {
 
 /*!
-\class SerialDenseMatrix
-
 \brief A class that wraps Epetra_SerialDenseMatrix with minor modifications
        in the constructor
 

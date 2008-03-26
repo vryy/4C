@@ -121,7 +121,7 @@ public:
 
 
 
-} // namespace MAT
+}
 
 #endif
 #endif

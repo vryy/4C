@@ -1,3 +1,12 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file stvenantkirchhoff.H
+
+<pre>
+Maintainer: ???
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifndef STVENANTKIRCHHOFF_H_
 #define STVENANTKIRCHHOFF_H_
 

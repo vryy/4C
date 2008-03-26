@@ -1,14 +1,6 @@
 /*!----------------------------------------------------------------------
 \file linalg_mlapi_operator.cpp
 
-\class LINALG::AMG_Operator
-
-\brief A multipurpose experimental multigrid operator
-
-This operator based on the ml advanced programming interface is a
-multipurpose development object for amg ideas that shall be tested in
-the baci framework
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de

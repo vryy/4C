@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file micromaterial.cpp
+
+\brief class for handling of micro-macro transitions
+
+<pre>
+Maintainer: Lena Wiechert
+            wiechert@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15303
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include "micromaterial.H"

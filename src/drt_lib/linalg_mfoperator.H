@@ -1,8 +1,6 @@
 /*!
  * \file mfoperator.H
  *
- * \class MatrixFreeOperator
- *
  * \brief Approximation to matrix-vector product
  *
  * \date 10/07

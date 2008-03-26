@@ -1,13 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_node.H
 
-\class DRT::Node
-
-\brief A virtual class for a node
-
-This class represents a finite element node. though it is virtual and one can overload any of its
-methods, the normal case would be to use this base class for all nodes.
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -29,10 +22,7 @@ using namespace Teuchos;
 #include "drt_parobject.H"
 #include "drt_condition.H"
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 
@@ -40,8 +30,6 @@ namespace DRT
 class Element;
 
 /*!
-\class Node
-
 \brief A virtual class all nodes that are used in DRT have to implement
 
 \author gee (gee@lnm.mw.tum.de)
