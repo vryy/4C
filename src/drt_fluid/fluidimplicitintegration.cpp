@@ -106,17 +106,19 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   fssgv_ = params_.get<string>("fs subgrid viscosity","No");
 
   // -------------------------------------------------------------------
-  // Build element group. This might change some element orientations.
-  // -------------------------------------------------------------------
-
-  egm_ = rcp(new DRT::EGROUP::ElementGroupManager(*actdis));
-
-  // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
   pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
   pbc_->UpdateDofsForPeriodicBoundaryConditions();
 
+  // -------------------------------------------------------------------
+  // Build element group. This might change some element orientations.
+  //
+  // Warning: The egm has to be called after pbc->Update since the pbc
+  //          moved elements among processors 
+  // -------------------------------------------------------------------
+  egm_ = rcp(new DRT::EGROUP::ElementGroupManager(*actdis));
+  
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
 
