@@ -218,6 +218,7 @@ public:
   Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
 
   double ResidualScaling() const { return density_/dta_/theta_; }
+  double Dt() const { return dta_; }
 
   double Time() const { return time_; }
   int Step() const { return step_; }
@@ -331,7 +332,7 @@ protected:
   RCP<Epetra_Vector>    residual_;
 
   /// rhs: right hand side vector for linearised flow solution
-  RefCountPtr<Epetra_Vector>    rhs_;
+  RCP<Epetra_Vector>    rhs_;
 
   /// true (rescaled) residual vector without zeros at dirichlet positions
   RCP<Epetra_Vector>    trueresidual_;
