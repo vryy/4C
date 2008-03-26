@@ -108,7 +108,6 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Beam3::ElementRegister() const
 }
 
 
-
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  |                                                          cyron 01/08 |
