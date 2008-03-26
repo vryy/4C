@@ -21,6 +21,17 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
  *----------------------------------------------------------------------*/
 int FSI::OverlappingBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
+  LowerGS(X, Y);
+  //UpperGS(X, Y);
+  //SGS(X, Y);
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::OverlappingBlockMatrix::LowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+{
   const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
   const LINALG::SparseMatrix& fluidBoundOp  = Matrix(1,0);
@@ -70,8 +81,88 @@ int FSI::OverlappingBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetr
   RangeExtractor().InsertVector(*sy,0,y);
   RangeExtractor().InsertVector(*fy,1,y);
   RangeExtractor().InsertVector(*ay,2,y);
+}
 
-  return 0;
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::OverlappingBlockMatrix::UpperGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+{
+  const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
+  const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
+  const LINALG::SparseMatrix& fluidBoundOp  = Matrix(0,1);
+  const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
+
+  // Extract vector blocks
+  // RHS
+
+  const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
+
+  Teuchos::RCP<Epetra_Vector> sx = DomainExtractor().ExtractVector(x,0);
+  Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x,1);
+  Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x,2);
+
+  // initial guess
+
+  Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
+
+  Teuchos::RCP<Epetra_Vector> sy = RangeExtractor().ExtractVector(y,0);
+  Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y,1);
+  Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y,2);
+
+  Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
+
+  // Solve fluid equations for fy with the rhs fx
+
+  fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fy,fx,true);
+
+  // Solve structure equations for sy with the rhs sx - F(Gamma,I) fy
+
+  fluidBoundOp.Multiply(false,*fy,*tmpsx);
+  sx->Update(-1.0,*tmpsx,1.0);
+  structuresolver_->Solve(structInnerOp.EpetraMatrix(),sy,sx,true);
+
+  // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
+
+  alesolver_->Solve(aleInnerOp.EpetraMatrix(),ay,ax,true);
+
+  // build solution vector
+
+  RangeExtractor().InsertVector(*sy,0,y);
+  RangeExtractor().InsertVector(*fy,1,y);
+  RangeExtractor().InsertVector(*ay,2,y);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::OverlappingBlockMatrix::SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+{
+  // this implementation is not meant to be most efficient
+
+  UpperGS(X,Y);
+
+  Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
+
+  Teuchos::RCP<Epetra_Vector> sy = RangeExtractor().ExtractVector(y,0);
+  Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y,1);
+  Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y,2);
+
+  Teuchos::RCP<Epetra_Vector> sz = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
+  Teuchos::RCP<Epetra_Vector> fz = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
+  Teuchos::RCP<Epetra_Vector> az = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
+
+  Matrix(0,0).Apply(*sy,*sz);
+  Matrix(1,1).Apply(*fy,*fz);
+  Matrix(2,2).Apply(*ay,*az);
+
+  Epetra_Vector z(Y.Map());
+
+  RangeExtractor().InsertVector(*sz,0,z);
+  RangeExtractor().InsertVector(*fz,1,z);
+  RangeExtractor().InsertVector(*az,2,z);
+
+  LowerGS(z,Y);
 }
 
 

@@ -42,6 +42,15 @@ namespace FSI
 
   private:
 
+    /// lower Gauss-Seidel block preconditioner
+    void LowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+    /// upper Gauss-Seidel block preconditioner
+    void UpperGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
+    /// symmetric Gauss-Seidel block preconditioner
+    void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
     /** \name Field solver objects */
     //@{
 
