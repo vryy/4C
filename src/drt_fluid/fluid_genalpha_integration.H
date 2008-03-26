@@ -477,8 +477,28 @@ public:
       // dacc really is nothing but the sum of all solutions of the linear
       // problems of one time step.
 
-      velnp_->Update(1.0,*veln_ ,0.0);
-      accnp_->Update(1.0,*accn_ ,0.0);
+      // Do not destroy Dirichlet values!
+      //
+      // There is no epetra operation for this! Maybe we could have such a beast
+      // in ANA?
+
+      int len = dacc->MyLength();
+
+      double* veln  = &(*veln_)[0];
+      double* velnp = &(*velnp_)[0];
+      double* accn  = &(*accn_)[0];
+      double* accnp = &(*accnp_)[0];
+      double* dt    = &(*dirichtoggle_)[0];
+
+      for (int i=0; i<len; ++i)
+      {
+        velnp[i] = velnp[i]*dt[i] + veln[i]*(1-dt[i]);
+      }
+
+      for (int i=0; i<len; ++i)
+      {
+        accnp[i] = accnp[i]*dt[i] + accn[i]*(1-dt[i]);
+      }
 
       // normal Newton iteration update
       //

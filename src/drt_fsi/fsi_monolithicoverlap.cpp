@@ -3,6 +3,7 @@
 #include "fsi_monolithicoverlap.H"
 #include "fsi_statustest.H"
 #include "fsi_overlapprec.H"
+#include "fsi_nox_aitken.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -141,10 +142,23 @@ void FSI::MonolithicOverlap::SetDefaultParameters(const Teuchos::ParameterList& 
 
   Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+  //Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
 
   lsParams.set<std::string>("Convergence Test","r0");
   lsParams.set<double>("Tolerance",1e-6);
   lsParams.set<std::string>("Preconditioner","User Defined");
+
+#if 0
+  // add Aitken relaxation to Newton step
+  // there is nothing to be gained...
+  Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
+    Teuchos::rcp(new NOX::FSI::AitkenFactory());
+  lineSearchParams.set("Method","User Defined");
+  lineSearchParams.set("User Defined Line Search Factory", aitkenfactory);
+
+  //lineSearchParams.sublist("Aitken").set("max step size",
+  //fsidyn.get<double>("MAXOMEGA"));
+#endif
 }
 
 
@@ -420,13 +434,6 @@ void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
 
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
-
-  // Here we have to add the current structural interface displacement because
-  // we solve for the displacement increments on the structural side but for
-  // the absolute displacements on the ale side.
-  //
-  // We have x = d(n+1,i+1) - d(n) here, this makes things quite easy.
-  acx->Update(1.0,*StructToAle(dispn),1.0);
 
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
   AleField().Interface().InsertCondVector(acx, a);

@@ -34,7 +34,7 @@ extern struct _FILES  allfiles;
 // Discretizations.
 /*----------------------------------------------------------------------*/
 FSI::MonolithicBase::MonolithicBase(Epetra_Comm& comm)
-  : StructureBaseAlgorithm(),
+  : StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
     FluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),true),
     AleBaseAlgorithm(),
     comm_(comm)

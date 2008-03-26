@@ -279,6 +279,9 @@ protected:
   //! use (or not) linearisation of reactive terms on the element
   bool newton_;
 
+  /// whether we do some extrapolation at the begin of each time step
+  bool extrapolationpredictor_;
+
   int restartstep_;
   int uprestart_;
   int writestep_;

@@ -46,9 +46,9 @@ ADAPTER::Structure::~Structure()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::StructureAdapter::StructureAdapter(Teuchos::RCP<Teuchos::ParameterList> params,
-                                         Teuchos::RCP<DRT::Discretization> dis,
-                                         Teuchos::RCP<LINALG::Solver> solver,
-                                         Teuchos::RCP<IO::DiscretizationWriter> output)
+                                            Teuchos::RCP<DRT::Discretization> dis,
+                                            Teuchos::RCP<LINALG::Solver> solver,
+                                            Teuchos::RCP<IO::DiscretizationWriter> output)
   : structure_(*params, *dis, *solver, *output),
     dis_(dis),
     params_(params),
@@ -176,7 +176,7 @@ double ADAPTER::StructureAdapter::DispIncrFactor()
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureAdapter::PrepareTimeStep()
 {
-  // Note: FSI requires a constant predictor. Otherwise the fields will get
+  // Note: MFSI requires a constant predictor. Otherwise the fields will get
   // out of sync.
 
   std::string pred = params_->get<string>("predictor","consistent");
@@ -190,6 +190,9 @@ void ADAPTER::StructureAdapter::PrepareTimeStep()
   }
   else
     dserror("predictor %s unknown", pred.c_str());
+
+  if (sumdisi_!=Teuchos::null)
+    sumdisi_->PutScalar(0.);
 }
 
 
@@ -205,7 +208,15 @@ void ADAPTER::StructureAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   if (disp!=Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(new Epetra_Vector(*disp));
-    disi->Update(-1.0,*Dispnp(),1.0);
+    if (sumdisi_!=Teuchos::null)
+    {
+      disi->Update(-1.0,*sumdisi_,1.0);
+      sumdisi_->Update(1.0,*disp,0.0);
+    }
+    else
+    {
+      sumdisi_ = Teuchos::rcp(new Epetra_Vector(*disp));
+    }
     structure_.Evaluate(disi);
   }
   else
@@ -378,9 +389,9 @@ void ADAPTER::StructureAdapter::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm()
+ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
 {
-  SetupStructure();
+  SetupStructure(prbdyn);
 }
 
 /*----------------------------------------------------------------------*/
@@ -391,7 +402,7 @@ ADAPTER::StructureBaseAlgorithm::~StructureBaseAlgorithm()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithm::SetupStructure()
+void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterList& prbdyn)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FSI::StructureBaseAlgorithm::SetupStructure");
   Teuchos::TimeMonitor monitor(*t);
@@ -420,7 +431,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure()
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   if ((actdis->Comm()).MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
@@ -450,16 +460,16 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure()
   genalphaparams->set<double>("alpha f",sdyn.get<double>("ALPHA_F"));
 
   genalphaparams->set<double>("total time",0.0);
-  genalphaparams->set<double>("delta time",fsidyn.get<double>("TIMESTEP"));
+  genalphaparams->set<double>("delta time",prbdyn.get<double>("TIMESTEP"));
   genalphaparams->set<int>   ("step",0);
-  genalphaparams->set<int>   ("nstep",fsidyn.get<int>("NUMSTEP"));
+  genalphaparams->set<int>   ("nstep",prbdyn.get<int>("NUMSTEP"));
   genalphaparams->set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
   genalphaparams->set<int>   ("num iterations",-1);
   genalphaparams->set<double>("tolerance displacements",sdyn.get<double>("TOLDISP"));
   genalphaparams->set<string>("convcheck",sdyn.get<string>("CONV_CHECK"));
 
   genalphaparams->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
-  genalphaparams->set<int>   ("io disp every nstep",fsidyn.get<int>("UPRES"));
+  genalphaparams->set<int>   ("io disp every nstep",prbdyn.get<int>("UPRES"));
 //   genalphaparams->set<bool>  ("io structural stress",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"));
   switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
   {
@@ -480,7 +490,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure()
   genalphaparams->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
 
   genalphaparams->set<int>   ("restart",probtype.get<int>("RESTART"));
-  genalphaparams->set<int>   ("write restart every",fsidyn.get<int>("RESTARTEVRY"));
+  genalphaparams->set<int>   ("write restart every",prbdyn.get<int>("RESTARTEVRY"));
 
   genalphaparams->set<bool>  ("print to screen",true);
   genalphaparams->set<bool>  ("print to err",true);
@@ -523,6 +533,18 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure()
   default:
     dserror("Cannot cope with choice of predictor");
     break;
+  }
+
+  // sanity checks and default flags
+  if (genprob.probtyp == prb_fsi)
+  {
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+
+    if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") == fsi_iter_monolithic)
+    {
+      if (Teuchos::getIntegralValue<int>(sdyn,"PREDICT")!=STRUCT_DYNAMIC::pred_constdisvelacc)
+        dserror("only constant structure predictor with monolithic FSI possible");
+    }
   }
 
   structure_ = rcp(new StructureAdapter(genalphaparams,actdis,solver,output));

@@ -116,8 +116,8 @@ void ADAPTER::AleLinear::BuildSystemMatrix(bool full)
   }
 
   EvaluateElements();
-  if (full)
-    LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
+  //if (full)
+  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
 }
 
 
@@ -171,6 +171,8 @@ void ADAPTER::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) const
 
   if (ddisp!=Teuchos::null)
   {
+    // Dirichlet boundaries != 0 are not supported.
+
     dispnp_->Update(1.0,*ddisp,1.0,*dispn_,0.0);
   }
 }

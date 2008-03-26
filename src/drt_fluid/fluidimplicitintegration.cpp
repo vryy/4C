@@ -59,6 +59,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   alefluid_(alefluid),
   time_(0.0),
   step_(0),
+  extrapolationpredictor_(params.get("do explicit predictor",true)),
   restartstep_(0),
   uprestart_(params.get("write restart every", -1)),
   writestep_(0),
@@ -117,7 +118,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // Build element group. This might change some element orientations.
   //
   // Warning: The egm has to be called after pbc->Update since the pbc
-  //          moved elements among processors 
+  //          moved elements among processors
   // -------------------------------------------------------------------
   egm_ = rcp(new DRT::EGROUP::ElementGroupManager(*actdis));
 
@@ -757,9 +758,15 @@ void FluidImplicitTimeInt::PrepareTimeStep()
   //                     +-                                      -+
   //
   // -------------------------------------------------------------------
-  if (step_>1)
+  //
+  // We cannot have a predictor in case of monolithic FSI here. There needs to
+  // be a way to ture this off.
+  if (extrapolationpredictor_)
   {
-    ExplicitPredictor();
+    if (step_>1)
+    {
+      ExplicitPredictor();
+    }
   }
 
   // -------------------------------------------------------------------
@@ -1358,10 +1365,25 @@ void FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // set the new solution we just got
   if (vel!=Teuchos::null)
   {
-    incvel_->Update(1.0, *vel, 0.);
+    int len = vel->MyLength();
+
+    // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
+    // values.
+    //
+    // There is no epetra operation for this! Maybe we could have such a beast
+    // in ANA?
+
+    double* veln  = &(*veln_)[0];
+    double* velnp = &(*velnp_)[0];
+    double* dt    = &(*dirichtoggle_)[0];
+    double* idv   = &(*invtoggle_)[0];
+    const double* incvel = &(*vel)[0];
 
     //------------------------------------------------ update (u,p) trial
-    velnp_->Update(1.0,*incvel_,1.0);
+    for (int i=0; i<len; ++i)
+    {
+      velnp[i] = velnp[i]*dt[i] + (veln[i] + incvel[i])*idv[i];
+    }
   }
 
   // add Neumann loads

@@ -16,7 +16,7 @@
 // turn defines the dof number ordering of the Discretizations.
 /*----------------------------------------------------------------------*/
 FSI::Algorithm::Algorithm(Epetra_Comm& comm)
-  : StructureBaseAlgorithm(),
+  : StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
     GeneralFluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"),
     comm_(comm)
 {

@@ -376,7 +376,17 @@ void FSI::Coupling::FillSlaveToMasterMap(std::map<int,int>& rowmap) const
 Teuchos::RCP<LINALG::SparseMatrix> FSI::Coupling::MasterToPermMaster(const LINALG::SparseMatrix& sm) const
 {
   Teuchos::RCP<Epetra_CrsMatrix> permsm = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*permmasterdofmap_,sm.MaxNumEntries()));
+
+  // OK. You cannot use the same exporter for different matrices. So we
+  // recreate one all the time... This has to be optimized later on.
+
+#if 0
   int err = permsm->Import(*sm.EpetraMatrix(),*masterexport_,Insert);
+#else
+  Teuchos::RCP<Epetra_Export> exporter = rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
+  int err = permsm->Import(*sm.EpetraMatrix(),*exporter,Insert);
+#endif
+
   if (err)
     dserror("Import failed with err=%d",err);
 
@@ -399,7 +409,17 @@ Teuchos::RCP<LINALG::SparseMatrix> FSI::Coupling::SlaveToPermSlave(const LINALG:
 #endif
 
   Teuchos::RCP<Epetra_CrsMatrix> permsm = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*permslavedofmap_,sm.MaxNumEntries()));
+
+  // OK. You cannot use the same exporter for different matrices. So we
+  // recreate one all the time... This has to be optimized later on.
+
+#if 0
   int err = permsm->Import(*sm.EpetraMatrix(),*slaveexport_,Insert);
+#else
+  Teuchos::RCP<Epetra_Export> exporter = rcp(new Epetra_Export(*permslavedofmap_, *slavedofmap_));
+  int err = permsm->Import(*sm.EpetraMatrix(),*exporter,Insert);
+#endif
+
   if (err)
     dserror("Import failed with err=%d",err);
 

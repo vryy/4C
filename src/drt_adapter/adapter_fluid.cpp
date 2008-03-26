@@ -161,16 +161,9 @@ void ADAPTER::FluidAdapter::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidAdapter::Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const
 {
-  // Yes, this is complicated. But we have to be very careful
-  // here. The field solver always expects an increment only. And
-  // there are Dirichlet conditions that need to be preserved. So take
-  // the sum of increments we get from NOX and apply the latest
-  // increment only.
   if (vel!=Teuchos::null)
   {
-    Teuchos::RCP<Epetra_Vector> incvel = Teuchos::rcp(new Epetra_Vector(*vel));
-    incvel->Update(-1.0,*fluid_.Velnp(),1.0);
-    fluid_.Evaluate(incvel);
+    fluid_.Evaluate(vel);
   }
   else
   {
@@ -824,9 +817,21 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
 
-  // in case of FSI calculations we do not want a stationary fluid solver
-  if ((genprob.probtyp == prb_fsi) and (iop == timeint_stationary))
-     dserror("Stationary fluid solver not allowed for FSI.");
+  // sanity checks and default flags
+  if (genprob.probtyp == prb_fsi)
+  {
+    // in case of FSI calculations we do not want a stationary fluid solver
+    if (iop == timeint_stationary)
+      dserror("Stationary fluid solver not allowed for FSI.");
+
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+
+    if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") == fsi_iter_monolithic)
+    {
+      // there are a couple of restrictions in monolithic FSI
+      fluidtimeparams->set<bool>("do explicit predictor",false);
+    }
+  }
 
   if(iop == timeint_stationary or
      iop == timeint_one_step_theta or

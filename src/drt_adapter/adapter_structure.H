@@ -292,6 +292,15 @@ namespace ADAPTER {
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor interface_;
 
+    /// sum of displacement vectors already applied
+    /*!
+      This is a hack required for monolithic FSI to convert from NOX style
+      update (sum in current Newton loop) to structure update (latest Newton
+      increment only). It would be nice avoid this variable and change
+      StruGenAlpha::Evaluate() instead.
+     */
+    mutable Teuchos::RCP<Epetra_Vector> sumdisi_;
+
     //! @name local copies of input parameters
 
     Teuchos::RCP<DRT::Discretization> dis_;
@@ -309,7 +318,7 @@ namespace ADAPTER {
   public:
 
     /// constructor
-    explicit StructureBaseAlgorithm();
+    explicit StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn);
 
     /// virtual destructor to support polymorph destruction
     virtual ~StructureBaseAlgorithm();
@@ -321,7 +330,7 @@ namespace ADAPTER {
   private:
 
     /// setup structure algorithm
-    void SetupStructure();
+    void SetupStructure(const Teuchos::ParameterList& prbdyn);
 
     /// structural field solver
     Teuchos::RCP<Structure> structure_;
