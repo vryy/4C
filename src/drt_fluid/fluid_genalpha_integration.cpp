@@ -1527,7 +1527,7 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
         // out to screen
         if (myrank_==0)
         {
-          cout << "Disturbed initial profile:   max. " << perc << "% random perturbation\n";
+          cout << "Disturbed initial profile:   max. " << perc*100 << "% random perturbation\n";
           cout << "\n\n";
         }
 
@@ -1538,20 +1538,20 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
           DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
           // the set of degrees of freedom associated with the node
           vector<int> nodedofset = discret_->Dof(lnode);
-          
+
           // check whether we have a pbc condition on this node
           vector<DRT::Condition*> mypbc;
-          
+
           lnode->GetCondition("SurfacePeriodic",mypbc);
-          
+
           // check whether a periodic boundary condition is active on this node
           if (mypbc.size()>0)
           {
             // yes, we have one
-            
+
             // get the list of all his slavenodes
             map<int, vector<int> >::iterator master = mapmastertoslave_.find(lnode->Id());
-            
+
             // slavenodes are ignored
             if(master == mapmastertoslave_.end())
             {
@@ -1609,7 +1609,6 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
           }
         }
       }
-
     }
   }
   //----------------------------------------------------------------------
