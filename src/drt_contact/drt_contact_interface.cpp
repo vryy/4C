@@ -909,11 +909,20 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
     dserror("ERROR: IntegrateOverlap2D: Unknown overlap case found!");
   }
   
+  // check for 1:1 node projections and for infeasible limits
   if ((sxia<-1.0) || (sxib>1.0) || (mxia<-1.0) || (mxib>1.0))
   {
-    cout << "Slave: " << sxia << " " << sxib << endl;
-    cout << "Master: " << mxia << " " << mxib << endl;
-    dserror("ERROR: IntegrateOverlap2D: Determined infeasible limits!");
+    if (abs(sxia+1.0)<CONTACTPROJLIM) sxia=-1.0;
+    if (abs(sxib-1.0)<CONTACTPROJLIM) sxib= 1.0;
+    if (abs(mxia+1.0)<CONTACTPROJLIM) mxia=-1.0;
+    if (abs(mxib-1.0)<CONTACTPROJLIM) mxib= 1.0;
+    
+    if ((sxia<-1.0) || (sxib>1.0) || (mxia<-1.0) || (mxib>1.0))
+    {
+      cout << "Slave: " << sxia << " " << sxib << endl;
+      cout << "Master: " << mxia << " " << mxib << endl;
+      dserror("ERROR: IntegrateOverlap2D: Determined infeasible limits!");
+    }
   }
 
 #ifdef DEBUG
