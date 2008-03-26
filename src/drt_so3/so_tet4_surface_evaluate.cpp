@@ -23,12 +23,6 @@ written by : Alexander Volf
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-#include "../drt_lib/dstrc.H"
-
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     vlf 08/07*
  * ---------------------------------------------------------------------*/
@@ -38,7 +32,6 @@ int DRT::ELEMENTS::Sotet4Surface::EvaluateNeumann(ParameterList&           param
                                                 vector<int>&             lm,
                                                 Epetra_SerialDenseVector& elevec1)
 {
-  DSTraceHelper dst("Sotet4Surface::EvaluateNeumann");
   // get values and switches from the condition
   static const DRT::ELEMENTS::Integrator_tri3_1point tri3_int;
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");

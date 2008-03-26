@@ -33,11 +33,6 @@ written by : Alexander Volf
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-#include "../drt_lib/dstrc.H"
 
 //#define VERBOSE_OUTPUT
 using namespace std; // cout etc.

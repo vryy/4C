@@ -21,7 +21,6 @@ Maintainer: Moritz Frenzel
 
 extern "C"
 {
-#include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
   \brief file pointers
 

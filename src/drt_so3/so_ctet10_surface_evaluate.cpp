@@ -22,11 +22,6 @@ written by : Alexander Volf
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     vlf 04/07*

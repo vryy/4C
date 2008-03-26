@@ -30,13 +30,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 
-
-extern "C"
-{
-#include "../headers/standardtypes.h"
-// see if we can avoid this #include "../shell8/shell8.h"
-}
-#include "../drt_lib/dstrc.H"
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 

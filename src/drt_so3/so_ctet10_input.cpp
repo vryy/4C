@@ -23,7 +23,6 @@ writen by : Alexander Volf
 
 extern "C"
 {
-#include "../headers/standardtypes.h"
 /*!----------------------------------------------------------------------
   \brief file pointers
 
@@ -36,7 +35,6 @@ extern "C"
 extern struct _FILES  allfiles;
 }
 #include "so_ctet10.H" //**
-#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------**########
  |  read element input (public)                                maf 04/07|

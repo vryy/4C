@@ -32,12 +32,6 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseSolver.h"
 
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-// see if we can avoid this #include "../shell8/shell8.h"
-}
-#include "../drt_lib/dstrc.H"
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
@@ -55,8 +49,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_stress(struct _MATERIAL* material,
                                          vector<double>& disp,
                                          Epetra_SerialDenseMatrix* stresses)
 {
-  DSTraceHelper dst("So_tet10::sotet10_stress");
-
 /* =============================================================================*
  * CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
  * =============================================================================*/

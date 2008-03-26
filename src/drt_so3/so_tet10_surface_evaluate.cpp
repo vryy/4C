@@ -22,11 +22,6 @@ written by : Alexander Volf
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-#include "../drt_lib/dstrc.H"
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     vlf 04/07*
@@ -127,8 +122,6 @@ void DRT::ELEMENTS::Sotet10Surface::sotet10_surface_shapefunc(
       Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
       Epetra_SerialDenseVector** weights)   // pointer to pointer of weights
 {
-  DSTraceHelper dst("Sotet10Surface::sotet10_surface_shapefunc");
-
   static Epetra_SerialDenseMatrix  f(NUMNOD_SOTET10_FACE,NUMGPT_SOTET10_FACE);  // shape functions
   static Epetra_SerialDenseVector weightfactors(NUMGPT_SOTET10_FACE);   // weights for each gp
 
