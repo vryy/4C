@@ -31,11 +31,6 @@ Maintainer: Ulrich Kuettler
 #include <mpi.h>
 #endif
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |

@@ -42,7 +42,6 @@ The new filters can be used in parallel.
 #include <Teuchos_CommandLineProcessor.hpp>
 
 extern "C" {
-#include "../headers/standardtypes.h"
 #include "../pss_full/pss_table.h"
 #include "../pss_full/pss_table_iter.h"
 }

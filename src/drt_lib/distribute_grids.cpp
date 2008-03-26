@@ -56,13 +56,6 @@ extern struct _CCA_TRACE         trace;
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | structure of flags to control output                                 |
- | defined in out_global.c                                              |
- *----------------------------------------------------------------------*/
-extern struct _IO_FLAGS     ioflags;
-
 /*!----------------------------------------------------------------------
   \brief file pointers
 

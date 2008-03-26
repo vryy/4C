@@ -25,8 +25,6 @@ Maintainer: Ulrich Kuettler
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {
-//#include "../headers/standardtypes.h"
-
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |

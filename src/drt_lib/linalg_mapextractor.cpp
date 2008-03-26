@@ -12,13 +12,6 @@
 #include <mpi.h>
 #endif
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-}
-
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 LINALG::MultiMapExtractor::MultiMapExtractor()
