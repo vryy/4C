@@ -35,7 +35,6 @@ Maintainer: Ulrich Kuettler
 #endif
 
 extern "C" {
-#include "../headers/standardtypes.h"
 #include "../pss_full/pss_table.h"
 }
 
