@@ -408,7 +408,7 @@ It uses ML instead of EpetraExt for the multiplication kernel.
          problems should work fine.
          Fourth:
          If you have a choice how to formulate your problem:
-/pre>
+</pre>
 
 \note The Mat-Mat-Mult kernel used herein
       was optimized for algebraic multigrid. This means, the method
