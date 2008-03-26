@@ -112,6 +112,8 @@ using namespace std;
 #define ParObject_DGFluid3Interface 	(int)87
 #define ParObject_DGFluid3InterfaceRegister  (int)88
 #define ParObject_Beam2Register	        (int)89
+#define ParObject_Beam3	                (int)90
+#define ParObject_Beam3Register	        (int)91
 
 
 namespace DRT

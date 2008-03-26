@@ -41,6 +41,7 @@ extern "C"
 #include "drt_dofset.H"
 #include "drt_discret.H"
 #include "../drt_beam2/beam2.H"
+#include "../drt_beam3/beam3.H"
 #include "../drt_s8/shell8.H"
 #include "../drt_f2/fluid2.H"
 #include "../drt_f2/condif2.H"
@@ -119,6 +120,23 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       DRT::ELEMENTS::Beam2Register* object =
                       new DRT::ELEMENTS::Beam2Register(DRT::Element::element_beam2);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+#endif
+#ifdef D_BEAM3
+    case ParObject_Beam3:
+    {
+      DRT::ELEMENTS::Beam3* object = new DRT::ELEMENTS::Beam3(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Beam3Register:
+    {
+      DRT::ELEMENTS::Beam3Register* object =
+                      new DRT::ELEMENTS::Beam3Register(DRT::Element::element_beam3);
       object->Unpack(data);
       return object;
     }
@@ -480,7 +498,8 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     so_weg6,
     so_shw6,
     sodisp,
-    beam2
+    beam2,
+    beam3
   };
 
   TypeofElement type = none;
@@ -502,6 +521,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="SOLIDSHW6") type = so_shw6;
   else if (eletype=="SOLID3") type = sodisp;
   else if (eletype=="BEAM2") type = beam2;
+  else if (eletype=="BEAM3") type = beam3;
   // continue to add elements here....
   else dserror("Unknown type of finite element");
 
@@ -512,6 +532,14 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case beam2:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam2(id,owner));
+      return ele;
+    }
+    break;
+#endif
+#ifdef D_BEAM3
+    case beam3:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Beam3(id,owner));
       return ele;
     }
     break;
