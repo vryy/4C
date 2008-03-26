@@ -133,14 +133,16 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       case calc_fluid_systemmat_and_residual:
       {
         // do no calculation, if not needed
-        if (lm.size() == 0)
+        if (lm.empty())
             break;
         
         // need current velocity/pressure and history vector
         RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-        if (velnp==null)  dserror("Cannot get state vector 'velnp'");
+        if (velnp==null)
+            dserror("Cannot get state vector 'velnp'");
         RCP<const Epetra_Vector> hist  = discretization.GetState("hist");
-        if (hist==null)   dserror("Cannot get state vectors 'hist'");
+        if (hist==null)
+            dserror("Cannot get state vectors 'hist'");
 
         // extract local values from the global vectors
         vector<double> myvelnp(lm.size());
@@ -158,18 +160,15 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
         const bool newton = params.get<bool>("include reactive terms for linearisation",false);
 
-        // the stabilisation scheme is hardcoded up to now --- maybe it's worth taking
-        // this into the input or to choose a standard implementation and drop all ifs
-        // on the element level -- if so, I would recommend to drop vstab...
         const bool pstab  = true;
         const bool supg   = true;
-        const bool vstab  = false;
         const bool cstab  = true;
 
         // One-step-Theta: timefac = theta*dt
         // BDF2:           timefac = 2/3 * dt
         const double timefac = params.get<double>("thsl",-1.0);
-        if (timefac < 0.0) dserror("No thsl supplied");
+        if (timefac < 0.0)
+            dserror("No thsl supplied");
 
         //--------------------------------------------------
         // wrap epetra serial dense objects in blitz objects
@@ -190,7 +189,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         //--------------------------------------------------
         XFLUID::callSysmat(assembly_type,
                 this, ih_, eleDofManager_, myvelnp, myhist, estif, eforce,
-                actmat, time, timefac, newton, pstab, supg, vstab, cstab, true);
+                actmat, time, timefac, newton, pstab, supg, cstab, true);
 
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
@@ -206,7 +205,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
           // need current velocity and history vector
           RefCountPtr<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
-          if (vel_pre_np==null) dserror("Cannot get state vectors 'velnp'");
+          if (vel_pre_np==null)
+              dserror("Cannot get state vectors 'velnp'");
 
           // extract local values from the global vectors
           vector<double> my_vel_pre_np(lm.size());
@@ -231,43 +231,16 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         }
       }
       break;
-      case calc_turbulence_statistics:
-      {
-        // do nothing if you do not own this element
-        if(this->Owner() == discretization.Comm().MyPID())
-        {
-          // --------------------------------------------------
-          // extract velocities and pressure from the global distributed vectors
-
-          // velocity and pressure values (n+1)
-          RefCountPtr<const Epetra_Vector> velnp
-            = discretization.GetState("u and p (n+1,converged)");
-
-
-          if (velnp==null)
-          {
-            dserror("Cannot get state vectors 'velnp'");
-          }
-
-          // extract local values from the global vectors
-          vector<double> mysol  (lm.size());
-          DRT::UTILS::ExtractMyValues(*velnp,mysol,lm);
-
-          // integrate mean values
-          f3_calc_means(mysol,params);
-
-        }
-      }
-      break;
       case calc_fluid_stationary_systemmat_and_residual:
       {
           // do no calculation, if not needed
-          if (lm.size() == 0)
+          if (lm.empty())
               break;
           
           // need current velocity/pressure 
           RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-          if (velnp==null)  dserror("Cannot get state vector 'velnp'");
+          if (velnp==null)
+              dserror("Cannot get state vector 'velnp'");
 
           // extract local values from the global vector
           vector<double> locval(lm.size());
@@ -287,7 +260,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           const bool newton = params.get<bool>("include reactive terms for linearisation",false);
           const bool pstab  = true;
           const bool supg   = true;
-          const bool vstab  = false;  // viscous stabilisation part switched off !!
           const bool cstab  = true;        
 
           // wrap epetra serial dense objects in blitz objects
@@ -305,7 +277,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           // calculate element coefficient matrix and rhs
           XFLUID::callSysmat(assembly_type,
                   this, ih_, eleDofManager_, locval, locval_hist, estif, eforce,
-                  actmat, pseudotime, 1.0, newton, pstab, supg, vstab, cstab, false);
+                  actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
           // This is a very poor way to transport the density to the
           // outside world. Is there a better one?
@@ -1492,7 +1464,7 @@ int DRT::ELEMENTS::XFluid3Register::Initialize(DRT::Discretization& dis)
       if (rewind) {
         if (distype==DRT::Element::tet4){
           int iel = actele->NumNode();
-          int new_nodeids[iel];
+          vector<int> new_nodeids(iel);
           const int* old_nodeids;
           old_nodeids = actele->NodeIds();
           // rewinding of nodes to arrive at mathematically positive element
@@ -1500,11 +1472,11 @@ int DRT::ELEMENTS::XFluid3Register::Initialize(DRT::Discretization& dis)
           new_nodeids[1] = old_nodeids[2];
           new_nodeids[2] = old_nodeids[1];
           new_nodeids[3] = old_nodeids[3];
-          actele->SetNodeIds(iel, new_nodeids);
+          actele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else if (distype==DRT::Element::hex8){
           int iel = actele->NumNode();
-          int new_nodeids[iel];
+          vector<int> new_nodeids(iel);
           const int* old_nodeids;
           old_nodeids = actele->NodeIds();
           // rewinding of nodes to arrive at mathematically positive element
@@ -1516,11 +1488,11 @@ int DRT::ELEMENTS::XFluid3Register::Initialize(DRT::Discretization& dis)
           new_nodeids[5] = old_nodeids[1];
           new_nodeids[6] = old_nodeids[2];
           new_nodeids[7] = old_nodeids[3];
-          actele->SetNodeIds(iel, new_nodeids);
+          actele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else if (distype==DRT::Element::wedge6){
           int iel = actele->NumNode();
-          int new_nodeids[iel];
+          vector<int> new_nodeids(iel);
           const int* old_nodeids;
           old_nodeids = actele->NodeIds();
           // rewinding of nodes to arrive at mathematically positive element
@@ -1530,11 +1502,11 @@ int DRT::ELEMENTS::XFluid3Register::Initialize(DRT::Discretization& dis)
           new_nodeids[3] = old_nodeids[0];
           new_nodeids[4] = old_nodeids[1];
           new_nodeids[5] = old_nodeids[2];
-          actele->SetNodeIds(iel, new_nodeids);
+          actele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else if (distype == DRT::Element::pyramid5){
           int iel = actele->NumNode();
-          int new_nodeids[iel];
+          vector<int> new_nodeids(iel);
           const int* old_nodeids;
           old_nodeids = actele->NodeIds();
           // rewinding of nodes to arrive at mathematically positive element
@@ -1544,7 +1516,7 @@ int DRT::ELEMENTS::XFluid3Register::Initialize(DRT::Discretization& dis)
           new_nodeids[0] = old_nodeids[0];
           new_nodeids[2] = old_nodeids[2];
           new_nodeids[4] = old_nodeids[4];
-          actele->SetNodeIds(iel, new_nodeids);
+          actele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else dserror("no rewinding scheme for this type of fluid3");
       }

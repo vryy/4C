@@ -19,20 +19,6 @@ Maintainer: Axel Gerstenberger
 #include "mpi.h"
 #endif
 
-extern "C"
-{
-#include "../headers/standardtypes.h"
-/*!----------------------------------------------------------------------
-  \brief file pointers
-
-  <pre>                                                         m.gee 8/00
-  This structure struct _FILES allfiles is defined in input_control_global.c
-  and the type is in standardtypes.h
-  It holds all file pointers and some variables needed for the FRSYSTEM
-  </pre>
- *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-}
 #include "xfluid3.H"
 #include "../drt_lib/drt_utils.H"
 

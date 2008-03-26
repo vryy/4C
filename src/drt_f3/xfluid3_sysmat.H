@@ -629,7 +629,6 @@ void Sysmat(
         const bool                        newton,        ///< full Newton or fixed-point-like
         const bool                        pstab,         ///< flag for stabilisation
         const bool                        supg,          ///< flag for stabilisation
-        const bool                        vstab,         ///< flag for stabilisation
         const bool                        cstab,         ///< flag for stabilisation
         const bool                        instationary   ///< switch between stationary and instationary formulation
         )
@@ -1043,8 +1042,8 @@ void Sysmat(
                 /* convective : viscous forces */
                 const double re2 = mk * vel_norm * strle / (2.0 * visceff);
 
-                const double xi1 = DMAX(re1,1.0);
-                const double xi2 = DMAX(re2,1.0);
+                const double xi1 = max(re1,1.0);
+                const double xi2 = max(re2,1.0);
 
                 tau_stab_M = DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
 
@@ -1057,8 +1056,8 @@ void Sysmat(
                 /* convective : viscous forces */
                 const double re_convect = mk * vel_norm * hk / (2.0 * visceff);
 
-                const double xi_viscous = DMAX(re_viscous,1.0);
-                const double xi_convect = DMAX(re_convect,1.0);
+                const double xi_viscous = max(re_viscous,1.0);
+                const double xi_convect = max(re_convect,1.0);
 
                 /*
                                 xi1,xi2 ^
@@ -1104,16 +1103,16 @@ void Sysmat(
                 
                 // compute tau_Mu
                 const double re_tau_mu = mk * vel_norm * strle / (2.0 * visc);   /* convective : viscous forces */
-                const double xi_tau_mu = DMAX(re_tau_mu, 1.0);
+                const double xi_tau_mu = max(re_tau_mu, 1.0);
                 tau_stab_M = (DSQR(strle)*mk)/(4.0*visc*xi_tau_mu);
     
                 // compute tau_Mp
                 const double re_tau_mp = mk * vel_norm * hk / (2.0 * visc);      /* convective : viscous forces */
-                const double xi_tau_mp = DMAX(re_tau_mp,1.0);
+                const double xi_tau_mp = max(re_tau_mp,1.0);
                 tau_stab_Mp = (DSQR(hk)*mk)/(4.0*visc*xi_tau_mp);
     
                 // compute tau_C
-                const double xi_tau_c = DMIN(re_tau_mp, 1.0);
+                const double xi_tau_c = min(re_tau_mp, 1.0);
                 tau_stab_C = 0.5*vel_norm*hk*xi_tau_c;
             }
             
@@ -1127,7 +1126,7 @@ void Sysmat(
 
             /*------------------------- evaluate rhs vector at integration point ---*/
             static BlitzVec rhsint(3);
-            rhsint = histvec(i) + bodyforce(i)*timefac;
+            rhsint = histvec + bodyforce*timefac;
 
             /*----------------- get numerical representation of single operators ---*/
 
@@ -1300,9 +1299,9 @@ void Sysmat(
             assembler.template Matrix<Vely,Pres>(shp_dy, -timefacfac, shp);
             assembler.template Matrix<Velz,Pres>(shp_dz, -timefacfac, shp);
             
-            assembler.template Vector<Velx>(shp_dx, press*timefacfac);
-            assembler.template Vector<Vely>(shp_dy, press*timefacfac);
-            assembler.template Vector<Velz>(shp_dz, press*timefacfac);
+            assembler.template Vector<Velx>(shp_dx, timefacfac*press);
+            assembler.template Vector<Vely>(shp_dy, timefacfac*press);
+            assembler.template Vector<Velz>(shp_dz, timefacfac*press);
             
             /* Divergenzfreiheit - continuity equation*/
             /*
@@ -1707,18 +1706,7 @@ void Sysmat(
                 assembler.template Vector<Vely>(enr_conv_c_, -timetauM*res_old(1));
                 assembler.template Vector<Velz>(enr_conv_c_, -timetauM*res_old(2));
             }
-            
-            
-            //----------------------------------------------------------------------
-            //                       STABILISATION, VISCOUS PART
-            if(vstab)
-            {
-                //
-                //  viscous part of stabilisation is switched off!
-                //  vstab is set to false within fluid3_evaluate.cpp
-                //
-                dserror("not translated to XFEM assembler!");
-            };
+
             
             //----------------------------------------------------------------------
             //                     STABILISATION, CONTINUITY PART
@@ -2099,21 +2087,18 @@ void callSysmat(
         const XFEM::ElementDofManager&    eleDofManager,
         const std::vector<double>&        locval,
         const std::vector<double>&        locval_hist,
-        blitz::Array<double,2>&           estif,
-        blitz::Array<double,1>&           eforce,
+        BlitzMat&                         estif,
+        BlitzVec&                         eforce,
         const struct _MATERIAL*           material,
         const double                      time,          ///< current time (pseudotime for stationary formulation)
         const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt
-        const bool                    newton ,
-        const bool                    pstab  ,
-        const bool                    supg   ,
-        const bool                    vstab  ,
-        const bool                    cstab  ,
-        const bool                    instationary
+        const bool                        newton ,
+        const bool                        pstab  ,
+        const bool                        supg   ,
+        const bool                        cstab  ,
+        const bool                        instationary
         )
 {
-    using DRT::Element;
-
     if (assembly_type == XFEM::standard_assembly)
     {
         switch (ele->Shape())
@@ -2121,22 +2106,22 @@ void callSysmat(
             case DRT::Element::hex8:
                 Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
+                        material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex20:
                 Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
+                        material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex27:
                 Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
+                        material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::tet4:
                 Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
+                        material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             default:
                 dserror("Sysmat not templated yet");
@@ -2149,17 +2134,17 @@ void callSysmat(
             case DRT::Element::hex8:
                 Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
+                        material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex20:
                 Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
+                        material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex27:
                 Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, vstab, cstab, instationary);
+                        material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             default:
                 dserror("Sysmat not templated yet");
