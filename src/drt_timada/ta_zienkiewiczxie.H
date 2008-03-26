@@ -2,8 +2,6 @@
 /*!
 \file ta_zienkiewiczxie.H
 
-\class ZienkiewiczXie
-
 \brief ZienkiewiczXie time step indicator for time adaptivity
 
 <pre>
@@ -51,8 +49,6 @@ using namespace Teuchos;
 
 /*======================================================================*/
 /*!
-\class ZienkiewiczXie
-
 \brief Time step size adaptivity with Zienkiewicz-Xie error indicator
 
 \author bborn

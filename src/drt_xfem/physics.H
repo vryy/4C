@@ -18,6 +18,7 @@ Maintainer: Axel Gerstenberger
 
 namespace XFEM
 {
+//! contains physical variables and related routines
 namespace PHYSICS
 {
 
@@ -69,6 +70,7 @@ enum Field
     Sigmazz             ///< stress
 };
 
+//! return a string representation for each enum value in XFEM::PHYSICS::Field
 std::string physVarToString(const Field var);
 
 }

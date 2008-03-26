@@ -16,7 +16,7 @@ Maintainer: Axel Gerstenberger
 
 #include <blitz/array.h>
 
-//! namespace for all xfem related stuff
+//! namespace for all XFEM related stuff
 namespace XFEM
 {
 
@@ -35,6 +35,7 @@ namespace XFEM
         standard_integration
     };
     
+    //! take a double C array and convert it to a BlitzArray of length 3
     inline BlitzVec toBlitzArray(const double* x)
     {
         static BlitzVec blitz_x(3);

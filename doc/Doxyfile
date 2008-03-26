@@ -482,7 +482,8 @@ INPUT                  = index.doc \
                          ../src/post_gid \
                          ../src/drt_structure \
                          ../src/drt_contact \
-                         ../src/drt_elch
+                         ../src/drt_elch \
+                         ../src/drt_surfstress
 
 # If the value of the INPUT tag contains directories, you can use the 
 # FILE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp 

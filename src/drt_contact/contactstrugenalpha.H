@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file contactstrugenalpha.H
 
-\class ContactStruGenAlpha
-
-\brief Generalized Alpha time integration for structural problems with contact
-
 <pre>
 Maintainer: Alexander Popp
             popp@lnm.mw.tum.de
@@ -20,8 +16,6 @@ Maintainer: Alexander Popp
 #include "../drt_structure/strugenalpha.H"
 
 /*!
-\class ContactStruGenAlpha
-
 \brief Generalized Alpha time integration for structural problems with contact
 
 \author popp (popp@lnm.mw.tum.de)

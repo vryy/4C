@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file microstatic.H
 
-\class MicroStatic
-
-\brief Static control for microstructural problems
-
 <pre>
 Maintainer: Lena Wiechert
             wiechert@lnm.mw.tum.de
@@ -45,8 +41,6 @@ using namespace std;
 using namespace IO;
 
 /*!
-\class MicroStatic
-
 \brief Static control for microstructural problems
 in case of microscale analyses
 

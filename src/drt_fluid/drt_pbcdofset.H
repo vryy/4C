@@ -43,8 +43,6 @@ using namespace std;
 #include "../headers/define_sizes.h"
 
 /*!
-\class PBCDofSet
-
 \brief A set of degrees of freedom
 
 \author gammi

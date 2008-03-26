@@ -25,7 +25,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 
 
-// namespace for all xfem related stuff
 namespace XFEM
 {
 

@@ -28,37 +28,42 @@ namespace XFEM
 {
 
 /*!
- \class InterfaceHandle
-
- \brief He knows everything about the XFEM enrichments for one particular interface setup
+ \brief It knows everything about the XFEM enrichments for one particular interface setup
 
  */
 class InterfaceHandle
 {
 public:
 
+    //! constructor
     explicit InterfaceHandle(
             const RCP<DRT::Discretization>        xfemdis, 
             const RCP<DRT::Discretization>        cutterdis);
+    //! destructor
     ~InterfaceHandle();
 
+    //! return string representation of the interface handle
     string toString() const;
     
+    //! return pointer to the intersected discretization
     RCP<DRT::Discretization> xfemdis() const {return xfemdis_;};
+    //! return pointer to the intersecting discretization
     RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
     
-    // ok, we copy the whole thing, this can be more elegant later on or not used at all
+    //! get copy of map with all domain integration cells on this proc
     std::map<int,DomainIntCells> elementalDomainIntCells() const {return elementalDomainIntCells_;};
+    //! get copy if map with all boundary integration cells on this proc
     std::map<int,BoundaryIntCells> elementalBoundaryIntCells() const {return elementalBoundaryIntCells_;};
 
-    // return list of integrationcells, however the list can be empty -> always terminates
+    //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
     DomainIntCells GetDomainIntCells(
-            const int gid,
-            const DRT::Element::DiscretizationType distype
+            const int                              gid,     ///< unique global element id
+            const DRT::Element::DiscretizationType distype  ///< shape of thefinite element
             ) const;
     
+    //! return list of boundary integrationcells for a given global element id, returned list can be empty -> always terminates
     BoundaryIntCells GetBoundaryIntCells(
-            const int gid
+            const int                              gid      ///< unique global element id
             ) const;
     
 //    set<int> getSetOfIntersectedElementIds() const
@@ -77,12 +82,19 @@ public:
             const int xfemcondition_label
             ) const;
     
+    /*! return
+     * \return true, if element is intersected
+     */
     bool ElementIntersected(
-            const int element_gid
+            const int element_gid   ///< unique global element id
             ) const;
     
+    /*!
+     * get pointer to boundary element
+     * \return pointer to boundary element
+     */
     DRT::Element* GetBoundaryEle(
-            const int element_gid
+            const int element_gid   ///< unique global element id of a boundary element
             ) const
     {
         map<int, DRT::Element* >::const_iterator tmp = boundaryElements_.find(element_gid);

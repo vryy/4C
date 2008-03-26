@@ -64,7 +64,7 @@ static BlitzMat ComputePhysicalCoordinates(
 
 
 
-/*
+/*!
  * \brief An integration cell is used for specialized element integration routines 
  */
 class IntCell
@@ -215,13 +215,18 @@ private:
     //! coordinates of the nodes in the parent domain element coordinates xi_domain
     const BlitzMat nodalpos_xi_domain_blitz_;
     
+    //! hide default constructor
     explicit DomainIntCell();
     
+    //! this function returns the coordinate array for all nodes of an element in parameter coordinates \f$ \xi \f$
     std::vector<std::vector<double> > GetDefaultCoordinates(
-            const DRT::Element::DiscretizationType distype) const;
+            const DRT::Element::DiscretizationType distype  ///< shape of element
+            ) const;
 };
 
+//! shortcut for a vector of DomainIntCells
 typedef std::vector<XFEM::DomainIntCell > DomainIntCells;
+//! shortcut for a set of DomainIntCells
 typedef std::set<XFEM::DomainIntCell > DomainIntCellSet;
 
 
@@ -313,12 +318,14 @@ public:
      */
     inline BlitzMat NodalPosXiBoundaryBlitz() const {return nodalpos_xi_boundary_blitz_;};
     
+    //! return "parent" cutter element id (global id)
     inline int GetSurfaceEleGid() const {return surface_ele_gid_;}
     
     std::string toString() const;
 
 private:
     
+    //! hide default constructor
     explicit BoundaryIntCell();
     
     //! the boundaryIntCell should know, to which cutterElement it belongs!?
@@ -332,7 +339,9 @@ private:
     
 };
 
+//! shortcut for a vector of BoundaryIntCells
 typedef std::vector<XFEM::BoundaryIntCell > BoundaryIntCells;
+//! shortcut for a set of BoundaryIntCells
 typedef std::set<XFEM::BoundaryIntCell > BoundaryIntCellSet;
 
 }

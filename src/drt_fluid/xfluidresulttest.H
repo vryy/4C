@@ -22,8 +22,6 @@ Maintainer: Axel Gerstenberger
 #include "xfluidimplicitintegration.H"
 
 /*!
-  \class XFluidResultTest
-
   \brief XFluid specific result test class
 
   \author u.kue

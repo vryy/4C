@@ -76,6 +76,13 @@ void ComputeEnrichedShapefunction(
         BlitzMat& enr_derxy2
         );
 
+/*!
+ * \brief For a given situation compute the enriched shape functions
+ * 
+ * simplest case: jump or void enrichment
+ * -> no chain rule, since enrichment function derivative is zero
+ * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
+ */
 void ComputeEnrichedStressShapefunction(
         const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,

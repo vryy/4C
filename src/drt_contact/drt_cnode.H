@@ -1,12 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_cnode.H
 
-\class CONTACT::CNode
-
-\brief A class for a contact node
-
-This class represents a finite element node capable of contact.
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -35,9 +29,9 @@ namespace CONTACT
 {
 
 /*!
-\class CNode
-
 \brief A class for a contact node derived from DRT::Node
+
+This class represents a finite element node capable of contact.
 
 \author gee (gee@lnm.mw.tum.de), popp (popp@lnm.mw.tum.de)
 */

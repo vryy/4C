@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_periodicbc.cpp
+\file drt_periodicbc.H
 
 \brief Methods to apply periodic boundary conditions
 
@@ -26,8 +26,6 @@ Maintainer: Peter Gamnitzer
 using namespace Teuchos;
 
 /*!
-\class PeriodicBoundaryConditions
-
 \brief  update dofrowmap and dofsets for periodic boundary conditions
 
         o effects distribution of master and slave nodes. Master and

@@ -1,11 +1,6 @@
 /*!----------------------------------------------------------------------
 \file avms_solver.H
 
-\class AVMS_Solver
-
-\brief An algebraic variational multiscale solver and method
-       with extended matrix system
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -54,8 +49,6 @@ using namespace MLAPI;
 
 
 /*!
-\class AVMS_Solver
-
 \brief An algebraic variational multiscale solver and method
        with extended matrix system
 
@@ -93,7 +86,6 @@ The solution is returned as
 \author vg/gee
 
 */
-
 class  AVMS_Solver
 {
 public:

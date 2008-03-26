@@ -1,24 +1,6 @@
 /*!----------------------------------------------------------------------
 \file vm3_solver.H
 
-\class VM3_Solver
-
-\brief A direct algebraic VM3 approach
-
-Scales are separated via plain aggregation. A fine-scale
-subgrid-viscosity matrix in the form
-                 M_fssv = S^T * M_sv * S
-is created, using an all-scale subgrid-viscosity matrix M_sv and a
-scale-separation matrix S.
-
-To (substantially) reduce computational cost, the matrix M_fssv is
-initially (i.e., in the first timestep) generated in a normalized form
-(i.e., based on a virtual subgrid-viscosity "1"). In each further
-timestep, a subgrid-viscosity-scaling vector is generated containing
-the "real" subgrid viscosity for each (velocity) degree of freedom, and
-the normalized matrix M_fssv is left- and right-scaled by the square-root
-values of that vector.
-
 <pre>
 Maintainer: Volker Gravemeier
             vgravem@lnm.mw.tum.de
@@ -67,15 +49,25 @@ using namespace MLAPI;
 
 
 /*!
-\class VM3_Solver
+\brief A direct algebraic VM3 approach
 
-\brief
+Scales are separated via plain aggregation. A fine-scale
+subgrid-viscosity matrix in the form
+                 M_fssv = S^T * M_sv * S
+is created, using an all-scale subgrid-viscosity matrix M_sv and a
+scale-separation matrix S.
 
+To (substantially) reduce computational cost, the matrix M_fssv is
+initially (i.e., in the first timestep) generated in a normalized form
+(i.e., based on a virtual subgrid-viscosity "1"). In each further
+timestep, a subgrid-viscosity-scaling vector is generated containing
+the "real" subgrid viscosity for each (velocity) degree of freedom, and
+the normalized matrix M_fssv is left- and right-scaled by the square-root
+values of that vector.
 
 \author vg
 
 */
-
 class  VM3_Solver
 {
 public:

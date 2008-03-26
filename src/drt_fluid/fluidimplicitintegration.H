@@ -60,8 +60,6 @@ using namespace std;
 using namespace Teuchos;
 
 /*!
-\class FluidImplicitTimeInt
-
 \brief time integration for fluid problems
 
 \author gammi (gamnitzer@lnm.mw.tum.de)

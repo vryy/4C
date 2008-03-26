@@ -27,8 +27,6 @@ using namespace std;
 namespace CONTACT
 {
 /*!
-\class CONTACT::CDofSet
-
 \brief A set of degrees of freedom special for contact
 
 */

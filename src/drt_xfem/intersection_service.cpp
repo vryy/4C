@@ -278,7 +278,7 @@ static inline void updateRHSForNWE(
        Fast templated version
 
 \param element              (in)        : element 
-\param x                    (in)        : node in current coordinates (x, y, z)
+\param x                    (in)        : node in current coordinates \f$(x, y, z)\f$
 \param xsi                  (inout)     : node in element coordinates
 */  
 template <DRT::Element::DiscretizationType DISTYPE, int dim>

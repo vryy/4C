@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file wall1.H
 
-\class DRT::ELEMENTS::Wall1
-
-\brief A C++ wrapper for the wall1 element
-
 <pre>
 Maintainer: Markus Gitterle
             gitterle@lnm.mw.tum.de
@@ -44,10 +40,7 @@ const int neas = 4;      // number of eas parameters
 struct _MATERIAL;
 struct _W1_DATA;
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
 
-*/
 namespace DRT
 {
 // forward declarations
@@ -60,8 +53,6 @@ namespace ELEMENTS
 class Wall1Line;
 
 /*!
-\class wall1
-
 \brief A C++ wrapper for the wall1 element
 
 \author gitterle (gitterle@lnm.mw.tum.de)
@@ -505,8 +496,6 @@ private:
 
 
 /*!
-\class Wall1Register
-
 \brief A register for Wall1 element
 
 \author gitterle (gitterle@lnm.mw.tum.de)
@@ -606,8 +595,6 @@ private:
 
 
 /*!
-\class Wall1Line
-
 \brief An element representing a line edge of a Wall1 element
 
 \note This is a pure Neumann boundary condition element. It's only

@@ -1,7 +1,7 @@
 #ifdef CCADISCRET
 
-#ifndef ADAPTER_FLUID_ALE_H
-#define ADAPTER_FLUID_ALE_H
+#ifndef ADAPTER_FLUID_XFEM_H
+#define ADAPTER_FLUID_XFEM_H
 
 #include <Epetra_Comm.h>
 
@@ -10,7 +10,6 @@
 
 #include "adapter_general_fluid.H"
 #include "adapter_fluid.H"
-#include "adapter_ale.H"
 #include "../drt_fsi/fsi_coupling.H"
 
 namespace ADAPTER
@@ -49,37 +48,9 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
-  protected:
-
-    //! @name Transfer helpers
-
-//    /// field transform
-//    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const;
-//
-//    /// field transform
-//    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<const Epetra_Vector> iv) const;
-//
-//    /// interface transform
-//    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const;
-//
-//    /// interface transform
-//    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
-
-    //@}
-
-    //Coupling& FluidAleFieldCoupling()             { return coupfa_; }
-    //const Coupling& FluidAleFieldCoupling() const { return coupfa_; }
-
   private:
 
     FluidBaseAlgorithm fluid_;
-    //AleBaseAlgorithm ale_;
-
-//    /// coupling of fluid and ale (whole field)
-//    FSI::Coupling               coupfa_;
-//
-//    /// coupling of fluid and ale (interface only)
-//    FSI::Coupling               icoupfa_;
 
   };
 

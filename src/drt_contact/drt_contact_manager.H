@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_contact_manager.H
 
-\class CONTACT::Manager
-
-\brief Main class to control all contact
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -26,18 +22,12 @@ Maintainer: Michael Gee
 using namespace std;
 using namespace Teuchos;
 
-/*!
-\brief DRT: namespace of the ccarat discretization module
-
-*/
 namespace CONTACT
 {
 
 // forward declarations
 
 /*!
-\class Manager
-
 \brief Main class to control all contact
 
 

@@ -2,10 +2,6 @@
 /*!
 \file timeadaptivity.H
 
-\class TimeAdaptivity
-
-\brief Time step size adaptivity
-
 <pre>
 Maintainer: Burkhard Bornemann
             bornemann@lnm.mw.tum.de
@@ -47,8 +43,6 @@ using namespace Teuchos;
 
 /*======================================================================*/
 /*!
-\class TimeAdaptivity
-
 \brief Time step size adaptivity
 
 \author bborn

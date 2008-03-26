@@ -25,8 +25,6 @@ Maintainer: Moritz Frenzel
 
 
 /*!
-  \class StruResultTest
-
   \brief Structure specific result test class
 
   \author a.vlf

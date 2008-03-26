@@ -1,7 +1,7 @@
 /*!
 \file dof_management.H
 
-\brief provides a class that represents an enriched physical scalar field
+\brief provides a class that represents an enriched physical scalar field and the dofmanagers
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -22,7 +22,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 
 
-// namespace for all xfem related stuff
 namespace XFEM
 {
 
@@ -36,10 +35,9 @@ enum AssemblyType
 };
 
 /*!
- \class FieldEnr
-
  \brief Corresponds to a specific enriched physical field variable
 
+ Haskell-esque:
  type FieldEnr = (Field, Enrichment)
 
  */
@@ -47,13 +45,18 @@ class FieldEnr
 {
 public:
 
+    //! default constructor
     explicit FieldEnr();
-    
+    //! constructor
     explicit FieldEnr(
-            const PHYSICS::Field physvar,
-            const Enrichment enr);
+            const PHYSICS::Field  physvar,  ///< physical variable
+            const Enrichment      enr       ///< enrichment
+            );
+    //! copy constructor
     FieldEnr(
-            const FieldEnr& other);
+            const FieldEnr& other           ///< source
+            );
+    //! destructor
     ~FieldEnr();
 
     string toString() const;
@@ -82,7 +85,7 @@ public:
                 return false;
         }
     }
-    
+    //!
     bool operator ==(const FieldEnr& rhs) const
     {
         if (field_ == rhs.field_ and getEnrichment() == rhs.getEnrichment())
@@ -102,36 +105,36 @@ public:
     
 
 private:
-    // physical field variable to be enriched
+    //! physical field variable to be enriched
     const PHYSICS::Field field_;
-    // specific enrichment for this physical field
+    //! specific enrichment for this physical field
     const Enrichment enr_;
 
 }; // class FieldEnr
 
 
 /*!
- \class ElementDofManager
-
  \brief He knows everything about the XFEM enrichments for a particular interface setup for one given element
 
  */
 class ElementDofManager
 {
 public:
-
+    //! default constructor
     explicit ElementDofManager();
     
+    //! standard constructor
     explicit ElementDofManager(
             const DRT::Element& ele,
             const map<int, const set<XFEM::FieldEnr> >&  nodalDofSet,
             const set<XFEM::FieldEnr>& elementDofs,
             const int numeleparam
             );
+    //! copy constructor
     ElementDofManager(const ElementDofManager& old);
-    
+    //! destructor
     ~ElementDofManager();
-    
+    //! return a string representation of this class
     std::string toString() const;
     
     /*!
@@ -143,7 +146,9 @@ public:
      * \return set with enriched fields
      * 
      */
-    const std::set<FieldEnr>& FieldEnrSetPerNode(const int gid) const
+    const std::set<FieldEnr>& FieldEnrSetPerNode(
+            const int  gid    ///< unique global node id
+            ) const
     {
         map<int, const set<FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
         if (tmp == nodalDofSet_.end()){
@@ -155,6 +160,12 @@ public:
         return tmp->second;
     };
     
+    /*!
+     * \brief get a set with the enriched fields on this element
+     * 
+     * \return set with enriched fields
+     * 
+     */
     inline const std::set<FieldEnr>& FieldEnrSetPerElement() const
     {
         return elementDofs_;
@@ -162,8 +173,8 @@ public:
     
     //! function that returns node specific number of dofs or the given default number
     inline int NumDofPerNode(
-            const int gid,            /// global node id
-            const int defaultnumdof   /// default number of degrees of freedom to be returned
+            const int gid,            ///< unique global node id
+            const int defaultnumdof   ///< default number of degrees of freedom to be returned
             ) const
     {
         map<int,int>::const_iterator tmp = nodalNumDof_.find(gid);
@@ -186,10 +197,13 @@ public:
         return numVirtualNodes_;
     };
     
-    /// return number of dofs on this element for a given field. E.g., if we have 4 nodes with 
-    /// standard x displacements at each node and 2 enriched x displacements, this function will return 6
-    /// we do not distuingish between nodal and element dofs
-    inline int NumDofPerField(const XFEM::PHYSICS::Field field) const
+    /*! return number of dofs on this element for a given field. E.g., if we have 4 nodes with
+     *  standard x displacements at each node and 2 enriched x displacements, this function will return 6
+     *  we do not distuingish between nodal and element dofs
+     */
+    inline int NumDofPerField(
+            const XFEM::PHYSICS::Field  field  ///< field for which we seek the number of DOFs
+            ) const
     {
         map<XFEM::PHYSICS::Field, int>::const_iterator tmp = numParamsPerField_.find(field);
         if (tmp == numParamsPerField_.end()){
@@ -211,6 +225,7 @@ public:
         return unique_enrichments_;
     }
     
+    //! not equal operator (for use in STL iterators)
     bool operator !=(const ElementDofManager& rhs) const
     {
         // in principle, they can be only not equal, if the nodalDofSet is not equal
@@ -255,19 +270,21 @@ private:
 
 
 /*!
- \class DofManager
-
  \brief He knows everything about the XFEM enrichments for one particular interface setup
 
  */
 class DofManager
 {
 public:
+    //! default constructor
     explicit DofManager();
+    //! constructor
     explicit DofManager(const RCP<XFEM::InterfaceHandle> ih);
+    //! copy constructor
     explicit DofManager(const XFEM::DofManager& dofman);
+    //! destructor
     ~DofManager();
-
+    //! return string representation of the dofmanager
     string toString() const;
 
     const std::set<FieldEnr> getNodeDofSet(const int gid) const
@@ -306,17 +323,19 @@ public:
     }
     
 private:
-    // pointer to the xfem discretization of which we hold the unknowns
+    //! pointer to the xfem discretization of which we hold the unknowns
     RCP<DRT::Discretization> xfemdis_;
     
-    // unknowns for each global node id (gid) on this processor
-    // if it does not contain the key, the number of unknowns is supposed to be zero
-    // meaning, the the dofmanager will not crash but give back an empty set of unknowns
-    // see also getNodeDofSet()
+    /*! unknowns for each global node id (gid) on this processor
+     * if it does not contain the key, the number of unknowns is supposed to be zero
+     * meaning, the the dofmanager will not crash but give back an empty set of unknowns
+     * see also getNodeDofSet()
+     */
     map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
     
-    // unknowns for each global element id (gid) on this processor
-    // same as above, see getElementDofs()
+    /*! unknowns for each global element id (gid) on this processor
+     * same as above, see getElementDofs()
+     */
     map<int, const set<XFEM::FieldEnr> > elementalDofs_;
     
     //! set of all enrichments that are available on this proc.
@@ -324,7 +343,7 @@ private:
     
 };
 
-
+//! return assembly type depending on the DOF distribution
 XFEM::AssemblyType CheckForStandardEnrichmentsOnly(
         const ElementDofManager&   eleDofManager_,
         const int                  numnode,

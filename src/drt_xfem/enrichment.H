@@ -25,10 +25,7 @@ namespace XFEM
 {
 
 /*!
- \class Enrichment
-
  \brief Corresponds to a specific enrichment with unique id and type
-
  */
 class Enrichment
 {
@@ -39,10 +36,10 @@ public:
      */
     enum EnrType
     {
-        typeUndefined,
-        typeStandard,
-        typeJump,
-        typeVoid
+        typeUndefined,   ///< default value, for which all functions should fail/crash
+        typeStandard,    ///< standard enrichment  - corresponds to the standard finite element method
+        typeJump,        ///< jump enrichment - Heaviside function from +1 (in Omega+) to -1 (in Omega-)
+        typeVoid         ///< void enrichment - Heaviside function from +1 (in Omega+) to  0 (in Omega-)
     };
     
     /*!
@@ -52,34 +49,43 @@ public:
      */
     enum ApproachFrom
     {
-        approachUnknown,
-        approachFromPlus,
-        approachFromMinus
+        approachUnknown,   ///<  approaching direction is unknown
+        approachFromPlus,  ///<  we are coming from Omega+
+        approachFromMinus  ///<  we are coming from Omega-
     };
     
+    //! default constructor
     explicit Enrichment();
-    
+    //! constructor
     explicit Enrichment(
-            const int xfemconditionlabel,
-            const EnrType type);
+            const int      xfemconditionlabel,   ///< unique label identifying the xfem interface
+            const EnrType  type                  ///< enrichment type
+            );
+    //! copy constructor
     Enrichment(
             const Enrichment& other);
+    //! destructor
     ~Enrichment();
     
+    //! return string representation of the Enrichment
     std::string toString() const;
 
+    //! return string representation of an EnrType
     std::string enrTypeToString(const EnrType type) const;
     
+    //! return label of the condition that this enrichment belongs to
     inline int XFEMConditionLabel() const
     {
         return xfemconditionlabel_;
     };
     
+    //! return type of enrichment
     inline EnrType Type() const
     {
         return type_;
     };
 
+    //! comparison operator
     bool operator ==(const Enrichment& rhs) const
     {
         if ((xfemconditionlabel_ == rhs.xfemconditionlabel_) and (type_ == rhs.type_))
@@ -88,6 +94,7 @@ public:
             return false;
     };
     
+    //! (redundant?) not equal operator
     bool operator !=(const Enrichment& rhs) const
     {
         //return (!(*this == rhs));
@@ -97,6 +104,9 @@ public:
             return false;
     }
     
+    /*! less than operator
+     *  Enrichments are ordered first by their condition label, then by type
+     */
     bool operator <(const Enrichment& rhs) const
     {
         if (xfemconditionlabel_ < rhs.xfemconditionlabel_)
@@ -112,26 +122,29 @@ public:
         }
     }
 
+    //! calculate modified enrichment value based on input \f$\psi(x) - \psi(x_{\mathrm{n}})\f$
     double ModifiedEnrValue(
-            const blitz::Array<double,1>& actpos,
-            const blitz::Array<double,1>& nodalpos,
-            const RCP<DRT::Discretization>& cutterdis,
-            const XFEM::Enrichment::ApproachFrom approachdirection
+            const blitz::Array<double,1>&         actpos,            ///< \f$x\f$
+            const blitz::Array<double,1>&         nodalpos,          ///< \f$x_{\mathrm{Node}\f$
+            const RCP<DRT::Discretization>&       cutterdis,         ///< intersecting discretization
+            const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
             ) const;
 
+    //! calculate enrichment value based on input \f$\psi(x)\f$
     double EnrValue(
-            const blitz::Array<double,1>& actpos,
-            const RCP<DRT::Discretization>& cutterdis,
-            const XFEM::Enrichment::ApproachFrom approachdirection
+            const blitz::Array<double,1>&         actpos,            ///< \f$x\f$
+            const RCP<DRT::Discretization>&       cutterdis,         ///< intersecting discretization
+            const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
             ) const;
     
 private:
-    // a global id used to distuinguish several surfaces within one element
-    // might become or contain reference to a certain condition
+    /*! a global id used to distuinguish several surfaces within one element
+     *  might become or contain reference to a certain condition
+     */
     const int xfemconditionlabel_;
-    // the specific type of enrichment
+    //! the specific type of enrichment
     const EnrType type_;
-}; // class Enrichment
+};
 
 }
 

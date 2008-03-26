@@ -1,5 +1,5 @@
-/*!----------------------------------------------------------------------
-\file fluidimplicitintegration.H
+/*!
+\file xfluidimplicitintegration.H
 \brief Associated with control routine for fluid (in)stationary solvers,
 
      including instationary solvers based on
@@ -17,8 +17,7 @@ Maintainer: Axel Gerstenberger
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
-
-*----------------------------------------------------------------------*/
+*/
 
 #ifdef CCADISCRET
 #ifndef XFLUIDIMPLICITINTEGRATION_H
@@ -61,8 +60,6 @@ using namespace std;
 using namespace Teuchos;
 
 /*!
-\class XFluidImplicitTimeInt
-
 \brief time integration for fluid problems
 
 \author gammi (gamnitzer@lnm.mw.tum.de)

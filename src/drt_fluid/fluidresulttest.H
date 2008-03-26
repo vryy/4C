@@ -23,8 +23,6 @@ Maintainer: Ulrich Kuettler
 #include "fluid_genalpha_integration.H"
 
 /*!
-  \class FluidResultTest
-
   \brief Fluid specific result test class
 
   \author u.kue

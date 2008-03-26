@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file strugenalpha.H
 
-\class StruGenAlpha
-
-\brief Generalized Alpha time integration for structural problems
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -63,8 +59,6 @@ using namespace Teuchos;
 class NoxInterface;
 
 /*!
-\class StruGenAlpha
-
 \brief Generalized Alpha time integration for structural problems
 
 \author gee (gee@lnm.mw.tum.de)
@@ -441,9 +435,6 @@ protected:
 
 
 /*!
-\class NoxInterface
-
-
 \brief An interface to Nox/ML for structural gen alpha
 
 \author gee (gee@lnm.mw.tum.de)

@@ -1,3 +1,12 @@
+/*!
+\file predicates.cpp
+
+\brief external library for constrained delaulay operations
+
+<pre>
+Maintainer: Ursula Mayer
+</pre>
+*/
 #ifdef CCADISCRET
 /*****************************************************************************/
 /*                                                                           */

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_pbcdofset.H
+\file drt_pbcdofset.cpp
 
 \brief A modified set of degrees of freedom for periodic boundary
        conditions

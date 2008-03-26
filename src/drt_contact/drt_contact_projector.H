@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_contact_projector.H
 
-\class CONTACT::Projector
-
-\brief A class to perform projections of nodes onto opposing CElements
-
 <pre>
 Maintainer: Alexander Popp
             popp@lnm.mw.tum.de
@@ -33,8 +29,6 @@ namespace CONTACT
 // forward declarations
 
 /*!
-\class Projector
-
 \brief A class to perform projections of nodes onto opposing CElements
 
 

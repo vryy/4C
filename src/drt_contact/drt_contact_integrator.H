@@ -1,11 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_contact_integrator.H
 
-\class CONTACT::Integrator
-
-\brief A class to perform intgerations of Mortar matrices on the overlap
-        of two CElements in 1D and 2D
-
 <pre>
 Maintainer: Alexander Popp
             popp@lnm.mw.tum.de
@@ -33,8 +28,6 @@ namespace CONTACT
 // forward declarations
 
 /*!
-\class Integrator
-
 \brief A class to perform Gaussian integration and assembly of Mortar
        matrices on the overlap of two CElements (1 Slave, 1 Master)
        in 1D (which is equivalent to a 2D contact problem) and in 2D

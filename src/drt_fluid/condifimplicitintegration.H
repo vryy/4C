@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file
+\file condifimplicitintegration.H
 \brief Associated with control routine for con.-diff.(in)stat. solvers,
 
      including instationary solvers based on
@@ -59,8 +59,6 @@ using namespace std;
 using namespace Teuchos;
 
 /*!
-\class CondifImplicitTimeInt
-
 \brief time integration for convection-diffusion problems
 
 \author vg (vgravem@lnm.mw.tum.de)
@@ -141,6 +139,7 @@ protected:
 
   // don't want = operator and cctor
   CondifImplicitTimeInt operator = (const CondifImplicitTimeInt& old);
+  //! copy constructor
   CondifImplicitTimeInt (const CondifImplicitTimeInt& old);
 
   RCP<DRT::Discretization>   discret_;

@@ -1,8 +1,6 @@
 /*!----------------------------------------------------------------------
 \file fluid_genalpha_integration.H
 
-\class FluidGenAlphaIntegration
-
 \brief Generalised alpha time integration scheme for incompressible flow
 problems.
 

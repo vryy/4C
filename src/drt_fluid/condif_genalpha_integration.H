@@ -1,8 +1,6 @@
 /*!----------------------------------------------------------------------
 \file condif_genalpha_integration.H
 
-\class CondifGenAlphaIntegration
-
 \brief Associated with control routine for con.-diff. instationary solver
        based on generalized-alpha time-integration scheme
 
@@ -48,7 +46,10 @@ Maintainer: Volker Gravemeier
 using namespace std;
 using namespace Teuchos;
 
-
+/*!
+ * \brief Associated with control routine for con.-diff. instationary solver
+ *        based on generalized-alpha time-integration scheme
+ */
 class CondifGenAlphaIntegration
 {
 

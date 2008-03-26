@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_contact_interface.H
 
-\class CONTACT::Interface
-
-\brief One contact interface
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -36,8 +32,6 @@ namespace CONTACT
 // forward declarations
 
 /*!
-\class Interface
-
 \brief One contact interface
 
 

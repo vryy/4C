@@ -1,10 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_celement.H
 
-\class CONTACT::CElement
-
-\brief A contact element
-
 <pre>
 Maintainer: Michael Gee
             gee@lnm.mw.tum.de
@@ -38,8 +34,6 @@ namespace CONTACT
 // forward declarations
 
 /*!
-\class CElement
-
 \brief A contact element
 
 

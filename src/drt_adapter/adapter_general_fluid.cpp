@@ -3,9 +3,11 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "adapter_general_fluid.H"
 #include "adapter_fluid_ale.H"
+#include "adapter_fluid_xfem.H"
 
 
 
@@ -15,8 +17,21 @@
 ADAPTER::GeneralFluidBaseAlgorithm::GeneralFluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
                                                               std::string condname)
 {
-  // here we could do some decision what kind of generalized fluid to build
-  fluid_ = Teuchos::rcp(new FluidAleAdapter(prbdyn,condname));
+    const Teuchos::ParameterList& list = DRT::Problem::Instance()->ProblemTypeParams();
+    const PROBLEM_TYP probtyp = Teuchos::getIntegralValue<PROBLEM_TYP>(list,"PROBLEMTYP");
+    
+    // switch between moving domain fluid implementations
+    switch (probtyp)
+    {
+        case prb_fsi:
+            fluid_ = Teuchos::rcp(new FluidAleAdapter(prbdyn,condname));
+            break;
+        case prb_fsi_xfem:
+            fluid_ = Teuchos::rcp(new FluidXFEMAdapter(prbdyn,condname));
+            break;
+        default:
+            dserror("fsi type not supported");
+    }
 }
 
 

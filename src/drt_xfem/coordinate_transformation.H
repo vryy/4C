@@ -144,7 +144,7 @@ namespace XFEM
 
   
   
-//! get determinante between eta^\boundary and xi^\boundary space
+//! get determinante between \f$\eta^{\Gamma (e)}\f$ and \f$\xi^{\Gamma (e)}\f$ space
 double detEtaBToXiB(
         const XFEM::BoundaryIntCell& cell,
         const XFEM::PosEtaDomain&  pos_eta)

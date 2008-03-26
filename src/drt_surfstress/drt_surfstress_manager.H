@@ -1,11 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_surfstress_manager.H
 
-\class DRT::SurfStressManager
-
-\brief Class controlling surface stresses due to interfacial phenomena
-and containing all necessary history data
-
 <pre>
 Maintainer: Lena Wiechert
             wiechert@lnm.mw.tum.de
@@ -34,6 +29,10 @@ using namespace Teuchos;
 
 namespace DRT
 {
+/*!
+\brief Class controlling surface stresses due to interfacial phenomena
+and containing all necessary history data
+*/
 class SurfStressManager
 {
 public:
