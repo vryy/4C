@@ -200,14 +200,4 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::FluidToAle(Teuchos::RCP<co
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-ADAPTER::GeneralFluidBaseAlgorithm::GeneralFluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
-                                                              std::string condname)
-{
-  // here we could do some decision what kind of generalized fluid to build
-  fluid_ = Teuchos::rcp(new FluidAleAdapter(prbdyn,condname));
-}
-
-
 #endif
