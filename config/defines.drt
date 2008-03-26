@@ -23,7 +23,8 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # D_THERM2           # planar thermal elment
 # D_THERM3           # spatial thermal element
 # D_SOLID3           # spatial solid elements
-# D_BEAM2            # two dimensional beam element (Timoshenko)
+# D_BEAM2            # two dimensional Timoshenko beam element
+# D_BEAM3            # two dimensional Reissner beam element
 
 
 #   problem types

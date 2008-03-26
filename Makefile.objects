@@ -319,6 +319,11 @@ OBJS_DRT_B2_LIB   = src/drt_beam2/beam2.o \
                 src/drt_beam2/beam2_input.o \
                 src/drt_beam2/beam2_evaluate.o
 OBJS_DRT_B2   = 
+# -------------------------------------------------- drt version of beam2
+OBJS_DRT_B3_LIB   = src/drt_beam3/beam3.o \
+                src/drt_beam3/beam3_input.o \
+                src/drt_beam3/beam3_evaluate.o
+OBJS_DRT_B3   = 
 #-------------------------------------------------- old version of shell8
 OBJS_SHELL8   = src/shell8/s8_main.o \
                 src/shell8/s8_restart.o \
