@@ -23,7 +23,7 @@ ADAPTER::GeneralFluidBaseAlgorithm::GeneralFluidBaseAlgorithm(const Teuchos::Par
     // switch between moving domain fluid implementations
     switch (probtyp)
     {
-        case prb_fsi:
+        case prb_fsi: case prb_fluid_ale:
             fluid_ = Teuchos::rcp(new FluidAleAdapter(prbdyn,condname));
             break;
         case prb_fsi_xfem:
