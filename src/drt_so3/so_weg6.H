@@ -261,6 +261,10 @@ public:
 
 
   //@}
+  
+  //! some distypes need rewinding of NodeIds due to bad input from mesher
+  //! flag whether process of rewinding is done
+  bool                                            donerewinding_;
 
 protected:
 
@@ -303,9 +307,7 @@ protected:
   //! vector of lines adjacent to this element
   vector<DRT::ELEMENTS::Sow6Line*>              lineptrs_;
 
-  //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag whether process of rewinding is done
-  bool                                            donerewinding_;
+
 
 
   // internal calculation methods

@@ -21,8 +21,11 @@ written by: Alexander Volf
 #include "mpi.h"
 #endif
 #include "so_integrator.H"
-#include "so_tet10.H"
+#include "so_weg6.H"
 #include "so_hex8.H"
+#include "so_tet10.H"
+#include "so_tet4.H"
+#include "so_disp.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
@@ -611,43 +614,60 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 
 int DRT::ELEMENTS::Sotet10Register::Initialize(DRT::Discretization& dis)
 {
-  //-------------------- loop all my column elements and check rewinding
-  for (int i=0; i<dis.NumMyColElements(); ++i)
-  {
-    // get the actual element
-    if (dis.lColElement(i)->Type() != DRT::Element::element_so_tet10) continue;
-    DRT::ELEMENTS::So_tet10* actele = dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i));
-    if (!actele) dserror("cast to So_tet10* failed");
-
-    if (!actele->donerewinding_) {
-        const bool rewind = DRT::UTILS::checkRewinding3D(actele);
-
-      if (rewind) {
-        int new_nodeids[NUMNOD_SOTET10];
-        const int* old_nodeids;
-        old_nodeids = actele->NodeIds();
-        // rewinding of nodes to arrive at mathematically positive element
-        new_nodeids[0] = old_nodeids[0];
-        new_nodeids[1] = old_nodeids[2];
-        new_nodeids[2] = old_nodeids[1];
-        new_nodeids[3] = old_nodeids[3];
-        new_nodeids[4] = old_nodeids[6];
-        new_nodeids[5] = old_nodeids[5];
-        new_nodeids[6] = old_nodeids[4];
-        new_nodeids[7] = old_nodeids[7];
-        new_nodeids[8] = old_nodeids[8];
-        new_nodeids[9] = old_nodeids[9];        
-        actele->SetNodeIds(NUMNOD_SOTET10, new_nodeids);
-      }
-      // process of rewinding done
-      actele->donerewinding_ = true;
-    }
-  }
-  // fill complete again to reconstruct element-node pointers,
-  // but without element init, etc.
-  dis.FillComplete(false,false,false);
-
-  return 0;
+	  int j =0;
+	  while (!dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(j)))
+	  {
+		  j++;
+	  }
+	  DRT::ELEMENTS::So_tet10* actele = dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(j));
+	  if (!actele->donerewinding_) 
+	    {
+	      DRT::UTILS::Rewinding3D(dis);
+	      dis.FillComplete(false,false,false);
+		for (int i=0; i<dis.NumMyColElements(); ++i)
+		{
+			// get the actual element
+			if (dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i)))
+			{
+				DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i));
+				actele->donerewinding_ = true;
+			}
+			else if (dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i)))
+			{
+				DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
+				actele->donerewinding_ = true;
+			}
+			else if (dynamic_cast<DRT::ELEMENTS::So_tet4*>(dis.lColElement(i)))
+			{
+				DRT::ELEMENTS::So_tet4* actele = dynamic_cast<DRT::ELEMENTS::So_tet4*>(dis.lColElement(i));
+			  	actele->donerewinding_ = true;
+			}
+			else if (dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i)))
+			{
+				DRT::ELEMENTS::So_tet10* actele = dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i));
+				actele->donerewinding_ = true;
+			}
+			else if (dynamic_cast<DRT::ELEMENTS::SoDisp*>(dis.lColElement(i)))
+			{
+				DRT::ELEMENTS::SoDisp* actele = dynamic_cast<DRT::ELEMENTS::SoDisp*>(dis.lColElement(i));
+				actele->donerewinding_ = true;
+			}
+			else
+			{
+				cout << "???" << endl;
+			}
+		}
+		// fill complete again to reconstruct element-node pointers,
+		// but without element init, etc.
+		dis.FillComplete(false,false,false);
+	    }
+	  for (int i=0; i<dis.NumMyColElements(); ++i)
+	    {
+	      // get the actual element
+	      DRT::ELEMENTS::So_tet10* actele = dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i));
+	      actele->donerewinding_ = true;
+	    }
+	  return 0;
 }
 
 

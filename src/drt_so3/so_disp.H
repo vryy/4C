@@ -271,6 +271,12 @@ public:
 
 
   //@}
+  
+  //! some distypes need rewinding of NodeIds due to bad input from mesher
+  //! flag to rewind this element, must be availabale for friend class fluid3register
+
+  //! flag whether process of rewinding is done
+  bool                                            donerewinding_;
 
 protected:
 
@@ -385,11 +391,7 @@ protected:
   
   void CreateSurfacesWegde15(const int& nsurf);
   
-  //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag to rewind this element, must be availabale for friend class fluid3register
-protected:
-  //! flag whether process of rewinding is done
-  bool                                            donerewinding_;
+
   
 }; // class SoDisp
 

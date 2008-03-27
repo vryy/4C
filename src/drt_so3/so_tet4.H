@@ -278,6 +278,11 @@ public:
 
 
   //@}
+  
+
+  //! some distypes need rewinding of NodeIds due to bad input from mesher
+  //! flag whether process of rewinding is done
+  bool                                            donerewinding_;
 
 protected:
 
@@ -338,9 +343,6 @@ protected:
   //! vector of history variables for each Gauss point
   vector<RefCountPtr<MAT::Material> >                mat_;
 
-  //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag whether process of rewinding is done
-  bool                                            donerewinding_;
 
 
   // internal calculation methods

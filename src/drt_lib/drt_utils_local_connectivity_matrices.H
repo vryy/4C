@@ -438,6 +438,13 @@ namespace UTILS
    * \return boolean rewind or not rewind
    */
   bool checkRewinding3D(const DRT::Element* ele);
+  
+  
+
+  /*!
+   * \Rewindes NodeIds if checkRewinding3D returned a true boolean
+  */ 
+  void Rewinding3D(DRT::Discretization& dis);
     
   /*!
   \brief    Returns the geometric center of the element in local coordinates

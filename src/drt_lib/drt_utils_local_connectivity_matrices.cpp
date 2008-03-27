@@ -1002,6 +1002,127 @@ bool DRT::UTILS::checkRewinding3D(const DRT::Element* ele)
   return rewind;
 }
 
+void DRT::UTILS::Rewinding3D(DRT::Discretization& dis)
+{
+  cout << "In the Rewinding3D function" << endl;
+  
+
+  bool dofillcompleteagain = false;
+  //-------------------- loop all my column elements and check rewinding
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    // get the actual element
+    
+	DRT::Element *ele = dis.lColElement(i);
+    const DRT::Element::DiscretizationType distype = ele->Shape();
+    bool possiblytorewind = false;
+    switch(distype)
+    {
+    case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
+        possiblytorewind = true;
+        break;
+    case DRT::Element::tet4: case DRT::Element::tet10:
+        possiblytorewind = true;
+        break;
+    case DRT::Element::wedge6: case DRT::Element::wedge15:
+        possiblytorewind = true;
+        break;
+    case DRT::Element::pyramid5:
+        possiblytorewind = true;
+        break;
+    default:
+        dserror("invalid discretization type");
+    }
+    
+    if (possiblytorewind) {
+      const bool rewind = checkRewinding3D(ele);
+
+      if (rewind) {
+        if (distype==DRT::Element::tet4){
+          int iel = ele->NumNode();
+          vector<int> new_nodeids(iel);
+          const int* old_nodeids;
+          old_nodeids = ele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[0] = old_nodeids[0];
+          new_nodeids[1] = old_nodeids[2];
+          new_nodeids[2] = old_nodeids[1];
+          new_nodeids[3] = old_nodeids[3];
+          ele->SetNodeIds(iel, &new_nodeids[0]);
+        }
+        else if (distype==DRT::Element::tet10){
+          int iel = ele->NumNode();
+          vector<int> new_nodeids(iel);
+          const int* old_nodeids;
+          old_nodeids = ele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[0] = old_nodeids[0];
+          new_nodeids[1] = old_nodeids[2];
+          new_nodeids[2] = old_nodeids[1];
+          new_nodeids[3] = old_nodeids[3];
+          new_nodeids[4] = old_nodeids[6];
+          new_nodeids[5] = old_nodeids[5];
+          new_nodeids[6] = old_nodeids[4];
+          new_nodeids[7] = old_nodeids[7];
+          new_nodeids[8] = old_nodeids[8];
+          new_nodeids[9] = old_nodeids[9];          
+          ele->SetNodeIds(iel, &new_nodeids[0]);
+        }
+        else if (distype==DRT::Element::hex8){
+          int iel = ele->NumNode();
+          vector<int> new_nodeids(iel);
+          const int* old_nodeids;
+          old_nodeids = ele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[0] = old_nodeids[4];
+          new_nodeids[1] = old_nodeids[5];
+          new_nodeids[2] = old_nodeids[6];
+          new_nodeids[3] = old_nodeids[7];
+          new_nodeids[4] = old_nodeids[0];
+          new_nodeids[5] = old_nodeids[1];
+          new_nodeids[6] = old_nodeids[2];
+          new_nodeids[7] = old_nodeids[3];
+          ele->SetNodeIds(iel, &new_nodeids[0]);
+        }
+        else if (distype==DRT::Element::wedge6){
+          int iel = ele->NumNode();
+          vector<int> new_nodeids(iel);
+          const int* old_nodeids;
+          old_nodeids = ele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[0] = old_nodeids[3];
+          new_nodeids[1] = old_nodeids[4];
+          new_nodeids[2] = old_nodeids[5];
+          new_nodeids[3] = old_nodeids[0];
+          new_nodeids[4] = old_nodeids[1];
+          new_nodeids[5] = old_nodeids[2];
+          ele->SetNodeIds(iel, &new_nodeids[0]);
+        }
+        else if (distype == DRT::Element::pyramid5){
+          int iel = ele->NumNode();
+          vector<int> new_nodeids(iel);
+          const int* old_nodeids;
+          old_nodeids = ele->NodeIds();
+          // rewinding of nodes to arrive at mathematically positive element
+          new_nodeids[1] = old_nodeids[3];
+          new_nodeids[3] = old_nodeids[1];
+          // the other nodes can stay the same
+          new_nodeids[0] = old_nodeids[0];
+          new_nodeids[2] = old_nodeids[2];
+          new_nodeids[4] = old_nodeids[4];
+          ele->SetNodeIds(iel, &new_nodeids[0]);
+        }
+        else dserror("no rewinding scheme for this type of element");
+        
+      }
+      // process of rewinding done
+      dofillcompleteagain = true;
+    }
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  Returns the geometric center of the element in local coordinates    |     
  |                                                           a.ger 12/07|

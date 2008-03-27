@@ -324,6 +324,10 @@ public:
   const vector<double> GetThickvec(){return thickvec_;};
   const vector<double> GetFibervec(){return fiberdirection_;};
   const vector<double> soh8_ElementCenterRefeCoords();
+  
+  //! some distypes need rewinding of NodeIds due to bad input from mesher
+  //! flag whether process of rewinding is done
+  bool                                            donerewinding_;
 
   //@}
 
@@ -394,9 +398,7 @@ protected:
   vector<DRT::ELEMENTS::Soh8Line*>              lineptrs_;
   //! vector of element stress tensor in Voigt notation
 
-  //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag whether process of rewinding is done
-  bool                                            donerewinding_;
+
 
   //! vector in thickness direction for compatibility with sosh8
   vector<double>                                   thickvec_;

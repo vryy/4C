@@ -79,6 +79,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::SoDisp::Shape() const
     case 27: return hex27;
     case  6: return wedge6;
     case 15: return wedge15;
+    case  5: return pyramid5; 
     default:
       dserror("unexpected number of nodes %d", NumNode());
     }
