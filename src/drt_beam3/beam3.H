@@ -1,8 +1,6 @@
 /*!----------------------------------------------------------------------
 \file beam3.H
 
-\class Beam3
-
 \brief two dimensional nonlinear corotational Euler-Bernoulli beam element
 
 <pre>
@@ -58,8 +56,6 @@ class Beam3Register;
 namespace ELEMENTS
 {
 /*!
-\class Element
-
 \brief two dimensional nonlinear corotational Euler-Bernoulli beam element
 
 \author cyron (cyron @lnm.mw.tum.de)
@@ -361,8 +357,6 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 //------------- class Beam3Register: -------------------------------------------
 
 /*!
-\class Beam3Register
-
 \brief A register for Beam3 element
 
 \author cyron (cyron@lnm.mw.tum.de)
