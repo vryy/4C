@@ -756,6 +756,13 @@ void DRT::ELEMENTS::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
   strain[2] = 0.5 * (F[0] * F[2] + F[3] * F[1]);        // E_12
   strain[3] = strain[2];                                // E_21
 
+  /*-----------------------linear engineering strain eps -----------------*/
+  /* (choose 2PK stresses for stress output, when using linear strains!)  */
+  //strain[0] = 0.5 * (F[0] + F[0]) - 1.0;
+  //strain[1] = 0.5 * (F[1] + F[1]) - 1.0;
+  //strain[2] = 0.5 * (F[2] + F[3]);
+  //strain[3] = strain[2];
+  
   return;
 }
 
