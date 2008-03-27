@@ -42,69 +42,8 @@ BlitzVec XFEM::computeCrossProduct(
 }
 
 
-///*----------------------------------------------------------------------*
-// |  GM:     checks if a certain element is a                 u.may 06/07|
-// |          volume  element with help of the discretization type        |
-// *----------------------------------------------------------------------*/  
-//bool XFEM::checkIfVolumeElement(
-//        const DRT::Element::DiscretizationType distype)
-//{
-//    bool isVolume = false;
-//    
-//    if( distype == DRT::Element::hex8  ||
-//        distype == DRT::Element::hex20 ||
-//        distype == DRT::Element::hex27 ||
-//        distype == DRT::Element::tet4  ||
-//        distype == DRT::Element::tet10  )
-//    {
-//        isVolume = true;        
-//    }
-//    return isVolume;
-//}
-
-
-///*----------------------------------------------------------------------*
-// |  GM:     checks if a certain element is a                 u.may 06/07|
-// |          with help of the discretization type                        |
-// *----------------------------------------------------------------------*/  
-//bool XFEM::checkIfSurfaceElement(
-//        const DRT::Element::DiscretizationType distype)
-//{
-//    bool isSurface = false;
-//    
-//    if( distype == DRT::Element::quad4 ||
-//        distype == DRT::Element::quad8 ||
-//        distype == DRT::Element::quad9 ||
-//        distype == DRT::Element::tri3  ||
-//        distype == DRT::Element::tri6  )
-//    {
-//        isSurface = true;       
-//    }
-//    return isSurface;
-//}
-
-
-///*----------------------------------------------------------------------*
-// |  GM:     checks if a certain element is a                 u.may 06/07|
-// |          line element with help of the discretization type           |
-// *----------------------------------------------------------------------*/  
-//bool XFEM::checkIfLineElement(
-//        const DRT::Element::DiscretizationType distype)
-//{
-//    bool isLine = false;
-//    
-//    if( distype == DRT::Element::line2 ||
-//        distype == DRT::Element::line3 )
-//    {
-//        isLine = true;      
-//    }
-//    return isLine;
-//}
-
-
-
 /*----------------------------------------------------------------------*
- | GM:      transforms a node in element coordinates       u.may 07/07|
+ | GM:      transforms a node in element coordinates         u.may 07/07|
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
 BlitzVec XFEM::elementToCurrentCoordinates(   

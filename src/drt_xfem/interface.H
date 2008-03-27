@@ -37,8 +37,9 @@ public:
 
     //! constructor
     explicit InterfaceHandle(
-            const RCP<DRT::Discretization>        xfemdis, 
-            const RCP<DRT::Discretization>        cutterdis);
+            const RCP<DRT::Discretization>        xfemdis,    ///< discretization that will be intersected
+            const RCP<DRT::Discretization>        cutterdis   ///< discretization with intersecting XFEM condition
+            );
     //! destructor
     ~InterfaceHandle();
 
@@ -77,11 +78,6 @@ public:
 //        return eleidset;
 //    }
 
-    bool PositionWithinSpecificClosedRegion(
-            const blitz::Array<double,1>& actpos,
-            const int xfemcondition_label
-            ) const;
-    
     /*! return
      * \return true, if element is intersected
      */

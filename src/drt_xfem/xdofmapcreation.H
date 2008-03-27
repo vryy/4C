@@ -28,8 +28,10 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
-// create a map that for each node (gid) and element (gid) on this processor
-// this is fluid specific and should somehow be generalized
+/*! 
+ * \brief create a map that for each node (gid) and element (gid) on this processor
+ * \note this is 3d fluid specific and should somehow be generalized
+ */
 void createDofMap(
         const RCP<DRT::Discretization>                    xfemdis,
         const RCP<DRT::Discretization>                    cutterdis,

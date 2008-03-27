@@ -102,7 +102,7 @@ namespace XFEM
   /////////////////////////////////////////////////////
   // 2d
   //
-  //! map position from eta^\boundary to xi^\boundary space
+  //! map position from eta^boundary to xi^boundary space
   XFEM::PosXiBoundary mapEtaBToXiB(
           const XFEM::BoundaryIntCell& cell,
           const XFEM::PosEtaBoundary&  pos_eta)
@@ -122,7 +122,7 @@ namespace XFEM
       return pos_xsi_boundary;
   }
   
-  //! map position from eta^\boundary to xi^\domain space
+  //! map position from eta^boundary to xi^domain space
   XFEM::PosXiDomain mapEtaBToXiD(
           const XFEM::BoundaryIntCell& cell,
           const XFEM::PosEtaBoundary&  pos_eta)

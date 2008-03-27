@@ -1,7 +1,7 @@
 /*!
 \file integrationcell.cpp
 
-\brief integration cell
+\brief integration cell classes for domain and boundary integration
 
 <pre>
 Maintainer: Axel Gerstenberger

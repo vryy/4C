@@ -32,7 +32,13 @@ namespace XFEM
     //! tolerance 1e-7 
     const double                 TOL7 = 1e-7;
     
-    inline double SQR(double a)
+    /*!
+     * \brief calculate a*a
+     * \param a
+     * \return a^2
+     */
+    template <typename T>
+    inline T sqr(T a)
     {
         return a * a;
     }
@@ -90,41 +96,8 @@ namespace XFEM
     {
         //note: sqrt(0.0) is properly defined and returns 0.0 as expected
         //      no check for zero needed
-        return sqrt(SQR(a)+SQR(b));
+        return sqrt(sqr(a)+sqr(b));
     }
-    
-    
-//    /*!
-//    \brief checks if element is a volume element
-//    
-//    \param element       (in)    : element
-//    \return true if it is a volume element, false otherwise
-//    */      
-//    bool checkIfVolumeElement(
-//            const DRT::Element::DiscretizationType distype
-//        );
-    
-    
-//    /*!
-//    \brief checks if element is a surface element
-//    
-//    \param element       (in)    : element
-//    \return true if it is a surface element, false otherwise
-//    */     
-//    bool checkIfSurfaceElement(
-//            const DRT::Element::DiscretizationType distype
-//        );
-    
-    
-//    /*!
-//    \brief checks if element is a line element
-//
-//    \param element       (in)    : element
-//    \return true if it is a line element, false otherwise
-//    */     
-//    bool checkIfLineElement(
-//            const DRT::Element::DiscretizationType distype
-//        );
     
     
     /*!
@@ -145,8 +118,7 @@ namespace XFEM
            in current coordinates with respect to a given element
 
     \param element          (in)        : element
-    \param eleCoord         (in)        : vector of element coordinates
-    \return                               vector of current coordinates
+    \param eleCoord         (in/out)    : vector of element/current coordinates
     */
     void elementToCurrentCoordinatesInPlace(   
         const DRT::Element*  element, 
@@ -160,7 +132,7 @@ namespace XFEM
 
     \param element          (in)        : element
     \param xsi              (in/out)    : vector of current coordinates/
-                                          vector of element coordinates
+    \return                               vector of element coordinates
     */
     BlitzVec currentToElementCoordinatesExact(
             const DRT::Element*         element,

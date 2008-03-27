@@ -50,7 +50,7 @@ public:
     enum ApproachFrom
     {
         approachUnknown,   ///<  approaching direction is unknown
-        approachFromPlus,  ///<  we are coming from Omega+
+        approachFromPlus,  ///<  we are coming from Omega+ \note there is a check needed, whether we are in the fluid ore not!!! thin structures will cause problems here!!!!!!
         approachFromMinus  ///<  we are coming from Omega-
     };
     

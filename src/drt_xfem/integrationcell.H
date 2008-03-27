@@ -30,10 +30,13 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
+/*!
+ * \brief create array with physical coordinates based an local coordinates of a parent element
+ */
 template<class Cell>
 static BlitzMat ComputePhysicalCoordinates(
-        const DRT::Element&  ele,
-        const Cell& cell
+        const DRT::Element&  ele,  ///< parent element
+        const Cell&          cell  ///< integration cell whose coordinates we'd like to transform
         )
 {
     const BlitzMat eleCoord(DRT::UTILS::PositionArrayBlitz(&ele));
@@ -72,24 +75,15 @@ class IntCell
 
 public:
 
-    /*!
-     \brief Standard Constructor
-     */
+    //! Standard Constructor
     explicit IntCell(
         const DRT::Element::DiscretizationType  distype  ///< distype of the integration cell
         );
 
-    /*!
-     \brief Copy Constructor
-
-     Makes a deep copy of a Element
-     */
+    //! Copy Constructor
     explicit IntCell(const IntCell& old);
     
-    /*!
-    \brief Destructor
-
-    */
+    //! Destructor
     ~IntCell();
 
     /*!  = operator
@@ -109,6 +103,7 @@ public:
      */
     inline DRT::Element::DiscretizationType Shape() const {return distype_;};
     
+    //! returns a string representation of the IntegrationCell
     inline std::string toString() const;
 
 protected:
@@ -117,7 +112,7 @@ protected:
     const DRT::Element::DiscretizationType distype_;
     
 private:
-    
+    //! hidden default constructor
     explicit IntCell();
 };
 
@@ -130,17 +125,13 @@ class DomainIntCell : IntCell
 
 public:
 
-    /*!
-     \brief Standard Constructor
-     */
+    //! Standard Constructor
     explicit DomainIntCell(
             const DRT::Element::DiscretizationType  distype,            ///< distype of the integration cell
             const vector<vector<double> >&          domainCoordinates   ///< coordinates in parent element coordinates
             );
 
-    /*!
-     \brief Standard Constructor
-     */
+    //! Standard Constructor
     explicit DomainIntCell(
             const DRT::Element::DiscretizationType  distype,            ///< distype of the integration cell
             const BlitzMat&                         domainCoordinates   ///< coordinates in parent element coordinates
@@ -206,8 +197,10 @@ public:
         return ComputePhysicalCoordinates<DomainIntCell>(ele, (*this));
     };
     
+    //! return string representation of the DomainIntCell
     std::string toString() const;
     
+    //! get geometric center of the cell in physical coordinates
     BlitzVec GetPhysicalCenterPosition(const DRT::Element& ele) const;
 
 private:
@@ -231,16 +224,14 @@ typedef std::set<XFEM::DomainIntCell > DomainIntCellSet;
 
 
 /*
- * \brief An domain integration cell is used for integrating the XFEM elements domain 
+ * \brief An boundary integration cell is used for integrating along a discontinuity caused by XFEM enrichments 
  */
 class BoundaryIntCell : IntCell
 {
 
 public:
 
-    /*!
-     \brief Standard Constructor
-     */
+    //! Standard Constructor
     explicit BoundaryIntCell(
             const DRT::Element::DiscretizationType  distype,            ///< shape of the integration cell
             const int                               surface_ele_gid,    ///< global id of the boundary element (cutter)
@@ -248,9 +239,7 @@ public:
             const vector<vector<double> >&          boundaryCoordinates ///< coordinates of the integrationcell in xsi_boundary
             );
 
-    /*!
-     \brief Standard Constructor
-     */
+    //! Standard Constructor
     explicit BoundaryIntCell(
             const DRT::Element::DiscretizationType  distype,             ///< shape of the integration cell
             const int                               surface_ele_gid,     ///< global id of the boundary element (cutter)
@@ -258,11 +247,7 @@ public:
             const BlitzMat&                         boundaryCoordinates  ///< coordinates of the integrationcell in xsi_boundary
             );
     
-    /*!
-     \brief Copy Constructor
-
-     Makes a deep copy of a Element
-     */
+    //! Copy Constructor
     BoundaryIntCell(
             const BoundaryIntCell& old);
 
@@ -299,7 +284,9 @@ public:
 
      \return cells nodal coordinates  
      */
-    inline BlitzMat NodalPosXYZ(const DRT::Element& ele) const
+    inline BlitzMat NodalPosXYZ(
+            const DRT::Element& ele  ///< parent element, where the integration cell is located in
+            ) const
     {
         return ComputePhysicalCoordinates<BoundaryIntCell>(ele, (*this));
     };
@@ -321,6 +308,7 @@ public:
     //! return "parent" cutter element id (global id)
     inline int GetSurfaceEleGid() const {return surface_ele_gid_;}
     
+    //! return string representation of the BoundaryIntCell
     std::string toString() const;
 
 private:
