@@ -600,6 +600,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fdyn);
   DoubleParameter("ALPHA_M",1.0,"Time integration factor",&fdyn);
   DoubleParameter("ALPHA_F",1.0,"Time integration factor",&fdyn);
+  DoubleParameter("GAMMA",1.0,"Time integration factor",&fdyn);
 
   DoubleParameter("THETA",0.66,"Time integration factor",&fdyn);
 

@@ -486,8 +486,6 @@ public:
 
       double* veln  = &(*veln_)[0];
       double* velnp = &(*velnp_)[0];
-      double* accn  = &(*accn_)[0];
-      double* accnp = &(*accnp_)[0];
       double* dt    = &(*dirichtoggle_)[0];
 
       for (int i=0; i<len; ++i)
@@ -495,10 +493,7 @@ public:
         velnp[i] = velnp[i]*dt[i] + veln[i]*(1-dt[i]);
       }
 
-      for (int i=0; i<len; ++i)
-      {
-        accnp[i] = accnp[i]*dt[i] + accn[i]*(1-dt[i]);
-      }
+      GenAlphaCalcInitialAccelerations();
 
       // normal Newton iteration update
       //
@@ -524,6 +519,8 @@ public:
   int Step() const { return step_; }
   /// time step
   double Dt() const { return dt_; }
+  /// time integration parameter
+  double Gamma() const { return gamma_; }
   /*!
   \brief return the nonlinear itemax
   */

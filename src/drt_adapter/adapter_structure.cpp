@@ -404,7 +404,7 @@ ADAPTER::StructureBaseAlgorithm::~StructureBaseAlgorithm()
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterList& prbdyn)
 {
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FSI::StructureBaseAlgorithm::SetupStructure");
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::StructureBaseAlgorithm::SetupStructure");
   Teuchos::TimeMonitor monitor(*t);
 
   // -------------------------------------------------------------------
@@ -544,6 +544,13 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
     {
       if (Teuchos::getIntegralValue<int>(sdyn,"PREDICT")!=STRUCT_DYNAMIC::pred_constdisvelacc)
         dserror("only constant structure predictor with monolithic FSI possible");
+
+#if 0
+      // overwrite time integration flags
+      genalphaparams->set<double>("gamma",fsidyn.get<double>("GAMMA"));
+      genalphaparams->set<double>("alpha m",fsidyn.get<double>("ALPHA_M"));
+      genalphaparams->set<double>("alpha f",fsidyn.get<double>("ALPHA_F"));
+#endif
     }
   }
 

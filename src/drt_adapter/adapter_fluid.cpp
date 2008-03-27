@@ -316,6 +316,21 @@ void ADAPTER::FluidAdapter::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FluidAdapter::ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx) const
+{
+  // get interface velocity at t(n)
+  Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(Veln());
+
+  // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
+  //
+  // Delta d(n+1,i+1) = ( Delta u(n+1,i+1) + u(n) ) * dt
+  //
+  fcx->Update(-1.,*veln,TimeScaling());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int ADAPTER::FluidAdapter::Itemax() const
 {
   return fluid_.Itemax();
@@ -546,7 +561,8 @@ double ADAPTER::FluidGenAlphaAdapter::ResidualScaling() const
 double ADAPTER::FluidGenAlphaAdapter::TimeScaling() const
 {
   double dt = fluid_.Dt();
-  return 1./dt/dt;
+  double gamma = fluid_.Gamma();
+  return 1./(dt*dt*gamma);
 }
 
 
@@ -630,6 +646,31 @@ void ADAPTER::FluidGenAlphaAdapter::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FluidGenAlphaAdapter::ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx) const
+{
+  // We convert Delta d(n+1,i+1) to Delta a(n+1,i+1) here.
+  //
+  // Delta d(n+1,i+1) =   ( Delta u(n+1,i+1)              + u(n) ) * dt
+  //
+  //                  = ( ( Delta a(n+1,i+1) * gamma * dt + u(n) ) * dt
+  //
+
+  double dt = fluid_.Dt();
+  double gamma = fluid_.Gamma();
+
+  // get interface velocity at t(n)
+  Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(fluid_.Veln());
+
+  // reduce to Delta u(n+1,i+1)
+  fcx->Update(-1.,*veln,1./dt);
+
+  // reduce to Delta a(n+1,i+1)
+  fcx->Scale(1./dt/gamma);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 int ADAPTER::FluidGenAlphaAdapter::Itemax() const
 {
   return fluid_.Itemax();
@@ -689,7 +730,7 @@ ADAPTER::FluidBaseAlgorithm::~FluidBaseAlgorithm()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdyn, bool& isale)
 {
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FSI::FluidBaseAlgorithm::SetupFluid");
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::FluidBaseAlgorithm::SetupFluid");
   Teuchos::TimeMonitor monitor(*t);
 
   // -------------------------------------------------------------------
@@ -863,6 +904,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
   else if (iop == timeint_gen_alpha)
   {
+#if 1
     // -------------------------------------------------------------------
     // set additional parameters in list for generalized-alpha scheme
     // -------------------------------------------------------------------
@@ -870,6 +912,19 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<double>           ("alpha_M"                  ,fdyn.get<double>("ALPHA_M"));
     // parameter alpha_F for for generalized-alpha scheme
     fluidtimeparams->set<double>           ("alpha_F"                  ,fdyn.get<double>("ALPHA_F"));
+
+    fluidtimeparams->set<double>           ("gamma"                    ,fdyn.get<double>("GAMMA"));
+#else
+    // -------------------------------------------------------------------
+    // set additional parameters in list for generalized-alpha scheme
+    // -------------------------------------------------------------------
+    // parameter alpha_M for for generalized-alpha scheme
+    fluidtimeparams->set<double>           ("alpha_M"                  ,1.-prbdyn.get<double>("ALPHA_M"));
+    // parameter alpha_F for for generalized-alpha scheme
+    fluidtimeparams->set<double>           ("alpha_F"                  ,1.-prbdyn.get<double>("ALPHA_F"));
+
+    fluidtimeparams->set<double>           ("gamma"                    ,prbdyn.get<double>("GAMMA"));
+#endif
 
     // create all vectors and variables associated with the time
     // integration (call the constructor);

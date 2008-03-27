@@ -7,8 +7,7 @@
 // necessary defines: D_FLUID2 RESULTTEST CCADISCRET BINIO D_ALE D_WALL1
 //
 // Monolithic FSI test. Both fluid and structure use
-// backward Euler time integration. The fluid field is solved using
-// one-step-theta algorithm.
+// backward Euler time integration within generalized-alpha algorithm.
 //
 ==================================================================
                         General Data File C_CARAT
@@ -39,20 +38,20 @@ RESTARTEVRY  20
 TIMESTEP     0.05 
 NUMSTEP      200 
 MAXTIME      5.0
-BETA         0.5 
-GAMMA        1.0 
-ALPHA_M      0.0 
+BETA         0.5
+GAMMA        1.0
+ALPHA_M      0.0
 ALPHA_F      0.0
 DAMPING      No 
 M_DAMP       0.5 
 K_DAMP       0.5
-//ITERATION    full 
+ITERATION    full 
 TOLDISP      1.0E-10
 MAXITER      50
 PREDICT      ConstDisVelAcc
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP   Nlin_Time_Int
-TIMEINTEGR   One_Step_Theta
+TIMEINTEGR   Gen_Alpha
 UPPSS        1
 UPOUT        1
 UPRES        1
@@ -73,6 +72,19 @@ NUMSTASTEPS  0
 START_THETA  1.00
 INITIALFIELD zero_field
 STARTFUNCNO  2
+ALPHA_F      1.0
+ALPHA_M      1.0
+GAMMA        1.0
+------------------------------------FLUID DYNAMIC/STABILIZATION
+STABTYPE              residual_based
+TDS                   quasistatic
+TRANSIENT             no_transient
+SUPG                  yes_supg
+PSPG                  yes_pspg
+VSTAB                 vstab_gls
+CSTAB                 cstab_qs
+CROSS-STRESS          no_cross
+REYNOLDS-STRESS       no_reynolds
 -------------------------------------------------------ALE DYNAMIC
 TIMESTEP     0.1
 NUMSTEP      41 
@@ -80,6 +92,7 @@ MAXTIME      4.0
 ALE_TYPE     classic_lin
 NUM_INITSTEP 0
 RESEVRYDISP  1
+QUALITY      none
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.1
@@ -89,35 +102,15 @@ UPPSS        1
 UPRES        1
 RESTARTEVRY  1
 COUPALGO     iter_monolithic
-//COUPALGO     iter_stagg_AITKEN_rel_param
-//COUPALGO     iter_stagg_steep_desc
-//PREDICTOR    d(n)
-//PREDICTOR    d(n)+dt*(1.5*v(n)-0.5*v(n-1))
-//PREDICTOR    d(n)+dt*v(n)
-PREDICTOR    d(n)+dt*v(n)+0.5*dt^2*a(n)
+PREDICTOR    d(n)
 CONVCRIT     ||g(i)||:sqrt(neq)
 ENERGYCHECK  yes
 TOLENCHECK   1.0
 RELAX        0.825
 ITEMAX       100
-CONVTOL      1.0E-8
+CONVTOL      1.0E-7
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK
-//SOLVER         Aztec_MSR
-//SOLVER         SPOOLES_nonsym
-AZOUTPUT       10
-AZSOLVE        GMRES
-AZPREC         ILU
-AZREUSE        0
-AZDROP         0.0
-AZFILL         1.0
-AZGFILL        1  
-AZTOL          1.0E-10
-AZITER         2500  
-AZSUB	       500  
-AZOMEGA        1.0  
-AZGRAPH        1  
-AZPOLY         5  
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         UMFPACK
@@ -7390,8 +7383,8 @@ CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 2155 POSITION vely NAME vely VALUE 3.228156619e-04 TOLERANCE 1e-8
-FLUID DIS 1 NODE 2155 POSITION pressure NAME pressure VALUE -2.328153747e-03 TOLERANCE 1e-8
+FLUID DIS 1 NODE 2155 POSITION vely NAME vely VALUE 3.425138208e-04 TOLERANCE 1e-8
+FLUID DIS 1 NODE 2155 POSITION pressure NAME pressure VALUE -2.443060086e-03 TOLERANCE 1e-8
 //STRUCTURE DIS 1 NODE 1782 POSITION sol(1,2) NAME dy VALUE -0.0000026252202840 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END

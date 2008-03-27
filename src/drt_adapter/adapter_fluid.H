@@ -188,6 +188,9 @@ namespace ADAPTER {
 
     //@}
 
+    /// convert Delta d(n+1,i+1) to the fluid unknown at the interface
+    virtual void ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx) const = 0;
+
     //! @name Number of Newton iterations
     //! For simplified FD MFNK solve we want to temporally limit the
     /// number of Newton steps inside the fluid solver
@@ -292,6 +295,8 @@ namespace ADAPTER {
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) const;
     virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) const;
+
+    virtual void ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx) const;
 
     virtual int Itemax() const;
     virtual void SetItemax(int itemax);
@@ -415,6 +420,8 @@ namespace ADAPTER {
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) const;
     virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) const;
+
+    virtual void ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx) const;
 
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);

@@ -207,7 +207,8 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
   // choice of third parameter necessary but not sufficiant for second
   // order accuracy
-  gamma_  = 0.5 + alphaM_ - alphaF_;
+  //gamma_  = 0.5 + alphaM_ - alphaF_;
+  gamma_  = params_.get<double>("gamma");
 
   // parameter for linearisation scheme (fixed point like or newton like)
   newton_ = params_.get<bool>("Use reaction terms for linearisation",false);

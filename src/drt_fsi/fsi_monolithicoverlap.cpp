@@ -300,11 +300,10 @@ void FSI::MonolithicOverlap::SetupVector(Epetra_Vector &f,
   Teuchos::RCP<Epetra_Vector> fov = FluidField()    .Interface().ExtractOtherVector(fv);
   Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
 
-  Teuchos::RCP<Epetra_Vector> fcv = FluidField()    .Interface().ExtractCondVector(fv);
-
   if (fluidscale!=0)
   {
     // add fluid interface values to structure vector
+    Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractCondVector(fv);
     Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertCondVector(FluidToStruct(fcv));
     modsv->Update(1.0, *sv, fluidscale);
 
@@ -413,18 +412,11 @@ void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
   Teuchos::RCP<const Epetra_Vector> scx = StructureField().Interface().ExtractCondVector(sx);
 
   // process fluid unknowns
+
   Teuchos::RCP<const Epetra_Vector> fox = Extractor().ExtractVector(x,1);
   Teuchos::RCP<Epetra_Vector> fcx = StructToFluid(scx);
 
-  // get interface displacement at t(n)
-  Teuchos::RCP<Epetra_Vector> dispn = StructureField().Interface().ExtractCondVector(StructureField().Dispn());
-
-  // get interface velocity at t(n)
-  Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface().ExtractCondVector(FluidField().Veln());
-
-  // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
-  //fcx->Update(-1./Dt(),*StructToFluid(dispn),1./Dt());
-  fcx->Update(-1.,*veln,1./Dt());
+  FluidField().ConvertInterfaceUnknown(fcx);
 
   Teuchos::RCP<Epetra_Vector> f = FluidField().Interface().InsertOtherVector(fox);
   FluidField().Interface().InsertCondVector(fcx, f);

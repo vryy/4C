@@ -264,10 +264,19 @@ void dyn_fluid_drt()
     // -------------------------------------------------------------------
     // set additional parameters in list for generalized-alpha scheme
     // -------------------------------------------------------------------
+#if 1
     // parameter alpha_M for for generalized-alpha scheme
     fluidtimeparams.set<double>           ("alpha_M"                  ,fdyn.get<double>("ALPHA_M"));
     // parameter alpha_F for for generalized-alpha scheme
     fluidtimeparams.set<double>           ("alpha_F"                  ,fdyn.get<double>("ALPHA_F"));
+#else
+    // parameter alpha_M for for generalized-alpha scheme
+    fluidtimeparams.set<double>           ("alpha_M"                  ,1.-fdyn.get<double>("ALPHA_M"));
+    // parameter alpha_F for for generalized-alpha scheme
+    fluidtimeparams.set<double>           ("alpha_F"                  ,1.-fdyn.get<double>("ALPHA_F"));
+#endif
+
+    fluidtimeparams.set<double>           ("gamma"                    ,fdyn.get<double>("GAMMA"));
 
     // create all vectors and variables associated with the time
     // integration (call the constructor);
