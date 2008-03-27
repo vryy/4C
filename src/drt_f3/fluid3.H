@@ -1036,7 +1036,9 @@ private:
   enum ActionType
   {
     none,
-    integrate_Shapefunction
+    integrate_Shapefunction,
+    flowratecalc,
+    Outletimpedance
   };
 
   // don't want = operator
@@ -1081,7 +1083,16 @@ private:
                           	      vector<int>&               lm,
                           	      Epetra_SerialDenseVector&  elevec1,
                                       const std::vector<double>& edispnp);
-
+  
+  void FlowRateParameterCaculation(ParameterList& params,
+                  DRT::Discretization&       discretization,
+                  vector<int>&               lm,
+                  Epetra_SerialDenseVector&  elevec1);
+  
+  void ImpedanceIntegration(ParameterList& params,
+          DRT::Discretization&       discretization,
+          vector<int>&               lm,
+          Epetra_SerialDenseVector&  elevec1);
 
 }; // class Fluid3Surface
 

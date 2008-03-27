@@ -251,6 +251,11 @@ public:
   void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
   //@}
+  
+  void FlowRateCalculation();
+  void OutflowBoundary();
+  std::complex<double> LungImpedance(int, int, std::complex<double>,std::complex<double>, std::complex<double> []);
+  std::complex<double> DCLungImpedance(int, int, std::complex<double>, std::complex<double> []);
 
 protected:
 
@@ -420,6 +425,10 @@ protected:
   double           dtele_;
   double           dtsolve_;
   double           dtfilter_;
+  
+  // Flowrate array for impedance conditions
+  RCP<vector<double> > 	FlowRateStorage_;
+  RCP<Epetra_Vector> impedancetbc_;
 
   /// velocity-pressure block matrix split strategy
   class VelPressSplitStrategy

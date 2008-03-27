@@ -516,6 +516,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(areamonitor);
 
+  /*--------------------------------------------------------------------*/
+  // Impedance condition 
+
+  Teuchos::RCP<ConditionDefinition> impedancebc =
+  Teuchos::rcp(new ConditionDefinition("IMPEDANCE CONDITIONS",
+                                         "ImpedanceCond",
+                                         "Surface Volume Constraint",
+                                         DRT::Condition::ImpedanceCond,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  impedancebc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  AddNamedReal(impedancebc,"timeperiod");
+  condlist.push_back(impedancebc);
   return vc;
 }
 
