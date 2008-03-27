@@ -59,6 +59,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   alefluid_(alefluid),
   time_(0.0),
   step_(0),
+  extrapolationpredictor_(params.get("do explicit predictor",true)),
   restartstep_(0),
   uprestart_(params.get("write restart every", -1)),
   writestep_(0),
@@ -106,16 +107,20 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   fssgv_ = params_.get<string>("fs subgrid viscosity","No");
 
   // -------------------------------------------------------------------
-  // Build element group. This might change some element orientations.
-  // -------------------------------------------------------------------
-
-  egm_ = rcp(new DRT::EGROUP::ElementGroupManager(*actdis));
-
-  // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
   pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
   pbc_->UpdateDofsForPeriodicBoundaryConditions();
+
+  mapmastertoslave_ = pbc_->ReturnAllCoupledNodesOnThisProc();
+
+  // -------------------------------------------------------------------
+  // Build element group. This might change some element orientations.
+  //
+  // Warning: The egm has to be called after pbc->Update since the pbc
+  //          moved elements among processors
+  // -------------------------------------------------------------------
+  egm_ = rcp(new DRT::EGROUP::ElementGroupManager(*actdis));
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
@@ -355,7 +360,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   {
     // parameters for sampling/dumping period
     samstart_  = modelparams->get<int>("SAMPLING_START",1);
-    samstop_   = modelparams->get<int>("SAMPLING_STOP",1);
+    samstop_   = modelparams->get<int>("SAMPLING_STOP",stepmax_);
     dumperiod_ = modelparams->get<int>("DUMPING_PERIOD",1);
 
     if (special_flow_ == "lid_driven_cavity")
@@ -508,7 +513,7 @@ void FluidImplicitTimeInt::TimeLoop()
     if (alefluid_)
       dserror("no ALE possible with linearised fluid");
     if (fssgv_ != "No")
-      dserror("no fine scale solution implemented with linearised fluid");
+      dserror("no fine-scale solution implemented with linearised fluid");
     /* additionally it remains to mention that for the linearised
        fluid the stbilisation is hard coded to be SUPG/PSPG */
   }
@@ -775,9 +780,15 @@ void FluidImplicitTimeInt::PrepareTimeStep()
   //                     +-                                      -+
   //
   // -------------------------------------------------------------------
-  if (step_>1)
+  //
+  // We cannot have a predictor in case of monolithic FSI here. There needs to
+  // be a way to ture this off.
+  if (extrapolationpredictor_)
   {
-    ExplicitPredictor();
+    if (step_>1)
+    {
+      ExplicitPredictor();
+    }
   }
 
   // -------------------------------------------------------------------
@@ -836,9 +847,6 @@ void FluidImplicitTimeInt::NonlinearSolve()
   tm3_ref_ = rcp(new TimeMonitor(*timenlnitlin_));
 
   // ---------------------------------------------- nonlinear iteration
-  // maximum number of nonlinear iteration steps
-  const int     itemax    =params_.get<int>   ("max nonlin iter steps");
-
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
   const double  ittol     =params_.get<double>("tolerance for nonlin iter");
@@ -848,7 +856,13 @@ void FluidImplicitTimeInt::NonlinearSolve()
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
   int               itnum = 0;
+  int               itemax = 0;
   bool              stopnonliniter = false;
+
+  // currently default for turbulent channel flow: only one iteration before sampling
+  if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
+    itemax  = 2;
+  else itemax  = params_.get<int>   ("max nonlin iter steps");
 
   dtsolve_ = 0;
   dtele_   = 0;
@@ -909,13 +923,6 @@ void FluidImplicitTimeInt::NonlinearSolve()
       if (fssgv_ == "scale_similarity" ||
           fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
       {
-        // choose what to assemble
-        eleparams.set("assemble matrix 1",false);
-        eleparams.set("assemble matrix 2",false);
-        eleparams.set("assemble vector 1",true);
-        eleparams.set("assemble vector 2",false);
-        eleparams.set("assemble vector 3",false);
-
         // action for elements
         eleparams.set("action","calc_convective_stresses");
 
@@ -924,7 +931,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
         discret_->SetState("velnp",velnp_);
 
         // element evaluation for getting convective stresses at nodes
-        discret_->Evaluate(eleparams,sysmat_,convnp_);
+        discret_->Evaluate(eleparams,null,convnp_);
         discret_->ClearState();
       }
 
@@ -1386,15 +1393,30 @@ void FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // set the new solution we just got
   if (vel!=Teuchos::null)
   {
-    incvel_->Update(1.0, *vel, 0.);
+    int len = vel->MyLength();
+
+    // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
+    // values.
+    //
+    // There is no epetra operation for this! Maybe we could have such a beast
+    // in ANA?
+
+    double* veln  = &(*veln_)[0];
+    double* velnp = &(*velnp_)[0];
+    double* dt    = &(*dirichtoggle_)[0];
+    double* idv   = &(*invtoggle_)[0];
+    const double* incvel = &(*vel)[0];
 
     //------------------------------------------------ update (u,p) trial
-    velnp_->Update(1.0,*incvel_,1.0);
+    for (int i=0; i<len; ++i)
+    {
+      velnp[i] = velnp[i]*dt[i] + (veln[i] + incvel[i])*idv[i];
+    }
   }
 
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
-  
+
   // create the parameters for the discretization
   ParameterList eleparams;
 
@@ -1546,8 +1568,8 @@ void FluidImplicitTimeInt::Output()
   //-------------------------------------------- output of solution
 
   //increase counters
-    restartstep_ += 1;
-    writestep_ += 1;
+  restartstep_ += 1;
+  writestep_ += 1;
 
   if (writestep_ == upres_)  //write solution
   {
@@ -1926,9 +1948,35 @@ void FluidImplicitTimeInt::SetInitialFlowField(
       // out to screen
       if (myrank_==0)
       {
-        cout << "Disturbed initial profile:   max. " << perc << "% random perturbation\n";
+        cout << "Disturbed initial profile:   max. " << perc*100 << "% random perturbation\n";
         cout << "\n\n";
       }
+
+      double bmvel=0;
+      double mybmvel=0;
+      double thisvel=0;
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
+      {
+        // get the processor local node
+        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+        // the set of degrees of freedom associated with the node
+        vector<int> nodedofset = discret_->Dof(lnode);
+
+        for(int index=0;index<numdim;++index)
+        {
+          int gid = nodedofset[index];
+          int lid = dofrowmap->LID(gid);
+
+          thisvel=(*velnp_)[lid];
+          if (mybmvel*mybmvel < thisvel*thisvel) mybmvel=thisvel;
+        }
+      }
+
+      // the noise is proportional to the bulk mean velocity of the
+      // undisturbed initial field (=2/3*maximum velocity)
+      mybmvel=2*mybmvel/3;
+      discret_->Comm().MaxAll(&mybmvel,&bmvel,1);
 
       // loop all nodes on the processor
       for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
@@ -1938,26 +1986,21 @@ void FluidImplicitTimeInt::SetInitialFlowField(
         // the set of degrees of freedom associated with the node
         vector<int> nodedofset = discret_->Dof(lnode);
 
-        // the noise is proportional to the maximum component of the
-        // undisturbed initial field in this point
-        double initialval=0;
+        // check whether we have a pbc condition on this node
+        vector<DRT::Condition*> mypbc;
 
-        // direction with max. profile
-        int flowdirection = 0;
+        lnode->GetCondition("SurfacePeriodic",mypbc);
 
-        for(int index=0;index<numdim;++index)
+        // check whether a periodic boundary condition is active on this node
+        if (mypbc.size()>0)
         {
-          int gid = nodedofset[index];
-          int lid = dofrowmap->LID(gid);
+          // yes, we have one
 
-          double thisval=(*velnp_)[lid];
-          if (initialval*initialval < thisval*thisval)
-          {
-            initialval=thisval;
+          // get the list of all his slavenodes
+          map<int, vector<int> >::iterator master = mapmastertoslave_.find(lnode->Id());
 
-            // remember the direction of maximum flow
-            flowdirection = index;
-          }
+          // slavenodes are ignored
+          if(master == mapmastertoslave_.end()) continue;
         }
 
         // add random noise on initial function field
@@ -1967,18 +2010,10 @@ void FluidImplicitTimeInt::SetInitialFlowField(
 
           double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
 
-          double noise = initialval * randomnumber * perc;
-
-          // full noise only in main flow direction
-          // one third noise orthogonal to flow direction
-          if (index != flowdirection)
-          {
-            noise *= 1./3.;
-          }
+          double noise = perc * bmvel * randomnumber;
 
           err += velnp_->SumIntoGlobalValues(1,&noise,&gid);
           err += veln_ ->SumIntoGlobalValues(1,&noise,&gid);
-
         }
 
         if(err!=0)
