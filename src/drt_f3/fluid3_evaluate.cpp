@@ -1480,10 +1480,12 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           // create blitz matrix objects
 
           const int numnode = NumNode();
-          blitz::Array<double, 1> eprenp (  numnode);
-          blitz::Array<double, 2> evelnp (3,numnode,blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> evelaf (3,numnode,blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 2> eaccam (3,numnode,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 1> eprenp    (  numnode);
+          blitz::Array<double, 2> evelnp    (3,numnode,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> evelaf    (3,numnode,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> eaccam    (3,numnode,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> edispnp   (3,numnode,blitz::ColumnMajorArray<2>());
+          blitz::Array<double, 2> egridvelaf(3,numnode,blitz::ColumnMajorArray<2>());
 
 
           // split "my_velnp" into velocity part "myvelnp" and pressure part "myprenp"
@@ -1506,6 +1508,43 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             eaccam(2,i) = myaccam[2+(i*4)];
           }
 
+          if(is_ale_)
+          {
+            // get most recent displacements
+            RefCountPtr<const Epetra_Vector> dispnp
+              =
+              discretization.GetState("dispnp");
+            
+            // get intermediate grid velocities
+            RefCountPtr<const Epetra_Vector> gridvelaf
+              =
+              discretization.GetState("gridvelaf");
+            
+            if (dispnp==null || gridvelaf==null)
+            {
+              dserror("Cannot get state vectors 'dispnp' and/or 'gridvelaf'");
+            }
+            
+            vector<double> mydispnp(lm.size());
+            DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+            
+            vector<double> mygridvelaf(lm.size());
+            DRT::UTILS::ExtractMyValues(*gridvelaf,mygridvelaf,lm);
+            
+            // extract velocity part from "mygridvelaf" and get
+            // set element displacements
+            for (int i=0;i<numnode;++i)
+            {
+              egridvelaf(0,i) = mygridvelaf[0+(i*4)];
+              egridvelaf(1,i) = mygridvelaf[1+(i*4)];
+              egridvelaf(2,i) = mygridvelaf[2+(i*4)];
+              
+              edispnp(0,i)    = mydispnp   [0+(i*4)];
+              edispnp(1,i)    = mydispnp   [1+(i*4)];
+              edispnp(2,i)    = mydispnp   [2+(i*4)];
+            }
+          }
+          
           // --------------------------------------------------
           // set parameters for time integration
           ParameterList& timelist = params.sublist("time integration parameters");
@@ -1561,37 +1600,54 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           blitz::Array<double, 1>  mean_res_sq(3);
           blitz::Array<double, 1>  mean_sacc_sq(3);
 
+          double mean_resC       =0;
+          double mean_resC_sq    =0;
+          double mean_spreacc    =0;
+          double mean_spreacc_sq =0;
+          
           mean_res    =0;
           mean_sacc   =0;
           mean_res_sq =0;
           mean_sacc_sq=0;
 
-          RefCountPtr<vector<double> > incrres       = params.get<RefCountPtr<vector<double> > >("incrres");
-          RefCountPtr<vector<double> > incrres_sq    = params.get<RefCountPtr<vector<double> > >("incrres_sq");
-          RefCountPtr<vector<double> > incrsacc      = params.get<RefCountPtr<vector<double> > >("incrsacc");
-          RefCountPtr<vector<double> > incrsacc_sq   = params.get<RefCountPtr<vector<double> > >("incrsacc_sq");
+          RefCountPtr<vector<double> > incrres      = params.get<RefCountPtr<vector<double> > >("incrres"         );
+          RefCountPtr<vector<double> > incrres_sq   = params.get<RefCountPtr<vector<double> > >("incrres_sq"      );
+          RefCountPtr<vector<double> > incrsacc     = params.get<RefCountPtr<vector<double> > >("incrsacc"        );
+          RefCountPtr<vector<double> > incrsacc_sq  = params.get<RefCountPtr<vector<double> > >("incrsacc_sq"     );
+          RefCountPtr<vector<double> > incrresC     = params.get<RefCountPtr<vector<double> > >("incrresC"        );
+          RefCountPtr<vector<double> > incrresC_sq  = params.get<RefCountPtr<vector<double> > >("incrresC_sq"     );
+          RefCountPtr<vector<double> > spressacc    = params.get<RefCountPtr<vector<double> > >("incrspressacc"   );
+          RefCountPtr<vector<double> > spressacc_sq = params.get<RefCountPtr<vector<double> > >("incrspressacc_sq");
 
-          RefCountPtr<vector<double> > planecoords   = params.get<RefCountPtr<vector<double> > >("planecoords_");
+          RefCountPtr<vector<double> > planecoords  = params.get<RefCountPtr<vector<double> > >("planecoords_");
+
+          if(planecoords==null)
+            dserror("Hossa\n");
 
           // --------------------------------------------------
           // calculate element coefficient matrix
           DRT::ELEMENTS::Fluid3GenalphaResVMM::Impl(this)->CalcRes(this,
-                                    evelnp,
-                                    eprenp,
-                                    eaccam,
-                                    evelaf,
-                                    actmat,
-                                    alphaM,
-                                    alphaF,
-                                    gamma,
-                                    dt,
-                                    time,
-                                    tds,
-                                    mean_res,
-                                    mean_sacc,
-                                    mean_res_sq,
-                                    mean_sacc_sq);
-
+                                                                   edispnp,
+                                                                   egridvelaf,
+                                                                   evelnp,
+                                                                   eprenp,
+                                                                   eaccam,
+                                                                   evelaf,
+                                                                   actmat,
+                                                                   alphaM,
+                                                                   alphaF,
+                                                                   gamma,
+                                                                   dt,
+                                                                   time,
+                                                                   tds,
+                                                                   mean_res,
+                                                                   mean_sacc,
+                                                                   mean_res_sq,
+                                                                   mean_sacc_sq,
+                                                                   mean_resC,
+                                                                   mean_resC_sq,
+                                                                   mean_spreacc,
+                                                                   mean_spreacc_sq);
 
           //this will be the y-coordinate of a point in the element interior
           double center = 0;
@@ -1622,17 +1678,20 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           }
           if (found ==false)
           {
-              dserror("could not determine element layer");
+            dserror("could not determine element layer");
           }
-
 
           for(int mm=0;mm<3;++mm)
           {
-            (*incrres)    [3*nlayer+mm] += mean_res    (mm);
-            (*incrres_sq) [3*nlayer+mm] += mean_res_sq (mm);
-            (*incrsacc)   [3*nlayer+mm] += mean_sacc   (mm);
+            (*incrres    )[3*nlayer+mm] += mean_res    (mm);
+            (*incrres_sq )[3*nlayer+mm] += mean_res_sq (mm);
+            (*incrsacc   )[3*nlayer+mm] += mean_sacc   (mm);
             (*incrsacc_sq)[3*nlayer+mm] += mean_sacc_sq(mm);
           }
+          (*incrresC    )[nlayer] += mean_resC      ;
+          (*incrresC_sq )[nlayer] += mean_resC_sq   ;
+          (*spressacc   )[nlayer] += mean_spreacc   ;
+          (*spressacc_sq)[nlayer] += mean_spreacc_sq;
         }
       }
       break;

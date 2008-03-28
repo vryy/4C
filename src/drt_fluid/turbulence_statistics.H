@@ -117,13 +117,29 @@ public:
   /*!
   \brief Compute in plane means of u,u^2 etc. (nodal quantities)
 
+  The averages here are calculated by integration.
+
   The calculated value is added to the sum**,sumsq** variables in the
   component corresponding to the plane.
 
   velnp is the solution vector provided by the time integration
   algorithm 
   */
-  void EvaluateMeanValuesInPlanes();
+  void EvaluateIntegralMeanValuesInPlanes();
+  
+  /*!
+  \brief Compute in plane means of u,u^2 etc. (nodal quantities)
+
+  The averages here are calculated as the arithmetic mean of
+  point values.
+  
+  The calculated value is added to the pointsum**,pointsumsq** variables in the
+  component corresponding to the plane.
+
+  velnp is the solution vector provided by the time integration
+  algorithm 
+  */
+  void EvaluatePointwiseMeanValuesInPlanes();
 
   /*!
   \brief 
@@ -208,18 +224,29 @@ public:
   
   */
    void AddToResAverage(
-     RefCountPtr<vector<double> > incrres,
-     RefCountPtr<vector<double> > incrres_sq,
-     RefCountPtr<vector<double> > incrsacc,
-     RefCountPtr<vector<double> > incrsacc_sq
+     RefCountPtr<vector<double> > incrres        ,
+     RefCountPtr<vector<double> > incrres_sq     ,
+     RefCountPtr<vector<double> > incrsacc       ,
+     RefCountPtr<vector<double> > incrsacc_sq    ,
+     RefCountPtr<vector<double> > incrresC       ,
+     RefCountPtr<vector<double> > incrresC_sq    ,
+     RefCountPtr<vector<double> > incrspresacc   ,
+     RefCountPtr<vector<double> > incrspresacc_sq     
     )
     {
       for (unsigned rr=0;rr<incrres->size();++rr)
       {
-          (*sumres_    )[rr]+=(*incrres)    [rr];
-          (*sumres_sq_ )[rr]+=(*incrres_sq) [rr];
-          (*sumsacc_   )[rr]+=(*incrsacc)   [rr];
-          (*sumsacc_sq_)[rr]+=(*incrsacc_sq)[rr];
+          (*sumres_        )[rr]+=(*incrres        )[rr];
+          (*sumres_sq_     )[rr]+=(*incrres_sq     )[rr];
+          (*sumsacc_       )[rr]+=(*incrsacc       )[rr];
+          (*sumsacc_sq_    )[rr]+=(*incrsacc_sq    )[rr];
+      }
+      for (unsigned rr=0;rr<incrresC->size();++rr)
+      {
+          (*sumresC_       )[rr]+=(*incrresC       )[rr];
+          (*sumresC_sq_    )[rr]+=(*incrresC_sq    )[rr];
+          (*sumspresacc_   )[rr]+=(*incrspresacc   )[rr];
+          (*sumspresacc_sq_)[rr]+=(*incrspresacc_sq)[rr];
       }
       return;
     };
@@ -267,8 +294,8 @@ private:
 
   //! contains plane normal direction etc
   ParameterList&                   params_;
-
-   //! pointer to vel/pres field
+  
+   //! pointer to mean vel/pres field
   RefCountPtr<Epetra_Vector>       meanvelnp_;
 
    //! pointer to vel/pres^2 field (space allocated in constructor)
@@ -367,7 +394,17 @@ private:
   RefCountPtr<vector<double> >     sumsacc_;
   //! sum over all in plane squared subscale accelerations
   RefCountPtr<vector<double> >     sumsacc_sq_;
+
+  //! sum over all in plane residuals of the continuity equation
+  RefCountPtr<vector<double> >     sumresC_;
+  //! sum over all in plane squared residuals of the continuity equation
+  RefCountPtr<vector<double> >     sumresC_sq_;
+  //! sum over all in plane subscale pressure accelerations (backward euler)
+  RefCountPtr<vector<double> >     sumspresacc_;
+  //! sum over all in plane squared subscale pressure accelerations (backward euler)
+  RefCountPtr<vector<double> >     sumspresacc_sq_;
   
+
   
   //! viscosity to calculate l_tau, y+ etc.
   double                           visc_;

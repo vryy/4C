@@ -236,24 +236,36 @@ namespace DRT
                   const bool                                            compute_elemat
         );
 
+  /*! \brief evaluate residuals resM and resC on the element and return
+   *         averaged values together with averaged subgrid-scale quantities.
 
-
-      void CalcRes(Fluid3*                                               ele,
-                   const blitz::Array<double,2>&                         evelnp,
-                   const blitz::Array<double,1>&                         eprenp,
-                   const blitz::Array<double,2>&                         eaccam,
-                   const blitz::Array<double,2>&                         evelaf,
-                   const struct _MATERIAL*                               material,
-                   const double                                          alphaM,
-                   const double                                          alphaF,
-                   const double                                          gamma,
-                   const double                                          dt,
-                   const double                                          time,
-                   const enum Fluid3::StabilisationAction                tds,
-                   blitz::Array<double,1>&                               mean_res,
-                   blitz::Array<double,1>&                               mean_sacc,
-                   blitz::Array<double,1>&                               mean_res_sq,
-                   blitz::Array<double,1>&                               mean_sacc_sq);
+   *         In large parts, this method is a copy of Sysmat (concerning
+   *         the computations of the residuals). Its only purpose is to
+   *         allow a output of time averaged residuals and subscale
+   *         accelerations to study their influence
+  */
+      void CalcRes(Fluid3*                                 ele,
+                   const blitz::Array<double,2>&           edispnp,
+                   const blitz::Array<double,2>&           egridvaf,
+                   const blitz::Array<double,2>&           evelnp,
+                   const blitz::Array<double,1>&           eprenp,
+                   const blitz::Array<double,2>&           eaccam,
+                   const blitz::Array<double,2>&           evelaf,
+                   const struct _MATERIAL*                 material,
+                   const double                            alphaM,
+                   const double                            alphaF,
+                   const double                            gamma,
+                   const double                            dt,
+                   const double                            time,
+                   const enum Fluid3::StabilisationAction  tds,
+                   blitz::Array<double,1>&                 mean_res,
+                   blitz::Array<double,1>&                 mean_sacc,
+                   blitz::Array<double,1>&                 mean_res_sq,
+                   blitz::Array<double,1>&                 mean_sacc_sq,
+                   double&                                 mean_resC,
+                   double&                                 mean_resC_sq,
+                   double&                                 mean_spreacc,
+                   double&                                 mean_spreacc_sq);
 
       static Fluid3GenalphaResVMM* Impl(DRT::ELEMENTS::Fluid3* ele);
 
@@ -321,8 +333,9 @@ namespace DRT
       blitz::Array<double,1> fsvelintaf_;
       //! coarse-scale convective stresses in gausspoint, time n+af
       blitz::Array<double,1> csconvintaf_;
-      //! grid velocity at intermediate time level n+af
-      blitz::Array<double,1> ugrid_af_;
+      //! ale convective velocity at intermediate time level n+af
+      //! aleconvint_af_ = velintaf_ - gridvelintaf_
+      blitz::Array<double,1> aleconvintaf_;
       //! pressure gradient in gausspoint, time n+1
       blitz::Array<double,1> pderxynp_;
       //! velocity derivatives in gausspoint, time n+1
