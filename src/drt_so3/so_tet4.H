@@ -7,7 +7,7 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 written by: Alexander Volf
-			alexander.volf@mytum.de       
+			alexander.volf@mytum.de
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -37,9 +37,9 @@ using namespace Teuchos;
 #define NUMSTR_SOTET4       6      // number of strains/stresses 	/****/
 #define NUMGPT_SOTET4       1      // total gauss points per element	/****/
 #define NUMDIM_SOTET4       3      // number of dimensions 			/****/
-#define NUMCOORD_SOTET4	    4 		// number of shape function cooordinates (ksi1-ksi4) 
-#define NUMNOD_SOTET4_FACE   3		// number of nodes on a TET4 face (which is a TRI3) 
-#define NUMGPT_SOTET4_FACE	 1		// number of GP    on a TET4 face (which is a TRI3) 
+#define NUMCOORD_SOTET4	    4 		// number of shape function cooordinates (ksi1-ksi4)
+#define NUMNOD_SOTET4_FACE   3		// number of nodes on a TET4 face (which is a TRI3)
+#define NUMGPT_SOTET4_FACE	 1		// number of GP    on a TET4 face (which is a TRI3)
 
 // forward declarations
 struct _MATERIAL;
@@ -81,7 +81,7 @@ public:
   \param id : A unique global id
   */
   So_tet4(int id, int owner);
-  
+
   /*!
   \brief Copy Constructor
 
@@ -89,7 +89,7 @@ public:
 
   */
   So_tet4(const So_tet4& old);
-  
+
   /*!
   \brief Deep copy this instance of Solid3 and return pointer to the copy
 
@@ -296,6 +296,7 @@ protected:
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
     calc_struct_stress,
+    postprocess_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
@@ -355,12 +356,17 @@ protected:
                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
-                                 struct _MATERIAL*         material);
+                                 Epetra_SerialDenseMatrix* stresses,
+                                 Epetra_SerialDenseMatrix* elestrain,
+                                 struct _MATERIAL*         material,
+                                 bool                      cauchy = false);
 
-  void so_tet4_stress(struct _MATERIAL* material,
-                   vector<double>& mydisp,
-                   Epetra_SerialDenseMatrix* stresses);
+//   void so_tet4_stress(struct _MATERIAL* material,
+//                    vector<double>& mydisp,
+//                    Epetra_SerialDenseMatrix* stresses);
 
+  void so_tet4_expol(Epetra_SerialDenseMatrix& stresses,
+                    Epetra_SerialDenseMatrix& nodalstresses);
 
 
   // #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden
@@ -369,7 +375,7 @@ protected:
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
                     const Epetra_SerialDenseMatrix* defgrd,
-                    int gp); 
+                    int gp);
 
 }; // class So_tet4
 
@@ -512,7 +518,7 @@ public:
 
   */
   Sotet4Surface(const Sotet4Surface& old);
-  
+
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
 
@@ -640,7 +646,7 @@ private:
   void sotet10_surface_shapefunc(
       Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
       Epetra_SerialDenseVector** weights);
-  
+
   /*void sotet10_surface_integ(	//became obsolete !!!!!!!!!!!!!!!!
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)

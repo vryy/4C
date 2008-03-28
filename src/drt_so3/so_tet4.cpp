@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------**##
 \file so_tet4.cpp
-\brief 
+\brief
 
 <pre>
 Maintainer: Moritz Frenzel
@@ -63,7 +63,7 @@ lineptrs_(old.lineptrs_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_tet4::Clone() const
 {
-  DRT::ELEMENTS::So_tet4* newelement = new DRT::ELEMENTS::So_tet4(*this);  
+  DRT::ELEMENTS::So_tet4* newelement = new DRT::ELEMENTS::So_tet4(*this);
   return newelement;
 }
 
@@ -146,6 +146,35 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
 }
 
 
+/*----------------------------------------------------------------------*
+ |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_tet4::so_tet4_expol(Epetra_SerialDenseMatrix& stresses,
+                                           Epetra_SerialDenseMatrix& nodalstresses)
+{
+  static Epetra_SerialDenseMatrix expol(NUMNOD_SOTET4, NUMGPT_SOTET4);
+  static bool isfilled;
+
+  if (isfilled==true)
+  {
+    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+  }
+  else
+  {
+    expol(0,0)=1.0;
+    expol(1,0)=1.0;
+    expol(2,0)=1.0;
+    expol(3,0)=1.0;
+
+    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+
+    isfilled=true;
+  }
+}
+
+
+
+
 /*----------------------------------------------------------------------***
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
@@ -181,7 +210,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_tet4::ElementRegister() cons
   /* parameter coordinates (ksi1, ksi2, ksi3, ksi4) of nodes
    * of a common tetrahedron [-1,1]x[-1,1]x[-1,1]
    *  4-node hexahedron: node 0,1,...,3
-   *          
+   *
    * -----------------------
    *- this is the numbering used in GiD & EXODUS!!
    *      3-
@@ -199,7 +228,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_tet4::ElementRegister() cons
    *      |  /                   \ \
    *      |/                       \\
    *      0--------------------------1
-   */ 
+   */
   /*====================================================================*/
 
 /*----------------------------------------------------------------------***
@@ -218,7 +247,7 @@ DRT::Element** DRT::ELEMENTS::So_tet4::Volumes()
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::So_tet4::Surfaces()
 {
-  
+
   const int nsurf = NumSurface();
   surfaces_.resize(nsurf);
   surfaceptrs_.resize(nsurf);
@@ -266,7 +295,7 @@ DRT::Element** DRT::ELEMENTS::So_tet4::Surfaces()
   surfaceptrs_[3] = surfaces_[3].get();
 
   return (DRT::Element**)(&(surfaceptrs_[0]));
-  
+
   return 0;
 }
 

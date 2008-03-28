@@ -104,6 +104,10 @@ void write_serialdensematrix_result(string result_name, PostField* field,
     // http://gid.cimne.upc.es/support_team/gid_toc/gid_toc.html
 
     break;
+  case DRT::Element::tet4:
+    gaussname = "tet4";
+    numdim=3;
+    break;
   case DRT::Element::quad4:
       gaussname = "quad4";
       numdim=2;
@@ -290,7 +294,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndMesh();
     break;
   case DRT::Element::tet4:
-    GiD_BeginGaussPoint("tet4", GiD_Tetrahedra, "tet4", 4, 0, 1);
+    GiD_BeginGaussPoint("tet4", GiD_Tetrahedra, "tet4", 1, 0, 1);
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("tet4",GiD_3D,GiD_Tetrahedra,4);
