@@ -260,6 +260,11 @@ public:
   void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
   //@}
+  
+  void FlowRateCalculation();
+  void OutflowBoundary();
+  std::complex<double> LungImpedance(int, int, std::complex<double>,std::complex<double>, std::complex<double> []);
+  std::complex<double> DCLungImpedance(int, int, std::complex<double>, std::complex<double> []);
 
 protected:
 
@@ -289,6 +294,9 @@ protected:
 
   //! use (or not) linearisation of reactive terms on the element
   bool newton_;
+
+  /// whether we do some extrapolation at the begin of each time step
+  bool extrapolationpredictor_;
 
   int restartstep_;
   int uprestart_;
@@ -400,6 +408,9 @@ protected:
 
   RCP<PeriodicBoundaryConditions> pbc_;
 
+  // the connection between master and slave nodes on this proc
+  map<int,vector<int> >     mapmastertoslave_;
+
   /// my elements grouped for faster evaluation
   //RCP<DRT::EGROUP::ElementGroupManager> egm_;
 
@@ -428,6 +439,10 @@ protected:
   double           dtele_;
   double           dtsolve_;
   double           dtfilter_;
+  
+  // Flowrate array for impedance conditions
+  RCP<vector<double> > 	FlowRateStorage_;
+  RCP<Epetra_Vector> impedancetbc_;
 
   /// velocity-pressure block matrix split strategy
   class VelPressSplitStrategy

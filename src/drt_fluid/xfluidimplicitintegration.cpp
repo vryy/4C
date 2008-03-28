@@ -66,6 +66,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   alefluid_(alefluid),
   time_(0.0),
   step_(0),
+  extrapolationpredictor_(params.get("do explicit predictor",true)),
   restartstep_(0),
   uprestart_(params.get("write restart every", -1)),
   writestep_(0),
@@ -113,16 +114,20 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   fssgv_ = params_.get<string>("fs subgrid viscosity","No");
 
   // -------------------------------------------------------------------
-  // Build element group. This might change some element orientations.
-  // -------------------------------------------------------------------
-
-  //egm_ = rcp(new DRT::EGROUP::ElementGroupManager(*fluiddis));
-
-  // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
   pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
   pbc_->UpdateDofsForPeriodicBoundaryConditions();
+
+  mapmastertoslave_ = pbc_->ReturnAllCoupledNodesOnThisProc();
+
+  // -------------------------------------------------------------------
+  // Build element group. This might change some element orientations.
+  //
+  // Warning: The egm has to be called after pbc->Update since the pbc
+  //          moved elements among processors
+  // -------------------------------------------------------------------
+//  egm_ = rcp(new DRT::EGROUP::ElementGroupManager(*actdis));
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
@@ -266,8 +271,178 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // solid displacement (to be removed)
   soliddispnp_       = LINALG::CreateVector(*soliddofrowmap,true);
 
+  // initialise vectors and flags for (dynamic) Smagorinsky model
+  // ------------------------------------------------------------
+  //
+  // (the smoothed quantities)
+  //
+  dynamic_smagorinsky_ = false;
+
+  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+
+  // flag for special flow: currently channel flow or flow in a lid-driven cavity
+  special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
+
+  if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+      ==
+      "CLASSICAL_LES")
+  {
+    // a canonical flow with homogeneous directions would allow a
+    // spatial averaging of data
+    string hom_plane = modelparams->get<string>("CHANNEL_HOMPLANE","not specified");
+
+    if (myrank_ == 0)
+    {
+
+      // Underresolved DNS, traditional LES (Smagorinsky type), RANS?
+      // including consistecy checks
+      cout << "Turbulence approach        : ";
+      cout << modelparams->get<string>("TURBULENCE_APPROACH");
+      cout << &endl << &endl;
+
+      if(modelparams->get<string>("TURBULENCE_APPROACH")
+         ==
+         "RANS")
+      {
+        dserror("RANS approaches not implemented yet\n");
+      }
+      else if(modelparams->get<string>("TURBULENCE_APPROACH")
+              ==
+              "CLASSICAL_LES")
+      {
+        string physmodel = modelparams->get<string>("PHYSICAL_MODEL");
+
+        cout << "                             ";
+        cout << physmodel;
+        cout << &endl;
+
+        if (physmodel == "Smagorinsky")
+        {
+          cout << "                             " ;
+          cout << "with Smagorinsky constant Cs= ";
+          cout << modelparams->get<double>("C_SMAGORINSKY") ;
+        }
+        else if(physmodel == "Smagorinsky_with_van_Driest_damping")
+        {
+          if (special_flow_ != "channel_flow_of_height_2"
+              ||
+              hom_plane != "xz")
+          {
+            dserror("The van Driest damping is only implemented for a channel flow with wall \nnormal direction y");
+          }
+
+          cout << "                             "          ;
+          cout << "- Smagorinsky constant:   Cs   = "      ;
+          cout << modelparams->get<double>("C_SMAGORINSKY");
+          cout << &endl;
+
+          cout << "                             "          ;
+          cout << "- viscous length      :   l_tau= "      ;
+          cout << modelparams->get<double>("CHANNEL_L_TAU");
+          cout << &endl;
+        }
+        else if(physmodel == "Dynamic_Smagorinsky")
+        {
+          if (special_flow_ != "channel_flow_of_height_2"
+              ||
+              hom_plane != "xz")
+          {
+            cout << "      no homogeneous directions specified --- so we just use pointwise clipping for Cs\n";
+          }
+        }
+        cout << &endl;
+      }
+
+      if (special_flow_ == "channel_flow_of_height_2")
+      {
+        cout << "                             " ;
+        cout << "Turbulence statistics are evaluated ";
+        cout << "for a turbulent channel flow.\n";
+        cout << "                             " ;
+        cout << "The solution is averaged over the homogeneous ";
+        cout << hom_plane;
+        cout << " plane and over time.\n";
+      }
+      cout << &endl;
+      cout << &endl;
+    }
+
+    if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Dynamic_Smagorinsky"
+      )
+    {
+      dynamic_smagorinsky_ = true;
+
+      // get a vector layout from the discretization to construct
+
+      const Epetra_Map* noderowmap    = discret_->NodeRowMap();
+
+      filtered_vel_                   = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+      filtered_reynoldsstress_        = rcp(new Epetra_MultiVector(*noderowmap,9,true));
+      filtered_modeled_subgrid_stress_= rcp(new Epetra_MultiVector(*noderowmap,9,true));
+
+      averaged_LijMij_                = rcp(new vector<double>);
+      averaged_MijMij_                = rcp(new vector<double>);
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // initialize turbulence-statistics evaluation
+  // -------------------------------------------------------------------
+  //if (special_flow_ == "lid_driven_cavity")
+  if (special_flow_ != "no")
+  {
+    // parameters for sampling/dumping period
+    samstart_  = modelparams->get<int>("SAMPLING_START",1);
+    samstop_   = modelparams->get<int>("SAMPLING_STOP",stepmax_);
+    dumperiod_ = modelparams->get<int>("DUMPING_PERIOD",1);
+
+    if (special_flow_ == "lid_driven_cavity")
+      turbulencestatistics_ldc_=rcp(new TurbulenceStatisticsLdc(discret_,params_));
+    else if (special_flow_ == "channel_flow_of_height_2")
+      turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
+  }
+
+  // -------------------------------------------------------------------
+  // necessary only for the VM3 approach:
+  // coarse- and fine-scale solution vectors + respective ouptput
+  // -------------------------------------------------------------------
+  if (fssgv_ != "No")
+  {
+    csvelnp_  = LINALG::CreateVector(*dofrowmap,true);
+    fsvelnp_  = LINALG::CreateVector(*dofrowmap,true);
+    convnp_   = LINALG::CreateVector(*dofrowmap,true);
+    csconvnp_ = LINALG::CreateVector(*dofrowmap,true);
+    fsconvnp_ = LINALG::CreateVector(*dofrowmap,true);
+
+    if (myrank_ == 0)
+    {
+      // Output
+      cout << "Fine-scale subgrid-viscosity approach based on AVM3: ";
+      cout << &endl << &endl;
+      cout << params_.get<string>("fs subgrid viscosity");
+
+      if (fssgv_ == "Smagorinsky_all" || fssgv_ == "Smagorinsky_small" ||
+          fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
+      {
+        cout << " with Smagorinsky constant Cs= ";
+        cout << modelparams->get<double>("C_SMAGORINSKY") ;
+      }
+      cout << &endl << &endl << &endl;
+    }
+  }
+
   // end time measurement for initialization
   tm1_ref_ = null;
+  
+  vector<DRT::Condition*> impedancecond;
+  discret_->GetCondition("ImpedanceCond",impedancecond);
+        	
+  if (!impedancecond.empty()){
+  FlowRateStorage_ = rcp(new vector<double>);
+  impedancetbc_= LINALG::CreateVector(*dofrowmap,true);
+  }
 
   return;
 
@@ -373,7 +548,7 @@ void XFluidImplicitTimeInt::TimeLoop()
     if (alefluid_)
       dserror("no ALE possible with linearised fluid");
     if (fssgv_ != "No")
-      dserror("no fine scale solution implemented with linearised fluid");
+      dserror("no fine-scale solution implemented with linearised fluid");
     /* additionally it remains to mention that for the linearised
        fluid the stbilisation is hard coded to be SUPG/PSPG */
   }
@@ -434,11 +609,25 @@ void XFluidImplicitTimeInt::TimeLoop()
     //  accn_  = (velnp_-veln_) / (dt)
     //
     // -------------------------------------------------------------------
+
     TimeUpdate();
 
     // time measurement: output and statistics --- start TimeMonitor tm8
     tm8_ref_ = rcp(new TimeMonitor(*timeout_ ));
 
+	vector<DRT::Condition*> impedancecond;
+	discret_->GetCondition("ImpedanceCond",impedancecond);
+	
+	if (!impedancecond.empty())
+	{
+		double dtp = (impedancecond[0])->GetDouble("timeperiod");
+		FlowRateCalculation();
+		if (time_ > dtp*dta_){
+			OutflowBoundary();
+			}
+	}
+    
+    
     // -------------------------------------------------------------------
     // add calculated velocity to mean value calculation (statistics)
     // -------------------------------------------------------------------
@@ -626,9 +815,15 @@ void XFluidImplicitTimeInt::PrepareTimeStep()
   //                     +-                                      -+
   //
   // -------------------------------------------------------------------
-  if (step_>1)
+  //
+  // We cannot have a predictor in case of monolithic FSI here. There needs to
+  // be a way to ture this off.
+  if (extrapolationpredictor_)
   {
-    ExplicitPredictor();
+    if (step_>1)
+    {
+      ExplicitPredictor();
+    }
   }
 
   // -------------------------------------------------------------------
@@ -723,9 +918,6 @@ void XFluidImplicitTimeInt::NonlinearSolve()
   const Epetra_Map* dofrowmap       = discret_->DofRowMap();
 
   // ---------------------------------------------- nonlinear iteration
-  // maximum number of nonlinear iteration steps
-  const int     itemax    =params_.get<int>   ("max nonlin iter steps");
-
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
   const double  ittol     =params_.get<double>("tolerance for nonlin iter");
@@ -735,7 +927,13 @@ void XFluidImplicitTimeInt::NonlinearSolve()
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
   int               itnum = 0;
+  int               itemax = 0;
   bool              stopnonliniter = false;
+
+  // currently default for turbulent channel flow: only one iteration before sampling
+  if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
+    itemax  = 2;
+  else itemax  = params_.get<int>   ("max nonlin iter steps");
 
   dtsolve_ = 0;
   dtele_   = 0;
@@ -766,7 +964,13 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
       // add Neumann loads
       residual_->Update(1.0,*neumann_loads_,0.0);
-
+      
+      vector<DRT::Condition*> impedancecond;
+      discret_->GetCondition("ImpedanceCond",impedancecond);
+      	
+      if (!impedancecond.empty()){
+      residual_->Update(1.0,*impedancetbc_,0.0);
+      }
       // Filter velocity for dynamic Smagorinsky model --- this provides
       // the necessary dynamic constant
       // //
@@ -790,13 +994,6 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       if (fssgv_ == "scale_similarity" ||
           fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
       {
-        // choose what to assemble
-        eleparams.set("assemble matrix 1",false);
-        eleparams.set("assemble matrix 2",false);
-        eleparams.set("assemble vector 1",true);
-        eleparams.set("assemble vector 2",false);
-        eleparams.set("assemble vector 3",false);
-
         // action for elements
         eleparams.set("action","calc_convective_stresses");
 
@@ -805,7 +1002,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
         discret_->SetState("velnp",velnp_);
 
         // element evaluation for getting convective stresses at nodes
-        discret_->Evaluate(eleparams,sysmat_,convnp_);
+        discret_->Evaluate(eleparams,null,convnp_);
         discret_->ClearState();
       }
 
@@ -1279,10 +1476,25 @@ void XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // set the new solution we just got
   if (vel!=Teuchos::null)
   {
-    incvel_->Update(1.0, *vel, 0.);
+    int len = vel->MyLength();
+
+    // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
+    // values.
+    //
+    // There is no epetra operation for this! Maybe we could have such a beast
+    // in ANA?
+
+    double* veln  = &(*veln_)[0];
+    double* velnp = &(*velnp_)[0];
+    double* dt    = &(*dirichtoggle_)[0];
+    double* idv   = &(*invtoggle_)[0];
+    const double* incvel = &(*vel)[0];
 
     //------------------------------------------------ update (u,p) trial
-    velnp_->Update(1.0,*incvel_,1.0);
+    for (int i=0; i<len; ++i)
+    {
+      velnp[i] = velnp[i]*dt[i] + (veln[i] + incvel[i])*idv[i];
+    }
   }
 
   // add Neumann loads
@@ -1439,8 +1651,8 @@ void XFluidImplicitTimeInt::Output()
   //-------------------------------------------- output of solution
 
   //increase counters
-    restartstep_ += 1;
-    writestep_ += 1;
+  restartstep_ += 1;
+  writestep_ += 1;
 
   if (writestep_ == upres_)  //write solution
   {
@@ -1660,6 +1872,46 @@ void XFluidImplicitTimeInt::ReadRestart(int step)
 }
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |                                                           chfoe 01/08|
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void XFluidImplicitTimeInt::UpdateGridv()
+{
+  // get order of accuracy of grid velocity determination
+  // from input file data
+  const int order  = params_.get<int>("order gridvel");
+
+  switch (order)
+  {
+    case 1:
+      /* get gridvelocity from BE time discretisation of mesh motion:
+           -> cheap
+           -> easy
+           -> limits FSI algorithm to first order accuracy in time
+
+                  x^n+1 - x^n
+             uG = -----------
+                    Delta t                        */
+      gridv_->Update(1/dta_, *dispnp_, -1/dta_, *dispn_, 0.0);
+    break;
+    case 2:
+      /* get gridvelocity from BDF2 time discretisation of mesh motion:
+           -> requires one more previous mesh position or displacemnt
+           -> somewhat more complicated
+           -> allows second order accuracy for the overall flow solution  */
+      gridv_->Update(1.5/dta_, *dispnp_, -2.0, *dispn_, 0.0);
+      gridv_->Update(0.5, *dispnm_, 1.0);
+    break;
+  }
+}
+
+
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1796,9 +2048,35 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
       // out to screen
       if (myrank_==0)
       {
-        cout << "Disturbed initial profile:   max. " << perc << "% random perturbation\n";
+        cout << "Disturbed initial profile:   max. " << perc*100 << "% random perturbation\n";
         cout << "\n\n";
       }
+
+      double bmvel=0;
+      double mybmvel=0;
+      double thisvel=0;
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
+      {
+        // get the processor local node
+        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+        // the set of degrees of freedom associated with the node
+        vector<int> nodedofset = discret_->Dof(lnode);
+
+        for(int index=0;index<numdim;++index)
+        {
+          int gid = nodedofset[index];
+          int lid = dofrowmap->LID(gid);
+
+          thisvel=(*velnp_)[lid];
+          if (mybmvel*mybmvel < thisvel*thisvel) mybmvel=thisvel;
+        }
+      }
+
+      // the noise is proportional to the bulk mean velocity of the
+      // undisturbed initial field (=2/3*maximum velocity)
+      mybmvel=2*mybmvel/3;
+      discret_->Comm().MaxAll(&mybmvel,&bmvel,1);
 
       // loop all nodes on the processor
       for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
@@ -1808,26 +2086,21 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
         // the set of degrees of freedom associated with the node
         vector<int> nodedofset = discret_->Dof(lnode);
 
-        // the noise is proportional to the maximum component of the
-        // undisturbed initial field in this point
-        double initialval=0;
+        // check whether we have a pbc condition on this node
+        vector<DRT::Condition*> mypbc;
 
-        // direction with max. profile
-        int flowdirection = 0;
+        lnode->GetCondition("SurfacePeriodic",mypbc);
 
-        for(int index=0;index<numdim;++index)
+        // check whether a periodic boundary condition is active on this node
+        if (mypbc.size()>0)
         {
-          int gid = nodedofset[index];
-          int lid = dofrowmap->LID(gid);
+          // yes, we have one
 
-          double thisval=(*velnp_)[lid];
-          if (initialval*initialval < thisval*thisval)
-          {
-            initialval=thisval;
+          // get the list of all his slavenodes
+          map<int, vector<int> >::iterator master = mapmastertoslave_.find(lnode->Id());
 
-            // remember the direction of maximum flow
-            flowdirection = index;
-          }
+          // slavenodes are ignored
+          if(master == mapmastertoslave_.end()) continue;
         }
 
         // add random noise on initial function field
@@ -1837,18 +2110,10 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
 
           double randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
 
-          double noise = initialval * randomnumber * perc;
-
-          // full noise only in main flow direction
-          // one third noise orthogonal to flow direction
-          if (index != flowdirection)
-          {
-            noise *= 1./3.;
-          }
+          double noise = perc * bmvel * randomnumber;
 
           err += velnp_->SumIntoGlobalValues(1,&noise,&gid);
           err += veln_ ->SumIntoGlobalValues(1,&noise,&gid);
-
         }
 
         if(err!=0)
@@ -2283,6 +2548,452 @@ void XFluidImplicitTimeInt::LiftDrag() const
   }
 }//FluidImplicitTimeInt::LiftDrag
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | filter quantities for dynamic Smagorinsky model. Compute averaged    |
+ | values for LijMij and MijMij.                             gammi 02/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void XFluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
+{
+  // check plausiblity of dimension of problem --- only 3d is
+  // valid for turbulence calculations
+  const int numdim  = params_.get<int>("number of velocity degrees of freedom");
+  if(numdim!=3)
+  {
+    dserror("Only 3d problems are allowed for dynamic Smagorinsky");
+  }
+
+  // time measurement
+  double tcpu=ds_cputime();
+
+  // get the dofrowmap for access of velocity dofs
+  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
+
+  // generate a parameterlist for communication and control
+  ParameterList filterparams;
+
+  // set filter action for elements
+  filterparams.set("action","calc_fluid_box_filter");
+
+  // set state vector to pass distributed vector to the element
+  discret_->ClearState();
+  discret_->SetState("u and p (trial)",velnp_);
+
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  // compute smoothed (averaged) velocities and stresses for
+  // all nodes
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+
+  // get additional connectivity for periodic boundary conditions
+  map<int,vector<int> > mapmastertoslave
+    =
+    pbc_->ReturnAllCoupledNodesOnThisProc();
+
+
+  // loop all nodes on the processor
+  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+  {
+    // ----------------------------------------
+    // get the processor local node
+    DRT::Node*  lnode       = discret_->lRowNode(lnodeid);
+
+    // the set of degrees of freedom associated with the node
+    vector<int> nodedofset = discret_->Dof(lnode);
+
+    // ----------------------------------------
+    // determine a patch of all elements adjacent to this nodex
+
+    // check whether the node is on a wall, i.e. all velocity
+    // dofs are Dirichlet constrained
+    int is_no_slip_node =0;
+    for(int index=0;index<numdim;++index)
+    {
+      int gid = nodedofset[index];
+      int lid = dofrowmap->LID(gid);
+
+      if ((*dirichtoggle_)[lid]==1)
+      {
+        is_no_slip_node++;
+      }
+    }
+
+    // skip this node if it is on a wall
+    if (is_no_slip_node == numdim)
+    {
+      continue;
+    }
+
+    // now check whether we have a pbc condition on this node
+    vector<DRT::Condition*> mypbc;
+
+    lnode->GetCondition("SurfacePeriodic",mypbc);
+
+    // check whether a periodic boundary condition is active
+    // on this node
+    bool ispbcmaster = false;
+
+    if (mypbc.size()>0)
+    {
+      // get the list of all his slavenodes
+      map<int, vector<int> >::iterator master
+        =
+        mapmastertoslave.find(lnode->Id());
+
+      // slavenodes are ignored
+      if(master == mapmastertoslave.end())
+      {
+        // the node is a slave --- so don't do anything
+        continue;
+      }
+      // we have a master. Remember this cause we have to extend the patch
+      // to the other side...
+      ispbcmaster = true;
+    }
+
+    // generate a vector of all adjacent elements
+    vector <DRT::Element*> patcheles;
+    for(int rr=0;rr<lnode->NumElement();++rr)
+    {
+      patcheles.push_back(lnode->Elements()[rr]);
+    }
+
+    // add the elements connected to the slavenodes --- master and
+    // slavenodes are treated like they were identical!
+    if(ispbcmaster == true)
+    {
+      for (unsigned slavecount = 0;
+           slavecount<mapmastertoslave[lnode->Id()].size();
+           ++slavecount)
+      {
+        // get the corresponding slavenodes
+        DRT::Node*  slavenode = discret_->gNode(mapmastertoslave[lnode->Id()][slavecount]);
+
+        // add the elements
+        for(int rr=0;rr<slavenode->NumElement();++rr)
+        {
+          patcheles.push_back(slavenode->Elements()[rr]);
+        }
+      }
+    }
+
+    // ----------------------------------------
+    // the patch is determined right now --- what follows
+    // now is the averaging over this patch
+
+
+    // define element matrices and vectors --- they are used to
+    // transfer information into the element routine and back
+    Epetra_SerialDenseMatrix ep_reystress_hat(3,3);
+    Epetra_SerialDenseMatrix ep_modeled_stress_grid_scale_hat(3,3);
+    Epetra_SerialDenseVector ep_velnp_hat (3);
+    Epetra_SerialDenseVector dummy1;
+    Epetra_SerialDenseVector dummy2;
+
+    // the patch volume has to be initialised to zero
+    double patchvolume = 0;
+
+    // loop all adjacent elements to this node
+    for (unsigned nele=0;nele<patcheles.size();++nele)
+    {
+      // get the adjacent element
+      DRT::Element* nbele = (patcheles[nele]);
+
+      // get element location vector, dirichlet flags and ownerships
+      vector<int> lm;
+      vector<int> lmowner;
+      nbele->LocationVector(*discret_,lm,lmowner);
+
+      // call the element evaluate method to integrate functions
+      // against heaviside function element
+      int err = nbele->Evaluate(filterparams,
+                                *discret_,
+                                lm,
+                                ep_reystress_hat,
+                                ep_modeled_stress_grid_scale_hat,
+                                ep_velnp_hat,dummy1,dummy2);
+      if (err) dserror("Proc %d: Element %d returned err=%d",
+                       discret_->Comm().MyPID(),nbele->Id(),err);
+
+      // get contribution to patch volume of this element. Add it up.
+      double volume_contribution =filterparams.get<double>("volume_contribution");
+
+      patchvolume+=volume_contribution;
+    }
+
+    // wrap Epetra Object in Blitz array
+    blitz::Array<double, 1> velnp_hat(
+      ep_velnp_hat.Values(),
+      blitz::shape(ep_velnp_hat.Length()),
+      blitz::neverDeleteData);
+
+    blitz::Array<double, 2> reystress_hat(
+      ep_reystress_hat.A(),
+      blitz::shape(ep_reystress_hat.M(),
+                   ep_reystress_hat.N()),
+      blitz::neverDeleteData,
+      blitz::ColumnMajorArray<2>());
+
+    blitz::Array<double, 2> modeled_stress_grid_scale_hat(
+      ep_modeled_stress_grid_scale_hat.A(),
+      blitz::shape(ep_modeled_stress_grid_scale_hat.M(),
+                   ep_modeled_stress_grid_scale_hat.N()),
+      blitz::neverDeleteData,
+      blitz::ColumnMajorArray<2>());
+
+
+    // normalize the computed convolution products by the complete patchvolume
+    reystress_hat                /=patchvolume;
+    modeled_stress_grid_scale_hat/=patchvolume;
+    velnp_hat                    /=patchvolume;
+
+    // now assemble the computed values into the global vector
+    double val = 0;
+    int    id  = (lnode->Id());
+
+    for (int idim =0;idim<3;++idim)
+    {
+      val = velnp_hat(idim);
+      ((*filtered_vel_)(idim))->ReplaceGlobalValues(1,&val,&id);
+
+      for (int jdim =0;jdim<3;++jdim)
+      {
+        val = reystress_hat (idim,jdim);
+        ((*filtered_reynoldsstress_ )       (3*idim+jdim))->ReplaceGlobalValues(1,&val,&id);
+
+        val = modeled_stress_grid_scale_hat(idim,jdim);
+        ((*filtered_modeled_subgrid_stress_)(3*idim+jdim))->ReplaceGlobalValues(1,&val,&id);
+      }
+    }
+
+    // for masternodes, all slavenodes get the same values
+    if (ispbcmaster == true)
+    {
+      for (unsigned slavecount = 0;slavecount<mapmastertoslave[lnode->Id()].size();++slavecount)
+      {
+        // get the corresponding slavenodes
+        DRT::Node*  slavenode = discret_->gNode(mapmastertoslave[lnode->Id()][slavecount]);
+
+        int    slaveid  = (slavenode->Id());
+
+        for (int idim =0;idim<3;++idim)
+        {
+          val = (velnp_hat(idim));
+          ((*filtered_vel_)(idim))->ReplaceGlobalValues(1,&val,&slaveid);
+
+          for (int jdim =0;jdim<3;++jdim)
+          {
+            val = reystress_hat (idim,jdim);
+            ((*filtered_reynoldsstress_ )       (3*idim+jdim))->ReplaceGlobalValues(1,&val,&slaveid);
+
+            val = modeled_stress_grid_scale_hat(idim,jdim);
+            ((*filtered_modeled_subgrid_stress_)(3*idim+jdim))->ReplaceGlobalValues(1,&val,&slaveid);
+          }
+        }
+      }
+    }
+  }
+
+  // clean up
+  discret_->ClearState();
+
+  // get the column map in order to communicate the result to all ghosted nodes
+  const Epetra_Map* nodecolmap = discret_->NodeColMap();
+
+  // allocate distributed vectors in col map format to have the filtered
+  // quantities available on ghosted nodes
+  col_filtered_vel_                    = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+  col_filtered_reynoldsstress_         = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+  col_filtered_modeled_subgrid_stress_ = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+
+  // export filtered vectors in rowmap to columnmap format
+  LINALG::Export(*filtered_vel_                   ,*col_filtered_vel_);
+  LINALG::Export(*filtered_reynoldsstress_        ,*col_filtered_reynoldsstress_);
+  LINALG::Export(*filtered_modeled_subgrid_stress_,*col_filtered_modeled_subgrid_stress_);
+
+
+  // -----------------------------------------------------------
+  // -----------------------------------------------------------
+  // computation of LijMij, MijMij and Cs_delta_sq
+
+  // up to now, only averaging in homogeneous planes is
+  // implemented. Otherwise, no aberaging will be applied.
+  //
+  //
+  // -----------------------------------------------------------
+  // -----------------------------------------------------------
+
+  // -----------------------------------------------------------
+  // initialise plane averaging of Cs for turbulent channel flow
+  vector<int>  count_for_average      ;
+  vector<int>  local_count_for_average;
+
+  vector <double> local_ele_sum_LijMij;
+  vector <double> local_ele_sum_MijMij;
+
+  if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
+      ==
+      "channel_flow_of_height_2")
+  {
+    // get ordered layers of elements in which LijMij and MijMij are averaged
+    if (planecoords_ == null)
+    {
+      planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
+    }
+
+    (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
+
+    averaged_LijMij_->resize((*planecoords_).size()-1);
+    averaged_MijMij_->resize((*planecoords_).size()-1);
+
+    count_for_average      .resize((*planecoords_).size()-1);
+    local_count_for_average.resize((*planecoords_).size()-1);
+
+    local_ele_sum_LijMij.resize((*planecoords_).size()-1);
+    local_ele_sum_MijMij.resize((*planecoords_).size()-1);
+
+    for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
+    {
+      (*averaged_LijMij_)    [rr]=0;
+      (*averaged_MijMij_)    [rr]=0;
+      local_ele_sum_LijMij   [rr]=0;
+      local_ele_sum_MijMij   [rr]=0;
+      local_count_for_average[rr]=0;
+    }
+  }
+
+  // -----------------------------------------------------------
+  // Compute Cs_delta_sq on elements, return LijMij and MijMij
+  // for plane averaging in case of turbulent channel flows
+
+  // generate a parameterlist for communication and control
+  ParameterList calc_smag_const_params;
+  // action for elements
+  calc_smag_const_params.set("action","calc_smagorinsky_const");
+
+  // hand filtered global vectors down to the element
+  calc_smag_const_params.set("col_filtered_vel"                   ,col_filtered_vel_);
+  calc_smag_const_params.set("col_filtered_reynoldsstress"        ,col_filtered_reynoldsstress_);
+  calc_smag_const_params.set("col_filtered_modeled_subgrid_stress",col_filtered_modeled_subgrid_stress_);
+
+  // dummy matrices and vectors for element call
+  Epetra_SerialDenseMatrix dummym1;
+  Epetra_SerialDenseMatrix dummym2;
+  Epetra_SerialDenseVector dummyv1;
+  Epetra_SerialDenseVector dummyv2;
+  Epetra_SerialDenseVector dummyv3;
+
+  // loop all elements on this proc (including ghosted ones)
+  for (int nele=0;nele<discret_->NumMyColElements();++nele)
+  {
+    // -----------------------------------------------------------
+    // Compute LijMij, MijMij and Cs_delta_sq_
+
+    // get the element
+    //DRT::Element* ele = discret_->lRowElement(nele);
+    DRT::Element* ele = discret_->lColElement(nele);
+
+    // get element location vector, dirichlet flags and ownerships
+    vector<int> lm;
+    vector<int> lmowner;
+
+    ele->LocationVector(*discret_,lm,lmowner);
+
+    // call the element evaluate method to integrate functions
+    // against heaviside function element
+    int err = ele->Evaluate(calc_smag_const_params,
+                            *discret_,
+                            lm,
+                            dummym1,dummym2,
+                            dummyv1,dummyv2,dummyv3);
+    if (err) dserror("Proc %d: Element %d returned err=%d",
+                     discret_->Comm().MyPID(),ele->Id(),err);
+
+
+
+    // -----------------------------------------------------------
+    // do averaging of Cs for turbulent channel flow
+
+    // initialise plane averaging of Cs for turbulent channel flow
+    if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
+        ==
+        "channel_flow_of_height_2")
+    {
+      // only row elements are included in the global averaging
+      if(ele->Owner() == myrank_)
+      {
+        // get the result from the element call
+        double LijMij = calc_smag_const_params.get<double>("LijMij");
+        double MijMij = calc_smag_const_params.get<double>("MijMij");
+        double center = calc_smag_const_params.get<double>("center");
+
+        // add result into result vetor
+
+        // for this purpose, determine the layer (the plane for average)
+        int  nlayer;
+        bool found = false;
+        for (nlayer=0;nlayer<(int)(*planecoords_).size()-1;)
+        {
+          if(center<(*planecoords_)[nlayer+1])
+          {
+            found = true;
+            break;
+          }
+          nlayer++;
+        }
+        if (found ==false)
+        {
+          dserror("could not determine element layer");
+        }
+
+        // add it up
+        local_ele_sum_LijMij[nlayer] += LijMij;
+        local_ele_sum_MijMij[nlayer] += MijMij;
+
+        local_count_for_average[nlayer]++;
+      }
+    }
+  }
+
+  if (params_.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW","no")
+      ==
+      "channel_flow_of_height_2")
+  {
+    // now add all the stuff from the different processors
+    for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
+    {
+      discret_->Comm().SumAll(&(local_count_for_average[rr]),&(count_for_average[rr]),1);
+      discret_->Comm().SumAll(&(local_ele_sum_LijMij[rr]),&((*averaged_LijMij_)[rr]),1);
+      discret_->Comm().SumAll(&(local_ele_sum_MijMij[rr]),&((*averaged_MijMij_)[rr]),1);
+    }
+
+    // do averaging
+    for (unsigned rr=0;rr<(*planecoords_).size()-1;++rr)
+    {
+      (*averaged_LijMij_)[rr]/=count_for_average[rr];
+      (*averaged_MijMij_)[rr]/=count_for_average[rr];
+    }
+
+    // provide necessary information for the elements
+    {
+      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+
+      modelparams->set<RefCountPtr<vector<double> > >("averaged_LijMij_",averaged_LijMij_);
+      modelparams->set<RefCountPtr<vector<double> > >("averaged_MijMij_",averaged_MijMij_);
+      modelparams->set<RefCountPtr<vector<double> > >("planecoords_",planecoords_);
+    }
+  }
+
+  dtfilter_=ds_cputime()-tcpu;
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -2413,6 +3124,253 @@ void XFluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> re
     dserror("sysmat_->Apply() failed");
   trueresidual_->Scale(-density/dta_/theta_);
 }
+
+void XFluidImplicitTimeInt::FlowRateCalculation()
+{
+  vector<DRT::Condition*> impedancecond;
+  discret_->GetCondition("ImpedanceCond",impedancecond);
+  double flowrate;
+  double area;
+  int cyclesteps=10;
+  ParameterList eleparams;
+  eleparams.set("action","flowrate calculation");
+  eleparams.set<double>("Outlet flowrate", 0.0);
+  eleparams.set<double>("Area calculation", 0.0);
+  eleparams.set("total time",time_);
+  eleparams.set("assemble matrix 1",false);
+  eleparams.set("assemble matrix 2",false);
+  eleparams.set("assemble vector 1",false);
+  eleparams.set("assemble vector 2",false);
+  eleparams.set("assemble vector 3",false);
+	
+  //store flowrate information
+  discret_->ClearState();
+  discret_->SetState("velnp",velnp_);
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  RCP<Epetra_Vector> myStoredFlowrates=rcp(new Epetra_Vector(*dofrowmap,100));
+  const string condstring("ImpedanceCond");
+  discret_->EvaluateCondition(eleparams,myStoredFlowrates,condstring);
+	
+  flowrate = eleparams.get<double>("Outlet flowrate");
+  area = eleparams.get<double>("Area calculation");
+  //Assign flowrate at current position
+  if (time_ <= cyclesteps*dta_){
+  	FlowRateStorage_->push_back(flowrate);
+  }
+  else {
+  	FlowRateStorage_->erase(FlowRateStorage_->begin());
+  	FlowRateStorage_->push_back(flowrate);
+  }
+  //cout << FlowRateStorage_->size() << endl;
+  return;
+}//FluidImplicitTimeInt::FlowRateCalculation
+
+void XFluidImplicitTimeInt::OutflowBoundary()
+{
+  vector<DRT::Condition*> impedancecond;
+  discret_->GetCondition("ImpedanceCond",impedancecond);
+    
+  ParameterList eleparams;
+  // action for elements
+  eleparams.set("action","Outlet impedance");
+    
+  //Only assemble a single vector
+  eleparams.set("assemble matrix 1",false);
+  eleparams.set("assemble matrix 2",false);
+  eleparams.set("assemble vector 1",true);
+  eleparams.set("assemble vector 2",false);
+  eleparams.set("assemble vector 3",false);
+
+  eleparams.set("total time",time_);
+  eleparams.set("delta time",dta_);
+  eleparams.set("thsl",theta_*dta_);
+	
+  //Current velocity to element
+  discret_->ClearState();
+  discret_->SetState("velnp",velnp_);
+  discret_->SetState("hist",hist_);
+
+  //Loop over all frequencies making a call to LungImpedance, w=2*pi*k/T
+  //where k=-N/2,....,N/2, however k is self adjointed.
+  //vector<double> ImpedanceValues(100);
+  const int cyclesteps=10;
+  vector<double> ImpedanceValues(cyclesteps);
+  std::complex<double> ImpedanceArrayFrequencyDomain[cyclesteps]={0};
+  std::complex<double> storage[35]={0}; 
+  double trigonometrytemp[cyclesteps]={0};
+  std::complex<double> RealNumberTwo (2,0), Imag (0,1), TimeDomainImpedance[cyclesteps]={0}, zparent (0,0), StorageEntry, TimeDomainImpedanceTmp=0, zleft (0,0);
+ double TimeDomainImpedanceReal, TimeDomainImpedanceImag, PressureFromConv=0, CyclePeriodDiscrete=10, trigonometrystuff;
+	
+  for (int ImpedanceCounter=1; ImpedanceCounter<=CyclePeriodDiscrete/2; ImpedanceCounter++)
+  {
+  	int generation=0;
+  	StorageEntry=LungImpedance(ImpedanceCounter, generation, zparent, zleft, storage);
+  	ImpedanceArrayFrequencyDomain[ImpedanceCounter]=StorageEntry;
+  	ImpedanceArrayFrequencyDomain[(int)CyclePeriodDiscrete-ImpedanceCounter]=StorageEntry;
+  }
+	  
+  //Calculate DC component
+  StorageEntry=DCLungImpedance(0,0,zparent,storage);
+  ImpedanceArrayFrequencyDomain[0]=StorageEntry;
+	  
+  for (int fourierindex=0; fourierindex<cyclesteps; fourierindex++)
+  {
+  	trigonometrytemp[fourierindex]=2*PI*fourierindex/cyclesteps;
+  }
+
+	
+  for (int PeriodFraction=0; PeriodFraction<cyclesteps; PeriodFraction++)
+  {
+  	trigonometrystuff=trigonometrytemp[PeriodFraction]*PeriodFraction;
+  	TimeDomainImpedanceReal=cos(trigonometrystuff);
+  	TimeDomainImpedanceImag=sin(trigonometrystuff);
+  	std::complex<double> TimeDomainImpedanceComplex (TimeDomainImpedanceReal,TimeDomainImpedanceImag);
+  	TimeDomainImpedance[PeriodFraction]=TimeDomainImpedanceTmp+TimeDomainImpedanceComplex*ImpedanceArrayFrequencyDomain[PeriodFraction];
+  	TimeDomainImpedanceTmp=TimeDomainImpedance[PeriodFraction];
+  }
+
+  //Get Real component of TimeDomain, imaginary part should be anyway zero.
+  for (int i=0; i<cyclesteps; i++){
+  	ImpedanceValues[i]=real(TimeDomainImpedance[i])/cyclesteps;
+  }
+
+  //Calculate pressure via inverse Fourier transform (if history of one period exists), 
+  //involves:			 Flow rate history of 1 period, Q
+  //					 Impedance history, Z
+	
+  for (int t=0; t<cyclesteps; t++){
+  	PressureFromConv=PressureFromConv+1000*ImpedanceValues[((cyclesteps-1)-t)]*(*FlowRateStorage_)[t];
+  }
+  PressureFromConv=PressureFromConv/cyclesteps;	
+  eleparams.set("ConvolutedPressure",PressureFromConv);
+
+  impedancetbc_->PutScalar(0.0);
+  const string condstring("ImpedanceCond");
+  discret_->EvaluateCondition(eleparams,impedancetbc_,condstring);
+  discret_->ClearState();
+	    
+}//FluidImplicitTimeInt::Outflow
+
+std::complex<double> XFluidImplicitTimeInt::LungImpedance(int ImpedanceCounter, int generation, std::complex<double> zparent, std::complex<double> zleft, std::complex<double> storage[])
+{
+  std::complex<double> Imag (0,1), RealNumberOne (1,0), RealThreeQuarters (0.75,0), RealNumberZero (0,0), K, wave_c, StoredTmpVar, g, zright, zend, StorageEntry;
+  double area, omega, WomersleyNumber, E=0.05, rho=1.206, nue=1.50912106e-5, compliance;
+  int generationLimit=33;
+  storage[generation]=zleft;
+	
+  //Lung morphological data
+  int delta[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1};
+  double diameter[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0002, 0.0003, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0014, 0.0015, 0.0017, 0.0019, 0.0020, 0.0022, 0.0023, 0.0024, 0.0026, 0.0030, 0.0030, 0.0038, 0.0049, 0.0054, 0.0054, 0.0069, 0.0077, 0.011, 0.0121, 0.0167};
+  double length[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0007, 0.0009, 0.0012, 0.0015, 0.0012, 0.0028, 0.0035, 0.0041, 0.0047, 0.0054, 0.0058, 0.0071, 0.0072, 0.0087, 0.0092, 0.0093, 0.0104, 0.0090, 0.0112, 0.0097, 0.0107, 0.0122, 0.0110, 0.0128, 0.0128, 0.0119, 0.0124, 0.0249, 0.0565, 0.1130};
+  double h[]={0.00014, 0.00014, 0.00014, 0.00014, 0.00014, 0.00014, 0.00010, 0.00010, 0.00011, 0.00012, 0.00013, 0.00015, 0.00017, 0.00020, 0.00022, 0.00024, 0.00026, 0.00028, 0.00030, 0.00030, 0.00032, 0.00033, 0.00034, 0.00026, 0.00040, 0.00040, 0.00047, 0.00057, 0.00062, 0.00062, 0.00074, 0.00080, 0.00105, 0.00113, 0.00146};
+
+  //Area of vessel
+  area=(PI*diameter[generation])/4;                                                                                                                 
+  //Frequency                                                           
+  omega=2*PI*ImpedanceCounter/4;
+  //Womersley number
+  WomersleyNumber=(diameter[generation]/2)*sqrt(omega/nue);   
+  //K depends on the womersley number
+  if (WomersleyNumber > 4)
+  {
+  	StoredTmpVar=(2/WomersleyNumber)*Imag;
+  	K=RealNumberOne+StoredTmpVar;     
+  }
+  else
+  {
+  	StoredTmpVar=8/WomersleyNumber*Imag;
+  	K=RealThreeQuarters+StoredTmpVar;
+  }
+	
+  //Compliance
+  compliance=(3*area*diameter[generation]/2)/(2*E*h[generation]);                                   
+             
+  //Wave speed
+  wave_c=sqrt(area*K/(rho*compliance));               
+	
+  //Convenience coefficient
+  g=sqrt(compliance*area*K/rho);                                                                             
+
+  if (real(zleft) == 0)
+  {
+  	zleft = (Imag)*((RealNumberOne/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));  
+  	storage[generation]=zleft;
+  }
+	
+  //Right side is always pre calculated!
+  if (real(zleft) != 0 && generation-delta[generation] == 0)
+  {
+  	zright = (Imag)*((RealNumberOne/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+  }
+  else if (real(storage[generation-delta[generation]]) == 0)     
+  {
+  	zright = (Imag)*(RealNumberOne/g*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+  }
+  else
+  {
+  	zright = storage[generation-delta[generation]];
+  }
+
+  //Bifurcation condition
+  zend = (zright*zleft)/(zleft+zright);
+	
+  //Impedance at the parent level
+  zparent = (Imag)*(RealNumberOne/g*sin(omega*length[generation]/wave_c)+zend*cos(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c)+Imag*g*zend*sin(omega*length[generation]/wave_c));	
+  zleft=zparent;
+   	
+  //Right side is always pre calculated!
+  if (generation < generationLimit) 
+  {
+  	generation++; 
+  	LungImpedance(ImpedanceCounter, generation, zparent, zleft, storage);                                    
+  }          
+  return StorageEntry=zparent;
+} //BioFluidImplicitTimeInt::LungImpedance
+
+std::complex<double> XFluidImplicitTimeInt::DCLungImpedance(int ImpedanceCounter, int generation, std::complex<double> zparent, std::complex<double> storage[])
+{
+  //DC impedance
+  std::complex<double> Imag (0,1), RealNumberOne (1,0), RealThreeQuarters (0.75,0), RealNumberZero (0,0), K, wave_c, StoredTmpVar, g, zleft, zright, StorageEntry;
+  double zend;
+  int generationLimit=33;
+	
+  zleft=zparent;
+  storage[generation]=zleft;
+  int delta[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1};
+  double diameter[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0002, 0.0003, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0014, 0.0015, 0.0017, 0.0019, 0.0020, 0.0022, 0.0023, 0.0024, 0.0026, 0.0030, 0.0030, 0.0038, 0.0049, 0.0054, 0.0054, 0.0069, 0.0077, 0.011, 0.0121, 0.0167};
+  double length[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0007, 0.0009, 0.0012, 0.0015, 0.0012, 0.0028, 0.0035, 0.0041, 0.0047, 0.0054, 0.0058, 0.0071, 0.0072, 0.0087, 0.0092, 0.0093, 0.0104, 0.0090, 0.0112, 0.0097, 0.0107, 0.0122, 0.0110, 0.0128, 0.0128, 0.0119, 0.0124, 0.0249, 0.0565, 0.1130};
+	
+  if (real(zleft) == 0)
+  {
+  	zleft = 8*length[generation]/(PI*diameter[generation]/2);
+  	storage[generation]=zleft;
+  }
+	
+  if (real(zleft) != 0 && generation-delta[generation] == 0)
+  {
+  	zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
+  }
+  else if (real(storage[generation-delta[generation]]) == 0)     //Right side is always pre calculated!
+  {
+  	zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
+  }
+  else
+  {
+  	zright = storage[generation-delta[generation]];
+  }
+	
+  //Bifurcation condition
+  zend = real((zright*zleft)/(zleft+zright));              
+  //Impedance at the parent level
+  zparent = zend;	
+   	
+  if (generation < generationLimit) //Number of Generations to model, better for small vessels ie. not the trachea
+  {
+  	generation++;
+  	DCLungImpedance(ImpedanceCounter, generation, zparent, storage);                                    
+  }          
+  return StorageEntry=zparent;
+}//FluidImplicitTimeInt::DCLungImpedance   
 
 
 #endif /* CCADISCRET       */
