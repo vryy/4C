@@ -58,7 +58,9 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
                                         )
 {
     
-	
+    static int timestepcounter_ = -1;
+    timestepcounter_++;
+    
     bool xfemIntersection; 
     vector< DRT::Condition * >      xfemConditions;
     set< DRT::Element* > 		    cutterElements;
@@ -207,7 +209,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
         {         
             //debugTetgenDataStructure(xfemElement);
             //computeCDT(xfemElement, cutterElements[0], domainintcells, boundaryintcells);
-            computeCDT(xfemElement, domainintcells, boundaryintcells);
+            computeCDT(xfemElement, domainintcells, boundaryintcells, timestepcounter_);
         }
         
     }// for-loop over all  actdis->NumMyColElements()
@@ -1446,7 +1448,8 @@ void Intersection::computeCDT(
         const DRT::Element*           			element,
 //        const DRT::Element*            			cutterElement,
         map< int, DomainIntCells >&	            domainintcells,
-        map< int, BoundaryIntCells >&           boundaryintcells)
+        map< int, BoundaryIntCells >&           boundaryintcells,
+        int                                     timestepcounter_)
 {
     int dim = 3;
     int nsegments = 0; 
@@ -1465,8 +1468,11 @@ void Intersection::computeCDT(
     // fill point list
     int fill = 0;
     for(int i = 0; i <  in.numberofpoints; i++)
-        for(int j = 0; j < dim; j++)  
-            in.pointlist[fill++] = (REAL) pointList_[i].coord[j]; 
+        for(int j = 0; j < dim; j++)
+        {
+            in.pointlist[fill] = (REAL) pointList_[i].coord[j];
+            fill++;
+        }
  
  
     in.pointmarkerlist = new int[in.numberofpoints];   
@@ -1477,8 +1483,7 @@ void Intersection::computeCDT(
         in.pointmarkerlist[i] = 2;    // 2 : point not lying on the xfem element
 
    
-    if(triangleList_.size()>0)      in.numberoffacets = numXFEMSurfaces_ + triangleList_.size(); 
-    else                            in.numberoffacets = numXFEMSurfaces_;   
+    in.numberoffacets = numXFEMSurfaces_ + triangleList_.size(); 
       
     in.facetlist = new tetgenio::facet[in.numberoffacets];
     in.facetmarkerlist = new int[in.numberoffacets];
@@ -1488,19 +1493,19 @@ void Intersection::computeCDT(
     for(int i = 0; i < numXFEMSurfaces_; i++)
     {
         f = &in.facetlist[i];
-        if(segmentList_[i].size() > 0)          nsegments = (int) (segmentList_[i].size()/2);
-        else                                    nsegments = 0;
-        if(surfacePointList_[i].size() > 0)     nsurfPoints = surfacePointList_[i].size();
-        else                                    nsurfPoints = 0;
+        nsegments = (int) (segmentList_[i].size()/2);
+        nsurfPoints = surfacePointList_[i].size();
+    
         f->numberofpolygons = 1 + nsegments + nsurfPoints; 
         f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
         f->numberofholes = 0;
         f->holelist = NULL;
         p = &f->polygonlist[0];
-        p->numberofvertices = 4;
+        const int numnodequad4 = 4;
+        p->numberofvertices = numnodequad4;
         p->vertexlist = new int[p->numberofvertices];
-        for(int j = 0; j < 4; j ++)
-            p->vertexlist[j] = eleNumberingSurfaces_[i][j];
+        for(int ivertex = 0; ivertex < numnodequad4; ivertex ++)
+            p->vertexlist[ivertex] = eleNumberingSurfaces_[i][ivertex];
            
       
         int count = 0;
@@ -1537,7 +1542,7 @@ void Intersection::computeCDT(
         }    
     }
     
-    // store triangles
+    // store triangles (tri3)
     for(int i = numXFEMSurfaces_; i < in.numberoffacets; i++)
     {
         f = &in.facetlist[i];
@@ -1548,7 +1553,7 @@ void Intersection::computeCDT(
         p = &f->polygonlist[0];
         p->numberofvertices = 3;
         p->vertexlist = new int[p->numberofvertices];
-        for(int j = 0; j < 3; j ++)
+        for(int j = 0; j < p->numberofvertices; j ++)
             p->vertexlist[j] = triangleList_[i - element->NumSurface()][j];    
     }
       
@@ -1605,11 +1610,11 @@ void Intersection::computeCDT(
  
     
     //Debug
-//    vector<int> elementIds;
-//    for(int i = 388; i<389; i++)
-//        elementIds.push_back(i);
+    vector<int> elementIds;
+    //for(int i = 388; i<389; i++)
+        elementIds.push_back(element->Id());
     
-    //debugTetgenOutput(in, out, element, elementIds);
+    debugTetgenOutput(in, out, element, elementIds, timestepcounter_);
     //printTetViewOutputPLC( element, element->Id(), in);
     
     // store interface triangles (+ recovery of higher order meshes)
@@ -3841,7 +3846,8 @@ void Intersection::debugTetgenDataStructure(
 void Intersection::debugTetgenOutput( 	tetgenio& in,
 										tetgenio& out, 
 										const DRT::Element*   element,
-    									vector<int>& elementIds) const
+    									vector<int>& elementIds,
+    									int timestepcounter) const
 {
 	char* tetgenIn = "tetgenPLC";
 	char* tetgenOut = "tetgenMesh";
@@ -3853,8 +3859,8 @@ void Intersection::debugTetgenOutput( 	tetgenio& in,
 		if(element->Id()== elementIds[i])
 		{
 			// change filename
-			sprintf(tetgenInId,"%s%d", tetgenIn, elementIds[i]);
-			sprintf(tetgenOutId,"%s%d", tetgenOut, elementIds[i]);
+			sprintf(tetgenInId,"%s%d%d", tetgenIn, elementIds[i], timestepcounter);
+			sprintf(tetgenOutId,"%s%d%d", tetgenOut, elementIds[i],timestepcounter);
 			
 			// write piecewise linear complex
 			in.save_nodes(tetgenInId);

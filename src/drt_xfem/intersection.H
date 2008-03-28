@@ -428,7 +428,8 @@ class Intersection
             const DRT::Element*                     element,
 //            const DRT::Element*                     cutterElement,
             map< int, DomainIntCells >&             domainintcells,
-            map< int, BoundaryIntCells >&           boundaryintcells
+            map< int, BoundaryIntCells >&           boundaryintcells,
+            int                                     timestepcounter_
             );
     
     
@@ -1179,7 +1180,8 @@ class Intersection
             tetgenio& in,
 			tetgenio& out, 
 		    const DRT::Element* element,
-            vector<int>& elementIds
+            vector<int>& elementIds,
+            int timestepcounter
             ) const;
             
 
