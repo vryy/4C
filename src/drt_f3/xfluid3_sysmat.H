@@ -796,7 +796,7 @@ void Sysmat(
             
             // shape functions and their first derivatives
             static BlitzVec funct(numnode);
-            static BlitzMat deriv(3, numnode ,blitz::ColumnMajorArray<2>());
+            static BlitzMat deriv(3, numnode, blitz::ColumnMajorArray<2>());
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
@@ -853,7 +853,7 @@ void Sysmat(
             static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
             if (higher_order_ele)
             {
-                static BlitzMat deriv2(6,numnode);
+                static BlitzMat deriv2(6,numnode,blitz::ColumnMajorArray<2>());
                 DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
                 derxy2 = gder2<DISTYPE>(xjm, derxy, deriv2, xyze);
             }
