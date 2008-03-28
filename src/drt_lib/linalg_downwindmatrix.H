@@ -37,8 +37,7 @@ namespace LINALG
 /*!
 \author gee (gee@lnm.mw.tum.de)
 
-\brief An approximate block factorization preconditioner based on the
-       SIMPLE family of methods
+\brief Creates a convection downwind numbering of a linear problem
 */
 class  DownwindMatrix
 {
@@ -46,6 +45,12 @@ public:
 
   /*!
   \brief Standard Constructor
+  
+  \param A (in) : Matrix to create downwind numbering for
+  \param nv (in): number of velocity degrees of freedom per node, may not be zero
+  \param np (in): number of pressure degrees of freedom per node, may be zero
+  \param tau (in): threshold parameter, somewhere between 1.0 and about 4.0
+  \param outlevel (in): level of output to screen (0 no output, >0 output)
   */
   explicit DownwindMatrix(RCP<Epetra_CrsMatrix> A, const int nv, 
                           const int np, const double tau, const int outlevel);
@@ -55,7 +60,18 @@ public:
   */
   virtual ~DownwindMatrix() {}
 
-  /// return a reindexed linear problem
+  /*!
+  \brief return reindexed linear problem
+  
+  Takes a linear problem and reindexes it. 
+  The lp provided must contain a Epetra_CrsMatrix, a rhs and lhs MultiVector.
+  Returns a ref to the reindexed problem.
+  Note that this class remains owner of the reindexed problem and destroys it
+  in its ctor.
+  
+  \param lp (in): original linear problem
+  \return reference to reindexed linear problem
+  */
   Epetra_LinearProblem& ReindexedProblem(Epetra_LinearProblem& lp)
   {
     // shallow redinex the problem, always create new reindexer
@@ -89,7 +105,15 @@ public:
     return *sreproblem_;
   }
   
-  /// return deeply reindexed matrix reference
+  /*!
+  \brief return reindexed matrix
+  
+  Returns a ptr to the reindexed matrix
+  Note that this class remains owner of the reindexed matrix and destroys it
+  in its ctor. The calling method must NOT delete the matrix.
+  
+  \return ptr to reindexed matrix
+  */
   inline Epetra_CrsMatrix* ReindexedMatrix()
   {
     if (Asre_ != null) return Asre_.get();
@@ -97,7 +121,15 @@ public:
     return NULL;
   }
   
-  /// undo reindexing of LHS
+  /*!
+  \brief undo reindexing of lhs vector
+  
+  Returns values from the reindexed lhs vector into a supplied lhs vector with
+  original ordering.
+  
+  \param lhs (out): lhs vector in original ordering to be filled with values from
+                    the reindexed lhs
+  */
   inline void UndoDownWindLHS(Epetra_MultiVector* lhs)
   {
     // shallow reindex the vector
@@ -107,7 +139,15 @@ public:
     relhs.Export(*(sreproblem_->GetLHS()),*rexporter_,Insert);
   }
   
-  /// undo reindexing of RHS
+  /*!
+  \brief undo reindexing of rhs vector
+  
+  Returns values from the reindexed rhs vector into a supplied rhs vector with
+  original ordering.
+  
+  \param rhs (out): rhs vector in original ordering to be filled with values from
+                    the reindexed rhs
+  */
   inline void UndoDownWindRHS(Epetra_MultiVector* rhs)
   {
     // shallow reindex the vector
@@ -117,6 +157,19 @@ public:
     rerhs.Export(*(sreproblem_->GetRHS()),*rexporter_,Insert);
   }
   
+  /*!
+  \brief clear temporary data
+  
+  */
+  inline void ClearData()
+  {
+    A_ = null;
+    lpreindex_ = null;
+    sreproblem_ = null;
+    Asre_ = null;
+    slhs_ = null;
+    srhs_ = null;
+  }
 
 private:
 

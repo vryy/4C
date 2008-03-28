@@ -192,7 +192,7 @@ void LINALG::DownwindMatrix::Setup()
         }
         if (!foundit) 
           doassemble=true;
-        else if (values[j]<=valuest[k]) 
+        else if (values[j]>=valuest[k]) 
           doassemble = true;
         if (values[j]>=tau_*average && doassemble)
           tmp->Assemble(values[j],grnode,gcnode);
@@ -234,7 +234,7 @@ void LINALG::DownwindMatrix::Setup()
     cout << "                Downwinding Setup time " 
          << time.ElapsedTime() << " s\n" 
          << "                nv " << nv_ 
-         << " np " << np_ << " bs " << bs_ << endl;
+         << " np " << np_ << " bs " << bs_ << " tau " << tau_ << endl;
 
 #if 0 // for debugging and viz of matrix data
   // reindex the graph to see how it looks like then
