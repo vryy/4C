@@ -247,8 +247,8 @@ public:
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
   
-  void Arbeit(double& A,double& AN,double& AM,double& AQ, double& xv);
-  void Thermik(double& kT, double& crosssec, double& mominer);
+  void Arbeit(double& AN,double& AM,double& AQ, double& xv);
+  void Thermik(double& kT);
                               
   //@}
 
@@ -294,8 +294,7 @@ private:
   
   //! rounded number of half rotations the beam has already carried out counter clockwise;
   int halfrotations_;
-  
-  double Arbeit_;
+
   double Arbeit_N;
   double Arbeit_M;
   double Arbeit_Q;

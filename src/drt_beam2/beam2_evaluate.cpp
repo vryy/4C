@@ -240,9 +240,8 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
   } // for (int ip=0; ip<intpoints.nquad; ++ip)
   
   
-//by the following code part stochastic external forces can be applied elementwise. It is deac-
-//tivated by default since application of stochastic forces on global degrees of freedom seems
-//to be more efficient
+//by the following code part stochastic external forces can be applied elementwise; deactivated by default since 
+// especially decoupling of load frequency and time step size difficult going this way
   /*
   if (thermalenergy_ > 0)
   {	  
@@ -269,19 +268,18 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 	  
 	  //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
 	  double stand_dev = pow(2 * thermalenergy_ * gamma / params.get<double>("delta time",0.01),0.5);
-	  
-	  //using Blitz namespace for random number generation
-	  using namespace ranlib;
-	  //creating a random generator object which creates random numbers with mean = 0 and variance = 1
-	  Normal<double> normalGen(0,1);
+
+	  //creating a random generator object which creates random numbers with mean = 0 and standard deviation
+	  //stand_dev; using Blitz namespace "ranlib" for random number generation
+	  ranlib::Normal<double> normalGen(0,stand_dev);
 	  
 	  //adding statistical forces accounting for connectivity of nodes
-	  elevec1[0] += stand_dev * normalGen.random() / sqrt( Nodes()[0]->NumElement() );  
-	  elevec1[1] += stand_dev * normalGen.random() / sqrt( Nodes()[0]->NumElement() );
-	  elevec1[2] += stand_dev * normalGen.random() / sqrt( Nodes()[0]->NumElement() );
-  	  elevec1[3] += stand_dev * normalGen.random() / sqrt( Nodes()[1]->NumElement() );
-  	  elevec1[4] += stand_dev * normalGen.random() / sqrt( Nodes()[1]->NumElement() ); 
-  	  elevec1[5] += stand_dev * normalGen.random() / sqrt( Nodes()[1]->NumElement() );  	  
+	  elevec1[0] += normalGen.random() / sqrt( Nodes()[0]->NumElement() );  
+	  elevec1[1] += normalGen.random() / sqrt( Nodes()[0]->NumElement() );
+	  elevec1[2] += normalGen.random() / sqrt( Nodes()[0]->NumElement() );
+  	  elevec1[3] += normalGen.random() / sqrt( Nodes()[1]->NumElement() );
+  	  elevec1[4] += normalGen.random() / sqrt( Nodes()[1]->NumElement() ); 
+  	  elevec1[5] += normalGen.random() / sqrt( Nodes()[1]->NumElement() );  	  
   } 
   */
 
@@ -418,8 +416,11 @@ for (int k=0; k<iel; ++k)
   {
 
     xrefe(0,k) = Nodes()[k]->X()[0];
+    std::cout<<"Knoten "<< k <<" xrefe(0) = "<< xrefe(0,k)<<"\n";
     xrefe(1,k) = Nodes()[k]->X()[1];
+    std::cout<<"Knoten "<< k <<" xrefe(1) = "<< xrefe(1,k)<<"\n";
     xrefe(2,k) = Nodes()[k]->X()[2];
+    std::cout<<"Knoten "<< k <<" xrefe(2) = "<< xrefe(2,k)<<"\n";
 
     xcurr(0,k) = xrefe(0,k) + disp[k*numdf+0];
     xcurr(1,k) = xrefe(1,k) + disp[k*numdf+1];
@@ -485,7 +486,6 @@ x_verschiebung = disp[numdf];
   Arbeit_N = 0.5*force_loc(0)*(length_curr*length_curr - length_refe*length_refe)/(length_refe*(length_curr + length_refe));
   Arbeit_M = -0.5*force_loc(1)* (xcurr(2,1)-xcurr(2,0));
   Arbeit_Q = -0.5*length_refe*force_loc(2)* ( (xcurr(2,1)+xcurr(2,0))/2 - beta );
-  Arbeit_ = Arbeit_N + Arbeit_M + Arbeit_Q;
   
 
   //calculating tangential stiffness matrix in global coordinates
@@ -612,20 +612,17 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam2::b2_nlnstiff_approx(vector<double>
 }
 
 
-void DRT::ELEMENTS::Beam2::Arbeit(double& A,double& AN,double& AM,double& AQ, double& xv)
+void DRT::ELEMENTS::Beam2::Arbeit(double& AN,double& AM,double& AQ, double& xv)
   {
-  	A += Arbeit_;
   	AN += Arbeit_N;
   	AM += Arbeit_M;
   	AQ += Arbeit_Q;
   	xv = x_verschiebung;
 	return;
   } 
-void DRT::ELEMENTS::Beam2::Thermik(double& kT, double& crosssec, double& mominer)
+void DRT::ELEMENTS::Beam2::Thermik(double& kT)
   {	
 	kT = thermalenergy_;
-	crosssec = crosssec_;
-	mominer = mominer_;
 	return;
   } 
 
