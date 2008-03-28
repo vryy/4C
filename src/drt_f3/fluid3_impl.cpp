@@ -455,25 +455,25 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     /* pressure gradient term derxy, funct without or with integration   *
      * by parts, respectively                                            */
 
-    {
-      // evaluate residual once for all stabilisation right hand sides
-      res_old_ = velint_-rhsint_+timefac*(conv_old_+gradp_-2*visceff*visc_old_);
+    // evaluate residual once for all stabilisation right hand sides
+    res_old_ = velint_-rhsint_+timefac*(conv_old_+gradp_-2*visceff*visc_old_);
 
-      /*
-        This is the operator
-
+    /*
+      This is the operator
+      
                   /               \
                  | resM    o nabla |
                   \    (i)        /
 
-        required for (lhs) cross- and (rhs) Reynolds-stress calculation
+                  required for (lhs) cross- and (rhs) Reynolds-stress calculation
+                  
+    */
 
-      */
+    if (cross    == Fluid3::cross_stress_stab ||
+        reynolds == Fluid3::reynolds_stress_stab_only_rhs)
+      conv_resM_ =  blitz::sum(res_old_(j)*derxy_(j,i),j);
 
-      if (cross    == Fluid3::cross_stress_stab ||
-         reynolds == Fluid3::reynolds_stress_stab_only_rhs)
-        conv_resM_ =  blitz::sum(res_old_(j)*derxy_(j,i),j);
-
+    {
       //----------------------------------------------------------------------
       //----------------------------------------------------------------------
       //                            GALERKIN PART
@@ -1481,7 +1481,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
         }
       }
     }
-  }
+  } // loop gausspoints
 }
 
 
