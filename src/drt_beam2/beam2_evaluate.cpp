@@ -242,7 +242,7 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
   
 //by the following code part stochastic external forces can be applied elementwise; deactivated by default since 
 // especially decoupling of load frequency and time step size difficult going this way
-  /*
+  
   if (thermalenergy_ > 0)
   {	  
 	  extern struct _MATERIAL  *mat;
@@ -279,11 +279,9 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 	  elevec1[2] += normalGen.random() / sqrt( Nodes()[0]->NumElement() );
   	  elevec1[3] += normalGen.random() / sqrt( Nodes()[1]->NumElement() );
   	  elevec1[4] += normalGen.random() / sqrt( Nodes()[1]->NumElement() ); 
-  	  elevec1[5] += normalGen.random() / sqrt( Nodes()[1]->NumElement() );  	  
-  } 
-  */
-
-return 0;
+  	  elevec1[5] += normalGen.random() / sqrt( Nodes()[1]->NumElement() );    	   
+  }   
+  return 0;
 }
 
 

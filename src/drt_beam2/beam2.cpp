@@ -18,6 +18,9 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+//enabling initialization of random generator
+#include <random/normal.h>
+#include <time.h>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|
@@ -305,7 +308,10 @@ void DRT::ELEMENTS::Beam2Register::Print(ostream& os) const
 
 int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
 {	
-	 return 0;
+  //random generator for seeding only in order (necessary for thermal noise)
+  ranlib::Normal<double> seedgenerator(0,1);
+  seedgenerator.seed((unsigned int)std::time(0));
+  return 0;
 }
 
 
