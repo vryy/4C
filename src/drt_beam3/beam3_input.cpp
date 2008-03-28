@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam2_input.cpp
+\file beam3_input.cpp
 \brief
 
 <pre>
@@ -19,7 +19,7 @@ Maintainer: Christian Cyron
 #include "mpi.h"
 #endif
 /*----------------------------------------------------------------------*
-|                                                        cyron 01/08     |
+|                                                        cyron 03/08     |
 | vector of material laws                                                |
 | defined in global_control.c
 *----------------------------------------------------------------------*/
@@ -45,7 +45,7 @@ extern struct _FILES  allfiles;
 #include "beam3.H"
 
 /*----------------------------------------------------------------------*
- |  read element input (public)                              cyron 01/08|
+ |  read element input (public)                              cyron 03/08|
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Beam3::ReadElement()
 {
@@ -56,12 +56,12 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
   frchk("LIN2",&ierr);
   // two figures have to be read by frint
   int nnode=2;
-  // provide an array of length two in order to store the two figures read
-  int nodes[2];
+  // provide an array of length two in order to store the two node IDs read by frint_n
+  int nodes[nnode];
   frint_n("LIN2",nodes,nnode,&ierr);
   if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
 
-  // reduce node numbers by one
+  // reduce node numbers by one for meeting BACI intern standard
   for (int i=0; i<nnode; ++i) nodes[i]--;
 
   SetNodeIds(nnode,nodes);
@@ -73,23 +73,28 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
   if (ierr!=1) dserror("Reading of Beam3 element failed");
 
   // read beam cross section
-  crosssec_ = 1.0;
+  crosssec_ = 0;
   frdouble("CROSS",&crosssec_,&ierr);
   if (ierr!=1) dserror("Reading of Beam3 element failed");
 
-   // read beam cross section
+  // read beam shear correction and compute corrected cross section
   double shear_correction = 0.0;
   frdouble("SHEARCORR",&shear_correction,&ierr);
   if (ierr!=1) dserror("Reading of Beam3 element failed");
   crosssecshear_ = crosssec_ * shear_correction;
 
-  // read beam moment of inertia of area
-  mominer_ = 1.0;
-  frdouble("INERMOM",&mominer_,&ierr);
+  // read beam moments of inertia of area
+  Iyy_ = 0;
+  Izz_ = 0;
+  Iyz_ = 0;
+  Irr_ = 0;
+  frdouble("Iyy",&Iyy_,&ierr);
+  frdouble("Izz",&Izz_,&ierr);
+  frdouble("Iyz",&Iyz_,&ierr);
+  frdouble("Irr",&Irr_,&ierr);
   if (ierr!=1) dserror("Reading of Beam3 element failed");
   
-  // element can use consistent or lumped mass matrix (the latter one assumes
-  // the moment of inertia of the cross section to be approximately zero)
+  // element can use consistent or lumped mass matrix
   lumpedflag_ = 0;
   frint("LUMPED",&lumpedflag_,&ierr);
   if (ierr!=1) dserror("Reading of Beam3 element failed");
@@ -101,8 +106,6 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
    
   return true;
 } // Beam3::ReadElement()
-
-
 
 
 #endif  // #ifdef CCADISCRET

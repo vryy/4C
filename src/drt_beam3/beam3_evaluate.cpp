@@ -314,40 +314,6 @@ void DRT::ELEMENTS::Beam3::b3_local_aux(LINALG::SerialDenseMatrix& Bcurr,
   double cos_beta = (xcurr(0,1)-xcurr(0,0))/length_curr;
   double sin_beta = (xcurr(1,1)-xcurr(1,0))/length_curr;
   
-  /*a crucial point in a corotational frame work is how to calculate the correct rotational angle
-   * beta; in case that abs(beta)<PI this can be done easily making use of asin(beta) and acos(beta);
-   * however, since in the course of large deformations abs(beta)>PI can happen one needs some special means
-   * in order to avoid confusion; here we calculate an angel psi in a local coordinate system rotated by an 
-   * angle of halfrotations_*PI; afterwards we know beta = psi * halfrotations_*PI; for this procedure we only
-   * have to make sure that abs(psi)>PI i.e. that the true rotation angle lies always in the range +/- PI of the 
-   * rotated system. This can be achieved by updating the variable halfrotations_ after each time step in such
-   * a way that the current angle leads to abs(psi)<0.5*PI in the coordinate system based on the updated variable
-   * halfrotations_; the also in the next time step abs(psi)>PI will be guaranteed as long as no rotations through
-   * an angle >0.5*PI take place within one time step throughout the whole simulated structure. This seems imply a 
-   * fairly mild restriction to time step size*/
-  
-  // psi is the rotation angle out of x-axis in a x-y-plane rotatated by halfrotations_*PI
-  double cos_psi = pow(-1.0,halfrotations_)*(xcurr(0,1)-xcurr(0,0))/length_curr;
-  double sin_psi = pow(-1.0,halfrotations_)*(xcurr(1,1)-xcurr(1,0))/length_curr;
-  
-  //first we calculate psi in a range between -pi < beta <= pi in the rotated plane
-  double psi = 0;
-  if (cos_psi >= 0)
-  	psi = asin(sin_psi);
-  else
-  {	if (sin_psi >= 0)
-  		psi =  acos(cos_psi);
-        else
-        	psi = -acos(cos_psi);
-   }
-  
-  beta = psi + PI*halfrotations_;
-  
-  if (psi > PI/2)
-	  halfrotations_++;
-  if (psi < -PI/2)
- 	  halfrotations_--; 
-
   rcurr[0] = -cos_beta;
   rcurr[1] = -sin_beta;
   rcurr[2] = 0;
@@ -476,7 +442,7 @@ x_verschiebung = disp[numdf];
   force_loc(0) = ym*crosssec_*(length_curr*length_curr - length_refe*length_refe)/(length_refe*(length_curr + length_refe));
   
   //local internal bending moment
-  force_loc(1) = -ym*mominer_*(xcurr(2,1)-xcurr(2,0))/length_refe;
+  force_loc(1) = -ym*Iyy_*(xcurr(2,1)-xcurr(2,0))/length_refe;
   
   //local internal shear force
   force_loc(2) = -sm*crosssecshear_*( (xcurr(2,1)+xcurr(2,0))/2 - beta);  
@@ -485,7 +451,6 @@ x_verschiebung = disp[numdf];
   Arbeit_N = 0.5*force_loc(0)*(length_curr*length_curr - length_refe*length_refe)/(length_refe*(length_curr + length_refe));
   Arbeit_M = -0.5*force_loc(1)* (xcurr(2,1)-xcurr(2,0));
   Arbeit_Q = -0.5*length_refe*force_loc(2)* ( (xcurr(2,1)+xcurr(2,0))/2 - beta );
-  Arbeit_ = Arbeit_N + Arbeit_M + Arbeit_Q;
   
 
   //calculating tangential stiffness matrix in global coordinates
@@ -495,7 +460,7 @@ x_verschiebung = disp[numdf];
   for(int id_col=0; id_col<6; id_col++)
   {
 	  aux_CB(0,id_col) = Bcurr(0,id_col) * (ym*crosssec_/length_refe);
-	  aux_CB(1,id_col) = Bcurr(1,id_col) * (ym*mominer_/length_refe);
+	  aux_CB(1,id_col) = Bcurr(1,id_col) * (ym*Iyy_/length_refe);
 	  aux_CB(2,id_col) = Bcurr(2,id_col) * (sm*crosssecshear_/length_refe);
   }
    
@@ -529,7 +494,7 @@ x_verschiebung = disp[numdf];
   if (lumpedflag_ == 0)
   {
 	  //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
-	  double aux_E[3]={density*length_refe*crosssec_/6,density*length_refe*crosssec_/6,density*length_refe*mominer_/6};
+	  double aux_E[3]={density*length_refe*crosssec_/6,density*length_refe*crosssec_/6,density*length_refe*Iyy_/6};
 	  for(int id=0; id<3; id++)
 	  {
 	  	massmatrix(id,id) = 2*aux_E[id];
@@ -612,20 +577,17 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3::b3_nlnstiff_approx(vector<double>
 }
 
 
-void DRT::ELEMENTS::Beam3::Arbeit(double& A,double& AN,double& AM,double& AQ, double& xv)
+void DRT::ELEMENTS::Beam3::Arbeit(double& AN,double& AM,double& AQ, double& xv)
   {
-  	A += Arbeit_;
   	AN += Arbeit_N;
   	AM += Arbeit_M;
   	AQ += Arbeit_Q;
   	xv = x_verschiebung;
 	return;
   } 
-void DRT::ELEMENTS::Beam3::Thermik(double& kT, double& crosssec, double& mominer)
+void DRT::ELEMENTS::Beam3::Thermik(double& kT)
   {	
 	kT = thermalenergy_;
-	crosssec = crosssec_;
-	mominer = mominer_;
 	return;
   } 
 

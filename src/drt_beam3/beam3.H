@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file beam3.H
 
-\brief two dimensional nonlinear corotational Euler-Bernoulli beam element
+\brief three dimensional nonlinear Reissner beam element
 
 <pre>
 Maintainer: Christian Cyron
@@ -56,7 +56,7 @@ class Beam3Register;
 namespace ELEMENTS
 {
 /*!
-\brief two dimensional nonlinear corotational Euler-Bernoulli beam element
+\brief three dimensional nonlinear Reissner beam element
 
 \author cyron (cyron @lnm.mw.tum.de)
 */
@@ -156,9 +156,9 @@ public:
 
 
   /*!
-  \brief Get number of degrees of freedom of a certain node
+  \brief Get number of degrees of freedom of a single node
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const { return 3;}
+  virtual int NumDofPerNode(const DRT::Node& node) const { return 6;}
 
   /*!
   \brief Get number of degrees of freedom per element not including nodal degrees of freedom
@@ -253,8 +253,8 @@ public:
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
   
-  void Arbeit(double& A,double& AN,double& AM,double& AQ, double& xv);
-  void Thermik(double& kT, double& crosssec, double& mominer);
+  void Arbeit(double& AN,double& AM,double& AQ, double& xv);
+  void Thermik(double& kT);
                               
   //@}
 
@@ -289,19 +289,18 @@ private:
    //! cross section area including shear corretion factor
   double crosssecshear_;
   
-  //! moment of inertia of area
-  double mominer_;
+  //! moments of inertia of area
+  double Iyy_;
+  double Izz_;
+  double Iyz_;
+  double Irr_;
   
   //! flag determining if consistent or lumped mass matrix
   int lumpedflag_;
   
   //! thermal energy responsible for statistical forces
   double thermalenergy_;
-  
-  //! rounded number of half rotations the beam has already carried out counter clockwise;
-  int halfrotations_;
-  
-  double Arbeit_;
+
   double Arbeit_N;
   double Arbeit_M;
   double Arbeit_Q;
@@ -349,9 +348,6 @@ private:
 
 // << operator
 ostream& operator << (ostream& os, const DRT::Element& ele);
-
-
-
 
 
 //------------- class Beam3Register: -------------------------------------------

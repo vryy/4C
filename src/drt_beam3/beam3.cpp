@@ -28,11 +28,12 @@ data_(),
 material_(0),
 crosssec_(0),
 crosssecshear_(0),
-mominer_(0),
+Iyy_(0),
+Izz_(0),
+Iyz_(0),
+Irr_(0),
 lumpedflag_(0),
 thermalenergy_(0),
-halfrotations_(0),
-Arbeit_(0),
 Arbeit_N(0),
 Arbeit_M(0),
 Arbeit_Q(0),
@@ -55,11 +56,12 @@ data_(old.data_),
 material_(old.material_),
 crosssec_(old.crosssec_),
 crosssecshear_(old.crosssecshear_),
-mominer_(old.mominer_),
+Iyy_(old.Iyy_),
+Izz_(old.Izz_),
+Iyz_(0),
+Irr_(old.Irr_),
 lumpedflag_(old.lumpedflag_),
 thermalenergy_(old.thermalenergy_),
-halfrotations_(old.halfrotations_),
-Arbeit_(old.Arbeit_),
 Arbeit_N(old.Arbeit_N),
 Arbeit_M(old.Arbeit_M),
 Arbeit_Q(old.Arbeit_Q),
@@ -139,14 +141,15 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,crosssec_);
    //cross section with shear correction
   AddtoPack(data,crosssecshear_);
-  //moment of inertia of area
-  AddtoPack(data,mominer_);
+  //moments of inertia of area
+  AddtoPack(data,Iyy_);
+  AddtoPack(data,Izz_);
+  AddtoPack(data,Iyz_);
+  AddtoPack(data,Irr_);
   //flag determining if consistent or lumped mass matrix
   AddtoPack(data,lumpedflag_);
   //thermal energy responsible for statistical forces
   AddtoPack(data,thermalenergy_);
-  //number of half rotations in comparision with reference configuration
-  AddtoPack(data,halfrotations_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -178,14 +181,15 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,crosssec_);
   //cross section with shear correction
   ExtractfromPack(position,data,crosssecshear_);
-  //moment of inertia of area
-  ExtractfromPack(position,data,mominer_);
+  //moments of inertia of area
+  ExtractfromPack(position,data,Iyy_);
+  ExtractfromPack(position,data,Izz_);
+  ExtractfromPack(position,data,Iyz_);
+  ExtractfromPack(position,data,Irr_);
   //flag determining if consistent or lumped mass matrix
   ExtractfromPack(position,data,lumpedflag_);
   //thermal energy responsible for statistical forces
   ExtractfromPack(position,data,thermalenergy_);
-  //number of half rotations in comparision with reference configuration
-  ExtractfromPack(position,data,halfrotations_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
@@ -305,7 +309,7 @@ void DRT::ELEMENTS::Beam3Register::Print(ostream& os) const
 
 int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 {	
-	 return 0;
+  return 0;
 }
 
 
