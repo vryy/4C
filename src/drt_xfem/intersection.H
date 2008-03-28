@@ -522,7 +522,8 @@ class Intersection
         void recoverCurvedInterface(
                 const DRT::Element*             xfemElement, 
                 map< int, BoundaryIntCells >&   boundaryintcells,
-                tetgenio&                       out
+                tetgenio&                       out,
+                bool 							recovery
                 );
            
             
@@ -1066,7 +1067,7 @@ class Intersection
             const tetgenio&                 out
             ) const; 
              
-              
+         
         /*!
         \brief  stores boundary integration cells
     
@@ -1089,7 +1090,7 @@ class Intersection
 		    const DRT::Element*				        xfemElement,
 		    const tetgenio&                			out
             ) const;
-            
+        
                     
         /*!
         \brief Debugging the intersection of XAABB's (DEBUG ONLY)

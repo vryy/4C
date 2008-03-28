@@ -1613,8 +1613,9 @@ void Intersection::computeCDT(
     //printTetViewOutputPLC( element, element->Id(), in);
     
     // store interface triangles (+ recovery of higher order meshes)
-    recoverCurvedInterface(element, boundaryintcells, out);
- 
+    recoverCurvedInterface(element, boundaryintcells, out, false);
+    // store boundaryIntCells integration cells
+  
     //if(element->Id()==388)
     //	debugFaceMarker(element->Id(), out);
     	
@@ -1913,7 +1914,8 @@ void Intersection::storeIntersectedCutterElement(
 void Intersection::recoverCurvedInterface(
         const DRT::Element*             xfemElement,
         map< int, BoundaryIntCells >&   boundaryintcells,
-        tetgenio&                       out
+        tetgenio&                       out,
+        bool							recovery
         )
 {
     BoundaryIntCells                     			listBoundaryICPerElement;
@@ -1924,7 +1926,8 @@ void Intersection::recoverCurvedInterface(
 //        visitedPointIndexList[i] = 0;
         
     // lifts all corner points into the curved interface
-    liftAllSteinerPoints(xfemElement, out);
+    if(recovery)
+    	liftAllSteinerPoints(xfemElement, out);
       
     for(int i=0; i<out.numberoftrifaces; i++)
     {
@@ -1956,7 +1959,7 @@ void Intersection::recoverCurvedInterface(
                 //printf("localHOindex = %d\n", localHigherOrderIndex);
                 const int globalHigherOrderIndex = out.tetrahedronlist[tetIndex*out.numberofcorners+localHigherOrderIndex];
                 //printf("globalHOindex = %d\n", globalHigherOrderIndex);
-                if(visitedPointIndexList[globalHigherOrderIndex]== 0)
+                if(visitedPointIndexList[globalHigherOrderIndex]== 0 && recovery)
                 {     
                     visitedPointIndexList[globalHigherOrderIndex] = 1; 
        
@@ -3525,9 +3528,9 @@ void Intersection::addCellsToDomainIntCellsMap(
 }
 
 
-
 /*----------------------------------------------------------------------*
  |  RCI:    stores boundary integration cells                u.may 11/07|
+ |																		|
  *----------------------------------------------------------------------*/  
 void Intersection::addCellsToBoundaryIntCellsMap(
     const int                         		trifaceIndex,
