@@ -278,7 +278,7 @@ public:
 
 
   //@}
-  
+
 
   //! some distypes need rewinding of NodeIds due to bad input from mesher
   //! flag whether process of rewinding is done
@@ -361,12 +361,9 @@ protected:
                                  struct _MATERIAL*         material,
                                  bool                      cauchy = false);
 
-//   void so_tet4_stress(struct _MATERIAL* material,
-//                    vector<double>& mydisp,
-//                    Epetra_SerialDenseMatrix* stresses);
 
   void so_tet4_expol(Epetra_SerialDenseMatrix& stresses,
-                    Epetra_SerialDenseMatrix& nodalstresses);
+                     Epetra_SerialDenseMatrix& nodalstresses);
 
 
   // #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden
