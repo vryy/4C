@@ -428,7 +428,6 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8_surface.o \
                 src/drt_so3/so_tet4.o \
                 src/drt_so3/so_tet4_evaluate.o \
                 src/drt_so3/so_tet4_input.o \
-                src/drt_so3/so_tet4_stress.o \
                 src/drt_so3/so_tet4_surface.o \
                 src/drt_so3/so_tet4_surface_evaluate.o \
                 src/drt_so3/so_tet4_line.o \
