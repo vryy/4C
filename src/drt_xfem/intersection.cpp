@@ -1456,7 +1456,7 @@ void Intersection::computeCDT(
     int nsurfPoints = 0;
     tetgenio in;
     tetgenio out;
-    char switches[] = "pnno2QY";    //o2 Y
+    char switches[] = "pnnQ";    //o2 Y
     tetgenio::facet *f;
     tetgenio::polygon *p;
     
@@ -1610,24 +1610,29 @@ void Intersection::computeCDT(
  
     
     //Debug
-    vector<int> elementIds;
+    //vector<int> elementIds;
     //for(int i = 388; i<389; i++)
-        elementIds.push_back(element->Id());
+    //    elementIds.push_back(element->Id());
     
-    debugTetgenOutput(in, out, element, elementIds, timestepcounter_);
+    //debugTetgenOutput(in, out, element, elementIds, timestepcounter_);
     //printTetViewOutputPLC( element, element->Id(), in);
     
     // store interface triangles (+ recovery of higher order meshes)
-    recoverCurvedInterface(element, boundaryintcells, out, false);
+    bool higherorder = false;
+    bool recovery = false;
+    
+    if(higherorder)
+    	recoverCurvedInterface(element, boundaryintcells, out, recovery);
+   	else
+   		storeIntCells(element, boundaryintcells, out);
     // store boundaryIntCells integration cells
-  
+    
     //if(element->Id()==388)
     //	debugFaceMarker(element->Id(), out);
     	
     //printTetViewOutput(element->Id(), out);
-    
     // store domain integration cells
-    addCellsToDomainIntCellsMap(element, domainintcells, out);
+    addCellsToDomainIntCellsMap(element, domainintcells, out, higherorder);
 }
 
 
@@ -1990,6 +1995,62 @@ void Intersection::recoverCurvedInterface(
     
     boundaryintcells.insert(make_pair(xfemElement->Id(),listBoundaryICPerElement));
     
+    intersectingCutterElements_.clear();
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  RCI:    store linear boundary and integration cells      u.may 03/08|
+ |                               										|
+ *----------------------------------------------------------------------*/  
+void Intersection::storeIntCells(
+		const DRT::Element*             xfemElement, 
+		map< int, BoundaryIntCells >&   boundaryintcells,
+		tetgenio&                       out)
+{
+	
+	BoundaryIntCells                     			listBoundaryICPerElement;
+    
+    // lifts all corner points into the curved interface
+    liftAllSteinerPoints(xfemElement, out);
+    
+    for(int i=0; i<out.numberoftrifaces; i++)
+    {
+        // run over all faces not lying in on of the xfem element planes
+        const int faceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
+        vector<vector<double> > domainCoord(3, std::vector<double>(3,0.0));
+        vector<vector<double> > boundaryCoord(3, std::vector<double>(3,0.0));
+                	
+        if(faceMarker > -1)
+        {        
+            const int tetIndex = out.adjtetlist[i*2];
+            //printf("tetIndex = %d\n", tetIndex);
+            vector<int>             order(3,0);
+            vector<int>             tetraCornerIndices(4,0);
+            vector<BlitzVec>        tetraCornerNodes(4, BlitzVec(3));
+            getTetrahedronInformation(tetIndex, i, tetraCornerIndices, order, out );
+            getTetrahedronNodes(tetraCornerNodes, tetraCornerIndices, xfemElement, out);
+            
+            // run over each triface
+            for(int index1 = 0; index1 < 3 ;index1++)
+            {                   
+                int index2 = index1+1;
+                if(index2 > 2) index2 = 0;
+                
+                // store boundary integration cells
+                addCellsToBoundaryIntCellsMap(	i, index1, -1, faceMarker, 
+                								domainCoord, boundaryCoord, xfemElement, out);
+            }
+            
+            const int ele_gid = intersectingCutterElements_[faceMarker]->Id();
+            listBoundaryICPerElement.push_back(BoundaryIntCell(DRT::Element::tri3, ele_gid, domainCoord, boundaryCoord));        
+         
+        }
+        
+    }
+    
+    boundaryintcells.insert(make_pair(xfemElement->Id(),listBoundaryICPerElement));
     intersectingCutterElements_.clear();
 }
 
@@ -3509,12 +3570,15 @@ void Intersection::storeHigherOrderNode(
 void Intersection::addCellsToDomainIntCellsMap(
         const DRT::Element*             xfemElement,
         map< int, DomainIntCells >&     domainintcells,
-        const tetgenio&                 out
+        const tetgenio&                 out,
+        bool 							higherorder
         ) const
 {   
     
     // store domain integration cells
-    DomainIntCells   listDomainICPerElement;
+    DomainIntCells   						listDomainICPerElement;
+    DRT::Element::DiscretizationType		distype = DRT::Element::tet4;
+    if(higherorder)							distype = DRT::Element::tet10;
 
     for(int i=0; i<out.numberoftetrahedra; i++ )
     {   
@@ -3527,7 +3591,7 @@ void Intersection::addCellsToDomainIntCellsMap(
               
             tetrahedronCoord.push_back(tetnodes);    
         }
-        listDomainICPerElement.push_back(DomainIntCell(DRT::Element::tet10, tetrahedronCoord));                 
+        listDomainICPerElement.push_back(DomainIntCell(distype, tetrahedronCoord));                 
     }
     domainintcells.insert(make_pair(xfemElement->Id(),listDomainICPerElement));
 }
@@ -3583,32 +3647,33 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     //boundaryCoord.push_back(trinodes);
     }
     
+    if(globalHigherOrderIndex > -1)
     {
-    // store higher order node
-    BlitzVec eleCoordDomaninHO(3);
-    for(int k = 0; k < 3; k++)
-        eleCoordDomaninHO(k) = out.pointlist[globalHigherOrderIndex*3+k];
- 
-    
-    
-    domainCoord[cornerIndex+3][0] = eleCoordDomaninHO(0);
-    domainCoord[cornerIndex+3][1] = eleCoordDomaninHO(1);
-    domainCoord[cornerIndex+3][2] = eleCoordDomaninHO(2);
-    
-    const BlitzVec physCoordHO(elementToCurrentCoordinates(xfemElement, eleCoordDomaninHO));
-    
-    //domainCoord.push_back(trinodes); 
-    
-    const BlitzVec eleCoordBoundaryHO(CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordHO));
-    
-//    cout << "physcood = " << physCoord << "    ";
-//    cout << "elecood = " << eleCoord << endl;
-    
-    boundaryCoord[cornerIndex+3][0] = eleCoordBoundaryHO(0);
-    boundaryCoord[cornerIndex+3][1] = eleCoordBoundaryHO(1);
-    boundaryCoord[cornerIndex+3][2] = 0.0;
-    
-    //boundaryCoord.push_back(trinodes);
+	    // store higher order node
+	    BlitzVec eleCoordDomaninHO(3);
+	    for(int k = 0; k < 3; k++)
+	        eleCoordDomaninHO(k) = out.pointlist[globalHigherOrderIndex*3+k];
+	 
+	    
+	    
+	    domainCoord[cornerIndex+3][0] = eleCoordDomaninHO(0);
+	    domainCoord[cornerIndex+3][1] = eleCoordDomaninHO(1);
+	    domainCoord[cornerIndex+3][2] = eleCoordDomaninHO(2);
+	    
+	    const BlitzVec physCoordHO(elementToCurrentCoordinates(xfemElement, eleCoordDomaninHO));
+	    
+	    //domainCoord.push_back(trinodes); 
+	    
+	    const BlitzVec eleCoordBoundaryHO(CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordHO));
+	    
+	//    cout << "physcood = " << physCoord << "    ";
+	//    cout << "elecood = " << eleCoord << endl;
+	    
+	    boundaryCoord[cornerIndex+3][0] = eleCoordBoundaryHO(0);
+	    boundaryCoord[cornerIndex+3][1] = eleCoordBoundaryHO(1);
+	    boundaryCoord[cornerIndex+3][2] = 0.0;
+	    
+	    //boundaryCoord.push_back(trinodes);
     }
 }
 

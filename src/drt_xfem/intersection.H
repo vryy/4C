@@ -527,7 +527,18 @@ class Intersection
                 bool 							recovery
                 );
            
-            
+       	/*!
+        \brief  stores linear boundary cells
+    
+        \param xfemElement              (in)        :   xfem element
+        \param out                  (in/out)    :   output data structure of TetGen
+        */    
+    	void storeIntCells(
+    			const DRT::Element*             xfemElement, 
+                map< int, BoundaryIntCells >&   boundaryintcells,
+                tetgenio&                       out
+                );
+    	  
         /*!
         \brief  checks if Steiner points are inserted additionally. They are lifted up such they
                 are lying in a cutter element.
@@ -1065,7 +1076,8 @@ class Intersection
         void addCellsToDomainIntCellsMap(
             const DRT::Element*             xfemElement,
             map< int, DomainIntCells >&     domainintcells,
-            const tetgenio&                 out
+            const tetgenio&                 out,
+            bool 							higherorder
             ) const; 
              
          
