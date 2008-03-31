@@ -1824,7 +1824,7 @@ void Sysmat(
             // coordinates of the current integration point in element coordinates \xi
             const XFEM::PosXiBoundary posXiBoundary(mapEtaBToXiB(*cell, pos_eta_boundary));
             const XFEM::PosXiDomain posXiDomain(mapEtaBToXiD(*cell, pos_eta_boundary));
-            const double detcell = abs(detEtaBToXiB(*cell, pos_eta_boundary));
+            const double detcell = abs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
 
             // shape functions and their first derivatives
             const BlitzVec funct_boundary(DRT::UTILS::shape_function_2D(posXiBoundary(0),posXiBoundary(1),boundaryele->Shape()));
