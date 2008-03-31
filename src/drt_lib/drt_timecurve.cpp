@@ -545,21 +545,23 @@ template <typename ScalarT>
 ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
 {
   const int DataLength=points_;
- //  double EvenCoefficient[DataLength/2]={0};
- //  double OddCoefficient[DataLength/2]={0};
- //  double SampleNumber[DataLength]={0};
-  ScalarT EvenCoefficient[31]={0};
-  ScalarT OddCoefficient[31]={0};
-  ScalarT SampleNumber[60]={0};
+  vector<double> SampleNumber;
+  vector<double> EvenCoefficient;
+  vector<double> OddCoefficient;
   ScalarT fac;
-  ScalarT C = (ScalarT)points_;
+  double C = (double)points_;
 
-  // printf("%d\n",DataLength);
 
   for (int p=0; p<DataLength; p++)
-  {
-    SampleNumber[p]=ArrayLength_[p]*flowrate_;
-  }
+    {
+      SampleNumber.push_back(ArrayLength_[p]*flowrate_);
+    }
+  
+  for (int p=0; p<=DataLength/2; p++)
+    {
+	  EvenCoefficient.push_back(0);
+	  OddCoefficient.push_back(0);
+    }
 
   for (int p=0; p<=DataLength/2; p++)
   {
@@ -573,7 +575,6 @@ ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
       OddCoefficient[p] = OddCoefficient[p]
                         + 2/C*SampleNumber[num]*sin(2*PI*p*(num+1)/C);
     }
-    //  printf("%3d : % f  % f\n", p, EvenCoefficient[p], OddCoefficient[p]);
   }
 
   EvenCoefficient[DataLength/2] = EvenCoefficient[DataLength/2]/2;
@@ -583,10 +584,11 @@ ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
   for (int h=1; h<=DataLength/2; h++)
   {
     fac = fac
-        + EvenCoefficient[h]*cos(2*PI*h*t/period_)
-        + OddCoefficient[h]*sin(2*PI*h*t/period_);
+        + (ScalarT)EvenCoefficient[h]*cos(2*PI*h*t/period_)
+        + (ScalarT)OddCoefficient[h]*sin(2*PI*h*t/period_);
   }
 
+  
   return fac;
 }
 
