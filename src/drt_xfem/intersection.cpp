@@ -2024,22 +2024,23 @@ void Intersection::storeIntCells(
                 	
         if(faceMarker > -1)
         {        
-            const int tetIndex = out.adjtetlist[i*2];
+            //const int tetIndex = out.adjtetlist[i*2];
             //printf("tetIndex = %d\n", tetIndex);
-            vector<int>             order(3,0);
-            vector<int>             tetraCornerIndices(4,0);
-            vector<BlitzVec>        tetraCornerNodes(4, BlitzVec(3));
-            getTetrahedronInformation(tetIndex, i, tetraCornerIndices, order, out );
-            getTetrahedronNodes(tetraCornerNodes, tetraCornerIndices, xfemElement, out);
+            //vector<int>             order(3,0);
+            //vector<int>             tetraCornerIndices(4,0);
+            //vector<BlitzVec>        tetraCornerNodes(4, BlitzVec(3));
+            //getTetrahedronInformation(tetIndex, i, tetraCornerIndices, order, out );
+            //getTetrahedronNodes(tetraCornerNodes, tetraCornerIndices, xfemElement, out);
             
             // run over each triface
             for(int index1 = 0; index1 < 3 ;index1++)
             {                   
-                int index2 = index1+1;
-                if(index2 > 2) index2 = 0;
+                //int index2 = index1+1;
+                //if(index2 > 2) index2 = 0;
                 
                 // store boundary integration cells
-                addCellsToBoundaryIntCellsMap(	i, index1, -1, faceMarker, 
+                const int globalHigherOrderIndex = -1; // means no quadratic points (tri3 instead of tri6)
+                addCellsToBoundaryIntCellsMap(	i, index1, globalHigherOrderIndex, faceMarker, 
                 								domainCoord, boundaryCoord, xfemElement, out);
             }
             
