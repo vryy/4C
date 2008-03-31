@@ -216,6 +216,8 @@ void ContactStruGenAlpha::ConsistentPredictor()
   // add contact forces
   contactmanager_->ContactForces(fresm_);
   RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
+  Epetra_Vector fccopy(*fc);
+  fc->Multiply(1.0,*invtoggle_,fccopy,0.0);
   if (fc!=null) fresm_->Update(-1.0,*fc,1.0);
 
   //------------------------------------------------ build residual norm
@@ -402,6 +404,8 @@ void ContactStruGenAlpha::ConstantPredictor()
   // add contact forces
   contactmanager_->ContactForces(fresm_);
   RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
+  Epetra_Vector fccopy(*fc);
+  fc->Multiply(1.0,*invtoggle_,fccopy,0.0);
   if (fc!=null) fresm_->Update(-1.0,*fc,1.0);
 
   //------------------------------------------------ build residual norm
@@ -597,6 +601,8 @@ void ContactStruGenAlpha::FullNewton()
     // add contact forces
     contactmanager_->ContactForces(fresm_);
     RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
+    Epetra_Vector fccopy(*fc);
+    fc->Multiply(1.0,*invtoggle_,fccopy,0.0);
     if (fc!=null) fresm_->Update(-1.0,*fc,1.0);
 
     //---------------------------------------------- build residual norm
@@ -826,6 +832,8 @@ void ContactStruGenAlpha::PTC()
     // add contact forces
     contactmanager_->ContactForces(fresm_);
     RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
+    Epetra_Vector fccopy(*fc);
+    fc->Multiply(1.0,*invtoggle_,fccopy,0.0);
     fresm_->Update(-1.0,*fc,1.0);
 
     // compute inf norm of residual

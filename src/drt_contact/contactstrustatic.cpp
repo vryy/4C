@@ -434,16 +434,20 @@ void contact_stru_static_drt()
         // evaluate new residual fresm at current iterate numiter
         // R{istep,numiter} = F_int{istep,numiter} - F_ext{istep}
         fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
-  
+        
+        // add contact forces
+        contactmanager->ContactForces(fresm);
+        RCP<Epetra_Vector> fc = contactmanager->GetContactForces();
+        Epetra_Vector fccopy(*fc);
+        fc->Multiply(1.0,*invtoggle,fccopy,0.0);
+        if (fc!=null) fresm->Update(1.0,*fc,1.0);
+                
         // blank residual DOFs which are on Dirichlet BC
         {
           Epetra_Vector fresmcopy(*fresm);
           fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
         }
-        // add contact forces
-        contactmanager->ContactForces(fresm);
-        RCP<Epetra_Vector> fc = contactmanager->GetContactForces();
-        if (fc!=null) fresm->Update(1.0,*fc,1.0);
+        
             
         //---------------------------------------------- build res/disi norm
         fresm->Norm2(&norm);
