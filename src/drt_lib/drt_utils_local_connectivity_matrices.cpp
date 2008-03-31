@@ -165,18 +165,14 @@ int DRT::UTILS::getNumberOfElementSurfaces(
 vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(   
     const DRT::Element::DiscretizationType&     distype)
 {   
-    int nSurf;
-    int nNode; 
     vector< vector<int> >   map;
-   
     
     switch(distype)
     {
         case DRT::Element::hex8:
         {
-            nSurf = 6;
-            nNode = 4;
-            
+            const int nSurf = 6;
+            const int nNode = 4;
             vector<int> submap(nNode, 0);
             for(int i = 0; i < nSurf; i++)
             {
@@ -188,9 +184,8 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         }
         case DRT::Element::hex20:
         {
-            nSurf = 6;
-            nNode = 8;
-           
+            const int nSurf = 6;
+            const int nNode = 8;
             vector<int> submap(nNode, 0);          
             for(int i = 0; i < nSurf; i++)
             {
@@ -202,9 +197,8 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         }
         case DRT::Element::hex27:
         {
-            nSurf = 6;
-            nNode = 9;
-                     
+            const int nSurf = 6;
+            const int nNode = 9;
             vector<int> submap(nNode, 0);
             for(int i = 0; i < nSurf; i++)
             {
@@ -216,9 +210,8 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         }
         case DRT::Element::tet4:
         {
-            nSurf = 4;
-            nNode = 3;
-          
+            const int nSurf = 4;
+            const int nNode = 3;
             vector<int> submap(nNode, 0);           
             for(int i = 0; i < nSurf; i++)
             {
@@ -230,9 +223,8 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         }
         case DRT::Element::tet10:
         {
-            nSurf = 4;
-            nNode = 6;
-     
+            const int nSurf = 4;
+            const int nNode = 6;
             vector<int> submap(nNode, 0);
             for(int i = 0; i < nSurf; i++)
             {
@@ -244,50 +236,50 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         }
         case DRT::Element::wedge6:
         {
-            // quad surfaces first
-            int nqSurf = 3;
-            nNode = 4;
-            
-            vector<int> submapq(nNode, 0);
+            // quad surfaces
+            const int nqSurf = 3;
+            const int nqNode = 4;
+            vector<int> submapq(nqNode, 0);
             for(int i = 0; i < nqSurf; i++)
             {
                 map.push_back(submapq);
-                for(int j = 0; j < nNode; j++)
+                for(int j = 0; j < nqNode; j++)
                     map[i][j] = eleNodeNumbering_wedge15_quadsurfaces[i][j];
             }
-            int ntSurf = 2;
-            nNode = 3;
-            
-            vector<int> submapt(nNode, 0);
+
+            // tri surfaces
+            const int ntSurf = 2;
+            const int ntNode = 3;
+            vector<int> submapt(ntNode, 0);
             for(int i = 0; i < ntSurf; i++)
             {
                 map.push_back(submapt);
-                for(int j = 0; j < nNode; j++)
+                for(int j = 0; j < ntNode; j++)
                     map[i+nqSurf][j] = eleNodeNumbering_wedge15_trisurfaces[i][j];
             }
             break;
         }
         case DRT::Element::pyramid5:
         {
-          // quad surfaces first
-          nSurf = 1;
-          nNode = 4;
-          
-          vector<int> submapq(nNode, 0);
-          for(int i = 0; i < nSurf; i++)
+          // quad surfaces
+          const int nqSurf = 1;
+          const int nqNode = 4;
+          vector<int> submapq(nqNode, 0);
+          for(int i = 0; i < nqSurf; i++)
           {
               map.push_back(submapq);
-              for(int j = 0; j < nNode; j++)
+              for(int j = 0; j < nqNode; j++)
                   map[i][j] = eleNodeNumbering_pyramid5_quadsurfaces[i][j];
           }
-          nSurf = 4;
-          nNode = 3;
-          
-          vector<int> submapt(nNode, 0);
-          for(int i = 0; i < nSurf; i++)
+
+          // tri surfaces
+          const int ntSurf = 4;
+          const int ntNode = 3;
+          vector<int> submapt(ntNode, 0);
+          for(int i = 0; i < ntSurf; i++)
           {
               map.push_back(submapt);
-              for(int j = 0; j < nNode; j++)
+              for(int j = 0; j < ntNode; j++)
                   map[i+1][j] = eleNodeNumbering_pyramid5_trisurfaces[i][j];
           }
           break;
@@ -310,18 +302,15 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
 vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(  
     const DRT::Element::DiscretizationType&     distype)
 {   
-    int nLine;
-    int nNode;
-    
     vector< vector<int> >  map;
         
     switch(distype)
     {
         case DRT::Element::hex8:
         {
-            nLine = 12;
-            nNode = 2;          
-            vector<int> submap(nNode, 0);
+            const int nLine = 12;
+            const int nNode = 2;          
+            vector<int> submap(nNode, -1);
             
             for(int i = 0; i < nLine; i++)
             {
@@ -333,9 +322,9 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         }
         case DRT::Element::hex20:
         {
-            nLine = 12;
-            nNode = 3;
-            vector<int> submap(nNode, 0);
+            const int nLine = 12;
+            const int nNode = 3;
+            vector<int> submap(nNode, -1);
             
             for(int i = 0; i < nLine; i++)
             {   
@@ -347,9 +336,9 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         }
         case DRT::Element::hex27:
         {
-            nLine = 12;
-            nNode = 3;
-            vector<int> submap(nNode, 0);
+            const int nLine = 12;
+            const int nNode = 3;
+            vector<int> submap(nNode, -1);
             
             for(int i = 0; i < nLine; i++)
             {
@@ -361,9 +350,9 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         }
         case DRT::Element::tet4:
         {
-            nLine = 6;
-            nNode = 2;
-            vector<int> submap(nNode, 0);
+            const int nLine = 6;
+            const int nNode = 2;
+            vector<int> submap(nNode, -1);
             
             for(int i = 0; i < nLine; i++)
             {
@@ -375,9 +364,9 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         }
         case DRT::Element::tet10:
         {
-            nLine = 6;
-            nNode = 3;
-            vector<int> submap(nNode, 0);
+            const int nLine = 6;
+            const int nNode = 3;
+            vector<int> submap(nNode, -1);
             
             for(int i = 0; i < nLine; i++)
             {
@@ -389,9 +378,9 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         }
         case DRT::Element::quad9:
         {
-            nLine = 4;
-            nNode = 3;
-            vector<int> submap(nNode, 0);
+            const int nLine = 4;
+            const int nNode = 3;
+            vector<int> submap(nNode, -1);
             
             for(int i = 0; i < nLine; i++)
             {
@@ -403,9 +392,9 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         } 
         case DRT::Element::quad4:
         {
-            nLine = 4;
-            nNode = 2;
-            vector<int> submap(nNode, 0);
+            const int nLine = 4;
+            const int nNode = 2;
+            vector<int> submap(nNode, -1);
             
             for(int i = 0; i < nLine; i++)
             {
@@ -417,9 +406,9 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         }
         case DRT::Element::tri6:
         {
-            nLine = 3;
-            nNode = 3;
-            vector<int> submap(nNode, 0);
+            const int nLine = 3;
+            const int nNode = 3;
+            vector<int> submap(nNode, -1);
             
             for(int i = 0; i < nLine; i++)
             {
@@ -431,9 +420,9 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         }
         case DRT::Element::tri3:
         {
-            nLine = 3;
-            nNode = 2;
-            vector<int> submap(nNode, 0);
+            const int nLine = 3;
+            const int nNode = 2;
+            vector<int> submap(nNode, -1);
             
             for(int i = 0; i < nLine; i++)
             {
@@ -508,17 +497,16 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
 vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(    
     const DRT::Element::DiscretizationType      distype)
 {
-    int nNode;
+    const int nCornerNode = getNumberOfElementCornerNodes(distype);
     int nSurf;
        
     vector< vector<int> >   map;
         
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
-        nNode = 8;
         nSurf = 3;
         vector<int> submap(nSurf, 0);
-        for(int i = 0; i < nNode; i++)
+        for(int i = 0; i < nCornerNode; i++)
         {
             map.push_back(submap);
             for(int j = 0; j < nSurf; j++)
@@ -527,10 +515,9 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(
     }
     else if(distype == DRT::Element::tet4 ||  distype == DRT::Element::tet10)
     {
-        nNode = 4;
         nSurf = 3;
         vector<int> submap(nSurf, 0);
-        for(int i = 0; i < nNode; i++)
+        for(int i = 0; i < nCornerNode; i++)
         {
             map.push_back(submap);
             for(int j = 0; j < nSurf; j++)
@@ -547,82 +534,60 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(
 
 
 /*----------------------------------------------------------------------*
- |  Fills a vector< vector<int> > with all nodes for         u.may 08/07|
- |  every surface for each discretization type                          |
+ |  Fills a vector< vector<double> > with positions in reference coordinates
+ |                                                           u.may 08/07|
  *----------------------------------------------------------------------*/   
 vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(   
     const DRT::Element::DiscretizationType      distype)
 {
-
-    int nNode;
-    int nCoord;
-    
-    vector< vector<double> >   map;
+    const int nNode = getNumberOfElementNodes(distype);
+    const int dim = getDimension(distype);
+    vector< vector<double> >   map(nNode, vector<double>(dim,0.0));
         
     switch(distype)
     {
         case DRT::Element::hex8:
         {
-            nNode = 8;
-            nCoord = 3;
-            vector<double> submap(nCoord, 0);
-            for(int i = 0; i < nNode; i++)
+            for(int inode = 0; inode < nNode; inode++)
             {
-                map.push_back(submap);
-                for(int j = 0; j < nCoord; j++)
-                    map[i][j] = eleNodeNumbering_hex27_nodes_reference[i][j];
+                for(int isd = 0; isd < dim; isd++)
+                    map[inode][isd] = eleNodeNumbering_hex27_nodes_reference[inode][isd];
             }
             break;
         }
         case DRT::Element::hex20:
         {
-            nNode = 20;
-            nCoord = 3;
-            vector<double> submap(nCoord, 0);
-            for(int i = 0; i < nNode; i++)
+            for(int inode = 0; inode < nNode; inode++)
             {
-                map.push_back(submap);
-                for(int j = 0; j < nCoord; j++)
-                    map[i][j] = eleNodeNumbering_hex27_nodes_reference[i][j];
+                for(int isd = 0; isd < dim; isd++)
+                    map[inode][isd] = eleNodeNumbering_hex27_nodes_reference[inode][isd];
             }
             break;
         }
         case DRT::Element::hex27:
         {
-            nNode = 27;
-            nCoord = 3;
-            vector<double> submap(nCoord, 0);
-            for(int i = 0; i < nNode; i++)
+            for(int inode = 0; inode < nNode; inode++)
             {
-                map.push_back(submap);
-                for(int j = 0; j < nCoord; j++)
-                    map[i][j] = eleNodeNumbering_hex27_nodes_reference[i][j];
+                for(int isd = 0; isd < dim; isd++)
+                    map[inode][isd] = eleNodeNumbering_hex27_nodes_reference[inode][isd];
             }
             break;
         }
         case DRT::Element::tet4:
         {
-            nNode = 4;
-            nCoord = 3;
-            vector<double> submap(nCoord, 0);
-            for(int i = 0; i < nNode; i++)
+            for(int inode = 0; inode < nNode; inode++)
             {
-                map.push_back(submap);
-                for(int j = 0; j < nCoord; j++)
-                    map[i][j] = eleNodeNumbering_tet10_nodes_reference[i][j];
+                for(int isd = 0; isd < dim; isd++)
+                    map[inode][isd] = eleNodeNumbering_tet10_nodes_reference[inode][isd];
             }
             break;
         }
         case DRT::Element::tet10:
         {
-            nNode = 10;
-            nCoord = 3;
-            vector<double> submap(nCoord, 0);
-            for(int i = 0; i < nNode; i++)
+            for(int inode = 0; inode < nNode; inode++)
             {
-                map.push_back(submap);
-                for(int j = 0; j < nCoord; j++)
-                    map[i][j] = eleNodeNumbering_tet10_nodes_reference[i][j];
+                for(int isd = 0; isd < dim; isd++)
+                    map[inode][isd] = eleNodeNumbering_tet10_nodes_reference[inode][isd];
             }
             break;
         }
@@ -645,7 +610,7 @@ int DRT::UTILS::getSurfaces(
 {
 
     int countSurf = 0;
-    double TOL = 1e-7;
+    const double TOL = 1e-7;
     
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
