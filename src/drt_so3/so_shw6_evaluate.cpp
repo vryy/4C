@@ -134,9 +134,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix stress(NUMGPT_WEG6,NUMSTR_WEG6);
       Epetra_SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
       bool cauchy = params.get<bool>("cauchy", false);
-      if (cauchy) dserror("Output of Cauchy stresses not (yet) implemented for solid shell wedge6");
-      soshw6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time);
-      cout << "gpstress: " << stress << endl;
+      soshw6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy);
+      //cout << "gpstress: " << stress << endl;
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -279,7 +278,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       Epetra_SerialDenseVector* force,          // element internal force vector
       Epetra_SerialDenseMatrix* elestress,      // element stresses
       Epetra_SerialDenseMatrix* elestrain,      // element stresses
-      const double              time)           // current absolute time
+      const double              time,           // current absolute time
+      const bool                cauchy)         // stress output option
 {
 
 /* ============================================================================*
@@ -506,9 +506,13 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
 
     // return gp stresses
     if (elestress != NULL){
-      for (int i = 0; i < NUMSTR_WEG6; ++i) {
-        (*elestress)(gp,i) = stress(i);
-        //(*elestress)(gp,i) = glstrain(i);
+      if (!cauchy) {
+        for (int i = 0; i < NUMSTR_WEG6; ++i) {
+          (*elestress)(gp,i) = stress(i);
+        }
+      }
+      else {                               // return Cauchy stresses
+        dserror("output of Cauchy stresses not supported for solid shell wedge6");
       }
     }
 

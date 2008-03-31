@@ -164,7 +164,8 @@ private:
                                  Epetra_SerialDenseVector* force,
                                  Epetra_SerialDenseMatrix* elestress,
                                  Epetra_SerialDenseMatrix* elestrain,
-                                 const double              time);
+                                 const double              time,
+                                 const bool                cauchy = false);
 
   void soshw6_anssetup(
             const int numsp,              // number of sampling points

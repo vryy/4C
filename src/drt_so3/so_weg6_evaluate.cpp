@@ -137,8 +137,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix stress(NUMGPT_WEG6,NUMSTR_WEG6);
       Epetra_SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
       bool cauchy = params.get<bool>("cauchy", false);
-      if (cauchy) dserror("Output of Cauchy stresses not (yet) implemented for wedge6");
-      sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time);
+      sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy);
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -295,7 +294,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       Epetra_SerialDenseVector* force,          // element internal force vector
       Epetra_SerialDenseMatrix* elestress,      // element stresses
       Epetra_SerialDenseMatrix* elestrain,      // strains at GP
-      const double              time)           // current absolute time
+      const double              time,           // current absolute time
+      const bool                cauchy)         // stress output option
 {
 
 /* ============================================================================*
@@ -450,8 +450,41 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 
     // return gp stresses
     if (elestress != NULL){
-      for (int i = 0; i < NUMSTR_WEG6; ++i) {
-        (*elestress)(gp,i) = stress(i);
+      if (!cauchy) {
+        for (int i = 0; i < NUMSTR_WEG6; ++i) {
+          (*elestress)(gp,i) = stress(i);
+        }
+      }
+      else {                               // return Cauchy stresses
+        double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
+                      defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
+                      defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
+                      defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
+                      defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
+                      defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
+
+        Epetra_SerialDenseMatrix pkstress(NUMDIM_WEG6,NUMDIM_WEG6);
+        pkstress(0,0) = stress(0);
+        pkstress(0,1) = stress(3);
+        pkstress(0,2) = stress(5);
+        pkstress(1,0) = pkstress(0,1);
+        pkstress(1,1) = stress(1);
+        pkstress(1,2) = stress(4);
+        pkstress(2,0) = pkstress(0,2);
+        pkstress(2,1) = pkstress(1,2);
+        pkstress(2,2) = stress(2);
+
+        Epetra_SerialDenseMatrix temp(NUMDIM_WEG6,NUMDIM_WEG6);
+        Epetra_SerialDenseMatrix cauchystress(NUMDIM_WEG6,NUMDIM_WEG6);
+        temp.Multiply('N','N',detF,defgrd,pkstress,0.);
+        cauchystress.Multiply('N','T',1.0,temp,defgrd,0.);
+
+        (*elestress)(gp,0) = cauchystress(0,0);
+        (*elestress)(gp,1) = cauchystress(1,1);
+        (*elestress)(gp,2) = cauchystress(2,2);
+        (*elestress)(gp,3) = cauchystress(0,1);
+        (*elestress)(gp,4) = cauchystress(1,2);
+        (*elestress)(gp,5) = cauchystress(0,2);
       }
     }
 
