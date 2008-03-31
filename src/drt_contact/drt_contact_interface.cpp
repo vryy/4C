@@ -1428,7 +1428,8 @@ bool CONTACT::Interface::InitializeActiveSet()
       // HERTZ 1
       //if (cnode->Id()==346 || cnode->Id()==332 || cnode->Id()==364 || cnode->Id()==316 || cnode->Id()==380)
       // HERTZ 2
-      if (cnode->Id()==909 || cnode->Id()==936 || cnode->Id()==888)
+      //if (cnode->Id()==909 || cnode->Id()==936 || cnode->Id()==888)
+      if (cnode->Id()==228)
       {
         cnode->Active()=true;
         mynodegids[countnodes] = cnode->Id();

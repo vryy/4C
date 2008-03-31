@@ -191,7 +191,7 @@ public:
   flag is kept on false -> another Newton iteration!
   
   */
-  void UpdateActiveSet(RCP<Epetra_Vector> dism);
+  void UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dism);
   
   /*!
   \brief Compute contact force vector
@@ -241,6 +241,10 @@ protected:
   RCP<LINALG::SparseMatrix>          ksn_;            // stiffness block K_sn (needed for LM)
   RCP<LINALG::SparseMatrix>          ksm_;            // stiffness block K_sm (needed for LM)
   RCP<LINALG::SparseMatrix>          kss_;            // stiffness block K_ss (needed for LM)
+  
+  RCP<Epetra_Map>                    zigzagone_;      // active node set of last active set try
+  RCP<Epetra_Map>                    zigzagtwo_;      // active node set of second-last active set try
+  RCP<Epetra_Map>                    zigzagthree_;    // active node set of third-last active set try
 
 
 }; // class Manager

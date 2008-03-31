@@ -1111,6 +1111,9 @@ void ContactStruGenAlpha::Integrate()
   else if (pred=="consistent") predictor = 2;
   else dserror("Unknown type of predictor");
 
+  // iteration counter for active set loop
+  int numiteractive = 0;
+  
   // Newton as nonlinear iteration scheme
   if (equil=="full newton")
   {
@@ -1118,7 +1121,8 @@ void ContactStruGenAlpha::Integrate()
     for (int i=step; i<nstep; ++i)
     {
       contactmanager_->ActiveSetConverged() = false;
-
+      numiteractive = 0;
+      
       // LOOP2: active set strategy
       while (contactmanager_->ActiveSetConverged()==false)
       {
@@ -1130,7 +1134,9 @@ void ContactStruGenAlpha::Integrate()
         FullNewton();
 
         // update of active set
-        contactmanager_->UpdateActiveSet(dism_);
+        numiteractive++;
+        contactmanager_->UpdateActiveSet(numiteractive,dism_);
+        
       }
       UpdateandOutput();
     }
@@ -1143,6 +1149,7 @@ void ContactStruGenAlpha::Integrate()
     for (int i=step; i<nstep; ++i)
     {
       contactmanager_->ActiveSetConverged() = false;
+      numiteractive = 0;
 
       // LOOP2: active set strategy
       while (contactmanager_->ActiveSetConverged()==false)
@@ -1155,7 +1162,8 @@ void ContactStruGenAlpha::Integrate()
         PTC();
 
         // update of active set
-        contactmanager_->UpdateActiveSet(dism_);
+        numiteractive++;
+        contactmanager_->UpdateActiveSet(numiteractive,dism_);
       }
       UpdateandOutput();
     }

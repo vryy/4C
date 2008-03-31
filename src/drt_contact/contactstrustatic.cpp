@@ -300,7 +300,8 @@ void contact_stru_static_drt()
     // we are at t_{n} == time; the new time is t_{n+1} == time+dt
     timen = time + dt;
     
-    // iteration counter for nonlinear Newton scheme
+    // iteration counters for active set and nonlinear Newton scheme
+    int numiteractive=0;
     int numiter=0;
    
     // initialize active set convergence status
@@ -471,7 +472,8 @@ void contact_stru_static_drt()
       else if (numiter==statvar->maxiter)
         dserror("Newton unconverged in %d iterations",numiter);
       
-      contactmanager->UpdateActiveSet(disn);
+      ++numiteractive;
+      contactmanager->UpdateActiveSet(numiteractive,disn);
     }
     //================================================ end active set loop
     

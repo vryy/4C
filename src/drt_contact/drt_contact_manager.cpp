@@ -1092,7 +1092,7 @@ void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> dism)
+void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dism)
 {
   // assume that active set has converged and check for opposite
   activesetconv_=true;
@@ -1142,7 +1142,8 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> dism)
         }
         
         cout << "INACTIVE: " << i << " " << j << " " << gid << " "
-             << nincr << " " << wgap << " " << cnode->HasProj() << endl;
+             << nincr << " " << wgap << " " << cnode->HasProj() << " "
+             << cnode->xspatial()[0] << endl;
       }
       
       // check nodes of active set ***************************************
@@ -1168,7 +1169,7 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> dism)
         
         cout << "ACTIVE: " << i << " " << j << " " << gid << " "
              << nz << " " << nzold << " " << 0.5*nz+0.5*nzold
-             << " " << cnode->Getg() << endl;  
+             << " " << cnode->Getg() << " " << cnode->xspatial()[0] << endl;  
       }
       
     }
@@ -1183,12 +1184,11 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> dism)
   if (convcheck!=Comm().NumProc())
     activesetconv_=false;
   
-  // output of active set status to screen
-  if (Comm().MyPID()==0 && activesetconv_==false)
-    cout << "ACTIVE SET NOT CONVERGED - REPEAT TIME STEP................." << endl;
-  else if (Comm().MyPID()==0 && activesetconv_==true)
-    cout << "ACTIVE SET CONVERGED................." << endl;
-  
+  // update zig-zagging history (shift by one)
+  if (zigzagtwo_!=null) zigzagthree_  = rcp(new Epetra_Map(*zigzagtwo_));
+  if (zigzagone_!=null) zigzagtwo_    = rcp(new Epetra_Map(*zigzagone_));
+  if (gactivenodes_!=null) zigzagone_ = rcp(new Epetra_Map(*gactivenodes_));
+    
   // (re)setup active global Epetra_Maps
   gactivenodes_ = null;
   gactivedofs_ = null;
@@ -1205,6 +1205,70 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> dism)
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs());
   }
   
+  // CHECK FOR ZIG-ZAGGING / JAMMING OF THE ACTIVE SET
+  // *********************************************************************
+  // A problem of the active set strategy which sometimes arises is known
+  // from optimization literature as jamming or zig-zagging. This means
+  // that within a load/time-step the algorithm can have more than one
+  // solution due to the fact that the active set is not unique. Hence the
+  // algorithm jumps between the solutions of the active set. The non-
+  // uniquenesss results either from hoghly curved contact surfaces or
+  // from the FE discretization, Thus the uniqueness of the closest-point-
+  // projection cannot be guaranteed.
+  // *********************************************************************
+  // To overcome this problem we monitor the development of the active
+  // set scheme in our contact algorithms. We can identify zig-zagging by
+  // comparing the current active set with the active set of the second-
+  // and third-last iteration. If an identity occurs, we consider the
+  // active set strategy as converged instantly, accepting the current
+  // version of the active set and proceeding with the next time/load step.
+  // This very simple approach helps stabilizing the contact algorithm!
+  // *********************************************************************
+  if (numiteractive>2)
+  {
+    if (zigzagtwo_!=null)
+    {
+      if (zigzagtwo_->SameAs(*gactivenodes_))
+      {
+        // set active set converged
+        activesetconv_=true;
+        
+        // output to screen
+        if (Comm().MyPID()==0)
+          cout << "DETECTED 1-2 ZIG-ZAGGING OF ACTIVE SET................." << endl;
+      }
+    }
+    
+    if (zigzagthree_!=null)
+    {
+      if (zigzagthree_->SameAs(*gactivenodes_))
+      {
+        // set active set converged
+        activesetconv_=true;
+        
+        // output to screen
+        if (Comm().MyPID()==0)
+          cout << "DETECTED 1-2-3 ZIG-ZAGGING OF ACTIVE SET................" << endl;
+      }
+    }
+  }
+  
+  // reset zig-zagging history
+  if (activesetconv_==true)
+  {
+    zigzagone_  = null;
+    zigzagtwo_  = null;
+    zigzagthree_= null;
+  }
+  
+  // output of active set status to screen
+  if (Comm().MyPID()==0 && activesetconv_==false)
+    cout << "ACTIVE SET ITERATION " << numiteractive
+         << " NOT CONVERGED - REPEAT TIME STEP................." << endl;
+  else if (Comm().MyPID()==0 && activesetconv_==true)
+    cout << "ACTIVE SET CONVERGED IN " << numiteractive
+         << " STEP(S)................." << endl;
+    
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
     IsInContact()=true;
