@@ -64,7 +64,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_fsiload")                 act = So_hex8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")            act = So_hex8::calc_struct_update_istep;
   else if (action=="calc_struct_update_genalpha_imrlike") act = So_hex8::calc_struct_update_genalpha_imrlike;
-  else if (action=="calc_struct_nlnstiffmass_multi")      act = So_hex8::calc_struct_nlnstiffmass_multi;
   else if (action=="calc_homog_stressdens")               act = So_hex8::calc_homog_stressdens;
   else if (action=="postprocess_stress")                  act = So_hex8::postprocess_stress;
   else dserror("Unknown type of action for So_hex8");
@@ -289,27 +288,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       soh8_homog(params, mydisp, time, myres);
-    }
-    break;
-
-    // in case of multi-scale problems, possible EAS internal data
-    // have to be stored in every macroscopic Gauss point
-    case calc_struct_nlnstiffmass_multi: {
-      // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      if (eastype_ != soh8_easnone) {
-        soh8_set_eas_multi(params);
-      }
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,time);
-      if (eastype_ != soh8_easnone) {
-        soh8_get_eas_multi(params);
-      }
     }
     break;
 
