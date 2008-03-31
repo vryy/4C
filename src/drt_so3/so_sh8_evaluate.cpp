@@ -190,7 +190,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
           for (int i = 0; i < NUMSTR_SOH8; ++i) {
             (*((*elestress)(i)))[lid] = 0.;
             for (int j = 0; j < NUMGPT_SOH8; ++j) {
-              (*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              //(*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOH8 * (*gpstress)(j,i);
             }
           }
         }
@@ -228,7 +229,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
           for (int i = 0; i < NUMSTR_SOH8; ++i) {
             (*((*elestress)(i)))[lid] = 0.;
             for (int j = 0; j < NUMGPT_SOH8; ++j) {
-              (*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              //(*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOH8 * (*gpstress)(j,i);
             }
           }
         }
@@ -260,7 +262,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
 
     case calc_struct_update_genalpha_imrlike: {
       // do something with internal EAS, etc parameters
-      // this depends on the applied solution technique (static, generalised-alpha, 
+      // this depends on the applied solution technique (static, generalised-alpha,
       // or other time integrators)
       if (eastype_ != soh8_easnone) {
         double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f

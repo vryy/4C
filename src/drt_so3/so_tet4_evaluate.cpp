@@ -209,7 +209,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
           for (int i = 0; i < NUMSTR_SOTET4; ++i) {
             (*((*elestress)(i)))[lid] = 0.;
             for (int j = 0; j < NUMGPT_SOTET4; ++j) {
-              (*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOTET4 * (*gpstress)(j,i);
             }
           }
         }
@@ -247,7 +247,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
           for (int i = 0; i < NUMSTR_SOTET4; ++i) {
             (*((*elestress)(i)))[lid] = 0.;
             for (int j = 0; j < NUMGPT_SOTET4; ++j) {
-              (*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOTET4 * (*gpstress)(j,i);
             }
           }
         }
@@ -764,7 +764,7 @@ int DRT::ELEMENTS::Sotet4Register::Initialize(DRT::Discretization& dis)
 		j++;
 	}
 	DRT::ELEMENTS::So_tet4* actele = dynamic_cast<DRT::ELEMENTS::So_tet4*>(dis.lColElement(j));
-	if (!actele->donerewinding_) 
+	if (!actele->donerewinding_)
 	  {
 	    DRT::UTILS::Rewinding3D(dis);
 	    dis.FillComplete(false,false,false);

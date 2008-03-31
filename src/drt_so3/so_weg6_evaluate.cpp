@@ -194,7 +194,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
           for (int i = 0; i < NUMSTR_WEG6; ++i) {
             (*((*elestress)(i)))[lid] = 0.;
             for (int j = 0; j < NUMGPT_WEG6; ++j) {
-              (*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              //(*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_WEG6 * (*gpstress)(j,i);
             }
           }
         }
@@ -232,7 +233,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
           for (int i = 0; i < NUMSTR_WEG6; ++i) {
             (*((*elestress)(i)))[lid] = 0.;
             for (int j = 0; j < NUMGPT_WEG6; ++j) {
-              (*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              //(*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_WEG6 * (*gpstress)(j,i);
             }
           }
         }
@@ -567,11 +569,11 @@ int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
 	j++;
   }
   DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(j));
-  if (!actele->donerewinding_) 
+  if (!actele->donerewinding_)
     {
       DRT::UTILS::Rewinding3D(dis);
       dis.FillComplete(false,false,false);
-    
+
 	  for (int i=0; i<dis.NumMyColElements(); ++i)
 	    {
 		  // get the actual element
@@ -604,14 +606,14 @@ int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
 		  {
 			  cout << "???" << endl;
 		  }
-	
+
 	    }
 	// fill complete again to reconstruct element-node pointers,
 	// but without element init, etc.
 	dis.FillComplete(false,false,false);
     }
-  
-  
+
+
   return 0;
 }
 

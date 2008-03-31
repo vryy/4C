@@ -192,7 +192,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
           for (int i = 0; i < NUMSTR_WEG6; ++i) {
             (*((*elestress)(i)))[lid] = 0.;
             for (int j = 0; j < NUMGPT_WEG6; ++j) {
-              (*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              //(*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_WEG6 * (*gpstress)(j,i);
             }
           }
         }
@@ -230,7 +231,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
           for (int i = 0; i < NUMSTR_WEG6; ++i) {
             (*((*elestress)(i)))[lid] = 0.;
             for (int j = 0; j < NUMGPT_WEG6; ++j) {
-              (*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              //(*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_WEG6 * (*gpstress)(j,i);
             }
           }
         }
