@@ -79,6 +79,7 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
 {
   // there are 3 velocities and 1 pressure
   return 0;
+#if 0
   const int numdf = 4;
 
   const double thsl = params.get("thsl",0.0);
@@ -178,6 +179,7 @@ int DRT::ELEMENTS::XFluid3Surface::EvaluateNeumann(
   } /* end of loop over integration points gpid */
 
   return 0;
+#endif
 }
 
 
