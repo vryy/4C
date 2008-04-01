@@ -164,6 +164,12 @@ namespace ADAPTER {
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const = 0;
 
+    //! @name Extract the velocity-related part of a fluid vector (e.g. velnp, veln, residual)
+    
+    /// Some applications need only access to velocity-related values of an fluid result vector.
+    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) const = 0;
+    //@}
+
     //! @name Extract interface forces
 
     /// After the fluid solve we need the forces at the FSI interface.
@@ -314,6 +320,8 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
+    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) const;
+
   private:
 
     /// the actual fluid algorithm
@@ -438,6 +446,8 @@ namespace ADAPTER {
     virtual Teuchos::RCP<Epetra_Vector>    RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
 
     virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
+
+    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) const;
 
   private:
 

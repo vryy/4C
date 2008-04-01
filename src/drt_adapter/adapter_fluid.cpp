@@ -371,6 +371,14 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidAdapter::CreateFieldTest()
 {
   return Teuchos::rcp(new FluidResultTest(fluid_));
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidAdapter::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) const
+{
+   return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
+}
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
@@ -710,6 +718,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidGenAlphaAdapter::RelaxationSolve(Teuch
 Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidGenAlphaAdapter::CreateFieldTest()
 {
   return Teuchos::rcp(new FluidResultTest(fluid_));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlphaAdapter::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) const
+{
+   return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
 }
 
 

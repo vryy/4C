@@ -202,6 +202,7 @@ public:
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
+  LINALG::MapExtractor& VelPresSplitter() {return velpressplitter_;}
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
   Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
 
@@ -263,10 +264,10 @@ protected:
   FluidImplicitTimeInt operator = (const FluidImplicitTimeInt& old);
   FluidImplicitTimeInt (const FluidImplicitTimeInt& old);
 
-  RCP<DRT::Discretization> discret_;
+  RCP<DRT::Discretization>      discret_;
   LINALG::Solver&               solver_;
   ParameterList&                params_;
-  IO::DiscretizationWriter&         output_;
+  IO::DiscretizationWriter&     output_;
   int                           myrank_;
   bool                          alefluid_;
   bool                          dynamic_smagorinsky_;

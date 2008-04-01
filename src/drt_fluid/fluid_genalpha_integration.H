@@ -443,6 +443,12 @@ public:
     { return discret_; }
 
   /*!
+  \brief provide the velocity-pressure splitter
+
+  */
+  LINALG::MapExtractor& VelPresSplitter() {return velpressplitter_;}
+
+  /*!
   \brief provide the dofrowmap of the velocity dofs
 
   */
