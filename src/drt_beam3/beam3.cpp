@@ -52,31 +52,33 @@ gaussrule_(DRT::UTILS::intrule_line_2point)
  |  copy-ctor (public)                                       cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
-DRT::Element(old),
-data_(old.data_),
-material_(old.material_),
-lrefe_(old.lrefe_),
-Told_(old.Told_),
-Tnew_(old.Tnew_),
-Tmid_(old.Tmid_),
-curvold_(old.curvold_),
-curvnew_(old.curvnew_),
-alphaold_(old.alphaold_),
-alphanew_(old.alphanew_),
-timenew(old,timenew),
-crosssec_(old.crosssec_),
-crosssecshear_(old.crosssecshear_),
-Iyy_(old.Iyy_),
-Izz_(old.Izz_),
-Irr_(old.Irr_),
-lumpedflag_(old.lumpedflag_),
-thermalenergy_(old.thermalenergy_),
-Arbeit_N(old.Arbeit_N),
-Arbeit_M(old.Arbeit_M),
-Arbeit_Q(old.Arbeit_Q),
-x_verschiebung(old.x_verschiebung),
-lines_(old.lines_),
-gaussrule_(old.gaussrule_)
+ DRT::Element(old),
+ data_(old.data_),
+ material_(old.material_),
+ lrefe_(old.lrefe_),
+ Told_(old.Told_),
+ Tnew_(old.Tnew_),
+ Tmid_(old.Tmid_),
+ curvold_(old.curvold_),
+ curvnew_(old.curvnew_),
+ betaplusalphaold_(old.betaplusalphaold_),
+ betaplusalphanew_(old.betaplusalphanew_),
+ betaminusalphaold_(old.betaminusalphaold_),
+ betaminusalphanew_(old.betaminusalphanew_),
+ timenew_(old.timenew_),
+ crosssec_(old.crosssec_),
+ crosssecshear_(old.crosssecshear_),
+ Iyy_(old.Iyy_),
+ Izz_(old.Izz_),
+ Irr_(old.Irr_),
+ lumpedflag_(old.lumpedflag_),
+ thermalenergy_(old.thermalenergy_),
+ Arbeit_N(old.Arbeit_N),
+ Arbeit_M(old.Arbeit_M),
+ Arbeit_Q(old.Arbeit_Q),
+ x_verschiebung(old.x_verschiebung),
+ lines_(old.lines_),
+ gaussrule_(old.gaussrule_)
 {
   return;
 }
@@ -153,10 +155,12 @@ void DRT::ELEMENTS::Beam3::Pack(vector<char>& data) const
   AddtoPack(data,Tnew_);
   AddtoPack(data,Tmid_);
   AddtoPack(data,curvold_);
-  AddtoPack(data,curvnew_);
-  AddtoPack(data,alphaold_);
-  AddtoPack(data,alphanew_);
-  AddtoPack(data,timenew);
+  AddtoPack(data,curvnew_);  
+  AddtoPack(data,betaplusalphaold_);
+  AddtoPack(data,betaplusalphanew_);
+  AddtoPack(data,betaminusalphaold_);
+  AddtoPack(data,betaminusalphanew_);
+  AddtoPack(data,timenew_);
   //cross section
   AddtoPack(data,crosssec_);
    //cross section with shear correction
@@ -203,10 +207,12 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,Tnew_);
   ExtractfromPack(position,data,Tmid_);
   ExtractfromPack(position,data,curvold_);
-  ExtractfromPack(position,data,curvnew_);
-  ExtractfromPack(position,data,alphaold_);
-  ExtractfromPack(position,data,alphanew_);
-  ExtractfromPack(position,data,timenew);
+  ExtractfromPack(position,data,curvnew_); 
+  ExtractfromPack(position,data,betaplusalphaold_);
+  ExtractfromPack(position,data,betaplusalphanew_);
+  ExtractfromPack(position,data,betaminusalphaold_);
+  ExtractfromPack(position,data,betaminusalphanew_);   
+  ExtractfromPack(position,data,timenew_);
   //cross section
   ExtractfromPack(position,data,crosssec_);
   //cross section with shear correction
@@ -365,13 +371,15 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
           xrefe(2,k) = currele->Nodes()[k]->X()[2];
         }
       //Initializing member matrices
-      Told_.Shape(3,3);
-      Tnew_.Shape(3,3);
-      Tmid_.Shape(3,3);
-      alphaold_.Shape(3,1);
-      alphanew_.Shape(3,1);
-      curvold_.Shape(3,1);
-      curvnew_.Shape(3,1);
+      currele->Told_.Shape(3,3);
+      currele->Tnew_.Shape(3,3);
+      currele->Tmid_.Shape(3,3);
+      currele->curvold_.Shape(3,1);
+      currele->curvnew_.Shape(3,1);
+      currele->betaplusalphaold_.Shape(3,1);
+      currele->betaplusalphanew_.Shape(3,1);
+      currele->betaminusalphaold_.Shape(3,1);
+      currele->betaminusalphanew_.Shape(3,1);
       
       //length in reference configuration
       currele->lrefe_ = pow(pow(xrefe(0,1)-xrefe(0,0),2)+pow(xrefe(1,1)-xrefe(1,0),2)+pow(xrefe(2,1)-xrefe(2,0),2),0.5);  
@@ -380,21 +388,21 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
        * of area tensor */
       for (int line; line<3; line++)	
       {
-	      Told_(line,0) = xrefe(line,1)-xrefe(line,0)/currele->lrefe_;
+        currele->Told_(line,0) = xrefe(line,1)-xrefe(line,0)/currele->lrefe_;
       }
       /*in the following two more or less arbitrary axes t2 and t3 are calculated in order to complete the triad Told_, which 
        * works in case of a rotationally symmetric crosssection; in case of different kinds of crosssections one has to mo-
        * dify the following code lines in such a way that t2 and t3 are still the principal axes related with Iyy_ and Izz_*/
       
       //seeting t2(0)=0 and calculating other elements by setting scalar product t1 o t2 to zero
-      double lin1norm = pow(pow(Told_(1,0),2)+pow(Told_(2,0),2),0.5);
-      Told_(0,1) =  0;
-      Told_(1,1) =  Told_(1,0)/lin1norm;
-      Told_(2,1) = -Told_(2,0)/lin1norm;
+      double lin1norm = pow(pow(currele->Told_(1,0),2)+pow(currele->Told_(2,0),2),0.5);
+      currele->Told_(0,1) =  0;
+      currele->Told_(1,1) =  currele->Told_(1,0)/lin1norm;
+      currele->Told_(2,1) = -currele->Told_(2,0)/lin1norm;
       //calculating t3 by crossproduct t1 x t2
-      Told_(0,2) = -Told_(1,0)*Told_(2,1)-Told_(2,0)*Told_(1,1);
-      Told_(1,2) =    Told_(0,0)*Told_(2,1);
-      Told_(2,2) =    Told_(0,0)*Told_(1,1);
+      currele->Told_(0,2) = -currele->Told_(1,0)*currele->Told_(2,1)-currele->Told_(2,0)*currele->Told_(1,1);
+      currele->Told_(1,2) =    currele->Told_(0,0)*currele->Told_(2,1);
+      currele->Told_(2,2) =    currele->Told_(0,0)*currele->Told_(1,1);
        
       
     } //for (int i=0; i<dis_.NumMyColElements(); ++i)

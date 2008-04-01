@@ -297,9 +297,11 @@ private:
   Epetra_SerialDenseMatrix curvold_;
   Epetra_SerialDenseMatrix curvnew_;
   
-  //!angle alpha_c from Crisfield, Vol. 1, section 17.2.1
-  Epetra_SerialDenseMatrix alphaold_;
-  Epetra_SerialDenseMatrix alphanew_;
+  //!auxiliary angles due to Crisfield, Vol. 2, equation (17.70) and (17.71)
+  Epetra_SerialDenseMatrix betaplusalphaold_;
+  Epetra_SerialDenseMatrix betaplusalphanew_;
+  Epetra_SerialDenseMatrix betaminusalphaold_;
+  Epetra_SerialDenseMatrix betaminusalphanew_;
   
   //! Tnew_ is to a point of time
   double timenew_;
@@ -343,16 +345,16 @@ private:
   void computespin(Epetra_SerialDenseMatrix& spin, const Epetra_SerialDenseMatrix rotationangle);
   
   //!computing rotation matrix out of a spin matrix
-  void computerotation(Epetra_SerialDenseMatrix& rotationmatrix, const Epetra_SerialDenseMatrix spin);
+  void computerotation(Epetra_SerialDenseMatrix& rotationmatrix, const Epetra_SerialDenseMatrix& spin);
   
   //!computing rotation matrix XT according to Crisfield, Vol. 2, equation (17.74)
-  void computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epetra_SerialDenseMatrix T_new, const Epetra_SerialDenseMatrix x21);
+  void computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epetra_SerialDenseMatrix& T_new, Epetra_SerialDenseMatrix x21);
   
   //!computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
-  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const Epetra_SerialDenseMatrix stressn, const Epetra_SerialDenseMatrix stressm);
+  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, Epetra_SerialDenseMatrix stressn, Epetra_SerialDenseMatrix stressm);
   
   //!computing stiffens matrix Ksigma2 according to Crisfield, Vol. 2, equation (17.87)
-  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const Epetra_SerialDenseMatrix stressn, const Epetra_SerialDenseMatrix x21);
+  void computeKsig2(Epetra_SerialDenseMatrix& Ksig1, Epetra_SerialDenseMatrix stressn, Epetra_SerialDenseMatrix x21);
                     
   //!calculation of nonlinear stiffness and mass matrix
   void b3_nlnstiffmass(vector<double>&           disp, 

@@ -85,6 +85,19 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      
+      /*update of central nodal triad T; in case that a time step was finished after the last call 
+       * of Evaluate formerly Tnew_ becomes Told_ */
+      if(params.get("total time", 0) > timenew_ + params.get<double>("delta time",0.01)/2);
+      {                     
+        //formerly "new" variables are now the "old" ones
+        Told_= Tnew_;
+        curvold_ = curvnew_;   
+        //new time is current time
+        timenew_ = params.get("total time", 0);
+        betaplusalphaold_  = betaplusalphanew_;
+        betaminusalphaold_ = betaminusalphanew_;
+      }
         
       b3_nlnstiffmass(mydisp,elemat1,elemat2,elevec1);
       
@@ -183,7 +196,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
 
   // no. of nodes on this element; the following line is only valid for elements with constant number of 
   // degrees of freedom per node
-  const int numdf = Nodes()[0]->NumDofPerNode();
+  const int numdf = 6;
   const DiscretizationType distype = this->Shape();
 
   // gaussian points 
@@ -267,8 +280,8 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
   	  ranlib::Normal<double> normalGen(0,stand_dev);
   	  
   	  //adding statistical forces accounting for connectivity of nodes
-  	(int node=0; node<NumNode(); ++node)
-  	  for (int idof=0; idof<numdf; ++numdf)  		  
+  	for(int node=0; node<NumNode(); ++node)
+  	  for (int idof=0; idof<numdf; ++idof)  		  
   	  {
   	    for (int inode=0; inode<NumNode(); ++inode)
   		  elevec1[numdf+numdf*inode] += normalGen.random() / sqrt( Nodes()[inode]->NumElement() ); 
@@ -284,20 +297,20 @@ return 0;
  | auxiliary functions for dealing with large rotations and nonlinear stiffness                    cyron 04/08|							     
  *----------------------------------------------------------------------------------------------------------*/
 //computing spin matrix out of a rotation vector
-void computespin(Epetra_SerialDenseMatrix& spin, const Epetra_SerialDenseMatrix rotationangle)
+void DRT::ELEMENTS::Beam3::computespin(Epetra_SerialDenseMatrix& spin, const Epetra_SerialDenseMatrix rotationangle)
 {
   spin.Shape(3,3);
-  spin(0,1) = -rotation(2,0);
-  spin(1,0) =  rotation(2,0);
-  spin(0,2) =  rotation(1,0);
-  spin(2,0) = -rotation(1,0);
-  spin(1,2) = -rotation(0,0);
-  spin(2,1) =  rotation(0,0); 
+  spin(0,1) = -rotationangle(2,0);
+  spin(1,0) =  rotationangle(2,0);
+  spin(0,2) =  rotationangle(1,0);
+  spin(2,0) = -rotationangle(1,0);
+  spin(1,2) = -rotationangle(0,0);
+  spin(2,1) =  rotationangle(0,0); 
   return;
-} /* DRT::ELEMENTS::Beam3::computespin */
+} // DRT::ELEMENTS::Beam3::computespin 
 
 //computing rotation matrix out of a spin matrix
-void computerotation(Epetra_SerialDenseMatrix& rotationmatrix, const Epetra_SerialDenseMatrix spin)
+void DRT::ELEMENTS::Beam3::computerotation(Epetra_SerialDenseMatrix& rotationmatrix, const Epetra_SerialDenseMatrix& spin)
 {
   rotationmatrix.Shape(3,3);
   rotationmatrix(0,0)=1;
@@ -305,10 +318,10 @@ void computerotation(Epetra_SerialDenseMatrix& rotationmatrix, const Epetra_Seri
   rotationmatrix(2,2)=1;
   rotationmatrix += spin;
   return;
-} /* DRT::ELEMENTS::Beam3::computerotation */
+} //DRT::ELEMENTS::Beam3::computerotation 
 
-//!computing rotation matrix X according to Crisfield, Vol. 2, equation (17.74)
-void computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epetra_SerialDenseMatrix T_new, const Epetra_SerialDenseMatrix x21)
+//computing rotation matrix X according to Crisfield, Vol. 2, equation (17.74)
+void DRT::ELEMENTS::Beam3::computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epetra_SerialDenseMatrix& T_new, Epetra_SerialDenseMatrix x21)
 {
   x21.Scale(0.5);
   Epetra_SerialDenseMatrix spinx21;
@@ -328,10 +341,10 @@ void computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epetra_SerialDenseMatrix 
      } 
   
   return;
-} /* DRT::ELEMENTS::Beam3::computeXrot*/
+} // DRT::ELEMENTS::Beam3::computeXrot
 
 //computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
-void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const Epetra_SerialDenseMatrix stressn, const Epetra_SerialDenseMatrix stressm)
+void DRT::ELEMENTS::Beam3::computeKsig1(Epetra_SerialDenseMatrix& Ksig1, Epetra_SerialDenseMatrix stressn, Epetra_SerialDenseMatrix stressm)
 {
   Ksig1.Shape(12,12);
   stressn.Scale(0.5);
@@ -357,10 +370,10 @@ void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const Epetra_SerialDenseMatri
       }
     }   
   return;
-} /* DRT::ELEMENTS::Beam3::computeKsig1*/
+} //DRT::ELEMENTS::Beam3::computeKsig1
 
 //computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.87) and (17.88)
-void computeKsig2(Epetra_SerialDenseMatrix& Ksig2, const Epetra_SerialDenseMatrix stressn, const Epetra_SerialDenseMatrix x21)
+void DRT::ELEMENTS::Beam3::computeKsig2(Epetra_SerialDenseMatrix& Ksig2,Epetra_SerialDenseMatrix stressn, Epetra_SerialDenseMatrix x21)
 {
   Ksig2.Shape(12,12);
   
@@ -370,7 +383,7 @@ void computeKsig2(Epetra_SerialDenseMatrix& Ksig2, const Epetra_SerialDenseMatri
   computespin(Sn,stressn);
   Epetra_SerialDenseMatrix Y;
   Y.Shape(3,3);
-  computespin(Y,x21)
+  computespin(Y,x21);
   Y.Multiply('N','N',1,Y,Sn,0); 
   
   for (int i=0; i<3; ++i)
@@ -389,7 +402,7 @@ void computeKsig2(Epetra_SerialDenseMatrix& Ksig2, const Epetra_SerialDenseMatri
       }
     }   
   return;
-} /* DRT::ELEMENTS::Beam3::computeKsig2*/
+} // DRT::ELEMENTS::Beam3::computeKsig2
 
 
 
@@ -400,15 +413,18 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
                                             Epetra_SerialDenseMatrix& stiffmatrix,
                                             Epetra_SerialDenseMatrix& massmatrix,
                                             Epetra_SerialDenseVector& force)
-{
+{ 
   //normal and shear strain
-  Epetra_SerialSendeMatrix espilon;
+  Epetra_SerialDenseMatrix epsilon;
   epsilon.Shape(3,1);
   //number of nodal degrees of freedom
-  const int numdf = Nodes()[0]->NumDofPerNode(); 
+  const int numdf = 6; 
   //current position of nodal degrees of freedom
   Epetra_SerialDenseMatrix xcurr;
   xcurr.Shape(numdf,NumNode());
+  //difference between coordinates of both nodes, x21' Crisfield  Vol. 2 equ. (17.66a) and (17.72)
+  Epetra_SerialDenseMatrix x21;
+  x21.Shape(numdf,NumNode());
   //rotation matrix XT, Crisfield, Vol. 2, equation (17.74)
   Epetra_SerialDenseMatrix Xrot;
   Xrot.Shape(2*numdf,numdf);
@@ -423,21 +439,16 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
   //rotation matrix, Crisfield Vol. 2, equation (17.74)
   Epetra_SerialDenseMatrix XT;
   XT.Shape(12,6);
+  Epetra_SerialDenseMatrix deltahalfbetaplusalpha;
+  deltahalfbetaplusalpha.Shape(3,1);
+  Epetra_SerialDenseMatrix deltabetaminusalpha;
+  deltabetaminusalpha.Shape(3,1);
+  Epetra_SerialDenseMatrix deltaquarterbetaplusalpha;
+  deltaquarterbetaplusalpha.Shape(3,1);
+  Epetra_SerialDenseMatrix Saux;
+  Epetra_SerialDenseMatrix Raux;
   
-   
-  /*update of central nodal triad T; in case that a time step was finished after the last call 
-   * of Evaluate formerly Tnew_ becomes Told_ */
-  if(params.get("total time", 0) > timenew_ + params.get<double>("delta time",0.01),0.5)/2;
-  {                     
-    //formerly "new" variables are now the "old" ones
-    Told_= Tnew_;
-    curvold_ = curvnew_;   
-    //new time is current time
-    timenew_ = params.get("total time", 0);
-    betaplusalphaold_  = betaplusalphanew_;
-    betaminusalphaold_ = betaminusalphanew_;
-  }
-  
+
   //nodal coordinates in current position
   for (int k=0; k<NumNode(); ++k)   
     {
@@ -452,30 +463,45 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
   //difference between coordinates of both nodes, x21' Crisfield  Vol. 2 equ. (17.66a) and (17.72)
    for (int j=0; j<3; ++j)
    {
-     x21(j) = xcurr(j,1) - xcurr(j,0); 
-     betaplusalphanew_(j)  = xcurr(j+3,1) + xcurr(j+3,0); 
-     betaminusalphanew_(j) = xcurr(j+3,1) - xcurr(j+3,0); 
+     x21(j,0) = xcurr(j,1) - xcurr(j,0); 
+     betaplusalphanew_(j,0)  = xcurr(j+3,1) + xcurr(j+3,0); 
+     betaminusalphanew_(j,0) = xcurr(j+3,1) - xcurr(j+3,0);
+     
    } 
+      
+   deltahalfbetaplusalpha  = betaplusalphaold_;
+   deltahalfbetaplusalpha.Scale(-1);
+   deltahalfbetaplusalpha  += betaplusalphanew_;
+   deltahalfbetaplusalpha.Scale(0.5);
+   
+   deltaquarterbetaplusalpha = deltahalfbetaplusalpha;
+   deltaquarterbetaplusalpha.Scale(0.5);
+   
+   
+   deltabetaminusalpha = betaminusalphaold_;
+   deltabetaminusalpha.Scale(-1);
+   deltabetaminusalpha += betaminusalphanew_;
   
   //auxiliary matrix for update of Tnew_, Crisfield, Vol 2, equation (17.65)
-  computespin(DeltaT,Deltaalpha);
-  Tnew_.Multiply('N','N',1,(alphaplusbetanew_-alphaplusbetaold_)/2,Told_,0); 
+  Tnew_.Multiply('N','N',1,deltahalfbetaplusalpha,Told_,0); 
   
   //computing triad for curvature update, Crisfield, Vol 2, equation (17.73)
-  Tmid_.Multiply('N','N',1,computerotation(DeltaT.Scale(0.5)),Told_,0); 
+  computespin(Saux,deltaquarterbetaplusalpha);
+  computerotation(Raux,Saux);
+  Tmid_.Multiply('N','N',1,Raux,Told_,0); 
   
   //updating curvature, Crisfield, Vol. 2, equation (17.72)
-  curvnew_.Multiply('T','N',1,Tmid_,betaminusalphanew_-betaminusalphaold_,0); 
+  curvnew_.Multiply('T','N',1,Tmid_,deltabetaminusalpha,0); 
   curvnew_.Scale(1/lrefe_);
   curvnew_ += curvold_;
   
   //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.67)
   epsilon.Multiply('T','N',1,Tnew_,x21,0); 
-  epsilon.Sacle(1/lrefe_);
-  epsilon(1) = epsilon(1) - 1;
+  epsilon.Scale(1/lrefe_);
+  epsilon(1,0) = epsilon(1,0) - 1;
   
   //computing rotation matrix XT according to Crisfield, Vol. 2, equation (17.74)
-  void computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epetra_SerialDenseMatrix T_new, const Epetra_SerialDenseMatrix x21);
+  computeXrot(Xrot, Tnew_, x21);
   
   /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
   / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
@@ -505,15 +531,15 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
     
   //stress values n and m, Crisfield, Vol. 2, equation (17.76) and (17.78)
   stressn = epsilon;
-  stressn(0) = stressn(0)*ym*crosssec_;
-  stressn(1) = stressn(1)*sm*crosssecshear_;
-  stressn(2) = stressn(2)*sm*crosssecshear_;
+  stressn(0,0) = stressn(0,0)*ym*crosssec_;
+  stressn(1,0) = stressn(1,0)*sm*crosssecshear_;
+  stressn(2,0) = stressn(2,0)*sm*crosssecshear_;
   stressn.Multiply('N','N',1,Tnew_,stressn,0); 
 
   stressm = curvnew_;
-  stressm(0) = stressm(0)*sm*Irr_;
-  stressm(1) = stressm(1)*ym*Iyy_;
-  stressm(2) = stressm(2)*ym*Izz_;
+  stressm(0,0) = stressm(0,0)*sm*Irr_;
+  stressm(1,0) = stressm(1,0)*ym*Iyy_;
+  stressm(2,0) = stressm(2,0)*ym*Izz_;
   stressm.Multiply('N','N',1,Tnew_,stressm,0); 
   
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
@@ -522,11 +548,11 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
     {
       for (int j=0; j<3; ++j)
       {
-        force(i) += Xrot(i,j)*stressn(j)
+        force(i) += Xrot(i,j)*stressn(j,0);
       }
       for (int j=0; j<3; ++j)
       {
-        force(i) += Xrot(i,j+3)*stressm(j)
+        force(i) += Xrot(i,j+3)*stressm(j,0);
       }
     } 
    
@@ -553,6 +579,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
   //calculating mass matrix (lcoal version = global version) 
   massmatrix.Shape(6,6);
   
+  /*
   //if lumped_flag == 0 a consistent mass Timoshenko beam mass matrix is applied
   if (lumpedflag_ == 0)
   {
@@ -566,8 +593,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
 	        massmatrix(id+3,id) = aux_E[id];
 	  }
   }
-  /*if lumped_flag == 1 a lumped mass matrix is applied where the cross sectional moment of inertia is
-   * assumed to be approximately zero so that the 3,3 and 5,5 element are both zero */
+  //if lumped_flag == 1 a lumped mass matrix is applied where the cross sectional moment of inertia is
+  //assumed to be approximately zero so that the 3,3 and 5,5 element are both zero 
   
   else if (lumpedflag_ == 1)
   {
@@ -586,6 +613,8 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
    }
   else
 	  dserror("improper value of variable lumpedflag_");  
+	  
+	  */
     
   return;
 } // DRT::ELEMENTS::Beam3::b3_nlnstiffmass
