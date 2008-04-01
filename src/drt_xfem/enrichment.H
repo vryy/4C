@@ -125,7 +125,7 @@ public:
     //! calculate modified enrichment value based on input \f$\psi(x) - \psi(x_{\mathrm{n}})\f$
     double ModifiedEnrValue(
             const blitz::Array<double,1>&         actpos,            ///< \f$x\f$
-            const blitz::Array<double,1>&         nodalpos,          ///< \f$x_{\mathrm{Node}\f$
+            const blitz::Array<double,1>&         nodalpos,          ///< \f$x_{\mathrm{Node}}\f$
             const RCP<DRT::Discretization>&       cutterdis,         ///< intersecting discretization
             const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
             ) const;
