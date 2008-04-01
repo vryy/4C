@@ -177,6 +177,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   const double                                          dt,
   const double                                          time,
   const bool                                            newton,
+  const bool                                            higher_order_ele,
   const enum Fluid3::StabilisationAction                fssgv,
   const enum Fluid3::StabilisationAction                tds,
   const enum Fluid3::StabilisationAction                inertia,
@@ -186,6 +187,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   const enum Fluid3::StabilisationAction                cstab,
   const enum Fluid3::StabilisationAction                cross,
   const enum Fluid3::StabilisationAction                reynolds,
+  const enum Fluid3::TauType                            whichtau,
   const enum Fluid3::TurbModelAction                    turb_mod_action,
   double&                                               Cs,
   double&                                               Cs_delta_sq,
@@ -339,7 +341,36 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         dserror("type unknown!\n");
   }
 
-  // get Jacobian matrix and determinant
+  // get transposed Jacobian matrix and determinant
+  //
+  //        +-            -+ T      +-            -+
+  //        | dx   dx   dx |        | dx   dy   dz |
+  //        | --   --   -- |        | --   --   -- |
+  //        | dr   ds   dt |        | dr   dr   dr |
+  //        |              |        |              |
+  //        | dy   dy   dy |        | dx   dy   dz |
+  //        | --   --   -- |   =    | --   --   -- |
+  //        | dr   ds   dt |        | ds   ds   ds |
+  //        |              |        |              |
+  //        | dz   dz   dz |        | dx   dy   dz |
+  //        | --   --   -- |        | --   --   -- |
+  //        | dr   ds   dt |        | dt   dt   dt |
+  //        +-            -+        +-            -+
+  //
+  // The Jacobian is computed using the formula
+  //
+  //            +-----
+  //   dx_j(r)   \      dN_k(r)
+  //   -------  = +     ------- * (x_j)_k
+  //    dr_i     /       dr_i       |
+  //            +-----    |         |
+  //            node k    |         |
+  //                  derivative    |
+  //                   of shape     |
+  //                   function     |
+  //                           component of
+  //                          node coordinate
+  //
   for (int nn=0;nn<3;++nn)
   {    
     for (int rr=0;rr<3;++rr)
@@ -390,7 +421,24 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           +-                 -+     +-    -+      +-    -+
 
   */
-  // inverse of jacobian
+
+  // inverse of jacobian (transposed)
+  /*
+          +-                 -+     +-                 -+ -1
+          |  dr    ds    dt   |     |  dx    dy    dz   |
+          |  --    --    --   |     |  --    --    --   |
+          |  dx    dx    dx   |     |  dr    dr    dr   |
+          |                   |     |                   |
+          |  dr    ds    dt   |     |  dx    dy    dz   |
+          |  --    --    --   |  =  |  --    --    --   |
+          |  dy    dy    dy   |     |  ds    ds    ds   |
+          |                   |     |                   |
+          |  dr    ds    dt   |     |  dx    dy    dz   |
+          |  --    --    --   |     |  --    --    --   |
+          |  dz    dz    dz   |     |  dt    dt    dt   |
+          +-                 -+     +-                 -+
+
+  */
   xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
   xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
   xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
@@ -771,44 +819,177 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
      * */
     tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*vel_normnp*hk));
 #endif
-  }
+  } // end Fluid3::subscales_time_dependent
   else
   {
-    // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
-    // tau_M: Barrenechea, G.R. and Valentin, F.
-    // tau_C: Wall
-
-
-    // this copy of velintaf_ will be used to store the normed velocity
-    blitz::Array<double,1> normed_velintaf(3);
-    normed_velintaf=velintaf_.copy();
-
-    // normed velocity at element center (we use the copy for safety reasons!)
-    if (vel_normaf>=1e-6)
+    if(whichtau == Fluid3::bazilevs)
     {
-      normed_velintaf = velintaf_/vel_normaf;
+      /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
+       
+         tau_M: Bazilevs et al.
+                                                               1.0
+                 +-                                       -+ - ---
+                 |                                         |   2.0
+                 | 4.0    n+af      n+af         2         |
+          tau  = | --- + u     * G u     + C * nu  * G : G |
+             M   |   2           -          I        -   - |
+                 | dt            -                   -   - |
+                 +-                                       -+
+         
+         tau_C: Bazilevs et al., derived from the fine scale complement Shur
+                                 operator of the pressure equation
+                
+                  
+                                  1.0
+                    tau  = -----------------
+                       C            /     \
+                            tau  * | g * g |
+                               M    \-   -/
+      */           
+      
+      /*          +-           -+   +-           -+   +-           -+
+                  |             |   |             |   |             |
+                  |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+            G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+             ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                  |    i     j  |   |    i     j  |   |    i     j  |
+                  +-           -+   +-           -+   +-           -+
+      */
+      blitz::Array<double,2> G(3,3,blitz::ColumnMajorArray<2>());
+      
+      for (int nn=0;nn<3;++nn)
+      {    
+        for (int rr=0;rr<3;++rr)
+        {
+          G(nn,rr) = xji_(nn,0)*xji_(rr,0);
+          for (int mm=1;mm<3;++mm)
+          {
+            G(nn,rr) += xji_(nn,mm)*xji_(rr,mm);
+          }
+        }
+      }
+      
+      /*          +----
+                   \ 
+          G : G =   +   G   * G
+          -   -    /     ij    ij
+          -   -   +----
+                   i,j
+      */
+      double normG = 0;
+      for (int nn=0;nn<3;++nn)
+      {    
+        for (int rr=0;rr<3;++rr)
+        {
+          normG+=G(nn,rr)*G(nn,rr);
+        }
+      }
+    
+      /*                    +----
+           n+af      n+af    \     n+af         n+af
+          u     * G u     =   +   u    * G   * u
+                  -          /     i     -ij    j
+                  -         +----        -
+                             i,j 
+      */
+      double Gnormu = 0;
+      for (int nn=0;nn<3;++nn)
+      {    
+        for (int rr=0;rr<3;++rr)
+        {
+          Gnormu+=velintaf_(nn)*G(nn,rr)*velintaf_(rr);
+        }
+      }
+      
+      // definition of constant from Akkerman et al. (2008)
+      const double CI = 36.0;
+
+      /*                                                       1.0
+                 +-                                       -+ - ---
+                 |                                         |   2.0
+                 | 4.0    n+af      n+af         2         |
+          tau  = | --- + u     * G u     + C * nu  * G : G |
+             M   |   2           -          I        -   - |
+                 | dt            -                   -   - |
+                 +-                                       -+
+      */
+      tau_(0) = 1.0/sqrt(4.0/(dt*dt)+Gnormu+CI*visceff*visceff*normG);
+      tau_(1) = tau_(0);
+      
+      /*         +-     -+   +-     -+   +-     -+
+                 |       |   |       |   |       |
+                 |  dr   |   |  ds   |   |  dt   |
+            g  = |  ---  | + |  ---  | + |  ---  |
+             i   |  dx   |   |  dx   |   |  dx   |
+                 |    i  |   |    i  |   |    i  |
+                 +-     -+   +-     -+   +-     -+
+      */          
+      blitz::Array<double,1> g(3);
+      
+      for (int rr=0;rr<3;++rr)
+      {    
+        g(rr) = xji_(rr,0);
+        for (int mm=1;mm<3;++mm)
+        {
+          g(rr) += xji_(rr,mm);
+        }
+      }
+
+      /*         +----
+                  \   
+         g * g =   +   g * g
+         -   -    /     i   i
+                 +----
+                   i
+      */
+      const double normgsq = g(0)*g(0)+g(1)*g(1)+g(2)*g(2);
+
+      /*
+                                1.0
+                  tau  = -----------------
+                     C           /      \
+                          tau  * | g * g |
+                             M    \-   -/
+      */
+      tau_(2) = 1./(tau_(0)*normgsq);
     }
-    else
+    else if (whichtau == Fluid3::franca_barrenechea_valentin_wall)
     {
-      normed_velintaf    = 0.;
-      normed_velintaf(0) = 1.;
-    }
+      // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
+      // tau_M: Barrenechea, G.R. and Valentin, F.
+      // tau_C: Wall
+      
 
-    // get streamlength
-    const double val = blitz::sum(blitz::abs(blitz::sum(normed_velintaf(j)*derxy_(j,i),j)));
-    const double strle = 2.0/val;
-
-    // time factor
-    const double timefac = gamma*dt;
-
-    /*----------------------------------------------------- compute tau_Mu ---*/
-    /* stability parameter definition according to
-
+      // this copy of velintaf_ will be used to store the normed velocity
+      blitz::Array<double,1> normed_velintaf(3);
+      normed_velintaf=velintaf_.copy();
+      
+      // normed velocity at element center (we use the copy for safety reasons!)
+      if (vel_normaf>=1e-6)
+      {
+        normed_velintaf = velintaf_/vel_normaf;
+      }
+      else
+      {
+        normed_velintaf    = 0.;
+        normed_velintaf(0) = 1.;
+      }
+      
+      // get streamlength
+      const double val = blitz::sum(blitz::abs(blitz::sum(normed_velintaf(j)*derxy_(j,i),j)));
+      const double strle = 2.0/val;
+      
+      // time factor
+      const double timefac = gamma*dt;
+      
+      /*----------------------------------------------------- compute tau_Mu ---*/
+      /* stability parameter definition according to
+         
               Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
               element method for a generalized Stokes problem. Numerische
               Mathematik, Vol. 92, pp. 652-677, 2002.
               http://www.lncc.br/~valentin/publication.htm
-    and:
+         and:
               Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
               Finite Element Method for the Advective-Reactive-Diffusive
               Equation. Computer Methods in Applied Mechanics and Enginnering,
@@ -816,24 +997,24 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               http://www.lncc.br/~valentin/publication.htm                   */
 
 
-    const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));   /* viscous : reactive forces   */
-    const double re2 = mk * vel_normaf * strle / (2.0 * visceff);      /* convective : viscous forces */
-
-    const double xi1 = DMAX(re1,1.0);
-    const double xi2 = DMAX(re2,1.0);
-
-    tau_(0) = timefac * DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
-
-    // compute tau_Mp
-    //    stability parameter definition according to Franca and Valentin (2000)
-    //                                       and Barrenechea and Valentin (2002)
-    const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk)); /* viscous : reactive forces   */
-    const double re_convect = mk * vel_normaf * hk / (2.0 * visceff);    /* convective : viscous forces */
-
-    const double xi_viscous = DMAX(re_viscous,1.0);
-    const double xi_convect = DMAX(re_convect,1.0);
-
-    /*
+      const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));   /* viscous : reactive forces   */
+      const double re2 = mk * vel_normaf * strle / (2.0 * visceff);      /* convective : viscous forces */
+      
+      const double xi1 = DMAX(re1,1.0);
+      const double xi2 = DMAX(re2,1.0);
+      
+      tau_(0) = timefac * DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
+      
+      // compute tau_Mp
+      //    stability parameter definition according to Franca and Valentin (2000)
+      //                                       and Barrenechea and Valentin (2002)
+      const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk)); /* viscous : reactive forces   */
+      const double re_convect = mk * vel_normaf * hk / (2.0 * visceff);    /* convective : viscous forces */
+      
+      const double xi_viscous = DMAX(re_viscous,1.0);
+      const double xi_convect = DMAX(re_convect,1.0);
+      
+      /*
                   xi1,xi2 ^
                           |      /
                           |     /
@@ -844,11 +1025,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                           |
                           +--------------> re1,re2
                               1
-    */
-    tau_(1) = timefac * DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visceff/mk) * xi_convect);
-
-    // Wall Diss. 99
-    /*
+      */
+      tau_(1) = timefac * DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visceff/mk) * xi_convect);
+      
+      // Wall Diss. 99
+      /*
                       xi2 ^
                           |
                         1 |   +-----------
@@ -857,21 +1038,100 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                           |/
                           +--------------> Re2
                               1
-    */
-    const double xi_tau_c = DMIN(re2,1.0);
-    tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
+      */
+      const double xi_tau_c = DMIN(re2,1.0);
+      tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
 
-#if 0
-    /*------------------------------------------------------ compute tau_C ---*/
-    /*-- stability parameter definition according to Codina (2002), CMAME 191
-     *
-     * Analysis of a stabilized finite element approximation of the transient
-     * convection-diffusion-reaction equation using orthogonal subscales.
-     * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
-     *
-     * */
-    tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*vel_normnp*hk));
-#endif
+    }
+    else if(whichtau == Fluid3::codina)
+    {
+      // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
+      // tau_M: Barrenechea, G.R. and Valentin, F.
+      // tau_C: Codina
+      
+
+      // this copy of velintaf_ will be used to store the normed velocity
+      blitz::Array<double,1> normed_velintaf(3);
+      normed_velintaf=velintaf_.copy();
+      
+      // normed velocity at element center (we use the copy for safety reasons!)
+      if (vel_normaf>=1e-6)
+      {
+        normed_velintaf = velintaf_/vel_normaf;
+      }
+      else
+      {
+        normed_velintaf    = 0.;
+        normed_velintaf(0) = 1.;
+      }
+      
+      // get streamlength
+      const double val = blitz::sum(blitz::abs(blitz::sum(normed_velintaf(j)*derxy_(j,i),j)));
+      const double strle = 2.0/val;
+      
+      // time factor
+      const double timefac = gamma*dt;
+      
+      /*----------------------------------------------------- compute tau_Mu ---*/
+      /* stability parameter definition according to
+         
+              Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+              element method for a generalized Stokes problem. Numerische
+              Mathematik, Vol. 92, pp. 652-677, 2002.
+              http://www.lncc.br/~valentin/publication.htm
+         and:
+              Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+              Finite Element Method for the Advective-Reactive-Diffusive
+              Equation. Computer Methods in Applied Mechanics and Enginnering,
+              Vol. 190, pp. 1785-1800, 2000.
+              http://www.lncc.br/~valentin/publication.htm                   */
+
+
+      const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));   /* viscous : reactive forces   */
+      const double re2 = mk * vel_normaf * strle / (2.0 * visceff);      /* convective : viscous forces */
+      
+      const double xi1 = DMAX(re1,1.0);
+      const double xi2 = DMAX(re2,1.0);
+      
+      tau_(0) = timefac * DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
+      
+      // compute tau_Mp
+      //    stability parameter definition according to Franca and Valentin (2000)
+      //                                       and Barrenechea and Valentin (2002)
+      const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk)); /* viscous : reactive forces   */
+      const double re_convect = mk * vel_normaf * hk / (2.0 * visceff);    /* convective : viscous forces */
+      
+      const double xi_viscous = DMAX(re_viscous,1.0);
+      const double xi_convect = DMAX(re_convect,1.0);
+      
+      /*
+                  xi1,xi2 ^
+                          |      /
+                          |     /
+                          |    /
+                        1 +---+
+                          |
+                          |
+                          |
+                          +--------------> re1,re2
+                              1
+      */
+      tau_(1) = timefac * DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visceff/mk) * xi_convect);
+
+      /*------------------------------------------------------ compute tau_C ---*/
+      /*-- stability parameter definition according to Codina (2002), CMAME 191
+       *
+       * Analysis of a stabilized finite element approximation of the transient
+       * convection-diffusion-reaction equation using orthogonal subscales.
+       * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
+       *
+       * */
+      tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*vel_normnp*hk));
+    }
+    else
+    {
+      dserror("Unknown definition of stabilisation parameter\n");
+    }
   }
 
   /*------------------------------------------- compute subgrid viscosity ---*/
@@ -957,9 +1217,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   //            integration, not on the element center anymore!
   //
   //----------------------------------------------------------------------------
-
-  // flag for higher order elements
-  const bool higher_order_ele = ele->isHigherOrderElement(distype);
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
@@ -5392,7 +5649,24 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::CalcRes(
           +-                 -+     +-    -+      +-    -+
 
   */
-  // inverse of jacobian
+  
+  // inverse of jacobian (transposed)
+  /*
+          +-                 -+     +-                 -+ -1
+          |  dr    ds    dt   |     |  dx    dy    dz   |
+          |  --    --    --   |     |  --    --    --   |
+          |  dx    dx    dx   |     |  dr    dr    dr   |
+          |                   |     |                   |
+          |  dr    ds    dt   |     |  dx    dy    dz   |
+          |  --    --    --   |  =  |  --    --    --   |
+          |  dy    dy    dy   |     |  ds    ds    ds   |
+          |                   |     |                   |
+          |  dr    ds    dt   |     |  dx    dy    dz   |
+          |  --    --    --   |     |  --    --    --   |
+          |  dz    dz    dz   |     |  dt    dt    dt   |
+          +-                 -+     +-                 -+
+
+  */
   xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
   xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
   xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
@@ -6476,7 +6750,40 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::GetNodalBodyForce(Fluid3* ele, const d
 
     if (myneumcond.size()>1)
     {
-      dserror("more than one VolumeNeumann cond on one node");
+
+      // get values and switches from the condition
+      const vector<int>*    firstonoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+      const vector<double>* firstval   = myneumcond[0]->Get<vector<double> >("val"  );
+
+      for(unsigned int rr=1;rr<myneumcond.size();++rr)
+      {
+        bool error = false;
+
+        const vector<int>*    otheronoff = myneumcond[rr]->Get<vector<int> >   ("onoff");
+        const vector<double>* otherval   = myneumcond[rr]->Get<vector<double> >("val"  );
+
+        for(unsigned mm=0;mm<(*firstonoff).size();++mm)
+        {
+          if(abs((*otheronoff)[mm]-(*firstonoff)[mm])>1e-9)
+          {
+            error=true;
+          }
+        }
+
+        for(unsigned mm=0;mm<(*firstval).size();++mm)
+        {
+          if(abs((*otherval)[mm]-(*firstval)[mm])>1e-9)
+          {
+            error=true;
+          }
+        }
+
+        if(error == true)
+        {
+          dserror("more than one different VolumeNeumann conds on one node");
+        }
+      }
+      nodecount++;
     }
     if (myneumcond.size()==1)
     {

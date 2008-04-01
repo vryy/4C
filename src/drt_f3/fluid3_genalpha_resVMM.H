@@ -89,8 +89,22 @@ namespace DRT
       Fix point treatment, no linearisation
 
     </pre>
-    For the choice of the stabilisation parameter see the inline
-    documentation.
+
+    Available versions of the stabilisation parameters are
+    <pre>
+
+    o tauM: Barrenechea, Franca , Valentin
+      tauC: Wall
+
+    o tauM: Barrenechea, Franca , Valentin
+      tauC: Codina
+
+    o tauM: Bazilevs
+      tauC: Bazilevs
+
+    </pre>
+    For further details on the choice of the stabilisation parameter
+    see the inline documentation.
 
     For time dependent subscale stabilisation we have an additional
     option:
@@ -135,13 +149,11 @@ namespace DRT
 
     </pre>
 
-    The stabilisation flags as well as turbulence model options are have been read
-    from the input file and passed through the evaluate interface.
-
-    There is no ALE-ability of the element up to now.
+    The stabilisation flags as well as turbulence model options have been read
+    from the input file and are passed through the evaluate interface.
 
     \auther gammi
-    \date 11/07
+    \date 04/08
   */
     class Fluid3GenalphaResVMM
     {
@@ -153,36 +165,52 @@ namespace DRT
       /*
         Calculate matrix and rhs. Here the whole thing is hidden.
 
-        \param ele             (i) the element those matrix is calculated
-        \param estif           (o) element matrix to calculate
-        \param eforce          (o) element rhs to calculate
-        \param evelnp          (i) nodal velocities at n+1
-        \param fsevelnp        (i) fine-scale nodal velocities at n+1
-        \param eprenp          (i) nodal pressure
-        \param eaccam          (i) nodal accelerations at n+alphaM
-        \param evelaf          (i) nodal velocities at n+alphaF
-        \param material        (i) fluid material
-        \param alphaM          (i) evaluate accelerations at this intermediate level
-        \param alphaF          (i) evaluate velocities at this intermediate level
-        \param gamma           (i) one step theta based parameter
-        \param dt              (i) time step size
-        \param time            (i) current simulation time
-        \param newton          (i) flag for use of full linearisation of reactive terms
-        \param fssgv           (i) flag for type of fine-scale subgrid viscosity
-        \param tds             (i) flag for use of time dependent subscale stabilisation
-        \param inertia         (i) flag for use of subscale accelerations for stabilisation (only for tds==true)
-        \param pspg            (i) flag for use of nabla q testfunctions
-        \param supg            (i) flag for use of (u o nabla) v testfunctions
-        \param vstab            (i) flag for use of 2 * nu * grad o eps(v) testfunctions
-        \param cross           (i) flag to add (u,(u_sub o nabla) v) to right hand side
-        \param reynolds        (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
-        \param turb_mod_action (i) action flag for the application of a turbulence model
-        \param Cs            (i/o) value for Smagorinsky constant (zero if unused)
-                                   in case of the dynamic model, it is only equal to the
-                                   Smagorinsky constant on output. On input, it corresponds to
-                                   (Cs*hk)^2
-        \param l_tau           (i) viscous length scale for van Driest damping (zero if unused)
-        \param compute_elemat  (i) if false, element matrices are not computed
+        \param ele                (i) the element those matrix is calculated
+        \param estif              (o) element matrix to calculate
+        \param eforce             (o) element rhs to calculate
+        \param evelnp             (i) nodal velocities at n+1
+        \param fsevelnp           (i) fine-scale nodal velocities at n+1
+        \param eprenp             (i) nodal pressure
+        \param eaccam             (i) nodal accelerations at n+alphaM
+        \param evelaf             (i) nodal velocities at n+alphaF
+        \param material           (i) fluid material
+        \param alphaM             (i) evaluate accelerations at this intermediate level
+        \param alphaF             (i) evaluate velocities at this intermediate level
+        \param gamma              (i) one step theta based parameter
+        \param dt                 (i) time step size
+        \param time               (i) current simulation time
+        \param newton             (i) flag for use of full linearisation of reactive terms
+        \param higher_order_ele   (i) include second derivatives in residual for stabilization
+        \param fssgv              (i) flag for type of fine-scale subgrid viscosity
+        \param tds                (i) flag for use of time dependent subscale stabilisation
+        \param inertia            (i) flag for use of subscale accelerations for stabilisation (only for tds==true)
+        \param pspg               (i) flag for use of nabla q testfunctions
+        \param supg               (i) flag for use of (u o nabla) v testfunctions
+        \param vstab              (i) flag for use of 2 * nu * grad o eps(v) testfunctions
+        \param cross              (i) flag to add (u,(u_sub o nabla) v) to right hand side
+        \param reynolds           (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
+        \param whichtau           (i) flag choosing the tau version used for stabilization
+        \param turb_mod_action    (i) action flag for the application of a turbulence model
+        \param Cs               (i/o) value for Smagorinsky constant (zero if unused)
+                                      in case of the dynamic model, it is only equal to the
+                                      Smagorinsky constant on output. On input, it corresponds to
+                                      (Cs*hk)^2
+        \param l_tau              (i) viscous length scale for van Driest damping (zero if unused)
+#ifdef PERF
+        \param timeelederxy2    (i/o) time spent on computation of second derivatives
+        \param timeelederxy     (i/o) time spent on computation of first derivatives
+        \param timeeletau       (i/o) time spent on computation of tauM,tauC
+        \param timeelegalerkin  (i/o) time for galerkin loops (matrix+vector)
+        \param timeelepspg      (i/o) time for pspg loops (matrix+vector)
+        \param timeelesupg      (i/o) time for supg loops (matrix+vector)
+        \param timeelecstab     (i/o) time for cstab loops (matrix+vector)
+        \param timeelevstab     (i/o) time for vstab loops (matrix+vector)
+        \param timeelecrossrey  (i/o) time for cross and reynolds loops (matrix+vector)
+        \param timeeleintertogp (i/o) time for interpolation to gausspoints
+        \param timeeleseteledata(i/o) time for initialisation, computation of bodyforce, xyze etc
+        \param timeeletdextras  (i/o) time spent on td extras
+#endif        
+        \param compute_elemat     (i) if false, element matrices are not computed
 
       */
       void Sysmat(Fluid3*                                               ele,
@@ -204,6 +232,7 @@ namespace DRT
                   const double                                          dt,
                   const double                                          time,
                   const bool                                            newton,
+                  const bool                                            higher_order_ele,                  
                   const enum Fluid3::StabilisationAction                fssgv,
                   const enum Fluid3::StabilisationAction                tds,
                   const enum Fluid3::StabilisationAction                inertia,
@@ -213,6 +242,7 @@ namespace DRT
                   const enum Fluid3::StabilisationAction                cstab,
                   const enum Fluid3::StabilisationAction                cross,
                   const enum Fluid3::StabilisationAction                reynolds,
+                  const enum Fluid3::TauType                            whichtau,
                   const enum Fluid3::TurbModelAction                    turb_mod_action,
                   double&                                               Cs,
                   double&                                               Cs_delta_sq,
@@ -231,7 +261,6 @@ namespace DRT
                   RefCountPtr<Time>                                     timeeleintertogp ,
                   RefCountPtr<Time>                                     timeeleseteledata,
                   RefCountPtr<Time>                                     timeeletdextras  ,
-
 #endif
                   const bool                                            compute_elemat
         );
@@ -272,8 +301,8 @@ namespace DRT
     private:
       ///  Get the nodal values of the bodyforce. The values are stored in edeadnf
       //
-      //  param ele         (i) element pointer for access to the neumann condition
-      //  param time        (i) time when the condition is evaluated
+      //  \param ele         (i) element pointer for access to the neumann condition
+      //  \param time        (i) time when the condition is evaluated
       void GetNodalBodyForce(Fluid3*      ele,
                              const double time);
       //! number of nodes --- determines array sizes
@@ -407,10 +436,6 @@ namespace DRT
 
       //! the element volume, used to define element length
       double                  vol_;
-#if 0
-      //! the effective viscosity (material+turbulent viscosity)
-      double                  visceff_;
-#endif
     };
   }
 }

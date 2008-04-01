@@ -106,53 +106,123 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     DRT::Condition* slavecond =NULL;
 
     // global master node Ids and global slave node Ids
-    const vector <int>* masternodeids;
-    const vector <int>* slavenodeids;
+    vector <int> masternodeids;
+    vector <int> slavenodeids;
 
     //----------------------------------------------------------------------
-    //          LOOP PAIRS OF PERIODIC BOUNDARY CONDITIONS
+    //                     LOOP PERIODIC DIRECTIONS
     //----------------------------------------------------------------------
 
+    vector<string> planes;
+    planes.push_back("xy");
+    planes.push_back("xz");
+    planes.push_back("yz");
 
-    // loop pairs of periodic boundary conditions
-    for (int pbcid=0;pbcid<numpbcpairs_;++pbcid)
+    // the id of the plane --- will be counted in the loop....
+    int num=0;
+
+    // loop over periodic directions/planes
+    for(vector<string>::iterator thisplane=planes.begin();
+        thisplane!=planes.end();
+        ++thisplane)
     {
-      if (discret_->Comm().MyPID() == 0)
-      {
-        cout << "pbc pair " << pbcid << ": ";
-        fflush(stdout);
-      }
+      // master and slave sets for this periodic direction
+      std::set<int> masterset;
+      std::set<int> slaveset;
 
-      // time measurement --- start TimeMonitor tm1
-      tm1_ref_        = rcp(new TimeMonitor(*timepbcmidtosid_ ));
-
-      //--------------------------------------------------
-      // get master and slave condition pair
+      //----------------------------------------------------
+      // in the following, we loop all periodic boundary
+      // conditions which have the prescribed periodic 
+      // direction. 
+      // For every Master condition, we add the nodes into
+      // the set of all masternodeids for periodic boundary
+      // conditions with this homogeneous direction.
+      // The same is done for the slave conditions.
+      
+      // loop pairs of periodic boundary conditions
+      for (int pbcid=0;pbcid<numpbcpairs_;++pbcid)
       {
-        for (unsigned numcond=0;numcond<mysurfpbcs_.size();++numcond)
+        //--------------------------------------------------
+        // get master and slave condition pair with id pbcid
         {
-          const vector<int>* myid
-            = mysurfpbcs_[numcond]->Get<vector<int> >("Id of periodic boundary condition");
-          if (myid[0][0] == pbcid)
+          for (unsigned numcond=0;numcond<mysurfpbcs_.size();++numcond)
           {
-            const string* mymasterslavetoggle
-              = mysurfpbcs_[numcond]->Get<string>("Is slave periodic boundary condition");
+            const vector<int>* myid
+              = mysurfpbcs_[numcond]->Get<vector<int> >("Id of periodic boundary condition");
 
-            if(*mymasterslavetoggle=="Master")
+            // yes, I am the condition with id pbcid
+            if (myid[0][0] == pbcid)
             {
-              mastercond =mysurfpbcs_[numcond];
-            }
-            else if (*mymasterslavetoggle=="Slave")
-            {
-              slavecond =mysurfpbcs_[numcond];
-            }
-            else
-            {
-              dserror("pbc is neither master nor slave");
+              const string* mymasterslavetoggle
+                = mysurfpbcs_[numcond]->Get<string>("Is slave periodic boundary condition");
+              
+              if(*mymasterslavetoggle=="Master")
+              {
+                mastercond =mysurfpbcs_[numcond];
+
+                //--------------------------------------------------
+                // check whether this periodic boundary condition belongs
+                // to thisplane
+                
+                const string* dofsforpbcplanename
+                  =
+                  mastercond->Get<string>("degrees of freedom for the pbc plane");
+              
+                if(*dofsforpbcplanename == *thisplane)
+                {
+                  // add all master nodes to masterset
+                  
+                  //--------------------------------------------------
+                  // get global master node Ids
+                  const vector <int>* masteridstoadd;
+                  
+                  masteridstoadd = mastercond->Nodes();
+                  
+                  for(vector<int>::const_iterator idtoadd =(*masteridstoadd).begin();
+                      idtoadd!=(*masteridstoadd).end();
+                      ++idtoadd)
+                  {
+                    masterset.insert(*idtoadd);
+                  }
+                }
+              }
+              else if (*mymasterslavetoggle=="Slave")
+              {
+                slavecond =mysurfpbcs_[numcond];
+
+                //--------------------------------------------------
+                // check whether this periodic boundary condition belongs
+                // to thisplane
+                const string* dofsforpbcplanename = slavecond->Get<string>("degrees of freedom for the pbc plane");
+                
+                if(*dofsforpbcplanename == *thisplane)
+                {
+                  // add all slave nodes to slaveset
+                  
+                  //--------------------------------------------------
+                  // get global slave node Ids
+                  const vector <int>* slaveidstoadd;
+                  
+                  slaveidstoadd = slavecond->Nodes();
+                  
+                  for(vector<int>::const_iterator idtoadd =(*slaveidstoadd).begin();
+                      idtoadd!=(*slaveidstoadd).end();
+                      ++idtoadd)
+                  {
+                    slaveset.insert(*idtoadd);
+                  }
+                }
+              }
+              else
+              {
+                dserror("pbc is neither master nor slave");
+              }
+
             }
           }
         }
-      }
+      } // end loop pairs of periodic boundary conditions
+      
 
       //--------------------------------------------------
       // vector specifying the plane of this pair
@@ -167,41 +237,62 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
       //   slave                      master
       //
       //
-      const string* dofsforpbcplanename  =
-        mastercond->Get<string>("degrees of freedom for the pbc plane");
 
-      // we get one of the three strings "xy", "xz", "yz" in dofsforpbcplanename
+      // we transform the three strings "xy", "xz", "yz" into integer
+      // values dofsforpbcplanename
       vector<int> dofsforpbcplane(2);
-      dofsforpbcplane[0] = dofsforpbcplanename->c_str()[0] - 'x';
-      dofsforpbcplane[1] = dofsforpbcplanename->c_str()[1] - 'x';
+
+      // this is a char-operation:
+      //
+      //       x -> 0
+      //       y -> 1
+      //       z -> 2
+      //
+      // it is based on the fact that the letters x, y and z are 
+      // consecutive in the ASCII table --- 'x' is the ASCII
+      // calue of x ....
+      dofsforpbcplane[0] = thisplane->c_str()[0] - 'x';
+      dofsforpbcplane[1] = thisplane->c_str()[1] - 'x';
 
       //--------------------------------------------------
-      // get global master node Ids and global slave node Ids
-      masternodeids = mastercond->Nodes();
-      slavenodeids  = slavecond ->Nodes();
+      // we just write the sets into vectors
+      (masternodeids).clear();
+      (slavenodeids ).clear();
 
+      for(std::set<int>::iterator appendednode = masterset.begin();
+          appendednode != masterset.end();
+          ++appendednode)
+      {
+        masternodeids.push_back(*appendednode);
+      }
+
+      for(std::set<int>::iterator appendednode = slaveset.begin();
+          appendednode != slaveset.end();
+          ++appendednode)
+      {
+        slavenodeids.push_back(*appendednode);
+      }
 
       //----------------------------------------------------------------------
       //      CONSTRUCT NODE MATCHING BETWEEN MASTER AND SLAVE NODES
-      //                        FOR THIS CONDITION
+      //                        FOR THIS DIRECTION
       //----------------------------------------------------------------------
 
       // clear map from global masternodeids (on this proc) to global
-      // slavenodeids --- it belongs to this pair of periodic boundary
-      // conditions!!!
+      // slavenodeids --- it belongs to this master slave pair!!!
       midtosid.clear();
 
       if (discret_->Comm().MyPID() == 0)
       {
-        cout << " creating midtosid-map ... ";
+        cout << " creating midtosid-map in " << *thisplane << " direction ... ";
         fflush(stdout);
       }
 
       // get map master on this proc -> slave on some proc
       CreateNodeCouplingForSinglePBC(
         midtosid,
-        *masternodeids,
-        *slavenodeids ,
+        masternodeids,
+        slavenodeids ,
         dofsforpbcplane);
       // time measurement --- this causes the TimeMonitor tm1 to stop here
       tm1_ref_ = null;
@@ -215,7 +306,6 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
       // time measurement --- start TimeMonitor tm4
       tm4_ref_        = rcp(new TimeMonitor(*timepbcaddcon_ ));
 
-
       //----------------------------------------------------------------------
       //      ADD CONNECTIVITY TO CONNECTIVITY OF ALL PREVIOUS PBCS
       //----------------------------------------------------------------------
@@ -223,7 +313,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
       // of all previously processed periodic boundary conditions.
       // Redistribute the nodes (rownodes+ghosting)
       // Assign the same degrees of freedom to coupled nodes
-      AddConnectivity(midtosid,pbcid);
+      AddConnectivity(midtosid,num);
 
       // time measurement --- this causes the TimeMonitor tm4 to stop here
       tm4_ref_ = null;
@@ -233,8 +323,9 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
         cout << " done\n";
         fflush(stdout);
       }
-    } // end loop pairs of periodic boundary conditions
 
+      ++num;
+    }
 
     //----------------------------------------------------------------------
     //         REDISTRIBUTE ACCORDING TO THE GENERATED CONNECTIVITY

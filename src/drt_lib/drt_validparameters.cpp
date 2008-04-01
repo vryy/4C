@@ -617,11 +617,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Apply (un)stabilized fluid formulation",
                                tuple<std::string>(
                                  "no_stabilization",
+                                 "inconsistent",
                                  "residual_based"),
                                tuple<std::string>(
-                                 "Do not use any stabilization -> inf-sup stable elements!",
+                                 "Do not use any stabilization -> inf-sup stable elements required!",
+                                 "Similar to residual based without second derivatives (i.e. only consistent for tau->0, but faster)",
                                  "Use a residual-based stabilization or, more generally, a stabilization \nbased on the concept of the residual-based variational multiscale method...\nExpecting additional input")  ,
-                               tuple<int>(0,1),
+                               tuple<int>(0,1,2),
                                &fdyn_stab);
 
   // the following parameters are necessary only if a residual based stabilized method is applied
@@ -735,6 +737,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Include Reynolds-stress term explicitly on right hand side"
                                  ),
                                tuple<int>(0,1),
+                               &fdyn_stab);
+
+  // this parameter selects the tau definition applied
+  setStringToIntegralParameter("DEFINITION_TAU",
+                               "Barrenechea_Franca_Valentin_Wall",
+                               "Definition of tau_M,C",
+                               tuple<std::string>(
+                                 "Barrenechea_Franca_Valentin_Wall",
+                                 "Bazilevs",
+                                 "Codina"),
+                               tuple<std::string>(
+                                 "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Wall",
+                                 "tau_M and tau_C (Bazilevs, based on G_ij and g_i)",
+                                 "tau_Mp: Barrenechea, Valentin; tau_M: Franca, Barrenechea; tau_C: Codina")  ,
+                               tuple<int>(0,1,2),
                                &fdyn_stab);
 
   /*----------------------------------------------------------------------*/

@@ -381,6 +381,16 @@ private:
     fssgv_scale_similarity
   };
 
+  //! possible options for the stabilisation parameter
+  enum TauType
+  {
+    franca_barrenechea_valentin_wall,
+    codina                          ,
+    bazilevs                        ,
+    tau_not_defined
+  };
+
+  
   //! physical turbulence models recognized by fluid3_genalpha implementation
   enum TurbModelAction
   {

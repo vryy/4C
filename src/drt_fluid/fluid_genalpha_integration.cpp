@@ -2361,21 +2361,23 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         // alpha_F
         cout << "Generalized Alpha parameter: alpha_F = ";
         cout << params_.get<double>("alpha_F");
-        cout << endl;
+        cout << "\n";
 
         // alpha_M
         cout << "                             alpha_M = ";
         cout << params_.get<double>("alpha_M");
-        cout << endl;
+        cout << "\n";
 
         // gamma
         cout << "                             gamma   = ";
-        cout << 0.5
-                +
-                params_.get<double>("alpha_M")
-                -
-                params_.get<double>("alpha_F");
-        cout << endl << endl;
+        cout << gamma_;
+        cout << "\n";
+
+        if(abs(gamma_  - (0.5 + alphaM_ - alphaF_)>1e-6))
+        {
+          cout << "Definition of gamma NOT second order accurate, should be " << (0.5 + alphaM_ - alphaF_);
+        }
+        cout << "\n";
 
         // linearisation
         if(params_.get<bool>("Use reaction terms for linearisation",false)
@@ -2383,12 +2385,12 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
            true)
         {
           cout << "Linearisation              : ";
-          cout << "Including reactive terms (Newton-like)" << endl;
+          cout << "Including reactive terms (Newton-like)" << "\n";
         }
         else
         {
           cout << "Linearisation              : ";
-          cout << "Without reactive terms (fixed-point-like)" << endl;
+          cout << "Without reactive terms (fixed-point-like)" << "\n";
         }
         cout << endl;
       }
@@ -2399,10 +2401,21 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
 
         // general
+
+        string stabtype =stabparams->get<string>("STABTYPE");
+        
         cout << "Stabilization type         : ";
-        cout << stabparams->get<string>("STABTYPE");
+        cout << stabtype; 
         cout << endl;
 
+        if (stabtype == "residual_based"||stabtype == "inconsistent")
+        {
+          cout << "                             ";
+          cout << "tau according to ";
+          cout << stabparams->get<string>("DEFINITION_TAU"); 
+          cout << endl;
+        }
+        
         // time-dependent subgrid scales
         cout << "                             ";
         cout << stabparams->get<string>("TDS")<< endl;

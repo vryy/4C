@@ -1139,6 +1139,8 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // set parameters for stabilisation
         ParameterList& stablist = params.sublist("STABILIZATION");
 
+        // specify which residual based stabilisation terms
+        // will be used
         StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("TDS"));
         StabilisationAction inertia  = ConvertStringToStabAction(stablist.get<string>("TRANSIENT"));
         StabilisationAction pspg     = ConvertStringToStabAction(stablist.get<string>("PSPG"));
@@ -1147,6 +1149,36 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         StabilisationAction cstab    = ConvertStringToStabAction(stablist.get<string>("CSTAB"));
         StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
         StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
+
+        // select tau definition
+        TauType whichtau = tau_not_defined;
+        {
+          const string taudef = stablist.get<string>("DEFINITION_TAU");
+          
+          if(taudef == "Barrenechea_Franca_Valentin_Wall")
+          {
+            whichtau = franca_barrenechea_valentin_wall;
+          }
+          else if(taudef == "Bazilevs")
+          {
+            whichtau = bazilevs;
+          }
+          else if(taudef == "Codina")
+          {
+            whichtau = codina;
+          }
+        }
+
+        // flag for higher order elements
+        bool higher_order_ele = isHigherOrderElement(Shape());
+
+        // overrule higher_order_ele if input-parameter is set
+        // this might be interesting for fast (but slightly
+        // less accurate) computations
+        if(stablist.get<string>("STABTYPE") == "inconsistent")
+        {
+          higher_order_ele = false;
+        }
 
 #ifdef PERF
         timeeleinitstab_ref = null;
@@ -1340,6 +1372,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                  dt,
                                  time,
                                  newton,
+                                 higher_order_ele,
                                  fssgv,
                                  tds,
                                  inertia,
@@ -1349,6 +1382,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                  cstab,
                                  cross,
                                  reynolds,
+                                 whichtau,
                                  turb_mod_action,
                                  Cs,
                                  Cs_delta_sq,
