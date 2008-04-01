@@ -108,6 +108,10 @@ void write_serialdensematrix_result(string result_name, PostField* field,
     gaussname = "tet4";
     numdim=3;
     break;
+  case DRT::Element::tet10:
+    gaussname = "tet10";
+    numdim=3;
+    break;
   case DRT::Element::quad4:
       gaussname = "quad4";
       numdim=2;
@@ -298,6 +302,37 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("tet4",GiD_3D,GiD_Tetrahedra,4);
+    // We have ony one mesh, so it's the first
+    GiD_BeginCoordinates();
+    for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
+    {
+      for (int j = 0; j < field->problem()->num_dim(); ++j)
+      {
+        x[j] = field->discretization()->gNode(i)->X()[j];
+      }
+      int id = field->discretization()->gNode(i)->Id();
+      GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
+    }
+    GiD_EndCoordinates();
+
+    GiD_BeginElements();
+    for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
+    {
+      int mesh_entry[MAXNOD];
+      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      {
+        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+      }
+      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+    }
+    GiD_EndElements();
+    GiD_EndMesh();
+    break;
+  case DRT::Element::tet10:
+    GiD_BeginGaussPoint("tet10", GiD_Tetrahedra, "tet10", 4, 0, 1);
+    GiD_EndGaussPoint();
+
+    GiD_BeginMesh("tet10",GiD_3D,GiD_Tetrahedra,10);
     // We have ony one mesh, so it's the first
     GiD_BeginCoordinates();
     for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
