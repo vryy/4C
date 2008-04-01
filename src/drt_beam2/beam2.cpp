@@ -18,6 +18,7 @@ Maintainer: Christian Cyron
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_timecurve.H"
 //enabling initialization of random generator
 #include <random/normal.h>
 #include <time.h>
@@ -29,12 +30,14 @@ DRT::ELEMENTS::Beam2::Beam2(int id, int owner) :
 DRT::Element(id,element_beam2,owner),
 data_(),
 material_(0),
+lrefe_(0),
 crosssec_(0),
 crosssecshear_(0),
 mominer_(0),
 lumpedflag_(0),
 thermalenergy_(0),
 halfrotations_(0),
+beta0_(0),
 Arbeit_N(0),
 Arbeit_M(0),
 Arbeit_Q(0),
@@ -55,12 +58,14 @@ DRT::ELEMENTS::Beam2::Beam2(const DRT::ELEMENTS::Beam2& old) :
 DRT::Element(old),
 data_(old.data_),
 material_(old.material_),
+lrefe_(old.lrefe_),
 crosssec_(old.crosssec_),
 crosssecshear_(old.crosssecshear_),
 mominer_(old.mominer_),
 lumpedflag_(old.lumpedflag_),
 thermalenergy_(old.thermalenergy_),
 halfrotations_(old.halfrotations_),
+beta0_(old.beta0_),
 Arbeit_N(old.Arbeit_N),
 Arbeit_M(old.Arbeit_M),
 Arbeit_Q(old.Arbeit_Q),
@@ -138,6 +143,8 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   //material type
   AddtoPack(data,material_);
+  //reference length
+  AddtoPack(data,lrefe_);
   //cross section
   AddtoPack(data,crosssec_);
    //cross section with shear correction
@@ -150,6 +157,8 @@ void DRT::ELEMENTS::Beam2::Pack(vector<char>& data) const
   AddtoPack(data,thermalenergy_);
   //number of half rotations in comparision with reference configuration
   AddtoPack(data,halfrotations_);
+  //angle relative to x-axis in reference configuration
+  AddtoPack(data,beta0_);
   // gaussrule_
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   vector<char> tmp(0);
@@ -177,6 +186,8 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
   //material type
   ExtractfromPack(position,data,material_);
+  //reference length
+  ExtractfromPack(position,data,lrefe_);
   //cross section
   ExtractfromPack(position,data,crosssec_);
   //cross section with shear correction
@@ -189,6 +200,8 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,thermalenergy_);
   //number of half rotations in comparision with reference configuration
   ExtractfromPack(position,data,halfrotations_);
+  //angle relative to x-axis in reference configuration
+  ExtractfromPack(position,data,beta0_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
@@ -308,9 +321,57 @@ void DRT::ELEMENTS::Beam2Register::Print(ostream& os) const
 
 int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
 {	
-  //random generator for seeding only in order (necessary for thermal noise)
+  LINALG::SerialDenseMatrix xrefe;
+  xrefe.Shape(2,2);
+	
+  //random generator for seeding only (necessary for thermal noise)
   ranlib::Normal<double> seedgenerator(0,1);
   seedgenerator.seed((unsigned int)std::time(0));
+  
+  //setting beam reference director correctly
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+    {
+      //in case that current element is not a beam2 element there is nothing to do and we go back
+      //to the head of the loop
+      if (dis.lColElement(i)->Type() != DRT::Element::element_beam2) continue;
+      
+      //if we get so far current element is a beam2 element and  we get a pointer at it
+      DRT::ELEMENTS::Beam2* currele = dynamic_cast<DRT::ELEMENTS::Beam2*>(dis.lColElement(i));
+      if (!currele) dserror("cast to Beam2* failed");
+      
+      //getting element's reference coordinates     
+      for (int k=0; k<2; ++k) //element has two nodes
+        {
+          xrefe(0,k) = currele->Nodes()[k]->X()[0];
+          xrefe(1,k) = currele->Nodes()[k]->X()[1];
+        }
+      
+      //length in reference configuration
+      currele->lrefe_  = pow( pow(xrefe(0,1)-xrefe(0,0),2) + pow(xrefe(1,1)-xrefe(1,0),2) , 0.5 );
+      
+      // beta is the rotation angle out of x-axis in a x-y-plane in reference configuration
+      double cos_beta0 = (xrefe(0,1)-xrefe(0,0))/currele->lrefe_;
+      double sin_beta0 = (xrefe(1,1)-xrefe(1,0))/currele->lrefe_;
+     
+      //we calculate beta in a range between -pi < beta <= pi
+      if (cos_beta0 >= 0)
+      	currele->beta0_ = asin(sin_beta0);
+      else
+      {	if (sin_beta0 >= 0)
+	  currele->beta0_ =  acos(cos_beta0);
+        else
+	  currele->beta0_ = -acos(cos_beta0);
+       }
+      
+      //if abs(beta0_)>PI/2 local angle calculations should be carried out in a rotated
+      //system right from the beginning (see also beam2_evaluate.cpp for further explanation)
+      if (currele->beta0_ > PI/2)
+    	  currele->halfrotations_ = 1;
+      if (currele->beta0_ < -PI/2)
+	  currele->halfrotations_ = -1;   
+      
+    } //for (int i=0; i<dis_.NumMyColElements(); ++i)
+  
   return 0;
 }
 

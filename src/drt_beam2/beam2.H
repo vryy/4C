@@ -35,6 +35,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_utils.H"
 //including random number library of blitz for statistical forces
 #include <random/normal.h>
+#include "../io/hdf_reader.H"
 
 
 // forward declarations
@@ -277,6 +278,9 @@ private:
   //! material type
   int material_;
   
+  //! length in reference configuration
+  double lrefe_;
+  
   //! cross section area
   double crosssec_;
   
@@ -294,6 +298,9 @@ private:
   
   //! rounded number of half rotations the beam has already carried out counter clockwise;
   int halfrotations_;
+  
+  //! angle relative to x-axis in reference configuration
+  double beta0_;
 
   double Arbeit_N;
   double Arbeit_M;
@@ -317,8 +324,8 @@ private:
                     LINALG::SerialDenseVector& z_curr,
                     double& beta,
                     const LINALG::SerialDenseMatrix& x_curr,
-                    const double& length_curr,
-                    const double& length_refe);
+                    const double& lcurr_,
+                    const double& lrefe_);
 
   //calculation of nonlinear stiffness and mass matrix
   void b2_nlnstiffmass(vector<double>&           disp, 

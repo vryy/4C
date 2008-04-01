@@ -283,16 +283,38 @@ private:
   //! material type
   int material_;
   
+  //! length in reference configuration
+  double lrefe_;
+  
+  //! central triad of the beam, denoted as T in Crisfield, Vol. 2
+  //Told_ is the triad at the end of the last time step
+  Epetra_SerialDenseMatrix Told_;
+  //Tnew_ is the triad at the end of the current iteration step
+  Epetra_SerialDenseMatrix Tnew_;
+  //!Tmid_ according to Crisfield, Vol. 2, equation (17.73)
+  Epetra_SerialDenseMatrix Tmid_;
+  //!curvature accroding to Crisfield, Vol. 2, equation (17.72)
+  Epetra_SerialDenseMatrix curvold_;
+  Epetra_SerialDenseMatrix curvnew_;
+  
+  //!angle alpha_c from Crisfield, Vol. 1, section 17.2.1
+  Epetra_SerialDenseMatrix alphaold_;
+  Epetra_SerialDenseMatrix alphanew_;
+  
+  //! Tnew_ is to a point of time
+  double timenew_;
+  
   //! cross section area
   double crosssec_;
   
    //! cross section area including shear corretion factor
   double crosssecshear_;
   
-  //! moments of inertia of area
+  /*! moments of inertia of area; in beam3_input.cpp the initial triad T_ has to be calculated in such a way that its
+   * first axis is parallel to the beam axis whereas the second and third axis are principal axes, respectively; Irr_
+   * is the polare moment of inertia of area around the beam axis*/
   double Iyy_;
   double Izz_;
-  double Iyz_;
   double Irr_;
   
   //! flag determining if consistent or lumped mass matrix
@@ -317,16 +339,22 @@ private:
   // internal calculation methods
   
   
-  //internal geometric calculations
-  void b3_local_aux(LINALG::SerialDenseMatrix& B_curr,
-                    LINALG::SerialDenseVector& r_curr,
-                    LINALG::SerialDenseVector& z_curr,
-                    double& beta,
-                    const LINALG::SerialDenseMatrix& x_curr,
-                    const double& length_curr,
-                    const double& length_refe);
-
-  //calculation of nonlinear stiffness and mass matrix
+  //!computing spin matrix out of a rotation vector
+  void computespin(Epetra_SerialDenseMatrix& spin, const Epetra_SerialDenseMatrix rotationangle);
+  
+  //!computing rotation matrix out of a spin matrix
+  void computerotation(Epetra_SerialDenseMatrix& rotationmatrix, const Epetra_SerialDenseMatrix spin);
+  
+  //!computing rotation matrix XT according to Crisfield, Vol. 2, equation (17.74)
+  void computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epetra_SerialDenseMatrix T_new, const Epetra_SerialDenseMatrix x21);
+  
+  //!computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
+  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const Epetra_SerialDenseMatrix stressn, const Epetra_SerialDenseMatrix stressm);
+  
+  //!computing stiffens matrix Ksigma2 according to Crisfield, Vol. 2, equation (17.87)
+  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const Epetra_SerialDenseMatrix stressn, const Epetra_SerialDenseMatrix x21);
+                    
+  //!calculation of nonlinear stiffness and mass matrix
   void b3_nlnstiffmass(vector<double>&           disp, 
                        Epetra_SerialDenseMatrix& stiffmatrix,
                        Epetra_SerialDenseMatrix& massmatrix,

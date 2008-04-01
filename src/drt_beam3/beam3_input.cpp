@@ -83,15 +83,18 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
   if (ierr!=1) dserror("Reading of Beam3 element failed");
   crosssecshear_ = crosssec_ * shear_correction;
 
-  // read beam moments of inertia of area
-  Iyy_ = 0;
-  Izz_ = 0;
-  Iyz_ = 0;
-  Irr_ = 0;
-  frdouble("Iyy",&Iyy_,&ierr);
-  frdouble("Izz",&Izz_,&ierr);
-  frdouble("Iyz",&Iyz_,&ierr);
-  frdouble("Irr",&Irr_,&ierr);
+  /*read beam moments of inertia of area; currently the beam3 element works only with rotationally symmetric
+   * crosssection so that the moment of inertia of area around both principal can be expressed by one input
+   * number I_; however, the implementation itself is a general one and works also for other cases; the only
+   * point which has to be made sure is that the nodal triad T_ is initialized in the registration process 
+   * (->beam3.cpp) in such a way that t1 is the unit vector along the beam axis and t2 and t3 are the principal
+   * axes with moment of inertia of area Iyy_ and Izz_, respectively; so a modification to more general kinds of
+   * cross sections can be done easily by allowing for more complex input right here and by calculating an approxipate
+   * initial nodal triad in the frame of the registration; */
+  
+  frdouble("MOMIN",&Iyy_,&ierr);
+  frdouble("MOMIN",&Izz_,&ierr);
+  frdouble("MOMINPOL",&Irr_,&ierr);
   if (ierr!=1) dserror("Reading of Beam3 element failed");
   
   // element can use consistent or lumped mass matrix

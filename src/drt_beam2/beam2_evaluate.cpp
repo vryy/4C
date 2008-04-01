@@ -178,14 +178,8 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
   if (curvenum>=0 && usetime)
     curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
   
-  //reference length calculated from nodal data
-  double x_sqdist_ref = pow( Nodes()[1]->X()[0] - Nodes()[0]->X()[0],2 );
-  double y_sqdist_ref = pow( Nodes()[1]->X()[1] - Nodes()[0]->X()[1],2 );
-  double length_refe = pow( x_sqdist_ref + y_sqdist_ref ,0.5 );
-
-  
   //jacobian determinant
-  double det = length_refe/2;
+  double det = lrefe_/2;
 
 
   // no. of nodes on this element
@@ -223,7 +217,7 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
     fac = wgt * det;
 
     // load vector ar
-    double ar[3];
+    double ar[numdf];
     // loop the dofs of a node
   
     for (int i=0; i<numdf; ++i)
@@ -240,8 +234,8 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
   } // for (int ip=0; ip<intpoints.nquad; ++ip)
   
   
-//by the following code part stochastic external forces can be applied elementwise; deactivated by default since 
-// especially decoupling of load frequency and time step size difficult going this way
+/*by the following code part stochastic external forces can be applied elementwise; for decoupling 
+ * load frequency and time step size stochastical forces should better be applied outside the element*/
   
   if (thermalenergy_ > 0)
   {	  
@@ -264,7 +258,7 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 	  
 	  //calculating diagonal entry of damping matrix  
 	  double gamma;
-	  gamma = 4*params.get<double>("damping factor M",0.0) * crosssec_ * density * length_refe/3;  
+	  gamma = 4*params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_/3;  
 	  
 	  //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
 	  double stand_dev = pow(2 * thermalenergy_ * gamma / params.get<double>("delta time",0.01),0.5);
@@ -295,8 +289,8 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& Bcurr,
                     			LINALG::SerialDenseVector& zcurr,
                                         double& beta,
                     			const LINALG::SerialDenseMatrix& xcurr,
-                    			const double& length_curr,
-                    			const double& length_refe)
+                    			const double& lcurr,
+                    			const double& lrefe_)
 
 {
 	//this function expects x 3x2 matrix xcurr for 3 DOF of 2 beam2 nodes
@@ -307,11 +301,12 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& Bcurr,
 
 
   // beta is the rotation angle out of x-axis in a x-y-plane 
-  double cos_beta = (xcurr(0,1)-xcurr(0,0))/length_curr;
-  double sin_beta = (xcurr(1,1)-xcurr(1,0))/length_curr;
+  double cos_beta = (xcurr(0,1)-xcurr(0,0))/lcurr;
+  double sin_beta = (xcurr(1,1)-xcurr(1,0))/lcurr;
   
   /*a crucial point in a corotational frame work is how to calculate the correct rotational angle
-   * beta; in case that abs(beta)<PI this can be done easily making use of asin(beta) and acos(beta);
+   * beta, which is the rotation relative to the reference rotation beta0_; 
+   * in case that abs(beta)<PI this can be done easily making use of asin(beta) and acos(beta);
    * however, since in the course of large deformations abs(beta)>PI can happen one needs some special means
    * in order to avoid confusion; here we calculate an angel psi in a local coordinate system rotated by an 
    * angle of halfrotations_*PI; afterwards we know beta = psi * halfrotations_*PI; for this procedure we only
@@ -323,8 +318,8 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& Bcurr,
    * fairly mild restriction to time step size*/
   
   // psi is the rotation angle out of x-axis in a x-y-plane rotatated by halfrotations_*PI
-  double cos_psi = pow(-1.0,halfrotations_)*(xcurr(0,1)-xcurr(0,0))/length_curr;
-  double sin_psi = pow(-1.0,halfrotations_)*(xcurr(1,1)-xcurr(1,0))/length_curr;
+  double cos_psi = pow(-1.0,halfrotations_)*(xcurr(0,1)-xcurr(0,0))/lcurr;
+  double sin_psi = pow(-1.0,halfrotations_)*(xcurr(1,1)-xcurr(1,0))/lcurr;
   
   //first we calculate psi in a range between -pi < beta <= pi in the rotated plane
   double psi = 0;
@@ -337,7 +332,7 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& Bcurr,
         	psi = -acos(cos_psi);
    }
   
-  beta = psi + PI*halfrotations_;
+  beta = psi + PI*halfrotations_ - beta0_;
   
   if (psi > PI/2)
 	  halfrotations_++;
@@ -364,9 +359,9 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& Bcurr,
   for(int id_col=0; id_col<6; id_col++)
   	{
 	  Bcurr(0,id_col) = rcurr[id_col];
-	  Bcurr(2,id_col) = (length_refe / length_curr) * zcurr[id_col];
+	  Bcurr(2,id_col) = (lrefe_ / lcurr) * zcurr[id_col];
 	  if (id_col == 2 || id_col ==5)
-	    		Bcurr(2,id_col) = Bcurr(2,id_col) - (length_refe / 2);
+	    		Bcurr(2,id_col) = Bcurr(2,id_col) - (lrefe_ / 2);
   	}
     Bcurr(1,2) = 1;
     Bcurr(1,5) = -1;
@@ -392,9 +387,7 @@ xrefe.Shape(3,2);
 xcurr.Shape(3,2);
 
 //current length of beam in physical space
-double length_curr = 0;
-//length of beam in reference configuration
-double length_refe = 0;
+double lcurr = 0;
 //current angle between x-axis and beam in physical space
 double beta;
 //some geometric auxiliary variables according to Crisfield, Vol. 1
@@ -414,14 +407,12 @@ for (int k=0; k<iel; ++k)
   {
 
     xrefe(0,k) = Nodes()[k]->X()[0];
-    std::cout<<"Knoten "<< k <<" xrefe(0) = "<< xrefe(0,k)<<"\n";
     xrefe(1,k) = Nodes()[k]->X()[1];
-    std::cout<<"Knoten "<< k <<" xrefe(1) = "<< xrefe(1,k)<<"\n";
     xrefe(2,k) = Nodes()[k]->X()[2];
-    std::cout<<"Knoten "<< k <<" xrefe(2) = "<< xrefe(2,k)<<"\n";
 
     xcurr(0,k) = xrefe(0,k) + disp[k*numdf+0];
     xcurr(1,k) = xrefe(1,k) + disp[k*numdf+1];
+    //note: this is actually not the current director angle, but current director angle minus reference director angle
     xcurr(2,k) = xrefe(2,k) + disp[k*numdf+2];
 
   }
@@ -431,12 +422,10 @@ x_verschiebung = disp[numdf];
     
   // calculation of local geometrically important matrices and vectors; notation according to Crisfield-------
   //current length
-  length_curr = pow( pow(xcurr(0,1)-xcurr(0,0),2) + pow(xcurr(1,1)-xcurr(1,0),2) , 0.5 );
-  //length in reference configuration
-  length_refe  = pow( pow(xrefe(0,1)-xrefe(0,0),2) + pow(xrefe(1,1)-xrefe(1,0),2) , 0.5 );
+  lcurr = pow( pow(xcurr(0,1)-xcurr(0,0),2) + pow(xcurr(1,1)-xcurr(1,0),2) , 0.5 );
   
   //calculation of local geometrically important matrices and vectors
-  b2_local_aux(Bcurr, rcurr, zcurr, beta, xcurr, length_curr, length_refe);
+  b2_local_aux(Bcurr, rcurr, zcurr, beta, xcurr, lcurr, lrefe_);
   
   //calculation of local internal forces
   LINALG::SerialDenseVector force_loc;
@@ -469,21 +458,25 @@ x_verschiebung = disp[numdf];
 	      dserror("unknown or improper type of material law");
 	 }	
 
-  
+  /*in the following internal forces are computed; one has to take into consideration that not global director angles cause
+   * internal forces, but local ones. Global and local director angles are different from each other by the reference beam 
+   * angle beta0_ so that theta_loc = theta_glob - beta0_; in case of curvature beta0_ cancels out of the calculation, however
+   * in case of the internal shear force it has to be accounted for */
+   
   //local internal axial force: note: application of the following expression of axial strain leads
-  //to numerically significantly better stability in comparison with (length_curr - length_refe)/length_refe
-  force_loc(0) = ym*crosssec_*(length_curr*length_curr - length_refe*length_refe)/(length_refe*(length_curr + length_refe));
+  //to numerically significantly better stability in comparison with (lcurr - lrefe_)/lrefe_
+  force_loc(0) = ym*crosssec_*(lcurr*lcurr - lrefe_*lrefe_)/(lrefe_*(lcurr + lrefe_));
   
   //local internal bending moment
-  force_loc(1) = -ym*mominer_*(xcurr(2,1)-xcurr(2,0))/length_refe;
+  force_loc(1) = -ym*mominer_*(xcurr(2,1)-xcurr(2,0))/lrefe_;
   
-  //local internal shear force
-  force_loc(2) = -sm*crosssecshear_*( (xcurr(2,1)+xcurr(2,0))/2 - beta);  
+  //local internal shear force   
+  force_loc(2) = -sm*crosssecshear_*( (xcurr(2,1)+xcurr(2,0))/2 - beta - beta0_);  
   
   //innere Arbeit:
-  Arbeit_N = 0.5*force_loc(0)*(length_curr*length_curr - length_refe*length_refe)/(length_refe*(length_curr + length_refe));
+  Arbeit_N = 0.5*force_loc(0)*(lcurr*lcurr - lrefe_*lrefe_)/(lrefe_*(lcurr + lrefe_));
   Arbeit_M = -0.5*force_loc(1)* (xcurr(2,1)-xcurr(2,0));
-  Arbeit_Q = -0.5*length_refe*force_loc(2)* ( (xcurr(2,1)+xcurr(2,0))/2 - beta );
+  Arbeit_Q = -0.5*lrefe_*force_loc(2)* ( (xcurr(2,1)+xcurr(2,0))/2 - beta );
   
 
   //calculating tangential stiffness matrix in global coordinates
@@ -492,15 +485,15 @@ x_verschiebung = disp[numdf];
   
   for(int id_col=0; id_col<6; id_col++)
   {
-	  aux_CB(0,id_col) = Bcurr(0,id_col) * (ym*crosssec_/length_refe);
-	  aux_CB(1,id_col) = Bcurr(1,id_col) * (ym*mominer_/length_refe);
-	  aux_CB(2,id_col) = Bcurr(2,id_col) * (sm*crosssecshear_/length_refe);
+	  aux_CB(0,id_col) = Bcurr(0,id_col) * (ym*crosssec_/lrefe_);
+	  aux_CB(1,id_col) = Bcurr(1,id_col) * (ym*mominer_/lrefe_);
+	  aux_CB(2,id_col) = Bcurr(2,id_col) * (sm*crosssecshear_/lrefe_);
   }
    
   stiffmatrix.Multiply('T','N',1,Bcurr,aux_CB,0);
 
   //adding geometric stiffness by shear force 
-  double aux_Q_fac = force_loc(2)*length_refe / pow(length_curr,2);
+  double aux_Q_fac = force_loc(2)*lrefe_ / pow(lcurr,2);
   for(int id_lin=0; id_lin<6; id_lin++)
   	for(int id_col=0; id_col<6; id_col++)
   	{
@@ -509,7 +502,7 @@ x_verschiebung = disp[numdf];
   	}
   
   //adding geometric stiffness by axial force 
-  double aux_N_fac = force_loc(0)/length_curr; 
+  double aux_N_fac = force_loc(0)/lcurr; 
   for(int id_lin=0; id_lin<6; id_lin++)
   	for(int id_col=0; id_col<6; id_col++)
   		stiffmatrix(id_lin,id_col) += aux_N_fac * zcurr(id_lin) * zcurr(id_col);  
@@ -527,7 +520,7 @@ x_verschiebung = disp[numdf];
   if (lumpedflag_ == 0)
   {
 	  //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
-	  double aux_E[3]={density*length_refe*crosssec_/6,density*length_refe*crosssec_/6,density*length_refe*mominer_/6};
+	  double aux_E[3]={density*lrefe_*crosssec_/6,density*lrefe_*crosssec_/6,density*lrefe_*mominer_/6};
 	  for(int id=0; id<3; id++)
 	  {
 	  	massmatrix(id,id) = 2*aux_E[id];
@@ -544,37 +537,18 @@ x_verschiebung = disp[numdf];
  	 massmatrix.Shape(6,6);
  	 //note: this is not an exact lumped mass matrix, but it is modified in such a way that it leads
  	 //to a diagonal mass matrix with constant diagonal entries
- 	 massmatrix(0,0) = 4*density*length_refe*crosssec_/( 3*Nodes()[0]->NumElement() );
- 	 massmatrix(1,1) = 4*density*length_refe*crosssec_/( 3*Nodes()[0]->NumElement() );
+ 	 massmatrix(0,0) = 4*density*lrefe_*crosssec_/( 3*Nodes()[0]->NumElement() );
+ 	 massmatrix(1,1) = 4*density*lrefe_*crosssec_/( 3*Nodes()[0]->NumElement() );
  	 
- 	 massmatrix(2,2) = 4*density*length_refe*crosssec_/( 3*Nodes()[0]->NumElement() );
+ 	 massmatrix(2,2) = 4*density*lrefe_*crosssec_/( 3*Nodes()[0]->NumElement() );
  	 
- 	 massmatrix(3,3) = 4*density*length_refe*crosssec_/( 3*Nodes()[1]->NumElement() );
- 	 massmatrix(4,4) = 4*density*length_refe*crosssec_/( 3*Nodes()[1]->NumElement() );
+ 	 massmatrix(3,3) = 4*density*lrefe_*crosssec_/( 3*Nodes()[1]->NumElement() );
+ 	 massmatrix(4,4) = 4*density*lrefe_*crosssec_/( 3*Nodes()[1]->NumElement() );
  	 
- 	 massmatrix(5,5) = 4*density*length_refe*crosssec_/( 3*Nodes()[1]->NumElement() );
+ 	 massmatrix(5,5) = 4*density*lrefe_*crosssec_/( 3*Nodes()[1]->NumElement() );
    }
   else
-	  dserror("improper value of variable lumpedflag_");  
-  
-  if (this->Id() ==0)
-  {
-	  if (abs(force_loc(0))>1)
-	  {
-		  std::cout<<"\n\ninnere lokale Kraft\n"<<force_loc;
-		  std::cout<<"\nVerschiebungen\n";
-		  for (int k=0; k<iel; ++k)
-		    {
-			  std::cout<<"\n"<<disp[k*numdf+0];
-			  std::cout<<"\n"<<disp[k*numdf+1];
-			  std::cout<<"\n"<<disp[k*numdf+2];
-	
-		    }
-		  std::cout<<"\n";
-	  }
-	  
-  }
-  
+	  dserror("improper value of variable lumpedflag_");    
   return;
 } // DRT::ELEMENTS::Beam2::b2_nlnstiffmass
 
