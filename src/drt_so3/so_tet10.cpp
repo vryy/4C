@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------**##
 \file so_tet10.cpp
-\brief 
+\brief
 
 <pre>
 Maintainer: Moritz Frenzel
@@ -63,7 +63,7 @@ lineptrs_(old.lineptrs_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_tet10::Clone() const
 {
-  DRT::ELEMENTS::So_tet10* newelement = new DRT::ELEMENTS::So_tet10(*this);  
+  DRT::ELEMENTS::So_tet10* newelement = new DRT::ELEMENTS::So_tet10(*this);
   return newelement;
 }
 
@@ -99,7 +99,7 @@ void DRT::ELEMENTS::So_tet10::Pack(vector<char>& data) const
   AddtoPack(data,stresstype_);
   // kintype_
   AddtoPack(data,kintype_);
-  
+
   // rewind flags
   AddtoPack(data,donerewinding_);
 
@@ -148,6 +148,79 @@ void DRT::ELEMENTS::So_tet10::Unpack(const vector<char>& data)
 }
 
 
+/*----------------------------------------------------------------------*
+ |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_tet10::so_tet10_expol(Epetra_SerialDenseMatrix& stresses,
+                                             Epetra_SerialDenseMatrix& nodalstresses)
+{
+  static Epetra_SerialDenseMatrix expol(NUMNOD_SOTET10,NUMGPT_SOTET10);
+  static bool isfilled;
+
+  if (isfilled==true)
+  {
+    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+  }
+  else
+  {
+    double sq5=sqrt(5);
+    expol(0,0)= (0.75+0.05*sq5)*sq5;
+    expol(0,1)=-(0.25-0.05*sq5)*sq5;
+    expol(0,2)=-(0.25-0.05*sq5)*sq5;
+    expol(0,3)=-(0.25-0.05*sq5)*sq5;
+
+    expol(1,0)=-(0.25-0.05*sq5)*sq5;
+    expol(1,1)= (0.75+0.05*sq5)*sq5;
+    expol(1,2)=-(0.25-0.05*sq5)*sq5;
+    expol(1,3)=-(0.25-0.05*sq5)*sq5;
+
+    expol(2,0)=-(0.25-0.05*sq5)*sq5;
+    expol(2,1)=-(0.25-0.05*sq5)*sq5;
+    expol(2,2)= (0.75+0.05*sq5)*sq5;
+    expol(2,3)=-(0.25-0.05*sq5)*sq5;
+
+    expol(3,0)=-(0.25-0.05*sq5)*sq5;
+    expol(3,1)=-(0.25-0.05*sq5)*sq5;
+    expol(3,2)=-(0.25-0.05*sq5)*sq5;
+    expol(3,3)= (0.75+0.05*sq5)*sq5;
+
+    expol(4,0)= (0.25+0.05*sq5)*sq5;
+    expol(4,1)= (0.25+0.05*sq5)*sq5;
+    expol(4,2)=-(0.25-0.05*sq5)*sq5;
+    expol(4,3)=-(0.25-0.05*sq5)*sq5;
+
+    expol(5,0)=-(0.25-0.05*sq5)*sq5;
+    expol(5,1)= (0.25+0.05*sq5)*sq5;
+    expol(5,2)= (0.25+0.05*sq5)*sq5;
+    expol(5,3)=-(0.25-0.05*sq5)*sq5;
+
+    expol(6,0)= (0.25+0.05*sq5)*sq5;
+    expol(6,1)=-(0.25-0.05*sq5)*sq5;
+    expol(6,2)= (0.25+0.05*sq5)*sq5;
+    expol(6,3)=-(0.25-0.05*sq5)*sq5;
+
+    expol(7,0)= (0.25+0.05*sq5)*sq5;
+    expol(7,1)=-(0.25-0.05*sq5)*sq5;
+    expol(7,2)=-(0.25-0.05*sq5)*sq5;
+    expol(7,3)= (0.25+0.05*sq5)*sq5;
+
+    expol(8,0)=-(0.25-0.05*sq5)*sq5;
+    expol(8,1)= (0.25+0.05*sq5)*sq5;
+    expol(8,2)=-(0.25-0.05*sq5)*sq5;
+    expol(8,3)= (0.25+0.05*sq5)*sq5;
+
+    expol(9,0)=-(0.25-0.05*sq5)*sq5;
+    expol(9,1)=-(0.25-0.05*sq5)*sq5;
+    expol(9,2)= (0.25+0.05*sq5)*sq5;
+    expol(9,3)= (0.25+0.05*sq5)*sq5;
+
+    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+
+    isfilled = true;
+  }
+}
+
+
 /*----------------------------------------------------------------------***
  |  dtor (public)                                              maf 04/07|
  *----------------------------------------------------------------------*/
@@ -183,7 +256,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_tet10::ElementRegister() con
   /* parameter coordinates (ksi1, ksi2, ksi3, ksi4) of nodes
    * of a common tetrahedron [-1,1]x[-1,1]x[-1,1]
    *  10-node hexahedron: node 0,1,...,9
-   *          
+   *
    * -----------------------
    *- this is the numbering used in GiD & EXODUS!!
    *      3-
@@ -201,7 +274,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_tet10::ElementRegister() con
    *      |  /                   \ \
    *      |/                       \\
    *      0------------4-------------1
-   */ 
+   */
   /*====================================================================*/
 
 /*----------------------------------------------------------------------***
@@ -220,7 +293,7 @@ DRT::Element** DRT::ELEMENTS::So_tet10::Volumes()
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::So_tet10::Surfaces()
 {
-  
+
   const int nsurf = NumSurface();
   surfaces_.resize(nsurf);
   surfaceptrs_.resize(nsurf);
@@ -292,7 +365,7 @@ DRT::Element** DRT::ELEMENTS::So_tet10::Surfaces()
   surfaceptrs_[3] = surfaces_[3].get();
 
   return (DRT::Element**)(&(surfaceptrs_[0]));
-  
+
   return 0;
 }
 

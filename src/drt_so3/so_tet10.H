@@ -7,7 +7,7 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 written by: Alexander Volf
-			alexander.volf@mytum.de     
+			alexander.volf@mytum.de
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -36,9 +36,9 @@ using namespace Teuchos;
 #define NUMSTR_SOTET10       6      // number of strains/stresses 	/****/
 #define NUMGPT_SOTET10       4      // total gauss points per element	/****/
 #define NUMDIM_SOTET10       3      // number of dimensions 			/****/
-#define NUMCOORD_SOTET10	 4 		// number of shape function cooordinates (ksi1-ksi4) 
-#define NUMNOD_SOTET10_FACE  6		// number of nodes on a TET10 face (which is a TRI6) 
-#define NUMGPT_SOTET10_FACE	 3		// number of GP    on a TET10 face (which is a TRI6) 
+#define NUMCOORD_SOTET10	 4 		// number of shape function cooordinates (ksi1-ksi4)
+#define NUMNOD_SOTET10_FACE  6		// number of nodes on a TET10 face (which is a TRI6)
+#define NUMGPT_SOTET10_FACE	 3		// number of GP    on a TET10 face (which is a TRI6)
 
 // forward declarations
 struct _MATERIAL;
@@ -80,7 +80,7 @@ public:
   \param id : A unique global id
   */
   So_tet10(int id, int owner);
-  
+
   /*!
   \brief Copy Constructor
 
@@ -88,7 +88,7 @@ public:
 
   */
   So_tet10(const So_tet10& old);
-  
+
   /*!
   \brief Deep copy this instance of Solid3 and return pointer to the copy
 
@@ -277,7 +277,7 @@ public:
 
 
   //@}
-  
+
   //! some distypes need rewinding of NodeIds due to bad input from mesher
   //! flag whether process of rewinding is done
   bool                                            donerewinding_;
@@ -297,7 +297,8 @@ protected:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
-    calc_struct_update_genalpha_imrlike
+    calc_struct_update_genalpha_imrlike,
+    postprocess_stress
   };
 
   //! kinematic types of so_tet10
@@ -340,50 +341,56 @@ protected:
   vector<DRT::ELEMENTS::Sotet10Line*>              lineptrs_;
   //! vector of history variables for each Gauss point
   vector<RefCountPtr<MAT::Material> >                mat_;
-  
-  
+
+
 
 
   // internal calculation methods
 
   // don't want = operator
   So_tet10& operator = (const So_tet10& old);
-  virtual void so_tet10_nlnstiffmass(vector<int>&              lm,
+  virtual void so_tet10_nlnstiffmass(vector<int>&          lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
-                                 struct _MATERIAL*         material);
+                                 Epetra_SerialDenseMatrix* stresses,
+                                 Epetra_SerialDenseMatrix* elestrain,
+                                 struct _MATERIAL*         material,
+                                 bool cauchy = false);
 
-  void so_tet10_stress(struct _MATERIAL* material,
-                   vector<double>& mydisp,
-                   Epetra_SerialDenseMatrix* stresses);
-  
+  void so_tet10_expol(Epetra_SerialDenseMatrix& stresses,
+                      Epetra_SerialDenseMatrix& nodalstresses);
+
+//   void so_tet10_stress(struct _MATERIAL* material,
+//                    vector<double>& mydisp,
+//                    Epetra_SerialDenseMatrix* stresses);
+
 /*!
 \brief A general class agregating all necessery data for discrete integration
 
 <h3>Purpose</h3>
 The class offers a standard interface for discrete integration, mainly the agregated
-shape functions and shape function derivatives, it is a purely general class and 
-does NOT own cnstructor. For use constructors of derived classes. It has however  
-a destructor (not virtual!(to save on vtable* pointers)), that should be the same 
+shape functions and shape function derivatives, it is a purely general class and
+does NOT own cnstructor. For use constructors of derived classes. It has however
+a destructor (not virtual!(to save on vtable* pointers)), that should be the same
 for all derived classes. Derived classes are not supposed to add extra attriutes,
  they may however add extra methods.
 
-pointer to (static) array of shape function stored in Epetra_Vectors			
+pointer to (static) array of shape function stored in Epetra_Vectors
 evaluated at each gp , for each node it may look like this:
 
 shapefct[gp] = [N_1(gp)  N_2(gp)  -- N_X(gp)]
 
 pointer to (static) array of shape function derivatives stored in
-Epetra_Matrices evaluated at each gp, for xsi1-4(or 1-3) it may look like this:	
+Epetra_Matrices evaluated at each gp, for xsi1-4(or 1-3) it may look like this:
 													    |
                [  N1_,xsi1   N1_,xsi2    N1_,xsi3   N1_,xsi4 ]
 deriv_gp[gp] = [  N2_,xsi1   N2_,xsi2    N2_,xsi3   N2_,xsi4 ] (at a given gp)
                [    |           |           |          |     ]
                [  NX_,xsi1   NX_,xsi2    NX_,xsi3   NX_,xsi4 ]
-               
+
 NOTE: X stands for the number of NODES (and shape functions) in a element
 
 
@@ -392,9 +399,9 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
 
   class Discrete_integrator
   {
-	public: 
-		Epetra_SerialDenseVector* shapefct_gp;  
-      	Epetra_SerialDenseMatrix* deriv_gp;  
+	public:
+		Epetra_SerialDenseVector* shapefct_gp;
+      	Epetra_SerialDenseMatrix* deriv_gp;
       	Epetra_SerialDenseVector weights;
       	int num_gp;
       	int num_nodes;
@@ -413,7 +420,7 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
   	public:
   		Tet_integrator_4point(void);
   };
- 
+
   /*---------------------------------------------------------------------------------*
   | class Tet_integrator_14point										vlf 09/07   |
   |																					|
@@ -421,18 +428,18 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
   |	it is exaxt for 0-4th order polynomials											|
   |																					|
   *---------------------------------------------------------------------------------*/
-  
+
   class Tet_integrator_14point : public Discrete_integrator
   {
   	public:
   		Tet_integrator_14point(void);
   };
-  
+
   // became obsolete
   void so_tet10_shapederiv(
-  	  Epetra_SerialDenseVector** shapefct_ptr,  
-      Epetra_SerialDenseMatrix** deriv_gp_ptr,  
-      Epetra_SerialDenseVector** weights);       
+  	  Epetra_SerialDenseVector** shapefct_ptr,
+      Epetra_SerialDenseMatrix** deriv_gp_ptr,
+      Epetra_SerialDenseVector** weights);
 
   // #### hier deklariert, in implementierung soll einfach soh8_mat_sel gerufen werden
   void so_tet10_mat_sel(Epetra_SerialDenseVector* stress,
@@ -440,7 +447,7 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
                     const Epetra_SerialDenseMatrix* defgrd,
-                    int gp);       
+                    int gp);
 
 }; // class So_tet10
 
@@ -583,7 +590,7 @@ public:
 
   */
   Sotet10Surface(const Sotet10Surface& old);
-  
+
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
 
@@ -711,7 +718,7 @@ private:
   void sotet10_surface_shapefunc(
       Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
       Epetra_SerialDenseVector** weights);
-  
+
   /*void sotet10_surface_integ(	//became obsolete !!!!!!!!!!!!!!!!
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
