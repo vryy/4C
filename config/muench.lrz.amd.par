@@ -1,0 +1,112 @@
+# -*- shell-script -*-
+# these moduls have to be loaded to be able to compile/link correctly
+#module load hdf5
+#module load metis/4.0
+#module load netcdf/3.6.2
+#module load mkl/10.0
+#module load szip/2.0
+#module load mpi.parastation/5.0/intel
+
+
+PLATFORM=LINUX_MUENCH
+PARALLEL=yes
+
+LINUX_DIST=amd
+MPI_VERSION=parastation
+
+PROGRAMNAME=cca_"$LINUX_DIST"_"$MPI_VERSION"
+F77="mpif77"
+CC="mpicc"
+CP="mpicxx"
+LD="mpicxx"
+
+
+BASEDIR=$HOME
+
+INCLUDEDIRS="-I$BASEDIR/include $MPI_INC -I$HOME/lib/blitz-0.9/amd/include -I$HOME/lib/blitz-0.9 $HDF5_INC"
+LIBDIRS="-L$BASEDIR/lib $MPI_LIB -L$HOME/lib/blitz-0.9/amd/lib -lblitz"
+
+# Trilinos
+TRILINOS_HOME=$BASEDIR/lib/Trilinos/lx64ia2_mpi_trilinos
+TRILINOS_INCDIR=$TRILINOS_HOME/include
+TRILINOS_LIBDIR=$TRILINOS_HOME/lib
+TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
+TRILINOS_LIB="-lmoertel \
+	-ltrilinoscouplings \
+	-lnoxthyra \
+	-lnoxepetra \
+	-lnox \
+	-lstratimikos \
+	-lstratimikosamesos \
+	-lstratimikosaztecoo \
+	-lstratimikosml \
+	-lstratimikosifpack \
+	-lthyraepetraext \
+	-lthyraepetra \
+	-lthyra \
+	-lifpack \
+	-laztecoo \
+	-lamesos \
+	-lml \
+	-lepetraext \
+	-lepetra \
+	-lteuchos \
+	-lrtop"
+TRILINOS_FILTER_LIB=$TRILINOS_LIB
+
+# aztec
+AZTEC_INC=""
+#AZTEC_LIB="-laztec_gcc"
+AZTEC_LIB=""
+
+
+# spooles
+SPOOLES_INC=""
+SPOOLES_LIB=""
+
+# umfpack
+UMFPACK_INC=
+UMFPACK_LIB="-L$HOME/lib/UMFPACKv4.1/UMFPACK/Lib -lumfpack_amd -L$HOME/lib/UMFPACKv4.1/AMD/Lib -lamd_amd"
+
+
+# qhull
+QHULL_INC=
+#QHULL_LIB="-lqhull"
+QHULL_LIB=""
+
+# super_lu
+SUPERLU_LIB="-L$HOME/lib/SuperLU_DIST_2.0 -lsuperlu_dist_2.0_lrz_amd"
+
+
+# fast elements
+LOOPL="-DLOOPL=15"
+
+# visual2
+VISUAL2_INC=""
+VISUAL2_LIB="-L/usr/X11R6/lib -lVisual2 -lX11"
+
+VISUAL3_INC=""
+VISUAL3_LIB="-L/usr/X11R6/lib -lVisual3 -lg2c -lGLU -lGL -lX11 -lXext -ldl -lpthread"
+
+# hdf5
+HDF5_LIB="-L$HDF5_BASE/lib -lhdf5_hl  -lhdf5 -lpthread -lz $SZIP_LIB"
+
+# exodus
+#EXODUS_LIB="-lexoIIv2c -L/usr/lib/netcdf-3 -lnetcdf"
+EXODUS_LIB=""
+
+#LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
+LIBS="$METIS_LIB $MKL_LIB -lm  -lpthread  -L/lrz/sys/intel/ifort_101/lib -lguide -lifcore  -limf -lsvml -lirc -lstdc++"
+
+CFLAGS_OPT="-O2  -xW -axW"
+CPFLAGS_OPT="-O2  -xW -axW"
+FFLAGS_OPT="-O2  -xW -axW"
+LDFLAGS_OPT="-O2  -xW -axW"
+
+
+# Alle Bibliotheken neu uebersetzen?!
+# -malign-double
+CFLAGS="-ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+CPFLAGS="-DMPICH_SKIP_MPICXX -ansi -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+FFLAGS="-D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
+LDFLAGS="-Xlinker -defsym -Xlinker MAIN__=main -cxxlib"
