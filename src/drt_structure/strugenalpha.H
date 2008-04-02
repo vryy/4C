@@ -18,6 +18,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_ana.H"
 #include "../io/io_drt.H"
 #include "../drt_contact/drt_contact_manager.H"
 #include "../drt_lib/linalg_mfoperator.H"
