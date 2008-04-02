@@ -147,6 +147,7 @@ void LINALG::DownwindMatrix::Setup()
   
   // coarsen the weighted graph by dropping below-average-connections
   // Also decide what links are downwind, skip all upwind connections
+#if 0
   RCP<Epetra_CrsMatrix> nnodegraph;
   {
     // create a transposed of the full graph
@@ -202,7 +203,86 @@ void LINALG::DownwindMatrix::Setup()
     tmp->Complete(*onoderowmap,*onoderowmap);
     nnodegraph = tmp->EpetraMatrix();
   }
+#endif
 
+#if 1
+  // create directed graph
+  RCP<Epetra_CrsMatrix> nnodegraph;
+  {
+    // create a transposed of the full graph
+    RCP<Epetra_CrsMatrix> onodegrapht = LINALG::Transpose(onodegraph);
+    // create a new graph that will store the directed graph
+    RCP<SparseMatrix> tmp = rcp(new SparseMatrix(*onoderowmap,(int)(onodegraph->MaxNumEntries())));
+    const Epetra_Map& rowmap = onodegraph->RowMap();
+    const Epetra_Map& colmap = onodegraph->ColMap();
+    const Epetra_Map& colmapt = onodegrapht->ColMap();
+    for (int i=0; i<rowmap.NumMyElements(); ++i)
+    {
+      // Dirichlet BC
+      if (oninflow[i]==0) continue;
+      const int grnode = rowmap.GID(i);
+
+      int numentries;
+      int* indices;
+      double* values;
+      onodegraph->ExtractMyRowView(i,numentries,values,indices);
+
+      int numentriest;
+      int* indicest;
+      double* valuest;
+      onodegrapht->ExtractMyRowView(i,numentriest,valuest,indicest);
+      
+      for (int j=0; j<numentries; ++j)
+      {
+        const int gcnode = colmap.GID(indices[j]);
+        if (!rowmap.MyGID(gcnode)) continue;
+        bool foundit = false;
+        int k;
+        for (k=0; k<numentriest; ++k)
+        {
+          const int gcnodet = colmapt.GID(indicest[k]);
+          if (gcnodet==gcnode) 
+          {
+            foundit = true;
+            break;
+          }
+        }
+        if (!foundit || (values[j]>=valuest[k]) )
+          tmp->Assemble(values[j],grnode,gcnode);
+      }
+    } // for (int i=0; i<rowmap.NumMyElements(); ++i)
+    tmp->Complete(rowmap,rowmap);
+    nnodegraph = tmp->EpetraMatrix();
+  }
+  // coarsen directed graph
+  {
+    // create a new graph that will store the directed graph
+    RCP<SparseMatrix> tmp = rcp(new SparseMatrix(nnodegraph->RowMap(),(int)(nnodegraph->MaxNumEntries())));
+    const Epetra_Map& rowmap = nnodegraph->RowMap();
+    const Epetra_Map& colmap = onodegraph->ColMap();
+    for (int i=0; i<rowmap.NumMyElements(); ++i)
+    {
+      // Dirichlet BC
+      if (oninflow[i]==0) continue;
+      const int grnode = rowmap.GID(i);
+      const double average = oaverweight[i];
+      int numentries;
+      int* indices;
+      double* values;
+      onodegraph->ExtractMyRowView(i,numentries,values,indices);
+
+      for (int j=0; j<numentries; ++j)
+      {
+        const int gcnode = colmap.GID(indices[j]);
+        if (!rowmap.MyGID(gcnode)) continue;
+        if (values[j]>=tau_*average)
+          tmp->Assemble(values[j],grnode,gcnode);
+      }
+    } // for (int i=0; i<rowmap.NumMyElements(); ++i)
+    tmp->Complete(rowmap,rowmap);
+    nnodegraph = tmp->EpetraMatrix();
+  }
+#endif
 
   // do the Bey & Wittum downwind numbering
   RCP<Epetra_Map> nnoderowmap = DownwindBeyWittum(*nnodegraph,oninflow);

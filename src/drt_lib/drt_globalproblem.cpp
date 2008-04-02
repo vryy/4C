@@ -636,6 +636,8 @@ void DRT::Problem::InputSolverControl(std::string section, _SOLVAR* solv)
     solv->azvar->blockdiag = solverparams.get<int>("AZBDIAG"   );
     solv->azvar->azoverlap = solverparams.get<int>("AZOVERLAP" );
 
+    solv->azvar->dwindtau  = solverparams.get<double>("DWINDTAU");
+
     // parameters of ML preconditioner
 
     solv->azvar->mlprint        = solverparams.get<int>("ML_PRINT");

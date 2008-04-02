@@ -1151,7 +1151,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   IntParameter("AZBDIAG", 0, "", &list);
 
   DoubleParameter("AZTOL", 1e-8, "tolerance in (un)scaled residual", &list);
-  DoubleParameter("AZOMEGA", 0.0, "unused", &list);
+  DoubleParameter("AZOMEGA", 0.0, "damping for GaussSeidel and jacobi type methods", &list);
+  DoubleParameter("DWINDTAU",1.5,"threshold tau for downwinding", &list);
 
   setStringToIntegralParameter(
     "AZSCAL","none","scaling of the system",
