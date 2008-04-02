@@ -617,13 +617,18 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
   // extract diagonal of invd into diag
   invd->ExtractDiagonalCopy(*diag);
   
+  // set zero diagonal values to dummy 1.0
+  for (int i=0;i<diag->MyLength();++i)
+    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+  
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
   if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
   
   // re-insert inverted diagonal into invd
   err = invd->ReplaceDiagonalValues(*diag);
-  if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+  // we cannot use this check, as we deliberately replaced zero entries
+  //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
   
   // do the multiplication M^ = inv(D) * M
   mhatmatrix_ = LINALG::Multiply(*invd,false,*mmatrix_,false);
@@ -1126,7 +1131,14 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
       // (thus we only have to check ncr.disp. jump and weighted gap)
       if (cnode->Active()==false)
       {
-        double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+        // get weighting factor from nodal D-map
+        double wii;
+        if ((int)((cnode->GetD()).size())==0)
+          wii = 0.0;
+        else
+         wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+        
+        // compute incr. normal displacement and weighted gap
         double nincr = 0.0;
         for (int k=0;k<3;++k)
           nincr += wii * cnode->n()[k] * (*incrjump_)[incrjump_->Map().LID(2*gid)+k];

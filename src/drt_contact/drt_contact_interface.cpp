@@ -402,8 +402,10 @@ void CONTACT::Interface::Evaluate()
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     CElement* selement = static_cast<CElement*>(ele1);
     
+#ifndef CONTACTONEMORTARLOOP
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave2D(*selement);
+#endif // #ifndef CONTACTONEMORTARLOOP
     
     // loop over the contact candidate master elements
     // use slave element's candidate list SearchElements !!!
@@ -984,12 +986,11 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   CONTACT::Integrator integrator(CONTACTNGP,true);
   
   // do the two integrations
-  //RCP<Epetra_SerialDenseMatrix> dseg = integrator.IntegrateD(sele,sxia,sxib);
   RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM(sele,sxia,sxib,mele,mxia,mxib);
   RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG(sele,sxia,sxib,mele,mxia,mxib);
   
   // do the two assemblies into the slave nodes
-  //integrator.AssembleD(*this,sele,*dseg);
+  // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
   integrator.AssembleM(*this,sele,mele,*mseg);
   integrator.AssembleG(*this,sele,*gseg);
     
@@ -1046,10 +1047,6 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
 
     if (cnode->Owner() != comm_.MyPID())
       dserror("ERROR: AssembleDMG: Node ownership inconsistency!");
-    
-    // do nothing for this node, if all 3 maps are empty
-    if ((cnode->GetD()).size()==0 && (cnode->GetM()).size()==0 && (cnode->GetMmod()).size()==0)
-      continue;
     
     /**************************************************** D-matrix ******/
     if ((cnode->GetD()).size()>0)

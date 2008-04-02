@@ -16,6 +16,7 @@ Maintainer: Alexander Popp
 #include "drt_contact_integrator.H"
 #include "drt_celement.H"
 #include "drt_contact_projector.H"
+#include "contactdefines.H"
 #include "../drt_lib/drt_utils.H"
 
 /*----------------------------------------------------------------------*
@@ -684,8 +685,12 @@ bool CONTACT::Integrator::AssembleD(CONTACT::Interface& inter,
 
 /*----------------------------------------------------------------------*
  |  Assemble M contribution                                   popp 01/08|
- |  This method assembles the contrubution of a 1D slave / master        |
- |  overlap pair to the M map of the adjacent slave nodes.               |
+ |  This method assembles the contrubution of a 1D slave / master       |
+ |  overlap pair to the M map of the adjacent slave nodes.              |
+ |  IMPORTANT NOTE:                                                     |
+ |  If CONTACTONEMORTARLOOP is defined then this method also assembles  |
+ |  the contribution of a 1D slave element part to the D map of the     |
+ |  adjacent slave nodes via the connection D = sum (M)                 |
  *----------------------------------------------------------------------*/
 bool CONTACT::Integrator::AssembleM(CONTACT::Interface& inter,
                                     CONTACT::CElement& sele,
@@ -710,7 +715,7 @@ bool CONTACT::Integrator::AssembleM(CONTACT::Interface& inter,
   for (int slave=0;slave<sele.NumNode();++slave)
   {
     CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(snodes[slave]);
-    //const int* sdofs = snode->Dofs();
+    const int* sdofs = snode->Dofs();
     int sndof = snode->NumDof();
     
     // only process slave node rows that belong to this proc
@@ -720,6 +725,9 @@ bool CONTACT::Integrator::AssembleM(CONTACT::Interface& inter,
     // loop over all dofs of the slave node
     for (int sdof=0;sdof<sndof;++sdof)
     {
+      // initialize sum(M) of current row
+      double msum=0.0;
+      
       // loop over all master nodes
       for (int master=0;master<mele.NumNode();++master)
       {
@@ -732,9 +740,15 @@ bool CONTACT::Integrator::AssembleM(CONTACT::Interface& inter,
         {
           int col = mdofs[mdof];
           double val = mseg(slave*sndof+sdof,master*mndof+mdof);
+          msum+=val;
           snode->AddMValue(sdof,col,val);
         }
       }
+      
+#ifdef CONTACTONEMORTARLOOP
+      // we know that D(snode) = sum_mnode (M(mnode,snode))
+      snode->AddDValue(sdof,sdofs[sdof],msum);
+#endif // #ifdef CONTACTONEMORTARLOOP
     }
     /*
 #ifdef DEBUG

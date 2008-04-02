@@ -16,6 +16,7 @@ Maintainer: Alexander Popp
 #define CONTACTDEFINES_H
 
 #define CONTACTWNORMAL           /* flag for weighted nodal normal calc. */
+//#define CONTACTONEMORTARLOOP   /* flag for computation of D,M matrices */
 //#define CONTACTDIMOUTPUT       /* flag for output of global matrix dim. */
 //#define CONTACTCHECKHUEEBER    /* flag for S.Hüeber's quad. conv. check */ 
 
@@ -24,7 +25,7 @@ Maintainer: Alexander Popp
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton   */
 #define CONTACTCONVTOL 1.0e-12   /* convergence tolerance for local Newton */
 #define CONTACTNGP 5             /* no. Gauss points for integration */
-#define CONTACTCRITDIST 0.5      /* critical distance for potential contact */
+#define CONTACTCRITDIST 5      /* critical distance for potential contact */
 
 #define CONTACTINITIALSET 0      /* flag for initialization of active set */
                                  /* 0=empty, 1=full, 2=user-defined      */
