@@ -389,8 +389,11 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 
     // return gp strains (only in case of stress/strain output)
     if (elestress != NULL){
-      for (int i = 0; i < NUMSTR_WEG6; ++i) {
+      for (int i = 0; i < 3; ++i) {
         (*elestrain)(gp,i) = glstrain(i);
+      }
+      for (int i = 3; i < 6; ++i) {
+        (*elestrain)(gp,i) = 0.5 * glstrain(i);
       }
     }
 
