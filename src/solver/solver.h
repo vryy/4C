@@ -269,6 +269,8 @@ typedef struct _AZVAR
   DOUBLE                  azomega;            /* relaxation parameter for some preconditioners */
   INT                     blockdiag;
 
+  DOUBLE                  dwindtau;           /* downwinding threshold */
+
 #ifdef TRILINOS_PACKAGE
   INT                     azscal;             /* 0 = none, 1 = sym, 2 = infnorm */
 
