@@ -5,7 +5,7 @@
 #$-S /bin/bash 
 #$-l march=x86_64
 #$-pe mpi_8 8
-#$-M gee@lnm.mw.tum.de
+#$-M <name>@lnm.mw.tum.de
 #$-m abe
 #$-cwd
 #$-r n

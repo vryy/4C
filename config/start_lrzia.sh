@@ -5,7 +5,7 @@
 #$-S /bin/bash 
 #$-l march=ia64 
 #$-pe mpi 4
-#$-M gee@lnm.mw.tum.de
+#$-M <name>@lnm.mw.tum.de
 #$-m abe
 #$-cwd
 #$-r n
