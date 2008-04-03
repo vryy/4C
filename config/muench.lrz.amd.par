@@ -23,7 +23,7 @@ LD="mpicxx"
 
 BASEDIR=$HOME
 
-INCLUDEDIRS="-I$BASEDIR/include $MPI_INC -I$HOME/lib/blitz-0.9/amd/include -I$HOME/lib/blitz-0.9 $HDF5_INC"
+INCLUDEDIRS="-I$BASEDIR/include $MPI_INC -I$HOME/lib/blitz-0.9/amd/include -I$HOME/lib/blitz-0.9 $HDF5_INC -I$BASEDIR/lib/UMFPACKv4.1/UMFPACK/Include -I$BASEDIR/lib/UMFPACKv4.1/AMD/Include"
 LIBDIRS="-L$BASEDIR/lib $MPI_LIB -L$HOME/lib/blitz-0.9/amd/lib -lblitz"
 
 # Trilinos
