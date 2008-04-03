@@ -211,6 +211,9 @@ for (i=1; i<numa3; i++)
       davn[2] =-alpha*DSQR(averdir[1])*dir_list[2][i]+alpha*averdir[1]*averdir[2]*dir_list[1][i]
                -alpha*DSQR(averdir[0])*dir_list[2][i]+alpha*averdir[0]*averdir[2]*dir_list[0][i]+averdir[2];
    }
+   averdir[0] = davn[0];
+   averdir[1] = davn[1];
+   averdir[2] = davn[2];
    a3[0] = davn[0];
    a3[1] = davn[1];
    a3[2] = davn[2];
