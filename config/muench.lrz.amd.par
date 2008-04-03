@@ -99,9 +99,9 @@ EXODUS_LIB=""
 LIBS="$METIS_LIB $MKL_LIB -lm  -lpthread  -L/lrz/sys/intel/ifort_101/lib -lguide -lifcore  -limf -lsvml -lirc -lstdc++"
 
 CFLAGS_OPT="-O2  -xW -axW"
-CPFLAGS_OPT="-O2  -xW -axW"
-FFLAGS_OPT="-O2  -xW -axW"
-LDFLAGS_OPT="-O2  -xW -axW"
+CPFLAGS_OPT="-O3  -xW -axW"
+FFLAGS_OPT="-O3  -xW -axW"
+LDFLAGS_OPT="-O3  -xW -axW"
 
 
 # Alle Bibliotheken neu uebersetzen?!
