@@ -101,10 +101,10 @@ EXODUS_LIB=""
 #LIBS="-lc -lg2c -llapack -lgoto_p4_512-r0.6 -lxerbla -lmetis"
 LIBS="$METIS_LIB $MKL_LIB -lm -lguide -lpthread -L/lrz/sys/intel/ifort_91/lib -lifcore -lirc -lstdc++"
 
-CFLAGS_OPT="-O2"
-CPFLAGS_OPT="-O2"
-FFLAGS_OPT="-O2"
-LDFLAGS_OPT="-O2"
+CFLAGS_OPT="-O2  -mcpu=itanium2"
+CPFLAGS_OPT="-O3  -mcpu=itanium2"
+FFLAGS_OPT="-O3  -mcpu=itanium2"
+LDFLAGS_OPT="-O2 -mcpu=itanium2"
 
 
 # Alle Bibliotheken neu uebersetzen?!
