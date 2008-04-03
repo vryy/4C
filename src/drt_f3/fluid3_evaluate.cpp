@@ -410,6 +410,39 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         StabilisationAction cross    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
         StabilisationAction reynolds = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
+        // select tau definition
+        TauType whichtau = tau_not_defined;
+        {
+          const string taudef = stablist.get<string>("DEFINITION_TAU");
+          
+          if(taudef == "Barrenechea_Franca_Valentin_Wall")
+          {
+            whichtau = franca_barrenechea_valentin_wall;
+          }
+          else if(taudef == "Bazilevs")
+          {
+            whichtau = bazilevs;
+          }
+          else if(taudef == "Codina")
+          {
+            whichtau = codina;
+          }
+        }
+
+        // flag for higher order elements
+        bool higher_order_ele = isHigherOrderElement(Shape());
+
+        // overrule higher_order_ele if input-parameter is set
+        // this might be interesting for fast (but slightly
+        // less accurate) computations
+        if(stablist.get<string>("STABTYPE") == "inconsistent")
+        {
+          higher_order_ele = false;
+        }
+
+        // get time step size
+        const double dt = params.get<double>("dt");
+
         // One-step-Theta: timefac = theta*dt
         // BDF2:           timefac = 2/3 * dt
         const double timefac = params.get<double>("thsl",-1.0);
@@ -598,8 +631,10 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                        eforce,
                        actmat,
                        time,
+                       dt,
                        timefac,
                        newton,
+                       higher_order_ele,
                        fssgv,
                        pspg,
                        supg,
@@ -607,6 +642,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                        cstab,
                        cross,
                        reynolds,
+                       whichtau,
                        turb_mod_action,
                        Cs,
                        Cs_delta_sq,
@@ -1627,37 +1663,81 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             stabstrtoact_["scale_similarity"       ]=Fluid3::fssgv_scale_similarity;
           }
 
+          // check for time dependent subgrid-scale stabilisation
           StabilisationAction tds      = ConvertStringToStabAction(stablist.get<string>("TDS"));
+
+          // select tau definition
+          TauType whichtau = tau_not_defined;
+          {
+            const string taudef = stablist.get<string>("DEFINITION_TAU");
+            
+            if(taudef == "Barrenechea_Franca_Valentin_Wall")
+            {
+              whichtau = franca_barrenechea_valentin_wall;
+            }
+            else if(taudef == "Bazilevs")
+            {
+              whichtau = bazilevs;
+            }
+            else if(taudef == "Codina")
+            {
+              whichtau = codina;
+            }
+          }
+
+          // flag for higher order elements
+          bool higher_order_ele = isHigherOrderElement(Shape());
+          
+          // overrule higher_order_ele if input-parameter is set
+          // this might be interesting for fast (but slightly
+          // less accurate) computations
+          if(stablist.get<string>("STABTYPE") == "inconsistent")
+          {
+            higher_order_ele = false;
+          }
+
 
           blitz::Array<double, 1>  mean_res(3);
           blitz::Array<double, 1>  mean_sacc(3);
+          blitz::Array<double, 1>  mean_svelaf(3);
           blitz::Array<double, 1>  mean_res_sq(3);
           blitz::Array<double, 1>  mean_sacc_sq(3);
+          blitz::Array<double, 1>  mean_svelaf_sq(3);
 
-          double mean_resC       =0;
-          double mean_resC_sq    =0;
-          double mean_spreacc    =0;
-          double mean_spreacc_sq =0;
+          double mean_resC       = 0;
+          double mean_resC_sq    = 0;
+          double mean_spreacc    = 0;
+          double mean_sprenp     = 0;
+          double mean_spreacc_sq = 0;
+          double mean_sprenp_sq  = 0;
+
           
-          mean_res    =0;
-          mean_sacc   =0;
-          mean_res_sq =0;
-          mean_sacc_sq=0;
-
+          mean_res       = 0;
+          mean_sacc      = 0;
+          mean_svelaf    = 0;
+          mean_res_sq    = 0;
+          mean_sacc_sq   = 0;
+          mean_svelaf_sq = 0;
+          
           RefCountPtr<vector<double> > incrres      = params.get<RefCountPtr<vector<double> > >("incrres"         );
           RefCountPtr<vector<double> > incrres_sq   = params.get<RefCountPtr<vector<double> > >("incrres_sq"      );
           RefCountPtr<vector<double> > incrsacc     = params.get<RefCountPtr<vector<double> > >("incrsacc"        );
           RefCountPtr<vector<double> > incrsacc_sq  = params.get<RefCountPtr<vector<double> > >("incrsacc_sq"     );
+          RefCountPtr<vector<double> > incrsvelaf   = params.get<RefCountPtr<vector<double> > >("incrsvelaf"      );
+          RefCountPtr<vector<double> > incrsvelaf_sq= params.get<RefCountPtr<vector<double> > >("incrsvelaf_sq"   );
+                    
           RefCountPtr<vector<double> > incrresC     = params.get<RefCountPtr<vector<double> > >("incrresC"        );
           RefCountPtr<vector<double> > incrresC_sq  = params.get<RefCountPtr<vector<double> > >("incrresC_sq"     );
           RefCountPtr<vector<double> > spressacc    = params.get<RefCountPtr<vector<double> > >("incrspressacc"   );
           RefCountPtr<vector<double> > spressacc_sq = params.get<RefCountPtr<vector<double> > >("incrspressacc_sq");
+          RefCountPtr<vector<double> > spressnp     = params.get<RefCountPtr<vector<double> > >("incrspressnp"    );
+          RefCountPtr<vector<double> > spressnp_sq  = params.get<RefCountPtr<vector<double> > >("incrspressnp_sq" );
 
           RefCountPtr<vector<double> > planecoords  = params.get<RefCountPtr<vector<double> > >("planecoords_");
 
           if(planecoords==null)
-            dserror("Hossa\n");
-
+            dserror("planecoords is null, but need channel_flow_of_height_2\n");
+          
           // --------------------------------------------------
           // calculate element coefficient matrix
           DRT::ELEMENTS::Fluid3GenalphaResVMM::Impl(this)->CalcRes(this,
@@ -1674,15 +1754,21 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                                                    dt,
                                                                    time,
                                                                    tds,
+                                                                   whichtau, 
+                                                                   higher_order_ele,
                                                                    mean_res,
                                                                    mean_sacc,
+                                                                   mean_svelaf,
                                                                    mean_res_sq,
                                                                    mean_sacc_sq,
+                                                                   mean_svelaf_sq,
                                                                    mean_resC,
-                                                                   mean_resC_sq,
                                                                    mean_spreacc,
-                                                                   mean_spreacc_sq);
-
+                                                                   mean_sprenp,
+                                                                   mean_resC_sq,
+                                                                   mean_spreacc_sq,
+                                                                   mean_sprenp_sq);
+          
           //this will be the y-coordinate of a point in the element interior
           double center = 0;
 
@@ -1717,15 +1803,20 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
           for(int mm=0;mm<3;++mm)
           {
-            (*incrres    )[3*nlayer+mm] += mean_res    (mm);
-            (*incrres_sq )[3*nlayer+mm] += mean_res_sq (mm);
-            (*incrsacc   )[3*nlayer+mm] += mean_sacc   (mm);
-            (*incrsacc_sq)[3*nlayer+mm] += mean_sacc_sq(mm);
+            (*incrres      )[3*nlayer+mm] += mean_res      (mm);
+            (*incrres_sq   )[3*nlayer+mm] += mean_res_sq   (mm);
+            (*incrsacc     )[3*nlayer+mm] += mean_sacc     (mm);
+            (*incrsacc_sq  )[3*nlayer+mm] += mean_sacc_sq  (mm);
+            
+            (*incrsvelaf   )[3*nlayer+mm] += mean_svelaf   (mm);
+            (*incrsvelaf_sq)[3*nlayer+mm] += mean_svelaf_sq(mm);
           }
           (*incrresC    )[nlayer] += mean_resC      ;
           (*incrresC_sq )[nlayer] += mean_resC_sq   ;
           (*spressacc   )[nlayer] += mean_spreacc   ;
           (*spressacc_sq)[nlayer] += mean_spreacc_sq;
+          (*spressnp    )[nlayer] += mean_sprenp    ;
+          (*spressnp_sq )[nlayer] += mean_sprenp_sq ;
         }
       }
       break;

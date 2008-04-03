@@ -287,14 +287,20 @@ namespace DRT
                    const double                            dt,
                    const double                            time,
                    const enum Fluid3::StabilisationAction  tds,
+                   const enum Fluid3::TauType              whichtau, 
+                   const bool                              higher_order_ele,
                    blitz::Array<double,1>&                 mean_res,
                    blitz::Array<double,1>&                 mean_sacc,
+                   blitz::Array<double,1>&                 mean_svelaf,
                    blitz::Array<double,1>&                 mean_res_sq,
                    blitz::Array<double,1>&                 mean_sacc_sq,
+                   blitz::Array<double,1>&                 mean_svelaf_sq,
                    double&                                 mean_resC,
-                   double&                                 mean_resC_sq,
                    double&                                 mean_spreacc,
-                   double&                                 mean_spreacc_sq);
+                   double&                                 mean_sprenp,
+                   double&                                 mean_resC_sq,
+                   double&                                 mean_spreacc_sq,
+                   double&                                 mean_sprenp_sq);
 
       static Fluid3GenalphaResVMM* Impl(DRT::ELEMENTS::Fluid3* ele);
 

@@ -99,6 +99,9 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
   // get control parameter
   time_ = params_.get<double>("total time");
 
+  // get time step size
+  dt_ = params.get<double>("dt");
+  
   newton_ = params_.get<bool>("include reactive terms for linearisation");
 
   // set parameters for stabilization
@@ -111,6 +114,32 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
   cross_    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
   reynolds_ = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
+  
+  // select tau definition
+  whichtau_ = Fluid3::tau_not_defined;
+  {
+    const string taudef = stablist.get<string>("DEFINITION_TAU");
+    
+    if(taudef == "Barrenechea_Franca_Valentin_Wall")
+    {
+      whichtau_ = Fluid3::franca_barrenechea_valentin_wall;
+    }
+    else if(taudef == "Bazilevs")
+    {
+      whichtau_ = Fluid3::bazilevs;
+    }
+    else if(taudef == "Codina")
+    {
+      whichtau_ = Fluid3::codina;
+    }
+  }
+
+  drop_second_derivatives_ = false;
+  if(stablist.get<string>("STABTYPE") == "inconsistent")
+  {
+    drop_second_derivatives_ = true;
+  }
+  
   // One-step-Theta: timefac = theta*dt
   // BDF2:           timefac = 2/3 * dt
   timefac_ = params_.get<double>("thsl");
@@ -239,110 +268,123 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
 
   switch (turb_mod_action_)
   {
-  case Fluid3::no_model:
-    break;
-  case Fluid3::smagorinsky:
-    // nothing to do
-    break;
-  case Fluid3::smagorinsky_with_wall_damping:
-  {
-    // this will be the y-coordinate of a point in the element interior
-    // we will determine the element layer in which he is contained to
-    // be able to do the output of visceff etc.
-    double center = 0;
-
-    for(int inode=0;inode<numnode;inode++)
-    {
-      center+=ele->Nodes()[inode]->X()[1];
-    }
-    center/=numnode;
-
-    const ParameterList& turbmodelparams    = params_.sublist("TURBULENCE MODEL");
-
-    // node coordinates of plane to the element layer
-    RefCountPtr<vector<double> > planecoords
-      =
-      turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
-
-    bool found = false;
-    for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-    {
-      if(center<(*planecoords)[nlayer+1])
+      case Fluid3::no_model:
+        break;
+      case Fluid3::smagorinsky:
+        // nothing to do
+        break;
+      case Fluid3::smagorinsky_with_wall_damping:
       {
-        found = true;
+        // this will be the y-coordinate of a point in the element interior
+        // we will determine the element layer in which he is contained to
+        // be able to do the output of visceff etc.
+        double center = 0;
+        
+        for(int inode=0;inode<numnode;inode++)
+        {
+          center+=ele->Nodes()[inode]->X()[1];
+        }
+        center/=numnode;
+        
+        const ParameterList& turbmodelparams    = params_.sublist("TURBULENCE MODEL");
+        
+        // node coordinates of plane to the element layer
+        RefCountPtr<vector<double> > planecoords
+          =
+          turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
+        
+        bool found = false;
+        for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+        {
+          if(center<(*planecoords)[nlayer+1])
+          {
+            found = true;
+            break;
+          }
+          nlayer++;
+        }
+        if (found ==false)
+        {
+          dserror("could not determine element layer");
+        }
         break;
       }
-      nlayer++;
-    }
-    if (found ==false)
-    {
-      dserror("could not determine element layer");
-    }
-    break;
-  }
-  case Fluid3::dynamic_smagorinsky:
-  {
-    const ParameterList& turbmodelparams    = params_.sublist("TURBULENCE MODEL");
-
-    // for turbulent channel flow, use averaged quantities
-    if (turbmodelparams.get<string>("CANONICAL_FLOW")
-        ==
-        "channel_flow_of_height_2")
-    {
-      RCP<vector<double> > averaged_LijMij
-        =
-        turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
-      RCP<vector<double> > averaged_MijMij
-        =
-        turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
-
-      //this will be the y-coordinate of a point in the element interior
-      // here, the layer is determined in order to get the correct
-      // averaged value from the vector of averaged (M/L)ijMij
-      double center = 0;
-      for(int inode=0;inode<numnode;inode++)
+      case Fluid3::dynamic_smagorinsky:
       {
-        center+=ele->Nodes()[inode]->X()[1];
-      }
-      center/=numnode;
-
-      RCP<vector<double> > planecoords
-        =
-        turbmodelparams.get<RCP<vector<double> > >("planecoords_");
-
-      bool found = false;
-      for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
-      {
-        if(center<(*planecoords)[nlayer+1])
+        const ParameterList& turbmodelparams    = params_.sublist("TURBULENCE MODEL");
+        
+        // for turbulent channel flow, use averaged quantities
+        if (turbmodelparams.get<string>("CANONICAL_FLOW")
+            ==
+            "channel_flow_of_height_2")
         {
-          found = true;
-          break;
+          RCP<vector<double> > averaged_LijMij
+            =
+            turbmodelparams.get<RCP<vector<double> > >("averaged_LijMij_");
+          RCP<vector<double> > averaged_MijMij
+            =
+            turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
+          
+          //this will be the y-coordinate of a point in the element interior
+          // here, the layer is determined in order to get the correct
+          // averaged value from the vector of averaged (M/L)ijMij
+          double center = 0;
+          for(int inode=0;inode<numnode;inode++)
+          {
+            center+=ele->Nodes()[inode]->X()[1];
+          }
+          center/=numnode;
+          
+          RCP<vector<double> > planecoords
+            =
+            turbmodelparams.get<RCP<vector<double> > >("planecoords_");
+          
+          bool found = false;
+          for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+          {
+            if(center<(*planecoords)[nlayer+1])
+            {
+              found = true;
+              break;
+            }
+            nlayer++;
+          }
+          if (found ==false)
+          {
+            dserror("could not determine element layer");
+          }
+          
+          // Cs_delta_sq is set by the averaged quantities
+          Cs_delta_sq_ = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
+          
+          // clipping to get algorithm stable
+          if (Cs_delta_sq_<0)
+          {
+            Cs_delta_sq_=0;
+          }
         }
-        nlayer++;
+        else
+        {
+          // when no averaging was done, we just keep the calculated (clipped) value
+          Cs_delta_sq_ = f3ele->Cs_delta_sq_;
+        }
+        break;
       }
-      if (found ==false)
-      {
-        dserror("could not determine element layer");
-      }
-
-      // Cs_delta_sq is set by the averaged quantities
-      Cs_delta_sq_ = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
-
-      // clipping to get algorithm stable
-      if (Cs_delta_sq_<0)
-      {
-        Cs_delta_sq_=0;
-      }
-    }
-    else
-    {
-      // when no averaging was done, we just keep the calculated (clipped) value
-      Cs_delta_sq_ = f3ele->Cs_delta_sq_;
-    }
-    break;
-  }
   }
 
+
+  // flag for higher order elements
+  bool higher_order_ele = f3ele->isHigherOrderElement(f3ele->Shape());
+  
+  // overrule higher_order_ele if input-parameter is set
+  // 
+  // this might be interesting for fast (but slightly
+  // less accurate) computations
+  if(drop_second_derivatives_)
+  {
+    higher_order_ele = false;
+  }
+  
   //--------------------------------------------------
   // calculate element coefficient matrix and rhs
   //--------------------------------------------------
@@ -358,9 +400,11 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
                                                  estif,
                                                  eforce,
                                                  actmat_,
+                                                 dt_,
                                                  time_,
                                                  timefac_,
                                                  newton_,
+                                                 higher_order_ele,
                                                  fssgv_,
                                                  pspg_,
                                                  supg_,
@@ -368,6 +412,7 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
                                                  cstab_,
                                                  cross_,
                                                  reynolds_,
+                                                 whichtau_,
                                                  turb_mod_action_,
                                                  Cs_,
                                                  Cs_delta_sq_,

@@ -123,6 +123,8 @@ namespace DRT
       MATERIAL* actmat_;
 
       double time_;
+      //! time step size
+      double dt_;
       double timefac_;
 
       bool newton_;
@@ -134,6 +136,11 @@ namespace DRT
       Fluid3::StabilisationAction cross_;
       Fluid3::StabilisationAction reynolds_;
 
+      //! flag specifying the tau version used
+      Fluid3::TauType             whichtau_;
+      //! flag that enables/disables the computation of second derivatives
+      bool                        drop_second_derivatives_;
+      
       static Teuchos::RCP<Teuchos::Time> otherelementtime_;
       static Teuchos::RCP<Teuchos::Time> alignedhex8time_;
     };

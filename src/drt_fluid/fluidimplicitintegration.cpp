@@ -944,6 +944,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       // other parameters that might be needed by the elements
       eleparams.set("total time",time_);
       eleparams.set("thsl",theta_*dta_);
+      eleparams.set("dt",dta_);
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("include reactive terms for linearisation",newton_);
 

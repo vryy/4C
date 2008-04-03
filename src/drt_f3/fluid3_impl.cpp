@@ -108,7 +108,6 @@ DRT::ELEMENTS::Fluid3Impl::Fluid3Impl(int iel)
     vderxy_(3,3,blitz::ColumnMajorArray<2>()),
     csvderxy_(3,3,blitz::ColumnMajorArray<2>()),
     fsvderxy_(3,3,blitz::ColumnMajorArray<2>()),
-    pderxy_(3),
     vderxy2_(3,6,blitz::ColumnMajorArray<2>()),
     derxy_(3,iel_,blitz::ColumnMajorArray<2>()),
     derxy2_(6,iel_,blitz::ColumnMajorArray<2>()),
@@ -154,8 +153,10 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
   blitz::Array<double,1>&                 eforce,
   struct _MATERIAL*                       material,
   double                                  time,
+  double                                  dt,
   double                                  timefac,
   bool                                    newton,
+  const bool                              higher_order_ele,
   const enum Fluid3::StabilisationAction  fssgv,
   const enum Fluid3::StabilisationAction  pspg,
   const enum Fluid3::StabilisationAction  supg,
@@ -163,6 +164,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
   const enum Fluid3::StabilisationAction  cstab,
   const enum Fluid3::StabilisationAction  cross,
   const enum Fluid3::StabilisationAction  reynolds,
+  const enum Fluid3::TauType              whichtau,
   const enum Fluid3::TurbModelAction      turb_mod_action,
   double&                                 Cs,
   double&                                 Cs_delta_sq,
@@ -213,8 +215,10 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
          evelnp,
          fsevelnp,
          distype,
+         whichtau,
          visc,
          timefac,
+         dt,
          turb_mod_action,
          Cs,
          Cs_delta_sq,
@@ -234,7 +238,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
   }
 
   // flag for higher order elements
-  const bool higher_order_ele = ele->isHigherOrderElement(distype);
+//  const bool higher_order_ele = ele->isHigherOrderElement(distype);
 
   // gaussian points
   const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
@@ -1494,8 +1498,10 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
   const blitz::Array<double,2>&           evelnp,
   const blitz::Array<double,2>&           fsevelnp,
   const DRT::Element::DiscretizationType  distype,
+  const enum Fluid3::TauType              whichtau,
   const double                            visc,
   const double                            timefac,
+  const double                            dt,
   const enum Fluid3::TurbModelAction      turb_mod_action,
   double&                                 Cs,
   double&                                 Cs_delta_sq,
@@ -1796,47 +1802,49 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
 
   // calculate tau
 
-  /*----------------------------------------------------- compute tau_Mu ---*/
-  /* stability parameter definition according to
+  if (whichtau == Fluid3::franca_barrenechea_valentin_wall)
+  {
+    /*----------------------------------------------------- compute tau_Mu ---*/
+    /* stability parameter definition according to
 
-  Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
-  element method for a generalized Stokes problem. Numerische
-  Mathematik, Vol. 92, pp. 652-677, 2002.
-  http://www.lncc.br/~valentin/publication.htm
+    Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+    element method for a generalized Stokes problem. Numerische
+    Mathematik, Vol. 92, pp. 652-677, 2002.
+    http://www.lncc.br/~valentin/publication.htm
 
-  and:
+    and:
 
-  Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
-  Finite Element Method for the Advective-Reactive-Diffusive
-  Equation. Computer Methods in Applied Mechanics and Enginnering,
-  Vol. 190, pp. 1785-1800, 2000.
-  http://www.lncc.br/~valentin/publication.htm                   */
+    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+    Finite Element Method for the Advective-Reactive-Diffusive
+    Equation. Computer Methods in Applied Mechanics and Enginnering,
+    Vol. 190, pp. 1785-1800, 2000.
+    http://www.lncc.br/~valentin/publication.htm                   */
 
 
-  /* viscous : reactive forces */
-  const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));
+    /* viscous : reactive forces */
+    const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));
 
-  /* convective : viscous forces */
-  const double re2 = mk * vel_norm * strle / (2.0 * visceff);
+    /* convective : viscous forces */
+    const double re2 = mk * vel_norm * strle / (2.0 * visceff);
+    
+    const double xi1 = DMAX(re1,1.0);
+    const double xi2 = DMAX(re2,1.0);
 
-  const double xi1 = DMAX(re1,1.0);
-  const double xi2 = DMAX(re2,1.0);
+    tau_(0) = DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
 
-  tau_(0) = DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
+    // compute tau_Mp
+    //    stability parameter definition according to Franca and Valentin (2000)
+    //                                       and Barrenechea and Valentin (2002)
 
-  // compute tau_Mp
-  //    stability parameter definition according to Franca and Valentin (2000)
-  //                                       and Barrenechea and Valentin (2002)
+    /* viscous : reactive forces */
+    const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk));
+    /* convective : viscous forces */
+    const double re_convect = mk * vel_norm * hk / (2.0 * visceff);
+    
+    const double xi_viscous = DMAX(re_viscous,1.0);
+    const double xi_convect = DMAX(re_convect,1.0);
 
-   /* viscous : reactive forces */
-  const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk));
-  /* convective : viscous forces */
-  const double re_convect = mk * vel_norm * hk / (2.0 * visceff);
-
-  const double xi_viscous = DMAX(re_viscous,1.0);
-  const double xi_convect = DMAX(re_convect,1.0);
-
-  /*
+    /*
                   xi1,xi2 ^
                           |      /
                           |     /
@@ -1847,21 +1855,21 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
                           |
                           +--------------> re1,re2
                               1
-  */
-  tau_(1) = DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visceff/mk) * xi_convect);
+    */
+    tau_(1) = DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visceff/mk) * xi_convect);
 
-  /*------------------------------------------------------ compute tau_C ---*/
-  /*-- stability parameter definition according to Codina (2002), CMAME 191
-   *
-   * Analysis of a stabilized finite element approximation of the transient
-   * convection-diffusion-reaction equation using orthogonal subscales.
-   * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
-   *
-   * */
-  //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
-
-  // Wall Diss. 99
-  /*
+    /*------------------------------------------------------ compute tau_C ---*/
+    /*-- stability parameter definition according to Codina (2002), CMAME 191
+     *
+     * Analysis of a stabilized finite element approximation of the transient
+     * convection-diffusion-reaction equation using orthogonal subscales.
+     * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
+     *
+     * */
+    //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
+    
+    // Wall Diss. 99
+    /*
                       xi2 ^
                           |
                         1 |   +-----------
@@ -1870,9 +1878,215 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
                           |/
                           +--------------> Re2
                               1
-  */
-  const double xi_tau_c = DMIN(re2,1.0);
-  tau_(2) = vel_norm * hk * 0.5 * xi_tau_c /timefac;
+    */
+    const double xi_tau_c = DMIN(re2,1.0);
+    tau_(2) = vel_norm * hk * 0.5 * xi_tau_c /timefac;
+  }
+  else if(whichtau == Fluid3::bazilevs)
+  {    
+    /* INSTATIONARY FLOW PROBLEM, ONE-STEP-THETA, BDF2
+       
+    tau_M: Bazilevs et al.
+                                                               1.0
+                 +-                                       -+ - ---
+                 |                                         |   2.0
+                 | 4.0    n+1       n+1          2         |
+          tau  = | --- + u     * G u     + C * nu  * G : G |
+             M   |   2           -          I        -   - |
+                 | dt            -                   -   - |
+                 +-                                       -+
+         
+   tau_C: Bazilevs et al., derived from the fine scale complement Shur
+          operator of the pressure equation
+                
+                  
+                                  1.0
+                    tau  = -----------------
+                       C            /     \
+                            tau  * | g * g |
+                               M    \-   -/
+    */           
+      
+    /*            +-           -+   +-           -+   +-           -+
+                  |             |   |             |   |             |
+                  |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+            G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+             ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                  |    i     j  |   |    i     j  |   |    i     j  |
+                  +-           -+   +-           -+   +-           -+
+    */
+    blitz::Array<double,2> G(3,3,blitz::ColumnMajorArray<2>());
+      
+    for (int nn=0;nn<3;++nn)
+    {    
+      for (int rr=0;rr<3;++rr)
+      {
+        G(nn,rr) = xji_(nn,0)*xji_(rr,0);
+        for (int mm=1;mm<3;++mm)
+        {
+          G(nn,rr) += xji_(nn,mm)*xji_(rr,mm);
+        }
+      }
+    }
+      
+    /*            +----
+                   \ 
+          G : G =   +   G   * G
+          -   -    /     ij    ij
+          -   -   +----
+                   i,j
+    */
+    double normG = 0;
+    for (int nn=0;nn<3;++nn)
+    {    
+      for (int rr=0;rr<3;++rr)
+      {
+        normG+=G(nn,rr)*G(nn,rr);
+      }
+    }
+    
+    /*                      +----
+           n+1       n+1     \     n+1          n+1
+          u     * G u     =   +   u    * G   * u
+                  -          /     i     -ij    j
+                  -         +----        -
+                             i,j 
+    */
+    double Gnormu = 0;
+    for (int nn=0;nn<3;++nn)
+    {    
+      for (int rr=0;rr<3;++rr)
+      {
+        Gnormu+=velint_(nn)*G(nn,rr)*velint_(rr);
+      }
+    }
+    
+    // definition of constant
+    // (Akkerman et al. (2008) used 36.0 for quadratics, but Stefan
+    //  brought 144.0 from Austin...)
+    const double CI = 12.0/mk;
+
+    /*                                                         1.0
+                 +-                                       -+ - ---
+                 |                                         |   2.0
+                 | 4.0    n+1       n+1          2         |
+          tau  = | --- + u     * G u     + C * nu  * G : G |
+             M   |   2           -          I        -   - |
+                 | dt            -                   -   - |
+                 +-                                       -+
+    */
+    tau_(0) = 1.0/sqrt(4.0/(dt*dt)+Gnormu+CI*visceff*visceff*normG);
+    tau_(1) = tau_(0);
+      
+    /*           +-     -+   +-     -+   +-     -+
+                 |       |   |       |   |       |
+                 |  dr   |   |  ds   |   |  dt   |
+            g  = |  ---  | + |  ---  | + |  ---  |
+             i   |  dx   |   |  dx   |   |  dx   |
+                 |    i  |   |    i  |   |    i  |
+                 +-     -+   +-     -+   +-     -+
+    */          
+    blitz::Array<double,1> g(3);
+    
+    for (int rr=0;rr<3;++rr)
+    {    
+      g(rr) = xji_(rr,0);
+      for (int mm=1;mm<3;++mm)
+      {
+        g(rr) += xji_(rr,mm);
+      }
+    }
+
+    /*           +----
+                  \   
+         g * g =   +   g * g
+         -   -    /     i   i
+                 +----
+                   i
+    */
+    const double normgsq = g(0)*g(0)+g(1)*g(1)+g(2)*g(2);
+    
+    /*
+                                1.0
+                  tau  = -----------------
+                     C            /     \
+                          tau  * | g * g |
+                             M    \-   -/
+    */
+    tau_(2) = 1./(tau_(0)*normgsq);
+
+  }
+  else if(whichtau == Fluid3::codina)
+  {
+    /*----------------------------------------------------- compute tau_Mu ---*/
+    /* stability parameter definition according to
+
+    Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+    element method for a generalized Stokes problem. Numerische
+    Mathematik, Vol. 92, pp. 652-677, 2002.
+    http://www.lncc.br/~valentin/publication.htm
+
+    and:
+
+    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+    Finite Element Method for the Advective-Reactive-Diffusive
+    Equation. Computer Methods in Applied Mechanics and Enginnering,
+    Vol. 190, pp. 1785-1800, 2000.
+    http://www.lncc.br/~valentin/publication.htm                   */
+
+
+    /* viscous : reactive forces */
+    const double re1 = 4.0 * timefac * visceff / (mk * DSQR(strle));
+
+    /* convective : viscous forces */
+    const double re2 = mk * vel_norm * strle / (2.0 * visceff);
+    
+    const double xi1 = DMAX(re1,1.0);
+    const double xi2 = DMAX(re2,1.0);
+
+    tau_(0) = DSQR(strle) / (DSQR(strle)*xi1+( 4.0 * timefac*visceff/mk)*xi2);
+
+    // compute tau_Mp
+    //    stability parameter definition according to Franca and Valentin (2000)
+    //                                       and Barrenechea and Valentin (2002)
+
+    /* viscous : reactive forces */
+    const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk));
+    /* convective : viscous forces */
+    const double re_convect = mk * vel_norm * hk / (2.0 * visceff);
+    
+    const double xi_viscous = DMAX(re_viscous,1.0);
+    const double xi_convect = DMAX(re_convect,1.0);
+
+    /*
+                  xi1,xi2 ^
+                          |      /
+                          |     /
+                          |    /
+                        1 +---+
+                          |
+                          |
+                          |
+                          +--------------> re1,re2
+                              1
+    */
+    tau_(1) = DSQR(hk) / (DSQR(hk) * xi_viscous + ( 4.0 * timefac * visceff/mk) * xi_convect);
+
+    /*------------------------------------------------------ compute tau_C ---*/
+    /*-- stability parameter definition according to Codina (2002), CMAME 191
+     *
+     * Analysis of a stabilized finite element approximation of the transient
+     * convection-diffusion-reaction equation using orthogonal subscales.
+     * Ramon Codina, Jordi Blasco; Comput. Visual. Sci., 4 (3): 167-174, 2002.
+     *
+     * */
+    tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*vel_norm*hk));
+    
+  }
+  else
+  {
+    dserror("unknown definition of tau\n");
+  }
 
   /*------------------------------------------- compute subgrid viscosity ---*/
   if (fssgv == Fluid3::fssgv_artificial_all || fssgv == Fluid3::fssgv_artificial_small)
