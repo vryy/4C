@@ -4,6 +4,8 @@
 #$-l h_rt=00:30:00 
 #$-S /bin/bash 
 #$-l march=x86_64
+## mpi_8: multiples of 8, machine size is 38 times 8
+## mpi_16: multiples of 16, machine size is 15 times 16 (machine owned by TU Mathematics and might go away)
 #$-pe mpi_8 8
 #$-M <name>@lnm.mw.tum.de
 #$-m abe
