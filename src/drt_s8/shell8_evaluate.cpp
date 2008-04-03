@@ -3963,6 +3963,9 @@ void s8_averagedirector(Epetra_SerialDenseMatrix& dir_list, const int numa3, dou
                 -alpha*DSQR(averdir[0])*dir_list(2,i)+alpha*averdir[0]*averdir[2]*dir_list(0,i)+averdir[2];
 
     }
+    averdir[0] = davn[0];
+    averdir[1] = davn[1];
+    averdir[2] = davn[2];
     a3[0] = davn[0];
     a3[1] = davn[1];
     a3[2] = davn[2];
