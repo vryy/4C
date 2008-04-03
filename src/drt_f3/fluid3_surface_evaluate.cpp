@@ -432,7 +432,7 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
 
   // the metric tensor and the area of an infintesimal surface element
   Epetra_SerialDenseMatrix 	metrictensor  (2,2);
-  double                      drs;
+  double                        drs;
 
   GaussRule2D  gaussrule = intrule2D_undefined;
   switch(distype)
@@ -463,9 +463,9 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
   vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 		
-  double flowrate = params.get<double>("Outlet flowrate");
-  double area = params.get<double>("Area calculation");
-  double flowratetmp;
+  double flowrate    = params.get<double>("Outlet flowrate");
+  double area        = params.get<double>("Area calculation");
+  double flowratetmp = 0;
   
   // create blitz objects for element arrays
   const int numnode = NumNode();
@@ -496,7 +496,7 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
   	const double e1 = intpoints.qxg[gpid][1];
   	
   	// get shape functions and derivatives in the plane of the element
-    shape_function_2D(funct, e0, e1, distype);
+        shape_function_2D(funct, e0, e1, distype);
 	shape_function_2D_deriv1(deriv, e0, e1, distype);
 	  
 	//Calculate infinitesimal area of element (drs)
