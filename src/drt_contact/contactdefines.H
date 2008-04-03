@@ -25,7 +25,7 @@ Maintainer: Alexander Popp
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton   */
 #define CONTACTCONVTOL 1.0e-12   /* convergence tolerance for local Newton */
 #define CONTACTNGP 5             /* no. Gauss points for integration */
-#define CONTACTCRITDIST 5      /* critical distance for potential contact */
+#define CONTACTCRITDIST 0.5      /* critical distance for potential contact */
 
 #define CONTACTINITIALSET 0      /* flag for initialization of active set */
                                  /* 0=empty, 1=full, 2=user-defined      */
