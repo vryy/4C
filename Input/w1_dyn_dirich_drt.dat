@@ -70,7 +70,6 @@ CONV_CHECK   AbsRes_Or_AbsDis
 ITERATION    full 
 TOLDISP      1.0E-08
 MAXITER      50
-CONTACT      0
 //CET_flag      1
 //FR_flag      0
 //NPP          1.0E+06

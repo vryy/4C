@@ -64,7 +64,6 @@ K_DAMP       0.1
 ITERATION    full 
 TOLDISP      1.0E-08
 MAXITER      50
-CONTACT      0
 TIMEADAPT    0
 ITWANT       4
 MAXDT        0.07

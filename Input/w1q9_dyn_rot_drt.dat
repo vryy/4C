@@ -69,7 +69,6 @@ CONV_CHECK   AbsRes_And_AbsDis
 TOLRES       1.0E-06
 TOLDISP      1.0E-06
 MAXITER      500
-CONTACT      0
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
