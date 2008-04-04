@@ -28,6 +28,14 @@ or the well-known .dat file is created.
 #include "pre_exodus_reader.H"
 #include "pre_exodus_soshextrusion.H"
 
+#ifdef PARALLEL
+#include <Epetra_MpiComm.h>
+#endif
+#include <Epetra_SerialComm.h>
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_inputreader.H"
+
+
 using namespace std;
 using namespace Teuchos;
 
@@ -112,7 +120,7 @@ int main(
       // open default bc specification file
       ofstream defaultbc(defaultbcfilename.c_str());
       if (!defaultbc)
-    	  dserror("failed to open file: %s", defaultbcfilename.c_str());
+         dserror("failed to open file: %s", defaultbcfilename.c_str());
       
       // write mesh verbosely
       defaultbc<<"----------- Mesh contents -----------"<<endl<<endl;
@@ -145,15 +153,15 @@ int main(
       int numEntities = mymesh.GetNumElementBlocks() + mymesh.GetNumNodeSets() + mymesh.GetNumSideSets();
       for (int i = 0; i < numEntities; ++i) 
       {    
-    	  defaultbc<<"*matr"<<i+1<<"=\"\"\"\""<<endl
-    	  <<"boundr_cond=\"\"\"\""<<endl
-    	  <<"type=\"\"\"\"\"\""<<endl
-    	  <<"prop=\"\""<<endl<<endl;
+          defaultbc<<"*matr"<<i+1<<"=\"\"\"\""<<endl
+          <<"boundr_cond=\"\"\"\""<<endl
+          <<"type=\"\"\"\"\"\""<<endl
+          <<"prop=\"\""<<endl<<endl;
       }
 
       // close default bc specification file
       if (defaultbc.is_open()) 
-    	  defaultbc.close();
+        defaultbc.close();
     }
 
     if (headfile=="")
@@ -163,7 +171,7 @@ int main(
       // open default header file
       ofstream defaulthead(defaultheadfilename.c_str());
       if (!defaulthead)
-    	  dserror("failed to open file: %s", defaultheadfilename.c_str());
+        dserror("failed to open file: %s", defaultheadfilename.c_str());
 
       // get valid input parameters
       Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
@@ -171,14 +179,49 @@ int main(
       // write default .dat header into file 
       DRT::INPUT::PrintDatHeader(defaulthead,*list);
 
-      // close default header file    
-      if (defaulthead.is_open()) 
-    	  defaulthead.close();   
+      // add additional line at the end of the default header file
+      // (needed in order to tell the DatFileReader that the last section has finished)
+      defaulthead<<"-----------------------------------------------------EOF HEADERFILE"<<endl;
+
+      // close default header file
+      if (defaulthead.is_open())
+         defaulthead.close();
     }
-    
+    else
+    {
+      // read and check the provided header file
+      cout << "ckecking given header file "<<headfile<< endl;
+
+#ifdef PARALLEL
+      int myrank = 0;
+      int nproc  = 1;
+      MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+      MPI_Comm_size(MPI_COMM_WORLD, &nproc);
+      Epetra_MpiComm* com = new Epetra_MpiComm(MPI_COMM_WORLD);
+      RefCountPtr<Epetra_Comm> comm = rcp(com);
+#else
+        Epetra_SerialComm* com = new Epetra_SerialComm();
+        RefCountPtr<Epetra_Comm> comm = rcp(com);
+#endif
+
+      Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+      DRT::INPUT::DatFileReader reader(headfile.c_str(), comm, false);
+
+      // do reading AND validation!
+      problem->ReadParameter(reader);
+
+      //the header file is valid --> go on
+
+      // clean up
+      problem->Done();
+    }
+
 #ifdef PARALLEL
   MPI_Finalize();
 #endif
+
+  return 0;
+
 }
 
 #endif
