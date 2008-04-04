@@ -81,11 +81,12 @@ namespace INPUT
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DatFileReader::DatFileReader(string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag)
+DatFileReader::DatFileReader(string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag, bool dumpinput)
   : filename_(filename), comm_(comm), outflag_(outflag)
 {
   ReadDat();
-  DumpInput();
+  if (dumpinput)
+    DumpInput();
 }
 
 

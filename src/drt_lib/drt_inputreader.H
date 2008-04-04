@@ -88,7 +88,7 @@ class DatFileReader
 public:
 
   /// construct a reader for a given file
-  DatFileReader(string filename, RefCountPtr<Epetra_Comm> comm, int outflag=0);
+  DatFileReader(string filename, RefCountPtr<Epetra_Comm> comm, int outflag=0, bool dumpinput=true);
 
   /// Publish (some) internal data to the old ccarat reading system
   /*!
