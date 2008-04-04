@@ -88,13 +88,13 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       
       /*update of central nodal triad T; in case that a time step was finished after the last call 
        * of Evaluate formerly Tnew_ becomes Told_ */
-      if(params.get("total time", 0) > timenew_ + params.get<double>("delta time",0.01)/2);
+      if(params.get("total time", 0.0) > timenew_ + params.get<double>("delta time",0.01)/2);
       {                     
         //formerly "new" variables are now the "old" ones
         Told_= Tnew_;
         curvold_ = curvnew_;   
         //new time is current time
-        timenew_ = params.get("total time", 0);
+        timenew_ = params.get("total time", 0.0);
         betaplusalphaold_  = betaplusalphanew_;
         betaminusalphaold_ = betaminusalphanew_;
       }
@@ -269,24 +269,34 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
   		 }	
   	  
   	  //calculating diagonal entry of damping matrix  
-  	  double gamma;
-  	  gamma = 4*params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_/3;  
+  	  double gammatrans;
+  	  double gammarot;
+  	  gammatrans = 0.5*params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_; 
+  	  gammarot   = 0.5*params.get<double>("damping factor M",0.0) * Iyy_      * density * lrefe_; 
   	  
   	  //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-  	  double stand_dev = pow(2 * thermalenergy_ * gamma / params.get<double>("delta time",0.01),0.5);
+  	  double standdevtrans = pow(2 * thermalenergy_ * gammatrans / params.get<double>("delta time",0.01),0.5);
+  	  double standdevrot   = pow(2 * thermalenergy_ * gammarot   / params.get<double>("delta time",0.01),0.5);
 
-  	  //creating a random generator object which creates random numbers with mean = 0 and standard deviation
-  	  //stand_dev; using Blitz namespace "ranlib" for random number generation
-  	  ranlib::Normal<double> normalGen(0,stand_dev);
+  	  //creating random generator objects which create random numbers with mean = 0 and standard deviation
+  	  //standdevtrans and standdevrot; using Blitz namespace "ranlib" for random number generation
+  	  ranlib::Normal<double> normalGenTrans(0,standdevtrans);
+  	  ranlib::Normal<double> normalGenRot(0,standdevrot);
   	  
-  	  //adding statistical forces accounting for connectivity of nodes
-  	for(int node=0; node<NumNode(); ++node)
-  	  for (int idof=0; idof<numdf; ++idof)  		  
-  	  {
-  	    for (int inode=0; inode<NumNode(); ++inode)
-  		  elevec1[numdf+numdf*inode] += normalGen.random() / sqrt( Nodes()[inode]->NumElement() ); 
-  	  }	   
-    }  
+      /*adding statistical forces accounting for connectivity of nodes; note that adding up several random forces
+       * in the frame of the assembly would change random force's variance if not node connectivity were accounted
+       * for */
+      for (int i=0; i<3; ++i)
+      {
+        elevec1(i)   += normalGenTrans.random() / sqrt( Nodes()[0]->NumElement() ); 
+        elevec1(i+6) += normalGenTrans.random() / sqrt( Nodes()[1]->NumElement() );
+      }
+      for (int i=3; i<6; ++i)
+      {
+        elevec1(i)   += normalGenRot.random() / sqrt( Nodes()[0]->NumElement() ); 
+        elevec1(i+6) += normalGenRot.random() / sqrt( Nodes()[1]->NumElement() );
+      }
+    }
 
 return 0;
 }
@@ -297,9 +307,10 @@ return 0;
  | auxiliary functions for dealing with large rotations and nonlinear stiffness                    cyron 04/08|							     
  *----------------------------------------------------------------------------------------------------------*/
 //computing spin matrix out of a rotation vector
-void DRT::ELEMENTS::Beam3::computespin(Epetra_SerialDenseMatrix& spin, const Epetra_SerialDenseMatrix rotationangle)
+void DRT::ELEMENTS::Beam3::computespin(Epetra_SerialDenseMatrix& spin, Epetra_SerialDenseMatrix rotationangle, const double& spinscale)
 {
   spin.Shape(3,3);
+  rotationangle.Scale(spinscale);
   spin(0,1) = -rotationangle(2,0);
   spin(1,0) =  rotationangle(2,0);
   spin(0,2) =  rotationangle(1,0);
@@ -321,11 +332,10 @@ void DRT::ELEMENTS::Beam3::computerotation(Epetra_SerialDenseMatrix& rotationmat
 } //DRT::ELEMENTS::Beam3::computerotation 
 
 //computing rotation matrix X according to Crisfield, Vol. 2, equation (17.74)
-void DRT::ELEMENTS::Beam3::computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epetra_SerialDenseMatrix& T_new, Epetra_SerialDenseMatrix x21)
+void DRT::ELEMENTS::Beam3::computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epetra_SerialDenseMatrix& T_new, const Epetra_SerialDenseMatrix& x21)
 {
-  x21.Scale(0.5);
   Epetra_SerialDenseMatrix spinx21;
-  computespin(spinx21,x21);
+  computespin(spinx21,x21, 0.5);
   
   Xrot.Shape(12,6);
   for (int j=0; j<6; ++j)
@@ -344,15 +354,13 @@ void DRT::ELEMENTS::Beam3::computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epe
 } // DRT::ELEMENTS::Beam3::computeXrot
 
 //computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
-void DRT::ELEMENTS::Beam3::computeKsig1(Epetra_SerialDenseMatrix& Ksig1, Epetra_SerialDenseMatrix stressn, Epetra_SerialDenseMatrix stressm)
+void DRT::ELEMENTS::Beam3::computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const Epetra_SerialDenseMatrix& stressn, const Epetra_SerialDenseMatrix& stressm)
 {
   Ksig1.Shape(12,12);
-  stressn.Scale(0.5);
-  stressm.Scale(0.5);
   Epetra_SerialDenseMatrix Sn;
   Epetra_SerialDenseMatrix Sm;
-  computespin(Sn,stressn);
-  computespin(Sm,stressm);
+  computespin(Sn,stressn, 0.5);
+  computespin(Sm,stressm, 0.5);
   
   for (int i=0; i<3; ++i)
     {
@@ -373,17 +381,14 @@ void DRT::ELEMENTS::Beam3::computeKsig1(Epetra_SerialDenseMatrix& Ksig1, Epetra_
 } //DRT::ELEMENTS::Beam3::computeKsig1
 
 //computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.87) and (17.88)
-void DRT::ELEMENTS::Beam3::computeKsig2(Epetra_SerialDenseMatrix& Ksig2,Epetra_SerialDenseMatrix stressn, Epetra_SerialDenseMatrix x21)
+void DRT::ELEMENTS::Beam3::computeKsig2(Epetra_SerialDenseMatrix& Ksig2, const Epetra_SerialDenseMatrix& stressn, const Epetra_SerialDenseMatrix& x21)
 {
   Ksig2.Shape(12,12);
-  
-  stressn.Scale(0.5);
-  x21.Scale(0.25);
   Epetra_SerialDenseMatrix Sn;
-  computespin(Sn,stressn);
+  computespin(Sn,stressn, 0.5);
   Epetra_SerialDenseMatrix Y;
   Y.Shape(3,3);
-  computespin(Y,x21);
+  computespin(Y,x21, 0.25);
   Y.Multiply('N','N',1,Y,Sn,0); 
   
   for (int i=0; i<3; ++i)
@@ -439,12 +444,10 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
   //rotation matrix, Crisfield Vol. 2, equation (17.74)
   Epetra_SerialDenseMatrix XT;
   XT.Shape(12,6);
-  Epetra_SerialDenseMatrix deltahalfbetaplusalpha;
-  deltahalfbetaplusalpha.Shape(3,1);
+  Epetra_SerialDenseMatrix deltabetaplusalpha;
+  deltabetaplusalpha.Shape(3,1);
   Epetra_SerialDenseMatrix deltabetaminusalpha;
   deltabetaminusalpha.Shape(3,1);
-  Epetra_SerialDenseMatrix deltaquarterbetaplusalpha;
-  deltaquarterbetaplusalpha.Shape(3,1);
   Epetra_SerialDenseMatrix Saux;
   Epetra_SerialDenseMatrix Raux;
   
@@ -469,24 +472,19 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
      
    } 
       
-   deltahalfbetaplusalpha  = betaplusalphaold_;
-   deltahalfbetaplusalpha.Scale(-1);
-   deltahalfbetaplusalpha  += betaplusalphanew_;
-   deltahalfbetaplusalpha.Scale(0.5);
-   
-   deltaquarterbetaplusalpha = deltahalfbetaplusalpha;
-   deltaquarterbetaplusalpha.Scale(0.5);
-   
-   
+   deltabetaplusalpha  = betaplusalphaold_;
+   deltabetaplusalpha.Scale(-1);
+   deltabetaplusalpha  += betaplusalphanew_;
+     
    deltabetaminusalpha = betaminusalphaold_;
    deltabetaminusalpha.Scale(-1);
    deltabetaminusalpha += betaminusalphanew_;
   
   //auxiliary matrix for update of Tnew_, Crisfield, Vol 2, equation (17.65)
-  Tnew_.Multiply('N','N',1,deltahalfbetaplusalpha,Told_,0); 
+  Tnew_.Multiply('N','N',0.5,deltabetaplusalpha,Told_,0); 
   
   //computing triad for curvature update, Crisfield, Vol 2, equation (17.73)
-  computespin(Saux,deltaquarterbetaplusalpha);
+  computespin(Saux,deltabetaplusalpha, 0.25);
   computerotation(Raux,Saux);
   Tmid_.Multiply('N','N',1,Raux,Told_,0); 
   
@@ -576,46 +574,24 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
   stiffmatrix += Ksig1;
   stiffmatrix += Ksig2;
    
-  //calculating mass matrix (lcoal version = global version) 
-  massmatrix.Shape(6,6);
-  
-  /*
-  //if lumped_flag == 0 a consistent mass Timoshenko beam mass matrix is applied
-  if (lumpedflag_ == 0)
+  /*calculating mass matrix; this beam3 element includes only a lumped mass matrix where for torsion and
+   * bending the same moments of inertia are assumed; for slender beams the influence of rotational moments
+   * of inertia is dilute so that often rotational inertia is just set to zero; since within this code at one
+   * point an LU-decomposition of the mass matrix is carried out this was avoided in the here implemented beam3
+   * element and instead the above described simplification was assumed; Iyy_ = Izz_ was assumed for similar 
+   * reasons */
+  massmatrix.Shape(12,12);
+  for (int i=0; i<3; ++i)
   {
-	  //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
-	  double aux_E[3]={density*lrefe_*crosssec_/6,density*lrefe_*crosssec_/6,density*lrefe_*Iyy_/6};
-	  for(int id=0; id<3; id++)
-	  {
-	  	massmatrix(id,id) = 2*aux_E[id];
-	        massmatrix(id+3,id+3) = 2*aux_E[id];
-	        massmatrix(id,id+3) = aux_E[id];
-	        massmatrix(id+3,id) = aux_E[id];
-	  }
+    massmatrix(i,i) = 0.5*density*lrefe_*crosssec_;
+    massmatrix(i+6,i+6) = 0.5*density*lrefe_*crosssec_;
   }
-  //if lumped_flag == 1 a lumped mass matrix is applied where the cross sectional moment of inertia is
-  //assumed to be approximately zero so that the 3,3 and 5,5 element are both zero 
-  
-  else if (lumpedflag_ == 1)
+  for (int i=3; i<6; ++i)
   {
- 	 massmatrix.Shape(6,6);
- 	 //note: this is not an exact lumped mass matrix, but it is modified in such a way that it leads
- 	 //to a diagonal mass matrix with constant diagonal entries
- 	 massmatrix(0,0) = 4*density*lrefe_*crosssec_/( 3*Nodes()[0]->NumElement() );
- 	 massmatrix(1,1) = 4*density*lrefe_*crosssec_/( 3*Nodes()[0]->NumElement() );
- 	 
- 	 massmatrix(2,2) = 4*density*lrefe_*crosssec_/( 3*Nodes()[0]->NumElement() );
- 	 
- 	 massmatrix(3,3) = 4*density*lrefe_*crosssec_/( 3*Nodes()[1]->NumElement() );
- 	 massmatrix(4,4) = 4*density*lrefe_*crosssec_/( 3*Nodes()[1]->NumElement() );
- 	 
- 	 massmatrix(5,5) = 4*density*lrefe_*crosssec_/( 3*Nodes()[1]->NumElement() );
-   }
-  else
-	  dserror("improper value of variable lumpedflag_");  
-	  
-	  */
-    
+    massmatrix(i,i) = 0.5*density*lrefe_*Iyy_;
+    massmatrix(i+6,i+6) = 0.5*density*lrefe_*Iyy_;
+  }
+   
   return;
 } // DRT::ELEMENTS::Beam3::b3_nlnstiffmass
 

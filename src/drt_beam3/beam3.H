@@ -342,19 +342,19 @@ private:
   
   
   //!computing spin matrix out of a rotation vector
-  void computespin(Epetra_SerialDenseMatrix& spin, const Epetra_SerialDenseMatrix rotationangle);
+  void computespin(Epetra_SerialDenseMatrix& spin, Epetra_SerialDenseMatrix rotationangle, const double& spinscale);
   
   //!computing rotation matrix out of a spin matrix
   void computerotation(Epetra_SerialDenseMatrix& rotationmatrix, const Epetra_SerialDenseMatrix& spin);
   
   //!computing rotation matrix XT according to Crisfield, Vol. 2, equation (17.74)
-  void computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epetra_SerialDenseMatrix& T_new, Epetra_SerialDenseMatrix x21);
+  void computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epetra_SerialDenseMatrix& T_new, const Epetra_SerialDenseMatrix& x21);
   
   //!computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
-  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, Epetra_SerialDenseMatrix stressn, Epetra_SerialDenseMatrix stressm);
+  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const Epetra_SerialDenseMatrix& stressn, const Epetra_SerialDenseMatrix& stressm);
   
   //!computing stiffens matrix Ksigma2 according to Crisfield, Vol. 2, equation (17.87)
-  void computeKsig2(Epetra_SerialDenseMatrix& Ksig1, Epetra_SerialDenseMatrix stressn, Epetra_SerialDenseMatrix x21);
+  void computeKsig2(Epetra_SerialDenseMatrix& Ksig1, const Epetra_SerialDenseMatrix& stressn, const Epetra_SerialDenseMatrix& x21);
                     
   //!calculation of nonlinear stiffness and mass matrix
   void b3_nlnstiffmass(vector<double>&           disp, 

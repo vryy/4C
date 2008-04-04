@@ -95,12 +95,7 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
   frdouble("MOMIN",&Iyy_,&ierr);
   frdouble("MOMIN",&Izz_,&ierr);
   frdouble("MOMINPOL",&Irr_,&ierr);
-  if (ierr!=1) dserror("Reading of Beam3 element failed");
-  
-  // element can use consistent or lumped mass matrix
-  lumpedflag_ = 0;
-  frint("LUMPED",&lumpedflag_,&ierr);
-  if (ierr!=1) dserror("Reading of Beam3 element failed");
+  if (ierr!=1) dserror("Reading of Beam3 element failed"); 
    
   // reading thermal energy kT responsible for statistical thermodynamical forces
     thermalenergy_ = 0;
