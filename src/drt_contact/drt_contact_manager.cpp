@@ -22,7 +22,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::Manager::Manager(DRT::Discretization& discret) :
+CONTACT::Manager::Manager(DRT::Discretization& discret, bool initialcontact) :
 discret_(discret),
 activesetconv_(false),
 isincontact_(false)
@@ -375,7 +375,7 @@ isincontact_(false)
   // initialize active sets of all interfaces
   for (int i=0;i<(int)interface_.size();++i)
   {
-    interface_[i]->InitializeActiveSet();
+    interface_[i]->InitializeActiveSet(initialcontact);
     gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes());
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs());
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs());

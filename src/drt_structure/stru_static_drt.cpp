@@ -77,22 +77,16 @@ void stru_static_drt()
   if (!actdis->Filled()) actdis->FillComplete();
   
   // -------------------------------------------------------------------
-  // check for contact conditions
+  // check for contact case
   // -------------------------------------------------------------------
-  // There is no explicit flag in the input-file indicating whether we
-  // want to do nonlinear structural statics with or without contact.
-  // BACI decides based on the input-file only, so if you define at
-  // least ONE contact condition there, you enter the contact case!
-  // -------------------------------------------------------------------
-  bool contact = false;
-  vector<DRT::Condition*> contactconditions(0);
-  actdis->GetCondition("Contact",contactconditions);
-  if (contactconditions.size()) contact=true;
+  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
+  bool contact = Teuchos::getIntegralValue<int>(scontact,"CONTACT");
+  bool initialcontact = Teuchos::getIntegralValue<int>(scontact,"INIT_CONTACT");
   
   if (contact)
   {
     // leave and call special routine for statics with contact
-    contact_stru_static_drt();
+    contact_stru_static_drt(initialcontact);
     return;
   } 
   

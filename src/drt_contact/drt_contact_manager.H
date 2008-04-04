@@ -54,8 +54,9 @@ public:
   input discretization.
   
   \param discret (in): A discretization containing contact boundary conditions
+  \param initialcontact (in): true, if contact at t=0 assumed (full active set)
   */
-  explicit Manager(DRT::Discretization& discret);
+  explicit Manager(DRT::Discretization& discret, bool initialcontact);
 
 
   /*!

@@ -369,7 +369,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("MAXITER",50,
                "maximum number of iterations allowed for newton iteration before failure",
                &sdyn);
-  IntParameter("CONTACT",0,"contact algorithms",&sdyn);
 
   setStringToIntegralParameter("NLNSOL","fullnewton","",
                                tuple<std::string>(
@@ -421,6 +420,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   SetValidTimeAdaptivityParameters(sdyn);
 
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& scontact = list->sublist("STRUCTURAL CONTACT",false,"");
+  
+  setStringToIntegralParameter("CONTACT","No","",yesnotuple,yesnovalue,&scontact);
+  setStringToIntegralParameter("INIT_CONTACT","No","",yesnotuple,yesnovalue,&scontact);
+  
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 

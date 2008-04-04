@@ -26,6 +26,11 @@ ContactStruGenAlpha::ContactStruGenAlpha(ParameterList& params,
 StruGenAlpha(params,dis,solver,output)
 {
   // -------------------------------------------------------------------
+  // see whether we assume initial contact at t=0
+  // -------------------------------------------------------------------
+  bool initialcontact = params_.get<bool>("init contact",false);
+    
+  // -------------------------------------------------------------------
   // see whether we have contact boundary conditions
   // and create contact manager if so
   // -------------------------------------------------------------------
@@ -33,7 +38,7 @@ StruGenAlpha(params,dis,solver,output)
     vector<DRT::Condition*> contactconditions(0);
     discret_.GetCondition("Contact",contactconditions);
     if (!contactconditions.size()) dserror("No contact boundary conditions present");
-    contactmanager_ = rcp(new CONTACT::Manager(discret_));
+    contactmanager_ = rcp(new CONTACT::Manager(discret_,initialcontact));
   }
   return;
 } // ContactStruGenAlpha::ContactStruGenAlpha

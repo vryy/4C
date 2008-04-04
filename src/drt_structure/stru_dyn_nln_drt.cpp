@@ -122,6 +122,7 @@ void dyn_nlnstructural_drt()
   const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
 
   if (actdis->Comm().MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
@@ -171,7 +172,8 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("tolerance residual",sdyn.get<double>("TOLRES"));
       genalphaparams.set<double>("tolerance constraint",sdyn.get<double>("TOLCONSTR"));
 
-      genalphaparams.set<bool>  ("contact",static_cast<bool>(sdyn.get<int>("CONTACT")));
+      genalphaparams.set<bool>  ("contact",Teuchos::getIntegralValue<int>(scontact,"CONTACT"));
+      genalphaparams.set<bool>  ("init contact",Teuchos::getIntegralValue<int>(scontact,"INIT_CONTACT"));
 
       genalphaparams.set<double>("uzawa parameter",sdyn.get<double>("UZAWAPARAM"));
       genalphaparams.set<int>   ("uzawa maxiter",sdyn.get<int>("UZAWAMAXITER"));

@@ -1350,16 +1350,8 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
 /*----------------------------------------------------------------------*
  |  initialize active set (nodes / dofs)                      popp 03/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::InitializeActiveSet()
-{
-  // display warning for user-specific case
-  if (CONTACTINITIALSET==2 && comm_.MyPID()==0)
-  {
-    cout << "***************************************************\n"
-         << "* WARNING: User-defined active set initialization *\n"
-         << "*          Is this still what you want...?        *\n"
-         << "***************************************************\n\n";
-  }     
+bool CONTACT::Interface::InitializeActiveSet(bool initialcontact)
+{    
   // define local variables
   int countnodes = 0;
   int countdofs = 0;
@@ -1385,14 +1377,24 @@ bool CONTACT::Interface::InitializeActiveSet()
     //     -> for unconstrained static problems this doesn't work!
     // 1) Full active set
     //    -> all slave nodes are set active, no IF here at all
-    // 2) Partial active set
-    //    -> this is problem-specific and the node-Ids have to be known
-    // ********************************************************************
+    // *******************************************************************
     
-    switch(CONTACTINITIALSET)
+    if (initialcontact)
     {
-    // EMPTY: no assumption on initial active set
-    case 0:
+      // FULL: all slave nodes are assumed to be active
+      cnode->Active()=true;
+      mynodegids[countnodes] = cnode->Id();
+      ++countnodes;
+        
+      for (int j=0;j<numdof;++j)
+      {
+        mydofgids[countdofs] = cnode->Dofs()[j];
+        ++countdofs;
+      }
+    }
+    else
+    {
+      // EMPTY: no assumption on initial active set
       if (cnode->Active())
       {
         cnode->Active()=true;
@@ -1405,45 +1407,7 @@ bool CONTACT::Interface::InitializeActiveSet()
           ++countdofs;
         }
       }
-      break;
-      
-     // FULL: all slave nodes are assumed to be active
-    case 1:
-      cnode->Active()=true;
-      mynodegids[countnodes] = cnode->Id();
-      ++countnodes;
-        
-      for (int j=0;j<numdof;++j)
-      {
-        mydofgids[countdofs] = cnode->Dofs()[j];
-        ++countdofs;
-      }
-      break;
-    
-    // USER-DEFINED: some slave nodes are assumed to be active
-    case 2:
-      // HERTZ 1
-      //if (cnode->Id()==346 || cnode->Id()==332 || cnode->Id()==364 || cnode->Id()==316 || cnode->Id()==380)
-      // HERTZ 2
-      //if (cnode->Id()==909 || cnode->Id()==936 || cnode->Id()==888)
-      if (cnode->Id()==228)
-      {
-        cnode->Active()=true;
-        mynodegids[countnodes] = cnode->Id();
-        ++countnodes;
-        
-        for (int j=0;j<numdof;++j)
-        {
-          mydofgids[countdofs] = cnode->Dofs()[j];
-          ++countdofs;
-        }
-      }
-      break;
-    
-    default:
-      dserror("ERROR: InitializeActiveSet: Invalid value for CONTACTINITIALSET!");
-      break;
-    }
+    } 
   }
   
   // resize the temporary vectors

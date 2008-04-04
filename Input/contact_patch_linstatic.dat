@@ -80,7 +80,9 @@ CONV_CHECK   AbsRes_And_AbsDis
 TOLRES       1.0E-6
 TOLDISP      1.0E-6
 MAXITER      50
-CONTACT      1
+------------------------------------------------STRUCTURAL CONTACT
+CONTACT        Yes
+INIT_CONTACT   Yes
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

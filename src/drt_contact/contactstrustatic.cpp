@@ -68,7 +68,7 @@ extern struct _STATIC_VAR  *statvar;
 /*----------------------------------------------------------------------*
   | structural nonlinear static with contact                popp 03/08  |
  *----------------------------------------------------------------------*/
-void contact_stru_static_drt()
+void contact_stru_static_drt(bool initialcontact)
 {
   // -------------------------------------------------------------------
   // access the discretization
@@ -85,9 +85,10 @@ void contact_stru_static_drt()
   RCP<CONTACT::Manager> contactmanager;
   vector<DRT::Condition*> contactconditions(0);
   actdis->GetCondition("Contact",contactconditions);
+  if (!contactconditions.size()) dserror("No contact boundary conditions present");
   
   // create contact manager to organize all contact-related things
-  contactmanager = rcp(new CONTACT::Manager(*actdis));
+  contactmanager = rcp(new CONTACT::Manager(*actdis,initialcontact));
   
   // -------------------------------------------------------------------
   // get a communicator and myrank
