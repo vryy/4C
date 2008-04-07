@@ -54,7 +54,6 @@ CONV_CHECK    AbsRes_Or_AbsDis
 TOLDISP      1.0E-08
 TOLRES       1.0E-08
 MAXITER      50
-CONTACT      0
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         UMFPACK
 PARTITION      Cut_Elements
