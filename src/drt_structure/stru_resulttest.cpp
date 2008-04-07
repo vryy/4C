@@ -51,7 +51,7 @@ StruResultTest::StruResultTest(RefCountPtr<DRT::Discretization> strudis_in,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StruResultTest::TestNode(_RESULTDESCR* res, int& nerr, int& test_count)
+void StruResultTest::TestNode(const _RESULTDESCR* res, int& nerr, int& test_count)
 {
   if (res->dis != 0)
     dserror("fix me: only one structure discretization supported for testing");
@@ -162,7 +162,7 @@ void StruResultTest::TestNode(_RESULTDESCR* res, int& nerr, int& test_count)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool StruResultTest::Match(_RESULTDESCR* res)
+bool StruResultTest::Match(const _RESULTDESCR* res)
 {
   /* res.field is a enum of type _FIELDTYP and can be found in headers/enums.h
    */

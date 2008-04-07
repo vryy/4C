@@ -51,17 +51,17 @@ ResultTest::~ResultTest()
 {
 }
 
-void ResultTest::TestElement(RESULTDESCR* res, int& nerr, int& test_count)
+void ResultTest::TestElement(const RESULTDESCR* res, int& nerr, int& test_count)
 {
   dserror("no element test available");
 }
 
-void ResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
+void ResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
 {
   dserror("no node test available");
 }
 
-void ResultTest::TestSpecial(RESULTDESCR* res, int& nerr, int& test_count)
+void ResultTest::TestSpecial(const RESULTDESCR* res, int& nerr, int& test_count)
 {
   dserror("no special case test available");
 }
@@ -82,7 +82,7 @@ void ResultTest::TestSpecial(RESULTDESCR* res, int& nerr, int& test_count)
  \date 06/04
  */
 /*----------------------------------------------------------------------*/
-int ResultTest::CompareValues(double actresult, RESULTDESCR *res)
+int ResultTest::CompareValues(double actresult, const RESULTDESCR *res)
 {
   FILE *err = allfiles.out_err;
   int ret = 0;

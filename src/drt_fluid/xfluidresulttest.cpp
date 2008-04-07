@@ -45,7 +45,7 @@ XFluidResultTest::XFluidResultTest(XFluidImplicitTimeInt& fluid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void XFluidResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
+void XFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
 {
   if (res->dis != 0)
     dserror("fix me: only one fluid discretization supported for testing");
@@ -106,7 +106,7 @@ void XFluidResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool XFluidResultTest::Match(RESULTDESCR* res)
+bool XFluidResultTest::Match(const RESULTDESCR* res)
 {
   return res->field==fluid;
 }

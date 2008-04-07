@@ -40,10 +40,10 @@ public:
     Possible position flags are "velx", "vely", "velz" and
     "pressure". With the obvious meaning.
    */
-  virtual void TestNode(RESULTDESCR* res, int& nerr, int& test_count);
+  virtual void TestNode(const RESULTDESCR* res, int& nerr, int& test_count);
 
   /// return true if this is a fluid test
-  virtual bool Match(RESULTDESCR* res);
+  virtual bool Match(const RESULTDESCR* res);
 
 private:
 

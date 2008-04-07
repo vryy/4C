@@ -55,7 +55,7 @@ FluidResultTest::FluidResultTest(FluidGenAlphaIntegration& fluid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FluidResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
+void FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
 {
   if (res->dis != 0)
     dserror("fix me: only one fluid discretization supported for testing");
@@ -115,7 +115,7 @@ void FluidResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FluidResultTest::Match(RESULTDESCR* res)
+bool FluidResultTest::Match(const RESULTDESCR* res)
 {
   return res->field==fluid;
 }

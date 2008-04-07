@@ -59,21 +59,21 @@ namespace DRT
     virtual ~ResultTest();
 
     /// perform element value test
-    virtual void TestElement(_RESULTDESCR* res, int& nerr, int& test_count);
+    virtual void TestElement(const _RESULTDESCR* res, int& nerr, int& test_count);
 
     /// perform nodal value test
-    virtual void TestNode(_RESULTDESCR* res, int& nerr, int& test_count);
+    virtual void TestNode(const _RESULTDESCR* res, int& nerr, int& test_count);
 
     /// perform special case test
-    virtual void TestSpecial(_RESULTDESCR* res, int& nerr, int& test_count);
+    virtual void TestSpecial(const _RESULTDESCR* res, int& nerr, int& test_count);
 
     /// tell whether this field test matches to a given line
-    virtual bool Match(_RESULTDESCR* res) = 0;
+    virtual bool Match(const _RESULTDESCR* res) = 0;
 
   protected:
 
     /// compare a calculated value with the expected one
-    virtual int CompareValues(double actresult, _RESULTDESCR *res);
+    virtual int CompareValues(double actresult, const _RESULTDESCR *res);
   };
 
   /*!

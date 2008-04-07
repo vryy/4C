@@ -45,10 +45,10 @@ public:
   //! Possible position flags are "dispx", "dispy", "dispz", 
   //!                             "velx", "vely", "velz",
   //!                             "accx", "accy", "accz"
-  virtual void TestNode(_RESULTDESCR* res, int& nerr, int& test_count);
+  virtual void TestNode(const _RESULTDESCR* res, int& nerr, int& test_count);
 
   //! return true if this is a structure test
-  virtual bool Match(_RESULTDESCR*);
+  virtual bool Match(const _RESULTDESCR*);
 
   /* _RESULTDESCR has been found working, but its exact function is unknown due to
    * missing documentation

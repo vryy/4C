@@ -12,7 +12,7 @@ ADAPTER::AleResultTest::AleResultTest(ADAPTER::AleLinear& ale)
 {
 }
 
-void ADAPTER::AleResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_count)
+void ADAPTER::AleResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
 {
   if (res->dis != 0)
     dserror("fix me: only one ale discretization supported for testing");
@@ -54,7 +54,7 @@ void ADAPTER::AleResultTest::TestNode(RESULTDESCR* res, int& nerr, int& test_cou
   }
 }
 
-bool ADAPTER::AleResultTest::Match(RESULTDESCR* res)
+bool ADAPTER::AleResultTest::Match(const RESULTDESCR* res)
 {
   return res->field==ale;
 }
