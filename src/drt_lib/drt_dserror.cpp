@@ -20,14 +20,14 @@ static std::string latest_file = "{dserror_func call without prototype}";
  |  assert function                                          mwgee 11/06|
  | used by macro dsassert in dserror.H                                  |
  *----------------------------------------------------------------------*/
-void cpp_dsassert_func(const std::string file, const int line, const int test, const std::string string)
+void cpp_dsassert_func(const std::string file, const int line, const bool test, const std::string text)
 {
 #ifdef DEBUG
   if (!test)
   {
     latest_file = file;
     latest_line = line;
-    cpp_dserror_func(string);
+    cpp_dserror_func(text);
   }
 #endif
   return;
@@ -47,11 +47,11 @@ void cpp_dslatest(const std::string file, const int line)
  | error function                                            mwgee 11/06|
  | used by macro dsassert in dserror.H                                  |
  *----------------------------------------------------------------------*/
-void cpp_dserror_func(const std::string string, ...)
+void cpp_dserror_func(const std::string text, ...)
 {
   va_list ap;
   char line[] = "=========================================================================\n";
-  va_start(ap, string);
+  va_start(ap, text);
 
 int myrank;
 #ifdef PARALLEL
@@ -64,7 +64,7 @@ myrank=0;
   printf("\n");
   printf(line);
   printf("PROC %d ERROR in %s, line %i:\n",myrank,latest_file.c_str(),latest_line);
-  vprintf(string.c_str(),ap);
+  vprintf(text.c_str(),ap);
   printf("\n");
   printf(line);
   printf("\n");

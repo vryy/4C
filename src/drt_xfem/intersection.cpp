@@ -3915,8 +3915,8 @@ void Intersection::debugTetgenOutput( 	tetgenio& in,
     									vector<int>& elementIds,
     									int timestepcounter) const
 {
-	char* tetgenIn = "tetgenPLC";
-	char* tetgenOut = "tetgenMesh";
+	std::string tetgenIn = "tetgenPLC";
+	std::string tetgenOut = "tetgenMesh";
 	char tetgenInId[30];
 	char tetgenOutId[30];
 		
@@ -3925,8 +3925,8 @@ void Intersection::debugTetgenOutput( 	tetgenio& in,
 		if(element->Id()== elementIds[i])
 		{
 			// change filename
-			sprintf(tetgenInId,"%s%d%d", tetgenIn, elementIds[i], timestepcounter);
-			sprintf(tetgenOutId,"%s%d%d", tetgenOut, elementIds[i],timestepcounter);
+			sprintf(tetgenInId,"%s%d%d", tetgenIn.c_str(), elementIds[i], timestepcounter);
+			sprintf(tetgenOutId,"%s%d%d", tetgenOut.c_str(), elementIds[i],timestepcounter);
 			
 			// write piecewise linear complex
 			in.save_nodes(tetgenInId);

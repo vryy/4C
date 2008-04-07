@@ -25,7 +25,7 @@ Maintainer: Michael Gee
 #include "cstdio"
 #include "cstdarg"
 #include <string>
-void cpp_dsassert_func(const std::string file, const int line, const int test, const std::string string);
+void cpp_dsassert_func(const std::string file, const int line, const bool test, const std::string string);
 void cpp_dserror_func(const std::string string, ...);
 void cpp_dslatest(const std::string file, const int line);
 #define dsassert(test, string) cpp_dsassert_func(__FILE__, __LINE__, test, string)
