@@ -39,7 +39,6 @@ using namespace DRT::UTILS;
 
 bool DRT::ELEMENTS::Ale3::ReadElement()
 {
-  cout << "input" <<endl;
   typedef map<string, DiscretizationType> Gid2DisType;
   Gid2DisType gid2distype;
   gid2distype["HEX8"]  = hex8;

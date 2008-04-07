@@ -267,6 +267,65 @@ public:
 
 private:
 
+  void ale3_edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
+                          double* length,
+                          double* edge_x,
+                          double* edge_y,
+                          double* edge_z);
+  double ale3_area_tria(const Epetra_SerialDenseMatrix& xyze,
+                        int i, int j, int k);
+
+  /*!
+  \brief Calculates stiffness for triangle ijk with torsional springs.
+
+  According to Farhat et al.
+
+  \param i, j, k (in)    : Nodes
+  \param xyze (in)     : The actual element coordinates (2D). Values for given
+  nodes in columns i, j, k.
+  \param k_torsion (out): 2-dimensional stiffness-matrix. Succession i, j, k.
+  */
+  void ale3_torsional(int i, int j, int k,
+                      const Epetra_SerialDenseMatrix& xyze,
+                      Epetra_SerialDenseMatrix* k_torsion);
+
+  /*!
+  \brief Prevents node s from penetrating face pqr.
+
+  The calculated dynamic triangle sjq is perpendicular to edge pr and face
+  pqr. According to Farhat et al.
+
+  \param node_i (in)    : Determine position of triangle sjq in
+  tetrahedra.
+  \param sysmat (in/out): The element's sys_mat
+  \param xyze (in)     : The actual element coordinates
+  */
+  void ale3_add_tria_stiffness(int node_p, int node_q, int node_r, int node_s,
+                               Epetra_SerialDenseMatrix* sys_mat,
+                               const Epetra_SerialDenseMatrix& xyze);
+
+  /*!
+  \brief Prevents node-face-penetration for given nodes.
+
+  Twelve-triangle configuration. According to Farhat et al.
+
+  \param tet_i (in)    : Nodes. Arbitrary succession.
+  \param sysmat (in/out): The element's sys_mat
+  \param xyze (in)     : The actual element coordinates
+  */
+  void ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2, int tet_3,
+                                Epetra_SerialDenseMatrix* sys_mat,
+                                const Epetra_SerialDenseMatrix& xyze);
+  void ale3_tors_spring_tet4(Epetra_SerialDenseMatrix* sys_mat,
+                             const Epetra_SerialDenseMatrix& xyze);
+  void ale3_tors_spring_pyramid5(Epetra_SerialDenseMatrix* sys_mat,
+                                 const Epetra_SerialDenseMatrix& xyze);
+  void ale3_tors_spring_wedge6(Epetra_SerialDenseMatrix* sys_mat,
+                               const Epetra_SerialDenseMatrix& xyze);
+  void ale3_tors_spring_hex8(Epetra_SerialDenseMatrix* sys_mat,
+                             const Epetra_SerialDenseMatrix& xyze);
+  void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
+                        vector<double>& displacements);
   void static_ke(vector<int>&              lm,
                  Epetra_SerialDenseMatrix* sys_mat,
                  Epetra_SerialDenseVector* residual,
@@ -277,7 +336,8 @@ private:
   enum ActionType
   {
     none,
-    calc_ale_lin_stiff
+    calc_ale_lin_stiff,
+    calc_ale_spring
   };
 
   //! Gaussrule

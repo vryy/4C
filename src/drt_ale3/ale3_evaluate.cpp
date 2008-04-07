@@ -52,6 +52,8 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
     dserror("No action supplied");
   else if (action == "calc_ale_lin_stiff")
     act = Ale3::calc_ale_lin_stiff;
+  else if (action == "calc_ale_spring")
+    act = Ale3::calc_ale_spring;
   else
     dserror("Unknown type of action for Ale3");
 
@@ -70,6 +72,19 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
 
     break;
   }
+
+  case calc_ale_spring:
+  {
+    RefCountPtr<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    vector<double> my_dispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+
+    static_ke_spring(&elemat1,my_dispnp);
+
+    break;
+  }
+
+
   default:
     dserror("Unknown type of action for Ale3");
   }
@@ -94,6 +109,947 @@ int DRT::ELEMENTS::Ale3::EvaluateNeumann(ParameterList& params,
   return 0;
 }
 
+void DRT::ELEMENTS::Ale3::ale3_edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
+                                             double* length,
+                                             double* edge_x,
+                                             double* edge_y,
+                                             double* edge_z)
+{
+  double delta_x, delta_y, delta_z;
+  /*---------------------------------------------- x-, y- and z-difference ---*/
+  delta_x = xyze(0,j)-xyze(0,i);
+  delta_y = xyze(1,j)-xyze(1,i);
+  delta_z = xyze(2,j)-xyze(2,i);
+  /*------------------------------- determine distance between i and j ---*/
+  *length = sqrt( delta_x * delta_x
+                + delta_y * delta_y
+                + delta_z * delta_z);
+  if (*length < (1.0E-14)) dserror("edge or diagonal of element has zero length");
+  /*--------------------------------------- determine direction of edge i-j ---*/
+  *edge_x = delta_x / *length;
+  *edge_y = delta_y / *length;
+  *edge_z = delta_z / *length;
+  /*----------------------------------------------------------------------*/
+}
+
+double DRT::ELEMENTS::Ale3::ale3_area_tria(const Epetra_SerialDenseMatrix& xyze,
+                                           int i, int j, int k)
+{
+  double a, b, c;  /* geometrical values */
+  double area;  /* triangle area */
+  /*----------------------------------------------------------------------*/
+
+  a = (xyze(0,i)-xyze(0,j))*(xyze(0,i)-xyze(0,j))
+     +(xyze(1,i)-xyze(1,j))*(xyze(1,i)-xyze(1,j)); /* line i-j squared */
+  b = (xyze(0,j)-xyze(0,k))*(xyze(0,j)-xyze(0,k))
+     +(xyze(1,j)-xyze(1,k))*(xyze(1,j)-xyze(1,k)); /* line j-k squared */
+  c = (xyze(0,k)-xyze(0,i))*(xyze(0,k)-xyze(0,i))
+     +(xyze(1,k)-xyze(1,i))*(xyze(1,k)-xyze(1,i)); /* line k-i squared */
+  area = 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
+  return area;
+}
+
+void DRT::ELEMENTS::Ale3::ale3_torsional(int i, int j, int k,
+                                         const Epetra_SerialDenseMatrix& xyze,
+                                         Epetra_SerialDenseMatrix* k_torsion)
+{
+/*
+                           k
+                           *
+	                  / \
+       y,v ^	    l_ki /   \  l_jk
+           |	       	/     \
+	    --->     i *-------* j
+            x,u	        l_ij
+*/
+
+  double x_ij, x_jk, x_ki;  /* x-differences between nodes */
+  double y_ij, y_jk, y_ki;  /* y-differences between nodes */
+  double l_ij, l_jk, l_ki;  /* side lengths */
+  double a_ij, a_jk, a_ki;  /* auxiliary values same as in Farhat et al. */
+  double b_ij, b_jk, b_ki;  /*                  - " -                    */
+  double area;              /* area of the triangle */
+
+
+  Epetra_SerialDenseMatrix R(3,6);   /* rotation matrix same as in Farhat et al. */
+  Epetra_SerialDenseMatrix C(3,3);   /* torsion stiffness matrix same as in Farhat et al. */
+  Epetra_SerialDenseMatrix A(6,3);   /* auxiliary array of intermediate results */
+
+
+/*--------------------------------- determine basic geometric values ---*/
+  x_ij = xyze(0,j) - xyze(0,i);
+  x_jk = xyze(0,k) - xyze(0,j);
+  x_ki = xyze(0,i) - xyze(0,k);
+  y_ij = xyze(1,j) - xyze(1,i);
+  y_jk = xyze(1,k) - xyze(1,j);
+  y_ki = xyze(1,i) - xyze(1,k);
+
+  l_ij = sqrt( x_ij*x_ij + y_ij*y_ij );
+  l_jk = sqrt( x_jk*x_jk + y_jk*y_jk );
+  l_ki = sqrt( x_ki*x_ki + y_ki*y_ki );
+
+/*----------------------------------------------- check edge lengths ---*/
+  if (l_ij < (1.0E-14)) dserror("edge or diagonal of element has zero length");
+  if (l_jk < (1.0E-14)) dserror("edge or diagonal of element has zero length");
+  if (l_ki < (1.0E-14)) dserror("edge or diagonal of element has zero length");
+
+/*-------------------------------------------- fill auxiliary values ---*/
+  a_ij = x_ij / (l_ij*l_ij);
+  a_jk = x_jk / (l_jk*l_jk);
+  a_ki = x_ki / (l_ki*l_ki);
+  b_ij = y_ij / (l_ij*l_ij);
+  b_jk = y_jk / (l_jk*l_jk);
+  b_ki = y_ki / (l_ki*l_ki);
+
+/*--------------------------------------------------- determine area ---*/
+  area = ale3_area_tria(xyze,i,j,k);
+
+/*---------------------------------- determine torsional stiffnesses ---*/
+  C(0,0) = l_ij*l_ij * l_ki*l_ki / (4.0*area*area);
+  C(1,1) = l_ij*l_ij * l_jk*l_jk / (4.0*area*area);
+  C(2,2) = l_ki*l_ki * l_jk*l_jk / (4.0*area*area);
+
+/*--------------------------------------- fill transformation matrix ---*/
+  R(0,0) = - b_ki - b_ij;
+  R(0,1) = a_ij + a_ki;
+  R(0,2) = b_ij;
+  R(0,3) = - a_ij;
+  R(0,4) = b_ki;
+  R(0,5) = - a_ki;
+
+  R(1,0) = b_ij;
+  R(1,1) = - a_ij;
+  R(1,2) = - b_ij - b_jk;
+  R(1,3) = a_jk + a_ij;
+  R(1,4) = b_jk;
+  R(1,5) = - a_jk;
+
+  R(2,0) = b_ki;
+  R(2,1) = - a_ki;
+  R(2,2) = b_jk;
+  R(2,3) = - a_jk;
+  R(2,4) = - b_jk - b_ki;
+  R(2,5) = a_ki + a_jk;
+
+/*----------------------------------- perform matrix multiplications ---*/
+
+
+  int err = A.Multiply('T','N',1,R,C,0);	// A = R^t * C
+  if (err!=0)
+    dserror("Multiply failed");
+  err = k_torsion->Multiply('N','N',1,A,R,0);	// stiff = A * R
+  if (err!=0)
+    dserror("Multiply failed");
+
+}
+
+void DRT::ELEMENTS::Ale3::ale3_add_tria_stiffness(int node_p, int node_q, int node_r, int node_s,
+                                                  Epetra_SerialDenseMatrix* sys_mat,
+                                                  const Epetra_SerialDenseMatrix& xyze)
+{
+  const DiscretizationType distype = this->Shape();       // Discretization type of this element
+  int numcnd;                                             // number of corner nodes
+
+  //Positions and local rotational stiffness matrix for dynamic triangle (2D)
+  //sequence: s,j,q
+  Epetra_SerialDenseMatrix xyze_dyn_tria(2,3);
+  Epetra_SerialDenseMatrix k_dyn_tria(6,6);
+
+  //auxiliary matrices
+  Epetra_SerialDenseMatrix A(9,6);
+  Epetra_SerialDenseMatrix B(12,9);
+  Epetra_SerialDenseMatrix S(12,9);
+
+  //transformation matrix from the plane of the triangle to the
+  //three-dimensional global frame
+  Epetra_SerialDenseMatrix trans_matrix(6,9);
+
+  //rotational stiffness matrix for dynamic triangle in global frame (3D)
+  Epetra_SerialDenseMatrix k_dyn_tria_global(9,9);
+
+  //rotational stiffness matrix for tetrahedron with given dynamic triangle
+  Epetra_SerialDenseMatrix k_dyn_tet(12,12);
+
+  //local x,y in the plane of the dynamic triangle
+  blitz::Array<double,1> local_x(3);
+  blitz::Array<double,1> local_y(3);
+  local_x = 0.0;
+  local_y = 0.0;
+
+  //auxiliary vectors
+  blitz::Array<double,1> vector_sq(3);
+  blitz::Array<double,1> vector_pq(3);
+  blitz::Array<double,1> vector_rp(3);
+  blitz::Array<double,1> vector_pj(3);
+  blitz::Array<double,1> vector_res(3);
+  vector_sq = 0.0;
+  vector_pq = 0.0;
+  vector_rp = 0.0;
+  vector_pj = 0.0;
+  vector_res = 0.0;
+
+  double length, factor, ex, ey, ez;
+
+  //number of corner nodes
+  switch (distype)
+  {
+  case DRT::Element::tet4:
+  case DRT::Element::tet10:
+    numcnd = 4;
+    break;
+  case DRT::Element::pyramid5:
+    numcnd = 5;
+    break;
+  case DRT::Element::wedge6:
+  case DRT::Element::wedge15:
+    numcnd = 6;
+    break;
+  case DRT::Element::hex8:
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+    numcnd = 8;
+    break;
+  default:
+    numcnd = 0;
+    dserror("distype unkown");
+    break;
+  }
+
+  ale3_edge_geometry(node_s,node_q,xyze,&length,&vector_sq(0),&vector_sq(1),&vector_sq(2));
+  vector_sq = length*vector_sq;
+  ale3_edge_geometry(node_p,node_q,xyze,&length,&vector_pq(0),&vector_pq(1),&vector_pq(2));
+  vector_pq = length*vector_pq;
+  ale3_edge_geometry(node_r,node_p,xyze,&length,&vector_rp(0),&vector_rp(1),&vector_rp(2));
+  vector_rp = length*vector_rp;
+
+
+  //local_x := normal vector of face pqr = vector_pq x vector_rp
+  local_x(0) = vector_pq(1)*vector_rp(2)-vector_pq(2)*vector_rp(1);  //just an intermediate step
+  local_x(1) = vector_pq(2)*vector_rp(0)-vector_pq(0)*vector_rp(2);  //just an intermediate step
+  local_x(2) = vector_pq(0)*vector_rp(1)-vector_pq(1)*vector_rp(0);  //just an intermediate step
+  length = sqrt(local_x(0)*local_x(0)+local_x(1)*local_x(1)+local_x(2)*local_x(2));
+  local_x = (1.0/length)*local_x;
+
+  //local x-value of s xyze_dyn_tria(0,0) := (-1.0)*vector_sq*local_x (local origin lies on plane pqr)
+  //local y-value of s xyze_dyn_tria(1,0 := 0.0
+  xyze_dyn_tria(0,0)=(-1.0)*(vector_sq(0)*local_x(0)+vector_sq(1)*local_x(1)+vector_sq(2)*local_x(2));
+  xyze_dyn_tria(1,0)=0.0;
+
+  //local_y = (vector_sq + xyze_dyn_tria(0,0)*local_x)/|(vector_sq + xyze_dyn_tria(0,0)*local_x)|
+  //xyze_dyn_tria(1,2) = |vector_sq + xyze_dyn_tria(0,0)*local_x|, xyze_dyn_tria(0,2) := 0.0
+  local_y = vector_sq + xyze_dyn_tria(0,0)*local_x;  //just an intermediate step
+  xyze_dyn_tria(1,2) = sqrt(local_y(0)*local_y(0)+local_y(1)*local_y(1)+local_y(2)*local_y(2));
+  xyze_dyn_tria(0,2) = 0.0;
+
+  if (((xyze_dyn_tria(1,2)/xyze_dyn_tria(0,0)) < (1.0E-4)) && (((-1.0)*(xyze_dyn_tria(1,2)/xyze_dyn_tria(0,0))) < (1.0E-4))) //if s lies directly above q calculate stiffness of lineal spring s-q
+  {
+    ale3_edge_geometry(node_s,node_q,xyze,&length,&ex,&ey,&ez);
+    factor = 1.0 / length;
+    //put values in 'element stiffness'
+    //rows for node_s
+    (*sys_mat)(node_s*3,  node_s*3  ) += ex*ex * factor;
+    (*sys_mat)(node_s*3,  node_s*3+1) += ex*ey * factor;
+    (*sys_mat)(node_s*3,  node_s*3+2) += ex*ez * factor;
+
+    (*sys_mat)(node_s*3,  node_q*3  ) -= ex*ex * factor;
+    (*sys_mat)(node_s*3,  node_q*3+1) -= ex*ey * factor;
+    (*sys_mat)(node_s*3,  node_q*3+2) -= ex*ez * factor;
+
+    (*sys_mat)(node_s*3+1,  node_s*3  ) += ex*ey * factor;
+    (*sys_mat)(node_s*3+1,  node_s*3+1) += ey*ey * factor;
+    (*sys_mat)(node_s*3+1,  node_s*3+2) += ey*ez * factor;
+
+    (*sys_mat)(node_s*3+1,  node_q*3  ) -= ex*ey * factor;
+    (*sys_mat)(node_s*3+1,  node_q*3+1) -= ey*ey * factor;
+    (*sys_mat)(node_s*3+1,  node_q*3+2) -= ey*ez * factor;
+
+    (*sys_mat)(node_s*3+2,  node_s*3  ) += ex*ez * factor;
+    (*sys_mat)(node_s*3+2,  node_s*3+1) += ey*ez * factor;
+    (*sys_mat)(node_s*3+2,  node_s*3+2) += ez*ez * factor;
+
+    (*sys_mat)(node_s*3+2,  node_q*3  ) -= ex*ez * factor;
+    (*sys_mat)(node_s*3+2,  node_q*3+1) -= ey*ez * factor;
+    (*sys_mat)(node_s*3+2,  node_q*3+2) -= ez*ez * factor;
+
+    //rows for node_q
+    (*sys_mat)(node_q*3,  node_s*3  ) -= ex*ex * factor;
+    (*sys_mat)(node_q*3,  node_s*3+1) -= ex*ey * factor;
+    (*sys_mat)(node_q*3,  node_s*3+2) -= ex*ez * factor;
+
+    (*sys_mat)(node_q*3,  node_q*3  ) += ex*ex * factor;
+    (*sys_mat)(node_q*3,  node_q*3+1) += ex*ey * factor;
+    (*sys_mat)(node_q*3,  node_q*3+2) += ex*ez * factor;
+
+    (*sys_mat)(node_q*3+1,  node_s*3  ) -= ex*ey * factor;
+    (*sys_mat)(node_q*3+1,  node_s*3+1) -= ey*ey * factor;
+    (*sys_mat)(node_q*3+1,  node_s*3+2) -= ey*ez * factor;
+
+    (*sys_mat)(node_q*3+1,  node_q*3  ) += ex*ey * factor;
+    (*sys_mat)(node_q*3+1,  node_q*3+1) += ey*ey * factor;
+    (*sys_mat)(node_q*3+1,  node_q*3+2) += ey*ez * factor;
+
+    (*sys_mat)(node_q*3+2,  node_s*3  ) -= ex*ez * factor;
+    (*sys_mat)(node_q*3+2,  node_s*3+1) -= ey*ez * factor;
+    (*sys_mat)(node_q*3+2,  node_s*3+2) -= ez*ez * factor;
+
+    (*sys_mat)(node_q*3+2,  node_q*3  ) += ex*ez * factor;
+    (*sys_mat)(node_q*3+2,  node_q*3+1) += ey*ez * factor;
+    (*sys_mat)(node_q*3+2,  node_q*3+2) += ez*ez * factor;
+  }
+  else
+  {
+    local_y = (1.0/xyze_dyn_tria(1,2))*local_y;
+
+    //local x,y-values of j, using vector_pO + vector_Oj + vector_jp = 0
+    //(O is local origin on plane pqr)
+    xyze_dyn_tria(0,1) = 0.0;
+    vector_res = xyze_dyn_tria(1,2)*local_y - vector_pq;
+
+    double numerator = 0.0;
+    double denominator = 1.0;
+    double f, check = 0.0;
+    int solved = 0;
+
+    //solve linear system of equations, case differentiation
+    if (!solved && !((vector_rp(0)<(1.0E-14)) && (((-1.0)*vector_rp(0))<(1.0E-14))) && !((local_y(1)<(1.0E-14)) && (((-1.0)*local_y(1))<(1.0E-14))))
+    {
+      numerator = (vector_res(1)-(vector_rp(1)/vector_rp(0))*vector_res(0));
+      denominator = (local_y(1)-(vector_rp(1)/vector_rp(0))*local_y(0));
+
+      //check if result (value j_y) is valid, using third equation
+      if (!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6))))
+      {
+        f = (vector_res(0)-(numerator/denominator)*local_y(0))/vector_rp(0);
+        check = (local_y(2)*(numerator/denominator)+vector_rp(2)*f)-vector_res(2);
+        if ((check<(1.0E-6)&&(((-1.0)*check)<(1.0E-6)))&&((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))) solved = 1;
+      }
+      //if (((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))&&(!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6)))))  solved = 1;
+    }
+    if (!solved && !((vector_rp(0)<(1.0E-14)) && (((-1.0)*vector_rp(0))<(1.0E-14))) && !((local_y(2)<(1.0E-14)) && (((-1.0)*local_y(2))<(1.0E-14))))
+    {
+      numerator = (vector_res(2)-(vector_rp(2)/vector_rp(0))*vector_res(0));
+      denominator = (local_y(2)-(vector_rp(2)/vector_rp(0))*local_y(0));
+
+      //check if result (value j_y) is valid, using second equation
+      if (!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6))))
+      {
+        f = (vector_res(0)-(numerator/denominator)*local_y(0))/vector_rp(0);
+        check = (local_y(1)*(numerator/denominator)+vector_rp(1)*f)-vector_res(1);
+        if ((check<(1.0E-6)&&(((-1.0)*check)<(1.0E-6)))&&((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))) solved = 1;
+      }
+    }
+    if (!solved && !((vector_rp(1)<(1.0E-14)) && (((-1.0)*vector_rp(1))<(1.0E-14))) && !((local_y(0)<(1.0E-14)) && (((-1.0)*local_y(0))<(1.0E-14))))
+    {
+      numerator = (vector_res(0)-(vector_rp(0)/vector_rp(1))*vector_res(1));
+      denominator = (local_y(0)-(vector_rp(0)/vector_rp(1))*local_y(1));
+
+      //check if result (value j_y) is valid, using third equation
+      if (!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6))))
+      {
+        f = (vector_res(1)-(numerator/denominator)*local_y(1))/vector_rp(1);
+        check = (local_y(2)*(numerator/denominator)+vector_rp(2)*f)-vector_res(2);
+        if ((check<(1.0E-6)&&(((-1.0)*check)<(1.0E-6)))&&((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))) solved = 1;
+      }
+    }
+    if (!solved && !((vector_rp(1)<(1.0E-14)) && (((-1.0)*vector_rp(1))<(1.0E-14))) && !((local_y(2)<(1.0E-14)) && (((-1.0)*local_y(2))<(1.0E-14))))
+    {
+      numerator = (vector_res(2)-(vector_rp(2)/vector_rp(1))*vector_res(1));
+      denominator = (local_y(2)-(vector_rp(2)/vector_rp(1))*local_y(1));
+
+      //check if result (value j_y) is valid, using first equation
+      if (!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6))))
+      {
+        f = (vector_res(1)-(numerator/denominator)*local_y(1))/vector_rp(1);
+        check = (local_y(0)*(numerator/denominator)+vector_rp(0)*f)-vector_res(0);
+        if ((check<(1.0E-6)&&(((-1.0)*check)<(1.0E-6)))&&((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))) solved = 1;
+      }
+    }
+    if (!solved && !((vector_rp(2)<(1.0E-14)) && (((-1.0)*vector_rp(2))<(1.0E-14))) && !((local_y(0)<(1.0E-14)) && (((-1.0)*local_y(0))<(1.0E-14))))
+    {
+      numerator = (vector_res(0)-(vector_rp(0)/vector_rp(2))*vector_res(2));
+      denominator = (local_y(0)-(vector_rp(0)/vector_rp(2))*local_y(2));
+
+      //check if result (value j_y) is valid, using second equation
+      if (!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6))))
+      {
+        f = (vector_res(2)-(numerator/denominator)*local_y(2))/vector_rp(2);
+        check = (local_y(1)*(numerator/denominator)+vector_rp(1)*f)-vector_res(1);
+        if ((check<(1.0E-6)&&(((-1.0)*check)<(1.0E-6)))&&((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))) solved = 1;
+      }
+    }
+    if (!solved && !((vector_rp(2)<(1.0E-14)) && (((-1.0)*vector_rp(2))<(1.0E-14))) && !((local_y(1)<(1.0E-14)) && (((-1.0)*local_y(1))<(1.0E-14))))
+    {
+      numerator = (vector_res(1)-(vector_rp(1)/vector_rp(2))*vector_res(2));
+      denominator = (local_y(1)-(vector_rp(1)/vector_rp(2))*local_y(2));
+
+      //check if result (value j_y) is valid, using first equation
+      if (!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6))))
+      {
+        f = (vector_res(2)-(numerator/denominator)*local_y(2))/vector_rp(2);
+        check = (local_y(0)*(numerator/denominator)+vector_rp(0)*f)-vector_res(0);
+        if ((check<(1.0E-6)&&(((-1.0)*check)<(1.0E-6)))&&((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))) solved = 1;
+      }
+    }
+
+    xyze_dyn_tria(1,1) = (numerator/denominator);
+
+
+    if (solved)
+    {
+      //evaluate torsional stiffness of dynamic triangle
+      ale3_torsional(0,1,2,xyze_dyn_tria,&k_dyn_tria);
+
+
+      //transformation matrix from the three-dimensional global frame to the
+      //plane of the dynamic triangle
+      int row,col;
+      for (row=0; row<3; row++)
+      {
+        col = row;
+        trans_matrix(row*2,col*3)  = local_x(0);
+        trans_matrix(row*2,col*3+1)= local_x(1);
+        trans_matrix(row*2,col*3+2)= local_x(2);
+
+        trans_matrix(row*2+1,col*3)  = local_y(0);
+        trans_matrix(row*2+1,col*3+1)= local_y(1);
+        trans_matrix(row*2+1,col*3+2)= local_y(2);
+      }
+
+
+      int err = A.Multiply('T','N',1,trans_matrix,k_dyn_tria,0);    	// A = trans_matrix^t * k_dyn_tria
+      if (err!=0)
+        dserror("Multiply failed");
+
+      err = k_dyn_tria_global.Multiply('N','N',1,A,trans_matrix,0);     // k_dyn_tria_global = A * trans_matrix
+      if (err!=0)
+        dserror("Multiply failed");
+
+
+      //S transfers elastic forces at s,q,j to cornernodes p,q,r,s of the
+      //tetrahedron
+      double lambda;
+      vector_pj = vector_pq + (xyze_dyn_tria(1,1)-xyze_dyn_tria(1,2))*local_y;
+      if ((vector_pj(0)*vector_rp(0)+vector_pj(1)*vector_rp(1)+vector_pj(2)*vector_rp(2))<0.0)
+      {
+        lambda = sqrt((vector_pj(0)*vector_pj(0)+vector_pj(1)*vector_pj(1)+vector_pj(2)*vector_pj(2))/
+                      (vector_rp(0)*vector_rp(0)+vector_rp(1)*vector_rp(1)+vector_rp(2)*vector_rp(2)));
+        lambda = min(1.0,lambda);
+      }
+      else
+        lambda = 0.0;
+
+      S(0,3)=S(1,4)=S(2,5)  = (1.0-lambda);
+      S(3,6)=S(4,7)=S(5,8)  =  1.0;
+      S(6,3)=S(7,4)=S(8,5)  =  lambda;
+      S(9,0)=S(10,1)=S(11,2)=  1.0;
+
+
+      err = B.Multiply('N','N',1,S,k_dyn_tria_global,0);	// B = S * k_dyn_tria_global
+      if (err!=0)
+        dserror("Multiply failed");
+
+      err = k_dyn_tet.Multiply('N','T',1,B,S,0);    	        // k_dyn_tet = B * S^t
+      if (err!=0)
+        dserror("Multiply failed");
+
+
+      //Sort values in element's sys_mat
+      for (int elem_node_i=0; elem_node_i<numcnd; elem_node_i++)
+        for (int elem_node_j=0; elem_node_j<numcnd; elem_node_j++)
+          if (((elem_node_i == node_p)||(elem_node_i == node_q)||(elem_node_i == node_r)||(elem_node_i == node_s))&&((elem_node_j == node_p)||(elem_node_j == node_q)||(elem_node_j == node_r)||(elem_node_j == node_s)))
+          {
+            int elem_node_i_tetID = ((0*((int)(elem_node_i == node_p)))+(1*((int)(elem_node_i == node_q)))+(2*((int)(elem_node_i == node_r)))+(3*((int)(elem_node_i == node_s))));
+            int elem_node_j_tetID = ((0*((int)(elem_node_j == node_p)))+(1*((int)(elem_node_j == node_q)))+(2*((int)(elem_node_j == node_r)))+(3*((int)(elem_node_j == node_s))));
+
+            (*sys_mat)(elem_node_i*3  ,elem_node_j*3  ) += k_dyn_tet(elem_node_i_tetID*3  ,elem_node_j_tetID*3  );
+            (*sys_mat)(elem_node_i*3  ,elem_node_j*3+1) += k_dyn_tet(elem_node_i_tetID*3  ,elem_node_j_tetID*3+1);
+            (*sys_mat)(elem_node_i*3  ,elem_node_j*3+2) += k_dyn_tet(elem_node_i_tetID*3  ,elem_node_j_tetID*3+2);
+
+            (*sys_mat)(elem_node_i*3+1,elem_node_j*3  ) += k_dyn_tet(elem_node_i_tetID*3+1,elem_node_j_tetID*3  );
+            (*sys_mat)(elem_node_i*3+1,elem_node_j*3+1) += k_dyn_tet(elem_node_i_tetID*3+1,elem_node_j_tetID*3+1);
+            (*sys_mat)(elem_node_i*3+1,elem_node_j*3+2) += k_dyn_tet(elem_node_i_tetID*3+1,elem_node_j_tetID*3+2);
+
+            (*sys_mat)(elem_node_i*3+2,elem_node_j*3  ) += k_dyn_tet(elem_node_i_tetID*3+2,elem_node_j_tetID*3  );
+            (*sys_mat)(elem_node_i*3+2,elem_node_j*3+1) += k_dyn_tet(elem_node_i_tetID*3+2,elem_node_j_tetID*3+1);
+            (*sys_mat)(elem_node_i*3+2,elem_node_j*3+2) += k_dyn_tet(elem_node_i_tetID*3+2,elem_node_j_tetID*3+2);
+          }
+    }
+  }
+}
+
+void DRT::ELEMENTS::Ale3::ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2, int tet_3,
+                                                   Epetra_SerialDenseMatrix* sys_mat,
+                                                   const Epetra_SerialDenseMatrix& xyze)
+{
+  //according to Farhat et al.
+  //twelve-triangle configuration
+
+  int node_s;
+  int node_p;
+  int node_q;
+  int node_r;
+
+  blitz::Array<int,1> nodeID(4);
+  nodeID(0) = tet_0;
+  nodeID(1) = tet_1;
+  nodeID(2) = tet_2;
+  nodeID(3) = tet_3;
+
+  for (node_p=0; node_p<3; node_p++)
+    for (node_r = node_p+1; node_r<4; node_r++)
+      for (node_q=0; node_q<4; node_q++)
+        if ((node_q != node_p)&&(node_q != node_r))
+          for (node_s=0; node_s<4; node_s++)
+            if ((node_s != node_p)&&(node_s != node_q)&&(node_s != node_r))
+              ale3_add_tria_stiffness(nodeID(node_p),nodeID(node_q),nodeID(node_r),nodeID(node_s),sys_mat,xyze);
+}
+
+void DRT::ELEMENTS::Ale3::ale3_tors_spring_tet4(Epetra_SerialDenseMatrix* sys_mat,
+                                               const Epetra_SerialDenseMatrix& xyze)
+{
+  ale3_add_tetra_stiffness(0,1,2,3,sys_mat,xyze);
+}
+
+void DRT::ELEMENTS::Ale3::ale3_tors_spring_pyramid5(Epetra_SerialDenseMatrix* sys_mat,
+                                                    const Epetra_SerialDenseMatrix& xyze)
+{
+  ale3_add_tetra_stiffness(0,1,3,4,sys_mat,xyze);
+  ale3_add_tetra_stiffness(0,1,2,4,sys_mat,xyze);
+  ale3_add_tetra_stiffness(1,2,3,4,sys_mat,xyze);
+  ale3_add_tetra_stiffness(0,2,3,4,sys_mat,xyze);
+}
+
+void DRT::ELEMENTS::Ale3::ale3_tors_spring_wedge6(Epetra_SerialDenseMatrix* sys_mat,
+                                                  const Epetra_SerialDenseMatrix& xyze)
+{
+  int tet_0, tet_1, tet_2, tet_3;
+  for (tet_0=0; tet_0<3; tet_0++)
+    for (tet_1=tet_0+1; tet_1<4; tet_1++)
+      for (tet_2=tet_1+1; tet_2<5; tet_2++)
+        for (tet_3=tet_2+1; tet_3<6; tet_3++)
+        {
+          if (!((tet_0==0 && tet_1==1 && tet_2==3 && tet_3==4)||
+                (tet_0==0 && tet_1==2 && tet_2==3 && tet_3==5)||
+                (tet_0==1 && tet_1==2 && tet_2==4 && tet_3==5)))
+            ale3_add_tetra_stiffness(tet_2, tet_0, tet_1, tet_3, sys_mat, xyze);
+        }
+}
+
+void DRT::ELEMENTS::Ale3::ale3_tors_spring_hex8(Epetra_SerialDenseMatrix* sys_mat,
+                                               const Epetra_SerialDenseMatrix& xyze)
+{
+//Use all valid tetrahedra to prevent node-face-penetration. This is not working well
+//   int tet_0, tet_1, tet_2, tet_3;
+
+//   for (tet_0=0; tet_0<5; tet_0++)
+//     for (tet_1=tet_0+1; tet_1<6; tet_1++)
+//       for (tet_2=tet_1+1; tet_2<7; tet_2++)
+//         for (tet_3=tet_2+1; tet_3<8; tet_3++)
+//         {
+//           //if the 4 nodes don't belong to a face or diagonal plane of the hexahedron they form
+//           //a tetrahedron
+//           if (!((tet_0==0 && tet_1==1 && tet_2==2 && tet_3==3)||
+//                 (tet_0==0 && tet_1==1 && tet_2==4 && tet_3==5)||
+//                 (tet_0==0 && tet_1==3 && tet_2==4 && tet_3==7)||
+//                 (tet_0==0 && tet_1==1 && tet_2==6 && tet_3==7)||
+//                 (tet_0==0 && tet_1==3 && tet_2==5 && tet_3==6)||
+//                 (tet_0==0 && tet_1==2 && tet_2==4 && tet_3==6)||
+//                 (tet_0==1 && tet_1==2 && tet_2==5 && tet_3==6)||
+//                 (tet_0==1 && tet_1==2 && tet_2==4 && tet_3==7)||
+//                 (tet_0==1 && tet_1==3 && tet_2==5 && tet_3==7)||
+//                 (tet_0==2 && tet_1==3 && tet_2==6 && tet_3==7)||
+//                 (tet_0==2 && tet_1==3 && tet_2==4 && tet_3==5)||
+//                 (tet_0==4 && tet_1==5 && tet_2==6 && tet_3==7)))
+//             ale3_add_tetra_stiffness(tet_2, tet_0, tet_1, tet_3, sys_mat, xyze);
+//         }
+
+  //Use 8 tetrahedra to prevent node-face-penetration
+  ale3_add_tetra_stiffness(0,1,3,4,sys_mat,xyze);
+  ale3_add_tetra_stiffness(0,1,2,5,sys_mat,xyze);
+  ale3_add_tetra_stiffness(1,2,3,6,sys_mat,xyze);
+  ale3_add_tetra_stiffness(0,2,3,7,sys_mat,xyze);
+
+  ale3_add_tetra_stiffness(0,4,5,7,sys_mat,xyze);
+  ale3_add_tetra_stiffness(1,4,5,6,sys_mat,xyze);
+  ale3_add_tetra_stiffness(2,5,6,7,sys_mat,xyze);
+  ale3_add_tetra_stiffness(3,4,6,7,sys_mat,xyze);
+}
+
+void DRT::ELEMENTS::Ale3::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
+                                           vector<double>& displacements)
+{
+  const int iel = NumNode();                              // numnp to this element
+  const DiscretizationType distype = this->Shape();
+  int numcnd;                                             // number of corner nodes
+  int node_i, node_j;                                     // end nodes of actual spring
+  double length;                                          // length of actual edge
+  double ex, ey, ez;                                      // direction of actual edge
+  double factor;
+
+
+  //number of corner nodes
+  switch (distype)
+  {
+  case DRT::Element::tet4:
+  case DRT::Element::tet10:
+    numcnd = 4;
+    break;
+  case DRT::Element::pyramid5:
+    numcnd = 5;
+    break;
+  case DRT::Element::wedge6:
+  case DRT::Element::wedge15:
+    numcnd = 6;
+    break;
+  case DRT::Element::hex8:
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+    numcnd = 8;
+    break;
+  default:
+    numcnd = 0;
+    dserror("distype unkown");
+    break;
+  }
+
+  // get actual node coordinates
+  Epetra_SerialDenseMatrix xyze(3,iel);
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i)=Nodes()[i]->X()[0] + displacements[i*3];
+    xyze(1,i)=Nodes()[i]->X()[1] + displacements[i*3+1];
+    xyze(2,i)=Nodes()[i]->X()[2] + displacements[i*3+2];
+  }
+
+//lineal springs from all corner nodes to all corner nodes
+//loop over all edges and diagonals of the element
+  for (node_i=0; node_i<(numcnd-1); node_i++)
+  {
+    for (node_j=node_i+1; node_j<numcnd; node_j++)
+    {
+      ale3_edge_geometry(node_i,node_j,xyze,&length,&ex,&ey,&ez);
+      factor = (1.0/length);
+      //put values in 'element stiffness'
+      //rows for node_i
+      (*sys_mat)(node_i*3,  node_i*3  ) += (ex*ex * factor);
+      (*sys_mat)(node_i*3,  node_i*3+1) += (ex*ey * factor);
+      (*sys_mat)(node_i*3,  node_i*3+2) += (ex*ez * factor);
+
+      (*sys_mat)(node_i*3,  node_j*3  ) -= (ex*ex * factor);
+      (*sys_mat)(node_i*3,  node_j*3+1) -= (ex*ey * factor);
+      (*sys_mat)(node_i*3,  node_j*3+2) -= (ex*ez * factor);
+
+      (*sys_mat)(node_i*3+1,  node_i*3  ) += (ex*ey * factor);
+      (*sys_mat)(node_i*3+1,  node_i*3+1) += (ey*ey * factor);
+      (*sys_mat)(node_i*3+1,  node_i*3+2) += (ey*ez * factor);
+
+      (*sys_mat)(node_i*3+1,  node_j*3  ) -= (ex*ey * factor);
+      (*sys_mat)(node_i*3+1,  node_j*3+1) -= (ey*ey * factor);
+      (*sys_mat)(node_i*3+1,  node_j*3+2) -= (ey*ez * factor);
+
+      (*sys_mat)(node_i*3+2,  node_i*3  ) += (ex*ez * factor);
+      (*sys_mat)(node_i*3+2,  node_i*3+1) += (ey*ez * factor);
+      (*sys_mat)(node_i*3+2,  node_i*3+2) += (ez*ez * factor);
+
+      (*sys_mat)(node_i*3+2,  node_j*3  ) -= (ex*ez * factor);
+      (*sys_mat)(node_i*3+2,  node_j*3+1) -= (ey*ez * factor);
+      (*sys_mat)(node_i*3+2,  node_j*3+2) -= (ez*ez * factor);
+
+      //rows for node_j
+      (*sys_mat)(node_j*3,  node_i*3  ) -= (ex*ex * factor);
+      (*sys_mat)(node_j*3,  node_i*3+1) -= (ex*ey * factor);
+      (*sys_mat)(node_j*3,  node_i*3+2) -= (ex*ez * factor);
+
+      (*sys_mat)(node_j*3,  node_j*3  ) += (ex*ex * factor);
+      (*sys_mat)(node_j*3,  node_j*3+1) += (ex*ey * factor);
+      (*sys_mat)(node_j*3,  node_j*3+2) += (ex*ez * factor);
+
+      (*sys_mat)(node_j*3+1,  node_i*3  ) -= (ex*ey * factor);
+      (*sys_mat)(node_j*3+1,  node_i*3+1) -= (ey*ey * factor);
+      (*sys_mat)(node_j*3+1,  node_i*3+2) -= (ey*ez * factor);
+
+      (*sys_mat)(node_j*3+1,  node_j*3  ) += (ex*ey * factor);
+      (*sys_mat)(node_j*3+1,  node_j*3+1) += (ey*ey * factor);
+      (*sys_mat)(node_j*3+1,  node_j*3+2) += (ey*ez * factor);
+
+      (*sys_mat)(node_j*3+2,  node_i*3  ) -= (ex*ez * factor);
+      (*sys_mat)(node_j*3+2,  node_i*3+1) -= (ey*ez * factor);
+      (*sys_mat)(node_j*3+2,  node_i*3+2) -= (ez*ez * factor);
+
+      (*sys_mat)(node_j*3+2,  node_j*3  ) += (ex*ez * factor);
+      (*sys_mat)(node_j*3+2,  node_j*3+1) += (ey*ez * factor);
+      (*sys_mat)(node_j*3+2,  node_j*3+2) += (ez*ez * factor);
+    }
+  }
+
+  //build in torsional springs
+  //and put edge nodes on the middle of the respective edge
+  switch (distype)
+  {
+  case DRT::Element::tet10:
+
+    (*sys_mat)(12,0)  = -0.5;
+    (*sys_mat)(12,3)  = -0.5;
+    (*sys_mat)(12,12) =  1.0;
+    (*sys_mat)(13,1)  = -0.5;
+    (*sys_mat)(13,4)  = -0.5;
+    (*sys_mat)(13,13) =  1.0;
+    (*sys_mat)(14,2)  = -0.5;
+    (*sys_mat)(14,5)  = -0.5;
+    (*sys_mat)(14,14) =  1.0;
+
+    (*sys_mat)(15,3)  = -0.5;
+    (*sys_mat)(15,6)  = -0.5;
+    (*sys_mat)(15,15) =  1.0;
+    (*sys_mat)(16,4)  = -0.5;
+    (*sys_mat)(16,7)  = -0.5;
+    (*sys_mat)(16,16) =  1.0;
+    (*sys_mat)(17,5)  = -0.5;
+    (*sys_mat)(17,8)  = -0.5;
+    (*sys_mat)(17,17) =  1.0;
+
+    (*sys_mat)(18,6)  = -0.5;
+    (*sys_mat)(18,0)  = -0.5;
+    (*sys_mat)(18,18) =  1.0;
+    (*sys_mat)(19,7)  = -0.5;
+    (*sys_mat)(19,1)  = -0.5;
+    (*sys_mat)(19,19) =  1.0;
+    (*sys_mat)(20,8)  = -0.5;
+    (*sys_mat)(20,2)  = -0.5;
+    (*sys_mat)(20,20) =  1.0;
+
+    (*sys_mat)(21,0)  = -0.5;
+    (*sys_mat)(21,9)  = -0.5;
+    (*sys_mat)(21,21) =  1.0;
+    (*sys_mat)(22,1)  = -0.5;
+    (*sys_mat)(22,10) = -0.5;
+    (*sys_mat)(22,22) =  1.0;
+    (*sys_mat)(23,2)  = -0.5;
+    (*sys_mat)(23,11) = -0.5;
+    (*sys_mat)(23,23) =  1.0;
+
+    (*sys_mat)(24,3)  = -0.5;
+    (*sys_mat)(24,9)  = -0.5;
+    (*sys_mat)(24,24) =  1.0;
+    (*sys_mat)(25,4)  = -0.5;
+    (*sys_mat)(25,10) = -0.5;
+    (*sys_mat)(25,25) =  1.0;
+    (*sys_mat)(26,5)  = -0.5;
+    (*sys_mat)(26,11) = -0.5;
+    (*sys_mat)(26,26) =  1.0;
+
+    (*sys_mat)(27,6)  = -0.5;
+    (*sys_mat)(27,9)  = -0.5;
+    (*sys_mat)(27,27) =  1.0;
+    (*sys_mat)(28,7)  = -0.5;
+    (*sys_mat)(28,10) = -0.5;
+    (*sys_mat)(28,28) =  1.0;
+    (*sys_mat)(29,8)  = -0.5;
+    (*sys_mat)(29,11) = -0.5;
+    (*sys_mat)(29,29) =  1.0;
+
+    ale3_tors_spring_tet4(sys_mat,xyze);
+    break;
+
+  case DRT::Element::tet4:
+    ale3_tors_spring_tet4(sys_mat,xyze);
+    break;
+
+  case DRT::Element::pyramid5:
+    ale3_tors_spring_pyramid5(sys_mat,xyze);
+    break;
+
+  case DRT::Element::wedge15:
+
+    for (int k=0; k<3; k++)
+    {
+      (*sys_mat)(3*(6+k)   , 3*k    ) = -0.5;
+      (*sys_mat)(3*(6+k) +1, 3*k +1 ) = -0.5;
+      (*sys_mat)(3*(6+k) +2, 3*k +2 ) = -0.5;
+      (*sys_mat)(3*(6+k)   , 3*((k+1)*((int)(k<2)))    ) = -0.5;
+      (*sys_mat)(3*(6+k) +1, 3*((k+1)*((int)(k<2))) +1 ) = -0.5;
+      (*sys_mat)(3*(6+k) +2, 3*((k+1)*((int)(k<2))) +2 ) = -0.5;
+      (*sys_mat)(3*(6+k)   , 3*(6+k)   ) =  1.0;
+      (*sys_mat)(3*(6+k) +1, 3*(6+k) +1) =  1.0;
+      (*sys_mat)(3*(6+k) +2, 3*(6+k) +2) =  1.0;
+    }
+
+    for (int k=0; k<3; k++)
+    {
+      (*sys_mat)(3*(9+k)  , 3*k   ) = -0.5;
+      (*sys_mat)(3*(9+k)+1, 3*k+1 ) = -0.5;
+      (*sys_mat)(3*(9+k)+2, 3*k+2 ) = -0.5;
+      (*sys_mat)(3*(9+k)  , 3*(3+k)   ) = -0.5;
+      (*sys_mat)(3*(9+k)+1, 3*(3+k)+1 ) = -0.5;
+      (*sys_mat)(3*(9+k)+2, 3*(3+k)+2 ) = -0.5;
+      (*sys_mat)(3*(9+k)  , 3*(9+k)  ) =  1.0;
+      (*sys_mat)(3*(9+k)+1, 3*(9+k)+1) =  1.0;
+      (*sys_mat)(3*(9+k)+2, 3*(9+k)+2) =  1.0;
+    }
+
+    for (int k=0; k<3; k++)
+    {
+      (*sys_mat)(3*(12+k)   , 3*(3+k)    ) = -0.5;
+      (*sys_mat)(3*(12+k) +1, 3*(3+k) +1 ) = -0.5;
+      (*sys_mat)(3*(12+k) +2, 3*(3+k) +2 ) = -0.5;
+      (*sys_mat)(3*(12+k)   , 3*(3+(k+1)*((int)(k<2)))    ) = -0.5;
+      (*sys_mat)(3*(12+k) +1, 3*(3+(k+1)*((int)(k<2))) +1 ) = -0.5;
+      (*sys_mat)(3*(12+k) +2, 3*(3+(k+1)*((int)(k<2))) +2 ) = -0.5;
+      (*sys_mat)(3*(12+k)   , 3*(12+k)   ) =  1.0;
+      (*sys_mat)(3*(12+k) +1, 3*(12+k) +1) =  1.0;
+      (*sys_mat)(3*(12+k) +2, 3*(12+k) +2) =  1.0;
+    }
+
+    ale3_tors_spring_wedge6(sys_mat,xyze);
+    break;
+
+  case DRT::Element::wedge6:
+    ale3_tors_spring_wedge6(sys_mat,xyze);
+    break;
+
+
+  case DRT::Element::hex20:
+
+    for (int k=0; k<4; k++)
+    {
+      (*sys_mat)(3*(8+k)   , 3*k    ) = -0.5;
+      (*sys_mat)(3*(8+k) +1, 3*k +1 ) = -0.5;
+      (*sys_mat)(3*(8+k) +2, 3*k +2 ) = -0.5;
+      (*sys_mat)(3*(8+k)   , 3*((k+1)*((int)(k<3)))    ) = -0.5;
+      (*sys_mat)(3*(8+k) +1, 3*((k+1)*((int)(k<3))) +1 ) = -0.5;
+      (*sys_mat)(3*(8+k) +2, 3*((k+1)*((int)(k<3))) +2 ) = -0.5;
+      (*sys_mat)(3*(8+k)   , 3*(8+k)   ) =  1.0;
+      (*sys_mat)(3*(8+k) +1, 3*(8+k) +1) =  1.0;
+      (*sys_mat)(3*(8+k) +2, 3*(8+k) +2) =  1.0;
+    }
+
+    for (int k=0; k<4; k++)
+    {
+      (*sys_mat)(3*(12+k)  , 3*k   ) = -0.5;
+      (*sys_mat)(3*(12+k)+1, 3*k+1 ) = -0.5;
+      (*sys_mat)(3*(12+k)+2, 3*k+2 ) = -0.5;
+      (*sys_mat)(3*(12+k)  , 3*(4+k)   ) = -0.5;
+      (*sys_mat)(3*(12+k)+1, 3*(4+k)+1 ) = -0.5;
+      (*sys_mat)(3*(12+k)+2, 3*(4+k)+2 ) = -0.5;
+      (*sys_mat)(3*(12+k)  , 3*(12+k)  ) =  1.0;
+      (*sys_mat)(3*(12+k)+1, 3*(12+k)+1) =  1.0;
+      (*sys_mat)(3*(12+k)+2, 3*(12+k)+2) =  1.0;
+    }
+
+    for (int k=0; k<4; k++)
+    {
+      (*sys_mat)(3*(16+k)   , 3*(4+k)    ) = -0.5;
+      (*sys_mat)(3*(16+k) +1, 3*(4+k) +1 ) = -0.5;
+      (*sys_mat)(3*(16+k) +2, 3*(4+k) +2 ) = -0.5;
+      (*sys_mat)(3*(16+k)   , 3*(4+(k+1)*((int)(k<3)))    ) = -0.5;
+      (*sys_mat)(3*(16+k) +1, 3*(4+(k+1)*((int)(k<3))) +1 ) = -0.5;
+      (*sys_mat)(3*(16+k) +2, 3*(4+(k+1)*((int)(k<3))) +2 ) = -0.5;
+      (*sys_mat)(3*(16+k)   , 3*(16+k)   ) =  1.0;
+      (*sys_mat)(3*(16+k) +1, 3*(16+k) +1) =  1.0;
+      (*sys_mat)(3*(16+k) +2, 3*(16+k) +2) =  1.0;
+    }
+
+    ale3_tors_spring_hex8(sys_mat,xyze);
+    break;
+
+  case DRT::Element::hex27:
+
+    for (int k=0; k<4; k++)
+    {
+      (*sys_mat)(3*(8+k)   , 3*k    ) = -0.5;
+      (*sys_mat)(3*(8+k) +1, 3*k +1 ) = -0.5;
+      (*sys_mat)(3*(8+k) +2, 3*k +2 ) = -0.5;
+      (*sys_mat)(3*(8+k)   , 3*((k+1)*((int)(k<3)))    ) = -0.5;
+      (*sys_mat)(3*(8+k) +1, 3*((k+1)*((int)(k<3))) +1 ) = -0.5;
+      (*sys_mat)(3*(8+k) +2, 3*((k+1)*((int)(k<3))) +2 ) = -0.5;
+      (*sys_mat)(3*(8+k)   , 3*(8+k)   ) =  1.0;
+      (*sys_mat)(3*(8+k) +1, 3*(8+k) +1) =  1.0;
+      (*sys_mat)(3*(8+k) +2, 3*(8+k) +2) =  1.0;
+    }
+
+    for (int k=0; k<4; k++)
+    {
+      (*sys_mat)(3*(12+k)  , 3*k   ) = -0.5;
+      (*sys_mat)(3*(12+k)+1, 3*k+1 ) = -0.5;
+      (*sys_mat)(3*(12+k)+2, 3*k+2 ) = -0.5;
+      (*sys_mat)(3*(12+k)  , 3*(4+k)   ) = -0.5;
+      (*sys_mat)(3*(12+k)+1, 3*(4+k)+1 ) = -0.5;
+      (*sys_mat)(3*(12+k)+2, 3*(4+k)+2 ) = -0.5;
+      (*sys_mat)(3*(12+k)  , 3*(12+k)  ) =  1.0;
+      (*sys_mat)(3*(12+k)+1, 3*(12+k)+1) =  1.0;
+      (*sys_mat)(3*(12+k)+2, 3*(12+k)+2) =  1.0;
+    }
+
+    for (int k=0; k<4; k++)
+    {
+      (*sys_mat)(3*(16+k)   , 3*(4+k)    ) = -0.5;
+      (*sys_mat)(3*(16+k) +1, 3*(4+k) +1 ) = -0.5;
+      (*sys_mat)(3*(16+k) +2, 3*(4+k) +2 ) = -0.5;
+      (*sys_mat)(3*(16+k)   , 3*(4+(k+1)*((int)(k<3)))    ) = -0.5;
+      (*sys_mat)(3*(16+k) +1, 3*(4+(k+1)*((int)(k<3))) +1 ) = -0.5;
+      (*sys_mat)(3*(16+k) +2, 3*(4+(k+1)*((int)(k<3))) +2 ) = -0.5;
+      (*sys_mat)(3*(16+k)   , 3*(16+k)   ) =  1.0;
+      (*sys_mat)(3*(16+k) +1, 3*(16+k) +1) =  1.0;
+      (*sys_mat)(3*(16+k) +2, 3*(16+k) +2) =  1.0;
+    }
+
+    (*sys_mat)(3*20  , 3*8   ) = -0.5;
+    (*sys_mat)(3*20+1, 3*8+1 ) = -0.5;
+    (*sys_mat)(3*20+2, 3*8+2 ) = -0.5;
+    (*sys_mat)(3*20  , 3*10  ) = -0.5;
+    (*sys_mat)(3*20+1, 3*10+1) = -0.5;
+    (*sys_mat)(3*20+2, 3*10+2) = -0.5;
+    (*sys_mat)(3*20  , 3*20  ) =  1.0;
+    (*sys_mat)(3*20+1, 3*20+1) =  1.0;
+    (*sys_mat)(3*20+2, 3*20+2) =  1.0;
+
+    for (int k=0; k<4; k++)
+    {
+      (*sys_mat)(3*(21+k)   , 3*(8+k)    ) = -0.5;
+      (*sys_mat)(3*(21+k) +1, 3*(8+k) + 1) = -0.5;
+      (*sys_mat)(3*(21+k) +2, 3*(8+k) + 2) = -0.5;
+      (*sys_mat)(3*(21+k)   , 3*(16+k)   ) = -0.5;
+      (*sys_mat)(3*(21+k) +1, 3*(16+k)+ 1) = -0.5;
+      (*sys_mat)(3*(21+k) +2, 3*(16+k)+ 2) = -0.5;
+      (*sys_mat)(3*(21+k)   , 3*(21+k)   ) =  1.0;
+      (*sys_mat)(3*(21+k) +1, 3*(21+k) +1) =  1.0;
+      (*sys_mat)(3*(21+k) +2, 3*(21+k) +2) =  1.0;
+    }
+
+    (*sys_mat)(3*25  , 3*16  ) = -0.5;
+    (*sys_mat)(3*25+1, 3*16+1) = -0.5;
+    (*sys_mat)(3*25+2, 3*16+2) = -0.5;
+    (*sys_mat)(3*25  , 3*18  ) = -0.5;
+    (*sys_mat)(3*25+1, 3*18+1) = -0.5;
+    (*sys_mat)(3*25+2, 3*18+2) = -0.5;
+    (*sys_mat)(3*25  , 3*25  ) =  1.0;
+    (*sys_mat)(3*25+1, 3*25+1) =  1.0;
+    (*sys_mat)(3*25+2, 3*25+2) =  1.0;
+
+    (*sys_mat)(3*26  , 3*21  ) = -0.5;
+    (*sys_mat)(3*26+1, 3*21+1) = -0.5;
+    (*sys_mat)(3*26+2, 3*21+2) = -0.5;
+    (*sys_mat)(3*26  , 3*23  ) = -0.5;
+    (*sys_mat)(3*26+1, 3*23+1) = -0.5;
+    (*sys_mat)(3*26+2, 3*23+2) = -0.5;
+    (*sys_mat)(3*26  , 3*26  ) =  1.0;
+    (*sys_mat)(3*26+1, 3*26+1) =  1.0;
+    (*sys_mat)(3*26+2, 3*26+2) =  1.0;
+
+    ale3_tors_spring_hex8(sys_mat,xyze);
+    break;
+
+  case DRT::Element::hex8:
+    ale3_tors_spring_hex8(sys_mat,xyze);
+    break;
+
+  default:
+    dserror("unknown distype in ale spring dynamic");
+    break;
+  }
+
+
+}
 
 void DRT::ELEMENTS::Ale3::static_ke(vector<int>&              lm,
                                     Epetra_SerialDenseMatrix* sys_mat,
@@ -271,8 +1227,8 @@ void DRT::ELEMENTS::Ale3::static_ke(vector<int>&              lm,
               Int. J. Num. Meth. Ing.: Vol. 17 (1981) p. 679-706.
          */
 
-	//Integration rule for hour-glass-stabilization. Not used in the moment. If needed, 
-	//it should be implemented within the getOptimalGaussrule-method  
+	//Integration rule for hour-glass-stabilization. Not used in the moment. If needed,
+	//it should be implemented within the getOptimalGaussrule-method
 #if 0
         if (distype==hex8 && intpoints.nquad == 1)
         {
@@ -542,7 +1498,7 @@ GaussRule3D DRT::ELEMENTS::Ale3::getOptimalGaussrule(const DiscretizationType& d
     case pyramid5:
       rule = intrule_pyramid_8point;
         break;
-    default: 
+    default:
         dserror("unknown number of nodes for gaussrule initialization");
     }
     return rule;

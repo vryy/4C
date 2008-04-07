@@ -274,12 +274,22 @@ private:
                  Epetra_SerialDenseVector* residual,
 		 RefCountPtr<MAT::Material> material,
                  ParameterList& 	   params);
+  void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat, vector<double>& displacements);
+  void edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
+                     double* length, double* sin_alpha, double* cos_alpha);
+  double ale2_area_tria(const Epetra_SerialDenseMatrix& xyze, int i, int j, int k);
+  void ale2_tors_spring_tri3(Epetra_SerialDenseMatrix* sys_mat, const Epetra_SerialDenseMatrix& xyze);
+  void ale2_tors_spring_quad4(Epetra_SerialDenseMatrix* sys_mat, const Epetra_SerialDenseMatrix& xyze);
+  void ale2_torsional(int i, int j, int k, const Epetra_SerialDenseMatrix& xyze,
+                      Epetra_SerialDenseMatrix* k_torsion);
+
 
   //! action parameters recognized by ale2
   enum ActionType
   {
     none,
-    calc_ale_lin_stiff
+    calc_ale_lin_stiff,
+    calc_ale_spring
   };
 
   //! container containing all kind of ale2 thisandthat
@@ -298,10 +308,10 @@ private:
 
   // don't want = operator
   Ale2& operator = (const Ale2& old);
-  
+
   void CreateLinesTri(const int& nline,
                       const int& nnode);
-  
+
   void CreateLinesQuad(const int& nline,
                        const int& nnode);
 };

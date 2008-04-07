@@ -53,6 +53,8 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList& params,
     dserror("No action supplied");
   else if (action == "calc_ale_lin_stiff")
     act = Ale2::calc_ale_lin_stiff;
+  else if (action == "calc_ale_spring")
+    act = Ale2::calc_ale_spring;
   else
     dserror("Unknown type of action for Ale2");
 
@@ -68,6 +70,16 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList& params,
     //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
     static_ke(lm,&elemat1,&elevec1,mat,params);
+
+    break;
+  }
+  case calc_ale_spring:
+  {
+    RefCountPtr<const Epetra_Vector> dispnp = discretization.GetState("dispnp"); // get the displacements
+    vector<double> my_dispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+
+    static_ke_spring(&elemat1,my_dispnp);
 
     break;
   }
@@ -96,6 +108,384 @@ int DRT::ELEMENTS::Ale2::EvaluateNeumann(ParameterList& params,
 }
 
 
+void DRT::ELEMENTS::Ale2::edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
+	           double* length,
+	           double* sin_alpha,
+	           double* cos_alpha)
+{
+  double delta_x, delta_y;
+  /*---------------------------------------------- x- and y-difference ---*/
+  delta_x = xyze(0,j)-xyze(0,i);
+  delta_y = xyze(1,j)-xyze(1,i);
+  /*------------------------------- determine distance between i and j ---*/
+  *length = sqrt( delta_x * delta_x
+                + delta_y * delta_y );
+  if (*length < (1.0E-14)) dserror("edge or diagonal of element has zero length");
+  /*--------------------------------------- determine direction of i-j ---*/
+  *sin_alpha = delta_y / *length;
+  *cos_alpha = delta_x / *length;
+  /*----------------------------------------------------------------------*/
+}
+
+
+double DRT::ELEMENTS::Ale2::ale2_area_tria(const Epetra_SerialDenseMatrix& xyze, int i, int j, int k)
+{
+  double a, b, c;  /* geometrical values */
+  double el_area;  /* element area */
+  /*----------------------------------------------------------------------*/
+
+  a = (xyze(0,i)-xyze(0,j))*(xyze(0,i)-xyze(0,j))
+     +(xyze(1,i)-xyze(1,j))*(xyze(1,i)-xyze(1,j)); /* line i-j squared */
+  b = (xyze(0,j)-xyze(0,k))*(xyze(0,j)-xyze(0,k))
+     +(xyze(1,j)-xyze(1,k))*(xyze(1,j)-xyze(1,k)); /* line j-k squared */
+  c = (xyze(0,k)-xyze(0,i))*(xyze(0,k)-xyze(0,i))
+     +(xyze(1,k)-xyze(1,i))*(xyze(1,k)-xyze(1,i)); /* line k-i squared */
+  el_area = 0.25 * sqrt(2.0*a*b + 2.0*b*c + 2.0*c*a - a*a - b*b - c*c);
+  return el_area;
+}
+
+
+void DRT::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k, const Epetra_SerialDenseMatrix& xyze,
+                                         Epetra_SerialDenseMatrix* k_torsion)
+{
+/*
+                           k
+                           *
+	                  / \
+       y,v ^	    l_ki /   \  l_jk
+           |	       	/     \
+	    --->     i *-------* j
+            x,u	        l_ij
+*/
+
+  double x_ij, x_jk, x_ki;  /* x-differences between nodes */
+  double y_ij, y_jk, y_ki;  /* y-differences between nodes */
+  double l_ij, l_jk, l_ki;  /* side lengths */
+  double a_ij, a_jk, a_ki;  /* auxiliary values same as in Farhat et al. */
+  double b_ij, b_jk, b_ki;  /*                  - " -                    */
+  double area;              /* area of the triangle */
+
+
+  Epetra_SerialDenseMatrix R(3,6);	 /* rotation matrix same as in Farhat et al. */
+  Epetra_SerialDenseMatrix C(3,3);   /* torsion stiffness matrix same as in Farhat et al. */
+  Epetra_SerialDenseMatrix A(6,3);   /* auxiliary array of intermediate results */
+
+
+/*--------------------------------- determine basic geometric values ---*/
+  x_ij = xyze(0,j) - xyze(0,i);
+  x_jk = xyze(0,k) - xyze(0,j);
+  x_ki = xyze(0,i) - xyze(0,k);
+  y_ij = xyze(1,j) - xyze(1,i);
+  y_jk = xyze(1,k) - xyze(1,j);
+  y_ki = xyze(1,i) - xyze(1,k);
+
+  l_ij = sqrt( x_ij*x_ij + y_ij*y_ij );
+  l_jk = sqrt( x_jk*x_jk + y_jk*y_jk );
+  l_ki = sqrt( x_ki*x_ki + y_ki*y_ki );
+
+/*----------------------------------------------- check edge lengths ---*/
+  if (l_ij < (1.0E-14)) dserror("edge or diagonal of element has zero length");
+  if (l_jk < (1.0E-14)) dserror("edge or diagonal of element has zero length");
+  if (l_ki < (1.0E-14)) dserror("edge or diagonal of element has zero length");
+
+/*-------------------------------------------- fill auxiliary values ---*/
+  a_ij = x_ij / (l_ij*l_ij);
+  a_jk = x_jk / (l_jk*l_jk);
+  a_ki = x_ki / (l_ki*l_ki);
+  b_ij = y_ij / (l_ij*l_ij);
+  b_jk = y_jk / (l_jk*l_jk);
+  b_ki = y_ki / (l_ki*l_ki);
+
+/*--------------------------------------------------- determine area ---*/
+  area = ale2_area_tria(xyze,i,j,k);
+
+/*---------------------------------- determine torsional stiffnesses ---*/
+  C(0,0) = l_ij*l_ij * l_ki*l_ki / (4.0*area*area);
+  C(1,1) = l_ij*l_ij * l_jk*l_jk / (4.0*area*area);
+  C(2,2) = l_ki*l_ki * l_jk*l_jk / (4.0*area*area);
+
+  C(0,1) = C(0,2) = C(1,0) = C(1,2) = C(2,0) = C(2,1) = 0;
+
+/*--------------------------------------- fill transformation matrix ---*/
+  R(0,0) = - b_ki - b_ij;
+  R(0,1) = a_ij + a_ki;
+  R(0,2) = b_ij;
+  R(0,3) = - a_ij;
+  R(0,4) = b_ki;
+  R(0,5) = - a_ki;
+
+  R(1,0) = b_ij;
+  R(1,1) = - a_ij;
+  R(1,2) = - b_ij - b_jk;
+  R(1,3) = a_jk + a_ij;
+  R(1,4) = b_jk;
+  R(1,5) = - a_jk;
+
+  R(2,0) = b_ki;
+  R(2,1) = - a_ki;
+  R(2,2) = b_jk;
+  R(2,3) = - a_jk;
+  R(2,4) = - b_jk - b_ki;
+  R(2,5) = a_ki + a_jk;
+
+/*----------------------------------- perform matrix multiplications ---*/
+
+
+  int err = A.Multiply('T','N',1,R,C,0);	// A = R^t * C
+  if (err!=0)
+    dserror("Multiply failed");
+  err = k_torsion->Multiply('N','N',1,A,R,0);	// stiff = A * R
+  if (err!=0)
+    dserror("Multiply failed");
+
+}
+
+void DRT::ELEMENTS::Ale2::ale2_tors_spring_tri3(Epetra_SerialDenseMatrix* sys_mat, const Epetra_SerialDenseMatrix& xyze)
+{
+  int i, j;      /* counters */
+
+  Epetra_SerialDenseMatrix k_tria(6,6);	// rotational stiffness matrix of one triangle
+
+  /*-------------------------------- evaluate torsional stiffness part ---*/
+  ale2_torsional(0,1,2,xyze,&k_tria);
+
+  /*-------------------------- add everything to the element stiffness ---*/
+  for (i=0; i<6; i++)
+    for (j=0; j<6; j++)
+      (*sys_mat)(i,j) += k_tria(i,j);
+}
+
+
+void DRT::ELEMENTS::Ale2::ale2_tors_spring_quad4(Epetra_SerialDenseMatrix* sys_mat, const Epetra_SerialDenseMatrix& xyze)
+{
+  int i, j;                 /* counters */
+
+  Epetra_SerialDenseMatrix k_tria(6,6);	// rotational stiffness matrix of one triangle
+
+  /*--- pass all nodes and determine the triangle defined by the node i and
+  adjunct nodes... ---*/
+  ale2_torsional(0,1,2,xyze,&k_tria);
+
+  /*---------- ...sort everything into the element stiffness matrix... ---*/
+  for (i=0; i<6; i++)
+    for (j=0; j<6; j++)
+      (*sys_mat)(i,j) += k_tria(i,j);
+
+  /*--------------------------------- ...repeat for second triangle... ---*/
+  ale2_torsional(1,2,3,xyze,&k_tria);
+  for (i=2; i<8; i++)
+    for (j=2; j<8; j++)
+      (*sys_mat)(i,j) += k_tria(i-2,j-2);
+
+  /*------------------------------------------ ...and for the third... ---*/
+  ale2_torsional(2,3,0,xyze,&k_tria);
+  for (i=4; i<8; i++)
+    for (j=4; j<8; j++)
+      (*sys_mat)(i,j) += k_tria(i-4,j-4);
+  for (i=0; i<2; i++)
+    for (j=0; j<2; j++)
+      (*sys_mat)(i,j) += k_tria(i+4,j+4);
+  for (i=4; i<8; i++)
+  {
+    for (j=0; j<2; j++)
+    {
+      (*sys_mat)(i,j) += k_tria(i-4,j+4);
+      (*sys_mat)(j,i) += k_tria(i-4,j+4);
+    }
+  }
+
+  /*------------------------------- ...and eventually for a forth time ---*/
+  ale2_torsional(3,0,1,xyze,&k_tria);
+  for (i=0; i<4; i++)
+    for (j=0; j<4; j++)
+      (*sys_mat)(i,j) += k_tria(i+2,j+2);
+  for (i=6; i<8; i++)
+    for (j=6; j<8; j++)
+      (*sys_mat)(i,j) += k_tria(i-6,j-6);
+  for (i=6; i<8; i++)
+  {
+    for (j=0; j<4; j++)
+    {
+      (*sys_mat)(i,j) += k_tria(i-6,j+2);
+      (*sys_mat)(j,i) += k_tria(i-6,j+2);
+    }
+  }
+}
+
+
+
+void DRT::ELEMENTS::Ale2::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
+                                           vector<double>& displacements)
+{
+  const int iel = NumNode();                              // numnp to this element
+  const DiscretizationType distype = this->Shape();
+  int numcnd;                                             // number of corner nodes
+  int node_i, node_j;                                     // end nodes of actual spring
+  double length;                                          // length of actual edge
+  double sin, cos;                                        // direction of actual edge
+  double factor;
+
+
+  //number of corner nodes
+  switch (distype)
+  {
+  case DRT::Element::quad4:
+  case DRT::Element::quad8:
+  case DRT::Element::quad9:
+    numcnd = 4;
+    break;
+  case DRT::Element::tri3:
+  case DRT::Element::tri6:
+    numcnd = 3;
+    break;
+  default:
+    numcnd = 0;
+    dserror("distype unkown");
+  }
+
+  //Actual element coordinates
+  Epetra_SerialDenseMatrix xyze(2,iel);
+
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i)=Nodes()[i]->X()[0] + displacements[i*2];
+    xyze(1,i)=Nodes()[i]->X()[1] + displacements[i*2+1];
+  }
+
+
+  //lineal springs from all corner nodes to all corner nodes
+  //loop over all edges and diagonals of the element
+  for (node_i=0; node_i<numcnd; node_i++)
+  {
+    for (node_j=node_i+1; node_j<numcnd; node_j++)
+    {
+      edge_geometry(node_i,node_j,xyze,&length,&sin,&cos);
+      factor = 1.0 / length;
+      //put values in 'element stiffness'
+      (*sys_mat)(node_i*2,  node_i*2  ) += cos*cos * factor;
+      (*sys_mat)(node_i*2+1,node_i*2+1) += sin*sin * factor;
+      (*sys_mat)(node_i*2,  node_i*2+1) += sin*cos * factor;
+      (*sys_mat)(node_i*2+1,node_i*2  ) += sin*cos * factor;
+
+      (*sys_mat)(node_j*2,  node_j*2)   += cos*cos * factor;
+      (*sys_mat)(node_j*2+1,node_j*2+1) += sin*sin * factor;
+      (*sys_mat)(node_j*2,  node_j*2+1) += sin*cos * factor;
+      (*sys_mat)(node_j*2+1,node_j*2)   += sin*cos * factor;
+
+      (*sys_mat)(node_i*2,  node_j*2)   -= cos*cos * factor;
+      (*sys_mat)(node_i*2+1,node_j*2+1) -= sin*sin * factor;
+      (*sys_mat)(node_i*2,  node_j*2+1) -= sin*cos * factor;
+      (*sys_mat)(node_i*2+1,node_j*2)   -= sin*cos * factor;
+
+      (*sys_mat)(node_j*2,  node_i*2)   -= cos*cos * factor;
+      (*sys_mat)(node_j*2+1,node_i*2+1) -= sin*sin * factor;
+      (*sys_mat)(node_j*2,  node_i*2+1) -= sin*cos * factor;
+      (*sys_mat)(node_j*2+1,node_i*2)   -= sin*cos * factor;
+    }
+  }
+
+  //build in torsional springs
+  //and put edge nodes on the middle of the respective edge
+  switch (distype)
+  {
+    case DRT::Element::quad8:
+      (*sys_mat)(8,8) =  1.0;
+      (*sys_mat)(8,0) = -0.5;
+      (*sys_mat)(8,2) = -0.5;
+      (*sys_mat)(9,9) =  1.0;
+      (*sys_mat)(9,1) = -0.5;
+      (*sys_mat)(9,3) = -0.5;
+      (*sys_mat)(10,10) =  1.0;
+      (*sys_mat)(10,2)  = -0.5;
+      (*sys_mat)(10,4)  = -0.5;
+      (*sys_mat)(11,11) =  1.0;
+      (*sys_mat)(11,3)  = -0.5;
+      (*sys_mat)(11,5)  = -0.5;
+      (*sys_mat)(12,12) =  1.0;
+      (*sys_mat)(12,4)  = -0.5;
+      (*sys_mat)(12,6)  = -0.5;
+      (*sys_mat)(13,13) =  1.0;
+      (*sys_mat)(13,5)  = -0.5;
+      (*sys_mat)(13,7)  = -0.5;
+      (*sys_mat)(14,14) =  1.0;
+      (*sys_mat)(14,6)  = -0.5;
+      (*sys_mat)(14,0)  = -0.5;
+      (*sys_mat)(15,15) =  1.0;
+      (*sys_mat)(15,7)  = -0.5;
+      (*sys_mat)(15,1)  = -0.5;
+      ale2_tors_spring_quad4(sys_mat,xyze);
+      break;
+    case DRT::Element::quad9:
+      (*sys_mat)(8,8) =  1.0;
+      (*sys_mat)(8,0) = -0.5;
+      (*sys_mat)(8,2) = -0.5;
+      (*sys_mat)(9,9) =  1.0;
+      (*sys_mat)(9,1) = -0.5;
+      (*sys_mat)(9,3) = -0.5;
+      (*sys_mat)(10,10) =  1.0;
+      (*sys_mat)(10,2)  = -0.5;
+      (*sys_mat)(10,4)  = -0.5;
+      (*sys_mat)(11,11) =  1.0;
+      (*sys_mat)(11,3)  = -0.5;
+      (*sys_mat)(11,5)  = -0.5;
+      (*sys_mat)(12,12) =  1.0;
+      (*sys_mat)(12,4)  = -0.5;
+      (*sys_mat)(12,6)  = -0.5;
+      (*sys_mat)(13,13) =  1.0;
+      (*sys_mat)(13,5)  = -0.5;
+      (*sys_mat)(13,7)  = -0.5;
+      (*sys_mat)(14,14) =  1.0;
+      (*sys_mat)(14,6)  = -0.5;
+      (*sys_mat)(14,0)  = -0.5;
+      (*sys_mat)(15,15) =  1.0;
+      (*sys_mat)(15,7)  = -0.5;
+      (*sys_mat)(15,1)  = -0.5;
+      (*sys_mat)(16,16) =  1.0;
+      (*sys_mat)(16,8)  = -0.5;
+      (*sys_mat)(16,12) = -0.5;
+      (*sys_mat)(17,17) =  1.0;
+      (*sys_mat)(17,9)  = -0.5;
+      (*sys_mat)(17,13) = -0.5;
+      ale2_tors_spring_quad4(sys_mat,xyze);
+      break;
+    case DRT::Element::quad4:
+      ale2_tors_spring_quad4(sys_mat,xyze);
+      break;
+    case DRT::Element::tri3:
+      ale2_tors_spring_tri3(sys_mat,xyze);
+      break;
+    case DRT::Element::tri6:
+      (*sys_mat)(6,6) =  1.0;
+      (*sys_mat)(6,0) = -0.5;
+      (*sys_mat)(6,2) = -0.5;
+      (*sys_mat)(7,7) =  1.0;
+      (*sys_mat)(7,1) = -0.5;
+      (*sys_mat)(7,3) = -0.5;
+      (*sys_mat)(8,8) =  1.0;
+      (*sys_mat)(8,2) = -0.5;
+      (*sys_mat)(8,4) = -0.5;
+      (*sys_mat)(9,9) =  1.0;
+      (*sys_mat)(9,3) = -0.5;
+      (*sys_mat)(9,5) = -0.5;
+      (*sys_mat)(10,10) =  1.0;
+      (*sys_mat)(10,4)  = -0.5;
+      (*sys_mat)(10,0)  = -0.5;
+      (*sys_mat)(11,11) =  1.0;
+      (*sys_mat)(11,5)  = -0.5;
+      (*sys_mat)(11,1)  = -0.5;
+      ale2_tors_spring_tri3(sys_mat,xyze);
+      break;
+    default:
+      dserror("unknown distype in ale spring dynamic");
+      break;
+  }
+}
+
+//=======================================================================
+//=======================================================================
+
+
+
 void DRT::ELEMENTS::Ale2::static_ke(vector<int>&              lm,
                                     Epetra_SerialDenseMatrix* sys_mat,
                                     Epetra_SerialDenseVector* residual,
@@ -106,7 +496,7 @@ void DRT::ELEMENTS::Ale2::static_ke(vector<int>&              lm,
   const int nd  = 2 * iel;
   const DiscretizationType distype = this->Shape();
 
-  
+
   // get material using class StVenantKirchhoff
   if (material->MaterialType()!=m_stvenant)
     dserror("stvenant material expected but got type %d", material->MaterialType());
