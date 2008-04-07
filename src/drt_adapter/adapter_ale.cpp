@@ -21,6 +21,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 using namespace std;
 using namespace Teuchos;
@@ -56,16 +57,18 @@ extern struct _FILES  allfiles;
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
-                          Teuchos::RCP<LINALG::Solver> solver,
-                          Teuchos::RCP<ParameterList> params,
-                          Teuchos::RCP<IO::DiscretizationWriter> output,
-                          bool dirichletcond)
+                              Teuchos::RCP<LINALG::Solver> solver,
+                              Teuchos::RCP<ParameterList> params,
+                              Teuchos::RCP<IO::DiscretizationWriter> output,
+                              int aletype,
+                              bool dirichletcond)
   : discret_(actdis),
     solver_ (solver),
     params_ (params),
     output_ (output),
     step_(0),
     time_(0.0),
+    aletype_(aletype),
     sysmat_(null),
     restartstep_(0),
     uprestart_(params->get("write restart every", -1))
@@ -116,7 +119,6 @@ void ADAPTER::AleLinear::BuildSystemMatrix(bool full)
   }
 
   EvaluateElements();
-  //if (full)
   LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
 }
 
@@ -182,13 +184,14 @@ void ADAPTER::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) const
  *----------------------------------------------------------------------*/
 void ADAPTER::AleLinear::Solve()
 {
+  if (aletype_==ALE_DYNAMIC::springs)
+    EvaluateElements();
+
   // set fixed nodes
   ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
   discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,dirichtoggle_);
-
-  //EvaluateElements();
 
   LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
 
@@ -252,14 +255,23 @@ void ADAPTER::AleLinear::EvaluateElements()
   // create the parameters for the discretization
   ParameterList eleparams;
 
-  // action for elements
-  eleparams.set("action", "calc_ale_lin_stiff");
-
-  // other parameters that might be needed by the elements
-
   // set vector values needed by elements
   discret_->ClearState();
-  //discret_->SetState("dispnp", dispnp_);
+
+  // action for elements
+  if (aletype_==ALE_DYNAMIC::classic_lin)
+  {
+    eleparams.set("action", "calc_ale_lin_stiff");
+  }
+  else if (aletype_==ALE_DYNAMIC::springs)
+  {
+    discret_->SetState("dispnp", dispnp_);
+    eleparams.set("action", "calc_ale_spring");
+  }
+  else
+  {
+    dserror("unsupported ale type");
+  }
 
   discret_->Evaluate(eleparams,sysmat_,residual_);
   discret_->ClearState();
@@ -354,6 +366,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
   // -------------------------------------------------------------------
   SOLVAR        *actsolv  = &solv[genprob.numaf];
 
+  const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
   // -------------------------------------------------------------------
@@ -374,7 +387,13 @@ void ADAPTER::AleBaseAlgorithm::SetupAle()
   // restart
   params->set<int>("write restart every", fsidyn.get<int>("RESTARTEVRY"));
 
-  ale_ = rcp(new AleLinear(actdis, solver, params, output));
+  int aletype = Teuchos::getIntegralValue<int>(adyn,"ALE_TYPE");
+  if (aletype==ALE_DYNAMIC::classic_lin)
+    ale_ = rcp(new AleLinear(actdis, solver, params, output, aletype));
+  else if (aletype==ALE_DYNAMIC::springs)
+    ale_ = rcp(new AleLinear(actdis, solver, params, output, aletype));
+  else
+    dserror("ale type '%s' unsupported",adyn.get<std::string>("ALE_TYPE").c_str());
 }
 
 

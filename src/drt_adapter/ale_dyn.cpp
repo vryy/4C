@@ -13,6 +13,7 @@
 
 #include <Epetra_Time.h>
 #include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
@@ -96,7 +97,8 @@ void dyn_ale_drt()
   params->set<double>("maxtime", adyn.get<double>("MAXTIME"));
   params->set<double>("dt", adyn.get<double>("TIMESTEP"));
 
-  ADAPTER::AleLinear ale(actdis, solver, params, output);
+  int aletype = Teuchos::getIntegralValue<int>(adyn,"ALE_TYPE");
+  ADAPTER::AleLinear ale(actdis, solver, params, output, aletype);
 
   ale.BuildSystemMatrix();
   ale.Integrate();

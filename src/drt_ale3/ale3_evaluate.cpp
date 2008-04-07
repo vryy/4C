@@ -277,16 +277,16 @@ void DRT::ELEMENTS::Ale3::ale3_add_tria_stiffness(int node_p, int node_q, int no
   local_y = 0.0;
 
   //auxiliary vectors
-  blitz::Array<double,1> vector_sq(3);
-  blitz::Array<double,1> vector_pq(3);
-  blitz::Array<double,1> vector_rp(3);
-  blitz::Array<double,1> vector_pj(3);
-  blitz::Array<double,1> vector_res(3);
-  vector_sq = 0.0;
-  vector_pq = 0.0;
-  vector_rp = 0.0;
-  vector_pj = 0.0;
-  vector_res = 0.0;
+  blitz::Array<double,1> sq(3);
+  blitz::Array<double,1> pq(3);
+  blitz::Array<double,1> rp(3);
+  blitz::Array<double,1> pj(3);
+  blitz::Array<double,1> res(3);
+  sq = 0.0;
+  pq = 0.0;
+  rp = 0.0;
+  pj = 0.0;
+  res = 0.0;
 
   double length, factor, ex, ey, ez;
 
@@ -315,33 +315,34 @@ void DRT::ELEMENTS::Ale3::ale3_add_tria_stiffness(int node_p, int node_q, int no
     break;
   }
 
-  ale3_edge_geometry(node_s,node_q,xyze,&length,&vector_sq(0),&vector_sq(1),&vector_sq(2));
-  vector_sq = length*vector_sq;
-  ale3_edge_geometry(node_p,node_q,xyze,&length,&vector_pq(0),&vector_pq(1),&vector_pq(2));
-  vector_pq = length*vector_pq;
-  ale3_edge_geometry(node_r,node_p,xyze,&length,&vector_rp(0),&vector_rp(1),&vector_rp(2));
-  vector_rp = length*vector_rp;
+  ale3_edge_geometry(node_s,node_q,xyze,&length,&sq(0),&sq(1),&sq(2));
+  sq = length*sq;
+  ale3_edge_geometry(node_p,node_q,xyze,&length,&pq(0),&pq(1),&pq(2));
+  pq = length*pq;
+  ale3_edge_geometry(node_r,node_p,xyze,&length,&rp(0),&rp(1),&rp(2));
+  rp = length*rp;
 
 
-  //local_x := normal vector of face pqr = vector_pq x vector_rp
-  local_x(0) = vector_pq(1)*vector_rp(2)-vector_pq(2)*vector_rp(1);  //just an intermediate step
-  local_x(1) = vector_pq(2)*vector_rp(0)-vector_pq(0)*vector_rp(2);  //just an intermediate step
-  local_x(2) = vector_pq(0)*vector_rp(1)-vector_pq(1)*vector_rp(0);  //just an intermediate step
+  //local_x := normal vector of face pqr = pq x rp
+  local_x(0) = pq(1)*rp(2)-pq(2)*rp(1);  //just an intermediate step
+  local_x(1) = pq(2)*rp(0)-pq(0)*rp(2);  //just an intermediate step
+  local_x(2) = pq(0)*rp(1)-pq(1)*rp(0);  //just an intermediate step
   length = sqrt(local_x(0)*local_x(0)+local_x(1)*local_x(1)+local_x(2)*local_x(2));
   local_x = (1.0/length)*local_x;
 
-  //local x-value of s xyze_dyn_tria(0,0) := (-1.0)*vector_sq*local_x (local origin lies on plane pqr)
+  //local x-value of s xyze_dyn_tria(0,0) := (-1.0)*sq*local_x (local origin lies on plane pqr)
   //local y-value of s xyze_dyn_tria(1,0 := 0.0
-  xyze_dyn_tria(0,0)=(-1.0)*(vector_sq(0)*local_x(0)+vector_sq(1)*local_x(1)+vector_sq(2)*local_x(2));
+  xyze_dyn_tria(0,0)=(-1.0)*(sq(0)*local_x(0)+sq(1)*local_x(1)+sq(2)*local_x(2));
   xyze_dyn_tria(1,0)=0.0;
 
-  //local_y = (vector_sq + xyze_dyn_tria(0,0)*local_x)/|(vector_sq + xyze_dyn_tria(0,0)*local_x)|
-  //xyze_dyn_tria(1,2) = |vector_sq + xyze_dyn_tria(0,0)*local_x|, xyze_dyn_tria(0,2) := 0.0
-  local_y = vector_sq + xyze_dyn_tria(0,0)*local_x;  //just an intermediate step
+  //local_y = (sq + xyze_dyn_tria(0,0)*local_x)/|(sq + xyze_dyn_tria(0,0)*local_x)|
+  //xyze_dyn_tria(1,2) = |sq + xyze_dyn_tria(0,0)*local_x|, xyze_dyn_tria(0,2) := 0.0
+  local_y = sq + xyze_dyn_tria(0,0)*local_x;  //just an intermediate step
   xyze_dyn_tria(1,2) = sqrt(local_y(0)*local_y(0)+local_y(1)*local_y(1)+local_y(2)*local_y(2));
   xyze_dyn_tria(0,2) = 0.0;
 
-  if (((xyze_dyn_tria(1,2)/xyze_dyn_tria(0,0)) < (1.0E-4)) && (((-1.0)*(xyze_dyn_tria(1,2)/xyze_dyn_tria(0,0))) < (1.0E-4))) //if s lies directly above q calculate stiffness of lineal spring s-q
+  //if s lies directly above q calculate stiffness of lineal spring s-q
+  if (fabs(xyze_dyn_tria(1,2)/xyze_dyn_tria(0,0)) < 1e-4)
   {
     ale3_edge_geometry(node_s,node_q,xyze,&length,&ex,&ey,&ez);
     factor = 1.0 / length;
@@ -400,10 +401,10 @@ void DRT::ELEMENTS::Ale3::ale3_add_tria_stiffness(int node_p, int node_q, int no
   {
     local_y = (1.0/xyze_dyn_tria(1,2))*local_y;
 
-    //local x,y-values of j, using vector_pO + vector_Oj + vector_jp = 0
+    //local x,y-values of j, using pO + Oj + jp = 0
     //(O is local origin on plane pqr)
     xyze_dyn_tria(0,1) = 0.0;
-    vector_res = xyze_dyn_tria(1,2)*local_y - vector_pq;
+    res = xyze_dyn_tria(1,2)*local_y - pq;
 
     double numerator = 0.0;
     double denominator = 1.0;
@@ -411,88 +412,92 @@ void DRT::ELEMENTS::Ale3::ale3_add_tria_stiffness(int node_p, int node_q, int no
     int solved = 0;
 
     //solve linear system of equations, case differentiation
-    if (!solved && !((vector_rp(0)<(1.0E-14)) && (((-1.0)*vector_rp(0))<(1.0E-14))) && !((local_y(1)<(1.0E-14)) && (((-1.0)*local_y(1))<(1.0E-14))))
+    if (!solved and fabs(rp(0))>1e-14 and fabs(local_y(1))>1e-14)
     {
-      numerator = (vector_res(1)-(vector_rp(1)/vector_rp(0))*vector_res(0));
-      denominator = (local_y(1)-(vector_rp(1)/vector_rp(0))*local_y(0));
+      numerator = (res(1)-(rp(1)/rp(0))*res(0));
+      denominator = (local_y(1)-(rp(1)/rp(0))*local_y(0));
 
       //check if result (value j_y) is valid, using third equation
-      if (!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6))))
+      if (fabs(denominator)>1e-6)
       {
-        f = (vector_res(0)-(numerator/denominator)*local_y(0))/vector_rp(0);
-        check = (local_y(2)*(numerator/denominator)+vector_rp(2)*f)-vector_res(2);
-        if ((check<(1.0E-6)&&(((-1.0)*check)<(1.0E-6)))&&((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))) solved = 1;
+        f = (res(0)-(numerator/denominator)*local_y(0))/rp(0);
+        check = (local_y(2)*(numerator/denominator)+rp(2)*f)-res(2);
+        if (fabs(check)<1e-6 and fabs(numerator/denominator)<1e10)
+          solved = 1;
       }
-      //if (((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))&&(!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6)))))  solved = 1;
     }
-    if (!solved && !((vector_rp(0)<(1.0E-14)) && (((-1.0)*vector_rp(0))<(1.0E-14))) && !((local_y(2)<(1.0E-14)) && (((-1.0)*local_y(2))<(1.0E-14))))
+    if (!solved and fabs(rp(0))>1e-14 and fabs(local_y(2))>1e-14)
     {
-      numerator = (vector_res(2)-(vector_rp(2)/vector_rp(0))*vector_res(0));
-      denominator = (local_y(2)-(vector_rp(2)/vector_rp(0))*local_y(0));
+      numerator = (res(2)-(rp(2)/rp(0))*res(0));
+      denominator = (local_y(2)-(rp(2)/rp(0))*local_y(0));
 
       //check if result (value j_y) is valid, using second equation
-      if (!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6))))
+      if (fabs(denominator)>1e-6)
       {
-        f = (vector_res(0)-(numerator/denominator)*local_y(0))/vector_rp(0);
-        check = (local_y(1)*(numerator/denominator)+vector_rp(1)*f)-vector_res(1);
-        if ((check<(1.0E-6)&&(((-1.0)*check)<(1.0E-6)))&&((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))) solved = 1;
+        f = (res(0)-(numerator/denominator)*local_y(0))/rp(0);
+        check = (local_y(1)*(numerator/denominator)+rp(1)*f)-res(1);
+        if (fabs(check)<1e-6 and fabs(numerator/denominator)<1e10)
+          solved = 1;
       }
     }
-    if (!solved && !((vector_rp(1)<(1.0E-14)) && (((-1.0)*vector_rp(1))<(1.0E-14))) && !((local_y(0)<(1.0E-14)) && (((-1.0)*local_y(0))<(1.0E-14))))
+    if (!solved and fabs(rp(1))>1e-14 and fabs(local_y(0))>1e-14)
     {
-      numerator = (vector_res(0)-(vector_rp(0)/vector_rp(1))*vector_res(1));
-      denominator = (local_y(0)-(vector_rp(0)/vector_rp(1))*local_y(1));
+      numerator = (res(0)-(rp(0)/rp(1))*res(1));
+      denominator = (local_y(0)-(rp(0)/rp(1))*local_y(1));
 
       //check if result (value j_y) is valid, using third equation
-      if (!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6))))
+      if (fabs(denominator)>1e-6)
       {
-        f = (vector_res(1)-(numerator/denominator)*local_y(1))/vector_rp(1);
-        check = (local_y(2)*(numerator/denominator)+vector_rp(2)*f)-vector_res(2);
-        if ((check<(1.0E-6)&&(((-1.0)*check)<(1.0E-6)))&&((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))) solved = 1;
+        f = (res(1)-(numerator/denominator)*local_y(1))/rp(1);
+        check = (local_y(2)*(numerator/denominator)+rp(2)*f)-res(2);
+        if (fabs(check)<1e-6 and fabs(numerator/denominator)<1e10)
+          solved = 1;
       }
     }
-    if (!solved && !((vector_rp(1)<(1.0E-14)) && (((-1.0)*vector_rp(1))<(1.0E-14))) && !((local_y(2)<(1.0E-14)) && (((-1.0)*local_y(2))<(1.0E-14))))
+    if (!solved and fabs(rp(1))>1e-14 and fabs(local_y(2))>1e-14)
     {
-      numerator = (vector_res(2)-(vector_rp(2)/vector_rp(1))*vector_res(1));
-      denominator = (local_y(2)-(vector_rp(2)/vector_rp(1))*local_y(1));
+      numerator = (res(2)-(rp(2)/rp(1))*res(1));
+      denominator = (local_y(2)-(rp(2)/rp(1))*local_y(1));
 
       //check if result (value j_y) is valid, using first equation
-      if (!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6))))
+      if (fabs(denominator)>1e-6)
       {
-        f = (vector_res(1)-(numerator/denominator)*local_y(1))/vector_rp(1);
-        check = (local_y(0)*(numerator/denominator)+vector_rp(0)*f)-vector_res(0);
-        if ((check<(1.0E-6)&&(((-1.0)*check)<(1.0E-6)))&&((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))) solved = 1;
+        f = (res(1)-(numerator/denominator)*local_y(1))/rp(1);
+        check = (local_y(0)*(numerator/denominator)+rp(0)*f)-res(0);
+        if (fabs(check)<1e-6 and fabs(numerator/denominator)<1e10)
+          solved = 1;
       }
     }
-    if (!solved && !((vector_rp(2)<(1.0E-14)) && (((-1.0)*vector_rp(2))<(1.0E-14))) && !((local_y(0)<(1.0E-14)) && (((-1.0)*local_y(0))<(1.0E-14))))
+    if (!solved and fabs(rp(2))>1e-14 and fabs(local_y(0))>1e-14)
     {
-      numerator = (vector_res(0)-(vector_rp(0)/vector_rp(2))*vector_res(2));
-      denominator = (local_y(0)-(vector_rp(0)/vector_rp(2))*local_y(2));
+      numerator = (res(0)-(rp(0)/rp(2))*res(2));
+      denominator = (local_y(0)-(rp(0)/rp(2))*local_y(2));
 
       //check if result (value j_y) is valid, using second equation
-      if (!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6))))
+      if (fabs(denominator)>1e-6)
       {
-        f = (vector_res(2)-(numerator/denominator)*local_y(2))/vector_rp(2);
-        check = (local_y(1)*(numerator/denominator)+vector_rp(1)*f)-vector_res(1);
-        if ((check<(1.0E-6)&&(((-1.0)*check)<(1.0E-6)))&&((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))) solved = 1;
+        f = (res(2)-(numerator/denominator)*local_y(2))/rp(2);
+        check = (local_y(1)*(numerator/denominator)+rp(1)*f)-res(1);
+        if (fabs(check)<1e-6 and fabs(numerator/denominator)<1e10)
+          solved = 1;
       }
     }
-    if (!solved && !((vector_rp(2)<(1.0E-14)) && (((-1.0)*vector_rp(2))<(1.0E-14))) && !((local_y(1)<(1.0E-14)) && (((-1.0)*local_y(1))<(1.0E-14))))
+    if (!solved and fabs(rp(2))>1e-14 and fabs(local_y(1))>1e-14)
     {
-      numerator = (vector_res(1)-(vector_rp(1)/vector_rp(2))*vector_res(2));
-      denominator = (local_y(1)-(vector_rp(1)/vector_rp(2))*local_y(2));
+      numerator = (res(1)-(rp(1)/rp(2))*res(2));
+      denominator = (local_y(1)-(rp(1)/rp(2))*local_y(2));
 
       //check if result (value j_y) is valid, using first equation
-      if (!((denominator<(1.0E-6))&&(((-1.0)*denominator)<(1.0E-6))))
+      if (fabs(denominator)>1e-6)
       {
-        f = (vector_res(2)-(numerator/denominator)*local_y(2))/vector_rp(2);
-        check = (local_y(0)*(numerator/denominator)+vector_rp(0)*f)-vector_res(0);
-        if ((check<(1.0E-6)&&(((-1.0)*check)<(1.0E-6)))&&((((numerator/denominator)<(1.0E+10))&&(((-1.0)*(numerator/denominator))<(1.0E+10))))) solved = 1;
+        f = (res(2)-(numerator/denominator)*local_y(2))/rp(2);
+        check = (local_y(0)*(numerator/denominator)+rp(0)*f)-res(0);
+        if (fabs(check)<1e-6 and fabs(numerator/denominator)<1e10)
+          solved = 1;
       }
     }
 
     xyze_dyn_tria(1,1) = (numerator/denominator);
-
 
     if (solved)
     {
@@ -528,11 +533,11 @@ void DRT::ELEMENTS::Ale3::ale3_add_tria_stiffness(int node_p, int node_q, int no
       //S transfers elastic forces at s,q,j to cornernodes p,q,r,s of the
       //tetrahedron
       double lambda;
-      vector_pj = vector_pq + (xyze_dyn_tria(1,1)-xyze_dyn_tria(1,2))*local_y;
-      if ((vector_pj(0)*vector_rp(0)+vector_pj(1)*vector_rp(1)+vector_pj(2)*vector_rp(2))<0.0)
+      pj = pq + (xyze_dyn_tria(1,1)-xyze_dyn_tria(1,2))*local_y;
+      if ((pj(0)*rp(0)+pj(1)*rp(1)+pj(2)*rp(2))<0.0)
       {
-        lambda = sqrt((vector_pj(0)*vector_pj(0)+vector_pj(1)*vector_pj(1)+vector_pj(2)*vector_pj(2))/
-                      (vector_rp(0)*vector_rp(0)+vector_rp(1)*vector_rp(1)+vector_rp(2)*vector_rp(2)));
+        lambda = sqrt((pj(0)*pj(0)+pj(1)*pj(1)+pj(2)*pj(2))/
+                      (rp(0)*rp(0)+rp(1)*rp(1)+rp(2)*rp(2)));
         lambda = min(1.0,lambda);
       }
       else
@@ -556,7 +561,7 @@ void DRT::ELEMENTS::Ale3::ale3_add_tria_stiffness(int node_p, int node_q, int no
       //Sort values in element's sys_mat
       for (int elem_node_i=0; elem_node_i<numcnd; elem_node_i++)
         for (int elem_node_j=0; elem_node_j<numcnd; elem_node_j++)
-          if (((elem_node_i == node_p)||(elem_node_i == node_q)||(elem_node_i == node_r)||(elem_node_i == node_s))&&((elem_node_j == node_p)||(elem_node_j == node_q)||(elem_node_j == node_r)||(elem_node_j == node_s)))
+          if (((elem_node_i == node_p)||(elem_node_i == node_q)||(elem_node_i == node_r)||(elem_node_i == node_s))and((elem_node_j == node_p)||(elem_node_j == node_q)||(elem_node_j == node_r)||(elem_node_j == node_s)))
           {
             int elem_node_i_tetID = ((0*((int)(elem_node_i == node_p)))+(1*((int)(elem_node_i == node_q)))+(2*((int)(elem_node_i == node_r)))+(3*((int)(elem_node_i == node_s))));
             int elem_node_j_tetID = ((0*((int)(elem_node_j == node_p)))+(1*((int)(elem_node_j == node_q)))+(2*((int)(elem_node_j == node_r)))+(3*((int)(elem_node_j == node_s))));
@@ -598,9 +603,9 @@ void DRT::ELEMENTS::Ale3::ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet
   for (node_p=0; node_p<3; node_p++)
     for (node_r = node_p+1; node_r<4; node_r++)
       for (node_q=0; node_q<4; node_q++)
-        if ((node_q != node_p)&&(node_q != node_r))
+        if ((node_q != node_p)and(node_q != node_r))
           for (node_s=0; node_s<4; node_s++)
-            if ((node_s != node_p)&&(node_s != node_q)&&(node_s != node_r))
+            if ((node_s != node_p)and(node_s != node_q)and(node_s != node_r))
               ale3_add_tria_stiffness(nodeID(node_p),nodeID(node_q),nodeID(node_r),nodeID(node_s),sys_mat,xyze);
 }
 
@@ -628,9 +633,9 @@ void DRT::ELEMENTS::Ale3::ale3_tors_spring_wedge6(Epetra_SerialDenseMatrix* sys_
       for (tet_2=tet_1+1; tet_2<5; tet_2++)
         for (tet_3=tet_2+1; tet_3<6; tet_3++)
         {
-          if (!((tet_0==0 && tet_1==1 && tet_2==3 && tet_3==4)||
-                (tet_0==0 && tet_1==2 && tet_2==3 && tet_3==5)||
-                (tet_0==1 && tet_1==2 && tet_2==4 && tet_3==5)))
+          if (!((tet_0==0 and tet_1==1 and tet_2==3 and tet_3==4)||
+                (tet_0==0 and tet_1==2 and tet_2==3 and tet_3==5)||
+                (tet_0==1 and tet_1==2 and tet_2==4 and tet_3==5)))
             ale3_add_tetra_stiffness(tet_2, tet_0, tet_1, tet_3, sys_mat, xyze);
         }
 }
@@ -648,18 +653,18 @@ void DRT::ELEMENTS::Ale3::ale3_tors_spring_hex8(Epetra_SerialDenseMatrix* sys_ma
 //         {
 //           //if the 4 nodes don't belong to a face or diagonal plane of the hexahedron they form
 //           //a tetrahedron
-//           if (!((tet_0==0 && tet_1==1 && tet_2==2 && tet_3==3)||
-//                 (tet_0==0 && tet_1==1 && tet_2==4 && tet_3==5)||
-//                 (tet_0==0 && tet_1==3 && tet_2==4 && tet_3==7)||
-//                 (tet_0==0 && tet_1==1 && tet_2==6 && tet_3==7)||
-//                 (tet_0==0 && tet_1==3 && tet_2==5 && tet_3==6)||
-//                 (tet_0==0 && tet_1==2 && tet_2==4 && tet_3==6)||
-//                 (tet_0==1 && tet_1==2 && tet_2==5 && tet_3==6)||
-//                 (tet_0==1 && tet_1==2 && tet_2==4 && tet_3==7)||
-//                 (tet_0==1 && tet_1==3 && tet_2==5 && tet_3==7)||
-//                 (tet_0==2 && tet_1==3 && tet_2==6 && tet_3==7)||
-//                 (tet_0==2 && tet_1==3 && tet_2==4 && tet_3==5)||
-//                 (tet_0==4 && tet_1==5 && tet_2==6 && tet_3==7)))
+//           if (!((tet_0==0 and tet_1==1 and tet_2==2 and tet_3==3)||
+//                 (tet_0==0 and tet_1==1 and tet_2==4 and tet_3==5)||
+//                 (tet_0==0 and tet_1==3 and tet_2==4 and tet_3==7)||
+//                 (tet_0==0 and tet_1==1 and tet_2==6 and tet_3==7)||
+//                 (tet_0==0 and tet_1==3 and tet_2==5 and tet_3==6)||
+//                 (tet_0==0 and tet_1==2 and tet_2==4 and tet_3==6)||
+//                 (tet_0==1 and tet_1==2 and tet_2==5 and tet_3==6)||
+//                 (tet_0==1 and tet_1==2 and tet_2==4 and tet_3==7)||
+//                 (tet_0==1 and tet_1==3 and tet_2==5 and tet_3==7)||
+//                 (tet_0==2 and tet_1==3 and tet_2==6 and tet_3==7)||
+//                 (tet_0==2 and tet_1==3 and tet_2==4 and tet_3==5)||
+//                 (tet_0==4 and tet_1==5 and tet_2==6 and tet_3==7)))
 //             ale3_add_tetra_stiffness(tet_2, tet_0, tet_1, tet_3, sys_mat, xyze);
 //         }
 
@@ -1230,7 +1235,7 @@ void DRT::ELEMENTS::Ale3::static_ke(vector<int>&              lm,
 	//Integration rule for hour-glass-stabilization. Not used in the moment. If needed,
 	//it should be implemented within the getOptimalGaussrule-method
 #if 0
-        if (distype==hex8 && intpoints.nquad == 1)
+        if (distype==hex8 and intpoints.nquad == 1)
         {
           const double ee = material->m.stvenant->youngs;
           const double nu = material->m.stvenant->possionratio;

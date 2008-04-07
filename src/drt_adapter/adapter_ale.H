@@ -161,6 +161,7 @@ public:
             Teuchos::RCP<LINALG::Solver> solver,
             Teuchos::RCP<ParameterList> params,
             Teuchos::RCP<IO::DiscretizationWriter> output,
+            int aletype,
             bool dirichletcond=true);
 
   /// build system matrix
@@ -235,6 +236,8 @@ private:
   double time_;
   double maxtime_;
   double dt_;
+
+  int aletype_;
 
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 

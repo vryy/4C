@@ -82,7 +82,7 @@ REYNOLDS-STRESS       no_reynolds
 TIMESTEP     0.1
 NUMSTEP      41 
 MAXTIME      4.0
-ALE_TYPE     classic_lin
+ALE_TYPE     springs
 NUM_INITSTEP 0
 RESEVRYDISP  1
 QUALITY      none

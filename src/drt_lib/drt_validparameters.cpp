@@ -422,10 +422,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scontact = list->sublist("STRUCTURAL CONTACT",false,"");
-  
+
   setStringToIntegralParameter("CONTACT","No","",yesnotuple,yesnovalue,&scontact);
   setStringToIntegralParameter("INIT_CONTACT","No","",yesnotuple,yesnovalue,&scontact);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 
@@ -836,9 +836,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TIMESTEP",0.1,"",&adyn);
   IntParameter("NUMSTEP",41,"",&adyn);
   DoubleParameter("MAXTIME",4.0,"",&adyn);
-  setStringToIntegralParameter("ALE_TYPE","classic_lin","",
-                               tuple<std::string>("classic_lin"),
-                               tuple<int>(ALE_DYNAMIC::classic_lin),
+  setStringToIntegralParameter("ALE_TYPE","classic_lin","ale mesh algorithm",
+                               tuple<std::string>("classic_lin","springs"),
+                               tuple<int>(ALE_DYNAMIC::classic_lin,
+                                          ALE_DYNAMIC::springs),
                                &adyn);
   IntParameter("NUM_INITSTEP",0,"",&adyn);
   IntParameter("RESEVRYDISP",1,"",&adyn);
