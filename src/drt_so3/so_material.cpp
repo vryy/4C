@@ -38,6 +38,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/hyperpolyconvex.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/anisotropic_balzani.H"
+#include "../drt_mat/aaaneohooke.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -122,6 +123,13 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
 
       break;
     }
+    case m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
+    {
+      MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
+      aaa->Evaluate(glstrain,cmat,stress);
+      *density = aaa->Density();
+    }
+    break;
     default:
       dserror("Illegal type %d of material for element solid3 hex8", mat->MaterialType());
       break;

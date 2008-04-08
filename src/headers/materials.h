@@ -33,6 +33,7 @@ typedef struct _MATERIAL
      struct _STVENPOR         *stvenpor;     /* porous St. Ven.-Kirch. material */
      struct _PL_POR_MISES     *pl_por_mises; /* porous von Mises material */
      struct _NEO_HOOKE        *neohooke;     /* Neo-Hooke material */
+     struct _AAA_NEO_HOOKE    *aaaneohooke;  /* quasi Neo-Hooke material for aneurysmatic artery wall*/
      struct _COMPOGDEN        *compogden;    /* compressible ogden hyperelastic material */
      struct _VISCOHYPER       *viscohyper;   /* viscoelastic compressible ogden hyperelastic material */
      struct _FLUID            *fluid;        /* fluid material */
@@ -119,6 +120,16 @@ typedef struct _NEO_HOOKE
      DOUBLE                    possionratio;   /* Possion ratio */
      DOUBLE                    density;        /* material specific weight */
 } NEO_HOOKE;
+
+/*----------------------------------------------------------------------*
+ | AAA generalised Neo Hooke material                     chfoe 4/08    |
+ *----------------------------------------------------------------------*/
+typedef struct _AAA_NEO_HOOKE
+{
+     DOUBLE                    youngs;        /* Young's modulus */
+     DOUBLE                    beta;          /* 2nd parameter */
+     DOUBLE                    density;        /* material specific weight */
+} AAA_NEO_HOOKE;
 
 /*----------------------------------------------------------------------*
  | compressible ogden material                            m.gee 6/03    |

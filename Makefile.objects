@@ -456,7 +456,7 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8_surface.o \
                 src/drt_so3/so_disp_line_evaluate.o \
                 src/drt_so3/so_disp_surface_evaluate.o \
                 src/drt_so3/so_disp_evaluate.o \
-				        src/drt_so3/so_integrator.o\
+                src/drt_so3/so_integrator.o\
                 src/drt_so3/so_shw6.o \
                 src/drt_so3/so_shw6_evaluate.o \
                 src/drt_so3/so_shw6_input.o \
@@ -840,6 +840,7 @@ OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
 		src/drt_mat/stvenantkirchhoff.o \
 		src/drt_mat/hyperpolyconvex.o \
 		src/drt_mat/neohooke.o \
+                src/drt_mat/aaaneohooke.o \
 		src/drt_mat/anisotropic_balzani.o \
 		src/drt_mat/convecdiffus.o \
 		src/drt_mat/material.o
