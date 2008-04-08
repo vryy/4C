@@ -62,6 +62,7 @@ extern "C"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/neohooke.H"
+#include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/hyperpolyconvex.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/convecdiffus.H"
@@ -440,6 +441,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
 	MAT::NeoHooke* neo = new MAT::NeoHooke();
 	neo->Unpack(data);
 	return neo;
+    }
+    case ParObject_AAAneohooke:
+    {
+	MAT::AAAneohooke* aaa = new MAT::AAAneohooke();
+	aaa->Unpack(data);
+	return aaa;
     }
     case ParObject_ConvecDiffus:
     {
