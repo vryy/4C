@@ -87,6 +87,7 @@ namespace LINALG
 
 // forward declarations
 class SparseMatrix;
+class DownwindMatrix;
 
 /*!
 \brief A general solver interface to Trilinos solvers and spooles
@@ -335,6 +336,9 @@ private:
 
   //! reindex linear problem for amesos
   RCP<EpetraExt::LinearProblem_Reindex> reindexer_;
+
+  //! downwinding reindexer for downwind smoothers
+  RCP<LINALG::DownwindMatrix> dwind_;
 
 #ifdef PARALLEL
 #ifdef SPOOLES_PACKAGE

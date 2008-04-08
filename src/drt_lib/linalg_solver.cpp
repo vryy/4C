@@ -315,6 +315,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   if (!Params().isSublist("Aztec Parameters"))
     dserror("Do not have aztec parameter list");
   ParameterList& azlist = Params().sublist("Aztec Parameters");
+  int azoutput = azlist.get<int>("AZ_output",0);
 
   // see whether Operator is a Epetra_CrsMatrix
   Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
@@ -386,8 +387,47 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     lp_->RightScale(invdiag);
   }
 
+  // get type of preconditioner and build either Ifpack or ML
+  // if we have an ifpack parameter list, we do ifpack
+  // if we have an ml parameter list we do ml
+  // if we have a downwinding flag we downwind the linear problem
+  bool   doifpack = Params().isSublist("IFPACK Parameters");
+  bool   doml     = Params().isSublist("ML Parameters");
+  bool   dwind    = azlist.get<bool>("downwinding",false);
+  if (!A) 
+  {
+    doifpack = false;
+    dwind    = false; // we can do downwinding inside SIMPLER if desired
+  }
+  
+  if (create && dwind)
+  { 
+    double tau  = azlist.get<double>("downwinding tau",1.5);
+    int    nv   = azlist.get<int>("downwinding nv",1);
+    int    np   = azlist.get<int>("downwinding np",0);
+    RCP<Epetra_CrsMatrix> fool = rcp(A,false);
+    dwind_ = rcp(new LINALG::DownwindMatrix(fool,nv,np,tau,azoutput));
+  }
+  if (dwind && dwind_==null) dserror("Do not have downwinding matrix");
+    
   // pass linear problem to aztec
-  aztec_->SetProblem(*lp_);
+  RCP<Epetra_LinearProblem> dwproblem;
+  RCP<Epetra_CrsMatrix>     dwA;
+  RCP<Epetra_MultiVector>   dwx;
+  RCP<Epetra_MultiVector>   dwb;
+  if (!dwind) aztec_->SetProblem(*lp_);
+  else        
+  {
+    dwA = dwind_->ReindexMatrix(A);
+    dwx = dwind_->ReindexVector(lp_->GetLHS());
+    dwb = dwind_->ReindexVector(lp_->GetRHS());
+    dwproblem = rcp(new Epetra_LinearProblem());
+    dwproblem->SetOperator(dwA.get());
+    dwproblem->SetLHS(dwx.get());
+    dwproblem->SetRHS(dwb.get());
+    aztec_->SetProblem(*dwproblem);
+    A = dwA.get();
+  }
 
   // Don't want linear problem to alter our aztec parameters (idiot feature!)
   // this is why we set our list here AFTER the linear problem has been set
@@ -400,26 +440,12 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   aztec_->SetParameters(azlist,false);
   azlist.set("scaling",scaling);
 
-  // get type of preconditioner and build either Ifpack or ML
-  // if we have an ifpack parameter list, we do ifpack
-  // if we have an ml parameter list we do ml
-  // if we have a downwinding flag we downwind
-  bool doifpack = Params().isSublist("IFPACK Parameters");
-  bool doml     = Params().isSublist("ML Parameters");
-  bool dwind    = azlist.get<bool>("downwinding",false);
-  if (!A)
-  {
-    doifpack = false;
-    // simple on a block matrix needs ml as well
-    //doml     = false;
-  }
-
   // do ifpack if desired
   if (create && doifpack)
   {
     ParameterList&  ifpacklist = Params().sublist("IFPACK Parameters");
     // create a copy of the scaled matrix
-    // so we can reuse the precondition
+    // so we can reuse the preconditioner
     Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
     // get the type of ifpack preconditioner from aztec
     string prectype = azlist.get("preconditioner","ILU");
@@ -450,6 +476,8 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     else if (dosimpler)
     {
       // SIMPLER does not need copy of preconditioning matrix to live
+      // SIMPLER does not use the downwinding installed here, it does 
+      // its own downwinding inside if desired
       P_ = rcp(new LINALG::SIMPLER_Operator(A_,
                                             Params(),
                                             Params().sublist("SIMPLER"),
@@ -458,7 +486,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     }
     else
     {
-      // create a copy of the scaled matrix
+      // create a copy of the scaled (and downwinded) matrix
       // so we can reuse the preconditioner several times
       Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
       P_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist,true));
@@ -467,12 +495,27 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     }
   }
 
-  if (doifpack || doml)
-    aztec_->SetPrecOperator(P_.get());
+  // set preconditioner
+  if (doifpack || doml) aztec_->SetPrecOperator(P_.get());
+  
   // iterate on the solution
   int iter = azlist.get("AZ_max_iter",500);
   double tol = azlist.get("AZ_tol",1.0e-6);
   aztec_->Iterate(iter,tol);
+  
+  // undo downwinding
+  if (dwind)
+  {
+    // undo reordering of lhs, don't care for rhs
+    dwind_->UndoReindexVector(dwproblem->GetLHS(),lp_->GetLHS());
+    // undo reordering of matrix (by pointing to original matrix)
+    if (A) A = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
+    // trash temporary data
+    dwproblem = null;
+    dwA = null;
+    dwx = null;
+    dwb = null;
+  }
 
   // check status of solution process
   const double* status = aztec_->GetAztecStatus();
@@ -496,30 +539,6 @@ void LINALG::Solver::Solve_aztec(const bool reset)
       if (Comm().MyPID()==0)
         printf("Max iterations reached in AztecOO\n");
       resolve = true;
-    }
-    if (resolve)
-    {
-#if 0
-#ifdef PARALLEL
-      if (Comm().MyPID()==0) cout << "Retrying using SuperLU\n"; fflush(stdout);
-      Amesos_Superludist superlusolver(*lp_);
-      int err = superlusolver.SymbolicFactorization();
-      if (err) dserror("SuperLU.SymbolicFactorization() returned %d",err);
-      err     = superlusolver.NumericFactorization();
-      if (err) dserror("SuperLU.NumericFactorization() returned %d",err);
-      err     = superlusolver.Solve();
-      if (err) dserror("SuperLU.Solve() returned %d",err);
-#else
-      if (Comm().MyPID()==0) cout << "Retrying using KLU\n"; fflush(stdout);
-      Amesos_Klu klusolver(*lp_);
-      int err = klusolver.SymbolicFactorization();
-      if (err) dserror("Amesos_Klu.SymbolicFactorization() returned %d",err);
-      err     = klusolver.NumericFactorization();
-      if (err) dserror("Amesos_Klu.NumericFactorization() returned %d",err);
-      err     = klusolver.Solve();
-      if (err) dserror("Amesos_Klu.Solve() returned %d",err);
-#endif
-#endif
     }
   } // if (status[AZ_why] != AZ_normal)
 
@@ -781,6 +800,7 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","point relaxation");
       azlist.set<bool>("downwinding",true);
+      azlist.set<double>("downwinding tau",azvar->dwindtau);
     break;
     case azprec_LU:
       // using ifpack
@@ -941,6 +961,11 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
           mllist.set("smoother: sweeps "+(string)levelstr                  ,azvar->mlsmotimes[i]);
           mllist.set("smoother: damping factor "+(string)levelstr          ,damp);
           azlist.set<bool>("downwinding",true);
+          azlist.set<double>("downwinding tau",azvar->dwindtau);
+          {
+            ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
+            ifpacklist.set("schwarz: reordering type","true");
+          }
         break;
         case 1: // Jacobi
           mllist.set("smoother: type "+(string)levelstr                    ,"Jacobi");
@@ -996,6 +1021,11 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
           mllist.set("coarse: sweeps"        , azvar->mlsmotimes[coarse]);
           mllist.set("coarse: damping factor",azvar->mldamp_coarse);
           azlist.set<bool>("downwinding",true);
+          azlist.set<double>("downwinding tau",azvar->dwindtau);
+          {
+            ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
+            ifpacklist.set("schwarz: reordering type","true");
+          }
         break;
         case 1:
           mllist.set("coarse: type"          ,"Jacobi");
