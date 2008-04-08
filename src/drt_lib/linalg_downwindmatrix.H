@@ -37,7 +37,7 @@ namespace LINALG
 /*!
 \author gee (gee@lnm.mw.tum.de)
 
-\brief Creates a convection downwind numbering of a linear problem
+\brief Creates a convection downwind numbering of a matrix
 */
 class  DownwindMatrix
 {
@@ -61,115 +61,44 @@ public:
   virtual ~DownwindMatrix() {}
 
   /*!
-  \brief return reindexed linear problem
-  
-  Takes a linear problem and reindexes it. 
-  The lp provided must contain a Epetra_CrsMatrix, a rhs and lhs MultiVector.
-  Returns a ref to the reindexed problem.
-  Note that this class remains owner of the reindexed problem and destroys it
-  in its ctor.
-  
-  \param lp (in): original linear problem
-  \return reference to reindexed linear problem
+  \brief reindex a given matrix
   */
-  Epetra_LinearProblem& ReindexedProblem(Epetra_LinearProblem& lp)
+  RCP<Epetra_CrsMatrix> ReindexMatrix(Epetra_CrsMatrix* Aorig)
   {
-    // shallow redinex the problem, always create new reindexer
-    lpreindex_  = rcp(new EpetraExt::LinearProblem_Reindex(ndofrowmap_.get()));
-    Epetra_LinearProblem& reproblem = (*lpreindex_)(lp);
-    
-    // Allocate sorted reindex linear problem
-    sreproblem_ = rcp(new Epetra_LinearProblem());
-    
-    // get matrix, lhs and rhs
-    Epetra_CrsMatrix* matrix = dynamic_cast<Epetra_CrsMatrix*>(reproblem.GetMatrix());
-    Epetra_MultiVector* lhs = reproblem.GetLHS();
-    Epetra_MultiVector* rhs = reproblem.GetRHS();
-    if (!matrix || !lhs || !rhs) dserror("linear problem broken");
-    
-    Asre_ = rcp(new Epetra_CrsMatrix(Copy,*sndofrowmap_,matrix->MaxNumEntries()));
-    Asre_->Export(*matrix,*sexporter_,Insert);
-    Asre_->FillComplete();
-        
-    // export lhs,rhs to new layout
-    slhs_ = rcp(new Epetra_Vector(*sndofrowmap_));
-    slhs_->Export(*lhs,*sexporter_,Insert);
-    srhs_ = rcp(new Epetra_Vector(*sndofrowmap_));
-    srhs_->Export(*rhs,*sexporter_,Insert);
-    
-    // put stuff in linear problem
-    sreproblem_->SetOperator(Asre_.get());
-    sreproblem_->SetLHS(slhs_.get());
-    sreproblem_->SetRHS(srhs_.get());
-    
-    return *sreproblem_;
+    // shallow reindex the matrix
+    EpetraExt::CrsMatrix_Reindex reindexer(*ndofrowmap_);
+    Epetra_CrsMatrix& reA = reindexer(*Aorig);
+    reA.FillComplete();
+    RCP<Epetra_CrsMatrix> dwA = rcp(new Epetra_CrsMatrix(Copy,*sndofrowmap_,reA.MaxNumEntries()));
+    dwA->Export(reA,*sexporter_,Insert);
+    if (!dwA->Filled()) dwA->FillComplete();
+    return dwA;
   }
-  
+
   /*!
-  \brief return reindexed matrix
-  
-  Returns a ptr to the reindexed matrix
-  Note that this class remains owner of the reindexed matrix and destroys it
-  in its ctor. The calling method must NOT delete the matrix.
-  
-  \return ptr to reindexed matrix
+  \brief reindex a given vector
   */
-  inline Epetra_CrsMatrix* ReindexedMatrix()
-  {
-    if (Asre_ != null) return Asre_.get();
-    else dserror("Do not have downwind matrix");
-    return NULL;
-  }
-  
-  /*!
-  \brief undo reindexing of lhs vector
-  
-  Returns values from the reindexed lhs vector into a supplied lhs vector with
-  original ordering.
-  
-  \param lhs (out): lhs vector in original ordering to be filled with values from
-                    the reindexed lhs
-  */
-  inline void UndoDownWindLHS(Epetra_MultiVector* lhs)
+  RCP<Epetra_MultiVector> ReindexVector(Epetra_MultiVector* xorig)
   {
     // shallow reindex the vector
-    EpetraExt::MultiVector_Reindex reindex(*ndofrowmap_);
-    Epetra_MultiVector& relhs = reindex(*lhs);
-    // export back to the original vector
-    relhs.Export(*(sreproblem_->GetLHS()),*rexporter_,Insert);
+    EpetraExt::MultiVector_Reindex reindexer(*ndofrowmap_);
+    Epetra_MultiVector& rex = reindexer(*xorig);
+    RCP<Epetra_MultiVector> dwx = rcp(new Epetra_Vector(*sndofrowmap_,false));
+    dwx->Export(rex,*sexporter_,Insert);
+    return dwx;
   }
-  
+
   /*!
-  \brief undo reindexing of rhs vector
-  
-  Returns values from the reindexed rhs vector into a supplied rhs vector with
-  original ordering.
-  
-  \param rhs (out): rhs vector in original ordering to be filled with values from
-                    the reindexed rhs
+  \brief undo reindexing of a given vector
   */
-  inline void UndoDownWindRHS(Epetra_MultiVector* rhs)
+  void UndoReindexVector(Epetra_MultiVector* xdw, Epetra_MultiVector* xorig)
   {
-    // shallow reindex the vector
     EpetraExt::MultiVector_Reindex reindex(*ndofrowmap_);
-    Epetra_MultiVector& rerhs = reindex(*rhs);
-    // export back to the original vector
-    rerhs.Export(*(sreproblem_->GetRHS()),*rexporter_,Insert);
+    Epetra_MultiVector& rex = reindex(*xorig);
+    rex.Export(*xdw,*rexporter_,Insert);
+    return;
   }
-  
-  /*!
-  \brief clear temporary data
-  
-  */
-  inline void ClearData()
-  {
-    A_ = null;
-    lpreindex_ = null;
-    sreproblem_ = null;
-    Asre_ = null;
-    slhs_ = null;
-    srhs_ = null;
-  }
+
 
 private:
 
@@ -178,7 +107,7 @@ private:
   DownwindMatrix operator = (const DownwindMatrix& old);
 
   /// setup phase of downwinding
-  void Setup();
+  void Setup(const Epetra_CrsMatrix& A);
   
   /// sets an index in the Bey&Wittum method
   void SetF(const int i, int& nf, Epetra_IntVector& index, 
@@ -189,12 +118,14 @@ private:
             const Epetra_CrsMatrix& graph,int rec);
 
   /// Do downwinding according to Bey & Wittum
-  RCP<Epetra_Map> DownwindBeyWittum(const Epetra_CrsMatrix& nnodegraph, 
-                                    const Epetra_IntVector& oninflow);
+  void DownwindBeyWittum(const Epetra_CrsMatrix& nnodegraph,
+                         Epetra_IntVector& index,
+                         const Epetra_IntVector& oninflow);
   
   /// Do downwinding according to Hackbusch
-  RCP<Epetra_Map> DownwindHackbusch(const Epetra_CrsMatrix& nnodegraph, 
-                                    const Epetra_IntVector& oninflow);
+  void DownwindHackbusch(const Epetra_CrsMatrix& nnodegraph,
+                         Epetra_IntVector& index,
+                         const Epetra_IntVector& oninflow);
 
   /// test whether k is successor of i
   inline bool IsSuccessor(const int k,const int gi, 
@@ -209,19 +140,11 @@ private:
     return false;
   }
 
-  /// get communicator (A_ not present all the time!)
-  const Epetra_Comm& Comm() const {return(A_->Comm());}
-
-  RCP<Epetra_CrsMatrix>                 A_;           // original input matrix
   const int                             outlevel_;    // level of output
   const int                             nv_;          // number velocity dofs
   const int                             np_;          // number pressure dofs
   const int                             bs_;          // total nodal block size (nv_ + np_)
   const double                          tau_;         // strong connections cutoff ratio
-
-  RCP<EpetraExt::LinearProblem_Reindex> lpreindex_;   // linear problem shallow reindexer
-
-  RCP<Epetra_LinearProblem>             sreproblem_;  // sorted reindexed linear problem
 
   RCP<Epetra_Map>                       ndofrowmap_;  // result new row map of system
   RCP<Epetra_Map>                       sndofrowmap_; // result new row map of system with dofs sorted in ascending order
@@ -229,11 +152,6 @@ private:
   RCP<Epetra_Export>                    sexporter_;   // export from ndofrowmap_ to sndofrowmap_
   RCP<Epetra_Export>                    rexporter_;   // export the other direction
 
-  RCP<Epetra_CrsMatrix>                 Asre_;        // deeply reindexed and sorted matrix
-  RCP<Epetra_Vector>                    slhs_;        // deeply reindexed vectors
-  RCP<Epetra_Vector>                    srhs_;
-
-  
 }; // class  DownwindMatrix
 }  // namespace LINALG
 

@@ -24,15 +24,13 @@ Maintainer: Michael Gee
 LINALG::DownwindMatrix::DownwindMatrix(RCP<Epetra_CrsMatrix> A, const int nv, 
                                        const int np, const double tau, 
                                        const int outlevel) :
-A_(A),
 outlevel_(outlevel),
 nv_(nv),
 np_(np),
 bs_(nv+np),
 tau_(tau)
 {
-  Setup();
-
+  Setup(*A);
   return;
 }
 
@@ -40,10 +38,9 @@ tau_(tau)
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-void LINALG::DownwindMatrix::Setup()
+void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
 {
-  Epetra_Time time(Comm());
-  Epetra_CrsMatrix& A = *A_;
+  Epetra_Time time(A.Comm());
   if (!A.Filled()) dserror("Input matrix has to be FillComplete");
   const int numdofrows = A.RowMap().NumMyElements();
   const int bsize = bs_;
@@ -65,7 +62,7 @@ void LINALG::DownwindMatrix::Setup()
       i += (bsize-1);
     }
     if (count != numnoderows) dserror("# nodes wrong: %d != %d",count,numnoderows);
-    onoderowmap = rcp(new Epetra_Map(-1,numnoderows,&gnodeids[0],0,Comm()));
+    onoderowmap = rcp(new Epetra_Map(-1,numnoderows,&gnodeids[0],0,A.Comm()));
   }
   
   
@@ -145,67 +142,6 @@ void LINALG::DownwindMatrix::Setup()
     }
   }
   
-  // coarsen the weighted graph by dropping below-average-connections
-  // Also decide what links are downwind, skip all upwind connections
-#if 0
-  RCP<Epetra_CrsMatrix> nnodegraph;
-  {
-    // create a transposed of the full graph
-    RCP<Epetra_CrsMatrix> onodegrapht = LINALG::Transpose(onodegraph);
-    // create a new graph that will store the coarsened directed graph
-    RCP<SparseMatrix> tmp = rcp(new SparseMatrix(*onoderowmap,(int)(onodegraph->MaxNumEntries())));
-    const Epetra_Map& rowmap = onodegraph->RowMap();
-    const Epetra_Map& colmap = onodegraph->ColMap();
-    const Epetra_Map& colmapt = onodegrapht->ColMap();
-    for (int i=0; i<rowmap.NumMyElements(); ++i)
-    {
-      // Dirichlet BC
-      if (oninflow[i]==0) continue;
-      const double average = oaverweight[i];
-      const int grnode = rowmap.GID(i);
-
-      int numentries;
-      int* indices;
-      double* values;
-      onodegraph->ExtractMyRowView(i,numentries,values,indices);
-
-      int numentriest;
-      int* indicest;
-      double* valuest;
-      onodegrapht->ExtractMyRowView(i,numentriest,valuest,indicest);
-      
-      for (int j=0; j<numentries; ++j)
-      {
-        const int gcnode = colmap.GID(indices[j]);
-        if (!rowmap.MyGID(gcnode)) continue;
-        
-        bool doassemble = false;
-        bool foundit = false;
-        int k;
-        for (k=0; k<numentriest; ++k)
-        {
-          const int gcnodet = colmapt.GID(indicest[k]);
-          if (gcnodet==gcnode) 
-          {
-            foundit = true;
-            break;
-          }
-        }
-        if (!foundit) 
-          doassemble=true;
-        else if (values[j]>=valuest[k]) 
-          doassemble = true;
-        if (values[j]>=tau_*average && doassemble)
-          tmp->Assemble(values[j],grnode,gcnode);
-      }
-    } // for (int i=0; i<rowmap.NumMyElements(); ++i)
-
-    tmp->Complete(*onoderowmap,*onoderowmap);
-    nnodegraph = tmp->EpetraMatrix();
-  }
-#endif
-
-#if 1
   // create directed graph
   RCP<Epetra_CrsMatrix> nnodegraph;
   {
@@ -282,15 +218,25 @@ void LINALG::DownwindMatrix::Setup()
     tmp->Complete(rowmap,rowmap);
     nnodegraph = tmp->EpetraMatrix();
   }
-#endif
 
-  // do the Bey & Wittum downwind numbering
-  RCP<Epetra_Map> nnoderowmap = DownwindBeyWittum(*nnodegraph,oninflow);
-
-
-  // do the Hackbusch down- and upwind numbering
-  //RCP<Epetra_Map> nnoderowmap = DownwindHackbusch(*nnodegraph,oninflow);
-
+  Epetra_IntVector index(nnodegraph->RowMap(),false);
+  
+  DownwindBeyWittum(*nnodegraph,index,oninflow);
+  //DownwindHackbusch(*nnodegraph,index,oninflow);
+  
+  // index now specifies the local order in which the rows should be processed
+  RCP<Epetra_Map> nnoderowmap;
+  {
+    Epetra_IntVector gindices(nnodegraph->RowMap(),false);
+    const int length = index.MyLength();
+    for (int i=0; i<length; ++i)
+    {
+      const int gid = nnodegraph->RowMap().GID(index[i]);
+      if (gid<0) dserror("nnodegraph->RowMap().GID(index[i]) failed");
+      gindices[i] = gid;
+    }
+    nnoderowmap = rcp(new Epetra_Map(-1,length,gindices.Values(),0,A.Comm()));
+  }
 
   // create a new dof row map which is the final result
   // Also, create a sorted variant which then will be used to build the matrix
@@ -300,17 +246,18 @@ void LINALG::DownwindMatrix::Setup()
     for (int i=0; i<mynodelength; ++i)
       for (int j=0; j<bs_; ++j)
         gindices[i*bs_+j] = nnoderowmap->GID(i)*bs_+j;
-    ndofrowmap_ = rcp(new Epetra_Map(-1,mynodelength*bs_,&gindices[0],0,Comm()));
+    ndofrowmap_ = rcp(new Epetra_Map(-1,mynodelength*bs_,&gindices[0],0,A.Comm()));
     ML_az_sort(&gindices[0],mynodelength*bs_,NULL,NULL);
-    sndofrowmap_ = rcp(new Epetra_Map(-1,mynodelength*bs_,&gindices[0],0,Comm()));
+    sndofrowmap_ = rcp(new Epetra_Map(-1,mynodelength*bs_,&gindices[0],0,A.Comm()));
   }
+  
   
   // Allocate an exporter from ndofrowmap_ to sndofrowmap_ and back
   sexporter_ = rcp(new Epetra_Export(*ndofrowmap_,*sndofrowmap_));
   rexporter_ = rcp(new Epetra_Export(*sndofrowmap_,*ndofrowmap_));
   
   
-  if (!Comm().MyPID() && outlevel_) 
+  if (!A.Comm().MyPID() && outlevel_) 
     cout << "                Downwinding Setup time " 
          << time.ElapsedTime() << " s\n" 
          << "                nv " << nv_ 
@@ -336,8 +283,6 @@ void LINALG::DownwindMatrix::Setup()
   }
 #endif
 
-  // don't need original matrix any more, so do not keep rcp ptr to it
-  A_ = null;
 
   return;
 }
@@ -347,22 +292,13 @@ void LINALG::DownwindMatrix::Setup()
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-RCP<Epetra_Map> LINALG::DownwindMatrix::DownwindBeyWittum(const Epetra_CrsMatrix& nnodegraph, 
-                                                          const Epetra_IntVector& oninflow)
+void LINALG::DownwindMatrix::DownwindBeyWittum(const Epetra_CrsMatrix& nnodegraph,
+                                               Epetra_IntVector& index, 
+                                               const Epetra_IntVector& oninflow)
 {
-  const int myrank = Comm().MyPID();
-  const int numproc = Comm().NumProc();
-  Epetra_IntVector index(nnodegraph.RowMap(),false);
+  const int myrank = nnodegraph.Comm().MyPID();
   index.PutValue(-1);
-  vector<int> slengths(numproc+1,0);
-  vector<int> rlengths(numproc+1);
-  slengths[myrank] = nnodegraph.NumMyRows();
-  Comm().SumAll(&slengths[0],&rlengths[0],numproc+1);
-  slengths.clear();
-  int myfirst=0;
-  for (int i=0; i<myrank; ++i) myfirst += rlengths[i];
-  int mylast = myfirst + rlengths[myrank] - 1;
-  int nf = myfirst;
+  int nf = 0;
   
   // number Dirichlet BCs first
   for (int i=0; i<nnodegraph.NumMyRows(); ++i)
@@ -377,13 +313,13 @@ RCP<Epetra_Map> LINALG::DownwindMatrix::DownwindBeyWittum(const Epetra_CrsMatrix
     if (index[i]<0) SetF(i,nf,index,nnodegraph,0);
   if (outlevel_)
   {
-    Comm().Barrier();
+    nnodegraph.Comm().Barrier();
     if (!myrank)
     cout << "                Downwinding:" << endl;
-    Comm().Barrier();
+    nnodegraph.Comm().Barrier();
     cout << "                Proc " << myrank 
-         << " lastindex " << mylast 
-         << " lastdownwind " << nf-1 << endl;
+         << " lastindex " << index.MyLength() 
+         << " lastdownwind " << nf << endl;
   }
   
   // number everything that's left over in old order
@@ -393,30 +329,21 @@ RCP<Epetra_Map> LINALG::DownwindMatrix::DownwindBeyWittum(const Epetra_CrsMatrix
       index[i] = nf;
       ++nf;
     }
-  if (nf != mylast+1) dserror("Local number of nodes wrong");
-  return rcp(new Epetra_Map(-1,index.MyLength(),index.Values(),0,Comm()));
+  if (nf != index.MyLength()) dserror("Local number of nodes wrong");
+  return;
 }
 
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 03/08|
  *----------------------------------------------------------------------*/
-RCP<Epetra_Map> LINALG::DownwindMatrix::DownwindHackbusch(const Epetra_CrsMatrix& nnodegraph, 
-                                                          const Epetra_IntVector& oninflow)
+void LINALG::DownwindMatrix::DownwindHackbusch(const Epetra_CrsMatrix& nnodegraph,
+                                               Epetra_IntVector& index,
+                                               const Epetra_IntVector& oninflow)
 {
-  const int myrank = Comm().MyPID();
-  const int numproc = Comm().NumProc();
-  Epetra_IntVector index(nnodegraph.RowMap(),false);
+  const int myrank = nnodegraph.Comm().MyPID();
   index.PutValue(-1);
-  vector<int> slengths(numproc+1,0);
-  vector<int> rlengths(numproc+1);
-  slengths[myrank] = nnodegraph.NumMyRows();
-  Comm().SumAll(&slengths[0],&rlengths[0],numproc+1);
-  slengths.clear();
-  int myfirst=0;
-  for (int i=0; i<myrank; ++i) myfirst += rlengths[i];
-  int mylast = myfirst + rlengths[myrank] - 1;
-  int nf = myfirst;
-  int nl = mylast;
+  int nf = 0;
+  int nl = index.MyLength()-1;
   // number Dirichlet BCs first
   for (int i=0; i<nnodegraph.NumMyRows(); ++i)
     if (oninflow[i]==0)
@@ -433,13 +360,13 @@ RCP<Epetra_Map> LINALG::DownwindMatrix::DownwindHackbusch(const Epetra_CrsMatrix
   }
   if (outlevel_)
   {
-    Comm().Barrier();
+    nnodegraph.Comm().Barrier();
     if (!myrank)
     cout << "                Downwinding:" << endl; 
-    Comm().Barrier();
+    nnodegraph.Comm().Barrier();
     cout << "                Proc " << myrank 
-         << " lastindex " << mylast 
-         << " lastdownwind " << nf-1 
+         << " lastindex " << index.MyLength()  
+         << " lastdownwind " << nf-1
          << " lastupwind " << nl+1 << endl;
   }
   // number everything that's left over in old order
@@ -449,7 +376,7 @@ RCP<Epetra_Map> LINALG::DownwindMatrix::DownwindHackbusch(const Epetra_CrsMatrix
       index[i] = nf;
       ++nf;
     }
-  return rcp(new Epetra_Map(-1,index.MyLength(),index.Values(),0,Comm()));
+  return;
 }
 
 
