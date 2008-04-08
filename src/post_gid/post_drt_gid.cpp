@@ -113,27 +113,49 @@ void write_serialdensematrix_result(string result_name, PostField* field,
     numdim=3;
     break;
   case DRT::Element::quad4:
-      gaussname = "quad4";
-      numdim=2;
+    gaussname = "quad4";
+    numdim=2;
 
-      // Note:
-      // Here no mapping between baci's and GiD definition of Gauss
-      // points is necessary since they are equal.
-      // The GiD convention can be found at
-      // http://gid.cimne.upc.es/support_team/gid_toc/gid_toc.html
+    // Note:
+    // Here no mapping between baci's and GiD definition of Gauss
+    // points is necessary since they are equal.
+    // The GiD convention can be found at
+    // http://gid.cimne.upc.es/support_team/gid_toc/gid_toc.html
 
-      break;
+    break;
   case DRT::Element::quad9:
-      gaussname = "quad9";
-      numdim=2;
+    gaussname = "quad9";
+    numdim=2;
 
-      // Note:
-      // Here no mapping between baci's and GiD definition of Gauss
-      // points is necessary since they are equal.
-      // The GiD convention can be found at
-      // http://gid.cimne.upc.es/support_team/gid_toc/gid_toc.html
+    // Note:
+    // Here no mapping between baci's and GiD definition of Gauss
+    // points is necessary since they are equal.
+    // The GiD convention can be found at
+    // http://gid.cimne.upc.es/support_team/gid_toc/gid_toc.html
 
-      break;
+    break;
+  case DRT::Element::tri3:
+    gaussname = "tri3";
+    numdim=2;
+
+    // Note:
+    // Here no mapping between baci's and GiD definition of Gauss
+    // points is necessary since they are equal.
+    // The GiD convention can be found at
+    // http://gid.cimne.upc.es/support_team/gid_toc/gid_toc.html
+
+    break;
+  case DRT::Element::tri6:
+    gaussname = "tri6";
+    numdim=2;
+
+    // Note:
+    // Here no mapping between baci's and GiD definition of Gauss
+    // points is necessary since they are equal.
+    // The GiD convention can be found at
+    // http://gid.cimne.upc.es/support_team/gid_toc/gid_toc.html
+
+    break;
   default:
     dserror("output of gauss point stresses/strains in GiD needs to be implemented for this element type");
   }
