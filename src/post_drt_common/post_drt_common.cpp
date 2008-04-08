@@ -59,7 +59,7 @@ struct _IO_FLAGS ioflags;
 struct _PARTITION  *partition;
 struct _SOLVAR  *solv;
 
-char* fieldnames[] = FIELDNAMES;
+const char* fieldnames[] = FIELDNAMES;
 
 
 
@@ -139,8 +139,8 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   ndim_ = map_read_int(&control_table_, "ndim");
   dsassert((ndim_ == 2) || (ndim_ == 3), "illegal dimension");
 
-  char* problem_names[] = PROBLEMNAMES;
-  char* type = map_read_string(&control_table_, "problem_type");
+  const char* problem_names[] = PROBLEMNAMES;
+  const char* type = map_read_string(&control_table_, "problem_type");
   int i;
   for (i=0; problem_names[i] != NULL; ++i)
   {
@@ -508,7 +508,7 @@ PostField PostProblem::getfield(MAP* field_info)
   int numele = map_read_int(field_info, "num_ele");
   int type;
 
-  char* fieldnames[] = FIELDNAMES;
+  const char* fieldnames[] = FIELDNAMES;
   int i;
   for (i=0; fieldnames[i]!=NULL; ++i)
   {
