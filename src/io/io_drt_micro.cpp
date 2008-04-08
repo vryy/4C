@@ -126,7 +126,7 @@ IO::MicroDiscretizationWriter::MicroDiscretizationWriter(RefCountPtr<DRT::Discre
   s << ".control";
   cf_ = fopen(s.str().c_str(), "wb");
 
-  static std::string problem_names[] = PROBLEMNAMES;
+  static const CHAR* problem_names[] = PROBLEMNAMES;
   time_t time_value;
   CHAR hostname[31];
   struct passwd *user_entry;
@@ -158,7 +158,7 @@ IO::MicroDiscretizationWriter::MicroDiscretizationWriter(RefCountPtr<DRT::Discre
           hostname,
           ctime(&time_value),
           allfiles.inputfile_name,
-          problem_names[genprob.probtyp].c_str(),
+          problem_names[genprob.probtyp],
           genprob.ndim);
 
   if (genprob.restart)
