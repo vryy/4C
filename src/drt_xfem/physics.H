@@ -41,7 +41,7 @@ enum Field
     Velz,               ///< z velocity
     Temp,               ///< temperature
     Pres,               ///< pressure
-    PresEle,            ///< pressure on element level
+    DiscPres,           ///< discontinous pressure on element level
     ConcentrationH2O,   ///< concentration of H2O
     ConcentrationNO2,   ///< concentration of NO2
     LMPLambdax,         ///< Lagrange multiplier unknown in x-direction
