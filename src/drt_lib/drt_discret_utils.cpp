@@ -33,65 +33,61 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   
   // get the aztec list and see whether we use downwinding
   ParameterList& azlist = solveparams.sublist("Aztec Parameters");
-  bool dwind = azlist.get<bool>("downwinding",false);
   // downwinding needs nodal block information, compute it
-  if (dwind)
+  if (!NumMyRowElements()) dserror("Proc does not have any elements");
+  DRT::Element* dwele = lRowElement(0);
+  int nv=0; // number of velocity dofs
+  int np=0; // number of pressure dofs
+  switch (dwele->Type())
   {
-    if (!NumMyRowElements()) dserror("Proc does not have any elements");
-    DRT::Element* ele = lRowElement(0);
-    int nv=0; // number of velocity dofs
-    int np=0; // number of pressure dofs
-    switch (ele->Type())
-    {
-      case DRT::Element::element_beam2:
-        nv = 3;
-      break;
-      case DRT::Element::element_shell8:
-        nv = 6;
-      break;
-      case DRT::Element::element_wall1:
-        nv = 2;
-      break;
-      case DRT::Element::element_sosh8:
-      case DRT::Element::element_so_hex8:
-      case DRT::Element::element_so_tet4:
-      case DRT::Element::element_so_tet10:
-      case DRT::Element::element_so_ctet10:
-      case DRT::Element::element_so_weg6:
-      case DRT::Element::element_sodisp:
-      case DRT::Element::element_so_shw6:
-        nv = 3;
-      break;
-      case DRT::Element::element_fluid3:
-        nv = 3;
-        np = 1;
-      break;
-      case DRT::Element::element_xfluid3:
-        nv = 3;
-        np = 1;
-      break;
-      case DRT::Element::element_fluid2:
-        nv = 2;
-        np = 1;
-      break;
-      case DRT::Element::element_condif2:
-        nv = 1;
-      break;
-      case DRT::Element::element_ale2:
-        nv = 2;
-      break;
-      case DRT::Element::element_ale3:
-        nv = 3;
-      break;
-      case DRT::Element::element_none:
-      default:
-        dserror("Element type not supported by ML");
-      break;
-    }
-    if (!(nv+np)) dserror("Cannot determine nodal block size");
-    azlist.set<int>("downwinding nv",nv);
-    azlist.set<int>("downwinding np",np);
+    case DRT::Element::element_beam2:
+      nv = 3;
+    break;
+    case DRT::Element::element_shell8:
+      nv = 6;
+    break;
+    case DRT::Element::element_wall1:
+      nv = 2;
+    break;
+    case DRT::Element::element_sosh8:
+    case DRT::Element::element_so_hex8:
+    case DRT::Element::element_so_tet4:
+    case DRT::Element::element_so_tet10:
+    case DRT::Element::element_so_ctet10:
+    case DRT::Element::element_so_weg6:
+    case DRT::Element::element_sodisp:
+    case DRT::Element::element_so_shw6:
+      nv = 3;
+    break;
+    case DRT::Element::element_fluid3:
+      nv = 3;
+      np = 1;
+    break;
+    case DRT::Element::element_xfluid3:
+      nv = 3;
+      np = 1;
+    break;
+    case DRT::Element::element_fluid2:
+      nv = 2;
+      np = 1;
+    break;
+    case DRT::Element::element_condif2:
+      nv = 1;
+    break;
+    case DRT::Element::element_ale2:
+      nv = 2;
+    break;
+    case DRT::Element::element_ale3:
+      nv = 3;
+    break;
+    case DRT::Element::element_none:
+    default:
+      dserror("Element type not supported by ML");
+    break;
   }
+  if (!(nv+np)) dserror("Cannot determine nodal block size");
+  azlist.set<int>("downwinding nv",nv);
+  azlist.set<int>("downwinding np",np);
   
   // see whether we have a sublist indicating usage of Trilinos::ML
   if (!solveparams.isSublist("ML Parameters")) return;
