@@ -749,6 +749,25 @@ namespace LINALG
    */
   RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap, const int pid);
 
+  /// Create an allreduced Epetra_Map from the given Epetra_Map
+  /// and give it to all processors.
+  /*!
+    This method is currently used within the constraint management, since 
+    current values of constraint values and langrange multipliers are distributed
+    uniquely for computation. At some places we need the full information of these
+    values on every processor, so this method has to be used.    
+
+    \note You are not supposed to use redundant vectors in normal
+    situations. If you happen to need this method you are probably
+    about to do something illegal.
+
+    \param emap (i) any distributed Epetra_Map
+
+    \author tk
+    \date 04/08
+   */
+  RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap);
+  
   /// find position of my map elements in a consecutive vector
   /*!
     The idea is to put the entries of a given map into a redundant

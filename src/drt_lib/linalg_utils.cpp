@@ -1287,6 +1287,20 @@ RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
   return rmap;
 }
 
+/*----------------------------------------------------------------------*
+ |  create an allreduced map on EVERY processor (public)        tk 12/07|
+ *----------------------------------------------------------------------*/
+RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
+{
+  vector<int> rv;
+  AllreduceEMap(rv,emap);
+  RefCountPtr<Epetra_Map> rmap;
+
+  rmap = rcp(new Epetra_Map(-1,rv.size(),&rv[0],0,emap.Comm()));
+  // check the map
+
+  return rmap;
+}
 
 /*----------------------------------------------------------------------*
  |  Send and receive lists of ints.  (heiner 09/07)                     |
