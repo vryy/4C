@@ -618,7 +618,7 @@ BlitzMat Inverse3x3(const BlitzMat& xjm_, const double det)
   */
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
-void Sysmat(
+void static Sysmat(
         const DRT::ELEMENTS::XFluid3*     ele,           ///< the element those matrix is calculated
         const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
@@ -1354,7 +1354,7 @@ void Sysmat(
             if (tauele_unknowns_present)
             {
                 const double reciproke_visc = 1.0 / visc;
-                /* quadratic part */
+                /* viscous stress-viscous stress coupling, quadratic part */
                 /*
                                /                    \
                               |                      |
@@ -1383,7 +1383,7 @@ void Sysmat(
                 assembler.template Vector<Tauzy>(shp_tau, factor*timefacfac*tau(2,1));
                 assembler.template Vector<Tauzz>(shp_tau, factor*timefacfac*tau(2,2));
                 
-                /* rectangular part */
+                /* viscous stress-viscous stress coupling, rectangular part */
                 /*
                                /                  \
                               |                    |
@@ -1396,13 +1396,11 @@ void Sysmat(
                 assembler.template Matrix<Tauxy,Vely>(shp_tau,     timefacfac*0.5, shp_dx);
                 assembler.template Matrix<Tauxz,Velx>(shp_tau,     timefacfac*0.5, shp_dz);
                 assembler.template Matrix<Tauxz,Velz>(shp_tau,     timefacfac*0.5, shp_dx);
-                
                 assembler.template Matrix<Tauyx,Velx>(shp_tau,     timefacfac*0.5, shp_dy);
                 assembler.template Matrix<Tauyx,Vely>(shp_tau,     timefacfac*0.5, shp_dx);
                 assembler.template Matrix<Tauyy,Vely>(shp_tau, 2.0*timefacfac*0.5, shp_dy);
                 assembler.template Matrix<Tauyz,Velz>(shp_tau,     timefacfac*0.5, shp_dz);
                 assembler.template Matrix<Tauyz,Vely>(shp_tau,     timefacfac*0.5, shp_dx);
-                
                 assembler.template Matrix<Tauzx,Velx>(shp_tau,     timefacfac*0.5, shp_dz);
                 assembler.template Matrix<Tauzx,Velz>(shp_tau,     timefacfac*0.5, shp_dx);
                 assembler.template Matrix<Tauzy,Vely>(shp_tau,     timefacfac*0.5, shp_dz);
@@ -1414,20 +1412,18 @@ void Sysmat(
                 assembler.template Vector<Tauxy>(shp_tau, -    timefacfac*0.5*vderxy(1, 0));
                 assembler.template Vector<Tauxz>(shp_tau, -    timefacfac*0.5*vderxy(0, 2));
                 assembler.template Vector<Tauxz>(shp_tau, -    timefacfac*0.5*vderxy(2, 0));
-                
                 assembler.template Vector<Tauyx>(shp_tau, -    timefacfac*0.5*vderxy(1, 0));
                 assembler.template Vector<Tauyx>(shp_tau, -    timefacfac*0.5*vderxy(0, 1));
                 assembler.template Vector<Tauyy>(shp_tau, -2.0*timefacfac*0.5*vderxy(1, 1));
                 assembler.template Vector<Tauyz>(shp_tau, -    timefacfac*0.5*vderxy(1, 2));
                 assembler.template Vector<Tauyz>(shp_tau, -    timefacfac*0.5*vderxy(2, 1));
-                
                 assembler.template Vector<Tauzx>(shp_tau, -    timefacfac*0.5*vderxy(2, 0));
                 assembler.template Vector<Tauzx>(shp_tau, -    timefacfac*0.5*vderxy(0, 2));
                 assembler.template Vector<Tauzy>(shp_tau, -    timefacfac*0.5*vderxy(2, 1));
                 assembler.template Vector<Tauzy>(shp_tau, -    timefacfac*0.5*vderxy(1, 2));
                 assembler.template Vector<Tauzz>(shp_tau, -2.0*timefacfac*0.5*vderxy(2, 2));
                 
-                /* quadratic part */
+                /* pressure-pressure coupling, quadratic part */
                 /*
                                /                  \
                               |                    |
@@ -1443,7 +1439,7 @@ void Sysmat(
                 assembler.template Vector<Tauyy>(shp_tau, reciproke_visc*timefacfac*discpres);
                 assembler.template Vector<Tauzz>(shp_tau, reciproke_visc*timefacfac*discpres);
 
-                /* rectangular part */
+                /* pressure-pressure coupling, rectangular part */
                 /*
                                /                \
                               |                  |
@@ -2039,37 +2035,38 @@ void Sysmat(
             /*
                            /                   \
                           |                     |
-                          | (virt tau) * n , Du |
+                        - | (virt tau) * n , Du |
                           |                     |
                            \                   /
             */
-            // i = x
             assembler.template Matrix<Tauxx,Velx>(shp_tau, -timefacfac*normalvec(0), shp);
             assembler.template Matrix<Tauxy,Velx>(shp_tau, -timefacfac*normalvec(1), shp);
             assembler.template Matrix<Tauxz,Velx>(shp_tau, -timefacfac*normalvec(2), shp);
-            // i = y
             assembler.template Matrix<Tauyx,Vely>(shp_tau, -timefacfac*normalvec(0), shp);
             assembler.template Matrix<Tauyy,Vely>(shp_tau, -timefacfac*normalvec(1), shp);
             assembler.template Matrix<Tauyz,Vely>(shp_tau, -timefacfac*normalvec(2), shp);
-            // i = z
             assembler.template Matrix<Tauzx,Velz>(shp_tau, -timefacfac*normalvec(0), shp);
             assembler.template Matrix<Tauzy,Velz>(shp_tau, -timefacfac*normalvec(1), shp);
             assembler.template Matrix<Tauzz,Velz>(shp_tau, -timefacfac*normalvec(2), shp);
             
-            // i = x
             assembler.template Vector<Tauxx>(shp_tau, timefacfac*normalvec(0)*velint(0));
             assembler.template Vector<Tauxy>(shp_tau, timefacfac*normalvec(1)*velint(0));
             assembler.template Vector<Tauxz>(shp_tau, timefacfac*normalvec(2)*velint(0));
-            // i = y
             assembler.template Vector<Tauyx>(shp_tau, timefacfac*normalvec(0)*velint(1));
             assembler.template Vector<Tauyy>(shp_tau, timefacfac*normalvec(1)*velint(1));
             assembler.template Vector<Tauyz>(shp_tau, timefacfac*normalvec(2)*velint(1));
-            // i = z            
             assembler.template Vector<Tauzx>(shp_tau, timefacfac*normalvec(0)*velint(2));
             assembler.template Vector<Tauzy>(shp_tau, timefacfac*normalvec(1)*velint(2));
             assembler.template Vector<Tauzz>(shp_tau, timefacfac*normalvec(2)*velint(2));
             
             
+            /*
+                           /                   \
+                          |                     |
+                          | (virt p^e) * n , Du |
+                          |                     |
+                           \                   /
+            */
             assembler.template Matrix<DiscPres,Velx>(shp_discpres, timefacfac*normalvec(0), shp);
             assembler.template Matrix<DiscPres,Vely>(shp_discpres, timefacfac*normalvec(1), shp);
             assembler.template Matrix<DiscPres,Velz>(shp_discpres, timefacfac*normalvec(2), shp);
@@ -2090,11 +2087,9 @@ void Sysmat(
             assembler.template Matrix<Velx,Tauxx>(shp, -timefacfac*normalvec(0), shp_tau);
             assembler.template Matrix<Velx,Tauxy>(shp, -timefacfac*normalvec(1), shp_tau);
             assembler.template Matrix<Velx,Tauxz>(shp, -timefacfac*normalvec(2), shp_tau);
-            
             assembler.template Matrix<Vely,Tauyx>(shp, -timefacfac*normalvec(0), shp_tau);
             assembler.template Matrix<Vely,Tauyy>(shp, -timefacfac*normalvec(1), shp_tau);
             assembler.template Matrix<Vely,Tauyz>(shp, -timefacfac*normalvec(2), shp_tau);
-            
             assembler.template Matrix<Velz,Tauzx>(shp, -timefacfac*normalvec(0), shp_tau);
             assembler.template Matrix<Velz,Tauzy>(shp, -timefacfac*normalvec(1), shp_tau);
             assembler.template Matrix<Velz,Tauzz>(shp, -timefacfac*normalvec(2), shp_tau);
