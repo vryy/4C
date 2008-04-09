@@ -360,6 +360,7 @@ public:
   double DispIncrFactor() { return 1./(1.-params_.get<double>("alpha f",0.459)); }
   double AlphaF() { return params_.get<double>("alpha f",0.459); }
   const Epetra_Map& DomainMap() { return mass_->DomainMap(); }
+  bool HaveConstraint() {return constrMan_->HaveConstraint(); }
 
   /// linear solve with prescribed loads and without history
   /*!
@@ -419,7 +420,7 @@ protected:
 
   double                        V0_;
 
-  RefCountPtr<ConstrManager>   ConstrMan_;
+  RefCountPtr<ConstrManager>   constrMan_;
 
   RefCountPtr<DRT::SurfStressManager>   surf_stress_man_;
 

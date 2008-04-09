@@ -171,7 +171,7 @@ maxentriesperrow_(81)
     discret_.ClearState();
 
     //initialize Constraint Manager
-    ConstrMan_=rcp(new ConstrManager(discret_, dis_));
+    constrMan_=rcp(new ConstrManager(discret_, dis_));
 
     // Check for surface stress conditions due to interfacial phenomena
     vector<DRT::Condition*> surfstresscond(0);
@@ -1259,9 +1259,9 @@ void StruGenAlpha::FullNewton()
         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
       }
 
-      if (ConstrMan_->HaveConstraint())
+      if (constrMan_->HaveConstraint())
       {
-          ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+          constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
       }
       // do NOT finalize the stiffness matrix to add masses to it later
     }
@@ -1320,9 +1320,9 @@ void StruGenAlpha::FullNewton()
   }
   else
   {
-    if (ConstrMan_->HaveMonitor())
+    if (constrMan_->HaveMonitor())
     {
-      ConstrMan_->ComputeMonitorValues(dism_);
+      constrMan_->ComputeMonitorValues(dism_);
     }
     if (!myrank_ and printscreen)
     {
@@ -1348,29 +1348,29 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
     double time        = params_.get<double>("total time"             ,0.0);
     double dt          = params_.get<double>("delta time"             ,0.01);
 
-
+    constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
     FullNewton();
     //--------------------update end configuration
     disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
     //--------------------compute constraint error
-    ConstrMan_->ComputeError(time+dt,disn_);
-    double constrnorm=ConstrMan_->GetErrorNorm();
+    constrMan_->ComputeError(time+dt,disn_);
+    double constrnorm=constrMan_->GetErrorNorm();
     cout<<"Constraint error for Newton solution: "<<constrnorm<<endl;
     int numiter_uzawa=0;
     while (constrnorm>tolconstr and numiter_uzawa <= maxiterUzawa)
     {
         // Lagrange multiplier is increased by Uzawa_param*ConstrErr
-        ConstrMan_->UpdateLagrMult(Uzawa_param);
+        constrMan_->UpdateLagrMult(Uzawa_param);
         // Keep new Lagrange multiplier fixed and solve for new displacements
         if      (predictor==1) ConstantPredictor();
         else if (predictor==2) ConsistentPredictor();
-        ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+        constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
         FullNewton();
         //--------------------update end configuration
         disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));
         //--------------------compute constraint error
-        ConstrMan_->ComputeError(time+dt,disn_);
-        constrnorm=ConstrMan_->GetErrorNorm();
+        constrMan_->ComputeError(time+dt,disn_);
+        constrnorm=constrMan_->GetErrorNorm();
         cout<<"Constraint error for computed displacement: "<<constrnorm<<endl;
         numiter_uzawa++;
     }
@@ -1417,14 +1417,16 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
   if (!damp_->Filled()) dserror("damping matrix must be filled here");
-
+  
   //=================================================== equilibrium loop
+  constrMan_->ScaleLagrMult(0.0);
+  constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
   int numiter=0;
   double fresmnorm = 1.0e6;
   double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
 
-  double constrnorm=ConstrMan_->GetErrorNorm();
+  double constrnorm=constrMan_->GetErrorNorm();
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
@@ -1461,15 +1463,15 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     //counter used for adaptivity
     int count_paramadapt=1;
 
-    ConstrMan_->ScaleLagrIncr(0.0);
+    constrMan_->ScaleLagrIncr(0.0);
     RCP<Epetra_Vector> constrVecWeight=LINALG::CreateVector(*dofrowmap,true);
 
-    RCP<Epetra_Map> domainmap= ConstrMan_->GetConstraintMap();
+    RCP<Epetra_Map> domainmap= constrMan_->GetConstraintMap();
     RCP<Epetra_Vector> dotprod= rcp(new Epetra_Vector(*domainmap));
 
     // Compute residual of the uzawa algorithm
 
-    ConstrMan_->ComputeConstrTimesLagrIncr(constrVecWeight);
+    constrMan_->ComputeConstrTimesLagrIncr(constrVecWeight);
     RCP<Epetra_Vector> fresmcopy=rcp(new Epetra_Vector(*fresm_));
     fresmcopy->Update(1.0,*constrVecWeight,1.0);
     Epetra_Vector uzawa_res(*fresmcopy);
@@ -1482,8 +1484,8 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     }
     uzawa_res.Norm2(&norm_uzawa);
     Epetra_Vector constr_res(*domainmap);
-    ConstrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
-    constr_res.Update(1.0,*dotprod,1.0,*(ConstrMan_->GetError()),0.0);
+    constrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
+    constr_res.Update(1.0,*dotprod,1.0,*(constrMan_->GetError()),0.0);
     constr_res.Norm2(&norm_constr_uzawa);
     quotient =1;
     //Solve one iteration step with augmented lagrange
@@ -1504,11 +1506,11 @@ void StruGenAlpha::FullNewtonLinearUzawa()
         }
 
         //compute Lagrange multiplier increment
-        ConstrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
-        ConstrMan_->UpdateLagrIncr(Uzawa_param, *dotprod);
+        constrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
+        constrMan_->UpdateLagrIncr(Uzawa_param, *dotprod);
 
         //Compute residual of the uzawa algorithm
-        ConstrMan_->ComputeConstrTimesLagrIncr(constrVecWeight);
+        constrMan_->ComputeConstrTimesLagrIncr(constrVecWeight);
         fresmcopy->Update(1.0,*constrVecWeight,1.0,*fresm_,0.0);
         Epetra_Vector uzawa_res(*fresmcopy);
         (*stiff_).Multiply(false,*disi_,uzawa_res);
@@ -1522,7 +1524,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
         uzawa_res.Norm2(&norm_uzawa);
         Epetra_Vector constr_res(*domainmap);
 
-        constr_res.Update(1.0,*dotprod,1.0,*(ConstrMan_->GetError()),0.0);
+        constr_res.Update(1.0,*dotprod,1.0,*(constrMan_->GetError()),0.0);
         constr_res.Norm2(& norm_constr_uzawa);
 
         //-------------Adapt Uzawa parameter--------------
@@ -1571,7 +1573,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     }
 
     //update lagrange multiplier
-    ConstrMan_->UpdateLagrMult();
+    constrMan_->UpdateLagrMult();
 
     //---------------------------------- update mid and end configuration values
     // displacements
@@ -1642,8 +1644,8 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
       discret_.ClearState();
 
-      ConstrMan_->StiffnessAndInternalForces(timen,disn_,fint_,stiff_);
-      constrnorm=ConstrMan_->GetErrorNorm();
+      constrMan_->StiffnessAndInternalForces(timen,disn_,fint_,stiff_);
+      constrnorm=constrMan_->GetErrorNorm();
       // do NOT finalize the stiffness matrix to add masses to it later
     }
 
@@ -1697,9 +1699,9 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   }
   else
   {
-    if (ConstrMan_->HaveMonitor())
+    if (constrMan_->HaveMonitor())
     {
-      ConstrMan_->ComputeMonitorValues(dism_);
+      constrMan_->ComputeMonitorValues(dism_);
     }
     if (!myrank_ and printscreen)
     {
@@ -1923,9 +1925,9 @@ void StruGenAlpha::ModifiedNewton()
   }
   else
   {
-    if (ConstrMan_->HaveMonitor())
+    if (constrMan_->HaveMonitor())
     {
-      ConstrMan_->ComputeMonitorValues(dism_);
+      constrMan_->ComputeMonitorValues(dism_);
     }
     if (!myrank_ and printscreen)
     {
@@ -2107,9 +2109,9 @@ void StruGenAlpha::MatrixFreeNewton()
 //         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
 //       }
 
-//       if (ConstrMan_->HaveConstraint())
+//       if (constrMan_->HaveConstraint())
 //       {
-//     	  ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+//     	  constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
 //       }
       // do NOT finalize the stiffness matrix to add masses to it later
     }
@@ -3279,10 +3281,10 @@ void StruGenAlpha::Integrate()
   else dserror("Unknown type of predictor");
 
   //in case a constraint is defined, use defined algorithm
-  if (ConstrMan_->HaveConstraint())
+  if (constrMan_->HaveConstraint())
   {
 	  string algo = params_.get<string>("uzawa algorithm","newtonlinuzawa");
-	  ConstrMan_->ScaleLagrMult(0.0);
+	  constrMan_->ScaleLagrMult(0.0);
 	  for (int i=step; i<nstep; ++i)
       {
         if      (predictor==1) ConstantPredictor();
@@ -3297,14 +3299,11 @@ void StruGenAlpha::Integrate()
         //								Until convergence Lagrange multiplier increased by Uzawa_param*(Vol_err)
         if (algo=="newtonlinuzawa")
         {
-        	ConstrMan_->ScaleLagrMult(0.0);
-        	ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
         	FullNewtonLinearUzawa();
         }
         else if (algo=="augmentedlagrange")
         {
-        	ConstrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
-        	NonLinearUzawaFullNewton(predictor);
+         	NonLinearUzawaFullNewton(predictor);
         }
         else dserror("Unknown type of algorithm to deal with constraints");
         UpdateandOutput();
@@ -3686,9 +3685,9 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
   }
   else
   {
-    if (ConstrMan_->HaveMonitor())
+    if (constrMan_->HaveMonitor())
     {
-      ConstrMan_->PrintMonitorValues();
+      constrMan_->PrintMonitorValues();
     }
     double timepernlnsolve = timer.ElapsedTime();
 
@@ -3783,9 +3782,9 @@ void StruGenAlpha::PrintNewton(bool printscreen, bool printerr, bool print_uncon
   }
   else
   {
-    if (ConstrMan_->HaveMonitor())
+    if (constrMan_->HaveMonitor())
     {
-      ConstrMan_->PrintMonitorValues();
+      constrMan_->PrintMonitorValues();
     }
     double timepernlnsolve = timer.ElapsedTime();
 
