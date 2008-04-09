@@ -320,9 +320,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         //apply the right lagrange multiplier and right signs to matrix and vectors
         const int ID =params.get("ConditionID",-1);
         int numID=params.get("NumberofID",0);
-        RCP<Epetra_Map> reducedmap = rcp(new Epetra_Map(*(params.get<RCP<Epetra_Map> >("ReducedMap",reducedmap))));
-        RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*reducedmap));
-        lambdav= params.get("LagrMultVector",lambdav);
+        RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
         if (ID<0)
         {
           dserror("Condition ID for volume constraint missing!");

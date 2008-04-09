@@ -157,11 +157,10 @@ void ConstrManager::StiffnessAndInternalForces(
         p.set("NumberofID",numConstrID_);
         // Convert Epetra_Vector constaining langrange multipliers to a Epetra_SerialDense Vector
         // since every element with the constraint condition needs them
-        RCP<Epetra_Map> reducedmap = LINALG::AllreduceEMap(*constrmap_,actdisc_.Comm().MyPID());
+        RCP<Epetra_Map> reducedmap = LINALG::AllreduceEMap(*constrmap_);
         RCP<Epetra_Vector> lagrMultVecDense = rcp(new Epetra_Vector(*reducedmap));
         LINALG::Export(*lagrMultVec_,*lagrMultVecDense);
         //SynchronizeDenseVector(lagrMultVecDense);
-        p.set("ReducedMap",reducedmap);
         p.set("LagrMultVector",lagrMultVecDense);
         actdisc_.ClearState();
         actdisc_.SetState("displacement",disp);
