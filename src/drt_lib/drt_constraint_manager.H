@@ -51,7 +51,8 @@ public:
     */
 
     ConstrManager(DRT::Discretization& disc,
-        RCP<Epetra_Vector> disp);
+        RCP<Epetra_Vector> disp,
+        ParameterList param);
 
     /*!
         \brief Destructor
@@ -155,28 +156,57 @@ public:
     */
     void UpdateLagrMult();
 
-
-    /*!
-     \brief Return matrix containing first derivatives of constraints wrt displacements
-     */
-    RCP<LINALG::SparseMatrix> GetConstraintMatrix()
-    {
-      return constrMatrix_;
-    };
     
+    /*!
+     \brief Return EpetraMap that determined distributation of constraints and lagrange 
+     multiplier over processors
+    */
     RCP<Epetra_Map> GetConstraintMap()
     {
       return constrmap_;
     };
 
     /*!
-             \brief Return lagrange multiplier for constraint i
+      \brief Return lagrange multiplier for constraint i
     */
     double GetLagrMult(int i)
     {
-        return (*lagrMultVec_)[i];
+      return (*lagrMultVec_)[i];
+    };
+    
+    /*!
+      \brief Return lagrange multiplier vector
+    */        
+    void GetLagrMultVector(RCP<Epetra_Vector> tmpmult)
+    {
+      LINALG::Export(*lagrMultVec_,*tmpmult);
+      return ;
+    };
+    /*!
+      \brief Set all lagrange multiplier for restart, assuming that Epetra_Maps fit together
+    */
+    void SetLagrMultVector(RCP<Epetra_Vector> restartvec)
+    {
+      LINALG::Export(*restartvec,*lagrMultVec_);
+      return;
     };
 
+    /*!
+      \brief Set uzawa parameter (used for dynamic adaptation and restart)
+    */
+    void SetUzawaParameter(double restartval)
+    {
+      uzawaparam_=restartval;
+      return;
+    }    
+    
+    /*!
+       \brief Return the current value of the uzawa parameter
+    */
+    double GetUzawaParameter()
+    {
+      return uzawaparam_;
+    }
     /*!
      \brief Return if there are constraints
     */
@@ -288,6 +318,7 @@ private:
     bool havemonitor_;
     bool haveareamonitor_;
     bool havevolmonitor_;
+    double uzawaparam_;
     //@}
 
 

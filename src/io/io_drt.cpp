@@ -669,7 +669,7 @@ void IO::DiscretizationWriter::WriteDouble(const string name, const double value
 }
 
 /*----------------------------------------------------------------------*/
-/*write double to control file                                  tk 04/08*/
+/*write int to control file                                     tk 04/08*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteInt(const string name, const int value)
 {

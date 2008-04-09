@@ -22,9 +22,11 @@ Maintainer: Thomas Kloeppel
  |  ctor (public)                                               tk 11/07|
  *----------------------------------------------------------------------*/
 ConstrManager::ConstrManager(DRT::Discretization& discr,
-        RCP<Epetra_Vector> disp):
+        RCP<Epetra_Vector> disp,
+        ParameterList params):
 actdisc_(discr)
 {
+    uzawaparam_=params.get<double>("uzawa parameter",1);
     //Check, what kind of constraining boundary conditions there are
     numConstrID_=0;
     haveareaconstr_=false;

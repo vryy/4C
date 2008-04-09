@@ -171,7 +171,7 @@ maxentriesperrow_(81)
     discret_.ClearState();
 
     //initialize Constraint Manager
-    constrMan_=rcp(new ConstrManager(discret_, dis_));
+    constrMan_=rcp(new ConstrManager(discret_, dis_, params_));
 
     // Check for surface stress conditions due to interfacial phenomena
     vector<DRT::Condition*> surfstresscond(0);
@@ -1342,7 +1342,7 @@ void StruGenAlpha::FullNewton()
 void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
 {
     int  maxiterUzawa  = params_.get<int>   ("uzawa maxiter"          ,50);
-    double Uzawa_param = params_.get<double>("uzawa parameter"        ,1);
+    double Uzawa_param = constrMan_->GetUzawaParameter();
     double tolconstr   = params_.get<double>("tolerance constraint"   ,1.0e-07);
     double alphaf      = params_.get<double>("alpha f"                ,0.459);
     double time        = params_.get<double>("total time"             ,0.0);
@@ -1406,7 +1406,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   int  maxiterUzawa   = params_.get<int>   ("uzawa maxiter"         ,50);
-  double Uzawa_param=params_.get<double>("uzawa parameter",1);
+  double Uzawa_param=constrMan_->GetUzawaParameter();
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
@@ -1711,7 +1711,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   }
 
   params_.set<int>("num iterations",numiter);
-  params_.set<double>("uzawa parameter",Uzawa_param);
+  constrMan_->SetUzawaParameter(Uzawa_param);
 
   return;
 } // StruGenAlpha::FullNewtonUzawa()
@@ -3139,6 +3139,11 @@ void StruGenAlpha::UpdateandOutput()
       output_.WriteVector("conquot", con);
     }
 
+    if (constrMan_->HaveConstraint()) 
+    {
+      output_.WriteDouble("uzawaparameter",constrMan_->GetUzawaParameter());
+    }
+    
     if (discret_.Comm().MyPID()==0 and printscreen)
     {
       cout << "====== Restart written in step " << istep << endl;
@@ -3489,7 +3494,13 @@ void StruGenAlpha::ReadRestart(int step)
     reader.ReadVector(con_quot, "conquot");
     surf_stress_man_->SetHistory(A_old,con_quot);
   }
-
+  
+  if (constrMan_->HaveConstraint())
+  {
+    double uzawatemp = reader.ReadDouble("uzawaparameter");
+    constrMan_->SetUzawaParameter(uzawatemp);
+  }
+  
   return;
 }
 
