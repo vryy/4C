@@ -140,6 +140,33 @@ public:
   */
   virtual void NewStep(const int step, const double time);
 
+  //! write a result double to constrol file
+  /*!
+    There will be an entry in the current result step in the control
+    file that points to this vector
+
+    \param name : control file entry name
+    \param value  : the result data value
+    
+    \author tk
+    \date 04/08
+  */  
+  virtual void WriteDouble(const string name, const double value);
+  
+  //! write a result integer to constrol file
+  /*!
+    There will be an entry in the current result step in the control
+    file that points to this vector
+
+    \param name : control file entry name
+    \param value  : the result data value
+    
+    \author tk
+    \date 04/08
+  */  
+  virtual void WriteInt(const string name, const int value);
+  
+  
   //! write a result vector
   /*!
     There will be an entry in the current result step in the control

@@ -649,6 +649,42 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
 #endif
 }
 
+/*----------------------------------------------------------------------*/
+/*write double to control file                                  tk 04/08*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::WriteDouble(const string name, const double value)
+{
+#ifdef BINIO
+
+  if (dis_->Comm().MyPID() == 0)
+  {
+    fprintf(cf_,
+            "    %s = %f\n\n",
+            name.c_str(), value
+      );
+    fflush(cf_);
+  }
+
+#endif
+}
+
+/*----------------------------------------------------------------------*/
+/*write double to control file                                  tk 04/08*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::WriteInt(const string name, const int value)
+{
+#ifdef BINIO
+
+  if (dis_->Comm().MyPID() == 0)
+  {
+    fprintf(cf_,
+            "    %s = %i\n\n",
+            name.c_str(), value
+      );
+    fflush(cf_);
+  }
+#endif
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
