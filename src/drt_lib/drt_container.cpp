@@ -247,6 +247,16 @@ void DRT::Container::Add(const string& name, const int* data, const int num)
 
 /*----------------------------------------------------------------------*
  |  Add stuff to the container                                 (public) |
+ |                                                             lw 04/08 |
+ *----------------------------------------------------------------------*/
+void DRT::Container::Add(const string& name, RefCountPtr<vector<int> > data)
+{
+  intdata_[name] = data;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add stuff to the container                                 (public) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
 void DRT::Container::Add(const string& name, const double* data, const int num)
@@ -258,6 +268,16 @@ void DRT::Container::Add(const string& name, const double* data, const int num)
 
   // store the vector
   doubledata_[name] = storage;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add stuff to the container                                 (public) |
+ |                                                             lw 04/08 |
+ *----------------------------------------------------------------------*/
+void DRT::Container::Add(const string& name, RefCountPtr<vector<double> > data)
+{
+  doubledata_[name] = data;
   return;
 }
 
@@ -279,6 +299,16 @@ void DRT::Container::Add(const string& name, const string& data)
 void DRT::Container::Add(const string& name, const Epetra_SerialDenseMatrix& matrix)
 {
   matdata_[name] = rcp(new Epetra_SerialDenseMatrix(matrix));
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add stuff to the container                                 (public) |
+ |                                                             lw 04/08 |
+ *----------------------------------------------------------------------*/
+void DRT::Container::Add(const string& name, RefCountPtr<Epetra_SerialDenseMatrix> matrix)
+{
+  matdata_[name] = matrix;
   return;
 }
 

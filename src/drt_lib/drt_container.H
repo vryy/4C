@@ -142,6 +142,16 @@ public:
   { Add(name,&data[0],data.size()); return;}
 
   /*!
+  \brief Add rcp to vector of int to the container
+
+  \param name : Name of data to store data with
+  \param data : rcp to vector of integers to be added
+
+  \note If record with name name already exists, it will be overwritten
+  */
+  void Add(const string& name, RefCountPtr<vector<int> > data);
+
+  /*!
   \brief Add a double to the container
 
   \param name : Name of data to store data with
@@ -174,6 +184,16 @@ public:
   void Add(const string& name, const vector<double>& data)
   { Add(name,&data[0],data.size()); return;}
 
+   /*!
+  \brief Add rcp to vector of double to the container
+
+  \param name : Name of data to store data with
+  \param data : rcp to vector of doubles to be added
+
+  \note If record with name name already exists, it will be overwritten
+  */
+  void Add(const string& name, RefCountPtr<vector<double> > data);
+
   /*!
   \brief Add a string to the container
 
@@ -204,6 +224,16 @@ public:
   \note If record with name name already exists, it will be overwritten
   */
   void Add(const string& name, const Epetra_SerialDenseMatrix& matrix);
+
+   /*!
+  \brief Add rcp to Epetra_SerialDenseMatrix to the container
+
+  \param name : Name of data to store data with
+  \param data : rcp to Epetra_SerialDenseMatrix to be added
+
+  \note If record with name name already exists, it will be overwritten
+  */
+  void Add(const string& name, RefCountPtr<Epetra_SerialDenseMatrix> data);
 
   //@}
 
