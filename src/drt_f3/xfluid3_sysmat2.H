@@ -991,7 +991,7 @@ void Sysmat(
 //                nabla_dot_tau(2) = blitz::sum(shp_tau_dx(_)*etau(4,_)) + blitz::sum(shp_tau_dy(_)*etau(5,_)) + blitz::sum(shp_tau_dz(_)*etau(2,_));
 //            }
             
-            //const double trace_tau = (tau(0, 0) + tau(1, 1) + tau(2, 2));
+            
       
       
 //            const BlitzMat eps(0.5*(vderxy_(i,j) + vderxy_(j,i));
@@ -1334,12 +1334,13 @@ void Sysmat(
                               |                   |
                                \                 /
                 */
-                assembler.template Matrix<DiscPres,Tauxx>(shp_discpres, timefacfac/visc, shp_tau);
-                assembler.template Matrix<DiscPres,Tauyy>(shp_discpres, timefacfac/visc, shp_tau);
-                assembler.template Matrix<DiscPres,Tauzz>(shp_discpres, timefacfac/visc, shp_tau);
+                const double factor = 1.0*visc;
+                assembler.template Matrix<DiscPres,Tauxx>(shp_discpres, factor*timefacfac, shp_tau);
+                assembler.template Matrix<DiscPres,Tauyy>(shp_discpres, factor*timefacfac, shp_tau);
+                assembler.template Matrix<DiscPres,Tauzz>(shp_discpres, factor*timefacfac, shp_tau);
                 
-                const double trace_gamma_ele = (tau(0, 0) + tau(1, 1) + tau(2, 2))/visc;
-                assembler.template Vector<DiscPres>(shp_discpres, -timefacfac*trace_gamma_ele);
+                const double trace_tau = (tau(0, 0) + tau(1, 1) + tau(2, 2));
+                assembler.template Vector<DiscPres>(shp_discpres, -factor*timefacfac*trace_tau);
             }
             
             
@@ -1877,7 +1878,7 @@ void Sysmat(
             const BlitzVec funct_stress(DRT::UTILS::shape_function_3D(posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype));
 
             // discontinouos pressure shape functions
-            BlitzVec funct_discpres(DRT::UTILS::getNumberOfElementNodes(discpresdistype));
+            static BlitzVec funct_discpres(DRT::UTILS::getNumberOfElementNodes(discpresdistype));
             //const BlitzMat deriv_discpres(3, DRT::UTILS::getNumberOfElementNodes(discpresdistype),blitz::ColumnMajorArray<2>());
             DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
             //DRT::UTILS::shape_function_3D_deriv1(deriv_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
