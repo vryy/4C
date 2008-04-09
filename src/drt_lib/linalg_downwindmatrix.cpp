@@ -45,6 +45,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   const int numdofrows = A.RowMap().NumMyElements();
   const int bsize = bs_;
   const int vsize = nv_;
+  const int psize = np_;
   if (numdofrows % bsize) dserror("Local number of matrix rows does not divide by block size");
   const int numnoderows = numdofrows / bsize;
 
@@ -53,11 +54,14 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   {
     vector<int> gnodeids(numnoderows);
     int count=0;
-    for (int i=0; i<numdofrows; ++i)
+    int i;
+    for (i=0; i<numdofrows; ++i)
     {
       const int gdofid = A.RowMap().GID(i);
-      if (gdofid%bsize) dserror("???");
-      const int gnodeid = gdofid/bsize;
+//      if (gdofid%bsize) 
+//        dserror("dof id is not a multiple of block size");
+//      const int gnodeid = gdofid/bsize;
+      const int gnodeid = gdofid;
       gnodeids[count++] = gnodeid;
       i += (bsize-1);
     }
@@ -69,15 +73,16 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   // compute a nodal block weighted graph
   RCP<Epetra_CrsMatrix> onodegraph;
   {
-    RCP<SparseMatrix> tmp = rcp(new SparseMatrix(*onoderowmap,A.MaxNumEntries()));
     const int maxnumentries = A.MaxNumEntries();
+    RCP<SparseMatrix> tmp = rcp(new SparseMatrix(*onoderowmap,maxnumentries));
     vector<int> indices(maxnumentries);
     vector<double> values(maxnumentries);
     for (int i=0; i<numdofrows; ++i)
     {
       const int gdofrow = A.RowMap().GID(i);
-      if (gdofrow%bsize) dserror("Row map is not a multiple of bsize");
-      const int gnoderow = gdofrow / bsize;
+//      if (gdofrow%bsize) dserror("Row map is not a multiple of bsize");
+//      const int gnoderow = gdofrow / bsize;
+      const int gnoderow = gdofrow;
       
       for (int ii=0; ii<vsize; ++ii)
       {
@@ -90,10 +95,11 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
         for (int j=0; j<numentries; ++j)
         {
           const int gdofcol = indices[j];
-          if (gdofcol%bsize)
-            dserror("Col map is not a multiple of bsize indices[j]=%d bsize=%d",indices[j],bsize);
+//          if (gdofcol%bsize)
+//            dserror("Col map is not a multiple of bsize indices[j]=%d bsize=%d",indices[j],bsize);
 
-          const int gnodecol = gdofcol / bsize;
+//          const int gnodecol = gdofcol / bsize;
+          const int gnodecol = gdofcol;
           if (gnodecol==gnoderow)
           {
             j += (bsize-1);
