@@ -312,6 +312,14 @@ namespace LINALG
 
     //@}
 
+    /// tell if this extractor has any meaning
+    /*!
+      We tend to setup extractors even if there is no condition at all. In
+      such a case we will end up with an empty condition map and there is no
+      point to the extractor all together.
+     */
+    bool Relevant() const { return CondMap()->NumGlobalElements()!=0; }
+
     /** \name Extract from full dof vector */
     //@{
 

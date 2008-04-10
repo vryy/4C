@@ -23,6 +23,7 @@ typedef enum _PROBLEM_TYP
                        prb_fluid_xfem,   /*  fluid problem including XFEM interfaces */
                        prb_fluid_dgfem,  /*  fluid problem including XFEM interfaces */
                        prb_fluid_ale,    /*  fluid on an ale mesh (no structure) */
+                       prb_freesurf,     /*  free surface fluid */
                        prb_opt,          /*  structural optimization  problem */
                        prb_ale,          /*  pure ale problem */
                        prb_tsi,          /*  thermal structure interaction */
@@ -36,7 +37,7 @@ typedef enum _PROBLEM_TYP
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "fsi","fsi_xfem","ssi","structure","fluid","fluid_xfem","fluid_dgfem","fluid_ale","opt","ale","tsi","fluid_pm","condif","pfsi","struct_multi","elch",NULL }
+#define PROBLEMNAMES { "fsi","fsi_xfem","ssi","structure","fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","fluid_pm","condif","pfsi","struct_multi","elch",NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/

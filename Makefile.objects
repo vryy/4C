@@ -205,6 +205,7 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_fluid_ale.o \
                 src/drt_adapter/adapter_fluid_xfem.o \
                 src/drt_adapter/adapter_general_fluid.o \
+                src/drt_adapter/adapter_utils.o \
                 src/drt_adapter/adapter_ale_resulttest.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \

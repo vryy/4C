@@ -27,7 +27,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_structure/strugenalpha.H"
 
-#include "../drt_fsi/fsi_utils.H"
+#include "adapter_utils.H"
 
 
 namespace ADAPTER {

@@ -75,6 +75,7 @@ int main(
     }
     case prb_fluid:
     case prb_fluid_ale:
+    case prb_freesurf:
     {
         PostField* field = problem.get_discretization(0);
         FluidEnsightWriter writer(field, problem.outname());

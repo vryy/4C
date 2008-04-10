@@ -28,7 +28,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluidresulttest.H"
 
-#include "../drt_fsi/fsi_utils.H"
+#include "adapter_utils.H"
 
 
 /// Algorithm adapter classes for use in multi-field problems
@@ -85,6 +85,9 @@ namespace ADAPTER {
 
     /// unknown velocities (and pressures) at t(n)
     virtual Teuchos::RCP<const Epetra_Vector> Veln() const = 0;
+
+    /// mesh displacements at t(n+1)
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const = 0;
 
     //@}
 
@@ -164,8 +167,11 @@ namespace ADAPTER {
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const = 0;
 
+    /// communication object at the free surface
+    virtual const LINALG::MapExtractor& FreeSurface() const = 0;
+
     //! @name Extract the velocity-related part of a fluid vector (e.g. velnp, veln, residual)
-    
+
     /// Some applications need only access to velocity-related values of an fluid result vector.
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) const = 0;
     //@}
@@ -261,6 +267,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const;
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() const;
     virtual Teuchos::RCP<const Epetra_Vector> Veln() const;
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const;
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const;
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() const;
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
@@ -291,6 +298,8 @@ namespace ADAPTER {
 
     /// communication object at the interface
     virtual const LINALG::MapExtractor& Interface() const { return interface_; }
+
+    virtual const LINALG::MapExtractor& FreeSurface() const { return freesurface_; }
 
     virtual void ReadRestart(int step);
     virtual double Time();
@@ -329,6 +338,8 @@ namespace ADAPTER {
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor interface_;
+
+    LINALG::MapExtractor freesurface_;
 
     /// ALE dof map
     LINALG::MapExtractor meshmap_;
@@ -390,6 +401,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> RHS() const;
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() const;
     virtual Teuchos::RCP<const Epetra_Vector> Veln() const;
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const;
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap() const;
     virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix() const;
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
@@ -418,6 +430,8 @@ namespace ADAPTER {
 
     /// communication object at the interface
     virtual const LINALG::MapExtractor&  Interface() const { return interface_; }
+
+    virtual const LINALG::MapExtractor& FreeSurface() const { return freesurface_; }
 
     virtual void ReadRestart(int step);
     virtual double Time();
@@ -456,6 +470,8 @@ namespace ADAPTER {
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor                   interface_;
+
+    LINALG::MapExtractor                   freesurface_;
 
     /// ALE dof map
     LINALG::MapExtractor                   meshmap_;

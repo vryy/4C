@@ -37,7 +37,7 @@ Maintainer: Ulrich Kuettler
 
 #include <set>
 
-#include "../drt_fsi/fsi_utils.H"
+#include "adapter_utils.H"
 
 
 namespace ADAPTER {
@@ -66,6 +66,9 @@ public:
 
   /// displacements at the interface are prescribed
   virtual void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp) = 0;
+
+  /// displacements at the free surface are prescribed
+  virtual void ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp) = 0;
 
   //@}
 
@@ -140,6 +143,9 @@ public:
   /// communication object at the interface
   virtual const LINALG::MapExtractor& Interface() const = 0;
 
+  /// communication object at the free surface
+  virtual const LINALG::MapExtractor& FreeSurface() const = 0;
+
   /// build system matrix
   virtual void BuildSystemMatrix(bool full=true) = 0;
 
@@ -184,6 +190,7 @@ public:
   void SetInterfaceMap(Teuchos::RCP<Epetra_Map> im);
 
   void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
+  void ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp);
 
   virtual Teuchos::RCP<Epetra_Vector> ExtractDisplacement() const;
 
@@ -218,10 +225,14 @@ public:
   /// communication object at the interface
   const LINALG::MapExtractor& Interface() const { return interface_; }
 
+  const LINALG::MapExtractor& FreeSurface() const { return freesurface_; }
+
 private:
 
   /// the interface map setup for interface <-> full translation
   LINALG::MapExtractor interface_;
+
+  LINALG::MapExtractor freesurface_;
 
   //! @name local copies of input parameters
   Teuchos::RCP<DRT::Discretization> discret_;

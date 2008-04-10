@@ -41,11 +41,6 @@ namespace FSI
                       double beta,
                       Teuchos::RefCountPtr<Epetra_Vector> soln,
                       std::string filename);
-
-    ///
-    void SetupInterfaceExtractor(const DRT::Discretization& dis,
-                                 std::string condname,
-                                 LINALG::MapExtractor& extractor);
   }
 }
 

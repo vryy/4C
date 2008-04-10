@@ -55,7 +55,7 @@ ADAPTER::StructureAdapter::StructureAdapter(Teuchos::RCP<Teuchos::ParameterList>
     solver_(solver),
     output_(output)
 {
-  FSI::UTILS::SetupInterfaceExtractor(*dis,"FSICoupling",interface_);
+  UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
 }
 
 

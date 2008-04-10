@@ -20,7 +20,11 @@ ADAPTER::FluidAleAdapter::FluidAleAdapter(const Teuchos::ParameterList& prbdyn,
                                    AleField().Interface(),
                                    condname);
 
-  //FSI::Coupling& coupfa = FluidAleFieldCoupling();
+  fscoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
+                                    FluidField().FreeSurface(),
+                                   *AleField().Discretization(),
+                                    AleField().FreeSurface(),
+                                    "FREESURFCoupling");
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
@@ -33,7 +37,7 @@ ADAPTER::FluidAleAdapter::FluidAleAdapter(const Teuchos::ParameterList& prbdyn,
 
   FluidField().SetMeshMap(coupfa_.MasterDofMap());
 
-  // the ale matrix is build just once
+  // the ale matrix might be build just once
   AleField().BuildSystemMatrix();
 }
 
@@ -96,13 +100,20 @@ double ADAPTER::FluidAleAdapter::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidAleAdapter::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                          Teuchos::RCP<Epetra_Vector> ivel)
+                                              Teuchos::RCP<Epetra_Vector> ivel)
 {
   if (idisp!=Teuchos::null)
   {
     // if we have values at the interface we need to apply them
     AleField().ApplyInterfaceDisplacements(FluidToAle(idisp));
     FluidField().ApplyInterfaceVelocities(ivel);
+  }
+
+  if (FluidField().FreeSurface().Relevant())
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
+    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().FreeSurface().ExtractCondVector(dispnp);
+    AleField().ApplyFreeSurfaceDisplacements(fscoupfa_.MasterToSlave(fsdispnp));
   }
 
   // Note: We do not look for moving ale boundaries (outside the coupling
@@ -120,7 +131,7 @@ void ADAPTER::FluidAleAdapter::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                                                  double dt)
+                                                                      double dt)
 {
   // Here we have a mesh position independent of the
   // given trial vector, but still the grid velocity depends on the

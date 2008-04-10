@@ -85,6 +85,9 @@ namespace ADAPTER
     /// coupling of fluid and ale (interface only)
     FSI::Coupling               icoupfa_;
 
+    /// coupling of fluid and ale at the free surface
+    FSI::Coupling               fscoupfa_;
+
   };
 
 }

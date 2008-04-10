@@ -242,6 +242,12 @@ void DRT::Problem::InputControl()
     genprob.numaf=1;
     break;
   }
+  case prb_freesurf:
+  {
+    genprob.numff=0;
+    genprob.numaf=1;
+    break;
+  }
   case prb_condif:
     genprob.numff=0;
     break;
@@ -369,6 +375,7 @@ void DRT::Problem::InputControl()
     break;
   }
   case prb_fluid_ale:
+  case prb_freesurf:
   {
     dsassert(genprob.numfld == 2, "numfld != 2 for fluid problem on ale mesh");
 
@@ -833,6 +840,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     break;
   }
   case prb_fluid_ale:
+  case prb_freesurf:
   {
     // allocate and input general old stuff....
     if (genprob.numfld!=2) dserror("numfld != 2 for fluid problem on ale");

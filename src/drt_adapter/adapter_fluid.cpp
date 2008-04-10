@@ -55,7 +55,10 @@ ADAPTER::FluidAdapter::FluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
     params_(params),
     output_(output)
 {
-  FSI::UTILS::SetupInterfaceExtractor(*dis,"FSICoupling",interface_);
+  UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
+  UTILS::SetupNDimExtractor(*dis,"FREESURFCoupling",freesurface_);
+
+  fluid_.SetFreeSurface(&freesurface_);
 
   // build inner velocity map
   // dofs at the interface are excluded
@@ -110,6 +113,14 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidAdapter::Velnp() const
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidAdapter::Veln() const
 {
   return fluid_.Veln();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidAdapter::Dispnp() const
+{
+  return fluid_.Dispnp();
 }
 
 
@@ -396,7 +407,8 @@ ADAPTER::FluidGenAlphaAdapter::FluidGenAlphaAdapter(
     params_(params),
     output_(output)
 {
-  FSI::UTILS::SetupInterfaceExtractor(*dis,"FSICoupling",interface_);
+  UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
+  UTILS::SetupNDimExtractor(*dis,"FREESURFCoupling",freesurface_);
 
   // build inner velocity map
   // dofs at the interface are excluded
@@ -451,6 +463,14 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlphaAdapter::Velnp() const
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlphaAdapter::Veln() const
 {
   return fluid_.Veln();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlphaAdapter::Dispnp() const
+{
+  return fluid_.Dispnp();
 }
 
 

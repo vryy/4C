@@ -325,6 +325,34 @@ void fluid_ale_drt()
 
 
 /*----------------------------------------------------------------------*/
+// entry point for (pure) free surface in DRT
+/*----------------------------------------------------------------------*/
+void fluid_freesurf_drt()
+{
+#ifdef PARALLEL
+  Epetra_MpiComm comm(MPI_COMM_WORLD);
+#else
+  Epetra_SerialComm comm;
+#endif
+
+  RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
+  if (!aledis->Filled()) aledis->FillComplete();
+
+  // create ale elements if the ale discretization is empty
+  if (aledis->NumGlobalNodes()==0)
+    CreateAleDiscretization();
+
+  Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
+
+  fluid->Timeloop();
+
+  DRT::ResultTestManager testmanager(comm);
+  testmanager.AddFieldTest(fluid->FluidField().CreateFieldTest());
+  testmanager.TestAll();
+}
+
+
+/*----------------------------------------------------------------------*/
 // entry point for FSI in DRT
 /*----------------------------------------------------------------------*/
 void fsi_ale_drt()

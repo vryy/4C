@@ -270,6 +270,9 @@ case prb_fluid_xfem:
   case prb_fluid_ale:
     fluid_ale_drt();
     break;
+  case prb_freesurf:
+    fluid_freesurf_drt();
+    break;
 #endif
   
 #ifdef D_FSI

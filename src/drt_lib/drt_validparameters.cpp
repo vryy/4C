@@ -230,23 +230,27 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Fluid",
                                  "Fluid_XFEM",
                                  "Fluid_Ale",
+                                 "Fluid_Freesurface",
                                  "Convection_Diffusion",
                                  "Fluid_Structure_Interaction",
                                  "Fluid_Structure_Interaction_XFEM",
                                  "Ale",
-                                 "Thermal_Structure_Interaction",
-                                 "Structure_Multiscale").append("Electrochemistry"),
+                                 "Thermal_Structure_Interaction")
+                               .append("Structure_Multiscale")
+                               .append("Electrochemistry"),
                                tuple<PROBLEM_TYP>(
                                  prb_structure,
                                  prb_fluid,
                                  prb_fluid_xfem,
                                  prb_fluid_ale,
+                                 prb_freesurf,
                                  prb_condif,
                                  prb_fsi,
                                  prb_fsi_xfem,
                                  prb_ale,
-                                 prb_tsi,
-                                 prb_struct_multi).append(prb_elch),
+                                 prb_tsi)
+                               .append(prb_struct_multi)
+                               .append(prb_elch),
                                &type);
   IntParameter("NUMFIELD",1,"",&type);
   setStringToIntegralParameter("TIMETYP","Dynamic","",

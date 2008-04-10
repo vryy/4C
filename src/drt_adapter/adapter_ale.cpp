@@ -84,7 +84,8 @@ ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
   residual_       = LINALG::CreateVector(*dofrowmap,true);
   dirichtoggle_   = LINALG::CreateVector(*dofrowmap,true);
 
-  FSI::UTILS::SetupInterfaceExtractor(*actdis,"FSICoupling",interface_);
+  UTILS::SetupNDimExtractor(*actdis,"FSICoupling",interface_);
+  UTILS::SetupNDimExtractor(*actdis,"FREESURFCoupling",freesurface_);
 
   // set fixed nodes (conditions != 0 are not supported right now)
   ParameterList eleparams;
@@ -99,6 +100,15 @@ ADAPTER::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
     Teuchos::RCP<Epetra_Vector> idisp = LINALG::CreateVector(*interface_.CondMap(),false);
     idisp->PutScalar(1.0);
     interface_.InsertCondVector(idisp,dirichtoggle_);
+  }
+
+  if (dirichletcond and freesurface_.Relevant())
+  {
+    // for partitioned solves the free surface becomes a Dirichlet boundary
+
+    Teuchos::RCP<Epetra_Vector> idisp = LINALG::CreateVector(*freesurface_.CondMap(),false);
+    idisp->PutScalar(1.0);
+    freesurface_.InsertCondVector(idisp,dirichtoggle_);
   }
 }
 
@@ -288,6 +298,14 @@ void ADAPTER::AleLinear::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector>
 
   // apply displacements to the rhs as well
   interface_.InsertCondVector(idisp,residual_);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::AleLinear::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp)
+{
+  freesurface_.InsertCondVector(fsdisp,dispnp_);
 }
 
 

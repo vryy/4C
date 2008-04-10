@@ -79,6 +79,7 @@ public:
     LinePeriodic,
     SurfacePeriodic,
     FSICoupling,
+    FREESURFCoupling,
     SurfaceTension,
     Surfactant,
     MicroBoundary,

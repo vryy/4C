@@ -308,6 +308,42 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surffsi);
 
   /*--------------------------------------------------------------------*/
+  // FREESURF
+
+  std::vector<Teuchos::RCP<ConditionComponent> > freesurfcomponents;
+
+  freesurfcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "field","fluid",
+        Teuchos::tuple<std::string>("fluid","ale"),
+        Teuchos::tuple<std::string>("fluid","ale"))));
+
+  Teuchos::RCP<ConditionDefinition> linefreesurf =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FLUID FREE SURFACE LINE CONDITIONS",
+                                         "FREESURFCoupling",
+                                         "FREESURF Coupling",
+                                         DRT::Condition::FREESURFCoupling,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surffreesurf =
+    Teuchos::rcp(new ConditionDefinition("DESIGN FLUID FREE SURFACE SURF CONDITIONS",
+                                         "FREESURFCoupling",
+                                         "FREESURF Coupling",
+                                         DRT::Condition::FREESURFCoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<freesurfcomponents.size(); ++i)
+  {
+    linefreesurf->AddComponent(freesurfcomponents[i]);
+    surffreesurf->AddComponent(freesurfcomponents[i]);
+  }
+
+  condlist.push_back(linefreesurf);
+  condlist.push_back(surffreesurf);
+
+  /*--------------------------------------------------------------------*/
   // xfem
 
   std::vector<Teuchos::RCP<ConditionComponent> > xfemcomponents;
@@ -517,7 +553,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(areamonitor);
 
   /*--------------------------------------------------------------------*/
-  // Impedance condition 
+  // Impedance condition
 
   Teuchos::RCP<ConditionDefinition> impedancebc =
   Teuchos::rcp(new ConditionDefinition("IMPEDANCE CONDITIONS",
