@@ -30,9 +30,6 @@ using namespace std; // cout etc.
 // this routine is intended to determine a homogenized stress and
 // density for multi-scale analyses by averaging the corresponding
 // quantities over the initial volume
-// currently no EAS is implemented, but this can easily be
-// incorporated as soon as the algorithm reliably works
-
 
 // dynamic homogenization based on averaging the 1st PK stresses
 void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params,
@@ -223,6 +220,62 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params,
     double homogP33 = params.get<double>("homogP33", 0.0);
     params.set("homogP33", P33+homogP33);
   }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Set EAS internal variables on the microscale (public)       lw 04/08|
+ *----------------------------------------------------------------------*/
+// the microscale internal EAS data have to be saved separately for every
+// macroscopic Gauss point and set before the determination of microscale
+// stiffness etc.
+
+void DRT::ELEMENTS::So_hex8::soh8_set_eas_multi(ParameterList&  params)
+{
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha =
+    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldalpha", null);
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas =
+    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldfeas", null);
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv =
+    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKaainv", null);
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda =
+    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKda", null);
+
+  if (oldalpha==null || oldfeas==null || oldKaainv==null || oldKda==null)
+    dserror("Cannot get EAS internal data from parameter list for multi-scale problems");
+
+  data_.Add("alpha", (*oldalpha)[Id()]);
+  data_.Add("feas", (*oldfeas)[Id()]);
+  data_.Add("invKaa", (*oldKaainv)[Id()]);
+  data_.Add("Kda", (*oldKda)[Id()]);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Initialize EAS internal variables on the microscale         lw 03/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(ParameterList&  params)
+{
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha =
+    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("lastalpha", null);
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha =
+    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldalpha", null);
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas =
+    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldfeas", null);
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv =
+    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKaainv", null);
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda =
+    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKda", null);
+
+  (*lastalpha)[Id()] = rcp(new Epetra_SerialDenseMatrix(neas_, 1));
+  (*oldalpha)[Id()]  = rcp(new Epetra_SerialDenseMatrix(neas_, 1));
+  (*oldfeas)[Id()]   = rcp(new Epetra_SerialDenseMatrix(neas_, 1));
+  (*oldKaainv)[Id()] = rcp(new Epetra_SerialDenseMatrix(neas_, neas_));
+  (*oldKda)[Id()]    = rcp(new Epetra_SerialDenseMatrix(neas_, NUMDOF_SOH8));
 
   return;
 }

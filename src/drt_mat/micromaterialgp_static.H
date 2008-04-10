@@ -52,6 +52,9 @@ public:
   /// Set up microscale static "time integrator"
   void SetUpMicroStatic();
 
+  /// Create and initialize "empty" EAS history map
+  void EasInit();
+
 
 private:
 
@@ -78,11 +81,12 @@ private:
   /// my manager of surface stresses
   RefCountPtr<DRT::SurfStressManager> surf_stress_man_;
 
-  // my EAS history data
-  Teuchos::RCP<std::vector<char> > oldalpha_;
-  Teuchos::RCP<std::vector<char> > oldfeas_;
-  Teuchos::RCP<std::vector<char> > oldKaainv_;
-  Teuchos::RCP<std::vector<char> > oldKda_;
+  // my EAS history data -> note that microstructure is not parallel
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha_;
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha_;
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas_;
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv_;
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda_;
 
   /// current absolute time
   double timen_;

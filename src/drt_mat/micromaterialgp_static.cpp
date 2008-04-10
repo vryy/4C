@@ -74,10 +74,11 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
   RefCountPtr<DRT::Discretization> microdis = microproblem->Dis(0, 0);
   dism_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   dis_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
-  oldalpha_ = Teuchos::rcp(new std::vector<char>());
-  oldfeas_ = Teuchos::rcp(new std::vector<char>());
-  oldKaainv_ = Teuchos::rcp(new std::vector<char>());
-  oldKda_ = Teuchos::rcp(new std::vector<char>());
+  lastalpha_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  oldalpha_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  oldfeas_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  oldKaainv_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  oldKda_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   microstaticcounter_ += 1;
 
   // if class handling microscale simulations is not yet initialized
@@ -87,6 +88,9 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
   {
     MAT::MicroMaterialGP::SetUpMicroStatic();
   }
+
+  // create and initialize "empty" EAS history map
+  EasInit();
 
   RefCountPtr<DRT::Discretization> actdis = DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
 
@@ -108,10 +112,12 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
   {
     istep_ = genprob.restart;
     string restartname = micro_output_->GetRestartFileName();
-    microstatic_->ReadRestart(istep_, dis_, restartname);
-    // both dis_ and dism_ are equal to dis_
+    microstatic_->ReadRestart(istep_, dis_, lastalpha_, restartname);
+    // both dis_ and dism_ are the same
     dism_->Update(1.0, *dis_, 0.0);
-    microstatic_->SetOldState(dis_, dism_, surf_stress_man_);
+    // both lastalpha and oldalpha are the same
+    *oldalpha_ = *lastalpha_;
+    microstatic_->SetOldState(dis_, dism_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
   }
   else
   {
@@ -123,8 +129,13 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
   // GiD sections we simply ask the macroproblem for its parameters.
   // note that the microscale solver is currently always UMFPACK
   // (hard coded)!
-  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-  timen_ = microstatic_->GetTime();
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
+//   timen_ = microstatic_->GetTime();
+  // we set the microscale time _ALWAYS_ to 0 (also in restart case)
+  // in order to handle the implicit update query!!!
+  timen_ = 0.;
+
   dt_    = sdyn.get<double>("TIMESTEP");
 }
 
@@ -226,6 +237,24 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   microstatic_ = rcp(new MicroStatic(params,actdis,solver));
 }
 
+void MAT::MicroMaterialGP::EasInit()
+{
+  // create the parameters for the discretization
+  ParameterList p;
+  // action for elements
+  p.set("action","eas_init_multi");
+  p.set("lastalpha", lastalpha_);
+  p.set("oldalpha", oldalpha_);
+  p.set("oldfeas", oldfeas_);
+  p.set("oldKaainv", oldKaainv_);
+  p.set("oldKda", oldKda_);
+
+  RefCountPtr<DRT::Discretization> actdis = DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
+  actdis->Evaluate(p,null,null,null,null,null);
+
+  return;
+}
+
 
 /// perform microscale simulation
 
@@ -239,13 +268,15 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   // this is a comparison of two doubles, but since timen_ is always a
   // copy of time as long as we are within a time step, any variation
   // must be due to an update of macroscale time!
-  if (time != timen_)
+  // -> no update for a new time step if timen_=0
+  // note that timen_ is set in the following if statement!
+  if (time != timen_ && timen_ != 0.)
   {
-    microstatic_->UpdateNewTimeStep(dis_, dism_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+    microstatic_->UpdateNewTimeStep(dis_, dism_, oldalpha_, lastalpha_);
   }
 
-  // set displacements of last step
-  microstatic_->SetOldState(dis_, dism_, surf_stress_man_);
+  // set displacements and EAS data of last step
+  microstatic_->SetOldState(dis_, dism_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
 
   // check if we have to update absolute time and step number
   // in case of restart, timen_ is set to the current total time in
@@ -279,8 +310,13 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   microstatic_->FullNewton();
   microstatic_->StaticHomogenization(stress, cmat, density, defgrd);
 
+  // note that it is not necessary to save displacements and EAS data
+  // explicitly since we dealt with RCP's -> any update in class
+  // microstatic and the elements, respectively, inherently updates the
+  // micromaterialgp_static data!
+
   // save calculated displacements
-  dism_ = microstatic_->ReturnNewDism();
+  //dism_ = microstatic_->ReturnNewDism();
 
   // clear displacements in MicroStruGenAlpha for next usage
   microstatic_->ClearState();
