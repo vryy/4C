@@ -274,11 +274,75 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                   eleDofManager_, NumNode(), NodeIds());
           
+#if 0
+          const XFEM::DomainIntCells&  domainIntCells(ih_->GetDomainIntCells(this->Id(),this->Shape()));
+          if ((assembly_type == XFEM::xfem_assembly) and (domainIntCells.size() > 1))
+          {
+              const int entry = 4; // line in stiffness matrix to compare
+              const double disturbance = 1.0e-4;
+
+              // initialize locval
+              for (unsigned i = 0;i < locval.size(); ++i)
+              {
+                  locval[i] = 0.0;
+                  locval_hist[i] = 0.0;
+              }
+              // R_0
+              // calculate element coefficient matrix and rhs
+              XFLUID::callSysmat(assembly_type,
+                      this, ih_, eleDofManager_, locval, locval_hist, estif, eforce,
+                      actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
+
+              blitz::Array<double, 1> eforce_0(locval.size());
+              for (unsigned i = 0;i < locval.size(); ++i)
+              {
+                  eforce_0(i) = eforce(i);
+              }
+              
+              // create disturbed vector
+              vector<double> locval_disturbed(locval.size());
+              for (unsigned i = 0;i < locval.size(); ++i)
+              {
+                  if (i == entry)
+                  {
+                      locval_disturbed[i] = locval[i] + disturbance;
+                  }
+                  else
+                  {
+                      locval_disturbed[i] = locval[i];
+                  }
+                  cout << locval[i] <<  " " << locval_disturbed[i] << endl;
+              }
+              
+
+              // R_0+dx
+              // calculate element coefficient matrix and rhs
+              XFLUID::callSysmat(assembly_type,
+                      this, ih_, eleDofManager_, locval_disturbed, locval_hist, estif, eforce,
+                      actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
+
+              
+              
+              // compare
+              cout << "sekante" << endl;
+              for (int i = 0;i < locval.size(); ++i)
+              {
+                  //cout << i << endl;
+                  const double matrixentry = (eforce_0(i) - eforce(i))/disturbance;
+                  printf("should be %+12.8E, is %+12.8E, factor = %5.2f, is %+12.8E, factor = %5.2f\n", matrixentry, estif(i, entry), estif(i, entry)/matrixentry, estif(entry,i), estif(entry,i)/matrixentry);
+                  //cout << "should be: " << std::scientific << matrixentry << ", is: " << estif(entry, i) << " " << estif(i, entry) << endl;                
+              }
+              
+              exit(0);
+          }
+          else
+#endif
+          {
           // calculate element coefficient matrix and rhs
           XFLUID::callSysmat(assembly_type,
                   this, ih_, eleDofManager_, locval, locval_hist, estif, eforce,
                   actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
-
+          }
           // This is a very poor way to transport the density to the
           // outside world. Is there a better one?
           params.set("density", actmat->m.fluid->density);
