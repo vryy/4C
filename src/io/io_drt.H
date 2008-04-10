@@ -60,6 +60,10 @@ public:
   /// read into given vector
   void ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, string name);
 
+  /// read into given std::map<int, RCP<Epetra_SerialDenseMatrix> >
+  void ReadSerialDenseMatrix(RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > mapdata,
+                             string name);
+
   /// read an integer value from the control file
   int ReadInt(string name);
 
@@ -147,12 +151,12 @@ public:
 
     \param name : control file entry name
     \param value  : the result data value
-    
+
     \author tk
     \date 04/08
-  */  
+  */
   virtual void WriteDouble(const string name, const double value);
-  
+
   //! write a result integer to constrol file
   /*!
     There will be an entry in the current result step in the control
@@ -160,13 +164,13 @@ public:
 
     \param name : control file entry name
     \param value  : the result data value
-    
+
     \author tk
     \date 04/08
-  */  
+  */
   virtual void WriteInt(const string name, const int value);
-  
-  
+
+
   //! write a result vector
   /*!
     There will be an entry in the current result step in the control

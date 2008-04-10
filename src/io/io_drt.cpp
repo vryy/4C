@@ -130,6 +130,37 @@ void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_Vector> vec, strin
 #endif
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationReader::ReadSerialDenseMatrix(RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > mapdata,
+                                                     string name)
+{
+#ifdef BINIO
+  MAP* result = map_read_map(restart_step_, name.c_str());
+  string id_path = map_read_string(result, "ids");
+  string value_path = map_read_string(result, "values");
+  int columns = map_find_int(result,"columns",&columns);
+  if (not map_find_int(result,"columns",&columns))
+  {
+    columns = 1;
+  }
+  if (columns != 1)
+    dserror("got multivector with name '%s', vector<char> expected", name.c_str());
+
+  RefCountPtr<Epetra_Map> elemap;
+  RefCountPtr<std::vector<char> > data = reader_->ReadResultDataVecChar(id_path, value_path, columns,
+                                                                        dis_->Comm(), elemap);
+
+  int position=0;
+  for (int i=0;i<elemap->NumMyElements();++i)
+  {
+    RefCountPtr<Epetra_SerialDenseMatrix> matrix = rcp(new Epetra_SerialDenseMatrix);
+    DRT::ParObject::ExtractfromPack(position, *data, *matrix);
+    (*mapdata)[elemap->GID(i)]=matrix;
+  }
+#endif
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

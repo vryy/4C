@@ -35,6 +35,7 @@ Maintainer: Lena Wiechert
 #include <Teuchos_RefCountPtr.hpp>
 
 #include "../io/io_drt_micro.H"
+#include "../drt_lib/drt_parobject.H"
 
 using namespace Teuchos;
 using namespace std;
@@ -75,7 +76,10 @@ public:
   \brief read restart
 
   */
-  void ReadRestart(int step, RCP<Epetra_Vector> dis, string name);
+  void ReadRestart(int step,
+                   RCP<Epetra_Vector> dis,
+                   RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
+                   string name);
 
   /*!
   \brief return time from parameter list (needed for writing of mesh
@@ -105,10 +109,8 @@ public:
   */
   void UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
                          RefCountPtr<Epetra_Vector> dism,
-                         RefCountPtr<std::vector<char> > oldalpha,
-                         RefCountPtr<std::vector<char> > oldfeas,
-                         RefCountPtr<std::vector<char> > oldKaainv,
-                         RefCountPtr<std::vector<char> > oldKda);
+                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
+                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha);
 
   /*!
   \brief write update
@@ -128,11 +130,16 @@ public:
 
   void SetOldState(RefCountPtr<Epetra_Vector> dis,
                    RefCountPtr<Epetra_Vector> dism,
-                   RefCountPtr<DRT::SurfStressManager> surfman);
+                   RefCountPtr<DRT::SurfStressManager> surfman,
+                   RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
+                   RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
+                   RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas,
+                   RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv,
+                   RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda);
 
   void SetTime(double timen, int istep);
 
-  RefCountPtr<Epetra_Vector> ReturnNewDism();
+//  RefCountPtr<Epetra_Vector> ReturnNewDism();
 
   void ClearState();
 
@@ -209,6 +216,7 @@ protected:
   RefCountPtr<Epetra_Vector>    fresm_dirich_;
 
   //EAS history data
+  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha_;
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha_;
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas_;
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv_;

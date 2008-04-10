@@ -64,6 +64,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_fsiload")                 act = So_hex8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")            act = So_hex8::calc_struct_update_istep;
   else if (action=="calc_struct_update_genalpha_imrlike") act = So_hex8::calc_struct_update_genalpha_imrlike;
+  else if (action=="eas_init_multi")                      act = So_hex8::eas_init_multi;
+  else if (action=="eas_set_multi")                       act = So_hex8::eas_set_multi;
   else if (action=="calc_homog_stressdens")               act = So_hex8::calc_homog_stressdens;
   else if (action=="postprocess_stress")                  act = So_hex8::postprocess_stress;
   else dserror("Unknown type of action for So_hex8");
@@ -291,6 +293,28 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     }
     break;
 
+    // in case of multi-scale problems, possible EAS internal data on microscale
+    // have to be stored in every macroscopic Gauss point
+    // allocation and initializiation of these data arrays can only be
+    // done in the elements that know the number of EAS parameters
+    case eas_init_multi: {
+      if (eastype_ != soh8_easnone) {
+        soh8_eas_init_multi(params);
+      }
+    }
+    break;
+
+    // in case of multi-scale problems, possible EAS internal data on microscale
+    // have to be stored in every macroscopic Gauss point
+    // before any microscale simulation, EAS internal data has to be
+    // set accordingly
+    case eas_set_multi: {
+      if (eastype_ != soh8_easnone) {
+        soh8_set_eas_multi(params);
+      }
+    }
+    break;
+
     default:
       dserror("Unknown type of action for Solid3");
   }
@@ -444,12 +468,12 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
 
     // we need the (residual) displacement at the previous step
-     Epetra_SerialDenseVector res_d(NUMDOF_SOH8);
-     for (int i = 0; i < NUMDOF_SOH8; ++i) {
-       res_d(i) = residual[i];
-     }
-     // add Kda . res_d to feas
-     (*oldfeas).Multiply('N','N',1.0,(*oldKda),res_d,1.0);
+    Epetra_SerialDenseVector res_d(NUMDOF_SOH8);
+    for (int i = 0; i < NUMDOF_SOH8; ++i) {
+      res_d(i) = residual[i];
+    }
+    // add Kda . res_d to feas
+    (*oldfeas).Multiply('N','N',1.0,(*oldKda),res_d,1.0);
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
     (*alpha).Multiply('N','N',-1.0,(*oldKaainv),(*oldfeas),1.0);
     /* end of EAS Update ******************/

@@ -324,7 +324,7 @@ public:
   const vector<double> GetThickvec(){return thickvec_;};
   const vector<double> GetFibervec(){return fiberdirection_;};
   const vector<double> soh8_ElementCenterRefeCoords();
-  
+
   //! some distypes need rewinding of NodeIds due to bad input from mesher
   //! flag whether process of rewinding is done
   bool                                            donerewinding_;
@@ -348,6 +348,8 @@ protected:
     calc_struct_update_istep,
     calc_struct_update_genalpha_imrlike,
     calc_homog_stressdens,
+    eas_init_multi,
+    eas_set_multi,
     postprocess_stress
   };
 
@@ -461,12 +463,19 @@ protected:
           Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
           const Epetra_SerialDenseMatrix& xrefe);     // material element coords
 
+
+  // multi-scale section
   void soh8_initvol(ParameterList& params);
 
   void soh8_homog(ParameterList&  params,
                   vector<double>& disp,
                   const double    time,
                   vector<double>& residual);
+
+  void soh8_set_eas_multi(ParameterList&  params);
+
+  void soh8_eas_init_multi(ParameterList&  params);
+
 
   vector<double> getthicknessvector() const {dserror("not implemented"); return vector<double>(3);};
 

@@ -114,15 +114,15 @@ solver_(solver)
 
   // -------------------------------------------------------------------
   // create "empty" EAS history map
+  //
   // -------------------------------------------------------------------
-  const Epetra_Map* elemap = discret_->ElementRowMap();
-//   for (int i=0;i<elemap->NumMyElements();++i)
-//   {
-//     (*oldalpha_)[elemap->GID(i)]=null;
-//     (*oldfeas_)[elemap->GID(i)]=null;
-//     (*oldKaainv_)[elemap->GID(i)]=null;
-//     (*oldKda_)[elemap->GID(i)]=null;
-//   }
+  {
+    lastalpha_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+    oldalpha_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+    oldfeas_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+    oldKaainv_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+    oldKda_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  }
 
   // -------------------------------------------------------------------
   // call elements to calculate stiffness and mass
@@ -132,7 +132,6 @@ solver_(solver)
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
-    //p.set("action","calc_struct_nlnstiff_multiscale");
     // other parameters that might be needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
@@ -141,23 +140,11 @@ solver_(solver)
     discret_->SetState("residual displacement",zeros_);
     discret_->SetState("displacement",dis_);
 
-//     if (oldalpha_!=null)   // i.e. we have are using EAS and have internal data
-//     {
-//       // provide EAS history of the last step
-//       p.set("oldalpha", oldalpha_);
-//       p.set("oldfeas", oldfeas_);
-//       p.set("oldKaainv", oldKaainv_);
-//       p.set("oldKda", oldKda_);
-//       // provide vector<char>'s to save the EAS history of the current step_
-//       Teuchos::RCP<std::vector<char> > newalpha = Teuchos::rcp(new std::vector<char>());
-//       Teuchos::RCP<std::vector<char> > newfeas = Teuchos::rcp(new std::vector<char>());
-//       Teuchos::RCP<std::vector<char> > newKaainv = Teuchos::rcp(new std::vector<char>());
-//       Teuchos::RCP<std::vector<char> > newKda = Teuchos::rcp(new std::vector<char>());
-//       p.set("newalpha", newalpha);
-//       p.set("newfeas", newfeas);
-//       p.set("newKaainv", newKaainv);
-//       p.set("newKda", newKda);
-//     }
+    // provide EAS history of the last step
+    p.set("oldalpha", oldalpha_);
+    p.set("oldfeas", oldfeas_);
+    p.set("oldKaainv", oldKaainv_);
+    p.set("oldKda", oldKda_);
 
     discret_->Evaluate(p,stiff_,null,fint_,null,null);
     discret_->ClearState();
@@ -265,6 +252,25 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
   //------------------------------- compute interpolated external forces
   fextm_->Scale(0.0);  // we do not have any external forces in the microproblem!
 
+  //--------------------------------- set EAS internal data if necessary
+
+  // this has to be done only once since the elements will remember
+  // their EAS data until the end of the microscale simulation
+  // (end of macroscopic time step)
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","eas_set_multi");
+
+    p.set("oldalpha", oldalpha_);
+    p.set("oldfeas", oldfeas_);
+    p.set("oldKaainv", oldKaainv_);
+    p.set("oldKda", oldKda_);
+
+    discret_->Evaluate(p,null,null,null,null,null);
+  }
+
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
@@ -273,12 +279,6 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
@@ -288,24 +288,6 @@ void MicroStatic::Predictor(const Epetra_SerialDenseMatrix* defgrd)
     discret_->SetState("residual displacement",disi_);
     discret_->SetState("displacement",dism_);
     fint_->PutScalar(0.0);  // initialise internal force vector
-
-//     if (oldalpha_!=null)   // i.e. we have are using EAS and have internal data
-//     {
-//       // provide EAS history of the last step
-//       p.set("oldalpha", oldalpha_);
-//       p.set("oldfeas", oldfeas_);
-//       p.set("oldKaainv", oldKaainv_);
-//       p.set("oldKda", oldKda_);
-//       // provide vector<char>'s to save the EAS history of the current step_
-//       Teuchos::RCP<std::vector<char> > newalpha = Teuchos::rcp(new std::vector<char>());
-//       Teuchos::RCP<std::vector<char> > newfeas = Teuchos::rcp(new std::vector<char>());
-//       Teuchos::RCP<std::vector<char> > newKaainv = Teuchos::rcp(new std::vector<char>());
-//       Teuchos::RCP<std::vector<char> > newKda = Teuchos::rcp(new std::vector<char>());
-//       p.set("newalpha", newalpha);
-//       p.set("newfeas", newfeas);
-//       p.set("newKaainv", newKaainv);
-//       p.set("newKda", newKda);
-//     }
 
     discret_->Evaluate(p,stiff_,null,fint_,null,null);
     discret_->ClearState();
@@ -415,12 +397,6 @@ void MicroStatic::FullNewton()
       ParameterList p;
       // action for elements
       p.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      p.set("assemble matrix 1",true);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",true);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       p.set("total time",time);
       p.set("delta time",dt);
@@ -434,23 +410,12 @@ void MicroStatic::FullNewton()
       discret_->SetState("displacement",dism_);
       fint_->PutScalar(0.0);  // initialise internal force vector
 
-//       if (oldalpha_!=null)   // i.e. we have are using EAS and have internal data
-//       {
-//         // provide EAS history of the last step
-//         p.set("oldalpha", oldalpha_);
-//         p.set("oldfeas", oldfeas_);
-//         p.set("oldKaainv", oldKaainv_);
-//         p.set("oldKda", oldKda_);
-//         // provide vector<char>'s to save the EAS history of the current step_
-//         Teuchos::RCP<std::vector<char> > newalpha = Teuchos::rcp(new std::vector<char>());
-//         Teuchos::RCP<std::vector<char> > newfeas = Teuchos::rcp(new std::vector<char>());
-//         Teuchos::RCP<std::vector<char> > newKaainv = Teuchos::rcp(new std::vector<char>());
-//         Teuchos::RCP<std::vector<char> > newKda = Teuchos::rcp(new std::vector<char>());
-//         p.set("newalpha", newalpha);
-//         p.set("newfeas", newfeas);
-//         p.set("newKaainv", newKaainv);
-//         p.set("newKda", newKda);
-//       }
+      // provide EAS history of the last step (and a place to store
+      // new EAS related stuff)
+      p.set("oldalpha", oldalpha_);
+      p.set("oldfeas", oldfeas_);
+      p.set("oldKaainv", oldKaainv_);
+      p.set("oldKda", oldKda_);
 
       discret_->Evaluate(p,stiff_,null,fint_,null,null);
       discret_->ClearState();
@@ -555,6 +520,26 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
       output->WriteVector("Aold", A_old);
       output->WriteVector("conquot", con_quot);
     }
+
+    RCP<std::vector<char> > lastalphadata = rcp(new std::vector<char>());
+
+    // note that the microstructure is (currently) serial only i.e. we
+    // can use the GLOBAL number of elements!
+    for (int i=0;i<discret_->NumGlobalElements();++i)
+    {
+      RCP<Epetra_SerialDenseMatrix> lastalpha;
+
+      if ((*lastalpha_)[i]!=null)
+      {
+        lastalpha = (*lastalpha_)[i];
+      }
+      else
+      {
+        lastalpha = rcp(new Epetra_SerialDenseMatrix(1, 1));
+      }
+      DRT::ParObject::AddtoPack(*lastalphadata, *lastalpha);
+    }
+    output->WriteVector("alpha", *lastalphadata, *discret_->ElementColMap());
   }
 
   //----------------------------------------------------- output results
@@ -648,10 +633,14 @@ void MicroStatic::SetDefaults(ParameterList& params)
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  read restart (public)                                       lw 03/08|
  *----------------------------------------------------------------------*/
-void MicroStatic::ReadRestart(int step, RCP<Epetra_Vector> dis, string name)
+void MicroStatic::ReadRestart(int step,
+                              RCP<Epetra_Vector> dis,
+                              RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
+                              string name)
 {
   IO::MicroDiscretizationReader reader(discret_, step, name);
   double time  = reader.ReadDouble("time");
@@ -662,11 +651,10 @@ void MicroStatic::ReadRestart(int step, RCP<Epetra_Vector> dis, string name)
   // It does not make any sense to read the mesh and corresponding
   // element based data because we only have one instance of the
   // microscale discretization and surely have different element based
-  // data at every Gauss point -> when implementing EAS, we have to
-  // think about how to handle element based EAS history data
+  // data at every Gauss point
   // reader.ReadMesh(step);
 
-  // override current time and step with values from file
+  // Override current time and step with values from file
   params_->set<double>("total time",time);
   params_->set<int>   ("step",rstep);
 
@@ -679,6 +667,8 @@ void MicroStatic::ReadRestart(int step, RCP<Epetra_Vector> dis, string name)
     reader.ReadVector(con_quot, "conquot");
     surf_stress_man_->SetHistory(A_old, con_quot);
   }
+
+  reader.ReadSerialDenseMatrix(lastalpha, "alpha");
 
   return;
 }
@@ -798,7 +788,12 @@ void MicroStatic::EvaluateMicroBC(const Epetra_SerialDenseMatrix* defgrd)
 
 void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
                               RefCountPtr<Epetra_Vector> dism,
-                              RefCountPtr<DRT::SurfStressManager> surfman)
+                              RefCountPtr<DRT::SurfStressManager> surfman,
+                              RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
+                              RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
+                              RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas,
+                              RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv,
+                              RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda)
 {
   dis_ = dis;
   dism_ = dism;
@@ -806,15 +801,24 @@ void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
   fext_->PutScalar(0.);     // we do not have any external loads on
                             // the microscale, so assign all components
                             // to zero
+
+  // using RCP's here means we do not need to return EAS data explicitly
+  lastalpha_ = lastalpha;
+  oldalpha_  = oldalpha;
+  oldfeas_   = oldfeas;
+  oldKaainv_ = oldKaainv;
+  oldKda_    = oldKda;
 }
 
 void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
                                     RefCountPtr<Epetra_Vector> dism,
-                                    RefCountPtr<std::vector<char> > oldalpha,
-                                    RefCountPtr<std::vector<char> > oldfeas,
-                                    RefCountPtr<std::vector<char> > oldKaainv,
-                                    RefCountPtr<std::vector<char> > oldKda)
+                                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha,
+                                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha)
 {
+  // these updates hold for an imr-like generalized alpha time integration
+  // -> if another time integration scheme should be used, this needs
+  // to be changed accordingly
+
   double alphaf = params_->get<double>("alpha f",0.459);
   dis->Update(1.0/(1.0-alphaf), *dism, -alphaf/(1.0-alphaf));
   dism->Update(1.0, *dis, 0.0);
@@ -823,26 +827,21 @@ void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
   {
     surf_stress_man_->Update();
   }
-//   if (oldalpha!=null && oldfeas!=null && oldKaainv!=null && oldKda!=null)
-//   {
-//     int position=0;
-//     const Epetra_Map* elemap = discret_->ElementRowMap();
-//     for (int i=0;i<elemap->NumMyElements();++i)
-//     {
-//       RefCountPtr<Epetra_SerialDenseMatrix> alpha = rcp(new Epetra_SerialDenseMatrix);
-//       DRT::ParObject::ExtractfromPack(position, *oldalpha, *alpha);
-//       (*oldalpha_)[elemap->GID(i)]=alpha;
-//       RefCountPtr<Epetra_SerialDenseMatrix> feas = rcp(new Epetra_SerialDenseMatrix);
-//       DRT::ParObject::ExtractfromPack(position, *oldfeas, *feas);
-//       (*oldfeas_)[elemap->GID(i)]=feas;
-//       RefCountPtr<Epetra_SerialDenseMatrix> kaainv = rcp(new Epetra_SerialDenseMatrix);
-//       DRT::ParObject::ExtractfromPack(position, *oldKaainv, *kaainv);
-//       (*oldKaainv_)[elemap->GID(i)]=kaainv;
-//       RefCountPtr<Epetra_SerialDenseMatrix> kda = rcp(new Epetra_SerialDenseMatrix);
-//       DRT::ParObject::ExtractfromPack(position, *oldKda, *kda);
-//       (*oldKda_)[elemap->GID(i)]=kda;
-//     }
-//   }
+
+  const Epetra_Map* elemap = discret_->ElementRowMap();
+  for (int i=0;i<elemap->NumMyElements();++i)
+  {
+    RCP<Epetra_SerialDenseMatrix> alphai  = (*alpha)[i];
+    RCP<Epetra_SerialDenseMatrix> alphao = (*oldalpha)[i];
+
+    if (alphai!=null && alphao!=null) // update only those elements with EAS
+    {
+      Epetra_BLAS::Epetra_BLAS blas;
+      blas.SCAL(alphao->M() * alphao->N(), -alphaf/(1.0-alphaf), alphao->A());  // alphao *= -alphaf/(1.0-alphaf)
+      blas.AXPY(alphao->M() * alphao->N(), 1.0/(1.0-alphaf), alphai->A(), alphao->A());  // alphao += 1.0/(1.0-alphaf) * alpha
+      blas.COPY(alphai->M() * alphai->N(), alphao->A(), alphai->A());  // alpha := alphao
+    }
+  }
 }
 
 void MicroStatic::SetTime(double timen, int istep)
@@ -851,7 +850,7 @@ void MicroStatic::SetTime(double timen, int istep)
   params_->set<int>   ("step", istep);
 }
 
-RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewDism() { return rcp(new Epetra_Vector(*dism_)); }
+//RefCountPtr<Epetra_Vector> MicroStatic::ReturnNewDism() { return rcp(new Epetra_Vector(*dism_)); }
 
 void MicroStatic::ClearState()
 {
