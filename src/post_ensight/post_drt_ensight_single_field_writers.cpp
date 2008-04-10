@@ -1046,7 +1046,7 @@ vector<double> computeScalarCellNodeValues(
       nodalPosXiDomain(2,inen),
       ele.Shape()));
 
-    XFEM::ComputeEnrichedShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
+    XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
     // interpolate value
     cellvalues[inen] = blitz::sum(elementvalues * enr_funct);
   }

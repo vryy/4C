@@ -21,13 +21,13 @@ Maintainer: Axel Gerstenberger
 
 #include <blitz/array.h>
 #include "../drt_lib/drt_utils.H"
+#include "../drt_xfem/xfem.H"
 
 
 namespace XFLUID
 {
 
-typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
-typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
+using namespace XFEM;
 
 //! for each distype there should be an m_k needed for stabilization computation
 template<DRT::Element::DiscretizationType DISTYPE>

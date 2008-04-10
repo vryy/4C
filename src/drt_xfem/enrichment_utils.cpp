@@ -28,11 +28,11 @@ Maintainer: Axel Gerstenberger
 using namespace XFEM;
 
 
-std::map<XFEM::Enrichment, double> computeEnrvalMap(
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const std::set<XFEM::Enrichment> enrset,
-        const BlitzVec& actpos,
-        const XFEM::Enrichment::ApproachFrom approachdirection
+static std::map<XFEM::Enrichment, double> computeEnrvalMap(
+        const RCP<XFEM::InterfaceHandle>      ih,
+        const std::set<XFEM::Enrichment>&     enrset,
+        const BlitzVec&                       actpos,
+        const XFEM::Enrichment::ApproachFrom  approachdirection
         )
 {
     std::map<XFEM::Enrichment, double> enrvals;
@@ -51,15 +51,15 @@ std::map<XFEM::Enrichment, double> computeEnrvalMap(
 //
 // For a given situation compute the enriched shape functions
 // 
-void XFEM::ComputeEnrichedShapefunction(
-        const DRT::Element&  ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field field,
-        const BlitzVec& actpos,
-        const XFEM::Enrichment::ApproachFrom approachdirection,
-        const blitz::Array<double,1>& funct,
-        BlitzVec& enr_funct
+void XFEM::ComputeEnrichedNodalShapefunction(
+        const DRT::Element&                   ele,
+        const RCP<XFEM::InterfaceHandle>      ih,
+        const XFEM::ElementDofManager&        dofman,
+        const XFEM::PHYSICS::Field            field,
+        const BlitzVec&                       actpos,
+        const XFEM::Enrichment::ApproachFrom  approachdirection,
+        const BlitzVec&                       funct,
+        BlitzVec&                             enr_funct
         )
 {
     
@@ -100,17 +100,17 @@ void XFEM::ComputeEnrichedShapefunction(
 //
 // For a given situation compute the enriched shape functions
 // 
-void XFEM::ComputeEnrichedShapefunction(
-        const DRT::Element&  ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field field,
-        const blitz::Array<double,1>& actpos,
-        const XFEM::Enrichment::ApproachFrom approachdirection,
-        const blitz::Array<double,1>& funct,
-        const blitz::Array<double,2>& derxy,
-        blitz::Array<double,1>& enr_funct,
-        blitz::Array<double,2>& enr_derxy
+void XFEM::ComputeEnrichedNodalShapefunction(
+        const DRT::Element&                   ele,
+        const RCP<XFEM::InterfaceHandle>      ih,
+        const XFEM::ElementDofManager&        dofman,
+        const XFEM::PHYSICS::Field            field,
+        const BlitzVec&                       actpos,
+        const XFEM::Enrichment::ApproachFrom  approachdirection,
+        const BlitzVec&                       funct,
+        const BlitzMat&                       derxy,
+        BlitzVec&                             enr_funct,
+        BlitzMat&                             enr_derxy
         )
 {
     
@@ -153,19 +153,19 @@ void XFEM::ComputeEnrichedShapefunction(
 //
 // For a given situation compute the enriched shape functions
 // 
-void XFEM::ComputeEnrichedShapefunction(
-        const DRT::Element&  ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field field,
-        const blitz::Array<double,1>& actpos,
-        const XFEM::Enrichment::ApproachFrom approachdirection,
-        const blitz::Array<double,1>& funct,
-        const blitz::Array<double,2>& derxy,
-        const blitz::Array<double,2>& derxy2,
-        blitz::Array<double,1>& enr_funct,
-        blitz::Array<double,2>& enr_derxy,
-        blitz::Array<double,2>& enr_derxy2
+void XFEM::ComputeEnrichedNodalShapefunction(
+        const DRT::Element&                   ele,
+        const RCP<XFEM::InterfaceHandle>      ih,
+        const XFEM::ElementDofManager&        dofman,
+        const XFEM::PHYSICS::Field            field,
+        const BlitzVec&                       actpos,
+        const XFEM::Enrichment::ApproachFrom  approachdirection,
+        const BlitzVec&                       funct,
+        const BlitzMat&                       derxy,
+        const BlitzMat&                       derxy2,
+        BlitzVec&                             enr_funct,
+        BlitzMat&                             enr_derxy,
+        BlitzMat&                             enr_derxy2
         )
 {
     
@@ -210,15 +210,15 @@ void XFEM::ComputeEnrichedShapefunction(
 //
 // For a given situation compute the enriched shape functions
 // 
-void XFEM::ComputeEnrichedStressShapefunction(
-        const DRT::Element&  ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field field,
-        const blitz::Array<double,1>& actpos,
-        const XFEM::Enrichment::ApproachFrom approachdirection,
-        const blitz::Array<double,1>& funct,
-        blitz::Array<double,1>& enr_funct
+void XFEM::ComputeEnrichedElementShapefunction(
+        const DRT::Element&                   ele,
+        const RCP<XFEM::InterfaceHandle>      ih,
+        const XFEM::ElementDofManager&        dofman,
+        const XFEM::PHYSICS::Field            field,
+        const BlitzVec&                       actpos,
+        const XFEM::Enrichment::ApproachFrom  approachdirection,
+        const BlitzVec&                       funct,
+        BlitzVec&                             enr_funct
         )
 {
     
@@ -251,17 +251,17 @@ void XFEM::ComputeEnrichedStressShapefunction(
 //
 // For a given situation compute the enriched shape functions
 // 
-void XFEM::ComputeEnrichedStressShapefunction(
-        const DRT::Element&  ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field field,
-        const blitz::Array<double,1>& actpos,
-        const XFEM::Enrichment::ApproachFrom approachdirection,
-        const blitz::Array<double,1>& funct,
-        const blitz::Array<double,2>& derxy,
-        blitz::Array<double,1>& enr_funct,
-        blitz::Array<double,2>& enr_derxy
+void XFEM::ComputeEnrichedElementShapefunction(
+        const DRT::Element&                   ele,
+        const RCP<XFEM::InterfaceHandle>      ih,
+        const XFEM::ElementDofManager&        dofman,
+        const XFEM::PHYSICS::Field            field,
+        const BlitzVec&                       actpos,
+        const XFEM::Enrichment::ApproachFrom  approachdirection,
+        const BlitzVec&                       funct,
+        const BlitzMat&                       derxy,
+        BlitzVec&                             enr_funct,
+        BlitzMat&                             enr_derxy
         )
 {
     

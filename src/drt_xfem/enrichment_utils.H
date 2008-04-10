@@ -37,7 +37,7 @@ namespace XFEM
  * -> no chain rule, since enrichment function derivative is zero
  * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
  */
-void ComputeEnrichedShapefunction(
+void ComputeEnrichedNodalShapefunction(
         const DRT::Element&                     ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager&    dofman,
@@ -48,7 +48,7 @@ void ComputeEnrichedShapefunction(
         BlitzVec&                         enr_funct
         );
 
-void ComputeEnrichedShapefunction(
+void ComputeEnrichedNodalShapefunction(
         const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
@@ -61,7 +61,7 @@ void ComputeEnrichedShapefunction(
         BlitzMat& enr_derxy
         );
 
-void ComputeEnrichedShapefunction(
+void ComputeEnrichedNodalShapefunction(
         const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
@@ -83,7 +83,7 @@ void ComputeEnrichedShapefunction(
  * -> no chain rule, since enrichment function derivative is zero
  * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
  */
-void ComputeEnrichedStressShapefunction(
+void ComputeEnrichedElementShapefunction(
         const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
@@ -94,7 +94,7 @@ void ComputeEnrichedStressShapefunction(
         BlitzVec& enr_funct
         );
 
-void ComputeEnrichedStressShapefunction(
+void ComputeEnrichedElementShapefunction(
         const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,

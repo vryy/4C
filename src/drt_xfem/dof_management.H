@@ -317,10 +317,10 @@ public:
             ) const;
     
     //! return unique enrichments for this proc
-    inline const std::set<XFEM::Enrichment>& getUniqueEnrichments() const
-    {
-        return unique_enrichments_;
-    }
+//    inline const std::set<XFEM::Enrichment>& getUniqueEnrichments() const
+//    {
+//        return unique_enrichments_;
+//    }
     
 private:
     //! pointer to the xfem discretization of which we hold the unknowns

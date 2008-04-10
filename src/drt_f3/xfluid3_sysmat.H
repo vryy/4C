@@ -38,11 +38,6 @@ Maintainer: Axel Gerstenberger
 using namespace std;
 using namespace XFEM::PHYSICS;
 
-
-typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
-typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
-
-
 namespace XFLUID
 {
 
@@ -869,7 +864,7 @@ void Sysmat(
             if (ASSTYPE == XFEM::xfem_assembly)
             {
                 // shape function for nodal dofs
-                XFEM::ComputeEnrichedShapefunction(
+                XFEM::ComputeEnrichedNodalShapefunction(
                         *ele,
                         ih,
                         dofman,
@@ -886,7 +881,7 @@ void Sysmat(
                 if (stress_unknowns_present)
                 {
                     // shape functions for element dofs
-                    XFEM::ComputeEnrichedStressShapefunction(
+                    XFEM::ComputeEnrichedElementShapefunction(
                             *ele,
                             ih,
                             dofman,
@@ -900,7 +895,7 @@ void Sysmat(
                 if (discpres_unknowns_present)
                 {
                     // shape functions for element dofs
-                    XFEM::ComputeEnrichedStressShapefunction(
+                    XFEM::ComputeEnrichedElementShapefunction(
                             *ele,
                             ih,
                             dofman,
@@ -1869,7 +1864,7 @@ void Sysmat(
             BlitzVec enr_funct_stress(numparamsigmaxx);
             
             // shape function for nodal dofs
-            XFEM::ComputeEnrichedShapefunction(
+            XFEM::ComputeEnrichedNodalShapefunction(
                     *ele,
                     ih,
                     dofman,
@@ -1880,7 +1875,7 @@ void Sysmat(
                     enr_funct);
             
 //            // shape function for nodal dofs
-//            XFEM::ComputeEnrichedShapefunction(
+//            XFEM::ComputeEnrichedNodalShapefunction(
 //                    *ele,
 //                    ih,
 //                    dofman,
@@ -1895,7 +1890,7 @@ void Sysmat(
 //                    enr_derxy2);
 
             // shape functions for element dofs
-            XFEM::ComputeEnrichedStressShapefunction(
+            XFEM::ComputeEnrichedElementShapefunction(
                     *ele,
                     ih,
                     dofman,
