@@ -516,14 +516,16 @@ void AleEnsightWriter::WriteAllResults(PostField* field)
 
 
 /*----------------------------------------------------------------------*
-  |                                                             gjb 12/07  |
-  \*----------------------------------------------------------------------*/
+|                                                           gjb 12/07   |
+\*----------------------------------------------------------------------*/
 void ConDifEnsightWriter::WriteAllResults(PostField* field)
 {
   //phinp is a scalar result field with ONE dof per node.
   //Therefore it is NOT possible to hand over field->problem()->num_dim()
   // (equals 2 or 3) as a number of dofs
   EnsightWriter::WriteResult("phinp", "phi", dofbased, 1);
+  // write velocity field (always 3D)
+  EnsightWriter::WriteResult("velocity", "velocity", nodebased, 3);
 }
 
 
