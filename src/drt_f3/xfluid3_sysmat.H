@@ -636,6 +636,10 @@ void Sysmat(
         const bool                        instationary   ///< switch between stationary and instationary formulation
         )
 {
+    // initialize arrays
+    estif = 0.0;
+    eforce = 0.0;
+    
     // number of nodes for element
     const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
     
