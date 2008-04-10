@@ -125,6 +125,7 @@ double MAT::AAAneohooke::Density()
      K = E / (3-6*nu) = 2*alpha / (1-2*nu)
 
      with nu = 0.495 we have K = 200 alpha
+     with nu = 0.45  we have K =  20 alpha
 
  */
 void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
@@ -139,7 +140,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
 
   // material parameters for volumetric part
   double beta2 = 9.0;                                   // parameter from Holzapfel
-  double komp  = alpha*200.;                            // bulk modulus with nu = 0.495
+  double komp  = alpha*20.;                            // bulk modulus with nu = 0.495
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
