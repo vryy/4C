@@ -63,13 +63,13 @@ public:
   /*!
   \brief reindex a given matrix
   */
-  RCP<Epetra_CrsMatrix> ReindexMatrix(Epetra_CrsMatrix* Aorig)
+  RCP<Epetra_CrsMatrix> Permute(Epetra_CrsMatrix* Aorig)
   {
     // shallow reindex the matrix
     EpetraExt::CrsMatrix_Reindex reindexer(*ndofrowmap_);
     Epetra_CrsMatrix& reA = reindexer(*Aorig);
     reA.FillComplete();
-    RCP<Epetra_CrsMatrix> dwA = rcp(new Epetra_CrsMatrix(Copy,*sndofrowmap_,reA.MaxNumEntries()));
+    RCP<Epetra_CrsMatrix> dwA = rcp(new Epetra_CrsMatrix(Copy,DownwindRowMap(),reA.MaxNumEntries()));
     dwA->Export(reA,*sexporter_,Insert);
     if (!dwA->Filled()) dwA->FillComplete();
     return dwA;
@@ -78,20 +78,29 @@ public:
   /*!
   \brief reindex a given vector
   */
-  RCP<Epetra_MultiVector> ReindexVector(Epetra_MultiVector* xorig)
+  RCP<Epetra_MultiVector> Permute(Epetra_MultiVector* xorig)
+  {
+    Epetra_MultiVector* dwx = new Epetra_Vector(DownwindRowMap(),false);
+    Permute(xorig,dwx);
+    return rcp(dwx);
+  }
+
+  /*!
+  \brief reindex a given vector
+  */
+  void Permute(Epetra_MultiVector* xorig, Epetra_MultiVector* dwx)
   {
     // shallow reindex the vector
     EpetraExt::MultiVector_Reindex reindexer(*ndofrowmap_);
     Epetra_MultiVector& rex = reindexer(*xorig);
-    RCP<Epetra_MultiVector> dwx = rcp(new Epetra_Vector(*sndofrowmap_,false));
     dwx->Export(rex,*sexporter_,Insert);
-    return dwx;
+    return;
   }
 
   /*!
   \brief undo reindexing of a given vector
   */
-  void UndoReindexVector(Epetra_MultiVector* xdw, Epetra_MultiVector* xorig)
+  void InvPermute(Epetra_MultiVector* xdw, Epetra_MultiVector* xorig)
   {
     EpetraExt::MultiVector_Reindex reindex(*ndofrowmap_);
     Epetra_MultiVector& rex = reindex(*xorig);
@@ -99,6 +108,11 @@ public:
     return;
   }
 
+  /*!
+  \brief Get downwinded row map of problem
+  */
+  inline const Epetra_Map& DownwindRowMap()
+  { return *sndofrowmap_; }
 
 private:
 

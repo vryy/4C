@@ -45,7 +45,6 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   const int numdofrows = A.RowMap().NumMyElements();
   const int bsize = bs_;
   const int vsize = nv_;
-  const int psize = np_;
   if (numdofrows % bsize) dserror("Local number of matrix rows does not divide by block size");
   const int numnoderows = numdofrows / bsize;
 
