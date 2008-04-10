@@ -155,14 +155,27 @@ double  DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix
 	  |                         +-        -+
 	  |
 	  */
-// compute derivative of parametrization
-double dr = 0.0;
-Epetra_SerialDenseMatrix der_par (1,2);
-int err = der_par.Multiply('N','T',1.0,deriv,xye,0.0);
-if (err!=0)
-	dserror("Multiply failed");
-dr=sqrt(der_par(0,0)*der_par(0,0)+der_par(0,1)*der_par(0,1));
-return dr;
+  // compute derivative of parametrization
+  double dr = 0.0;
+  Epetra_SerialDenseMatrix der_par (1,2);
+  int err = der_par.Multiply('N','T',1.0,deriv,xye,0.0);
+  if (err!=0)
+    dserror("Multiply failed");
+  dr=sqrt(der_par(0,0)*der_par(0,0)+der_par(0,1)*der_par(0,1));
+  return dr;
+}
+
+int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
+                                DRT::Discretization&      discretization,
+                                vector<int>&              lm,
+                                Epetra_SerialDenseMatrix& elematrix1,
+                                Epetra_SerialDenseMatrix& elematrix2,
+                                Epetra_SerialDenseVector& elevector1,
+                                Epetra_SerialDenseVector& elevector2,
+                                Epetra_SerialDenseVector& elevector3)
+{
+  dserror("Method not working yet");
+  return 0;
 }
 
 

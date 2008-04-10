@@ -33,6 +33,8 @@ using namespace Teuchos;
 #endif
 
 // parameters which are fixed for Wall1
+const int NUMDIM_W1 = 2;
+const int NODDOF_W1 = 2;
 const int NUMSTR_W1 = 3;      // number of strains/stresses
 const int neas = 4;      // number of eas parameters
 
@@ -745,11 +747,42 @@ public:
                               DRT::Condition&           condition,
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
+  
+  /*!
+    \brief Evaluate a boundary condition
+
+    this method evaluates a line Neumann condition on the wall element
+
+    \param params (in/out)    : ParameterList for communication between control routine
+                                and elements
+    \param discretization (in): A reference to the underlying discretization
+    \param condition (in)     : The condition to be evaluated
+    \param lm (in)            : location vector of this element
+    \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+
+    \return 0 if successful, negative otherwise
+    */
+    virtual int Evaluate(ParameterList& params,
+                                DRT::Discretization&      discretization,
+                                vector<int>&              lm,
+                                Epetra_SerialDenseMatrix& elematrix1,
+                                Epetra_SerialDenseMatrix& elematrix2,
+                                Epetra_SerialDenseVector& elevector1,
+                                Epetra_SerialDenseVector& elevector2,
+                                Epetra_SerialDenseVector& elevector3);
 
   //@}
-
+    
+    
 private:
 
+  enum ActionType
+  {
+    none,
+    calc_struct_areaconstrstiff,
+    calc_struct_constrarea
+  };
+  
   // don't want = operator
   Wall1Line& operator = (const Wall1Line& old);
 
