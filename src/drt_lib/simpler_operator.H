@@ -47,6 +47,9 @@ using namespace Teuchos;
 
 namespace LINALG
 {
+// forward declarations
+class DownwindMatrix;
+
 
 /*!
 \brief A Semi-implicit Method for Pressure Linked Equations (SIMPLE) 
@@ -201,7 +204,7 @@ private:
 
 
   /*!
-  \brief do one sweep of simple or simplec preconditioning
+  \brief do one sweep of simple or simplec preconditioning without subsolves
   */
   void CheapSimple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
                    LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;
@@ -230,6 +233,18 @@ private:
 
   RCP<LINALG::Solver>                                 vsolver_; // velocity solver
   RCP<LINALG::Solver>                                 psolver_; // pressure solver
+
+  bool                                                vdw_;     // indicate downwinding for velocity subproblem
+  RCP<LINALG::DownwindMatrix>                         vdwind_;  // downwinding reindexer for velocity subproblem
+  RCP<Epetra_CrsMatrix>                               dwA00_;
+  RCP<LINALG::ANA::Vector>                            vdwin_;   // working vector
+  RCP<LINALG::ANA::Vector>                            vdwout_;  // working vector
+
+  bool                                                pdw_;     // indicate downwinding for velocity subproblem
+  RCP<LINALG::DownwindMatrix>                         pdwind_;  // downwinding reindexer for velocity subproblem
+  RCP<Epetra_CrsMatrix>                               dwS_;
+  RCP<LINALG::ANA::Vector>                            pdwin_;   // working vector
+  RCP<LINALG::ANA::Vector>                            pdwout_;  // working vector
 
 }; // class  SIMPLER_Operator : public virtual Epetra_Operator
 }  // namespace LINALG

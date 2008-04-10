@@ -10,6 +10,7 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
+#include "linalg_downwindmatrix.H"
 #include "simpler_operator.H"
 
 #define SIMPLEC_DIAGONAL      0    // 1: row sums     0: just diagonal
@@ -27,7 +28,9 @@ LINALG::SIMPLER_Operator::SIMPLER_Operator(RCP<Epetra_Operator> A,
   : outfile_(outfile),
     vlist_(velocitylist),
     plist_(pressurelist),
-    alpha_(SIMPLER_ALPHA)
+    alpha_(SIMPLER_ALPHA),
+    vdw_(false),
+    pdw_(false)
 {
   // remove the SIMPLER sublist from the vlist_,
   // otherwise it will try to recursively create a SIMPLE
@@ -50,18 +53,77 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
   const int myrank = A->Comm().MyPID();
   Epetra_Time time(A->Comm());
   Epetra_Time totaltime(A->Comm());
+  const bool visml = vlist_.isSublist("ML Parameters");
+  const bool pisml = plist_.isSublist("ML Parameters");
+  const bool visifpack = vlist_.isSublist("IFPACK Parameters");
+  const bool pisifpack = plist_.isSublist("IFPACK Parameters");
+  vdw_ = vlist_.sublist("Aztec Parameters").get<bool>("downwinding",false);
+  pdw_ = plist_.sublist("Aztec Parameters").get<bool>("downwinding",false);
+  if (!visml && !visifpack) dserror("Have to use either ML or Ifpack for velocities");
+  if (!pisml && !pisifpack) dserror("Have to use either ML or Ifpack for pressure");
 
-  // see whether velocity and pressure solver where configured as ML
-  bool visml = vlist_.isSublist("ML Parameters");
-  bool pisml = plist_.isSublist("ML Parameters");
-  if (!visml) dserror("SIMPLER only works with ML-AMG for velocity");
-
-  const int ndofpernode = vlist_.sublist("ML Parameters").get<int>("PDE equations",0);
-  if (ndofpernode != 4 && ndofpernode !=3) dserror("You should have either 3 or 4 dofs per node at this point");
   const Epetra_Map& fullmap = A->OperatorRangeMap();
-  const int length = fullmap.NumMyElements();
-  const int nv     = ndofpernode-1;
-  const int nlnode = length / ndofpernode;
+  const int         length  = fullmap.NumMyElements();
+  int ndofpernode=0;
+  int nv=0;
+  int np=0;
+  int nlnode;
+  double tauv = 1.0;
+  double taup = 1.0;
+  int vout=0;
+  int pout=0;
+  //-------------------------------------------------------------------------
+  // get the dof splitting from the ML information
+  //-------------------------------------------------------------------------
+  if (visml)
+  {
+    ndofpernode = vlist_.sublist("ML Parameters").get<int>("PDE equations",0);
+    if (ndofpernode != 4 && ndofpernode !=3) dserror("You should have either 3 or 4 dofs per node at this point");
+    nv     = ndofpernode-1;
+    np     = 1;
+    nlnode = length / ndofpernode;
+  }
+  //-------------------------------------------------------------------------
+  // get the dof splitting from the downwind information
+  //-------------------------------------------------------------------------
+  else if (vdw_)
+  {
+    tauv = vlist_.sublist("Aztec Parameters").get<double>("downwinding tau",1.0);
+    nv   = vlist_.sublist("Aztec Parameters").get<int>("downwinding nv",1);
+    np   = vlist_.sublist("Aztec Parameters").get<int>("downwinding np",1);
+    vout = vlist_.sublist("Aztec Parameters").get<int>("AZ_output",0);
+    ndofpernode = nv+np;
+    nlnode = length / ndofpernode;
+  }
+  //-------------------------------------------------------------------------
+  // get the dof splitting anyway (I know, this is not really logical, is it)
+  //-------------------------------------------------------------------------
+  else 
+  {
+    nv   = vlist_.sublist("Aztec Parameters").get<int>("downwinding nv",1);
+    np   = vlist_.sublist("Aztec Parameters").get<int>("downwinding np",1);
+    ndofpernode = nv+np;
+    nlnode = length / ndofpernode;
+  }
+  //-------------------------------------------------------------------------
+  // manipulate the copy of the parameter lists for subproblem solvers
+  //-------------------------------------------------------------------------
+  if (pdw_)
+  {
+    taup = plist_.sublist("Aztec Parameters").get<double>("downwinding tau",1.0);
+    pout = plist_.sublist("Aztec Parameters").get<int>("AZ_output",0);
+    plist_.sublist("Aztec Parameters").set<int>("downwinding nv",np);
+    plist_.sublist("Aztec Parameters").set<int>("downwinding np",0);
+  }
+  if (vdw_)
+  {
+    vlist_.sublist("Aztec Parameters").set<int>("downwinding nv",nv);
+    vlist_.sublist("Aztec Parameters").set<int>("downwinding np",0);
+  }
+  
+  //-------------------------------------------------------------------------
+  // either do manual split or use provided BlockSparseMatrixBase
+  //-------------------------------------------------------------------------
   A_ = rcp_dynamic_cast<BlockSparseMatrixBase>(A);
   if (A_!=null)
   {
@@ -91,7 +153,6 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
     mmex_.Setup(fullmap,maps);
     if (!myrank && SIMPLER_TIMING) printf("--- Time to split map       %10.3E\n",time.ElapsedTime());
     time.ResetStartTime();
-
     // wrap matrix in SparseMatrix and split it into 2x2 BlockMatrix
     {
       SparseMatrix fullmatrix(rcp_dynamic_cast<Epetra_CrsMatrix>(A));
@@ -104,7 +165,9 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
     }
   }
 
+  //-------------------------------------------------------------------------
   // split nullspace into velocity and pressure subproblem
+  //-------------------------------------------------------------------------
   if (visml)
   {
     vlist_.sublist("ML Parameters").set("PDE equations",nv);
@@ -137,7 +200,9 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
   if (!myrank && SIMPLER_TIMING) printf("--- Time to do p nullspace  %10.3E\n",time.ElapsedTime());
   time.ResetStartTime();
 
+  //-------------------------------------------------------------------------
   // Modify lists to reuse subblock preconditioner at least maxiter times
+  //-------------------------------------------------------------------------
   {
     int maxiter = vlist_.sublist("Aztec Parameters").get("AZ_max_iter",1);
     vlist_.sublist("Aztec Parameters").set("reuse",maxiter+1);
@@ -145,7 +210,9 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
   }
 
 #if SIMPLEC_DIAGONAL
+  //-------------------------------------------------------------------------
   // Allocate and compute abs(rowsum(A(0,0))^{-1}
+  //-------------------------------------------------------------------------
   {
     Epetra_Vector diag(*mmex_.Map(0),true);
     RCP<Epetra_CrsMatrix> A00 = (*A_)(0,0).EpetraMatrix();
@@ -165,7 +232,9 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
     diagAinv_->Complete(*mmex_.Map(0),*mmex_.Map(0));
   }
 #else
+  //-------------------------------------------------------------------------
   // Allocate and compute diag(A(0,0)^{-1}
+  //-------------------------------------------------------------------------
   {
     Epetra_Vector diag(*mmex_.Map(0),false);
     (*A_)(0,0).ExtractDiagonalCopy(diag);
@@ -178,8 +247,10 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
   if (!myrank && SIMPLER_TIMING) printf("--- Time to do diagF^{-1}   %10.3E\n",time.ElapsedTime());
   time.ResetStartTime();
 
+  //-------------------------------------------------------------------------
   // Allocate and compute approximate Schur complement operator S
   // S = A(1,1) - A(1,0) * diagAinv * A(0,1)
+  //-------------------------------------------------------------------------
   {
     Epetra_Time ltime(A_->Comm());
     S_ = LINALG::Multiply(*diagAinv_,false,(*A_)(0,1),false,true);
@@ -201,22 +272,78 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
   
 
 #if CHEAPSIMPLE_ALGORITHM
-  // Allocate preconditioner for pressure and velocity
+  //-------------------------------------------------------------------------
+  // create downwinding if desired
+  //-------------------------------------------------------------------------
   {
-    if (!visml || !pisml) dserror("Have to use ML for this variant of SIMPLE");
-    Pv_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*((*A_)(0,0).EpetraMatrix()),
-                                                      vlist_.sublist("ML Parameters"),
-                                                      true));
-    if (!myrank && SIMPLER_TIMING) printf("--- Time to do AMG(v)       %10.3E\n",time.ElapsedTime());
+    Epetra_CrsMatrix* A00 = NULL;
+    Epetra_CrsMatrix* A11 = NULL;
+    if (vdw_)
+    {
+      // create the downwinding
+      vdwind_ = rcp(new LINALG::DownwindMatrix((*A_)(0,0).EpetraMatrix(),nv,0,tauv,vout));
+      // get and store downwinded operator
+      dwA00_ = vdwind_->Permute((*A_)(0,0).EpetraMatrix().get());
+      A00 = dwA00_.get();
+      vdwin_  = rcp(new LINALG::ANA::Vector(vdwind_->DownwindRowMap(),false));
+      vdwout_ = rcp(new LINALG::ANA::Vector(vdwind_->DownwindRowMap(),false));
+    }
+    else 
+      A00 = (*A_)(0,0).EpetraMatrix().get();
+    if (pdw_)
+    {
+      // create the downwinding
+      pdwind_ = rcp(new LINALG::DownwindMatrix(S_->EpetraMatrix(),np,0,taup,pout));
+      // get and store downwinded operator
+      dwS_ = pdwind_->Permute(S_->EpetraMatrix().get());
+      A11 = dwS_.get();
+      pdwin_  = rcp(new LINALG::ANA::Vector(pdwind_->DownwindRowMap(),false));
+      pdwout_ = rcp(new LINALG::ANA::Vector(pdwind_->DownwindRowMap(),false));
+    }
+    else 
+      A11 = S_->EpetraMatrix().get();
+
+    if (!myrank && SIMPLER_TIMING) printf("--- Time to do downwinding  %10.3E\n",time.ElapsedTime());
     time.ResetStartTime();
-    Pp_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*(S_->EpetraMatrix()),
-                                                      plist_.sublist("ML Parameters"),
-                                                      true));
-    if (!myrank && SIMPLER_TIMING) printf("--- Time to do AMG(p)       %10.3E\n",time.ElapsedTime());
+    
+  //-------------------------------------------------------------------------
+  // Allocate preconditioner for pressure and velocity
+  //-------------------------------------------------------------------------
+    if (visml) 
+      Pv_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*A00,vlist_.sublist("ML Parameters"),true));
+    else       
+    {
+      string type = vlist_.sublist("Aztec Parameters").get("preconditioner","ILU");
+      Ifpack factory;
+      Ifpack_Preconditioner* prec = factory.Create(type,A00,0);
+      prec->SetParameters(vlist_.sublist("IFPACK Parameters"));
+      prec->Initialize();
+      prec->Compute();
+      Pv_ = rcp(prec);
+    }
+    if (!myrank && SIMPLER_TIMING) printf("--- Time to do P(v)         %10.3E\n",time.ElapsedTime());
+    time.ResetStartTime();
+    if (pisml)
+    {
+      Pp_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*A11,plist_.sublist("ML Parameters"),true));
+    }
+    else
+    {
+      Ifpack factory;
+      string type = plist_.sublist("Aztec Parameters").get("preconditioner","ILU");
+      Ifpack_Preconditioner* prec = factory.Create(type,A11,0);
+      prec->SetParameters(plist_.sublist("IFPACK Parameters"));
+      prec->Initialize();
+      prec->Compute();
+      Pp_ = rcp(prec);
+    }
+    if (!myrank && SIMPLER_TIMING) printf("--- Time to do P(p)         %10.3E\n",time.ElapsedTime());
     time.ResetStartTime();
   }
 #else
+  //-------------------------------------------------------------------------
   // Allocate solver for pressure and velocity
+  //-------------------------------------------------------------------------
   {
     RCP<ParameterList> vrcplist = rcp(&vlist_,false);
     vsolver_ = rcp(new LINALG::Solver(vrcplist,A_->Comm(),outfile_));
@@ -225,13 +352,17 @@ void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
   }
 #endif
 
+  //-------------------------------------------------------------------------
   // Allocate velocity and pressure solution and rhs vectors
+  //-------------------------------------------------------------------------
   vx_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
   vb_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
   px_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
   pb_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
 
+  //-------------------------------------------------------------------------
   // Allocate working vectors for velocity and pressure
+  //-------------------------------------------------------------------------
   vwork1_  = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
   vwork2_  = rcp(new LINALG::ANA::Vector(*mmex_.Map(0),false));
   pwork1_ = rcp(new LINALG::ANA::Vector(*mmex_.Map(1),false));
@@ -369,12 +500,25 @@ void LINALG::SIMPLER_Operator::CheapSimple(LINALG::ANA::Vector& vx, LINALG::ANA:
   SparseMatrix& diagAinv = *diagAinv_;
 
   //------------------------------------------------------------ L-solve
-  
-  Pv_->ApplyInverse(vb,*vwork1_);
+  if (vdw_)
+  {
+    vdwind_->Permute(&vb,&*vdwin_);
+    Pv_->ApplyInverse(*vdwin_,*vdwout_);
+    vdwind_->InvPermute(&*vdwout_,&*vwork1_);
+  }
+  else
+    Pv_->ApplyInverse(vb,*vwork1_);
 
   *pwork1_ = pb - A10 * vwork1_;
 
-  Pp_->ApplyInverse(*pwork1_,px);
+  if (pdw_)
+  {
+    pdwind_->Permute(&*pwork1_,&*pdwin_);
+    Pp_->ApplyInverse(*pdwin_,*pdwout_);
+    pdwind_->InvPermute(&*pdwout_,&px);
+  }
+  else
+    Pp_->ApplyInverse(*pwork1_,px);
 
   //------------------------------------------------------------ U-solve
 
