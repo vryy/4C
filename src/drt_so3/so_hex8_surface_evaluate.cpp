@@ -242,7 +242,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
       case calc_struct_constrvol:
       {
         if (distype!=quad4)
-          dserror("Volume Constraint online works for quad4 surfaces!");
+          dserror("Volume Constraint only works for quad4 surfaces!");
         //We are not interested in volume of ghosted elements
         if(Comm.MyPID()==this->Owner())
         {
@@ -295,7 +295,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
       case calc_struct_volconstrstiff:
       {
         if (distype!=quad4)
-          dserror("Volume Constraint online works for quad4 surfaces!");
+          dserror("Volume Constraint only works for quad4 surfaces!");
         // element geometry update
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -524,7 +524,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
       case calc_struct_monitarea:
         {
           if (distype!=quad4)
-            dserror("Area Constraint online works for quad4 surfaces!");
+            dserror("Area Constraint only works for quad4 surfaces!");
           //We are not interested in volume of ghosted elements
           if(Comm.MyPID()==this->Owner())
           {
@@ -647,6 +647,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         {
           dserror("Element routines for area constraint not implemented yet!");
         }
+        break;
         default:
           dserror("Unimplemented type of action for Soh8Surface");
 
