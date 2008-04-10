@@ -391,18 +391,20 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   // if we have an ifpack parameter list, we do ifpack
   // if we have an ml parameter list we do ml
   // if we have a downwinding flag we downwind the linear problem
-  bool   doifpack = Params().isSublist("IFPACK Parameters");
-  bool   doml     = Params().isSublist("ML Parameters");
-  bool   dwind    = azlist.get<bool>("downwinding",false);
-  if (!A) 
+  bool   doifpack  = Params().isSublist("IFPACK Parameters");
+  bool   doml      = Params().isSublist("ML Parameters");
+  bool   dwind     = azlist.get<bool>("downwinding",false);
+  bool   dosimpler = Params().isSublist("SIMPLER");
+  if (!A || dosimpler) 
   {
     doifpack = false;
+    doml     = false;
     dwind    = false; // we can do downwinding inside SIMPLER if desired
   }
   
   if (create && dwind)
   { 
-    double tau  = azlist.get<double>("downwinding tau",1.5);
+    double tau  = azlist.get<double>("downwinding tau",1.0);
     int    nv   = azlist.get<int>("downwinding nv",1);
     int    np   = azlist.get<int>("downwinding np",0);
     RCP<Epetra_CrsMatrix> fool = rcp(A,false);
@@ -418,9 +420,9 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   if (!dwind) aztec_->SetProblem(*lp_);
   else        
   {
-    dwA = dwind_->ReindexMatrix(A);
-    dwx = dwind_->ReindexVector(lp_->GetLHS());
-    dwb = dwind_->ReindexVector(lp_->GetRHS());
+    dwA = dwind_->Permute(A);
+    dwx = dwind_->Permute(lp_->GetLHS());
+    dwb = dwind_->Permute(lp_->GetRHS());
     dwproblem = rcp(new Epetra_LinearProblem());
     dwproblem->SetOperator(dwA.get());
     dwproblem->SetLHS(dwx.get());
@@ -464,25 +466,12 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     ParameterList&  mllist = Params().sublist("ML Parameters");
     // see whether we use standard ml or our own mlapi operator
     const bool domlapioperator = mllist.get<bool>("LINALG::AMG_Operator",false);
-    // see whether we have a SIMPLER sublist
-    const bool dosimpler = Params().isSublist("SIMPLER");
     if (domlapioperator)
     {
       // create a copy of the scaled matrix
       // so we can reuse the preconditioner several times
       Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
       P_ = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist,true));
-    }
-    else if (dosimpler)
-    {
-      // SIMPLER does not need copy of preconditioning matrix to live
-      // SIMPLER does not use the downwinding installed here, it does 
-      // its own downwinding inside if desired
-      P_ = rcp(new LINALG::SIMPLER_Operator(A_,
-                                            Params(),
-                                            Params().sublist("SIMPLER"),
-                                            outfile_));
-      Pmatrix_ = null;
     }
     else
     {
@@ -494,9 +483,20 @@ void LINALG::Solver::Solve_aztec(const bool reset)
       //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
     }
   }
+  
+  if (create && dosimpler)
+  {
+      // SIMPLER does not need copy of preconditioning matrix to live
+      // SIMPLER does not use the downwinding installed here, it does 
+      // its own downwinding inside if desired
+      P_ = rcp(new LINALG::SIMPLER_Operator(A_,Params(),
+                                            Params().sublist("SIMPLER"),
+                                            outfile_));
+      Pmatrix_ = null;
+  }
 
   // set preconditioner
-  if (doifpack || doml) aztec_->SetPrecOperator(P_.get());
+  if (doifpack || doml || dosimpler) aztec_->SetPrecOperator(P_.get());
   
   // iterate on the solution
   int iter = azlist.get("AZ_max_iter",500);
@@ -507,7 +507,7 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   if (dwind)
   {
     // undo reordering of lhs, don't care for rhs
-    dwind_->UndoReindexVector(dwproblem->GetLHS(),lp_->GetLHS());
+    dwind_->InvPermute(dwproblem->GetLHS(),lp_->GetLHS());
     // undo reordering of matrix (by pointing to original matrix)
     if (A) A = dynamic_cast<Epetra_CrsMatrix*>(A_.get());
     // trash temporary data
