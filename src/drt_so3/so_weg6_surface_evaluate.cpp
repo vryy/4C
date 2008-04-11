@@ -105,12 +105,12 @@ int DRT::ELEMENTS::Sow6Surface::EvaluateNeumann(ParameterList&           params,
   }
   
   // allocate vector for shape functions and matrix for derivatives
-  Epetra_SerialDenseVector  funct       (numnode);
-  Epetra_SerialDenseMatrix  deriv       (2,numnode);
+  Epetra_SerialDenseVector  funct(numnode);
+  Epetra_SerialDenseMatrix  deriv(2,numnode);
 
   // the metric tensor and the area of an infintesimal surface element
   Epetra_SerialDenseMatrix  metrictensor(2,2);
-  double                        drs;
+  double                    drs;
 
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
@@ -166,7 +166,7 @@ int DRT::ELEMENTS::Sow6Surface::EvaluateNeumann(ParameterList&           params,
           for(int dim=0 ; dim<NUMDIM_WEG6; dim++)
           {
             elevec1[node*numdf+dim]+=
-              funct[node] * (*onoff)[dim] * unrm[dim] * fac;
+              funct[node] * unrm[dim] * fac;
           }
         }
       }
@@ -207,8 +207,9 @@ void DRT::ELEMENTS::Sow6Surface::sow6_surface_integ(
   */
   Epetra_SerialDenseMatrix metrictensor(2,2);
   metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,1.0);
-  (*sqrtdetg) = sqrt( metrictensor(0,0)*metrictensor(1,1)
-                     -metrictensor(0,1)*metrictensor(1,0));
+  *sqrtdetg = sqrt( metrictensor(0,0)*metrictensor(1,1)
+                    -metrictensor(0,1)*metrictensor(1,0));
+
   if (unrm != NULL){
     (*unrm)[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
     (*unrm)[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
