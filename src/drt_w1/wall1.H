@@ -167,7 +167,7 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 2;}
+  virtual int NumDofPerNode(const DRT::Node& node) const {return NODDOF_W1;}
 
   /*!
   \brief Get number of degrees of freedom per element
@@ -791,6 +791,14 @@ private:
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
 
+  //! Submethod to compute necessary change to stiffness matrix due to the constraint
+  void ComputeAreaConstrStiff(Epetra_SerialDenseMatrix xscurr,
+      Epetra_SerialDenseMatrix& elematrix);
+  
+  //! Submethod to compute first derivatives of constraint area w.r.t. the displacements
+  void ComputeAreaConstrDeriv(Epetra_SerialDenseMatrix xscurr,
+      Epetra_SerialDenseVector& elevector);
+  
   // compute infintesimal line element dr for integration along the line
   double  w1_substitution(const Epetra_SerialDenseMatrix& xyze,
 		                  const Epetra_SerialDenseMatrix& deriv,

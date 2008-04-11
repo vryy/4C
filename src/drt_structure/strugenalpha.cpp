@@ -1435,7 +1435,8 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
   bool print_unconv = true;
-  while (!Converged(convcheck, disinorm, fresmnorm, constrnorm, toldisp, tolres, tolconstr) and numiter<=maxiter){
+  while (!Converged(convcheck, disinorm, fresmnorm, constrnorm, toldisp, tolres, tolconstr) and numiter<=maxiter)
+  {
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
@@ -3294,7 +3295,6 @@ void StruGenAlpha::Integrate()
   if (constrMan_->HaveConstraint())
   {
 	  string algo = params_.get<string>("uzawa algorithm","newtonlinuzawa");
-	  constrMan_->ScaleLagrMult(0.0);
 	  for (int i=step; i<nstep; ++i)
       {
         if      (predictor==1) ConstantPredictor();

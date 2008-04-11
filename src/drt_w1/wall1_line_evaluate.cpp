@@ -50,9 +50,9 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
     curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
    // set number of nodes
-  const int iel   = this->NumNode();
+  const int iel   = NumNode();
   
-  const DiscretizationType distype = this->Shape();
+  const DiscretizationType distype = Shape();
   
   // gaussian points 
   const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype); 
@@ -72,8 +72,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
   // get node coordinates
   for(int i=0;i<iel;++i)
   {
-    xye(0,i)=this->Nodes()[i]->X()[0]; 
-    xye(1,i)=this->Nodes()[i]->X()[1];
+    xye(0,i)=Nodes()[i]->X()[0]; 
+    xye(1,i)=Nodes()[i]->X()[1];
   }
    
   // loop over integration points //new
@@ -89,10 +89,10 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
      const double dr = w1_substitution(xye,deriv,iel);
     
   // load vector ar
-     double ar[2];
+     double ar[NODDOF_W1];
   // loop the dofs of a node
   // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
-     for (int i=0; i<2; ++i)
+     for (int i=0; i<NODDOF_W1; ++i)
      {
         ar[i] = intpoints.qwgt[gpid] * dr * (*onoff)[i]*(*val)[i] * curvefac;
      }
@@ -100,9 +100,9 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
    // add load components
      for (int node=0; node<iel; ++node)
      {	 
-       for (int j=0; j<2; ++j)
+       for (int j=0; j<NODDOF_W1; ++j)
        {
-          elevec1[node*2+j] += funct[node]*ar[j];
+          elevec1[node*NODDOF_W1+j] += funct[node]*ar[j];
        }
      }
   } 
@@ -148,11 +148,11 @@ double  DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix
 	  |       dxyzdrs             deriv^T          xye^T
 	  |
 	  |
-	  |                         +-        -+
-	  |  	   	    	    	| dx   dy  |
+	  |                       +-        -+
+	  |  	   	    	    	    | dx   dy  |
 	  |  	  yields   dxydr =	| --   --  |
 	  | 	                    | dr   dr  |
-	  |                         +-        -+
+	  |                       +-        -+
 	  |
 	  */
   // compute derivative of parametrization
@@ -165,6 +165,7 @@ double  DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix
   return dr;
 }
 
+
 int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
                                 DRT::Discretization&      discretization,
                                 vector<int>&              lm,
@@ -174,9 +175,189 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
                                 Epetra_SerialDenseVector& elevector2,
                                 Epetra_SerialDenseVector& elevector3)
 {
-  dserror("Method not working yet");
-  return 0;
+  const DiscretizationType distype = Shape();
+
+  // start with "none"
+  DRT::ELEMENTS::Wall1Line::ActionType act = Wall1Line::none;
+
+  // get the required action
+  string action = params.get<string>("action","none");
+  if (action == "none") dserror("No action supplied");
+  else if (action=="calc_struct_constrarea")       act = Wall1Line::calc_struct_constrarea;
+  else if (action=="calc_struct_areaconstrstiff")  act= Wall1Line::calc_struct_areaconstrstiff;
+  else dserror("Unknown type of action for Soh8Surface");
+  //create communicator
+  const Epetra_Comm& Comm = discretization.Comm();
+  // what the element has to do
+  switch(act)
+  {
+    //just compute the enclosed volume (e.g. for initialization)
+    case calc_struct_constrarea:
+    {
+      if (distype!=line2)
+      {
+        dserror("Area Constraint only works for line2 curves!");
+      }
+      //We are not interested in volume of ghosted elements
+      if(Comm.MyPID()==Owner())
+      {
+        // element geometry update
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vector 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        const int numnod = NumNode();
+        Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_W1);  // material coord. of element
+        Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_W1);  // material coord. of element
+        for (int i=0; i<numnod; ++i)
+        {
+          xsrefe(i,0) = Nodes()[i]->X()[0];
+          xsrefe(i,1) = Nodes()[i]->X()[1];
+          
+          xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_W1];
+          xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_W1+1];
+        }
+        //compute area between line and x-Axis
+        double areaele =  0.5*(xscurr(0,1)+xscurr(1,1))*(xscurr(1,0)-xscurr(0,0));
+        
+        // get RIGHT area out of parameterlist and maximum ConditionID
+        char areaname[30];
+        const int ID =params.get("ConditionID",-1);
+        const int maxID=params.get("MaxID",0);
+        const int minID=params.get("MinID",1000000);
+        if (ID<0)
+        {
+          dserror("Condition ID for area constraint missing!");
+        }
+        if (maxID<ID)
+        {
+          params.set("MaxID",ID);
+        }
+        if (minID>ID)
+        {
+          params.set("MinID",ID);
+        }
+        sprintf(areaname,"computed area %d",ID);
+        double areacondval = params.get(areaname,0.0);
+        //update volume in parameter list
+        params.set(areaname, areacondval+areaele);
+      }
+      
+    }
+    break;
+    case calc_struct_areaconstrstiff:
+    {
+      if (distype!=line2)
+      {
+        dserror("Area Constraint only works for line2 curves!");
+      }  // element geometry update
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) 
+      {
+        dserror("Cannot get state vector 'displacement'");
+      }
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      const int numnod = NumNode();
+      Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_W1);  // material coord. of element
+      Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_W1);  // material coord. of element
+      for (int i=0; i<numnod; ++i)
+      {
+        xsrefe(i,0) = Nodes()[i]->X()[0];
+        xsrefe(i,1) = Nodes()[i]->X()[1];
+        
+        xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_W1];
+        xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_W1+1];
+      }
+      //call submethods
+      ComputeAreaConstrStiff(xscurr,elematrix1);
+      ComputeAreaConstrDeriv(xscurr,elevector1);
+      //apply the right lagrange multiplier and right signs to matrix and vectors
+      const int ID =params.get("ConditionID",-1);
+      RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
+      if (ID<0)
+      {
+        dserror("Condition ID for area constraint missing!");
+      }
+      const int minID =params.get("MinID",0);
+      //update corresponding column in "constraint" matrix
+      elevector2=elevector1;
+      elevector1.Scale(1*(*lambdav)[ID-minID]);
+      elematrix1.Scale(1*(*lambdav)[ID-minID]);
+      //compute area between line and x-Axis
+      if(Comm.MyPID()==Owner())
+      {
+        double areaele =  0.5*(xscurr(0,1)+xscurr(1,1))*(xscurr(1,0)-xscurr(0,0));
+
+        // get RIGHT area out of parameterlist
+        char areaname[30];
+        sprintf(areaname,"computed area %d",ID);
+        double areacondval = params.get(areaname,0.0);
+        //update volume in parameter list
+        params.set(areaname, areacondval+areaele);
+      }
+    }
+    break;
+    default:
+      dserror("Unimplemented type of action for Soh8Surface");
+
+   }
+   return 0;
 }
+
+/*----------------------------------------------------------------------*
+ * Compute first derivatives of area                            tk 10/07*
+ * with respect to the displacements                                    *
+ * ---------------------------------------------------------------------*/
+void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrDeriv(Epetra_SerialDenseMatrix xscurr,
+    Epetra_SerialDenseVector& elevector)
+{
+  if (elevector.Length()!=4)
+  {
+    cout<<"Length of element Vector: "<<elevector.Length()<<endl;
+    dserror("That is not the right size!");
+  }
+  //implementation of simple analytic solution
+  elevector[0]=-xscurr(0,1)-xscurr(1,1);
+  elevector[1]=xscurr(1,0)-xscurr(0,0);
+  elevector[2]=xscurr(0,1)+xscurr(1,1);
+  elevector[3]=xscurr(1,0)-xscurr(0,0);
+  elevector.Scale(-0.5);
+  return ;
+}
+
+/*----------------------------------------------------------------------*
+ * Compute influence of area constraint on stiffness matrix.    tk 10/07*
+ * Second derivatives of areas with respect to the displacements        *
+ * ---------------------------------------------------------------------*/
+void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrStiff(Epetra_SerialDenseMatrix xscurr,
+    Epetra_SerialDenseMatrix& elematrix)
+{
+  elematrix(0,0)=0.0;
+  elematrix(0,1)=-0.5;
+  elematrix(0,2)=0.0;
+  elematrix(0,3)=-0.5;
+
+  elematrix(1,0)=-0.5;
+  elematrix(1,1)=0.0;
+  elematrix(1,2)=0.5;
+  elematrix(1,3)=0.0;
+  
+  elematrix(2,0)=0.0;
+  elematrix(2,1)=0.5;
+  elematrix(2,2)=0.0;
+  elematrix(2,3)=0.5;
+
+  elematrix(3,0)=-0.5;
+  elematrix(3,1)=0.0;
+  elematrix(3,2)=0.5;
+  elematrix(3,3)=0.0;
+
+  elematrix.Scale(-1.0);
+  return ;
+}
+
+
 
 
 #endif  // #ifdef CCADISCRET
