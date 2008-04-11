@@ -73,7 +73,10 @@ void ADAPTER::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
   }
 
   // if there is no such condition, do not waste any more time
-  if (conddofset.size()==0)
+  int conddofsetsize = static_cast<int>(conddofset.size());
+  int size;
+  dis.Comm().SumAll(&conddofsetsize,&size,1);
+  if (size==0)
   {
     Teuchos::RCP<Epetra_Map> emptymap =
       Teuchos::rcp(new Epetra_Map(-1,
