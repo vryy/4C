@@ -261,8 +261,8 @@ public:
   //@}
   void FlowRateCalculation();
   void OutflowBoundary();
-  std::complex<double> LungImpedance(int, int, std::complex<double>,std::complex<double>, std::complex<double> []);
-  std::complex<double> DCLungImpedance(int, int, std::complex<double>, std::complex<double> []);
+  std::complex<double> LungImpedance(int, int, std::complex<double> &,std::complex<double>, std::complex<double> []);
+  std::complex<double> DCLungImpedance(int, int, std::complex<double> &, std::complex<double> []);
 
 protected:
 

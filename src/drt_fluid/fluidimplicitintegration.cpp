@@ -3048,6 +3048,7 @@ void FluidImplicitTimeInt::FlowRateCalculation()
   	FlowRateStorage_->erase(FlowRateStorage_->begin());
   	FlowRateStorage_->push_back(flowrate);
   }
+  printf("Flowrate: %f\n",flowrate);
   //cout << FlowRateStorage_->size() << endl;
   return;
 }//FluidImplicitTimeInt::FlowRateCalculation
@@ -3059,11 +3060,11 @@ void FluidImplicitTimeInt::OutflowBoundary()
 {
   vector<DRT::Condition*> impedancecond;
   discret_->GetCondition("ImpedanceCond",impedancecond);
-
+    
   ParameterList eleparams;
   // action for elements
   eleparams.set("action","Outlet impedance");
-
+    
   //Only assemble a single vector
   eleparams.set("assemble matrix 1",false);
   eleparams.set("assemble matrix 2",false);
@@ -3074,7 +3075,7 @@ void FluidImplicitTimeInt::OutflowBoundary()
   eleparams.set("total time",time_);
   eleparams.set("delta time",dta_);
   eleparams.set("thsl",theta_*dta_);
-
+	
   //Current velocity to element
   discret_->ClearState();
   discret_->SetState("velnp",velnp_);
@@ -3082,79 +3083,68 @@ void FluidImplicitTimeInt::OutflowBoundary()
 
   //Loop over all frequencies making a call to LungImpedance, w=2*pi*k/T
   //where k=-N/2,....,N/2, however k is self adjointed.
-  //vector<double> ImpedanceValues(100);
   const int cyclesteps=10;
   vector<double> ImpedanceValues(cyclesteps);
+  vector<double> pressureArray(20);
   std::complex<double> ImpedanceArrayFrequencyDomain[cyclesteps]={0};
   std::complex<double> storage[35]={0};
-  double trigonometrytemp[cyclesteps]={0};
   std::complex<double> RealNumberTwo (2,0), Imag (0,1), TimeDomainImpedance[cyclesteps]={0}, zparent (0,0), StorageEntry, TimeDomainImpedanceTmp=0, zleft (0,0);
-  double TimeDomainImpedanceReal, TimeDomainImpedanceImag, PressureFromConv=0, CyclePeriodDiscrete=10, trigonometrystuff;
-
+ double TimeDomainImpedanceReal, TimeDomainImpedanceImag, PressureFromConv=0, CyclePeriodDiscrete=10, trigonometrystuff, pressuretmp;
+	
   for (int ImpedanceCounter=1; ImpedanceCounter<=CyclePeriodDiscrete/2; ImpedanceCounter++)
   {
-    int generation=0;
-    StorageEntry=LungImpedance(ImpedanceCounter, generation, zparent, zleft, storage);
-    ImpedanceArrayFrequencyDomain[ImpedanceCounter]=StorageEntry;
-    ImpedanceArrayFrequencyDomain[(int)CyclePeriodDiscrete-ImpedanceCounter]=StorageEntry;
+  	int generation=0;
+  	StorageEntry=LungImpedance(ImpedanceCounter, generation, zparent, zleft, storage);
+  	ImpedanceArrayFrequencyDomain[ImpedanceCounter]=StorageEntry;
+  	ImpedanceArrayFrequencyDomain[(int)CyclePeriodDiscrete-ImpedanceCounter]=StorageEntry;
   }
-
+	  
   //Calculate DC component
   StorageEntry=DCLungImpedance(0,0,zparent,storage);
   ImpedanceArrayFrequencyDomain[0]=StorageEntry;
-
-  for (int fourierindex=0; fourierindex<cyclesteps; fourierindex++)
-  {
-    trigonometrytemp[fourierindex]=2*PI*fourierindex/cyclesteps;
-  }
-
-
+	  
   for (int PeriodFraction=0; PeriodFraction<cyclesteps; PeriodFraction++)
   {
-    trigonometrystuff=trigonometrytemp[PeriodFraction]*PeriodFraction;
-    TimeDomainImpedanceReal=cos(trigonometrystuff);
-    TimeDomainImpedanceImag=sin(trigonometrystuff);
-    std::complex<double> TimeDomainImpedanceComplex (TimeDomainImpedanceReal,TimeDomainImpedanceImag);
-    TimeDomainImpedance[PeriodFraction]=TimeDomainImpedanceTmp+TimeDomainImpedanceComplex*ImpedanceArrayFrequencyDomain[PeriodFraction];
-    TimeDomainImpedanceTmp=TimeDomainImpedance[PeriodFraction];
+	TimeDomainImpedanceTmp=0;
+	for (int k=0; k<cyclesteps; k++)
+	{
+  	trigonometrystuff=2*PI/cyclesteps;
+  	TimeDomainImpedanceReal=cos(trigonometrystuff);
+  	TimeDomainImpedanceImag=sin(trigonometrystuff);
+  	std::complex<double> TimeDomainImpedanceComplex (TimeDomainImpedanceReal,TimeDomainImpedanceImag);
+  	TimeDomainImpedanceTmp=TimeDomainImpedanceTmp+pow(TimeDomainImpedanceComplex,-1*PeriodFraction*k)*ImpedanceArrayFrequencyDomain[k];
+	}
+	TimeDomainImpedance[PeriodFraction]=TimeDomainImpedanceTmp;
   }
 
   //Get Real component of TimeDomain, imaginary part should be anyway zero.
   for (int i=0; i<cyclesteps; i++){
-    ImpedanceValues[i]=real(TimeDomainImpedance[i])/cyclesteps;
+  	ImpedanceValues[i]=real(TimeDomainImpedance[i])/cyclesteps;
   }
-
-  //Calculate pressure via inverse Fourier transform (if history of one period exists),
-  //involves:			 Flow rate history of 1 period, Q
-  //					 Impedance history, Z
-
-  for (int t=0; t<cyclesteps; t++){
-    PressureFromConv=PressureFromConv+1000*ImpedanceValues[((cyclesteps-1)-t)]*(*FlowRateStorage_)[t];
-  }
-  PressureFromConv=PressureFromConv/cyclesteps;
+  
+  pressuretmp=0;
+  for (int j=0; j<=cyclesteps; j++){
+	  pressuretmp=pressuretmp+1000*ImpedanceValues[j]*(*FlowRateStorage_)[cyclesteps-1-j]*dta_;
+  } 
+  PressureFromConv=pressuretmp;
+   
+  //PressureFromConv=pressureArray[N-1];
   eleparams.set("ConvolutedPressure",PressureFromConv);
-
+  printf("Pressure from convolution: %f\n",PressureFromConv);
   impedancetbc_->PutScalar(0.0);
   const string condstring("ImpedanceCond");
   discret_->EvaluateCondition(eleparams,impedancetbc_,condstring);
   discret_->ClearState();
-
+	    
 }//FluidImplicitTimeInt::Outflow
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::complex<double> FluidImplicitTimeInt::LungImpedance(int ImpedanceCounter,
-                                                         int generation,
-                                                         std::complex<double> zparent,
-                                                         std::complex<double> zleft,
-                                                         std::complex<double> storage[])
+std::complex<double> FluidImplicitTimeInt::LungImpedance(int ImpedanceCounter, int generation, std::complex<double> & zparent, std::complex<double> zleft, std::complex<double> storage[])
 {
-  std::complex<double> Imag (0,1), RealNumberOne (1,0), RealThreeQuarters (0.75,0), RealNumberZero (0,0), K, wave_c, StoredTmpVar, g, zright, zend, StorageEntry;
-  double area, omega, WomersleyNumber, E=0.05, rho=1.206, nue=1.50912106e-5, compliance;
+  std::complex<double> Imag (0,1), RealNumberOne (1,0), RealThreeQuarters (0.75,0), RealNumberZero (0,0), K, wave_c, StoredTmpVar, g, zright, zend, StorageEntry=0;
+  double area, omega, WomersleyNumber, E=1e6, rho=1.206, nue=1.50912106e-5, compliance;
   int generationLimit=33;
   storage[generation]=zleft;
-
+	
   //Lung morphological data
   int delta[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1};
   double diameter[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0002, 0.0003, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0014, 0.0015, 0.0017, 0.0019, 0.0020, 0.0022, 0.0023, 0.0024, 0.0026, 0.0030, 0.0030, 0.0038, 0.0049, 0.0054, 0.0054, 0.0069, 0.0077, 0.011, 0.0121, 0.0167};
@@ -3162,118 +3152,109 @@ std::complex<double> FluidImplicitTimeInt::LungImpedance(int ImpedanceCounter,
   double h[]={0.00014, 0.00014, 0.00014, 0.00014, 0.00014, 0.00014, 0.00010, 0.00010, 0.00011, 0.00012, 0.00013, 0.00015, 0.00017, 0.00020, 0.00022, 0.00024, 0.00026, 0.00028, 0.00030, 0.00030, 0.00032, 0.00033, 0.00034, 0.00026, 0.00040, 0.00040, 0.00047, 0.00057, 0.00062, 0.00062, 0.00074, 0.00080, 0.00105, 0.00113, 0.00146};
 
   //Area of vessel
-  area=(PI*diameter[generation])/4;
-  //Frequency
-  omega=2*PI*ImpedanceCounter/4;
+  area=(PI*diameter[generation])/4;                                                                                                                 
+  //Frequency                                                           
+  omega=2*PI*ImpedanceCounter/0.8;
   //Womersley number
-  WomersleyNumber=(diameter[generation]/2)*sqrt(omega/nue);
+  WomersleyNumber=(diameter[generation]/2)*sqrt(omega/nue);   
   //K depends on the womersley number
   if (WomersleyNumber > 4)
   {
-    StoredTmpVar=(2/WomersleyNumber)*Imag;
-    K=RealNumberOne+StoredTmpVar;
+  	StoredTmpVar=(2/WomersleyNumber)*Imag;
+  	K=RealNumberOne+StoredTmpVar;     
   }
   else
   {
-    StoredTmpVar=8/WomersleyNumber*Imag;
-    K=RealThreeQuarters+StoredTmpVar;
+  	StoredTmpVar=8/WomersleyNumber*Imag;
+  	K=RealThreeQuarters+StoredTmpVar;
   }
-
+	
   //Compliance
-  compliance=(3*area*diameter[generation]/2)/(2*E*h[generation]);
-
+  compliance=(3*area*diameter[generation]/2)/(2*E*h[generation]);                                   
+             
   //Wave speed
-  wave_c=sqrt(area*K/(rho*compliance));
-
+  wave_c=sqrt(area*K/(rho*compliance));               
+	
   //Convenience coefficient
-  g=sqrt(compliance*area*K/rho);
+  g=sqrt(compliance*area*K/rho);                                                                             
 
   if (real(zleft) == 0)
   {
-    zleft = (Imag)*((RealNumberOne/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
-    storage[generation]=zleft;
+  	zleft = (Imag)*((RealNumberOne/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));  
+  	storage[generation]=zleft;
   }
-
+	
   //Right side is always pre calculated!
   if (real(zleft) != 0 && generation-delta[generation] == 0)
   {
-    zright = (Imag)*((RealNumberOne/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+  	zright = (Imag)*((RealNumberOne/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
   }
-  else if (real(storage[generation-delta[generation]]) == 0)
+  else if (real(storage[generation-delta[generation]]) == 0)     
   {
-    zright = (Imag)*(RealNumberOne/g*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+  	zright = (Imag)*(RealNumberOne/g*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
   }
   else
   {
-    zright = storage[generation-delta[generation]];
+  	zright = storage[generation-delta[generation]];
   }
 
   //Bifurcation condition
   zend = (zright*zleft)/(zleft+zright);
-
   //Impedance at the parent level
-  zparent = (Imag)*(RealNumberOne/g*sin(omega*length[generation]/wave_c)+zend*cos(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c)+Imag*g*zend*sin(omega*length[generation]/wave_c));
-  zleft=zparent;
-
+  zparent = (Imag)*(RealNumberOne/g*sin(omega*length[generation]/wave_c)+zend*cos(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c)+Imag*g*zend*sin(omega*length[generation]/wave_c));	
+  zleft=zparent;	
   //Right side is always pre calculated!
-  if (generation < generationLimit)
+  if (generation < generationLimit) 
   {
-    generation++;
-    LungImpedance(ImpedanceCounter, generation, zparent, zleft, storage);
+  	generation++;
+  	LungImpedance(ImpedanceCounter, generation, zparent, zleft, storage);                                    
   }
-  return StorageEntry=zparent;
+  return zparent;
 } //BioFluidImplicitTimeInt::LungImpedance
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::complex<double> FluidImplicitTimeInt::DCLungImpedance(int ImpedanceCounter,
-                                                           int generation,
-                                                           std::complex<double> zparent,
-                                                           std::complex<double> storage[])
+std::complex<double> FluidImplicitTimeInt::DCLungImpedance(int ImpedanceCounter, int generation, std::complex<double> & zparentdc, std::complex<double> storage[])
 {
   //DC impedance
-  std::complex<double> Imag (0,1), RealNumberOne (1,0), RealThreeQuarters (0.75,0), RealNumberZero (0,0), K, wave_c, StoredTmpVar, g, zleft, zright, StorageEntry;
-  double zend;
+  std::complex<double> Imag (0,1), RealNumberOne (1,0), RealThreeQuarters (0.75,0), RealNumberZero (0,0), K, wave_c, StoredTmpVar, g, zleft, zright, StorageEntry, zend;
+  //double zend;
   int generationLimit=33;
-
-  zleft=zparent;
+  zleft=zparentdc;
   storage[generation]=zleft;
   int delta[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1};
   double diameter[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0002, 0.0003, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0014, 0.0015, 0.0017, 0.0019, 0.0020, 0.0022, 0.0023, 0.0024, 0.0026, 0.0030, 0.0030, 0.0038, 0.0049, 0.0054, 0.0054, 0.0069, 0.0077, 0.011, 0.0121, 0.0167};
   double length[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0007, 0.0009, 0.0012, 0.0015, 0.0012, 0.0028, 0.0035, 0.0041, 0.0047, 0.0054, 0.0058, 0.0071, 0.0072, 0.0087, 0.0092, 0.0093, 0.0104, 0.0090, 0.0112, 0.0097, 0.0107, 0.0122, 0.0110, 0.0128, 0.0128, 0.0119, 0.0124, 0.0249, 0.0565, 0.1130};
-
+	
   if (real(zleft) == 0)
-  {
-    zleft = 8*length[generation]/(PI*diameter[generation]/2);
-    storage[generation]=zleft;
+  {  
+	zleft = 8*length[generation]/(PI*diameter[generation]/2);
+  	storage[generation]=zleft;
   }
-
+	
   if (real(zleft) != 0 && generation-delta[generation] == 0)
   {
-    zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
+  	zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
   }
   else if (real(storage[generation-delta[generation]]) == 0)     //Right side is always pre calculated!
   {
-    zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
+  	zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
   }
   else
   {
-    zright = storage[generation-delta[generation]];
+  	zright = storage[generation-delta[generation]];
   }
-
+	
   //Bifurcation condition
-  zend = real((zright*zleft)/(zleft+zright));
+  zend = (zright*zleft)/(zleft+zright);              
   //Impedance at the parent level
-  zparent = zend;
-
+  zparentdc = zend;	
+  
   if (generation < generationLimit) //Number of Generations to model, better for small vessels ie. not the trachea
   {
-    generation++;
-    DCLungImpedance(ImpedanceCounter, generation, zparent, storage);
+  	generation++;
+  	DCLungImpedance(ImpedanceCounter, generation, zparentdc, storage);                                    
   }
-  return StorageEntry=zparent;
+  //zparentdc= 8*length[generation]/(PI*diameter[generation]/2)+zparentdc;
+  return StorageEntry=zparentdc;
 }//FluidImplicitTimeInt::DCLungImpedance
-
 
 #endif /* CCADISCRET       */
