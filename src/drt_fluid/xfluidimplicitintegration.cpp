@@ -24,6 +24,8 @@ Maintainer: Axel Gerstenberger
 #include <stdio.h>
 
 #include "xfluidimplicitintegration.H"
+
+#include "../drt_lib/linalg_ana.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_function.H"
@@ -90,8 +92,8 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // time measurement: total --- start TimeMonitor tm0
   tm0_ref_        = rcp(new TimeMonitor(*timetotal_ ));
 
-  // time measurement: initialization --- start TimeMonitor tm7
-  tm1_ref_        = rcp(new TimeMonitor(*timeinit_ ));
+  // time measurement: initialization
+  TimeMonitor monitor(*timeinit_);
 
   // -------------------------------------------------------------------
   // get the basic parameters first
@@ -433,19 +435,14 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
     }
   }
 
-  // end time measurement for initialization
-  tm1_ref_ = null;
-  
   vector<DRT::Condition*> impedancecond;
   discret_->GetCondition("ImpedanceCond",impedancecond);
-        	
-  if (!impedancecond.empty()){
-  FlowRateStorage_ = rcp(new vector<double>);
-  impedancetbc_= LINALG::CreateVector(*dofrowmap,true);
+
+  if (!impedancecond.empty())
+  {
+    FlowRateStorage_ = rcp(new vector<double>);
+    impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);
   }
-
-  return;
-
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 
@@ -537,8 +534,8 @@ void XFluidImplicitTimeInt::Integrate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::TimeLoop()
 {
-  // time measurement: time loop --- start TimeMonitor tm2
-  tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
+  // time measurement: time loop
+  TimeMonitor monitor(*timetimeloop_);
 
   // how do we want to solve or fluid equations?
   const int dyntype    =params_.get<int>   ("type of nonlinear solve");
@@ -612,22 +609,22 @@ void XFluidImplicitTimeInt::TimeLoop()
 
     TimeUpdate();
 
-    // time measurement: output and statistics --- start TimeMonitor tm8
-    tm8_ref_ = rcp(new TimeMonitor(*timeout_ ));
+    // time measurement: output and statistics
+    TimeMonitor monitor(*timeout_);
 
-	vector<DRT::Condition*> impedancecond;
-	discret_->GetCondition("ImpedanceCond",impedancecond);
-	
-	if (!impedancecond.empty())
-	{
-		double dtp = (impedancecond[0])->GetDouble("timeperiod");
-		FlowRateCalculation();
-		if (time_ > dtp*dta_){
-			OutflowBoundary();
-			}
-	}
-    
-    
+    vector<DRT::Condition*> impedancecond;
+    discret_->GetCondition("ImpedanceCond",impedancecond);
+
+    if (!impedancecond.empty())
+    {
+      double dtp = (impedancecond[0])->GetDouble("timeperiod");
+      FlowRateCalculation();
+      if (time_ > dtp*dta_)
+      {
+        OutflowBoundary();
+      }
+    }
+
     // -------------------------------------------------------------------
     // add calculated velocity to mean value calculation (statistics)
     // -------------------------------------------------------------------
@@ -650,18 +647,15 @@ void XFluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     Output();
 
-    // end time measurement for output and statistics
-    tm8_ref_ = null;
-
     // -------------------------------------------------------------------
     //                    calculate lift'n'drag forces
     // -------------------------------------------------------------------
     int liftdrag = params_.get<int>("liftdrag");
 
-    if(liftdrag == 0); // do nothing, we don't want lift & drag
-    if(liftdrag == 1)
+    if (liftdrag == 0); // do nothing, we don't want lift & drag
+    if (liftdrag == 1)
       dserror("how did you manage to get here???");
-    if(liftdrag == 2)
+    if (liftdrag == 2)
       LiftDrag();
 
     // -------------------------------------------------------------------
@@ -673,11 +667,6 @@ void XFluidImplicitTimeInt::TimeLoop()
     //                    stop criterium for timeloop
     // -------------------------------------------------------------------
   }
-
-  // end time measurement for timeloop
-  tm2_ref_ = null;
-
-  return;
 } // FluidImplicitTimeInt::TimeLoop
 
 
@@ -901,6 +890,9 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(RCP<DRT::Discretization> 
   discret_->FillComplete();
 }
 
+
+
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -912,8 +904,8 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(RCP<DRT::Discretization> 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::NonlinearSolve()
 {
-  // time measurement: nonlinear iteration --- start TimeMonitor tm3
-  tm3_ref_ = rcp(new TimeMonitor(*timenlnitlin_));
+  // time measurement: nonlinear iteration
+  TimeMonitor monitor(*timenlnitlin_);
 
   const Epetra_Map* dofrowmap       = discret_->DofRowMap();
 
@@ -955,8 +947,8 @@ void XFluidImplicitTimeInt::NonlinearSolve()
     // call elements to calculate system matrix
     // -------------------------------------------------------------------
     {
-      // time measurement: element --- start TimeMonitor tm4
-      tm4_ref_ = rcp(new TimeMonitor(*timeelement_));
+      // time measurement: element
+      TimeMonitor monitor(*timeelement_);
       // get cpu time
       tcpu=ds_cputime();
 
@@ -964,13 +956,15 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
       // add Neumann loads
       residual_->Update(1.0,*neumann_loads_,0.0);
-      
+
       vector<DRT::Condition*> impedancecond;
       discret_->GetCondition("ImpedanceCond",impedancecond);
-      	
-      if (!impedancecond.empty()){
-      residual_->Update(1.0,*impedancetbc_,0.0);
+
+      if (!impedancecond.empty())
+      {
+        residual_->Update(1.0,*impedancetbc_,0.0);
       }
+
       // Filter velocity for dynamic Smagorinsky model --- this provides
       // the necessary dynamic constant
       // //
@@ -992,7 +986,8 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       ParameterList eleparams;
 
       if (fssgv_ == "scale_similarity" ||
-          fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
+          fssgv_ == "mixed_Smagorinsky_all" ||
+          fssgv_ == "mixed_Smagorinsky_small")
       {
         // action for elements
         eleparams.set("action","calc_convective_stresses");
@@ -1008,26 +1003,22 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
       // action for elements
       if (timealgo_==timeint_stationary)
-          eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
+        eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
       else
-          eleparams.set("action","calc_fluid_systemmat_and_residual");
+        eleparams.set("action","calc_fluid_systemmat_and_residual");
 
       // other parameters that might be needed by the elements
       eleparams.set("total time",time_);
       eleparams.set("thsl",theta_*dta_);
+      eleparams.set("dt",dta_);
       eleparams.set("fs subgrid viscosity",fssgv_);
       eleparams.set("include reactive terms for linearisation",newton_);
 
       // parameters for stabilization
-      {
-        eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
-      }
+      eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
 
       // parameters for stabilization
-      {
-        eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
-      }
-
+      eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
       // set vector values needed by elements
       discret_->ClearState();
@@ -1045,8 +1036,8 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       //----------------------------------------------------------------------
       if (fssgv_ != "No")
       {
-        // time measurement: avm3 --- start TimeMonitor tm5
-        tm5_ref_ = rcp(new TimeMonitor(*timeavm3_));
+        // time measurement: avm3
+        TimeMonitor monitor(*timeavm3_);
 
 
         // call the VM3 constructor (only in the first time step)
@@ -1098,9 +1089,6 @@ void XFluidImplicitTimeInt::NonlinearSolve()
 
         // set coarse- and fine-scale vectors
         discret_->SetState("fsvelnp",fsvelnp_);
-
-        // end time measurement for avm3
-        tm5_ref_=null;
       }
 
       // convergence check at itemax is skipped for speedup if
@@ -1123,7 +1111,6 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       }
 
       // end time measurement for element
-      tm4_ref_=null;
       dtele_=ds_cputime()-tcpu;
     }
 
@@ -1301,18 +1288,15 @@ void XFluidImplicitTimeInt::NonlinearSolve()
     //          boundary conditions
     incvel_->PutScalar(0.0);
     {
-      // time measurement: application of dbc --- start TimeMonitor tm6
-      tm6_ref_ = rcp(new TimeMonitor(*timeapplydbc_));
+      // time measurement: application of dbc
+      TimeMonitor monitor(*timeapplydbc_);
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
-
-      // end time measurement for application of dbc
-      tm6_ref_=null;
     }
 
     //-------solve for residual displacements to correct incremental displacements
     {
-      // time measurement: solver --- start TimeMonitor tm7
-      tm7_ref_ = rcp(new TimeMonitor(*timesolver_));
+      // time measurement: solver
+      TimeMonitor monitor(*timesolver_);
       // get cpu time
       tcpu=ds_cputime();
 
@@ -1329,18 +1313,30 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       solver_.ResetTolerance();
 
       // end time measurement for solver
-      tm7_ref_=null;
       dtsolve_=ds_cputime()-tcpu;
     }
 
     //------------------------------------------------ update (u,p) trial
     velnp_->Update(1.0,*incvel_,1.0);
+
+    // free surface update
+    if (alefluid_ and freesurface_->Relevant())
+    {
+      //using namespace LINALG::ANA;
+
+      Teuchos::RefCountPtr<Epetra_Vector> fsvelnp = freesurface_->ExtractCondVector(velnp_);
+      Teuchos::RefCountPtr<Epetra_Vector> fsdisp = freesurface_->ExtractCondVector(dispn_);
+      Teuchos::RefCountPtr<Epetra_Vector> fsdispnp = Teuchos::rcp(new Epetra_Vector(*freesurface_->CondMap()));
+
+      // this is first order
+      //*fsdispnp = *fsdisp + dta_*(*fsvelnp);
+      fsdispnp->Update(1.0,*fsdisp,dta_,*fsvelnp,0.0);
+
+      freesurface_->InsertCondVector(fsdispnp,dispnp_);
+      freesurface_->InsertCondVector(fsvelnp,gridv_);
+    }
   }
 
-  // end time measurement for nonlinear iteration
-  tm3_ref_ = null;
-
-  return;
 } // FluidImplicitTimeInt::NonlinearSolve
 
 
@@ -1363,8 +1359,8 @@ drawbacks:
 */
 void XFluidImplicitTimeInt::LinearSolve()
 {
-  // time measurement: linearised fluid --- start TimeMonitor tm3
-  tm3_ref_ = rcp(new TimeMonitor(*timenlnitlin_));
+  // time measurement: linearised fluid
+  TimeMonitor monitor(*timenlnitlin_);
 
   dtsolve_ = 0;
   dtele_   = 0;
@@ -1380,83 +1376,80 @@ void XFluidImplicitTimeInt::LinearSolve()
   // call elements to calculate system matrix
   // -------------------------------------------------------------------
 
-  // time measurement: element --- start TimeMonitor tm4
-  tm4_ref_ = rcp(new TimeMonitor(*timeelement_));
-  // get cpu time
-  tcpu=ds_cputime();
+  {
+    // time measurement: element
+    TimeMonitor monitor(*timeelement_);
+    // get cpu time
+    tcpu=ds_cputime();
 
-  sysmat_->Zero();
+    sysmat_->Zero();
 
-  // add Neumann loads
-  rhs_->Update(1.0,*neumann_loads_,0.0);
+    // add Neumann loads
+    rhs_->Update(1.0,*neumann_loads_,0.0);
 
-  // create the parameters for the discretization
-  ParameterList eleparams;
+    // create the parameters for the discretization
+    ParameterList eleparams;
 
-  // action for elements
-  if (timealgo_==timeint_stationary)
-    dserror("no stationary solution with linearised fluid!!!");
-  else
-    eleparams.set("action","calc_linear_fluid");
+    // action for elements
+    if (timealgo_==timeint_stationary)
+      dserror("no stationary solution with linearised fluid!!!");
+    else
+      eleparams.set("action","calc_linear_fluid");
 
-  // other parameters that might be needed by the elements
-  eleparams.set("total time",time_);
-  eleparams.set("thsl",theta_*dta_);
+    // other parameters that might be needed by the elements
+    eleparams.set("total time",time_);
+    eleparams.set("thsl",theta_*dta_);
 
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("velnp",velnp_);
-  discret_->SetState("hist"  ,hist_ );
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("velnp",velnp_);
+    discret_->SetState("hist"  ,hist_ );
 
-  // call standard loop over linear elements
-  discret_->Evaluate(eleparams,sysmat_,rhs_);
-  discret_->ClearState();
+    // call standard loop over linear elements
+    discret_->Evaluate(eleparams,sysmat_,rhs_);
+    discret_->ClearState();
 
-  density = eleparams.get("density", 0.0);
+    density = eleparams.get("density", 0.0);
 
-  // finalize the complete matrix
-  sysmat_->Complete();
+    // finalize the complete matrix
+    sysmat_->Complete();
 
-  // end time measurement for element
-  tm4_ref_=null;
-  dtele_=ds_cputime()-tcpu;
+    // end time measurement for element
+    dtele_=ds_cputime()-tcpu;
+  }
 
   //--------- Apply dirichlet boundary conditions to system of equations
   //          residual velocities (and pressures) are supposed to be zero at
   //          boundary conditions
   //velnp_->PutScalar(0.0);
 
-  // time measurement: application of dbc --- start TimeMonitor tm6
-  tm6_ref_ = rcp(new TimeMonitor(*timeapplydbc_));
+  {
+    // time measurement: application of dbc
+    TimeMonitor monitor(*timeapplydbc_);
 
-  LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,dirichtoggle_);
-
-  // end time measurement for application of dbc
-  tm6_ref_=null;
+    LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,dirichtoggle_);
+  }
 
   //-------solve for total new velocities and pressures
 
-  // time measurement: solver --- start TimeMonitor tm7
-  tm7_ref_ = rcp(new TimeMonitor(*timesolver_));
-  // get cpu time
-  tcpu=ds_cputime();
+  {
+    // time measurement: solver
+    TimeMonitor monitor(*timesolver_);
+    // get cpu time
+    tcpu=ds_cputime();
 
-  /* possibly we could accelerate it if the reset variable
-     is true only every fifth step, i.e. set the last argument to false
-     for 4 of 5 timesteps or so. */
-  solver_.Solve(sysmat_->EpetraOperator(),velnp_,rhs_,true,true);
+    /* possibly we could accelerate it if the reset variable
+       is true only every fifth step, i.e. set the last argument to false
+       for 4 of 5 timesteps or so. */
+    solver_.Solve(sysmat_->EpetraOperator(),velnp_,rhs_,true,true);
 
-  // end time measurement for solver
-  tm7_ref_=null;
-  dtsolve_=ds_cputime()-tcpu;
-
-  // end time measurement for linearised fluid
-  tm3_ref_ = null;
+    // end time measurement for solver
+    dtsolve_=ds_cputime()-tcpu;
+  }
 
   if (myrank_ == 0)
     cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
 
-  return;
 } // FluidImplicitTimeInt::LinearSolve
 
 
@@ -2224,7 +2217,7 @@ void XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 void XFluidImplicitTimeInt::SolveStationaryProblem()
 {
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
-  tm2_ref_ = rcp(new TimeMonitor(*timetimeloop_));
+  TimeMonitor monitor(*timetimeloop_);
 
   // override time integration parameters in order to avoid misuse in
   // NonLinearSolve method below
@@ -2321,10 +2314,6 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 
   } // end of time loop
 
-  // end time measurement for pseudo time loop (stationary)
-  tm2_ref_ = null;
-
-  return;
 } // FluidImplicitTimeInt::SolveStationaryProblem
 
 
@@ -2337,43 +2326,43 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-RCP<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
+RefCountPtr<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
 {
-     ParameterList eleparams;
-     // set action for elements
-     eleparams.set("action","integrate_Shapefunction");
+  ParameterList eleparams;
+  // set action for elements
+  eleparams.set("action","integrate_Shapefunction");
 
-     // get a vector layout from the discretization to construct matching
-     // vectors and matrices
-     //                 local <-> global dof numbering
-     const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-     // create vector (+ initialization with zeros)
-     RefCountPtr<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
+  // create vector (+ initialization with zeros)
+  RefCountPtr<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
 
-     // call loop over elements to evaluate the condition
-     discret_->ClearState();
-     const string condstring("FluidStressCalc");
-     discret_->EvaluateCondition(eleparams,integratedshapefunc,condstring);
-     discret_->ClearState();
+  // call loop over elements to evaluate the condition
+  discret_->ClearState();
+  const string condstring("FluidStressCalc");
+  discret_->EvaluateCondition(eleparams,integratedshapefunc,condstring);
+  discret_->ClearState();
 
-     // compute traction values at specified nodes; otherwise do not touch the zero values
-     for (int i=0;i<integratedshapefunc->MyLength();i++)
-     {
-       if ((*integratedshapefunc)[i] != 0.0)
-       {
-         // overwerite integratedshapefunc values with the calculated traction coefficients
-        (*integratedshapefunc)[i] = (*trueresidual_)[i]/(*integratedshapefunc)[i];
-       }
-     }
+  // compute traction values at specified nodes; otherwise do not touch the zero values
+  for (int i=0;i<integratedshapefunc->MyLength();i++)
+  {
+    if ((*integratedshapefunc)[i] != 0.0)
+    {
+      // overwerite integratedshapefunc values with the calculated traction coefficients
+      (*integratedshapefunc)[i] = (*trueresidual_)[i]/(*integratedshapefunc)[i];
+    }
+  }
 
-     // compute traction values at nodes   ---not used any more-----
-     // component-wise calculation:  traction := 0.0*traction + 1.0*(trueresidual_ / integratedshapefunc_)
-     // int err = traction->ReciprocalMultiply(1.0,*integratedshapefunc,*trueresidual_,0.0);
-     // if (err > 0) dserror("error in traction->ReciprocalMultiply");
+  // compute traction values at nodes   ---not used any more-----
+  // component-wise calculation:  traction := 0.0*traction + 1.0*(trueresidual_ / integratedshapefunc_)
+  // int err = traction->ReciprocalMultiply(1.0,*integratedshapefunc,*trueresidual_,0.0);
+  // if (err > 0) dserror("error in traction->ReciprocalMultiply");
 
 
-     return integratedshapefunc;
+  return integratedshapefunc;
 
 } // FluidImplicitTimeInt::CalcStresses()
 
@@ -2523,7 +2512,7 @@ void XFluidImplicitTimeInt::LiftDrag() const
         if (ndim == 2)
 	{
 	  cout << "     " << label << "         ";
-      cout << std::scientific << resultvec[0] << "    ";
+          cout << std::scientific << resultvec[0] << "    ";
 	  cout << std::scientific << resultvec[1] << "    ";
 	  cout << std::scientific << resultvec[5];
 	  cout << "\n";
@@ -2531,7 +2520,7 @@ void XFluidImplicitTimeInt::LiftDrag() const
         if (ndim == 3)
 	{
 	  cout << "     " << label << "         ";
-      cout << std::scientific << resultvec[0] << "    ";
+          cout << std::scientific << resultvec[0] << "    ";
 	  cout << std::scientific << resultvec[1] << "    ";
 	  cout << std::scientific << resultvec[2] << "    ";
 	  cout << std::scientific << resultvec[3] << "    ";
@@ -3125,6 +3114,9 @@ void XFluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> re
   trueresidual_->Scale(-density/dta_/theta_);
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void XFluidImplicitTimeInt::FlowRateCalculation()
 {
   vector<DRT::Condition*> impedancecond;
@@ -3142,7 +3134,7 @@ void XFluidImplicitTimeInt::FlowRateCalculation()
   eleparams.set("assemble vector 1",false);
   eleparams.set("assemble vector 2",false);
   eleparams.set("assemble vector 3",false);
-	
+
   //store flowrate information
   discret_->ClearState();
   discret_->SetState("velnp",velnp_);
@@ -3150,7 +3142,7 @@ void XFluidImplicitTimeInt::FlowRateCalculation()
   RCP<Epetra_Vector> myStoredFlowrates=rcp(new Epetra_Vector(*dofrowmap,100));
   const string condstring("ImpedanceCond");
   discret_->EvaluateCondition(eleparams,myStoredFlowrates,condstring);
-	
+
   flowrate = eleparams.get<double>("Outlet flowrate");
   area = eleparams.get<double>("Area calculation");
   //Assign flowrate at current position
@@ -3165,15 +3157,18 @@ void XFluidImplicitTimeInt::FlowRateCalculation()
   return;
 }//FluidImplicitTimeInt::FlowRateCalculation
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void XFluidImplicitTimeInt::OutflowBoundary()
 {
   vector<DRT::Condition*> impedancecond;
   discret_->GetCondition("ImpedanceCond",impedancecond);
-    
+
   ParameterList eleparams;
   // action for elements
   eleparams.set("action","Outlet impedance");
-    
+
   //Only assemble a single vector
   eleparams.set("assemble matrix 1",false);
   eleparams.set("assemble matrix 2",false);
@@ -3184,7 +3179,7 @@ void XFluidImplicitTimeInt::OutflowBoundary()
   eleparams.set("total time",time_);
   eleparams.set("delta time",dta_);
   eleparams.set("thsl",theta_*dta_);
-	
+
   //Current velocity to element
   discret_->ClearState();
   discret_->SetState("velnp",velnp_);
@@ -3196,68 +3191,75 @@ void XFluidImplicitTimeInt::OutflowBoundary()
   const int cyclesteps=10;
   vector<double> ImpedanceValues(cyclesteps);
   std::complex<double> ImpedanceArrayFrequencyDomain[cyclesteps]={0};
-  std::complex<double> storage[35]={0}; 
+  std::complex<double> storage[35]={0};
   double trigonometrytemp[cyclesteps]={0};
   std::complex<double> RealNumberTwo (2,0), Imag (0,1), TimeDomainImpedance[cyclesteps]={0}, zparent (0,0), StorageEntry, TimeDomainImpedanceTmp=0, zleft (0,0);
- double TimeDomainImpedanceReal, TimeDomainImpedanceImag, PressureFromConv=0, CyclePeriodDiscrete=10, trigonometrystuff;
-	
+  double TimeDomainImpedanceReal, TimeDomainImpedanceImag, PressureFromConv=0, CyclePeriodDiscrete=10, trigonometrystuff;
+
   for (int ImpedanceCounter=1; ImpedanceCounter<=CyclePeriodDiscrete/2; ImpedanceCounter++)
   {
-  	int generation=0;
-  	StorageEntry=LungImpedance(ImpedanceCounter, generation, zparent, zleft, storage);
-  	ImpedanceArrayFrequencyDomain[ImpedanceCounter]=StorageEntry;
-  	ImpedanceArrayFrequencyDomain[(int)CyclePeriodDiscrete-ImpedanceCounter]=StorageEntry;
+    int generation=0;
+    StorageEntry=LungImpedance(ImpedanceCounter, generation, zparent, zleft, storage);
+    ImpedanceArrayFrequencyDomain[ImpedanceCounter]=StorageEntry;
+    ImpedanceArrayFrequencyDomain[(int)CyclePeriodDiscrete-ImpedanceCounter]=StorageEntry;
   }
-	  
+
   //Calculate DC component
   StorageEntry=DCLungImpedance(0,0,zparent,storage);
   ImpedanceArrayFrequencyDomain[0]=StorageEntry;
-	  
+
   for (int fourierindex=0; fourierindex<cyclesteps; fourierindex++)
   {
-  	trigonometrytemp[fourierindex]=2*PI*fourierindex/cyclesteps;
+    trigonometrytemp[fourierindex]=2*PI*fourierindex/cyclesteps;
   }
 
-	
+
   for (int PeriodFraction=0; PeriodFraction<cyclesteps; PeriodFraction++)
   {
-  	trigonometrystuff=trigonometrytemp[PeriodFraction]*PeriodFraction;
-  	TimeDomainImpedanceReal=cos(trigonometrystuff);
-  	TimeDomainImpedanceImag=sin(trigonometrystuff);
-  	std::complex<double> TimeDomainImpedanceComplex (TimeDomainImpedanceReal,TimeDomainImpedanceImag);
-  	TimeDomainImpedance[PeriodFraction]=TimeDomainImpedanceTmp+TimeDomainImpedanceComplex*ImpedanceArrayFrequencyDomain[PeriodFraction];
-  	TimeDomainImpedanceTmp=TimeDomainImpedance[PeriodFraction];
+    trigonometrystuff=trigonometrytemp[PeriodFraction]*PeriodFraction;
+    TimeDomainImpedanceReal=cos(trigonometrystuff);
+    TimeDomainImpedanceImag=sin(trigonometrystuff);
+    std::complex<double> TimeDomainImpedanceComplex (TimeDomainImpedanceReal,TimeDomainImpedanceImag);
+    TimeDomainImpedance[PeriodFraction]=TimeDomainImpedanceTmp+TimeDomainImpedanceComplex*ImpedanceArrayFrequencyDomain[PeriodFraction];
+    TimeDomainImpedanceTmp=TimeDomainImpedance[PeriodFraction];
   }
 
   //Get Real component of TimeDomain, imaginary part should be anyway zero.
   for (int i=0; i<cyclesteps; i++){
-  	ImpedanceValues[i]=real(TimeDomainImpedance[i])/cyclesteps;
+    ImpedanceValues[i]=real(TimeDomainImpedance[i])/cyclesteps;
   }
 
-  //Calculate pressure via inverse Fourier transform (if history of one period exists), 
+  //Calculate pressure via inverse Fourier transform (if history of one period exists),
   //involves:			 Flow rate history of 1 period, Q
   //					 Impedance history, Z
-	
+
   for (int t=0; t<cyclesteps; t++){
-  	PressureFromConv=PressureFromConv+1000*ImpedanceValues[((cyclesteps-1)-t)]*(*FlowRateStorage_)[t];
+    PressureFromConv=PressureFromConv+1000*ImpedanceValues[((cyclesteps-1)-t)]*(*FlowRateStorage_)[t];
   }
-  PressureFromConv=PressureFromConv/cyclesteps;	
+  PressureFromConv=PressureFromConv/cyclesteps;
   eleparams.set("ConvolutedPressure",PressureFromConv);
 
   impedancetbc_->PutScalar(0.0);
   const string condstring("ImpedanceCond");
   discret_->EvaluateCondition(eleparams,impedancetbc_,condstring);
   discret_->ClearState();
-	    
+
 }//FluidImplicitTimeInt::Outflow
 
-std::complex<double> XFluidImplicitTimeInt::LungImpedance(int ImpedanceCounter, int generation, std::complex<double> zparent, std::complex<double> zleft, std::complex<double> storage[])
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::complex<double> XFluidImplicitTimeInt::LungImpedance(int ImpedanceCounter,
+                                                         int generation,
+                                                         std::complex<double> zparent,
+                                                         std::complex<double> zleft,
+                                                         std::complex<double> storage[])
 {
   std::complex<double> Imag (0,1), RealNumberOne (1,0), RealThreeQuarters (0.75,0), RealNumberZero (0,0), K, wave_c, StoredTmpVar, g, zright, zend, StorageEntry;
   double area, omega, WomersleyNumber, E=0.05, rho=1.206, nue=1.50912106e-5, compliance;
   int generationLimit=33;
   storage[generation]=zleft;
-	
+
   //Lung morphological data
   int delta[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1};
   double diameter[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0002, 0.0003, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0014, 0.0015, 0.0017, 0.0019, 0.0020, 0.0022, 0.0023, 0.0024, 0.0026, 0.0030, 0.0030, 0.0038, 0.0049, 0.0054, 0.0054, 0.0069, 0.0077, 0.011, 0.0121, 0.0167};
@@ -3265,112 +3267,118 @@ std::complex<double> XFluidImplicitTimeInt::LungImpedance(int ImpedanceCounter, 
   double h[]={0.00014, 0.00014, 0.00014, 0.00014, 0.00014, 0.00014, 0.00010, 0.00010, 0.00011, 0.00012, 0.00013, 0.00015, 0.00017, 0.00020, 0.00022, 0.00024, 0.00026, 0.00028, 0.00030, 0.00030, 0.00032, 0.00033, 0.00034, 0.00026, 0.00040, 0.00040, 0.00047, 0.00057, 0.00062, 0.00062, 0.00074, 0.00080, 0.00105, 0.00113, 0.00146};
 
   //Area of vessel
-  area=(PI*diameter[generation])/4;                                                                                                                 
-  //Frequency                                                           
+  area=(PI*diameter[generation])/4;
+  //Frequency
   omega=2*PI*ImpedanceCounter/4;
   //Womersley number
-  WomersleyNumber=(diameter[generation]/2)*sqrt(omega/nue);   
+  WomersleyNumber=(diameter[generation]/2)*sqrt(omega/nue);
   //K depends on the womersley number
   if (WomersleyNumber > 4)
   {
-  	StoredTmpVar=(2/WomersleyNumber)*Imag;
-  	K=RealNumberOne+StoredTmpVar;     
+    StoredTmpVar=(2/WomersleyNumber)*Imag;
+    K=RealNumberOne+StoredTmpVar;
   }
   else
   {
-  	StoredTmpVar=8/WomersleyNumber*Imag;
-  	K=RealThreeQuarters+StoredTmpVar;
+    StoredTmpVar=8/WomersleyNumber*Imag;
+    K=RealThreeQuarters+StoredTmpVar;
   }
-	
+
   //Compliance
-  compliance=(3*area*diameter[generation]/2)/(2*E*h[generation]);                                   
-             
+  compliance=(3*area*diameter[generation]/2)/(2*E*h[generation]);
+
   //Wave speed
-  wave_c=sqrt(area*K/(rho*compliance));               
-	
+  wave_c=sqrt(area*K/(rho*compliance));
+
   //Convenience coefficient
-  g=sqrt(compliance*area*K/rho);                                                                             
+  g=sqrt(compliance*area*K/rho);
 
   if (real(zleft) == 0)
   {
-  	zleft = (Imag)*((RealNumberOne/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));  
-  	storage[generation]=zleft;
+    zleft = (Imag)*((RealNumberOne/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+    storage[generation]=zleft;
   }
-	
+
   //Right side is always pre calculated!
   if (real(zleft) != 0 && generation-delta[generation] == 0)
   {
-  	zright = (Imag)*((RealNumberOne/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+    zright = (Imag)*((RealNumberOne/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
   }
-  else if (real(storage[generation-delta[generation]]) == 0)     
+  else if (real(storage[generation-delta[generation]]) == 0)
   {
-  	zright = (Imag)*(RealNumberOne/g*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+    zright = (Imag)*(RealNumberOne/g*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
   }
   else
   {
-  	zright = storage[generation-delta[generation]];
+    zright = storage[generation-delta[generation]];
   }
 
   //Bifurcation condition
   zend = (zright*zleft)/(zleft+zright);
-	
+
   //Impedance at the parent level
-  zparent = (Imag)*(RealNumberOne/g*sin(omega*length[generation]/wave_c)+zend*cos(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c)+Imag*g*zend*sin(omega*length[generation]/wave_c));	
+  zparent = (Imag)*(RealNumberOne/g*sin(omega*length[generation]/wave_c)+zend*cos(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c)+Imag*g*zend*sin(omega*length[generation]/wave_c));
   zleft=zparent;
-   	
+
   //Right side is always pre calculated!
-  if (generation < generationLimit) 
+  if (generation < generationLimit)
   {
-  	generation++; 
-  	LungImpedance(ImpedanceCounter, generation, zparent, zleft, storage);                                    
-  }          
+    generation++;
+    LungImpedance(ImpedanceCounter, generation, zparent, zleft, storage);
+  }
   return StorageEntry=zparent;
 } //BioFluidImplicitTimeInt::LungImpedance
 
-std::complex<double> XFluidImplicitTimeInt::DCLungImpedance(int ImpedanceCounter, int generation, std::complex<double> zparent, std::complex<double> storage[])
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::complex<double> XFluidImplicitTimeInt::DCLungImpedance(int ImpedanceCounter,
+                                                           int generation,
+                                                           std::complex<double> zparent,
+                                                           std::complex<double> storage[])
 {
   //DC impedance
   std::complex<double> Imag (0,1), RealNumberOne (1,0), RealThreeQuarters (0.75,0), RealNumberZero (0,0), K, wave_c, StoredTmpVar, g, zleft, zright, StorageEntry;
   double zend;
   int generationLimit=33;
-	
+
   zleft=zparent;
   storage[generation]=zleft;
   int delta[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1};
   double diameter[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0002, 0.0003, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0014, 0.0015, 0.0017, 0.0019, 0.0020, 0.0022, 0.0023, 0.0024, 0.0026, 0.0030, 0.0030, 0.0038, 0.0049, 0.0054, 0.0054, 0.0069, 0.0077, 0.011, 0.0121, 0.0167};
   double length[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0007, 0.0009, 0.0012, 0.0015, 0.0012, 0.0028, 0.0035, 0.0041, 0.0047, 0.0054, 0.0058, 0.0071, 0.0072, 0.0087, 0.0092, 0.0093, 0.0104, 0.0090, 0.0112, 0.0097, 0.0107, 0.0122, 0.0110, 0.0128, 0.0128, 0.0119, 0.0124, 0.0249, 0.0565, 0.1130};
-	
+
   if (real(zleft) == 0)
   {
-  	zleft = 8*length[generation]/(PI*diameter[generation]/2);
-  	storage[generation]=zleft;
+    zleft = 8*length[generation]/(PI*diameter[generation]/2);
+    storage[generation]=zleft;
   }
-	
+
   if (real(zleft) != 0 && generation-delta[generation] == 0)
   {
-  	zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
+    zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
   }
   else if (real(storage[generation-delta[generation]]) == 0)     //Right side is always pre calculated!
   {
-  	zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
+    zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
   }
   else
   {
-  	zright = storage[generation-delta[generation]];
+    zright = storage[generation-delta[generation]];
   }
-	
+
   //Bifurcation condition
-  zend = real((zright*zleft)/(zleft+zright));              
+  zend = real((zright*zleft)/(zleft+zright));
   //Impedance at the parent level
-  zparent = zend;	
-   	
+  zparent = zend;
+
   if (generation < generationLimit) //Number of Generations to model, better for small vessels ie. not the trachea
   {
-  	generation++;
-  	DCLungImpedance(ImpedanceCounter, generation, zparent, storage);                                    
-  }          
+    generation++;
+    DCLungImpedance(ImpedanceCounter, generation, zparent, storage);
+  }
   return StorageEntry=zparent;
-}//FluidImplicitTimeInt::DCLungImpedance   
+}//FluidImplicitTimeInt::DCLungImpedance
 
 
 #endif /* CCADISCRET       */

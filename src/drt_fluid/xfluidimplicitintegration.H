@@ -1,4 +1,4 @@
-/*!
+/*!----------------------------------------------------------------------
 \file xfluidimplicitintegration.H
 \brief Associated with control routine for fluid (in)stationary solvers,
 
@@ -17,7 +17,8 @@ Maintainer: Axel Gerstenberger
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
-*/
+
+*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
 #ifndef XFLUIDIMPLICITINTEGRATION_H
@@ -135,7 +136,6 @@ public:
   
   /*!
   \brief compute Interface
-
   */
   void ComputeInterfaceAndSetDOFs(RCP<DRT::Discretization> cutterdiscret);
 
@@ -211,6 +211,7 @@ public:
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
+  LINALG::MapExtractor& VelPresSplitter() {return velpressplitter_;}
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
   Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
 
@@ -223,6 +224,13 @@ public:
   int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
   void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
+  /// introduce free surface extractor object
+  /*!
+    This method must (and will) be called during setup with a properly
+    initialized extractor object iff we are on an ale mesh.
+   */
+  void SetFreeSurface(const LINALG::MapExtractor* freesurface) { freesurface_ = freesurface; }
+
   /*!
   \brief determine grid velocity
 
@@ -234,18 +242,6 @@ public:
 
   */
   void LiftDrag() const;
-
-  /*!
-  //
-  //! @name methods for turbulence models (dynamic Smagorinsky)
-
-  \brief filter quantities for dynamic Smagorinsky model.
-         Compute averaged values for LijMij and MijMij.
-
-  */
-  void ApplyFilterForDynamicComputationOfCs();
-
-  //@}
 
   /// integrate shape functions at nodes marked by condition
   /*!
@@ -260,7 +256,18 @@ public:
   void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
 
   //@}
-  
+
+  /*!
+  //
+  //! @name methods for turbulence models (dynamic Smagorinsky)
+
+  \brief filter quantities for dynamic Smagorinsky model.
+         Compute averaged values for LijMij and MijMij.
+
+  */
+  void ApplyFilterForDynamicComputationOfCs();
+
+  //@}
   void FlowRateCalculation();
   void OutflowBoundary();
   std::complex<double> LungImpedance(int, int, std::complex<double>,std::complex<double>, std::complex<double> []);
@@ -281,12 +288,16 @@ protected:
   int                           myrank_;
   bool                          alefluid_;
   bool                          dynamic_smagorinsky_;
+  //@}
 
+  //! @name time stepping variables
   double time_;
   int step_;
   int stepmax_;
   double maxtime_;
+  //@}
 
+  /// time algorithm flag
   FLUID_TIMEINTTYPE timealgo_;
 
   /// density extracted from element material
@@ -298,20 +309,25 @@ protected:
   /// whether we do some extrapolation at the begin of each time step
   bool extrapolationpredictor_;
 
+  //! @name restart variables
   int restartstep_;
   int uprestart_;
   int writestep_;
   int upres_;
   int writestresses_;
+  //@}
 
+  //! @name time step sizes
   double dta_;
   double dtp_;
   double theta_;
+  //@}
 
-  /// parameters for sampling/dumping period
+  //! @name parameters for sampling/dumping period
   int samstart_;
   int samstop_;
   int dumperiod_;
+  //@}
 
   /// flag for special flow: currently channel flow or flow in a lid-driven cavity
   string special_flow_;
@@ -337,7 +353,7 @@ protected:
   RCP<Epetra_Vector>    residual_;
 
   /// rhs: right hand side vector for linearised flow solution
-  RCP<Epetra_Vector>    rhs_;
+  RefCountPtr<Epetra_Vector>    rhs_;
 
   /// true (rescaled) residual vector without zeros at dirichlet positions
   RCP<Epetra_Vector>    trueresidual_;
@@ -345,19 +361,22 @@ protected:
   /// Nonlinear iteration increment vector
   RCP<Epetra_Vector>    incvel_;
 
-  /// accelerations at time n and n-1
+  //! @name accelerations at time n and n-1
   RCP<Epetra_Vector>    accn_;
   RCP<Epetra_Vector>    accnm_;
+  //@}
 
-  /// velocities and pressures at time n+1, n and n-1
+  //! @name velocities and pressures at time n+1, n and n-1
   RCP<Epetra_Vector>    velnp_;
   RCP<Epetra_Vector>    veln_;
   RCP<Epetra_Vector>    velnm_;
+  //@}
 
-  /// displacemets at time n+1, n and n-1
+  //! @name displacemets at time n+1, n and n-1
   RCP<Epetra_Vector>    dispnp_;
   RCP<Epetra_Vector>    dispn_;
   RCP<Epetra_Vector>    dispnm_;
+  //@}
 
   RCP<Epetra_Vector>    gridv_;
 
@@ -406,16 +425,19 @@ protected:
 
   LINALG::MapExtractor      velpressplitter_;
 
+  /// free surface row dof map extractor
+  const LINALG::MapExtractor* freesurface_;
+
   RCP<PeriodicBoundaryConditions> pbc_;
 
-  // the connection between master and slave nodes on this proc
+  /// connection between master and slave nodes on this proc
   map<int,vector<int> >     mapmastertoslave_;
 
   /// my elements grouped for faster evaluation
-  //RCP<DRT::EGROUP::ElementGroupManager> egm_;
+  RCP<DRT::EGROUP::ElementGroupManager> egm_;
 
-  // time measurement
-  // ----------------
+  //! @name time measurement
+
   RCP<Teuchos::Time> timetotal_   ;
   RCP<Teuchos::Time> timeinit_    ;
   RCP<Teuchos::Time> timetimeloop_;
@@ -427,19 +449,16 @@ protected:
   RCP<Teuchos::Time> timeout_     ;
 
   RCP<TimeMonitor> tm0_ref_ ;
-  RCP<TimeMonitor> tm1_ref_ ;
-  RCP<TimeMonitor> tm2_ref_ ;
-  RCP<TimeMonitor> tm3_ref_ ;
-  RCP<TimeMonitor> tm4_ref_ ;
-  RCP<TimeMonitor> tm5_ref_ ;
-  RCP<TimeMonitor> tm6_ref_ ;
-  RCP<TimeMonitor> tm7_ref_ ;
-  RCP<TimeMonitor> tm8_ref_ ;
 
+  //@}
+
+  //! @name even more turbulence garbage
+  /// somebody really needs to clean up here
   double           dtele_;
   double           dtsolve_;
   double           dtfilter_;
-  
+  //@}
+
   // Flowrate array for impedance conditions
   RCP<vector<double> > 	FlowRateStorage_;
   RCP<Epetra_Vector> impedancetbc_;
