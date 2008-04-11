@@ -35,7 +35,7 @@ Maintainer: Axel Gerstenberger
  | set part of the residual vector belonging to the old timestep        |
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
-void FLUIDTIMEINTEGRATION::SetOldPartOfRighthandside(
+void TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
         RCP<Epetra_Vector>&         veln,
         RCP<Epetra_Vector>&         velnm,
         RCP<Epetra_Vector>&         accn,
@@ -78,7 +78,7 @@ void FLUIDTIMEINTEGRATION::SetOldPartOfRighthandside(
  |  do explicit predictor step to start nonlinear iteration from a      |
  |  better value                                             gammi 04/07|
  *----------------------------------------------------------------------*/
-void FLUIDTIMEINTEGRATION::ExplicitPredictor(
+void TIMEINT_THETA_BDF2::ExplicitPredictor(
         RCP<Epetra_Vector>&         veln,
         RCP<Epetra_Vector>&         velnm,
         RCP<Epetra_Vector>&         accn,
@@ -103,7 +103,7 @@ void FLUIDTIMEINTEGRATION::ExplicitPredictor(
  | current solution becomes most recent solution of next timestep       |
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
-void FLUIDTIMEINTEGRATION::CalculateAcceleration(
+void TIMEINT_THETA_BDF2::CalculateAcceleration(
         RCP<Epetra_Vector>&         velnp,
         RCP<Epetra_Vector>&         veln,
         RCP<Epetra_Vector>&         velnm,
@@ -191,7 +191,7 @@ void FLUIDTIMEINTEGRATION::CalculateAcceleration(
 /*----------------------------------------------------------------------*
  |                                                           chfoe 01/08|
  -----------------------------------------------------------------------*/
-void FLUIDTIMEINTEGRATION::UpdateGridv(
+void TIMEINT_THETA_BDF2::ComputeGridVelocity(
         RCP<Epetra_Vector>&         dispnp,
         RCP<Epetra_Vector>&         dispn,
         RCP<Epetra_Vector>&         dispnm,

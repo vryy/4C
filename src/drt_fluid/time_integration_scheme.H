@@ -50,12 +50,16 @@ using namespace std;
 using namespace Teuchos;
 
 //! namespace for all time discretization routines of the fluid field
-namespace FLUIDTIMEINTEGRATION
+namespace TIMEINT_THETA_BDF2
 {
   /*!
   \brief do explicit predictor step to start nonlinear iteration from
          a better initial value
-
+                       +-                                      -+
+                       | /     dta \          dta  veln_-velnm_ |
+   velnp_ =veln_ + dta | | 1 + --- | accn_ - ----- ------------ |
+                       | \     dtp /          dtp     dtp       |
+                       +-                                      -+
   */
   void ExplicitPredictor(
           RCP<Epetra_Vector>&         veln,
@@ -102,7 +106,7 @@ namespace FLUIDTIMEINTEGRATION
   \brief determine grid velocity
 
   */
-  void UpdateGridv(
+  void ComputeGridVelocity(
           RCP<Epetra_Vector>&         dispnp,
           RCP<Epetra_Vector>&         dispn,
           RCP<Epetra_Vector>&         dispnm,
