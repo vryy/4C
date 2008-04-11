@@ -301,7 +301,7 @@ private:
                    struct _MATERIAL*         material,
                    double                    time,
                    double                    timefac,
-                   int                       vel_field,
+                   Epetra_SerialDenseVector& vel,
                    string                    fssgd,
                    bool                      is_stationary
 		   );
@@ -318,7 +318,7 @@ private:
    * \brief get the body force from the nodes condition
    * \return ???
    */
-  Epetra_SerialDenseVector condif2_getbodyforce();
+  Epetra_SerialDenseVector condif2_getbodyforce(const double time);
 
   // calculate global derivatives w.r.t. x,y,z at point r,s,t are
   void condif2_gder(Epetra_SerialDenseMatrix& derxy,

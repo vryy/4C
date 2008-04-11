@@ -24,6 +24,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/drt_timecurve.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/convecdiffus.H"
 
@@ -82,14 +83,29 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList& params,
         if (timefac < 0.0) dserror("No thsl supplied");
       }
 
-      // get type of velocity field
-      const int vel_field = params.get<int>("condif velocity field",0);
+      // get velocity values at the nodes (3rd component of velocity field is ignored!)
+      const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+      const int iel = NumNode();
+      const int nsd=2;
+      Epetra_SerialDenseVector evel(nsd*iel);
+      for (int i=0; i<nsd; i++)
+      {
+          // get actual component column of velocity multi-vector
+          double* velcolumn = (*velocity)[i];
+          // loop over the nodes
+          for (int j=0;j<iel;j++)
+          {
+              DRT::Node* mynode = Nodes()[j];
+              int gid = mynode->Id();
+              evel(i+(nsd*j))=velcolumn[gid];
+          }
+      }
 
       // get flag for fine-scale subgrid diffusivity
       string fssgd = params.get<string>("fs subgrid diffusivity","No");
 
       // calculate element coefficient matrix and rhs
-      condif2_sys_mat(lm,myhist,&elemat1,&elemat2,&elevec1,elevec2,actmat,time,timefac,vel_field,fssgd,is_stationary);
+      condif2_sys_mat(lm,myhist,&elemat1,&elemat2,&elevec1,elevec2,actmat,time,timefac,evel,fssgd,is_stationary);
 
     }
     break;
@@ -122,7 +138,7 @@ int DRT::ELEMENTS::Condif2::EvaluateNeumann(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  calculate system matrix and rhs for convec.-diff. (private) vg 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&              lm,
+void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&          lm,
                                          vector<double>&           ehist,
                                          Epetra_SerialDenseMatrix* sys_mat,
                                          Epetra_SerialDenseMatrix* sys_mat_sd,
@@ -131,7 +147,7 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&              lm,
                                          struct _MATERIAL*         material,
                                          double                    time,
                                          double                    timefac,
-                                         int                       vel_field,
+                                         Epetra_SerialDenseVector& evel,
                                          string                    fssgd,
                                          bool                      is_stationary)
 {
@@ -149,7 +165,7 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&              lm,
   }
 
   // dead load in element nodes
-  const Epetra_SerialDenseVector bodyforce = condif2_getbodyforce();
+  const Epetra_SerialDenseVector bodyforce = condif2_getbodyforce(time);
 
   /*---------------------------------------------- get diffusivity ---*/
   if(material->mattyp != m_condif) dserror("Material law is not of type m_condif.");
@@ -157,17 +173,17 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&              lm,
 
   /*----------------------------------------- declaration of variables ---*/
   Epetra_SerialDenseVector      funct(iel);
-  Epetra_SerialDenseMatrix 	deriv(2,iel);
-  Epetra_SerialDenseMatrix 	deriv2(3,iel);
-  static Epetra_SerialDenseMatrix 	xjm(2,2);
-  Epetra_SerialDenseMatrix 	derxy(2,iel);
-  Epetra_SerialDenseMatrix 	derxy2(3,iel);
+  Epetra_SerialDenseMatrix      deriv(2,iel);
+  Epetra_SerialDenseMatrix      deriv2(3,iel);
+  static Epetra_SerialDenseMatrix xjm(2,2);
+  Epetra_SerialDenseMatrix      derxy(2,iel);
+  Epetra_SerialDenseMatrix      derxy2(3,iel);
   static vector<double>         velint(2);
   double                        edeadng;
-  double              		hist; /* history data at integration point      */
-  double         		hk;  /* element length for calculation of tau  */
-  double         		vel_norm, epe1, epe2, xi1, xi2;
-  double         		mk=0.0;
+  double                        hist; /* history data at integration point      */
+  double                        hk;  /* element length for calculation of tau  */
+  double                        vel_norm, epe1, epe2, xi1, xi2;
+  double                        mk=0.0;
   double                        tau; // stabilization parameter
   double                        kart; // artificial diffusivity
 
@@ -214,30 +230,15 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&              lm,
   }
 
 /*--------------------------------- get velocities at element center ---*/
-  switch(vel_field)
+  // use same shape functions for velocity as for unknown scalar field phi
+  for (int i=0;i<2;i++)
   {
-  case 1:
-    velint[0]=1.0;
-    velint[1]=0.0;
-    break;
-  case 2:
-    velint[0]=0.5*sqrt(3.0);
-    velint[1]=0.5;
-    break;
-  case 3:
-    velint[0]=0.5;
-    velint[1]=0.5*sqrt(3.0);
-    break;
-  case 4:
-    velint[0]=0.5;
-    velint[1]=-0.5*sqrt(3.0);
-    break;
-  case 5:
-	velint[0]=0.0;
-	velint[1]=0.0;
-	break;
-  default: dserror("condif velocity field unknown!\n");
-  }
+      velint[i]=0.0;
+      for (int j=0;j<iel;j++)
+      {
+          velint[i] += funct[j]*evel[i+(2*j)];
+      }
+  } //end loop over i
 
 /*------------------------------ get Jacobian matrix and determinant ---*/
   double  det;
@@ -368,30 +369,15 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&              lm,
       if (higher_order_ele) condif2_gder2(xyze,xjm,derxy,derxy2,deriv2,iel);
 
       /*---------------------- get velocity at integration point */
-      switch(vel_field)
+      // use same shape functions for velocity as for unknown scalar field phi
+      for (int i=0;i<2;i++)
       {
-      case 1:
-        velint[0]=1.0;
-        velint[1]=0.0;
-        break;
-      case 2:
-        velint[0]=0.5*sqrt(3.0);
-        velint[1]=0.5;
-        break;
-      case 3:
-        velint[0]=0.5;
-        velint[1]=0.5*sqrt(3.0);
-        break;
-      case 4:
-        velint[0]=0.5;
-        velint[1]=-0.5*sqrt(3.0);
-        break;
-      case 5:
-        velint[0]=0.0;
-        velint[1]=0.0;
-        break;
-      default: dserror("condif velocity field unknown!\n");
-      }
+          velint[i]=0.0;
+          for (int j=0;j<iel;j++)
+          {
+              velint[i] += funct[j]*evel[i+(2*j)];
+          }
+      } //end loop over i
 
       /*---------------- get history data (n,i) at integration point */
       hist=ZERO;
@@ -437,11 +423,11 @@ void DRT::ELEMENTS::Condif2::condif2_sys_mat(vector<int>&              lm,
  |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Condif2::condif2_jaco(const Epetra_SerialDenseMatrix& xyze,
-				    const Epetra_SerialDenseMatrix& deriv,
-                                    Epetra_SerialDenseMatrix& xjm,
-				    double* det,
-                                    const int iel
-				    )
+                                          const Epetra_SerialDenseMatrix& deriv,
+                                          Epetra_SerialDenseMatrix& xjm,
+                                          double* det,
+                                          const int iel
+                                          )
 {
   double dum;
 
@@ -478,17 +464,89 @@ void DRT::ELEMENTS::Condif2::condif2_jaco(const Epetra_SerialDenseMatrix& xyze,
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a surface Neumann condition    |
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseVector DRT::ELEMENTS::Condif2::condif2_getbodyforce()
+Epetra_SerialDenseVector DRT::ELEMENTS::Condif2::condif2_getbodyforce(
+                                           const double          time
+                                           )
 {
   const int iel = NumNode();
+  const int nsd = 2;
+
   Epetra_SerialDenseVector edeadng(iel);
 
-  // we have only a constant dead load so far
-  for(int inode=0;inode<iel;inode++)
-  {
-    edeadng(inode)=1.0;
-  }
+  vector<DRT::Condition*> myneumcond;
+ 
+  // check whether all nodes have a unique surface Neumann condition
+    int nodecount = 0;
+    for(int inode=0;inode<iel;inode++)
+    {
+      Nodes()[inode]->GetCondition("SurfaceNeumann",myneumcond);
 
+      if (myneumcond.size()>1)
+      {
+        dserror("more than one SurfaceNeumann cond on one node");
+      }
+      if (myneumcond.size()==1)
+      {
+        nodecount++;
+      }
+    }
+
+    if (nodecount == iel)
+    {
+      // find out whether we will use a time curve
+      const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+      int curvenum = -1;
+
+      if (curve) curvenum = (*curve)[0];
+      // initialisation
+      double curvefac    = 0.0;
+
+      if (curvenum >= 0) // yes, we have a timecurve
+      {
+        // time factor for the intermediate step
+        if(time >= 0.0)
+        {
+          curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+        }
+        else
+        {
+        // do not compute an "alternative" curvefac here since a negative time value
+        // indicates an error.
+           dserror("Negative time value in body force calculation: time = %f",time);
+        // curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
+        }
+      }
+      else // we do not have a timecurve --- timefactors are constant equal 1
+      {
+        curvefac = 1.0;
+      }
+      
+      // set this condition to the edeadng array
+      for(int jnode=0;jnode<iel;jnode++)
+      {
+        Nodes()[jnode]->GetCondition("SurfaceNeumann",myneumcond);
+
+        // get values and switches from the condition
+        const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+        const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+
+        for(int isd=0;isd<nsd;isd++)
+        {
+          edeadng(isd,jnode)=(*onoff)[isd]*(*val)[isd]*curvefac;
+        }
+      }
+    }
+    else
+    {
+        // we have no dead load
+        for(int inode=0;inode<iel;inode++)
+        {
+          for(int isd=0;isd<nsd;isd++)
+          {
+            edeadng(isd,inode)=0.0;
+          }
+        }
+     }
   return edeadng;
 } // end of DRT:ELEMENTS:Condif2:condif2_getbodyforce
 
@@ -516,11 +574,11 @@ Epetra_SerialDenseVector DRT::ELEMENTS::Condif2::condif2_getbodyforce()
  |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Condif2::condif2_gder(Epetra_SerialDenseMatrix& derxy,
-				    const Epetra_SerialDenseMatrix& deriv,
+                                    const Epetra_SerialDenseMatrix& deriv,
                                     Epetra_SerialDenseMatrix& xjm,
-				    double& det,
+                                    double& det,
                                     const int iel
-				    )
+                                    )
 {
   static Epetra_SerialDenseMatrix       xji(2,2);   // inverse of jacobian matrix
 
@@ -622,12 +680,12 @@ void DRT::ELEMENTS::Condif2::condif2_gder(Epetra_SerialDenseMatrix& derxy,
  *----------------------------------------------------------------------*/
 
 void DRT::ELEMENTS::Condif2::condif2_gder2(const Epetra_SerialDenseMatrix& xyze,
-				     const Epetra_SerialDenseMatrix& xjm,
-				     const Epetra_SerialDenseMatrix& derxy,
-				     Epetra_SerialDenseMatrix& derxy2,
-				     const Epetra_SerialDenseMatrix& deriv2,
-				     const int iel
-				    )
+                                           const Epetra_SerialDenseMatrix& xjm,
+                                           const Epetra_SerialDenseMatrix& derxy,
+                                           Epetra_SerialDenseMatrix& derxy2,
+                                           const Epetra_SerialDenseMatrix& deriv2,
+                                           const int iel
+                                           )
 {
 //--------------------------------------------initialize and zero out everything
     static Epetra_SerialDenseMatrix bm(3,3);
@@ -663,24 +721,24 @@ void DRT::ELEMENTS::Condif2::condif2_gder2(const Epetra_SerialDenseMatrix& xyze,
   |        +-+-+             +-+-+-+-+         | | | .
   |        | | | 2           | | | | | 2       +-+-+
   |        +-+-+             +-+-+-+-+         | | | iel-1
-  |		     	      	     	       +-+-+
+  |                                            +-+-+
   |
   |        xder2               deriv2          xyze^T
   |
   |
   |                                     +-           -+
-  |  	   	    	    	        | d^2x   d^2y |
-  |  	   	    	    	        | ----   ---- |
-  | 	   	   	   	        | dr^2   dr^2 |
-  | 	   	   	   	        |             |
-  | 	   	   	   	        | d^2x   d^2y |
+  |                                     | d^2x   d^2y |
+  |                                     | ----   ---- |
+  |                                     | dr^2   dr^2 |
+  |                                     |             |
+  |                                     | d^2x   d^2y |
   |                 yields    xder2  =  | ----   ---- |
-  | 	   	   	   	        | ds^2   ds^2 |
-  | 	   	   	   	        |             |
-  | 	   	   	   	        | d^2x   d^2y |
-  | 	   	   	   	        | ----   ---- |
-  | 	   	   	   	        | drds   drds |
-  | 	   	   	   	        +-           -+
+  |                                     | ds^2   ds^2 |
+  |                                     |             |
+  |                                     | d^2x   d^2y |
+  |                                     | ----   ---- |
+  |                                     | drds   drds |
+  |                                     +-           -+
   |
   |
   */
@@ -719,13 +777,13 @@ void DRT::ELEMENTS::Condif2::condif2_gder2(const Epetra_SerialDenseMatrix& xyze,
   /*
   |
   |          0  1  2         i        i
-  | 	   +--+--+--+       +-+      +-+
-  | 	   |  |  |  | 0     | | 0    | | 0
-  | 	   +--+--+--+       +-+	     +-+
-  | 	   |  |  |  | 1  *  | | 1 =  | | 1  for i=0...iel-1
-  | 	   +--+--+--+       +-+	     +-+
-  | 	   |  |  |  | 2     | | 2    | | 2
-  | 	   +--+--+--+       +-+	     +-+
+  |        +--+--+--+       +-+      +-+
+  |        |  |  |  | 0     | | 0    | | 0
+  |        +--+--+--+       +-+	     +-+
+  |        |  |  |  | 1  *  | | 1 =  | | 1  for i=0...iel-1
+  |        +--+--+--+       +-+	     +-+
+  |        |  |  |  | 2     | | 2    | | 2
+  |        +--+--+--+       +-+	     +-+
   |                          |        |
   |                          |        |
   |                        derxy2[i]  |
@@ -735,13 +793,13 @@ void DRT::ELEMENTS::Condif2::condif2_gder2(const Epetra_SerialDenseMatrix& xyze,
   |
   |
   |                   0...iel-1
-  |		     +-+-+-+-+
-  |		     | | | | | 0
-  |		     +-+-+-+-+
-  |	  yields     | | | | | 1
-  |		     +-+-+-+-+
-  |                  | | | | | 2
-  | 		     +-+-+-+-+
+  |                   +-+-+-+-+
+  |                   | | | | | 0
+  |                   +-+-+-+-+
+  |        yields     | | | | | 1
+  |                   +-+-+-+-+
+  |                   | | | | | 2
+  |                   +-+-+-+-+
   |
   |                    derxy2
   |
@@ -839,8 +897,8 @@ void DRT::ELEMENTS::Condif2::condif2_calmat(
 {
 /*========================= further variables =========================*/
 
-vector<double>            conv(iel); 	    /* convective part       */
-vector<double>            diff(iel); 	    /* diffusive part        */
+vector<double>            conv(iel);        /* convective part       */
+vector<double>            diff(iel);        /* diffusive part        */
 static double             rhsint;           /* rhs at int. point     */
 
 // stabilization parameter
