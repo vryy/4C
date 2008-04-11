@@ -124,6 +124,7 @@ void dyn_condif_drt()
 
   // -----------------------------------------------------velocity field
   condiftimeparams.set<int>              ("condif velocity field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY"));
+  //condiftimeparams.set<int>              ("condif velocity function number",fdyn.get<int>("CD_VELFUNCNO"));
 
   // -------------------------------------------------- time integration
   // the default time step size
@@ -181,6 +182,20 @@ void dyn_condif_drt()
       condifimplicit.ReadRestart(probtype.get<int>("RESTART"));
     }
 
+    // -------------------------------------------------set velocity field
+    int veltype = Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY");
+    switch (veltype)
+    {
+    case 0:  // zero
+    case 1:  // function
+      condifimplicit.SetVelocityField(veltype,fdyn.get<int>("CD_VELFUNCNO"));
+      break;
+    case 2: //Navier_Stokes
+      dserror("condif velocity: >>Navier_Stokes<< not implemented.");
+    default:
+      dserror("unknown velocity field type for convection-diffusion");
+    }
+
     // call time-integration (or stationary) scheme
     condifimplicit.Integrate();
 
@@ -210,6 +225,19 @@ void dyn_condif_drt()
     {
       // read the restart information, set vectors and variables
       genalphaint.ReadRestart(genprob.restart);
+    }
+
+    // -------------------------------------------------set velocity field
+    int veltype = Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY");
+    switch (veltype)
+    {
+    case 0:  // zero
+    case 1:  // function
+      ;//genalphaint.SetVelocityField(veltype,fdyn.get<int>("CD_VELFUNCNO"));
+    case 3: //Navier_Stokes
+      dserror("condif velocity: >>Navier_Stokes<< not implemented.");
+    default:
+      dserror("unknown velocity field type for convection-diffusion");
     }
 
     // call generalized-alpha time-integration scheme

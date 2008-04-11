@@ -24,6 +24,7 @@ Maintainer: Volker Gravemeier
 #include "condifimplicitintegration.H"
 #include "drt_periodicbc.H"
 #include "vm3_solver.H"
+#include "../drt_lib/drt_function.H"
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -144,6 +145,11 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   // histvector --- a linear combination of phinm, phin (BDF)
   //                or phin, phidtn (One-Step-Theta)
   hist_         = LINALG::CreateVector(*dofrowmap,true);
+
+  // get noderowmap of condif discretization
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  /// convective velocity (always three velocity components per node)
+  convel_         = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
   // Vectors associated to boundary conditions
   // -----------------------------------------
@@ -504,6 +510,7 @@ void CondifImplicitTimeInt::Solve(
     eleparams.set("condif velocity field",cdvel_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
     eleparams.set("using stationary formulation",is_stat);
+    eleparams.set("velocity field",convel_);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -766,6 +773,7 @@ void CondifImplicitTimeInt::Output()
 
       output_.NewStep    (step_,time_);
       output_.WriteVector("phinp", phinp_);
+      output_.WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);
       //output_.WriteVector("residual", residual_);
 
       if (restartstep_ == uprestart_) //add restart data
@@ -785,6 +793,7 @@ void CondifImplicitTimeInt::Output()
 
     output_.NewStep    (step_,time_);
     output_.WriteVector("phinp", phinp_);
+    output_.WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);
     //output_.WriteVector("residual", residual_);
 
     output_.WriteVector("phidtn", phidtn_);
@@ -842,7 +851,7 @@ void CondifImplicitTimeInt::Output()
 #endif
 
 
-#if 1  //DEBUG IO --- incremental solution
+#if 0  //DEBUG IO --- incremental solution
       for (int proc=0; proc<phinp_->Comm().NumProc(); ++proc)
       {
         if (proc==myrank_)
@@ -857,7 +866,10 @@ void CondifImplicitTimeInt::Output()
         phinp_->Comm().Barrier();
       }
 #endif
-//cout << *phinp_;
+
+#if 0  //DEBUG IO --- convective velocity
+convel_->Print(cout);
+#endif
 
   return;
 } // CondifImplicitTimeInt::Output
@@ -957,6 +969,46 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
 
   return;
 } // CondifImplicitTimeInt::SolveStationaryProblem
+
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | update the velocity field                                   gjb 04/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void CondifImplicitTimeInt::SetVelocityField(int veltype, int velfuncno)
+{
+    if (veltype != cdvel_)
+        dserror("velocity field type does not match!");
+
+    if (veltype == 0) // zero
+        convel_->PutScalar(0); // just to be sure!
+    else if (veltype == 1)  // function
+    {
+    int numdim =3;
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+      for(int index=0;index<numdim;++index)
+      {
+        double value=DRT::UTILS::FunctionManager::Instance().Funct(velfuncno-1).Evaluate(index,lnode->X());
+        convel_->ReplaceMyValue (lnodeid, index, value);
+      }
+    }
+    }
+    else
+        dserror("error in setVelocityField");
+
+    return;
+
+} // CondifImplicitTimeInt::SetVelocityField
 
 
 /*----------------------------------------------------------------------*

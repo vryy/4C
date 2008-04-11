@@ -136,7 +136,12 @@ public:
 
   */
   void GenAlphaOutput();
+  
+  /*!
+  \brief update velocity field
 
+  */
+  void SetVelocityField(int veltype, int velfuncno);
 
   //@}
 
@@ -197,7 +202,7 @@ private:
   RefCountPtr<DRT::Discretization> discret_;
   LINALG::Solver&                  solver_;
   ParameterList&                   params_;
-  IO::DiscretizationWriter&            output_;
+  IO::DiscretizationWriter&        output_;
 
   // parallelism
   int                              myrank_;
@@ -213,6 +218,11 @@ private:
   double                           gamma_;
   double                           alphaM_;
   double                           alphaF_;
+
+  // velocity field type
+  int cdvel_;
+  /// actual convective velocity
+  RCP<Epetra_MultiVector>    convel_;
 
   // write restart every uprestart_ steps --- restartstep_ is
   // the counter used for this purpose

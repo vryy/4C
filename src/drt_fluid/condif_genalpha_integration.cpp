@@ -742,6 +742,7 @@ void CondifGenAlphaIntegration::GenAlphaOutput()
     output_.NewStep    (step_,time_);
 
     output_.WriteVector("phinp"   , phinp_);
+    output_.WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);
 
     // do restart if we have to
     if (restartstep_ == uprestart_)
@@ -762,10 +763,15 @@ void CondifGenAlphaIntegration::GenAlphaOutput()
     output_.NewStep    (step_,time_);
 
     output_.WriteVector("phinp",   phinp_);
+    output_.WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);
     output_.WriteVector("phin ",   phin_ );
     output_.WriteVector("phidtnp", phidtnp_);
     output_.WriteVector("phidtn ", phidtn_ );
   }
+
+#if 0  //DEBUG IO --- convective velocity
+convel_->Print(cout);
+#endif
 
   return;
 } // CondifGenAlphaIntegration::GenAlphaOutput
@@ -791,6 +797,45 @@ void CondifGenAlphaIntegration::ReadRestart(int step)
   reader.ReadVector(phidtnp_,"phidtnp");
   reader.ReadVector(phidtn_, "phidtn");
 }
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | update the velocity field                                   gjb 04/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void CondifGenAlphaIntegration::SetVelocityField(int veltype, int velfuncno)
+{
+    if (veltype != cdvel_)
+        dserror("velocity field type does not match!");
+
+    if (veltype == 0) // zero
+        convel_->PutScalar(0); // just to be sure!
+    else if (veltype == 1)  // function
+    {
+    int numdim =3;
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+      for(int index=0;index<numdim;++index)
+      {
+        double value=DRT::UTILS::FunctionManager::Instance().Funct(velfuncno-1).Evaluate(index,lnode->X());
+        convel_->ReplaceMyValue (lnodeid, index, value);
+      }
+    }
+    }
+    else
+        dserror("error in setVelocityField");
+
+    return;
+
+} // CondifGenAlphaIntegration::SetVelocityField
 
 
 #endif /* CCADISCRET       */

@@ -135,6 +135,12 @@ public:
   */
   void ReadRestart(int step);
 
+  /*!
+  \brief set the velocity field
+
+  */
+  void SetVelocityField(int veltype, int velfuncno);
+
 protected:
 
   // don't want = operator and cctor
@@ -196,6 +202,9 @@ protected:
   /// histvector --- a linear combination of phinm, phin (BDF)
   ///                or phin, phidtn (One-Step-Theta)
   RCP<Epetra_Vector>    hist_;
+
+  /// actual convective velocity
+  RCP<Epetra_MultiVector>    convel_;
 
   /// vm3 and avms solver
   RCP<VM3_Solver> vm3_solver_;
