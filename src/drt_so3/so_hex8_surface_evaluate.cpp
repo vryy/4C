@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15239
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -131,7 +131,9 @@ int DRT::ELEMENTS::Soh8Surface::EvaluateNeumann(ParameterList&           params,
         if (!ortho_value) dserror("no orthopressure value given!");
         vector<double> unrm(NUMDIM_SOH8);
         soh8_surface_integ(&funct,&drs,&unrm,&xscurr,gpcoord(gpid,0),gpcoord(gpid,1));
-        double fac = (-1.0) * gpweight * drs * curvefac;   // integration factor
+        //double fac = (-1.0) * gpweight * drs * curvefac;   // integration factor
+        // turned around the direction of the pressure to be consistent with wedge6 and shell8
+        double fac = gpweight * drs * curvefac;   // integration factor
         // distribute over element load vector
         for (int nodid=0; nodid < 4; ++nodid) {
           for(int dim=0; dim < NUMDIM_SOH8; ++dim) {
@@ -218,7 +220,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         Epetra_SerialDenseVector& elevector2,
         Epetra_SerialDenseVector& elevector3)
 {
-  const DiscretizationType distype = Shape();
+  const DiscretizationType distype = this->Shape();
 
   // start with "none"
   DRT::ELEMENTS::Soh8Surface::ActionType act = Soh8Surface::none;
@@ -242,9 +244,9 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
       case calc_struct_constrvol:
       {
         if (distype!=quad4)
-          dserror("Volume Constraint only works for quad4 surfaces!");
+          dserror("Volume Constraint online works for quad4 surfaces!");
         //We are not interested in volume of ghosted elements
-        if(Comm.MyPID()==Owner())
+        if(Comm.MyPID()==this->Owner())
         {
           // element geometry update
           RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -295,7 +297,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
       case calc_struct_volconstrstiff:
       {
         if (distype!=quad4)
-          dserror("Volume Constraint only works for quad4 surfaces!");
+          dserror("Volume Constraint online works for quad4 surfaces!");
         // element geometry update
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
@@ -315,10 +317,11 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
           xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
         }
         //call submethods
-        ComputeVolConstrStiff(xscurr,elematrix1);
-        ComputeVolConstrDeriv(xscurr,elevector1);
+        ComputeVolconstrStiff(xscurr,elematrix1);
+        ComputeVolconstrVolDeriv(xscurr,elevector1);
         //apply the right lagrange multiplier and right signs to matrix and vectors
         const int ID =params.get("ConditionID",-1);
+        int numID=params.get("NumberofID",0);
         RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
         if (ID<0)
         {
@@ -330,7 +333,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         elevector1.Scale(1*(*lambdav)[ID-minID]);
         elematrix1.Scale(1*(*lambdav)[ID-minID]);
         //call submethod for volume evaluation
-        if(Comm.MyPID()==Owner())
+        if(Comm.MyPID()==this->Owner())
         {
           double volumeele = ComputeConstrVols(xscurr);
           // get RIGHT volume out of parameterlist and maximum ConditionID
@@ -523,9 +526,9 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
       case calc_struct_monitarea:
         {
           if (distype!=quad4)
-            dserror("Area Constraint only works for quad4 surfaces!");
+            dserror("Area Constraint online works for quad4 surfaces!");
           //We are not interested in volume of ghosted elements
-          if(Comm.MyPID()==Owner())
+          if(Comm.MyPID()==this->Owner())
           {
             // element geometry update
             RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -642,16 +645,10 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
 
         }
         break;
-        case calc_struct_constrarea:
-        {
-          dserror("Element routines for area constraint in 3D not implemented yet!");
-        }
-        break;
         case calc_struct_areaconstrstiff:
         {
-          dserror("Element routines for area constraint in 3D not implemented yet!");
+          dserror("Element routines for area constraint not implemented yet!");
         }
-        break;
         default:
           dserror("Unimplemented type of action for Soh8Surface");
 
@@ -715,227 +712,226 @@ double DRT::ELEMENTS::Soh8Surface::ComputeConstrVols(Epetra_SerialDenseMatrix xc
  * Compute influence of volume constraint on stiffness matrix.  tk 10/07*
  * Second derivatives of volume with respect to the displacements       *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soh8Surface::ComputeVolConstrStiff(Epetra_SerialDenseMatrix xc,
+void DRT::ELEMENTS::Soh8Surface::ComputeVolconstrStiff(Epetra_SerialDenseMatrix xc,
     Epetra_SerialDenseMatrix& elematrix)
 {
   //Second derivatives of volume with respect to the displacements.
   //Only suitable for quad4 surfaces, since based on a symbolic calculation with mupad
-  elematrix(0,0) = 0.0 ;
-  elematrix(0,1) = 0.0 ;
-  elematrix(0,2) = xc(1,1)*(1.0/6.0) - xc(3,1)*(1.0/6.0) ;
-  elematrix(0,3) = 0.0 ;
-  elematrix(0,4) = xc(0,2)*(1.0/6.0) + xc(1,2)*(1.0/6.0) + xc(2,2)*(1.0/12.0) + xc(3,2)*(1.0/12.0) ;
-  elematrix(0,5) = xc(1,1)*(1.0/6.0) - xc(2,1)*(1.0/12.0) - xc(3,1)*(1.0/12.0) ;
-  elematrix(0,6) = 0.0 ;
-  elematrix(0,7) = xc(1,2)*(-1.0/12.0) + xc(3,2)*(1.0/12.0) ;
-  elematrix(0,8) = xc(1,1)*(1.0/12.0) - xc(3,1)*(1.0/12.0) ;
-  elematrix(0,9) = 0.0 ;
-  elematrix(0,10) = xc(0,2)*(-1.0/6.0) - xc(1,2)*(1.0/12.0) - xc(2,2)*(1.0/12.0) - xc(3,2)*(1.0/6.0) ;
-  elematrix(0,11) = xc(1,1)*(1.0/12.0) + xc(2,1)*(1.0/12.0) - xc(3,1)*(1.0/6.0) ;
+    elematrix(0,0) = 0.0 ;
+    elematrix(0,1) = 0.0 ;
+    elematrix(0,2) = xc(1,1)*(1.0/6.0) - xc(3,1)*(1.0/6.0) ;
+    elematrix(0,3) = 0.0 ;
+    elematrix(0,4) = xc(0,2)*(1.0/6.0) + xc(1,2)*(1.0/6.0) + xc(2,2)*(1.0/12.0) + xc(3,2)*(1.0/12.0) ;
+    elematrix(0,5) = xc(1,1)*(1.0/6.0) - xc(2,1)*(1.0/12.0) - xc(3,1)*(1.0/12.0) ;
+    elematrix(0,6) = 0.0 ;
+    elematrix(0,7) = xc(1,2)*(-1.0/12.0) + xc(3,2)*(1.0/12.0) ;
+    elematrix(0,8) = xc(1,1)*(1.0/12.0) - xc(3,1)*(1.0/12.0) ;
+    elematrix(0,9) = 0.0 ;
+    elematrix(0,10) = xc(0,2)*(-1.0/6.0) - xc(1,2)*(1.0/12.0) - xc(2,2)*(1.0/12.0) - xc(3,2)*(1.0/6.0) ;
+    elematrix(0,11) = xc(1,1)*(1.0/12.0) + xc(2,1)*(1.0/12.0) - xc(3,1)*(1.0/6.0) ;
 
-  elematrix(1,0) = 0.0 ;
-  elematrix(1,1) = 0.0 ;
-  elematrix(1,2) = xc(1,0)*(-1.0/6.0) + xc(3,0)*(1.0/6.0) ;
-  elematrix(1,3) = xc(0,2)*(-1.0/6.0) - xc(1,2)*(1.0/6.0) - xc(2,2)*(1.0/12.0) - xc(3,2)*(1.0/12.0) ;
-  elematrix(1,4) = 0.0 ;
-  elematrix(1,5) = xc(1,0)*(-1.0/6.0) + xc(2,0)*(1.0/12.0) + xc(3,0)*(1.0/12.0) ;
-  elematrix(1,6) = xc(1,2)*(1.0/12.0) - xc(3,2)*(1.0/12.0) ;
-  elematrix(1,7) = 0.0 ;
-  elematrix(1,8) = xc(1,0)*(-1.0/12.0) + xc(3,0)*(1.0/12.0) ;
-  elematrix(1,9) = xc(0,2)*(1.0/6.0) + xc(1,2)*(1.0/12.0) + xc(2,2)*(1.0/12.0) + xc(3,2)*(1.0/6.0) ;
-  elematrix(1,10) = 0.0 ;
-  elematrix(1,11) = xc(1,0)*(-1.0/12.0) - xc(2,0)*(1.0/12.0) + xc(3,0)*(1.0/6.0) ;
+    elematrix(1,0) = 0.0 ;
+    elematrix(1,1) = 0.0 ;
+    elematrix(1,2) = xc(1,0)*(-1.0/6.0) + xc(3,0)*(1.0/6.0) ;
+    elematrix(1,3) = xc(0,2)*(-1.0/6.0) - xc(1,2)*(1.0/6.0) - xc(2,2)*(1.0/12.0) - xc(3,2)*(1.0/12.0) ;
+    elematrix(1,4) = 0.0 ;
+    elematrix(1,5) = xc(1,0)*(-1.0/6.0) + xc(2,0)*(1.0/12.0) + xc(3,0)*(1.0/12.0) ;
+    elematrix(1,6) = xc(1,2)*(1.0/12.0) - xc(3,2)*(1.0/12.0) ;
+    elematrix(1,7) = 0.0 ;
+    elematrix(1,8) = xc(1,0)*(-1.0/12.0) + xc(3,0)*(1.0/12.0) ;
+    elematrix(1,9) = xc(0,2)*(1.0/6.0) + xc(1,2)*(1.0/12.0) + xc(2,2)*(1.0/12.0) + xc(3,2)*(1.0/6.0) ;
+    elematrix(1,10) = 0.0 ;
+    elematrix(1,11) = xc(1,0)*(-1.0/12.0) - xc(2,0)*(1.0/12.0) + xc(3,0)*(1.0/6.0) ;
 
-  elematrix(2,0) = xc(1,1)*(1.0/6.0) - xc(3,1)*(1.0/6.0) ;
-  elematrix(2,1) = xc(1,0)*(-1.0/6.0) + xc(3,0)*(1.0/6.0) ;
-  elematrix(2,2) = 0.0 ;
-  elematrix(2,3) = xc(0,1)*(-1.0/6.0) + xc(2,1)*(1.0/12.0) + xc(3,1)*(1.0/12.0) ;
-  elematrix(2,4) = xc(0,0)*(1.0/6.0) - xc(2,0)*(1.0/12.0) - xc(3,0)*(1.0/12.0) ;
-  elematrix(2,5) = 0.0 ;
-  elematrix(2,6) = xc(1,1)*(-1.0/12.0) + xc(3,1)*(1.0/12.0) ;
-  elematrix(2,7) = xc(1,0)*(1.0/12.0) - xc(3,0)*(1.0/12.0) ;
-  elematrix(2,8) = 0.0 ;
-  elematrix(2,9) = xc(0,1)*(1.0/6.0) - xc(1,1)*(1.0/12.0) - xc(2,1)*(1.0/12.0) ;
-  elematrix(2,10) = xc(0,0)*(-1.0/6.0) + xc(1,0)*(1.0/12.0) + xc(2,0)*(1.0/12.0) ;
-  elematrix(2,11) = 0.0 ;
+    elematrix(2,0) = xc(1,1)*(1.0/6.0) - xc(3,1)*(1.0/6.0) ;
+    elematrix(2,1) = xc(1,0)*(-1.0/6.0) + xc(3,0)*(1.0/6.0) ;
+    elematrix(2,2) = 0.0 ;
+    elematrix(2,3) = xc(0,1)*(-1.0/6.0) + xc(2,1)*(1.0/12.0) + xc(3,1)*(1.0/12.0) ;
+    elematrix(2,4) = xc(0,0)*(1.0/6.0) - xc(2,0)*(1.0/12.0) - xc(3,0)*(1.0/12.0) ;
+    elematrix(2,5) = 0.0 ;
+    elematrix(2,6) = xc(1,1)*(-1.0/12.0) + xc(3,1)*(1.0/12.0) ;
+    elematrix(2,7) = xc(1,0)*(1.0/12.0) - xc(3,0)*(1.0/12.0) ;
+    elematrix(2,8) = 0.0 ;
+    elematrix(2,9) = xc(0,1)*(1.0/6.0) - xc(1,1)*(1.0/12.0) - xc(2,1)*(1.0/12.0) ;
+    elematrix(2,10) = xc(0,0)*(-1.0/6.0) + xc(1,0)*(1.0/12.0) + xc(2,0)*(1.0/12.0) ;
+    elematrix(2,11) = 0.0 ;
 
-  elematrix(3,0) = 0.0 ;
-  elematrix(3,1) = xc(0,2)*(-1.0/6.0) - xc(1,2)*(1.0/6.0) - xc(2,2)*(1.0/12.0) - xc(3,2)*(1.0/12.0) ;
-  elematrix(3,2) = xc(0,1)*(-1.0/6.0) + xc(2,1)*(1.0/12.0) + xc(3,1)*(1.0/12.0) ;
-  elematrix(3,3) = 0.0 ;
-  elematrix(3,4) = 0.0 ;
-  elematrix(3,5) = xc(0,1)*(-1.0/6.0) + xc(2,1)*(1.0/6.0) ;
-  elematrix(3,6) = 0.0 ;
-  elematrix(3,7) = xc(0,2)*(1.0/12.0) + xc(1,2)*(1.0/6.0) + xc(2,2)*(1.0/6.0) + xc(3,2)*(1.0/12.0) ;
-  elematrix(3,8) = xc(0,1)*(-1.0/12.0) + xc(2,1)*(1.0/6.0) - xc(3,1)*(1.0/12.0) ;
-  elematrix(3,9) = 0.0 ;
-  elematrix(3,10) = xc(0,2)*(1.0/12.0) - xc(2,2)*(1.0/12.0) ;
-  elematrix(3,11) = xc(0,1)*(-1.0/12.0) + xc(2,1)*(1.0/12.0) ;
+    elematrix(3,0) = 0.0 ;
+    elematrix(3,1) = xc(0,2)*(-1.0/6.0) - xc(1,2)*(1.0/6.0) - xc(2,2)*(1.0/12.0) - xc(3,2)*(1.0/12.0) ;
+    elematrix(3,2) = xc(0,1)*(-1.0/6.0) + xc(2,1)*(1.0/12.0) + xc(3,1)*(1.0/12.0) ;
+    elematrix(3,3) = 0.0 ;
+    elematrix(3,4) = 0.0 ;
+    elematrix(3,5) = xc(0,1)*(-1.0/6.0) + xc(2,1)*(1.0/6.0) ;
+    elematrix(3,6) = 0.0 ;
+    elematrix(3,7) = xc(0,2)*(1.0/12.0) + xc(1,2)*(1.0/6.0) + xc(2,2)*(1.0/6.0) + xc(3,2)*(1.0/12.0) ;
+    elematrix(3,8) = xc(0,1)*(-1.0/12.0) + xc(2,1)*(1.0/6.0) - xc(3,1)*(1.0/12.0) ;
+    elematrix(3,9) = 0.0 ;
+    elematrix(3,10) = xc(0,2)*(1.0/12.0) - xc(2,2)*(1.0/12.0) ;
+    elematrix(3,11) = xc(0,1)*(-1.0/12.0) + xc(2,1)*(1.0/12.0) ;
 
-  elematrix(4,0) = xc(0,2)*(1.0/6.0) + xc(1,2)*(1.0/6.0) + xc(2,2)*(1.0/12.0) + xc(3,2)*(1.0/12.0) ;
-  elematrix(4,1) = 0.0 ;
-  elematrix(4,2) = xc(0,0)*(1.0/6.0) - xc(2,0)*(1.0/12.0) - xc(3,0)*(1.0/12.0) ;
-  elematrix(4,3) = 0.0 ;
-  elematrix(4,4) = 0.0 ;
-  elematrix(4,5) = xc(0,0)*(1.0/6.0) - xc(2,0)*(1.0/6.0) ;
-  elematrix(4,6) = xc(0,2)*(-1.0/12.0) - xc(1,2)*(1.0/6.0) - xc(2,2)*(1.0/6.0) - xc(3,2)*(1.0/12.0) ;
-  elematrix(4,7) = 0.0 ;
-  elematrix(4,8) = xc(0,0)*(1.0/12.0) - xc(2,0)*(1.0/6.0) + xc(3,0)*(1.0/12.0) ;
-  elematrix(4,9) = xc(0,2)*(-1.0/12.0) + xc(2,2)*(1.0/12.0) ;
-  elematrix(4,10) = 0.0 ;
-  elematrix(4,11) = xc(0,0)*(1.0/12.0) - xc(2,0)*(1.0/12.0) ;
+    elematrix(4,0) = xc(0,2)*(1.0/6.0) + xc(1,2)*(1.0/6.0) + xc(2,2)*(1.0/12.0) + xc(3,2)*(1.0/12.0) ;
+    elematrix(4,1) = 0.0 ;
+    elematrix(4,2) = xc(0,0)*(1.0/6.0) - xc(2,0)*(1.0/12.0) - xc(3,0)*(1.0/12.0) ;
+    elematrix(4,3) = 0.0 ;
+    elematrix(4,4) = 0.0 ;
+    elematrix(4,5) = xc(0,0)*(1.0/6.0) - xc(2,0)*(1.0/6.0) ;
+    elematrix(4,6) = xc(0,2)*(-1.0/12.0) - xc(1,2)*(1.0/6.0) - xc(2,2)*(1.0/6.0) - xc(3,2)*(1.0/12.0) ;
+    elematrix(4,7) = 0.0 ;
+    elematrix(4,8) = xc(0,0)*(1.0/12.0) - xc(2,0)*(1.0/6.0) + xc(3,0)*(1.0/12.0) ;
+    elematrix(4,9) = xc(0,2)*(-1.0/12.0) + xc(2,2)*(1.0/12.0) ;
+    elematrix(4,10) = 0.0 ;
+    elematrix(4,11) = xc(0,0)*(1.0/12.0) - xc(2,0)*(1.0/12.0) ;
 
-  elematrix(5,0) = xc(1,1)*(1.0/6.0) - xc(2,1)*(1.0/12.0) - xc(3,1)*(1.0/12.0) ;
-  elematrix(5,1) = xc(1,0)*(-1.0/6.0) + xc(2,0)*(1.0/12.0) + xc(3,0)*(1.0/12.0) ;
-  elematrix(5,2) = 0.0 ;
-  elematrix(5,3) = xc(0,1)*(-1.0/6.0) + xc(2,1)*(1.0/6.0) ;
-  elematrix(5,4) = xc(0,0)*(1.0/6.0) - xc(2,0)*(1.0/6.0) ;
-  elematrix(5,5) = 0.0 ;
-  elematrix(5,6) = xc(0,1)*(1.0/12.0) - xc(1,1)*(1.0/6.0) + xc(3,1)*(1.0/12.0) ;
-  elematrix(5,7) = xc(0,0)*(-1.0/12.0) + xc(1,0)*(1.0/6.0) - xc(3,0)*(1.0/12.0) ;
-  elematrix(5,8) = 0.0 ;
-  elematrix(5,9) = xc(0,1)*(1.0/12.0) - xc(2,1)*(1.0/12.0) ;
-  elematrix(5,10) = xc(0,0)*(-1.0/12.0) + xc(2,0)*(1.0/12.0) ;
-  elematrix(5,11) = 0.0 ;
+    elematrix(5,0) = xc(1,1)*(1.0/6.0) - xc(2,1)*(1.0/12.0) - xc(3,1)*(1.0/12.0) ;
+    elematrix(5,1) = xc(1,0)*(-1.0/6.0) + xc(2,0)*(1.0/12.0) + xc(3,0)*(1.0/12.0) ;
+    elematrix(5,2) = 0.0 ;
+    elematrix(5,3) = xc(0,1)*(-1.0/6.0) + xc(2,1)*(1.0/6.0) ;
+    elematrix(5,4) = xc(0,0)*(1.0/6.0) - xc(2,0)*(1.0/6.0) ;
+    elematrix(5,5) = 0.0 ;
+    elematrix(5,6) = xc(0,1)*(1.0/12.0) - xc(1,1)*(1.0/6.0) + xc(3,1)*(1.0/12.0) ;
+    elematrix(5,7) = xc(0,0)*(-1.0/12.0) + xc(1,0)*(1.0/6.0) - xc(3,0)*(1.0/12.0) ;
+    elematrix(5,8) = 0.0 ;
+    elematrix(5,9) = xc(0,1)*(1.0/12.0) - xc(2,1)*(1.0/12.0) ;
+    elematrix(5,10) = xc(0,0)*(-1.0/12.0) + xc(2,0)*(1.0/12.0) ;
+    elematrix(5,11) = 0.0 ;
 
-  elematrix(6,0) = 0.0 ;
-  elematrix(6,1) = xc(1,2)*(1.0/12.0) - xc(3,2)*(1.0/12.0) ;
-  elematrix(6,2) = xc(1,1)*(-1.0/12.0) + xc(3,1)*(1.0/12.0) ;
-  elematrix(6,3) = 0.0 ;
-  elematrix(6,4) = xc(0,2)*(-1.0/12.0) - xc(1,2)*(1.0/6.0) - xc(2,2)*(1.0/6.0) - xc(3,2)*(1.0/12.0) ;
-  elematrix(6,5) = xc(0,1)*(1.0/12.0) - xc(1,1)*(1.0/6.0) + xc(3,1)*(1.0/12.0) ;
-  elematrix(6,6) = 0.0 ;
-  elematrix(6,7) = 0.0 ;
-  elematrix(6,8) = xc(1,1)*(-1.0/6.0) + xc(3,1)*(1.0/6.0) ;
-  elematrix(6,9) = 0.0 ;
-  elematrix(6,10) = xc(0,2)*(1.0/12.0) + xc(1,2)*(1.0/12.0) + xc(2,2)*(1.0/6.0) + xc(3,2)*(1.0/6.0) ;
-  elematrix(6,11) = xc(0,1)*(-1.0/12.0) - xc(1,1)*(1.0/12.0) + xc(3,1)*(1.0/6.0) ;
+    elematrix(6,0) = 0.0 ;
+    elematrix(6,1) = xc(1,2)*(1.0/12.0) - xc(3,2)*(1.0/12.0) ;
+    elematrix(6,2) = xc(1,1)*(-1.0/12.0) + xc(3,1)*(1.0/12.0) ;
+    elematrix(6,3) = 0.0 ;
+    elematrix(6,4) = xc(0,2)*(-1.0/12.0) - xc(1,2)*(1.0/6.0) - xc(2,2)*(1.0/6.0) - xc(3,2)*(1.0/12.0) ;
+    elematrix(6,5) = xc(0,1)*(1.0/12.0) - xc(1,1)*(1.0/6.0) + xc(3,1)*(1.0/12.0) ;
+    elematrix(6,6) = 0.0 ;
+    elematrix(6,7) = 0.0 ;
+    elematrix(6,8) = xc(1,1)*(-1.0/6.0) + xc(3,1)*(1.0/6.0) ;
+    elematrix(6,9) = 0.0 ;
+    elematrix(6,10) = xc(0,2)*(1.0/12.0) + xc(1,2)*(1.0/12.0) + xc(2,2)*(1.0/6.0) + xc(3,2)*(1.0/6.0) ;
+    elematrix(6,11) = xc(0,1)*(-1.0/12.0) - xc(1,1)*(1.0/12.0) + xc(3,1)*(1.0/6.0) ;
 
-  elematrix(7,0) = xc(1,2)*(-1.0/12.0) + xc(3,2)*(1.0/12.0) ;
-  elematrix(7,1) = 0.0 ;
-  elematrix(7,2) = xc(1,0)*(1.0/12.0) - xc(3,0)*(1.0/12.0) ;
-  elematrix(7,3) = xc(0,2)*(1.0/12.0) + xc(1,2)*(1.0/6.0) + xc(2,2)*(1.0/6.0) + xc(3,2)*(1.0/12.0) ;
-  elematrix(7,4) = 0.0 ;
-  elematrix(7,5) = xc(0,0)*(-1.0/12.0) + xc(1,0)*(1.0/6.0) - xc(3,0)*(1.0/12.0) ;
-  elematrix(7,6) = 0.0 ;
-  elematrix(7,7) = 0.0 ;
-  elematrix(7,8) = xc(1,0)*(1.0/6.0) - xc(3,0)*(1.0/6.0) ;
-  elematrix(7,9) = xc(0,2)*(-1.0/12.0) - xc(1,2)*(1.0/12.0) - xc(2,2)*(1.0/6.0) - xc(3,2)*(1.0/6.0) ;
-  elematrix(7,10) = 0.0 ;
-  elematrix(7,11) = xc(0,0)*(1.0/12.0) + xc(1,0)*(1.0/12.0) - xc(3,0)*(1.0/6.0) ;
+    elematrix(7,0) = xc(1,2)*(-1.0/12.0) + xc(3,2)*(1.0/12.0) ;
+    elematrix(7,1) = 0.0 ;
+    elematrix(7,2) = xc(1,0)*(1.0/12.0) - xc(3,0)*(1.0/12.0) ;
+    elematrix(7,3) = xc(0,2)*(1.0/12.0) + xc(1,2)*(1.0/6.0) + xc(2,2)*(1.0/6.0) + xc(3,2)*(1.0/12.0) ;
+    elematrix(7,4) = 0.0 ;
+    elematrix(7,5) = xc(0,0)*(-1.0/12.0) + xc(1,0)*(1.0/6.0) - xc(3,0)*(1.0/12.0) ;
+    elematrix(7,6) = 0.0 ;
+    elematrix(7,7) = 0.0 ;
+    elematrix(7,8) = xc(1,0)*(1.0/6.0) - xc(3,0)*(1.0/6.0) ;
+    elematrix(7,9) = xc(0,2)*(-1.0/12.0) - xc(1,2)*(1.0/12.0) - xc(2,2)*(1.0/6.0) - xc(3,2)*(1.0/6.0) ;
+    elematrix(7,10) = 0.0 ;
+    elematrix(7,11) = xc(0,0)*(1.0/12.0) + xc(1,0)*(1.0/12.0) - xc(3,0)*(1.0/6.0) ;
 
-  elematrix(8,0) = xc(1,1)*(1.0/12.0) - xc(3,1)*(1.0/12.0) ;
-  elematrix(8,1) = xc(1,0)*(-1.0/12.0) + xc(3,0)*(1.0/12.0) ;
-  elematrix(8,2) = 0.0 ;
-  elematrix(8,3) = xc(0,1)*(-1.0/12.0) + xc(2,1)*(1.0/6.0) - xc(3,1)*(1.0/12.0) ;
-  elematrix(8,4) = xc(0,0)*(1.0/12.0) - xc(2,0)*(1.0/6.0) + xc(3,0)*(1.0/12.0) ;
-  elematrix(8,5) = 0.0 ;
-  elematrix(8,6) = xc(1,1)*(-1.0/6.0) + xc(3,1)*(1.0/6.0) ;
-  elematrix(8,7) = xc(1,0)*(1.0/6.0) - xc(3,0)*(1.0/6.0) ;
-  elematrix(8,8) = 0.0 ;
-  elematrix(8,9) = xc(0,1)*(1.0/12.0) + xc(1,1)*(1.0/12.0) - xc(2,1)*(1.0/6.0) ;
-  elematrix(8,10) = xc(0,0)*(-1.0/12.0) - xc(1,0)*(1.0/12.0) + xc(2,0)*(1.0/6.0) ;
-  elematrix(8,11) = 0.0 ;
+    elematrix(8,0) = xc(1,1)*(1.0/12.0) - xc(3,1)*(1.0/12.0) ;
+    elematrix(8,1) = xc(1,0)*(-1.0/12.0) + xc(3,0)*(1.0/12.0) ;
+    elematrix(8,2) = 0.0 ;
+    elematrix(8,3) = xc(0,1)*(-1.0/12.0) + xc(2,1)*(1.0/6.0) - xc(3,1)*(1.0/12.0) ;
+    elematrix(8,4) = xc(0,0)*(1.0/12.0) - xc(2,0)*(1.0/6.0) + xc(3,0)*(1.0/12.0) ;
+    elematrix(8,5) = 0.0 ;
+    elematrix(8,6) = xc(1,1)*(-1.0/6.0) + xc(3,1)*(1.0/6.0) ;
+    elematrix(8,7) = xc(1,0)*(1.0/6.0) - xc(3,0)*(1.0/6.0) ;
+    elematrix(8,8) = 0.0 ;
+    elematrix(8,9) = xc(0,1)*(1.0/12.0) + xc(1,1)*(1.0/12.0) - xc(2,1)*(1.0/6.0) ;
+    elematrix(8,10) = xc(0,0)*(-1.0/12.0) - xc(1,0)*(1.0/12.0) + xc(2,0)*(1.0/6.0) ;
+    elematrix(8,11) = 0.0 ;
 
-  elematrix(9,0) = 0.0 ;
-  elematrix(9,1) = xc(0,2)*(1.0/6.0) + xc(1,2)*(1.0/12.0) + xc(2,2)*(1.0/12.0) + xc(3,2)*(1.0/6.0) ;
-  elematrix(9,2) = xc(0,1)*(1.0/6.0) - xc(1,1)*(1.0/12.0) - xc(2,1)*(1.0/12.0) ;
-  elematrix(9,3) = 0.0 ;
-  elematrix(9,4) = xc(0,2)*(-1.0/12.0) + xc(2,2)*(1.0/12.0) ;
-  elematrix(9,5) = xc(0,1)*(1.0/12.0) - xc(2,1)*(1.0/12.0) ;
-  elematrix(9,6) = 0.0 ;
-  elematrix(9,7) = xc(0,2)*(-1.0/12.0) - xc(1,2)*(1.0/12.0) - xc(2,2)*(1.0/6.0) - xc(3,2)*(1.0/6.0) ;
-  elematrix(9,8) = xc(0,1)*(1.0/12.0) + xc(1,1)*(1.0/12.0) - xc(2,1)*(1.0/6.0) ;
-  elematrix(9,9) = 0.0 ;
-  elematrix(9,10) = 0.0 ;
-  elematrix(9,11) = xc(0,1)*(1.0/6.0) - xc(2,1)*(1.0/6.0) ;
+    elematrix(9,0) = 0.0 ;
+    elematrix(9,1) = xc(0,2)*(1.0/6.0) + xc(1,2)*(1.0/12.0) + xc(2,2)*(1.0/12.0) + xc(3,2)*(1.0/6.0) ;
+    elematrix(9,2) = xc(0,1)*(1.0/6.0) - xc(1,1)*(1.0/12.0) - xc(2,1)*(1.0/12.0) ;
+    elematrix(9,3) = 0.0 ;
+    elematrix(9,4) = xc(0,2)*(-1.0/12.0) + xc(2,2)*(1.0/12.0) ;
+    elematrix(9,5) = xc(0,1)*(1.0/12.0) - xc(2,1)*(1.0/12.0) ;
+    elematrix(9,6) = 0.0 ;
+    elematrix(9,7) = xc(0,2)*(-1.0/12.0) - xc(1,2)*(1.0/12.0) - xc(2,2)*(1.0/6.0) - xc(3,2)*(1.0/6.0) ;
+    elematrix(9,8) = xc(0,1)*(1.0/12.0) + xc(1,1)*(1.0/12.0) - xc(2,1)*(1.0/6.0) ;
+    elematrix(9,9) = 0.0 ;
+    elematrix(9,10) = 0.0 ;
+    elematrix(9,11) = xc(0,1)*(1.0/6.0) - xc(2,1)*(1.0/6.0) ;
 
-  elematrix(10,0) = xc(0,2)*(-1.0/6.0) - xc(1,2)*(1.0/12.0) - xc(2,2)*(1.0/12.0) - xc(3,2)*(1.0/6.0) ;
-  elematrix(10,1) = 0.0 ;
-  elematrix(10,2) = xc(0,0)*(-1.0/6.0) + xc(1,0)*(1.0/12.0) + xc(2,0)*(1.0/12.0) ;
-  elematrix(10,3) = xc(0,2)*(1.0/12.0) - xc(2,2)*(1.0/12.0) ;
-  elematrix(10,4) = 0.0 ;
-  elematrix(10,5) = xc(0,0)*(-1.0/12.0) + xc(2,0)*(1.0/12.0) ;
-  elematrix(10,6) = xc(0,2)*(1.0/12.0) + xc(1,2)*(1.0/12.0) + xc(2,2)*(1.0/6.0) + xc(3,2)*(1.0/6.0) ;
-  elematrix(10,7) = 0.0 ;
-  elematrix(10,8) = xc(0,0)*(-1.0/12.0) - xc(1,0)*(1.0/12.0) + xc(2,0)*(1.0/6.0) ;
-  elematrix(10,9) = 0.0 ;
-  elematrix(10,10) = 0.0 ;
-  elematrix(10,11) = xc(0,0)*(-1.0/6.0) + xc(2,0)*(1.0/6.0) ;
+    elematrix(10,0) = xc(0,2)*(-1.0/6.0) - xc(1,2)*(1.0/12.0) - xc(2,2)*(1.0/12.0) - xc(3,2)*(1.0/6.0) ;
+    elematrix(10,1) = 0.0 ;
+    elematrix(10,2) = xc(0,0)*(-1.0/6.0) + xc(1,0)*(1.0/12.0) + xc(2,0)*(1.0/12.0) ;
+    elematrix(10,3) = xc(0,2)*(1.0/12.0) - xc(2,2)*(1.0/12.0) ;
+    elematrix(10,4) = 0.0 ;
+    elematrix(10,5) = xc(0,0)*(-1.0/12.0) + xc(2,0)*(1.0/12.0) ;
+    elematrix(10,6) = xc(0,2)*(1.0/12.0) + xc(1,2)*(1.0/12.0) + xc(2,2)*(1.0/6.0) + xc(3,2)*(1.0/6.0) ;
+    elematrix(10,7) = 0.0 ;
+    elematrix(10,8) = xc(0,0)*(-1.0/12.0) - xc(1,0)*(1.0/12.0) + xc(2,0)*(1.0/6.0) ;
+    elematrix(10,9) = 0.0 ;
+    elematrix(10,10) = 0.0 ;
+    elematrix(10,11) = xc(0,0)*(-1.0/6.0) + xc(2,0)*(1.0/6.0) ;
 
-  elematrix(11,0) = xc(1,1)*(1.0/12.0) + xc(2,1)*(1.0/12.0) - xc(3,1)*(1.0/6.0) ;
-  elematrix(11,1) = xc(1,0)*(-1.0/12.0) - xc(2,0)*(1.0/12.0) + xc(3,0)*(1.0/6.0) ;
-  elematrix(11,2) = 0.0 ;
-  elematrix(11,3) = xc(0,1)*(-1.0/12.0) + xc(2,1)*(1.0/12.0) ;
-  elematrix(11,4) = xc(0,0)*(1.0/12.0) - xc(2,0)*(1.0/12.0) ;
-  elematrix(11,5) = 0.0 ;
-  elematrix(11,6) = xc(0,1)*(-1.0/12.0) - xc(1,1)*(1.0/12.0) + xc(3,1)*(1.0/6.0) ;
-  elematrix(11,7) = xc(0,0)*(1.0/12.0) + xc(1,0)*(1.0/12.0) - xc(3,0)*(1.0/6.0) ;
-  elematrix(11,8) = 0.0 ;
-  elematrix(11,9) = xc(0,1)*(1.0/6.0) - xc(2,1)*(1.0/6.0) ;
-  elematrix(11,10) = xc(0,0)*(-1.0/6.0) + xc(2,0)*(1.0/6.0) ;
-  elematrix(11,11) = 0.0 ;
+    elematrix(11,0) = xc(1,1)*(1.0/12.0) + xc(2,1)*(1.0/12.0) - xc(3,1)*(1.0/6.0) ;
+    elematrix(11,1) = xc(1,0)*(-1.0/12.0) - xc(2,0)*(1.0/12.0) + xc(3,0)*(1.0/6.0) ;
+    elematrix(11,2) = 0.0 ;
+    elematrix(11,3) = xc(0,1)*(-1.0/12.0) + xc(2,1)*(1.0/12.0) ;
+    elematrix(11,4) = xc(0,0)*(1.0/12.0) - xc(2,0)*(1.0/12.0) ;
+    elematrix(11,5) = 0.0 ;
+    elematrix(11,6) = xc(0,1)*(-1.0/12.0) - xc(1,1)*(1.0/12.0) + xc(3,1)*(1.0/6.0) ;
+    elematrix(11,7) = xc(0,0)*(1.0/12.0) + xc(1,0)*(1.0/12.0) - xc(3,0)*(1.0/6.0) ;
+    elematrix(11,8) = 0.0 ;
+    elematrix(11,9) = xc(0,1)*(1.0/6.0) - xc(2,1)*(1.0/6.0) ;
+    elematrix(11,10) = xc(0,0)*(-1.0/6.0) + xc(2,0)*(1.0/6.0) ;
+    elematrix(11,11) = 0.0 ;
 	return;
 }
 
 /*----------------------------------------------------------------------*
- * Compute first derivatives of volume                          tk 10/07*
+ * Compute derivative of volume                                 tk 10/07*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soh8Surface::ComputeVolConstrDeriv(Epetra_SerialDenseMatrix xc,
+void DRT::ELEMENTS::Soh8Surface::ComputeVolconstrVolDeriv(Epetra_SerialDenseMatrix xc,
     Epetra_SerialDenseVector& elevector)
 {
-      
   //implementation based on symbolic calculation with mupad
-  elevector[0] = (1.0/6.0)*xc(1,1)*xc(0,2) + (1.0/6.0)*xc(1,1)*xc(1,2) + (1.0/12.0)*xc(1,1)*xc(2,2) -
-    (1.0/6.0)*xc(0,2)*xc(3,1) - (1.0/12.0)*xc(2,1)*xc(1,2) + (1.0/12.0)*xc(1,1)*xc(3,2) -
-    (1.0/12.0)*xc(1,2)*xc(3,1) + (1.0/12.0)*xc(2,1)*xc(3,2) - (1.0/12.0)*xc(3,1)*xc(2,2) -
-    (1.0/6.0)*xc(3,1)*xc(3,2) ;
-  elevector[1] = (-1.0/6.0)*xc(1,0)*xc(0,2) - (1.0/6.0)*xc(1,0)*xc(1,2) - (1.0/12.0)*xc(1,0)*xc(2,2) +
-    (1.0/12.0)*xc(2,0)*xc(1,2) + (1.0/6.0)*xc(0,2)*xc(3,0) - (1.0/12.0)*xc(1,0)*xc(3,2) +
-    (1.0/12.0)*xc(3,0)*xc(1,2) - (1.0/12.0)*xc(2,0)*xc(3,2) + (1.0/12.0)*xc(3,0)*xc(2,2) +
-    (1.0/6.0)*xc(3,0)*xc(3,2) ;
-  elevector[2] = (1.0/6.0)*xc(0,0)*xc(1,1) - (1.0/6.0)*xc(1,0)*xc(0,1) - (1.0/6.0)*xc(0,0)*xc(3,1) +
-    (1.0/12.0)*xc(1,0)*xc(2,1) + (1.0/6.0)*xc(0,1)*xc(3,0) - (1.0/12.0)*xc(2,0)*xc(1,1) +
-    (1.0/12.0)*xc(1,0)*xc(3,1) - (1.0/12.0)*xc(1,1)*xc(3,0) + (1.0/12.0)*xc(2,0)*xc(3,1) -
-    (1.0/12.0)*xc(3,0)*xc(2,1) ;
-  elevector[3] = (-1.0/6.0)*xc(0,1)*xc(0,2) - (1.0/6.0)*xc(0,1)*xc(1,2) - (1.0/12.0)*xc(0,1)*xc(2,2) +
-    (1.0/12.0)*xc(0,2)*xc(2,1) - (1.0/12.0)*xc(0,1)*xc(3,2) + (1.0/12.0)*xc(0,2)*xc(3,1) +
-    (1.0/6.0)*xc(2,1)*xc(1,2) + (1.0/6.0)*xc(2,1)*xc(2,2) + (1.0/12.0)*xc(2,1)*xc(3,2) -
-    (1.0/12.0)*xc(3,1)*xc(2,2) ;
-  elevector[4] = (1.0/6.0)*xc(0,0)*xc(0,2) + (1.0/6.0)*xc(0,0)*xc(1,2) + (1.0/12.0)*xc(0,0)*xc(2,2) -
-    (1.0/12.0)*xc(2,0)*xc(0,2) + (1.0/12.0)*xc(0,0)*xc(3,2) - (1.0/6.0)*xc(2,0)*xc(1,2) -
-    (1.0/12.0)*xc(0,2)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(2,2) - (1.0/12.0)*xc(2,0)*xc(3,2) +
-    (1.0/12.0)*xc(3,0)*xc(2,2) ;
-  elevector[5] = (1.0/6.0)*xc(0,0)*xc(1,1) - (1.0/6.0)*xc(1,0)*xc(0,1) - (1.0/12.0)*xc(0,0)*xc(2,1) +
-    (1.0/12.0)*xc(0,1)*xc(2,0) - (1.0/12.0)*xc(0,0)*xc(3,1) + (1.0/6.0)*xc(1,0)*xc(2,1) +
-    (1.0/12.0)*xc(0,1)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(1,1) + (1.0/12.0)*xc(2,0)*xc(3,1) -
-    (1.0/12.0)*xc(3,0)*xc(2,1) ;
-  elevector[6] = (1.0/12.0)*xc(0,1)*xc(1,2) - (1.0/12.0)*xc(1,1)*xc(0,2) - (1.0/6.0)*xc(1,1)*xc(1,2) -
-    (1.0/12.0)*xc(0,1)*xc(3,2) - (1.0/6.0)*xc(1,1)*xc(2,2) + (1.0/12.0)*xc(0,2)*xc(3,1) -
-    (1.0/12.0)*xc(1,1)*xc(3,2) + (1.0/12.0)*xc(1,2)*xc(3,1) + (1.0/6.0)*xc(3,1)*xc(2,2) +
-    (1.0/6.0)*xc(3,1)*xc(3,2) ;
-  elevector[7] = (-1.0/12.0)*xc(0,0)*xc(1,2) + (1.0/12.0)*xc(1,0)*xc(0,2) + (1.0/6.0)*xc(1,0)*xc(1,2) +
-    (1.0/12.0)*xc(0,0)*xc(3,2) + (1.0/6.0)*xc(1,0)*xc(2,2) - (1.0/12.0)*xc(0,2)*xc(3,0) +
-    (1.0/12.0)*xc(1,0)*xc(3,2) - (1.0/12.0)*xc(3,0)*xc(1,2) - (1.0/6.0)*xc(3,0)*xc(2,2) -
-    (1.0/6.0)*xc(3,0)*xc(3,2) ;
-  elevector[8] = (1.0/12.0)*xc(0,0)*xc(1,1) - (1.0/12.0)*xc(1,0)*xc(0,1) - (1.0/12.0)*xc(0,0)*xc(3,1) +
-    (1.0/6.0)*xc(1,0)*xc(2,1) + (1.0/12.0)*xc(0,1)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(1,1) -
-    (1.0/12.0)*xc(1,0)*xc(3,1) + (1.0/12.0)*xc(1,1)*xc(3,0) + (1.0/6.0)*xc(2,0)*xc(3,1) -
-    (1.0/6.0)*xc(3,0)*xc(2,1) ;
-  elevector[9] = (1.0/6.0)*xc(0,1)*xc(0,2) + (1.0/12.0)*xc(0,1)*xc(1,2) - (1.0/12.0)*xc(1,1)*xc(0,2) +
-    (1.0/12.0)*xc(0,1)*xc(2,2) - (1.0/12.0)*xc(0,2)*xc(2,1) + (1.0/6.0)*xc(0,1)*xc(3,2) +
-    (1.0/12.0)*xc(1,1)*xc(2,2) - (1.0/12.0)*xc(2,1)*xc(1,2) - (1.0/6.0)*xc(2,1)*xc(2,2) -
-    (1.0/6.0)*xc(2,1)*xc(3,2) ;
-  elevector[10] = (-1.0/6.0)*xc(0,0)*xc(0,2) - (1.0/12.0)*xc(0,0)*xc(1,2) + (1.0/12.0)*xc(1,0)*xc(0,2) -
-    (1.0/12.0)*xc(0,0)*xc(2,2) + (1.0/12.0)*xc(2,0)*xc(0,2) - (1.0/6.0)*xc(0,0)*xc(3,2) -
-    (1.0/12.0)*xc(1,0)*xc(2,2) + (1.0/12.0)*xc(2,0)*xc(1,2) + (1.0/6.0)*xc(2,0)*xc(2,2) +
-    (1.0/6.0)*xc(2,0)*xc(3,2) ;
-  elevector[11] = (1.0/12.0)*xc(0,0)*xc(1,1) - (1.0/12.0)*xc(1,0)*xc(0,1) + (1.0/12.0)*xc(0,0)*xc(2,1) -
-    (1.0/12.0)*xc(0,1)*xc(2,0) - (1.0/6.0)*xc(0,0)*xc(3,1) + (1.0/12.0)*xc(1,0)*xc(2,1) +
-    (1.0/6.0)*xc(0,1)*xc(3,0) - (1.0/12.0)*xc(2,0)*xc(1,1) + (1.0/6.0)*xc(2,0)*xc(3,1) -
-    (1.0/6.0)*xc(3,0)*xc(2,1) ;
-  return;
+    elevector[0] = (1.0/6.0)*xc(1,1)*xc(0,2) + (1.0/6.0)*xc(1,1)*xc(1,2) + (1.0/12.0)*xc(1,1)*xc(2,2) -
+             (1.0/6.0)*xc(0,2)*xc(3,1) - (1.0/12.0)*xc(2,1)*xc(1,2) + (1.0/12.0)*xc(1,1)*xc(3,2) -
+             (1.0/12.0)*xc(1,2)*xc(3,1) + (1.0/12.0)*xc(2,1)*xc(3,2) - (1.0/12.0)*xc(3,1)*xc(2,2) -
+             (1.0/6.0)*xc(3,1)*xc(3,2) ;
+    elevector[1] = (-1.0/6.0)*xc(1,0)*xc(0,2) - (1.0/6.0)*xc(1,0)*xc(1,2) - (1.0/12.0)*xc(1,0)*xc(2,2) +
+             (1.0/12.0)*xc(2,0)*xc(1,2) + (1.0/6.0)*xc(0,2)*xc(3,0) - (1.0/12.0)*xc(1,0)*xc(3,2) +
+             (1.0/12.0)*xc(3,0)*xc(1,2) - (1.0/12.0)*xc(2,0)*xc(3,2) + (1.0/12.0)*xc(3,0)*xc(2,2) +
+             (1.0/6.0)*xc(3,0)*xc(3,2) ;
+    elevector[2] = (1.0/6.0)*xc(0,0)*xc(1,1) - (1.0/6.0)*xc(1,0)*xc(0,1) - (1.0/6.0)*xc(0,0)*xc(3,1) +
+             (1.0/12.0)*xc(1,0)*xc(2,1) + (1.0/6.0)*xc(0,1)*xc(3,0) - (1.0/12.0)*xc(2,0)*xc(1,1) +
+             (1.0/12.0)*xc(1,0)*xc(3,1) - (1.0/12.0)*xc(1,1)*xc(3,0) + (1.0/12.0)*xc(2,0)*xc(3,1) -
+             (1.0/12.0)*xc(3,0)*xc(2,1) ;
+    elevector[3] = (-1.0/6.0)*xc(0,1)*xc(0,2) - (1.0/6.0)*xc(0,1)*xc(1,2) - (1.0/12.0)*xc(0,1)*xc(2,2) +
+             (1.0/12.0)*xc(0,2)*xc(2,1) - (1.0/12.0)*xc(0,1)*xc(3,2) + (1.0/12.0)*xc(0,2)*xc(3,1) +
+             (1.0/6.0)*xc(2,1)*xc(1,2) + (1.0/6.0)*xc(2,1)*xc(2,2) + (1.0/12.0)*xc(2,1)*xc(3,2) -
+             (1.0/12.0)*xc(3,1)*xc(2,2) ;
+    elevector[4] = (1.0/6.0)*xc(0,0)*xc(0,2) + (1.0/6.0)*xc(0,0)*xc(1,2) + (1.0/12.0)*xc(0,0)*xc(2,2) -
+             (1.0/12.0)*xc(2,0)*xc(0,2) + (1.0/12.0)*xc(0,0)*xc(3,2) - (1.0/6.0)*xc(2,0)*xc(1,2) -
+             (1.0/12.0)*xc(0,2)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(2,2) - (1.0/12.0)*xc(2,0)*xc(3,2) +
+             (1.0/12.0)*xc(3,0)*xc(2,2) ;
+    elevector[5] = (1.0/6.0)*xc(0,0)*xc(1,1) - (1.0/6.0)*xc(1,0)*xc(0,1) - (1.0/12.0)*xc(0,0)*xc(2,1) +
+             (1.0/12.0)*xc(0,1)*xc(2,0) - (1.0/12.0)*xc(0,0)*xc(3,1) + (1.0/6.0)*xc(1,0)*xc(2,1) +
+             (1.0/12.0)*xc(0,1)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(1,1) + (1.0/12.0)*xc(2,0)*xc(3,1) -
+             (1.0/12.0)*xc(3,0)*xc(2,1) ;
+    elevector[6] = (1.0/12.0)*xc(0,1)*xc(1,2) - (1.0/12.0)*xc(1,1)*xc(0,2) - (1.0/6.0)*xc(1,1)*xc(1,2) -
+             (1.0/12.0)*xc(0,1)*xc(3,2) - (1.0/6.0)*xc(1,1)*xc(2,2) + (1.0/12.0)*xc(0,2)*xc(3,1) -
+             (1.0/12.0)*xc(1,1)*xc(3,2) + (1.0/12.0)*xc(1,2)*xc(3,1) + (1.0/6.0)*xc(3,1)*xc(2,2) +
+             (1.0/6.0)*xc(3,1)*xc(3,2) ;
+    elevector[7] = (-1.0/12.0)*xc(0,0)*xc(1,2) + (1.0/12.0)*xc(1,0)*xc(0,2) + (1.0/6.0)*xc(1,0)*xc(1,2) +
+             (1.0/12.0)*xc(0,0)*xc(3,2) + (1.0/6.0)*xc(1,0)*xc(2,2) - (1.0/12.0)*xc(0,2)*xc(3,0) +
+             (1.0/12.0)*xc(1,0)*xc(3,2) - (1.0/12.0)*xc(3,0)*xc(1,2) - (1.0/6.0)*xc(3,0)*xc(2,2) -
+             (1.0/6.0)*xc(3,0)*xc(3,2) ;
+    elevector[8] = (1.0/12.0)*xc(0,0)*xc(1,1) - (1.0/12.0)*xc(1,0)*xc(0,1) - (1.0/12.0)*xc(0,0)*xc(3,1) +
+             (1.0/6.0)*xc(1,0)*xc(2,1) + (1.0/12.0)*xc(0,1)*xc(3,0) - (1.0/6.0)*xc(2,0)*xc(1,1) -
+             (1.0/12.0)*xc(1,0)*xc(3,1) + (1.0/12.0)*xc(1,1)*xc(3,0) + (1.0/6.0)*xc(2,0)*xc(3,1) -
+             (1.0/6.0)*xc(3,0)*xc(2,1) ;
+    elevector[9] = (1.0/6.0)*xc(0,1)*xc(0,2) + (1.0/12.0)*xc(0,1)*xc(1,2) - (1.0/12.0)*xc(1,1)*xc(0,2) +
+             (1.0/12.0)*xc(0,1)*xc(2,2) - (1.0/12.0)*xc(0,2)*xc(2,1) + (1.0/6.0)*xc(0,1)*xc(3,2) +
+             (1.0/12.0)*xc(1,1)*xc(2,2) - (1.0/12.0)*xc(2,1)*xc(1,2) - (1.0/6.0)*xc(2,1)*xc(2,2) -
+             (1.0/6.0)*xc(2,1)*xc(3,2) ;
+    elevector[10] = (-1.0/6.0)*xc(0,0)*xc(0,2) - (1.0/12.0)*xc(0,0)*xc(1,2) + (1.0/12.0)*xc(1,0)*xc(0,2) -
+            (1.0/12.0)*xc(0,0)*xc(2,2) + (1.0/12.0)*xc(2,0)*xc(0,2) - (1.0/6.0)*xc(0,0)*xc(3,2) -
+            (1.0/12.0)*xc(1,0)*xc(2,2) + (1.0/12.0)*xc(2,0)*xc(1,2) + (1.0/6.0)*xc(2,0)*xc(2,2) +
+            (1.0/6.0)*xc(2,0)*xc(3,2) ;
+    elevector[11] = (1.0/12.0)*xc(0,0)*xc(1,1) - (1.0/12.0)*xc(1,0)*xc(0,1) + (1.0/12.0)*xc(0,0)*xc(2,1) -
+            (1.0/12.0)*xc(0,1)*xc(2,0) - (1.0/6.0)*xc(0,0)*xc(3,1) + (1.0/12.0)*xc(1,0)*xc(2,1) +
+            (1.0/6.0)*xc(0,1)*xc(3,0) - (1.0/12.0)*xc(2,0)*xc(1,1) + (1.0/6.0)*xc(2,0)*xc(3,1) -
+            (1.0/6.0)*xc(3,0)*xc(2,1) ;
+    return;
 }
 
 #endif  // #ifdef CCADISCRET
