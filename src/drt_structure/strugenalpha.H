@@ -48,7 +48,7 @@ Maintainer: Michael Gee
 #endif
 //#define STRUGENALPHA_BE  /* enable backward Euler with alpham=0,alphaf=0,beta=1/2,delta=1,gamma=1 */
 //#define STRUGENALPHA_FINTLIKETR  /* enable TR-like mid-internal force vector F_{int}*/
-                                 /* TR-like mid-point internal force: 
+                                 /* TR-like mid-point internal force:
                                   *    F_{int,m} = (1-alpha_f)*F_{int,n+1} + alpha_f*F_{int,n}
                                   *              = (1-alpha_f)*F_{int}(D_{n+1}) + alpha_f*F_{int}(D_n)
                                   * in contrast to the IMR-like mid-point internal force (default)
@@ -423,6 +423,12 @@ protected:
   RefCountPtr<ConstrManager>   constrMan_;
 
   RefCountPtr<DRT::SurfStressManager>   surf_stress_man_;
+
+  // For a relative convergence check, reference norms have to be
+  // calculated. We need to know whether we are in the first step
+  // of a simulation (either step=0 or step=genprob.restart) in
+  // order to determine these norms at the right time.
+  bool firststep_;
 
   // stuff needed to use NOX as nonlinear solver
   RefCountPtr<NLNML::NLNML_FineLevelNoxInterface> fineinterface_;

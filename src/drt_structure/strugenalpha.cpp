@@ -207,6 +207,8 @@ maxentriesperrow_(81)
   //------------------------------------------------------ time step index
   step = 0;
   params_.set<int>("step",step);
+
+  firststep_ = true;
   return;
 } // StruGenAlpha::StruGenAlpha
 
@@ -222,7 +224,6 @@ void StruGenAlpha::ConstantPredictor()
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
   double mdamp       = params_.get<double>("damping factor M",0.0);
-  int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
@@ -231,7 +232,7 @@ void StruGenAlpha::ConstantPredictor()
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
-  if (step != 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
+  if (!firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -359,10 +360,12 @@ void StruGenAlpha::ConstantPredictor()
 
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
-  // is desired and we are in the first time step
-  if (step == 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
+  // is desired and we are in the first time step (possibly after a
+  // restart)
+  if (firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
+    firststep_=false;
   }
 
   if (printscreen)
@@ -398,7 +401,6 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
   double mdamp       = params_.get<double>("damping factor M",0.0);
-  int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
@@ -407,7 +409,7 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
-  if (step != 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
+  if (!firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -529,10 +531,12 @@ void StruGenAlpha::MatrixFreeConstantPredictor()
 
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
-  // is desired and we are in the first time step
-  if (step == 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
+  // is desired and we are in the first time step (possibly after a
+  // restart)
+  if (firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
+    firststep_=false;
   }
 
   if (printscreen)
@@ -557,7 +561,6 @@ void StruGenAlpha::ConsistentPredictor()
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
   double mdamp       = params_.get<double>("damping factor M",0.0);
-  int    step        = params_.get<int>   ("step"           ,0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   double alpham      = params_.get<double>("alpha m"        ,0.378);
@@ -572,7 +575,7 @@ void StruGenAlpha::ConsistentPredictor()
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
-  if (step != 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
+  if (!firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -775,10 +778,12 @@ void StruGenAlpha::ConsistentPredictor()
 
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
-  // is desired and we are in the first time step
-  if (step == 0 and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
+  // is desired and we are in the first time step (possibly after a
+  // restart)
+  if (firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
+    firststep_=false;
   }
 
   if (printscreen)
@@ -1417,7 +1422,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
   if (!damp_->Filled()) dserror("damping matrix must be filled here");
-  
+
   //=================================================== equilibrium loop
   constrMan_->ScaleLagrMult(0.0);
   constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
@@ -3089,7 +3094,7 @@ void StruGenAlpha::UpdateandOutput()
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
-    p.set("action","calc_struct_update_istep"); 
+    p.set("action","calc_struct_update_istep");
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -3101,7 +3106,7 @@ void StruGenAlpha::UpdateandOutput()
     ParameterList p;
     // action for elements
     //p.set("action","calc_struct_update_istep");
-    p.set("action","calc_struct_update_genalpha_imrlike"); 
+    p.set("action","calc_struct_update_genalpha_imrlike");
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -3139,11 +3144,11 @@ void StruGenAlpha::UpdateandOutput()
       output_.WriteVector("conquot", con);
     }
 
-    if (constrMan_->HaveConstraint()) 
+    if (constrMan_->HaveConstraint())
     {
       output_.WriteDouble("uzawaparameter",constrMan_->GetUzawaParameter());
     }
-    
+
     if (discret_.Comm().MyPID()==0 and printscreen)
     {
       cout << "====== Restart written in step " << istep << endl;
@@ -3494,13 +3499,13 @@ void StruGenAlpha::ReadRestart(int step)
     reader.ReadVector(con_quot, "conquot");
     surf_stress_man_->SetHistory(A_old,con_quot);
   }
-  
+
   if (constrMan_->HaveConstraint())
   {
     double uzawatemp = reader.ReadDouble("uzawaparameter");
     constrMan_->SetUzawaParameter(uzawatemp);
   }
-  
+
   return;
 }
 
@@ -3564,24 +3569,26 @@ bool StruGenAlpha::Converged(const string type, const double disinorm,
   else if (type == "RelRes_Or_AbsDis")
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
-    return (disinorm<toldisp or (resnorm/ref_fnorm_)<tolres);
+    return (disinorm<toldisp or ((resnorm/ref_fnorm_)<tolres or resnorm<tolres));
   }
   else if (type == "RelRes_And_AbsDis")
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
-    return (disinorm<toldisp and (resnorm/ref_fnorm_)<tolres);
+    return (disinorm<toldisp and ((resnorm/ref_fnorm_)<tolres or resnorm<tolres));
   }
   else if (type == "RelRes_Or_RelDis")
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
     if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
-    return ((disinorm/ref_disnorm_)<toldisp or (resnorm/ref_fnorm_)<tolres);
+    return (((disinorm/ref_disnorm_)<toldisp or disinorm<toldisp) or
+            ((resnorm/ref_fnorm_)<tolres or resnorm<tolres));
   }
   else if (type == "RelRes_And_RelDis")
   {
     if (ref_fnorm_ == 0.) ref_fnorm_ = 1.0;
     if (ref_disnorm_ == 0.) ref_disnorm_ = 1.0;
-    return ((disinorm/ref_disnorm_)<toldisp and (resnorm/ref_fnorm_)<tolres);
+    return (((disinorm/ref_disnorm_)<toldisp or disinorm<toldisp) and
+            ((resnorm/ref_fnorm_)<tolres or resnorm<tolres));
   }
   else
   {
