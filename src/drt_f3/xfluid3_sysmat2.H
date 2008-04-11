@@ -451,8 +451,8 @@ BlitzMat gder2(
 
 //! calculate element normal in gausspoint (r,s)
 BlitzVec computeNormalToBoundaryElement(
-        const BlitzMat& deriv,                  ///< shape functions derivative
-        const BlitzMat& xs                      ///< element nodal coordinates in x space
+        const BlitzMat& deriv,                  ///< shape functions derivative in (r,s)
+        const BlitzMat& xs                      ///< boundary element nodal coordinates in (x,y,z) space
         )
 {
     // init blitz indices
