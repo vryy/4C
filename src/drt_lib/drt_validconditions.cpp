@@ -534,7 +534,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(volumemonitor);
 
   /*--------------------------------------------------------------------*/
-  // area constraint
+  // area monitor 3D
 
   Teuchos::RCP<ConditionDefinition> areamonitor =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE AREA MONITOR 3D",
@@ -552,6 +552,41 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(areamonitor);
 
+  /*--------------------------------------------------------------------*/
+  // area constraint
+
+  Teuchos::RCP<ConditionDefinition> areaconstraint2D =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE AREA CONSTRAINT 2D",
+                                         "AreaConstraint_2D",
+                                         "Line Area Constraint",
+                                         DRT::Condition::AreaConstraint_2D,
+                                         true,
+                                         DRT::Condition::Line));
+
+  areaconstraint2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  areaconstraint2D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+
+  condlist.push_back(areaconstraint2D);
+  
+  /*--------------------------------------------------------------------*/
+  // area monitor 2D
+
+  Teuchos::RCP<ConditionDefinition> areamonitor2D =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE AREA MONITOR 2D",
+                                         "AreaMonitor_2D",
+                                         "Line Area Monitor",
+                                         DRT::Condition::AreaMonitor_2D,
+                                         true,
+                                         DRT::Condition::Line));
+
+  areamonitor2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  areamonitor2D->AddComponent(Teuchos::rcp(new StringConditionComponent("projection","none",
+    Teuchos::tuple<std::string>("none","x","y"),
+    Teuchos::tuple<std::string>("none","x","y"),
+    true)));
+
+  condlist.push_back(areamonitor2D);
+  
   /*--------------------------------------------------------------------*/
   // Impedance condition
 

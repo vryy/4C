@@ -89,8 +89,10 @@ public:
     SurfLIFTDRAG,
     VolumeConstraint_3D,
     AreaConstraint_3D,
+    AreaConstraint_2D,
     VolumeMonitor_3D,
     AreaMonitor_3D,
+    AreaMonitor_2D,
     ImpedanceCond
   };
 
