@@ -439,7 +439,7 @@ void DRT::ELEMENTS::SoDispRegister::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
- |  init the element (public)                                mwgee 12/06|
+ |  init the element (public)                                      12/06|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::SoDispRegister::Initialize(DRT::Discretization& dis)
 {
