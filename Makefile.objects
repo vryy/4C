@@ -164,6 +164,7 @@ OBJS_DRT_CONTACT_LIB = \
 OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/fluid_dyn_nln_drt.o \
                 src/drt_fluid/xfluid_dyn_nln_drt.o \
+                src/drt_fluid/time_integration_scheme.o \
                 src/drt_fluid/condif_drt.o \
                 src/drt_fluid/fluidimplicitintegration.o \
                 src/drt_fluid/xfluidimplicitintegration.o \

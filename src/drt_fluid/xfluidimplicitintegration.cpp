@@ -24,6 +24,7 @@ Maintainer: Axel Gerstenberger
 #include <stdio.h>
 
 #include "xfluidimplicitintegration.H"
+#include "time_integration_scheme.H"
 
 #include "../drt_lib/linalg_ana.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
