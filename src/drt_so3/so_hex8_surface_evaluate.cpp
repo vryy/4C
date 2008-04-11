@@ -218,7 +218,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         Epetra_SerialDenseVector& elevector2,
         Epetra_SerialDenseVector& elevector3)
 {
-  const DiscretizationType distype = this->Shape();
+  const DiscretizationType distype = Shape();
 
   // start with "none"
   DRT::ELEMENTS::Soh8Surface::ActionType act = Soh8Surface::none;
@@ -244,7 +244,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         if (distype!=quad4)
           dserror("Volume Constraint only works for quad4 surfaces!");
         //We are not interested in volume of ghosted elements
-        if(Comm.MyPID()==this->Owner())
+        if(Comm.MyPID()==Owner())
         {
           // element geometry update
           RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -319,7 +319,6 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         ComputeVolconstrVolDeriv(xscurr,elevector1);
         //apply the right lagrange multiplier and right signs to matrix and vectors
         const int ID =params.get("ConditionID",-1);
-        int numID=params.get("NumberofID",0);
         RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
         if (ID<0)
         {
@@ -331,7 +330,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         elevector1.Scale(1*(*lambdav)[ID-minID]);
         elematrix1.Scale(1*(*lambdav)[ID-minID]);
         //call submethod for volume evaluation
-        if(Comm.MyPID()==this->Owner())
+        if(Comm.MyPID()==Owner())
         {
           double volumeele = ComputeConstrVols(xscurr);
           // get RIGHT volume out of parameterlist and maximum ConditionID
@@ -526,7 +525,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
           if (distype!=quad4)
             dserror("Area Constraint only works for quad4 surfaces!");
           //We are not interested in volume of ghosted elements
-          if(Comm.MyPID()==this->Owner())
+          if(Comm.MyPID()==Owner())
           {
             // element geometry update
             RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
