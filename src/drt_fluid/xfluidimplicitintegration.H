@@ -90,7 +90,7 @@ public:
   \brief Destructor
 
   */
-  ~XFluidImplicitTimeInt();
+  virtual ~XFluidImplicitTimeInt();
 
 
   /*!
