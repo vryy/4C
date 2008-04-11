@@ -6,7 +6,7 @@
 <pre>
 Maintainer: Thomas Kloeppel
             kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/kloeppel
             089 - 289-15257
 </pre>
 
@@ -28,7 +28,8 @@ actdisc_(discr)
 {          
   //Check, what kind of constraining boundary conditions there are
   numConstrID_=0;
-  haveareaconstr_=false;
+  haveareaconstr3D_=false;
+  haveareaconstr2D_=false;
   havevolconstr_=false;
   //Check for volume constraints
   vector<DRT::Condition*> constrcond(0);
@@ -47,13 +48,13 @@ actdisc_(discr)
   }
   // Check for Area Constraints in 3D
   actdisc_.GetCondition("AreaConstraint_3D",constrcond);
-  //Deal with area constraints
+  //Deal with area constraints in 3D
   if (constrcond.size())
   {
     p.set("action","calc_struct_constrarea");
     actdisc_.SetState("displacement",disp);
     actdisc_.EvaluateCondition(p,"AreaConstraint_3D");
-    haveareaconstr_=true;
+    haveareaconstr3D_=true;
   }
   // Check for Area Constraints in 2D
   actdisc_.GetCondition("AreaConstraint_2D",constrcond);
@@ -63,12 +64,12 @@ actdisc_(discr)
     p.set("action","calc_struct_constrarea");
     actdisc_.SetState("displacement",disp);
     actdisc_.EvaluateCondition(p,"AreaConstraint_2D");
-    haveareaconstr_=true;
+    haveareaconstr2D_=true;
   }
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
-  haveconstraint_= haveareaconstr_||havevolconstr_;
+  haveconstraint_= haveareaconstr3D_||havevolconstr_||haveareaconstr2D_;
   if (haveconstraint_)
   {
     uzawaparam_=params.get<double>("uzawa parameter",1);
@@ -97,7 +98,8 @@ actdisc_(discr)
     fact_=rcp(new Epetra_Vector(*constrmap_));
   } 
   havevolmonitor_=false;
-  haveareamonitor_=false;
+  haveareamonitor3D_=false;
+  haveareamonitor2D_=false;
   //Check for Volume Monitors
   actdisc_.GetCondition("VolumeMonitor_3D",constrcond);
   ParameterList p1;
@@ -116,22 +118,22 @@ actdisc_(discr)
     p1.set("action","calc_struct_monitarea");
     actdisc_.SetState("displacement",disp);
     actdisc_.EvaluateCondition(p1,"AreaMonitor_3D");
-    haveareamonitor_=true;
+    haveareamonitor3D_=true;
   }
   // Check for Area Monitor in 2D
   actdisc_.GetCondition("AreaMonitor_2D",constrcond);
   //Deal with area Monitors
   if (constrcond.size())
   {
-    p1.set("action","calc_struct_monitarea");
+    p1.set("action","calc_struct_constrarea");
     actdisc_.SetState("displacement",disp);
     actdisc_.EvaluateCondition(p1,"AreaMonitor_2D");
-    haveareamonitor_=true;
+    haveareamonitor2D_=true;
   }  
   //----------------------------------------------------
   //--------------include possible further monitors here
   //---------------------------------------------------- 
-  havemonitor_= haveareamonitor_||havevolmonitor_;
+  havemonitor_= haveareamonitor3D_||havevolmonitor_||haveareamonitor2D_;
   if (havemonitor_)
   {
     ManageIDs(p1,minMonitorID_,maxMonitorID_,numMonitorID_);
@@ -191,7 +193,7 @@ void ConstrManager::StiffnessAndInternalForces(
     SynchronizeSumConstraint(p,actvalues_,"computed volume",numConstrID_,minConstrID_);
   }
   //Deal with area constraints in 3D
-  if (haveareaconstr_)
+  if (haveareaconstr3D_)
   {
     //Evaluate volume at predicted ENDpoint D_{n+1}
     // action for elements
@@ -219,7 +221,7 @@ void ConstrManager::StiffnessAndInternalForces(
     SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
   }
   //Deal with area constraints in 2D
-  if (haveareaconstr_)
+  if (haveareaconstr2D_)
   {
     //Evaluate volume at predicted ENDpoint D_{n+1}
     // action for elements
@@ -275,18 +277,18 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
         actdisc_.EvaluateCondition(p,"VolumeConstraint_3D");
         SynchronizeSumConstraint(p, actvalues_,"computed volume",numConstrID_,minConstrID_);
     }
-    if(haveareaconstr_)
+    if(haveareaconstr3D_)
     {
         p.set("action","calc_struct_constrarea");
         actdisc_.EvaluateCondition(p,"AreaConstraint_3D");
         SynchronizeSumConstraint(p, actvalues_,"computed area",numConstrID_,minConstrID_);
     }
-    if(haveareaconstr_)
-        {
-            p.set("action","calc_struct_constrarea");
-            actdisc_.EvaluateCondition(p,"AreaConstraint_3D");
-            SynchronizeSumConstraint(p, actvalues_,"computed area",numConstrID_,minConstrID_);
-        }
+    if(haveareaconstr2D_)
+    {
+      p.set("action","calc_struct_constrarea");
+      actdisc_.EvaluateCondition(p,"AreaConstraint_2D");
+      SynchronizeSumConstraint(p, actvalues_,"computed area",numConstrID_,minConstrID_);
+    }
     constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
     return;
 }
@@ -361,10 +363,16 @@ void ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
     actdisc_.EvaluateCondition(p,"VolumeMonitor_3D");
     SynchronizeSumConstraint(p, monitorvalues_,"computed volume",numMonitorID_,minMonitorID_);
   }
-  if(haveareamonitor_)
+  if(haveareamonitor3D_)
   {
     p.set("action","calc_struct_monitarea");
     actdisc_.EvaluateCondition(p,"AreaMonitor_3D");
+    SynchronizeSumConstraint(p, monitorvalues_,"computed area",numMonitorID_,minMonitorID_);
+  }
+  if(haveareamonitor2D_)
+  {
+    p.set("action","calc_struct_constrarea");
+    actdisc_.EvaluateCondition(p,"AreaMonitor_2D");
     SynchronizeSumConstraint(p, monitorvalues_,"computed area",numMonitorID_,minMonitorID_);
   }
   return;

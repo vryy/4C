@@ -565,7 +565,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   areaconstraint2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   areaconstraint2D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-
   condlist.push_back(areaconstraint2D);
   
   /*--------------------------------------------------------------------*/
@@ -580,11 +579,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Line));
 
   areamonitor2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  areamonitor2D->AddComponent(Teuchos::rcp(new StringConditionComponent("projection","none",
-    Teuchos::tuple<std::string>("none","x","y"),
-    Teuchos::tuple<std::string>("none","x","y"),
-    true)));
-
   condlist.push_back(areamonitor2D);
   
   /*--------------------------------------------------------------------*/

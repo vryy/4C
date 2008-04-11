@@ -314,9 +314,11 @@ private:
     RCP<LINALG::SparseMatrix> constrMatrix_;
     bool haveconstraint_;
     bool havevolconstr_;
-    bool haveareaconstr_;
+    bool haveareaconstr3D_;
+    bool haveareaconstr2D_;
     bool havemonitor_;
-    bool haveareamonitor_;
+    bool haveareamonitor3D_;
+    bool haveareamonitor2D_;
     bool havevolmonitor_;
     double uzawaparam_;
     //@}
