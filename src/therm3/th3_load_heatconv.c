@@ -10,6 +10,7 @@ Maintainer: Burkhard Bornemann
             089-289-15237
 </pre>
 */
+#ifndef CCADISCRET
 #ifdef D_THERM3
 
 /*----------------------------------------------------------------------*/
@@ -307,3 +308,4 @@ void th3_load_heatconv_fct(INT ifct,
 /*======================================================================*/
 #endif  /*end of #ifdef D_THERM3 */
 /*! @} (documentation module close)*/
+#endif
