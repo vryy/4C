@@ -24,12 +24,8 @@ Maintainer: Axel Gerstenberger
 #include <stdio.h>
 
 #include "time_integration_scheme.H"
-
 #include "../drt_lib/linalg_ana.H"
 
-#include "../drt_xfem/dof_management.H"
-#include "fluid_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  | set part of the residual vector belonging to the old timestep        |

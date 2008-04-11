@@ -31,20 +31,9 @@ Maintainer: Axel Gerstenberger
 #endif /* PARALLEL */
 
 #include "Teuchos_RefCountPtr.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/linalg_solver.H"
-#include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
-
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
-
 
 using namespace std;
 using namespace Teuchos;
@@ -73,6 +62,17 @@ namespace TIMEINT_THETA_BDF2
   /*!
   \brief Set the part of the righthandside belonging to the last
          timestep.
+         
+   set part of the rhs vector belonging to the old timestep
+  
+           One-step-Theta:
+  
+                   hist_ = veln_ + dta*(1-Theta)*accn_
+  
+  
+           BDF2: for constant time step:
+  
+                   hist_ = 4/3 veln_ - 1/3 velnm_
   */
   void SetOldPartOfRighthandside(
           RCP<Epetra_Vector>&         veln,
