@@ -522,18 +522,15 @@ Epetra_SerialDenseVector DRT::ELEMENTS::Condif2::condif2_getbodyforce(
       }
       
       // set this condition to the edeadng array
-      for(int jnode=0;jnode<iel;jnode++)
+      for(int inode=0;inode<iel;inode++)
       {
-        Nodes()[jnode]->GetCondition("SurfaceNeumann",myneumcond);
+        Nodes()[inode]->GetCondition("SurfaceNeumann",myneumcond);
 
         // get values and switches from the condition
         const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
         const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
 
-        for(int isd=0;isd<nsd;isd++)
-        {
-          edeadng(isd,jnode)=(*onoff)[isd]*(*val)[isd]*curvefac;
-        }
+          edeadng(inode)=(*onoff)[0]*(*val)[0]*curvefac;
       }
     }
     else
@@ -541,10 +538,7 @@ Epetra_SerialDenseVector DRT::ELEMENTS::Condif2::condif2_getbodyforce(
         // we have no dead load
         for(int inode=0;inode<iel;inode++)
         {
-          for(int isd=0;isd<nsd;isd++)
-          {
-            edeadng(isd,inode)=0.0;
-          }
+          edeadng(inode)=0.0;
         }
      }
   return edeadng;
