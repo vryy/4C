@@ -273,7 +273,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter("OUTPUT_GID","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("OUTPUT_BIN","No","",yesnotuple,yesnovalue,&io);
 
-  setStringToIntegralParameter("STRUCT_DISP","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter("STRUCT_DISP","Yes","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("STRUCT_STRESS","No","",
                                tuple<std::string>("No","no","NO",
                                                   "Yes","yes","YES",
@@ -288,7 +288,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter("STRUCT_STRAIN","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("STRUCT_SM_DISP","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("STRUCT_SM_STRESS","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter("FLUID_SOL","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter("FLUID_SOL","Yes","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("FLUID_STRESS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("FLUID_VIS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter("ALE_DISP","No","",yesnotuple,yesnovalue,&io);
