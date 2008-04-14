@@ -160,28 +160,18 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
 
-#define USESIMPLEBLOCKMATRIX
-
-#ifdef USESIMPLEBLOCKMATRIX
   if (not params_.get<int>("Simple Preconditioner",0))
-#endif
   {
     // initialize standard (stabilized) system matrix
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
   }
-#ifdef USESIMPLEBLOCKMATRIX
   else
   {
-#if 1
     Teuchos::RCP<LINALG::BlockSparseMatrix<VelPressSplitStrategy> > blocksysmat =
       Teuchos::rcp(new LINALG::BlockSparseMatrix<VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
     blocksysmat->SetNumdim(numdim);
     sysmat_ = blocksysmat;
-#else
-    sysmat_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(velpressplitter_,velpressplitter_,108,false,true));
-#endif
   }
-#endif
 
   // -------------------------------------------------------------------
   // create empty vectors
