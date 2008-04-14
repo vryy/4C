@@ -93,7 +93,7 @@ int DRT::ELEMENTS::Sotet4Surface::EvaluateNeumann(ParameterList&           param
   ** Here, we integrate a 6-node surface with 3 Gauss Points
   */
   double fac = tri3_int.weights[0] * detJ * curvefac;   // integration factor
-
+  dserror("3 gauss points times 0.5 * g_1 \times g_2 correct?");
   // gauss parameters
   for (int gpid = 0; gpid < NUMGPT_SOTET4_FACE; gpid++) {    // loop over intergration points
     // get shape functions and derivatives of element surface
