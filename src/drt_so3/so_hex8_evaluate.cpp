@@ -423,15 +423,15 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element
   Epetra_SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);  // current  coord. of element
   for (int i=0; i<NUMNOD_SOH8; ++i){
-  	#if 0 //NODE TRANSLATION AROUND ZERO TO GAIN ACCURACY
+#if 0 //NODE TRANSLATION AROUND ZERO TO GAIN ACCURACY
     xrefe(i,0) = Nodes()[i]->X()[0]-Nodes()[0]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1]-Nodes()[0]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2]-Nodes()[0]->X()[2];
-	  #else
-	  xrefe(i,0) = Nodes()[i]->X()[0];
+#else
+    xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
-    #endif
+#endif
 
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
