@@ -964,10 +964,14 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
   kteffnew->Add(*nmatrix_,false,1.0,1.0);
 
   // add submatrices with tangents to kteffnew, if existing
+#ifndef CONTACTSTICKING
   if (tkanmod!=null) kteffnew->Add(*tkanmod,false,1.0,1.0);
   if (tkammod!=null) kteffnew->Add(*tkammod,false,1.0,1.0);
   if (tkaimod!=null) kteffnew->Add(*tkaimod,false,1.0,1.0);
   if (tkaamod!=null) kteffnew->Add(*tkaamod,false,1.0,1.0);
+#else
+  if (tmatrix_!=null) kteffnew->Add(*tmatrix_,false,1.0,1.0);
+#endif // #ifndef CONTACTSTICKING
   
   // FillComplete kteffnew (square)
   kteffnew->Complete();
@@ -984,7 +988,11 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
   RCP<Epetra_Vector> tfamodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
   if (fimod!=null) LINALG::Export(*fimod,*fimodexp);
   if (tfamod!=null) LINALG::Export(*tfamod,*tfamodexp);
+#ifndef CONTACTSTICKING
   feffnew->Update(1.0,*fimodexp,1.0,*tfamodexp,1.0);
+#else
+  feffnew->Update(1.0,*fimodexp,0.0,*tfamodexp,1.0);
+#endif // #ifndef CONTACTSTICKING
   
   // add weighted gap vector to feffnew, if existing
   RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
@@ -1068,9 +1076,12 @@ void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
 #ifdef DEBUG
   //debugging (check for z_i = 0)
   RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,*gactivedofs_);
-  RCP<Epetra_Vector> zinactive = rcp(new Epetra_Vector(*gidofs));
-  LINALG::Export(*z_,*zinactive);
-  cout << *zinactive << endl;
+  if (gidofs->NumGlobalElements())
+  {
+    RCP<Epetra_Vector> zinactive = rcp(new Epetra_Vector(*gidofs));
+    LINALG::Export(*z_,*zinactive);
+    cout << *zinactive << endl;
+  }
   
   // debugging (check for N*[d_a] = g_a and T*z_a = 0)
   if (gactivedofs_->NumGlobalElements())
@@ -1086,6 +1097,7 @@ void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
     LINALG::Export(*z_,*zactive);
     tmatrix_->Multiply(false,*zactive,*zerotest);
     cout << *zerotest << endl;
+    cout << *zactive << endl;
   }
 #endif // #ifdef DEBUG
   // CHECK OF CONTACT BOUNDARY CONDITIONS---------------------------------
@@ -1175,8 +1187,8 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
         //if (nz<0) // no averaging of Lagrange multipliers
         if ((0.5*nz+0.5*nzold)<0) // averaging of Lagrange multipliers
         {
-          cnode->Active() = false;
-          activesetconv_ = false;
+          cnode->Active() = false; //set to true for mesh tying
+          activesetconv_ = false;  //set to true for mesh tying
         }
         
         cout << "ACTIVE: " << i << " " << j << " " << gid << " "

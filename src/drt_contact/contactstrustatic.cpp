@@ -442,7 +442,10 @@ void contact_stru_static_drt(bool initialcontact)
         Epetra_Vector fccopy(*fc);
         fc->Multiply(1.0,*invtoggle,fccopy,0.0);
         if (fc!=null) fresm->Update(1.0,*fc,1.0);
-                
+         
+        //for (int k=0;k<fint->MyLength();++k)
+        //  cout << (*fint)[k] << " " << -(*fextn)[k] << " " << (*fc)[k] << endl;
+        
         // blank residual DOFs which are on Dirichlet BC
         {
           Epetra_Vector fresmcopy(*fresm);
