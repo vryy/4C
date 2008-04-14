@@ -246,6 +246,20 @@ public:
 //        return unique_enrichments_;
 //    }
     
+    void fillDofDistributionMap(
+            map<DofKey<onNode>, DofPos>&   NodalDofDistributionMap
+            ) const;
+    
+    RCP<Epetra_Vector> mapVectorToNewDofDistribution(
+            const RCP<XFEM::InterfaceHandle>     ih,
+            const Epetra_Map*                    olddofrowmap,
+            const Epetra_Map*                    newdofrowmap,
+            const map<DofKey<onNode>, DofPos>&   oldNodalDofDistrib,
+            const map<DofKey<onNode>, DofPos>&   newNodalDofDistrib,
+            const RCP<Epetra_Vector>             oldVector
+            ) const;
+    
+    
 private:
     //! pointer to the xfem discretization of which we hold the unknowns
     RCP<DRT::Discretization> xfemdis_;

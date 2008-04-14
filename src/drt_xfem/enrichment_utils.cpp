@@ -28,7 +28,7 @@ Maintainer: Axel Gerstenberger
 using namespace XFEM;
 
 
-static std::map<XFEM::Enrichment, double> computeEnrvalMap(
+std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(
         const RCP<XFEM::InterfaceHandle>      ih,
         const std::set<XFEM::Enrichment>&     enrset,
         const BlitzVec&                       actpos,

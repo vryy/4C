@@ -92,6 +92,7 @@ public:
   */
   virtual ~XFluidImplicitTimeInt();
 
+
   /*!
   \brief start time loop for startingalgo, normal problems and restarts
 
@@ -256,8 +257,8 @@ public:
   //@}
   void FlowRateCalculation();
   void OutflowBoundary();
-  std::complex<double> LungImpedance(int, int, std::complex<double>,std::complex<double>, std::complex<double> []);
-  std::complex<double> DCLungImpedance(int, int, std::complex<double>, std::complex<double> []);
+  std::complex<double> LungImpedance(int, int, std::complex<double> &,std::complex<double>, std::complex<double> []);
+  std::complex<double> DCLungImpedance(int, int, std::complex<double> &, std::complex<double> []);
 
 protected:
 
@@ -321,6 +322,8 @@ protected:
   /// fine-scale subgrid-viscosity flag
   string fssgv_;
 
+  map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos >    dofDistributionMap_;
+  
   /// (standard) system matrix
   RCP<LINALG::SparseOperator> sysmat_;
 

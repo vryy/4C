@@ -30,6 +30,14 @@ using namespace Teuchos;
 namespace XFEM
 {
 
+
+std::map<XFEM::Enrichment, double> computeEnrvalMap(
+        const RCP<XFEM::InterfaceHandle>      ih,
+        const std::set<XFEM::Enrichment>&     enrset,
+        const BlitzVec&                       actpos,
+        const XFEM::Enrichment::ApproachFrom  approachdirection
+        );
+
 /*!
  * \brief For a given situation compute the enriched shape functions
  * 

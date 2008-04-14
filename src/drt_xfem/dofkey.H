@@ -21,6 +21,9 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
+//! Position in 
+typedef int DofPos; 
+
 /*!
  \brief Allows to distuingish between nodal and elemental dofs
  */
