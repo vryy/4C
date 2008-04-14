@@ -133,7 +133,8 @@ int DRT::ELEMENTS::Soh8Surface::EvaluateNeumann(ParameterList&           params,
         soh8_surface_integ(&funct,&drs,&unrm,&xscurr,gpcoord(gpid,0),gpcoord(gpid,1));
         //double fac = (-1.0) * gpweight * drs * curvefac;   // integration factor
         // turned around the direction of the pressure to be consistent with wedge6 and shell8
-        double fac = gpweight * drs * curvefac;   // integration factor
+        // the area drs already is contained in unrm
+        double fac = gpweight * curvefac;   
         // distribute over element load vector
         for (int nodid=0; nodid < 4; ++nodid) {
           for(int dim=0; dim < NUMDIM_SOH8; ++dim) {
