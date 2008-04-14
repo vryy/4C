@@ -295,16 +295,6 @@ void DRT::ELEMENTS::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
     //double fac = intpoints.qwgt[gpid] *dr * thsl;
     const double fac = intpoints.qwgt[gpid] *dr;
 
-    // determine coordinates of current Gauss point
-    double coordgp[2];
-    coordgp[0]=0.0;
-    coordgp[0]=0.0;
-    for (int i = 0; i< iel; i++)
-      {
-       coordgp[0]+=xye(0,i)*funct[i];
-       coordgp[1]+=xye(1,i)*funct[i];
-      }
-
     for (int node=0;node<iel;++node)
       {
        for(int dim=0;dim<3;dim++)
