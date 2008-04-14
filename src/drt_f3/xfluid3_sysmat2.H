@@ -1353,7 +1353,7 @@ void static Sysmat(
             // Hellinger-Reissner terms
             if (tauele_unknowns_present)
             {
-                const double reciproke_visc = 1.0 / visc;
+                //const double reciproke_visc = 1.0 / visc;
                 /* viscous stress-viscous stress coupling, quadratic part */
                 /*
                                /                    \
