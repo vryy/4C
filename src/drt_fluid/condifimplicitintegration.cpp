@@ -510,7 +510,12 @@ void CondifImplicitTimeInt::Solve(
     eleparams.set("condif velocity field",cdvel_);
     eleparams.set("fs subgrid diffusivity",fssgd_);
     eleparams.set("using stationary formulation",is_stat);
-    eleparams.set("velocity field",convel_);
+
+    //provide velocity field (export to column map necessary for parallel evaluation)
+    const Epetra_Map* nodecolmap = discret_->NodeColMap();
+    RefCountPtr<Epetra_MultiVector> tmp = rcp(new Epetra_MultiVector(*nodecolmap,3));
+    LINALG::Export(*convel_,*tmp);
+    eleparams.set("velocity field",tmp);
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -775,6 +780,10 @@ void CondifImplicitTimeInt::Output()
       output_.WriteVector("phinp", phinp_);
       output_.WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);
       //output_.WriteVector("residual", residual_);
+
+      // write domain decomposition for visualization (only once!)
+      if (step_==upres_)
+       output_.WriteElementData();
 
       if (restartstep_ == uprestart_) //add restart data
       {

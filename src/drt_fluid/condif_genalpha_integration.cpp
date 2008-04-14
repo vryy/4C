@@ -744,6 +744,10 @@ void CondifGenAlphaIntegration::GenAlphaOutput()
     output_.WriteVector("phinp"   , phinp_);
     output_.WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);
 
+    // write domain decomposition for visualization (only once!)
+    if (step_==upres_)
+     output_.WriteElementData();
+
     // do restart if we have to
     if (restartstep_ == uprestart_)
     {

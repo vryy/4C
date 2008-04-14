@@ -84,6 +84,7 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList& params,
       }
 
       // get velocity values at the nodes (3rd component of velocity field is ignored!)
+      // compare also with DRT::UTILS::ExtractMyValues()
       const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
       const int iel = NumNode();
       const int nsd=2;
@@ -95,9 +96,10 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList& params,
           // loop over the nodes
           for (int j=0;j<iel;j++)
           {
-              DRT::Node* mynode = Nodes()[j];
-              int gid = mynode->Id();
-              evel(i+(nsd*j))=velcolumn[gid];
+              const int nodegid = (Nodes()[j])->Id();
+              const int lid = velocity->Map().LID(nodegid);
+              evel(i+(nsd*j))=velcolumn[lid];
+              //cout<< "node gid: "<<gid<<"velocity component: "<<velcolumn[gid]<<endl;
           }
       }
 
