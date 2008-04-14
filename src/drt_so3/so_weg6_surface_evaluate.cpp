@@ -159,7 +159,9 @@ int DRT::ELEMENTS::Sow6Surface::EvaluateNeumann(ParameterList&           params,
     
         // values are multiplied by the product from inf. area element,
         // the gauss weight, the timecurve factor
-        const double fac = intpoints.qwgt[gpid] * drs * curvefac * ortho_value * (-1.0);
+        //const double fac = intpoints.qwgt[gpid] * drs * curvefac * ortho_value * (-1.0);
+        // detA is contained in unrm (what is detA in a triangle?)
+        const double fac = intpoints.qwgt[gpid] * curvefac * ortho_value * (-1.0);
     
         for (int node=0; node < numnode; ++node)
         {
