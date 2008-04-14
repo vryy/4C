@@ -559,17 +559,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                &fdyn);
 
-  setStringToIntegralParameter("CD_VELOCITY","Navier_Stokes","",
+  setStringToIntegralParameter("CD_VELOCITY","zero",
+                               "type of velocity field used for convection-diffusion problems",
                                tuple<std::string>(
-                                 "Navier_Stokes",
-                                 "straight",
-                                 "30_degree",
-                                 "60_degree",
-                                 "min60_degree",
-                                 "zero"
+                                 "zero",
+                                 "function",
+                                 "Navier_Stokes"
                                  ),
-                               tuple<int>(0,1,2,3,4,5),
+                               tuple<int>(0,1,2),
                                &fdyn);
+
+  IntParameter("CD_VELFUNCNO",1,"function number for con-dif velocity field",&fdyn);
 
   setStringToIntegralParameter("FSSUGRVISC","No","fine-scale subgrid diffusivity/viscosity",
                                tuple<std::string>(
