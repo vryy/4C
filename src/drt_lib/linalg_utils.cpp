@@ -1126,14 +1126,20 @@ Teuchos::RCP<Epetra_Map> LINALG::SplitMap(const Epetra_Map& Amap,
  | merge two given maps to one map                            popp 01/08|
  *----------------------------------------------------------------------*/
 RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
-                                 const Epetra_Map& map2)
+                                 const Epetra_Map& map2,
+                                 bool overlap)
 {
   // check for unique GIDs and for identity
   if ((!map1.UniqueGIDs()) || (!map2.UniqueGIDs()))
     dserror("LINALG::MergeMap: One or both input maps are not unique");
   if (map1.SameAs(map2))
-    return rcp(new Epetra_Map(map1));
-
+  {
+    if ((overlap==false) && map1.NumGlobalElements()>0)
+      dserror("LINALG::MergeMap: Result map is overlapping");
+    else
+      return rcp(new Epetra_Map(map1));
+  }
+  
   vector<int> mygids(map1.NumMyElements()+map2.NumMyElements());
   int count = map1.NumMyElements();
 
@@ -1143,11 +1149,19 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
 
   // add GIDs of input map2 (only new ones)
   for (int i=0;i<map2.NumMyElements();++i)
-    if (!map1.MyGID(map2.GID(i)))
+  {
+    // check for overlap
+    if (map1.MyGID(map2.GID(i)))
+    {
+      if (overlap==false) dserror("LINALG::MergeMap: Result map is overlapping");
+    }
+    // add new GIDs to mygids
+    else
     {
       mygids[count]=map2.GID(i);
       ++count;
     }
+  }
   mygids.resize(count);
 
 	// sort merged map
@@ -1160,7 +1174,8 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
  | merge two given maps to one map                            popp 01/08|
  *----------------------------------------------------------------------*/
 RCP<Epetra_Map> LINALG::MergeMap(const RCP<Epetra_Map>& map1,
-                                 const RCP<Epetra_Map>& map2)
+                                 const RCP<Epetra_Map>& map2,
+                                 bool overlap)
 {
   // check for cases with null RCPs
   if (map1==null && map2==null)
@@ -1171,7 +1186,7 @@ RCP<Epetra_Map> LINALG::MergeMap(const RCP<Epetra_Map>& map1,
     return rcp(new Epetra_Map(*map1));
 
   // wrapped call to non-RCP version of MergeMap
-  return LINALG::MergeMap(*map1,*map2);
+  return LINALG::MergeMap(*map1,*map2,overlap);
 }
 
 /*----------------------------------------------------------------------*

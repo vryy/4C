@@ -373,13 +373,14 @@ isincontact_(false)
   gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_,*gmdofrowmap_);
   
   // initialize active sets of all interfaces
+  // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
   {
     interface_[i]->InitializeActiveSet(initialcontact);
-    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes());
-    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs());
-    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs());
-    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs());
+    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
+    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
+    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
+    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
   }
     
   // setup Lagrange muliplier vectors
@@ -473,13 +474,14 @@ void CONTACT::Manager::ReadRestart(const RCP<Epetra_Vector> activetoggle)
   }
   
   // update active sets of all interfaces
+  // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
   {
     interface_[i]->BuildActiveSet();
-    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes());
-    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs());
-    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs());;
-    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs());;
+    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
+    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
+    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
+    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
   }
   
   // update flag for global contact status
@@ -644,7 +646,8 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
   RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
   
   // we also need the combined sm rowmap
-  RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_);
+  // (this map is NOT allowed to have an overlap !!!)
+  RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
   
   // some temporary RCPs
   RCP<Epetra_Map> tempmap;
@@ -1220,13 +1223,14 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
   gactivet_ = null;
   
   // update active sets of all interfaces
+  // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
   {
     interface_[i]->BuildActiveSet();
-    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes());
-    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs());
-    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs());
-    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs());
+    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
+    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
+    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
+    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
   }
   
   // CHECK FOR ZIG-ZAGGING / JAMMING OF THE ACTIVE SET
