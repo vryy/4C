@@ -279,6 +279,7 @@ int DRT::ELEMENTS::So_weg6::EvaluateNeumann(ParameterList& params,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
+  dserror("Body force of wedge6 not implemented");
   return 0;
 }
 
