@@ -43,7 +43,7 @@ RESEVRYSTRS  1
 RESTARTEVRY  20
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     0.0001  
-NUMSTEP      3200  
+NUMSTEP      10  
 MAXTIME      5.0
 BETA         0.291
 GAMMA        0.581
@@ -239,7 +239,7 @@ ML_DAMPMED                      0.67                            // damping med g
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
 ---------------------------------------------------------------STRUCT SOLVER
-SOLVER                          Superlu                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         CG                              // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                              // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -10051,6 +10051,9 @@ CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.00  1.60 FACTOR 0.0 1613
 ---------------------------------------------------------------------LOCSYS3
 ---------------------------------------------------------------------LOCSYS4
 ---------------------------------------------------------------------LOCSYS5
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 2238 POSITION dispx NAME ux VALUE  2.521740653256748571e-04 TOLERANCE 1e-10
+STRUCTURE DIS 1 NODE 1403 POSITION dispz NAME uz VALUE  1.825326151509139660e-06 TOLERANCE 1e-10
 ------------------------------------------------------------------MONITORING
 -------------------------------------------------------------------------END
 // END
