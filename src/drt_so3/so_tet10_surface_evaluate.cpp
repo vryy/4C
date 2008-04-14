@@ -97,6 +97,7 @@ int DRT::ELEMENTS::Sotet10Surface::EvaluateNeumann(ParameterList&           para
   /*
   ** Here, we integrate a 6-node surface with 3 Gauss Points
   */
+  dserror("Is this load correct?: 3 gauss points * 0.5 * g_1 x g2 ???");
   double fac = (*weights)(0) * detJ * curvefac;   // integration factor
 
   // gauss parameters
