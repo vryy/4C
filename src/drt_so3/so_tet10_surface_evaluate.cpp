@@ -32,6 +32,8 @@ int DRT::ELEMENTS::Sotet10Surface::EvaluateNeumann(ParameterList&           para
                                                 vector<int>&             lm,
                                                 Epetra_SerialDenseVector& elevec1)
 {
+  dserror("Do you really want live load?");
+  
   //cout << "DRT::ELEMENTS::Sotet10Surface::EvaluateNeumann" << endl;
   //getchar();
  
@@ -77,6 +79,7 @@ int DRT::ELEMENTS::Sotet10Surface::EvaluateNeumann(ParameterList&           para
    * the area is then |A x B| 
    */
   
+  dserror("This is a quadratic surface, so you can't do this:");
   A(0)=xsrefe(1,0)-xsrefe(0,0);
   A(1)=xsrefe(1,1)-xsrefe(0,1);
   A(2)=xsrefe(1,2)-xsrefe(0,2);
@@ -93,6 +96,7 @@ int DRT::ELEMENTS::Sotet10Surface::EvaluateNeumann(ParameterList&           para
   
   /* detJ = |A x B|*/
   double detJ= C.Norm2()/2;
+  
 
   /*
   ** Here, we integrate a 6-node surface with 3 Gauss Points

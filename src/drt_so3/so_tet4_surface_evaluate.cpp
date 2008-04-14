@@ -32,6 +32,8 @@ int DRT::ELEMENTS::Sotet4Surface::EvaluateNeumann(ParameterList&           param
                                                 vector<int>&             lm,
                                                 Epetra_SerialDenseVector& elevec1)
 {
+  dserror("Do you want live load or something else?");
+  
   // get values and switches from the condition
   static const DRT::ELEMENTS::Integrator_tri3_1point tri3_int;
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
@@ -100,7 +102,7 @@ int DRT::ELEMENTS::Sotet4Surface::EvaluateNeumann(ParameterList&           param
     // distribute over element load vector
     for (int nodid=0; nodid < NUMNOD_SOTET4_FACE; nodid++) {
       for(int dim=0; dim < NUMDIM_SOTET4; dim++) {
-        elevec1[nodid*NUMDIM_SOTET4 + dim] +=\
+        elevec1[nodid*NUMDIM_SOTET4 + dim] +=
         	tri3_int.shapefct_gp[gpid](nodid) * (*onoff)[dim] * (*val)[dim] * fac;
       }
     }
