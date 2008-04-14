@@ -27,12 +27,12 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Vector.h>
 
 #include "fsi_coupling.H"
-
+#include "../drt_lib/linalg_mapextractor.H"
 
 namespace FSI
 {
 
-  /// a copy of NOX::StatusTest::NormF works on a vector part only
+  /// a copy of NOX::StatusTest::NormF that works on a vector part only
   /*!
 
     This is a copy of NOX::StatusTest::NormF that allows subclasses to
@@ -173,52 +173,96 @@ namespace FSI
   };
 
 
-#if 0
-
-  /// Norm of combined fluid-structure interface dofs
-  /*!
-
-    At the FSI interface the residual norm of the sum of fluid and
-    structural residual is required to vanish.
-
-    \author u.kue
-    \date 11/07
-   */
-  class InterfaceNormF : public GenericNormF
+  /// Copy of NOX::StatusTest::NormUpdate
+  class GenericNormUpdate : public NOX::StatusTest::Generic
   {
   public:
 
-    InterfaceNormF(double structfac,
-                   const Epetra_Map &structblockmap,
-                   const Epetra_Map &structinterfacemap,
-                   double fluidfac,
-                   const Epetra_Map &fluidblockmap,
-                   const Epetra_Map &fluidinterfacemap,
-                   const FSI::Coupling& coupsf,
-                   double tolerance,
-                   ScaleType stype = Scaled);
+    //! Type that determines whether to scale the norm by the problem size.
+    enum ScaleType {
+      //! No norm scaling
+      Unscaled,
+      //! Scale the norm by the length of the vector
+      Scaled
+    };
+
+    //! Constructor for absolute norm.
+    /*! This constructor defaults to the \c Absolute tolerance type. */
+    GenericNormUpdate(double tolerance, NOX::Abstract::Vector::NormType ntype, ScaleType stype = Scaled);
+
+    //! Constructor for absolute norm
+    /*! This constructor defaults to the \c Absolute ToleranceType and \c TWO NormType. */
+    GenericNormUpdate(double tolerance, ScaleType stype = Scaled);
+
+    //! Destructor.
+    virtual ~GenericNormUpdate();
+
+    virtual NOX::StatusTest::StatusType
+    checkStatus(const NOX::Solver::Generic& problem,
+                NOX::StatusTest::CheckType checkType);
+
+    virtual NOX::StatusTest::StatusType getStatus() const;
+
+    virtual ostream& print(ostream& stream, int indent = 0) const;
+
+    /* @name Accessor Functions
+       Used to query current values of variables in the status test.
+    */
+    //@{
+
+    //! Returns the value of the Update-norm computed in the last call to checkStatus.
+    virtual double getNormUpdate() const;
+
+    //! Returns the true tolerance.
+    virtual double getTolerance() const;
+
+    //@}
 
   protected:
 
-    double computeNorm(const NOX::Abstract::Group& grp);
+    /// compute the norm of a given vector
+    virtual double computeNorm(const Epetra_Vector& v);
 
   private:
 
-    double structfac_;
-    double fluidfac_;
+    //! %Status
+    NOX::StatusTest::StatusType status_;
 
-    const Epetra_Map &structblockmap_;
-    const Epetra_Map &structinterfacemap_;
-    const Epetra_Map &fluidblockmap_;
-    const Epetra_Map &fluidinterfacemap_;
+    //! Vector containing the update for the current outer iteration
+    Teuchos::RCP<NOX::Abstract::Vector> updateVectorPtr_;
 
-    const FSI::Coupling& coupsf_;
+    //! Type of norm to use
+    NOX::Abstract::Vector::NormType normType_;
 
-    Teuchos::RCP<Epetra_Import> structextractor_;
-    Teuchos::RCP<Epetra_Import> fluidextractor_;
+    //! Scaling to use
+    ScaleType scaleType_;
+
+    //! Tolerance value specified by user in constructor
+    double tolerance_;
+
+    //! Norm of the update to be compared to trueTolerance
+    double normUpdate_;
   };
 
-#endif
+
+  /// Norm of inner dofs of one of our fields
+  class PartialNormUpdate : public GenericNormUpdate
+  {
+  public:
+    PartialNormUpdate(std::string name,
+                      const Epetra_Map &fullmap,
+                      const Epetra_Map &innermap,
+                      double tolerance,
+                      ScaleType stype = Scaled);
+  protected:
+
+    /// compute the norm of a given vector
+    virtual double computeNorm(const Epetra_Vector& v);
+
+  private:
+    LINALG::MapExtractor extractor_;
+  };
+
 
 }
 

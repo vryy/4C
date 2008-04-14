@@ -1,6 +1,7 @@
 #ifdef CCADISCRET
 
 #include "fsi_overlapprec.H"
+#include <Epetra_Time.h>
 
 
 /*----------------------------------------------------------------------*
@@ -58,23 +59,53 @@ void FSI::OverlappingBlockMatrix::LowerGS(const Epetra_MultiVector &X, Epetra_Mu
   Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
   Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
 
-  // Solve structure equations for sy with the rhs sx
+  {
+    // Solve structure equations for sy with the rhs sx
+    if (Comm().MyPID()==0)
+      std::cout << "    structural solve: " << std::flush;
 
-  structuresolver_->Solve(structInnerOp.EpetraMatrix(),sy,sx,true);
 
-  // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy
+    Epetra_Time ts(Comm());
 
-  //fluidInnerOp.EpetraMatrix()->Print(cout);
+    structuresolver_->Solve(structInnerOp.EpetraMatrix(),sy,sx,true);
 
-  fluidBoundOp.Multiply(false,*sy,*tmpfx);
-  fx->Update(-1.0,*tmpfx,1.0);
-  fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fy,fx,true);
+    if (Comm().MyPID()==0)
+      std::cout << ts.ElapsedTime() << std::flush;
+  }
 
-  // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
+  {
+    // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy
 
-  aleBoundOp.Multiply(false,*sy,*tmpax);
-  ax->Update(-1.0,*tmpax,1.0);
-  alesolver_->Solve(aleInnerOp.EpetraMatrix(),ay,ax,true);
+    //fluidInnerOp.EpetraMatrix()->Print(cout);
+
+    if (Comm().MyPID()==0)
+      std::cout << "    fluid solve: " << std::flush;
+
+    Epetra_Time tf(Comm());
+
+    fluidBoundOp.Multiply(false,*sy,*tmpfx);
+    fx->Update(-1.0,*tmpfx,1.0);
+    fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fy,fx,true);
+
+    if (Comm().MyPID()==0)
+      std::cout << tf.ElapsedTime() << std::flush;
+  }
+
+  {
+    // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
+
+    if (Comm().MyPID()==0)
+      std::cout << "    ale solve: " << std::flush;
+
+    Epetra_Time ta(Comm());
+
+    aleBoundOp.Multiply(false,*sy,*tmpax);
+    ax->Update(-1.0,*tmpax,1.0);
+    alesolver_->Solve(aleInnerOp.EpetraMatrix(),ay,ax,true);
+
+    if (Comm().MyPID()==0)
+      std::cout << ta.ElapsedTime() << "\n";
+  }
 
   // build solution vector
 

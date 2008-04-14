@@ -14,6 +14,8 @@
 
 #include <Thyra_DefaultProductVector.hpp>
 
+#include "../drt_lib/linalg_utils.H"
+
 
 
 /*----------------------------------------------------------------------*/
@@ -246,89 +248,171 @@ double FSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
 }
 
 
-#if 0
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::InterfaceNormF::InterfaceNormF(double structfac,
-                                     const Epetra_Map &structblockmap,
-                                     const Epetra_Map &structinterfacemap,
-                                     double fluidfac,
-                                     const Epetra_Map &fluidblockmap,
-                                     const Epetra_Map &fluidinterfacemap,
-                                     const FSI::Coupling& coupsf,
-                                     double tolerance,
-                                     ScaleType stype)
-  : GenericNormF("FSI interface",tolerance,stype),
-    structfac_(structfac),
-    fluidfac_(fluidfac),
-    structblockmap_(structblockmap),
-    structinterfacemap_(structinterfacemap),
-    fluidblockmap_(fluidblockmap),
-    fluidinterfacemap_(fluidinterfacemap),
-    coupsf_(coupsf)
+FSI::GenericNormUpdate::GenericNormUpdate(double tol,
+                                          NOX::Abstract::Vector::NormType ntype,
+                                          ScaleType stype)
+  : status_(NOX::StatusTest::Unevaluated),
+    normType_(ntype),
+    scaleType_(stype),
+    tolerance_(tol),
+    normUpdate_(0.0)
 {
-  structextractor_ = Teuchos::rcp(new Epetra_Import(structinterfacemap_, structblockmap_));
-  fluidextractor_ = Teuchos::rcp(new Epetra_Import(fluidinterfacemap_, fluidblockmap_));
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::InterfaceNormF::computeNorm(const NOX::Abstract::Group& grp)
+FSI::GenericNormUpdate::GenericNormUpdate(double tol, ScaleType stype)
+  : status_(NOX::StatusTest::Unevaluated),
+    normType_(NOX::Abstract::Vector::TwoNorm),
+    scaleType_(stype),
+    tolerance_(tol),
+    normUpdate_(0.0)
 {
-  if (!grp.isF())
-    return -1.0;
-
-  // extract the block epetra vector
-
-  const NOX::Abstract::Vector& abstract_res = grp.getF();
-  const NOX::Thyra::Vector& thyra_res = Teuchos::dyn_cast<const NOX::Thyra::Vector>(abstract_res);
-
-  const Thyra::DefaultProductVector<double>& res =
-    Teuchos::dyn_cast<const Thyra::DefaultProductVector<double> >(*thyra_res.getThyraRCPVector());
-
-  // extract structure interface residual
-
-  Teuchos::RCP<const Thyra::VectorBase<double> > thyra_s = res.getVectorBlock(0);
-
-  // This is ugly. We have to strip the RCP on const VectorBase and
-  // create a new (not owning) one, because the original RCP contains
-  // the original (non-const) Epetra_Vector and we cannot extract it
-  // from a const RCP. :(
-  Teuchos::RCP<const Epetra_Vector> epetra_s = Thyra::get_Epetra_Vector(structblockmap_,
-                                                                        Teuchos::rcp(&*thyra_s,false));
-
-  Teuchos::RCP<Epetra_Vector> sv = Teuchos::rcp(new Epetra_Vector(structinterfacemap_));
-  int err = sv->Import(*epetra_s, *structextractor_, Insert);
-  if (err!=0)
-    dserror("import failed with err=%d", err);
-
-  // extract fluid interface residual
-
-  Teuchos::RCP<const Thyra::VectorBase<double> > thyra_f = res.getVectorBlock(1);
-
-  // This is ugly. We have to strip the RCP on const VectorBase and
-  // create a new (not owning) one, because the original RCP contains
-  // the original (non-const) Epetra_Vector and we cannot extract it
-  // from a const RCP. :(
-  Teuchos::RCP<const Epetra_Vector> epetra_f = Thyra::get_Epetra_Vector(fluidblockmap_,
-                                                                        Teuchos::rcp(&*thyra_f,false));
-
-  Teuchos::RCP<Epetra_Vector> fv = Teuchos::rcp(new Epetra_Vector(fluidinterfacemap_));
-  err = fv->Import(*epetra_f, *fluidextractor_, Insert);
-  if (err!=0)
-    dserror("import failed with err=%d", err);
-
-  // transfer the fluid interface vector to the structural side
-  fv = coupsf_.SlaveToMaster(fv);
-
-  // add both residual with appropriate scaling
-  sv->Update(fluidfac_, *fv, structfac_);
-
-  return FSI::GenericNormF::computeNorm(*sv);
 }
 
-#endif
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::GenericNormUpdate::~GenericNormUpdate()
+{
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+NOX::StatusTest::StatusType FSI::GenericNormUpdate::checkStatus(const NOX::Solver::Generic& problem,
+                                                                NOX::StatusTest::CheckType checkType)
+{
+  if (checkType == NOX::StatusTest::None)
+  {
+    status_ = NOX::StatusTest::Unevaluated;
+    normUpdate_ = -1.0;
+    return status_;
+  }
+
+  // On the first iteration, the old and current solution are the same so
+  // we should return the test as unconverged until there is a valid
+  // old solution (i.e. the number of iterations is greater than zero).
+  int niters = problem.getNumIterations();
+  if (niters == 0)
+  {
+    status_ = NOX::StatusTest::Unconverged;
+    normUpdate_ = -1.0;
+    return status_;
+  }
+
+  // Check that F exists!
+  if (!problem.getSolutionGroup().isF())
+  {
+    status_ = NOX::StatusTest::Unconverged;
+    normUpdate_ = -1.0;
+    return status_;
+  }
+
+  const NOX::Abstract::Vector& oldSoln = problem.getPreviousSolutionGroup().getX();
+  const NOX::Abstract::Vector& curSoln = problem.getSolutionGroup().getX();
+
+  if (Teuchos::is_null(updateVectorPtr_))
+    updateVectorPtr_ = curSoln.clone();
+
+  updateVectorPtr_->update(1.0, curSoln, -1.0, oldSoln, 0.0);
+
+  computeNorm(Teuchos::rcp_dynamic_cast<NOX::Epetra::Vector>(updateVectorPtr_)->getEpetraVector());
+
+  status_ = (normUpdate_ < tolerance_) ? NOX::StatusTest::Converged : NOX::StatusTest::Unconverged;
+  return status_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FSI::GenericNormUpdate::computeNorm(const Epetra_Vector& v)
+{
+  int n = (scaleType_ == Scaled) ? updateVectorPtr_->length() : 0;
+
+  switch (normType_)
+  {
+  case NOX::Abstract::Vector::TwoNorm:
+    normUpdate_ = updateVectorPtr_->norm();
+    if (scaleType_ == Scaled)
+      normUpdate_ /= sqrt(1.0 * n);
+    break;
+
+  default:
+    normUpdate_ = updateVectorPtr_->norm(normType_);
+    if (scaleType_ == Scaled)
+      normUpdate_ /= n;
+    break;
+
+  }
+  return normUpdate_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+NOX::StatusTest::StatusType FSI::GenericNormUpdate::getStatus() const
+{
+  return status_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::ostream& FSI::GenericNormUpdate::print(std::ostream& stream, int indent) const
+{
+  for (int j = 0; j < indent; j ++)
+    stream << ' ';
+  stream << status_
+         << "Absolute Update-Norm = "
+         << NOX::Utils::sciformat(normUpdate_, 3)
+	 << " < "
+         << NOX::Utils::sciformat(tolerance_, 3)
+         << endl;
+  return stream;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FSI::GenericNormUpdate::getNormUpdate() const
+{
+  return normUpdate_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FSI::GenericNormUpdate::getTolerance() const
+{
+  return tolerance_;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
+                                          const Epetra_Map &fullmap,
+                                          const Epetra_Map &innermap,
+                                          double tolerance,
+                                          ScaleType stype)
+  : GenericNormUpdate(tolerance,stype)
+{
+  extractor_.Setup(fullmap,
+                   Teuchos::rcp(&innermap,false),
+                   LINALG::SplitMap(fullmap,innermap));
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FSI::PartialNormUpdate::computeNorm(const Epetra_Vector& v)
+{
+  return FSI::GenericNormUpdate::computeNorm(*extractor_.ExtractCondVector(v));
+}
+
 
 #endif

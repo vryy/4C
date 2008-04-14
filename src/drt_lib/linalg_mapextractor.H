@@ -324,6 +324,14 @@ namespace LINALG
     //@{
 
     /// extract a condition dof vector from a full row (or column) vector
+    Teuchos::RCP<Epetra_Vector> ExtractCondVector(const Epetra_Vector& full) const
+    { return MultiMapExtractor::ExtractVector(full,1); }
+
+    /// extract an other dof vector from a full row (or column) vector
+    Teuchos::RCP<Epetra_Vector> ExtractOtherVector(const Epetra_Vector& full) const
+    { return MultiMapExtractor::ExtractVector(full,0); }
+
+    /// extract a condition dof vector from a full row (or column) vector
     Teuchos::RCP<Epetra_Vector> ExtractCondVector(Teuchos::RCP<const Epetra_Vector> full) const;
 
     /// extract an other dof vector from a full row (or column) vector

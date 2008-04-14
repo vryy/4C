@@ -157,8 +157,10 @@ void FSI::Coupling::MatchNodes(const DRT::Discretization& masterdis,
     if (coupling.find(gid) != coupling.end())
     {
       pair<int,double>& coupled = coupling[gid];
+#if 0
       if (coupled.second > 1e-7)
         dserror("Coupled nodes (%d,%d) do not match. difference=%e", gid, coupled.first, coupled.second);
+#endif
       patchedmasternodes.push_back(gid);
       permslavenodes.push_back(coupled.first);
     }
