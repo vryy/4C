@@ -32,6 +32,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_function.H"
 #include "../drt_xfem/interface.H"
 #include "../drt_xfem/dof_management.H"
+#include "../drt_xfem/dof_distribution_switcher.H"
 #include "fluid_utils.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -120,7 +121,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 //  }
 //
 //  // ensure that degrees of freedom in the discretization have been set
-//  discret_->FillComplete();
+  discret_->FillComplete();
 //  
 //  initialdofmanager->fillDofDistributionMap(dofDistributionMap_);
   
@@ -232,9 +233,6 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   // solid displacement (to be removed)
   soliddispnp_       = LINALG::CreateVector(*soliddofrowmap,true);
-
-  vector<DRT::Condition*> impedancecond;
-  discret_->GetCondition("ImpedanceCond",impedancecond);
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -601,24 +599,23 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(RCP<DRT::Discretization> 
   }
   
   // store old (proc-overlapping) dofmap, compute new one and return it
-  const Epetra_Map* olddofrowmap = discret_->DofRowMap();
+  Epetra_Map olddofrowmap = *discret_->DofRowMap();
   discret_->FillComplete();
-  const Epetra_Map* newdofrowmap = discret_->DofRowMap();
+  Epetra_Map newdofrowmap = *discret_->DofRowMap();
   
-  map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos > oldDofDistributionMap(dofDistributionMap_);
+  XFEM::DofPosMap oldDofDistributionMap(dofDistributionMap_);
   dofmanager->fillDofDistributionMap(dofDistributionMap_);
   
   cout << "switching " << endl;
   
+  // create switcher
+  const XFEM::DofDistributionSwitcher dofswitch(
+          ih, dofmanager,
+          olddofrowmap, newdofrowmap,
+          oldDofDistributionMap, dofDistributionMap_);
+  
   // switch nodal values of all important state vectors
-  accn_ = dofmanager->mapVectorToNewDofDistribution(
-          ih,
-          olddofrowmap,
-          newdofrowmap,
-          oldDofDistributionMap,
-          dofDistributionMap_,
-          accn_
-          );
+  dofswitch.mapVectorToNewDofDistribution(accn_);
 
 }
 

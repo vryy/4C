@@ -292,7 +292,7 @@ protected:
   double theta_;
   //@}
 
-  map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos >    dofDistributionMap_;
+  XFEM::DofPosMap    dofDistributionMap_;
   
   /// (standard) system matrix
   RCP<LINALG::SparseOperator> sysmat_;

@@ -21,7 +21,7 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
-//! Position in 
+//! global Position in Epetra vector 
 typedef int DofPos; 
 
 /*!
@@ -155,6 +155,9 @@ private:
     const FieldEnr  fieldenr_;
 
 }; // class DofKey
+
+//! connects each dofkey with a specific position in an solution vector
+typedef map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos > DofPosMap;
 
 } // namespace XFEM
 
