@@ -209,6 +209,19 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       fluidtimeparams->set<bool>("do explicit predictor",false);
     }
   }
+  // sanity checks and default flags
+  if (genprob.probtyp == prb_fsi_xfem)
+  {
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+
+    if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") == fsi_iter_monolithic)
+    {
+      // there are a couple of restrictions in monolithic FSI
+      dserror("XFEM and monolithic FSI not tested!");
+      fluidtimeparams->set<bool>("do explicit predictor",false);
+    }
+  }
+  
 
   if(iop == timeint_stationary or
      iop == timeint_one_step_theta or
@@ -236,7 +249,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // integration (call the constructor);
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-    fluid_ = rcp(new FluidAdapter(actdis, solver, fluidtimeparams, output, isale));
+    if (genprob.probtyp == prb_fsi_xfem)
+    {
+        fluid_ = rcp(new XFluidAdapter(actdis, solver, fluidtimeparams, output, isale));
+    }
+    else
+    {
+        fluid_ = rcp(new FluidAdapter(actdis, solver, fluidtimeparams, output, isale));
+    }
   }
   else if (iop == timeint_gen_alpha)
   {
