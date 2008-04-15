@@ -101,7 +101,7 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
 
   // get time step size
   dt_ = params.get<double>("dt");
-  
+
   newton_ = params_.get<bool>("include reactive terms for linearisation");
 
   // set parameters for stabilization
@@ -114,12 +114,12 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
   cross_    = ConvertStringToStabAction(stablist.get<string>("CROSS-STRESS"));
   reynolds_ = ConvertStringToStabAction(stablist.get<string>("REYNOLDS-STRESS"));
 
-  
+
   // select tau definition
   whichtau_ = Fluid3::tau_not_defined;
   {
     const string taudef = stablist.get<string>("DEFINITION_TAU");
-    
+
     if(taudef == "Barrenechea_Franca_Valentin_Wall")
     {
       whichtau_ = Fluid3::franca_barrenechea_valentin_wall;
@@ -139,7 +139,7 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
   {
     drop_second_derivatives_ = true;
   }
-  
+
   // One-step-Theta: timefac = theta*dt
   // BDF2:           timefac = 2/3 * dt
   timefac_ = params_.get<double>("thsl");
@@ -279,20 +279,20 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
         // we will determine the element layer in which he is contained to
         // be able to do the output of visceff etc.
         double center = 0;
-        
+
         for(int inode=0;inode<numnode;inode++)
         {
           center+=ele->Nodes()[inode]->X()[1];
         }
         center/=numnode;
-        
+
         const ParameterList& turbmodelparams    = params_.sublist("TURBULENCE MODEL");
-        
+
         // node coordinates of plane to the element layer
         RefCountPtr<vector<double> > planecoords
           =
           turbmodelparams.get<RefCountPtr<vector<double> > >("planecoords_");
-        
+
         bool found = false;
         for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
         {
@@ -312,7 +312,7 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
       case Fluid3::dynamic_smagorinsky:
       {
         const ParameterList& turbmodelparams    = params_.sublist("TURBULENCE MODEL");
-        
+
         // for turbulent channel flow, use averaged quantities
         if (turbmodelparams.get<string>("CANONICAL_FLOW")
             ==
@@ -324,7 +324,7 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
           RCP<vector<double> > averaged_MijMij
             =
             turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
-          
+
           //this will be the y-coordinate of a point in the element interior
           // here, the layer is determined in order to get the correct
           // averaged value from the vector of averaged (M/L)ijMij
@@ -334,11 +334,11 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
             center+=ele->Nodes()[inode]->X()[1];
           }
           center/=numnode;
-          
+
           RCP<vector<double> > planecoords
             =
             turbmodelparams.get<RCP<vector<double> > >("planecoords_");
-          
+
           bool found = false;
           for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
           {
@@ -353,10 +353,10 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
           {
             dserror("could not determine element layer");
           }
-          
+
           // Cs_delta_sq is set by the averaged quantities
           Cs_delta_sq_ = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
-          
+
           // clipping to get algorithm stable
           if (Cs_delta_sq_<0)
           {
@@ -375,16 +375,16 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
 
   // flag for higher order elements
   bool higher_order_ele = f3ele->isHigherOrderElement(f3ele->Shape());
-  
+
   // overrule higher_order_ele if input-parameter is set
-  // 
+  //
   // this might be interesting for fast (but slightly
   // less accurate) computations
   if(drop_second_derivatives_)
   {
     higher_order_ele = false;
   }
-  
+
   //--------------------------------------------------
   // calculate element coefficient matrix and rhs
   //--------------------------------------------------
@@ -400,8 +400,8 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
                                                  estif,
                                                  eforce,
                                                  actmat_,
-                                                 dt_,
                                                  time_,
+                                                 dt_,
                                                  timefac_,
                                                  newton_,
                                                  higher_order_ele,
