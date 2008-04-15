@@ -60,7 +60,7 @@ public:
     }
     
     void mapVectorToNewDofDistribution(
-            RCP<Epetra_Vector>     vector
+            RCP<Epetra_Vector>&     vector
             ) const;
     
     

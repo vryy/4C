@@ -56,7 +56,7 @@ static XFEM::Enrichment genAlternativeEnrichment(
 }
 
 void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
-        RCP<Epetra_Vector>             vector
+        RCP<Epetra_Vector>&             vector
         ) const
 {
     // create new vector with new number of dofs 
@@ -88,7 +88,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
             DofPosMap::const_iterator olddof = oldNodalDofDistrib_.find(newdofkey);
             if (olddof != oldNodalDofDistrib_.end())  // if dofkey has existed before, use old value
             {
-                const XFEM::DofKey<XFEM::onNode> olddofkey = olddof->first;
+                //const XFEM::DofKey<XFEM::onNode> olddofkey = olddof->first;
                 const int olddofpos = olddof->second;
                 //cout << "init to old value" << endl;
                 (*newVector)[newdofrowmap_.LID(newdofpos)] = (*oldVector)[olddofrowmap_.LID(olddofpos)];

@@ -71,6 +71,11 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 {
 
   // -------------------------------------------------------------------
+  // get the processor ID from the communicator
+  // -------------------------------------------------------------------
+  myrank_  = discret_->Comm().MyPID();
+		    
+  // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
   timetotal_    = TimeMonitor::getNewTimer("dynamic routine total"            );
@@ -81,9 +86,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   timeapplydbc_ = TimeMonitor::getNewTimer("      + apply DBC"                );
   timesolver_   = TimeMonitor::getNewTimer("      + solver calls"             );
   timeout_      = TimeMonitor::getNewTimer("      + output and statistics"    );
-
-  // time measurement: total --- start TimeMonitor tm0
-  tm0_ref_        = rcp(new TimeMonitor(*timetotal_ ));
+  tm0_ref_      = rcp(new TimeMonitor(*timetotal_ ));
 
   // time measurement: initialization
   TimeMonitor monitor(*timeinit_);
@@ -96,142 +99,12 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   stepmax_  = params_.get<int>   ("max number timesteps");
   maxtime_  = params_.get<double>("total time");
   theta_    = params_.get<double>("theta");
-  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
 
-  // initial Intersection
-  RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(fluiddis,cutterdis));
-
-  // apply enrichments
-  RCP<XFEM::DofManager> initialdofmanager = rcp(new XFEM::DofManager(ih));
-//
-//  // tell elements about the dofs and the integration
-//  {
-//	  ParameterList eleparams;
-//	  eleparams.set("action","store_xfem_info");
-//	  eleparams.set("dofmanager",initialdofmanager);
-//	  eleparams.set("assemble matrix 1",false);
-//	  eleparams.set("assemble matrix 2",false);
-//	  eleparams.set("assemble vector 1",false);
-//	  eleparams.set("assemble vector 2",false);
-//	  eleparams.set("assemble vector 3",false);
-//	  discret_->Evaluate(eleparams,null,null,null,null,null);
-//  }
-//
-//  // ensure that degrees of freedom in the discretization have been set
-  discret_->FillComplete();
-//  
-//  initialdofmanager->fillDofDistributionMap(dofDistributionMap_);
-  
-  ComputeInterfaceAndSetDOFs(cutterdiscret_);
-
-  discret_->ComputeNullSpaceIfNecessary(solver_.Params());
-
-  // -------------------------------------------------------------------
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  // -------------------------------------------------------------------
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  const Epetra_Map* soliddofrowmap = cutterdiscret_->DofRowMap();
-
-  // -------------------------------------------------------------------
-  // get a vector layout from the discretization for a vector which only
-  // contains the velocity dofs and for one vector which only contains
-  // pressure degrees of freedom.
-  // -------------------------------------------------------------------
-
-  const int numdim = params_.get<int>("number of velocity degrees of freedom");
-
-  FLUID_UTILS::SetupXFluidSplit(*discret_,initialdofmanager,velpressplitter_);
-
-  // -------------------------------------------------------------------
-  // get the processor ID from the communicator
-  // -------------------------------------------------------------------
-  myrank_  = discret_->Comm().MyPID();
-
-  // -------------------------------------------------------------------
-  // create empty system matrix --- stiffness and mass are assembled in
-  // one system matrix!
-  // -------------------------------------------------------------------
-
-  // This is a first estimate for the number of non zeros in a row of
-  // the matrix. Assuming a structured 3d-fluid mesh we have 27 adjacent
-  // nodes with 4 dofs each. (27*4=108)
-  // We do not need the exact number here, just for performance reasons
-  // a 'good' estimate
-
-  if (not params_.get<int>("Simple Preconditioner",0))
-  {
-    // initialize standard (stabilized) system matrix
-    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
-  }
-  else
-  {
-    Teuchos::RCP<LINALG::BlockSparseMatrix<VelPressSplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
-    blocksysmat->SetNumdim(numdim);
-    sysmat_ = blocksysmat;
-  }
-
-  // -------------------------------------------------------------------
-  // create empty vectors
-  // -------------------------------------------------------------------
-
-  // Vectors passed to the element
-  // -----------------------------
-
-  // accelerations at time n and n-1
-  accn_         = LINALG::CreateVector(*dofrowmap,true);
-  accnm_        = LINALG::CreateVector(*dofrowmap,true);
-
-  // velocities and pressures at time n+1, n and n-1
-  velnp_        = LINALG::CreateVector(*dofrowmap,true);
-  veln_         = LINALG::CreateVector(*dofrowmap,true);
-  velnm_        = LINALG::CreateVector(*dofrowmap,true);
-
-  if (alefluid_)
-  {
-    dispnp_       = LINALG::CreateVector(*dofrowmap,true);
-    dispn_        = LINALG::CreateVector(*dofrowmap,true);
-    dispnm_       = LINALG::CreateVector(*dofrowmap,true);
-    gridv_        = LINALG::CreateVector(*dofrowmap,true);
-  }
-
-  // histvector --- a linear combination of velnm, veln (BDF)
-  //                or veln, accn (One-Step-Theta)
-  hist_         = LINALG::CreateVector(*dofrowmap,true);
-
-  // Vectors associated to boundary conditions
-  // -----------------------------------------
-
-  // toggle vector indicating which dofs have Dirichlet BCs
-  dirichtoggle_ = LINALG::CreateVector(*dofrowmap,true);
-  // opposite of dirichtoggle vector, ie for each component
-  invtoggle_    = LINALG::CreateVector(*dofrowmap,false);
-
-  // a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  zeros_        = LINALG::CreateVector(*dofrowmap,true);
-
-  // the vector containing body and surface forces
-  neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
-
-  // Vectors used for solution process
-  // ---------------------------------
-
-  // rhs: standard (stabilized) residual vector (rhs for the incremental form)
-  residual_     = LINALG::CreateVector(*dofrowmap,true);
-  trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // right hand side vector for linearised solution;
-  rhs_ = LINALG::CreateVector(*dofrowmap,true);
-
-  // Nonlinear iteration increment vector
-  incvel_       = LINALG::CreateVector(*dofrowmap,true);
-
   // solid displacement (to be removed)
+  const Epetra_Map* soliddofrowmap = cutterdiscret_->DofRowMap();
   soliddispnp_       = LINALG::CreateVector(*soliddofrowmap,true);
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
@@ -341,8 +214,8 @@ void XFluidImplicitTimeInt::TimeLoop()
 
   while (step_<stepmax_ and time_<maxtime_)
   {
-    PrepareTimeStep();
     ComputeInterfaceAndSetDOFs(cutterdiscret_);
+    PrepareTimeStep();
     switch (dyntype)
     {
     case 0:
@@ -414,7 +287,7 @@ void XFluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     //                    calculate lift'n'drag forces
     // -------------------------------------------------------------------
-    int liftdrag = params_.get<int>("liftdrag");
+    const int liftdrag = params_.get<int>("liftdrag");
 
     if (liftdrag == 0); // do nothing, we don't want lift & drag
     if (liftdrag == 1)
@@ -603,6 +476,8 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(RCP<DRT::Discretization> 
   discret_->FillComplete();
   Epetra_Map newdofrowmap = *discret_->DofRowMap();
   
+  discret_->ComputeNullSpaceIfNecessary(solver_.Params());
+  
   XFEM::DofPosMap oldDofDistributionMap(dofDistributionMap_);
   dofmanager->fillDofDistributionMap(dofDistributionMap_);
   
@@ -614,9 +489,80 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(RCP<DRT::Discretization> 
           olddofrowmap, newdofrowmap,
           oldDofDistributionMap, dofDistributionMap_);
   
-  // switch nodal values of all important state vectors
-  dofswitch.mapVectorToNewDofDistribution(accn_);
+  // --------------------------------------------
+  // switch state vectors to new dof distribution
+  // --------------------------------------------
 
+  // accelerations at time n and n-1
+  dofswitch.mapVectorToNewDofDistribution(accn_);
+  dofswitch.mapVectorToNewDofDistribution(accnm_);
+
+  // velocities and pressures at time n+1, n and n-1
+  dofswitch.mapVectorToNewDofDistribution(velnp_);
+  dofswitch.mapVectorToNewDofDistribution(veln_);
+  dofswitch.mapVectorToNewDofDistribution(velnm_);
+
+  if (alefluid_)
+  {
+      dofswitch.mapVectorToNewDofDistribution(dispnp_);
+      dofswitch.mapVectorToNewDofDistribution(dispn_);
+      dofswitch.mapVectorToNewDofDistribution(dispnm_);
+      dofswitch.mapVectorToNewDofDistribution(gridv_);
+  }
+
+  // --------------------------------------------------
+  // create remaining vectors with new dof distribution
+  // --------------------------------------------------
+  hist_         = LINALG::CreateVector(newdofrowmap,true);
+
+  dirichtoggle_ = LINALG::CreateVector(newdofrowmap,true);
+  invtoggle_    = LINALG::CreateVector(newdofrowmap,false);
+
+  zeros_        = LINALG::CreateVector(newdofrowmap,true);
+
+  neumann_loads_= LINALG::CreateVector(newdofrowmap,true);
+
+  // ---------------------------------
+  // Vectors used for solution process
+  // ---------------------------------
+  residual_     = LINALG::CreateVector(newdofrowmap,true);
+  trueresidual_ = LINALG::CreateVector(newdofrowmap,true);
+  rhs_          = LINALG::CreateVector(newdofrowmap,true);
+  incvel_       = LINALG::CreateVector(newdofrowmap,true);
+  
+  
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization for a vector which only
+  // contains the velocity dofs and for one vector which only contains
+  // pressure degrees of freedom.
+  // -------------------------------------------------------------------
+  FLUID_UTILS::SetupXFluidSplit(*discret_,dofmanager,velpressplitter_);
+  
+  // -------------------------------------------------------------------
+  // create empty system matrix --- stiffness and mass are assembled in
+  // one system matrix!
+  // -------------------------------------------------------------------
+
+  // This is a first estimate for the number of non zeros in a row of
+  // the matrix. Assuming a structured 3d-fluid mesh we have 27 adjacent
+  // nodes with 4 dofs each. (27*4=108)
+  // We do not need the exact number here, just for performance reasons
+  // a 'good' estimate
+
+  if (not params_.get<int>("Simple Preconditioner",0))
+  {
+    // initialize standard (stabilized) system matrix
+    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,108,false,true));
+  }
+  else
+  {
+    const int numdim = params_.get<int>("number of velocity degrees of freedom");
+    Teuchos::RCP<LINALG::BlockSparseMatrix<VelPressSplitStrategy> > blocksysmat =
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
+    blocksysmat->SetNumdim(numdim);
+    sysmat_ = blocksysmat;
+  }
+  
 }
 
 
@@ -692,7 +638,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("total time",time_);
       eleparams.set("thsl",theta_*dta_);
       eleparams.set("dt",dta_);
-      eleparams.set("include reactive terms for linearisation",newton_);
+      eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation",false));
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -1070,7 +1016,7 @@ void XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // set the new solution we just got
   if (vel!=Teuchos::null)
   {
-    int len = vel->MyLength();
+    const int len = vel->MyLength();
 
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
@@ -1106,7 +1052,7 @@ void XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // other parameters that might be needed by the elements
   eleparams.set("total time",time_);
   eleparams.set("thsl",theta_*dta_);
-  eleparams.set("include reactive terms for linearisation",newton_);
+  eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation",false));
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -1426,6 +1372,8 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
   int startfuncno
   )
 {
+  ComputeInterfaceAndSetDOFs(cutterdiscret_);
+  
   //------------------------------------------------------- beltrami flow
   if(whichinitialfield == 8)
   {
@@ -2020,7 +1968,7 @@ void XFluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> re
   eleparams.set("total time",time_);
   eleparams.set("thsl",theta_*dta_);
   eleparams.set("using stationary formulation",false);
-  eleparams.set("include reactive terms for linearisation",newton_);
+  eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation",false));
 
   // set vector values needed by elements
   discret_->ClearState();

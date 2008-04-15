@@ -255,6 +255,7 @@ protected:
   ParameterList&                params_;
   IO::DiscretizationWriter&         output_;
   IO::DiscretizationWriter&         solidoutput_;
+  //! the processor ID from the communicator
   int                           myrank_;
   bool                          alefluid_;
   //@}
@@ -271,9 +272,6 @@ protected:
 
   /// density extracted from element material
   double density_;
-
-  //! use (or not) linearisation of reactive terms on the element
-  bool newton_;
 
   /// whether we do some extrapolation at the begin of each time step
   bool extrapolationpredictor_;
@@ -364,6 +362,7 @@ protected:
   RCP<Teuchos::Time> timesolver_  ;
   RCP<Teuchos::Time> timeout_     ;
 
+  //! time measurement: total --- start TimeMonitor tm0
   RCP<TimeMonitor> tm0_ref_ ;
   //@}
 
