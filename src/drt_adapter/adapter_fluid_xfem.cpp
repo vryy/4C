@@ -104,6 +104,13 @@ void ADAPTER::FluidXFEMAdapter::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp
     FluidField().ApplyInterfaceVelocities(ivel);
   }
 
+  //if (FluidField().FreeSurface().Relevant())
+  //{
+  //  Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
+  //  Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().FreeSurface().ExtractCondVector(dispnp);
+  //  AleField().ApplyFreeSurfaceDisplacements(fscoupfa_.MasterToSlave(fsdispnp));
+  //}
+
   // Note: We do not look for moving ale boundaries (outside the coupling
   // interface) on the fluid side. Thus if you prescribe time variable ale
   // Dirichlet conditions the according fluid Dirichlet conditions will not
@@ -119,7 +126,7 @@ void ADAPTER::FluidXFEMAdapter::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEMAdapter::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                                                  double dt)
+                                                                      double dt)
 {
   // Here we have a mesh position independent of the
   // given trial vector, but still the grid velocity depends on the

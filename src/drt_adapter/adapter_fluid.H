@@ -355,6 +355,141 @@ namespace ADAPTER {
     Teuchos::RefCountPtr<Epetra_Map> innervelmap_;
   };
 
+  
+  /// adapter to normal fluid algorithm
+    /*!
+      <h3>Scaling factors in monolithic FSI</h3>
+
+      For monolithic FSI we need to build one block system with overlapping
+      equations at the interface. In order to do so we have to scale all blocks
+      such that we the terms we add are of the same units. We go for real forces
+      and displacement increments at the interface.
+
+      It is the duty of the adapter to provide the necessary scaling
+      factors.
+
+      We assume a very simple velocity -- displacement relation at the interface
+      \f$ \mathbf{u}^{n+1}_{i+1} = \frac{1}{\Delta t} \Delta
+      \mathbf{d}^{n+1}_{i+1} \f$
+
+      The fluid interface equations have to be scaled with \f$
+      \frac{\rho}{\theta\Delta t} \f$ to be physical forces. The matrix columns
+      that go with \f$ \mathbf{u}^{n+1}_{\Gamma,i+1} \f$ have to be scaled with
+      \f$ \frac{1}{\Delta t} \f$. This results in the scaled blocks:
+
+      - \f$ \frac{\rho}{\theta\Delta t^2} \mathbf{F}_{\Gamma\Gamma} \f$
+
+      - \f$ \frac{1}{\Delta t} \mathbf{F}_{I\Gamma} \f$
+
+      - \f$ \frac{\rho}{\theta\Delta t} \mathbf{F}_{\Gamma I} \f$
+
+      \note As we couple a generalized-\f$\alpha\f$ structure to a
+      one-step-\f$\theta\f$ fluid here all we can to is backward Euler time
+      discretization on both fields.
+
+      \author u.kue
+      \date 02/08
+     */
+    class XFluidAdapter : public Fluid
+    {
+    public:
+      XFluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
+                   Teuchos::RCP<LINALG::Solver> solver,
+                   Teuchos::RCP<ParameterList> params,
+                   Teuchos::RCP<IO::DiscretizationWriter> output,
+                   bool isale);
+
+      virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const;
+      virtual Teuchos::RCP<const Epetra_Vector> RHS() const;
+      virtual Teuchos::RCP<const Epetra_Vector> Velnp() const;
+      virtual Teuchos::RCP<const Epetra_Vector> Veln() const;
+      virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const;
+      virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const;
+      virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() const;
+      virtual Teuchos::RCP<DRT::Discretization> Discretization();
+
+      //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
+
+      virtual void PrepareTimeStep();
+      virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const;
+      virtual void Update();
+      virtual void Output();
+
+      virtual void NonlinearSolve();
+
+      /// get the linear solver object used for this field
+      virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+
+      /// the interface map contains all velocity dofs at the interface
+      virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap();
+      virtual Teuchos::RCP<const Epetra_Map> PressureRowMap();
+
+      /// the mesh map contains all velocity dofs that are covered by an ALE node
+      virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
+
+      /// scaling factor needed to convert the residual to real forces
+      virtual double ResidualScaling() const;
+
+      virtual double TimeScaling() const;
+
+      /// communication object at the interface
+      virtual const LINALG::MapExtractor& Interface() const { return interface_; }
+
+      virtual const LINALG::MapExtractor& FreeSurface() const { return freesurface_; }
+
+      virtual void ReadRestart(int step);
+      virtual double Time();
+      virtual int Step();
+      virtual void LiftDrag();
+
+      virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+      virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
+      virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) const;
+      virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) const;
+
+      virtual void ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx) const;
+
+      virtual int Itemax() const;
+      virtual void SetItemax(int itemax);
+
+      virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape();
+
+      /// linear fluid solve with just a interface load
+      /*!
+        The very special solve done in steepest descent relaxation
+        calculation (and matrix free Newton Krylov).
+
+        \note Can only be called after a valid fluid solve.
+      */
+      virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
+
+      virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
+      virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) const;
+
+    private:
+
+      /// the actual fluid algorithm
+      mutable FluidImplicitTimeInt fluid_;
+
+      /// the interface map setup for interface <-> full translation
+      LINALG::MapExtractor interface_;
+
+      LINALG::MapExtractor freesurface_;
+
+      /// ALE dof map
+      LINALG::MapExtractor meshmap_;
+
+      //! @name local copies of input parameters
+      Teuchos::RCP<DRT::Discretization> dis_;
+      Teuchos::RCP<LINALG::Solver> solver_;
+      Teuchos::RCP<Teuchos::ParameterList> params_;
+      Teuchos::RCP<IO::DiscretizationWriter> output_;
+      //@}
+
+      /// all velocity dofs not at the interface
+      Teuchos::RefCountPtr<Epetra_Map> innervelmap_;
+    };
 
   /// adapter to generalized alpha fluid algorithm
   /*!
@@ -485,32 +620,6 @@ namespace ADAPTER {
 
     /// all velocity dofs not at the interface
     Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
-  };
-
-
-  /// fluid field solver
-  class FluidBaseAlgorithm
-  {
-  public:
-
-    /// constructor
-    explicit FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn, bool isale);
-
-    /// virtual destructor to support polymorph destruction
-    virtual ~FluidBaseAlgorithm();
-
-    /// fluid field solver
-    Fluid& FluidField() { return *fluid_; }
-    const Fluid& FluidField() const { return *fluid_; }
-
-  private:
-
-    /// setup fluid algorithm (overriding some fluid parameters with
-    /// values specified in given problem-dependent ParameterList)
-    void SetupFluid(const Teuchos::ParameterList& prbdyn, bool& isale);
-
-    /// fluid field solver
-    Teuchos::RCP<Fluid> fluid_;
   };
 
 }

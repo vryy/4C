@@ -9,7 +9,7 @@
 #include <Teuchos_ParameterList.hpp>
 
 #include "adapter_general_fluid.H"
-#include "adapter_fluid.H"
+#include "adapter_fluid_base_algorithm.H"
 #include "../drt_fsi/fsi_coupling.H"
 
 namespace ADAPTER
@@ -48,9 +48,30 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
+  protected:
+
+//    //! @name Transfer helpers
+//
+//    /// field transform
+//    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const;
+//
+//    /// field transform
+//    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<const Epetra_Vector> iv) const;
+//
+//    /// interface transform
+//    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const;
+//
+//    /// interface transform
+//    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
+//
+//    //@}
+    
   private:
 
     FluidBaseAlgorithm fluid_;
+
+    /// coupling of fluid and ale (interface only)
+    FSI::Coupling               icoupfa_;
 
   };
 

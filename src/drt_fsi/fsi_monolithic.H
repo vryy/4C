@@ -4,7 +4,7 @@
 #define FSI_MONOLITHIC_H
 
 #include "../drt_adapter/adapter_structure.H"
-#include "../drt_adapter/adapter_fluid.H"
+#include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_adapter/adapter_ale.H"
 
 #include "fsi_coupling.H"

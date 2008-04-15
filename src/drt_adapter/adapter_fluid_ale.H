@@ -9,7 +9,7 @@
 #include <Teuchos_ParameterList.hpp>
 
 #include "adapter_general_fluid.H"
-#include "adapter_fluid.H"
+#include "adapter_fluid_base_algorithm.H"
 #include "adapter_ale.H"
 #include "../drt_fsi/fsi_coupling.H"
 

@@ -23,7 +23,7 @@ Maintainer: Georg Bauer
 //#include <Teuchos_RCP.hpp>
 //#include <Teuchos_ParameterList.hpp>
 
-#include "../drt_adapter/adapter_fluid.H"
+#include "../drt_adapter/adapter_fluid_base_algorithm.H"
 //#include "fsi_ale.H"
 
 
