@@ -259,8 +259,8 @@ public:
   void ApplyFilterForDynamicComputationOfCs();
 
   //@}
-  void FlowRateCalculation();
-  void OutflowBoundary();
+  void FlowRateCalculation(double);
+  void OutflowBoundary(double);
   std::complex<double> LungImpedance(int, int, std::complex<double> &,std::complex<double>, std::complex<double> []);
   std::complex<double> DCLungImpedance(int, int, std::complex<double> &, std::complex<double> []);
 

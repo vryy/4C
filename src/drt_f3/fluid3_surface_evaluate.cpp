@@ -501,8 +501,13 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
 	  
 	//Calculate infinitesimal area of element (drs)
 	f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
-		
-	drs=drs/2;
+	
+	if (iel==4){
+		drs=drs*4;
+		}
+	else {
+		drs=drs/2;
+		}
 	 
 	//Compute elment flowrate
   	for (int node=0;node<iel;++node)
@@ -516,8 +521,7 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
   	
   }
   
-  //prepressure=prepressuretmp/iel;
-  flowrate=flowrate+flowratetmp/iel;
+  flowrate=flowrate+flowratetmp;
   area=area+drs;
   params.set<double>("Area calculation", area);
   params.set<double>("Outlet flowrate", flowrate);

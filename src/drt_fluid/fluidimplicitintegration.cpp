@@ -573,10 +573,10 @@ void FluidImplicitTimeInt::TimeLoop()
     if (!impedancecond.empty())
     {
       double dtp = (impedancecond[0])->GetDouble("timeperiod");
-      FlowRateCalculation();
+      FlowRateCalculation(dtp);
       if (time_ > dtp*dta_)
       {
-        OutflowBoundary();
+        OutflowBoundary(dtp);
       }
     }
 
@@ -3010,7 +3010,7 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FluidImplicitTimeInt::FlowRateCalculation()
+void FluidImplicitTimeInt::FlowRateCalculation(double dtp)
 {
   vector<DRT::Condition*> impedancecond;
   discret_->GetCondition("ImpedanceCond",impedancecond);
@@ -3039,6 +3039,10 @@ void FluidImplicitTimeInt::FlowRateCalculation()
   flowrate = eleparams.get<double>("Outlet flowrate");
   area = eleparams.get<double>("Area calculation");
   //Assign flowrate at current position
+  double parflowrate = 0;
+   
+  discret_->Comm().SumAll(&flowrate,&parflowrate,1);
+  
   if (time_ <= cyclesteps*dta_){
   	FlowRateStorage_->push_back(flowrate);
   }
@@ -3046,7 +3050,11 @@ void FluidImplicitTimeInt::FlowRateCalculation()
   	FlowRateStorage_->erase(FlowRateStorage_->begin());
   	FlowRateStorage_->push_back(flowrate);
   }
-  printf("Flowrate: %f\n",flowrate);
+  
+  if (myrank_ == 0)
+    {
+  	  printf("Current Flowrate: %f\n",parflowrate);
+    }
   //cout << FlowRateStorage_->size() << endl;
   return;
 }//FluidImplicitTimeInt::FlowRateCalculation
@@ -3054,7 +3062,7 @@ void FluidImplicitTimeInt::FlowRateCalculation()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FluidImplicitTimeInt::OutflowBoundary()
+void FluidImplicitTimeInt::OutflowBoundary(double dtp)
 {
   vector<DRT::Condition*> impedancecond;
   discret_->GetCondition("ImpedanceCond",impedancecond);
@@ -3087,7 +3095,7 @@ void FluidImplicitTimeInt::OutflowBoundary()
   std::complex<double> ImpedanceArrayFrequencyDomain[cyclesteps]={0};
   std::complex<double> storage[35]={0};
   std::complex<double> RealNumberTwo (2,0), Imag (0,1), TimeDomainImpedance[cyclesteps]={0}, zparent (0,0), StorageEntry, TimeDomainImpedanceTmp=0, zleft (0,0);
- double TimeDomainImpedanceReal, TimeDomainImpedanceImag, PressureFromConv=0, CyclePeriodDiscrete=10, trigonometrystuff, pressuretmp;
+ double TimeDomainImpedanceReal, TimeDomainImpedanceImag, PressureFromConv=0, CyclePeriodDiscrete=dtp, trigonometrystuff, pressuretmp;
 
   for (int ImpedanceCounter=1; ImpedanceCounter<=CyclePeriodDiscrete/2; ImpedanceCounter++)
   {
@@ -3126,9 +3134,10 @@ void FluidImplicitTimeInt::OutflowBoundary()
   }
   PressureFromConv=pressuretmp;
 
-  //PressureFromConv=pressureArray[N-1];
   eleparams.set("ConvolutedPressure",PressureFromConv);
-  printf("Pressure from convolution: %f\n",PressureFromConv);
+  if (myrank_ == 0){
+    printf("Pressure from convolution: %f\n",PressureFromConv);
+    }
   impedancetbc_->PutScalar(0.0);
   const string condstring("ImpedanceCond");
   discret_->EvaluateCondition(eleparams,impedancetbc_,condstring);
