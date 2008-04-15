@@ -172,8 +172,7 @@ void StructureEnsightWriter::WriteNodalStressStep(ofstream& file,
                                                   map<string, vector<ofstream::pos_type> >& resultfilepos,
                                                   const string groupname,
                                                   const string name,
-                                                  const int numdf,
-                                                  const bool eigen) const
+                                                  const int numdf) const
 {
   //--------------------------------------------------------------------
   // calculate nodal stresses from gauss point stresses
@@ -458,5 +457,6 @@ void StructureEnsightWriter::WriteElementCenterStressStep(ofstream& file,
   Write(file, "END TIME STEP");
   return;
 }
+
 
 #endif
