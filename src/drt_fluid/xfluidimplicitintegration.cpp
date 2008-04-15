@@ -27,9 +27,6 @@ Maintainer: Axel Gerstenberger
 #include "time_integration_scheme.H"
 
 #include "../drt_lib/linalg_ana.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
-#include "drt_periodicbc.H"
-#include "../drt_lib/drt_function.H"
 #include "../drt_xfem/interface.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
@@ -214,7 +211,6 @@ void XFluidImplicitTimeInt::TimeLoop()
 
   while (step_<stepmax_ and time_<maxtime_)
   {
-    ComputeInterfaceAndSetDOFs(cutterdiscret_);
     PrepareTimeStep();
     switch (dyntype)
     {
@@ -350,7 +346,20 @@ void XFluidImplicitTimeInt::PrepareTimeStep()
       dserror("parameter out of range: IOP\n");
     } /* end of switch(timealgo) */
   }
-
+}
+  
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | setup the variables to do a new nonlinear iteration      a.ger 064/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void XFluidImplicitTimeInt::PrepareNonlinearSolve()
+{
+  
   // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
   //
@@ -382,7 +391,7 @@ void XFluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   //
   // We cannot have a predictor in case of monolithic FSI here. There needs to
-  // be a way to ture this off.
+  // be a way to turn this off.
   if (extrapolationpredictor_)
   {
     if (step_>1)
@@ -577,10 +586,13 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(RCP<DRT::Discretization> 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::NonlinearSolve()
 {
+    
+  ComputeInterfaceAndSetDOFs(cutterdiscret_);
+  
+  PrepareNonlinearSolve();
+    
   // time measurement: nonlinear iteration
   TimeMonitor monitor(*timenlnitlin_);
-
-  const Epetra_Map* dofrowmap       = discret_->DofRowMap();
 
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
@@ -724,6 +736,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
     double fullnorm_L2;
     double fullresnorm;
 
+    const Epetra_Map* dofrowmap       = discret_->DofRowMap();
       Epetra_Vector full(*dofrowmap);
       Epetra_Import importer(*dofrowmap,residual_->Map());
 
@@ -913,6 +926,11 @@ drawbacks:
 */
 void XFluidImplicitTimeInt::LinearSolve()
 {
+  
+  ComputeInterfaceAndSetDOFs(cutterdiscret_);
+  
+  PrepareNonlinearSolve();
+  
   // time measurement: linearised fluid
   TimeMonitor monitor(*timenlnitlin_);
 
@@ -1578,6 +1596,11 @@ void XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::SolveStationaryProblem()
 {
+  
+  ComputeInterfaceAndSetDOFs(cutterdiscret_);
+  
+  PrepareNonlinearSolve();
+  
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
   TimeMonitor monitor(*timetimeloop_);
 
@@ -1611,8 +1634,6 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
     {
       printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
     }
-
-   ComputeInterfaceAndSetDOFs(cutterdiscret_);
    
     // -------------------------------------------------------------------
     //         evaluate dirichlet and neumann boundary conditions

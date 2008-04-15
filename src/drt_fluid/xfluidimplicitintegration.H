@@ -41,8 +41,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../io/io_drt.H"
-#include "drt_periodicbc.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_xfem/dof_management.H"
 
@@ -112,6 +110,9 @@ public:
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
+  
+  /// setup the variables to do a new nonlinear iteration
+  void PrepareNonlinearSolve();
 
   /*!
   \brief do nonlinear iteration, e.g. full Newton, Newton like or
@@ -249,7 +250,9 @@ protected:
   XFluidImplicitTimeInt operator = (const XFluidImplicitTimeInt& old);
   XFluidImplicitTimeInt (const XFluidImplicitTimeInt& old);
 
+  //! fluid discretization
   RCP<DRT::Discretization> discret_;
+  //! structure dicretization (will be removed)
   RCP<DRT::Discretization> cutterdiscret_;
   LINALG::Solver&               solver_;
   ParameterList&                params_;
@@ -257,14 +260,15 @@ protected:
   IO::DiscretizationWriter&         solidoutput_;
   //! the processor ID from the communicator
   int                           myrank_;
+  //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   bool                          alefluid_;
   //@}
 
   //! @name time stepping variables
-  double time_;
-  int step_;
-  int stepmax_;
-  double maxtime_;
+  double  time_;    ///< physical time
+  int     step_;    ///< timestep
+  int     stepmax_; ///< maximal number of timesteps
+  double  maxtime_; ///< maximal physical computation time
   //@}
 
   /// time algorithm flag
@@ -290,6 +294,9 @@ protected:
   double theta_;
   //@}
 
+  /*! contains connection between DofKey and a position in the global state arrays
+   *  should always fit to the current Epetra_Maps in this class
+   */
   XFEM::DofPosMap    dofDistributionMap_;
   
   /// (standard) system matrix
@@ -341,12 +348,10 @@ protected:
   ///                or veln, accn (One-Step-Theta)
   RCP<Epetra_Vector>    hist_;
 
-  // solid displacement (might be moved somewhere else later)
+  //! solid displacement (might be moved somewhere else later)
   RCP<Epetra_Vector>    soliddispnp_;
 
-  // Extractor used for convergence check
-  // ------------------------------------
-
+  //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
 
   /// free surface row dof map extractor
