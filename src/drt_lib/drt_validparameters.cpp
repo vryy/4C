@@ -876,7 +876,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "iter_stagg_MFNK_FSI",
                                  "iter_stagg_MPE",
                                  "iter_stagg_RRE",
-                                 "iter_monolithic"),
+                                 "iter_monolithic").append("pseudo_structure"),
                                tuple<int>(
                                  fsi_basic_sequ_stagg,
                                  //fsi_sequ_stagg_pred,
@@ -889,7 +889,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  fsi_iter_stagg_MFNK_FSI,
                                  fsi_iter_stagg_MPE,
                                  fsi_iter_stagg_RRE,
-                                 fsi_iter_monolithic),
+                                 fsi_iter_monolithic).append(fsi_pseudo_structure),
                                &fsidyn);
 
   setStringToIntegralParameter("PREDICTOR","d(n)+dt*v(n)+0.5*dt^2*a(n)",
