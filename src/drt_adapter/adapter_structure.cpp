@@ -263,7 +263,12 @@ void ADAPTER::StructureAdapter::ReadRestart(int step)
 void ADAPTER::StructureAdapter::Solve()
 {
   std::string equil = params_->get<string>("equilibrium iteration","full newton");
-  if (equil=="full newton")
+    
+  if (structure_.HaveConstraint())
+  {
+    structure_.FullNewtonLinearUzawa();
+  }
+  else if (equil=="full newton")
   {
     structure_.FullNewton();
   }
