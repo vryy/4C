@@ -476,7 +476,8 @@ void XFEM::DofManager::fillDofDistributionMap(
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
         if (entry == nodalDofSet_.end())
         {
-            dserror("bug");
+            // no dofs for this node... must be a hole or somethin'
+            continue;
         }
         const std::vector<int> gdofs(xfemdis_->Dof(actnode));
         const std::set<FieldEnr> dofset = entry->second;
@@ -512,6 +513,8 @@ static XFEM::Enrichment genAlternativeEnrichment(
             exit(1);
         }
     }
+    dserror("bug!");
+    return XFEM::Enrichment();
 }
 
 RCP<Epetra_Vector> XFEM::DofManager::mapVectorToNewDofDistribution(

@@ -44,7 +44,6 @@ Maintainer: Axel Gerstenberger
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
-#include "../drt_lib/drt_elementgroup.H"
 #include "../drt_xfem/dof_management.H"
 
 #include "Epetra_Vector.h"
@@ -244,22 +243,6 @@ public:
 
   //@}
 
-  /*!
-  //
-  //! @name methods for turbulence models (dynamic Smagorinsky)
-
-  \brief filter quantities for dynamic Smagorinsky model.
-         Compute averaged values for LijMij and MijMij.
-
-  */
-  void ApplyFilterForDynamicComputationOfCs();
-
-  //@}
-  void FlowRateCalculation();
-  void OutflowBoundary();
-  std::complex<double> LungImpedance(int, int, std::complex<double> &,std::complex<double>, std::complex<double> []);
-  std::complex<double> DCLungImpedance(int, int, std::complex<double> &, std::complex<double> []);
-
 protected:
 
   // don't want = operator and cctor
@@ -274,7 +257,6 @@ protected:
   IO::DiscretizationWriter&         solidoutput_;
   int                           myrank_;
   bool                          alefluid_;
-  bool                          dynamic_smagorinsky_;
   //@}
 
   //! @name time stepping variables
@@ -309,18 +291,6 @@ protected:
   double dtp_;
   double theta_;
   //@}
-
-  //! @name parameters for sampling/dumping period
-  int samstart_;
-  int samstop_;
-  int dumperiod_;
-  //@}
-
-  /// flag for special flow: currently channel flow or flow in a lid-driven cavity
-  string special_flow_;
-
-  /// fine-scale subgrid-viscosity flag
-  string fssgv_;
 
   map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos >    dofDistributionMap_;
   
@@ -376,39 +346,6 @@ protected:
   // solid displacement (might be moved somewhere else later)
   RCP<Epetra_Vector>    soliddispnp_;
 
-  /// vm3 solver
-  RCP<VM3_Solver>       vm3_solver_;
-
-  /// only necessary for vm3 solver: coarse- and fine-scale solution vectors
-  RCP<Epetra_Vector>    csvelnp_;
-  RCP<Epetra_Vector>    fsvelnp_;
-
-  /// only necessary for vm3 solver: convective stresses + coarse- and fine-scale part
-  RCP<Epetra_Vector>    convnp_;
-  RCP<Epetra_Vector>    csconvnp_;
-  RCP<Epetra_Vector>    fsconvnp_;
-
-  /// turbulence statistics, lid driven cavity
-  RCP<TurbulenceStatisticsLdc> turbulencestatistics_ldc_;
-
-  /// turbulence statistics, channel flow
-  RCP<TurbulenceStatistics>    turbulencestatistics_;
-
-
-  // Vectors used for filtering (for dynamic Smagorinsky model)
-  // --------------------------
-
-  RCP<Epetra_MultiVector>  filtered_vel_;
-  RCP<Epetra_MultiVector>  filtered_reynoldsstress_;
-  RCP<Epetra_MultiVector>  filtered_modeled_subgrid_stress_;
-  RCP<Epetra_MultiVector>  col_filtered_vel_;
-  RCP<Epetra_MultiVector>  col_filtered_reynoldsstress_;
-  RCP<Epetra_MultiVector>  col_filtered_modeled_subgrid_stress_;
-
-  RCP<vector<double> >     averaged_LijMij_;
-  RCP<vector<double> >     averaged_MijMij_;
-  RCP<vector<double> >     planecoords_;
-
   // Extractor used for convergence check
   // ------------------------------------
 
@@ -417,40 +354,18 @@ protected:
   /// free surface row dof map extractor
   const LINALG::MapExtractor* freesurface_;
 
-  RCP<PeriodicBoundaryConditions> pbc_;
-
-  /// connection between master and slave nodes on this proc
-  map<int,vector<int> >     mapmastertoslave_;
-
-  /// my elements grouped for faster evaluation
-  RCP<DRT::EGROUP::ElementGroupManager> egm_;
-
   //! @name time measurement
-
   RCP<Teuchos::Time> timetotal_   ;
   RCP<Teuchos::Time> timeinit_    ;
   RCP<Teuchos::Time> timetimeloop_;
   RCP<Teuchos::Time> timenlnitlin_;
   RCP<Teuchos::Time> timeelement_ ;
-  RCP<Teuchos::Time> timeavm3_    ;
   RCP<Teuchos::Time> timeapplydbc_;
   RCP<Teuchos::Time> timesolver_  ;
   RCP<Teuchos::Time> timeout_     ;
 
   RCP<TimeMonitor> tm0_ref_ ;
-
   //@}
-
-  //! @name even more turbulence garbage
-  /// somebody really needs to clean up here
-  double           dtele_;
-  double           dtsolve_;
-  double           dtfilter_;
-  //@}
-
-  // Flowrate array for impedance conditions
-  RCP<vector<double> > 	FlowRateStorage_;
-  RCP<Epetra_Vector> impedancetbc_;
 
   /// velocity-pressure block matrix split strategy
   class VelPressSplitStrategy
