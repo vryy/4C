@@ -158,3 +158,5 @@ Input/strufem_sosh8_eas_cantilever.dat                  x        x        -     
 Input/strufem_tet4_disp_cantilever.dat                  x        x        -        -        -        -
 Input/strufem_tet10_disp_cantilever.dat                 x        x        -        -        -        -
 Input/strufem_ctet10_disp_cantilever.dat                x        x        -        -        -        -
+Input/strufem_ctet10_disp_cantilever.dat                x        x        -        -        -        -
+Input/thin_nonlinear_pinched_hemisphere.dat             x        x
