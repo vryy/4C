@@ -15,7 +15,7 @@
 namespace ADAPTER
 {
 
-  /// generalized fluid adapter base
+  /// generalized fluid base: fluid with moving boundaries
   /*!
 
     The generalized fluid is a fluid on a variable domain. The domain could be
