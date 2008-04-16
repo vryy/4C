@@ -248,7 +248,6 @@ void xdyn_fluid_drt()
     		solver,
     		fluidtimeparams,
     		fluidoutput,
-    		solidoutput,
     		false);
 
     // initial field from restart or calculated by given function

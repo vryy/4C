@@ -398,12 +398,14 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::ExtractVelocityPart(Teucho
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::XFluidImpl::XFluidImpl(Teuchos::RCP<DRT::Discretization> dis,
-                                 Teuchos::RCP<LINALG::Solver> solver,
-                                 Teuchos::RCP<ParameterList> params,
-                                 Teuchos::RCP<IO::DiscretizationWriter> output,
-                                 bool isale)
-  : fluid_(dis, *solver, *params, *output, isale),
+ADAPTER::XFluidImpl::XFluidImpl(
+        Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<DRT::Discretization> cutterdis,
+        Teuchos::RCP<LINALG::Solver> solver,
+        Teuchos::RCP<ParameterList> params,
+        Teuchos::RCP<IO::DiscretizationWriter> output,
+        bool isale)
+  : fluid_(dis, cutterdis, *solver, *params, *output, isale),
     dis_(dis),
     solver_(solver),
     params_(params),
@@ -734,7 +736,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::RelaxationSolve(Teuchos::RCP<Ep
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::XFluidImpl::CreateFieldTest()
 {
-  return Teuchos::rcp(new FluidResultTest(fluid_));
+  return Teuchos::rcp(new XFluidResultTest(fluid_));
 }
 
 

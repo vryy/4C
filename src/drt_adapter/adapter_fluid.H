@@ -26,7 +26,10 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Operator.h>
 
 #include "../drt_fluid/fluidimplicitintegration.H"
+#include "../drt_fluid/xfluidimplicitintegration.H"
 #include "../drt_fluid/fluidresulttest.H"
+#include "../drt_fluid/xfluidresulttest.H"
+#include "../drt_fluid/fluid_genalpha_integration.H"
 
 #include "adapter_utils.H"
 
@@ -393,11 +396,13 @@ namespace ADAPTER {
     class XFluidImpl : public Fluid
     {
     public:
-      XFluidImpl(Teuchos::RCP<DRT::Discretization> dis,
-                   Teuchos::RCP<LINALG::Solver> solver,
-                   Teuchos::RCP<ParameterList> params,
-                   Teuchos::RCP<IO::DiscretizationWriter> output,
-                   bool isale);
+      XFluidImpl(
+              Teuchos::RCP<DRT::Discretization> dis,
+              Teuchos::RCP<DRT::Discretization> cutterdis,
+              Teuchos::RCP<LINALG::Solver> solver,
+              Teuchos::RCP<ParameterList> params,
+              Teuchos::RCP<IO::DiscretizationWriter> output,
+              bool isale);
 
       virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const;
       virtual Teuchos::RCP<const Epetra_Vector> RHS() const;
@@ -470,7 +475,7 @@ namespace ADAPTER {
     private:
 
       /// the actual fluid algorithm
-      mutable FluidImplicitTimeInt fluid_;
+      mutable XFluidImplicitTimeInt fluid_;
 
       /// the interface map setup for interface <-> full translation
       LINALG::MapExtractor interface_;

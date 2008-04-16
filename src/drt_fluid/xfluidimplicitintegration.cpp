@@ -47,7 +47,6 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 		LINALG::Solver&       solver,
 		ParameterList&        params,
 		IO::DiscretizationWriter& output,
-		IO::DiscretizationWriter& solidoutput,
 		const bool alefluid) :
   // call constructor for "nontrivial" objects
   discret_(fluiddis),
@@ -55,7 +54,6 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   solver_ (solver),
   params_ (params),
   output_ (output),
-  solidoutput_ (solidoutput),
   alefluid_(alefluid),
   time_(0.0),
   step_(0),
@@ -71,7 +69,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
   myrank_  = discret_->Comm().MyPID();
-		    
+            
   // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
@@ -83,7 +81,9 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   timeapplydbc_ = TimeMonitor::getNewTimer("      + apply DBC"                );
   timesolver_   = TimeMonitor::getNewTimer("      + solver calls"             );
   timeout_      = TimeMonitor::getNewTimer("      + output and statistics"    );
-  tm0_ref_      = rcp(new TimeMonitor(*timetotal_ ));
+
+  // time measurement: total --- start TimeMonitor tm0
+  tm0_ref_        = rcp(new TimeMonitor(*timetotal_ ));
 
   // time measurement: initialization
   TimeMonitor monitor(*timeinit_);
@@ -100,12 +100,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
 
-  // solid displacement (to be removed)
-  const Epetra_Map* soliddofrowmap = cutterdiscret_->DofRowMap();
-  soliddispnp_       = LINALG::CreateVector(*soliddofrowmap,true);
-
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
-
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -212,6 +207,7 @@ void XFluidImplicitTimeInt::TimeLoop()
   while (step_<stepmax_ and time_<maxtime_)
   {
     PrepareTimeStep();
+
     switch (dyntype)
     {
     case 0:
@@ -865,7 +861,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       // time measurement: solver
       TimeMonitor monitor(*timesolver_);
       // get cpu time
-      const double tcpu=ds_cputime();
+      const double tcpusolve=ds_cputime();
 
       // do adaptive linear solver tolerance (not in first solve)
       if (isadapttol && itnum>1)
@@ -880,7 +876,7 @@ void XFluidImplicitTimeInt::NonlinearSolve()
       solver_.ResetTolerance();
 
       // end time measurement for solver
-      dtsolve = ds_cputime()-tcpu;
+      dtsolve = ds_cputime()-tcpusolve;
     }
 
     //------------------------------------------------ update (u,p) trial
@@ -948,7 +944,7 @@ void XFluidImplicitTimeInt::LinearSolve()
   const double tcpuele = ds_cputime();
   {
     // time measurement: element
-    TimeMonitor elementmonitor(*timeelement_);
+    TimeMonitor monitor(*timeelement_);
 
     sysmat_->Zero();
 
@@ -1070,6 +1066,7 @@ void XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // other parameters that might be needed by the elements
   eleparams.set("total time",time_);
   eleparams.set("thsl",theta_*dta_);
+  eleparams.set("dt",dta_);
   eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation",false));
 
   // set vector values needed by elements
@@ -1155,12 +1152,6 @@ void XFluidImplicitTimeInt::Output()
   {
     writestep_= 0;
 
-    // solid
-    if (cutterdiscret_->NumGlobalElements() > 0)
-    {
-        solidoutput_.NewStep    (step_,time_);
-    }
-    
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
     //output_.WriteVector("residual", trueresidual_);
@@ -1182,13 +1173,6 @@ void XFluidImplicitTimeInt::Output()
     {
       restartstep_ = 0;
 
-      // solid
-      if (cutterdiscret_->NumGlobalElements() > 0)
-      {
-          soliddispnp_->PutScalar(0.0);
-          solidoutput_.WriteVector("soliddispnp", soliddispnp_);
-      }
-      
       output_.WriteVector("accn", accn_);
       output_.WriteVector("veln", veln_);
       output_.WriteVector("velnm", velnm_);
@@ -1206,10 +1190,6 @@ void XFluidImplicitTimeInt::Output()
   {
     restartstep_ = 0;
 
-    solidoutput_.NewStep    (step_,time_);
-    soliddispnp_->PutScalar(0.0);
-    solidoutput_.WriteVector("soliddispnp", soliddispnp_);
-    
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
     //output_.WriteVector("residual", trueresidual_);
@@ -1634,7 +1614,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem()
     {
       printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
     }
-   
+
     // -------------------------------------------------------------------
     //         evaluate dirichlet and neumann boundary conditions
     // -------------------------------------------------------------------

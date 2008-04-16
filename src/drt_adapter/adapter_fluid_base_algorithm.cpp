@@ -251,7 +251,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // velocity degrees of freedom
     if (genprob.probtyp == prb_fsi_xfem)
     {
-        fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, solver, fluidtimeparams, output, isale));
+        // This is temporary until I found a solution how to model the non-exising interface mesh of a XFEM fluid
+        // this is solely for the XFEM development and will go away (a.ger 04/08)
+        RCP<DRT::Discretization> soliddis = null;
+        soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+        
+        if (!soliddis->Filled()) soliddis->FillComplete();
+        
+        fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, soliddis, solver, fluidtimeparams, output, isale));
     }
     else
     {

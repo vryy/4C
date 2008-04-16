@@ -78,8 +78,7 @@ public:
 		  RCP<DRT::Discretization> cutterdis,
 		  LINALG::Solver&       solver,
 		  ParameterList&        params,
-		  IO::DiscretizationWriter& fluidoutput,
-		  IO::DiscretizationWriter& solidoutput,
+		  IO::DiscretizationWriter& output,
 		  bool alefluid);
 
 
@@ -250,14 +249,14 @@ protected:
   XFluidImplicitTimeInt operator = (const XFluidImplicitTimeInt& old);
   XFluidImplicitTimeInt (const XFluidImplicitTimeInt& old);
 
+  //! @name general algorithm parameters
   //! fluid discretization
-  RCP<DRT::Discretization> discret_;
+  RCP<DRT::Discretization>      discret_;
   //! structure dicretization (will be removed)
-  RCP<DRT::Discretization> cutterdiscret_;
+  RCP<DRT::Discretization>      cutterdiscret_;
   LINALG::Solver&               solver_;
   ParameterList&                params_;
-  IO::DiscretizationWriter&         output_;
-  IO::DiscretizationWriter&         solidoutput_;
+  IO::DiscretizationWriter&     output_;
   //! the processor ID from the communicator
   int                           myrank_;
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
@@ -348,9 +347,6 @@ protected:
   ///                or veln, accn (One-Step-Theta)
   RCP<Epetra_Vector>    hist_;
 
-  //! solid displacement (might be moved somewhere else later)
-  RCP<Epetra_Vector>    soliddispnp_;
-
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
 
@@ -358,6 +354,7 @@ protected:
   const LINALG::MapExtractor* freesurface_;
 
   //! @name time measurement
+
   RCP<Teuchos::Time> timetotal_   ;
   RCP<Teuchos::Time> timeinit_    ;
   RCP<Teuchos::Time> timetimeloop_;
@@ -367,8 +364,8 @@ protected:
   RCP<Teuchos::Time> timesolver_  ;
   RCP<Teuchos::Time> timeout_     ;
 
-  //! time measurement: total --- start TimeMonitor tm0
   RCP<TimeMonitor> tm0_ref_ ;
+
   //@}
 
   /// velocity-pressure block matrix split strategy
