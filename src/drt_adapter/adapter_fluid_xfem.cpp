@@ -11,7 +11,7 @@
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidXFEM::FluidXFEM(const Teuchos::ParameterList& prbdyn,
                                           std::string condname)
-  : fluid_(prbdyn,true)
+  : fluid_(prbdyn,false)
 {
 //  icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
 //                                   FluidField().Interface(),

@@ -22,6 +22,10 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
+#include "adapter_fluid_impl.H"
+#include "adapter_xfluid_impl.H"
+#include "adapter_fluid_genalpha.H"
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
