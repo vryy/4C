@@ -112,6 +112,16 @@ void xdyn_fluid_drt()
   if (soliddis->NumGlobalElements() > 0)
   {
       solidoutput.WriteMesh(0,0.0);
+      // solid displacement (to be removed)
+      const Epetra_Map* soliddofrowmap = soliddis->DofRowMap();
+      RCP<Epetra_Vector> soliddispnp = LINALG::CreateVector(*soliddofrowmap,true);
+      
+      solidoutput.NewStep    (0,0.0);
+      soliddispnp->PutScalar(0.0);
+      solidoutput.WriteVector("soliddispnp", soliddispnp);
+//      solidoutput_.NewStep    (step_,time_);
+//      soliddispnp_->PutScalar(0.0);
+//      solidoutput_.WriteVector("soliddispnp", soliddispnp_);
   }
   IO::DiscretizationWriter fluidoutput(fluiddis);
   fluidoutput.WriteMesh(0,0.0);
