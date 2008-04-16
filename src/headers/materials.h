@@ -190,6 +190,7 @@ typedef struct _CARREAUYASUDA
      DOUBLE                    lambda;      /* characteristic time */
      DOUBLE                    a;			/* constant parameter */
      DOUBLE                    b;           /* constant parameter */
+     DOUBLE                    density;     /* density */
 } CARREAUYASUDA;
 
 /*----------------------------------------------------------------------*

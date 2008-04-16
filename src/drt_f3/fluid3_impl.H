@@ -22,7 +22,6 @@ Maintainer: Ulrich Kuettler
 #include "fluid3.H"
 #include <blitz/array.h>
 
-
 namespace DRT
 {
 namespace ELEMENTS
@@ -192,7 +191,8 @@ namespace ELEMENTS
       const blitz::Array<double,2>&           fsevelnp,
       const DRT::Element::DiscretizationType  distype,
       const enum Fluid3::TauType              whichtau,
-      const double                            visc,
+      struct _MATERIAL*                       material,
+      double                                  visc,
       const double                            timefac,
       const double                            dt,
       const enum Fluid3::TurbModelAction      turb_mod_action,

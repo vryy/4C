@@ -223,18 +223,30 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
   }
 
   // we know we have all fluid3 elements with constant material
+  //TODO dserror if not !!
   DRT::Element* ele = dis->lRowElement(0);
 
   // get the material
+  double density = 0.0;
   RCP<MAT::Material> mat = ele->Material();
-  if (mat->MaterialType()!=m_fluid)
-    dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
-
-  actmat_ = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+  
+  if(mat->MaterialType()== m_fluid)
+  {
+	actmat_ = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+	density = actmat_->m.fluid->density;
+  }
+  else if(mat->MaterialType()== m_carreauyasuda)
+  {
+	actmat_ = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
+	density = actmat_->m.carreauyasuda->density;
+  }
+  else
+    dserror("fluid material expected but got type %d", mat->MaterialType());
 
   // This is a very poor way to transport the density to the
   // outside world.
-  const_cast<Teuchos::ParameterList&>(params).set("density", actmat_->m.fluid->density);
+  
+  const_cast<Teuchos::ParameterList&>(params).set("density", density);
 }
 
 
@@ -257,7 +269,7 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
 
   // the number of nodes
   const int numnode = ele->NumNode();
-
+  
   // initialise the Smagorinsky constant Cs and the viscous length scale l_tau to zero
   Cs_delta_sq_   = 0.0;
   l_tau_         = 0.0;

@@ -31,6 +31,7 @@ Maintainer: Georg Bauer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/carreauyasuda.H"
 
 #include <blitz/array.h>
 #include <Epetra_SerialDenseSolver.h>
@@ -206,11 +207,18 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
   // get the material
   RefCountPtr<MAT::Material> mat = Material();
-  if (mat->MaterialType()!=m_fluid)
-    dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
+  //if (mat->MaterialType()!=m_fluid && mat->MaterialType() != m_carreauyasuda)
+  //  dserror("fluid material expected but got type %d", mat->MaterialType());
 
-  MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-
+  MATERIAL* actmat = NULL;
+  
+  if(mat->MaterialType()== m_fluid)
+	  actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+  else if(mat->MaterialType()== m_carreauyasuda)
+	  actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
+  else
+	  dserror("fluid material expected but got type %d", mat->MaterialType());
+  
   switch(act)
   {
     //--------------------------------------------------
@@ -681,7 +689,16 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
-        params.set("density", actmat->m.fluid->density);
+        // TODO check
+        double dens = 0.0;
+        if(mat->MaterialType()== m_fluid)
+          dens = actmat->m.fluid->density;
+        else if(mat->MaterialType()== m_carreauyasuda)
+          dens = actmat->m.carreauyasuda->density;
+        else
+          dserror("no fluid material found");
+          
+        params.set("density", dens);
 
       }
       break;
@@ -1477,7 +1494,16 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
-        params.set("density", actmat->m.fluid->density);
+        // TODO check
+        double dens = 0.0;
+        if(mat->MaterialType()== m_fluid)
+          dens = actmat->m.fluid->density;
+        else if(mat->MaterialType()== m_carreauyasuda)
+          dens = actmat->m.carreauyasuda->density;
+        else
+          dserror("no fluid material found");
+          
+        params.set("density", dens);
       }
       break;
       case calc_fluid_genalpha_update_for_subscales:
@@ -2000,9 +2026,18 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                    reynolds,
                                    Cs);
 
-          // This is a very poor way to transport the density to the
-          // outside world. Is there a better one?
-          params.set("density", actmat->m.fluid->density);
+        // This is a very poor way to transport the density to the
+        // outside world. Is there a better one?
+        // TODO check
+        double dens = 0.0;
+        if(mat->MaterialType()== m_fluid)
+          dens = actmat->m.fluid->density;
+        else if(mat->MaterialType()== m_carreauyasuda)
+          dens = actmat->m.carreauyasuda->density;
+        else
+          dserror("no fluid material found");
+          
+        params.set("density", dens);
       }
       break;
       case calc_convective_stresses:

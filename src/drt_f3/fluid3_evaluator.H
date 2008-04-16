@@ -13,6 +13,7 @@
 #include "fluid3.H"
 
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/carreauyasuda.H"
 
 
 namespace DRT
@@ -120,6 +121,7 @@ namespace DRT
       /// map that converts strings to actions (stabilisation)
       static std::map<std::string,Fluid3::StabilisationAction> stabstrtoact_;
 
+      RefCountPtr<MAT::Material> matmodel_;
       MATERIAL* actmat_;
 
       double time_;

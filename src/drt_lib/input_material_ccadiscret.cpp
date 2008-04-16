@@ -69,10 +69,11 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       localmat.mattyp = m_carreauyasuda;
       localmat.m.carreauyasuda = new _CARREAUYASUDA();
       frdouble("MU_0"   ,&(localmat.m.carreauyasuda->mu_0)      ,&ierr);
-      frdouble("MU_inf" ,&(localmat.m.carreauyasuda->mu_inf)    ,&ierr);
+      frdouble("MU_INF" ,&(localmat.m.carreauyasuda->mu_inf)    ,&ierr);
       frdouble("LAMBDA" ,&(localmat.m.carreauyasuda->lambda)    ,&ierr);
       frdouble("A"      ,&(localmat.m.carreauyasuda->a)         ,&ierr);
       frdouble("B"      ,&(localmat.m.carreauyasuda->b)         ,&ierr);
+      frdouble("DENSITY",&(localmat.m.carreauyasuda->density)   ,&ierr);
    }
 
    frchk("MAT_condif",&ierr);
