@@ -668,7 +668,7 @@ DRT::ELEMENTS::Integrator_tri3_1point::Integrator_tri3_1point(void)
 /*----------------------------------------------------------------------*
  |                                                         vlf 06/07    |
  | recursive computation of determinant of a  matrix using Sarrus rule  |
- |                              										|
+ |                              					|
  *----------------------------------------------------------------------*/
 long double det_volf(Epetra_SerialDenseMatrix& in_matrix)
 {
@@ -680,7 +680,7 @@ long double det_volf(Epetra_SerialDenseMatrix& in_matrix)
 	}	
 	else if (in_matrix.N()==2)
 	{
-		return 	((long double)(in_matrix(0,0)*(long double)in_matrix(1,1))-\
+		return 	((long double)(in_matrix(0,0)*(long double)in_matrix(1,1))-
 					((long double)in_matrix(0,1)*(long double)in_matrix(1,0)));
 	}
 	else if (in_matrix.N()>2)
@@ -702,7 +702,7 @@ long double det_volf(Epetra_SerialDenseMatrix& in_matrix)
 		              temp_matrix(row-1,c_col-1)=in_matrix(row,c_col);	
 			}
  
-			out_det=out_det+((long double)sign *\
+			out_det=out_det+((long double)sign *
 					(long double)in_matrix(0,i_col) * (long double)det_volf(temp_matrix));
 			sign*=-1;
 		}
