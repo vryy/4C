@@ -159,6 +159,7 @@ int DRT::ELEMENTS::SoDisp::EvaluateNeumann(ParameterList& params,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
+  dserror("This element does not do body force or similar");
   return 0;
 }
 
