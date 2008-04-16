@@ -25,12 +25,12 @@ ADAPTER::GeneralFluidBaseAlgorithm::GeneralFluidBaseAlgorithm(const Teuchos::Par
     case prb_fsi:
     case prb_fluid_ale:
     case prb_freesurf:
-      cout << "using FluidAleAdapter as GeneralFluid" << endl;
-      fluid_ = Teuchos::rcp(new FluidAleAdapter(prbdyn,condname));
+      cout << "using FluidAle as GeneralFluid" << endl;
+      fluid_ = Teuchos::rcp(new FluidAle(prbdyn,condname));
       break;
     case prb_fsi_xfem:
-      cout << "using FluidXFEMAdapter as GeneralFluid" << endl;
-      fluid_ = Teuchos::rcp(new FluidXFEMAdapter(prbdyn,condname));
+      cout << "using FluidXFEM as GeneralFluid" << endl;
+      fluid_ = Teuchos::rcp(new FluidXFEM(prbdyn,condname));
       break;
     default:
       dserror("fsi type not supported");

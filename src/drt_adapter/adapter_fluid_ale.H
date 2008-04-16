@@ -17,11 +17,11 @@ namespace ADAPTER
 {
 
   /// fluid on ale
-  class FluidAleAdapter : public GeneralFluid
+  class FluidAle : public GeneralFluid
   {
   public:
 
-    FluidAleAdapter(const Teuchos::ParameterList& prbdyn,
+    FluidAle(const Teuchos::ParameterList& prbdyn,
                     std::string condname);
 
     /// fluid field

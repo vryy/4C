@@ -254,10 +254,10 @@ namespace ADAPTER {
     \author u.kue
     \date 02/08
    */
-  class FluidAdapter : public Fluid
+  class FluidImpl : public Fluid
   {
   public:
-    FluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
+    FluidImpl(Teuchos::RCP<DRT::Discretization> dis,
                  Teuchos::RCP<LINALG::Solver> solver,
                  Teuchos::RCP<ParameterList> params,
                  Teuchos::RCP<IO::DiscretizationWriter> output,
@@ -390,10 +390,10 @@ namespace ADAPTER {
       \author u.kue
       \date 02/08
      */
-    class XFluidAdapter : public Fluid
+    class XFluidImpl : public Fluid
     {
     public:
-      XFluidAdapter(Teuchos::RCP<DRT::Discretization> dis,
+      XFluidImpl(Teuchos::RCP<DRT::Discretization> dis,
                    Teuchos::RCP<LINALG::Solver> solver,
                    Teuchos::RCP<ParameterList> params,
                    Teuchos::RCP<IO::DiscretizationWriter> output,
@@ -521,10 +521,10 @@ namespace ADAPTER {
     \author pg
     \date 02/08
    */
-  class FluidGenAlphaAdapter : public Fluid
+  class FluidGenAlpha : public Fluid
   {
   public:
-    FluidGenAlphaAdapter(
+    FluidGenAlpha(
       Teuchos::RCP<DRT::Discretization>      dis,
       Teuchos::RCP<LINALG::Solver>           solver,
       Teuchos::RCP<ParameterList>            params,

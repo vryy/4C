@@ -9,7 +9,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidAleAdapter::FluidAleAdapter(const Teuchos::ParameterList& prbdyn,
+ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                                           std::string condname)
   : fluid_(prbdyn,true),
     ale_()
@@ -44,7 +44,7 @@ ADAPTER::FluidAleAdapter::FluidAleAdapter(const Teuchos::ParameterList& prbdyn,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FluidAleAdapter::Discretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::FluidAle::Discretization()
 {
   return FluidField().Discretization();
 }
@@ -52,7 +52,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidAleAdapter::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const LINALG::MapExtractor& ADAPTER::FluidAleAdapter::Interface() const
+const LINALG::MapExtractor& ADAPTER::FluidAle::Interface() const
 {
   return FluidField().Interface();
 }
@@ -60,7 +60,7 @@ const LINALG::MapExtractor& ADAPTER::FluidAleAdapter::Interface() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidAleAdapter::PrepareTimeStep()
+void ADAPTER::FluidAle::PrepareTimeStep()
 {
   FluidField().PrepareTimeStep();
   AleField().PrepareTimeStep();
@@ -69,7 +69,7 @@ void ADAPTER::FluidAleAdapter::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidAleAdapter::Update()
+void ADAPTER::FluidAle::Update()
 {
   FluidField().Update();
   AleField().Update();
@@ -78,7 +78,7 @@ void ADAPTER::FluidAleAdapter::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidAleAdapter::Output()
+void ADAPTER::FluidAle::Output()
 {
   FluidField().Output();
   AleField().Output();
@@ -89,7 +89,7 @@ void ADAPTER::FluidAleAdapter::Output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ADAPTER::FluidAleAdapter::ReadRestart(int step)
+double ADAPTER::FluidAle::ReadRestart(int step)
 {
   FluidField().ReadRestart(step);
   AleField().ReadRestart(step);
@@ -99,7 +99,7 @@ double ADAPTER::FluidAleAdapter::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidAleAdapter::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
+void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                               Teuchos::RCP<Epetra_Vector> ivel)
 {
   if (idisp!=Teuchos::null)
@@ -130,7 +130,7 @@ void ADAPTER::FluidAleAdapter::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                                                       double dt)
 {
   // Here we have a mesh position independent of the
@@ -157,7 +157,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::RelaxationSolve(Teuchos::R
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceForces()
 {
   return FluidField().ExtractInterfaceForces();
 }
@@ -165,7 +165,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::IntegrateInterfaceShape()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::IntegrateInterfaceShape()
 {
   return FluidField().IntegrateInterfaceShape();
 }
@@ -173,7 +173,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::IntegrateInterfaceShape()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidAleAdapter::CreateFieldTest()
+Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidAle::CreateFieldTest()
 {
   return FluidField().CreateFieldTest();
 }
@@ -181,7 +181,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidAleAdapter::CreateFieldTest()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupfa_.SlaveToMaster(iv);
 }
@@ -189,7 +189,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::AleToFluidField(Teuchos::R
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::AleToFluidField(Teuchos::RCP<const Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::AleToFluidField(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupfa_.SlaveToMaster(iv);
 }
@@ -197,7 +197,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::AleToFluidField(Teuchos::R
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return icoupfa_.MasterToSlave(iv);
 }
@@ -205,7 +205,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::FluidToAle(Teuchos::RCP<Ep
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAleAdapter::FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return icoupfa_.MasterToSlave(iv);
 }

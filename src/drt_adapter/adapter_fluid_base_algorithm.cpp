@@ -251,11 +251,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // velocity degrees of freedom
     if (genprob.probtyp == prb_fsi_xfem)
     {
-        fluid_ = rcp(new XFluidAdapter(actdis, solver, fluidtimeparams, output, isale));
+        fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, solver, fluidtimeparams, output, isale));
     }
     else
     {
-        fluid_ = rcp(new FluidAdapter(actdis, solver, fluidtimeparams, output, isale));
+        fluid_ = rcp(new ADAPTER::FluidImpl(actdis, solver, fluidtimeparams, output, isale));
     }
   }
   else if (iop == timeint_gen_alpha)
@@ -286,7 +286,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // integration (call the constructor);
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
-    fluid_ = rcp(new FluidGenAlphaAdapter(actdis, solver, fluidtimeparams, output, isale));
+    fluid_ = rcp(new ADAPTER::FluidGenAlpha(actdis, solver, fluidtimeparams, output, isale));
   }
   else
   {

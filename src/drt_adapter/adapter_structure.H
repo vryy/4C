@@ -208,11 +208,11 @@ namespace ADAPTER {
 
 
   /// adapter to generalized alpha algorithm
-  class StructureAdapter : public Structure
+  class StructureGenAlpha : public Structure
   {
   public:
 
-    StructureAdapter(Teuchos::RCP<Teuchos::ParameterList> params,
+    StructureGenAlpha(Teuchos::RCP<Teuchos::ParameterList> params,
                      Teuchos::RCP<DRT::Discretization> dis,
                      Teuchos::RCP<LINALG::Solver> solver,
                      Teuchos::RCP<IO::DiscretizationWriter> output);

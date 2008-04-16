@@ -16,11 +16,11 @@ namespace ADAPTER
 {
 
   /// fluid with moving interfaces implemented by the XFEM
-  class FluidXFEMAdapter : public GeneralFluid
+  class FluidXFEM : public GeneralFluid
   {
   public:
 
-    FluidXFEMAdapter(const Teuchos::ParameterList& prbdyn,
+    FluidXFEM(const Teuchos::ParameterList& prbdyn,
                     std::string condname);
 
     /// fluid field

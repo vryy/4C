@@ -9,7 +9,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidXFEMAdapter::FluidXFEMAdapter(const Teuchos::ParameterList& prbdyn,
+ADAPTER::FluidXFEM::FluidXFEM(const Teuchos::ParameterList& prbdyn,
                                           std::string condname)
   : fluid_(prbdyn,true)
 {
@@ -39,7 +39,7 @@ ADAPTER::FluidXFEMAdapter::FluidXFEMAdapter(const Teuchos::ParameterList& prbdyn
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEMAdapter::Discretization()
+Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEM::Discretization()
 {
   return FluidField().Discretization();
 }
@@ -47,7 +47,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidXFEMAdapter::Discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const LINALG::MapExtractor& ADAPTER::FluidXFEMAdapter::Interface() const
+const LINALG::MapExtractor& ADAPTER::FluidXFEM::Interface() const
 {
   return FluidField().Interface();
 }
@@ -55,7 +55,7 @@ const LINALG::MapExtractor& ADAPTER::FluidXFEMAdapter::Interface() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidXFEMAdapter::PrepareTimeStep()
+void ADAPTER::FluidXFEM::PrepareTimeStep()
 {
   FluidField().PrepareTimeStep();
   //AleField().PrepareTimeStep();
@@ -64,7 +64,7 @@ void ADAPTER::FluidXFEMAdapter::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidXFEMAdapter::Update()
+void ADAPTER::FluidXFEM::Update()
 {
   FluidField().Update();
   //AleField().Update();
@@ -73,7 +73,7 @@ void ADAPTER::FluidXFEMAdapter::Update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidXFEMAdapter::Output()
+void ADAPTER::FluidXFEM::Output()
 {
   FluidField().Output();
   //AleField().Output();
@@ -84,7 +84,7 @@ void ADAPTER::FluidXFEMAdapter::Output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double ADAPTER::FluidXFEMAdapter::ReadRestart(int step)
+double ADAPTER::FluidXFEM::ReadRestart(int step)
 {
   FluidField().ReadRestart(step);
   //AleField().ReadRestart(step);
@@ -94,7 +94,7 @@ double ADAPTER::FluidXFEMAdapter::ReadRestart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidXFEMAdapter::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
+void ADAPTER::FluidXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                           Teuchos::RCP<Epetra_Vector> ivel)
 {
   if (idisp!=Teuchos::null)
@@ -125,7 +125,7 @@ void ADAPTER::FluidXFEMAdapter::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEMAdapter::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                                                       double dt)
 {
   // Here we have a mesh position independent of the
@@ -152,7 +152,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEMAdapter::RelaxationSolve(Teuchos::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEMAdapter::ExtractInterfaceForces()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceForces()
 {
   return FluidField().ExtractInterfaceForces();
 }
@@ -160,7 +160,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEMAdapter::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEMAdapter::IntegrateInterfaceShape()
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::IntegrateInterfaceShape()
 {
   return FluidField().IntegrateInterfaceShape();
 }
@@ -168,7 +168,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEMAdapter::IntegrateInterfaceShape()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFEMAdapter::CreateFieldTest()
+Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFEM::CreateFieldTest()
 {
   return FluidField().CreateFieldTest();
 }
@@ -176,7 +176,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFEMAdapter::CreateFieldTest()
 
 ///*----------------------------------------------------------------------*/
 ///*----------------------------------------------------------------------*/
-//Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEMAdapter::AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const
+//Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const
 //{
 //  return coupfa_.SlaveToMaster(iv);
 //}
@@ -184,7 +184,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFEMAdapter::CreateFieldTest()
 //
 ///*----------------------------------------------------------------------*/
 ///*----------------------------------------------------------------------*/
-//Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEMAdapter::AleToFluidField(Teuchos::RCP<const Epetra_Vector> iv) const
+//Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::AleToFluidField(Teuchos::RCP<const Epetra_Vector> iv) const
 //{
 //  return coupfa_.SlaveToMaster(iv);
 //}
@@ -192,7 +192,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFEMAdapter::CreateFieldTest()
 //
 ///*----------------------------------------------------------------------*/
 ///*----------------------------------------------------------------------*/
-//Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEMAdapter::FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const
+//Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const
 //{
 //  return icoupfa_.MasterToSlave(iv);
 //}
@@ -200,7 +200,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFEMAdapter::CreateFieldTest()
 //
 ///*----------------------------------------------------------------------*/
 ///*----------------------------------------------------------------------*/
-//Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEMAdapter::FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const
+//Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const
 //{
 //  return icoupfa_.MasterToSlave(iv);
 //}
