@@ -12,7 +12,6 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
 #ifdef CCADISCRET
 
 #ifndef ADAPTER_FLUID_H
@@ -25,11 +24,9 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
-#include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_fluid/xfluidimplicitintegration.H"
-#include "../drt_fluid/fluidresulttest.H"
-#include "../drt_fluid/xfluidresulttest.H"
-#include "../drt_fluid/fluid_genalpha_integration.H"
+#include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_solver.H"
+#include "../drt_lib/drt_resulttest.H"
 
 #include "adapter_utils.H"
 

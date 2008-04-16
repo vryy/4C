@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file adapter_fluid_ale.H
+
+\brief 
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #ifndef ADAPTER_FLUID_ALE_H

@@ -21,6 +21,8 @@
 
 #include <string>
 #include <Epetra_Time.h>
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 

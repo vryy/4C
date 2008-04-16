@@ -12,7 +12,6 @@ Maintainer: Ulrich Kuettler
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
 #ifdef CCADISCRET
 
 #ifndef ADAPTER_STRUCTURE_H

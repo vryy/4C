@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file adapter_structure.cpp
+
+\brief Structure field adapter
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include "adapter_structure.H"

@@ -13,6 +13,8 @@
 
 #include "elch_dyn.H"
 #include "elch_algorithm.H"
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
