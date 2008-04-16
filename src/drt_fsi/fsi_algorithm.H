@@ -53,7 +53,7 @@ namespace FSI
     \date 02/08
    */
   class Algorithm : public ADAPTER::StructureBaseAlgorithm,
-                    public ADAPTER::GeneralFluidBaseAlgorithm
+                    public ADAPTER::FluidMovingBoundaryBaseAlgorithm
   {
   public:
 

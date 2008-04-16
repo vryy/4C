@@ -16,7 +16,7 @@ namespace ADAPTER
 {
 
   /// fluid with moving interfaces implemented by the XFEM
-  class FluidXFEM : public GeneralFluid
+  class FluidXFEM : public FluidMovingBoundary
   {
   public:
 

@@ -9,7 +9,7 @@ namespace FSI
 {
 
   /// Fluid on Ale test algorithm
-  class FluidAleAlgorithm : public ADAPTER::GeneralFluidBaseAlgorithm
+  class FluidAleAlgorithm : public ADAPTER::FluidMovingBoundaryBaseAlgorithm
   {
   public:
     explicit FluidAleAlgorithm(Epetra_Comm& comm);

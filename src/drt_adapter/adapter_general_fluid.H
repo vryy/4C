@@ -25,12 +25,12 @@ namespace ADAPTER
     \author u.kue
     \date 03/08
    */
-  class GeneralFluid
+  class FluidMovingBoundary
   {
   public:
 
     /// virtual destructor to get polymorph destruction
-    virtual ~GeneralFluid() {}
+    virtual ~FluidMovingBoundary() {}
 
     //! @name Misc
 
@@ -104,25 +104,25 @@ namespace ADAPTER
 
 
   /// base of all algorithms that use a fluid on a variable domain
-  class GeneralFluidBaseAlgorithm
+  class FluidMovingBoundaryBaseAlgorithm
   {
   public:
 
     /// constructor
-    explicit GeneralFluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
+    explicit FluidMovingBoundaryBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
                                        std::string condname);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~GeneralFluidBaseAlgorithm() {}
+    virtual ~FluidMovingBoundaryBaseAlgorithm() {}
 
     /// fluid field solver
-    GeneralFluid& FluidField() { return *fluid_; }
-    const GeneralFluid& FluidField() const { return *fluid_; }
+    FluidMovingBoundary& FluidField() { return *fluid_; }
+    const FluidMovingBoundary& FluidField() const { return *fluid_; }
 
   private:
 
     /// fluid field solver
-    Teuchos::RCP<GeneralFluid> fluid_;
+    Teuchos::RCP<FluidMovingBoundary> fluid_;
   };
 }
 

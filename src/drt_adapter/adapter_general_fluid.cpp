@@ -13,7 +13,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::GeneralFluidBaseAlgorithm::GeneralFluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
+ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
                                                               std::string condname)
 {
     const Teuchos::ParameterList& list = DRT::Problem::Instance()->ProblemTypeParams();
@@ -25,11 +25,11 @@ ADAPTER::GeneralFluidBaseAlgorithm::GeneralFluidBaseAlgorithm(const Teuchos::Par
     case prb_fsi:
     case prb_fluid_ale:
     case prb_freesurf:
-      cout << "using FluidAle as GeneralFluid" << endl;
+      cout << "using FluidAle as FluidMovingBoundary" << endl;
       fluid_ = Teuchos::rcp(new FluidAle(prbdyn,condname));
       break;
     case prb_fsi_xfem:
-      cout << "using FluidXFEM as GeneralFluid" << endl;
+      cout << "using FluidXFEM as FluidMovingBoundary" << endl;
       fluid_ = Teuchos::rcp(new FluidXFEM(prbdyn,condname));
       break;
     default:

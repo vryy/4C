@@ -17,7 +17,7 @@
 /*----------------------------------------------------------------------*/
 FSI::Algorithm::Algorithm(Epetra_Comm& comm)
   : StructureBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams()),
-    GeneralFluidBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"),
+    FluidMovingBoundaryBaseAlgorithm(DRT::Problem::Instance()->FSIDynamicParams(),"FSICoupling"),
     comm_(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();

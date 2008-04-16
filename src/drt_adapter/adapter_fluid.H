@@ -34,7 +34,7 @@ Maintainer: Ulrich Kuettler
 /// Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
 
-  /// general fluid field interface for FSI
+  /// general fluid field interface for multiphysics (FSI, ELCH, ...)
   /*!
 
   This is the FSI algorithm's view on a fluid algorithm. This pure virtual

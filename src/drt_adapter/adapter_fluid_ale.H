@@ -17,7 +17,7 @@ namespace ADAPTER
 {
 
   /// fluid on ale
-  class FluidAle : public GeneralFluid
+  class FluidAle : public FluidMovingBoundary
   {
   public:
 
