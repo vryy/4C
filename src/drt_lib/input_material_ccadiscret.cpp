@@ -63,6 +63,18 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       if (localmat.m.fluid->density <= 0.0) dserror("MAT_fluid: density is not positive: %f",localmat.m.fluid->density);    
       frdouble("GAMMA",&(localmat.m.fluid->gamma)  ,&ierr);
    }
+   frchk("MAT_carreauyasuda",&ierr);  
+   if (ierr==1)
+   {
+      localmat.mattyp = m_carreauyasuda;
+      localmat.m.carreauyasuda = new _CARREAUYASUDA();
+      frdouble("MU_0"   ,&(localmat.m.carreauyasuda->mu_0)      ,&ierr);
+      frdouble("MU_inf" ,&(localmat.m.carreauyasuda->mu_inf)    ,&ierr);
+      frdouble("LAMBDA" ,&(localmat.m.carreauyasuda->lambda)    ,&ierr);
+      frdouble("A"      ,&(localmat.m.carreauyasuda->a)         ,&ierr);
+      frdouble("B"      ,&(localmat.m.carreauyasuda->b)         ,&ierr);
+   }
+
    frchk("MAT_condif",&ierr);
    if (ierr==1)
    {

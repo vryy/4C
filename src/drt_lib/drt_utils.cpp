@@ -66,6 +66,7 @@ extern "C"
 #include "../drt_mat/hyperpolyconvex.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/convecdiffus.H"
+#include "../drt_mat/carreauyasuda.H"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
 #include "drt_dserror.H"
@@ -453,6 +454,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::ConvecDiffus* condif = new MAT::ConvecDiffus();
       condif->Unpack(data);
       return condif;
+    }
+    case ParObject_CarreauYasuda:
+    {
+      MAT::CarreauYasuda* carYas = new MAT::CarreauYasuda();
+      carYas->Unpack(data);
+      return carYas;
     }
     case ParObject_CNode:
     {

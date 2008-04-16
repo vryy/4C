@@ -37,6 +37,7 @@ typedef struct _MATERIAL
      struct _COMPOGDEN        *compogden;    /* compressible ogden hyperelastic material */
      struct _VISCOHYPER       *viscohyper;   /* viscoelastic compressible ogden hyperelastic material */
      struct _FLUID            *fluid;        /* fluid material */
+     struct _CARREAUYASUDA    *carreauyasuda;/* fluid with nopnlinear viscosity according to Carreau-Yasuda */
      struct _CONDIF           *condif;       /* convection-diffusion material */
      struct _PL_HASH          *pl_hash;      /* elpl. hashin delamination material */
      struct _EL_ORTH          *el_orth;      /* elastic orthotropic material */
@@ -176,6 +177,21 @@ typedef struct _FLUID
      DOUBLE                    density;
      DOUBLE                    gamma;     /* surface tension coeficient */
 } FLUID;
+
+
+/*----------------------------------------------------------------------*
+ | fluid with nonlinear viscosity according               u.may 4/08    |
+ | to Carreau-Yasuda                                                    |
+ *----------------------------------------------------------------------*/
+typedef struct _CARREAUYASUDA
+{
+     DOUBLE                    mu_0; 		/* zero-shear viscosity */
+     DOUBLE                    mu_inf;		/* infinite-shear viscosity */
+     DOUBLE                    lambda;      /* characteristic time */
+     DOUBLE                    a;			/* constant parameter */
+     DOUBLE                    b;           /* constant parameter */
+} CARREAUYASUDA;
+
 /*----------------------------------------------------------------------*
  | convection-diffusion material                             vg 6/07    |
  *----------------------------------------------------------------------*/

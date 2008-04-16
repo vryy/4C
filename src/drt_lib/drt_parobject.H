@@ -115,6 +115,7 @@ using namespace std;
 #define ParObject_Beam3	                (int)90
 #define ParObject_Beam3Register	        (int)91
 #define ParObject_AAAneohooke           (int)92
+#define ParObject_CarreauYasuda         (int)93
 
 
 namespace DRT

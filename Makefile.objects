@@ -850,6 +850,7 @@ OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
                 src/drt_mat/aaaneohooke.o \
 		src/drt_mat/anisotropic_balzani.o \
 		src/drt_mat/convecdiffus.o \
+		src/drt_mat/carreauyasuda.o \
 		src/drt_mat/material.o
 #
 OBJS_DRT_MAT  = src/drt_mat/micromaterialgp_static.o \
