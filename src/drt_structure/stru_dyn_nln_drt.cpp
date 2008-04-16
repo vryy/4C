@@ -185,16 +185,16 @@ void dyn_nlnstructural_drt()
       {
       case struct_stress_none:
         genalphaparams.set<string>("io structural stress", "none");
-        break;
+      break;
       case struct_stress_cauchy:
         genalphaparams.set<string>("io structural stress", "cauchy");
-        break;
+      break;
       case struct_stress_pk:
         genalphaparams.set<string>("io structural stress", "2PK");
-        break;
+      break;
       default:
         genalphaparams.set<string>("io structural stress", "none");
-        break;
+      break;
       }
 
       genalphaparams.set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
