@@ -271,20 +271,23 @@ protected:
   FluidImplicitTimeInt (const FluidImplicitTimeInt& old);
 
   //! @name general algorithm parameters
+  //! fluid discretization
   RCP<DRT::Discretization>      discret_;
   LINALG::Solver&               solver_;
   ParameterList&                params_;
   IO::DiscretizationWriter&     output_;
+  //! the processor ID from the communicator
   int                           myrank_;
+  //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   bool                          alefluid_;
   bool                          dynamic_smagorinsky_;
   //@}
 
   //! @name time stepping variables
-  double time_;
-  int step_;
-  int stepmax_;
-  double maxtime_;
+  double  time_;    ///< physical time
+  int     step_;    ///< timestep
+  int     stepmax_; ///< maximal number of timesteps
+  double  maxtime_; ///< maximal physical computation time
   //@}
 
   /// time algorithm flag
@@ -407,9 +410,7 @@ protected:
   RCP<vector<double> >     averaged_MijMij_;
   RCP<vector<double> >     planecoords_;
 
-  // Extractor used for convergence check
-  // ------------------------------------
-
+  //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
 
   /// free surface row dof map extractor
@@ -437,13 +438,6 @@ protected:
 
   RCP<TimeMonitor> tm0_ref_ ;
 
-  //@}
-
-  //! @name even more turbulence garbage
-  /// somebody really needs to clean up here
-  double           dtele_;
-  double           dtsolve_;
-  double           dtfilter_;
   //@}
 
   // Flowrate array for impedance conditions

@@ -70,6 +70,11 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 {
 
   // -------------------------------------------------------------------
+  // get the processor ID from the communicator
+  // -------------------------------------------------------------------
+  myrank_  = discret_->Comm().MyPID();
+            
+  // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
   timetotal_    = TimeMonitor::getNewTimer("dynamic routine total"            );
@@ -143,11 +148,6 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
   FLUID_UTILS::SetupFluidSplit(*discret_,numdim,velpressplitter_);
-
-  // -------------------------------------------------------------------
-  // get the processor ID from the communicator
-  // -------------------------------------------------------------------
-  myrank_  = discret_->Comm().MyPID();
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -605,7 +605,7 @@ void FluidImplicitTimeInt::TimeLoop()
     // -------------------------------------------------------------------
     //                    calculate lift'n'drag forces
     // -------------------------------------------------------------------
-    int liftdrag = params_.get<int>("liftdrag");
+    const int liftdrag = params_.get<int>("liftdrag");
 
     if (liftdrag == 0); // do nothing, we don't want lift & drag
     if (liftdrag == 1)
@@ -843,9 +843,9 @@ void FluidImplicitTimeInt::NonlinearSolve()
     itemax  = 2;
   else itemax  = params_.get<int>   ("max nonlin iter steps");
 
-  dtsolve_ = 0;
-  dtele_   = 0;
-  double   tcpu;
+  double dtsolve = 0.0;
+  double dtele   = 0.0;
+  double dtfilter = 0.0;
 
   if (myrank_ == 0)
   {
@@ -866,7 +866,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       // time measurement: element
       TimeMonitor monitor(*timeelement_);
       // get cpu time
-      tcpu=ds_cputime();
+      const double tcpu=ds_cputime();
 
       sysmat_->Zero();
 
@@ -894,7 +894,10 @@ void FluidImplicitTimeInt::NonlinearSolve()
       {
         if (dynamic_smagorinsky_)
         {
+          // time measurement
+          const double tcpufilter=ds_cputime();
           this->ApplyFilterForDynamicComputationOfCs();
+          dtfilter=ds_cputime()-tcpufilter;
         }
       }
 
@@ -1040,7 +1043,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       }
 
       // end time measurement for element
-      dtele_=ds_cputime()-tcpu;
+      dtele=ds_cputime()-tcpu;
     }
 
     // How to extract the density from the fluid material?
@@ -1105,10 +1108,10 @@ void FluidImplicitTimeInt::NonlinearSolve()
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm);
-        printf(" (      --     ,te=%10.3E",dtele_);
+        printf(" (      --     ,te=%10.3E",dtele);
         if (dynamic_smagorinsky_)
         {
-          printf(",tf=%10.3E",dtfilter_);
+          printf(",tf=%10.3E",dtfilter);
         }
         printf(")\n");
       }
@@ -1130,10 +1133,10 @@ void FluidImplicitTimeInt::NonlinearSolve()
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
           if (dynamic_smagorinsky_)
           {
-            printf(",tf=%10.3E",dtfilter_);
+            printf(",tf=%10.3E",dtfilter);
           }
           printf(")\n");
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
@@ -1154,10 +1157,10 @@ void FluidImplicitTimeInt::NonlinearSolve()
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
           if (dynamic_smagorinsky_)
           {
-            printf(",tf=%10.3E",dtfilter_);
+            printf(",tf=%10.3E",dtfilter);
           }
           printf(")\n");
         }
@@ -1202,7 +1205,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       // time measurement: solver
       TimeMonitor monitor(*timesolver_);
       // get cpu time
-      tcpu=ds_cputime();
+      const double tcpusolve=ds_cputime();
 
       // do adaptive linear solver tolerance (not in first solve)
       if (isadapttol && itnum>1)
@@ -1217,7 +1220,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       solver_.ResetTolerance();
 
       // end time measurement for solver
-      dtsolve_=ds_cputime()-tcpu;
+      dtsolve = ds_cputime()-tcpusolve;
     }
 
     //------------------------------------------------ update (u,p) trial
@@ -1266,10 +1269,6 @@ void FluidImplicitTimeInt::LinearSolve()
   // time measurement: linearised fluid
   TimeMonitor monitor(*timenlnitlin_);
 
-  dtsolve_ = 0;
-  dtele_   = 0;
-  double  tcpu;
-
   if (myrank_ == 0)
     cout << "solution of linearised fluid   ";
 
@@ -1280,11 +1279,11 @@ void FluidImplicitTimeInt::LinearSolve()
   // call elements to calculate system matrix
   // -------------------------------------------------------------------
 
+  // get cpu time
+  const double tcpuele = ds_cputime();
   {
     // time measurement: element
     TimeMonitor monitor(*timeelement_);
-    // get cpu time
-    tcpu=ds_cputime();
 
     sysmat_->Zero();
 
@@ -1317,11 +1316,10 @@ void FluidImplicitTimeInt::LinearSolve()
 
     // finalize the complete matrix
     sysmat_->Complete();
-
-    // end time measurement for element
-    dtele_=ds_cputime()-tcpu;
   }
-
+  // end time measurement for element
+  const double dtele = ds_cputime() - tcpuele;
+  
   //--------- Apply dirichlet boundary conditions to system of equations
   //          residual velocities (and pressures) are supposed to be zero at
   //          boundary conditions
@@ -1335,24 +1333,22 @@ void FluidImplicitTimeInt::LinearSolve()
   }
 
   //-------solve for total new velocities and pressures
-
+  // get cpu time
+  const double tcpusolve = ds_cputime();
   {
     // time measurement: solver
-    TimeMonitor monitor(*timesolver_);
-    // get cpu time
-    tcpu=ds_cputime();
-
+    TimeMonitor solvemonitor(*timesolver_);
+  
     /* possibly we could accelerate it if the reset variable
        is true only every fifth step, i.e. set the last argument to false
        for 4 of 5 timesteps or so. */
     solver_.Solve(sysmat_->EpetraOperator(),velnp_,rhs_,true,true);
-
-    // end time measurement for solver
-    dtsolve_=ds_cputime()-tcpu;
   }
+  // end time measurement for solver
+  const double dtsolve = ds_cputime() - tcpusolve;
 
   if (myrank_ == 0)
-    cout << "te=" << dtele_ << ", ts=" << dtsolve_ << "\n\n" ;
+    cout << "te=" << dtele << ", ts=" << dtsolve << "\n\n" ;
 
 } // FluidImplicitTimeInt::LinearSolve
 
@@ -1373,7 +1369,7 @@ void FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // set the new solution we just got
   if (vel!=Teuchos::null)
   {
-    int len = vel->MyLength();
+    const int len = vel->MyLength();
 
     // Take Dirichlet values from velnp and add vel to veln for non-Dirichlet
     // values.
@@ -2116,7 +2112,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 
   // override time integration parameters in order to avoid misuse in
   // NonLinearSolve method below
-  double origdta = dta_;
+  const double origdta = dta_;
   dta_= 1.0;
   theta_ = 1.0;
 
@@ -2449,9 +2445,6 @@ void FluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
   {
     dserror("Only 3d problems are allowed for dynamic Smagorinsky");
   }
-
-  // time measurement
-  double tcpu=ds_cputime();
 
   // get the dofrowmap for access of velocity dofs
   const Epetra_Map* dofrowmap       = discret_->DofRowMap();
@@ -2871,8 +2864,6 @@ void FluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
       modelparams->set<RefCountPtr<vector<double> > >("planecoords_",planecoords_);
     }
   }
-
-  dtfilter_=ds_cputime()-tcpu;
 
   return;
 }
