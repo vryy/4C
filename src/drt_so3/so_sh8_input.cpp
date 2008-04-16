@@ -75,7 +75,7 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
 
   // we expect kintype to be total lagrangian
   kintype_ = soh8_totlag;
-   
+
   // read kinematic type
   char buffer[50];
   frchar("KINEM",buffer,&ierr);
@@ -95,7 +95,6 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
   }
 
   // read EAS technology flag
-  eastype_ = soh8_eassosh8;     // default: EAS for Solid-Shell8
   frchar("EAS",buffer,&ierr);
   if (ierr){
     // full EAS technology
@@ -110,6 +109,12 @@ bool DRT::ELEMENTS::So_sh8::ReadElement()
       eastype_ = soh8_easnone;
     }
     else dserror("Reading of SO_SH8 EAS technology failed");
+  }
+  else
+  {
+    eastype_ = soh8_eassosh8;     // default: EAS for Solid-Shell8
+    neas_ = 7;                    // number of eas parameters for EAS_SOSH8
+    soh8_easinit();
   }
 
   // read global coordinate of shell-thickness direction
