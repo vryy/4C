@@ -183,6 +183,7 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::SoDisp::ElementRegister() const
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::SoDisp::Volumes()
 {
+  dserror("body force not implemented");
   volume_.resize(1);
   return 0;
 }
@@ -222,6 +223,8 @@ DRT::Element** DRT::ELEMENTS::SoDisp::Surfaces()
     case wedge15:
         CreateSurfacesWegde15(nsurf);
         break;
+    case pyramid5:
+      dserror("pyramid5 is missing");
     default:
         dserror("distype not supported");
     }
