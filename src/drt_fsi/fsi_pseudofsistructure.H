@@ -50,12 +50,12 @@ namespace FSI
   \author tk
   \date 06/07
  */
-class PseudoFSIStructure : public Algorithm
+class StructureALE : public Algorithm
 {
 public:
 
   /// setup FSI algorithm
-  PseudoFSIStructure(Epetra_Comm& comm);
+  StructureALE(Epetra_Comm& comm);
 
   /// outer level FSI time loop
   void Timeloop();
@@ -66,7 +66,9 @@ private:
 
   void Solve();
   
-  void Update();
+  Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
+  
+//  void Update();
   
   /// interface structural operator
 

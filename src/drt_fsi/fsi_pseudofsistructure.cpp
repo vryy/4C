@@ -28,7 +28,7 @@ extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::PseudoFSIStructure::PseudoFSIStructure(Epetra_Comm& comm)
+FSI::StructureALE::StructureALE(Epetra_Comm& comm)
   : Algorithm(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
@@ -69,7 +69,7 @@ FSI::PseudoFSIStructure::PseudoFSIStructure(Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::PseudoFSIStructure::Timeloop()
+void FSI::StructureALE::Timeloop()
 {
   while (NotFinished())
   {
@@ -83,16 +83,30 @@ void FSI::PseudoFSIStructure::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::PseudoFSIStructure::Solve()
+void FSI::StructureALE::Solve()
 {
-  StructureField().Solve();  
+  StructureField().Solve();
+  FluidField().NonlinearSolve(StructToFluid(StructureField().ExtractInterfaceDispnp()));
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::PseudoFSIStructure::Update()
+//void FSI::StructureALE::Update()
+//{
+//  StructureField().Update();
+//}
+
+Teuchos::RCP<Epetra_Vector> FSI::StructureALE::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
-  StructureField().Update();
+  FSI::Coupling& coupsf = StructureFluidCoupling();
+  if (matchingnodes_)
+  {
+    return coupsf.MasterToSlave(iv);
+  }
+  else
+  {
+    return coupsfm_.MasterToSlave(iv);
+  }
 }
 
 #endif

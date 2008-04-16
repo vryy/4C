@@ -603,7 +603,7 @@ typedef enum _FSI_COUPLING
   fsi_iter_stagg_MFNK_FSI,
   fsi_iter_stagg_MPE,
   fsi_iter_stagg_RRE,
-  fsi_pseudo_structure
+  fsi_pseudo_structureale
 } FSI_COUPLING;
 
 

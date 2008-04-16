@@ -3,6 +3,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "adapter_fluid_ale.H"
 
@@ -102,11 +103,16 @@ double ADAPTER::FluidAle::ReadRestart(int step)
 void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                               Teuchos::RCP<Epetra_Vector> ivel)
 {
+  
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   if (idisp!=Teuchos::null)
   {
     // if we have values at the interface we need to apply them
     AleField().ApplyInterfaceDisplacements(FluidToAle(idisp));
-    FluidField().ApplyInterfaceVelocities(ivel);
+    if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
+    {
+      FluidField().ApplyInterfaceVelocities(ivel);
+    }
   }
 
   if (FluidField().FreeSurface().Relevant())
@@ -124,7 +130,12 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   AleField().Solve();
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDisplacement());
   FluidField().ApplyMeshDisplacement(fluiddisp);
-  FluidField().NonlinearSolve();
+  
+  // no computation of fluid velocities in case only structure and ALE are to compute 
+  if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
+  {
+    FluidField().NonlinearSolve();
+  }
 }
 
 

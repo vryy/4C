@@ -373,7 +373,7 @@ void fsi_ale_drt()
 
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
-  if ((Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_iter_monolithic)&&(Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structure))
+  if ((Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_iter_monolithic)&&(Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale))
   {
     Teuchos::RCP<FSI::DirichletNeumannCoupling> fsi = Teuchos::rcp(new FSI::DirichletNeumannCoupling(comm));
 
@@ -389,7 +389,7 @@ void fsi_ale_drt()
     testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
     testmanager.TestAll();
   }
-  else if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structure)
+  else if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
   {
     Teuchos::RCP<FSI::MonolithicOverlap> fsi = Teuchos::rcp(new FSI::MonolithicOverlap(comm));
 
@@ -407,7 +407,7 @@ void fsi_ale_drt()
   }
   else 
   {
-    Teuchos::RCP<FSI::PseudoFSIStructure> fsi = Teuchos::rcp(new FSI::PseudoFSIStructure(comm));
+    Teuchos::RCP<FSI::StructureALE> fsi = Teuchos::rcp(new FSI::StructureALE(comm));
 
     if (genprob.restart)
     {
