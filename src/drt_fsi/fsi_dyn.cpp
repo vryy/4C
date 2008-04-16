@@ -12,7 +12,7 @@
 #include "fsi_dyn.H"
 #include "fsi_dirichletneumann.H"
 #include "fsi_monolithicoverlap.H"
-#include "fsi_pseudofsistructure.H"
+#include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
 #include "fsi_utils.H"
 

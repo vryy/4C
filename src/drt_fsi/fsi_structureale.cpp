@@ -1,7 +1,7 @@
 
 #ifdef CCADISCRET
 
-#include "fsi_pseudofsistructure.H"
+#include "fsi_structureale.H"
 #include "fsi_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -24,7 +24,6 @@ It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
 extern struct _FILES  allfiles;
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -181,7 +181,7 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
 OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_algorithm.o \
                 src/drt_fsi/fsi_dirichletneumann.o \
-                src/drt_fsi/fsi_pseudofsistructure.o \
+                src/drt_fsi/fsi_structureale.o \
                 src/drt_fsi/fsi_monolithic.o \
                 src/drt_fsi/fsi_monolithicoverlap.o \
                 src/drt_fsi/fsi_fluid_ale.o \
