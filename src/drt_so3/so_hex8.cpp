@@ -517,10 +517,11 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
   if (name != "FiberVec") return;
 
   // check sizes
-  if ((name == "FiberVec") && ((int)data.size()!=3)) dserror("FiberVec size mismatch ");
+  if ((name == "FiberVec") && (data.size()!=fiberdirection_.size())) 
+    dserror("FiberVec size mismatch ");
 
   if (name == "FiberVec"){
-    data = fiberdirection_;
+      data = fiberdirection_;
   }
   else dserror("weirdo impossible case????");
 
