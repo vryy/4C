@@ -144,15 +144,18 @@ void FSI::MonolithicOverlap::SetDefaultParameters(const Teuchos::ParameterList& 
 
   dirParams.set<std::string>("Method","Newton");
 
+  Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
   Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   //Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
 
+  // status tests are expensive, but instructive
+  //solverOptions.set<std::string>("Status Test Check Type","Minimal");
+  solverOptions.set<std::string>("Status Test Check Type","Complete");
+
   // be explicit about linear solver parameters
   lsParams.set<std::string>("Aztec Solver","GMRES");
-  lsParams.set<int>("Size of Krylov Subspace",40);
-  lsParams.set<std::string>("Convergence Test","r0");
-  lsParams.set<double>("Tolerance",1e-2);
+  lsParams.set<int>("Size of Krylov Subspace",25);
   lsParams.set<std::string>("Preconditioner","User Defined");
   lsParams.set<int>("Output Frequency",AZ_all);
   lsParams.set<bool>("Output Solver Details",true);
@@ -376,19 +379,19 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
   combo->addStatusTest(converged);
   combo->addStatusTest(maxiters);
 
+  // setup tests for structural displacements
+
   Teuchos::RCP<NOX::StatusTest::Combo> structcombo =
     Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<PartialNormF> structureDisp =
     Teuchos::rcp(new PartialNormF("displacement",
-                                  *DofRowMap(),
-                                  *StructureField().DofRowMap(),
+                                  Extractor(),0,
                                   nlParams.get("Norm abs disp", 1.0e-6),
                                   PartialNormF::Scaled));
   Teuchos::RCP<PartialNormUpdate> structureDispUpdate =
     Teuchos::rcp(new PartialNormUpdate("displacement update",
-                                       *DofRowMap(),
-                                       *StructureField().DofRowMap(),
+                                       Extractor(),0,
                                        nlParams.get("Norm abs disp", 1.0e-6),
                                        PartialNormUpdate::Scaled));
 
@@ -397,42 +400,59 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
   converged->addStatusTest(structcombo);
 
-  Teuchos::RCP<NOX::StatusTest::Combo> fluidcombo =
+  // setup tests for fluid velocities
+
+  std::vector<Teuchos::RCP<const Epetra_Map> > fluidvel;
+  fluidvel.push_back(FluidField().InnerVelocityRowMap());
+  fluidvel.push_back(LINALG::SplitMap(*DofRowMap(),
+                                      *FluidField().InnerVelocityRowMap()));
+  LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(),fluidvel);
+
+  Teuchos::RCP<NOX::StatusTest::Combo> fluidvelcombo =
     Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<PartialNormF> innerFluidVel =
     Teuchos::rcp(new PartialNormF("velocity",
-                                  *DofRowMap(),
-                                  *FluidField().InnerVelocityRowMap(),
+                                  fluidvelextract,0,
                                   nlParams.get("Norm abs vel", 1.0e-6),
                                   PartialNormF::Scaled));
   Teuchos::RCP<PartialNormUpdate> innerFluidVelUpdate =
     Teuchos::rcp(new PartialNormUpdate("velocity update",
-                                       *DofRowMap(),
-                                       *FluidField().InnerVelocityRowMap(),
+                                       fluidvelextract,0,
                                        nlParams.get("Norm abs vel", 1.0e-6),
                                        PartialNormUpdate::Scaled));
 
-  fluidcombo->addStatusTest(innerFluidVel);
-  fluidcombo->addStatusTest(innerFluidVelUpdate);
+  fluidvelcombo->addStatusTest(innerFluidVel);
+  fluidvelcombo->addStatusTest(innerFluidVelUpdate);
+
+  converged->addStatusTest(fluidvelcombo);
+
+  // setup tests for fluid pressure
+
+  std::vector<Teuchos::RCP<const Epetra_Map> > fluidpress;
+  fluidpress.push_back(FluidField().InnerVelocityRowMap());
+  fluidpress.push_back(LINALG::SplitMap(*DofRowMap(),
+                                        *FluidField().InnerVelocityRowMap()));
+  LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(),fluidpress);
+
+  Teuchos::RCP<NOX::StatusTest::Combo> fluidpresscombo =
+    Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<PartialNormF> fluidPress =
     Teuchos::rcp(new PartialNormF("pressure",
-                                  *DofRowMap(),
-                                  *FluidField().PressureRowMap(),
+                                  fluidpressextract,0,
                                   nlParams.get("Norm abs pres", 1.0e-6),
                                   PartialNormF::Scaled));
   Teuchos::RCP<PartialNormUpdate> fluidPressUpdate =
     Teuchos::rcp(new PartialNormUpdate("pressure update",
-                                       *DofRowMap(),
-                                       *FluidField().PressureRowMap(),
+                                       fluidpressextract,0,
                                        nlParams.get("Norm abs pres", 1.0e-6),
                                        PartialNormUpdate::Scaled));
 
-  fluidcombo->addStatusTest(fluidPress);
-  fluidcombo->addStatusTest(fluidPressUpdate);
+  fluidpresscombo->addStatusTest(fluidPress);
+  fluidpresscombo->addStatusTest(fluidPressUpdate);
 
-  converged->addStatusTest(fluidcombo);
+  converged->addStatusTest(fluidpresscombo);
 
   return combo;
 }

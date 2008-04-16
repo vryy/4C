@@ -214,14 +214,14 @@ double FSI::GenericNormF::getInitialTolerance() const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::PartialNormF::PartialNormF(std::string name,
-                                const Epetra_Map &fullmap,
-                                const Epetra_Map &innermap,
+                                const LINALG::MultiMapExtractor& extractor,
+                                int blocknum,
                                 double tolerance,
                                 ScaleType stype)
   : GenericNormF(name,tolerance,stype),
-    innermap_(innermap)
+    extractor_(extractor),
+    blocknum_(blocknum)
 {
-  extractor_ = Teuchos::rcp(new Epetra_Import(innermap_, fullmap));
 }
 
 
@@ -237,12 +237,9 @@ double FSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
   const NOX::Abstract::Vector& abstract_f = grp.getF();
   const NOX::Epetra::Vector& f = Teuchos::dyn_cast<const NOX::Epetra::Vector>(abstract_f);
 
-  // extract the inner vector elements we are interessted in
+  // extract the inner vector elements we are interested in
 
-  Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(innermap_));
-  int err = v->Import(f.getEpetraVector(), *extractor_, Insert);
-  if (err!=0)
-    dserror("import failed with err=%d", err);
+  Teuchos::RCP<Epetra_Vector> v = extractor_.ExtractVector(f.getEpetraVector(),blocknum_);
 
   return FSI::GenericNormF::computeNorm(*v);
 }
@@ -395,15 +392,14 @@ double FSI::GenericNormUpdate::getTolerance() const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
-                                          const Epetra_Map &fullmap,
-                                          const Epetra_Map &innermap,
+                                          const LINALG::MultiMapExtractor& extractor,
+                                          int blocknum,
                                           double tolerance,
                                           ScaleType stype)
-  : GenericNormUpdate(tolerance,stype)
+  : GenericNormUpdate(tolerance,stype),
+    extractor_(extractor),
+    blocknum_(blocknum)
 {
-  extractor_.Setup(fullmap,
-                   Teuchos::rcp(&innermap,false),
-                   LINALG::SplitMap(fullmap,innermap));
 }
 
 
@@ -411,7 +407,7 @@ FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
 /*----------------------------------------------------------------------*/
 double FSI::PartialNormUpdate::computeNorm(const Epetra_Vector& v)
 {
-  return FSI::GenericNormUpdate::computeNorm(*extractor_.ExtractCondVector(v));
+  return FSI::GenericNormUpdate::computeNorm(*extractor_.ExtractVector(v,blocknum_));
 }
 
 

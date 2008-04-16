@@ -6,6 +6,7 @@
 
 #include "fsi_monolithic.H"
 #include "fsi_nox_group.H"
+#include "fsi_nox_adapttol.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
@@ -223,6 +224,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   // sublists
 
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
   Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
@@ -271,6 +273,12 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
     InitialGuess(initial_guess);
 
     NOX::Epetra::Vector noxSoln(initial_guess, NOX::Epetra::Vector::CreateView);
+
+    // activate the tolerance settings
+    Teuchos::RCP<NOX::Abstract::PrePostOperator> adaptprepost =
+      Teuchos::rcp(new NOX::FSI::AdaptiveTolerance(utils_,lsParams));
+    solverOptions.set<Teuchos::RCP<NOX::Abstract::PrePostOperator> >("User Defined Pre/Post Operator",
+                                                                     adaptprepost);
 
     // Create the linear system
     Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =

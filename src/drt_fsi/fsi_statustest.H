@@ -157,8 +157,8 @@ namespace FSI
   public:
 
     PartialNormF(std::string name,
-                 const Epetra_Map &fullmap,
-                 const Epetra_Map &innermap,
+                 const LINALG::MultiMapExtractor& extractor,
+                 int blocknum,
                  double tolerance,
                  ScaleType stype = Scaled);
 
@@ -167,9 +167,8 @@ namespace FSI
     double computeNorm(const NOX::Abstract::Group& grp);
 
   private:
-    const Epetra_Map &innermap_;
-
-    Teuchos::RCP<Epetra_Import> extractor_;
+    const LINALG::MultiMapExtractor extractor_;
+    int blocknum_;
   };
 
 
@@ -250,8 +249,8 @@ namespace FSI
   {
   public:
     PartialNormUpdate(std::string name,
-                      const Epetra_Map &fullmap,
-                      const Epetra_Map &innermap,
+                      const LINALG::MultiMapExtractor& extractor,
+                      int blocknum,
                       double tolerance,
                       ScaleType stype = Scaled);
   protected:
@@ -260,7 +259,8 @@ namespace FSI
     virtual double computeNorm(const Epetra_Vector& v);
 
   private:
-    LINALG::MapExtractor extractor_;
+    const LINALG::MultiMapExtractor extractor_;
+    int blocknum_;
   };
 
 
