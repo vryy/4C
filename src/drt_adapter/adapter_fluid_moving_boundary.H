@@ -10,7 +10,6 @@
 
 #include "adapter_fluid.H"
 #include "adapter_ale.H"
-#include "../drt_fsi/fsi_coupling.H"
 
 namespace ADAPTER
 {
