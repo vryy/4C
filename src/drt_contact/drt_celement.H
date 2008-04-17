@@ -44,6 +44,20 @@ class CElement : public DRT::Element
 public:
 
   //! @name Enums and Friends
+  enum ShapeType // shape function types recognized by CElement
+    {
+      lin1D,
+      lindual1D,
+      lindual1D_edge0,
+      lindual1D_edge1,
+      dual1D_base_for_edge0,
+      dual1D_base_for_edge1,
+      quad1D,
+      quaddual1D,
+      quaddual1D_edge0,
+      quaddual1D_edge1 
+    };
+      
   //@}
 
   //! @name Constructors and destructors and related methods
@@ -298,6 +312,14 @@ public:
   virtual double ComputeArea();
   
   /*!
+  \brief A repository for all kinds of 1D/2D shape functions
+  */
+  virtual void ShapeFunctions(CElement::ShapeType shape,
+                              const double* xi,
+                              vector<double>& val,
+                              vector<double>& deriv);
+  
+  /*!
   \brief Evaluate shape functions and derivatives - LINEAR / QUAD 1D 
   */
   virtual bool EvaluateShape1D(const double* xi, vector<double>& val,
@@ -332,7 +354,7 @@ public:
 
 
 private:
-
+  
   DRT::Element::DiscretizationType   shape_;   // shape of this element
   
   bool          isslave_;           // indicating slave or master side

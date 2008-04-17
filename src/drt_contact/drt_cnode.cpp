@@ -25,6 +25,7 @@ CONTACT::CNode::CNode(int id, const double* coords, const int owner,
                       const int numdof, const vector<int>& dofs, const bool isslave) :
 DRT::Node(id,coords,owner),
 isslave_(isslave),
+isonbound_(false),
 numdof_(numdof),
 dofs_(dofs),
 closestnode_(-1),
@@ -48,6 +49,7 @@ grow_(1.0e12)
 CONTACT::CNode::CNode(const CONTACT::CNode& old) :
 DRT::Node(old),
 isslave_(old.isslave_),
+isonbound_(old.isonbound_),
 numdof_(old.numdof_),
 dofs_(old.dofs_),
 closestnode_(old.closestnode_),
@@ -105,7 +107,8 @@ void CONTACT::CNode::Print(ostream& os) const
     os << dofs_[i] << " ";
   if (IsSlave()) os << " Slave Side  ";
   else           os << " Master Side ";
-
+  if (IsOnBound()) os << " Boundary Node ";
+  else             os << " Interior Node ";
   return;
 }
 
@@ -126,6 +129,8 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   // add isslave_
   AddtoPack(data,isslave_);
+  // add isonbound_
+  AddtoPack(data,isonbound_);
   // add numdof_
   AddtoPack(data,numdof_);
   // add dofs_
@@ -164,6 +169,8 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   DRT::Node::Unpack(basedata);
   // isslave_
   ExtractfromPack(position,data,isslave_);
+  // isonbound_
+  ExtractfromPack(position,data,isonbound_);
   // numdof_
   ExtractfromPack(position,data,numdof_);
   // dofs_
@@ -191,6 +198,10 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::AddDValue(int row, int col, double val)
 {
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false || IsOnBound()==true)
+    dserror("ERROR: AddDValue: function called for master node %i", Id());
+  
   // check if this has been called before
   if ((int)drows_.size()==0)
     drows_.resize(NumDof());
@@ -211,6 +222,10 @@ void CONTACT::CNode::AddDValue(int row, int col, double val)
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::AddMValue(int row, int col, double val)
 {
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false || IsOnBound()==true)
+    dserror("ERROR: AddMValue: function called for master node %i", Id());
+    
   // check if this has been called before
   if ((int)mrows_.size()==0)
     mrows_.resize(NumDof());
@@ -231,6 +246,10 @@ void CONTACT::CNode::AddMValue(int row, int col, double val)
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::AddMmodValue(int row, int col, double val)
 {
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false || IsOnBound()==true)
+    dserror("ERROR: AddMmodValue: function called for master node %i", Id());
+    
   // check if this has been called before
   if ((int)mmodrows_.size()==0)
     mmodrows_.resize(NumDof());
@@ -251,6 +270,10 @@ void CONTACT::CNode::AddMmodValue(int row, int col, double val)
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::AddgValue(double val)
 {
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false || IsOnBound()==true)
+    dserror("ERROR: AddgValue: function called for master node %i", Id());
+  
   // initialize if called for the first time
   if (grow_==1.0e12) grow_=0;
   

@@ -287,7 +287,7 @@ isincontact_(false)
     // We rely on this fact, therefore it is not possible to
     // do contact between two distinct discretizations here
     
-    //--------------------------------------------- process nodes
+    //-------------------------------------------------- process nodes
     for (int j=0;j<(int)currentgroup.size();++j)
     {
       // get all nodes and add them
@@ -311,7 +311,7 @@ isincontact_(false)
       }
     }
 
-    //-------------------------------------------- process elements
+    //----------------------------------------------- process elements
     int ggsize = 0;
     for (int j=0;j<(int)currentgroup.size();++j)
     {

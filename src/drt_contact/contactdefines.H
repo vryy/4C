@@ -16,13 +16,14 @@ Maintainer: Alexander Popp
 #define CONTACTDEFINES_H
 
 #define CONTACTWNORMAL           /* flag for weighted nodal normal calc. */
+#define CONTACTBOUNDMOD          /* flag for modification of boundary nodes */
 //#define CONTACTSTICKING        /* flag for tangential sticking condition */
 //#define CONTACTONEMORTARLOOP   /* flag for computation of D,M matrices */
 //#define CONTACTDIMOUTPUT       /* flag for output of global matrix dim. */
 //#define CONTACTCHECKHUEEBER    /* flag for S.Hüeber's quad. conv. check */ 
 
 #define CONTACTPROJTOL 0.05      /* projection tol. for overlap decision */
-#define CONTACTPROJLIM 1.0e-8   /* no problems with exact node projections */
+#define CONTACTPROJLIM 1.0e-8    /* no problems with exact node projections */
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton   */
 #define CONTACTCONVTOL 1.0e-12   /* convergence tolerance for local Newton */
 #define CONTACTNGP 5             /* no. Gauss points for integration */

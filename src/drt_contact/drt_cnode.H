@@ -123,6 +123,26 @@ public:
   inline virtual bool IsSlave() const { return isslave_; }
 
   /*!
+  \brief Modify slave / master status of current node
+  
+  This belated modification is necessary to be able to deal
+  with boundary nodes on the slave side of the interface. Their
+  status is changed to master, thy do NOT carry Lagrange multi-
+  pliers and their neighbors' dual shape fct. are modified!
+  */
+  inline virtual bool& SetSlave() { return isslave_; }
+    
+  /*!
+  \brief Is Node on slave side boundary of contact interface
+  */
+  inline virtual bool IsOnBound() const { return isonbound_; }
+  
+  /*!
+  \brief Set slave side boundary status of current node
+  */
+  inline virtual bool& SetBound() { return isonbound_; }
+   
+  /*!
   \brief Get no. of degrees of freedom
   */
   inline virtual int NumDof() const { return numdof_; }
@@ -256,6 +276,7 @@ public:
 protected:
 
   bool            isslave_;        // true if cnode is on slave side of contact problem
+  bool            isonbound_;      // true if cnode is on slave side boundary
   int             numdof_;         // number of degrees of freedom (length of dofs_)
   vector<int>     dofs_;           // degrees of freedom of this node
   double          n_[3];           // nodal normal for contact methods

@@ -147,8 +147,8 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement&
     double dsxideta = -0.5*sxia + 0.5*sxib;
     
     /* loop over all dtemp matrix entries
-       nrow represents the dofs !!!
-       ncol represents the Lagrange multipliers !!!
+       nrow represents the Lagrange multipliers !!!
+       ncol represents the dofs !!!
        (although this does not really matter here for dseg,
        as it will turn out to be diagonal anyway)             */
     for (int j=0;j<nrow;++j)
@@ -156,7 +156,7 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement&
       for (int k=0;k<ncol;++k)
       {
         // multiply the two shape functions
-        double prod = val[j]*dualval[k];
+        double prod = dualval[j]*val[k];
         // add current Gauss point's contribution to dtemp  
         (*dtemp)(j,k) += prod*dxdsxi*dsxideta*wgt; 
       }
@@ -643,6 +643,11 @@ bool CONTACT::Integrator::AssembleD(CONTACT::Interface& inter,
     if (snode->Owner() != inter.Comm().MyPID())
       continue;
     
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound())
+      continue;
+    
     // loop over all dofs of the slave node
     for (int sdof=0;sdof<sndof;++sdof)
     {
@@ -658,7 +663,22 @@ bool CONTACT::Integrator::AssembleD(CONTACT::Interface& inter,
         {
           int col = mdofs[mdof];
           double val = dseg(slave*sndof+sdof,master*mndof+mdof);
-          snode->AddDValue(sdof,col,val);
+         
+          // BOUNDARY NODE MODIFICATION **********************************
+          // We have modified their neighbors' dual shape functions, so we
+          // now have a problem with off-diagonal entries occuring in D.
+          // Of course we want to keep the diagonality property of the D
+          // matrix, but still we may not modify the whole Mortar coupling
+          // setting! We achieve both by appling a quite simple but very
+          // effective trick: The boundary nodes have already been defined
+          // as being master nodes, so all we have to do here, is to shift
+          // the off-diagonal terms from D to the resepective place in M,
+          // which is not diagonal anyway! (Mind the MINUS sign!!!)
+          // *************************************************************
+          if (mnode->IsOnBound())
+            snode->AddMValue(sdof,col,-val);
+          else
+            snode->AddDValue(sdof,col,val);
         }
       }
     }
@@ -720,6 +740,11 @@ bool CONTACT::Integrator::AssembleM(CONTACT::Interface& inter,
     
     // only process slave node rows that belong to this proc
     if (snode->Owner() != inter.Comm().MyPID())
+      continue;
+    
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound())
       continue;
     
     // loop over all dofs of the slave node
@@ -807,6 +832,11 @@ bool CONTACT::Integrator::AssembleMmod(CONTACT::Interface& inter,
     if (snode->Owner() != inter.Comm().MyPID())
       continue;
     
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound())
+      continue;
+    
     // loop over all dofs of the slave node
     for (int sdof=0;sdof<sndof;++sdof)
     {
@@ -875,6 +905,11 @@ bool CONTACT::Integrator::AssembleG(CONTACT::Interface& inter,
     
     // only process slave node rows that belong to this proc
     if (snode->Owner() != inter.Comm().MyPID())
+      continue;
+    
+    // do not process slave side boundary nodes
+    // (their row entries would be zero anyway!)
+    if (snode->IsOnBound())
       continue;
     
     double val = gseg(slave);

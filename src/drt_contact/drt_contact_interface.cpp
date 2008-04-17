@@ -92,6 +92,41 @@ void CONTACT::Interface::FillComplete()
     Discret().FillComplete(false,false,false);
   } 
   
+#ifdef CONTACTBOUNDMOD
+  // detect boundary nodes on slave side
+  // ---------------------------------------------------------------------
+  // Within our dual Lagrange multiplier framework, results can be
+  // improved by a modified treatment of these "boundary nodes". Their
+  // status is changed to MASTER and consequently they will NOT carry
+  // Lagrange multipliers later on. In order to sustain the partition
+  // of unity property of the dual shape functions on the adjacent slave
+  // elements, the dual shape functions of the adjacent nodes will be
+  // modified later on! This way, the Mortar operator entries of these
+  // "boundary nodes" are transfered to the neighboring slave nodes!
+  // ---------------------------------------------------------------------
+  for (int i=0; i<(Discret().NodeRowMap())->NumMyElements();++i)
+  {
+    CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lRowNode(i));
+    
+    // candidates are slave nodes with only 1 adjacent CElement
+    if (node->IsSlave() && node->NumElement()==1)
+    {
+      //case1: linear shape functions, boundary nodes already found
+      if ((node->Elements()[0])->NumNode() == 2)
+      {
+        node->SetBound()=true;
+        node->SetSlave()=false;
+      }
+      //case2: quad. shape functions, middle nodes must be sorted out
+      else if (node->Id() != (node->Elements()[0])->NodeIds()[2])
+      {
+        node->SetBound()=true;
+        node->SetSlave()=false;
+      }
+    } 
+  }
+#endif // #ifdef CONTACTBOUNDMOD
+  
   // get standard nodal column map
   RCP<Epetra_Map> oldnodecolmap = rcp (new Epetra_Map(*(Discret().NodeColMap() )));
   // get standard element column map
@@ -165,33 +200,47 @@ void CONTACT::Interface::FillComplete()
   {
     const Epetra_Map* noderowmap = Discret().NodeRowMap();
     const Epetra_Map* nodecolmap = Discret().NodeColMap();
-    vector<int> sc;
-    vector<int> sr;
-    vector<int> scfull;
-    vector<int> mc;
-    vector<int> mr;
-    vector<int> mcfull;
+    
+    vector<int> sc;          // slave column map
+    vector<int> sr;          // slave row map
+    vector<int> scfull;      // slave full map
+    vector<int> mc;          // master column map
+    vector<int> mr;          // master row map
+    vector<int> mcfull;      // master full map
+    vector<int> scb;         // slave column map + boundary nodes
+    vector<int> scfullb;     // slave full map + boundary nodes
+    vector<int> mcfullb;     // master full map - boundary nodes
+    
     for (int i=0; i<nodecolmap->NumMyElements(); ++i)
     {
       int gid = nodecolmap->GID(i);
       bool isslave = dynamic_cast<CONTACT::CNode*>(Discret().gNode(gid))->IsSlave();
+      bool isonbound = dynamic_cast<CONTACT::CNode*>(Discret().gNode(gid))->IsOnBound();
       if (oldnodecolmap->MyGID(gid))
       {
+        if (isslave || isonbound) scb.push_back(gid);
         if (isslave) sc.push_back(gid);
-        else         mc.push_back(gid);
-      }  
+        else         mc.push_back(gid);  
+      }
+      if (isslave || isonbound) scfullb.push_back(gid);
+      else                      mcfullb.push_back(gid);
       if (isslave) scfull.push_back(gid);
       else         mcfull.push_back(gid);
       if (!noderowmap->MyGID(gid)) continue;
       if (isslave) sr.push_back(gid);
       else         mr.push_back(gid);
     }
+    
     snoderowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
     snodefullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
     snodecolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
     mnoderowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
     mnodefullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
     mnodecolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
+    
+    snodecolmapbound_ = rcp(new Epetra_Map(-1,(int)scb.size(),&scb[0],0,Comm()));
+    snodefullmapbound_ = rcp(new Epetra_Map(-1,(int)scfullb.size(),&scfullb[0],0,Comm()));
+    mnodefullmapnobound_ = rcp(new Epetra_Map(-1,(int)mcfullb.size(),&mcfullb[0],0,Comm()));
   }
   
   // do the same business for elements
@@ -199,12 +248,14 @@ void CONTACT::Interface::FillComplete()
   {
     const Epetra_Map* elerowmap = Discret().ElementRowMap();
     const Epetra_Map* elecolmap = Discret().ElementColMap();
-    vector<int> sc;
-    vector<int> sr;
-    vector<int> scfull;
-    vector<int> mc;
-    vector<int> mr;
-    vector<int> mcfull;
+    
+    vector<int> sc;          // slave column map
+    vector<int> sr;          // slave row map
+    vector<int> scfull;      // slave full map
+    vector<int> mc;          // master column map
+    vector<int> mr;          // master row map
+    vector<int> mcfull;      // master full map
+    
     for (int i=0; i<elecolmap->NumMyElements(); ++i)
     {
       int gid = elecolmap->GID(i);
@@ -220,6 +271,7 @@ void CONTACT::Interface::FillComplete()
       if (isslave) sr.push_back(gid);
       else         mr.push_back(gid);
     }
+    
     selerowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
     selefullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
     selecolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
@@ -232,8 +284,10 @@ void CONTACT::Interface::FillComplete()
   // (get row map of slave and master dofs seperately)
   {
     const Epetra_Map* noderowmap = Discret().NodeRowMap();
-    vector<int> sr;
-    vector<int> mr;
+    
+    vector<int> sr;          // slave row map
+    vector<int> mr;          // master row map
+    
     for (int i=0; i<noderowmap->NumMyElements();++i)
     {
       int gid = noderowmap->GID(i);
@@ -248,6 +302,7 @@ void CONTACT::Interface::FillComplete()
         for (int j=0;j<cnode->NumDof();++j)
           mr.push_back(cnode->Dofs()[j]);
     }
+    
     sdofrowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
     mdofrowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
   }
@@ -373,10 +428,11 @@ void CONTACT::Interface::Evaluate()
       dserror("ERROR: FillComplete() not called on interface %", id_);
   
   // loop over proc's slave nodes of the interface
-  // use standard column map to include processor's ghosted nodes 
-  for(int i=0; i<snodecolmap_->NumMyElements();++i)
+  // use standard column map to include processor's ghosted nodes
+  // use boundary map to include slave side boundary nodes
+  for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
   {
-    int gid = snodecolmap_->GID(i);
+    int gid = snodecolmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
@@ -445,17 +501,18 @@ bool CONTACT::Interface::EvaluateContactSearch()
   /**********************************************************************/
   
   // loop over proc's slave nodes for closest node detection
-  // use standard column map to include processor's ghosted nodes 
-  for (int i=0; i<snodecolmap_->NumMyElements();++i)
+  // use standard column map to include processor's ghosted nodes
+  // use boundary map to include slave boundary nodes
+  for (int i=0; i<snodecolmapbound_->NumMyElements();++i)
   {
-    int gid = snodecolmap_->GID(i);
+    int gid = snodecolmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
     CNode* snode = static_cast<CNode*>(node);
     
     // find closest master node to current slave node
     double mindist = 1.0e12;
-    CNode* closestnode = snode->FindClosestNode(idiscret_,mnodefullmap_,mindist);
+    CNode* closestnode = snode->FindClosestNode(idiscret_,mnodefullmapnobound_,mindist);
     snode->ClosestNode() = closestnode->Id();
     
     // proceed only if nodes are not far from each other!!!
@@ -482,17 +539,18 @@ bool CONTACT::Interface::EvaluateContactSearch()
   }
   
   // loop over all master nodes for closest node detection
-  // use full overlap column map to include all nodes 
-  for (int i=0; i<mnodefullmap_->NumMyElements();++i)
+  // use full overlap column map to include all nodes
+  // use no boundary map to exclude slave side boundary nodes
+  for (int i=0; i<mnodefullmapnobound_->NumMyElements();++i)
   {
-    int gid = mnodefullmap_->GID(i);
+    int gid = mnodefullmapnobound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
     CNode* mnode = static_cast<CNode*>(node);
       
     // find closest slave node to current master node
     double mindist = 1.0e12;
-    CNode* closestnode = mnode->FindClosestNode(idiscret_,snodefullmap_,mindist);
+    CNode* closestnode = mnode->FindClosestNode(idiscret_,snodefullmapbound_,mindist);
     mnode->ClosestNode() = closestnode->Id();
     
     // proceed only if nodes are not far from each other!!!

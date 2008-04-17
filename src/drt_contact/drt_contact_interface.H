@@ -407,34 +407,38 @@ protected:
   Interface(const Interface& old);
 
 
-  int                           id_;            // unique interface id
-  const Epetra_Comm&            comm_;          // communicator
-  RCP<DRT::Discretization>      idiscret_;      // the discretization of the contact interface
+  int                         id_;            // unique interface id
+  const Epetra_Comm&          comm_;          // communicator
+  RCP<DRT::Discretization>    idiscret_;      // the discretization of the contact interface
   
-  RCP<Epetra_Map>               snoderowmap_;   // row map of all slave nodes
-  RCP<Epetra_Map>               snodecolmap_;   // column map of all slave nodes
-  RCP<Epetra_Map>               snodefullmap_;  // fully overlapping column map of all slave nodes
-  RCP<Epetra_Map>               mnoderowmap_;   // row map of all master nodes
-  RCP<Epetra_Map>               mnodecolmap_;   // column map of all master nodes
-  RCP<Epetra_Map>               mnodefullmap_;  // fully overlapping column map of all master nodes
+  RCP<Epetra_Map>             snoderowmap_;   // row map of all slave nodes
+  RCP<Epetra_Map>             snodecolmap_;   // column map of all slave nodes
+  RCP<Epetra_Map>             snodefullmap_;  // fully overlapping column map of all slave nodes
+  RCP<Epetra_Map>             mnoderowmap_;   // row map of all master nodes
+  RCP<Epetra_Map>             mnodecolmap_;   // column map of all master nodes
+  RCP<Epetra_Map>             mnodefullmap_;  // fully overlapping column map of all master nodes
   
-  RCP<Epetra_Map>               selerowmap_;    // row map of all slave elements
-  RCP<Epetra_Map>               selecolmap_;    // column map of all slave elements
-  RCP<Epetra_Map>               selefullmap_;   // fully overlapping column map of all slave elements
-  RCP<Epetra_Map>               melerowmap_;    // row map of all master elements
-  RCP<Epetra_Map>               melecolmap_;    // column map of all master elements
-  RCP<Epetra_Map>               melefullmap_;   // fully overlapping column map of all master elements
+  RCP<Epetra_Map>             selerowmap_;    // row map of all slave elements
+  RCP<Epetra_Map>             selecolmap_;    // column map of all slave elements
+  RCP<Epetra_Map>             selefullmap_;   // fully overlapping column map of all slave elements
+  RCP<Epetra_Map>             melerowmap_;    // row map of all master elements
+  RCP<Epetra_Map>             melecolmap_;    // column map of all master elements
+  RCP<Epetra_Map>             melefullmap_;   // fully overlapping column map of all master elements
   
-  RCP<Epetra_Map>               sdofrowmap_;    // row map of all slave dofs
-  RCP<Epetra_Map>               mdofrowmap_;    // row map of all master dofs
+  RCP<Epetra_Map>             sdofrowmap_;    // row map of all slave dofs
+  RCP<Epetra_Map>             mdofrowmap_;    // row map of all master dofs
   
-  RCP<Epetra_Map>               activenodes_;   // row map of all active slave nodes
-  RCP<Epetra_Map>               activedofs_;    // row map of all active slave dofs
-  RCP<Epetra_Map>               activen_;       // row map of global N-matrix
-  RCP<Epetra_Map>               activet_;       // row map of global T-matrix
+  RCP<Epetra_Map>             snodecolmapbound_;    // col map of slave nodes (+ boundary nodes)
+  RCP<Epetra_Map>             snodefullmapbound_;   // full map of slave nodes (+ boundary nodes)
+  RCP<Epetra_Map>             mnodefullmapnobound_; // full map of master nodes (- boundary nodes)
   
-  Epetra_SerialDenseMatrix      contactsegs_;   // contains coordinates of all contact segments (gmsh)
-  int                           counter_;       // counts the number of calls to this interface (gmsh)
+  RCP<Epetra_Map>             activenodes_;   // row map of all active slave nodes
+  RCP<Epetra_Map>             activedofs_;    // row map of all active slave dofs
+  RCP<Epetra_Map>             activen_;       // row map of global N-matrix
+  RCP<Epetra_Map>             activet_;       // row map of global T-matrix
+  
+  Epetra_SerialDenseMatrix    contactsegs_;   // contains coordinates of all contact segments (gmsh)
+  int                         counter_;       // counts the number of calls to this interface (gmsh)
   
 }; // class Interface
 } // namespace CONTACT
