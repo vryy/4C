@@ -34,13 +34,13 @@
 /*----------------------------------------------------------------------*
  |  returns the number of nodes                              a.ger 11/07|
  |  for each discretization type                                        |
- *----------------------------------------------------------------------*/    
-int DRT::UTILS::getNumberOfElementNodes( 
+ *----------------------------------------------------------------------*/
+int DRT::UTILS::getNumberOfElementNodes(
     const DRT::Element::DiscretizationType&     distype)
 {
-    
+
     int numnodes = 0;
-    
+
     switch(distype)
     {
     case DRT::Element::dis_none:     return 0;    break;
@@ -58,23 +58,23 @@ int DRT::UTILS::getNumberOfElementNodes(
     case DRT::Element::tet4:         return 4;    break;
     case DRT::Element::tet10:        return 10;   break;
     default:
-        dserror("discretization type not yet implemented");  
+        dserror("discretization type not yet implemented");
     }
-    
-    return numnodes;     
-}   
+
+    return numnodes;
+}
 
 
 /*----------------------------------------------------------------------*
  |  returns the number of corner nodes                       u.may 08/07|
  |  for each discretization type                                        |
- *----------------------------------------------------------------------*/    
-int DRT::UTILS::getNumberOfElementCornerNodes( 
+ *----------------------------------------------------------------------*/
+int DRT::UTILS::getNumberOfElementCornerNodes(
     const DRT::Element::DiscretizationType&     distype)
 {
-    
+
     int numCornerNodes = 0;
-    
+
     switch(distype)
     {
         case DRT::Element::hex8:
@@ -91,21 +91,21 @@ int DRT::UTILS::getNumberOfElementCornerNodes(
             break;
         case DRT::Element::tet10:
             numCornerNodes = 4;
-            break;   
+            break;
         default:
-            dserror("discretization type not yet implemented");     
+            dserror("discretization type not yet implemented");
     }
-    
-    return numCornerNodes;     
-}   
-    
+
+    return numCornerNodes;
+}
+
 
 
 /*----------------------------------------------------------------------*
  |  returns the number of lines                              a.ger 08/07|
  |  for each discretization type                                        |
- *----------------------------------------------------------------------*/    
-int DRT::UTILS::getNumberOfElementLines( 
+ *----------------------------------------------------------------------*/
+int DRT::UTILS::getNumberOfElementLines(
     const DRT::Element::DiscretizationType&     distype)
 {
     int numLines = 0;
@@ -127,17 +127,17 @@ int DRT::UTILS::getNumberOfElementLines(
             numLines = 3;
             break;
         default:
-            dserror("discretization type not yet implemented");     
+            dserror("discretization type not yet implemented");
     }
     return numLines;
-}  
+}
 
 
 /*----------------------------------------------------------------------*
  |  returns the number of lines                              a.ger 08/07|
  |  for each discretization type                                        |
- *----------------------------------------------------------------------*/    
-int DRT::UTILS::getNumberOfElementSurfaces( 
+ *----------------------------------------------------------------------*/
+int DRT::UTILS::getNumberOfElementSurfaces(
     const DRT::Element::DiscretizationType&     distype)
 {
     int numSurf = 0;
@@ -153,20 +153,20 @@ int DRT::UTILS::getNumberOfElementSurfaces(
             numSurf = 4;
             break;
         default:
-            dserror("discretization type not yet implemented");     
+            dserror("discretization type not yet implemented");
     }
     return numSurf;
-}  
+}
 
 /*----------------------------------------------------------------------*
  |  Fills a vector< vector<int> > with all nodes for         u.may 08/07|
  |  every surface for each discretization type                          |
- *----------------------------------------------------------------------*/    
-vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(   
+ *----------------------------------------------------------------------*/
+vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
     const DRT::Element::DiscretizationType&     distype)
-{   
+{
     vector< vector<int> >   map;
-    
+
     switch(distype)
     {
         case DRT::Element::hex8:
@@ -186,7 +186,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         {
             const int nSurf = 6;
             const int nNode = 8;
-            vector<int> submap(nNode, 0);          
+            vector<int> submap(nNode, 0);
             for(int i = 0; i < nSurf; i++)
             {
                 map.push_back(submap);
@@ -212,12 +212,12 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         {
             const int nSurf = 4;
             const int nNode = 3;
-            vector<int> submap(nNode, 0);           
+            vector<int> submap(nNode, 0);
             for(int i = 0; i < nSurf; i++)
             {
                 map.push_back(submap);
                 for(int j = 0; j < nNode; j++)
-                    map[i][j] = eleNodeNumbering_tet10_surfaces[i][j];       
+                    map[i][j] = eleNodeNumbering_tet10_surfaces[i][j];
             }
             break;
         }
@@ -284,34 +284,34 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
           }
           break;
         }
-        default: 
-            dserror("discretizationtype is not yet implemented"); 
+        default:
+            dserror("discretizationtype is not yet implemented");
     }
-    
+
     return map;
 }
-    
 
 
 
-   
+
+
 /*----------------------------------------------------------------------*
  |  Fills a vector< vector<int> > with all nodes for         u.may 08/07|
  |  every line for each discretization type                             |
- *----------------------------------------------------------------------*/      
-vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(  
+ *----------------------------------------------------------------------*/
+vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
     const DRT::Element::DiscretizationType&     distype)
-{   
+{
     vector< vector<int> >  map;
-        
+
     switch(distype)
     {
         case DRT::Element::hex8:
         {
             const int nLine = 12;
-            const int nNode = 2;          
+            const int nNode = 2;
             vector<int> submap(nNode, -1);
-            
+
             for(int i = 0; i < nLine; i++)
             {
                 map.push_back(submap);
@@ -325,9 +325,9 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             const int nLine = 12;
             const int nNode = 3;
             vector<int> submap(nNode, -1);
-            
+
             for(int i = 0; i < nLine; i++)
-            {   
+            {
                 map.push_back(submap);
                 for(int j = 0; j < nNode; j++)
                     map[i][j] = eleNodeNumbering_hex27_lines[i][j];
@@ -339,7 +339,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             const int nLine = 12;
             const int nNode = 3;
             vector<int> submap(nNode, -1);
-            
+
             for(int i = 0; i < nLine; i++)
             {
                 map.push_back(submap);
@@ -353,7 +353,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             const int nLine = 6;
             const int nNode = 2;
             vector<int> submap(nNode, -1);
-            
+
             for(int i = 0; i < nLine; i++)
             {
                 map.push_back(submap);
@@ -367,7 +367,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             const int nLine = 6;
             const int nNode = 3;
             vector<int> submap(nNode, -1);
-            
+
             for(int i = 0; i < nLine; i++)
             {
                 map.push_back(submap);
@@ -381,7 +381,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             const int nLine = 4;
             const int nNode = 3;
             vector<int> submap(nNode, -1);
-            
+
             for(int i = 0; i < nLine; i++)
             {
                 map.push_back(submap);
@@ -389,13 +389,13 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
                     map[i][j] = eleNodeNumbering_quad9_lines[i][j];
             }
             break;
-        } 
+        }
         case DRT::Element::quad4:
         {
             const int nLine = 4;
             const int nNode = 2;
             vector<int> submap(nNode, -1);
-            
+
             for(int i = 0; i < nLine; i++)
             {
                 map.push_back(submap);
@@ -409,7 +409,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             const int nLine = 3;
             const int nNode = 3;
             vector<int> submap(nNode, -1);
-            
+
             for(int i = 0; i < nLine; i++)
             {
                 map.push_back(submap);
@@ -423,7 +423,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             const int nLine = 3;
             const int nNode = 2;
             vector<int> submap(nNode, -1);
-            
+
             for(int i = 0; i < nLine; i++)
             {
                 map.push_back(submap);
@@ -432,10 +432,10 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             }
             break;
         }
-        default: 
-            dserror("discretizationtype is not yet implemented"); 
+        default:
+            dserror("discretizationtype is not yet implemented");
     }
-    
+
     return map;
 }
 
@@ -447,22 +447,22 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
 /*----------------------------------------------------------------------*
  |  Fills a vector< vector<int> > with all surfaces for      u.may 08/07|
  |  every line for each discretization type                             |
- *----------------------------------------------------------------------*/   
-vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(    
+ *----------------------------------------------------------------------*/
+vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
     const DRT::Element::DiscretizationType&     distype)
-{   
+{
     int nLine;
     int nSurf;
-       
+
     vector< vector<int> > map;
-        
+
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
         nLine = 12;
         nSurf = 2;
         vector<int> submap(nSurf, 0);
         for(int i = 0; i < nLine; i++)
-        { 
+        {
             map.push_back(submap);
             for(int j = 0; j < nSurf; j++)
                 map[i][j] = eleNodeNumbering_hex27_lines_surfaces[i][j];
@@ -474,7 +474,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
         nSurf = 2;
         vector<int> submap(nSurf, 0);
         for(int i = 0; i < nLine; i++)
-        { 
+        {
             map.push_back(submap);
             for(int j = 0; j < nSurf; j++)
                 map[i][j] = eleNodeNumbering_tet10_lines_surfaces[i][j];
@@ -482,26 +482,26 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
     }
     else
         dserror("discretizationtype not yet implemented");
-        
-        
+
+
     return map;
-    
+
 }
-                                  
-             
-                                               
+
+
+
 /*----------------------------------------------------------------------*
  |  Fills a vector< vector<int> > with all surfaces for      u.may 08/07|
  |  every node for each discretization type                             |
- *----------------------------------------------------------------------*/   
-vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(    
+ *----------------------------------------------------------------------*/
+vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(
     const DRT::Element::DiscretizationType      distype)
 {
     const int nCornerNode = getNumberOfElementCornerNodes(distype);
     int nSurf;
-       
+
     vector< vector<int> >   map;
-        
+
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
         nSurf = 3;
@@ -526,9 +526,9 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(
     }
     else
         dserror("discretizationtype not yet implemented");
-        
-    return map; 
-   
+
+    return map;
+
 }
 
 
@@ -536,14 +536,14 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(
 /*----------------------------------------------------------------------*
  |  Fills a vector< vector<double> > with positions in reference coordinates
  |                                                           u.may 08/07|
- *----------------------------------------------------------------------*/   
-vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(   
+ *----------------------------------------------------------------------*/
+vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
     const DRT::Element::DiscretizationType      distype)
 {
     const int nNode = getNumberOfElementNodes(distype);
     const int dim = getDimension(distype);
     vector< vector<double> >   map(nNode, vector<double>(dim,0.0));
-        
+
     switch(distype)
     {
         case DRT::Element::hex8:
@@ -594,7 +594,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
         default:
             dserror("discretizationtype not yet implemented");
     }
-    
+
     return map;
 }
 
@@ -602,8 +602,8 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
 /*----------------------------------------------------------------------*
  |  Fills an array with surface ID s a point is lying on     u.may 08/07|
  |  for each discretization type                                        |
- *----------------------------------------------------------------------*/   
-int DRT::UTILS::getSurfaces(    
+ *----------------------------------------------------------------------*/
+int DRT::UTILS::getSurfaces(
     const blitz::Array<double,1>&               rst,
     int*                                        surfaces,
     const DRT::Element::DiscretizationType      distype)
@@ -611,28 +611,28 @@ int DRT::UTILS::getSurfaces(
 
     int countSurf = 0;
     const double TOL = 1e-7;
-    
+
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
-        if(fabs(rst(0)-1.0) < TOL)      surfaces[countSurf++] = 2;        
-        if(fabs(rst(0)+1.0) < TOL)      surfaces[countSurf++] = 4;        
-        if(fabs(rst(1)-1.0) < TOL)      surfaces[countSurf++] = 3;        
-        if(fabs(rst(1)+1.0) < TOL)      surfaces[countSurf++] = 1;        
-        if(fabs(rst(2)-1.0) < TOL)      surfaces[countSurf++] = 5;        
-        if(fabs(rst(2)+1.0) < TOL)      surfaces[countSurf++] = 0;     
+        if(fabs(rst(0)-1.0) < TOL)      surfaces[countSurf++] = 2;
+        if(fabs(rst(0)+1.0) < TOL)      surfaces[countSurf++] = 4;
+        if(fabs(rst(1)-1.0) < TOL)      surfaces[countSurf++] = 3;
+        if(fabs(rst(1)+1.0) < TOL)      surfaces[countSurf++] = 1;
+        if(fabs(rst(2)-1.0) < TOL)      surfaces[countSurf++] = 5;
+        if(fabs(rst(2)+1.0) < TOL)      surfaces[countSurf++] = 0;
     }
     else if(distype == DRT::Element::tet4 ||  distype == DRT::Element::tet10 )
     {
         const double tetcoord = rst(0)+rst(1)+rst(2);
-        if(fabs(rst(1))         < TOL)  surfaces[countSurf++] = 0;        
-        if(fabs(tetcoord-1.0)   < TOL)  surfaces[countSurf++] = 1;       
-        if(fabs(rst(0))         < TOL)  surfaces[countSurf++] = 2;        
-        if(fabs(rst(2))         < TOL)  surfaces[countSurf++] = 3;          
+        if(fabs(rst(1))         < TOL)  surfaces[countSurf++] = 0;
+        if(fabs(tetcoord-1.0)   < TOL)  surfaces[countSurf++] = 1;
+        if(fabs(rst(0))         < TOL)  surfaces[countSurf++] = 2;
+        if(fabs(rst(2))         < TOL)  surfaces[countSurf++] = 3;
     }
     else
         dserror("discretization type not yet implemented");
-        
-    return countSurf;   
+
+    return countSurf;
 }
 
 
@@ -640,71 +640,71 @@ int DRT::UTILS::getSurfaces(
  |  Fills an array with coordinates in the reference         u.may 08/07|
  |  system of the cutter element                                        |
  |  according to the node ID for each discretization type               |
- *----------------------------------------------------------------------*/   
+ *----------------------------------------------------------------------*/
 void DRT::UTILS::getNodeCoordinates(    const int                                   nodeId,
                                         double*                                     coord,
                                         const DRT::Element::DiscretizationType      distype)
 {
 
     if(distype == DRT::Element::quad4 ||  distype == DRT::Element::quad8 || distype == DRT::Element::quad9)
-    {       
+    {
         switch(nodeId)
         {
             case 0:
             {
-                coord[0] = -1.0; 
+                coord[0] = -1.0;
                 coord[1] = -1.0;
                 break;
             }
             case 1:
             {
-                coord[0] =  1.0; 
+                coord[0] =  1.0;
                 coord[1] = -1.0;
                 break;
             }
             case 2:
             {
-                coord[0] =  1.0; 
+                coord[0] =  1.0;
                 coord[1] =  1.0;
                 break;
             }
             case 3:
             {
-                coord[0] = -1.0; 
+                coord[0] = -1.0;
                 coord[1] =  1.0;
                 break;
             }
             default:
-                dserror("node number not correct");    
+                dserror("node number not correct");
         }
-        coord[2] = 0.0; 
+        coord[2] = 0.0;
     }
     else if(distype == DRT::Element::tri3 ||  distype == DRT::Element::tri6)
-    {       
+    {
         switch(nodeId)
         {
             case 0:
             {
-                coord[0] = 0.0; 
+                coord[0] = 0.0;
                 coord[1] = 0.0;
                 break;
             }
             case 1:
             {
-                coord[0] =  1.0; 
+                coord[0] =  1.0;
                 coord[1] =  0.0;
                 break;
             }
             case 2:
             {
-                coord[0] =  0.0; 
+                coord[0] =  0.0;
                 coord[1] =  1.0;
                 break;
             }
             default:
-                dserror("node number not correct");    
+                dserror("node number not correct");
         }
-        coord[2] = 0.0; 
+        coord[2] = 0.0;
     }
     else dserror("discretizationtype is not yet implemented");
 }
@@ -715,8 +715,8 @@ void DRT::UTILS::getNodeCoordinates(    const int                               
  |  Fills an array with coordinates in the reference         u.may 08/07|
  |  system of the cutter element                                        |
  |  according to the line ID for each discretization type               |
- *----------------------------------------------------------------------*/   
-void DRT::UTILS::getLineCoordinates(    
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::getLineCoordinates(
     const int                                   lineId,
     const double                                lineCoord,
     double*                                     coord,
@@ -725,67 +725,67 @@ void DRT::UTILS::getLineCoordinates(
 
     if(distype == DRT::Element::quad4 ||  distype == DRT::Element::quad8 || distype == DRT::Element::quad9)
     {
-        // change minus sign if you change the line numbering   
+        // change minus sign if you change the line numbering
         switch(lineId)
         {
             case 0:
             {
-                coord[0] = lineCoord; 
+                coord[0] = lineCoord;
                 coord[1] = -1.0;
                 break;
             }
             case 1:
             {
-                coord[0] = 1.0; 
+                coord[0] = 1.0;
                 coord[1] = lineCoord;
                 break;
             }
             case 2:
             {
-                coord[0] =  -lineCoord;    
+                coord[0] =  -lineCoord;
                 coord[1] =  1.0;
                 break;
             }
             case 3:
             {
-                coord[0] = -1.0; 
+                coord[0] = -1.0;
                 coord[1] = -lineCoord;
                 break;
             }
             default:
-                dserror("node number not correct");   
-                           
-        }  
-        coord[2] =  0.0;          
+                dserror("node number not correct");
+
+        }
+        coord[2] =  0.0;
     }
     else if(distype == DRT::Element::tri3 ||  distype == DRT::Element::tri6)
     {
-        // change minus sign if you change the line numbering   
+        // change minus sign if you change the line numbering
         switch(lineId)
         {
             case 0:
             {
-                coord[0] = (lineCoord+1)*0.5; 
+                coord[0] = (lineCoord+1)*0.5;
                 coord[1] = 0.0;
                 break;
             }
             case 1:
             {
-                coord[0] = 1.0; 
+                coord[0] = 1.0;
                 coord[1] = (lineCoord+1)*0.5;
                 break;
             }
             case 2:
             {
-                coord[0] =  1.0 - (lineCoord+1)*0.5;    
+                coord[0] =  1.0 - (lineCoord+1)*0.5;
                 coord[1] =  (lineCoord+1)*0.5;
                 break;
             }
             default:
-                dserror("node number not correct");   
-                           
-        }  
-        coord[2] =  0.0;          
+                dserror("node number not correct");
+
+        }
+        coord[2] =  0.0;
     }
     else
         dserror("discretization type not yet implemented");
@@ -797,15 +797,15 @@ void DRT::UTILS::getLineCoordinates(
  |  returns the index of a higher order                      u.may 09/07|
  |  element node index lying between two specified corner               |
  |  node indices for each discretizationtype                            |
- *----------------------------------------------------------------------*/  
+ *----------------------------------------------------------------------*/
 int DRT::UTILS::getHigherOrderIndex(
-    const int                                   index1, 
+    const int                                   index1,
     const int                                   index2,
     const DRT::Element::DiscretizationType      distype )
 {
 
     int higherOrderIndex = 0;
-    
+
     switch(distype)
     {
         case DRT::Element::tet10:
@@ -837,8 +837,8 @@ int DRT::UTILS::getHigherOrderIndex(
             break;
         }
         default:
-            dserror("discretizationtype not yet implemented");  
-    }          
+            dserror("discretizationtype not yet implemented");
+    }
     return higherOrderIndex;
 }
 
@@ -846,7 +846,7 @@ int DRT::UTILS::getHigherOrderIndex(
 
 /*----------------------------------------------------------------------*
  |  returns the dimension of the element parameter space     u.may 10/07|
- *----------------------------------------------------------------------*/  
+ *----------------------------------------------------------------------*/
 int DRT::UTILS::getDimension(
     const DRT::Element*   element)
 {
@@ -855,30 +855,30 @@ int DRT::UTILS::getDimension(
 
 /*----------------------------------------------------------------------*
  |  returns the dimension of the element-shape                 bos 01/08|
- *----------------------------------------------------------------------*/  
+ *----------------------------------------------------------------------*/
 int DRT::UTILS::getDimension(const DRT::Element::DiscretizationType distype)
 {
     int dim = 0;
-    
+
     switch(distype)
     {
         case DRT::Element::line2 :  case DRT::Element::line3 :
         {
-            dim = 1;      
+            dim = 1;
             break;
         }
         case DRT::Element::quad4 : case DRT::Element::quad8 : case DRT::Element::quad9 :
         case DRT::Element::tri3 : case DRT::Element::tri6 :
         {
-            dim = 2;   
+            dim = 2;
             break;
         }
         case DRT::Element::hex8 : case DRT::Element::hex20 : case DRT::Element::hex27 :
         case DRT::Element::tet4 : case DRT::Element::tet10 :
         {
-            dim = 3;      
+            dim = 3;
             break;
-        }   
+        }
         default:
             dserror("discretization type is not yet implemented");
     }
@@ -951,7 +951,7 @@ bool DRT::UTILS::checkRewinding3D(const DRT::Element* ele)
   xjm.Multiply('N','T',1.0,deriv,xyze,0.0);
 
 
-  
+
   const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                      xjm(0,1)*xjm(1,2)*xjm(2,0)+
                      xjm(0,2)*xjm(1,0)*xjm(2,1)-
@@ -959,7 +959,7 @@ bool DRT::UTILS::checkRewinding3D(const DRT::Element* ele)
                      xjm(0,0)*xjm(1,2)*xjm(2,1)-
                      xjm(0,1)*xjm(1,0)*xjm(2,2);
   if (abs(det) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
-  
+
   bool rewind = false;
   if (det < 0.0) rewind = true;
   else rewind = false;
@@ -969,15 +969,15 @@ bool DRT::UTILS::checkRewinding3D(const DRT::Element* ele)
 
 void DRT::UTILS::Rewinding3D(DRT::Discretization& dis)
 {
-  cout << "In the Rewinding3D function" << endl;
-  
+  //cout << "In the Rewinding3D function" << endl;
+
 
   bool dofillcompleteagain = false;
   //-------------------- loop all my column elements and check rewinding
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     // get the actual element
-    
+
 	DRT::Element *ele = dis.lColElement(i);
     const DRT::Element::DiscretizationType distype = ele->Shape();
     bool possiblytorewind = false;
@@ -998,7 +998,7 @@ void DRT::UTILS::Rewinding3D(DRT::Discretization& dis)
     default:
         dserror("invalid discretization type");
     }
-    
+
     if (possiblytorewind) {
       const bool rewind = checkRewinding3D(ele);
 
@@ -1030,7 +1030,7 @@ void DRT::UTILS::Rewinding3D(DRT::Discretization& dis)
           new_nodeids[6] = old_nodeids[4];
           new_nodeids[7] = old_nodeids[7];
           new_nodeids[8] = old_nodeids[8];
-          new_nodeids[9] = old_nodeids[9];          
+          new_nodeids[9] = old_nodeids[9];
           ele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else if (distype==DRT::Element::hex8){
@@ -1078,7 +1078,7 @@ void DRT::UTILS::Rewinding3D(DRT::Discretization& dis)
           ele->SetNodeIds(iel, &new_nodeids[0]);
         }
         else dserror("no rewinding scheme for this type of element");
-        
+
       }
       // process of rewinding done
       dofillcompleteagain = true;
@@ -1089,7 +1089,7 @@ void DRT::UTILS::Rewinding3D(DRT::Discretization& dis)
 }
 
 /*----------------------------------------------------------------------*
- |  Returns the geometric center of the element in local coordinates    |     
+ |  Returns the geometric center of the element in local coordinates    |
  |                                                           a.ger 12/07|
  *----------------------------------------------------------------------*/
 blitz::Array<double,1> DRT::UTILS::getLocalCenterPosition(
@@ -1124,7 +1124,7 @@ blitz::Array<double,1> DRT::UTILS::getLocalCenterPosition(
         {
             pos = 1.0/4.0;
             break;
-        }   
+        }
         default:
             dserror("discretization type is not yet implemented");
     }
