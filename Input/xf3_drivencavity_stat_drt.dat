@@ -424,7 +424,7 @@ Surface: 4 Orientation: SAME1ST
 Surface: 6 Orientation: SAME1ST
 Center: 0.500000 0.050000 0.500000
 END VOLUME
-------------------------------------DESIGN POINT DIRICH CONDITIONS
+------------------------------------DESIGN POINT DIRICH CONDITIONS 
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 8
 E 1 - 1 1 1 1 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
@@ -8667,10 +8667,10 @@ MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 10000 NUE 0.3 DENS 0.0 THEXPANS 0.0
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 1623 POSITION velz NAME velz VALUE -4.643844864e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 1623 POSITION velx NAME velx VALUE -2.808855888e-02 TOLERANCE 1e-6
-FLUID DIS 1 NODE 1623 POSITION pressure NAME pressure VALUE 1.841253727e-02 TOLERANCE 1e-5
-FLUID DIS 1 NODE 1610 POSITION pressure NAME pressure VALUE 1.841253727e-02 TOLERANCE 1e-5
+FLUID DIS 1 NODE 1623 POSITION velz NAME velz VALUE -4.639767941e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 1623 POSITION velx NAME velx VALUE -3.035825040e-02 TOLERANCE 1e-6
+FLUID DIS 1 NODE 1623 POSITION pressure NAME pressure VALUE 1.914752744e-02 TOLERANCE 1e-5
+FLUID DIS 1 NODE 1610 POSITION pressure NAME pressure VALUE 1.914752744e-02 TOLERANCE 1e-5
 -----------------------------------------------------------LOCSYS1
 -----------------------------------------------------------LOCSYS2
 -----------------------------------------------------------LOCSYS3
@@ -8678,8 +8678,8 @@ FLUID DIS 1 NODE 1610 POSITION pressure NAME pressure VALUE 1.841253727e-02 TOLE
 -----------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
-// FLUID 1 - 0 0 0 0 0 0
-// STRUCTURE 2 - 0 0 0 0 0 0
-// ALE 3 - 0 0 0 0 0 0
+// FLUID 1 - 0 0 0 0 0 0 
+// STRUCTURE 2 - 0 0 0 0 0 0 
+// ALE 3 - 0 0 0 0 0 0 
 ---------------------------------------------------------------END
 // END
