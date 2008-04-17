@@ -1,3 +1,11 @@
+//
+// Maintainer: Michael Gee
+//             gee@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-25239
+//
+// necessary defines: CCADISCRET D_SHELL8 D_SOLID3 D_SOH8 BINIO EXTRUSION RESULTTEST
+//
 -----------------------------------------------------------------------TITLE
 Default_title
 ----------------------------------------------------------------PROBLEM SIZE
@@ -13,10 +21,10 @@ PROBLEMTYP                      Structure
 TIMETYP                         Dynamic
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
+NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
-NUMALEDIS                       1
-NUMTHERMDIS                     1
+NUMALEDIS                       0
+NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_OUT                      No
 OUTPUT_GID                      No
