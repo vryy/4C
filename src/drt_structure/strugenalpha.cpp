@@ -1128,6 +1128,9 @@ void StruGenAlpha::FullNewton()
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
+  //------------------------------ turn adaptive solver tolerance on/off
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
+  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
   // check whether we have a stiffness matrix, that is not filled yet
   // and mass and damping are present
@@ -1171,11 +1174,15 @@ void StruGenAlpha::FullNewton()
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (!numiter)
-      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,true);
-    else
-      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,false);
-
+    if (isadapttol && numiter)
+    {
+      double worst = fresmnorm;
+      double wanted = tolres;
+      solver_.AdaptTolerance(wanted,worst,adaptolbetter);
+    }
+    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.ResetTolerance();
+    
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -1410,6 +1417,9 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   double tolconstr    = params_.get<double>("tolerance constraint"     ,1.0e-07);
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
+  //------------------------------ turn adaptive solver tolerance on/off
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
+  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
   int  maxiterUzawa   = params_.get<int>   ("uzawa maxiter"         ,50);
   double Uzawa_param=constrMan_->GetUzawaParameter();
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
@@ -1502,14 +1512,14 @@ void StruGenAlpha::FullNewtonLinearUzawa()
         LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresmcopy,zeros_,dirichtoggle_);
         // solve for disi
         // Solve K . IncD = -R  ===>  IncD_{n+1}
-        if (numiter_uzawa==0 and numiter==0)
+        if (isadapttol && numiter && numiter_uzawa)
         {
-            solver_.Solve(stiff_->EpetraMatrix(),disi_,fresmcopy,true,true);
+          double worst = norm_uzawa;
+          double wanted = tolres/10.0;
+          solver_.AdaptTolerance(wanted,worst,adaptolbetter);
         }
-        else
-        {
-            solver_.Solve(stiff_->EpetraMatrix(),disi_,fresmcopy,true,false);
-        }
+        solver_.Solve(stiff_->EpetraMatrix(),disi_,fresmcopy,true,numiter_uzawa==0 && numiter==0);
+        solver_.ResetTolerance();
 
         //compute Lagrange multiplier increment
         constrMan_->ComputeConstrTimesDisi(*disi_,dotprod);
@@ -1751,6 +1761,9 @@ void StruGenAlpha::ModifiedNewton()
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
+  //------------------------------ turn adaptive solver tolerance on/off
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
+  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
   //const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
   // check whether we have a stiffness matrix, that is not filled yet
@@ -1793,10 +1806,14 @@ void StruGenAlpha::ModifiedNewton()
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (!numiter)
-      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,true);
-    else
-      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,false,false);
+    if (isadapttol && numiter)
+    {
+      double worst = fresmnorm;
+      double wanted = tolres;
+      solver_.AdaptTolerance(wanted,worst,adaptolbetter);
+    }
+    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.ResetTolerance();
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -1975,6 +1992,9 @@ void StruGenAlpha::MatrixFreeNewton()
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
+  //------------------------------ turn adaptive solver tolerance on/off
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
+  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
   //const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
 //   int numiter=0;
@@ -2034,10 +2054,14 @@ void StruGenAlpha::MatrixFreeNewton()
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (!numiter)
-      solver_.Solve(mfop,disi_,fresm_,true,true);
-    else
-      solver_.Solve(mfop,disi_,fresm_,false,false);
+    if (isadapttol && numiter)
+    {
+      double worst = fresmnorm;
+      double wanted = tolres;
+      solver_.AdaptTolerance(wanted,worst,adaptolbetter);
+    }
+    solver_.Solve(mfop,disi_,fresm_,true,numiter==0);
+    solver_.ResetTolerance();
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -2516,6 +2540,9 @@ void StruGenAlpha::PTC()
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
+  //------------------------------ turn adaptive solver tolerance on/off
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
+  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
   // check whether we have a stiffness matrix, that is not filled yet
   // and mass and damping are present
@@ -2571,10 +2598,14 @@ void StruGenAlpha::PTC()
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (!numiter)
-      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,true);
-    else
-      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,false);
+    if (isadapttol && numiter)
+    {
+      double worst = fresmnorm;
+      double wanted = tolres;
+      solver_.AdaptTolerance(wanted,worst,adaptolbetter);
+    }
+    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.ResetTolerance();
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -3465,6 +3496,10 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<string>("predictor"              ,"constant");
   // takes values "full newton" , "modified newton" , "matrixfree newton", "nonlinear cg" "ptc"
   params.set<string>("equilibrium iteration"  ,"full newton");
+
+  params.set<bool>  ("ADAPTCONV",false);
+  params.set<double>("ADAPTCONV_BETTER",0.1);
+  
   return;
 }
 

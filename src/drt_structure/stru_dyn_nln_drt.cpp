@@ -181,6 +181,9 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
       genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
 
+      genalphaparams.set<bool>  ("ADAPTCONV",getIntegralValue<int>(sdyn,"ADAPTCONV")==1);
+      genalphaparams.set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
+
       switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
       {
       case struct_stress_none:
