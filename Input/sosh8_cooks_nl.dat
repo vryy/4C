@@ -1,0 +1,384 @@
+//
+// Maintainer: Moritz Frenzel
+//             frenzel@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-15240
+//
+// necessary defines: CCADISCRET UMFPACK D_SOLID3 BINIO
+//
+==================================================================
+        General Data File CCARAT
+==================================================================
+-------------------------------------------------------------TITLE
+Nonlinear Cook's membrane problem for 8 sosh8 (ref. Klinkel 2006)
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS          16
+NODES             50
+DIM                3
+MATERIALS          1
+NUMDF              6
+--------------------------------------------------------ALE DYNAMIC
+---------------------------------------------------------ALE SOLVER
+----------------------------------------------------CONDITION NAMES
+// number of nodal clouds
+-----------------------------------------------------DISCRETISATION
+// Number of meshes in ale field
+NUMALEDIS                       1
+// Number of meshes in fluid field
+NUMFLUIDDIS                     1
+// Number of meshes in structural field
+NUMSTRUCDIS                     1
+// Number of meshes in thermal field
+NUMTHERMDIS                     1
+------------------------------------------------------FLUID DYNAMIC
+----------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
+----------------------------------------------FLUID PRESSURE SOLVER
+-------------------------------------------------------FLUID SOLVER
+--------------------------------------------------------FSI DYNAMIC
+-----------------------------------------------------------------IO
+ALE_DISP                        No
+FILESTEPS                       1000
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+OUTPUT_BIN                      Yes
+OUTPUT_GID                      No
+OUTPUT_OUT                      Yes
+STRUCT_DISP                     Yes
+STRUCT_SM_DISP                  No
+STRUCT_SM_STRESS                No
+STRUCT_STRESS                   No
+STRUCT_STRESS_SMO               No
+THERM_HEATFLUX                  No
+THERM_TEMPERATURE               No
+--------------------------------------------------------PROBLEM TYP
+ALGEBRA                         Trilinos
+MULTISC_STRUCT                  0
+NUMFIELD                        1
+PROBLEMTYP                      Structure
+RESTART                         0
+TIMETYP                         Static
+------------------------------------------------------STRUCT SOLVER
+SOLVER                          UMFPACK
+-------------------------------------------------STRUCTURAL DYNAMIC
+ALPHA_F                         0.5
+ALPHA_M                         0.5
+BETA                            0.25
+// type of convergence check
+//     AbsRes_Or_AbsDis
+//     AbsRes_And_AbsDis
+//     RelRes_Or_AbsDis
+//     RelRes_And_AbsDis
+//     RelRes_Or_RelDis
+//     RelRes_And_RelDis
+CONV_CHECK                      AbsRes_Or_AbsDis
+DAMPING                         No
+DYNAMICTYP                      Gen_Alfa
+EIGEN                           0
+GAMMA                           0.5
+INV_ANALYSIS                    No
+ITERATION                       full
+ITWANT                          0
+K_DAMP                          0.5
+MAXDT                           0
+MAXITER                         50
+MAXTIME                         5
+M_DAMP                          0.5
+NLNSOL                          fullnewton
+NUMSTEP                         200
+PREDICT                         ConstDis
+RESEVRYDISP                     1
+RESEVRYSTRS                     1
+RESTARTEVRY                     1
+RESULTDT                        0
+TA_ADAPTSTEPMAX                 0
+TA_ERRNORM                      Vague
+TA_ERRTOL                       0
+TA_KIND                         None
+TA_SIZERATIOMAX                 0
+TA_SIZERATIOMIN                 0
+TA_SIZERATIOSCALE               0
+TA_STEPSIZEMAX                  0
+TA_STEPSIZEMIN                  0
+TIMEADAPT                       0
+TIMESTEP                        0.05
+TOLCONSTR                       1e-08
+TOLDISP                         1e-10
+TOLRES                          1e-08
+UZAWAALGO                       newtonlinuzawa
+UZAWAMAXITER                    50
+UZAWAPARAM                      1
+-----------------------------------------------------THERMAL SOLVER
+------------------------------------------------------------STATIC
+NONLINEAR
+KINTYP       Tot_Lagr
+NEWTONRAPHSO Load_Control
+NUMSTEP      100
+MAXITER      20
+TOLRESID     1.0E-06
+TOLDISP      1.0E-07
+STEPSIZE     1.0
+IARC         No
+ARCSCL       1.0
+SIGNCHCSP    No
+RESEVRYDISP  1
+RESEVRYSTRS  1
+RESTARTEVRY  200
+---------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_NeoHooke YOUNG 240.5653612 NUE 0.4999  DENS 0.001
+-------------------------------------------------------LOAD CURVES
+------------------------------------------------------------CURVE1
+CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------CURVE5
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 50 POSITION dispy NAME dispy VALUE 6.294170734489203944e+00 TOLERANCE 1e-12
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 0
+NDLINE  0
+NDSURF  3
+NDVOL   0
+-----------------------------------------------------DESIGN POINTS
+------------------------------------------------------DESIGN LINES
+---------------------------------------------------DESIGN SURFACES
+----------------------------------------------------DESIGN VOLUMES
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF 2
+//node_ns1
+E 3 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+//node_ns3
+E 1 - 0 0 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DVOL 0
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  NSURF
+DPOINT 0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
+DLINE 0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
+DSURF 1
+//node_ns2
+E 2 - 1  0 1 0 0 0 0 0.0 0.0625 0.0 0.0 0.0 0.0 Live Mid
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
+DVOL 0
+----------------------------------DESIGN COUPLING POINT CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DPOINT 0
+-----------------------------------DESIGN COUPLING LINE CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DLINE 0
+-----------------------------------DESIGN COUPLING SURF CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DSURF 0
+------------------------------------DESIGN COUPLING VOL CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DVOL 0
+-------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH FLAG
+DLINE 0
+-------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+// DOBJECT FSI_ID FIELD MESH FLAG
+DSURF 0
+------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
+// DOBJECT
+DPOINT 0
+-------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+// DOBJECT
+DLINE 0
+-------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+// DOBJECT
+DSURF 0
+------------------------------------------------CONTACT CONDITIONS
+DLINE 0
+-------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
+DLINE 0
+------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
+DLINE 0
+------------------------------DESIGN AXISHELL COS POINT CONDITIONS
+DPOINT 0
+---------------------------------------DESIGN FLUID LINE LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
+DLINE 0
+---------------------------------------DESIGN FLUID SURF LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
+DSURF 0
+-----------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
+// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
+DSURF 0
+------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
+// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
+DVOL 0
+------------------------------------DESIGN POINT LOCSYS CONDITIONS
+// DOBJECT Id
+DPOINT 0
+-------------------------------------DESIGN LINE LOCSYS CONDITIONS
+// DOBJECT Id
+DLINE 0
+-------------------------------------DESIGN SURF LOCSYS CONDITIONS
+// DOBJECT Id
+DSURF 0
+--------------------------------------DESIGN VOL LOCSYS CONDITIONS
+// DOBJECT Id
+DVOL 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE       8 DSURFACE 3
+NODE      24 DSURFACE 3
+NODE      34 DSURFACE 3
+NODE      32 DSURFACE 3
+NODE      22 DSURFACE 3
+NODE       4 DSURFACE 3
+NODE       5 DSURFACE 3
+NODE      44 DSURFACE 3
+NODE      42 DSURFACE 3
+NODE       1 DSURFACE 3
+NODE      40 DSURFACE 2
+NODE      30 DSURFACE 2
+NODE      20 DSURFACE 2
+NODE      18 DSURFACE 2
+NODE      29 DSURFACE 2
+NODE      39 DSURFACE 2
+NODE      50 DSURFACE 2
+NODE      19 DSURFACE 2
+NODE      17 DSURFACE 2
+NODE      49 DSURFACE 2
+NODE       8 DSURFACE 1
+NODE      24 DSURFACE 1
+NODE      34 DSURFACE 1
+NODE      15 DSURFACE 1
+NODE      11 DSURFACE 1
+NODE       6 DSURFACE 1
+NODE      40 DSURFACE 1
+NODE      30 DSURFACE 1
+NODE      20 DSURFACE 1
+NODE      43 DSURFACE 1
+NODE      46 DSURFACE 1
+NODE      48 DSURFACE 1
+NODE       2 DSURFACE 1
+NODE       9 DSURFACE 1
+NODE      13 DSURFACE 1
+NODE      32 DSURFACE 1
+NODE      22 DSURFACE 1
+NODE       4 DSURFACE 1
+NODE      47 DSURFACE 1
+NODE      45 DSURFACE 1
+NODE      41 DSURFACE 1
+NODE      18 DSURFACE 1
+NODE      29 DSURFACE 1
+NODE      39 DSURFACE 1
+NODE       5 DSURFACE 1
+NODE      44 DSURFACE 1
+NODE      19 DSURFACE 1
+NODE      50 DSURFACE 1
+NODE       1 DSURFACE 1
+NODE      17 DSURFACE 1
+NODE      42 DSURFACE 1
+NODE      49 DSURFACE 1
+NODE      33 DSURFACE 1
+NODE      23 DSURFACE 1
+NODE       7 DSURFACE 1
+NODE      36 DSURFACE 1
+NODE      26 DSURFACE 1
+NODE      12 DSURFACE 1
+NODE      38 DSURFACE 1
+NODE      28 DSURFACE 1
+NODE      16 DSURFACE 1
+NODE      14 DSURFACE 1
+NODE      10 DSURFACE 1
+NODE       3 DSURFACE 1
+NODE      27 DSURFACE 1
+NODE      25 DSURFACE 1
+NODE      21 DSURFACE 1
+NODE      37 DSURFACE 1
+NODE      35 DSURFACE 1
+NODE      31 DSURFACE 1
+-----------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE            1     COORD 0.0000000000000e+00     0.0000000000000e+00     0.0000000000000e+00   
+NODE            2     COORD 1.2000000000000e+01     1.1000000000000e+01     0.0000000000000e+00   
+NODE            3     COORD 1.2000000000000e+01     2.0250000000000e+01     0.0000000000000e+00   
+NODE            4     COORD 0.0000000000000e+00     1.1000000000000e+01     0.0000000000000e+00   
+NODE            5     COORD 0.0000000000000e+00     0.0000000000000e+00     1.0000000000000e+00   
+NODE            6     COORD 1.2000000000000e+01     1.1000000000000e+01     1.0000000000000e+00   
+NODE            7     COORD 1.2000000000000e+01     2.0250000000000e+01     1.0000000000000e+00   
+NODE            8     COORD 0.0000000000000e+00     1.1000000000000e+01     1.0000000000000e+00   
+NODE            9     COORD 2.4000000000000e+01     2.2000000000000e+01     0.0000000000000e+00   
+NODE           10     COORD 2.4000000000000e+01     2.9500000000000e+01     0.0000000000000e+00   
+NODE           11     COORD 2.4000000000000e+01     2.2000000000000e+01     1.0000000000000e+00   
+NODE           12     COORD 2.4000000000000e+01     2.9500000000000e+01     1.0000000000000e+00   
+NODE           13     COORD 3.6000000000000e+01     3.3000000000000e+01     0.0000000000000e+00   
+NODE           14     COORD 3.6000000000000e+01     3.8750000000000e+01     0.0000000000000e+00   
+NODE           15     COORD 3.6000000000000e+01     3.3000000000000e+01     1.0000000000000e+00   
+NODE           16     COORD 3.6000000000000e+01     3.8750000000000e+01     1.0000000000000e+00   
+NODE           17     COORD 4.8000000000000e+01     4.4000000000000e+01     0.0000000000000e+00   
+NODE           18     COORD 4.8000000000000e+01     4.8000000000000e+01     0.0000000000000e+00   
+NODE           19     COORD 4.8000000000000e+01     4.4000000000000e+01     1.0000000000000e+00   
+NODE           20     COORD 4.8000000000000e+01     4.8000000000000e+01     1.0000000000000e+00   
+NODE           21     COORD 1.2000000000000e+01     2.9500000000000e+01     0.0000000000000e+00   
+NODE           22     COORD 0.0000000000000e+00     2.2000000000000e+01     0.0000000000000e+00   
+NODE           23     COORD 1.2000000000000e+01     2.9500000000000e+01     1.0000000000000e+00   
+NODE           24     COORD 0.0000000000000e+00     2.2000000000000e+01     1.0000000000000e+00   
+NODE           25     COORD 2.4000000000000e+01     3.7000000000000e+01     0.0000000000000e+00   
+NODE           26     COORD 2.4000000000000e+01     3.7000000000000e+01     1.0000000000000e+00   
+NODE           27     COORD 3.6000000000000e+01     4.4500000000000e+01     0.0000000000000e+00   
+NODE           28     COORD 3.6000000000000e+01     4.4500000000000e+01     1.0000000000000e+00   
+NODE           29     COORD 4.8000000000000e+01     5.2000000000000e+01     0.0000000000000e+00   
+NODE           30     COORD 4.8000000000000e+01     5.2000000000000e+01     1.0000000000000e+00   
+NODE           31     COORD 1.2000000000000e+01     3.8750000000000e+01     0.0000000000000e+00   
+NODE           32     COORD 0.0000000000000e+00     3.3000000000000e+01     0.0000000000000e+00   
+NODE           33     COORD 1.2000000000000e+01     3.8750000000000e+01     1.0000000000000e+00   
+NODE           34     COORD 0.0000000000000e+00     3.3000000000000e+01     1.0000000000000e+00   
+NODE           35     COORD 2.4000000000000e+01     4.4500000000000e+01     0.0000000000000e+00   
+NODE           36     COORD 2.4000000000000e+01     4.4500000000000e+01     1.0000000000000e+00   
+NODE           37     COORD 3.6000000000000e+01     5.0250000000000e+01     0.0000000000000e+00   
+NODE           38     COORD 3.6000000000000e+01     5.0250000000000e+01     1.0000000000000e+00   
+NODE           39     COORD 4.8000000000000e+01     5.6000000000000e+01     0.0000000000000e+00   
+NODE           40     COORD 4.8000000000000e+01     5.6000000000000e+01     1.0000000000000e+00   
+NODE           41     COORD 1.2000000000000e+01     4.8000000000000e+01     0.0000000000000e+00   
+NODE           42     COORD 0.0000000000000e+00     4.4000000000000e+01     0.0000000000000e+00   
+NODE           43     COORD 1.2000000000000e+01     4.8000000000000e+01     1.0000000000000e+00   
+NODE           44     COORD 0.0000000000000e+00     4.4000000000000e+01     1.0000000000000e+00   
+NODE           45     COORD 2.4000000000000e+01     5.2000000000000e+01     0.0000000000000e+00   
+NODE           46     COORD 2.4000000000000e+01     5.2000000000000e+01     1.0000000000000e+00   
+NODE           47     COORD 3.6000000000000e+01     5.6000000000000e+01     0.0000000000000e+00   
+NODE           48     COORD 3.6000000000000e+01     5.6000000000000e+01     1.0000000000000e+00   
+NODE           49     COORD 4.8000000000000e+01     6.0000000000000e+01     0.0000000000000e+00   
+NODE           50     COORD 4.8000000000000e+01     6.0000000000000e+01     1.0000000000000e+00   
+----------------------------------------------------------ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
+      1 SOLIDH8 HEX8       1      2      3      4      5      6      7      8 MAT       1 EAS mild
+      2 SOLIDH8 HEX8       2      9     10      3      6     11     12      7 MAT       1 EAS mild
+      3 SOLIDH8 HEX8       9     13     14     10     11     15     16     12 MAT       1 EAS mild
+      4 SOLIDH8 HEX8      13     17     18     14     15     19     20     16 MAT       1 EAS mild
+      5 SOLIDH8 HEX8       4      3     21     22      8      7     23     24 MAT       1 EAS mild
+      6 SOLIDH8 HEX8       3     10     25     21      7     12     26     23 MAT       1 EAS mild
+      7 SOLIDH8 HEX8      10     14     27     25     12     16     28     26 MAT       1 EAS mild
+      8 SOLIDH8 HEX8      14     18     29     27     16     20     30     28 MAT       1 EAS mild
+      9 SOLIDH8 HEX8      22     21     31     32     24     23     33     34 MAT       1 EAS mild
+     10 SOLIDH8 HEX8      21     25     35     31     23     26     36     33 MAT       1 EAS mild
+     11 SOLIDH8 HEX8      25     27     37     35     26     28     38     36 MAT       1 EAS mild
+     12 SOLIDH8 HEX8      27     29     39     37     28     30     40     38 MAT       1 EAS mild
+     13 SOLIDH8 HEX8      32     31     41     42     34     33     43     44 MAT       1 EAS mild
+     14 SOLIDH8 HEX8      31     35     45     41     33     36     46     43 MAT       1 EAS mild
+     15 SOLIDH8 HEX8      35     37     47     45     36     38     48     46 MAT       1 EAS mild
+     16 SOLIDH8 HEX8      37     39     49     47     38     40     50     48 MAT       1 EAS mild
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+-------------------------------------------------LEVELSET ELEMENTS
+---------------------------------------------------------------END
+// END
