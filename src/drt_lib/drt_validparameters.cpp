@@ -416,6 +416,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    STRUCT_DYNAMIC::nonlinuzawa),
                                  &sdyn);
 
+  // convergence criteria adaptivity
+  setStringToIntegralParameter("ADAPTCONV","No",
+                               "Switch on adaptive control of linear solver tolerance for nonlinear solution",
+                               yesnotuple,yesnovalue,&sdyn);
+  DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&sdyn);
+
+
   // Inverse Analysis
   setStringToIntegralParameter("INV_ANALYSIS","No",
                                "determines the material parameter for the hyperpolyconvex material",
