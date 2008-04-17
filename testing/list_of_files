@@ -164,3 +164,5 @@ Input/sosh8_thin_nonlinear_pinched_hemisphere.dat       x        x
 Input/sosh8_cooks_nl.dat                                x        x
 Input/sohex8_easmild_cooks_nl.dat                       x        x
 Input/sohex8_easfull_cooks_nl.dat                       x        x
+Input/constr3D_shrinking.dat                            x        x
+Input/constr2D_shrinking.dat                            x        x
