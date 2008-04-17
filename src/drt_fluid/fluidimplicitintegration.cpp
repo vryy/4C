@@ -1213,7 +1213,6 @@ void FluidImplicitTimeInt::NonlinearSolve()
         double currresidual = max(vresnorm,presnorm);
         currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
         currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
-        // the 'better' value should be an input parameter?
         solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
       solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1);
