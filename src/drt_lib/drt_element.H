@@ -76,6 +76,8 @@ public:
     element_xfluid3line,
     element_ale3,
     element_ale3surface,
+    element_bele3,
+    element_bele3line,
     element_so_hex8,
     element_soh8surface,
     element_soh8line,

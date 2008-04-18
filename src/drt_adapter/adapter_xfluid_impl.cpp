@@ -5,10 +5,10 @@
 \brief Fluid field adapter
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15236
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -50,7 +50,8 @@ ADAPTER::XFluidImpl::XFluidImpl(
   for (int i=0; i<numvelids; ++i)
   {
     int gid = velmap->GID(i);
-    if (not interface_.CondMap()->MyGID(gid) and (*dirichtoggle)[fullmap->LID(gid)]==0.)
+    // NOTE: in xfem, there are no interface dofs in the fluid field
+    if ((*dirichtoggle)[fullmap->LID(gid)]==0.)
     {
       velids.push_back(gid);
     }

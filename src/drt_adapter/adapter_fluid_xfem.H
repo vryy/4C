@@ -1,3 +1,17 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file adapter_fluid_xfem.H
+
+\brief 
+
+<pre>
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #ifndef ADAPTER_FLUID_XFEM_H
@@ -10,6 +24,7 @@
 
 #include "adapter_fluid_moving_boundary.H"
 #include "adapter_fluid_base_algorithm.H"
+#include "adapter_boundary.H"
 #include "../drt_fsi/fsi_coupling.H"
 
 namespace ADAPTER
@@ -26,6 +41,10 @@ namespace ADAPTER
     /// fluid field
     Fluid& FluidField() { return fluid_.FluidField(); }
     const Fluid& FluidField() const { return fluid_.FluidField(); }
+
+    /// ale field
+    Boundary& BoundaryField() { return boundary_.BoundaryField(); }
+    const Boundary& BoundaryField() const { return boundary_.BoundaryField(); }
 
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
     virtual const LINALG::MapExtractor& Interface() const;
@@ -50,8 +69,8 @@ namespace ADAPTER
 
   protected:
 
-//    //! @name Transfer helpers
-//
+    //! @name Transfer helpers
+
 //    /// field transform
 //    virtual Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const;
 //
@@ -63,15 +82,19 @@ namespace ADAPTER
 //
 //    /// interface transform
 //    virtual Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
-//
-//    //@}
-    
+
+    //@}
+
+    //Coupling& FluidAleFieldCoupling()             { return coupfa_; }
+    //const Coupling& FluidAleFieldCoupling() const { return coupfa_; }
+
   private:
 
     FluidBaseAlgorithm fluid_;
+    BoundaryBaseAlgorithm boundary_;
 
-    /// coupling of fluid and ale (interface only)
-    FSI::Coupling               icoupfa_;
+    /// coupling of fluid and boundary (interface only)
+    FSI::Coupling               icoupfb_;
 
   };
 

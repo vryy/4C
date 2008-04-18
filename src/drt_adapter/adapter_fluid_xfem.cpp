@@ -1,8 +1,22 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file adapter_fluid_xfem.cpp
 
+\brief 
+
+<pre>
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "adapter_fluid_xfem.H"
 
@@ -11,7 +25,8 @@
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidXFEM::FluidXFEM(const Teuchos::ParameterList& prbdyn,
                                           std::string condname)
-  : fluid_(prbdyn,false)
+  : fluid_(prbdyn,false),
+    boundary_()
 {
 //  icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
 //                                   FluidField().Interface(),

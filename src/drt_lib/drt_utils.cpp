@@ -49,6 +49,7 @@ extern "C"
 #include "../drt_f3/xfluid3.H"
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale3/ale3.H"
+#include "../drt_xfem/bele3.H"
 #include "../drt_w1/wall1.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_sh8.H"
@@ -276,6 +277,21 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     }
     break;
 #endif
+case ParObject_Bele3:
+{
+  DRT::ELEMENTS::Bele3* object = new DRT::ELEMENTS::Bele3(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+break;
+case ParObject_Bele3Register:
+{
+  DRT::ELEMENTS::Bele3Register* object =
+                  new DRT::ELEMENTS::Bele3Register(DRT::Element::element_bele3);
+  object->Unpack(data);
+  return object;
+}
+break;
 #ifdef D_SOLID3
     case ParObject_So_hex8:
     {
@@ -881,7 +897,7 @@ void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
 void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, std::string condname, std::vector<int>& nodes)
 {
   std::set<int> nodeset;
-  int myrank = dis.Comm().MyPID();
+  const int myrank = dis.Comm().MyPID();
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
   for (unsigned i=0; i<conds.size(); ++i)
@@ -889,7 +905,7 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, std::strin
     const std::vector<int>* n = conds[i]->Nodes();
     for (unsigned j=0; j<n->size(); ++j)
     {
-      int gid = (*n)[j];
+      const int gid = (*n)[j];
       if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner()==myrank)
       {
         nodeset.insert(gid);

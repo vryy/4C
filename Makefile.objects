@@ -212,6 +212,7 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_fluid_impl.o \
                 src/drt_adapter/adapter_fluid_genalpha.o \
                 src/drt_adapter/adapter_xfluid_impl.o \
+                src/drt_adapter/adapter_boundary.o \
                 src/drt_adapter/adapter_utils.o \
                 src/drt_adapter/adapter_ale_resulttest.o
 #                pss_full
@@ -1121,6 +1122,10 @@ OBJS_INTERSECTION = src/drt_xfem/predicates.o \
                     src/drt_xfem/intersection.o \
                     src/drt_xfem/interface.o \
                     src/drt_xfem/enrichment_utils.o \
+                    src/drt_xfem/bele3.o \
+                    src/drt_xfem/bele3_line.o \
+                    src/drt_xfem/bele3_line_evaluate.o \
+                    src/drt_xfem/bele3_evaluate.o \
                     src/drt_xfem/xdofmapcreation.o
 #               time adaptivity
 OBJS_DRT_TIMADA = src/drt_timada/timeadaptivity.o \
