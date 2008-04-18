@@ -24,7 +24,6 @@ Maintainer: Axel Gerstenberger
 
 #include "adapter_fluid_moving_boundary.H"
 #include "adapter_fluid_base_algorithm.H"
-#include "adapter_boundary.H"
 #include "../drt_fsi/fsi_coupling.H"
 
 namespace ADAPTER
