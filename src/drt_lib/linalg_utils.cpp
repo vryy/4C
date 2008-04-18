@@ -388,22 +388,43 @@ void LINALG::SymmetriseMatrix(Epetra_SerialDenseMatrix& A)
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|
+ *----------------------------------------------------------------------*/
+void LINALG::SymmetricEigenValues(Epetra_SerialDenseMatrix& A,
+                                  Epetra_SerialDenseVector& L)
+{
+  LINALG::SymmetricEigen(A, L, 'N');
+}
+
+/*----------------------------------------------------------------------*
+ |  compute all eigenvalues and eigenvectors of a real symmetric        |
+ |  matrix A (eigenvectors are stored in A, i.e. original matrix        |
+ |  is destroyed!!!)                                            lw 04/08|
+ *----------------------------------------------------------------------*/
+void LINALG::SymmetricEigenProblem(Epetra_SerialDenseMatrix& A,
+                                   Epetra_SerialDenseVector& L)
+{
+  LINALG::SymmetricEigen(A, L, 'V');
+}
+
 /*----------------------------------------------------------------------*
  |  compute all eigenvalues and, optionally,                            |
  |  eigenvectors of a real symmetric matrix A  (public)        maf 06/07|
  *----------------------------------------------------------------------*/
 void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
                             Epetra_SerialDenseVector& L,
-                            const int dim, const char jobz)
+                            const char jobz)
 {
   if (A.M() != A.N()) dserror("Matrix is not square");
-  if (A.M() != dim) dserror("Dimension supplied does not match matrix");
-  if (L.Length() != dim) dserror("Dimension of eigenvalues does not match");
+  if (A.M() != L.Length()) dserror("Dimension of eigenvalues does not match");
 
   double* a = A.A();
   double* w = L.A();
   const char uplo = {'U'};
   const int lda = A.LDA();
+  const int dim = A.M();
 
   int liwork;
   if (dim == 1) liwork = 1;

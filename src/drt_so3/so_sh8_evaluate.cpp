@@ -768,7 +768,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       KdaTKaa.Multiply('T', 'N', 1.0, Kda, Kaa, 1.0);
 
       Epetra_SerialDenseVector L6(NUMDOF_SOH8);
-      //SymmetricEigen(KdaTKaaKda,L6,NUMDOF_SOH8,'N');
+      //SymmetricEigenValues(KdaTKaaKda,L6);
       //cout << setprecision(16) << KdaTKaaKda;
       //cout << "eigen(KEAS): " << L6;
 
@@ -792,7 +792,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     //improvement?:  SymmetriseMatrix(*stiffmatrix);
   }
 //  Epetra_SerialDenseVector L5(NUMDOF_SOH8);
-//  SymmetricEigen(*stiffmatrix,L5,NUMDOF_SOH8,'N');
+//  SymmetricEigenValues(*stiffmatrix,L5);
 //  cout << "eigen(K): " << L5;
 
 //  SymmetriseMatrix(KdaTKaaKda);
@@ -800,17 +800,17 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
 //  Epetra_SerialDenseMatrix newstiff2(newstiff);
 //  cout << "newstiff2"<<setprecision(16) << newstiff2;
 //
-//  SymmetricEigen(newstiff,L16,NUMDOF_SOH8,'N');
+//  SymmetricEigenValues(newstiff,L16);
 //  cout << "eigen(newstiffpreEAS): " << L16;
 //  double normKeas = KdaTKaaKda.NormOne();
 //  cout << "KdaTKda"<<setprecision(16) << KdaTKaaKda;
 //  Epetra_SerialDenseMatrix KdaTKaaKda2(KdaTKaaKda);
 //  Epetra_SerialDenseVector L36(NUMDOF_SOH8);
-//  SymmetricEigen(KdaTKaaKda2,L36,NUMDOF_SOH8,'N');
+//  SymmetricEigenValues(KdaTKaaKda2,L36);
 //  cout << "eigen(KEAS): " << L36;
 //  newstiff2 += KdaTKaaKda;
 //  Epetra_SerialDenseVector L26(NUMDOF_SOH8);
-//  SymmetricEigen(newstiff2,L26,NUMDOF_SOH8,'N');
+//  SymmetricEigenValues(newstiff2,L26);
 //  cout << "eigen(newstiff2): " << L26;
 
   return;

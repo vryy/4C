@@ -89,15 +89,15 @@ double MAT::AnisotropicBalzani::Density()
  *----------------------------------------------------------------------*
 
 This routine establishes a local material law, stress-strain relationship
-for hyperelastic, anisotropic material for a 3D-hex-element. 
+for hyperelastic, anisotropic material for a 3D-hex-element.
 Used for biological, soft, collagenous tissues.
 
 Documented in the 'Diplomarbeit' by Barbara Roehrnbauer at LNM.
 Based on Holzapfel [1], Ogden [2] and Balzani, Schroeder, Neff [3].
 
 [1] G.A.Holzapfel, R.W.Ogden, A New Consitutive Framework for Arterial Wall Mechanics and
-  a Comparative Study of Material Models, Journal of Elasticity 61, 1-48, 2000. 
-[2] R.W.Ogden, Anisotropy and Nonlinear Elasticity in Arterial Wall Mechanics,  
+  a Comparative Study of Material Models, Journal of Elasticity 61, 1-48, 2000.
+[2] R.W.Ogden, Anisotropy and Nonlinear Elasticity in Arterial Wall Mechanics,
   CISM Course on Biomechanical Modeling, Lectures 2,3, 2006.
 [3] D.Balzani, P.Neff, J.Schroeder, G.A.Holzapfel, A Polyconvex Framework for Soft Biological Tissues
   Adjustment to Experimental Data, Report-Preprint No. 22, 2005.
@@ -118,11 +118,11 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double alpha2 = matdata_->m.anisotropic_balzani->alpha2;  //parameter for 1st fiber potential
   double alpha1_2 = matdata_->m.anisotropic_balzani->alpha1_2;//parameter for 2nd fiber potential
   double alpha2_2 = matdata_->m.anisotropic_balzani->alpha2_2;//parameter for 2nd fiber potential
-    
+
   // Identity Matrix
   Epetra_SerialDenseMatrix I(3,3);
   for (int i = 0; i < 3; ++i) I(i,i) = 1.0;
-  
+
   // Green-Lagrange Strain Tensor
   Epetra_SerialDenseMatrix E(3,3);
   E(0,0) = (*glstrain)(0);
@@ -131,30 +131,30 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   E(0,1) = 0.5 * (*glstrain)(3);  E(1,0) = 0.5 * (*glstrain)(3);
   E(1,2) = 0.5 * (*glstrain)(4);  E(2,1) = 0.5 * (*glstrain)(4);
   E(0,2) = 0.5 * (*glstrain)(5);  E(2,0) = 0.5 * (*glstrain)(5);
-  
+
   // Right Cauchy-Green Tensor  C = 2 * E + I
   Epetra_SerialDenseMatrix C(E);
   C.Scale(2.0);
   C += I;
-  
+
 //  cout << "Enhanced Cauchy-Green: " << C;
-//  
+//
 //  Epetra_SerialDenseMatrix C_lock(3,3);
 //  //C_lock.Multiply('T','N',1.0,*defgrd,*defgrd,0.0);
 //  cout << "Disp-based Cauchy-Green: " << C_lock;
-  
+
 //  // compute eigenvalues of C
 //  Epetra_SerialDenseMatrix Ccopy(C);
 //  Epetra_SerialDenseVector lambda(3);
-//  SymmetricEigen(Ccopy,lambda,3,'N');
-//  
+//  SymmetricEigenValues(Ccopy,lambda);
+//
 //  // evaluate principle Invariants of C
 //  //Epetra_SerialDenseVector Inv(3);
 //  double I1 = lambda(0) + lambda(1) + lambda(2);
 //  //double I2 = lambda(0) * lambda(1) + lambda(0) * lambda(2) + lambda(1) * lambda(2);
 //  double I3 = lambda(0) * lambda(1) * lambda(2);  // = det(C)
 
-  
+
   double I1 = C(0,0) + C(1,1) + C(2,2);  // I1 = trace(C)
   // compute determinant of C by Sarrus' rule
   double I3  = C(0,0) * C(1,1) * C(2,2)    // I3 = det(C)
@@ -168,12 +168,12 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Epetra_SerialDenseMatrix Cinv(C);
   Epetra_SerialDenseSolver solve_for_inverseC;
   solve_for_inverseC.SetMatrix(Cinv);
-  int err2 = solve_for_inverseC.Factor();        
+  int err2 = solve_for_inverseC.Factor();
   int err = solve_for_inverseC.Invert();
   if ((err != 0) && (err2!=0)) dserror("Inversion of Cauchy-Green failed");
   // Cinv = C^-T
   Cinv.SetUseTranspose(true);
-  
+
   // Structural Tensor M, defined by a x a
   Epetra_SerialDenseVector a(3);
   if (matdata_->m.anisotropic_balzani->aloc != 1){
@@ -187,7 +187,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   a.Scale(1.0/norma);
   Epetra_SerialDenseMatrix M(3,3);
   M.Multiply('N','T',1.0,a,a,0.0);
-  
+
   Epetra_SerialDenseMatrix CM(3,3);
   CM.Multiply('N','N',1.0,C,M,0.0);
   // compute CM + MC
@@ -202,7 +202,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   CsqM.Multiply('N','N',1.0,Csq,M,0.0);
   // anisotropic Invariant J5 = tr[C^2M]
   double J5 = CsqM(0,0) + CsqM(1,1) + CsqM(2,2);
-  
+
   // anisotropic associated reducible Invariant K3 = I1*J4 - J5
   double K3 = I1 * J4 - J5;
 
@@ -219,7 +219,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   a_2.Scale(1.0/norma_2);
   Epetra_SerialDenseMatrix M_2(3,3);
   M_2.Multiply('N','T',1.0,a_2,a_2,0.0);
-  
+
   Epetra_SerialDenseMatrix CM_2(3,3);
   CM_2.Multiply('N','N',1.0,C,M_2,0.0);
   // compute CM_2 + M_2C
@@ -235,17 +235,17 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // anisotropic associated reducible Invariant K3_2 = I1*J4_2 - J5_2
   double K3_2 = I1 * J4_2 - J5_2;
   /* end of Second fiber part ***********************************************/
-  
+
   // cofC = det(C)*C^-T
   Epetra_SerialDenseMatrix CofC(Cinv);
   CofC.Scale(I3);
-  
+
   /* Underlying strain-energy function
    * Wiso = c1*(\frac{I_1}{I_3^{\frac{1}{3}} -3)                  // ground substance SEF
    *      + eps1 * (I_3^eps2 + \frac{1}{I_3^eps2} - 2)            // penalty function
    *      + alpha1*(I_1*J4 - J5 - 2)^alpha2 if ... >= 2; else 0   // fiber SEF
    */
-    
+
   // ******* evaluate 2nd PK stress ********************
   Epetra_SerialDenseMatrix S(CofC);   // S = CofC
   double scalar1 = -1.0/3.0 * c1*I1 * pow(I3,-4.0/3.0)
@@ -264,7 +264,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Epetra_SerialDenseMatrix Iscale(I);
   Iscale.Scale(scalar2);
   S += Iscale;
-  
+
   // ***** fiber part *******
   if ( (K3 - 2.0) > 1.0E-15){
     // 1st fiber active
@@ -276,7 +276,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
     Epetra_SerialDenseMatrix CMMCscale(CMMC);
     CMMCscale.Scale(-fiberscalar);      // dW/dJ5 (CM + MC)
     S += CMMCscale;
-    
+
     Iscale = I;
     Iscale.Scale(fiberscalar*J4);       // dW/dI1 I just fiber part
     S += Iscale;
@@ -291,17 +291,17 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
     Epetra_SerialDenseMatrix CMMCscale(CMMC_2);
     CMMCscale.Scale(-fiberscalar);      // dW/dJ5_2 (CM_2 + M_2C)
     S += CMMCscale;
-    
+
     Iscale = I;
     Iscale.Scale(fiberscalar*J4_2);     // dW/dI1 I just fiber part
     S += Iscale;
   }
-  
+
   // the wellknown factor 2!
   S.Scale(2.0);
-  
+
   //cout << setprecision(10) << S;
-  
+
   (*stress)(0) = S(0,0);
   (*stress)(1) = S(1,1);
   (*stress)(2) = S(2,2);
@@ -309,7 +309,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   (*stress)(4) = S(1,2);
   (*stress)(5) = S(0,2);
   // end of ******* evaluate 2nd PK stress ********************
-  
+
   // ********** evaluate C-Matrix *****************************
   // isotropic part
   double d2W_dI3dI3 = 4.0/9.0 * c1 * I1 * pow(I3,-7.0/3.0)
@@ -320,12 +320,12 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double d2W_dI3dI1 = -1.0/3.0 * c1 * pow(I3,-4.0/3.0);
   double dW_dI3     = -1.0/3.0 * c1 * I1 * pow(I3,-4.0/3.0)
                       + eps1 * (pow(I3,eps2-1.0)*eps2 - eps2 * pow(I3,-eps2-1.0));
-  
+
   ElastSymTensorMultiply((*cmat),d2W_dI3dI3,CofC,CofC,1.0);     // CofC x CofC
   ElastSymTensorMultiplyAddSym((*cmat),d2W_dI3dI1,I,CofC,1.0);  // I x CofC + CofC x I
   ElastSymTensorMultiply((*cmat),I3 * dW_dI3,Cinv,Cinv,1.0);    // Cinv x Cinv
   ElastSymTensor_o_Multiply((*cmat),-I3 * dW_dI3,Cinv,Cinv,1.0);// - Cinv o Cinv
-  
+
   // fiber part
   // 1st fiber active
   if ( (K3 - 2.0) > 1.0E-15){
@@ -338,15 +338,15 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
     double d2W_dI1dJ5 = alpha1 * alpha2 * J4 * (1.0-alpha2) * K3fac;
     double d2W_dJ4dJ5 = alpha1 * alpha2 * I1 * (1.0-alpha2) * K3fac;
     double dW_dJ5     = - alpha1 * alpha2 * (K3-2.0) * K3fac;
-    double d2W_dI1dI1 = alpha1 * alpha2 * (alpha2-1.0) * J4*J4 * K3fac; 
-    
+    double d2W_dI1dI1 = alpha1 * alpha2 * (alpha2-1.0) * J4*J4 * K3fac;
+
 //    double K3m2sq = 1.0 / (K3 - 2.0) * (K3 - 2.0);
 //    double K3m2p = pow((K3 - 2.0),alpha2);
-//    double d2W_dJ4dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * I1*I1 
+//    double d2W_dJ4dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * I1*I1
 //                         -alpha1 * K3m2p * alpha2 * I1*I1 ) * K3m2sq;
-//    double d2W_dJ5dJ5 = ( alpha1 * K3m2p * alpha2*alpha2  
+//    double d2W_dJ5dJ5 = ( alpha1 * K3m2p * alpha2*alpha2
 //                         -alpha1 * K3m2p * alpha2 ) * K3m2sq;
-//    double d2W_dI1dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * J4 * I1  
+//    double d2W_dI1dJ4 = ( alpha1 * K3m2p * alpha2*alpha2 * J4 * I1
 //                         -alpha1 * K3m2p * alpha2 * J4 * I1 ) * K3m2sq
 //                         +alpha1 * K3m2p * alpha2 / (K3 - 2.0);
 //    double d2W_dI1dJ5 = (-alpha1 * K3m2p * alpha2*alpha2 * J4
@@ -354,9 +354,9 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
 //    double d2W_dJ4dJ5 = (-alpha1 * K3m2p * alpha2*alpha2 * I1
 //                         +alpha1 * K3m2p * alpha2 * I1 ) * K3m2sq;
 //    double dW_dJ5     = - alpha1 * K3m2p * alpha2 / (K3 - 2.0);
-//    
+//
 //    double dW_dI1dI1 = alpha1*alpha2*(alpha2-1) * pow(K3-2.0,alpha2-2.0) * J4*J4;
-    
+
     // multiply these with corresponding tensor products
     ElastSymTensorMultiply((*cmat),d2W_dI1dI1,I,I,1.0);         // I x I
     ElastSymTensorMultiply((*cmat),d2W_dJ4dJ4,M,M,1.0);         // M x M
@@ -369,7 +369,7 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
   }
   //2nd fiber active
   if ( (K3_2 - 2.0) > 1.0E-15) {
-    // temporay factors are NOT renamed to *_2 but refer to 2nd fiber 
+    // temporay factors are NOT renamed to *_2 but refer to 2nd fiber
     // compute derivatives of W_ti w.r.t. Invariants
     double K3fac = pow( K3_2-2.0 , alpha2_2-2.0);
     double d2W_dJ4dJ4 = alpha1_2 * alpha2_2 * I1*I1 * (alpha2_2-1.0) * K3fac;
@@ -379,8 +379,8 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
     double d2W_dI1dJ5 = alpha1_2 * alpha2_2 * J4_2 * (1.0-alpha2_2) * K3fac;
     double d2W_dJ4dJ5 = alpha1_2 * alpha2_2 * I1 * (1.0-alpha2_2) * K3fac;
     double dW_dJ5     = - alpha1_2 * alpha2_2 * (K3_2-2.0) * K3fac;
-    double d2W_dI1dI1 = alpha1_2 * alpha2_2 * (alpha2_2-1.0) * J4_2*J4_2 * K3fac; 
-    
+    double d2W_dI1dI1 = alpha1_2 * alpha2_2 * (alpha2_2-1.0) * J4_2*J4_2 * K3fac;
+
     // multiply these with corresponding tensor products
     ElastSymTensorMultiply((*cmat),d2W_dI1dI1,I,I,1.0);         // I x I
     ElastSymTensorMultiply((*cmat),d2W_dJ4dJ4,M_2,M_2,1.0);         // M x M
@@ -391,12 +391,12 @@ void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,
     ElastSymTensor_o_Multiply((*cmat),dW_dJ5,I,M_2,1.0);          // I o M
     ElastSymTensor_o_Multiply((*cmat),dW_dJ5,M_2,I,1.0);          // M o I
   }
-  
+
   (*cmat).Scale(4.0);
-  
+
 //  cout << (*cmat);
   // end of ********** evaluate C-Matrix *****************************
-  
+
   return;
 }
 

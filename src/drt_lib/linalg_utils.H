@@ -165,16 +165,36 @@ namespace LINALG
   void SymmetriseMatrix(Epetra_SerialDenseMatrix& A);
 
   /*!
+  \brief Compute all eigenvalues of a real symmetric matrix A
+
+  \param A (in):     Matrix to be analysed
+  \param L (out):    Vector of eigenvalues in ascending order
+  */
+  void SymmetricEigenValues(Epetra_SerialDenseMatrix& A,
+                            Epetra_SerialDenseVector& L);
+
+  /*!
+  \brief Compute all eigenvalues and eigenvectors of a real symmetric matrix A
+
+  \param A (in/out): in: Matrix to be analysed, out: eigenvectors
+                     (i.e. original matrix is destroyed!!!)
+  \param L (out):    Vector of eigenvalues in ascending order
+  */
+  void SymmetricEigenProblem(Epetra_SerialDenseMatrix& A,
+                             Epetra_SerialDenseVector& L);
+
+  /*!
   \brief Compute all eigenvalues and, optionally, eigenvectors
    of a real symmetric matrix A
 
   \param A (in/out): Matrix to be analysed, if eigv=true stores eigenvectors
   \param L (in/out): Vector of eigenvalues in ascending order
   \param dim (in) :  Dimension of matrix
-  \param eigv (in):  flag to evaluate also eigenvectors
+  \param eigv (in):  flag to evaluate also eigenvectors ('N'=no, 'V'=yes)
   */
   void SymmetricEigen(Epetra_SerialDenseMatrix& A,
-                      Epetra_SerialDenseVector& L,const int dim, const char eigv='N');
+                      Epetra_SerialDenseVector& L,
+                      const char eigv);
   /*!
   \brief Invert a symmetric dim*dim square matrix
 
@@ -758,10 +778,10 @@ namespace LINALG
   /// Create an allreduced Epetra_Map from the given Epetra_Map
   /// and give it to all processors.
   /*!
-    This method is currently used within the constraint management, since 
+    This method is currently used within the constraint management, since
     current values of constraint values and langrange multipliers are distributed
     uniquely for computation. At some places we need the full information of these
-    values on every processor, so this method has to be used.    
+    values on every processor, so this method has to be used.
 
     \note You are not supposed to use redundant vectors in normal
     situations. If you happen to need this method you are probably
@@ -773,7 +793,7 @@ namespace LINALG
     \date 04/08
    */
   RCP<Epetra_Map> AllreduceEMap(const Epetra_Map& emap);
-  
+
   /// find position of my map elements in a consecutive vector
   /*!
     The idea is to put the entries of a given map into a redundant
