@@ -19,6 +19,7 @@ Maintainer: Moritz Frenzel
 #ifdef CCADISCRET
 
 #include "stru_static_drt.H"
+#include "strugenalpha.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../io/io_drt.H"
@@ -39,6 +40,9 @@ public:
     RefCountPtr<Epetra_Vector> vel,  //!< velocities to test
     RefCountPtr<Epetra_Vector> acc  //!< accelerations to test
   );
+  
+  //! constructor to use when timeintegrator is generalized alpha!
+  StruResultTest(StruGenAlpha& tintegrator);
 
   //! \brief structure version of nodal value tests
   //!

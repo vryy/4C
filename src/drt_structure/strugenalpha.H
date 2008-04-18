@@ -64,8 +64,9 @@ class NoxInterface;
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class StruGenAlpha
+class StruGenAlpha 
 {
+  friend class StruResultTest;
 public:
 
   /*!

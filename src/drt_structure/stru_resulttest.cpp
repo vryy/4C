@@ -47,7 +47,13 @@ StruResultTest::StruResultTest(RefCountPtr<DRT::Discretization> strudis_in,
   acc_ = acc;
 }
 
-
+StruResultTest::StruResultTest(StruGenAlpha&tintegrator)
+{
+  dis_ = tintegrator.Disp();
+  vel_ = tintegrator.Vel();
+  acc_ = tintegrator.Acc();
+  strudisc_ = tintegrator.Discretization();
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

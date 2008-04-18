@@ -282,10 +282,7 @@ void dyn_nlnstructural_drt()
       // test results
       {
         DRT::ResultTestManager testmanager(actdis->Comm());
-        Teuchos::RCP<Epetra_Vector> dis = tintegrator->Disp();
-        Teuchos::RCP<Epetra_Vector> vel = tintegrator->Vel();
-        Teuchos::RCP<Epetra_Vector> acc = tintegrator->Acc();
-        testmanager.AddFieldTest(rcp(new StruResultTest(actdis,dis,vel,acc)));
+        testmanager.AddFieldTest(rcp(new StruResultTest(*tintegrator)));
         testmanager.TestAll();
       }
 
