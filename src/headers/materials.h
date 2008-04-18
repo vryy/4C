@@ -37,7 +37,8 @@ typedef struct _MATERIAL
      struct _COMPOGDEN        *compogden;    /* compressible ogden hyperelastic material */
      struct _VISCOHYPER       *viscohyper;   /* viscoelastic compressible ogden hyperelastic material */
      struct _FLUID            *fluid;        /* fluid material */
-     struct _CARREAUYASUDA    *carreauyasuda;/* fluid with nopnlinear viscosity according to Carreau-Yasuda */
+     struct _CARREAUYASUDA    *carreauyasuda;/* fluid with nonlinear viscosity according to Carreau-Yasuda */
+     struct _MODPOWERLAW      *modpowerlaw;  /* fluid with nonlinear viscosity according to modified power law */
      struct _CONDIF           *condif;       /* convection-diffusion material */
      struct _PL_HASH          *pl_hash;      /* elpl. hashin delamination material */
      struct _EL_ORTH          *el_orth;      /* elastic orthotropic material */
@@ -192,6 +193,20 @@ typedef struct _CARREAUYASUDA
      DOUBLE                    b;           /* constant parameter */
      DOUBLE                    density;     /* density */
 } CARREAUYASUDA;
+
+
+/*----------------------------------------------------------------------*
+ | fluid with nonlinear viscosity according               u.may 4/08    |
+ | to a modified power law                                              |
+ *----------------------------------------------------------------------*/
+typedef struct _MODPOWERLAW
+{
+     DOUBLE                    m; 		    /* consistency */
+     DOUBLE                    delta;       /* safety factor */
+     DOUBLE                    a;			/* exponent */
+     DOUBLE                    density;     /* density */
+} MODPOWERLAW;
+
 
 /*----------------------------------------------------------------------*
  | convection-diffusion material                             vg 6/07    |

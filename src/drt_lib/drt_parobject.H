@@ -119,6 +119,7 @@ using namespace std;
 #define ParObject_Bele3                 (int)94
 #define ParObject_Bele3Register         (int)95
 #define ParObject_Bele3Line             (int)96
+#define ParObject_ModPowerLaw           (int)97
 
 namespace DRT
 {

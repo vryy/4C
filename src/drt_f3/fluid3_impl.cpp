@@ -18,7 +18,6 @@ Maintainer: Ulrich Kuettler
 
 #include "fluid3_impl.H"
 #include "../drt_mat/newtonianfluid.H"
-#include "../drt_mat/carreauyasuda.H"
 #include "../drt_lib/drt_timecurve.H"
 
 #include <Epetra_SerialDenseSolver.h>
@@ -198,7 +197,9 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
 
   
   // check here, if we really have a fluid !!
-  if(material->mattyp != m_carreauyasuda && material->mattyp != m_fluid)
+  if( material->mattyp != m_fluid
+	  &&  material->mattyp != m_carreauyasuda 
+	  &&  material->mattyp != m_modpowerlaw)
   	  dserror("Material law is not a fluid");
   
   // get viscosity
@@ -1662,26 +1663,52 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
   // compute nonlinear viscosity according to the Carreau-Yasuda model
   if(material->mattyp == m_carreauyasuda)
   {   
-	  double mu_0 	= material->m.carreauyasuda->mu_0;          // parameter for zero-shear viscosity
-	  double mu_inf = material->m.carreauyasuda->mu_inf;      	// parameter for infinite-shear viscosity
-	  double lambda = material->m.carreauyasuda->lambda;      	// parameter for characteristic time
-	  double a 		= material->m.carreauyasuda->a;  			// constant parameter
-	  double b 		= material->m.carreauyasuda->b;  			// constant parameter
+	double mu_0 	= material->m.carreauyasuda->mu_0;          // parameter for zero-shear viscosity
+	double mu_inf   = material->m.carreauyasuda->mu_inf;      	// parameter for infinite-shear viscosity
+	double lambda   = material->m.carreauyasuda->lambda;      	// parameter for characteristic time
+	double a 		= material->m.carreauyasuda->a;  			// constant parameter
+	double b 		= material->m.carreauyasuda->b;  			// constant parameter
 
-	  // compute shear rate 
-	  double rateofshear = 0.0;
-	  blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain tensor
-	  epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
+	// compute shear rate 
+	double rateofshear = 0.0;
+	blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain tensor
+	epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
 	   
-	  for(int rr=0;rr<3;rr++)
-	    for(int mm=0;mm<3;mm++)
-	    	rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
+	for(int rr=0;rr<3;rr++)
+	  for(int mm=0;mm<3;mm++)
+   	    rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
 	  
-	  rateofshear = sqrt(2.0*rateofshear);
+	rateofshear = sqrt(2.0*rateofshear);
 	   
-	  // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
-	  const double tmp = pow(lambda*rateofshear,b);
-	  visc = mu_inf + ((mu_0 - mu_inf)/pow((1 + tmp),a));
+	// compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
+	// see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+	const double tmp = pow(lambda*rateofshear,b);
+	visc = mu_inf + ((mu_0 - mu_inf)/pow((1 + tmp),a));
+  }
+  else if(material->mattyp == m_modpowerlaw)
+  {
+	// get material parameters
+    double m  	  = material->m.modpowerlaw->m;           // consistency constant 
+    double delta  = material->m.modpowerlaw->delta;       // safety factor
+    double a      = material->m.modpowerlaw->a;      	  // exponent
+   
+
+    // compute shear rate 
+    double rateofshear = 0.0;
+    blitz::firstIndex i;    // Placeholder for the first index
+    blitz::secondIndex j;   // Placeholder for the second index
+    blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain tensor
+    epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
+    
+    for(int rr=0;rr<3;rr++)
+      for(int mm=0;mm<3;mm++)
+      	rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
+   
+    rateofshear = sqrt(2.0*rateofshear);
+    
+    // compute viscosity according to a modified power law model for shear-thinning fluids
+    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+    visc = m * pow((delta + rateofshear), (-1)*a);  
   }
   
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping

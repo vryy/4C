@@ -68,6 +68,7 @@ extern "C"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_mat/carreauyasuda.H"
+#include "../drt_mat/modpowerlaw.H"
 #include "../drt_contact/drt_cnode.H"
 #include "../drt_contact/drt_celement.H"
 #include "drt_dserror.H"
@@ -476,6 +477,12 @@ break;
       MAT::CarreauYasuda* carYas = new MAT::CarreauYasuda();
       carYas->Unpack(data);
       return carYas;
+    }
+    case ParObject_ModPowerLaw:
+    {
+      MAT::ModPowerLaw* powLaw = new MAT::ModPowerLaw();
+      powLaw->Unpack(data);
+      return powLaw;
     }
     case ParObject_CNode:
     {

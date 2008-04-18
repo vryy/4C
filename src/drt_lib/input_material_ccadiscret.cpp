@@ -75,7 +75,16 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("B"      ,&(localmat.m.carreauyasuda->b)         ,&ierr);
       frdouble("DENSITY",&(localmat.m.carreauyasuda->density)   ,&ierr);
    }
-
+   frchk("MAT_modpowerlaw",&ierr);  
+   if (ierr==1)
+   {
+      localmat.mattyp = m_modpowerlaw;
+      localmat.m.modpowerlaw = new _MODPOWERLAW();
+      frdouble("M"      ,&(localmat.m.modpowerlaw->m)      ,&ierr);
+      frdouble("DELTA"  ,&(localmat.m.modpowerlaw->delta)  ,&ierr);
+      frdouble("A"      ,&(localmat.m.modpowerlaw->a)      ,&ierr);
+      frdouble("DENSITY",&(localmat.m.modpowerlaw->density),&ierr);
+   }
    frchk("MAT_condif",&ierr);
    if (ierr==1)
    {

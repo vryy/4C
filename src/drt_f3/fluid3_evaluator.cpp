@@ -240,12 +240,16 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
 	actmat_ = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
 	density = actmat_->m.carreauyasuda->density;
   }
+  else if(mat->MaterialType()== m_modpowerlaw)
+  {
+  	actmat_ = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
+  	density = actmat_->m.modpowerlaw->density;
+  }
   else
     dserror("fluid material expected but got type %d", mat->MaterialType());
 
   // This is a very poor way to transport the density to the
   // outside world.
-  
   const_cast<Teuchos::ParameterList&>(params).set("density", density);
 }
 

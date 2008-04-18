@@ -273,7 +273,8 @@ typedef enum _MATERIAL_TYP
                        m_compogden,   /* compressible Ogden material (with shell8) */
                        m_viscohyper,  /* compressible viscous Ogden material (with shell8) */
                        m_fluid,       /* fluid */
-                       m_carreauyasuda,/* fluid with nonlinear viscosity accoring to Carreau-Yasuda*/
+                       m_carreauyasuda,/* fluid with nonlinear viscosity according to Carreau-Yasuda*/
+                       m_modpowerlaw,  /* fluid with nonlinear viscosity according to a modified power law*/
                        m_condif,      /* convection-diffusion */
                        m_pl_hash,     /* elpl. hashin delamination material */
                        m_el_orth,     /* elastic orthotropic material */

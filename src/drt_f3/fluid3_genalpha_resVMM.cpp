@@ -241,7 +241,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   //                      SET MATERIAL DATA
   //-------------------------------------------------
   // check here, if we really have a fluid !!
-    if(material->mattyp != m_carreauyasuda && material->mattyp != m_fluid)
+    if( material->mattyp != m_carreauyasuda 
+    	&&	material->mattyp != m_modpowerlaw
+        && material->mattyp != m_fluid)
     	  dserror("Material law is not a fluid");
     
     // get viscosity
@@ -592,8 +594,33 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     rateofshear = sqrt(2.0*rateofshear);
    
     // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
+    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
     const double tmp = pow(lambda*rateofshear,b);
     visc = mu_inf + ((mu_0 - mu_inf)/pow((1 + tmp),a));
+  }
+  else if(material->mattyp == m_modpowerlaw)
+  {
+    // get material parameters
+    double m  	  = material->m.modpowerlaw->m;           // consistency constant 
+    double delta  = material->m.modpowerlaw->delta;       // safety factor
+    double a      = material->m.modpowerlaw->a;      	  // exponent
+ 
+    // compute shear rate 
+    double rateofshear = 0.0;
+    blitz::firstIndex i;    // Placeholder for the first index
+    blitz::secondIndex j;   // Placeholder for the second index
+    blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain tensor
+    epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
+  
+    for(int rr=0;rr<3;rr++)
+      for(int mm=0;mm<3;mm++)
+    	rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
+ 
+    rateofshear = sqrt(2.0*rateofshear);
+  
+    // compute viscosity according to a modified power law model for shear-thinning fluids
+    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+    visc = m * pow((delta + rateofshear), (-1)*a);  
   }
   
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping

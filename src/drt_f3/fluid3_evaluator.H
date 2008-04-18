@@ -14,7 +14,7 @@
 
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/carreauyasuda.H"
-
+#include "../drt_mat/modpowerlaw.H"
 
 namespace DRT
 {
