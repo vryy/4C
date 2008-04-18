@@ -2,7 +2,7 @@
 //
 // Maintainer: Axel Gerstenberger
 //
-// necessary defines: D_FLUID3 RESULTTEST DEBUG CCADISCRET BINIO QHULL
+// necessary defines: D_FLUID3 D_SOLID3 RESULTTEST DEBUG CCADISCRET BINIO QHULL
 //
 ==================================================================
                         General Data File CCARAT
