@@ -50,7 +50,8 @@ void DRT::Discretization::Reset(bool killdofs)
  *----------------------------------------------------------------------*/
 int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
                                       bool initelements,
-                                      bool doboundaryconditions)
+                                      bool doboundaryconditions,
+                                      bool unique_and_unchanging_dofnumbers)
 {
   // set all maps to null
   Reset(assigndegreesoffreedom);
@@ -79,7 +80,7 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
   filled_ = true;
 
   // Assign degrees of freedom to elements and nodes
-  if (assigndegreesoffreedom) AssignDegreesOfFreedom(0);
+  if (assigndegreesoffreedom) AssignDegreesOfFreedom(0,unique_and_unchanging_dofnumbers);
 
   if (initelements)
   {
@@ -383,14 +384,14 @@ void DRT::Discretization::BuildNodeToElementPointers()
 /*----------------------------------------------------------------------*
  |  set degrees of freedom (public)                          mwgee 03/07|
  *----------------------------------------------------------------------*/
-int DRT::Discretization::AssignDegreesOfFreedom(const int start)
+int DRT::Discretization::AssignDegreesOfFreedom(const int start, const bool unique_and_unchanging_dofnumbers)
 {
   if (!Filled()) dserror("Filled()==false");
   if (!NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
   if (!ElementRowMap()->UniqueGIDs()) dserror("Element row map is not unique");
 
   havedof_ = true;
-  return dofsets_[currentdofset_]->AssignDegreesOfFreedom(*this,start);
+  return dofsets_[currentdofset_]->AssignDegreesOfFreedom(*this,start, unique_and_unchanging_dofnumbers);
 }
 
 

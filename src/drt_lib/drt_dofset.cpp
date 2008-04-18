@@ -119,7 +119,7 @@ void DRT::DofSet::Reset()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int start)
+int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int start, const bool unique_and_unchanging_dofnumbers)
 {
   if (!dis.Filled()) dserror("discretization Filled()==false");
   if (!dis.NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
@@ -136,18 +136,21 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
 
   int count=0;
 
-  // We assume that all dof sets before this one have been set up. Otherwise
-  // we'd have to reorder the list.
-  for (std::list<DofSet*>::iterator i=dofsets_.begin();
-       i!=dofsets_.end();
-       ++i)
+  if (unique_and_unchanging_dofnumbers)
   {
-    if (*i==this)
-      break;
-    if (count > (*i)->dofrowmap_->MinAllGID())
-      dserror("dof sets numbers not assigned continuously: %d %d",
-              count,(*i)->dofrowmap_->MinAllGID());
-    count = (*i)->dofrowmap_->MaxAllGID() + 1;
+      // We assume that all dof sets before this one have been set up. Otherwise
+      // we'd have to reorder the list.
+      for (std::list<DofSet*>::iterator i=dofsets_.begin();
+           i!=dofsets_.end();
+           ++i)
+      {
+        if (*i==this)
+          break;
+        if (count > (*i)->dofrowmap_->MinAllGID())
+          dserror("dof sets numbers not assigned continuously: %d %d",
+                  count,(*i)->dofrowmap_->MinAllGID());
+        count = (*i)->dofrowmap_->MaxAllGID() + 1;
+      }
   }
 
   // Now this is tricky. We have to care for nodes and elements, both

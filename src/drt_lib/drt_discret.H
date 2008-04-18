@@ -485,7 +485,8 @@ public:
   */
   virtual int FillComplete(bool assigndegreesoffreedom=true,
                            bool initelements = true,
-                           bool doboundaryconditions = true);
+                           bool doboundaryconditions = true,
+                           bool unique_and_unchanging_dofnumbers = true);
 
   //@}
 
@@ -1193,7 +1194,7 @@ private:
 
   \return last dof assigned + 1
   */
-  virtual int AssignDegreesOfFreedom(const int start);
+  virtual int AssignDegreesOfFreedom(const int start, const bool unique_and_unchanging_dofnumbers);
 
   /*!
   \brief Initialize element routines

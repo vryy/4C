@@ -35,7 +35,7 @@ DRT::DofSet()
 int CONTACT::CDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
 {
   // first, we call the standard AssignDegreesOfFreedom from the base class
-  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,start);
+  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,start,true);
   
   // now we'll get ourselves the row and column dof maps from the base class and replace
   // them with our own version of them
