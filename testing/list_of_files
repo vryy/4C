@@ -160,6 +160,7 @@ Input/strufem_tet4_disp_cantilever.dat                  x        x        -     
 Input/strufem_tet10_disp_cantilever.dat                 x        x        -        -        -        -
 Input/strufem_ctet10_disp_cantilever.dat                x        x        -        -        -        -
 Input/strufem_ctet10_disp_cantilever.dat                x        x        -        -        -        -
+Input/strufem_wedge6_disp_cantilever.dat                x        x        -        -        -        -
 Input/sosh8_thin_nonlinear_pinched_hemisphere.dat       x        x
 Input/sosh8_cooks_nl.dat                                x        x
 Input/sohex8_easmild_cooks_nl.dat                       x        x
