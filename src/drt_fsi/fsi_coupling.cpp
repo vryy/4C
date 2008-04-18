@@ -56,7 +56,7 @@ void FSI::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
     dserror("master dof map mismatch");
 
   if (not slavedofmap_->SameAs(*slave.CondMap()))
-    dserror("master dof map mismatch");
+    dserror("slave dof map mismatch");
 
   masterdofmap_ = master.CondMap();
   masterexport_ = rcp(new Epetra_Export(*permmasterdofmap_, *masterdofmap_));
