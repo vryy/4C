@@ -214,11 +214,8 @@ void DRT::Problem::InputControl()
   {
     genprob.numsf=0;
     genprob.numff=1;
-    if (genprob.numfld==3)
-    {
-      dserror("ale support tuned of for fsi xfem problems. choose numfld = 2!");
-      genprob.numaf=2;
-    }
+    genprob.numaf=2;
+    genprob.numbf=3;
     break;
   }
   case prb_fluid:
@@ -323,7 +320,7 @@ void DRT::Problem::InputControl()
   }
   case prb_fsi_xfem:
   {
-    if (genprob.numfld!=2) dserror("numfld != 2 for FSI XFEM problem");
+    if (genprob.numfld!=4) dserror("numfld != 4 for FSI XFEM problem (solid,fluid,ale,boundary)");
 
     solver_.resize(genprob.numfld);
     solv = &solver_[0];
@@ -333,6 +330,12 @@ void DRT::Problem::InputControl()
 
     solv[genprob.numff].fieldtyp = fluid;
     InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
+    
+    solv[genprob.numaf].fieldtyp = ale;
+    InputSolverControl("ALE SOLVER",&(solv[genprob.numaf]));
+    
+    solv[genprob.numbf].fieldtyp = boundary;
+    InputSolverControl("BOUNDARY SOLVER",&(solv[genprob.numbf]));
     break;
   }
   /* for structure */
@@ -711,9 +714,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   RefCountPtr<Epetra_Map> coleles    = null;
   RefCountPtr<Epetra_CrsGraph> graph = null;
 
-  RefCountPtr<DRT::Discretization> structdis = null;
-  RefCountPtr<DRT::Discretization> fluiddis  = null;
-  RefCountPtr<DRT::Discretization> aledis    = null;
+  RefCountPtr<DRT::Discretization> structdis       = null;
+  RefCountPtr<DRT::Discretization> fluiddis        = null;
+  RefCountPtr<DRT::Discretization> aledis          = null;
+  RefCountPtr<DRT::Discretization> boundarydis     = null;
   RefCountPtr<DRT::Discretization> structdis_macro = null;
   RefCountPtr<DRT::Discretization> structdis_micro = null;
 
@@ -753,20 +757,28 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_fsi_xfem:
   {
     // allocate and input general old stuff....
-    dsassert(genprob.numfld==2, "numfld != 2 for fluid problem with XFEM interfaces");
+    dsassert(genprob.numfld==4, "numfld != 4 for fluid problem with XFEM interfaces (solid,fluid,ale,boundary)");
     field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
     field[genprob.numsf].fieldtyp = structure;
     field[genprob.numff].fieldtyp = fluid;
+    field[genprob.numaf].fieldtyp = ale;
+    field[genprob.numbf].fieldtyp = boundary;
 
     // obsolete
     field[genprob.numsf].ndis = DiscretisationParams().get<int>("NUMSTRUCDIS");
     field[genprob.numff].ndis = DiscretisationParams().get<int>("NUMFLUIDDIS");
-
+    field[genprob.numaf].ndis = 0;
+    field[genprob.numbf].ndis = 1;
+    
     structdis = rcp(new DRT::Discretization("Structure",reader.Comm()));
     fluiddis = rcp(new DRT::Discretization("Fluid",reader.Comm()));
+    aledis = rcp(new DRT::Discretization("Ale",reader.Comm()));
+    boundarydis = rcp(new DRT::Discretization("Boundary",reader.Comm()));
 
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
+    AddDis(genprob.numaf, aledis);
+    AddDis(genprob.numbf, boundarydis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
