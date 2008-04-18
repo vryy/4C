@@ -797,6 +797,8 @@ for (i=0; i<genprob.numfld; i++)
    break;
    case ale:
    break;
+   case boundary:
+   break;
    case structure:
      inpctr_eig_struct(alleig);
    break;
@@ -805,10 +807,10 @@ for (i=0; i<genprob.numfld; i++)
    break;
 #endif
    case none:
-      dserror("Cannot find type of field");
+      dserror("Cannot find type of field, field = none");
    break;
    default:
-      dserror("Cannot find type of field");
+      dserror("Cannot find type of field, field not mentioned in switch");
    break;
    }
 }
