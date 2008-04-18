@@ -59,6 +59,32 @@ protected:
                                     const string groupname,
                                     const string name,
                                     const int numdf) const;
+  void WriteNodalEigenStress(const string groupname,
+                             PostResult& result);
+  void WriteNodalEigenStressStep(ofstream& file0,
+                                 ofstream& file1,
+                                 ofstream& file2,
+                                 ofstream& file3,
+                                 ofstream& file4,
+                                 ofstream& file5,
+                                 PostResult& result,
+                                 map<string, vector<ofstream::pos_type> >& resultfilepos,
+                                 const string groupname,
+                                 vector<string> name,
+                                 const int numdf) const;
+  void WriteElementCenterEigenStress(const string groupname,
+                                     PostResult& result);
+  void WriteElementCenterEigenStressStep(ofstream& file0,
+                                         ofstream& file1,
+                                         ofstream& file2,
+                                         ofstream& file3,
+                                         ofstream& file4,
+                                         ofstream& file5,
+                                         PostResult& result,
+                                         map<string, vector<ofstream::pos_type> >& resultfilepos,
+                                         const string groupname,
+                                         vector<string> name,
+                                         const int numdf) const;
 
   string stresstype_;
   string straintype_;
