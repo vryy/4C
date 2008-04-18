@@ -281,6 +281,14 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
 
       break;
     }
+    case m_neohooke: /*----------------- NeoHookean Material */
+    {
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(glstrain, cmat, stress);
+      *density = neo->Density();
+
+    break;
+    }
     default:
       dserror("Illegal type %d of material for element solid3 hex8", mat->MaterialType());
       break;
@@ -318,6 +326,14 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
 
       break;
     }
+    case m_neohooke: /*----------------- NeoHookean Material */
+    {
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(glstrain, cmat, stress);
+      *density = neo->Density();
+
+    break;
+    }
     default:
       dserror("Illegal type %d of material for element solid3 hex8", mat->MaterialType());
       break;
@@ -354,6 +370,14 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_mat_sel(
       *density = stvk->Density();
       
       break;
+    }
+    case m_neohooke: /*----------------- NeoHookean Material */
+    {
+      MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
+      neo->Evaluate(glstrain, cmat, stress);
+      *density = neo->Density();
+
+    break;
     }
     default:
       dserror("Illegal type %d of material for element solid3 hex8", mat->MaterialType());

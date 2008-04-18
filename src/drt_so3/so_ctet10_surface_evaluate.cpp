@@ -32,6 +32,27 @@ int DRT::ELEMENTS::Soctet10Surface::EvaluateNeumann(ParameterList&           par
                                                 vector<int>&             lm,
                                                 Epetra_SerialDenseVector& elevec1)
 {
+  // get type of condition
+  enum LoadType
+  {
+    neum_none,
+    neum_live,
+    neum_orthopressure,
+    neum_consthydro_z,
+    neum_increhydro_z,
+    neum_live_FSI,
+    neum_opres_FSI
+  };
+  LoadType ltype;
+  const string* type = condition.Get<string>("type");
+  if      (*type == "neum_live")          ltype = neum_live;
+  //else if (*type == "neum_live_FSI")      ltype = neum_live_FSI;
+  else if (*type == "neum_orthopressure"){
+    ltype = neum_orthopressure;
+    dserror("orthopressure not implemented for tet10");
+  }
+  else dserror("Unknown type of SurfaceNeumann condition");
+
   /*cout << "DRT::ELEMENTS::Soctet10Surface::EvaluateNeumann" << endl;
   getchar();*/
   // OBSOLETE!!! needs change

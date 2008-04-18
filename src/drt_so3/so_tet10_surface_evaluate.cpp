@@ -21,7 +21,10 @@ written by : Alexander Volf
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_utils_integration.H"
+#include "../drt_lib/drt_utils_fem_shapefunctions.H"
 
+using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     vlf 04/07*
@@ -32,10 +35,26 @@ int DRT::ELEMENTS::Sotet10Surface::EvaluateNeumann(ParameterList&           para
                                                 vector<int>&             lm,
                                                 Epetra_SerialDenseVector& elevec1)
 {
-  dserror("Do you really want live load?");
-  
-  //cout << "DRT::ELEMENTS::Sotet10Surface::EvaluateNeumann" << endl;
-  //getchar();
+  // get type of condition
+  enum LoadType
+  {
+    neum_none,
+    neum_live,
+    neum_orthopressure,
+    neum_consthydro_z,
+    neum_increhydro_z,
+    neum_live_FSI,
+    neum_opres_FSI
+  };
+  LoadType ltype;
+  const string* type = condition.Get<string>("type");
+  if      (*type == "neum_live")          ltype = neum_live;
+  //else if (*type == "neum_live_FSI")      ltype = neum_live_FSI;
+  else if (*type == "neum_orthopressure"){
+    ltype = neum_orthopressure;
+    dserror("orthopressure not implemented for tet10");
+  }
+  else dserror("Unknown type of SurfaceNeumann condition");
  
   // get values and switches from the condition
   Epetra_SerialDenseMatrix* shapefct;
@@ -62,63 +81,136 @@ int DRT::ELEMENTS::Sotet10Surface::EvaluateNeumann(ParameterList&           para
 
   // element geometry
   const int numnod = 6;
-  Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOTET10+1);  // material coord. of element
+  Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOTET10);  // material coord. of element
   for (int i=0; i<numnod; i++){
     xsrefe(i,0) = Nodes()[i]->X()[0];
     xsrefe(i,1) = Nodes()[i]->X()[1];
     xsrefe(i,2) = Nodes()[i]->X()[2];
   }
+  
+  const DiscretizationType distype = this->Shape();
+  DRT::UTILS::GaussRule2D gaussrule = intrule_tri_3point;
+  
+  // allocate vector for shape functions and matrix for derivatives
+  Epetra_SerialDenseVector  funct       (numnod);
+  Epetra_SerialDenseMatrix  deriv       (2,numnod);
+  const int numdf=3;
 
-  Epetra_SerialDenseVector A(NUMDIM_SOTET10);
-  Epetra_SerialDenseVector B(NUMDIM_SOTET10);
-  Epetra_SerialDenseVector C(NUMDIM_SOTET10);
-  
-  /*
-   * to compute the Jacobian i compute the area of the triangle 
-   * for that i get the boundary vectors A,B of the triangle 
-   * the area is then |A x B| 
-   */
-  
-  dserror("This is a quadratic surface, so you can't do this:");
-  A(0)=xsrefe(1,0)-xsrefe(0,0);
-  A(1)=xsrefe(1,1)-xsrefe(0,1);
-  A(2)=xsrefe(1,2)-xsrefe(0,2);
+  // the metric tensor and the area of an infintesimal surface element
+  Epetra_SerialDenseMatrix  metrictensor(2,2);
+  double                        drs;
 
-  
-  B(0)=xsrefe(2,0)-xsrefe(0,0);
-  B(1)=xsrefe(2,1)-xsrefe(0,1);
-  B(2)=xsrefe(2,2)-xsrefe(0,2);
-  
-  /* C = A x B  */
-  C(0)=A(0)*B(1) - A(1)*B(0);
-  C(1)=A(1)*B(2) - A(2)*B(1);
-  C(2)=A(2)*B(0) - A(0)*B(2);
-  
-  /* detJ = |A x B|*/
-  double detJ= C.Norm2()/2;
-  
+  /*----------------------------------------------------------------------*
+  |               start loop over integration points                     |
+  *----------------------------------------------------------------------*/
+  const DRT::UTILS::IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
 
-  /*
-  ** Here, we integrate a 6-node surface with 3 Gauss Points
-  */
-  dserror("Is this load correct?: 3 gauss points * 0.5 * g_1 x g2 ???");
-  double fac = (*weights)(0) * detJ * curvefac;   // integration factor
+    // get shape functions and derivatives in the plane of the element
+    shape_function_2D(funct, e0, e1, distype);
+    shape_function_2D_deriv1(deriv, e0, e1, distype);
 
-  // gauss parameters
-  for (int gpid = 0; gpid < NUMGPT_SOTET10_FACE; gpid++) {    // loop over intergration points
-    // get shape functions and derivatives of element surface
-    // distribute over element load vector
-    for (int nodid=0; nodid < NUMNOD_SOTET10_FACE; nodid++) {
-      for(int dim=0; dim < NUMDIM_SOTET10; dim++) {
-        elevec1[nodid*NUMDIM_SOTET10 + dim] +=\
-        	(*shapefct)(nodid,gpid) * (*onoff)[dim] * (*val)[dim] * fac;
+    // compute measure tensor for surface element and the infinitesimal
+    // area element drs for the integration
+    sotet10_surface_integ(&drs,&xsrefe,deriv);
+
+    // values are multiplied by the product from inf. area element,
+    // the gauss weight, the timecurve factor
+    const double fac = intpoints.qwgt[gpid] * drs * curvefac;
+
+    for (int node=0; node < numnod; ++node)
+    {
+      for(int dim=0 ; dim<NUMDIM_SOTET10; dim++)
+      {
+        elevec1[node*numdf+dim]+=
+          funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
       }
     }
-  }
+
+  } /* end of loop over integration points gpid */
+
+  // here comes the original version of Alexander Volf: Indeed I see a problem 
+  // with non-straight edges and therefore switched to the above
+//  Epetra_SerialDenseVector A(NUMDIM_SOTET10);
+//  Epetra_SerialDenseVector B(NUMDIM_SOTET10);
+//  Epetra_SerialDenseVector C(NUMDIM_SOTET10);
+//  
+//  /*
+//   * to compute the Jacobian we compute the area of the triangle 
+//   * with boundary vectors A,B of the triangle the area is |A x B| 
+//   */
+//  
+//  //dserror("This is a quadratic surface, so you can't do this:");
+//  A(0)=xsrefe(1,0)-xsrefe(0,0);
+//  A(1)=xsrefe(1,1)-xsrefe(0,1);
+//  A(2)=xsrefe(1,2)-xsrefe(0,2);
+//
+//  
+//  B(0)=xsrefe(2,0)-xsrefe(0,0);
+//  B(1)=xsrefe(2,1)-xsrefe(0,1);
+//  B(2)=xsrefe(2,2)-xsrefe(0,2);
+//  
+//  /* C = A x B  */
+//  C(0)=A(0)*B(1) - A(1)*B(0);
+//  C(1)=A(1)*B(2) - A(2)*B(1);
+//  C(2)=A(2)*B(0) - A(0)*B(2);
+//  
+//  /* detJ = |A x B|*/
+//  double detJ= C.Norm2()/2;
+//  
+//
+//  // Here, we integrate a 6-node surface with 3 Gauss Points
+//  //dserror("Is this load correct?: 3 gauss points * 0.5 * g_1 x g2 ???");
+//  double fac = (*weights)(0) * detJ * curvefac;   // integration factor
+//
+//  // gauss parameters
+//  for (int gpid = 0; gpid < NUMGPT_SOTET10_FACE; gpid++) {    // loop over intergration points
+//    // get shape functions and derivatives of element surface
+//    // distribute over element load vector
+//    for (int nodid=0; nodid < NUMNOD_SOTET10_FACE; nodid++) {
+//      for(int dim=0; dim < NUMDIM_SOTET10; dim++) {
+//        elevec1[nodid*NUMDIM_SOTET10 + dim] +=
+//        	(*shapefct)(nodid,gpid) * (*onoff)[dim] * (*val)[dim] * fac;
+//      }
+//    }
+//  }
  
   return 0;
 } //Sotet10Surface::EvaluateNeumann(..)
 
+/*----------------------------------------------------------------------*
+ * Evaluate sqrt of determinant of metric at gp (private)      maf 05/07*
+ * ---------------------------------------------------------------------*/
+void DRT::ELEMENTS::Sotet10Surface::sotet10_surface_integ(
+      double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
+      const Epetra_SerialDenseMatrix* xs,    // (i) element coords
+      const Epetra_SerialDenseMatrix deriv)  // (i) shape funct derivs
+{
+
+  // compute dXYZ / drs
+  Epetra_SerialDenseMatrix dxyzdrs(2,3);
+  dxyzdrs.Multiply('N','N',1.0,deriv,(*xs),0.0);
+
+  /* compute covariant metric tensor G for surface element
+  **                        | g11   g12 |
+  **                    G = |           |
+  **                        | g12   g22 |
+  ** where (o denotes the inner product, xyz a vector)
+  **
+  **       dXYZ   dXYZ          dXYZ   dXYZ          dXYZ   dXYZ
+  ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
+  **        dr     dr            dr     ds            ds     ds
+  */
+  Epetra_SerialDenseMatrix metrictensor(2,2);
+  metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,1.0);
+  (*sqrtdetg) = sqrt( metrictensor(0,0)*metrictensor(1,1)
+                     -metrictensor(0,1)*metrictensor(1,0));
+                       
+  return;
+}
 
 /*----------------------------------------------------------------------*
  * Get shape functions for a tet10 face					       vlf 05/07*

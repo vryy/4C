@@ -719,6 +719,11 @@ private:
       Epetra_SerialDenseMatrix** shapefct,  // pointer to pointer of shapefct
       Epetra_SerialDenseVector** weights);
 
+  void sotet10_surface_integ(
+        double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
+        const Epetra_SerialDenseMatrix* xs,    // (i) element coords
+        const Epetra_SerialDenseMatrix deriv); // (i) shape funct derivs
+  
   /*void sotet10_surface_integ(	//became obsolete !!!!!!!!!!!!!!!!
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
