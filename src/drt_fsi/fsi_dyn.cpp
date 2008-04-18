@@ -132,9 +132,9 @@ void fsi_ale_drt()
     }
 
     fsi->Timeloop(fsi);
-
     DRT::ResultTestManager testmanager(comm);
     testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
+    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
     testmanager.TestAll();
   }
   else if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
@@ -146,11 +146,12 @@ void fsi_ale_drt()
       // read the restart information, set vectors and variables
       fsi->ReadRestart(genprob.restart);
     }
-
+    
     fsi->Timeloop(fsi);
 
     DRT::ResultTestManager testmanager(comm);
     testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
+    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
     testmanager.TestAll();
   }
   else 
@@ -166,7 +167,7 @@ void fsi_ale_drt()
     fsi->Timeloop();
 
     DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
+    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
     testmanager.TestAll();    
   }
   Teuchos::TimeMonitor::summarize();

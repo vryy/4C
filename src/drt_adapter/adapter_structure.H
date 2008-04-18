@@ -25,7 +25,7 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Operator.h>
 
 #include "../drt_structure/strugenalpha.H"
-
+#include "../drt_structure/stru_resulttest.H"
 #include "adapter_utils.H"
 
 
@@ -201,6 +201,9 @@ namespace ADAPTER {
       \note This is not yet the most efficient implementation.
     */
     virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce) = 0;
+    
+    /// create result test for encapulated structure algorithm
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
 
     //@}
   };
@@ -281,6 +284,8 @@ namespace ADAPTER {
     */
     virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce);
 
+    /// create result test for encapulated structure algorithm
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest(); 
     //@}
 
   private:

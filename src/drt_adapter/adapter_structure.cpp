@@ -405,6 +405,14 @@ void ADAPTER::StructureGenAlpha::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector
   structure_.ApplyExternalForce(interface_,iforce);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureGenAlpha::CreateFieldTest()
+{
+  return Teuchos::rcp(new StruResultTest(structure_));
+}
+
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
