@@ -520,6 +520,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     xfluid3,
     ale2,
     ale3,
+    bele3,
     so_hex8,
     so_sh8,
     so_tet4,
@@ -542,6 +543,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="XFLUID3") type = xfluid3;
   else if (eletype=="ALE2") type = ale2;
   else if (eletype=="ALE3") type = ale3;
+  else if (eletype=="BELE3") type = bele3;
   else if (eletype=="SOLIDH8") type = so_hex8;
   else if (eletype=="SOLIDSH8") type = so_sh8;
   else if (eletype=="SOLIDT4") type = so_tet4;
@@ -626,6 +628,12 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     }
     break;
 #endif
+    case bele3:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele3(id,owner));
+      return ele;
+    }
+    break;
 #ifdef D_WALL1
     case wall1:
     {
