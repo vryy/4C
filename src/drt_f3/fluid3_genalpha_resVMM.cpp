@@ -239,11 +239,15 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
   //------------------------------------------------------------------
   //                      SET MATERIAL DATA
-  //------------------------------------------------------------------
-  // get viscosity
+  //-------------------------------------------------
   // check here, if we really have a fluid !!
-  dsassert(material->mattyp == m_fluid, "Material law is not of type m_fluid.");
-  const double visc = material->m.fluid->viscosity;
+    if(material->mattyp != m_carreauyasuda && material->mattyp != m_fluid)
+    	  dserror("Material law is not a fluid");
+    
+    // get viscosity
+    double visc = 0.0;
+    if(material->mattyp == m_fluid)
+  	  visc = material->m.fluid->viscosity;
 
   //------------------------------------------------------------------
   //                      SET ELEMENT DATA
@@ -567,6 +571,31 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   /* middle of the element.                                           */
   /*------------------------------------------------------------------*/
 
+  // compute nonlinear viscosity according to the Carreau-Yasuda model
+  if(material->mattyp == m_carreauyasuda)
+  {   
+    double mu_0 	= material->m.carreauyasuda->mu_0;          // parameter for zero-shear viscosity
+    double mu_inf = material->m.carreauyasuda->mu_inf;      	// parameter for infinite-shear viscosity
+    double lambda = material->m.carreauyasuda->lambda;      	// parameter for characteristic time
+    double a 		= material->m.carreauyasuda->a;  			// constant parameter
+    double b 		= material->m.carreauyasuda->b;  			// constant parameter
+
+    // compute shear rate 
+    double rateofshear = 0.0;
+    blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain tensor
+    epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
+   
+    for(int rr=0;rr<3;rr++)
+      for(int mm=0;mm<3;mm++)
+    	rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
+  
+    rateofshear = sqrt(2.0*rateofshear);
+   
+    // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
+    const double tmp = pow(lambda*rateofshear,b);
+    visc = mu_inf + ((mu_0 - mu_inf)/pow((1 + tmp),a));
+  }
+  
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
       ||
       turb_mod_action == Fluid3::smagorinsky)
