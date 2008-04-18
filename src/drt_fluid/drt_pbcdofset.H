@@ -102,7 +102,7 @@ public:
   \return int highest dof number assigned up to now
   
   */
-  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start);
+  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start, const bool unique_and_unchanging_dofnumbers);
 
   //@}
 
