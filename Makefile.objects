@@ -214,7 +214,6 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_fluid_impl.o \
                 src/drt_adapter/adapter_fluid_genalpha.o \
                 src/drt_adapter/adapter_xfluid_impl.o \
-                src/drt_adapter/adapter_boundary.o \
                 src/drt_adapter/adapter_utils.o \
                 src/drt_adapter/adapter_ale_resulttest.o
 #                pss_full
