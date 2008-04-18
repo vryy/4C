@@ -499,8 +499,11 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
   DRT::Element::VisNames(names);
 
   // element fiber direction vector
-  string fibervecname = "FiberVec";
-  names[fibervecname] = 3;
+  if (fiberdirection_.size()!=0)
+  {
+    string fibervecname = "FiberVec";
+    names[fibervecname] = 3;
+  }
 
   return;
 }
@@ -517,7 +520,7 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
   if (name != "FiberVec") return;
 
   // check sizes
-  if ((name == "FiberVec") && (data.size()!=fiberdirection_.size())) 
+  if ((name == "FiberVec") && (data.size()!=fiberdirection_.size()))
     dserror("FiberVec size mismatch ");
 
   if (name == "FiberVec"){

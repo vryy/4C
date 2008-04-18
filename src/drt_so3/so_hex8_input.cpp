@@ -71,7 +71,7 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
 
   // we expect kintype to be total lagrangian
   kintype_ = soh8_totlag;
-   
+
   // read kinematic type
   char buffer[50];
   frchar("KINEM",buffer,&ierr);
@@ -112,7 +112,7 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
   }
 
   //Initialize fiber vector
-  fiberdirection_.resize(3);
+  //fiberdirection_.resize(3);
 
   // Initialize winding flags
   donerewinding_ = false;
