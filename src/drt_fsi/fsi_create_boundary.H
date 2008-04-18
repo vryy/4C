@@ -20,7 +20,7 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*/
 // create ale discretization parallel to the fluid one
 /*----------------------------------------------------------------------*/
-void CreateBoundaryDiscretization();
+void CreateBoundaryDiscretization(RCP<DRT::Discretization> cutterdis);
 
 #endif
 #endif

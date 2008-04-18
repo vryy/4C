@@ -203,6 +203,7 @@ public:
   bool ReadElement()
   {
       dserror("No reading for this element! Will be created on the fly, not from a .dat file.");
+      return false;
   }
 
   //@}

@@ -365,7 +365,7 @@ void ADAPTER::BoundaryBaseAlgorithm::SetupBoundary()
   // access the discretization
   // -------------------------------------------------------------------
   RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
+  actdis = DRT::Problem::Instance()->Dis(genprob.numbf,0);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -382,7 +382,7 @@ void ADAPTER::BoundaryBaseAlgorithm::SetupBoundary()
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  SOLVAR        *actsolv  = &solv[genprob.numaf];
+  SOLVAR        *actsolv  = &solv[genprob.numbf];
 
   const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();

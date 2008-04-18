@@ -184,8 +184,10 @@ void xfsi_drt()
   Epetra_SerialComm comm;
 #endif
 
-  //dserror("XFEM FSI is not operational yet!");
+  RefCountPtr<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
 
+  CreateBoundaryDiscretization(soliddis);
+  
   //const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));
 
