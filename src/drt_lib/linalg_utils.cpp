@@ -269,7 +269,7 @@ RCP<Epetra_CrsMatrix> LINALG::Transpose(const Epetra_CrsMatrix& A)
   Epetra_CrsMatrix* Aprime =
   		&(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
 
-  
+
   return rcp(new Epetra_CrsMatrix(*Aprime));
 }
 
@@ -403,12 +403,24 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
   double* a = A.A();
   double* w = L.A();
   const char uplo = {'U'};
-//  char jobz = {'N'};
-//  if (eigv == true) jobz = 'V';
   const int lda = A.LDA();
-  const int liwork = 3+5*dim;
+
+  int liwork;
+  if (dim == 1) liwork = 1;
+  else
+  {
+    if      (jobz == 'N') liwork = 1;
+    else if (jobz == 'V') liwork = 3+5*dim;
+  }
   vector<int> iwork(liwork);
-  const int lwork = 2*dim^2 + 7*dim;
+
+  int lwork;
+  if (dim == 1) lwork = 1;
+  else
+  {
+    if      (jobz == 'N') lwork = 2*dim+1;
+    else if (jobz == 'V') lwork = 2*dim*dim+6*dim+1;
+  }
   vector<double> work(lwork);
   int info=0;
 
@@ -418,8 +430,8 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
 
   //SYEVD (const char JOBZ, const char UPLO, const int N, double *A, const int LDA, double *W, double *WORK, const int LWORK, int *IWORK, const int LIWORK, int *INFO) const
 
-  if (info > 0) dserror("Lapack algorithm dsyevd failed");
-  if (info < 0) dserror("Illegal value in Lapack dsyevd call");
+  if (info > 0) dserror("Lapack algorithm syevd failed");
+  if (info < 0) dserror("Illegal value in Lapack syevd call");
 
   return;
 }
@@ -748,15 +760,15 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   maps[0] = rcp(new Epetra_Map(*A11rowmap));
   maps[1] = rcp(new Epetra_Map(*A22rowmap));
   LINALG::MultiMapExtractor extractor(A->RowMap(),maps);
-  
-  // create SparseMatrix view to input matrix A  
+
+  // create SparseMatrix view to input matrix A
   SparseMatrix a(A,View);
-  
+
   // split matrix into pieces, where main diagonal blocks are square
-  RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > Ablock = 
+  RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > Ablock =
                        a.Split<DefaultBlockMatrixStrategy>(extractor,extractor);
   Ablock->Complete();
-  
+
   // get Epetra objects out of the block matrix (prevents them from dying)
   A11 = (*Ablock)(0,0).EpetraMatrix();
   A12 = (*Ablock)(0,0).EpetraMatrix();
@@ -1068,8 +1080,8 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   domainmaps[1] = rcp(new Epetra_Map(*A22domainmap));
   LINALG::MultiMapExtractor range(A->RangeMap(),rangemaps);
   LINALG::MultiMapExtractor domain(A->DomainMap(),domainmaps);
-  
-  RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > Ablock = 
+
+  RCP<BlockSparseMatrix<DefaultBlockMatrixStrategy> > Ablock =
                        A->Split<DefaultBlockMatrixStrategy>(domain,range);
 
 #if 0 // debugging
@@ -1090,7 +1102,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   A12 = rcp(new SparseMatrix((*Ablock)(0,1),View));
   A21 = rcp(new SparseMatrix((*Ablock)(1,0),View));
   A22 = rcp(new SparseMatrix((*Ablock)(1,1),View));
-  
+
   return true;
 }
 #endif
@@ -1139,7 +1151,7 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
     else
       return rcp(new Epetra_Map(map1));
   }
-  
+
   vector<int> mygids(map1.NumMyElements()+map2.NumMyElements());
   int count = map1.NumMyElements();
 
