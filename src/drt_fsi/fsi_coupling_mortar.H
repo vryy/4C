@@ -76,11 +76,6 @@ namespace FSI
     RefCountPtr<Epetra_Map> SlaveDofMap()  const { return slavedofmap_; }
 
   private:
-    /// find all local nodes and elements in the interface
-    void FindInterfaceObjects(
-      const DRT::Discretization& dis,
-      map<int, DRT::Node*>& nodes,
-      map< int, RefCountPtr<DRT::Element> >& elements );
 
     RefCountPtr<Epetra_Map> masterdofmap_;
     RefCountPtr<Epetra_Map> slavedofmap_;
@@ -90,6 +85,12 @@ namespace FSI
     RefCountPtr<Epetra_CrsMatrix> Dinv_;
     RefCountPtr<Epetra_CrsMatrix> M_;
   };
+  
+  /// find all local nodes and elements in a interface
+  void FindInterfaceObjects(
+    const DRT::Discretization& dis,
+    map<int, DRT::Node*>& nodes,
+    map< int, RefCountPtr<DRT::Element> >& elements );
 }
 
 #endif // FSI_COUPLING_MORTAR_H

@@ -440,10 +440,11 @@ RefCountPtr<Epetra_Vector> FSI::CouplingMortar::SlaveToMaster(
     return mv;
 }
 
-void FSI::CouplingMortar::FindInterfaceObjects(
+void FSI::FindInterfaceObjects(
     const DRT::Discretization& dis,
     map<int, DRT::Node*>& nodes,
-    map< int, RefCountPtr<DRT::Element> >& elements )
+    map< int, RefCountPtr<DRT::Element> >& elements
+    )
 {
     int myrank = dis.Comm().MyPID();
     vector<DRT::Condition*> conds;
@@ -454,7 +455,7 @@ void FSI::CouplingMortar::FindInterfaceObjects(
         const vector<int>* n = conds[i]->Nodes();
         for ( unsigned j = 0; j < n->size(); ++j )
         {
-            int gid = (*n)[j];
+            const int gid = (*n)[j];
             if ( dis.HaveGlobalNode( gid ) and dis.gNode( gid )->Owner() == myrank )
             {
                 nodes[gid] = dis.gNode( gid );
