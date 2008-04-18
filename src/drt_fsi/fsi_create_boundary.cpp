@@ -68,7 +68,7 @@ void CreateBoundaryDiscretization(RCP<DRT::Discretization> cutterdis)
   
   RCP<DRT::Discretization> boundarydis = DRT::Problem::Instance()->Dis(genprob.numbf,0);
 
-  if (!cutterdis->Filled()) cutterdis->FillComplete();
+  if (!cutterdis->Filled()) cutterdis->FillComplete(true,true,true,false);
 
   const int myrank = boundarydis->Comm().MyPID();
 //  vector< DRT::Condition* >      xfemConditions;
@@ -91,7 +91,6 @@ void CreateBoundaryDiscretization(RCP<DRT::Discretization> cutterdis)
   // catch all nodes attached to cutter elements
   map<int, DRT::Node*>          cutternodes;
   map<int, RCP<DRT::Element> >  cutterelements;
-  
   FSI::FindInterfaceObjects(*cutterdis, cutternodes, cutterelements);
   
   // Loop all cutter elements
@@ -173,8 +172,8 @@ void CreateBoundaryDiscretization(RCP<DRT::Discretization> cutterdis)
     
     // add boundary element
     boundarydis->AddElement(boundaryele);
-    cout << "boundary element:" << endl;
-    cout << (*boundaryele) << endl;
+//    cout << "boundary element:" << endl;
+//    cout << (*boundaryele) << endl;
   }
 
   // conditions
@@ -183,23 +182,14 @@ void CreateBoundaryDiscretization(RCP<DRT::Discretization> cutterdis)
   // note, the condition is still named after the structure,
   // but that does not seem to matter in the subsequent computations
   vector<DRT::Condition*> conds;
-//  cutterdis->GetCondition("FSICoupling", conds);
-//  for (unsigned i=0; i<conds.size(); ++i)
-//  {
-//    // We use the same nodal ids and therefore we can just copy the
-//    // conditions.
-//    boundarydis->SetCondition("FSICoupling", rcp(new DRT::Condition(*conds[i])));
-//  }
-
+  cutterdis->GetCondition("FSICoupling", conds);
+  for (unsigned i=0; i<conds.size(); ++i)
+  {
+    // We use the same nodal ids and therefore we can just copy the
+    // conditions.
+    boundarydis->SetCondition("FSICoupling", rcp(new DRT::Condition(*conds[i])));
+  }
   conds.clear();
-//  cutterdis->GetCondition("ALEDirichlet", cond);
-//  for (unsigned i=0; i<cond.size(); ++i)
-//  {
-//    // We use the same nodal ids and therefore we can just copy the
-//    // conditions. But here we rename it. So we have nice dirichlet
-//    // conditions at the ale.
-//    boundarydis->SetCondition("Dirichlet", rcp(new DRT::Condition(*cond[i])));
-//  }
 
   // now care about the parallel distribution
   //
@@ -218,27 +208,26 @@ void CreateBoundaryDiscretization(RCP<DRT::Discretization> cutterdis)
 
   // redistribute nodes to column (ghost) map
 
-//  boundarydis->ExportColumnNodes(*boundarynodecolmap);
-//
-//  RefCountPtr< Epetra_Map > boundaryelerowmap;
-//  RefCountPtr< Epetra_Map > boundaryelecolmap;
-//
-//  // now we have all elements in a linear map roweles
-//  // build resonable maps for elements from the
-//  // already valid and final node maps
-//  // note that nothing is actually redistributed in here
-//  boundarydis->BuildElementRowColumn(*boundarynoderowmap, *boundarynodecolmap, boundaryelerowmap, boundaryelecolmap);
-//
-//  // we can now export elements to resonable row element distribution
-//  boundarydis->ExportRowElements(*boundaryelerowmap);
-//
-//  // export to the column map / create ghosting of elements
-//  boundarydis->ExportColumnElements(*boundaryelecolmap);
+  boundarydis->ExportColumnNodes(*boundarynodecolmap);
 
-  cout << (*boundarydis) << endl;
-  
+  RefCountPtr< Epetra_Map > boundaryelerowmap;
+  RefCountPtr< Epetra_Map > boundaryelecolmap;
+
+  // now we have all elements in a linear map roweles
+  // build resonable maps for elements from the
+  // already valid and final node maps
+  // note that nothing is actually redistributed in here
+  boundarydis->BuildElementRowColumn(*boundarynoderowmap, *boundarynodecolmap, boundaryelerowmap, boundaryelecolmap);
+
+  // we can now export elements to resonable row element distribution
+  boundarydis->ExportRowElements(*boundaryelerowmap);
+
+  // export to the column map / create ghosting of elements
+  boundarydis->ExportColumnElements(*boundaryelecolmap);
+
   // Now we are done. :)
-  boundarydis->FillComplete();
+  boundarydis->FillComplete(true,true,true,false);
+  cout << (*boundarydis) << endl;
 }
 
 #endif
