@@ -3542,7 +3542,7 @@ MAT       1 MAT_Struct_NeoHooke  YOUNG 1000000.0 NUE 0.45 DENS 0.001
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  -1.644792464642609175e+01 TOLERANCE 1e-10
+STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  1.644792467e+01 TOLERANCE 1e-8
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 2.0
