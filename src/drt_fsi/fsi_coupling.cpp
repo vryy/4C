@@ -195,7 +195,7 @@ void FSI::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
     rcp(new Epetra_IntVector(*slavenodemap));
 
   Epetra_Export masternodeexport(*permslavenodemap, *slavenodemap);
-  int err = permmasternodevec->Export(*masternodevec, masternodeexport, Insert);
+  const int err = permmasternodevec->Export(*masternodevec, masternodeexport, Insert);
   if (err)
     dserror("failed to export master nodes");
 
@@ -227,13 +227,13 @@ void FSI::Coupling::BuildDofMaps(const DRT::Discretization& dis,
   vector<int> dofmapvec;
   map<int, vector<int> > dofs;
 
-  int* nodes = nodemap->MyGlobalElements();
-  int numnode = nodemap->NumMyElements();
+  const int* nodes = nodemap->MyGlobalElements();
+  const int numnode = nodemap->NumMyElements();
 
   for (int i=0; i<numnode; ++i)
   {
-    DRT::Node* actnode = dis.gNode(nodes[i]);
-    vector<int> dof = dis.Dof(actnode);
+    const DRT::Node* actnode = dis.gNode(nodes[i]);
+    const vector<int> dof = dis.Dof(actnode);
     copy(&dof[0], &dof[0]+genprob.ndim, back_inserter(dofs[nodes[i]]));
     copy(&dof[0], &dof[0]+genprob.ndim, back_inserter(dofmapvec));
   }
@@ -246,12 +246,12 @@ void FSI::Coupling::BuildDofMaps(const DRT::Discretization& dis,
   DRT::Exporter exportdofs(*nodemap,*permnodemap,dis.Comm());
   exportdofs.Export(dofs);
 
-  nodes = permnodemap->MyGlobalElements();
-  numnode = permnodemap->NumMyElements();
+  const int* permnodes = permnodemap->MyGlobalElements();
+  const int permnumnode = permnodemap->NumMyElements();
 
-  for (int i=0; i<numnode; ++i)
+  for (int i=0; i<permnumnode; ++i)
   {
-    vector<int>& dof = dofs[nodes[i]];
+    const vector<int>& dof = dofs[permnodes[i]];
     copy(dof.begin(), dof.end(), back_inserter(dofmapvec));
   }
 
@@ -334,7 +334,7 @@ void FSI::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv, Teu
   Epetra_MultiVector perm(*permslavedofmap_,mv->NumVectors());
   copy(mv->Values(), mv->Values()+(mv->MyLength()*mv->NumVectors()), perm.Values());
 
-  int err = sv->Export(perm,*slaveexport_,Insert);
+  const int err = sv->Export(perm,*slaveexport_,Insert);
   if (err)
     dserror("Export to slave distribution returned err=%d",err);
 }
@@ -356,7 +356,7 @@ void FSI::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teu
   Epetra_MultiVector perm(*permmasterdofmap_,sv->NumVectors());
   copy(sv->Values(), sv->Values()+(sv->MyLength()*sv->NumVectors()), perm.Values());
 
-  int err = mv->Export(perm,*masterexport_,Insert);
+  const int err = mv->Export(perm,*masterexport_,Insert);
   if (err)
     dserror("Export to master distribution returned err=%d",err);
 }
