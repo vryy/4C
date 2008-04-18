@@ -179,6 +179,8 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
 		src/drt_fluid/avms_solver.o
 # ----------------------------- drt version of fluid structure interaction
 OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
+                src/drt_fsi/fsi_create_ale.o \
+                src/drt_fsi/fsi_create_boundary.o \
                 src/drt_fsi/fsi_algorithm.o \
                 src/drt_fsi/fsi_dirichletneumann.o \
                 src/drt_fsi/fsi_structureale.o \
