@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_dirichletneumann.H
+\file fsi_structureale.H
 
 \brief Solve structure only using FSI framework
 
@@ -44,7 +44,7 @@ Maintainer: Thomas Kloeppel
 namespace FSI 
 {
 
-/// Dirichlet Neumann coupled interface system
+/// Coupling structure and ALE, while keeping fluid velocities at zero
 /*!
 
   \author tk
@@ -67,17 +67,11 @@ private:
   void Solve();
   
   Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
-  
-//  void Update();
-  
+    
   /// interface structural operator
 
   /// coupling of structure and fluid at the interface, with mortar. Experimental!
   CouplingMortar         coupsfm_;
-
-  /// interface displacement from time step begin
-  Teuchos::RCP<Epetra_Vector> idispn_;
-
 
   /// nodes at the fluid-structure interface match
   bool matchingnodes_;

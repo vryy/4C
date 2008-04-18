@@ -5,9 +5,9 @@
 
 <pre>
 Maintainer: Thomas Kloeppel
-        kloeppel@lnm.mw.tum.de
-        http://www.lnm.mw.tum.de
-        089 - 289-15257
+            kloeppel@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15257
 </pre>
 
 *----------------------------------------------------------------------*/

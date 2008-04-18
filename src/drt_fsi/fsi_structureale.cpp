@@ -88,12 +88,6 @@ void FSI::StructureALE::Solve()
   FluidField().NonlinearSolve(StructToFluid(StructureField().ExtractInterfaceDispnp()));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-//void FSI::StructureALE::Update()
-//{
-//  StructureField().Update();
-//}
 
 Teuchos::RCP<Epetra_Vector> FSI::StructureALE::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
