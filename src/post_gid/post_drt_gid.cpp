@@ -45,6 +45,7 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
 
   RefCountPtr<Epetra_Vector> data = result->read_result(result_name);
   const Epetra_BlockMap& datamap = data->Map();
+  
   GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Vector,
                   GiD_OnNodes, NULL, NULL, field->problem()->num_dim(),
                   componentnames);
@@ -55,6 +56,7 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
   // post-processing phase, when only one discretization is called,
   // numbering always starts with 0, so a potential offset needs to be
   // taken into account
+  
   int offset = datamap.MinAllGID() - field->discretization()->DofRowMap()->MinAllGID();
 
   double v[3];
@@ -209,13 +211,16 @@ void write_serialdensematrix_result(string result_name, PostField* field,
 void write_mesh(PostProblem* problem, int disnum)
 {
   PostField* field = problem->get_discretization(disnum);
-
-  // ==================================================================
-  // We expect all elements in a mesh to be of the same type (shape
-  // and everything)
+  
+  
   RefCountPtr<DRT::Discretization> dis = field->discretization();
-  const Epetra_Map* elementmap = dis->ElementRowMap();
-  DRT::Element* actele = dis->gElement(elementmap->GID(0));
+  
+  //Writing the mesh should always start with the smallest NodeID and
+  //ElementID of the discretization
+  int node_offset =dis->NodeRowMap()->MinAllGID();
+  int ele_offset=dis->ElementRowMap()->MinAllGID();
+
+  DRT::Element* actele = dis->gElement(ele_offset);
 
   double x[3];
   x[2] = 0;
@@ -228,15 +233,15 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("so_hex8",GiD_3D,GiD_Hexahedra,8);
-    // We have ony one mesh, so it's the first
+    // We have only one mesh, so it's the first
     GiD_BeginCoordinates();
     for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
     {
       for (int j = 0; j < field->problem()->num_dim(); ++j)
       {
-        x[j] = field->discretization()->gNode(i)->X()[j];
+        x[j] = field->discretization()->gNode(i+node_offset)->X()[j];
       }
-      int id = field->discretization()->gNode(i)->Id();
+      int id = field->discretization()->gNode(i+node_offset)->Id();
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
@@ -245,11 +250,11 @@ void write_mesh(PostProblem* problem, int disnum)
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
       int mesh_entry[MAXNODHARDCODED];
-      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      for (int j = 0; j < field->discretization()->gElement(i+ele_offset)->NumNode(); ++j)
       {
-        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+        mesh_entry[j] = field->discretization()->gElement(i+ele_offset)->NodeIds()[j]+1;
       }
-      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+      GiD_WriteElement(field->discretization()->gElement(i+ele_offset)->Id()+1,mesh_entry);
     }
     GiD_EndElements();
     GiD_EndMesh();
@@ -266,9 +271,9 @@ void write_mesh(PostProblem* problem, int disnum)
     {
       for (int j = 0; j < field->problem()->num_dim(); ++j)
       {
-        x[j] = field->discretization()->gNode(i)->X()[j];
+        x[j] = field->discretization()->gNode(i+node_offset)->X()[j];
       }
-      int id = field->discretization()->gNode(i)->Id();
+      int id = field->discretization()->gNode(i+node_offset)->Id();
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
@@ -277,11 +282,11 @@ void write_mesh(PostProblem* problem, int disnum)
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
       int mesh_entry[MAXNOD];
-      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      for (int j = 0; j < field->discretization()->gElement(i+ele_offset)->NumNode(); ++j)
       {
-        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+        mesh_entry[j] = field->discretization()->gElement(i+ele_offset)->NodeIds()[j]+1;
       }
-      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+      GiD_WriteElement(field->discretization()->gElement(i+ele_offset)->Id()+1,mesh_entry);
     }
     GiD_EndElements();
     GiD_EndMesh();
@@ -293,15 +298,15 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("so_hex27",GiD_3D,GiD_Hexahedra,27);
-    // We have ony one mesh, so it's the first
+    // We have only one mesh, so it's the first
     GiD_BeginCoordinates();
     for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
     {
       for (int j = 0; j < field->problem()->num_dim(); ++j)
       {
-        x[j] = field->discretization()->gNode(i)->X()[j];
+        x[j] = field->discretization()->gNode(i+node_offset)->X()[j];
       }
-      int id = field->discretization()->gNode(i)->Id();
+      int id = field->discretization()->gNode(i+node_offset)->Id();
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
@@ -310,11 +315,11 @@ void write_mesh(PostProblem* problem, int disnum)
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
       int mesh_entry[MAXNOD];
-      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      for (int j = 0; j < field->discretization()->gElement(i+ele_offset)->NumNode(); ++j)
       {
-        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+        mesh_entry[j] = field->discretization()->gElement(i+ele_offset)->NodeIds()[j]+1;
       }
-      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+      GiD_WriteElement(field->discretization()->gElement(i+ele_offset)->Id()+1,mesh_entry);
     }
     GiD_EndElements();
     GiD_EndMesh();
@@ -324,15 +329,15 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("tet4",GiD_3D,GiD_Tetrahedra,4);
-    // We have ony one mesh, so it's the first
+    // We have only one mesh, so it's the first
     GiD_BeginCoordinates();
     for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
     {
       for (int j = 0; j < field->problem()->num_dim(); ++j)
       {
-        x[j] = field->discretization()->gNode(i)->X()[j];
+        x[j] = field->discretization()->gNode(i+node_offset)->X()[j];
       }
-      int id = field->discretization()->gNode(i)->Id();
+      int id = field->discretization()->gNode(i+node_offset)->Id();
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
@@ -341,11 +346,11 @@ void write_mesh(PostProblem* problem, int disnum)
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
       int mesh_entry[MAXNOD];
-      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      for (int j = 0; j < field->discretization()->gElement(i+ele_offset)->NumNode(); ++j)
       {
-        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+        mesh_entry[j] = field->discretization()->gElement(i+ele_offset)->NodeIds()[j]+1;
       }
-      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+      GiD_WriteElement(field->discretization()->gElement(i+ele_offset)->Id()+1,mesh_entry);
     }
     GiD_EndElements();
     GiD_EndMesh();
@@ -355,15 +360,15 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("tet10",GiD_3D,GiD_Tetrahedra,10);
-    // We have ony one mesh, so it's the first
+    // We have only one mesh, so it's the first
     GiD_BeginCoordinates();
     for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
     {
       for (int j = 0; j < field->problem()->num_dim(); ++j)
       {
-        x[j] = field->discretization()->gNode(i)->X()[j];
+        x[j] = field->discretization()->gNode(i+node_offset)->X()[j];
       }
-      int id = field->discretization()->gNode(i)->Id();
+      int id = field->discretization()->gNode(i+node_offset)->Id();
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
@@ -372,11 +377,11 @@ void write_mesh(PostProblem* problem, int disnum)
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
       int mesh_entry[MAXNOD];
-      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      for (int j = 0; j < field->discretization()->gElement(i+ele_offset)->NumNode(); ++j)
       {
-        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+        mesh_entry[j] = field->discretization()->gElement(i+ele_offset)->NodeIds()[j]+1;
       }
-      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+      GiD_WriteElement(field->discretization()->gElement(i+ele_offset)->Id()+1,mesh_entry);
     }
     GiD_EndElements();
     GiD_EndMesh();
@@ -386,28 +391,27 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("quad4",GiD_3D,GiD_Quadrilateral,4);
-    // We have ony one mesh, so it's the first
+    // We have only one mesh, so it's the first
     GiD_BeginCoordinates();
     for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
     {
       for (int j = 0; j < field->problem()->num_dim(); ++j)
       {
-        x[j] = field->discretization()->gNode(i)->X()[j];
+        x[j] = field->discretization()->gNode(i+node_offset)->X()[j];
       }
-      int id = field->discretization()->gNode(i)->Id();
+      int id = field->discretization()->gNode(i+node_offset)->Id();
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
-
     GiD_BeginElements();
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
       int mesh_entry[MAXNODHARDCODED];
-      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      for (int j = 0; j < field->discretization()->gElement(i+ele_offset)->NumNode(); ++j)
       {
-        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+         mesh_entry[j] = field->discretization()->gElement(i+ele_offset)->NodeIds()[j]+1;
       }
-      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+      GiD_WriteElement(field->discretization()->gElement(i+ele_offset)->Id()+1,mesh_entry);
     }
     GiD_EndElements();
     GiD_EndMesh();
@@ -417,15 +421,15 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("quad8",GiD_3D,GiD_Quadrilateral,8);
-    // We have ony one mesh, so it's the first
+    // We have only one mesh, so it's the first
     GiD_BeginCoordinates();
     for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
     {
       for (int j = 0; j < field->problem()->num_dim(); ++j)
       {
-        x[j] = field->discretization()->gNode(i)->X()[j];
+        x[j] = field->discretization()->gNode(i+node_offset)->X()[j];
       }
-      int id = field->discretization()->gNode(i)->Id();
+      int id = field->discretization()->gNode(i+node_offset)->Id();
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
@@ -434,11 +438,11 @@ void write_mesh(PostProblem* problem, int disnum)
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
       int mesh_entry[MAXNODHARDCODED];
-      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      for (int j = 0; j < field->discretization()->gElement(i+ele_offset)->NumNode(); ++j)
       {
-        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+        mesh_entry[j] = field->discretization()->gElement(i+ele_offset)->NodeIds()[j]+1;
       }
-      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+      GiD_WriteElement(field->discretization()->gElement(i+ele_offset)->Id()+1,mesh_entry);
     }
     GiD_EndElements();
     GiD_EndMesh();
@@ -449,15 +453,15 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("quad9",GiD_3D,GiD_Quadrilateral,9);
-    // We have ony one mesh, so it's the first
+    // We have only one mesh, so it's the first
     GiD_BeginCoordinates();
     for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
     {
       for (int j = 0; j < field->problem()->num_dim(); ++j)
       {
-        x[j] = field->discretization()->gNode(i)->X()[j];
+        x[j] = field->discretization()->gNode(i+node_offset)->X()[j];
       }
-      int id = field->discretization()->gNode(i)->Id();
+      int id = field->discretization()->gNode(i+node_offset)->Id();
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
@@ -466,11 +470,11 @@ void write_mesh(PostProblem* problem, int disnum)
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
       int mesh_entry[MAXNODHARDCODED];
-      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      for (int j = 0; j < field->discretization()->gElement(i+ele_offset)->NumNode(); ++j)
       {
-        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+        mesh_entry[j] = field->discretization()->gElement(i+ele_offset)->NodeIds()[j]+1;
       }
-      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+      GiD_WriteElement(field->discretization()->gElement(i+ele_offset)->Id()+1,mesh_entry);
     }
     GiD_EndElements();
     GiD_EndMesh();
@@ -486,9 +490,9 @@ void write_mesh(PostProblem* problem, int disnum)
     {
       for (int j = 0; j < field->problem()->num_dim(); ++j)
       {
-        x[j] = field->discretization()->gNode(i)->X()[j];
+        x[j] = field->discretization()->gNode(i+node_offset)->X()[j];
       }
-      int id = field->discretization()->gNode(i)->Id();
+      int id = field->discretization()->gNode(i+node_offset)->Id();
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
@@ -497,11 +501,11 @@ void write_mesh(PostProblem* problem, int disnum)
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
       int mesh_entry[MAXNODHARDCODED];
-      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      for (int j = 0; j < field->discretization()->gElement(i+ele_offset)->NumNode(); ++j)
       {
-        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+        mesh_entry[j] = field->discretization()->gElement(i+ele_offset)->NodeIds()[j]+1;
       }
-      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+      GiD_WriteElement(field->discretization()->gElement(i+ele_offset)->Id()+1,mesh_entry);
     }
     GiD_EndElements();
     GiD_EndMesh();
@@ -517,9 +521,9 @@ void write_mesh(PostProblem* problem, int disnum)
     {
       for (int j = 0; j < field->problem()->num_dim(); ++j)
       {
-        x[j] = field->discretization()->gNode(i)->X()[j];
+        x[j] = field->discretization()->gNode(i+node_offset)->X()[j];
       }
-      int id = field->discretization()->gNode(i)->Id();
+      int id = field->discretization()->gNode(i+node_offset)->Id();
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
@@ -528,11 +532,11 @@ void write_mesh(PostProblem* problem, int disnum)
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
       int mesh_entry[MAXNODHARDCODED];
-      for (int j = 0; j < field->discretization()->gElement(i)->NumNode(); ++j)
+      for (int j = 0; j < field->discretization()->gElement(i+ele_offset)->NumNode(); ++j)
       {
-        mesh_entry[j] = field->discretization()->gElement(i)->NodeIds()[j]+1;
+        mesh_entry[j] = field->discretization()->gElement(i+ele_offset)->NodeIds()[j]+1;
       }
-      GiD_WriteElement(field->discretization()->gElement(i)->Id()+1,mesh_entry);
+      GiD_WriteElement(field->discretization()->gElement(i+ele_offset)->Id()+1,mesh_entry);
     }
     GiD_EndElements();
     GiD_EndMesh();
@@ -561,7 +565,9 @@ int main(int argc, char** argv)
 
   // just write the mesh
   for (int i = 0; i<problem.num_discr(); ++i)
+  {
     write_mesh(&problem,i);
+  }
 
   for (int i = 0; i<problem.num_discr(); ++i)
   {
