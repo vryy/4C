@@ -164,10 +164,23 @@ public:
     
   /*!
   \brief Evaluate contact
-    
+  
+  This is the main routine of our contact algorithms on a global level.
+  It includes the evaluation of the current Mortar operators D and M
+  as well as the setup of the global linear system including contact.
+  This makes modifications to the effective stiffness K and the effective
+  load vector f necessary. As these modifications are usually applied
+  to groups of dofs (slave, master, etc.) some matrix and vector
+  splitting and a lot of matrix-vector calculation is done!  
   */
   void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
   
+  /*!
+  \brief Evaluate contact (without basis transformation)
+      
+  */
+  void EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
+    
   /*!
   \brief Transform displacement increment vector
   
@@ -177,10 +190,18 @@ public:
   instead of the incremental slave displacments. This step is reversed
   here by recovering the incremental slave displacements. But as we
   still need the incremental jump for the active set strategy, it is
-  extracted at the beginning and stored in incrjump_
+  extracted at the beginning and stored in incrjump_.
+  Moreover we recover the Lagrange multipliers here, which had been
+  statically condensated during the setup of the global problem!
   
   */
   void RecoverDisp(RCP<Epetra_Vector>& disi);
+  
+  /*!
+  \brief RecoverDisp (without basis transformation)
+  
+  */
+  void RecoverDispNoBasisTrafo(RCP<Epetra_Vector>& disi);
   
   /*!
   \brief Update active set and check for convergence

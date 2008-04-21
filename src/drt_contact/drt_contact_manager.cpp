@@ -1019,6 +1019,420 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
 }
 
 /*----------------------------------------------------------------------*
+ |  evaluate contact without basis transformation (public)    popp 04/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
+                                            RCP<Epetra_Vector> feff, int numiter)
+{ 
+  // FIXME: Currently only the old LINALG::Multiply method is used,
+  // because there are still problems with the transposed version of
+  // MLMultiply if a row has no entries! One day we should use ML...
+  
+  /**********************************************************************/
+  /* evaluate interfaces                                                */
+  /* (nodal normals, projections, Mortar integration, Mortar assembly)  */
+  /**********************************************************************/
+#ifdef CONTACTCHECKHUEEBER
+  if (numiter==0)
+  {
+#endif // #ifdef CONTACTCHECKHUEEBER
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->Evaluate();
+    interface_[i]->AssembleDMG(*dmatrix_,*mmatrix_,*g_);
+  }
+  
+  // FillComplete() global Mortar matrices
+  dmatrix_->Complete();
+  mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
+  
+  
+#ifdef CONTACTCHECKHUEEBER
+  }
+#endif // #ifdef CONTACTCHECKHUEEBER
+  // export weighted gap vector to gactiveN-map
+  RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
+  if (gact->GlobalLength())
+  {
+    LINALG::Export(*g_,*gact);
+    gact->ReplaceMap(*gactiven_);
+  }
+  
+  /**********************************************************************/
+  /* build global matrix n with normal vectors of active nodes          */
+  /* and global matrix t with tangent vectors of active nodes           */
+  /**********************************************************************/
+#ifdef CONTACTCHECKHUEEBER
+  if (numiter==0)
+  {
+#endif // #ifdef CONTACTCHECKHUEEBER
+  for (int i=0; i<(int)interface_.size(); ++i)
+    interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
+    
+  // FillComplete() global matrices N and T
+  nmatrix_->Complete(*gactivedofs_,*gactiven_);
+  tmatrix_->Complete(*gactivedofs_,*gactivet_);
+#ifdef CONTACTCHECKHUEEBER
+  }
+#endif // #ifdef CONTACTCHECKHUEEBER
+  /**********************************************************************/
+  /* Multiply Mortar matrices: m^ = inv(d) * m                          */
+  /**********************************************************************/
+  RCP<LINALG::SparseMatrix> invd = rcp(new LINALG::SparseMatrix(*dmatrix_));
+  RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_,true);
+  int err = 0;
+  
+  // extract diagonal of invd into diag
+  invd->ExtractDiagonalCopy(*diag);
+  
+  // set zero diagonal values to dummy 1.0
+  for (int i=0;i<diag->MyLength();++i)
+    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+  
+  // scalar inversion of diagonal values
+  err = diag->Reciprocal(*diag);
+  if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  
+  // re-insert inverted diagonal into invd
+  err = invd->ReplaceDiagonalValues(*diag);
+  // we cannot use this check, as we deliberately replaced zero entries
+  //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+  
+  // do the multiplication M^ = inv(D) * M
+  mhatmatrix_ = LINALG::Multiply(*invd,false,*mmatrix_,false);
+  
+  /**********************************************************************/
+  /* Split kteff into 3x3 block matrix                                  */
+  /**********************************************************************/
+  // we want to split k into 3 groups s,m,n = 9 blocks
+  RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+  
+  // temporarily we need the blocks ksmsm, ksmn, knsm
+  // (FIXME: because a direct SplitMatrix3x3 is still missing!) 
+  RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
+  
+  // we also need the combined sm rowmap
+  // (this map is NOT allowed to have an overlap !!!)
+  RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
+  
+  // some temporary RCPs
+  RCP<Epetra_Map> tempmap;
+  RCP<LINALG::SparseMatrix> tempmtx1;
+  RCP<LINALG::SparseMatrix> tempmtx2;
+  RCP<LINALG::SparseMatrix> tempmtx3;
+  
+  // split into slave/master part + structure part
+  LINALG::SplitMatrix2x2(kteff,gsmdofs,gndofrowmap_,gsmdofs,gndofrowmap_,ksmsm,ksmn,knsm,knn);
+  
+  // further splits into slave part + master part
+  LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
+  LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
+  LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
+  
+  // store some stuff for static condensation of LM
+  ksn_  = ksn;
+  ksm_  = ksm;
+  kss_  = kss;
+  invd_ = invd;
+  
+  // output for checking everything
+#ifdef CONTACTDIMOUTPUT
+  if(Comm().MyPID()==0)
+  {
+    cout << endl << "*****************" << endl;
+    cout << "k:   " << kteff->EpetraMatrix()->NumGlobalRows() << " x " << kteff->EpetraMatrix()->NumGlobalCols() << endl;
+    if (kss!=null) cout << "kss: " << kss->EpetraMatrix()->NumGlobalRows() << " x " << kss->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kss: null" << endl;
+    if (ksm!=null) cout << "ksm: " << ksm->EpetraMatrix()->NumGlobalRows() << " x " << ksm->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "ksm: null" << endl;
+    if (ksn!=null) cout << "ksn: " << ksn->EpetraMatrix()->NumGlobalRows() << " x " << ksn->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "ksn: null" << endl;
+    if (kms!=null) cout << "kms: " << kms->EpetraMatrix()->NumGlobalRows() << " x " << kms->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kms: null" << endl;
+    if (kmm!=null) cout << "kmm: " << kmm->EpetraMatrix()->NumGlobalRows() << " x " << kmm->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kmm: null" << endl;
+    if (kmn!=null) cout << "kmn: " << kmn->EpetraMatrix()->NumGlobalRows() << " x " << kmn->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kmn: null" << endl;
+    if (kns!=null) cout << "kns: " << kns->EpetraMatrix()->NumGlobalRows() << " x " << kns->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kns: null" << endl;
+    if (knm!=null) cout << "knm: " << knm->EpetraMatrix()->NumGlobalRows() << " x " << knm->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "knm: null" << endl;
+    if (knn!=null) cout << "knn: " << knn->EpetraMatrix()->NumGlobalRows() << " x " << knn->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "knn: null" << endl;
+    cout << "*****************" << endl;
+  }
+#endif // #ifdef CONTACTDIMOUTPUT
+  
+  /**********************************************************************/
+  /* Split feff into 3 subvectors                                       */
+  /**********************************************************************/
+  // we want to split f into 3 groups s.m,n
+  RCP<Epetra_Vector> fs, fm, fn;
+  
+  // temporarily we need the group sm
+  RCP<Epetra_Vector> fsm;
+  
+  // do the vector splitting smn -> sm+n -> s+m+n
+  LINALG::SplitVector(*feff,*gsmdofs,fsm,*gndofrowmap_,fn);
+  LINALG::SplitVector(*fsm,*gsdofrowmap_,fs,*gmdofrowmap_,fm);
+  
+  // output for checking everything
+#ifdef CONTACTDIMOUTPUT
+  if(Comm().MyPID()==0)
+  {
+    cout << endl << "**********" << endl;
+    cout << "f:  " << feff->GlobalLength() << endl;
+    cout << "fs: " << fs->GlobalLength() << endl;
+    cout << "fm: " << fm->GlobalLength() << endl;
+    cout << "fn: " << fn->GlobalLength() << endl;
+    cout << "**********" << endl;
+  }
+#endif // #ifdef CONTACTDIMOUTPUT
+  
+  /**********************************************************************/
+  /* Split slave quantities into active / inactive                      */
+  /**********************************************************************/
+  // we want to split kssmod into 2 groups a,i = 4 blocks
+  RCP<LINALG::SparseMatrix> kaa, kai, kia, kii;
+  
+  // we want to split ksn / ksm / kms into 2 groups a,i = 2 blocks
+  RCP<LINALG::SparseMatrix> kan, kin, kam, kim, kma, kmi;
+    
+  // we will get the i rowmap as a by-product
+  RCP<Epetra_Map> gidofs;
+    
+  // do the splitting
+  LINALG::SplitMatrix2x2(kss,gactivedofs_,gidofs,gactivedofs_,gidofs,kaa,kai,kia,kii);
+  LINALG::SplitMatrix2x2(ksn,gactivedofs_,gidofs,gndofrowmap_,tempmap,kan,tempmtx1,kin,tempmtx2);
+  LINALG::SplitMatrix2x2(ksm,gactivedofs_,gidofs,gmdofrowmap_,tempmap,kam,tempmtx1,kim,tempmtx2);
+  LINALG::SplitMatrix2x2(kms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,kma,kmi,tempmtx1,tempmtx2);
+  
+  // output for checking everything
+#ifdef CONTACTDIMOUTPUT
+  if(Comm().MyPID()==0)
+  {
+    cout << endl << "*****************" << endl;
+    cout << "kss: " << kss->EpetraMatrix()->NumGlobalRows() << " x " << kss->EpetraMatrix()->NumGlobalCols() << endl;
+    if (kaa!=null) cout << "kaa: " << kaa->EpetraMatrix()->NumGlobalRows() << " x " << kaa->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kaa: null" << endl;
+    if (kai!=null) cout << "kai: " << kai->EpetraMatrix()->NumGlobalRows() << " x " << kai->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kai: null" << endl;
+    if (kia!=null) cout << "kia: " << kia->EpetraMatrix()->NumGlobalRows() << " x " << kia->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kia: null" << endl;
+    if (kii!=null) cout << "kii: " << kii->EpetraMatrix()->NumGlobalRows() << " x " << kii->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kii: null" << endl;
+    cout << "*****************" << endl;
+    
+    cout << endl << "*****************" << endl;
+    cout << "ksn: " << ksn->EpetraMatrix()->NumGlobalRows() << " x " << ksn->EpetraMatrix()->NumGlobalCols() << endl;
+    if (kan!=null) cout << "kan: " << kan->EpetraMatrix()->NumGlobalRows() << " x " << kan->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kan: null" << endl;
+    if (kin!=null) cout << "kin: " << kin->EpetraMatrix()->NumGlobalRows() << " x " << kin->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kin: null" << endl;
+    cout << "*****************" << endl;
+    
+    cout << endl << "*****************" << endl;
+    cout << "ksm: " << ksm->EpetraMatrix()->NumGlobalRows() << " x " << ksm->EpetraMatrix()->NumGlobalCols() << endl;
+    if (kam!=null) cout << "kam: " << kam->EpetraMatrix()->NumGlobalRows() << " x " << kam->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kam: null" << endl;
+    if (kim!=null) cout << "kim: " << kim->EpetraMatrix()->NumGlobalRows() << " x " << kim->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kim: null" << endl;
+    cout << "*****************" << endl;
+    
+    cout << endl << "*****************" << endl;
+    cout << "kms: " << kms->EpetraMatrix()->NumGlobalRows() << " x " << kms->EpetraMatrix()->NumGlobalCols() << endl;
+    if (kma!=null) cout << "kma: " << kma->EpetraMatrix()->NumGlobalRows() << " x " << kma->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kma: null" << endl;
+    if (kmi!=null) cout << "kmi: " << kmi->EpetraMatrix()->NumGlobalRows() << " x " << kmi->EpetraMatrix()->NumGlobalCols() << endl;
+    else cout << "kmi: null" << endl;
+    cout << "*****************" << endl;
+  }
+#endif // #ifdef CONTACTDIMOUTPUT
+  
+  // we want to split fsmod into 2 groups a,i
+  RCP<Epetra_Vector> fa = rcp(new Epetra_Vector(*gactivedofs_));
+  RCP<Epetra_Vector> fi = rcp(new Epetra_Vector(*gidofs));
+  
+  // do the vector splitting s -> a+i
+  if (!gidofs->NumGlobalElements())
+    *fa = *fs; //rcp(new Epetra_Vector(*fs));
+  else if (!gactivedofs_->NumGlobalElements())
+    *fi = *fs; //rcp(new Epetra_Vector(*fs));
+  else
+  {
+    LINALG::SplitVector(*fs,*gactivedofs_,fa,*gidofs,fi);
+  }
+  
+  // output for checking everything
+#ifdef CONTACTDIMOUTPUT
+  if(Comm().MyPID()==0)
+  {
+    cout << endl << "**********" << endl;
+    if (fs!=null) cout << "fs: " << fs->GlobalLength() << endl;
+    else cout << "fs: null" << endl;
+    if (fa!=null) cout << "fa: " << fa->GlobalLength() << endl;
+    else cout << "fa: null" << endl;
+    if (fi!=null) cout << "fi: " << fi->GlobalLength() << endl;
+    else cout << "fi: null" << endl;
+    cout << "**********" << endl;
+  }
+#endif // #ifdef CONTACTDIMOUTPUT
+  
+  /**********************************************************************/
+  /* Isolate active part from mhat                                      */
+  /**********************************************************************/
+  RCP<LINALG::SparseMatrix> mhata;
+  LINALG::SplitMatrix2x2(mhatmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mhata,tempmtx1,tempmtx2,tempmtx3);
+  
+  /**********************************************************************/
+  /* Build the final K and f blocks                                     */
+  /**********************************************************************/
+  // knn: nothing to do
+  
+  // knm: nothing to do
+  
+  // kns: nothing to do
+  
+  // kmn: add T(mbaractive)*kan
+  RCP<LINALG::SparseMatrix> kmnmod = LINALG::Multiply(*mhata,true,*kan,false,false);
+  kmnmod->Add(*kmn,false,1.0,1.0);
+  kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
+  
+  // kmm: add T(mbaractive)*kam
+  RCP<LINALG::SparseMatrix> kmmmod = LINALG::Multiply(*mhata,true,*kam,false,false);
+  kmmmod->Add(*kmm,false,1.0,1.0);
+  kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
+  
+  // kmi: add T(mbaractive)*kai
+  RCP<LINALG::SparseMatrix> kmimod = LINALG::Multiply(*mhata,true,*kai,false,false);
+  kmimod->Add(*kmi,false,1.0,1.0);
+  kmimod->Complete(kmi->DomainMap(),kmi->RowMap());
+  
+  // kma: add T(mbaractive)*kaa
+  RCP<LINALG::SparseMatrix> kmamod = LINALG::Multiply(*mhata,true,*kaa,false,false);
+  kmamod->Add(*kma,false,1.0,1.0);
+  kmamod->Complete(kma->DomainMap(),kma->RowMap());
+  
+  // kin: nothing to do
+  
+  // kim: nothing to do
+  
+  // kii: nothing to do
+  
+  // kia: nothing to do
+  
+  // n*mbaractive: do the multiplication
+  RCP<LINALG::SparseMatrix> nmhata = LINALG::Multiply(*nmatrix_,false,*mhata,false,true);
+  
+  // nmatrix: nothing to do
+  
+  // kan: multiply with tmatrix
+  RCP<LINALG::SparseMatrix> kanmod = LINALG::Multiply(*tmatrix_,false,*kan,false,true);
+  
+  // kam: multiply with tmatrix
+  RCP<LINALG::SparseMatrix> kammod = LINALG::Multiply(*tmatrix_,false,*kam,false,true);
+    
+  // kai: multiply with tmatrix
+  RCP<LINALG::SparseMatrix> kaimod = LINALG::Multiply(*tmatrix_,false,*kai,false,true);
+      
+  // kaa: multiply with tmatrix
+  RCP<LINALG::SparseMatrix> kaamod = LINALG::Multiply(*tmatrix_,false,*kaa,false,true);
+  
+  // fn: nothing to do
+  
+  // fm: add T(mbaractive)*fa
+  RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
+  mhata->Multiply(true,*fa,*fmmod);
+  fmmod->Update(1.0,*fm,1.0);
+  
+  // fi: nothing to do
+  
+  // gactive: nothing to do
+  
+  // fa: mutliply with tmatrix
+  RCP<Epetra_Vector> famod = rcp(new Epetra_Vector(*gactivet_));
+  tmatrix_->Multiply(false,*fa,*famod);
+  
+  /**********************************************************************/
+  /* Global setup of kteffnew, feffnew (including contact)              */
+  /**********************************************************************/
+  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*(discret_.DofRowMap()),81));
+  RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*(discret_.DofRowMap()));
+  
+  // add n submatrices to kteffnew
+  kteffnew->Add(*knn,false,1.0,1.0);
+  kteffnew->Add(*knm,false,1.0,1.0);
+  kteffnew->Add(*kns,false,1.0,1.0);
+
+  // add m submatrices to kteffnew
+  kteffnew->Add(*kmnmod,false,1.0,1.0);
+  kteffnew->Add(*kmmmod,false,1.0,1.0);
+  kteffnew->Add(*kmimod,false,1.0,1.0);
+  kteffnew->Add(*kmamod,false,1.0,1.0);
+  
+  // add i submatrices to kteffnew
+  if (gidofs->NumGlobalElements()) kteffnew->Add(*kin,false,1.0,1.0);
+  if (gidofs->NumGlobalElements()) kteffnew->Add(*kim,false,1.0,1.0);
+  if (gidofs->NumGlobalElements()) kteffnew->Add(*kii,false,1.0,1.0);
+  if (gidofs->NumGlobalElements()) kteffnew->Add(*kia,false,1.0,1.0);
+  
+  // add matrix nmhata to keteffnew
+  if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmhata,false,-1.0,1.0);
+
+  // add matrix n to kteffnew
+  if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmatrix_,false,1.0,1.0);
+    
+  // add a submatrices to kteffnew
+  if (gactivet_->NumGlobalElements()) kteffnew->Add(*kanmod,false,1.0,1.0);
+  if (gactivet_->NumGlobalElements()) kteffnew->Add(*kammod,false,1.0,1.0);
+  if (gactivet_->NumGlobalElements()) kteffnew->Add(*kaimod,false,1.0,1.0);
+  if (gactivet_->NumGlobalElements()) kteffnew->Add(*kaamod,false,1.0,1.0);
+  
+  // FillComplete kteffnew (square)
+  kteffnew->Complete();
+  
+  // add n subvector to feffnew
+  RCP<Epetra_Vector> fnexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  LINALG::Export(*fn,*fnexp);
+  feffnew->Update(1.0,*fnexp,1.0);
+  
+  // add m subvector to feffnew
+  RCP<Epetra_Vector> fmmodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  LINALG::Export(*fmmod,*fmmodexp);
+  feffnew->Update(1.0,*fmmodexp,1.0);
+  
+  // add i subvector to feffnew
+  RCP<Epetra_Vector> fiexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  LINALG::Export(*fi,*fiexp);
+  if (gidofs->NumGlobalElements()) feffnew->Update(1.0,*fiexp,1.0);
+  
+  // add weighted gap vector to feffnew, if existing
+  RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  LINALG::Export(*gact,*gexp);
+  if (gact->GlobalLength()) feffnew->Update(1.0,*gexp,1.0);
+  
+  // add a subvector to feffnew
+  RCP<Epetra_Vector> famodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  LINALG::Export(*famod,*famodexp);
+  if (gactivenodes_->NumGlobalElements())feffnew->Update(1.0,*famodexp,1.0);
+    
+  
+  /**********************************************************************/
+  /* Replace kteff and feff by kteffnew and feffnew                     */
+  /**********************************************************************/
+  *kteff = *kteffnew;
+  *feff = *feffnew;
+  
+  /**********************************************************************/
+  /* Update Lagrange multipliers                                        */
+  /**********************************************************************/
+  //invd->Multiply(false,*fs,*z_); // approximate update
+  z_->Update(1.0,*fs,0.0);         // full update (see below) 
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Transform displacement increment vector (public)          popp 02/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
@@ -1110,6 +1524,77 @@ void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
 }
 
 /*----------------------------------------------------------------------*
+ |  RecoverDisp without basis transformation (public)         popp 04/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::RecoverDispNoBasisTrafo(RCP<Epetra_Vector>& disi)
+{
+#ifdef CONTACTCHECKHUEEBER
+  // debugging (check S. Hüeber)
+  dserror("ERROR: RecoverDispNoBasisTrafo: Quadr. convergence check not implemented");
+#endif // #ifdef CONTACTCHECKHUEEBER
+  
+  // extract slave displacements from disi
+  RCP<Epetra_Vector> disis = rcp(new Epetra_Vector(*gsdofrowmap_));
+  LINALG::Export(*disi,*disis);
+  
+  // extract master displacements from disi
+  RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
+  LINALG::Export(*disi,*disim);
+  
+  // recover incremental jump (for active set)
+  incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
+  mhatmatrix_->Multiply(false,*disim,*incrjump_);
+  incrjump_->Update(1.0,*disis,-1.0);
+  
+  // update Lagrange multipliers
+  RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gsdofrowmap_));
+  kss_->Multiply(false,*disis,*mod);
+  z_->Update(-1.0,*mod,1.0);
+  ksm_->Multiply(false,*disim,*mod);
+  z_->Update(-1.0,*mod,1.0);
+  RCP<Epetra_Vector> disin = rcp(new Epetra_Vector(*gndofrowmap_));
+  LINALG::Export(*disi,*disin);
+  ksn_->Multiply(false,*disin,*mod);
+  z_->Update(-1.0,*mod,1.0);
+  RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
+  invd_->Multiply(false,*zcopy,*z_);
+ 
+  /* 
+  // CHECK OF CONTACT COUNDARY CONDITIONS---------------------------------
+#ifdef DEBUG
+  //debugging (check for z_i = 0)
+  RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_,*gactivedofs_);
+  if (gidofs->NumGlobalElements())
+  {
+    RCP<Epetra_Vector> zinactive = rcp(new Epetra_Vector(*gidofs));
+    LINALG::Export(*z_,*zinactive);
+    cout << *zinactive << endl;
+  }
+  
+  // debugging (check for N*[d_a] = g_a and T*z_a = 0)
+  if (gactivedofs_->NumGlobalElements())
+  { 
+    RCP<Epetra_Vector> activejump = rcp(new Epetra_Vector(*gactivedofs_));
+    RCP<Epetra_Vector> gtest = rcp(new Epetra_Vector(*gactiven_));
+    LINALG::Export(*incrjump_,*activejump);
+    nmatrix_->Multiply(false,*activejump,*gtest);
+    cout << *gtest << endl << *g_ << endl;
+    
+    RCP<Epetra_Vector> zactive = rcp(new Epetra_Vector(*gactivedofs_));
+    RCP<Epetra_Vector> zerotest = rcp(new Epetra_Vector(*gactivet_));
+    LINALG::Export(*z_,*zactive);
+    tmatrix_->Multiply(false,*zactive,*zerotest);
+    cout << *zerotest << endl;
+    cout << *zactive << endl;
+  }
+#endif // #ifdef DEBUG
+  // CHECK OF CONTACT BOUNDARY CONDITIONS---------------------------------
+  */
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 02/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dism)
@@ -1131,7 +1616,7 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
+    //if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
     
     // loop over all slave nodes on the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)

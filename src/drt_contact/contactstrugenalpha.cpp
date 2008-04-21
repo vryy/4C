@@ -13,6 +13,7 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "contactstrugenalpha.H"
+#include "contactdefines.H"
 #include "iostream"
 
 
@@ -497,7 +498,11 @@ void ContactStruGenAlpha::FullNewton()
       contactmanager_->SetState("displacement",dism_);
 
       // (almost) all contact stuff is done here!
+#ifdef CONTACTBASISTRAFO
       contactmanager_->Evaluate(stiff_,fresm_,numiter);
+#else
+      contactmanager_->EvaluateNoBasisTrafo(stiff_,fresm_,numiter);
+#endif // #ifdef CONTACTBASISTRAFO
     }
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -513,7 +518,11 @@ void ContactStruGenAlpha::FullNewton()
 
     //------------------------------------ transform disi due to contact
     {
+#ifdef CONTACTBASISTRAFO
       contactmanager_->RecoverDisp(disi_);
+#else
+      contactmanager_->RecoverDispNoBasisTrafo(disi_);
+#endif // #ifdef CONTACTBASISTRAFO
     }
 
     //---------------------------------- update mid configuration values

@@ -381,7 +381,11 @@ void contact_stru_static_drt(bool initialcontact)
           contactmanager->SetState("displacement",disn);
   
           // (almost) all contact stuff is done here!
+#ifdef CONTACTBASISTRAFO
           contactmanager->Evaluate(stiff_mat,fresm,numiter);
+#else
+          contactmanager->EvaluateNoBasisTrafo(stiff_mat,fresm,numiter);
+#endif // #ifdef CONTACTBASISTRAFO
         }
         
         //----------------------- apply dirichlet BCs to system of equations
@@ -402,7 +406,11 @@ void contact_stru_static_drt(bool initialcontact)
         
         //------------------------------------ transform disi due to contact
         {
+#ifdef CONTACTBASISTRAFO
           contactmanager->RecoverDisp(disi);
+#else
+          contactmanager->RecoverDispNoBasisTrafo(disi);
+#endif // #ifdef CONTACTBASISTRAFO
         }
         
         // update displacements
