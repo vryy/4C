@@ -133,7 +133,7 @@ void FSI::Coupling::SetupCouplingCheap(const DRT::Discretization& masterdis,
                          masternodes.MyGlobalElements() + masternodes.NumMyElements());
   vector<int> slavevect(slavenodes.MyGlobalElements(),
                         slavenodes.MyGlobalElements() + slavenodes.NumMyElements());
-  vector<int> permslavenodes;
+  vector<int> permslavenodes(mastervect.size());
 
   MatchNodesCheap(masterdis, slavedis, mastervect, permslavenodes, slavevect);
 
