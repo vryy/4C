@@ -12,7 +12,6 @@ Maintainer: Axel Gerstenberger
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
 #ifdef CCADISCRET
 
 #ifndef ADAPTER_XFLUID_IMPL_H
@@ -163,6 +162,7 @@ namespace ADAPTER {
 
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization>      dis_;
+    Teuchos::RCP<DRT::Discretization>      boundarydis_;
     Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;

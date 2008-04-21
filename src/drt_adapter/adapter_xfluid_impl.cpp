@@ -20,19 +20,20 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*/
 ADAPTER::XFluidImpl::XFluidImpl(
         Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<DRT::Discretization> cutterdis,
+        Teuchos::RCP<DRT::Discretization> boundarydis,
         Teuchos::RCP<LINALG::Solver> solver,
         Teuchos::RCP<ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output,
         bool isale)
-  : fluid_(dis, cutterdis, *solver, *params, *output, isale),
+  : fluid_(dis, boundarydis, *solver, *params, *output, isale),
     dis_(dis),
+    boundarydis_(boundarydis),
     solver_(solver),
     params_(params),
     output_(output)
 {
-  UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
-  UTILS::SetupNDimExtractor(*dis,"FREESURFCoupling",freesurface_);
+  UTILS::SetupNDimExtractor(*boundarydis,"FSICoupling",interface_);
+  UTILS::SetupNDimExtractor(*boundarydis,"FREESURFCoupling",freesurface_);
 
   fluid_.SetFreeSurface(&freesurface_);
 
@@ -40,11 +41,11 @@ ADAPTER::XFluidImpl::XFluidImpl(
   // dofs at the interface are excluded
   // we use only velocity dofs and only those without Dirichlet constraint
 
-  Teuchos::RCP<const Epetra_Map> velmap = fluid_.VelocityRowMap();
-  Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();
-  Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();
+  Teuchos::RCP<const Epetra_Map> velmap = fluid_.VelocityRowMap(); //???
+  Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();   //???
+  Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();            //???
 
-  int numvelids = velmap->NumMyElements();
+  const int numvelids = velmap->NumMyElements();
   std::vector<int> velids;
   velids.reserve(numvelids);
   for (int i=0; i<numvelids; ++i)
@@ -122,7 +123,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidImpl::SystemMatrix() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ADAPTER::XFluidImpl::Discretization()
 {
-  return fluid_.Discretization();
+  return boundarydis_;
 }
 
 
