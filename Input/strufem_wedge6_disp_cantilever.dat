@@ -4496,7 +4496,7 @@ NODE 1056 COORD 5.11197128013 -1.0 4.8299866628
 MAT 1 MAT_fluid VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_NeoHooke  YOUNG 1000000 NUE 0.45 DENS 0.001
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  2.307328550810935042e+01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  2.307328550810935042e+01 TOLERANCE 1e-5
 --------------------------------------------------------MULTILAYER MATERIALS
 ----------------------------------------------------------------CONTROL NODE
 -----------------------------------------------------------------LOAD CURVES
