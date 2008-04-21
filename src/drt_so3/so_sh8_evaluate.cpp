@@ -627,6 +627,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
         }
       }
       else {                         // return Cauchy stresses
+        dserror("Cauchy stress not yet available for sosh8");
         double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
                       defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
                       defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
