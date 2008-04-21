@@ -2,7 +2,7 @@
 /*!
 \file fsi_create_boundary.H
 
-\brief Basis of all FSI algorithms
+\brief
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -17,10 +17,13 @@ Maintainer: Axel Gerstenberger
 #ifndef FSI_CREATE_BOUNDARY_H
 #define FSI_CREATE_BOUNDARY_H
 
-/*----------------------------------------------------------------------*/
-// create ale discretization parallel to the fluid one
-/*----------------------------------------------------------------------*/
-void CreateBoundaryDiscretization(RCP<DRT::Discretization> cutterdis);
+//! create discretization from a given condition
+RCP<DRT::Discretization> CreateDiscretizationFromCondition(
+        RCP<DRT::Discretization>  cutterdis,    ///< condition with discretization
+        const string&             condname,     ///< name of the condition, by which the derived discretization is identified 
+        const string&             discret_name, ///< name of the new condition
+        const string&             element_name  ///< name/type of the elements to be created
+        );
 
 #endif
 #endif

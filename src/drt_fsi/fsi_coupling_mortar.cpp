@@ -50,8 +50,8 @@ void FSI::CouplingMortar::Setup( const DRT::Discretization& masterdis,
     map< int, RefCountPtr<DRT::Element> > masterelements;
     map< int, RefCountPtr<DRT::Element> > slaveelements;
 
-    FindInterfaceObjects( masterdis, masternodes, masterelements );
-    FindInterfaceObjects( slavedis,  slavenodes,   slaveelements );
+    FindInterfaceObjects( masterdis, masternodes, masterelements, "FSICoupling" );
+    FindInterfaceObjects( slavedis,  slavenodes,   slaveelements, "FSICoupling" );
 
     MOERTEL::Interface interface( 0, genprob.ndim == 2, comm, PRINTLEVEL );
 
@@ -443,12 +443,13 @@ RefCountPtr<Epetra_Vector> FSI::CouplingMortar::SlaveToMaster(
 void FSI::FindInterfaceObjects(
     const DRT::Discretization& dis,
     map<int, DRT::Node*>& nodes,
-    map< int, RefCountPtr<DRT::Element> >& elements
+    map<int, RefCountPtr<DRT::Element> >& elements,
+    const string&              condname
     )
 {
     int myrank = dis.Comm().MyPID();
     vector<DRT::Condition*> conds;
-    dis.GetCondition( "FSICoupling", conds );
+    dis.GetCondition( condname, conds );
     for ( unsigned i = 0; i < conds.size(); ++i )
     {
         // get this condition's nodes

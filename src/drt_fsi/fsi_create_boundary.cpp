@@ -2,7 +2,7 @@
 /*!
 \file fsi_create_boundary.cpp
 
-\brief Basis of all FSI algorithms
+\brief
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -19,22 +19,9 @@ Maintainer: Axel Gerstenberger
 #include <set>
 #include <functional>
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "fsi_dyn.H"
-#include "fsi_dirichletneumann.H"
-#include "fsi_monolithicoverlap.H"
-#include "fsi_structureale.H"
-#include "fsi_fluid_ale.H"
 #include "fsi_utils.H"
 #include "fsi_coupling_mortar.H"
-
-#include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-
-#include "../drt_fluid/fluidresulttest.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -46,27 +33,19 @@ Maintainer: Axel Gerstenberger
 #include <Epetra_SerialComm.h>
 #endif
 
-#include "../drt_lib/drt_globalproblem.H"
-
-// we need to know all element types for the boundary mesh creation
-#include "../drt_xfem/bele3.H"
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-
 
 /*----------------------------------------------------------------------*/
-// create boundary discretization from structure surface
 /*----------------------------------------------------------------------*/
-void CreateBoundaryDiscretization(RCP<DRT::Discretization> cutterdis)
+RCP<DRT::Discretization> CreateDiscretizationFromCondition(
+        RCP<DRT::Discretization>  cutterdis,
+        const string&             condname, 
+        const string&             discret_name,
+        const string&             element_name
+        )
 {
-  
-  RCP<DRT::Discretization> boundarydis = DRT::Problem::Instance()->Dis(genprob.numbf,0);
+  RCP<Epetra_Comm> com = rcp(cutterdis->Comm().Clone());
+    
+  RCP<DRT::Discretization> boundarydis = rcp(new DRT::Discretization(discret_name,com));
 
   if (!cutterdis->Filled()) cutterdis->FillComplete(true,true,true,false);
 
@@ -91,7 +70,7 @@ void CreateBoundaryDiscretization(RCP<DRT::Discretization> cutterdis)
   // catch all nodes attached to cutter elements
   map<int, DRT::Node*>          cutternodes;
   map<int, RCP<DRT::Element> >  cutterelements;
-  FSI::FindInterfaceObjects(*cutterdis, cutternodes, cutterelements);
+  FSI::FindInterfaceObjects(*cutterdis, cutternodes, cutterelements, condname);
   
   // Loop all cutter elements
 
@@ -158,8 +137,8 @@ void CreateBoundaryDiscretization(RCP<DRT::Discretization> cutterdis)
   {
     RCP<DRT::Element> cutterele = cutterelements[i];
 
-    // create the ale element with the same global element id
-    RCP<DRT::Element> boundaryele = DRT::UTILS::Factory("BELE3", egid[i], myrank);
+    // create an element with the same global element id
+    RCP<DRT::Element> boundaryele = DRT::UTILS::Factory(element_name, egid[i], myrank);
 
     // get global node ids of fluid element
     vector<int> nids;
@@ -182,12 +161,12 @@ void CreateBoundaryDiscretization(RCP<DRT::Discretization> cutterdis)
   // note, the condition is still named after the structure,
   // but that does not seem to matter in the subsequent computations
   vector<DRT::Condition*> conds;
-  cutterdis->GetCondition("FSICoupling", conds);
+  cutterdis->GetCondition(condname, conds);
   for (unsigned i=0; i<conds.size(); ++i)
   {
     // We use the same nodal ids and therefore we can just copy the
     // conditions.
-    boundarydis->SetCondition("FSICoupling", rcp(new DRT::Condition(*conds[i])));
+    boundarydis->SetCondition(condname, rcp(new DRT::Condition(*conds[i])));
   }
   conds.clear();
 
@@ -228,6 +207,8 @@ void CreateBoundaryDiscretization(RCP<DRT::Discretization> cutterdis)
   // Now we are done. :)
   boundarydis->FillComplete(true,true,true,false);
   cout << (*boundarydis) << endl;
+  
+  return boundarydis;
 }
 
 #endif

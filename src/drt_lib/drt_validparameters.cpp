@@ -991,10 +991,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& alesolver = list->sublist("ALE SOLVER",false,"");
   SetValidSolverParameters(alesolver);
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& boundarysolver = list->sublist("BOUNDARY SOLVER",false,"");
-  SetValidSolverParameters(boundarysolver);
   
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& thermalsolver = list->sublist("THERMAL SOLVER",false,"");

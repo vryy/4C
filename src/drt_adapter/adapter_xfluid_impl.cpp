@@ -15,25 +15,26 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "adapter_xfluid_impl.H"
+#include "../drt_fsi/fsi_create_boundary.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::XFluidImpl::XFluidImpl(
         Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<DRT::Discretization> boundarydis,
+        Teuchos::RCP<DRT::Discretization> cutterdis,
         Teuchos::RCP<LINALG::Solver> solver,
         Teuchos::RCP<ParameterList> params,
         Teuchos::RCP<IO::DiscretizationWriter> output,
         bool isale)
-  : fluid_(dis, boundarydis, *solver, *params, *output, isale),
+  : fluid_(dis, cutterdis, *solver, *params, *output, isale),
     dis_(dis),
-    boundarydis_(boundarydis),
+    boundarydis_(CreateDiscretizationFromCondition(cutterdis, "FSICoupling", "Boundary", "BELE3")),
     solver_(solver),
     params_(params),
     output_(output)
 {
-  UTILS::SetupNDimExtractor(*boundarydis,"FSICoupling",interface_);
-  UTILS::SetupNDimExtractor(*boundarydis,"FREESURFCoupling",freesurface_);
+  UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
+  UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
 
   fluid_.SetFreeSurface(&freesurface_);
 

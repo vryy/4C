@@ -17,10 +17,6 @@
 #include "fsi_utils.H"
 
 #include "../drt_lib/drt_resulttest.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-
-#include "../drt_fluid/fluidresulttest.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -183,12 +179,7 @@ void xfsi_drt()
 #else
   Epetra_SerialComm comm;
 #endif
-
-  RefCountPtr<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-
-  CreateBoundaryDiscretization(soliddis);
   
-  //const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));
 
   if (genprob.restart)
