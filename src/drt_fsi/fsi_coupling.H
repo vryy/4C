@@ -81,7 +81,7 @@ namespace FSI
                                 const LINALG::MapExtractor& master,
                                 const DRT::Discretization& slavedis,
                                 const LINALG::MapExtractor& slave,
-                                std::string condname);
+                                const std::string& condname);
 
     /// setup coupling of given nodes
     /*!

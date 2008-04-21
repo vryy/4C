@@ -30,7 +30,7 @@ void FSI::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
                                            const LINALG::MapExtractor& master,
                                            const DRT::Discretization& slavedis,
                                            const LINALG::MapExtractor& slave,
-                                           std::string condname)
+                                           const std::string& condname)
 {
   std::vector<int> masternodes;
   DRT::UTILS::FindConditionedNodes(masterdis,condname,masternodes);
