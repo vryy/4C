@@ -45,7 +45,7 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
 
   RefCountPtr<Epetra_Vector> data = result->read_result(result_name);
   const Epetra_BlockMap& datamap = data->Map();
-  
+
   GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Vector,
                   GiD_OnNodes, NULL, NULL, field->problem()->num_dim(),
                   componentnames);
@@ -56,7 +56,7 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
   // post-processing phase, when only one discretization is called,
   // numbering always starts with 0, so a potential offset needs to be
   // taken into account
-  
+
   int offset = datamap.MinAllGID() - field->discretization()->DofRowMap()->MinAllGID();
 
   double v[3];
@@ -211,10 +211,10 @@ void write_serialdensematrix_result(string result_name, PostField* field,
 void write_mesh(PostProblem* problem, int disnum)
 {
   PostField* field = problem->get_discretization(disnum);
-  
-  
+
+
   RefCountPtr<DRT::Discretization> dis = field->discretization();
-  
+
   //Writing the mesh should always start with the smallest NodeID and
   //ElementID of the discretization
   int node_offset =dis->NodeRowMap()->MinAllGID();
@@ -237,11 +237,12 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_BeginCoordinates();
     for (int i = 0; i < field->discretization()->NumGlobalNodes(); ++i)
     {
+      int nid = dis->NodeRowMap()->GID(i);
       for (int j = 0; j < field->problem()->num_dim(); ++j)
       {
-        x[j] = field->discretization()->gNode(i+node_offset)->X()[j];
+        x[j] = field->discretization()->gNode(nid)->X()[j];
       }
-      int id = field->discretization()->gNode(i+node_offset)->Id();
+      int id = field->discretization()->gNode(nid)->Id();
       GiD_WriteCoordinates(id+1, x[0], x[1], x[2]);
     }
     GiD_EndCoordinates();
@@ -249,12 +250,13 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_BeginElements();
     for (int i=0; i<field->discretization()->NumGlobalElements(); ++i)
     {
+      int eid = dis->ElementRowMap()->GID(i);
       int mesh_entry[MAXNODHARDCODED];
-      for (int j = 0; j < field->discretization()->gElement(i+ele_offset)->NumNode(); ++j)
+      for (int j = 0; j < field->discretization()->gElement(eid)->NumNode(); ++j)
       {
-        mesh_entry[j] = field->discretization()->gElement(i+ele_offset)->NodeIds()[j]+1;
+        mesh_entry[j] = field->discretization()->gElement(eid)->NodeIds()[j]+1;
       }
-      GiD_WriteElement(field->discretization()->gElement(i+ele_offset)->Id()+1,mesh_entry);
+      GiD_WriteElement(field->discretization()->gElement(eid)->Id()+1,mesh_entry);
     }
     GiD_EndElements();
     GiD_EndMesh();
