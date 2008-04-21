@@ -83,10 +83,10 @@ STARTINGALGO     One_Step_Theta
 NONLINITER       Newton
 ITEMAX           20
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-6
+CONVTOL          1.0E-8
 STEADYCHECK      L_2_norm
 STEADYSTEP       -1
-STEADYTOL        1.0E-6
+STEADYTOL        1.0E-8
 UPOUT            1
 UPPSS            1
 UPRES            1
@@ -11273,9 +11273,9 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 10000.0 NUE 0.0 DENS 0.0 THEXPAN
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 773 POSITION velx     NAME velx     VALUE 1.939098503e+00 TOLERANCE 2e-6
-FLUID DIS 1 NODE 773 POSITION vely     NAME vely     VALUE 1.735308910e-01 TOLERANCE 2e-6
-FLUID DIS 1 NODE 773 POSITION velz     NAME velz     VALUE 0.000000000e+00 TOLERANCE 2e-6
-FLUID DIS 1 NODE 773 POSITION pressure NAME pressure VALUE 5.746788504e-01 TOLERANCE 2e-6
+FLUID DIS 1 NODE 773 POSITION velx     NAME velx     VALUE 1.939328997e+00 TOLERANCE 2e-5
+FLUID DIS 1 NODE 773 POSITION vely     NAME vely     VALUE 1.735523006e-01 TOLERANCE 2e-5
+FLUID DIS 1 NODE 773 POSITION velz     NAME velz     VALUE 0.000000000e+00 TOLERANCE 2e-5
+FLUID DIS 1 NODE 773 POSITION pressure NAME pressure VALUE 5.747628884e-01 TOLERANCE 2e-5
 ---------------------------------------------------------------END
 // END
