@@ -140,6 +140,7 @@ BlitzVec XFEM::currentToElementCoordinatesExact(
 {
     dsassert(x.size() == 3, "current coordinates have to be 3!");
     const int dim = DRT::UTILS::getDimension(element->Shape());
+    dsassert(dim == 3, "element has to be 3-dimensional!");
     
     BlitzVec xsi(dim);
     currentToElementCoordinates(element, x, xsi);
@@ -298,6 +299,7 @@ bool XFEM::currentToElementCoordinates(
         nodeWithinElement = currentToElementCoordinatesT<DRT::Element::line3, 1>(element, x, xsi);
         break;
     default:
+        cout << DistypeToString(element->Shape()) << endl;
         dserror("add your distype to this switch!");
         nodeWithinElement = false;
     }   
@@ -387,6 +389,7 @@ bool XFEM::checkPositionWithinElement(
     const BlitzVec&                     x)
 {
     BlitzVec xsi(getDimension(element->Shape()));
+    dsassert(getDimension(element->Shape()) == 3, "only valid for 3 dimensional elements");
     bool nodeWithinElement = currentToElementCoordinates(element, x, xsi);
     //printf("iter = %d\n", iter);
     //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0),xsi(1),xsi(2), residual, TOL14);
