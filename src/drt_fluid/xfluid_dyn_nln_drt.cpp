@@ -254,7 +254,7 @@ void xdyn_fluid_drt()
     //------------------------------------------------------------------
     XFluidImplicitTimeInt fluidimplicit(
     		fluiddis,
-    		soliddis,
+    		//soliddis,
     		solver,
     		fluidtimeparams,
     		fluidoutput,
@@ -276,14 +276,14 @@ void xdyn_fluid_drt()
         {
           startfuncno=-1;
         }
-        fluidimplicit.SetInitialFlowField(init,startfuncno);
+        fluidimplicit.SetInitialFlowField(soliddis,init,startfuncno);
       }
     }
 
     fluidtimeparams.set<FILE*>("err file",allfiles.out_err);
 
     // call time-integration (or stationary) scheme
-    fluidimplicit.Integrate();
+    fluidimplicit.Integrate(soliddis);
 
     // do result test if required
     DRT::ResultTestManager testmanager(fluiddis->Comm());

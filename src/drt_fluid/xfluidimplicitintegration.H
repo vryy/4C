@@ -75,7 +75,7 @@ public:
   */
   XFluidImplicitTimeInt(
 		  RCP<DRT::Discretization> dis,
-		  RCP<DRT::Discretization> cutterdis,
+		  //RCP<DRT::Discretization> cutterdis,
 		  LINALG::Solver&       solver,
 		  ParameterList&        params,
 		  IO::DiscretizationWriter& output,
@@ -93,19 +93,19 @@ public:
   \brief start time loop for startingalgo, normal problems and restarts
 
   */
-  void Integrate();
+  void Integrate(RCP<DRT::Discretization> cutterdiscret);
 
   /*!
   \brief Do time integration (time loop)
 
   */
-  void TimeLoop();
+  void TimeLoop(RCP<DRT::Discretization> cutterdiscret);
 
   /*!
   \brief Solve stationary problem
 
   */
-  void SolveStationaryProblem();
+  void SolveStationaryProblem(RCP<DRT::Discretization> cutterdiscret);
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
@@ -118,7 +118,7 @@ public:
          Fixpoint iteration
 
   */
-  void NonlinearSolve();
+  void NonlinearSolve(RCP<DRT::Discretization> cutterdiscret);
   
   /*!
   \brief compute Interface
@@ -129,7 +129,7 @@ public:
   \brief solve linearised fluid
 
   */
-  void LinearSolve();
+  void LinearSolve(RCP<DRT::Discretization> cutterdiscret);
 
   /*!
     \brief build linear system matrix and rhs
@@ -158,6 +158,7 @@ public:
 
   */
   void SetInitialFlowField(
+    RCP<DRT::Discretization> cutterdiscret,
     int whichinitialfield,
     int startfuncno
     );
@@ -252,8 +253,6 @@ protected:
   //! @name general algorithm parameters
   //! fluid discretization
   RCP<DRT::Discretization>      discret_;
-  //! structure dicretization (will be removed)
-  RCP<DRT::Discretization>      cutterdiscret_;
   LINALG::Solver&               solver_;
   ParameterList&                params_;
   IO::DiscretizationWriter&     output_;

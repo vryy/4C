@@ -17,49 +17,30 @@ Maintainer: Axel Gerstenberger
 #include "adapter_xfluid_impl.H"
 #include "../drt_fsi/fsi_create_boundary.H"
 
+using namespace Teuchos;
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::XFluidImpl::XFluidImpl(
-        Teuchos::RCP<DRT::Discretization> dis,
-        Teuchos::RCP<DRT::Discretization> cutterdis,
-        Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<ParameterList> params,
-        Teuchos::RCP<IO::DiscretizationWriter> output,
+        RCP<DRT::Discretization> dis,
+        const RCP<DRT::Discretization> cutterdis,
+        RCP<LINALG::Solver> solver,
+        RCP<ParameterList> params,
+        RCP<IO::DiscretizationWriter> output,
         bool isale)
-  : fluid_(dis, cutterdis, *solver, *params, *output, isale),
+  : fluid_(dis, *solver, *params, *output, isale),
     dis_(dis),
-    boundarydis_(CreateDiscretizationFromCondition(cutterdis, "FSICoupling", "Boundary", "BELE3")),
     solver_(solver),
     params_(params),
     output_(output)
 {
-  UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
-  UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
+  boundarydis_solidparalleldistribution_ = CreateDiscretizationFromCondition(cutterdis, "FSICoupling", "Boundary", "BELE3");
+  boundarydis_fluidparalleldistribution_ = CreateDiscretizationFromCondition(cutterdis, "FSICoupling", "Boundary", "BELE3");
+            
+  UTILS::SetupNDimExtractor(*boundarydis_solidparalleldistribution_,"FSICoupling",interface_);
+  UTILS::SetupNDimExtractor(*boundarydis_solidparalleldistribution_,"FREESURFCoupling",freesurface_);
 
   fluid_.SetFreeSurface(&freesurface_);
-
-  // build inner velocity map
-  // dofs at the interface are excluded
-  // we use only velocity dofs and only those without Dirichlet constraint
-
-  Teuchos::RCP<const Epetra_Map> velmap = fluid_.VelocityRowMap(); //???
-  Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();   //???
-  Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();            //???
-
-  const int numvelids = velmap->NumMyElements();
-  std::vector<int> velids;
-  velids.reserve(numvelids);
-  for (int i=0; i<numvelids; ++i)
-  {
-    int gid = velmap->GID(i);
-    // NOTE: in xfem, there are no interface dofs in the fluid field
-    if ((*dirichtoggle)[fullmap->LID(gid)]==0.)
-    {
-      velids.push_back(gid);
-    }
-  }
-
-  innervelmap_ = Teuchos::rcp(new Epetra_Map(-1,velids.size(), &velids[0], 0, velmap->Comm()));
 }
 
 
@@ -67,6 +48,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::InitialGuess() const
 {
+    dserror("not implemented");
   return fluid_.InitialGuess();
 }
 
@@ -75,6 +57,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::InitialGuess() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::RHS() const
 {
+    dserror("not implemented");
   return fluid_.Residual();
 }
 
@@ -83,6 +66,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::RHS() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Velnp() const
 {
+    dserror("not implemented");
   return fluid_.Velnp();
 }
 
@@ -91,6 +75,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Velnp() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Veln() const
 {
+    dserror("not implemented");
   return fluid_.Veln();
 }
 
@@ -99,6 +84,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Veln() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Dispnp() const
 {
+    dserror("not implemented");
   return fluid_.Dispnp();
 }
 
@@ -107,6 +93,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Dispnp() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::DofRowMap() const
 {
+  dserror("not implemented");
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
   return Teuchos::rcp(dofrowmap, false);
 }
@@ -116,6 +103,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::DofRowMap() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidImpl::SystemMatrix() const
 {
+  dserror("not implemented");
   return fluid_.SystemMatrix();
 }
 
@@ -124,7 +112,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidImpl::SystemMatrix() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ADAPTER::XFluidImpl::Discretization()
 {
-  return boundarydis_;
+  return boundarydis_solidparalleldistribution_;
 }
 
 
@@ -182,7 +170,7 @@ void ADAPTER::XFluidImpl::Output()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::NonlinearSolve()
 {
-  fluid_.NonlinearSolve();
+  fluid_.NonlinearSolve(boundarydis_solidparalleldistribution_);
 }
 
 
@@ -190,6 +178,29 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::InnerVelocityRowMap()
 {
+    // build inner velocity map
+    // dofs at the interface are excluded
+    // we use only velocity dofs and only those without Dirichlet constraint
+
+    Teuchos::RCP<const Epetra_Map> velmap = fluid_.VelocityRowMap(); //???
+    Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();   //???
+    Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();            //???
+
+    const int numvelids = velmap->NumMyElements();
+    std::vector<int> velids;
+    velids.reserve(numvelids);
+    for (int i=0; i<numvelids; ++i)
+    {
+      int gid = velmap->GID(i);
+      // NOTE: in xfem, there are no interface dofs in the fluid field
+      if ((*dirichtoggle)[fullmap->LID(gid)]==0.)
+      {
+        velids.push_back(gid);
+      }
+    }
+
+    innervelmap_ = Teuchos::rcp(new Epetra_Map(-1,velids.size(), &velids[0], 0, velmap->Comm()));
+    
   return innervelmap_;
 }
 

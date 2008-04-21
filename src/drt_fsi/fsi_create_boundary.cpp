@@ -50,6 +50,11 @@ RCP<DRT::Discretization> CreateDiscretizationFromCondition(
   if (!cutterdis->Filled()) cutterdis->FillComplete(true,true,true,false);
 
   const int myrank = boundarydis->Comm().MyPID();
+  
+  if (myrank == 0)
+  {
+      cout << "creating discretization <"<< discret_name <<"> from condition <" << condname <<">" << endl;  
+  }
 //  vector< DRT::Condition* >      xfemConditions;
 //  cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
 //      
@@ -170,6 +175,15 @@ RCP<DRT::Discretization> CreateDiscretizationFromCondition(
   }
   conds.clear();
 
+  cutterdis->GetCondition("XFEMCoupling", conds);
+  for (unsigned i=0; i<conds.size(); ++i)
+  {
+    // We use the same nodal ids and therefore we can just copy the
+    // conditions.
+    boundarydis->SetCondition("XFEMCoupling", rcp(new DRT::Condition(*conds[i])));
+  }
+  conds.clear();
+  
   // now care about the parallel distribution
   //
 
@@ -206,7 +220,7 @@ RCP<DRT::Discretization> CreateDiscretizationFromCondition(
 
   // Now we are done. :)
   boundarydis->FillComplete(true,true,true,false);
-  cout << (*boundarydis) << endl;
+  //cout << (*boundarydis) << endl;
   
   return boundarydis;
 }

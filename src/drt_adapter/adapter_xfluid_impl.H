@@ -162,7 +162,8 @@ namespace ADAPTER {
 
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization>      dis_;
-    Teuchos::RCP<DRT::Discretization>      boundarydis_;
+    Teuchos::RCP<DRT::Discretization>      boundarydis_solidparalleldistribution_;
+    Teuchos::RCP<DRT::Discretization>      boundarydis_fluidparalleldistribution_;
     Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
