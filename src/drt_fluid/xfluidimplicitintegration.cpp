@@ -100,6 +100,10 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
 
+    ComputeInterfaceAndSetDOFs(cutterdiscret_);
+    
+    PrepareNonlinearSolve();
+  
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
