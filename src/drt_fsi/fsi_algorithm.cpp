@@ -45,7 +45,7 @@ FSI::Algorithm::~Algorithm()
 void FSI::Algorithm::ReadRestart(int step)
 {
   StructureField().ReadRestart(step);
-  time_ = FluidField().ReadRestart(step);
+  time_ = MBFluidField().ReadRestart(step);
   step_ = step;
 }
 
@@ -68,7 +68,7 @@ void FSI::Algorithm::PrepareTimeStep()
               << "\n\n";
 
   StructureField().PrepareTimeStep();
-  FluidField().    PrepareTimeStep();
+  MBFluidField().    PrepareTimeStep();
 }
 
 
@@ -77,7 +77,7 @@ void FSI::Algorithm::PrepareTimeStep()
 void FSI::Algorithm::Update()
 {
   StructureField().Update();
-  FluidField().    Update();
+  MBFluidField().    Update();
 }
 
 
@@ -90,7 +90,7 @@ void FSI::Algorithm::Output()
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
   StructureField().Output();
-  FluidField().    Output();
+  MBFluidField().    Output();
 }
 
 

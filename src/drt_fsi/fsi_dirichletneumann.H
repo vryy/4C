@@ -147,7 +147,7 @@ private:
                                                const FillType fillFlag);
 
   /// interface velocity calculation given the interface displacements
-  Teuchos::RCP<Epetra_Vector> InterfaceVelocity(Teuchos::RCP<Epetra_Vector> idispnp);
+  Teuchos::RCP<Epetra_Vector> InterfaceVelocity(const Teuchos::RCP<Epetra_Vector> idispnp) const;
 
   /// current interface displacements
   Teuchos::RCP<Epetra_Vector> InterfaceDisp();

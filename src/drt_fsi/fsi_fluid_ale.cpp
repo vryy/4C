@@ -60,7 +60,7 @@ void FSI::FluidAleAlgorithm::PrepareTimeStep()
               << "     STEP = " YELLOW_LIGHT << setw(4) << step_ << END_COLOR "/" << setw(4) << nstep_
               << "\n\n";
 
-  FluidField().PrepareTimeStep();
+  MBFluidField().PrepareTimeStep();
 }
 
 
@@ -68,7 +68,7 @@ void FSI::FluidAleAlgorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::Solve()
 {
-  FluidField().NonlinearSolve();
+  MBFluidField().NonlinearSolve();
 }
 
 
@@ -76,7 +76,7 @@ void FSI::FluidAleAlgorithm::Solve()
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::Update()
 {
-  FluidField().Update();
+  MBFluidField().Update();
 }
 
 
@@ -84,7 +84,7 @@ void FSI::FluidAleAlgorithm::Update()
 /*----------------------------------------------------------------------*/
 void FSI::FluidAleAlgorithm::Output()
 {
-  FluidField().Output();
+  MBFluidField().Output();
 }
 
 #endif

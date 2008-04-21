@@ -73,7 +73,7 @@ namespace ADAPTER {
   public:
     XFluidImpl(
             Teuchos::RCP<DRT::Discretization> dis,
-            Teuchos::RCP<DRT::Discretization> cutterdis,
+            Teuchos::RCP<DRT::Discretization> soliddis,
             Teuchos::RCP<LINALG::Solver> solver,
             Teuchos::RCP<ParameterList> params,
             Teuchos::RCP<IO::DiscretizationWriter> output,
@@ -158,17 +158,23 @@ namespace ADAPTER {
     LINALG::MapExtractor                   freesurface_;
 
     /// ALE dof map
-    LINALG::MapExtractor                   meshmap_;
+    //LINALG::MapExtractor                   meshmap_;
 
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization>      dis_;
-    Teuchos::RCP<DRT::Discretization>      boundarydis_solidparalleldistribution_;
-    Teuchos::RCP<DRT::Discretization>      boundarydis_fluidparalleldistribution_;
+    Teuchos::RCP<DRT::Discretization>      soliddis_; ///< the solid discretization will go away,once we can determine inside and outside of the structure without volume elements
+    Teuchos::RCP<DRT::Discretization>      boundarydis_fluidparalleldistrib_;
     Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
     //@}
 
+    //! @name state vectors using the fluid boundary parallel distribution
+    Teuchos::RCP<Epetra_Vector>            ivel_fluidparalleldistrib_;      ///< interface velocity
+    Teuchos::RCP<Epetra_Vector>            idisp_fluidparalleldistrib_;     ///< interface displacement
+    Teuchos::RCP<Epetra_Vector>            itrueres_fluidparalleldistrib_;  ///< interface residual
+    //@}
+    
     /// all velocity dofs not at the interface
     Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
   };

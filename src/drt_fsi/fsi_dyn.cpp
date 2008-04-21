@@ -64,7 +64,7 @@ void fluid_ale_drt()
   fluid->Timeloop();
 
   DRT::ResultTestManager testmanager(comm);
-  testmanager.AddFieldTest(fluid->FluidField().CreateFieldTest());
+  testmanager.AddFieldTest(fluid->MBFluidField().CreateFieldTest());
   testmanager.TestAll();
 }
 
@@ -92,7 +92,7 @@ void fluid_freesurf_drt()
   fluid->Timeloop();
 
   DRT::ResultTestManager testmanager(comm);
-  testmanager.AddFieldTest(fluid->FluidField().CreateFieldTest());
+  testmanager.AddFieldTest(fluid->MBFluidField().CreateFieldTest());
   testmanager.TestAll();
 }
 
@@ -129,7 +129,7 @@ void fsi_ale_drt()
 
     fsi->Timeloop(fsi);
     DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
+    testmanager.AddFieldTest(fsi->MBFluidField().CreateFieldTest());
     testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
     testmanager.TestAll();
   }
@@ -191,7 +191,7 @@ void xfsi_drt()
   fsi->Timeloop(fsi);
 
   DRT::ResultTestManager testmanager(comm);
-  testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
+  testmanager.AddFieldTest(fsi->MBFluidField().CreateFieldTest());
   testmanager.TestAll();
 
   Teuchos::TimeMonitor::summarize();

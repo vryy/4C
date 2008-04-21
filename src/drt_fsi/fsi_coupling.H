@@ -123,6 +123,22 @@ namespace FSI
                        const Epetra_Map& masternodes,
                        const Epetra_Map& slavenodes);
 
+    /// setup coupling of given nodes
+    /*!
+      Setup the whole thing using the MatchNodeCheap() without a tree
+
+      \note All slave nodes are required to find a match.
+
+      \param masterdis   (i) master side mesh
+      \param slavedis    (i) slave side mesh
+      \param masternodes (i) gids of nodes on master side to be coupled
+      \param slavenodes  (i) gids of nodes on slave side to be coupled
+     */
+    void SetupCouplingCheap(const DRT::Discretization& masterdis,
+                       const DRT::Discretization& slavedis,
+                       const Epetra_Map& masternodes,
+                       const Epetra_Map& slavenodes);
+    
     //@}
 
     /** \name Conversion between master and slave */
@@ -221,6 +237,22 @@ namespace FSI
     void MatchNodes(const DRT::Discretization& masterdis,
                     const DRT::Discretization& slavedis,
                     std::vector<int>& masternodes,
+                    std::vector<int>& permslavenodes,
+                    const std::vector<int>& slavenodes);
+    
+    /// do the actual matching of the master <-> slave pairs
+    /*!
+      If we already know the partners on the other side then we can do this a lot cheaper without a tree
+
+      \param masterdis   (i) master side mesh
+      \param slavedis    (i) slave side mesh
+      \param masternodes (i) all master node gids
+      \param permslavenodes (o) slave node gids permutated to match master node gids
+      \param slavenodes (i) slave node gids
+     */
+    void MatchNodesCheap(const DRT::Discretization& masterdis,
+                    const DRT::Discretization& slavedis,
+                    const std::vector<int>& masternodes,
                     std::vector<int>& permslavenodes,
                     const std::vector<int>& slavenodes);
 

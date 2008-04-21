@@ -39,8 +39,8 @@ FSI::StructureALE::StructureALE(Epetra_Comm& comm)
     matchingnodes_ = true;
     coupsf.SetupConditionCoupling(*StructureField().Discretization(),
                                    StructureField().Interface(),
-                                  *FluidField().Discretization(),
-                                   FluidField().Interface(),
+                                  *MBFluidField().Discretization(),
+                                   MBFluidField().Interface(),
                                   "FSICoupling");
 
     // In the following we assume that both couplings find the same dof
@@ -59,7 +59,7 @@ FSI::StructureALE::StructureALE(Epetra_Comm& comm)
   {
     matchingnodes_ = false;
     coupsfm_.Setup( *StructureField().Discretization(),
-                    *FluidField().Discretization(),
+                    *MBFluidField().Discretization(),
                     comm );
   }
 
@@ -85,7 +85,7 @@ void FSI::StructureALE::Timeloop()
 void FSI::StructureALE::Solve()
 {
   StructureField().Solve();
-  FluidField().NonlinearSolve(StructToFluid(StructureField().ExtractInterfaceDispnp()));
+  MBFluidField().NonlinearSolve(StructToFluid(StructureField().ExtractInterfaceDispnp()));
 }
 
 

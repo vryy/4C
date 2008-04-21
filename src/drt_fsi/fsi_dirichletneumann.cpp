@@ -62,8 +62,8 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
     matchingnodes_ = true;
     coupsf.SetupConditionCoupling(*StructureField().Discretization(),
                                    StructureField().Interface(),
-                                  *FluidField().Discretization(),
-                                   FluidField().Interface(),
+                                  *MBFluidField().Discretization(),
+                                   MBFluidField().Interface(),
                                   "FSICoupling");
 
 //     coupsa.SetupConditionCoupling(*StructureField().Discretization(),
@@ -91,7 +91,7 @@ FSI::DirichletNeumannCoupling::DirichletNeumannCoupling(Epetra_Comm& comm)
   {
     matchingnodes_ = false;
     coupsfm_.Setup( *StructureField().Discretization(),
-                    *FluidField().Discretization(),
+                    *MBFluidField().Discretization(),
                     comm );
 
     // This is cheating. We setup the coupling of interface dofs between fluid
@@ -609,7 +609,7 @@ FSI::DirichletNeumannCoupling::CreateLinearSystem(ParameterList& nlParams,
   // Jacobian has to be provided, otherwise the linear system uses
   // plain finite differences.
 
-  std::string jacobian = nlParams.get("Jacobian", "None");
+  const std::string jacobian = nlParams.get("Jacobian", "None");
   std::string preconditioner = nlParams.get("Preconditioner", "None");
 
   // Special FSI based matrix free method
@@ -795,7 +795,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceDisp()
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceForce()
 {
   // extract forces
-  return FluidToStruct(FluidField().ExtractInterfaceForces());
+  return FluidToStruct(MBFluidField().ExtractInterfaceForces());
 }
 
 
@@ -806,7 +806,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   const char* flags[] = { "Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", NULL };
 
   Epetra_Time timer(x.Comm());
-  double startTime = timer.WallTime();
+  const double startTime = timer.WallTime();
 
   if (Comm().MyPID()==0)
   {
@@ -849,10 +849,10 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
   }
 #endif
 
-    Teuchos::RCP<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
+    const Teuchos::RCP<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
 
-    Teuchos::RCP<Epetra_Vector> iforce = FluidOp(idispn, fillFlag);
-    Teuchos::RCP<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
+    const Teuchos::RCP<Epetra_Vector> iforce = FluidOp(idispn, fillFlag);
+    const Teuchos::RCP<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
 
 #if 0
   if (Comm().NumProc()==1)
@@ -931,7 +931,7 @@ bool FSI::DirichletNeumannCoupling::computeF(const Epetra_Vector &x, Epetra_Vect
     F.Update(1.0, *iforcenp, -1.0, *iforcen, 0.0);
   }
 
-  double endTime = timer.WallTime();
+  const double endTime = timer.WallTime();
   if (Comm().MyPID()==0)
     utils_->out() << "\nTime for residual calculation: " << endTime-startTime << "\n\n";
   return true;
@@ -950,25 +950,25 @@ FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
   if (fillFlag==User)
   {
     // SD relaxation calculation
-    return FluidToStruct(FluidField().RelaxationSolve(StructToFluid(idisp),Dt()));
+    return FluidToStruct(MBFluidField().RelaxationSolve(StructToFluid(idisp),Dt()));
   }
   else
   {
     // normal fluid solve
 
     // the displacement -> velocity conversion at the interface
-    Teuchos::RCP<Epetra_Vector> ivel = InterfaceVelocity(idisp);
+    const Teuchos::RCP<Epetra_Vector> ivel = InterfaceVelocity(idisp);
 
     // A rather simple hack. We need something better!
-    int itemax = FluidField().Itemax();
+    const int itemax = MBFluidField().Itemax();
     if (fillFlag==MF_Res and mfresitemax_ > 0)
-      FluidField().SetItemax(mfresitemax_ + 1);
+        MBFluidField().SetItemax(mfresitemax_ + 1);
 
-    FluidField().NonlinearSolve(StructToFluid(idisp),StructToFluid(ivel));
+    MBFluidField().NonlinearSolve(StructToFluid(idisp),StructToFluid(ivel));
 
-    FluidField().SetItemax(itemax);
+    MBFluidField().SetItemax(itemax);
 
-    return FluidToStruct(FluidField().ExtractInterfaceForces());
+    return FluidToStruct(MBFluidField().ExtractInterfaceForces());
   }
 }
 
@@ -999,7 +999,8 @@ FSI::DirichletNeumannCoupling::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceVelocity(Teuchos::RCP<Epetra_Vector> idispnp)
+Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceVelocity(
+        const Teuchos::RCP<Epetra_Vector> idispnp) const
 {
   Teuchos::RCP<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idispn_));
   ivel->Update(1.0, *idispnp, -1.0);
@@ -1030,7 +1031,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::InterfaceVelocity(Teu
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
-  FSI::Coupling& coupsf = StructureFluidCoupling();
+  const FSI::Coupling& coupsf = StructureFluidCoupling();
   if (matchingnodes_)
   {
     return coupsf.MasterToSlave(iv);
@@ -1046,7 +1047,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::StructToFluid(Teuchos
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
 {
-  FSI::Coupling& coupsf = StructureFluidCoupling();
+  const FSI::Coupling& coupsf = StructureFluidCoupling();
   if (matchingnodes_)
   {
     return coupsf.SlaveToMaster(iv);
@@ -1054,8 +1055,8 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannCoupling::FluidToStruct(Teuchos
   else
   {
     // Translate consistent nodal forces to interface loads
-    Teuchos::RCP<Epetra_Vector> ishape = FluidField().IntegrateInterfaceShape();
-    Teuchos::RCP<Epetra_Vector> iforce = rcp(new Epetra_Vector(iv->Map()));
+    const Teuchos::RCP<Epetra_Vector> ishape = MBFluidField().IntegrateInterfaceShape();
+    const Teuchos::RCP<Epetra_Vector> iforce = rcp(new Epetra_Vector(iv->Map()));
 
     if ( iforce->ReciprocalMultiply( 1.0, *ishape, *iv, 0.0 ) )
       dserror("ReciprocalMultiply failed");

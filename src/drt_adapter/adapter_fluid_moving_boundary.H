@@ -129,8 +129,8 @@ namespace ADAPTER
     virtual ~FluidMovingBoundaryBaseAlgorithm() {}
 
     /// fluid field solver
-    FluidMovingBoundary& FluidField() { return *fluid_; }
-    const FluidMovingBoundary& FluidField() const { return *fluid_; }
+    FluidMovingBoundary& MBFluidField() { return *fluid_; }
+    const FluidMovingBoundary& MBFluidField() const { return *fluid_; }
 
   private:
 
