@@ -364,12 +364,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     */
     //(*alpha).Shape(neas_,1);
     alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
-//    // evaluate current (updated) EAS alphas (from history variables)
-//    soh8_easupdate(alpha,disp,residual);
+    // evaluate current (updated) EAS alphas (from history variables)
     // get stored EAS history
-    //(*oldfeas).Shape(neas_,1);
-    //(*oldKaainv).Shape(neas_,neas_);
-    //(*oldKda).Shape(neas_,NUMDOF_SOH8);
     oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
     oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
     oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
@@ -382,7 +378,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     }
     // add Kda . res_d to feas
     (*oldfeas).Multiply('N','N',1.0,(*oldKda),res_d,1.0);
-    // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+    // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
     (*alpha).Multiply('N','N',-1.0,(*oldKaainv),(*oldfeas),1.0);
     /* end of EAS Update ******************/
 
@@ -673,10 +669,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       (*stiffmatrix).Multiply('T', 'N', detJ * (*weights)(gp), bop, cb, 1.0);
 
       // intergrate `geometric' stiffness matrix and add to keu *****************
-      //    Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
-      //    sfac.Scale(detJ * (*weights)(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-      //    vector<double> SmB_L(NUMDIM_SOH8);     // intermediate Sm.B_L
-      //    // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
+      // here also the ANS interpolation comes into play
       for (int inod=0; inod<NUMNOD_SOH8; ++inod) {
         for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod) {
           Epetra_SerialDenseVector G_ij(NUMSTR_SOH8);
@@ -685,27 +678,20 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
           G_ij(3) = deriv_gp(0, inod) * deriv_gp(1, jnod) + deriv_gp(1, inod)
               * deriv_gp(0, jnod); //rs-dir
           // ANS modification in tt-dir
-          G_ij(2) = 0.25*(1-r[gp])*(1-s[gp]) * (*deriv_sp)(2+4*NUMDIM_SOH8,
-              inod) * (*deriv_sp)(2+4*NUMDIM_SOH8, jnod) +0.25*(1+r[gp])*(1
-              -s[gp]) * (*deriv_sp)(2+5*NUMDIM_SOH8, inod) * (*deriv_sp)(2+5
-              *NUMDIM_SOH8, jnod) +0.25*(1+r[gp])*(1+s[gp]) * (*deriv_sp)(2+6
-              *NUMDIM_SOH8, inod) * (*deriv_sp)(2+6*NUMDIM_SOH8, jnod) +0.25*(1
-              -r[gp])*(1+s[gp]) * (*deriv_sp)(2+7*NUMDIM_SOH8, inod)
-              * (*deriv_sp)(2+7*NUMDIM_SOH8, jnod);
+          G_ij(2) = 0.25*(1-r[gp])*(1-s[gp]) * (*deriv_sp)(2+4*NUMDIM_SOH8,inod) * (*deriv_sp)(2+4*NUMDIM_SOH8,jnod) 
+                   +0.25*(1+r[gp])*(1-s[gp]) * (*deriv_sp)(2+5*NUMDIM_SOH8,inod) * (*deriv_sp)(2+5*NUMDIM_SOH8,jnod)
+                   +0.25*(1+r[gp])*(1+s[gp]) * (*deriv_sp)(2+6*NUMDIM_SOH8,inod) * (*deriv_sp)(2+6*NUMDIM_SOH8,jnod)
+                   +0.25*(1-r[gp])*(1+s[gp]) * (*deriv_sp)(2+7*NUMDIM_SOH8,inod) * (*deriv_sp)(2+7*NUMDIM_SOH8,jnod);
           // ANS modification in st-dir
-          G_ij(4) = 0.5*((1+r[gp]) * ((*deriv_sp)(1+1*NUMDIM_SOH8, inod)
-              * (*deriv_sp)(2+1*NUMDIM_SOH8, jnod) +(*deriv_sp)( 2+1
-              *NUMDIM_SOH8, inod) * (*deriv_sp)(1+1*NUMDIM_SOH8, jnod)) +(1
-              -r[gp]) * ((*deriv_sp)(1+3*NUMDIM_SOH8, inod) * (*deriv_sp)(2+3
-              *NUMDIM_SOH8, jnod) +(*deriv_sp)(2+3*NUMDIM_SOH8, inod)
-              * (*deriv_sp)(1+3*NUMDIM_SOH8, jnod)));
+          G_ij(4) = 0.5*((1+r[gp]) * ((*deriv_sp)(1+1*NUMDIM_SOH8,inod) * (*deriv_sp)(2+1*NUMDIM_SOH8,jnod) 
+                                     +(*deriv_sp)(2+1*NUMDIM_SOH8,inod) * (*deriv_sp)(1+1*NUMDIM_SOH8,jnod)) 
+                        +(1-r[gp]) * ((*deriv_sp)(1+3*NUMDIM_SOH8,inod) * (*deriv_sp)(2+3*NUMDIM_SOH8,jnod)
+                                     +(*deriv_sp)(2+3*NUMDIM_SOH8,inod) * (*deriv_sp)(1+3*NUMDIM_SOH8,jnod)));
           // ANS modification in rt-dir
-          G_ij(5) = 0.5*((1-s[gp]) * ((*deriv_sp)(0+0*NUMDIM_SOH8, inod)
-              * (*deriv_sp)(2+0*NUMDIM_SOH8, jnod) +(*deriv_sp)( 2+0
-              *NUMDIM_SOH8, inod) * (*deriv_sp)(0+0*NUMDIM_SOH8, jnod)) +(1
-              +s[gp]) * ((*deriv_sp)(0+2*NUMDIM_SOH8, inod) * (*deriv_sp)(2+2
-              *NUMDIM_SOH8, jnod) +(*deriv_sp)(2+2*NUMDIM_SOH8, inod)
-              * (*deriv_sp)(0+2*NUMDIM_SOH8, jnod)));
+          G_ij(5) = 0.5*((1-s[gp]) * ((*deriv_sp)(0+0*NUMDIM_SOH8,inod) * (*deriv_sp)(2+0*NUMDIM_SOH8,jnod)
+                                     +(*deriv_sp)(2+0*NUMDIM_SOH8,inod) * (*deriv_sp)(0+0*NUMDIM_SOH8,jnod))
+                        +(1+s[gp]) * ((*deriv_sp)(0+2*NUMDIM_SOH8,inod) * (*deriv_sp)(2+2*NUMDIM_SOH8,jnod)
+                                     +(*deriv_sp)(2+2*NUMDIM_SOH8,inod) * (*deriv_sp)(0+2*NUMDIM_SOH8,jnod)));
           // transformation of local(parameter) space 'back' to global(material) space
           Epetra_SerialDenseVector G_ij_glob(NUMSTR_SOH8);
           G_ij_glob.Multiply('N', 'N', 1.0, TinvT, G_ij, 0.0);
@@ -763,55 +749,23 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       solve_for_inverseKaa.SetMatrix(Kaa);
       solve_for_inverseKaa.Invert();
 
-      //    cout << "Kda" << Kda;
       Epetra_SerialDenseMatrix KdaTKaa(NUMDOF_SOH8, neas_); // temporary Kda^T.Kaa^{-1}
       KdaTKaa.Multiply('T', 'N', 1.0, Kda, Kaa, 1.0);
 
-      Epetra_SerialDenseVector L6(NUMDOF_SOH8);
-      //SymmetricEigenValues(KdaTKaaKda,L6);
-      //cout << setprecision(16) << KdaTKaaKda;
-      //cout << "eigen(KEAS): " << L6;
-
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
       (*stiffmatrix).Multiply('N', 'N', -1.0, KdaTKaa, Kda, 1.0);
-      //cout << setprecision(16) << *stiffmatrix;
 
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
       (*force).Multiply('N', 'N', -1.0, KdaTKaa, feas, 1.0);
 
       // store current EAS data in history
       for (int i=0; i<neas_; ++i) {
-        for (int j=0; j<neas_; ++j)
-          (*oldKaainv)(i, j) = Kaa(i,j);
-        for (int j=0; j<NUMDOF_SOH8; ++j)
-          (*oldKda)(i, j) = Kda(i,j);
+        for (int j=0; j<neas_; ++j) (*oldKaainv)(i,j) = Kaa(i,j);
+        for (int j=0; j<NUMDOF_SOH8; ++j) (*oldKda)(i, j) = Kda(i,j);
         (*oldfeas)(i, 0) = feas(i);
       }
     } // -------------------------------------------------------------------- EAS
-    /*------------------------------------- make estif absolute symmetric */
-    //improvement?:  SymmetriseMatrix(*stiffmatrix);
   }
-//  Epetra_SerialDenseVector L5(NUMDOF_SOH8);
-//  SymmetricEigenValues(*stiffmatrix,L5);
-//  cout << "eigen(K): " << L5;
-
-//  SymmetriseMatrix(KdaTKaaKda);
-//  Epetra_SerialDenseVector L16(NUMDOF_SOH8);
-//  Epetra_SerialDenseMatrix newstiff2(newstiff);
-//  cout << "newstiff2"<<setprecision(16) << newstiff2;
-//
-//  SymmetricEigenValues(newstiff,L16);
-//  cout << "eigen(newstiffpreEAS): " << L16;
-//  double normKeas = KdaTKaaKda.NormOne();
-//  cout << "KdaTKda"<<setprecision(16) << KdaTKaaKda;
-//  Epetra_SerialDenseMatrix KdaTKaaKda2(KdaTKaaKda);
-//  Epetra_SerialDenseVector L36(NUMDOF_SOH8);
-//  SymmetricEigenValues(KdaTKaaKda2,L36);
-//  cout << "eigen(KEAS): " << L36;
-//  newstiff2 += KdaTKaaKda;
-//  Epetra_SerialDenseVector L26(NUMDOF_SOH8);
-//  SymmetricEigenValues(newstiff2,L26);
-//  cout << "eigen(newstiff2): " << L26;
 
   return;
 } // DRT::ELEMENTS::Shell8::s8_nlnstiffmass
@@ -1086,6 +1040,7 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
         }
         break;
       }
+      case DRT::ELEMENTS::So_sh8::none: break;
       default:
         dserror("no thickness direction for So_sh8");
       }

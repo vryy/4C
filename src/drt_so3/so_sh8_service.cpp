@@ -82,22 +82,28 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   int thick_index;
   
   if (max_stretch == r_stretch) {
-    if ((max_stretch / s_stretch <= 2) || (max_stretch / t_stretch <=2)) {
-      dserror("Solid-Shell element geometry has not a shell aspect ratio");
+    if ((max_stretch / s_stretch <= 1.5) || (max_stretch / t_stretch <=1.5)) {
+      cout << "ID: " << this->Id() << ", has aspect ratio of: ";
+      cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
+      //dserror("Solid-Shell element geometry has not a shell aspect ratio");
     }
     thickdir = autor;
     thick_index = 0;
   }
   else if (max_stretch == s_stretch) {
-    if ((max_stretch / r_stretch <= 2) || (max_stretch / t_stretch <=2)) {
-      dserror("Solid-Shell element geometry has not a shell aspect ratio");
+    if ((max_stretch / r_stretch <= 1.5) || (max_stretch / t_stretch <=1.5)) {
+      cout << "ID: " << this->Id() << ", has aspect ratio of: ";
+      cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
+      //dserror("Solid-Shell element geometry has not a shell aspect ratio");
     }
     thickdir = autos;
     thick_index = 1;
   }
   else if (max_stretch == t_stretch) {
-    if ((max_stretch / r_stretch <= 2) || (max_stretch / s_stretch <=2)) {
-      dserror("Solid-Shell element geometry has not a shell aspect ratio");
+    if ((max_stretch / r_stretch <= 1.5) || (max_stretch / s_stretch <=1.5)) {
+      cout << "ID: " << this->Id() << ", has aspect ratio of: ";
+      cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
+      //dserror("Solid-Shell element geometry has not a shell aspect ratio");
     }
     thickdir = autot;
     thick_index = 2;

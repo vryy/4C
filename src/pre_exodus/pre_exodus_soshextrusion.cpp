@@ -455,17 +455,22 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
 
   } // end of extruding 
   
-  // transfer nodeIds from initial SideSet Ids to new EleBlock Ids
+  /* In case extrusion is based on SideSet
+     transfer nodeIds from initial SideSet Ids to new EleBlock Ids
+     to apply boundary conditions e.g. pressure
+   */
   set<int> nodes_extrusion_base;
   set<int>::iterator it;
   for(it=nodes_from_sideset.begin(); it!=nodes_from_sideset.end(); ++it)
     nodes_extrusion_base.insert(node_pair.find(*it)->second.front());
-  std::ostringstream nodesetname;
-  nodesetname << "nodes";//sideset.GetName() << "nodes";
-  string propname = "";
-  EXODUS::NodeSet nodeset_extrusion_base(nodes_extrusion_base,nodesetname.str(),propname);
-  newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_base));
-  highestns ++;
+  if (nodes_from_sideset.size() != 0){
+    std::ostringstream nodesetname;
+    nodesetname << "nodes";//sideset.GetName() << "nodes";
+    string propname = "";
+    EXODUS::NodeSet nodeset_extrusion_base(nodes_extrusion_base,nodesetname.str(),propname);
+    newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_base));
+    highestns ++;
+  }
 
   
   string newtitle = "extrusion";

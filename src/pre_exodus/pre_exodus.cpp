@@ -138,7 +138,7 @@ int main(
       <<"\\\\matr1 =\"ELEMENT\"\"STRUCTURE\""<<endl
       <<"\\\\boundr_cond=\" \"\" \" "<<endl
       <<"\\\\type=\"STRUCTURE\"\"SOLIDSH8\"\"HEX8\" "<<endl
-      <<"\\\\prop=\"MAT       1 GP 2 2 2 STRESS None KINEM Totlag  EAS sosh8 THICKDIR AUTO\" "<<endl<<endl;
+      <<"\\\\prop=\"MAT       1 EAS sosh8 THICKDIR auto\" "<<endl<<endl;
       defaultbc<<"\\\\matr1 =\"ELEMENT\"\"FLUID\" "<<endl
       <<"\\\\boundr_cond=\" \"\" \" "<<endl
       <<"\\\\type=\"FLUID\"\"FLUID3\"\"HEX8\" " <<endl
