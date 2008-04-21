@@ -167,34 +167,45 @@ namespace LINALG
   /*!
   \brief Compute all eigenvalues of a real symmetric matrix A
 
-  \param A (in):     Matrix to be analysed
-  \param L (out):    Vector of eigenvalues in ascending order
+  \param A (in):        Matrix to be analysed
+  \param L (out):       Vector of eigenvalues in ascending order
+  \param postproc (in): flag indicating whether we are using this
+                        routine for postprocessing only (in that
+                        case dserror is replaced with a warning)
   */
   void SymmetricEigenValues(Epetra_SerialDenseMatrix& A,
-                            Epetra_SerialDenseVector& L);
+                            Epetra_SerialDenseVector& L,
+                            const bool postproc=false);
 
   /*!
   \brief Compute all eigenvalues and eigenvectors of a real symmetric matrix A
 
-  \param A (in/out): in: Matrix to be analysed, out: eigenvectors
-                     (i.e. original matrix is destroyed!!!)
-  \param L (out):    Vector of eigenvalues in ascending order
+  \param A (in/out):    in: Matrix to be analysed, out: eigenvectors
+                        (i.e. original matrix is destroyed!!!)
+  \param L (out):       Vector of eigenvalues in ascending order
+  \param postproc (in): flag indicating whether we are using this
+                        routine for postprocessing only (in that
+                        case dserror is replaced with a warning)
   */
   void SymmetricEigenProblem(Epetra_SerialDenseMatrix& A,
-                             Epetra_SerialDenseVector& L);
+                             Epetra_SerialDenseVector& L,
+                             const bool postproc=false);
 
   /*!
   \brief Compute all eigenvalues and, optionally, eigenvectors
    of a real symmetric matrix A
 
-  \param A (in/out): Matrix to be analysed, if eigv=true stores eigenvectors
-  \param L (in/out): Vector of eigenvalues in ascending order
-  \param dim (in) :  Dimension of matrix
-  \param eigv (in):  flag to evaluate also eigenvectors ('N'=no, 'V'=yes)
+  \param A (in/out):    Matrix to be analysed, if eigv=true stores eigenvectors
+  \param L (in/out):    Vector of eigenvalues in ascending order
+  \param eigv (in):     flag to evaluate also eigenvectors ('N'=no, 'V'=yes)
+  \param postproc (in): flag indicating whether we are using this
+                        routine for postprocessing only (in that
+                        case dserror is replaced with a warning)
   */
   void SymmetricEigen(Epetra_SerialDenseMatrix& A,
                       Epetra_SerialDenseVector& L,
-                      const char eigv);
+                      const char eigv,
+                      const bool postproc=false);
   /*!
   \brief Invert a symmetric dim*dim square matrix
 

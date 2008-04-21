@@ -815,7 +815,7 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(ofstream& file0,
       (eigenvec[i])(2,1) = (eigenvec[i])(1,2);
       (eigenvec[i])(2,2) = (*normal_data_proc0)[3*i+2];
 
-      LINALG::SymmetricEigenProblem((eigenvec[i]), eigenval[i]);
+      LINALG::SymmetricEigenProblem((eigenvec[i]), eigenval[i], true);
     }
 
     for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0datamap
@@ -1218,7 +1218,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(ofstream& file0,
         (eigenvec[i])(2,1) = (eigenvec[i])(1,2);
         (eigenvec[i])(2,2) = (*(*data_proc0)(2))[lid];
 
-        LINALG::SymmetricEigenProblem((eigenvec[i]), eigenval[i]);
+        LINALG::SymmetricEigenProblem((eigenvec[i]), eigenval[i], true);
       }
 
       for (int iele=0; iele<numelepertype; iele++)

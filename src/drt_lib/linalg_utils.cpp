@@ -393,9 +393,10 @@ void LINALG::SymmetriseMatrix(Epetra_SerialDenseMatrix& A)
  |  compute all eigenvalues of a real symmetric matrix A        lw 04/08|
  *----------------------------------------------------------------------*/
 void LINALG::SymmetricEigenValues(Epetra_SerialDenseMatrix& A,
-                                  Epetra_SerialDenseVector& L)
+                                  Epetra_SerialDenseVector& L,
+                                  const bool postproc)
 {
-  LINALG::SymmetricEigen(A, L, 'N');
+  LINALG::SymmetricEigen(A, L, 'N', postproc);
 }
 
 /*----------------------------------------------------------------------*
@@ -404,9 +405,10 @@ void LINALG::SymmetricEigenValues(Epetra_SerialDenseMatrix& A,
  |  is destroyed!!!)                                            lw 04/08|
  *----------------------------------------------------------------------*/
 void LINALG::SymmetricEigenProblem(Epetra_SerialDenseMatrix& A,
-                                   Epetra_SerialDenseVector& L)
+                                   Epetra_SerialDenseVector& L,
+                                   const bool postproc)
 {
-  LINALG::SymmetricEigen(A, L, 'V');
+  LINALG::SymmetricEigen(A, L, 'V', postproc);
 }
 
 /*----------------------------------------------------------------------*
@@ -415,7 +417,8 @@ void LINALG::SymmetricEigenProblem(Epetra_SerialDenseMatrix& A,
  *----------------------------------------------------------------------*/
 void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
                             Epetra_SerialDenseVector& L,
-                            const char jobz)
+                            const char jobz,
+                            const bool postproc)
 {
   if (A.M() != A.N()) dserror("Matrix is not square");
   if (A.M() != L.Length()) dserror("Dimension of eigenvalues does not match");
@@ -449,10 +452,18 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
 
   lapack.SYEVD(jobz,uplo,dim,a,lda,w,&(work[0]),lwork,&(iwork[0]),liwork,&info);
 
-  //SYEVD (const char JOBZ, const char UPLO, const int N, double *A, const int LDA, double *W, double *WORK, const int LWORK, int *IWORK, const int LIWORK, int *INFO) const
-
-  if (info > 0) dserror("Lapack algorithm syevd failed");
-  if (info < 0) dserror("Illegal value in Lapack syevd call");
+  if (!postproc)
+  {
+    if (info > 0) dserror("Lapack algorithm syevd failed");
+    if (info < 0) dserror("Illegal value in Lapack syevd call");
+  }
+  // if we only calculate eigenvalues/eigenvectors for postprocessing,
+  // a warning might be sufficient
+  else
+  {
+    if (info > 0) cout << "Lapack algorithm syevd failed" << endl;
+    if (info < 0) cout << "Illegal value in Lapack syevd call" << endl;
+  }
 
   return;
 }
