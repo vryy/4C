@@ -18,11 +18,12 @@ Maintainer: Ulrich Kuettler
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::FluidImpl::FluidImpl(Teuchos::RCP<DRT::Discretization> dis,
-                                 Teuchos::RCP<LINALG::Solver> solver,
-                                 Teuchos::RCP<ParameterList> params,
-                                 Teuchos::RCP<IO::DiscretizationWriter> output,
-                                 bool isale)
+ADAPTER::FluidImpl::FluidImpl(
+        Teuchos::RCP<DRT::Discretization> dis,
+        Teuchos::RCP<LINALG::Solver> solver,
+        Teuchos::RCP<ParameterList> params,
+        Teuchos::RCP<IO::DiscretizationWriter> output,
+        bool isale)
   : fluid_(dis, *solver, *params, *output, isale),
     dis_(dis),
     solver_(solver),
@@ -42,7 +43,7 @@ ADAPTER::FluidImpl::FluidImpl(Teuchos::RCP<DRT::Discretization> dis,
   Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();
   Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();
 
-  int numvelids = velmap->NumMyElements();
+  const int numvelids = velmap->NumMyElements();
   std::vector<int> velids;
   velids.reserve(numvelids);
   for (int i=0; i<numvelids; ++i)
