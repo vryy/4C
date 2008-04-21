@@ -75,7 +75,7 @@ ADAPTER::StructureGenAlpha::StructureGenAlpha(Teuchos::RCP<Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::InitialGuess() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::InitialGuess()
 {
   return Teuchos::rcp(&structure_.Getdu(),false);
   //return structure_.Dispm();
@@ -84,7 +84,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::InitialGuess() con
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::RHS() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::RHS()
 {
   return structure_.Residual();
 }
@@ -92,7 +92,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::RHS() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnp() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnp()
 {
   double alphaf = structure_.AlphaF();
   Teuchos::RCP<Epetra_Vector> dispnp = Teuchos::rcp(new Epetra_Vector(*Dispn()));
@@ -103,7 +103,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnp() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispn() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispn()
 {
   return structure_.Disp();
 }
@@ -111,7 +111,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispn() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnm() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnm()
 {
   return structure_.Dispm();
 }
@@ -119,7 +119,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnm() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ADAPTER::StructureGenAlpha::DofRowMap() const
+Teuchos::RCP<const Epetra_Map> ADAPTER::StructureGenAlpha::DofRowMap()
 {
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
   return Teuchos::rcp(dofrowmap, false);
@@ -128,7 +128,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::StructureGenAlpha::DofRowMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureGenAlpha::SystemMatrix() const
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::StructureGenAlpha::SystemMatrix()
 {
   return structure_.SystemMatrix();
 }
@@ -212,7 +212,7 @@ void ADAPTER::StructureGenAlpha::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::StructureGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp) const
+void ADAPTER::StructureGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And

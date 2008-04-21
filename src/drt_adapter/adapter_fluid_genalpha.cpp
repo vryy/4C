@@ -57,7 +57,7 @@ ADAPTER::FluidGenAlpha::FluidGenAlpha(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::InitialGuess() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::InitialGuess()
 {
   return fluid_.InitialGuess();
 }
@@ -65,7 +65,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::InitialGuess() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::RHS() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::RHS()
 {
   return fluid_.Residual();
 }
@@ -73,7 +73,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::RHS() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::Velnp() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::Velnp()
 {
   return fluid_.Velnp();
 }
@@ -81,7 +81,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::Velnp() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::Veln() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::Veln()
 {
   return fluid_.Veln();
 }
@@ -89,7 +89,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::Veln() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::Dispnp() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::Dispnp()
 {
   return fluid_.Dispnp();
 }
@@ -97,7 +97,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::Dispnp() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ADAPTER::FluidGenAlpha::DofRowMap() const
+Teuchos::RCP<const Epetra_Map> ADAPTER::FluidGenAlpha::DofRowMap()
 {
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
   return Teuchos::rcp(dofrowmap, false);
@@ -106,7 +106,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidGenAlpha::DofRowMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FluidGenAlpha::SystemMatrix() const
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FluidGenAlpha::SystemMatrix()
 {
   return fluid_.SysMat();
 }
@@ -145,7 +145,7 @@ void ADAPTER::FluidGenAlpha::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> dacc) const
+void ADAPTER::FluidGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> dacc)
 {
   if (dacc!=Teuchos::null)
   {
@@ -284,7 +284,7 @@ void ADAPTER::FluidGenAlpha::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlpha::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) const
+void ADAPTER::FluidGenAlpha::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp)
 {
   meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());
 
@@ -295,7 +295,7 @@ void ADAPTER::FluidGenAlpha::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> f
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlpha::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) const
+void ADAPTER::FluidGenAlpha::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
 {
   meshmap_.InsertCondVector(gridvel,fluid_.GridVel());
 }
@@ -303,7 +303,7 @@ void ADAPTER::FluidGenAlpha::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridv
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlpha::ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx) const
+void ADAPTER::FluidGenAlpha::ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // We convert Delta d(n+1,i+1) to Delta a(n+1,i+1) here.
   //
@@ -372,7 +372,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidGenAlpha::CreateFieldTest()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidGenAlpha::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
 {
    return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
 }

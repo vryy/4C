@@ -84,32 +84,32 @@ namespace ADAPTER {
     //! @name Vector access
 
     /// initial guess of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
 
     /// rhs of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
 
     /// unknown displacements at t(n+1)
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() = 0;
 
     /// unknown displacements at t(n)
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn() = 0;
 
     /// unknown displacements at t(n-1)
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnm() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnm() = 0;
 
     //@}
 
     //! @name Misc
 
     /// dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
 
     /// domain map of system matrix (do we really need this?)
     virtual const Epetra_Map& DomainMap() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() const = 0;
+    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
@@ -142,7 +142,7 @@ namespace ADAPTER {
     virtual void PrepareTimeStep() = 0;
 
     /// evaluate elements with given displacement
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp) const = 0;
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disp) = 0;
 
     /// update at time step end
     virtual void Update() = 0;
@@ -219,13 +219,13 @@ namespace ADAPTER {
                      Teuchos::RCP<LINALG::Solver> solver,
                      Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() const;
-    Teuchos::RCP<const Epetra_Vector> RHS() const;
-    Teuchos::RCP<const Epetra_Vector> Dispnp() const;
-    Teuchos::RCP<const Epetra_Vector> Dispn() const;
-    Teuchos::RCP<const Epetra_Vector> Dispnm() const;
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const;
-    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() const;
+    Teuchos::RCP<const Epetra_Vector> InitialGuess();
+    Teuchos::RCP<const Epetra_Vector> RHS();
+    Teuchos::RCP<const Epetra_Vector> Dispnp();
+    Teuchos::RCP<const Epetra_Vector> Dispn();
+    Teuchos::RCP<const Epetra_Vector> Dispnm();
+    Teuchos::RCP<const Epetra_Map> DofRowMap();
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
     Teuchos::RCP<DRT::Discretization> Discretization();
     double DispIncrFactor();
 
@@ -235,7 +235,7 @@ namespace ADAPTER {
     //Teuchos::RCP<Epetra_Vector> InterfaceDispn();
 
     void PrepareTimeStep();
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> disp) const;
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> disp);
     void Update();
     void Output();
 
@@ -291,19 +291,13 @@ namespace ADAPTER {
   private:
 
     /// the actual structure algorithm
-    mutable StruGenAlpha structure_;
+    StruGenAlpha structure_;
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor interface_;
 
     /// sum of displacement vectors already applied
-    /*!
-      This is a hack required for monolithic FSI to convert from NOX style
-      update (sum in current Newton loop) to structure update (latest Newton
-      increment only). It would be nice avoid this variable and change
-      StruGenAlpha::Evaluate() instead.
-     */
-    mutable Teuchos::RCP<Epetra_Vector> sumdisi_;
+    Teuchos::RCP<Epetra_Vector> sumdisi_;
 
     //! @name local copies of input parameters
 

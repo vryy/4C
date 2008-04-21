@@ -209,7 +209,7 @@ bool FSI::MonolithicOverlap::computePreconditioner(const Epetra_Vector &x,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f) const
+void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f)
 {
   Teuchos::TimeMonitor monitor(*rhstimer_);
 
@@ -304,7 +304,7 @@ void FSI::MonolithicOverlap::SetupVector(Epetra_Vector &f,
                                          Teuchos::RCP<const Epetra_Vector> sv,
                                          Teuchos::RCP<const Epetra_Vector> fv,
                                          Teuchos::RCP<const Epetra_Vector> av,
-                                         double fluidscale) const
+                                         double fluidscale)
 {
 
   // extract the inner and boundary dofs of all three fields
@@ -463,7 +463,7 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
 void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
                                                  Teuchos::RCP<const Epetra_Vector>& sx,
                                                  Teuchos::RCP<const Epetra_Vector>& fx,
-                                                 Teuchos::RCP<const Epetra_Vector>& ax) const
+                                                 Teuchos::RCP<const Epetra_Vector>& ax)
 {
   Teuchos::TimeMonitor monitor(*exctracttimer_);
 

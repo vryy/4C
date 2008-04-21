@@ -63,7 +63,7 @@ namespace FSI
     //! @name Apply current field state to system
 
     /// setup composed right hand side from field solvers
-    virtual void SetupRHS(Epetra_Vector& f) const;
+    virtual void SetupRHS(Epetra_Vector& f);
 
     /// setup composed system matrix from field solvers
     virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat);
@@ -102,7 +102,7 @@ namespace FSI
     virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
                                      Teuchos::RCP<const Epetra_Vector>& sx,
                                      Teuchos::RCP<const Epetra_Vector>& fx,
-                                     Teuchos::RCP<const Epetra_Vector>& ax) const;
+                                     Teuchos::RCP<const Epetra_Vector>& ax);
 
 
   private:
@@ -115,7 +115,7 @@ namespace FSI
                      Teuchos::RCP<const Epetra_Vector> sv,
                      Teuchos::RCP<const Epetra_Vector> fv,
                      Teuchos::RCP<const Epetra_Vector> av,
-                     double fluidscale) const;
+                     double fluidscale);
 
     ///
     void AddFluidInterface(double scale,

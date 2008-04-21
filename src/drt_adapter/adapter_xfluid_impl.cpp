@@ -46,7 +46,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::InitialGuess() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::InitialGuess()
 {
     dserror("not implemented");
   return fluid_.InitialGuess();
@@ -55,7 +55,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::InitialGuess() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::RHS() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::RHS()
 {
     dserror("not implemented");
   return fluid_.Residual();
@@ -64,7 +64,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::RHS() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Velnp() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Velnp()
 {
     dserror("not implemented");
   return fluid_.Velnp();
@@ -73,7 +73,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Velnp() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Veln() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Veln()
 {
     dserror("not implemented");
   return fluid_.Veln();
@@ -82,7 +82,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Veln() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Dispnp() const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Dispnp()
 {
     dserror("not implemented");
   return fluid_.Dispnp();
@@ -91,7 +91,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Dispnp() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::DofRowMap() const
+Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::DofRowMap()
 {
   dserror("not implemented");
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
@@ -101,7 +101,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::DofRowMap() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidImpl::SystemMatrix() const
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidImpl::SystemMatrix()
 {
   dserror("not implemented");
   return fluid_.SystemMatrix();
@@ -137,7 +137,7 @@ void ADAPTER::XFluidImpl::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const
+void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
   if (vel!=Teuchos::null)
   {
@@ -298,7 +298,7 @@ void ADAPTER::XFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> i
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) const
+void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp)
 {
   meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());
 
@@ -309,7 +309,7 @@ void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> flui
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) const
+void ADAPTER::XFluidImpl::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
 {
   meshmap_.InsertCondVector(gridvel,fluid_.GridVel());
 }
@@ -317,10 +317,10 @@ void ADAPTER::XFluidImpl::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx) const
+void ADAPTER::XFluidImpl::ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
-  Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(Veln());
+  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(Veln());
 
   // We convert Delta d(n+1,i+1) to Delta u(n+1,i+1) here.
   //
@@ -376,7 +376,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::XFluidImpl::CreateFieldTest()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) const
+Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
 {
    return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
 }

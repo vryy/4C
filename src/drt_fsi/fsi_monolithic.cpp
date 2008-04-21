@@ -330,7 +330,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x) const
+void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 {
   if (x!=Teuchos::null)
   {

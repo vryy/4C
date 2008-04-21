@@ -76,19 +76,19 @@ namespace ADAPTER {
       bool isale
       );
 
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const;
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() const;
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp() const;
-    virtual Teuchos::RCP<const Epetra_Vector> Veln() const;
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const;
-    virtual Teuchos::RCP<const Epetra_Map>    DofRowMap() const;
-    virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix() const;
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
+    virtual Teuchos::RCP<const Epetra_Vector> RHS();
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp();
+    virtual Teuchos::RCP<const Epetra_Vector> Veln();
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
+    virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
+    virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix();
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
 
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
 
     virtual void PrepareTimeStep();
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> dacc) const;
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> dacc);
     virtual void Update();
     virtual void Output();
 
@@ -121,10 +121,10 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<Epetra_Vector>  ExtractInterfaceForces();
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) const;
-    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) const;
+    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp);
+    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel);
 
-    virtual void ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx) const;
+    virtual void ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx);
 
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);
@@ -142,12 +142,12 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
 
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) const;
+    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres);
 
   private:
 
     /// the actual fluid algorithm
-    mutable FluidGenAlphaIntegration       fluid_;
+    FluidGenAlphaIntegration               fluid_;
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor                   interface_;

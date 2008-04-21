@@ -75,29 +75,29 @@ namespace ADAPTER {
     //! @name Vector access
 
     /// initial guess of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
 
     /// rhs of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
 
     /// unknown velocities (and pressures) at t(n+1)
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
 
     /// unknown velocities (and pressures) at t(n)
-    virtual Teuchos::RCP<const Epetra_Vector> Veln() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Veln() = 0;
 
     /// mesh displacements at t(n+1)
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() = 0;
 
     //@}
 
     //! @name Misc
 
     /// dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() const = 0;
+    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
 
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
@@ -112,7 +112,7 @@ namespace ADAPTER {
     virtual void PrepareTimeStep() = 0;
 
     /// evaluate elements with given displacement
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) const = 0;
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) = 0;
 
     /// update at time step end
     virtual void Update() = 0;
@@ -173,7 +173,7 @@ namespace ADAPTER {
     //! @name Extract the velocity-related part of a fluid vector (e.g. velnp, veln, residual)
 
     /// Some applications need only access to velocity-related values of an fluid result vector.
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) const = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) = 0;
     //@}
 
     //! @name Extract interface forces
@@ -193,15 +193,15 @@ namespace ADAPTER {
     //! @name Extract mesh values
 
     /// tell the mesh displacement to the fluid solver
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) const = 0;
+    virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp) = 0;
 
     /// tell the mesh velocity to the fluid solver
-    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) const = 0;
+    virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel) = 0;
 
     //@}
 
     /// convert Delta d(n+1,i+1) to the fluid unknown at the interface
-    virtual void ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx) const = 0;
+    virtual void ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx) = 0;
 
     //! @name Number of Newton iterations
     //! For simplified FD MFNK solve we want to temporally limit the
