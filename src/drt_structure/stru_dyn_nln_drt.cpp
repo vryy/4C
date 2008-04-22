@@ -220,9 +220,6 @@ void dyn_nlnstructural_drt()
         case STRUCT_DYNAMIC::modnewton:
           genalphaparams.set<string>("equilibrium iteration","modified newton");
         break;
-        case STRUCT_DYNAMIC::matfreenewton:
-          genalphaparams.set<string>("equilibrium iteration","matrixfree newton");
-        break;
         case STRUCT_DYNAMIC::nlncg:
           genalphaparams.set<string>("equilibrium iteration","nonlinear cg");
         break;

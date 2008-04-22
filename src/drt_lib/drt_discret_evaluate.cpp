@@ -491,9 +491,9 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
   const bool assemblevec2 = systemvector2!=Teuchos::null;
   const bool assemblevec3 = systemvector3!=Teuchos::null;
 
-  //-----------------------------------------------------------------------
-  // loop through conditions and evaluate them iff they match the criterion
-  //-----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  // loop through conditions and evaluate them if they match the criterion
+  //----------------------------------------------------------------------
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
     if (fool->first == condstring)

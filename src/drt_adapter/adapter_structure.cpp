@@ -277,7 +277,7 @@ void ADAPTER::StructureGenAlpha::ReadRestart(int step)
 void ADAPTER::StructureGenAlpha::Solve()
 {
   std::string equil = params_->get<string>("equilibrium iteration","full newton");
-    
+
   if (structure_.HaveConstraint())
   {
     structure_.FullNewtonLinearUzawa();
@@ -289,10 +289,6 @@ void ADAPTER::StructureGenAlpha::Solve()
   else if (equil=="modified newton")
   {
     structure_.ModifiedNewton();
-  }
-  else if (equil=="matrixfree newton")
-  {
-    structure_.MatrixFreeNewton();
   }
   else if (equil=="nonlinear cg")
   {
@@ -530,9 +526,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
     break;
   case STRUCT_DYNAMIC::modnewton:
     genalphaparams->set<string>("equilibrium iteration","modified newton");
-    break;
-  case STRUCT_DYNAMIC::matfreenewton:
-    genalphaparams->set<string>("equilibrium iteration","matrixfree newton");
     break;
   case STRUCT_DYNAMIC::nlncg:
     genalphaparams->set<string>("equilibrium iteration","nonlinear cg");

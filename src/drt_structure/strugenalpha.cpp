@@ -378,176 +378,6 @@ void StruGenAlpha::ConstantPredictor()
   return;
 } // StruGenAlpha::ConstantPredictor()
 
-/*----------------------------------------------------------------------*
- |  do matrix free constant predictor step (public)             lw 10/07|
- *----------------------------------------------------------------------*/
-void StruGenAlpha::MatrixFreeConstantPredictor()
-{
-  // currently no preconditioner can be used in combination with this
-  // matrix-free method
-  ParameterList& solvparams = solver_.Params();
-  string solvertype = solvparams.get("solver", "aztec");
-  if (solvertype == "aztec")
-  {
-    ParameterList& azlist = solvparams.sublist("Aztec Parameters");
-    int azprectype = azlist.get("AZ_precond", AZ_none);
-    if (azprectype != AZ_none)
-      dserror("Matrix-free Newton does not support preconditioning");
-  }
-
-  // -------------------------------------------------------------------
-  // get some parameters from parameter list
-  // -------------------------------------------------------------------
-  double time        = params_.get<double>("total time"     ,0.0);
-  double dt          = params_.get<double>("delta time"     ,0.01);
-  double mdamp       = params_.get<double>("damping factor M",0.0);
-  bool   damping     = params_.get<bool>  ("damping"        ,false);
-  double alphaf      = params_.get<double>("alpha f"        ,0.459);
-  bool   printscreen = params_.get<bool>  ("print to screen",false);
-  string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-
-  // store norms of old displacements and maximum of norms of
-  // internal, external and inertial forces if a relative convergence
-  // check is desired
-  if (!firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
-  {
-    CalcRefNorms();
-  }
-
-  // increment time and step
-  double timen = time + dt;  // t_{n+1}
-  //int istep = step + 1;  // n+1
-
-  //--------------------------------------------------- predicting state
-  // constant predictor : displacement in domain
-  disn_->Update(1.0,*dis_,0.0);
-
-  // apply new displacements at DBCs
-  // and get new external force vector
-  {
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_eleload");
-    // other parameters needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    p.set("damping factor M",mdamp);
-    // set vector values needed by elements
-    discret_.ClearState();
-    discret_.SetState("displacement",disn_);
-    // predicted dirichlet values
-    // disn then also holds prescribed new dirichlet displacements
-    discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
-    discret_.ClearState();
-    discret_.SetState("displacement",disn_);
-    fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
-    discret_.EvaluateNeumann(p,*fextn_);
-    discret_.ClearState();
-  }
-
-  // constant predictor
-  veln_->Update(1.0,*vel_,0.0);
-  accn_->Update(1.0,*acc_,0.0);
-
-  //------------------------------ compute interpolated dis, vel and acc
-  // constant predictor
-  // mid-displacements D_{n+1-alpha_f} (dism)
-  //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
-  dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
-  velm_->Update(1.0,*vel_,0.0);
-  accm_->Update(1.0,*acc_,0.0);
-
-  //------------------------------- compute interpolated external forces
-  // external mid-forces F_{ext;n+1-alpha_f} (fextm)
-  //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
-  //                         + alpha_f * F_{ext;n}
-  fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
-
-  //------------------------------------ eval fint at interpolated state
-  {
-    stiff_->Zero();
-
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_nlnstiff");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    // set vector values needed by elements
-    discret_.ClearState();
-    disi_->PutScalar(0.0);
-    discret_.SetState("residual displacement",disi_);
-#ifdef STRUGENALPHA_FINTLIKETR
-    discret_.SetState("displacement",disn_);
-#else
-    discret_.SetState("displacement",dism_);
-#endif
-    //discret_.SetState("velocity",velm_); // not used at the moment
-#ifdef STRUGENALPHA_FINTLIKETR
-    fintn_->PutScalar(0.0);  // initialise internal force vector
-    discret_.Evaluate(p,stiff_,null,fintn_,null,null);
-#else
-    fint_->PutScalar(0.0);  // initialise internal force vector
-//     discret_.Evaluate(p,null,null,fint_,null,null);
-    discret_.Evaluate(p,stiff_,null,fint_,null,null);          // test only!
-#endif
-    discret_.ClearState();
-    stiff_->Complete();                                 // test only!
-  }
-
-  //-------------------------------------------- compute residual forces
-  // Res = M . A_{n+1-alpha_m}
-  //     + C . V_{n+1-alpha_f}
-  //     + F_int(D_{n+1-alpha_f})
-  //     - F_{ext;n+1-alpha_f}
-  // add mid-inertial force
-  mass_->Multiply(false,*accm_,*finert_);
-  fresm_->Update(1.0,*finert_,0.0);
-  // add mid-viscous damping force
-  if (damping)
-  {
-      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-      damp_->Multiply(false,*velm_,*fvisc_);
-      fresm_->Update(1.0,*fvisc_,1.0);
-  }
-
-  // add static mid-balance
-#ifdef STRUGENALPHA_FINTLIKETR
-  fresm_->Update(1.0,*fextm_,-1.0);
-  fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
-#else
-  fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
-#endif
-
-  // blank residual at DOFs on Dirichlet BC
-  {
-    Epetra_Vector fresmcopy(*fresm_);
-    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-  }
-
-  //------------------------------------------------ build residual norm
-  double fresmnorm = 1.0;
-
-  // store norms of displacements and maximum of norms of internal,
-  // external and inertial forces if a relative convergence check
-  // is desired and we are in the first time step (possibly after a
-  // restart)
-  if (firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
-  {
-    CalcRefNorms();
-    firststep_=false;
-  }
-
-  if (printscreen)
-    fresm_->Norm2(&fresmnorm);
-  if (!myrank_ and printscreen)
-  {
-    PrintPredictor(convcheck, fresmnorm);
-  }
-
-  return;
-} // StruGenAlpha::MatrixFreeConstantPredictor()
 
 
 /*----------------------------------------------------------------------*
@@ -795,6 +625,7 @@ void StruGenAlpha::ConsistentPredictor()
 
   return;
 } // StruGenAlpha::ConsistentPredictor()
+
 
 
 /*----------------------------------------------------------------------*
@@ -1182,7 +1013,7 @@ void StruGenAlpha::FullNewton()
     }
     solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
     solver_.ResetTolerance();
-    
+
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
@@ -1965,246 +1796,6 @@ void StruGenAlpha::ModifiedNewton()
 } // StruGenAlpha::ModifiedNewton()
 
 
-/*----------------------------------------------------------------------*
- |  do matrix free Newton iteration (public)                    lw 10/07|
- *----------------------------------------------------------------------*/
-void StruGenAlpha::MatrixFreeNewton()
-{
-  // -------------------------------------------------------------------
-  // get some parameters from parameter list
-  // -------------------------------------------------------------------
-  double time      = params_.get<double>("total time"             ,0.0);
-  double dt        = params_.get<double>("delta time"             ,0.01);
-  double timen     = time + dt;
-  int    maxiter   = params_.get<int>   ("max iterations"         ,10);
-  bool   damping   = params_.get<bool>  ("damping"                ,false);
-  double beta      = params_.get<double>("beta"                   ,0.292);
-#ifdef STRUGENALPHA_BE
-  double delta     = params_.get<double>("delta"                  ,beta);
-#endif
-  double gamma     = params_.get<double>("gamma"                  ,0.581);
-  double alpham    = params_.get<double>("alpha m"                ,0.378);
-  double alphaf    = params_.get<double>("alpha f"                ,0.459);
-  string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
-  double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
-  double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
-  bool printscreen = params_.get<bool>  ("print to screen",true);
-  bool printerr    = params_.get<bool>  ("print to err",false);
-  FILE* errfile    = params_.get<FILE*> ("err file",NULL);
-  if (!errfile) printerr = false;
-  //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
-  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
-  //const Epetra_Map* dofrowmap = discret_.DofRowMap();
-
-//   int numiter=0;
-//   //---------------------------------------------- build effective lhs
-//   LINALG::ApplyDirichlettoSystem(disi_,fresm_,zeros_,dirichtoggle_);
-
-//   //=================================================== equilibrium loop
-//   double fresmnorm = 1.0e6;
-//   double disinorm = 1.0e6;
-//   fresm_->Norm2(&fresmnorm);
-//   Epetra_Time timer(discret_.Comm());
-//   timer.ResetStartTime();
-//   bool print_unconv = true;
-
-  // check whether we have a stiffness matrix, that is not filled yet
-  // and mass and damping are present          -------------------> test only !!!!!!!!!!!!!!
-  if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
-  if (!mass_->Filled()) dserror("mass matrix must be filled here");
-  if (damping)
-    if (!damp_->Filled()) dserror("damping matrix must be filled here");
-
-  //=================================================== equilibrium loop
-  int numiter=0;
-  double fresmnorm = 1.0e6;
-  double disinorm = 1.0e6;
-  fresm_->Norm2(&fresmnorm);
-  Epetra_Time timer(discret_.Comm());
-  timer.ResetStartTime();
-  bool print_unconv = true;
-
-  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres)  and numiter<=maxiter)
-  {
-
-    // (using matrix stiff_ as effective matrix) ----------> test only!!!!!!!
-#ifdef STRUGENALPHA_BE
-     stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
-#else
-     stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-#endif
-    if (damping)
-    {
-#ifdef STRUGENALPHA_BE
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
-#else
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
-#endif
-    }
-    stiff_->Complete();
-
-    //------------------------------------------- effective rhs is fresm
-    //----------------------- apply dirichlet BCs to system of equations
-    disi_->PutScalar(0.0);  // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
-
-    //----------------------------------------- build MatrixFreeOperator
-    RCP<Epetra_Operator> mfop = rcp(new LINALG::MatrixFreeOperator(*this, stiff_));
-
-    //--------------------------------------------------- solve for disi
-    // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (isadapttol && numiter)
-    {
-      double worst = fresmnorm;
-      double wanted = tolres;
-      solver_.AdaptTolerance(wanted,worst,adaptolbetter);
-    }
-    solver_.Solve(mfop,disi_,fresm_,true,numiter==0);
-    solver_.ResetTolerance();
-
-    //---------------------------------- update mid configuration values
-    // displacements
-    // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
-    dism_->Update(1.-alphaf,*disi_,1.0);
-    // velocities
-//#ifndef STRUGENALPHA_INCRUPDT
-    // iterative
-    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-//    velm_->Update((1.-alphaf)*gamma/(beta*dt),*disi_,1.0);
-//#else
-    // incremental (required for constant predictor)
-    velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-#ifdef STRUGENALPHA_BE
-    velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,
-                  (1.0-alphaf)*(-gamma-2.*delta*gamma+2.*beta*gamma+2.*delta)*dt/(2.*delta),*acc_,
-                  gamma/(delta*dt));
-#else
-    velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
-                  gamma/(beta*dt));
-#endif
-//#endif
-    // accelerations
-//#ifndef STRUGENALPHA_INCRUPDT
-    // iterative
-    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
-    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-//    accm_->Update((1.-alpham)/(beta*dt*dt),*disi_,1.0);
-//#else
-    // incremental (required for constant predictor)
-    accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
-#ifdef STRUGENALPHA_BE
-    accm_->Update(-(1.-alpham)/(delta*dt),*vel_,
-                  (2.*beta-1.+alpham-2.*alpham*beta+2.*alpham*delta)/(2.*delta),*acc_,
-                  (1.-alpham)/((1.-alphaf)*delta*dt*dt));
-#else
-    accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
-                  (2.*beta-1.+alpham)/(2.*beta),*acc_,
-                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-#endif
-//#endif
-
-    //----------------------------------------- compute internal forces
-    {
-      // create the parameters for the discretization
-      ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_nlnstiff");
-      // other parameters that might be needed by the elements
-      p.set("total time",timen);
-      p.set("delta time",dt);
-      // set vector values needed by elements
-      discret_.ClearState();
-#ifdef STRUGENALPHA_FINTLIKETR
-#else
-      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
-      disi_->Scale(1.-alphaf);
-#endif
-      discret_.SetState("residual displacement",disi_);
-      discret_.SetState("displacement",dism_);
-      //discret_.SetState("velocity",velm_); // not used at the moment
-      fint_->PutScalar(0.0);  // initialise internal force vector
-      //discret_.Evaluate(p,null,null,fint_,null,null);
-      discret_.Evaluate(p,stiff_,null,fint_,null,null);
-      discret_.ClearState();
-
-//       if surface stress etc should be incorporated, be sure that
-//       they are also incorporated in computeFmatrixfree!!!!!!!!
-//
-//       if (surf_stress_man_!=null)
-//       {
-//         p.set("surfstr_man", surf_stress_man_);
-//         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
-//       }
-
-//       if (constrMan_->HaveConstraint())
-//       {
-//     	  constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
-//       }
-      // do NOT finalize the stiffness matrix to add masses to it later
-    }
-
-    //------------------------------------------ compute residual forces
-    // Res = M . A_{n+1-alpha_m}
-    //     + C . V_{n+1-alpha_f}
-    //     + F_int(D_{n+1-alpha_f})
-    //     - F_{ext;n+1-alpha_f}
-    // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*finert_);
-    fresm_->Update(1.0,*finert_,0.0);
-    // add viscous mid-forces
-    if (damping)
-    {
-      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fvisc_);
-      fresm_->Update(1.0,*fvisc_,1.0);
-    }
-    // add static mid-balance
-    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
-    // blank residual DOFs with are on Dirichlet BC
-    {
-      Epetra_Vector fresmcopy(*fresm_);
-      fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-    }
-
-    //---------------------------------------------- build residual norm
-    disi_->Norm2(&disinorm);
-
-    fresm_->Norm2(&fresmnorm);
-    // a short message
-    if (!myrank_ and (printscreen or printerr))
-    {
-      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                  fresmnorm,disinorm,convcheck);
-    }
-
-    //--------------------------------- increment equilibrium loop index
-    ++numiter;
-  }
-  //============================================= end equilibrium loop
-  print_unconv = false;
-
-  //-------------------------------- test whether max iterations was hit
-  if (numiter>=maxiter)
-  {
-     dserror("Newton unconverged in %d iterations",numiter);
-  }
-  else
-  {
-     if (!myrank_ and printscreen)
-     {
-       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                   fresmnorm,disinorm,convcheck);
-     }
-  }
-
-  params_.set<int>("num iterations",numiter);
-
-  return;
-} // StruGenAlpha::MatrixFreeNewton()
-
 
 /*----------------------------------------------------------------------*
  |  do nonlinear cg iteration (public)                       mwgee 03/07|
@@ -2875,124 +2466,6 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
 } // void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
 
 
-/*----------------------------------------------------------------------*
- |  compute residual to given state dism_+x (public)            lw 10/07|
- |  in this routine, none of the state vectors is changed               |
- |  -> necessary in case of matrix-free methods where the residual is   |
- |  evaluated also for pertubations                                     |
- *----------------------------------------------------------------------*/
-void StruGenAlpha::computeFmatrixfree(const Epetra_Vector& x, Epetra_Vector& F)
-{
-    //==================== compute residual for given displcaement increment x
-    double time    = params_.get<double>("total time",0.0);
-    double dt      = params_.get<double>("delta time",0.01);
-    double beta    = params_.get<double>("beta"      ,0.292);
-    double gamma   = params_.get<double>("gamma"     ,0.581);
-    double alpham  = params_.get<double>("alpha m"   ,0.378);
-    double alphaf  = params_.get<double>("alpha f"   ,0.459);
-    bool   damping = params_.get<bool>  ("damping"   ,false);
-    const Epetra_Map* dofrowmap = discret_.DofRowMap();
-
-    RCP<Epetra_Vector> fresm = rcp(new Epetra_Vector(*dofrowmap, true));
-    RCP<Epetra_Vector> fint = rcp(new Epetra_Vector(*dofrowmap, true));
-
-    // cast away constness of x
-    Epetra_Vector& dx = const_cast<Epetra_Vector&>(x);
-    RefCountPtr<Epetra_Vector> disi = rcp(&dx);
-    disi.release();
-
-
-    // blank increment on Dirichlet BC
-    LINALG::ApplyDirichlettoSystem(disi,fresm,zeros_,dirichtoggle_);
-
-    //---------------------------------- update mid configuration values
-    RefCountPtr<Epetra_Vector> dism = LINALG::CreateVector(*dofrowmap,false);
-    RefCountPtr<Epetra_Vector> velm = LINALG::CreateVector(*dofrowmap,false);
-    RefCountPtr<Epetra_Vector> accm = LINALG::CreateVector(*dofrowmap,false);
-    // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
-    dism->Update(1.-alphaf,*disi,1.0,*dism_,0.0);
-
-
-    // velocities
-#ifndef STRUGENALPHA_INCRUPDT
-    // iterative
-    // V_{n+1-alpha_f} := V_{n+1-alpha_f}
-    //                  + (1-alpha_f)*gamma/beta/dt*IncD_{n+1}
-    velm->Update((1.-alphaf)*gamma/(beta*dt),*disi,1.0,*velm_,0.0);
-#else
-    // incremental (required for constant predictor)
-    velm->Update(1.0,*dism,-1.0,*dis_,0.0);
-    velm->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
-                  (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
-                  gamma/(beta*dt));
-#endif
-
-    // accelerations
-#ifndef STRUGENALPHA_INCRUPDT
-    // iterative
-    // A_{n+1-alpha_m} := A_{n+1-alpha_m}
-    //                  + (1-alpha_m)/beta/dt^2*IncD_{n+1}
-    accm->Update((1.-alpham)/(beta*dt*dt),*disi,1.0,*accm_,0.0);
-#else
-    // incremental (required for constant predictor)
-    accm->Update(1.0,*dism,-1.0,*dis_,0.0);
-    accm->Update(-(1.-alpham)/(beta*dt),*vel_,
-                  (2.*beta-1.+alpham)/(2.*beta),*acc_,
-                  (1.-alpham)/((1.-alphaf)*beta*dt*dt));
-#endif
-
-    //----------------------------------------- compute internal forces
-    {
-      // create the parameters for the discretization
-      ParameterList p;
-      // action for elements
-      p.set("action","calc_struct_nlnstiff");
-      // other parameters that might be needed by the elements
-      p.set("total time",time);
-      p.set("delta time",dt);
-      // set vector values needed by elements
-      discret_.ClearState();
-      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
-      disi->Scale(1.-alphaf);
-      discret_.SetState("residual displacement",disi);
-      discret_.SetState("displacement",dism);
-      //discret_.SetState("velocity",velm); // not used at the moment
-      fint->PutScalar(0.0);  // initialise internal force vector
-      discret_.Evaluate(p,null,null,fint,null,null);
-      discret_.ClearState();
-    }
-
-    //------------------------------------------ compute residual forces
-    // Res = M . A_{n+1-alpha_m}
-    //     + C . V_{n+1-alpha_f}
-    //     + F_int(D_{n+1-alpha_f})
-    //     - F_{ext;n+1-alpha_f}
-    // add inertia mid-forces
-    mass_->Multiply(false,*accm,*fresm);
-    // add viscous mid-forces
-    if (damping)
-    {
-      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm,*fviscm);
-      fresm->Update(1.0,*fviscm,1.0);
-    }
-    // add static mid-balance
-    fresm->Update(-1.0,*fint,1.0,*fextm_,-1.0);
-    // blank residual at DOFs that are on Dirichlet BC
-    {
-      Epetra_Vector fresmcopy(*fresm);
-      fresm->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-    }
-
-    // copy residual forces to nox vector
-    F.Update(1.0,*fresm,0.0);
-    // copy disi to time integrator
-    // disi_->Update(1.0,*disi,0.0);
-    //========================================================================
-
-  return;
-} // void StruGenAlpha::computeFmatrixfree(const Epetra_Vector& x, Epetra_Vector& F)
-
 
 /*----------------------------------------------------------------------*
  |  compute Jacobian to given state x (public)               mwgee 10/07|
@@ -3370,16 +2843,6 @@ void StruGenAlpha::Integrate()
       UpdateandOutput();
     }
   }
-  else if (equil=="matrixfree newton")
-  {
-    for (int i=step; i<nstep; ++i)
-    {
-      //dserror("Matrix-free Newton not yet implemented");
-      MatrixFreeConstantPredictor();
-      MatrixFreeNewton();
-      UpdateandOutput();
-    }
-  }
   else if (equil=="nonlinear cg")
   {
     for (int i=step; i<nstep; ++i)
@@ -3447,12 +2910,6 @@ void StruGenAlpha::IntegrateStep()
     else if (predictor==2) ConsistentPredictor();
     PTC();
   }
-  else if (equil=="matrixfree newton")
-  {
-    //dserror("Matfree Newton not yet impl.");
-    MatrixFreeConstantPredictor();
-    MatrixFreeNewton();
-  }
   else dserror("Unknown type of equilibrium iteration");
 
   return;
@@ -3494,12 +2951,12 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<bool>  ("contact"                ,false);
   // takes values "constant" consistent"
   params.set<string>("predictor"              ,"constant");
-  // takes values "full newton" , "modified newton" , "matrixfree newton", "nonlinear cg" "ptc"
+  // takes values "full newton" , "modified newton" , "nonlinear cg", "ptc"
   params.set<string>("equilibrium iteration"  ,"full newton");
 
   params.set<bool>  ("ADAPTCONV",false);
   params.set<double>("ADAPTCONV_BETTER",0.1);
-  
+
   return;
 }
 

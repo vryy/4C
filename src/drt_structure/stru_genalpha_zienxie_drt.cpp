@@ -164,9 +164,6 @@ void genalpha_setparalist
   case STRUCT_DYNAMIC::modnewton:
     equisoltech = "modified newton";
     break;
-  case STRUCT_DYNAMIC::matfreenewton:
-    equisoltech = "matrixfree newton";
-    break;
   case STRUCT_DYNAMIC::nlncg:
     equisoltech = "nonlinear cg";
     break;

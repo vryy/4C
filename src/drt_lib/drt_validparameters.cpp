@@ -378,13 +378,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "fullnewton",
                                  "modnewton",
-                                 "matfreenewton",
                                  "nlncg",
                                  "ptc"),
                                tuple<int>(
                                  STRUCT_DYNAMIC::fullnewton,
                                  STRUCT_DYNAMIC::modnewton,
-                                 STRUCT_DYNAMIC::matfreenewton,
                                  STRUCT_DYNAMIC::nlncg,
                                  STRUCT_DYNAMIC::ptc),
                                &sdyn);
@@ -991,7 +989,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& alesolver = list->sublist("ALE SOLVER",false,"");
   SetValidSolverParameters(alesolver);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& thermalsolver = list->sublist("THERMAL SOLVER",false,"");
   SetValidSolverParameters(thermalsolver);

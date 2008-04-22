@@ -64,7 +64,7 @@ class NoxInterface;
 
 \author gee (gee@lnm.mw.tum.de)
 */
-class StruGenAlpha 
+class StruGenAlpha
 {
   friend class StruResultTest;
 public:
@@ -118,12 +118,6 @@ public:
   virtual void ConstantPredictor();
 
   /*!
-  \brief do matrix free constant predictor
-
-  */
-  virtual void MatrixFreeConstantPredictor();
-
-  /*!
   \brief do consistent constant predictor step
 
   */
@@ -166,12 +160,6 @@ public:
   virtual void ModifiedNewton();
 
   /*!
-  \brief do matrix free Newton iteration (only with Aztec)
-
-  */
-  virtual void MatrixFreeNewton();
-
-  /*!
   \brief do nonlinear cg iteration using nox
 
   */
@@ -196,9 +184,6 @@ public:
   \param F (out): residual matching current solution state (dirichlet dofs will be blanked)
   */
   virtual void computeF(const Epetra_Vector& x, Epetra_Vector& F);
-
-  virtual void computeFmatrixfree(const Epetra_Vector& x, Epetra_Vector& F);
-
 
   /*!
   \brief Compute the Jacobian to a given state x
