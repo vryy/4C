@@ -13,8 +13,8 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "drt_constraint_manager.H"
-#include "linalg_systemmatrix.H"
+#include "constraint_manager.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 #include "iostream"
 
 

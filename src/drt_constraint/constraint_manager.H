@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file drt_constraint_manager.H
+\file constraint_manager.H
 
 \brief Class controlling constraints and containing the necessary data
 
@@ -12,8 +12,8 @@ Maintainer: Thomas Kloeppel
 
 *----------------------------------------------------------------------*/
 
-#ifndef DRT_CONSTRAINT_MANAGER_H
-#define DRT_CONSTRAINT_MANAGER_H
+#ifndef CONSTRAINT_MANAGER_H
+#define CONSTRAINT_MANAGER_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -22,10 +22,10 @@ Maintainer: Thomas Kloeppel
 
 
 #include <Teuchos_ParameterList.hpp>
-#include "./drt_discret.H"
-#include "./linalg_solver.H"
-#include "./linalg_utils.H"
-#include "linalg_systemmatrix.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/linalg_solver.H"
+#include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_systemmatrix.H"
 
 
 using namespace std;

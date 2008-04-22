@@ -22,7 +22,7 @@ Maintainer: Michael Gee
 #include "../io/io_drt.H"
 #include "../drt_contact/drt_contact_manager.H"
 #include "../drt_lib/linalg_systemmatrix.H"
-#include "../drt_lib/drt_constraint_manager.H"
+#include "../drt_constraint/constraint_manager.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 
 #include "Epetra_Vector.h"

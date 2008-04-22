@@ -125,7 +125,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_validconditions.o \
                 src/drt_lib/linalg_mapextractor.o \
                 src/drt_lib/linalg_systemmatrix.o \
-                src/drt_lib/drt_constraint_manager.o \
                 src/drt_fluid/drt_pbcdofset.o \
                 src/drt_fluid/drt_periodicbc.o
 OBJS_DRT      = \
@@ -149,7 +148,8 @@ OBJS_DRT_STRUCTURE      = \
 #-------------------------------------------------------constraint drivers
 OBJS_DRT_CONSTRAINT      = \
                 src/drt_constraint/constraint_element3.o \
-                src/drt_constraint/constraint_element3_evaluate.o         
+                src/drt_constraint/constraint_element3_evaluate.o \
+                src/drt_constraint/constraint_manager.o
 #----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT = \
                 src/drt_contact/contactstrugenalpha.o \
