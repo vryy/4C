@@ -2,10 +2,10 @@
 \file constraint_element3.H
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Thomas Kloeppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15257
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -48,7 +48,6 @@ public:
 
   //! @name Friends
   friend class ConstraintElement3Register;
-  friend class ConstraintElement3Line;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -80,34 +79,11 @@ public:
   /*!
   \brief Get shape type of element
   */
-  virtual DiscretizationType Shape() const;
-
-  /*!
-  \brief Return number of lines of this element
-  */
-  virtual int NumLine() const {return 0;}
-
-  /*!
-  \brief Return number of surfaces of this element
-  */
-  virtual int NumSurface() const {return 1;}
-
-  /*!
-  \brief Return number of volumes of this element (always 1)
-  */
-  virtual int NumVolume() const {return -1;}
-
-  /*!
-  \brief Get vector of ptrs to the volume of this element
-
-  */
-  virtual DRT::Element** Lines();
-
-  /*!
-  \brief Get vector of ptrs to the surfaces of this element
-
-  */
-  virtual DRT::Element** Surfaces();
+  virtual DiscretizationType Shape() const
+  {
+      dserror("ConstraintElement3 has no shape!");
+      return DRT::Element::dis_none;
+  };
 
   /*!
   \brief Return unique ParObject id
@@ -264,13 +240,6 @@ private:
   //! vector of surfaces of this element (length 1)
   vector<DRT::Element*>                           surface_;
 
-//  //! vector of lines adjacent to this element (fluid2: 3 or 4 lines)
-//  vector<RefCountPtr<DRT::ELEMENTS::ConstraintElement3Line> > lines_;
-//  //! vector of lines adjacent to this element (fluid2: 3 or 4 lines)
-//  vector<DRT::ELEMENTS::ConstraintElement3Line*>              lineptrs_;
-
-  // internal calculation methods
-
   // don't want = operator
   ConstraintElement3& operator = (const ConstraintElement3& old);
 
@@ -374,241 +343,6 @@ private:
 
 
 }; // class ConstraintElement3Register
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-//
-///*!
-//\brief An element representing a line of a bele3 element
-//
-//\note This is a pure Neumann boundary condition element. It's only
-//      purpose is to evaluate line Neumann boundary conditions that might be
-//      adjacent to a parent fluid2 element. It therefore does not implement
-//      the DRT::Element::Evaluate method and does not have its own ElementRegister class.
-//
-//\author gamnitzer (gamnitzer@lnm.mw.tum.de)
-//*/
-//class ConstraintElement3Line : public DRT::Element
-//{
-//public:
-//
-//  //! @name Constructors and destructors and related methods
-//
-//  /*!
-//  \brief Standard Constructor
-//
-//  \param id : A unique global id
-//  \param owner: Processor owning this line
-//  \param nnode: Number of nodes attached to this element
-//  \param nodeids: global ids of nodes attached to this element
-//  \param nodes: the discretizations map of nodes to build ptrs to nodes from
-//  \param parent: The parent fluid element of this line
-//  \param lline: the local line number of this line w.r.t. the parent element
-//  */
-//  ConstraintElement3Line(int id, int owner, int nnode, const int* nodeids,
-//             DRT::Node** nodes, DRT::ELEMENTS::ConstraintElement3* parent, const int lline);
-//
-//  /*!
-//  \brief Copy Constructor
-//
-//  Makes a deep copy of a Element
-//
-//  */
-//  ConstraintElement3Line(const ConstraintElement3Line& old);
-//
-//  /*!
-//  \brief Deep copy this instance of an element and return pointer to the copy
-//
-//  The Clone() method is used from the virtual base class Element in cases
-//  where the type of the derived class is unknown and a copy-ctor is needed
-//
-//  */
-//  DRT::Element* Clone() const;
-//
-//  /*!
-//  \brief Get shape type of element
-//  */
-//  virtual DiscretizationType Shape() const;
-//
-//  /*!
-//  \brief Return unique ParObject id
-//
-//  every class implementing ParObject needs a unique id defined at the
-//  top of the drt_parobject.H file.
-//  */
-//  virtual int UniqueParObjectId() const { return ParObject_ConstraintElement3Line;}
-//
-//  /*!
-//  \brief Pack this class so it can be communicated
-//
-//  \ref Pack and \ref Unpack are used to communicate this element
-//
-//  */
-//  virtual void Pack(vector<char>& data) const;
-//
-//  /*!
-//  \brief Unpack data from a char vector into this class
-//
-//  \ref Pack and \ref Unpack are used to communicate this element
-//
-//  */
-//  virtual void Unpack(const vector<char>& data);
-//
-//  /*!
-//  \brief Destructor
-//
-//  */
-//  virtual ~ConstraintElement3Line();
-//
-//  //@}
-//
-//  //! @name Access methods
-//
-//
-//  /*!
-//  \brief Get number of degrees of freedom of a certain node
-//         (implements pure virtual DRT::Element)
-//
-//  The element decides how many degrees of freedom its nodes must have.
-//  As this may vary along a simulation, the element can redecide the
-//  number of degrees of freedom per node along the way for each of it's nodes
-//  separately.
-//  */
-//  virtual int NumDofPerNode(const DRT::Node& node) const
-//  {return 3;}
-//
-//  /*!
-//  \brief Get number of degrees of freedom per element
-//         (implements pure virtual DRT::Element)
-//
-//  The element decides how many element degrees of freedom it has.
-//  It can redecide along the way of a simulation.
-//
-//  \note Element degrees of freedom mentioned here are dofs that are visible
-//        at the level of the total system of equations. Purely internal
-//        element dofs that are condensed internally should NOT be considered.
-//  */
-//  virtual int NumDofPerElement() const { return 0; }
-//
-//  /*!
-//  \brief Print this element
-//  */
-//  void Print(ostream& os) const;
-//
-//  /*!
-//  \brief Allocate and return a ElementRegister class
-//
-//  Every implementation of DRT::Element must also implement
-//  an DRT::ElementRegister. This method allocates and returns
-//  an instance of a matching DRT::ElementRegister.
-//  */
-//  virtual RefCountPtr<DRT::ElementRegister> ElementRegister() const { return null; }
-//
-//  //@}
-//
-//    //! @name Evaluation
-//
-//  /*!
-//  \brief Evaluate an element
-//
-//  Evaluate fluid2 line element stiffness, mass, internal forces etc
-//
-//  \param params (in/out): ParameterList for communication between control routine
-//                          and elements
-//  \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-//                          the controling method does not epxect the element to fill
-//                          this matrix.
-//  \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-//                          the controling method does not epxect the element to fill
-//                          this matrix.
-//  \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-//                          the controlling method does not epxect the element
-//                          to fill this vector
-//  \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-//                          the controlling method does not epxect the element
-//                          to fill this vector
-//  \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-//                          the controlling method does not epxect the element
-//                          to fill this vector
-//  \return 0 if successful, negative otherwise
-//  */
-//  virtual int Evaluate(ParameterList& params,
-//               DRT::Discretization&      discretization,
-//               vector<int>&              lm,
-//               Epetra_SerialDenseMatrix& elemat1,
-//               Epetra_SerialDenseMatrix& elemat2,
-//               Epetra_SerialDenseVector& elevec1,
-//               Epetra_SerialDenseVector& elevec2,
-//               Epetra_SerialDenseVector& elevec3);
-//
-//  //! @name Evaluate methods
-//
-//  /*!
-//  \brief Evaluate a Neumann boundary condition
-//
-//  this method evaluates a line Neumann condition on the fluid2 element
-//
-//  \param params (in/out)    : ParameterList for communication between control routine
-//                              and elements
-//  \param discretization (in): A reference to the underlying discretization
-//  \param condition (in)     : The condition to be evaluated
-//  \param lm (in)            : location vector of this element
-//  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
-//
-//  \return 0 if successful, negative otherwise
-//  */
-//  virtual int EvaluateNeumann(ParameterList& params,
-//                              DRT::Discretization&      discretization,
-//                              DRT::Condition&           condition,
-//                              vector<int>&              lm,
-//                              Epetra_SerialDenseVector& elevec1);
-//
-//  //@}
-//
-//private:
-//
-//  //! action parameters recognized by ConstraintElement3Line
-//  enum ActionType
-//  {
-//     none,
-//     integrate_Shapefunction
-//  };
-//
-//  // don't want = operator
-//  ConstraintElement3Line& operator = (const ConstraintElement3Line& old);
-//
-//  //! The parent element of this line
-//  DRT::ELEMENTS::ConstraintElement3* parent_;
-//  //! The local line number of this line w.r.t to the parent_ element
-//  int                    lline_;
-//
-//
-//
-//  // compute infintesimal line element dr for integration along the line
-//  double  f2_substitution(
-//		      const Epetra_SerialDenseMatrix  xyze,
-//		      const Epetra_SerialDenseMatrix  deriv,
-//		      const int iel);
-//
-//  // Get Rule for Gaussintegration according to DRT::UTIL
-//  DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
-//
-//  // integrate shape functions over a line
-//  void IntegrateShapeFunction(ParameterList& params,
-//                  DRT::Discretization&       discretization,
-//                  vector<int>&               lm,
-//                  Epetra_SerialDenseVector&  elevec1,
-//                  const std::vector<double>& edispnp);
-//
-//
-//}; // class ConstraintElement3Line
-
-
-
 
 } // namespace ELEMENTS
 } // namespace DRT

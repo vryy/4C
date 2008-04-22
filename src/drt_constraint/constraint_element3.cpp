@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Thomas Kloeppel
+            kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15257
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -30,8 +30,6 @@ data_()
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       gammi 11/06|
- |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ConstraintElement3::ConstraintElement3(const DRT::ELEMENTS::ConstraintElement3& old) :
 DRT::Element(old),
@@ -41,8 +39,6 @@ data_(old.data_)
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of ConstraintElement3 and return pointer to it (public) |
- |                                                          gammi 11/06 |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::ConstraintElement3::Clone() const
 {
@@ -51,17 +47,6 @@ DRT::Element* DRT::ELEMENTS::ConstraintElement3::Clone() const
 }
 
 /*----------------------------------------------------------------------*
- |                                                             (public) |
- |                                                          u.kue 03/07 |
- *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ConstraintElement3::Shape() const
-{
-  return dis_none;
-}
-
-/*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                          gammi 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ConstraintElement3::Pack(vector<char>& data) const
 {
@@ -85,8 +70,6 @@ void DRT::ELEMENTS::ConstraintElement3::Pack(vector<char>& data) const
 
 
 /*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                          gammi 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ConstraintElement3::Unpack(const vector<char>& data)
 {
@@ -112,7 +95,6 @@ void DRT::ELEMENTS::ConstraintElement3::Unpack(const vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            gammi 11/06|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ConstraintElement3::~ConstraintElement3()
 {
@@ -121,7 +103,6 @@ DRT::ELEMENTS::ConstraintElement3::~ConstraintElement3()
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              gammi 11/06|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ConstraintElement3::Print(ostream& os) const
 {
@@ -133,79 +114,16 @@ void DRT::ELEMENTS::ConstraintElement3::Print(ostream& os) const
 }
 
 /*----------------------------------------------------------------------*
- |  allocate and return ConstraintElement3Register (public)              gammi 04/07|
  *----------------------------------------------------------------------*/
 RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::ConstraintElement3::ElementRegister() const
 {
   return rcp(new DRT::ELEMENTS::ConstraintElement3Register(Type()));
 }
 
-//
-// get vector of lines
-//
-DRT::Element** DRT::ELEMENTS::ConstraintElement3::Lines()
-{
-    dserror("noe, kriegst nix!");
-    surface_.resize(1);
-    surface_[0] = this; //points to ConstraintElement3 element itself
-    return &surface_[0];
-}
 
-//void DRT::ELEMENTS::ConstraintElement3::CreateLinesTri(const int& nline,
-//                                           const int& nnode)
-//{
-//    for(int iline=0;iline<nline;iline++)
-//    {
-//        vector<int> nodeids(nnode);
-//        vector<DRT::Node*> nodes(nnode);
-//
-//        for (int inode=0;inode<nnode;inode++)
-//        {
-//             nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
-//             nodes[inode]   = Nodes()[  eleNodeNumbering_tri6_lines[iline][inode]];
-//        }
-//        lines_[iline] = rcp(new DRT::ELEMENTS::ConstraintElement3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,iline));
-//        lineptrs_[iline] = lines_[iline].get();
-//    }
-//}
-
-//void DRT::ELEMENTS::ConstraintElement3::CreateLinesQuad(const int& nline,
-//                                            const int& nnode)
-//{
-//    for(int iline=0;iline<nline;iline++)
-//    {
-//        vector<int> nodeids(nnode);
-//        vector<DRT::Node*> nodes(nnode);
-//
-//        for (int inode=0;inode<nnode;inode++)
-//        {
-//             nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
-//             nodes[inode]   = Nodes()[  eleNodeNumbering_quad9_lines[iline][inode]];
-//        }
-//        lines_[iline] = rcp(new DRT::ELEMENTS::ConstraintElement3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,iline));
-//        lineptrs_[iline] = lines_[iline].get();
-//    }
-//}
 
 
 /*----------------------------------------------------------------------*
- |  get vector of Surfaces (length 1) (public)               gammi 04/07|
- *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::ConstraintElement3::Surfaces()
-{
-  surface_.resize(1);
-  surface_[0] = this; //points to ConstraintElement3 element itself
-  return &surface_[0];
-}
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 12/06|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ConstraintElement3Register::ConstraintElement3Register(DRT::Element::ElementType etype) :
 ElementRegister(etype)
@@ -214,7 +132,6 @@ ElementRegister(etype)
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 12/06|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ConstraintElement3Register::ConstraintElement3Register(
                                const DRT::ELEMENTS::ConstraintElement3Register& old) :
@@ -224,8 +141,6 @@ ElementRegister(old)
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it               (public) |
- |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ConstraintElement3Register* DRT::ELEMENTS::ConstraintElement3Register::Clone() const
 {
@@ -233,8 +148,6 @@ DRT::ELEMENTS::ConstraintElement3Register* DRT::ELEMENTS::ConstraintElement3Regi
 }
 
 /*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ConstraintElement3Register::Pack(vector<char>& data) const
 {
@@ -253,8 +166,6 @@ void DRT::ELEMENTS::ConstraintElement3Register::Pack(vector<char>& data) const
 
 
 /*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ConstraintElement3Register::Unpack(const vector<char>& data)
 {
@@ -275,7 +186,6 @@ void DRT::ELEMENTS::ConstraintElement3Register::Unpack(const vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 12/06|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ConstraintElement3Register::~ConstraintElement3Register()
 {
@@ -283,7 +193,6 @@ DRT::ELEMENTS::ConstraintElement3Register::~ConstraintElement3Register()
 }
 
 /*----------------------------------------------------------------------*
- |  print (public)                                           mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ConstraintElement3Register::Print(ostream& os) const
 {
