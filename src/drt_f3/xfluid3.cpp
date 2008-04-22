@@ -115,8 +115,6 @@ void DRT::ELEMENTS::XFluid3::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   // is_ale_
   AddtoPack(data,is_ale_);
-  // rewinding bools
-  AddtoPack(data,donerewinding_);
 
   // history variables
   AddtoPack(data,sub_acc_old_.extent(blitz::firstDim));
@@ -159,8 +157,6 @@ void DRT::ELEMENTS::XFluid3::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
-  // rewinding bools
-  ExtractfromPack(position,data,donerewinding_);
 
 
   // history variables (subscale velocities, accelerations and pressure)

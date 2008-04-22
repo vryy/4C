@@ -420,13 +420,6 @@ private:
   vector<RCP<DRT::ELEMENTS::XFluid3Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::ELEMENTS::XFluid3Line*>              lineptrs_;
-  
- 
-  //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag to rewind this element, must be availabale for friend class fluid3register
-protected:
-  //! flag whether process of rewinding is done
-  bool                                            donerewinding_;
 
 private:
   //! factor including Smagorinsky's constant

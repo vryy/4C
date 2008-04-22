@@ -84,9 +84,6 @@ bool DRT::ELEMENTS::XFluid3::ReadElement()
     dsassert(material!=0, "No material defined for FLUID3 element\n");
     SetMaterial(material);
     
-    // Initialize winding flags
-    donerewinding_ = false;
-    
     // read net algo
     char  buffer[50];
     frchar("NA",buffer,&ierr);
