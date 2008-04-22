@@ -108,7 +108,8 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==VolumeMonitor_3D)            os << "Volume monitor condition";
   else if (Type()==AreaMonitor_3D)              os << "Area monitor condition";
   else if (Type()==AreaMonitor_2D)              os << "Area monitor condition";
-  else if (Type()==ImpedanceCond)				os << "Impedance boundary condition";
+  else if (Type()==ImpedanceCond)				        os << "Impedance boundary condition";
+  else if (Type()==MPC_NodeOnPlane_3D)    os << "Multipoint constraint on a plane";
 
   else dserror("no output string for condition defined in DRT::Condition::Print");
   Container::Print(os);

@@ -595,6 +595,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   impedancebc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   AddNamedReal(impedancebc,"timeperiod");
   condlist.push_back(impedancebc);
+  
+  /*--------------------------------------------------------------------*/
+    // area monitor 2D
+
+  Teuchos::RCP<ConditionDefinition> nodeonplaneconst3D =
+    Teuchos::rcp(new ConditionDefinition("DESIGN MULTIPOINT CONSTRAINT 3D",
+                                         "MPC_NodeOnPlane_3D",
+                                         "Node on Plane Constraint",
+                                         DRT::Condition::MPC_NodeOnPlane_3D,
+                                         false,
+                                         DRT::Condition::NoGeom));
+
+  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new RealConditionComponent("Amplitude")));
+  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("Curve")));
+  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 1")));
+  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 2")));
+  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 3")));
+  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 4")));
+  condlist.push_back(nodeonplaneconst3D);
+  
   return vc;
 }
 
