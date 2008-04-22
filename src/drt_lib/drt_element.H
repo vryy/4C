@@ -112,7 +112,8 @@ public:
     element_dgfluid2,
     element_dgfluid2interface,
     element_dgfluid3,
-    element_dgfluid3interface
+    element_dgfluid3interface,
+    element_constraintelement3
   };
 
   /*!

@@ -146,6 +146,10 @@ OBJS_DRT_STRUCTURE      = \
                 src/drt_structure/stru_genalpha_zienxie_drt.o \
                 src/drt_structure/stru_static_drt.o \
                 src/drt_structure/stru_resulttest.o
+#-------------------------------------------------------constraint drivers
+OBJS_DRT_CONSTRAINT      = \
+                src/drt_constraint/constraint_element3.o \
+                src/drt_constraint/constraint_element3_evaluate.o         
 #----------------------------------------------------- drt version contact
 OBJS_DRT_CONTACT = \
                 src/drt_contact/contactstrugenalpha.o \

@@ -50,6 +50,7 @@ extern "C"
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale3/ale3.H"
 #include "../drt_xfem/bele3.H"
+#include "../drt_constraint/constraint_element3.H"
 #include "../drt_w1/wall1.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_sh8.H"
@@ -501,6 +502,21 @@ break;
       ele->Unpack(data);
       return ele;
     }
+    case ParObject_ConstraintElement3:
+    {
+      DRT::ELEMENTS::ConstraintElement3* object = new DRT::ELEMENTS::ConstraintElement3(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_ConstraintElement3Register:
+    {
+      DRT::ELEMENTS::ConstraintElement3Register* object =
+                      new DRT::ELEMENTS::ConstraintElement3Register(DRT::Element::element_constraintelement3);
+      object->Unpack(data);
+      return object;
+    }
+    break;
     default:
       dserror("Unknown type of ParObject instance: %d",type);
     break;

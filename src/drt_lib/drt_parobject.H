@@ -120,6 +120,8 @@ using namespace std;
 #define ParObject_Bele3Register         (int)95
 #define ParObject_Bele3Line             (int)96
 #define ParObject_ModPowerLaw           (int)97
+#define ParObject_ConstraintElement3    (int)98
+#define ParObject_ConstraintElement3Register (int)99
 
 namespace DRT
 {
