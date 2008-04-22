@@ -316,6 +316,7 @@ private:
     bool havevolconstr_;
     bool haveareaconstr3D_;
     bool haveareaconstr2D_;
+    bool havenodeconstraint_;
     bool havemonitor_;
     bool haveareamonitor3D_;
     bool haveareamonitor2D_;

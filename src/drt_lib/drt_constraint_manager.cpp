@@ -31,6 +31,7 @@ actdisc_(discr)
   haveareaconstr3D_=false;
   haveareaconstr2D_=false;
   havevolconstr_=false;
+  havenodeconstraint_=false;
   //Check for volume constraints
   vector<DRT::Condition*> constrcond(0);
   actdisc_.GetCondition("VolumeConstraint_3D",constrcond);
@@ -66,10 +67,20 @@ actdisc_(discr)
     actdisc_.EvaluateCondition(p,"AreaConstraint_2D");
     haveareaconstr2D_=true;
   }
+  // Check for Nodal Constraints on planes in 3D
+  actdisc_.GetCondition("NodeConstraintOnPlane_3D",constrcond);
+  //Deal with area constraints
+  if (constrcond.size())
+  {
+    p.set("action","calc_nodeplanedist");
+    actdisc_.SetState("displacement",disp);
+    actdisc_.EvaluateCondition(p,"NodeConstraintOnPlane_3D");
+    havenodeconstraint_=true;
+  }
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
-  haveconstraint_= haveareaconstr3D_||havevolconstr_||haveareaconstr2D_;
+  haveconstraint_= haveareaconstr3D_||havevolconstr_||haveareaconstr2D_||havenodeconstraint_;
   if (haveconstraint_)
   {
     uzawaparam_=params.get<double>("uzawa parameter",1);
@@ -84,6 +95,7 @@ actdisc_(discr)
     initialvalues_->Scale(0.0);
     SynchronizeSumConstraint(p,initialvalues_,"computed volume",numConstrID_,minConstrID_);
     SynchronizeSumConstraint(p,initialvalues_,"computed area",numConstrID_,minConstrID_);
+    SynchronizeSumConstraint(p,initialvalues_,"computed dist",numConstrID_,minConstrID_);
     //Initialize Lagrange Multiplicators, reference values and errors
     actdisc_.ClearState();
     referencevalues_=rcp(new Epetra_Vector(*constrmap_));
@@ -248,6 +260,35 @@ void ConstrManager::StiffnessAndInternalForces(
     actdisc_.EvaluateCondition(p,stiff,constrMatrix_,fint,null,null,"AreaConstraint_2D");
     SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
   }
+  //Deal with area constraints in 2D
+  if (havenodeconstraint_)
+  {
+    //Evaluate volume at predicted ENDpoint D_{n+1}
+    // action for elements
+    p.set("action","calc_areaconstrstiff");
+    // choose what to assemble
+    p.set("assemble matrix 1",true);
+    p.set("assemble matrix 2",false);
+    p.set("assemble vector 1",true);
+    p.set("assemble vector 2",true);
+    p.set("assemble vector 3",false);
+    // other parameters that might be needed by the elements
+    p.set("total time",time);
+    p.set("MinID",minConstrID_);
+    p.set("MaxID",maxConstrID_);
+    p.set("NumberofID",numConstrID_);        
+    // Convert Epetra_Vector constaining lagrange multipliers to an completely
+    // redundant Epetra_vector since every element with the constraint condition needs them
+    RCP<Epetra_Map> reducedmap = LINALG::AllreduceEMap(*constrmap_);
+    RCP<Epetra_Vector> lagrMultVecDense = rcp(new Epetra_Vector(*reducedmap));
+    LINALG::Export(*lagrMultVec_,*lagrMultVecDense);
+    p.set("LagrMultVector",lagrMultVecDense);
+    actdisc_.ClearState();
+    actdisc_.SetState("displacement",disp);
+    actdisc_.EvaluateCondition(p,stiff,constrMatrix_,fint,null,null,"AreaConstraint_2D");
+    SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
+  }
+  
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------  
@@ -377,6 +418,7 @@ void ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
   }
   return;
 }
+
 /*----------------------------------------------------------------------*
 |(public)                                                       tk 01/08|
 |Print monitored values                                                 |
