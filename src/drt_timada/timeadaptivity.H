@@ -23,7 +23,6 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/linalg_utils.H"
 #include "../io/io_drt.H"
 #include "../drt_contact/drt_contact_manager.H"
-#include "../drt_lib/linalg_mfoperator.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -48,7 +47,7 @@ using namespace Teuchos;
 \author bborn
 \date 10/07
 */
-class TimeAdaptivity 
+class TimeAdaptivity
 {
 
 public:
@@ -57,7 +56,7 @@ public:
     \brief Norm for error vector
   */
   enum TAErrNorm
-  { 
+  {
     norm_vague = 0,  // undetermined norm
     norm_l1,  // L1/linear/average norm
     norm_l2,   // L2/Euclidean norm
@@ -115,7 +114,7 @@ public:
 
   /*!
     \brief Integrate in time
-            
+
     This is the key method here, i.e. the time integration
     algorithm. It has to be implemented by derived classes.
   */
@@ -186,7 +185,7 @@ protected:
   LINALG::Solver& solver_;
   IO::DiscretizationWriter& output_;
   int mypid_;  // processor ID
- 
+
   // more parameters
   //ParameterList* params_;
 
@@ -212,7 +211,7 @@ protected:
 */
 std::ostream& operator<<
 (
-  ostream& str, 
+  ostream& str,
   const TimeAdaptivity& ta
 );
 
