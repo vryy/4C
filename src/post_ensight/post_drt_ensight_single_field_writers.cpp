@@ -89,7 +89,7 @@ void ConDifEnsightWriter::WriteAllResults(PostField* field)
   // (equals 2 or 3) as a number of dofs
   EnsightWriter::WriteResult("phinp", "phi", dofbased, 1);
   // write velocity field (always 3D)
-  EnsightWriter::WriteResult("velocity", "velocity", nodebased, 3);
+  EnsightWriter::WriteResult("conv_velocity", "velocity", nodebased, 3);
   WriteElementResults(field);
 }
 

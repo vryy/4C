@@ -121,9 +121,14 @@ int main(
     case prb_elch:
     {
         string basename = problem.outname();
+
         PostField* fluidfield = problem.get_discretization(0);
         FluidEnsightWriter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
+
+        PostField* condiffield = problem.get_discretization(1);
+        ConDifEnsightWriter condifwriter(condiffield, basename);
+        condifwriter.WriteFiles();
         break;
     }
     default:
