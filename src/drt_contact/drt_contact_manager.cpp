@@ -966,13 +966,15 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
   // add matrix of normals to kteffnew
   kteffnew->Add(*nmatrix_,false,1.0,1.0);
 
-  // add submatrices with tangents to kteffnew, if existing
+  
 #ifndef CONTACTSTICKING
+  // add submatrices with tangents to kteffnew, if existing
   if (tkanmod!=null) kteffnew->Add(*tkanmod,false,1.0,1.0);
   if (tkammod!=null) kteffnew->Add(*tkammod,false,1.0,1.0);
   if (tkaimod!=null) kteffnew->Add(*tkaimod,false,1.0,1.0);
   if (tkaamod!=null) kteffnew->Add(*tkaamod,false,1.0,1.0);
 #else
+  // add matrix of tangents to kteffnew
   if (tmatrix_!=null) kteffnew->Add(*tmatrix_,false,1.0,1.0);
 #endif // #ifndef CONTACTSTICKING
   
@@ -1326,6 +1328,7 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
   // nmatrix: nothing to do
   
+#ifndef CONTACTSTICKING
   // kan: multiply with tmatrix
   RCP<LINALG::SparseMatrix> kanmod = LINALG::Multiply(*tmatrix_,false,*kan,false,true);
   
@@ -1337,6 +1340,10 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
       
   // kaa: multiply with tmatrix
   RCP<LINALG::SparseMatrix> kaamod = LINALG::Multiply(*tmatrix_,false,*kaa,false,true);
+#else
+  // t*mbaractive: do the multiplication
+  RCP<LINALG::SparseMatrix> tmhata = LINALG::Multiply(*tmatrix_,false,*mhata,false,true);
+#endif // #ifndef CONTACTSTICKING
   
   // fn: nothing to do
   
@@ -1382,11 +1389,17 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // add matrix n to kteffnew
   if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmatrix_,false,1.0,1.0);
     
+#ifndef CONTACTSTICKING
   // add a submatrices to kteffnew
   if (gactivet_->NumGlobalElements()) kteffnew->Add(*kanmod,false,1.0,1.0);
   if (gactivet_->NumGlobalElements()) kteffnew->Add(*kammod,false,1.0,1.0);
   if (gactivet_->NumGlobalElements()) kteffnew->Add(*kaimod,false,1.0,1.0);
   if (gactivet_->NumGlobalElements()) kteffnew->Add(*kaamod,false,1.0,1.0);
+#else
+  // add matrices t and tmhata to kteffnew
+  if (gactivet_->NumGlobalElements()) kteffnew->Add(*tmatrix_,false,1.0,1.0);
+  if (gactivet_->NumGlobalElements()) kteffnew->Add(*tmhata,false,-1.0,1.0);
+#endif // #ifdef CONTACTSTICKING
   
   // FillComplete kteffnew (square)
   kteffnew->Complete();
@@ -1411,10 +1424,12 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::Export(*gact,*gexp);
   if (gact->GlobalLength()) feffnew->Update(1.0,*gexp,1.0);
   
+#ifndef CONTACTSTICKING
   // add a subvector to feffnew
   RCP<Epetra_Vector> famodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
   LINALG::Export(*famod,*famodexp);
   if (gactivenodes_->NumGlobalElements())feffnew->Update(1.0,*famodexp,1.0);
+#endif // #ifndef CONTACTSTICKING
     
   
   /**********************************************************************/
