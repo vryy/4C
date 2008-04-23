@@ -199,8 +199,10 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
 void CONTACT::CNode::AddDValue(int row, int col, double val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave()==false || IsOnBound()==true)
+  if (IsSlave()==false)
     dserror("ERROR: AddDValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddDValue: function called for boundary node %i", Id());
   
   // check if this has been called before
   if ((int)drows_.size()==0)
@@ -223,8 +225,10 @@ void CONTACT::CNode::AddDValue(int row, int col, double val)
 void CONTACT::CNode::AddMValue(int row, int col, double val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave()==false || IsOnBound()==true)
-    dserror("ERROR: AddMValue: function called for master node %i", Id());
+  if (IsSlave()==false)
+    dserror("ERROR: AddDValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddDValue: function called for boundary node %i", Id());
     
   // check if this has been called before
   if ((int)mrows_.size()==0)
@@ -247,8 +251,10 @@ void CONTACT::CNode::AddMValue(int row, int col, double val)
 void CONTACT::CNode::AddMmodValue(int row, int col, double val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave()==false || IsOnBound()==true)
-    dserror("ERROR: AddMmodValue: function called for master node %i", Id());
+  if (IsSlave()==false)
+    dserror("ERROR: AddDValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddDValue: function called for boundary node %i", Id());
     
   // check if this has been called before
   if ((int)mmodrows_.size()==0)
@@ -271,8 +277,10 @@ void CONTACT::CNode::AddMmodValue(int row, int col, double val)
 void CONTACT::CNode::AddgValue(double val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave()==false || IsOnBound()==true)
-    dserror("ERROR: AddgValue: function called for master node %i", Id());
+  if (IsSlave()==false)
+    dserror("ERROR: AddDValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddDValue: function called for boundary node %i", Id());
   
   // initialize if called for the first time
   if (grow_==1.0e12) grow_=0;
@@ -309,8 +317,7 @@ void CONTACT::CNode::BuildAveragedNormal()
     {
 #ifdef CONTACTWNORMAL
       n()[j]+=wgt*elen[j];
-#endif // #ifdef CONTACTWNORMAL
-#ifndef CONTACTWNORMAL
+#else
       n()[j]+=elen[j];
 #endif // #ifndef CONTACTWNORMAL
     }
@@ -324,13 +331,7 @@ void CONTACT::CNode::BuildAveragedNormal()
   else
     for (int j=0;j<3;++j)
       n()[j]/=length;
-
-/*
-#ifdef DEBUG
-  cout << "\nUnit normal for node " << Id() << " is "
-       << n()[0] << " " << n()[1] << " " << n()[2] << endl << endl;
-#endif // #ifdef DEBUG
-*/  
+  
   return;
 }
 
