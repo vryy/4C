@@ -605,11 +605,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          "Node on Plane Constraint",
                                          DRT::Condition::MPC_NodeOnPlane_3D,
                                          false,
-                                         DRT::Condition::NoGeom));
+                                         DRT::Condition::Volume));
 
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new RealConditionComponent("Amplitude")));
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("Curve")));
+  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("Curve",true,true)));
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 1")));
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 2")));
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 3")));

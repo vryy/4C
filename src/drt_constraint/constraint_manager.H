@@ -281,6 +281,16 @@ private:
     */
     
     void ManageIDs(ParameterList& params,int& minID, int& maxID, int& numID);
+    
+    RCP<DRT::Discretization> CreateDiscretizationFromCondition(
+            vector< DRT::Condition* >      constrcond, 
+            const string&             discret_name,
+            const string&             element_name
+            );
+    
+    void SortConstraintNodes(
+        vector<int>& nodeids,
+        DRT::Condition*      condname);
     //@}
 
 private:
@@ -292,7 +302,8 @@ private:
 
 
     //! name@ Private Attributes
-    DRT::Discretization& actdisc_;
+    RCP<DRT::Discretization> actdisc_;
+    RCP<DRT::Discretization> constraintdis_;
     RCP<Epetra_Map> constrmap_;
     RCP<Epetra_Map> monitormap_;
     RCP<Epetra_Vector> referencevalues_;

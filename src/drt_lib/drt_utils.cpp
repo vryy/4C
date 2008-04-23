@@ -553,7 +553,8 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     so_shw6,
     sodisp,
     beam2,
-    beam3
+    beam3,
+    constrele3
   };
 
   TypeofElement type = none;
@@ -577,6 +578,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
   else if (eletype=="SOLID3") type = sodisp;
   else if (eletype=="BEAM2") type = beam2;
   else if (eletype=="BEAM3") type = beam3;
+  else if (eletype=="CONSTRELE3") type = constrele3;
   // continue to add elements here....
   else dserror("Unknown type of finite element");
 
@@ -654,6 +656,12 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     case bele3:
     {
       RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Bele3(id,owner));
+      return ele;
+    }
+    break;
+    case constrele3:
+    {
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement3(id,owner));
       return ele;
     }
     break;
