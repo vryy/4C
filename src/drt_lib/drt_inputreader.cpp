@@ -345,6 +345,7 @@ void DatFileReader::ReadDat()
   exclude.push_back("--STRUCTURE ELEMENTS");
   exclude.push_back("--FLUID ELEMENTS");
   exclude.push_back("--ALE ELEMENTS");
+  exclude.push_back("--TRANSPORT ELEMENTS");
 
   int arraysize = 0;
 

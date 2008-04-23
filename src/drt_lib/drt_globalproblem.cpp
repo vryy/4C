@@ -244,7 +244,7 @@ void DRT::Problem::InputControl()
     break;
   }
   case prb_condif:
-    genprob.numff=0;
+    genprob.numcdf=0;
     break;
   case prb_ale:
     genprob.numaf=0;
@@ -265,7 +265,8 @@ void DRT::Problem::InputControl()
   }
   case prb_elch:
   {
-    genprob.numff = 0; /* fluid field index */
+    genprob.numff = 0;  /* fluid field index */
+    genprob.numcdf = 1; /* convection-diffusion field index */
     break;
   }
   default:
@@ -414,8 +415,8 @@ void DRT::Problem::InputControl()
     solver_.resize(genprob.numfld);
     solv = &solver_[0];
 
-    solv[genprob.numff].fieldtyp = fluid;
-    InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
+    solv[genprob.numcdf].fieldtyp = condif;
+    InputSolverControl("FLUID SOLVER",&(solv[genprob.numcdf]));
     break;
   }
   /* for (plain) ALE */
@@ -470,12 +471,18 @@ void DRT::Problem::InputControl()
   /* for electrochemistry (ELCH)*/
   case prb_elch:
   {
-    if (genprob.numfld!=1) dserror("numfld != 1 for Electrochemistry Problem");
+    if (genprob.numfld!=2) dserror("numfld != 2 for Electrochemistry Problem");
     solver_.resize(genprob.numfld);
     solv = &solver_[0];
 
+    // solver for fluid problem
     solv[genprob.numff].fieldtyp = fluid;
     InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
+    
+    // solver for convection-diffusion problem (at the moment the same!!!)
+    solv[genprob.numcdf].fieldtyp = condif;
+    InputSolverControl("FLUID SOLVER",&(solv[genprob.numcdf]));
+    
     break;
   }
 
@@ -710,6 +717,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   RefCountPtr<DRT::Discretization> fluiddis        = null;
   RefCountPtr<DRT::Discretization> aledis          = null;
   RefCountPtr<DRT::Discretization> boundarydis     = null;
+  RefCountPtr<DRT::Discretization> condifdis       = null;
   RefCountPtr<DRT::Discretization> structdis_macro = null;
   RefCountPtr<DRT::Discretization> structdis_micro = null;
 
@@ -791,7 +799,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     nodereader.Read();
     break;
   }
-  case prb_fluid: case prb_condif:
+  case prb_fluid:
   {
     // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for fluid problem");
@@ -806,6 +814,24 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.Read();
+    break;
+  }
+  case prb_condif:
+  {
+    // allocate and input general old stuff....
+    if (genprob.numfld!=1) dserror("numfld != 1 for condif problem");
+    field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
+    field[genprob.numcdf].fieldtyp = condif;
+
+    // obsolete
+    field[genprob.numcdf].ndis = DiscretisationParams().get<int>("NUMFLUIDDIS");
+
+    condifdis = rcp(new DRT::Discretization("ConvectionDiffusion",reader.Comm()));
+    AddDis(genprob.numcdf, condifdis);
+
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(condifdis, reader, "--TRANSPORT ELEMENTS")));
     nodereader.Read();
     break;
   }
@@ -977,19 +1003,27 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   case prb_elch:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=1) dserror("numfld != 1 for Electrochemistry problem");
+    if (genprob.numfld!=2) dserror("numfld != 2 for Electrochemistry problem");
     field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
     field[genprob.numff].fieldtyp = fluid;
+    field[genprob.numcdf].fieldtyp = condif;
 
     // obsolete
     field[genprob.numff].ndis = DiscretisationParams().get<int>("NUMFLUIDDIS");
+    field[genprob.numcdf].ndis = 1;
 
+    // create empty discretizations
     fluiddis = rcp(new DRT::Discretization("Fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
+    
+    condifdis = rcp(new DRT::Discretization("ConvectionDiffusion",reader.Comm()));
+    AddDis(genprob.numcdf, condifdis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(condifdis, reader, "--TRANSPORT ELEMENTS")));
     nodereader.Read();
+    
     break;
   } // end of else if (genprob.probtyp==prb_elch)
 
