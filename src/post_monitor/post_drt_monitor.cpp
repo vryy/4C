@@ -68,6 +68,10 @@ MonWriter(PostProblem& problem, string& infieldtype, int node):
 			break;		
 		case pressure:
 			fieldtype = "pressure";
+		case condif:
+		    fieldtype = "condif";
+		case boundary:
+		    fieldtype = "boundary";
 		}
 
 		if (fieldtype==infieldtype)
