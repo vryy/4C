@@ -123,14 +123,7 @@ bool CONTACT::Projector::ProjectElementNormal(CONTACT::CNode& node,
   bool ok = true;
   
   if (IsTwoDimensional())
-  {
-#ifdef DEBUG
-    // two-dimensional version of the problem
-    //cout << "CONTACT::Projector::ProjectElementNormal" << endl
-    //     << "Ready for projection of master CNode " << node.Id()
-    //     << " onto slave CElement " << ele.Id() << endl;
-#endif // #ifdef DEBUG
-    
+  {    
     // define variable to check if projection is outward w.r.t to slave
     bool outward = true;
     
@@ -219,14 +212,6 @@ bool CONTACT::Projector::ProjectGaussPoint(CONTACT::CElement& gpele,
   bool ok = true;
   if (IsTwoDimensional())
   {
-    // two-dimensional version of the problem
-#ifdef DEBUG
-    //cout << "CONTACT::Projector::ProjectGaussPoint" << endl
-    //     << "Ready for projection of GP at xi=" << gpeta[0]
-    //     << " from slave Celement " << gpele.Id()
-    //     << " onto master CElement " << ele.Id() << endl;
-#endif // #ifdef DEBUG
-    
     // collect necessary data (slave side, for GP)
     int nnodes = gpele.NumNode();
     vector<double> val(nnodes);

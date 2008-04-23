@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file drt_contact_integrator.cpp
-\brief A class to perform intgerations of Mortar matrices on the overlap
+\brief A class to perform integrations of Mortar matrices on the overlap
  			 of two CElements in 1D and 2D
 
 <pre>
@@ -636,7 +636,6 @@ bool CONTACT::Integrator::AssembleD(CONTACT::Interface& inter,
   for (int slave=0;slave<sele.NumNode();++slave)
   {
     CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(snodes[slave]);
-    //const int* sdofs = snode->Dofs();
     int sndof = snode->NumDof();
     
     // only process slave node rows that belong to this proc

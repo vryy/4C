@@ -39,8 +39,6 @@ class Projector
 {
 public:
   
-  //! @name Constructors and destructors
-  
   /*!
   \brief Standard constructor
   
@@ -57,8 +55,6 @@ public:
 
   */
   virtual ~Projector() {}
-  
-  //@}
   
   //! @name Access methods
   

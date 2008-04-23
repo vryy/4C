@@ -41,8 +41,6 @@ class Integrator
 {
 public:
   
-  //! @name Constructors and destructors
-  
   /*!
   \brief Standard constructor
   
@@ -53,7 +51,7 @@ public:
   DRT::UTILS::IntegrationPoints structs to get Gauss points
   and corresponding weights.
   
-  \param twoD (in): true if problem is 2D, false if 3D
+  \param oned (in): true if integration is 1D, false if 2D
   */
   explicit Integrator(int ngp, bool oned);
 
@@ -62,8 +60,6 @@ public:
 
   */
   virtual ~Integrator() {}
-  
-  //@}
   
   //! @name Access methods
   
