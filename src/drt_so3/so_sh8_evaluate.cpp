@@ -635,7 +635,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
                       defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
                       defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
 
-        Epetra_SerialDenseMatrix pkstress(NUMDIM_SOH8,NUMDIM_SOH8);
+        LINALG::SerialDenseMatrix pkstress(NUMDIM_SOH8,NUMDIM_SOH8);
         pkstress(0,0) = stress(0);
         pkstress(0,1) = stress(3);
         pkstress(0,2) = stress(5);
@@ -646,9 +646,9 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
         pkstress(2,1) = pkstress(1,2);
         pkstress(2,2) = stress(2);
 
-        Epetra_SerialDenseMatrix temp(NUMDIM_SOH8,NUMDIM_SOH8);
-        Epetra_SerialDenseMatrix cauchystress(NUMDIM_SOH8,NUMDIM_SOH8);
-        temp.Multiply('N','N',detF,defgrd,pkstress,0.);
+        LINALG::SerialDenseMatrix temp(NUMDIM_SOH8,NUMDIM_SOH8);
+        LINALG::SerialDenseMatrix cauchystress(NUMDIM_SOH8,NUMDIM_SOH8);
+        temp.Multiply('N','N',1.0/detF,defgrd,pkstress,0.);
         cauchystress.Multiply('N','T',1.0,temp,defgrd,0.);
 
         (*elestress)(gp,0) = cauchystress(0,0);
@@ -679,13 +679,13 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
           G_ij(3) = deriv_gp(0, inod) * deriv_gp(1, jnod) + deriv_gp(1, inod)
               * deriv_gp(0, jnod); //rs-dir
           // ANS modification in tt-dir
-          G_ij(2) = 0.25*(1-r[gp])*(1-s[gp]) * (*deriv_sp)(2+4*NUMDIM_SOH8,inod) * (*deriv_sp)(2+4*NUMDIM_SOH8,jnod) 
+          G_ij(2) = 0.25*(1-r[gp])*(1-s[gp]) * (*deriv_sp)(2+4*NUMDIM_SOH8,inod) * (*deriv_sp)(2+4*NUMDIM_SOH8,jnod)
                    +0.25*(1+r[gp])*(1-s[gp]) * (*deriv_sp)(2+5*NUMDIM_SOH8,inod) * (*deriv_sp)(2+5*NUMDIM_SOH8,jnod)
                    +0.25*(1+r[gp])*(1+s[gp]) * (*deriv_sp)(2+6*NUMDIM_SOH8,inod) * (*deriv_sp)(2+6*NUMDIM_SOH8,jnod)
                    +0.25*(1-r[gp])*(1+s[gp]) * (*deriv_sp)(2+7*NUMDIM_SOH8,inod) * (*deriv_sp)(2+7*NUMDIM_SOH8,jnod);
           // ANS modification in st-dir
-          G_ij(4) = 0.5*((1+r[gp]) * ((*deriv_sp)(1+1*NUMDIM_SOH8,inod) * (*deriv_sp)(2+1*NUMDIM_SOH8,jnod) 
-                                     +(*deriv_sp)(2+1*NUMDIM_SOH8,inod) * (*deriv_sp)(1+1*NUMDIM_SOH8,jnod)) 
+          G_ij(4) = 0.5*((1+r[gp]) * ((*deriv_sp)(1+1*NUMDIM_SOH8,inod) * (*deriv_sp)(2+1*NUMDIM_SOH8,jnod)
+                                     +(*deriv_sp)(2+1*NUMDIM_SOH8,inod) * (*deriv_sp)(1+1*NUMDIM_SOH8,jnod))
                         +(1-r[gp]) * ((*deriv_sp)(1+3*NUMDIM_SOH8,inod) * (*deriv_sp)(2+3*NUMDIM_SOH8,jnod)
                                      +(*deriv_sp)(2+3*NUMDIM_SOH8,inod) * (*deriv_sp)(1+3*NUMDIM_SOH8,jnod)));
           // ANS modification in rt-dir

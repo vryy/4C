@@ -467,7 +467,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
                       defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
                       defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
 
-        Epetra_SerialDenseMatrix pkstress(NUMDIM_WEG6,NUMDIM_WEG6);
+        LINALG::SerialDenseMatrix pkstress(NUMDIM_WEG6,NUMDIM_WEG6);
         pkstress(0,0) = stress(0);
         pkstress(0,1) = stress(3);
         pkstress(0,2) = stress(5);
@@ -478,9 +478,9 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
         pkstress(2,1) = pkstress(1,2);
         pkstress(2,2) = stress(2);
 
-        Epetra_SerialDenseMatrix temp(NUMDIM_WEG6,NUMDIM_WEG6);
-        Epetra_SerialDenseMatrix cauchystress(NUMDIM_WEG6,NUMDIM_WEG6);
-        temp.Multiply('N','N',detF,defgrd,pkstress,0.);
+        LINALG::SerialDenseMatrix temp(NUMDIM_WEG6,NUMDIM_WEG6);
+        LINALG::SerialDenseMatrix cauchystress(NUMDIM_WEG6,NUMDIM_WEG6);
+        temp.Multiply('N','N',1.0/detF,defgrd,pkstress,0.);
         cauchystress.Multiply('N','T',1.0,temp,defgrd,0.);
 
         (*elestress)(gp,0) = cauchystress(0,0);
