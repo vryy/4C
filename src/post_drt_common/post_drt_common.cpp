@@ -562,226 +562,226 @@ PostField PostProblem::getfield(MAP* field_info)
  *-----------------------------------------------------------------------*/
 void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
 {
-    // this section is strongly oriented on what is done during the
-	// usual BACI setup phase.
-    // reference: src/drt_lib/drt_inputreader.cpp
-	// ToDo: make PostProblem::setup_ghosting a method of the dicretization class itself
+  // this section is strongly oriented on what is done during the
+  // usual BACI setup phase.
+  // reference: src/drt_lib/drt_inputreader.cpp
+  // ToDo: make PostProblem::setup_ghosting a method of the dicretization class itself
 
-	int numnode=dis->NumMyColNodes();
-    vector<int> nids(numnode);         // vector for global node ids
+  int numnode=dis->NumMyColNodes();
+  vector<int> nids(numnode);         // vector for global node ids
 
-    // we have to know about the global node ids on each processor.
-    // since the current discretization is NOT(!!!) Filled() yet, the following was
-    // the only solution to create the ghosting for ALREADY DISTRIBUTED nodes/elements.
-    int nodecount=0;
-    int ngid=0;
-    while(nodecount < numnode)
-    {
-    	if (dis->HaveGlobalNode(ngid)) // do we have this global node id on this processor?
-    	{ nids[nodecount]= ngid;
-    	  nodecount+=1;
-    	}
-  	    ngid+=1;
+  // we have to know about the global node ids on each processor.
+  // since the current discretization is NOT(!!!) Filled() yet, the following was
+  // the only solution to create the ghosting for ALREADY DISTRIBUTED nodes/elements.
+  int nodecount=0;
+  int ngid=0;
+  while(nodecount < numnode)
+  {
+    if (dis->HaveGlobalNode(ngid)) // do we have this global node id on this processor?
+    { nids[nodecount]= ngid;
+      nodecount+=1;
     }
+    ngid+=1;
+  }
 
-    // now create a preliminary node row map
-    RefCountPtr<Epetra_Map> rownodes = rcp(new Epetra_Map(-1,nids.size(),&nids[0],0,*comm_));
-    nids.clear();
+  // now create a preliminary node row map
+  RefCountPtr<Epetra_Map> rownodes = rcp(new Epetra_Map(-1,nids.size(),&nids[0],0,*comm_));
+  nids.clear();
 
-    // construct graphs
-    RefCountPtr<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
-    RefCountPtr<Epetra_CrsGraph> finalgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
+  // construct graphs
+  RefCountPtr<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
+  RefCountPtr<Epetra_CrsGraph> finalgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
 
 #if 0
-    //cout<<dis->NumMyColNodes()<<endl;
-    //rownodes->Print(cout);
-    dis->Print(cout);
+  //cout<<dis->NumMyColNodes()<<endl;
+  //rownodes->Print(cout);
+  dis->Print(cout);
 #endif
 
-    // loop over all elements located on this processor (no ghosting existent)
-    list<vector<int> > elementnodes;
+  // loop over all elements located on this processor (no ghosting existent)
+  list<vector<int> > elementnodes;
 
-    int numele = dis->NumMyColElements();
-    int elecount=0;
-    int elegid=0;
-    while(elecount < numele)
+  int numele = dis->NumMyColElements();
+  int elecount=0;
+  int elegid=0;
+  while(elecount < numele)
+  {
+    if (dis->HaveGlobalElement(elegid)) // do we have this global element id on this processor?
     {
-	  if (dis->HaveGlobalElement(elegid)) // do we have this global element id on this processor?
-	  {
-	    elecount+=1;
-	    // get the node ids of this element...
-	    const int  numnode = dis->gElement(elegid)->NumNode();
-	    const int* nodeids1 = dis->gElement(elegid)->NodeIds();
-	    // ... and store them locally
-	    elementnodes.push_back(vector<int>(nodeids1, nodeids1+numnode));
-	  }
-	elegid+=1;
-    } // while
+      elecount+=1;
+      // get the node ids of this element...
+      const int  numnode = dis->gElement(elegid)->NumNode();
+      const int* nodeids1 = dis->gElement(elegid)->NodeIds();
+      // ... and store them locally
+      elementnodes.push_back(vector<int>(nodeids1, nodeids1+numnode));
+    }
+    elegid+=1;
+  } // while
 
 #if 0
-      cout << "\n\nelementnodes: size=" << elementnodes.size() << endl;
-      for (list<vector<int> >::iterator i=elementnodes.begin();
-           i!=elementnodes.end();
-           ++i)
+  cout << "\n\nelementnodes: size=" << elementnodes.size() << endl;
+  for (list<vector<int> >::iterator i=elementnodes.begin();
+       i!=elementnodes.end();
+       ++i)
+  {
+    copy(i->begin(), i->end(), ostream_iterator<int>(cout, " "));
+    cout << endl;
+  }
+#endif
+#if 0
+  // storage set for refused row numbers
+  set<int> refusedrowgid;
+#endif
+
+  // initial fill-up of the node dependency graph
+  for (list<vector<int> >::iterator i=elementnodes.begin();
+       i!=elementnodes.end();
+       ++i)
+  {
+    // get the node ids of this element
+    int  numelnodes = static_cast<int>(i->size());
+    int* nodeids = &(*i)[0];
+
+    // loop nodes and add this topology to the row in the graph of every node
+    for (int i=0; i<numelnodes; ++i)
+    {
+      // ensure first that node with nodeids[i] belongs to this processor
+      if (rownodes->MyGID(nodeids[i]))
       {
-        copy(i->begin(), i->end(), ostream_iterator<int>(cout, " "));
-        cout << endl;
+        int err = graph->InsertGlobalIndices(nodeids[i],numelnodes,nodeids);
+        if (err<0) dserror("graph->InsertGlobalIndices returned %d",err);
+        // do the same for finalgraph
+        err = finalgraph->InsertGlobalIndices(nodeids[i],numelnodes,nodeids);
+        if (err<0) dserror("graph->InsertGlobalIndices returned %d",err);
+      }
+      else
+      {  // this case does NOT happen in the normal BACI inputreader;
+        // however, here we loose information, which has to be fetched from the transposed graph
+#if 0
+        cout<<"Proc "<<par.myrank<<" refused InsertGlobelIndices with nodeids[i]="<<nodeids[i]<<endl;
+        // store refused row number for later use?
+        refusedrowgid.insert(nodeids[i]);
+#endif
+      }
+    }
+  } // end for-loop over elementnodes
+
+  elementnodes.clear();
+
+
+  // finalize construction of initial graph
+  // FillComplete() is necessary for the following transposition)
+  int err = graph->FillComplete(*rownodes,*rownodes);
+  if (err) dserror("graph->FillComplete returned %d",err);
+
+  // create transformation object
+  RefCountPtr<EpetraExt::CrsGraph_Transpose::CrsGraph_Transpose> graphtransposer = rcp(new EpetraExt::CrsGraph_Transpose());
+  // create graph object
+  RefCountPtr<Epetra_CrsGraph> tgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
+  Epetra_CrsGraph& new_graph = ((*tgraph));
+  // finally do the transposition
+  new_graph=(*graphtransposer)(*graph);
+  // free memory of the graph transposer object
+  graphtransposer=null;
+
+#if 0
+  if (!(refusedrowgid.empty()))
+  {
+    set<int>::iterator j;
+    for (j = refusedrowgid.begin(); j != refusedrowgid.end(); ++j)
+    {
+      cout<<"Proc: "<<par.myrank<<"  Iterator = "<<*j<<endl;
+    }
+  }
+#endif
+
+  // loop over my rows of transposed graph and insert dependencies to final graph
+  for (int lid = 0; lid < tgraph->NumMyRows(); ++lid)
+  {
+    int gid = graph->GRID(lid); // get global id
+    int maxrowlength=tgraph->NumGlobalIndices(gid);
+    int numelnodes=0;
+    vector<int> nodeentries(maxrowlength,0);
+    int* nodeids = &(nodeentries)[0];
+    // what is the Global row index??
+    //cout<<"Proc: "<<par.myrank<<"  Iterator = "<<j <<"  gid: "<<gid<<endl;
+    if (gid > (-1))
+    {
+      // int err = tgraph->ExtractGlobalRowView(gid,numelnodes,nodeids);
+      int err = tgraph->ExtractGlobalRowCopy(gid,maxrowlength,numelnodes,nodeids);
+      if (err<0) dserror("error while extracting global row copy from transposed graph: %d",err);
+#if 0
+      for (int k=0;k<numelnodes;++k)
+      {
+        cout<<"nodeids["<<k<<"] = "<<nodeids[k]<<endl;
       }
 #endif
-#if 0
-      // storage set for refused row numbers
-      set<int> refusedrowgid;
-#endif
-
-    // initial fill-up of the node dependency graph
-    for (list<vector<int> >::iterator i=elementnodes.begin();
-           i!=elementnodes.end();
-           ++i)
-      {
-        // get the node ids of this element
-        int  numelnodes = static_cast<int>(i->size());
-        int* nodeids = &(*i)[0];
-
-        // loop nodes and add this topology to the row in the graph of every node
-        for (int i=0; i<numelnodes; ++i)
-        {
-          // ensure first that node with nodeids[i] belongs to this processor
-          if (rownodes->MyGID(nodeids[i]))
-          {
-        	int err = graph->InsertGlobalIndices(nodeids[i],numelnodes,nodeids);
-            if (err<0) dserror("graph->InsertGlobalIndices returned %d",err);
-            // do the same for finalgraph
-        	err = finalgraph->InsertGlobalIndices(nodeids[i],numelnodes,nodeids);
-            if (err<0) dserror("graph->InsertGlobalIndices returned %d",err);
-          }
-          else
-          {  // this case does NOT happen in the normal BACI inputreader;
-        	 // however, here we loose information, which has to be fetched from the transposed graph
-#if 0
-              cout<<"Proc "<<par.myrank<<" refused InsertGlobelIndices with nodeids[i]="<<nodeids[i]<<endl;
-              // store refused row number for later use?
-        	  refusedrowgid.insert(nodeids[i]);
-#endif
-          }
-        }
-      } // end for-loop over elementnodes
-
-    elementnodes.clear();
-
-
-      // finalize construction of initial graph
-      // FillComplete() is necessary for the following transposition)
-      int err = graph->FillComplete(*rownodes,*rownodes);
-      if (err) dserror("graph->FillComplete returned %d",err);
-
-      // create transformation object
-      RefCountPtr<EpetraExt::CrsGraph_Transpose::CrsGraph_Transpose> graphtransposer = rcp(new EpetraExt::CrsGraph_Transpose());
-      // create graph object
-      RefCountPtr<Epetra_CrsGraph> tgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
-      Epetra_CrsGraph& new_graph = ((*tgraph));
-      // finally do the transposition
-      new_graph=(*graphtransposer)(*graph);
-      // free memory of the graph transposer object
-      graphtransposer=null;
-
-#if 0
-      if (!(refusedrowgid.empty()))
-      {
-    	  set<int>::iterator j;
-    	  for (j = refusedrowgid.begin(); j != refusedrowgid.end(); ++j)
-    	  	{
-             cout<<"Proc: "<<par.myrank<<"  Iterator = "<<*j<<endl;
-    	  	}
-      }
-#endif
-
-    // loop over my rows of transposed graph and insert dependencies to final graph
-    for (int lid = 0; lid < tgraph->NumMyRows(); ++lid)
-    {
-     int gid = graph->GRID(lid); // get global id
-     int maxrowlength=tgraph->NumGlobalIndices(gid);
-     int numelnodes=0;
-     vector<int> nodeentries(maxrowlength,0);
-     int* nodeids = &(nodeentries)[0];
-     // what is the Global row index??
-     //cout<<"Proc: "<<par.myrank<<"  Iterator = "<<j <<"  gid: "<<gid<<endl;
-     if (gid > (-1))
-          {
-        	 // int err = tgraph->ExtractGlobalRowView(gid,numelnodes,nodeids);
-        	  int err = tgraph->ExtractGlobalRowCopy(gid,maxrowlength,numelnodes,nodeids);
-              if (err<0) dserror("error while extracting global row copy from transposed graph: %d",err);
-#if 0
-              for (int k=0;k<numelnodes;++k)
-               {
-        	    cout<<"nodeids["<<k<<"] = "<<nodeids[k]<<endl;
-               }
-#endif
-          // insert node gids into final graph
-          err = finalgraph->InsertGlobalIndices(gid,numelnodes,nodeids);
-          if (err<0) dserror("finalgraph->InsertGlobalIndices returned %d",err);
-          }
+      // insert node gids into final graph
+      err = finalgraph->InsertGlobalIndices(gid,numelnodes,nodeids);
+      if (err<0) dserror("finalgraph->InsertGlobalIndices returned %d",err);
     }
+  }
 
-    // finalize construction of final graph
-    err = finalgraph->FillComplete(*rownodes,*rownodes);
-    if (err) dserror("graph->FillComplete returned %d",err);
+  // finalize construction of final graph
+  err = finalgraph->FillComplete(*rownodes,*rownodes);
+  if (err) dserror("graph->FillComplete returned %d",err);
 
-    // no partition of the graph using metis here, since we want to keep the currently
-    // existing parallel distribution of nodes and elements
+  // no partition of the graph using metis here, since we want to keep the currently
+  // existing parallel distribution of nodes and elements
 
-    // replace rownodes, colnodes with row and column maps from the graph
-    // do stupid conversion from Epetra_BlockMap to Epetra_Map
-    const Epetra_BlockMap& brow = finalgraph->RowMap();
-    const Epetra_BlockMap& bcol = finalgraph->ColMap();
-    rownodes = rcp(new Epetra_Map(brow.NumGlobalElements(),
-                                   brow.NumMyElements(),
-                                   brow.MyGlobalElements(),
-                                   0,
-                                   *comm_));
-    RefCountPtr<Epetra_Map> colnodes;
-    colnodes = rcp(new Epetra_Map(bcol.NumGlobalElements(),
-                                   bcol.NumMyElements(),
-                                   bcol.MyGlobalElements(),
-                                   0,
-                                   *comm_));
-
-#if 0
-    //rownodes->Print(cout);
-    //colnodes->Print(cout);
-    //graph->Print(cout);
-    //tgraph->Print(cout);
-    finalgraph->Print(cout);
-#endif
-
-    // clean up
-    graph = null;
-    finalgraph = null;
-    tgraph = null;
-
-    // distribute ghost nodes resolving the node dependencies given by the final graph
-    dis->ExportColumnNodes(*colnodes);
-
-    // now we do the element stuff
-    RefCountPtr<Epetra_Map> elerowmap;
-    RefCountPtr<Epetra_Map> elecolmap;
-
-    // now we have all elements in a linear map roweles
-    // build resonable maps for elements from the
-    // already valid and final node maps
-    // note that nothing is actually redistributed in here
-    dis->BuildElementRowColumn(*rownodes,*colnodes,elerowmap,elecolmap);
-
-    // we can now export elements to resonable row element distribution
-    dis->ExportRowElements(*elerowmap);
-
-    // export to the column map / create ghosting of elements
-    dis->ExportColumnElements(*elecolmap);
+  // replace rownodes, colnodes with row and column maps from the graph
+  // do stupid conversion from Epetra_BlockMap to Epetra_Map
+  const Epetra_BlockMap& brow = finalgraph->RowMap();
+  const Epetra_BlockMap& bcol = finalgraph->ColMap();
+  rownodes = rcp(new Epetra_Map(brow.NumGlobalElements(),
+                                brow.NumMyElements(),
+                                brow.MyGlobalElements(),
+                                0,
+                                *comm_));
+  RefCountPtr<Epetra_Map> colnodes;
+  colnodes = rcp(new Epetra_Map(bcol.NumGlobalElements(),
+                                bcol.NumMyElements(),
+                                bcol.MyGlobalElements(),
+                                0,
+                                *comm_));
 
 #if 0
-    dis->Print(cout);
+  //rownodes->Print(cout);
+  //colnodes->Print(cout);
+  //graph->Print(cout);
+  //tgraph->Print(cout);
+  finalgraph->Print(cout);
 #endif
 
-    return;
+  // clean up
+  graph = null;
+  finalgraph = null;
+  tgraph = null;
+
+  // distribute ghost nodes resolving the node dependencies given by the final graph
+  dis->ExportColumnNodes(*colnodes);
+
+  // now we do the element stuff
+  RefCountPtr<Epetra_Map> elerowmap;
+  RefCountPtr<Epetra_Map> elecolmap;
+
+  // now we have all elements in a linear map roweles
+  // build resonable maps for elements from the
+  // already valid and final node maps
+  // note that nothing is actually redistributed in here
+  dis->BuildElementRowColumn(*rownodes,*colnodes,elerowmap,elecolmap);
+
+  // we can now export elements to resonable row element distribution
+  dis->ExportRowElements(*elerowmap);
+
+  // export to the column map / create ghosting of elements
+  dis->ExportColumnElements(*elecolmap);
+
+#if 0
+  dis->Print(cout);
+#endif
+
+  return;
 }
 
 
