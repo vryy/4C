@@ -282,7 +282,7 @@ private:
     
     void ManageIDs(ParameterList& params,int& minID, int& maxID, int& numID);
     
-    RCP<DRT::Discretization> CreateDiscretizationFromCondition(
+    void CreateDiscretizationFromCondition(
             vector< DRT::Condition* >      constrcond, 
             const string&             discret_name,
             const string&             element_name

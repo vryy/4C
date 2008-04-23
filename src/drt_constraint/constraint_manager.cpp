@@ -68,18 +68,37 @@ actdisc_(rcp(&discr))
     actdisc_->EvaluateCondition(p,"AreaConstraint_2D");
     haveareaconstr2D_=true;
   }
-  // Check for Nodal Constraints on planes in 3D
-  //actdisc_->Print(cout);
+  
+  // Check for Multi Point Constraint Node on planes in 3D
   actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
-  //Deal with area constraints
+  //Initialize Vectors to contain IDs and amplitudes
+  vector<double> MPCamplitudes(constrcond.size());
+  vector<int> MPCcondIDs(constrcond.size());
+  // Deal with MPC
   if (constrcond.size())
   {
     CreateDiscretizationFromCondition(constrcond,"ConstrDisc","CONSTRELE3");
+    // get user specified amplitude of movement and store it as initial value
     
-//    
-//    p.set("action","calc_nodeplanedist");
-//    actdisc_->SetState("displacement",disp);
-//    actdisc_->EvaluateCondition(p,"NodeOnPlaneConstraint_3D");
+    for (unsigned int i=0;i<constrcond.size();i++)
+    {
+      const vector<double>*    MPCampl  = constrcond[i]->Get<vector<double> >("Amplitude");
+      const vector<int>*    MPCcondID  = constrcond[i]->Get<vector<int> >("ConditionID");
+      MPCamplitudes[i]=(*MPCampl)[0];
+      MPCcondIDs[i]=(*MPCcondID)[0]-1;
+      // element write condition IDs (min and max) to parameter list. Here we have to do it ourselves
+      // since we do not call any element action
+      const int maxID=p.get("MaxID",0);
+      const int minID=p.get("MinID",1000000);
+      if (maxID<(*MPCcondID)[0])
+      {
+        p.set("MaxID",(*MPCcondID)[0]);
+      }
+      if (minID>(*MPCcondID)[0])
+      {
+        p.set("MinID",(*MPCcondID)[0]);
+      }
+    }
 //    havenodeconstraint_=true;
   }
   //----------------------------------------------------
@@ -98,9 +117,10 @@ actdisc_(rcp(&discr))
     // sum up initial values
     initialvalues_=rcp(new Epetra_Vector(*constrmap_));
     initialvalues_->Scale(0.0);
+    //Set initial values to computed volumes and areas and to amplitudes of MPC
     SynchronizeSumConstraint(p,initialvalues_,"computed volume",numConstrID_,minConstrID_);
     SynchronizeSumConstraint(p,initialvalues_,"computed area",numConstrID_,minConstrID_);
-    SynchronizeSumConstraint(p,initialvalues_,"computed dist",numConstrID_,minConstrID_);
+    initialvalues_->ReplaceGlobalValues(MPCamplitudes.size(),&(MPCamplitudes[0]),&(MPCcondIDs[0]));
     //Initialize Lagrange Multiplicators, reference values and errors
     actdisc_->ClearState();
     referencevalues_=rcp(new Epetra_Vector(*constrmap_));
@@ -493,7 +513,7 @@ void ConstrManager::SynchronizeMinConstraint(ParameterList& params,
 }
 
 
-RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
+void ConstrManager::CreateDiscretizationFromCondition
         (   vector< DRT::Condition* >      constrcondvec,
             const string&             discret_name,
             const string&             element_name)
@@ -599,11 +619,9 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
     constraintdis_->ExportColumnElements(*constraintelecolmap);
   
   }
-  // Now we are done. :)
- 
+   
   constraintdis_->FillComplete(true,true,true,false);
-  constraintdis_->Print(cout);  
-  return null;
+  return;
 }
 
 void ConstrManager::SortConstraintNodes(
