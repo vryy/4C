@@ -799,6 +799,8 @@ for (i=0; i<genprob.numfld; i++)
    break;
    case boundary:
    break;
+   case condif:
+   break;
    case structure:
      inpctr_eig_struct(alleig);
    break;
