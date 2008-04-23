@@ -70,6 +70,8 @@ public:
   */
   virtual const Epetra_Comm& Comm() const { return comm_;}
 
+  //! @name Access methods
+    
   /*!
   \brief Check whether interface was called FillComplete
 
@@ -279,7 +281,11 @@ public:
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
-    
+  
+  //@}
+  
+  //! @name Evlauation methods
+  
   /*!
   \brief Add a CONTACT::CNode to the interface (Filled()==true NOT prerequisite)
   
@@ -342,16 +348,59 @@ public:
   
   /*!
   \brief Integrate Mortar matrix D on slave element (2D)
+  
+  This method is only called, if the flag CONTACTONEMORTARLOOP is
+  not chosen. Then it integrates the Mortar matrix D on the current
+  slave CElement sele (full integration from -1 to 1).
           
   */
   virtual bool IntegrateSlave2D(CONTACT::CElement& sele);
   
   /*!
-  \brief Determine overlap and integrate slave / master pair (2D)
+  \brief Projection of slave / master pair (2D)
+  
+  This method projects the nodes of the slave CElement sele onto
+  the master CElement mele and vice versa. The parameter hasproj
+  stores a boolean variable for each of the 4 end nodes, indicating
+  whether a feasible projection was found or not. The local element
+  coordinates of the 4 projection points are stored in xiproj.
+  
+  */
+  virtual bool Project2D(CONTACT::CElement& sele,
+                         CONTACT::CElement& mele,
+                         vector<bool>& hasproj,
+                         vector<double>& xiproj);
+  
+  /*!
+  \brief Detect overlap of slave / master pair (2D)
+  
+  This method evaluates the overlap of the current CElement pair
+  sele / mele based on the projection status of the 4 end nodes
+  (hasproj) and the coordinates of the projection points (xiproj).
+  According to the detected overlap case, the integration limits
+  are determined and written into xiproj and the overlap status
+  is returned by a boolean variable.
+  
+  */
+  virtual bool DetectOverlap2D(CONTACT::CElement& sele,
+                               CONTACT::CElement& mele,
+                               vector<bool>& hasproj,
+                               vector<double>& xiproj);
+  
+  /*!
+  \brief Integrate overlap of slave / master pair (2D)
+  
+  This method integrates the overlap of the current CElement
+  pair sele / mele based on the integration limits (xiproj). The
+  integration always includes the Mortar matrix M and the gap g.
+  In some cases it also includes the Mortar matrix D (if the
+  flag CONTACTONEMORTARLOOP is chosen) and the Mortar matrix
+  Mmod (if the respective conditions are fulfilled).
         
   */
   virtual bool IntegrateOverlap2D(CONTACT::CElement& sele,
-                                  CONTACT::CElement& mele);
+                                  CONTACT::CElement& mele,
+                                  vector<double>& xiproj);
   
   /*!
   \brief Assemble Mortar matrices and weighted gap
@@ -388,6 +437,10 @@ public:
   */
   virtual bool SplitActiveDofs();
   
+  //@}
+  
+  //! @name Visualization methods
+  
   /*!
   \brief Visualize node normals and projections with gmsh
           
@@ -399,6 +452,8 @@ public:
   
   */
   virtual Epetra_SerialDenseMatrix& CSegs() {return contactsegs_;};
+  
+  //@}
 
 protected:
 

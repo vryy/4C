@@ -472,8 +472,19 @@ void CONTACT::Interface::Evaluate()
       if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
       CElement* melement = static_cast<CElement*>(ele2);
       
-      // check for element overlap and integrate the pair
-      IntegrateOverlap2D(*selement,*melement);
+      // prepare overlap integration
+      vector<bool> hasproj(4);
+      vector<double> xiproj(4);
+      bool overlap = false;
+      
+      // project the element pair
+      Project2D(*selement,*melement,hasproj,xiproj);
+      
+      // check for element overlap
+      overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
+      
+      // integrate the element overlap
+      if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
     }
   }
   
@@ -599,26 +610,23 @@ bool CONTACT::Interface::IntegrateSlave2D(CONTACT::CElement& sele)
 }
 
 /*----------------------------------------------------------------------*
- |  Determine overlap and integrate sl/ma pair (public)       popp 01/08|
+ |  Project slave / master element pair (public)              popp 04/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
-                                             CONTACT::CElement& mele)
-{
+bool CONTACT::Interface::Project2D(CONTACT::CElement& sele,
+                                   CONTACT::CElement& mele,
+                                   vector<bool>& hasproj,
+                                   vector<double>& xiproj)
+{ 
+  
   //cout << "Proc " << comm_.MyPID() << " checking pair... Slave ID: "
   //     << sele.Id() << " Master ID: " << mele.Id() << endl;
-  
-  /************************************************************/
-  /* There are several cases how the 2 elements can overlap.  */
-  /* Handle all of them, including the ones that they don't   */
-  /* overlap at all !                                          */
-  /************************************************************/
-  
-  // create local booleans for projections of end nodes
-  bool s0hasproj = false;
-  bool s1hasproj = false;
-  bool m0hasproj = false;
-  bool m1hasproj = false;
-  
+    
+  // initialize projection status
+  hasproj[0] = false;   // slave 0 end node
+  hasproj[1] = false;   // slave 1 end node
+  hasproj[2] = false;   // master 0 end node
+  hasproj[3] = false;   // master 1 end node
+
   // get slave and master element nodes
   DRT::Node** mysnodes = sele.Nodes();
   if (!mysnodes)
@@ -631,52 +639,68 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   CONTACT::Projector projector(true);
     
   // project slave nodes onto master element
-  vector<double> sprojxi(sele.NumNode());
   for (int i=0;i<sele.NumNode();++i)
   {
     CONTACT::CNode* snode = static_cast<CONTACT::CNode*>(mysnodes[i]);
     double xi[2] = {0.0, 0.0};
     projector.ProjectNodalNormal(*snode,mele,xi);
-    sprojxi[i]=xi[0];
     
     // save projection if it is feasible
     // we need an expanded feasible domain in order to check pathological
     // cases due to round-off error and iteration tolerances later!
-    if ((-1.0-CONTACTPROJTOL<=sprojxi[i]) && (sprojxi[i]<=1.0+CONTACTPROJTOL))
+    if ((-1.0-CONTACTPROJTOL<=xi[0]) && (xi[0]<=1.0+CONTACTPROJTOL))
     {
       // for element overlap only the outer nodes are of interest
-      if (i==0) s0hasproj=true;
-      if (i==1) s1hasproj=true;
+      if (i<2)
+      {
+        hasproj[i]=true;
+        xiproj[i]=xi[0];
+      }
       // nevertheless we need the inner node projection status later (weighted gap)
       snode->HasProj()=true;
     }    
   }
   
   // project master nodes onto slave element
-  vector<double> mprojxi(mele.NumNode());
   for (int i=0;i<2;++i)
   {
     CONTACT::CNode* mnode = static_cast<CONTACT::CNode*>(mymnodes[i]);
     double xi[2] = {0.0, 0.0};
     projector.ProjectElementNormal(*mnode,sele,xi);
-    mprojxi[i]=xi[0];
     
     // save projection if it is feasible
     // we need an expanded feasible domain in order to check pathological
     // cases due to round-off error and iteration tolerances later!!!
-    if ((-1.0-CONTACTPROJTOL<=mprojxi[i]) && (mprojxi[i]<=1.0+CONTACTPROJTOL))
+    if ((-1.0-CONTACTPROJTOL<=xi[0]) && (xi[0]<=1.0+CONTACTPROJTOL))
     {
-      if (i==0) m0hasproj=true;
-      if (i==1) m1hasproj=true;
+      // for element overlap only the outer nodes are of interest
+      if (i<2)
+      {
+        hasproj[i+2]=true;
+        xiproj[i+2]=xi[0];
+      }
     }    
   }
   
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Detect overlap of slave / master pair (public)            popp 04/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::DetectOverlap2D(CONTACT::CElement& sele,
+                                         CONTACT::CElement& mele,
+                                         vector<bool>& hasproj,
+                                         vector<double>& xiproj)
+{
   /**********************************************************************/
   /* OVERLAP CASES                                                      */
-  /* depending on mxi and sxi overlap will be decided                    */
-  /* even for 3noded CElements only the two end nodes matter in 2D!!!   */
+  /* Depending on mxi and sxi overlap will be decided!                  */
+  /* Even for 3noded CElements only the two end nodes matter in 2D!     */
+  /* There are several cases how the 2 elements can overlap. Handle all */
+  /* of them, including the ones that they don't overlap at all!        */
   /**********************************************************************/
-  //
+  
   // For the non-overlapping cases, the possibility of an identical local
   // node numbering direction for both sides is taken into account!!
   // (this can happen, when elements far from each other are projected,
@@ -690,11 +714,30 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   // which is ensured by only processing nodes that fulfill the 
   // CONTACTCRITDIST condition above!)
   
+  // CAUTION: The bool output variable in this method is a REAL output
+  // variable, determining whether there is an overlap or not!
+  
+  // initialize local working variables
   bool overlap = false;
   double sxia = 0.0;
   double sxib = 0.0;
   double mxia = 0.0;
   double mxib = 0.0;
+  
+  // local working copies of input variables
+  bool s0hasproj = hasproj[0];
+  bool s1hasproj = hasproj[1];
+  bool m0hasproj = hasproj[2];
+  bool m1hasproj = hasproj[3];
+  
+  vector<double> sprojxi(2);
+  sprojxi[0] = xiproj[0];
+  sprojxi[1] = xiproj[1];
+  
+  vector<double> mprojxi(2);
+  mprojxi[0] = xiproj[2];
+  mprojxi[1] = xiproj[3];
+  
   
   /* CASE 1 (NO OVERLAP):
      no feasible projection found for any of the 4 outer element nodes  */
@@ -712,8 +755,8 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   {
     if ((-1.0+CONTACTPROJTOL<=sprojxi[0]) && (sprojxi[0]<=1.0-CONTACTPROJTOL))
     {
-      cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
-      cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
+      cout << "SElement Node IDs: " << (sele.Nodes()[0])->Id() << " " << (sele.Nodes()[1])->Id() << endl;
+      cout << "MElement Node IDs: " << (mele.Nodes()[0])->Id() << " " << (mele.Nodes()[1])->Id() << endl;
       cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
       cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
       dserror("ERROR: IntegrateOverlap2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
@@ -724,8 +767,8 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   {
     if ((-1.0+CONTACTPROJTOL<=sprojxi[1]) && (sprojxi[1]<=1.0-CONTACTPROJTOL))
     {
-      cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
-      cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
+      cout << "SElement Node IDs: " << (sele.Nodes()[0])->Id() << " " << (sele.Nodes()[1])->Id() << endl;
+      cout << "MElement Node IDs: " << (mele.Nodes()[0])->Id() << " " << (mele.Nodes()[1])->Id() << endl;
       cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
       cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
       dserror("ERROR: IntegrateOverlap2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
@@ -736,8 +779,8 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   {
     if ((-1.0+CONTACTPROJTOL<=mprojxi[0]) && (mprojxi[0]<=1.0-CONTACTPROJTOL))
     {
-      cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
-      cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
+      cout << "SElement Node IDs: " << (sele.Nodes()[0])->Id() << " " << (sele.Nodes()[1])->Id() << endl;
+      cout << "MElement Node IDs: " << (mele.Nodes()[0])->Id() << " " << (mele.Nodes()[1])->Id() << endl;
       cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
       cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
       dserror("ERROR: IntegrateOverlap2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
@@ -748,8 +791,8 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   {
     if ((-1.0+CONTACTPROJTOL<=mprojxi[1]) && (mprojxi[1]<=1.0-CONTACTPROJTOL))
     {
-      cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
-      cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
+      cout << "SElement Node IDs: " << (sele.Nodes()[0])->Id() << " " << (sele.Nodes()[1])->Id() << endl;
+      cout << "MElement Node IDs: " << (mele.Nodes()[0])->Id() << " " << (mele.Nodes()[1])->Id() << endl;
       cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
       cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
       dserror("ERROR: IntegrateOverlap2D: Significant overlap ignored S%i M%i!", sele.Id(), mele.Id());
@@ -766,8 +809,8 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
     cout << "***WARNING***" << endl << "CONTACT::Interface::IntegrateOverlap2D "<< endl
          << "has detected '4 feasible projections'-case for Slave/Master pair "
          << sele.Id() << "/" << mele.Id() << endl;
-    cout << "SElement Node IDs: " << mysnodes[0]->Id() << " " << mysnodes[1]->Id() << endl;
-    cout << "MElement Node IDs: " << mymnodes[0]->Id() << " " << mymnodes[1]->Id() << endl;
+    cout << "SElement Node IDs: " << (sele.Nodes()[0])->Id() << " " << (sele.Nodes()[1])->Id() << endl;
+    cout << "MElement Node IDs: " << (mele.Nodes()[0])->Id() << " " << (mele.Nodes()[1])->Id() << endl;
     cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
     cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
     
@@ -985,14 +1028,16 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
     }
   }
 
+  // update integration limits in xiproj
+  xiproj[0]=sxia;
+  xiproj[1]=sxib;
+  xiproj[2]=mxia;
+  xiproj[3]=mxib;
+  
+  // prepare gmsh visualization
 #ifdef DEBUG
   if (overlap)
   {
-    //cout << "Found overlap!!!" << endl;
-    //cout << "sxia: " << sxia << " sxib: " << sxib << endl;
-    //cout << "mxia: " << mxia << " mxib: " << mxib << endl;
-    
-    // prepare gmsh visualization
     double sxialoc[2] = {sxia, 0.0};
     double sxibloc[2] = {sxib, 0.0};
     double mxialoc[2] = {mxia, 0.0};
@@ -1023,22 +1068,30 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
     segs(segs.M()-1,10) = sxibglob[1];
     segs(segs.M()-1,11) = sxibglob[2];
   }
-  else
-  {
-    //cout << "Did not find overlap!!!" << endl;
-  }
 #endif // #ifdef DEBUG
   
+  return overlap;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integrate slave / master overlap (public)                 popp 04/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
+                                             CONTACT::CElement& mele,
+                                             vector<double>& xiproj)
+{
   /**********************************************************************/
   /* INTEGRATION                                                        */
-  /* depending on overlap, sxia, sxib, mxia and mxib                     */
-  /* integrate the Mortar matrix M and the weighted gap function g~      */
-  /* on the overlap of the current Slave / Master CElement pair         */
+  /* Depending on overlap and the xiproj entries integrate the Mortar   */
+  /* matrix M and the weighted gap function g~ on the overlap of the    */
+  /* current slave / master CElement pair                               */
   /**********************************************************************/
   
-  // send non-overlapping pairs out of here
-  if (!overlap)
-    return true;
+  //local working copies of input variables
+  double sxia = xiproj[0];
+  double sxib = xiproj[1];
+  double mxia = xiproj[2];
+  double mxib = xiproj[3];
   
   // create a 2D integrator instance of GP order 5
   CONTACT::Integrator integrator(CONTACTNGP,true);
