@@ -4,6 +4,7 @@
 #include "fsi_statustest.H"
 #include "fsi_overlapprec.H"
 #include "fsi_nox_aitken.H"
+#include "fsi_nox_newton.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -142,10 +143,12 @@ void FSI::MonolithicOverlap::SetDefaultParameters(const Teuchos::ParameterList& 
 
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
 
-  dirParams.set<std::string>("Method","Newton");
+  dirParams.set<std::string>("Method","User Defined");
+  Teuchos::RCP<NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this,false);
+  dirParams.set("User Defined Direction Factory",newtonfactory);
 
   Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   //Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
 
@@ -171,6 +174,21 @@ void FSI::MonolithicOverlap::SetDefaultParameters(const Teuchos::ParameterList& 
   //lineSearchParams.sublist("Aitken").set("max step size",
   //fsidyn.get<double>("MAXOMEGA"));
 #endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<NOX::Direction::Generic>
+FSI::MonolithicOverlap::buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
+                                       Teuchos::ParameterList& params) const
+{
+  Teuchos::RCP<NOX::FSI::Newton> newton = Teuchos::rcp(new NOX::FSI::Newton(gd,params));
+  for (unsigned i=0; i<statustests_.size(); ++i)
+  {
+    statustests_[i]->SetNewton(newton);
+  }
+  return newton;
 }
 
 
@@ -342,7 +360,7 @@ FSI::MonolithicOverlap::CreateLinearSystem(ParameterList& nlParams,
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
   NOX::Epetra::Interface::Jacobian* iJac = this;
@@ -395,8 +413,9 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
                                        nlParams.get("Norm abs disp", 1.0e-6),
                                        PartialNormUpdate::Scaled));
 
+  statustests_.push_back(structureDisp);
   structcombo->addStatusTest(structureDisp);
-  structcombo->addStatusTest(structureDispUpdate);
+  //structcombo->addStatusTest(structureDispUpdate);
 
   converged->addStatusTest(structcombo);
 
@@ -422,8 +441,9 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
                                        nlParams.get("Norm abs vel", 1.0e-6),
                                        PartialNormUpdate::Scaled));
 
+  statustests_.push_back(innerFluidVel);
   fluidvelcombo->addStatusTest(innerFluidVel);
-  fluidvelcombo->addStatusTest(innerFluidVelUpdate);
+  //fluidvelcombo->addStatusTest(innerFluidVelUpdate);
 
   converged->addStatusTest(fluidvelcombo);
 
@@ -449,8 +469,9 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
                                        nlParams.get("Norm abs pres", 1.0e-6),
                                        PartialNormUpdate::Scaled));
 
+  statustests_.push_back(fluidPress);
   fluidpresscombo->addStatusTest(fluidPress);
-  fluidpresscombo->addStatusTest(fluidPressUpdate);
+  //fluidpresscombo->addStatusTest(fluidPressUpdate);
 
   converged->addStatusTest(fluidpresscombo);
 

@@ -2,6 +2,7 @@
 #ifdef CCADISCRET
 
 #include "fsi_statustest.H"
+#include "fsi_nox_newton.H"
 #include "../drt_lib/drt_dserror.H"
 
 #include <NOX_Common.H>
@@ -21,8 +22,8 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::GenericNormF::GenericNormF(std::string name,
-                                 double tolerance,
-                                 ScaleType stype)
+                                double tolerance,
+                                ScaleType stype)
   : status_(NOX::StatusTest::Unevaluated),
     normType_(NOX::Abstract::Vector::TwoNorm),
     scaleType_(stype),
@@ -103,7 +104,7 @@ void FSI::GenericNormF::relativeSetup(NOX::Abstract::Group& initialGuess)
 /*----------------------------------------------------------------------*/
 NOX::StatusTest::StatusType
 FSI::GenericNormF::checkStatus(const NOX::Solver::Generic& problem,
-                                NOX::StatusTest::CheckType checkType)
+                               NOX::StatusTest::CheckType checkType)
 {
   if (checkType == NOX::StatusTest::None)
   {
@@ -227,6 +228,14 @@ FSI::PartialNormF::PartialNormF(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void FSI::PartialNormF::SetNewton(Teuchos::RCP<NOX::FSI::Newton> newton)
+{
+  newton_ = newton;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 double FSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
 {
   if (!grp.isF())
@@ -241,32 +250,44 @@ double FSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
 
   Teuchos::RCP<Epetra_Vector> v = extractor_.ExtractVector(f.getEpetraVector(),blocknum_);
 
-  return FSI::GenericNormF::computeNorm(*v);
+  double norm = FSI::GenericNormF::computeNorm(*v);
+
+  if (newton_!=Teuchos::null)
+  {
+    newton_->Residual(norm,Tolerance());
+  }
+
+  return norm;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::GenericNormUpdate::GenericNormUpdate(double tol,
+FSI::GenericNormUpdate::GenericNormUpdate(std::string name,
+                                          double tol,
                                           NOX::Abstract::Vector::NormType ntype,
                                           ScaleType stype)
   : status_(NOX::StatusTest::Unevaluated),
     normType_(ntype),
     scaleType_(stype),
     tolerance_(tol),
-    normUpdate_(0.0)
+    normUpdate_(0.0),
+    name_(name)
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::GenericNormUpdate::GenericNormUpdate(double tol, ScaleType stype)
+FSI::GenericNormUpdate::GenericNormUpdate(std::string name,
+                                          double tol,
+                                          ScaleType stype)
   : status_(NOX::StatusTest::Unevaluated),
     normType_(NOX::Abstract::Vector::TwoNorm),
     scaleType_(stype),
     tolerance_(tol),
-    normUpdate_(0.0)
+    normUpdate_(0.0),
+    name_(name)
 {
 }
 
@@ -343,8 +364,8 @@ double FSI::GenericNormUpdate::computeNorm(const Epetra_Vector& v)
     if (scaleType_ == Scaled)
       normUpdate_ /= n;
     break;
-
   }
+
   return normUpdate_;
 }
 
@@ -396,7 +417,7 @@ FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
                                           int blocknum,
                                           double tolerance,
                                           ScaleType stype)
-  : GenericNormUpdate(tolerance,stype),
+  : GenericNormUpdate(name,tolerance,stype),
     extractor_(extractor),
     blocknum_(blocknum)
 {

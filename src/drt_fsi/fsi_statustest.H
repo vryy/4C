@@ -29,6 +29,14 @@ Maintainer: Ulrich Kuettler
 #include "fsi_coupling.H"
 #include "../drt_lib/linalg_mapextractor.H"
 
+namespace NOX
+{
+  namespace FSI
+  {
+    class Newton;
+  }
+}
+
 namespace FSI
 {
 
@@ -113,6 +121,8 @@ namespace FSI
       \c trueTolerance based on the F-value at the initial guess.*/
     //void relativeSetup(NOX::Abstract::Group& initialGuess);
 
+    double Tolerance() const { return trueTolerance_; }
+
   private:
 
     //! %Status
@@ -162,6 +172,8 @@ namespace FSI
                  double tolerance,
                  ScaleType stype = Scaled);
 
+    void SetNewton(Teuchos::RCP<NOX::FSI::Newton> newton);
+
   protected:
 
     double computeNorm(const NOX::Abstract::Group& grp);
@@ -169,6 +181,7 @@ namespace FSI
   private:
     const LINALG::MultiMapExtractor extractor_;
     int blocknum_;
+    Teuchos::RCP<NOX::FSI::Newton> newton_;
   };
 
 
@@ -187,11 +200,16 @@ namespace FSI
 
     //! Constructor for absolute norm.
     /*! This constructor defaults to the \c Absolute tolerance type. */
-    GenericNormUpdate(double tolerance, NOX::Abstract::Vector::NormType ntype, ScaleType stype = Scaled);
+    GenericNormUpdate(std::string name,
+                      double tolerance,
+                      NOX::Abstract::Vector::NormType ntype,
+                      ScaleType stype = Scaled);
 
     //! Constructor for absolute norm
     /*! This constructor defaults to the \c Absolute ToleranceType and \c TWO NormType. */
-    GenericNormUpdate(double tolerance, ScaleType stype = Scaled);
+    GenericNormUpdate(std::string name,
+                      double tol,
+                      ScaleType stype = Scaled);
 
     //! Destructor.
     virtual ~GenericNormUpdate();
@@ -241,6 +259,8 @@ namespace FSI
 
     //! Norm of the update to be compared to trueTolerance
     double normUpdate_;
+
+    std::string name_;
   };
 
 

@@ -206,11 +206,21 @@ namespace FSI
 
     //! @name Access methods for subclasses
 
+    /// output utility
     Teuchos::RCP<NOX::Utils> Utils() const { return utils_; }
 
+    /// full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() const { return blockrowdofmap_.FullMap(); }
+
+    /// set full monolithic dof row map
+    /*!
+      A subclass calls this method (from its constructor) and thereby
+      defines the number of blocks, their maps and the block order. The block
+      maps must be row maps by themselves and must not contain identical GIDs.
+     */
     void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
+    /// extractor to communicate between full monolithic map and block maps
     const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
     //@}

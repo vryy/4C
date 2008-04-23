@@ -3,11 +3,13 @@
 #ifndef FSI_MONOLITHICOVERLAP_H
 #define FSI_MONOLITHICOVERLAP_H
 
+#include <NOX_Direction_UserDefinedFactory.H>
+
 #include "fsi_monolithic.H"
 
 namespace FSI
 {
-
+  class PartialNormF;
 
   /// monolithic FSI algorithm with overlapping interface equations
   /*!
@@ -42,7 +44,8 @@ namespace FSI
     \author u.kue
     \date 02/08
    */
-  class MonolithicOverlap : public Monolithic
+  class MonolithicOverlap : public Monolithic,
+                            public NOX::Direction::UserDefinedFactory
   {
   public:
     explicit MonolithicOverlap(Epetra_Comm& comm);
@@ -75,6 +78,19 @@ namespace FSI
 
     /// the composed system matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+
+    /// create my own direction object
+    /*!
+      MonolithicOverlap is a (inherits from)
+      NOX::Direction::UserDefinedFactory. This is an implementation
+      detail. This way we can construct a specialized direction object at a
+      place where we know about the status tests. This is the whole point
+      here. Our specialized direction is of the type NOX::FSI::Newton, the
+      normal Newton direction enhanced with adaptive tolerance control for the
+      internal linear (iterative) solver.
+     */
+    virtual Teuchos::RCP<NOX::Direction::Generic> buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
+                                                                 Teuchos::ParameterList& params) const;
 
   protected:
 
@@ -164,6 +180,10 @@ namespace FSI
 
     mutable bool havefluidstructcolmap_;
     mutable bool havepermfluidstructcolmap_;
+
+    /// keep the status tests available so we can connect them with our
+    /// adaptive Newton direction
+    std::vector<Teuchos::RCP<PartialNormF> > statustests_;
   };
 }
 

@@ -172,7 +172,7 @@ void ADAPTER::AleLinear::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp) const
+void ADAPTER::AleLinear::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
 {
   // We save the current solution here. This will not change the
   // result of our element call, but the next time somebody asks us we

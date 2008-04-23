@@ -928,8 +928,7 @@ void ElementReader::Complete()
 
   if (!myrank && !reader_.MyOutputFlag())
   {
-    cout << "Complete discretization                  in....";
-    fflush(stdout);
+    cout << "Complete discretization                  in...." << flush;
   }
 
   int err = dis_->FillComplete();
@@ -938,8 +937,7 @@ void ElementReader::Complete()
 
   if (!myrank && !reader_.MyOutputFlag())
   {
-    cout << time.ElapsedTime() << " secs\n";
-    fflush(stdout);
+    cout << time.ElapsedTime() << " secs" << endl;
   }
 }
 
@@ -986,8 +984,7 @@ void NodeReader::Read()
 
   if (!myrank && !reader_.MyOutputFlag())
   {
-    cout << "Read, create and partition nodes         in....";
-    fflush(stdout);
+    cout << "Read, create and partition nodes         in...." << flush;
   }
 
   // We will read the nodes block wise. we will use one block per processor
@@ -1065,8 +1062,7 @@ void NodeReader::Read()
 
   if (!myrank && !reader_.MyOutputFlag())
   {
-    cout << time.ElapsedTime() << " secs\n";
-    fflush(stdout);
+    cout << time.ElapsedTime() << " secs" << endl;
   }
 
   for (unsigned i=0; i<ereader_.size(); ++i)
