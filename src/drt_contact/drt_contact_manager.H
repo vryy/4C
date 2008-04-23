@@ -78,6 +78,8 @@ public:
   */
   inline const Epetra_Comm& Comm() const { return discret_.Comm();};
 
+  //! @name Access methods
+  
   /*!
   \brief Get discretization
 
@@ -132,6 +134,10 @@ public:
   */
   inline bool& IsInContact() { return isincontact_; }
   
+  //@}
+  
+  //! @name Evaluation methods
+  
   /*!
   \brief Write restart information for contact
   
@@ -158,6 +164,11 @@ public:
   
   /*!
   \brief Evaluate contact Mortar matrices D,M only
+    
+  This is a light version of the Evaluate() method, which include the
+  evluation of the current Mortar operators D and M only. No setup of
+  the global system is to be done here, so there is no need to pass
+  in the effective stiffness K or the effective load vector f.
       
   */
   void EvaluateMortar();
@@ -171,7 +182,8 @@ public:
   This makes modifications to the effective stiffness K and the effective
   load vector f necessary. As these modifications are usually applied
   to groups of dofs (slave, master, etc.) some matrix and vector
-  splitting and a lot of matrix-vector calculation is done!  
+  splitting and a lot of matrix-vector calculation is done! 
+   
   */
   void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
   
@@ -221,8 +233,9 @@ public:
   */
   void ContactForces(RCP<Epetra_Vector>& fresm);
   
+  //@}
   
-
+  
 protected:
 
   // don't want = operator and cctor
