@@ -601,10 +601,21 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
 int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
 {
   int j =0;
+  bool skiptherest=false;
+
   while (!dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(j)))
   {
-	j++;
+    j++;
+    // stop, if all elements on this proc (including ghost elements) have been visited
+    if (j==dis.NumMyColElements())
+    {
+      skiptherest=true;
+      break;
+    }
   }
+
+  if (!skiptherest)
+  {
   DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(j));
   if (!actele->donerewinding_)
     {
@@ -649,6 +660,7 @@ int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
 	// but without element init, etc.
 	dis.FillComplete(false,false,false);
     }
+  }
 
 
   return 0;
