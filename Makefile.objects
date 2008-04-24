@@ -1132,7 +1132,8 @@ OBJS_INTERSECTION = src/drt_xfem/predicates.o \
                     src/drt_xfem/bele3_line.o \
                     src/drt_xfem/bele3_line_evaluate.o \
                     src/drt_xfem/bele3_evaluate.o \
-                    src/drt_xfem/xdofmapcreation.o
+                    src/drt_xfem/xdofmapcreation.o \
+                    src/drt_xfem/xfsi_searchtree.o
 #               time adaptivity
 OBJS_DRT_TIMADA = src/drt_timada/timeadaptivity.o \
                   src/drt_timada/ta_zienkiewiczxie.o
