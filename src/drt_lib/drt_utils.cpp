@@ -67,6 +67,7 @@ extern "C"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/hyperpolyconvex.H"
 #include "../drt_mat/anisotropic_balzani.H"
+#include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
@@ -448,6 +449,12 @@ break;
       MAT::AnisotropicBalzani* anba = new MAT::AnisotropicBalzani();
       anba->Unpack(data);
       return anba;
+    }
+    case ParObject_MooneyRivlin:
+    {
+      MAT::MooneyRivlin* moon = new MAT::MooneyRivlin();
+      moon->Unpack(data);
+      return moon;
     }
     case ParObject_MicroMaterial:
     {

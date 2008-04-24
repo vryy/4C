@@ -54,6 +54,7 @@ typedef struct _MATERIAL
      struct _ITSKOV           *itskov;       /* Itskov material for isotropic case */
      struct _QUADRATIC_ANISO  *quadratic_aniso;       /* Anisotropic quadratic material */
      struct _ANISOTROPIC_BALZANI *anisotropic_balzani; /* anisotropic hyperelastic polyconvex material */
+     struct _MOONEYRIVLIN     *mooneyrivlin; /* Mooney-Rivlin material */
      struct _TH_FOURIER_ISO   *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
      struct _TH_FOURIER_GEN   *th_fourier_gen;   /* general heat conduction matrix of Fourier's (linear) law of heat conduction */
      struct _VP_ROBINSON      *vp_robinson;  /* viscoplastic Robinson material */
@@ -640,6 +641,18 @@ typedef struct _ANISOTROPIC_BALZANI
      DOUBLE                    alpha2_2;
      DOUBLE                    a2[3];
 } ANISOTROPIC_BALZANI;
+/*----------------------------------------------------------------------*
+ | Mooney-Rivlin material                                     maf 04/08 |
+ *----------------------------------------------------------------------*/
+typedef struct _MOONEYRIVLIN
+{
+     DOUBLE                    mu1;
+     DOUBLE                    alpha1;
+     DOUBLE                    mu2;
+     DOUBLE                    alpha2;
+     DOUBLE                    penalty;
+     DOUBLE                    density;
+} MOONEYRIVLIN;
 /*----------------------------------------------------------------------*
  | Isotropic heat conduction coefficient                    bborn 03/06 |
  | of Fourier's law of heat conduction                                  |

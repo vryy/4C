@@ -90,17 +90,10 @@ double MAT::AnisotropicBalzani::Density()
 
 This routine establishes a local material law, stress-strain relationship
 for hyperelastic, anisotropic material for a 3D-hex-element.
-Used for biological, soft, collagenous tissues.
+Used for biological, soft, collagenous tissues. 2 Fiber families account for
+anisotropy where fiber angles need to be specified
 
-Documented in the 'Diplomarbeit' by Barbara Roehrnbauer at LNM.
-Based on Holzapfel [1], Ogden [2] and Balzani, Schroeder, Neff [3].
-
-[1] G.A.Holzapfel, R.W.Ogden, A New Consitutive Framework for Arterial Wall Mechanics and
-  a Comparative Study of Material Models, Journal of Elasticity 61, 1-48, 2000.
-[2] R.W.Ogden, Anisotropy and Nonlinear Elasticity in Arterial Wall Mechanics,
-  CISM Course on Biomechanical Modeling, Lectures 2,3, 2006.
-[3] D.Balzani, P.Neff, J.Schroeder, G.A.Holzapfel, A Polyconvex Framework for Soft Biological Tissues
-  Adjustment to Experimental Data, Report-Preprint No. 22, 2005.
+Based on Dissertation of Daniel Balzani
 */
 
 void MAT::AnisotropicBalzani::Evaluate(const Epetra_SerialDenseVector* glstrain,

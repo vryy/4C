@@ -39,6 +39,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
+#include "../drt_mat/mooneyrivlin.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -95,6 +96,14 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       anba->Evaluate(glstrain,defgrd,gp,ele_ID,time,cmat,stress,avec);
 
       *density = anba->Density();
+
+      break;
+    }
+    case m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
+    {
+      MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
+      moon->Evaluate(glstrain,cmat,stress);
+      *density = moon->Density();
 
       break;
     }

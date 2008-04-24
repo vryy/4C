@@ -23,6 +23,7 @@ Maintainer: Lena Wiechert
 #include "aaaneohooke.H"
 #include "convecdiffus.H"
 #include "anisotropic_balzani.H"
+#include "mooneyrivlin.H"
 #include "carreauyasuda.H"
 #include "modpowerlaw.H"
 
@@ -67,6 +68,8 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return Teuchos::rcp(new HyperPolyconvex(actmat));
   case m_anisotropic_balzani:
     return Teuchos::rcp(new AnisotropicBalzani(actmat));
+  case m_mooneyrivlin:
+    return Teuchos::rcp(new MooneyRivlin(actmat));
   case m_neohooke:
     return Teuchos::rcp(new NeoHooke(actmat));
   case m_aaaneohooke:

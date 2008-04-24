@@ -508,6 +508,19 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("A2Y"    ,&(localmat.m.anisotropic_balzani->a2[1])    ,&ierr);
       frdouble("A2Z"    ,&(localmat.m.anisotropic_balzani->a2[2])    ,&ierr);
    }
+   // Mooney-Rivlin material law
+   frchk("MAT_MOONEYRIVLIN",&ierr);
+   if (ierr==1)
+   {
+      localmat.mattyp      = m_mooneyrivlin;
+      localmat.m.mooneyrivlin = new MOONEYRIVLIN();
+      frdouble("MU1"     ,&(localmat.m.mooneyrivlin->mu1)      ,&ierr);
+      frdouble("ALPHA1"  ,&(localmat.m.mooneyrivlin->alpha1)   ,&ierr);
+      frdouble("MU2"     ,&(localmat.m.mooneyrivlin->mu2)      ,&ierr);
+      frdouble("ALPHA2"  ,&(localmat.m.mooneyrivlin->alpha2)   ,&ierr);
+      frdouble("PENALTY" ,&(localmat.m.mooneyrivlin->penalty)  ,&ierr);
+      frdouble("DENS"    ,&(localmat.m.mooneyrivlin->density)  ,&ierr);
+   }
    /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */
    frchk("MAT_Therm_Fourier_iso",&ierr);
    if (ierr==1)

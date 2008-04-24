@@ -122,6 +122,7 @@ using namespace std;
 #define ParObject_ModPowerLaw           (int)97
 #define ParObject_ConstraintElement3    (int)98
 #define ParObject_ConstraintElement3Register (int)99
+#define ParObject_MooneyRivlin          (int)100
 
 namespace DRT
 {
