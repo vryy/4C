@@ -25,17 +25,20 @@ Maintainer: Robert Metzke
 
 extern struct _MATERIAL *mat;
 
+/*---------------------------------------------------------------------*/
 MAT::NeoHooke::NeoHooke()
   : matdata_(NULL)
 {
 }
 
 
+/*---------------------------------------------------------------------*/
 MAT::NeoHooke::NeoHooke(MATERIAL* matdata)
   : matdata_(matdata)
 {
 }
 
+/*---------------------------------------------------------------------*/
 void MAT::NeoHooke::Pack(vector<char>& data) const
 {
   data.resize(0);
@@ -49,6 +52,7 @@ void MAT::NeoHooke::Pack(vector<char>& data) const
 }
 
 
+/*---------------------------------------------------------------------*/
 void MAT::NeoHooke::Unpack(const vector<char>& data)
 {
   int position = 0;
