@@ -37,6 +37,9 @@ data_()
   donerewinding_ = false;
   thickvec_.resize(0);
   fiberdirection_.resize(0);
+#if defined(PRESTRESS) || defined(POSTSTRESS)  
+  glprestrain_ = rcp(new Epetra_SerialDenseMatrix(NUMGPT_SOH8,NUMSTR_SOH8));
+#endif
   return;
 }
 
@@ -59,6 +62,9 @@ donerewinding_(old.donerewinding_),
 thickvec_(old.thickvec_),
 fiberdirection_(old.fiberdirection_)
 {
+#if defined(PRESTRESS) || defined(POSTSTRESS)  
+  glprestrain_ = rcp(new Epetra_SerialDenseMatrix(*(old.glprestrain_)));
+#endif
   return;
 }
 
@@ -111,6 +117,9 @@ void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
+#if defined(PRESTRESS) || defined(POSTSTRESS)  
+  AddtoPack(data,*glprestrain_);
+#endif  
 
   return;
 }
@@ -146,6 +155,9 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
+#if defined(PRESTRESS) || defined(POSTSTRESS)  
+  ExtractfromPack(position,data,*glprestrain_);
+#endif  
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

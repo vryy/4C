@@ -282,7 +282,8 @@ protected:
     calc_struct_fsiload,
     calc_struct_update_istep,
     calc_struct_update_genalpha_imrlike,
-    postprocess_stress
+    postprocess_stress,
+    update_gl
   };
 
   //! kinematic types of so_weg6
@@ -307,6 +308,12 @@ protected:
   //! vector of lines adjacent to this element
   vector<DRT::ELEMENTS::Sow6Line*>              lineptrs_;
 
+  //! green lagrange strains storage needed for prestressing structures
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  virtual inline Teuchos::RCP<Epetra_SerialDenseMatrix>& PreStrains()
+  { return glprestrain_; }
+  RCP<Epetra_SerialDenseMatrix>                    glprestrain_;
+#endif
 
 
 

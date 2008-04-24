@@ -37,6 +37,9 @@ data_()
   lineptrs_.resize(0);
   kintype_ = sow6_totlag;
   donerewinding_ = false;
+#if defined(PRESTRESS) || defined(POSTSTRESS)  
+  glprestrain_ = rcp(new Epetra_SerialDenseMatrix(NUMGPT_WEG6,NUMSTR_WEG6));
+#endif
   return;
 }
 
@@ -55,6 +58,9 @@ lines_(old.lines_),
 lineptrs_(old.lineptrs_),
 donerewinding_(old.donerewinding_)
 {
+#if defined(PRESTRESS) || defined(POSTSTRESS)  
+  glprestrain_ = rcp(new Epetra_SerialDenseMatrix(*(old.glprestrain_)));
+#endif
   return;
 }
 
@@ -100,6 +106,9 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
+#if defined(PRESTRESS) || defined(POSTSTRESS)  
+  AddtoPack(data,*glprestrain_);
+#endif  
 
   return;
 }
@@ -128,6 +137,9 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
+#if defined(PRESTRESS) || defined(POSTSTRESS)  
+  ExtractfromPack(position,data,*glprestrain_);
+#endif  
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

@@ -54,20 +54,23 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
   // get the required action
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff")                act = So_hex8::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff")                act = So_hex8::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce")           act = So_hex8::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass")            act = So_hex8::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass")            act = So_hex8::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_stress")                  act = So_hex8::calc_struct_stress;
-  else if (action=="calc_struct_eleload")                 act = So_hex8::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload")                 act = So_hex8::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep")            act = So_hex8::calc_struct_update_istep;
-  else if (action=="calc_struct_update_genalpha_imrlike") act = So_hex8::calc_struct_update_genalpha_imrlike;
-  else if (action=="eas_init_multi")                      act = So_hex8::eas_init_multi;
-  else if (action=="eas_set_multi")                       act = So_hex8::eas_set_multi;
-  else if (action=="calc_homog_stressdens")               act = So_hex8::calc_homog_stressdens;
-  else if (action=="postprocess_stress")                  act = So_hex8::postprocess_stress;
+  else if (action=="calc_struct_linstiff")                        act = So_hex8::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff")                        act = So_hex8::calc_struct_nlnstiff;
+  else if (action=="calc_struct_internalforce")                   act = So_hex8::calc_struct_internalforce;
+  else if (action=="calc_struct_linstiffmass")                    act = So_hex8::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass")                    act = So_hex8::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_stress")                          act = So_hex8::calc_struct_stress;
+  else if (action=="calc_struct_eleload")                         act = So_hex8::calc_struct_eleload;
+  else if (action=="calc_struct_fsiload")                         act = So_hex8::calc_struct_fsiload;
+  else if (action=="calc_struct_update_istep")                    act = So_hex8::calc_struct_update_istep;
+  else if (action=="calc_struct_update_genalpha_imrlike")         act = So_hex8::calc_struct_update_genalpha_imrlike;
+  else if (action=="eas_init_multi")                              act = So_hex8::eas_init_multi;
+  else if (action=="eas_set_multi")                               act = So_hex8::eas_set_multi;
+  else if (action=="calc_homog_stressdens")                       act = So_hex8::calc_homog_stressdens;
+  else if (action=="postprocess_stress")                          act = So_hex8::postprocess_stress;
+#ifdef PRESTRESS
+  else if (action=="calc_struct_prestress_update_green_lagrange") act = So_hex8::update_gl;
+#endif
   else dserror("Unknown type of action for So_hex8");
 
   const double time = params.get("total time",-1.0);
@@ -141,6 +144,21 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       bool cauchy = params.get<bool>("cauchy", false);
       soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy);
       AddtoPack(*stressdata, stress);
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+      {
+        RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
+        if (gl==null) 
+          dserror("Cannot output prestrains");
+        if (gl->M() != strain.M() || gl->N() != strain.N())
+          dserror("Mismatch in dimension");
+        // the element outputs 0.5* strains[3-5], but we have the computational quantity here
+        Epetra_SerialDenseMatrix tmp(*gl);
+        for (int i=0; i<NUMGPT_SOH8; ++i)
+          for (int j=3; j<6; ++j)
+            tmp(i,j) *= 0.5;
+        strain += tmp;
+      }
+#endif      
       AddtoPack(*straindata, strain);
     }
     break;
@@ -314,6 +332,32 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       }
     }
     break;
+
+#ifdef PRESTRESS    
+    // in case of prestressing, make a snapshot of the current green-Lagrange strains and add them to
+    // the previously stored GL strains in an incremental manner
+    case update_gl: 
+    {
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get displacement state");
+      vector<double> mydisp(lm.size());
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      Epetra_SerialDenseMatrix strain(NUMGPT_SOH8,NUMSTR_SOH8);
+      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&strain,time,false);
+      // the element outputs 0.5* strains[3-5], but we want the computational quantity here
+      for (int i=0; i<NUMGPT_SOH8; ++i)
+        for (int j=3; j<6; ++j) strain(i,j) *= 2.0;
+      RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
+      if (gl==null) dserror("Prestress array not initialized");
+      if (gl->M() != strain.M() || gl->N() != strain.N())
+        dserror("Prestress arrauy not initialized");
+      (*gl) += strain;
+    }
+    break;
+#endif    
 
     default:
       dserror("Unknown type of action for Solid3");
@@ -533,6 +577,10 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
 
+    // gee: do this once upon construction, because it does not
+    // change in the calculation (material frame)
+    // also do explicitly without solver
+    
     /* compute derivatives N_XYZ at gp w.r.t. material coordinates
     ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
     ** Inverse of Jacobian is therefore not explicitly computed
@@ -599,7 +647,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     } // ------------------------------------------------------------------ EAS
 
     // return gp strains (only in case of stress/strain output)
-    if (elestress != NULL){
+    if (elestrain != NULL){
       for (int i = 0; i < 3; ++i) {
         (*elestrain)(gp,i) = glstrain(i);
       }
@@ -607,6 +655,18 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
         (*elestrain)(gp,i) = 0.5 * glstrain(i);
       }
     }
+    
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+    {
+      // note: must be AFTER strains are output above!
+      RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
+      if (gl==null) dserror("Prestress array not initialized");
+      if (gl->M() != NUMGPT_SOH8 || gl->N() != NUMSTR_SOH8)
+        dserror("Prestress array not initialized");
+      for (int i=0; i<6; ++i) 
+        glstrain(i) += (*gl)(gp,i);
+    }
+#endif    
 
     /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *

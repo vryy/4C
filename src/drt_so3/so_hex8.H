@@ -350,7 +350,8 @@ protected:
     calc_homog_stressdens,
     eas_init_multi,
     eas_set_multi,
-    postprocess_stress
+    postprocess_stress,
+    update_gl
   };
 
   //! kinematic types of so_hex8
@@ -381,25 +382,31 @@ protected:
     soh8_easnone
   };
   //! kinematic type
-  KinematicType                                   kintype_;
+  KinematicType                                    kintype_;
   //! type of EAS technology
-  EASType                                         eastype_;
+  EASType                                          eastype_;
   //! number of EAS parameters (alphas)
-  int                                             neas_;
+  int                                              neas_;
   //! container containing all kind of solid3 thisandthat
-  DRT::Container                                  data_;
+  DRT::Container                                   data_;
   //! vector of volumes of this element (length 1)
-  vector<DRT::Element*>                           volume_;
+  vector<DRT::Element*>                            volume_;
   //! vector of surfaces of this element
   vector<RefCountPtr<DRT::ELEMENTS::Soh8Surface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::ELEMENTS::Soh8Surface*>           surfaceptrs_;
+  vector<DRT::ELEMENTS::Soh8Surface*>              surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::Soh8Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Soh8Line> >    lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::Soh8Line*>              lineptrs_;
-  //! vector of element stress tensor in Voigt notation
+  vector<DRT::ELEMENTS::Soh8Line*>                 lineptrs_;
 
+  //! green lagrange strains storage needed for prestressing structures
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  virtual inline Teuchos::RCP<Epetra_SerialDenseMatrix>& PreStrains()
+  { return glprestrain_; }
+  RCP<Epetra_SerialDenseMatrix>                    glprestrain_;
+#endif
+  
 
 
   //! vector in thickness direction for compatibility with sosh8
@@ -433,8 +440,8 @@ protected:
   */
   class Integrator_So_hex8 : public DRT::ELEMENTS::So_integrator
   {
-  	public:
-  		Integrator_So_hex8();
+    public:
+      Integrator_So_hex8();
   };
   /***************OBSOLETE**********************************/
   void soh8_shapederiv(Epetra_SerialDenseMatrix** shapefct,

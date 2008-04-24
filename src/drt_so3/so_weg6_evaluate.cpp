@@ -67,6 +67,9 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")  act = So_weg6::calc_struct_update_istep;
   else if (action=="calc_struct_update_genalpha_imrlike")  act = So_weg6::calc_struct_update_genalpha_imrlike;
   else if (action=="postprocess_stress")        act = So_weg6::postprocess_stress;
+#ifdef PRESTRESS
+  else if (action=="calc_struct_prestress_update_green_lagrange") act = So_weg6::update_gl;
+#endif
   else dserror("Unknown type of action for So_weg6");
 
   const double time = params.get("total time",-1.0);
@@ -139,6 +142,21 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       bool cauchy = params.get<bool>("cauchy", false);
       sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy);
       AddtoPack(*stressdata, stress);
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+      {
+        RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
+        if (gl==null) 
+          dserror("Cannot output prestrains");
+        if (gl->M() != strain.M() || gl->N() != strain.N())
+          dserror("Mismatch in dimension");
+        // the element outputs 0.5* strains[3-5], but we have the computational quantity here
+        Epetra_SerialDenseMatrix tmp(*gl);
+        for (int i=0; i<NUMGPT_WEG6; ++i)
+          for (int j=3; j<6; ++j)
+            tmp(i,j) *= 0.5;
+        strain += tmp;
+      }
+#endif      
       AddtoPack(*straindata, strain);
     }
     break;
@@ -261,6 +279,32 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       ;// there is nothing to do here at the moment
     }
     break;
+
+#ifdef PRESTRESS    
+    // in case of prestressing, make a snapshot of the current green-Lagrange strains and add them to
+    // the previously stored GL strains in an incremental manner
+    case update_gl: 
+    {
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get displacement state");
+      vector<double> mydisp(lm.size());
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      Epetra_SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
+      sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&strain,time,false);
+      // the element outputs 0.5* strains[3-5], but we want the computational quantity here
+      for (int i=0; i<NUMGPT_WEG6; ++i)
+        for (int j=3; j<6; ++j) strain(i,j) *= 2.0;
+      RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
+      if (gl==null) dserror("Prestress array not initialized");
+      if (gl->M() != strain.M() || gl->N() != strain.N())
+        dserror("Prestress arrauy not initialized");
+      (*gl) += strain;
+    }
+    break;
+#endif    
 
     default:
       dserror("Unknown type of action for Solid3");
@@ -389,7 +433,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     glstrain(5) = cauchygreen(2,0);
 
     // return gp strains (only in case of stress/strain output)
-    if (elestress != NULL){
+    if (elestrain != NULL){
       for (int i = 0; i < 3; ++i) {
         (*elestrain)(gp,i) = glstrain(i);
       }
@@ -397,6 +441,18 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
         (*elestrain)(gp,i) = 0.5 * glstrain(i);
       }
     }
+
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+    {
+      // note: must be AFTER strains are output above!
+      RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
+      if (gl==null) dserror("Prestress array not initialized");
+      if (gl->M() != NUMGPT_WEG6 || gl->N() != NUMSTR_WEG6)
+        dserror("Prestress array not initialized");
+      for (int i=0; i<6; ++i) 
+        glstrain(i) += (*gl)(gp,i);
+    }
+#endif    
 
     /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
