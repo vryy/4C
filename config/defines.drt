@@ -37,6 +37,8 @@ CCADISCRET           # use new baci discretization subsystem DRT
 # BINIO              # binary io
 # QHULL              # needed for XFEM simulations
 # D_EXODUS           # Pre_exodus (exodusII, netcdf)
+# PRESTRESS          # prestress a structure with Neumann loads only
+# POSTSTRESS         # restart with a prestressed structure
 
 #   tools
 #  =======
