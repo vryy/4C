@@ -2,7 +2,7 @@
 /*!
 \file adapter_fluid_xfem.H
 
-\brief 
+\brief
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -54,7 +54,12 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                                         double dt);
 
+    virtual void RobinNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
+						   Teuchos::RCP<Epetra_Vector> ivel,
+						   Teuchos::RCP<Epetra_Vector> iforce);
+
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity();
 
     virtual int Itemax() const { return FluidField().Itemax(); }
     virtual void SetItemax(int itemax) { FluidField().SetItemax(itemax); }
@@ -87,13 +92,13 @@ namespace ADAPTER
   private:
 
     FluidBaseAlgorithm fluid_;
-    
+
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor                   interface_;
-    
+
     /// coupling of interface in to parallel distributions
     FSI::Coupling               icoupsf_;
-    
+
     Teuchos::RCP<DRT::Discretization>      boundarydis_solidparalleldistrib_;
     //Teuchos::RCP<DRT::Discretization>      boundarydis_fluidparalleldistrib_;
 

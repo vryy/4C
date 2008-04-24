@@ -238,9 +238,25 @@ void LINALG::MapExtractor::AddCondVector(Teuchos::RCP<const Epetra_Vector> cond,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void LINALG::MapExtractor::AddCondVector(double scale, Teuchos::RCP<const Epetra_Vector> cond, Teuchos::RCP<Epetra_Vector> full) const
+{
+  AddVector(cond,1,full,scale);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void LINALG::MapExtractor::AddOtherVector(Teuchos::RCP<const Epetra_Vector> other, Teuchos::RCP<Epetra_Vector> full) const
 {
   AddVector(other,0,full);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void LINALG::MapExtractor::AddOtherVector(double scale, Teuchos::RCP<const Epetra_Vector> other, Teuchos::RCP<Epetra_Vector> full) const
+{
+  AddVector(other,0,full,scale);
 }
 
 

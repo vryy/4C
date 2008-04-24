@@ -2,7 +2,7 @@
 /*!
 \file adapter_fluid_ale.cpp
 
-\brief 
+\brief
 
 <pre>
 Maintainer: Ulrich Kuettler
@@ -116,7 +116,7 @@ double ADAPTER::FluidAle::ReadRestart(int step)
 void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                               Teuchos::RCP<Epetra_Vector> ivel)
 {
-  
+
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   if (idisp!=Teuchos::null)
   {
@@ -143,8 +143,8 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   AleField().Solve();
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDisplacement());
   FluidField().ApplyMeshDisplacement(fluiddisp);
-  
-  // no computation of fluid velocities in case only structure and ALE are to compute 
+
+  // no computation of fluid velocities in case only structure and ALE are to compute
   if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
   {
     FluidField().NonlinearSolve();
@@ -154,8 +154,33 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FluidAle::RobinNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
+                                            Teuchos::RCP<Epetra_Vector> ivel,
+                                            Teuchos::RCP<Epetra_Vector> iforce)
+{
+  // if we have values at the interface we need to apply them
+  AleField().ApplyInterfaceDisplacements(FluidToAle(idisp));
+
+  // pass coupling values for subsequent application at the interface of the
+  // fluid domain
+  FluidField().ApplyInterfaceRobinValue(ivel, iforce);
+
+  // Note: We do not look for moving ale boundaries (outside the coupling
+  // interface) on the fluid side. Thus if you prescribe time variable ale
+  // Dirichlet conditions the according fluid Dirichlet conditions will not
+  // notice.
+
+  AleField().Solve();
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDisplacement());
+  FluidField().ApplyMeshDisplacement(fluiddisp);
+  FluidField().NonlinearSolve();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                                                      double dt)
+                                                               double dt)
 {
   // Here we have a mesh position independent of the
   // given trial vector, but still the grid velocity depends on the
@@ -184,6 +209,13 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::RelaxationSolve(Teuchos::RCP<Epet
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceForces()
 {
   return FluidField().ExtractInterfaceForces();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceFluidVelocity()
+{
+  return FluidField().ExtractInterfaceFluidVelocity();
 }
 
 

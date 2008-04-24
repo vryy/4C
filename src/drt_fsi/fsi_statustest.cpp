@@ -4,6 +4,7 @@
 #include "fsi_statustest.H"
 #include "fsi_nox_newton.H"
 #include "../drt_lib/drt_dserror.H"
+#include "fsi_dirichletneumann.H"
 
 #include <NOX_Common.H>
 #include <NOX_Abstract_Vector.H>
@@ -431,5 +432,38 @@ double FSI::PartialNormUpdate::computeNorm(const Epetra_Vector& v)
   return FSI::GenericNormUpdate::computeNorm(*extractor_.ExtractVector(v,blocknum_));
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::AndisInterfaceNormF::AndisInterfaceNormF(DirichletNeumannCoupling& dirineum,
+                                              double tolerance)
+  : GenericNormF("FSI interface",tolerance,Scaled),
+    dirineum_(dirineum)
+{
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FSI::AndisInterfaceNormF::computeNorm(const NOX::Abstract::Group& grp)
+{
+#if 0
+  // this convergence check is really simple:
+  // we only calculate the change of the interface force from
+  // iteration to iteration
+  Teuchos::RCP<Epetra_Vector> lastfluidforce = dirineum_.GetLastInterfaceForce();
+  if (lastfluidforce==null)
+    dserror("couldn't load last interface force vector");
+
+  Teuchos::RCP<Epetra_Vector> fluidforce = Teuchos::rcp(new Epetra_Vector(*dirineum_.InterfaceForce()));
+  if (fluidforce==null)
+    dserror("couldn't load actual interface force vector");
+
+  fluidforce->Update(-1.0,*lastfluidforce,1.);
+
+  return FSI::GenericNormF::computeNorm(*fluidforce);
+#endif
+  return Teuchos::null;
+}
 
 #endif

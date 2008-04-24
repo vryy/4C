@@ -185,6 +185,17 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -----------------------sublist containing stabilization parameters
   fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
 
+  // ------------------------------------------- Robin scheme parameters
+  if (Teuchos::getIntegralValue<int>(prbdyn,"FLUIDROBIN"))
+  {
+    fluidtimeparams->set<double>("alpharobinf",prbdyn.get<double>("ALPHA_F"));
+    fluidtimeparams->set<bool>("fluidrobin",true);
+  }
+  else
+  {
+    fluidtimeparams->set<bool>("fluidrobin",false);
+  }
+
   // --------------------------sublist containing turbulence parameters
   {
     fluidtimeparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
@@ -225,7 +236,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       fluidtimeparams->set<bool>("do explicit predictor",false);
     }
   }
-  
+
 
   if(iop == timeint_stationary or
      iop == timeint_one_step_theta or
@@ -255,18 +266,18 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // velocity degrees of freedom
     if (genprob.probtyp == prb_fsi_xfem)
     {
-        // This is temporary until I found a solution how to model the non-exising interface mesh of a XFEM fluid
-        // this is solely for the XFEM development and will go away (a.ger 04/08)
-        RCP<DRT::Discretization> soliddis = null;
-        soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-        
-        if (!soliddis->Filled()) soliddis->FillComplete();
-        
-        fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, soliddis, solver, fluidtimeparams, output, isale));
+      // This is temporary until I found a solution how to model the non-exising interface mesh of a XFEM fluid
+      // this is solely for the XFEM development and will go away (a.ger 04/08)
+      RCP<DRT::Discretization> soliddis = null;
+      soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+
+      if (!soliddis->Filled()) soliddis->FillComplete();
+
+      fluid_ = rcp(new ADAPTER::XFluidImpl(actdis, soliddis, solver, fluidtimeparams, output, isale));
     }
     else
     {
-        fluid_ = rcp(new ADAPTER::FluidImpl(actdis, solver, fluidtimeparams, output, isale));
+      fluid_ = rcp(new ADAPTER::FluidImpl(actdis, solver, fluidtimeparams, output, isale));
     }
   }
   else if (iop == timeint_gen_alpha)

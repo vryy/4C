@@ -125,6 +125,9 @@ namespace LINALG
                           const std::vector<int>& lmrowowner,
                           const std::vector<int>& lmcol) = 0;
 
+    /// single value assemble using gids
+    virtual void Assemble(double val, int rgid, int cgid) = 0;
+
     /// Call FillComplete on a matrix
     virtual void Complete() = 0;
 
@@ -473,7 +476,7 @@ namespace LINALG
 
     /*!
       \brief Split matrix in either 2x2 or 3x3 blocks (3x3 not yet impl.)
-    
+
       Split given matrix 'this' into 2x2 block matrix and
       return result as templated BlockSparseMatrix.
       The MultiMapExtractor's provided have to be 2 and 2 maps,
@@ -743,6 +746,17 @@ namespace LINALG
                   const std::vector<int>& lmrowowner,
                   const std::vector<int>& lmcol);
 
+    /// single value assemble
+    /*!
+
+     \warning This method is less useful here. We just need to make the
+     compiler happy. We assume "element matrices" of size 1x1 here. Do not use
+     this method if your strategy depends on the real position of the dof in
+     the element matrix.
+
+    */
+    void Assemble(double val, int rgid, int cgid);
+
     void Complete();
   };
 
@@ -879,9 +893,9 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::BlockSparseMatrix<Strategy>:
  *----------------------------------------------------------------------*/
 template <class Strategy>
 void LINALG::BlockSparseMatrix<Strategy>::Assemble(const Epetra_SerialDenseMatrix& Aele,
-                                                    const std::vector<int>& lmrow,
-                                                    const std::vector<int>& lmrowowner,
-                                                    const std::vector<int>& lmcol)
+                                                   const std::vector<int>& lmrow,
+                                                   const std::vector<int>& lmrowowner,
+                                                   const std::vector<int>& lmcol)
 {
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
@@ -910,6 +924,21 @@ void LINALG::BlockSparseMatrix<Strategy>::Assemble(const Epetra_SerialDenseMatri
       strategy->Assemble(val,lrow,rgid,rblock,lcol,cgid,cblock);
     }
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <class Strategy>
+void LINALG::BlockSparseMatrix<Strategy>::Assemble(double val, int rgid, int cgid)
+{
+  // neccessary for compilation with suse gcc  4.1.0
+  Strategy* strategy = (Strategy*)this;
+
+  int rblock = strategy->RowBlock(0,rgid);
+  int cblock = strategy->ColBlock(rblock,0,cgid);
+
+  strategy->Assemble(val,0,rgid,rblock,0,cgid,cblock);
 }
 
 

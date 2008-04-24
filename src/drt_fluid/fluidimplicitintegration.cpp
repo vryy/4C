@@ -66,14 +66,16 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   uprestart_(params.get("write restart every", -1)),
   writestep_(0),
   upres_(params.get("write solution every", -1)),
-  writestresses_(params.get<int>("write stresses", 0))
+  writestresses_(params.get<int>("write stresses", 0)),
+  freesurface_(NULL),
+  fsisurface_(NULL)
 {
 
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
   myrank_  = discret_->Comm().MyPID();
-            
+
   // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
@@ -176,6 +178,9 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // -------------------------------------------------------------------
   // create empty vectors
   // -------------------------------------------------------------------
+
+  // additional rhs vector for robin-BC and vector for copying the residual
+  robinrhs_      = LINALG::CreateVector(*dofrowmap,true);
 
   // Vectors passed to the element
   // -----------------------------
@@ -834,6 +839,8 @@ void FluidImplicitTimeInt::NonlinearSolve()
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
+  const bool fluidrobin = params_.get<bool>("fluidrobin", false);
+
   int               itnum = 0;
   int               itemax = 0;
   bool              stopnonliniter = false;
@@ -973,7 +980,8 @@ void FluidImplicitTimeInt::NonlinearSolve()
           // element evaluation for getting system matrix
           discret_->Evaluate(eleparams,sysmat_,residual_);
 
-          // complete system matrix
+
+	  // complete system matrix
           sysmat_->Complete();
 
           // apply DBC to system matrix
@@ -1038,16 +1046,50 @@ void FluidImplicitTimeInt::NonlinearSolve()
         density = eleparams.get("density", 0.0);
         if (density <= 0.0) dserror("recieved illegal density value");
 
+        // How to extract the density from the fluid material?
+        trueresidual_->Update(density/dta_/theta_,*residual_,0.0);
+
         // finalize the complete matrix
         sysmat_->Complete();
+
+        // If we have a robin condition we need to modify both the rhs and the
+        // matrix diagonal corresponding to the dofs at the robin interface.
+        if (fluidrobin)
+        {
+          // Add structral part of Robin force
+          // (combination of structral force and velocity)
+          residual_->Update(theta_*dta_,*robinrhs_,1.0);
+
+          double alphaf = params_.get<double>("alpharobinf",-1.0);
+          double scale = alphaf*theta_*dta_;
+
+          // Add fluid part of Robin force
+          // (scaled fluid velocity)
+          fsisurface_->AddCondVector(-1.*scale,velnp_,residual_);
+
+          const Epetra_Map& robinmap = *fsisurface_->CondMap();
+          int numrdofs = robinmap.NumMyElements();
+          int* rdofs = robinmap.MyGlobalElements();
+          for (int lid=0; lid<numrdofs; ++lid)
+          {
+            int gid = rdofs[lid];
+            // We assemble with a global id into a filled matrix here. This is
+            // fine as we know we do not add new entries but just add to the
+            // diagonal.
+            //
+            // Note: The matrix lives in the full fluid map whereas
+            // we loop the robin interface map here, so our local ids are very
+            // different from the matrix local ids.
+            //
+            // Note: This assemble might fail if we have a block matrix here.
+            sysmat_->Assemble(scale,gid,gid);
+          }
+        }
       }
 
       // end time measurement for element
       dtele=ds_cputime()-tcpu;
     }
-
-    // How to extract the density from the fluid material?
-    trueresidual_->Update(density/dta_/theta_,*residual_,0.0);
 
     // blank residual DOFs which are on Dirichlet BC
     // We can do this because the values at the dirichlet positions
@@ -1318,7 +1360,7 @@ void FluidImplicitTimeInt::LinearSolve()
   }
   // end time measurement for element
   const double dtele = ds_cputime() - tcpuele;
-  
+
   //--------- Apply dirichlet boundary conditions to system of equations
   //          residual velocities (and pressures) are supposed to be zero at
   //          boundary conditions
@@ -1337,7 +1379,7 @@ void FluidImplicitTimeInt::LinearSolve()
   {
     // time measurement: solver
     TimeMonitor solvemonitor(*timesolver_);
-  
+
     /* possibly we could accelerate it if the reset variable
        is true only every fifth step, i.e. set the last argument to false
        for 4 of 5 timesteps or so. */
@@ -3030,9 +3072,9 @@ void FluidImplicitTimeInt::FlowRateCalculation(double dtp)
   area = eleparams.get<double>("Area calculation");
   //Assign flowrate at current position
   double parflowrate = 0;
-   
+
   discret_->Comm().SumAll(&flowrate,&parflowrate,1);
-  
+
   if (time_ <= cyclesteps*dta_){
   	FlowRateStorage_->push_back(flowrate);
   }
@@ -3040,7 +3082,7 @@ void FluidImplicitTimeInt::FlowRateCalculation(double dtp)
   	FlowRateStorage_->erase(FlowRateStorage_->begin());
   	FlowRateStorage_->push_back(flowrate);
   }
-  
+
   if (myrank_ == 0)
     {
   	  printf("Current Flowrate: %f\n",parflowrate);

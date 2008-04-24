@@ -122,8 +122,10 @@ namespace ADAPTER {
     virtual int Step();
     virtual void LiftDrag();
 
-    virtual Teuchos::RCP<Epetra_Vector>  ExtractInterfaceForces();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity();
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
+    virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce);
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp);
     virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel);
 
@@ -174,7 +176,7 @@ namespace ADAPTER {
     Teuchos::RCP<Epetra_Vector>            idisp_fluidparalleldistrib_;     ///< interface displacement
     Teuchos::RCP<Epetra_Vector>            itrueres_fluidparalleldistrib_;  ///< interface residual
     //@}
-    
+
     /// all velocity dofs not at the interface
     Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
   };

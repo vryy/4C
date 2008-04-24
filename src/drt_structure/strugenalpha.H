@@ -13,7 +13,7 @@ Maintainer: Michael Gee
 #ifndef STRUGENALPHA_H
 #define STRUGENALPHA_H
 
-#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_solver.H"
@@ -22,6 +22,7 @@ Maintainer: Michael Gee
 #include "../io/io_drt.H"
 #include "../drt_contact/drt_contact_manager.H"
 #include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 
@@ -339,6 +340,8 @@ public:
   Teuchos::RCP<Epetra_Vector> Disp() { return dis_; }
   Teuchos::RCP<Epetra_Vector> Vel() { return vel_; }
   Teuchos::RCP<Epetra_Vector> Acc() { return acc_; }
+  Teuchos::RCP<Epetra_Vector> FRobin() { return frobin_; }
+  Teuchos::RCP<Epetra_Vector> FExtn() { return fextn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return stiff_; }
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
   Teuchos::RCP<DRT::Discretization> Discretization() { return Teuchos::rcp(&discret_,false); }
@@ -357,6 +360,13 @@ public:
   void ApplyExternalForce(const LINALG::MapExtractor& extractor,
                           Teuchos::RCP<Epetra_Vector> iforce);
 
+  /// introduce (robin) fsi surface extractor object
+  /*!
+    Introduce the FSI surface to the fluid algorithm. This way special case
+    algorithms (robin coupling) can work on the surface.
+   */
+  void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
+
   //@}
 
 protected:
@@ -365,49 +375,63 @@ protected:
   StruGenAlpha operator = (const StruGenAlpha& old);
   StruGenAlpha(const StruGenAlpha& old);
 
+  //! @name (very) general purpose algorithm parameters
+
   ParameterList&                params_;
   DRT::Discretization&          discret_;
   LINALG::Solver&               solver_;
   IO::DiscretizationWriter&     output_;
   int                           myrank_;
-  int                           maxentriesperrow_;
 
-  RefCountPtr<LINALG::SparseMatrix> stiff_;
-  RefCountPtr<LINALG::SparseMatrix> mass_;
-  RefCountPtr<LINALG::SparseMatrix> damp_;
+  //@}
 
-  RefCountPtr<Epetra_Vector>    dirichtoggle_;
-  RefCountPtr<Epetra_Vector>    invtoggle_;
-  RefCountPtr<Epetra_Vector>    zeros_;
-  RefCountPtr<Epetra_Vector>    dis_;
-  RefCountPtr<Epetra_Vector>    vel_;
-  RefCountPtr<Epetra_Vector>    acc_;
-  RefCountPtr<Epetra_Vector>    disn_;
-  RefCountPtr<Epetra_Vector>    veln_;
-  RefCountPtr<Epetra_Vector>    accn_;
-  RefCountPtr<Epetra_Vector>    dism_;
-  RefCountPtr<Epetra_Vector>    velm_;
-  RefCountPtr<Epetra_Vector>    accm_;
-  RefCountPtr<Epetra_Vector>    disi_;
-  RefCountPtr<Epetra_Vector>    fint_;
+  //! @name The usual structural dynamics matrix triple
+
+  RCP<LINALG::SparseMatrix> stiff_;
+  RCP<LINALG::SparseMatrix> mass_;
+  RCP<LINALG::SparseMatrix> damp_;
+
+  //@}
+
+  //! @name Vectors for the people
+
+  RCP<Epetra_Vector>    dirichtoggle_;
+  RCP<Epetra_Vector>    invtoggle_;
+  RCP<Epetra_Vector>    zeros_;
+  RCP<Epetra_Vector>    dis_;
+  RCP<Epetra_Vector>    vel_;
+  RCP<Epetra_Vector>    acc_;
+  RCP<Epetra_Vector>    disn_;
+  RCP<Epetra_Vector>    veln_;
+  RCP<Epetra_Vector>    accn_;
+  RCP<Epetra_Vector>    dism_;
+  RCP<Epetra_Vector>    velm_;
+  RCP<Epetra_Vector>    accm_;
+  RCP<Epetra_Vector>    disi_;
+  RCP<Epetra_Vector>    fint_;
 #ifdef STRUGENALPHA_FINTLIKETR
-  RefCountPtr<Epetra_Vector>    fintn_;
+  RCP<Epetra_Vector>    fintn_;
 #endif
-  RefCountPtr<Epetra_Vector>    finert_;
-  RefCountPtr<Epetra_Vector>    fvisc_;
-  RefCountPtr<Epetra_Vector>    fext_;
-  RefCountPtr<Epetra_Vector>    fextm_;
-  RefCountPtr<Epetra_Vector>    fextn_;
-  RefCountPtr<Epetra_Vector>    fresm_;
+  RCP<Epetra_Vector>    finert_;
+  RCP<Epetra_Vector>    fvisc_;
+  RCP<Epetra_Vector>    fext_;
+  RCP<Epetra_Vector>    fextm_;
+  RCP<Epetra_Vector>    fextn_;
+  RCP<Epetra_Vector>    fresm_;
+  RCP<Epetra_Vector>    frobin_;
+
+  //@}
 
   double                        ref_disnorm_;
   double                        ref_fnorm_;
 
   double                        V0_;
 
-  RefCountPtr<ConstrManager>   constrMan_;
+  /// whatever constraints
+  RCP<ConstrManager>   constrMan_;
 
-  RefCountPtr<DRT::SurfStressManager>   surf_stress_man_;
+  /// surface stresses
+  RCP<DRT::SurfStressManager>   surf_stress_man_;
 
   // For a relative convergence check, reference norms have to be
   // calculated. We need to know whether we are in the first step
@@ -415,13 +439,16 @@ protected:
   // order to determine these norms at the right time.
   bool firststep_;
 
-  // stuff needed to use NOX as nonlinear solver
-  RefCountPtr<NLNML::NLNML_FineLevelNoxInterface> fineinterface_;
-  RefCountPtr<NLNML::NLNML_Preconditioner>        prec_;
-  RefCountPtr<NOX::Epetra::MatrixFree>            matfreeoperator_;
-  RefCountPtr<NOX::Epetra::LinearSystemAztecOO>   rcpazlinsys_;
-  RefCountPtr<NOX::StatusTest::Combo>             combo_;
+  //! @name stuff needed to use NOX as nonlinear solver
+  RCP<NLNML::NLNML_FineLevelNoxInterface> fineinterface_;
+  RCP<NLNML::NLNML_Preconditioner>        prec_;
+  RCP<NOX::Epetra::MatrixFree>            matfreeoperator_;
+  RCP<NOX::Epetra::LinearSystemAztecOO>   rcpazlinsys_;
+  RCP<NOX::StatusTest::Combo>             combo_;
+  //@}
 
+  /// (robin) fsi coupling row dof map extractor
+  const LINALG::MapExtractor* fsisurface_;
 
 }; // class StruGenAlpha
 

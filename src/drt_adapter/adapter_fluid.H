@@ -151,17 +151,19 @@ namespace ADAPTER {
 
     //@}
 
-    ///
+    /// Map of all velocity dofs that are not Dirichlet-constrained
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() = 0;
 
-    ///
+    /// Map of all pressure dofs
     virtual Teuchos::RCP<const Epetra_Map> PressureRowMap() = 0;
 
     /// the mesh map contains all velocity dofs that are covered by an ALE node
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm) = 0;
 
+    /// scaling factor between velocity and displacement
     virtual double ResidualScaling() const = 0;
 
+    /// time scaling factor to get back to real forces
     virtual double TimeScaling() const = 0;
 
     /// communication object at the interface
@@ -171,24 +173,36 @@ namespace ADAPTER {
     virtual const LINALG::MapExtractor& FreeSurface() const = 0;
 
     //! @name Extract the velocity-related part of a fluid vector (e.g. velnp, veln, residual)
+    /// The idea is to have one function that does the extraction and call it
+    /// with different vectors.
 
     /// Some applications need only access to velocity-related values of an fluid result vector.
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) = 0;
-    //@}
-
-    //! @name Extract interface forces
-
-    /// After the fluid solve we need the forces at the FSI interface.
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
 
     //@}
 
-    //! @name Extract interface values
+    //! @name Apply interface values
 
     /// at the interface the velocity is prescribed as a Dirichlet condition
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel) = 0;
 
+    /// apply a generalized robin force to the interface
+    virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel,
+                                          Teuchos::RCP<Epetra_Vector> iforce) = 0;
+
     //@}
+
+    //! @name Extract interface values
+    /// Maybe we do not need all of them?
+
+    /// extract fluid velocity at the interface
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity() = 0;
+
+    /// extract fluid forces at the interface
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
+
+    //@}
+
 
     //! @name Extract mesh values
 
@@ -218,7 +232,6 @@ namespace ADAPTER {
     /// create result test for encapulated fluid algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
   };
-
 }
 
 #endif

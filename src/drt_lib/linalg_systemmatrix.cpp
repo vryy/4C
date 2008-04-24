@@ -198,9 +198,9 @@ void LINALG::SparseMatrix::Reset()
  |  assemble a matrix  (public)                               popp 01/08|
  *----------------------------------------------------------------------*/
 void LINALG::SparseMatrix::Assemble(const Epetra_SerialDenseMatrix& Aele,
-                                          const std::vector<int>& lmrow,
-                                          const std::vector<int>& lmrowowner,
-                                          const std::vector<int>& lmcol)
+                                    const std::vector<int>& lmrow,
+                                    const std::vector<int>& lmrowowner,
+                                    const std::vector<int>& lmcol)
 {
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();

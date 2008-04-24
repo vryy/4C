@@ -897,6 +897,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  fsi_iter_monolithic).append(fsi_pseudo_structureale),
                                &fsidyn);
 
+  setStringToIntegralParameter("FLUIDROBIN","no",
+			       "Robin coupling for fluid field",
+			       yesnotuple,yesnovalue,
+			       &fsidyn);
+
+  setStringToIntegralParameter("STRUCTROBIN","no",
+			       "Robin coupling for structure field",
+			       yesnotuple,yesnovalue,
+			       &fsidyn);
+
+  DoubleParameter("ALPHA_F",-1.0,"Robin parameter fluid",&fsidyn);
+  DoubleParameter("ALPHA_S",-1.0,"Robin parameter structure",&fsidyn);
+
   setStringToIntegralParameter("PREDICTOR","d(n)+dt*v(n)+0.5*dt^2*a(n)",
                                "Predictor for interface displacements",
                                tuple<std::string>(

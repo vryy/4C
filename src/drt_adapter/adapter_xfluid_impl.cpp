@@ -37,7 +37,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
 {
   // needs to be umverteilt
   boundarydis_fluidparalleldistrib_ = CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3");
-            
+
   UTILS::SetupNDimExtractor(*boundarydis_fluidparalleldistrib_,"FSICoupling",interface_);
   UTILS::SetupNDimExtractor(*boundarydis_fluidparalleldistrib_,"FREESURFCoupling",freesurface_);
 
@@ -46,7 +46,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
   ivel_fluidparalleldistrib_ = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   idisp_fluidparalleldistrib_ = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   itrueres_fluidparalleldistrib_ = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-  
+
   fluid_.SetFreeSurface(&freesurface_);
   cout << "XFluidImpl constructor done" << endl;
 }
@@ -179,7 +179,7 @@ void ADAPTER::XFluidImpl::Output()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::NonlinearSolve()
 {
-    
+
   cout << "XFluidImpl::NonlinearSolve()" << endl;
   fluid_.NonlinearSolve(soliddis_);  // this will be replaced by the next line, once we have the tree
   //fluid_.NonlinearSolve(boundarydis_solidparalleldistrib_);
@@ -212,7 +212,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::InnerVelocityRowMap()
     }
 
     innervelmap_ = Teuchos::rcp(new Epetra_Map(-1,velids.size(), &velids[0], 0, velmap->Comm()));
-    
+
   return innervelmap_;
 }
 
@@ -292,10 +292,19 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceFluidVelocity()
+{
+  dserror("no Robin coupling here");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   cout << "applying interface velocity" << endl;
-  
+
   interface_.InsertCondVector(ivel,ivel_fluidparalleldistrib_);
 
   // mark all interface velocities as dirichlet values
@@ -313,10 +322,18 @@ void ADAPTER::XFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> i
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::XFluidImpl::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce)
+{
+  dserror("robin unimplemented");
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> idisp)
 {
   interface_.InsertCondVector(idisp,idisp_fluidparalleldistrib_);
-  
+
   // new grid velocity
 //  fluid_.UpdateGridv();
 }

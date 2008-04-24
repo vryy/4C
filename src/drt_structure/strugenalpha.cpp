@@ -30,7 +30,7 @@ discret_(dis),
 solver_(solver),
 output_(output),
 myrank_(discret_.Comm().MyPID()),
-maxentriesperrow_(81)
+fsisurface_(NULL)
 {
 #ifdef PRESTRESS
 #ifdef POTSTRESS
@@ -134,6 +134,8 @@ maxentriesperrow_(81)
   fextm_ = LINALG::CreateVector(*dofrowmap,true);
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap,true);
+  // external pseudo force due to RobinBC
+  frobin_ =LINALG::CreateVector(*dofrowmap,true);
 
   // dynamic force residual at mid-time R_{n+1-alpha}
   // also known as out-of-balance-force
@@ -664,6 +666,7 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
   //double gamma       = params_.get<double>("gamma"          ,0.581);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
+  bool structrobin   = params_.get<bool>  ("structrobin", false);
 
   // increment time and step
   double timen = time + dt;
@@ -695,6 +698,12 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
   //                         + alpha_f * F_{ext;n}
   fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
 
+  // add frobin_ directly to fextm_, so we do not change fextn_ which
+  // is going to be used later
+  if (structrobin)
+    fextm_->Update(1.,*frobin_,1.);
+
+
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
     // zero out stiffness
@@ -722,6 +731,8 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
+
+
     discret_.ClearState();
 
     if (surf_stress_man_!=null)
@@ -731,6 +742,27 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
+
+    // If we have a robin condition we need to modify both the rhs and the
+    // matrix diagonal corresponding to the dofs at the robin interface.
+    if (structrobin)
+    {
+      double alphas = params_.get<double>("alpha s",-1.);
+
+      // Add structural part of Robin force
+      fsisurface_->AddCondVector(alphas/dt,dism_,fint_);
+
+      double scale = alphas*(1.-alphaf)/dt;
+      const Epetra_Map& robinmap = *fsisurface_->CondMap();
+      int numrdofs = robinmap.NumMyElements();
+      int* rdofs = robinmap.MyGlobalElements();
+      for (int lid=0; lid<numrdofs; ++lid)
+      {
+        int gid = rdofs[lid];
+        // Note: This assemble might fail if we have a block matrix here.
+        stiff_->Assemble(scale,gid,gid);
+      }
+    }
   }
 
   //-------------------------------------------- compute residual forces
@@ -756,6 +788,7 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
 #else
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
+
 
   // blank residual at DOFs on Dirichlet BC
   {
@@ -974,6 +1007,7 @@ void StruGenAlpha::FullNewton()
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
+  bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
@@ -1120,9 +1154,31 @@ void StruGenAlpha::FullNewton()
 
       if (constrMan_->HaveConstraint())
       {
-          constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+        constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
       }
+
       // do NOT finalize the stiffness matrix to add masses to it later
+
+      // If we have a robin condition we need to modify both the rhs and the
+      // matrix diagonal corresponding to the dofs at the robin interface.
+      if (structrobin)
+      {
+        double alphas = params_.get<double>("alpha s",-1.);
+
+        // Add structural part of Robin force
+        fsisurface_->AddCondVector(alphas/dt,dism_,fint_);
+
+        double scale = alphas*(1.-alphaf)/dt;
+        const Epetra_Map& robinmap = *fsisurface_->CondMap();
+        int numrdofs = robinmap.NumMyElements();
+        int* rdofs = robinmap.MyGlobalElements();
+        for (int lid=0; lid<numrdofs; ++lid)
+        {
+          int gid = rdofs[lid];
+          // Note: This assemble might fail if we have a block matrix here.
+          stiff_->Assemble(scale,gid,gid);
+        }
+      }
     }
 
     //------------------------------------------ compute residual forces
@@ -1146,6 +1202,7 @@ void StruGenAlpha::FullNewton()
     fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
 #else
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+
 #endif
     // blank residual DOFs that are on Dirichlet BC
     {
@@ -2624,7 +2681,7 @@ void StruGenAlpha::UpdateandOutput()
     discret_.SetState("residual displacement",zeros_);
     discret_.Evaluate(p,null,null,null,null,null);
   }
-  
+
   //----------------------------- reset the current disp/vel/acc to zero
   // (the structure does not move while prestraining it )
   // (prestraining with DBCs != 0 not allowed!)
@@ -2634,7 +2691,7 @@ void StruGenAlpha::UpdateandOutput()
   dis_->Scale(0.0);
   vel_->Scale(0.0);
   acc_->Scale(0.0);
-#endif    
+#endif
 
 
   //------ update anything that needs to be updated at the element level

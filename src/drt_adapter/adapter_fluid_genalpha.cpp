@@ -265,6 +265,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidGenAlpha::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidGenAlpha::ExtractInterfaceFluidVelocity()
+{
+  return interface_.ExtractCondVector(fluid_.Velnp());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidGenAlpha::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   interface_.InsertCondVector(ivel,fluid_.Velnp());
@@ -279,6 +287,14 @@ void ADAPTER::FluidGenAlpha::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector
   //----------------------- compute an inverse of the dirichtoggle vector
   fluid_.InvDirichlet()->PutScalar(1.0);
   fluid_.InvDirichlet()->Update(-1.0,*fluid_.Dirichlet(),1.0);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidGenAlpha::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce)
+{
+  dserror ("You must not use robin-BC with FluidGenAlphaIntegration! It has not been implementet yet!");
 }
 
 

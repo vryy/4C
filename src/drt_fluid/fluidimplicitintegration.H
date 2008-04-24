@@ -201,6 +201,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
+  Teuchos::RCP<Epetra_Vector> RobinRHS() { return robinrhs_;}
 
   LINALG::MapExtractor& VelPresSplitter() {return velpressplitter_;}
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
@@ -221,6 +222,13 @@ public:
     initialized extractor object iff we are on an ale mesh.
    */
   void SetFreeSurface(const LINALG::MapExtractor* freesurface) { freesurface_ = freesurface; }
+
+  /// introduce (robin) fsi surface extractor object
+  /*!
+    Introduce the FSI surface to the fluid algorithm. This way special case
+    algorithms (robin coupling) can work on the surface.
+   */
+  void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
 
   /*!
   \brief determine grid velocity
@@ -348,6 +356,9 @@ protected:
   /// rhs: right hand side vector for linearised flow solution
   RefCountPtr<Epetra_Vector>    rhs_;
 
+  /// robinrhs_: additional rhs when using robin-BC
+  RCP<Epetra_Vector>    robinrhs_;
+
   /// true (rescaled) residual vector without zeros at dirichlet positions
   RCP<Epetra_Vector>    trueresidual_;
 
@@ -371,6 +382,7 @@ protected:
   RCP<Epetra_Vector>    dispnm_;
   //@}
 
+  /// grid velocity (set from the adapter!)
   RCP<Epetra_Vector>    gridv_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
@@ -380,14 +392,16 @@ protected:
   /// vm3 solver
   RCP<VM3_Solver>       vm3_solver_;
 
-  /// only necessary for vm3 solver: coarse- and fine-scale solution vectors
+  //! @name only necessary for vm3 solver: coarse- and fine-scale solution vectors
   RCP<Epetra_Vector>    csvelnp_;
   RCP<Epetra_Vector>    fsvelnp_;
+  //@}
 
-  /// only necessary for vm3 solver: convective stresses + coarse- and fine-scale part
+  //! @name only necessary for vm3 solver: convective stresses + coarse- and fine-scale part
   RCP<Epetra_Vector>    convnp_;
   RCP<Epetra_Vector>    csconvnp_;
   RCP<Epetra_Vector>    fsconvnp_;
+  //@}
 
   /// turbulence statistics, lid driven cavity
   RCP<TurbulenceStatisticsLdc> turbulencestatistics_ldc_;
@@ -395,9 +409,7 @@ protected:
   /// turbulence statistics, channel flow
   RCP<TurbulenceStatistics>    turbulencestatistics_;
 
-
-  // Vectors used for filtering (for dynamic Smagorinsky model)
-  // --------------------------
+  //! @name Vectors used for filtering (for dynamic Smagorinsky model)
 
   RCP<Epetra_MultiVector>  filtered_vel_;
   RCP<Epetra_MultiVector>  filtered_reynoldsstress_;
@@ -410,12 +422,18 @@ protected:
   RCP<vector<double> >     averaged_MijMij_;
   RCP<vector<double> >     planecoords_;
 
+  //@}
+
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
 
   /// free surface row dof map extractor
   const LINALG::MapExtractor* freesurface_;
 
+  /// (robin) fsi coupling row dof map extractor
+  const LINALG::MapExtractor* fsisurface_;
+
+  /// Periodic Boundary Conditions. Guess what.
   RCP<PeriodicBoundaryConditions> pbc_;
 
   /// connection between master and slave nodes on this proc

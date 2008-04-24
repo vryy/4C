@@ -284,6 +284,28 @@ namespace FSI
   };
 
 
+  class DirichletNeumannCoupling;
+
+  /*!
+    At the FSI interface the residual norm of the sum of fluid and
+    structural residual is required to vanish.
+
+    \author u.kue
+    \date 11/07
+   */
+  class AndisInterfaceNormF : public GenericNormF
+  {
+   public:
+    AndisInterfaceNormF(DirichletNeumannCoupling& dirineum,
+			double tolerance);
+
+  protected:
+
+    double computeNorm(const NOX::Abstract::Group& grp);
+
+  private:
+    DirichletNeumannCoupling& dirineum_;
+  };
 }
 
 #endif

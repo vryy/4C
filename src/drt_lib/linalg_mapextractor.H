@@ -363,13 +363,19 @@ namespace LINALG
     //@}
 
     /** \name Add from full dof vector */
-    //@{
+    /// These are convenience methods that create a temporary vector internally.
 
     /// Put a condition dof vector into a full row vector
     void AddCondVector(Teuchos::RCP<const Epetra_Vector> cond, Teuchos::RCP<Epetra_Vector> full) const;
 
+    /// Put a scaled condition dof vector into a full row vector
+    void AddCondVector(double scale, Teuchos::RCP<const Epetra_Vector> cond, Teuchos::RCP<Epetra_Vector> full) const;
+
     /// Put an other dof vector into a full row vector
     void AddOtherVector(Teuchos::RCP<const Epetra_Vector> other, Teuchos::RCP<Epetra_Vector> full) const;
+
+    /// Put a scaled other dof vector into a full row vector
+    void AddOtherVector(double scale,Teuchos::RCP<const Epetra_Vector> other, Teuchos::RCP<Epetra_Vector> full) const;
 
     //@}
 

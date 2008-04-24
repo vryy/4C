@@ -33,6 +33,7 @@ ADAPTER::FluidImpl::FluidImpl(
   UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
   UTILS::SetupNDimExtractor(*dis,"FREESURFCoupling",freesurface_);
 
+  fluid_.SetFSISurface(&interface_);
   fluid_.SetFreeSurface(&freesurface_);
 
   // build inner velocity map
@@ -264,6 +265,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceFluidVelocity()
+{
+  return interface_.ExtractCondVector(fluid_.Velnp());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   interface_.InsertCondVector(ivel,fluid_.Velnp());
@@ -278,6 +287,38 @@ void ADAPTER::FluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> iv
   //----------------------- compute an inverse of the dirichtoggle vector
   fluid_.InvDirichlet()->PutScalar(1.0);
   fluid_.InvDirichlet()->Update(-1.0,*fluid_.Dirichlet(),1.0);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel,
+                                                  Teuchos::RCP<Epetra_Vector> iforce)
+{
+  // use the known parts of structure field to create the robin
+  // boundary value
+  // the robin boundary value consists of a linear combination of
+  // interface velocity and interface forces:
+
+  // Robin-RHS = alpha_f * structural interface velocity
+  //             - interface force (form structure to fluid)
+
+  // get linear combination parameter
+  double alphaf = params_->get<double>("alpharobinf",-1.);
+  if (alphaf<0) dserror("falscher alpharobinf-Parameter");
+
+  // robinboundaryvalue vorerst nur interfacegeschwindigkeit
+  Teuchos::RCP<Epetra_Vector> robinboundaryvalue = Teuchos::rcp(new Epetra_Vector(*ivel));
+
+  // at the moment iforce is the force to the structure, we have to
+  // multiply with -1
+  robinboundaryvalue->Update(-1.,*iforce,alphaf);
+
+  // apply robin values to fluid equations RobinRHS vector
+  interface_.InsertCondVector(robinboundaryvalue,fluid_.RobinRHS());
+
+  // at this point we have to omit the setting of dirichlet values at
+  // the interface
 }
 
 

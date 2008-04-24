@@ -83,6 +83,10 @@ namespace ADAPTER
     virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp=Teuchos::null,
                                 Teuchos::RCP<Epetra_Vector> ivel=Teuchos::null) = 0;
 
+    virtual void RobinNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
+				     Teuchos::RCP<Epetra_Vector> ivel,
+				     Teuchos::RCP<Epetra_Vector> iforce)=0;
+
     /// linear fluid solve with just a interface load
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                                         double dt) = 0;
@@ -98,6 +102,8 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
 
     //@}
+
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity() = 0;
 
     //! @name Number of Newton iterations
     //! For simplified FD MFNK solve we want to temporally limit the

@@ -2,7 +2,7 @@
 /*!
 \file adapter_fluid_xfem.cpp
 
-\brief 
+\brief
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -106,7 +106,7 @@ void ADAPTER::FluidXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
                               *ifluidnodemap,
                               *isolidnodemap);
 
-  
+
   if (idisp!=Teuchos::null)
   {
     // if we have values at the interface we need to apply them
@@ -131,6 +131,15 @@ void ADAPTER::FluidXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   //Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDisplacement());
   //FluidField().ApplyMeshDisplacement(fluiddisp);
   FluidField().NonlinearSolve();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidXFEM::RobinNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
+                                             Teuchos::RCP<Epetra_Vector> ivel,
+                                             Teuchos::RCP<Epetra_Vector> iforce)
+{
+  dserror("you should not use robin-BC with XFEM, yet");
 }
 
 
@@ -166,6 +175,15 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::RelaxationSolve(Teuchos::RCP<Epe
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceForces()
 {
   return FluidToSolid(FluidField().ExtractInterfaceForces());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceFluidVelocity()
+{
+  dserror("Robin stuff");
+  return Teuchos::null;
 }
 
 

@@ -60,9 +60,9 @@ ADAPTER::Structure::~Structure()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::StructureGenAlpha::StructureGenAlpha(Teuchos::RCP<Teuchos::ParameterList> params,
-                                            Teuchos::RCP<DRT::Discretization> dis,
-                                            Teuchos::RCP<LINALG::Solver> solver,
-                                            Teuchos::RCP<IO::DiscretizationWriter> output)
+                                              Teuchos::RCP<DRT::Discretization> dis,
+                                              Teuchos::RCP<LINALG::Solver> solver,
+                                              Teuchos::RCP<IO::DiscretizationWriter> output)
   : structure_(*params, *dis, *solver, *output),
     dis_(dis),
     params_(params),
@@ -70,6 +70,7 @@ ADAPTER::StructureGenAlpha::StructureGenAlpha(Teuchos::RCP<Teuchos::ParameterLis
     output_(output)
 {
   UTILS::SetupNDimExtractor(*dis,"FSICoupling",interface_);
+  structure_.SetFSISurface(&interface_);
 }
 
 
@@ -147,6 +148,20 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::StructureGenAlpha::Discretization()
 double ADAPTER::StructureGenAlpha::DispIncrFactor()
 {
   return structure_.DispIncrFactor();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::FRobin()
+{
+  return structure_.FRobin();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::FExtn()
+{
+  return structure_.FExtn();
 }
 
 
@@ -338,6 +353,16 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceDispnp()
   return idis;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractInterfaceForces()
+{
+  Teuchos::RCP<Epetra_Vector> iforce = interface_.ExtractCondVector(structure_.FExtn());
+
+  return iforce;
+}
+
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -397,9 +422,46 @@ void ADAPTER::StructureGenAlpha::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector
   // before we add our special contribution.
   // So we calculate the stiffness anyway (and waste the available
   // stiffness in the first iteration).
-
   structure_.ApplyExternalForce(interface_,iforce);
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::StructureGenAlpha::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> iforce,
+                                                          Teuchos::RCP<Epetra_Vector> ifluidvel)
+{
+  // get robin parameter and timestep
+  double alphas  = params_->get<double>("alpha s",-1.);
+  double dt      = params_->get<double>("delta time",-1.);
+  double alphaf  = params_->get<double>("alpha f", 0.459);
+
+  if (alphas<0. or dt<0.)
+    dserror("couldn't get robin parameter alpha_s or time step size");
+
+  // the RobinRHS is going to be:
+  //
+  // RobinRHS =
+  //     - (alpha_s/dt)*(dis(n))
+  //     - alpha_s*(1-alpha_f)*(fluidvel(n+1))
+  //     + (1-alpha_f)*(iforce(n+1))
+
+  // Attention: We must not change iforce here, because we would
+  // implicitely change fextn_, too. fextn_ is needed to set fext_
+  // after successfully reaching timestep end.
+  // This is why an additional robin force vector is needed.
+
+  Teuchos::RCP<Epetra_Vector> idisn  = interface_.ExtractCondVector(structure_.Disp());
+  Teuchos::RCP<Epetra_Vector> frobin = interface_.ExtractCondVector(structure_.FRobin());
+
+  // save robin coupling values in frobin vector (except iforce which
+  // is passed separately)
+  frobin->Update(alphas/dt,*idisn,alphas*(1-alphaf),*ifluidvel,0.0);
+
+  interface_.InsertCondVector(frobin,structure_.FRobin());
+  structure_.ApplyExternalForce(interface_,iforce);
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -409,13 +471,13 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::StructureGenAlpha::CreateFieldTest()
 }
 
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
 {
   SetupStructure(prbdyn);
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -455,6 +517,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
 
+  const Teuchos::ParameterList& size     = DRT::Problem::Instance()->ProblemSizeParams();
+
   if ((actdis->Comm()).MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
 
@@ -493,7 +557,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
 
   genalphaparams->set<bool>  ("io structural disp",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_DISP"));
   genalphaparams->set<int>   ("io disp every nstep",prbdyn.get<int>("UPRES"));
-//   genalphaparams->set<bool>  ("io structural stress",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRESS"));
+
   switch (Teuchos::getIntegralValue<STRUCT_STRESS_TYP>(ioflags,"STRUCT_STRESS"))
   {
   case struct_stress_none:
@@ -559,6 +623,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   if (genprob.probtyp == prb_fsi)
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+
+    // robin flags
+    genalphaparams->set<double>("alpha s",fsidyn.get<double>("ALPHA_S"));
+    genalphaparams->set<bool>  ("structrobin",
+                                Teuchos::getIntegralValue<int>(fsidyn,"FLUIDROBIN"));
 
     if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") == fsi_iter_monolithic)
     {

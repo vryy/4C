@@ -11,6 +11,7 @@
 
 #include "fsi_dyn.H"
 #include "fsi_dirichletneumann.H"
+#include "fsi_robin.H"
 #include "fsi_monolithicoverlap.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
@@ -117,9 +118,64 @@ void fsi_ale_drt()
 
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
-  if ((Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_iter_monolithic)&&(Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale))
+  int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+  switch (coupling)
   {
-    Teuchos::RCP<FSI::DirichletNeumannCoupling> fsi = Teuchos::rcp(new FSI::DirichletNeumannCoupling(comm));
+  case fsi_pseudo_structureale:
+  {
+    // pseudo FSI problem used to find starting configuration
+
+    Teuchos::RCP<FSI::StructureALE> fsi = Teuchos::rcp(new FSI::StructureALE(comm));
+
+    if (genprob.restart)
+    {
+      // read the restart information, set vectors and variables
+      fsi->ReadRestart(genprob.restart);
+    }
+
+    fsi->Timeloop();
+
+    DRT::ResultTestManager testmanager(comm);
+    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
+    testmanager.TestAll();
+    break;
+  }
+  case fsi_iter_monolithic:
+  {
+    // Monolithic FSI. The real thing.
+
+    Teuchos::RCP<FSI::MonolithicOverlap> fsi = Teuchos::rcp(new FSI::MonolithicOverlap(comm));
+
+    if (genprob.restart)
+    {
+      // read the restart information, set vectors and variables
+      fsi->ReadRestart(genprob.restart);
+    }
+
+    fsi->Timeloop(fsi);
+
+    DRT::ResultTestManager testmanager(comm);
+    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
+    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
+    testmanager.TestAll();
+    break;
+  }
+
+  default:
+  {
+    // Any partitioned algorithm. Stable of working horses.
+
+    Teuchos::RCP<FSI::Partitioned> fsi;
+
+    if (Teuchos::getIntegralValue<int>(fsidyn,"FLUIDROBIN") or
+        Teuchos::getIntegralValue<int>(fsidyn,"STRUCTROBIN"))
+    {
+      fsi = Teuchos::rcp(new FSI::Robin(comm));
+    }
+    else
+    {
+      fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
+    }
 
     if (genprob.restart)
     {
@@ -133,39 +189,8 @@ void fsi_ale_drt()
     testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
     testmanager.TestAll();
   }
-  else if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
-  {
-    Teuchos::RCP<FSI::MonolithicOverlap> fsi = Teuchos::rcp(new FSI::MonolithicOverlap(comm));
-
-    if (genprob.restart)
-    {
-      // read the restart information, set vectors and variables
-      fsi->ReadRestart(genprob.restart);
-    }
-    
-    fsi->Timeloop(fsi);
-
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
-    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
-    testmanager.TestAll();
   }
-  else 
-  {
-    Teuchos::RCP<FSI::StructureALE> fsi = Teuchos::rcp(new FSI::StructureALE(comm));
 
-    if (genprob.restart)
-    {
-      // read the restart information, set vectors and variables
-      fsi->ReadRestart(genprob.restart);
-    }
-
-    fsi->Timeloop();
-
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
-    testmanager.TestAll();    
-  }
   Teuchos::TimeMonitor::summarize();
 }
 
@@ -179,13 +204,13 @@ void xfsi_drt()
 #else
   Epetra_SerialComm comm;
 #endif
-  
-  Teuchos::RefCountPtr<FSI::DirichletNeumannCoupling> fsi = rcp(new FSI::DirichletNeumannCoupling(comm));
+
+  Teuchos::RefCountPtr<FSI::DirichletNeumann> fsi = rcp(new FSI::DirichletNeumann(comm));
 
   if (genprob.restart)
   {
-      // read the restart information, set vectors and variables
-      fsi->ReadRestart(genprob.restart);
+    // read the restart information, set vectors and variables
+    fsi->ReadRestart(genprob.restart);
   }
 
   fsi->Timeloop(fsi);

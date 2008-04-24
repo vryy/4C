@@ -189,6 +189,9 @@ namespace ADAPTER {
     /// Predictor for interface displacements
     virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp() = 0;
 
+    /// extract interface forces (necessary for robin-BC)
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
+
     //@}
 
     //! @name Apply interface forces
@@ -202,10 +205,14 @@ namespace ADAPTER {
     */
     virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce) = 0;
 
-    /// create result test for encapulated structure algorithm
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+    /// apply robin enhanced interface forces to structural solver
+    virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> iforce,
+                                          Teuchos::RCP<Epetra_Vector> ifluidvel) = 0;
 
     //@}
+
+    /// create result test for encapulated structure algorithm
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
   };
 
 
@@ -228,7 +235,8 @@ namespace ADAPTER {
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
     Teuchos::RCP<DRT::Discretization> Discretization();
     double DispIncrFactor();
-
+    Teuchos::RCP<const Epetra_Vector> FExtn();
+    Teuchos::RCP<const Epetra_Vector> FRobin();
     //virtual Teuchos::RCP<Epetra_Vector> FluidCondRHS() const;
     //virtual Teuchos::RCP<Epetra_Vector> MeshCondRHS() const;
 
@@ -268,6 +276,9 @@ namespace ADAPTER {
     /// extract displacements
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp();
 
+    /// extract interface forces (necessary for robin-BC)
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+
     /// Predictor for interface displacements
     virtual Teuchos::RCP<Epetra_Vector> PredictInterfaceDispnp();
 
@@ -284,9 +295,13 @@ namespace ADAPTER {
     */
     virtual void ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce);
 
+    virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> iforce,
+                                          Teuchos::RCP<Epetra_Vector> ifluidvel);
+
+    //@}
+
     /// create result test for encapulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
-    //@}
 
   private:
 

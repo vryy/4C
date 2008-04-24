@@ -18,35 +18,9 @@ Maintainer: Ulrich Kuettler
 #ifndef FSI_DIRICHLETNEUMANN_H
 #define FSI_DIRICHLETNEUMANN_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
+#include "fsi_partitioned.H"
 
-#include <AztecOO.h>
-#include <Epetra_CrsGraph.h>
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_Import.h>
-#include <Epetra_LinearProblem.h>
-#include <Epetra_Map.h>
-#include <Epetra_RowMatrix.h>
-#include <Epetra_Vector.h>
-#include <NOX.H>
-#include <NOX_Epetra.H>
-#include <NOX_Epetra_Interface_Required.H>
-#include <NOX_Epetra_LinearSystem_AztecOO.H>
-
-#include <vector>
-
-#include "fsi_algorithm.H"
-#include "fsi_coupling.H"
-#include "fsi_coupling_mortar.H"
-
-
-/// FSI: Fluid Structure Interaction
-/*!
-  This is the place where we bring fluid and structure together.
- */
 namespace FSI {
-
 
 /// Dirichlet Neumann coupled interface system
 /*!
@@ -101,100 +75,34 @@ namespace FSI {
   \author u.kue
   \date 06/07
  */
-class DirichletNeumannCoupling : public Algorithm,
-                                 public NOX::Epetra::Interface::Required
+class DirichletNeumann : public Partitioned
 {
 public:
 
-  /// setup FSI algorithm
-  DirichletNeumannCoupling(Epetra_Comm& comm);
-
-  /// outer level FSI time loop
-  void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
-
-  /// compute FSI interface residual S^{-1}(F(d)) - d
-  bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
+  explicit DirichletNeumann(Epetra_Comm& comm);
 
 protected:
 
-  //! @name Transfer helpers
-
-//   Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<Epetra_Vector> iv);
-  Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
-  Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv);
-
-  //@}
-
-private:
-
-  ///
-  Teuchos::RCP<NOX::Epetra::LinearSystem>
-  CreateLinearSystem(ParameterList& nlParams,
-                     const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
-                     NOX::Epetra::Vector& noxSoln,
-                     Teuchos::RCP<NOX::Utils> utils);
-
-  ///
-  Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(ParameterList& nlParams,
-                                                        Teuchos::RCP<NOX::Epetra::Group> grp);
+  /// composed FSI operator
+  virtual void FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
 
   /// interface fluid operator
-  Teuchos::RCP<Epetra_Vector> FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
+  virtual Teuchos::RCP<Epetra_Vector> FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
                                               const FillType fillFlag);
 
   /// interface structural operator
-  Teuchos::RCP<Epetra_Vector> StructOp(Teuchos::RCP<Epetra_Vector> iforce,
+  virtual Teuchos::RCP<Epetra_Vector> StructOp(Teuchos::RCP<Epetra_Vector> iforce,
                                                const FillType fillFlag);
 
-  /// interface velocity calculation given the interface displacements
-  Teuchos::RCP<Epetra_Vector> InterfaceVelocity(const Teuchos::RCP<Epetra_Vector> idispnp) const;
+  virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
+  virtual void UpdateDisplacement(Teuchos::RCP<Epetra_Vector>& idispn,
+                                  const Epetra_Vector& finalSolution);
 
-  /// current interface displacements
-  Teuchos::RCP<Epetra_Vector> InterfaceDisp();
-
-  /// current interface forces
-  Teuchos::RCP<Epetra_Vector> InterfaceForce();
-
-  /// setup list with default parameters
-  void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
-
-  /// coupling of structure and fluid at the interface, with mortar. Experimental!
-  CouplingMortar         coupsfm_;
-
-  /// interface displacement from time step begin
-  Teuchos::RCP<Epetra_Vector> idispn_;
-
-  //! connection of interface dofs for finite differences
-  Teuchos::RCP<Epetra_CrsGraph> rawGraph_;
-
-  //! counters on how many times the residuum was called in a time step
-  /*!
-    NOX knows different types of residuum calls depending on
-    circumstances (normal, finite difference, matrix free
-    jacobi). It is possible to do approximations depending on the
-    type.
-   */
-  std::vector<int> counter_;
-
-  //! number of residuum calculations per nonlinear solve in one time step
-  std::vector<int> linsolvcount_;
+private:
 
   //! we couple based on displacements
   bool displacementcoupling_;
 
-  /// print parameters and stuff
-  /*!
-    \warning This variable is only valid during when the time loop runs.
-   */
-  Teuchos::RCP<NOX::Utils> utils_;
-
-  /// parameters handed in to NOX
-  Teuchos::ParameterList noxparameterlist_;
-
-  int mfresitemax_;
-
-  /// nodes at the fluid-structure interface match
-  bool matchingnodes_;
 };
 
 }
