@@ -171,7 +171,7 @@ maxentriesperrow_(81)
     discret_.ClearState();
 
     //initialize Constraint Manager
-    constrMan_=rcp(new ConstrManager(discret_, dis_, params_));
+    constrMan_=rcp(new ConstrManager(Discretization(), dis_, params_));
 
     // Check for surface stress conditions due to interfacial phenomena
     vector<DRT::Condition*> surfstresscond(0);

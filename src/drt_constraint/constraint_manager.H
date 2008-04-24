@@ -50,7 +50,7 @@ public:
     \param disp (in): current displacement to compute initial constraints
     */
 
-    ConstrManager(DRT::Discretization& disc,
+    ConstrManager(RCP<DRT::Discretization> disc,
         RCP<Epetra_Vector> disp,
         ParameterList param);
 

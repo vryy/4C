@@ -22,10 +22,10 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 11/07|
  *----------------------------------------------------------------------*/
-ConstrManager::ConstrManager(DRT::Discretization& discr,
+ConstrManager::ConstrManager(RCP<DRT::Discretization> discr,
         RCP<Epetra_Vector> disp,
         ParameterList params):
-actdisc_(rcp(&discr))
+actdisc_(discr)
 {          
   //Check, what kind of constraining boundary conditions there are
   numConstrID_=0;
@@ -75,6 +75,8 @@ actdisc_(rcp(&discr))
   vector<double> MPCamplitudes(constrcond.size());
   vector<int> MPCcondIDs(constrcond.size());
   // Deal with MPC
+  RCP<Epetra_Comm> com = rcp(actdisc_->Comm().Clone());
+  constraintdis_ = rcp(new DRT::Discretization("ConstrDisc",com));
   if (constrcond.size())
   {
     CreateDiscretizationFromCondition(constrcond,"ConstrDisc","CONSTRELE3");
@@ -99,7 +101,7 @@ actdisc_(rcp(&discr))
         p.set("MinID",(*MPCcondID)[0]);
       }
     }
-//    havenodeconstraint_=true;
+    havenodeconstraint_=true;
   }
   //----------------------------------------------------
   //-----------include possible further constraints here
@@ -134,6 +136,9 @@ actdisc_(rcp(&discr))
     lagrMultInc_->Scale(0.0);
     fact_=rcp(new Epetra_Vector(*constrmap_));
   } 
+  MPCamplitudes.clear();
+  MPCcondIDs.clear();
+  //-----------------------------Monitors!
   havevolmonitor_=false;
   haveareamonitor3D_=false;
   haveareamonitor2D_=false;
@@ -182,6 +187,7 @@ actdisc_(rcp(&discr))
     SynchronizeSumConstraint(p1,initialmonvalues_,"computed volume",numMonitorID_,minMonitorID_);
     SynchronizeSumConstraint(p1,initialmonvalues_,"computed area",numMonitorID_,minMonitorID_);
   }
+ 
   return;
 }
 
