@@ -289,7 +289,7 @@ namespace XFEM
     \brief checks if a position in current coordinates lies within a certain element           
            The nonlinear system of equation is solved with help of the Newton-method.
 
-    \param discretization       (in)        : mesh 
+    \param discretization       (in)        : goal: discretization with boundary elements in proper parallel distribution (currently it contains volume elements!) 
     \param x                    (in)        : node in current coordinates
     */  
     bool PositionWithinDiscretization(  
