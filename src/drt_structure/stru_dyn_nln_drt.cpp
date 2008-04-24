@@ -162,6 +162,7 @@ void dyn_nlnstructural_drt()
 
       genalphaparams.set<double>("total time",0.0);
       genalphaparams.set<double>("delta time",sdyn.get<double>("TIMESTEP"));
+      genalphaparams.set<double>("max time",sdyn.get<double>("MAXTIME"));
       genalphaparams.set<int>   ("step",0);
       genalphaparams.set<int>   ("nstep",sdyn.get<int>("NUMSTEP"));
       genalphaparams.set<int>   ("max iterations",sdyn.get<int>("MAXITER"));
@@ -251,10 +252,11 @@ void dyn_nlnstructural_drt()
       // create the time integrator
       bool contact = genalphaparams.get("contact",false);
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
-      RCP<StruGenAlpha> tintegrator = null;
+      RCP<StruGenAlpha> tintegrator;
       if (!contact && !inv_analysis)
         tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
-      else {
+      else 
+      {
         if (!inv_analysis)
           tintegrator = rcp(new ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
         else
