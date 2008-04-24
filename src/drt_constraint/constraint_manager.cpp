@@ -75,8 +75,6 @@ actdisc_(discr)
   vector<double> MPCamplitudes(constrcond.size());
   vector<int> MPCcondIDs(constrcond.size());
   // Deal with MPC
-  RCP<Epetra_Comm> com = rcp(actdisc_->Comm().Clone());
-  constraintdis_ = rcp(new DRT::Discretization("ConstrDisc",com));
   if (constrcond.size())
   {
     CreateDiscretizationFromCondition(constrcond,"ConstrDisc","CONSTRELE3");
@@ -136,8 +134,6 @@ actdisc_(discr)
     lagrMultInc_->Scale(0.0);
     fact_=rcp(new Epetra_Vector(*constrmap_));
   } 
-  MPCamplitudes.clear();
-  MPCcondIDs.clear();
   //-----------------------------Monitors!
   havevolmonitor_=false;
   haveareamonitor3D_=false;
