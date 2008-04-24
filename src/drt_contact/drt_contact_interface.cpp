@@ -1133,8 +1133,8 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   // integrate and assemble the modification, if necessary
   if (modification)
   {
-    //RCP<Epetra_SerialDenseMatrix> mmodseg = integrator.IntegrateMmod(sele,sxia,sxib,mele,mxia,mxib);
-    //integrator.AssembleMmod(*this,sele,mele,*mmodseg);
+   RCP<Epetra_SerialDenseMatrix> mmodseg = integrator.IntegrateMmod(sele,sxia,sxib,mele,mxia,mxib);
+   integrator.AssembleMmod(*this,sele,mele,*mmodseg);
   }
   
   return true;
