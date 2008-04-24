@@ -15,6 +15,8 @@ Maintainer: Markus Gitterle
 
 #include "wall1.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_serialdensevector.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
@@ -22,7 +24,7 @@ Maintainer: Markus Gitterle
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Line Neumann boundary condition (public)     mgit 03/07|
+ |  Integrate a Line Neumann boundary condition (public)      mgit 03/07|
  *----------------------------------------------------------------------*/
 
 int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
@@ -31,11 +33,24 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1)
 {
-  RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp==null) dserror("Cannot get state vector 'displacement'");
-  vector<double> mydisp(lm.size());
-  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-
+  // get type of condition
+  enum LoadType
+  {
+    neum_none,
+    neum_live,
+    neum_orthopressure
+  };
+  
+  LoadType ltype;
+  const string* type = condition.Get<string>("type");
+  if      (*type == "neum_live")          ltype = neum_live;
+  else if (*type == "neum_orthopressure") ltype = neum_orthopressure;
+  else dserror("Unknown type of SurfaceNeumann condition");
+  
+  // get values and switches from the condition
+  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
+  const vector<double>* val   = condition.Get<vector<double> >("val"  );
+  
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
@@ -50,32 +65,34 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
     curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
    // set number of nodes
-  const int iel   = NumNode();
-  
+  const int numnod   = NumNode();
   const DiscretizationType distype = Shape();
   
   // gaussian points 
   const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype); 
   const DRT::UTILS::IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
   
-  // get values and switches from the condition
-  const vector<int>*    onoff = condition.Get<vector<int> >("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val");
-   
   // allocate vector for shape functions and for derivatives
-  Epetra_SerialDenseVector    funct(iel);
-  Epetra_SerialDenseMatrix    deriv(1,iel);
+  LINALG::SerialDenseVector    funct(numnod);
+  LINALG::SerialDenseMatrix    deriv(1,numnod);
   
-  // node coordinates
-  Epetra_SerialDenseMatrix xye(2,iel);
-    
-  // get node coordinates
-  for(int i=0;i<iel;++i)
+  // element geometry update
+  RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+  if (disp==null) dserror("Cannot get state vector 'displacement'");
+  vector<double> mydisp(lm.size());
+  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+  LINALG::SerialDenseMatrix xye(NUMDIM_W1,numnod);  // material coord. of element
+  LINALG::SerialDenseMatrix xyecurr(NUMDIM_W1,numnod);  // spatial coord. of element
+  for (int i=0; i<numnod; ++i)
   {
     xye(0,i)=Nodes()[i]->X()[0]; 
     xye(1,i)=Nodes()[i]->X()[1];
+    
+    xyecurr(0,i) = xye(0,i) + mydisp[i*NODDOF_W1+0];
+    xyecurr(1,i) = xye(1,i) + mydisp[i*NODDOF_W1+1];
+    
   }
-   
+ 
   // loop over integration points //new
   for (int gpid=0;gpid<intpoints.nquad;gpid++)
   {  
@@ -85,26 +102,65 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
      DRT::UTILS::shape_function_1D(funct,e1,distype);
      DRT::UTILS::shape_function_1D_deriv1(deriv,e1,distype);
   
-  // compute infinitesimal line element dr for integration along the line
-     const double dr = w1_substitution(xye,deriv,iel);
-    
-  // load vector ar
-     double ar[NODDOF_W1];
-  // loop the dofs of a node
-  // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
-     for (int i=0; i<NODDOF_W1; ++i)
+     switch(ltype)
      {
-        ar[i] = intpoints.qwgt[gpid] * dr * (*onoff)[i]*(*val)[i] * curvefac;
-     }
+       case neum_live:{ // uniform load on reference configuration
+         
+         // compute infinitesimal line element dr for integration along the line
+         const double dr = w1_substitution(xye,deriv,NULL,numnod);
+         
+         // load vector ar
+         double ar[NODDOF_W1];
+            
+         // loop the dofs of a node
+         // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
+         for (int i=0; i<NODDOF_W1; ++i)
+           ar[i] = intpoints.qwgt[gpid] * dr * (*onoff)[i]*(*val)[i] * curvefac;
 
-   // add load components
-     for (int node=0; node<iel; ++node)
-     {	 
-       for (int j=0; j<NODDOF_W1; ++j)
-       {
-          elevec1[node*NODDOF_W1+j] += funct[node]*ar[j];
+         // add load components
+         for (int node=0; node<numnod; ++node)
+           for (int j=0; j<NODDOF_W1; ++j)
+             elevec1[node*NODDOF_W1+j] += funct[node]*ar[j];
+         
+         break;
+       }
+       case neum_orthopressure:{ // orthogonal pressure on deformed config.
+         
+         // check for correct input
+         if ((*onoff)[0] != 1) dserror("orthopressure on 1st dof only!");
+         for (int checkdof = 1; checkdof < 3; ++checkdof) {
+           if ((*onoff)[checkdof] != 0) dserror("orthopressure on 1st dof only!");
+         }
+         double ortho_value = (*val)[0];
+         if (!ortho_value) dserror("no orthopressure value given!");
+         
+         // outward normal vector (unit vector)
+         vector<double> unrm(NUMDIM_W1);
+          
+         // compute infinitesimal line element dr for integration along the line
+         const double dr = w1_substitution(xyecurr,deriv,&unrm,numnod);
+         
+         // load vector ar
+         double ar[NODDOF_W1];
+           
+         // loop the dofs of a node
+         // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
+         for (int i=0; i<NODDOF_W1; ++i)
+           ar[i] = intpoints.qwgt[gpid] * dr * ortho_value * curvefac;
+
+         // add load components
+           for (int node=0; node<numnod; ++node)
+             for (int j=0; j<NODDOF_W1; ++j)
+               elevec1[node*NODDOF_W1+j] += funct[node] * ar[j] * unrm[j];
+          
+         break;
+       }
+       default:{
+         dserror("Unknown type of SurfaceNeumann load");
+         break;
        }
      }
+  
   } 
   return 0;
 }
@@ -131,6 +187,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(const Disc
 
 double  DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix& xye,
                                                   const Epetra_SerialDenseMatrix& deriv,
+                                                  vector<double>* unrm, // unit normal
                                                   const int iel)
 {
 	  /*
@@ -162,6 +219,11 @@ double  DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix
   if (err!=0)
     dserror("Multiply failed");
   dr=sqrt(der_par(0,0)*der_par(0,0)+der_par(0,1)*der_par(0,1));
+  if (unrm!=NULL)
+  {
+    (*unrm)[0] =  1/dr*der_par(0,1);
+    (*unrm)[1] = -1/dr*der_par(0,0);
+  }
   return dr;
 }
 

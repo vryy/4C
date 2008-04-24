@@ -802,6 +802,7 @@ private:
   // compute infintesimal line element dr for integration along the line
   double  w1_substitution(const Epetra_SerialDenseMatrix& xyze,
 		                  const Epetra_SerialDenseMatrix& deriv,
+		                  vector<double>* unrm,
 		                  const int iel);
 
   // set number of gauss points to element shape default
