@@ -323,7 +323,7 @@ void FSI::DirichletNeumannCoupling::SetDefaultParameters(const Teuchos::Paramete
     SetMethod("BASIC SEQUENTIAL STAGGERED SCHEME");
 
     nlParams.set("Jacobian", "None");
-    nlParams.set("Max Iterations", 1.);
+    nlParams.set("Max Iterations", 1);
 
     dirParams.set("Method","User Defined");
     Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
@@ -962,7 +962,7 @@ FSI::DirichletNeumannCoupling::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
     // A rather simple hack. We need something better!
     const int itemax = MBFluidField().Itemax();
     if (fillFlag==MF_Res and mfresitemax_ > 0)
-        MBFluidField().SetItemax(mfresitemax_ + 1);
+      MBFluidField().SetItemax(mfresitemax_ + 1);
 
     MBFluidField().NonlinearSolve(StructToFluid(idisp),StructToFluid(ivel));
 
