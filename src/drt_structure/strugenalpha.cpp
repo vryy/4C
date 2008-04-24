@@ -32,6 +32,21 @@ output_(output),
 myrank_(discret_.Comm().MyPID()),
 maxentriesperrow_(81)
 {
+#ifdef PRESTRESS
+#ifdef POTSTRESS
+  dserror("Cannot use PRESTRESS && POTSTRESS");
+#endif
+#ifdef STRUGENALPHA_BE
+  dserror("Cannot use STRUGENALPHA_BE with prestressing");
+#endif
+#ifdef STRUGENALPHA_FINTLIKETR
+  dserror("Cannot use STRUGENALPHA_FINTLIKETR with prestressing");
+#endif
+#ifdef STRUGENALPHA_STRONGDBC
+  dserror("Cannot do STRUGENALPHA_STRONGDBC with prestressing");
+#endif
+#endif
+
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -169,21 +184,22 @@ maxentriesperrow_(81)
     //discret_.SetState("velocity",vel_); // not used at the moment
     discret_.Evaluate(p,stiff_,mass_,fint_,null,null);
     discret_.ClearState();
-
-    //initialize Constraint Manager
-    constrMan_=rcp(new ConstrManager(Discretization(), dis_, params_));
-
-    // Check for surface stress conditions due to interfacial phenomena
-    vector<DRT::Condition*> surfstresscond(0);
-    discret_.GetCondition("SurfaceStress",surfstresscond);
-    if (surfstresscond.size())
-    {
-      surf_stress_man_=rcp(new DRT::SurfStressManager(discret_));
-    }
   }
 
   // close mass matrix
   mass_->Complete();
+
+  // -------------------------------------------------------------------
+  // do surface stress and constraints manager
+  // -------------------------------------------------------------------
+    //initialize Constraint Manager
+    constrMan_=rcp(new ConstrManager(Discretization(), dis_, params_));
+    // Check for surface stress conditions due to interfacial phenomena
+    vector<DRT::Condition*> surfstresscond(0);
+    discret_.GetCondition("SurfaceStress",surfstresscond);
+    if (surfstresscond.size())
+      surf_stress_man_=rcp(new DRT::SurfStressManager(discret_));
+
 
   // build damping matrix if desired
   if (damping)
@@ -196,7 +212,7 @@ maxentriesperrow_(81)
 
   //--------------------------- calculate consistent initial accelerations
   {
-    RefCountPtr<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
+    RefCountPtr<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,false);
     if (damping) damp_->Multiply(false,*vel_,*rhs);
     rhs->Update(-1.0,*fint_,1.0,*fext_,-1.0);
     Epetra_Vector rhscopy(*rhs);
@@ -2593,6 +2609,34 @@ void StruGenAlpha::UpdateandOutput()
   fint_->Update(1.0,*fintn_,0.0);
 #endif
 
+
+#ifdef PRESTRESS
+  //----------- save the current green-lagrange strains in the material
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_prestress_update_green_lagrange");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    discret_.SetState("displacement",dis_);
+    discret_.SetState("residual displacement",zeros_);
+    discret_.Evaluate(p,null,null,null,null,null);
+  }
+  
+  //----------------------------- reset the current disp/vel/acc to zero
+  // (the structure does not move while prestraining it )
+  // (prestraining with DBCs != 0 not allowed!)
+  //dis_->Update(1.0,disold,0.0);
+  //vel_->Update(1.0,velold,0.0);
+  //acc_->Update(1.0,accold,0.0);
+  dis_->Scale(0.0);
+  vel_->Scale(0.0);
+  acc_->Scale(0.0);
+#endif    
+
+
   //------ update anything that needs to be updated at the element level
 #ifdef STRUGENALPHA_FINTLIKETR
   {
@@ -2782,8 +2826,9 @@ void StruGenAlpha::ExtrapolateEndState()
  *----------------------------------------------------------------------*/
 void StruGenAlpha::Integrate()
 {
-  int    step  = params_.get<int>   ("step" ,0);
-  int    nstep = params_.get<int>   ("nstep",5);
+  int    step    = params_.get<int>   ("step" ,0);
+  int    nstep   = params_.get<int>   ("nstep",5);
+  double maxtime = params_.get<double>("max time",0.0);
 
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
@@ -2798,14 +2843,14 @@ void StruGenAlpha::Integrate()
   //in case a constraint is defined, use defined algorithm
   if (constrMan_->HaveConstraint())
   {
-	  string algo = params_.get<string>("uzawa algorithm","newtonlinuzawa");
-	  for (int i=step; i<nstep; ++i)
+      string algo = params_.get<string>("uzawa algorithm","newtonlinuzawa");
+      for (int i=step; i<nstep; ++i)
       {
         if      (predictor==1) ConstantPredictor();
         else if (predictor==2) ConsistentPredictor();
         //Does predicted displacement satisfy constraint?
-        double time          = params_.get<double>("total time"             ,0.0);
-        double dt            = params_.get<double>("delta time"             ,0.01);
+        double time = params_.get<double>("total time",0.0);
+        double dt   = params_.get<double>("delta time",0.01);
         // what algorithm is used?
         // - "newtonlinuzawa": 			Potential is linearized wrt displacements and Lagrange multipliers
         //					   			Linear problem is solved with Uzawa algorithm
@@ -2813,14 +2858,15 @@ void StruGenAlpha::Integrate()
         //								Until convergence Lagrange multiplier increased by Uzawa_param*(Vol_err)
         if (algo=="newtonlinuzawa")
         {
-        	FullNewtonLinearUzawa();
+          FullNewtonLinearUzawa();
         }
         else if (algo=="augmentedlagrange")
         {
-         	NonLinearUzawaFullNewton(predictor);
+           NonLinearUzawaFullNewton(predictor);
         }
         else dserror("Unknown type of algorithm to deal with constraints");
         UpdateandOutput();
+        if (time>=maxtime) break;
       }
   }
   else if (equil=="full newton")
@@ -2831,7 +2877,9 @@ void StruGenAlpha::Integrate()
       else if (predictor==2) ConsistentPredictor();
       FullNewton();
       UpdateandOutput();
-    }
+      double time = params_.get<double>("total time",0.0);
+      if (time>=maxtime) break;
+      }
   }
   else if (equil=="modified newton")
   {
@@ -2841,6 +2889,8 @@ void StruGenAlpha::Integrate()
       else if (predictor==2) ConsistentPredictor();
       ModifiedNewton();
       UpdateandOutput();
+      double time = params_.get<double>("total time",0.0);
+      if (time>=maxtime) break;
     }
   }
   else if (equil=="nonlinear cg")
@@ -2851,6 +2901,8 @@ void StruGenAlpha::Integrate()
       else if (predictor==2) ConsistentPredictor();
       NonlinearCG();
       UpdateandOutput();
+      double time = params_.get<double>("total time",0.0);
+      if (time>=maxtime) break;
     }
   }
   else if (equil=="ptc")
@@ -2861,6 +2913,8 @@ void StruGenAlpha::Integrate()
       else if (predictor==2) ConsistentPredictor();
       PTC();
       UpdateandOutput();
+      double time = params_.get<double>("total time",0.0);
+      if (time>=maxtime) break;
     }
   }
   else dserror("Unknown type of equilibrium iteration");
@@ -2936,6 +2990,7 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<double>("alpha f"                ,0.459);
   params.set<double>("total time"             ,0.0);
   params.set<double>("delta time"             ,0.01);
+  params.set<double>("max time"               ,0.02);
   params.set<int>   ("step"                   ,0);
   params.set<int>   ("nstep"                  ,5);
   params.set<int>   ("max iterations"         ,10);
