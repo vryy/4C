@@ -262,6 +262,15 @@ void CreateAleDiscretization()
   }
 
   cond.clear();
+  fluiddis->GetCondition("FREESURFCoupling", cond);
+  for (unsigned i=0; i<cond.size(); ++i)
+  {
+    // We use the same nodal ids and therefore we can just copy the
+    // conditions.
+    aledis->SetCondition("FREESURFCoupling", rcp(new DRT::Condition(*cond[i])));
+  }
+
+  cond.clear();
   fluiddis->GetCondition("ALEDirichlet", cond);
   for (unsigned i=0; i<cond.size(); ++i)
   {
