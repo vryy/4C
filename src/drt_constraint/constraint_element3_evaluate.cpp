@@ -49,11 +49,11 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
   else if (action=="calc_MPC_stiff")       act = calc_MPC_stiffness;
   else
     dserror("Unknown type of action for ConstraintElement3");
-  
+
   switch (act)
   {
     case none:
-    {  
+    {
     }
     break;
     case calc_MPC_stiffness:
@@ -69,13 +69,13 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
       LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
       for (int i=0; i<numnod; ++i)
       {
-        for (int j = 0; j < numdofpernode; ++j) 
+        for (int j = 0; j < numdofpernode; ++j)
         {
           xsrefe(i,j) = Nodes()[i]->X()[j];
           xscurr(i,j) = xsrefe(i,j) + mydisp[i*numdofpernode+j];
         }
       }
-      
+
       LINALG::SerialDenseVector elementnormal(numdim);
       ComputeElementNormal(xscurr,elementnormal);
       if(abs(elementnormal.Norm2())<1E-6)
@@ -87,12 +87,12 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
       ComputeSecondDeriv(xscurr,elemat1);
       const int ID =params.get("ConditionID",-1);
       RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
-      
+
       if (ID<0)
       {
         dserror("Condition ID for volume constraint missing!");
       }
-      
+
       const int minID =params.get("MinID",0);
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
@@ -114,8 +114,8 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
       dserror("Unimplemented type of action");
   }
   return 0;
-  
-  
+
+
 } // end of DRT::ELEMENTS::ConstraintElement3::Evaluate
 
 
@@ -127,145 +127,146 @@ int DRT::ELEMENTS::ConstraintElement3::EvaluateNeumann(ParameterList& params,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
-  
+
   return 0;
 }
 
 void DRT::ELEMENTS::ConstraintElement3::ComputeElementNormal(const LINALG::SerialDenseMatrix& xc,
     LINALG::SerialDenseVector& elenorm)
 {
-  elenorm[0]=-(xc(0,2)*xc(1,1)) + xc(0,1)*xc(1,2) + xc(0,2)*xc(2,1) - 
+  elenorm[0]=-(xc(0,2)*xc(1,1)) + xc(0,1)*xc(1,2) + xc(0,2)*xc(2,1) -
     xc(1,2)*xc(2,1) - xc(0,1)*xc(2,2) + xc(1,1)*xc(2,2);
-  elenorm[1]=xc(0,2)*xc(1,0) - xc(0,0)*xc(1,2) - xc(0,2)*xc(2,0) + 
+  elenorm[1]=xc(0,2)*xc(1,0) - xc(0,0)*xc(1,2) - xc(0,2)*xc(2,0) +
     xc(1,2)*xc(2,0) + xc(0,0)*xc(2,2) - xc(1,0)*xc(2,2);
-  elenorm[2]=-(xc(0,1)*xc(1,0)) + xc(0,0)*xc(1,1) + xc(0,1)*xc(2,0) - 
-    xc(1,1)*xc(2,0) - xc(0,0)*xc(2,1) + xc(1,0)*xc(2,1);    
+  elenorm[2]=-(xc(0,1)*xc(1,0)) + xc(0,0)*xc(1,1) + xc(0,1)*xc(2,0) -
+    xc(1,1)*xc(2,0) - xc(0,0)*xc(2,1) + xc(1,0)*xc(2,1);
   return ;
 }
 
 double DRT::ELEMENTS::ConstraintElement3::ComputeNormalDist(const LINALG::SerialDenseMatrix& xc)
 {
-  return ((xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)))*(xc(0,0) - xc(3,0)) + 
-       (xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)))*(-xc(0,1) + xc(3,1)) + 
+  return ((xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)))*(xc(0,0) - xc(3,0)) +
+       (xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)))*(-xc(0,1) + xc(3,1)) +
        (xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)))*(xc(0,2) - xc(3,2)))/
-     sqrt(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + 
-       pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + 
+     sqrt(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) +
+       pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) +
        pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2));
 }
 
 void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDeriv(const LINALG::SerialDenseMatrix& xc,
                                                           LINALG::SerialDenseVector& elevector)
 {
-  elevector[0]=(-((2*(-xc(1,1) + xc(2,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - 
-      xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(1,2) + xc(2,2))*(xc(0,2)*(xc(1,0) 
+#if 0
+  elevector[0]=(-((2*(-xc(1,1) + xc(2,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) -
+      xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(1,2) + xc(2,2))*(xc(0,2)*(xc(1,0)
       - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2))))*((xc(0,2)*
       (xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)))*
-      (xc(0,0) - xc(3,0)) + (xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + 
+      (xc(0,0) - xc(3,0)) + (xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) +
       xc(0,0)*(-xc(1,2) + xc(2,2)))*(-xc(0,1) + xc(3,1)) + (xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*
       xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)))*(xc(0,2) - xc(3,2)))) + 2*(pow(xc(0,1)*
-      (xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + 
-      pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + 
+      (xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) +
+      pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) +
       xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*
-      (-xc(1,2) + xc(2,2)),2))*(xc(1,2)*(xc(2,1) - xc(3,1)) + xc(2,2)*xc(3,1) - xc(2,1)*xc(3,2) + 
-      xc(1,1)*(-xc(2,2) + xc(3,2))))/(2.*pow(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - 
-      xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + 
+      (-xc(1,2) + xc(2,2)),2))*(xc(1,2)*(xc(2,1) - xc(3,1)) + xc(2,2)*xc(3,1) - xc(2,1)*xc(3,2) +
+      xc(1,1)*(-xc(2,2) + xc(3,2))))/(2.*pow(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) -
+      xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) +
       xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*
       (xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2),1.5));
-  elevector[1]=(-((2*(xc(1,0) - xc(2,0))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - 
-      xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(1,2) + xc(2,2))*(xc(0,2)*(xc(1,1) 
+  elevector[1]=(-((2*(xc(1,0) - xc(2,0))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) -
+      xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(1,2) + xc(2,2))*(xc(0,2)*(xc(1,1)
       - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2))))*((xc(0,2)*
       (xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)))*
       (xc(0,0) - xc(3,0)) + (xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) +
-      xc(0,0)*(-xc(1,2) + xc(2,2)))*(-xc(0,1) + xc(3,1)) + (xc(0,1)*(xc(1,0) - xc(2,0)) + 
-      xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)))*(xc(0,2) - xc(3,2)))) + 
-      2*(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + 
+      xc(0,0)*(-xc(1,2) + xc(2,2)))*(-xc(0,1) + xc(3,1)) + (xc(0,1)*(xc(1,0) - xc(2,0)) +
+      xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)))*(xc(0,2) - xc(3,2)))) +
+      2*(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) +
       xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*
-      (-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + 
+      (-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) +
       xc(0,1)*(-xc(1,2) + xc(2,2)),2))*(-(xc(2,2)*xc(3,0)) + xc(1,2)*(-xc(2,0) + xc(3,0)) + xc(1,0)*
       (xc(2,2) - xc(3,2)) + xc(2,0)*xc(3,2)))/(2.*pow(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*
-      xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - 
-      xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + 
+      xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) -
+      xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) +
       pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) +
       xc(2,2)),2),1.5));
-  elevector[2]=(2*(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + 
-      xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - 
-      xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + 
-      xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2))*(xc(1,1)*(xc(2,0) - 
-      xc(3,0)) + xc(2,1)*xc(3,0) - xc(2,0)*xc(3,1) + xc(1,0)*(-xc(2,1) + xc(3,1))) - (2*(xc(1,0) - 
+  elevector[2]=(2*(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) +
+      xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) -
+      xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) +
+      xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2))*(xc(1,1)*(xc(2,0) -
+      xc(3,0)) + xc(2,1)*xc(3,0) - xc(2,0)*xc(3,1) + xc(1,0)*(-xc(2,1) + xc(3,1))) - (2*(xc(1,0) -
       xc(2,0))*(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*
       (-xc(1,2) + xc(2,2))) + 2*(xc(1,1) - xc(2,1))*(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*
-      xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2))))*((xc(0,2)*(xc(1,1) - xc(2,1)) + 
-      xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)))*(xc(0,0) - xc(3,0)) + 
-      (xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + 
+      xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2))))*((xc(0,2)*(xc(1,1) - xc(2,1)) +
+      xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)))*(xc(0,0) - xc(3,0)) +
+      (xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) +
       xc(2,2)))*(-xc(0,1) + xc(3,1)) + (xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*
       xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)))*(xc(0,2) - xc(3,2))))/(2.*pow(pow(xc(0,1)*
-      (xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + 
-      pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + 
+      (xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) +
+      pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) +
       xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*
       (-xc(1,2) + xc(2,2)),2),1.5));
   elevector[3]=(2*(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*
-      (-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + 
+      (-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) +
       xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*
-      xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2))*((xc(0,2) - xc(2,2))*(-xc(0,1) + xc(3,1)) + (xc(0,1) 
+      xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2))*((xc(0,2) - xc(2,2))*(-xc(0,1) + xc(3,1)) + (xc(0,1)
       - xc(2,1))*(xc(0,2) - xc(3,2))) - (2*(xc(0,1) - xc(2,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*
       xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(xc(0,2) - xc(2,2))*(xc(0,2)*
       (xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2))))*
-      ((xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + 
+      ((xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) +
       xc(2,2)))*(xc(0,0) - xc(3,0)) + (xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*
-      xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)))*(-xc(0,1) + xc(3,1)) + (xc(0,1)*(xc(1,0) - xc(2,0)) 
+      xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)))*(-xc(0,1) + xc(3,1)) + (xc(0,1)*(xc(1,0) - xc(2,0))
       + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)))*(xc(0,2) - xc(3,2))))/
       (2.*pow(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*
-      (-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) 
+      (-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2)
       + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)
       *xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2),1.5));
   elevector[4]=(2*(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*
-      (-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + 
+      (-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) +
       xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*
-      xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2))*((xc(0,2) - xc(2,2))*(xc(0,0) - xc(3,0)) + (-xc(0,0) 
+      xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2))*((xc(0,2) - xc(2,2))*(xc(0,0) - xc(3,0)) + (-xc(0,0)
       + xc(2,0))*(xc(0,2) - xc(3,2))) - (2*(-xc(0,0) + xc(2,0))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)
-      *xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(xc(0,2) - xc(2,2))*(xc(0,2)*(xc(1,1) 
+      *xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(xc(0,2) - xc(2,2))*(xc(0,2)*(xc(1,1)
       - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2))))*((xc(0,2)*(xc(1,1)
-       - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)))*(xc(0,0) - xc(3,0)) 
+       - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)))*(xc(0,0) - xc(3,0))
       + (xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)))*
       (-xc(0,1) + xc(3,1)) + (xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)
-      *(-xc(1,1) + xc(2,1)))*(xc(0,2) - xc(3,2))))/(2.*pow(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) 
-      - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) 
+      *(-xc(1,1) + xc(2,1)))*(xc(0,2) - xc(3,2))))/(2.*pow(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0)
+      - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0)
       - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*
       xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2),1.5));
   elevector[5]=(2*(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*
-      (-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + 
+      (-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) +
       xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*
       xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2))*((-xc(0,1) + xc(2,1))*(xc(0,0) - xc(3,0)) + (xc(0,0)
       - xc(2,0))*(xc(0,1) - xc(3,1))) - (2*(-xc(0,0) + xc(2,0))*(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*
-      xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2))) + 2*(-xc(0,1) + xc(2,1))*(xc(0,2)*(xc(1,1) - 
-      xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2))))*((xc(0,2)*(xc(1,1) - 
-      xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)))*(xc(0,0) - xc(3,0)) + 
+      xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2))) + 2*(-xc(0,1) + xc(2,1))*(xc(0,2)*(xc(1,1) -
+      xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2))))*((xc(0,2)*(xc(1,1) -
+      xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)))*(xc(0,0) - xc(3,0)) +
       (xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)))*
       (-xc(0,1) + xc(3,1)) + (xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*
-      (-xc(1,1) + xc(2,1)))*(xc(0,2) - xc(3,2))))/(2.*pow(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - 
-      xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - 
-      xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - 
+      (-xc(1,1) + xc(2,1)))*(xc(0,2) - xc(3,2))))/(2.*pow(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) -
+      xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) -
+      xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) -
       xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2),1.5));
   elevector[6]=(2*(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*
-      (-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + 
+      (-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) +
       xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*
-      xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2))*((xc(0,2) - xc(1,2))*(xc(0,1) - xc(3,1)) + (-xc(0,1) + 
-      xc(1,1))*(xc(0,2) - xc(3,2))) - (2*(-xc(0,1) + xc(1,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - 
-      xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(0,2) + xc(1,2))*(xc(0,2)*(xc(1,0) - xc(2,0)) + 
-      xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2))))*((xc(0,2)*(xc(1,1) - xc(2,1)) + 
+      xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2))*((xc(0,2) - xc(1,2))*(xc(0,1) - xc(3,1)) + (-xc(0,1) +
+      xc(1,1))*(xc(0,2) - xc(3,2))) - (2*(-xc(0,1) + xc(1,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) -
+      xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(0,2) + xc(1,2))*(xc(0,2)*(xc(1,0) - xc(2,0)) +
+      xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2))))*((xc(0,2)*(xc(1,1) - xc(2,1)) +
       xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)))*(xc(0,0) - xc(3,0)) + (xc(0,2)*
-      (xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)))*(-xc(0,1) + 
-      xc(3,1)) + (xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + 
+      (xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)))*(-xc(0,1) +
+      xc(3,1)) + (xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) +
       xc(2,1)))*(xc(0,2) - xc(3,2))))/(2.*pow(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*
-      xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - 
+      xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) -
       xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*
       xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2),1.5));
   elevector[7]=(2*(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*
-      (-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + 
+      (-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) +
       xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*
-      xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2))*((-xc(0,2) + xc(1,2))*(xc(0,0) - xc(3,0)) + (xc(0,0) - 
-      xc(1,0))*(xc(0,2) - xc(3,2))) - (2*(xc(0,0) - xc(1,0))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - 
-      xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(0,2) + xc(1,2))*(xc(0,2)*(xc(1,1) - xc(2,1)) + 
+      xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2))*((-xc(0,2) + xc(1,2))*(xc(0,0) - xc(3,0)) + (xc(0,0) -
+      xc(1,0))*(xc(0,2) - xc(3,2))) - (2*(xc(0,0) - xc(1,0))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) -
+      xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(0,2) + xc(1,2))*(xc(0,2)*(xc(1,1) - xc(2,1)) +
       xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2))))*((xc(0,2)*(xc(1,1) - xc(2,1)) +
       xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)))*(xc(0,0) - xc(3,0)) + (xc(0,2)*
       (xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)))*(-xc(0,1) +
@@ -304,11 +305,13 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDeriv(const LINALG::SerialDe
       xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) +
       xc(0,1)*(-xc(1,2) + xc(2,2)),2));
   return;
+#endif
 }
 
 void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialDenseMatrix& xc,
     LINALG::SerialDenseMatrix& elematrix)
 {
+#if 0
   elematrix(0,0)=
   (-((2*(-xc(1,1) + xc(2,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) +
   xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(1,2) + xc(2,2))*(xc(0,2)*(xc(1,0) - xc(2,0)) +
@@ -449,7 +452,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialD
   xc(1,1)*(-xc(2,2) + xc(3,2)))))/(4.*pow(pow(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) -
   xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) +
   xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) -
-  xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2),2.5)); 
+  xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2),2.5));
 
   elematrix(0,4)=
   (-((2*(-xc(1,1) + xc(2,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) +
@@ -563,7 +566,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialD
   xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) +
   xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) -
   xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2),2.5));
-  
+
   elematrix(0,7)=
   (-((2*(-xc(1,1) + xc(2,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) +
   xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(1,2) + xc(2,2))*(xc(0,2)*(xc(1,0) - xc(2,0)) +
@@ -904,7 +907,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialD
   xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) +
   pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) +
   xc(2,2)),2),2.5));
-  
+
   elematrix(1,6)=
   (-((2*(xc(1,0) - xc(2,0))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) +
   xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(1,2) + xc(2,2))*(xc(0,2)*(xc(1,1) - xc(2,1)) +
@@ -1799,7 +1802,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialD
   xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) +
   xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) -
   xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2),1.5));
-  
+
   elematrix(4,0)=
   (-3*(2*(-xc(1,1) + xc(2,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) +
   xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(1,2) + xc(2,2))*(xc(0,2)*(xc(1,0) - xc(2,0)) +
@@ -2166,7 +2169,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialD
   xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)),2) + pow(xc(0,2)*(xc(1,0) - xc(2,0)) +
   xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) -
   xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) + xc(2,2)),2),1.5));
-  
+
   elematrix(5,0)=
   (2*(2*(-xc(1,1) + xc(2,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) +
   xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(1,2) + xc(2,2))*(xc(0,2)*(xc(1,0) - xc(2,0)) +
@@ -2542,7 +2545,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialD
   pow(xc(0,2)*(xc(1,0) - xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) +
   xc(2,2)),2) + pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) +
   xc(0,1)*(-xc(1,2) + xc(2,2)),2),1.5));
-  
+
   elematrix(6,0)=
   (2*(2*(-xc(1,1) + xc(2,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) +
   xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(1,2) + xc(2,2))*(xc(0,2)*(xc(1,0) - xc(2,0)) +
@@ -2917,7 +2920,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialD
   xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) +
   pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) +
   xc(2,2)),2),1.5));
-  
+
   elematrix(7,0)=
   (-3*(2*(-xc(1,1) + xc(2,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) +
   xc(0,0)*(-xc(1,1) + xc(2,1))) + 2*(-xc(1,2) + xc(2,2))*(xc(0,2)*(xc(1,0) - xc(2,0)) +
@@ -3656,7 +3659,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialD
   xc(2,0)) + xc(1,2)*xc(2,0) - xc(1,0)*xc(2,2) + xc(0,0)*(-xc(1,2) + xc(2,2)),2) +
   pow(xc(0,2)*(xc(1,1) - xc(2,1)) + xc(1,2)*xc(2,1) - xc(1,1)*xc(2,2) + xc(0,1)*(-xc(1,2) +
   xc(2,2)),2),1.5));
-  
+
   elematrix(9,0)=
   -((-(xc(1,2)*xc(2,1)) + xc(0,2)*(-xc(1,1) + xc(2,1)) + xc(0,1)*(xc(1,2) - xc(2,2)) +
   xc(1,1)*xc(2,2))*(2*(-xc(1,1) + xc(2,1))*(xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) -
@@ -4013,8 +4016,9 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialD
   elematrix(11,10)=0;
 
   elematrix(11,11)=0;
-  
+
   return;
+#endif
 }
 
 
