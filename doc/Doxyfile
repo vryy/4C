@@ -1044,7 +1044,8 @@ INCLUDE_FILE_PATTERNS  =
 # undefined via #undef or recursively expanded use the := operator 
 # instead of the = operator.
 
-PREDEFINED             = CCADISCRET \
+PREDEFINED             = __cplusplus \
+                         CCADISCRET \
                          TRILINOS_PACKAGE \
                          QHULL \
                          D_SHELL8 \
