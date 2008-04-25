@@ -201,9 +201,9 @@ public:
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
-  Teuchos::RCP<Epetra_Vector> RobinRHS() { return robinrhs_;}
+  Teuchos::RCP<Epetra_Vector> RobinRHS() { return robinrhs_; }
 
-  LINALG::MapExtractor& VelPresSplitter() {return velpressplitter_;}
+  LINALG::MapExtractor& VelPresSplitter() { return velpressplitter_; }
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
   Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
 

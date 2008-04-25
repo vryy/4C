@@ -1058,8 +1058,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
         {
           // Add structral part of Robin force
           // (combination of structral force and velocity)
-          if (residual_->Update(theta_*dta_,*robinrhs_,1.0)!=0)
-            dserror("Update failed");
+          residual_->Update(theta_*dta_,*robinrhs_,1.0);
 
           double alphaf = params_.get<double>("alpharobinf",-1.0);
           double scale = alphaf*theta_*dta_;
@@ -1069,6 +1068,14 @@ void FluidImplicitTimeInt::NonlinearSolve()
           fsisurface_->AddCondVector(-1.*scale,
                                      fsisurface_->ExtractCondVector(velnp_),
                                      residual_);
+
+          // Note: It is the right thing to test the robin enhanced residual_
+          // for convergence, since the velocity terms are to vanish and the
+          // structural forces are to cancel with the internal forces.
+          //
+          // Note: We do not add any external (robin) loads to
+          // trueresidual_. This way we get the unbalanced forces at the
+          // interface, which can be applied to the structure later on.
 
           const Epetra_Map& robinmap = *fsisurface_->CondMap();
           int numrdofs = robinmap.NumMyElements();
