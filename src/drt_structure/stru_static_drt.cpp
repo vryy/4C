@@ -86,7 +86,7 @@ void stru_static_drt()
   if (contact)
   {
     // leave and call special routine for statics with contact
-    contact_stru_static_drt(initialcontact);
+    CONTACT::contact_stru_static_drt(initialcontact);
     return;
   } 
   

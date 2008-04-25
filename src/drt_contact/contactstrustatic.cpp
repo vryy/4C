@@ -65,6 +65,9 @@ extern struct _SOLVAR  *solv;
  *----------------------------------------------------------------------*/
 extern struct _STATIC_VAR  *statvar;
 
+
+namespace CONTACT
+{
 /*----------------------------------------------------------------------*
   | structural nonlinear static with contact                popp 03/08  |
  *----------------------------------------------------------------------*/
@@ -632,6 +635,6 @@ void contact_stru_static_drt(bool initialcontact)
   //----------------------------- this is the end my lonely friend the end
   return;
 } // end of contact_stru_static_drt()
-
+} // namespace CONTACT
 
 #endif  // #ifdef CCADISCRET

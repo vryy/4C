@@ -44,8 +44,10 @@ Maintainer: Alexander Popp
 #define CONTACTNGP 5             /* no. Gauss points for integration */
 #define CONTACTCRITDIST 0.5      /* critical distance for potential contact */
 
-// static solution routine
-void contact_stru_static_drt(bool initialcontact);
+namespace CONTACT {
+  // static solution routine
+  void contact_stru_static_drt(bool initialcontact);
+}
 
 #endif  // #ifndef CONTACTDEFINES_H
 #endif  // #ifdef CCADISCRET
