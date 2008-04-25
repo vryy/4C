@@ -627,7 +627,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
     // robin flags
     genalphaparams->set<double>("alpha s",fsidyn.get<double>("ALPHA_S"));
     genalphaparams->set<bool>  ("structrobin",
-                                Teuchos::getIntegralValue<int>(fsidyn,"FLUIDROBIN"));
+                                Teuchos::getIntegralValue<int>(fsidyn,"STRUCTROBIN"));
 
     if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") == fsi_iter_monolithic)
     {
