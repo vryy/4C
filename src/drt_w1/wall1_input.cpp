@@ -135,7 +135,15 @@ bool DRT::ELEMENTS::Wall1::ReadElement()
     {
     	dserror("eas-technology not necessary with 8 nodes");	
     }
-        else
+    else if (nnode==3)
+    {
+      	dserror("eas-technology not implemented for tri3 elements");	
+    }
+    else if (nnode==6)
+    {
+     	dserror("eas-technology not implemented for tri6 elements");	
+    }
+    else
     {	
       // EAS enhanced deformation gradient parameters
       Epetra_SerialDenseMatrix alpha(neas,1);  // if you change '4' here, then do it for alphao as well
