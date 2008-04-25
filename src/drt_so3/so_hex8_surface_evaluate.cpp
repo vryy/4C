@@ -304,7 +304,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
         if (disp==null) dserror("Cannot get state vector 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        const int numnod = 4;
+        const int numnod=NumNode();
         Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
         Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
         for (int i=0; i<numnod; ++i)
@@ -666,7 +666,7 @@ int DRT::ELEMENTS::Soh8Surface::Evaluate(ParameterList& params,
  * Compute Volume between surface and xy-plane.                 tk 10/07*
  * Yields to the enclosed volume when summed up over all elements       *
  * ---------------------------------------------------------------------*/
-double DRT::ELEMENTS::Soh8Surface::ComputeConstrVols(Epetra_SerialDenseMatrix xc)
+double DRT::ELEMENTS::Soh8Surface::ComputeConstrVols(const Epetra_SerialDenseMatrix& xc)
 {
   double volume =0;
   //Formula for volume computation based on calculation of Ulrich done
@@ -718,7 +718,7 @@ double DRT::ELEMENTS::Soh8Surface::ComputeConstrVols(Epetra_SerialDenseMatrix xc
  * Compute influence of volume constraint on stiffness matrix.  tk 10/07*
  * Second derivatives of volume with respect to the displacements       *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soh8Surface::ComputeVolConstrStiff(Epetra_SerialDenseMatrix xc,
+void DRT::ELEMENTS::Soh8Surface::ComputeVolConstrStiff(const Epetra_SerialDenseMatrix& xc,
     Epetra_SerialDenseMatrix& elematrix)
 {
   //Second derivatives of volume with respect to the displacements.
@@ -885,7 +885,7 @@ void DRT::ELEMENTS::Soh8Surface::ComputeVolConstrStiff(Epetra_SerialDenseMatrix 
  * Compute first derivatives of volume                          tk 10/07*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::Soh8Surface::ComputeVolConstrDeriv(Epetra_SerialDenseMatrix xc,
+void DRT::ELEMENTS::Soh8Surface::ComputeVolConstrDeriv(const Epetra_SerialDenseMatrix& xc,
     Epetra_SerialDenseVector& elevector)
 {
       

@@ -796,14 +796,14 @@ private:
 
 
   //! Submethod to compute the enclosed volume for vlume constraint boundary condition
-  double ComputeConstrVols(Epetra_SerialDenseMatrix xscurr);
+  double ComputeConstrVols(const Epetra_SerialDenseMatrix& xscurr);
 
   //! Submethod to compute necessary change to stiffness matrix due to the constraints
-  void ComputeVolConstrStiff(Epetra_SerialDenseMatrix xscurr,
+  void ComputeVolConstrStiff(const Epetra_SerialDenseMatrix& xscurr,
 		  Epetra_SerialDenseMatrix& elematrix);
 
   //! Submethod to compute first derivatives of constraint volumes w.r.t. the displacements
-  void ComputeVolConstrDeriv(Epetra_SerialDenseMatrix xscurr,
+  void ComputeVolConstrDeriv(const Epetra_SerialDenseMatrix& xscurr,
 		  Epetra_SerialDenseVector& elevector1);
 
 
