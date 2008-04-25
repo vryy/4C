@@ -207,6 +207,25 @@ void XFluidImplicitTimeInt::TimeLoop(RCP<DRT::Discretization> cutterdiscret)
   while (step_<stepmax_ and time_<maxtime_)
   {
     PrepareTimeStep();
+    // -------------------------------------------------------------------
+    //                         out to screen
+    // -------------------------------------------------------------------
+    if (myrank_==0)
+    {
+      switch (timealgo_)
+      {
+      case timeint_one_step_theta:
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta  STEP = %4d/%4d \n",
+              time_,maxtime_,dta_,step_,stepmax_);
+        break;
+      case timeint_bdf2:
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E     BDF2         STEP = %4d/%4d \n",
+               time_,maxtime_,dta_,step_,stepmax_);
+        break;
+      default:
+        dserror("parameter out of range: IOP\n");
+      } /* end of switch(timealgo) */
+    }
 
     switch (dyntype)
     {
@@ -321,26 +340,6 @@ void XFluidImplicitTimeInt::PrepareTimeStep()
   if (timealgo_==timeint_bdf2)
   {
     theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
-  }
-
-  // -------------------------------------------------------------------
-  //                         out to screen
-  // -------------------------------------------------------------------
-  if (myrank_==0)
-  {
-    switch (timealgo_)
-    {
-    case timeint_one_step_theta:
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta  STEP = %4d/%4d \n",
-             time_,maxtime_,dta_,step_,stepmax_);
-      break;
-    case timeint_bdf2:
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E     BDF2         STEP = %4d/%4d \n",
-             time_,maxtime_,dta_,step_,stepmax_);
-      break;
-    default:
-      dserror("parameter out of range: IOP\n");
-    } /* end of switch(timealgo) */
   }
 }
   
