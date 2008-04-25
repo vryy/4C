@@ -23,6 +23,8 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/linalg_serialdensevector.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
 
 
 
@@ -202,11 +204,11 @@ public:
   int Evaluate(ParameterList& params,
                DRT::Discretization&      discretization,
                vector<int>&              lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
+               LINALG::SerialDenseMatrix& elemat1,
+               LINALG::SerialDenseMatrix& elemat2,
+               LINALG::SerialDenseVector& elevec1,
+               LINALG::SerialDenseVector& elevec2,
+               LINALG::SerialDenseVector& elevec3);
 
 
   /*!
@@ -223,6 +225,7 @@ public:
                               Epetra_SerialDenseVector& elevec1);
 
 
+
   //@}
 
 private:
@@ -231,7 +234,7 @@ private:
   enum ActionType
   {
     none,
-    calc_fluid_systemmat_and_residual
+    calc_MPC_stiffness
   };
 
   //! container containing all kind of fluid2 thisandthat
@@ -242,6 +245,17 @@ private:
 
   // don't want = operator
   ConstraintElement3& operator = (const ConstraintElement3& old);
+  
+  void ComputeElementNormal(const LINALG::SerialDenseMatrix& xc,
+      LINALG::SerialDenseVector& elevector);
+  
+  double ComputeNormalDist(const LINALG::SerialDenseMatrix& xc);
+  
+  void ComputeFirstDeriv(const LINALG::SerialDenseMatrix&,
+      LINALG::SerialDenseVector& elevector);
+  
+  void ComputeSecondDeriv(const LINALG::SerialDenseMatrix&,
+      LINALG::SerialDenseMatrix& elevector);
 
 }; // class ConstraintElement3
 
