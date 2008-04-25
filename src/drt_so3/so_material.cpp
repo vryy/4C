@@ -299,7 +299,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
     break;
     }
     default:
-      dserror("Illegal type %d of material for element solid3 hex8", mat->MaterialType());
+      dserror("Illegal type %d of material for element solid3 tet4", mat->MaterialType());
       break;
   }
 
@@ -335,6 +335,14 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
 
       break;
     }
+    case m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
+    {
+      MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
+      moon->Evaluate(glstrain,cmat,stress);
+      *density = moon->Density();
+
+      break;
+    }
     case m_neohooke: /*----------------- NeoHookean Material */
     {
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());
@@ -344,7 +352,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
     break;
     }
     default:
-      dserror("Illegal type %d of material for element solid3 hex8", mat->MaterialType());
+      dserror("Illegal type %d of material for element solid3 tet10", mat->MaterialType());
       break;
   }
 
@@ -389,7 +397,7 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_mat_sel(
     break;
     }
     default:
-      dserror("Illegal type %d of material for element solid3 hex8", mat->MaterialType());
+      dserror("Illegal type %d of material for element solid3 ctet10", mat->MaterialType());
       break;
   }
 
