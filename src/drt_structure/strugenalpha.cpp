@@ -215,7 +215,7 @@ fsisurface_(NULL)
   //--------------------------- calculate consistent initial accelerations
   {
     RefCountPtr<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
-    if (damping) 
+    if (damping)
       damp_->Multiply(false,*vel_,*rhs);
     rhs->Update(-1.0,*fint_,1.0,*fext_,-1.0);
     Epetra_Vector rhscopy(*rhs);
@@ -751,7 +751,9 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
       double alphas = params_.get<double>("alpha s",-1.);
 
       // Add structural part of Robin force
-      fsisurface_->AddCondVector(alphas/dt,dism_,fint_);
+      fsisurface_->AddCondVector(alphas/dt,
+                                 fsisurface_->ExtractCondVector(dism_),
+                                 fint_);
 
       double scale = alphas*(1.-alphaf)/dt;
       const Epetra_Map& robinmap = *fsisurface_->CondMap();
@@ -1167,7 +1169,9 @@ void StruGenAlpha::FullNewton()
         double alphas = params_.get<double>("alpha s",-1.);
 
         // Add structural part of Robin force
-        fsisurface_->AddCondVector(alphas/dt,dism_,fint_);
+        fsisurface_->AddCondVector(alphas/dt,
+                                   fsisurface_->ExtractCondVector(dism_),
+                                   fint_);
 
         double scale = alphas*(1.-alphaf)/dt;
         const Epetra_Map& robinmap = *fsisurface_->CondMap();

@@ -1058,14 +1058,17 @@ void FluidImplicitTimeInt::NonlinearSolve()
         {
           // Add structral part of Robin force
           // (combination of structral force and velocity)
-          residual_->Update(theta_*dta_,*robinrhs_,1.0);
+          if (residual_->Update(theta_*dta_,*robinrhs_,1.0)!=0)
+            dserror("Update failed");
 
           double alphaf = params_.get<double>("alpharobinf",-1.0);
           double scale = alphaf*theta_*dta_;
 
           // Add fluid part of Robin force
           // (scaled fluid velocity)
-          fsisurface_->AddCondVector(-1.*scale,velnp_,residual_);
+          fsisurface_->AddCondVector(-1.*scale,
+                                     fsisurface_->ExtractCondVector(velnp_),
+                                     residual_);
 
           const Epetra_Map& robinmap = *fsisurface_->CondMap();
           int numrdofs = robinmap.NumMyElements();
