@@ -121,16 +121,21 @@ protected:
 
   //@}
 
+  /// create convergance tests
+  virtual void CreateStatusTest(ParameterList& nlParams,
+                                Teuchos::RCP<NOX::Epetra::Group> grp,
+                                Teuchos::RCP<NOX::StatusTest::Combo> converged);
+
 private:
 
-  ///
+  /// create linear solver framework
   Teuchos::RCP<NOX::Epetra::LinearSystem>
   CreateLinearSystem(ParameterList& nlParams,
                      const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
                      NOX::Epetra::Vector& noxSoln,
                      Teuchos::RCP<NOX::Utils> utils);
 
-  ///
+  /// create convergance tests including testing framework
   Teuchos::RCP<NOX::StatusTest::Combo> CreateStatusTest(ParameterList& nlParams,
                                                         Teuchos::RCP<NOX::Epetra::Group> grp);
 

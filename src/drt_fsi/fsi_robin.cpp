@@ -22,7 +22,8 @@ FSI::Robin::Robin(Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::Robin::FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
-  InterfaceForce();
+  //iforcen_ = InterfaceForce();
+  iforcen_ = StructureField().ExtractInterfaceForces();
 
   const Teuchos::RCP<Epetra_Vector> idispn = rcp(new Epetra_Vector(x));
 
@@ -130,5 +131,32 @@ FSI::Robin::StructOp(Teuchos::RCP<Epetra_Vector> iforce,
   }
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double FSI::Robin::InterfaceForceNormF::computeNorm(const NOX::Abstract::Group& grp)
+{
+  Teuchos::RCP<Epetra_Vector> iforce = algorithm_.StructureField().ExtractInterfaceForces();
+  iforce->Update(-1.,*algorithm_.iforcen_,1.);
+
+  return FSI::GenericNormF::computeNorm(*iforce);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void
+FSI::Robin::CreateStatusTest(ParameterList& nlParams,
+                             Teuchos::RCP<NOX::Epetra::Group> grp,
+                             Teuchos::RCP<NOX::StatusTest::Combo> converged)
+{
+  FSI::Partitioned::CreateStatusTest(nlParams,grp,converged);
+
+  Teuchos::RCP<FSI::Robin::InterfaceForceNormF> absforce =
+    Teuchos::rcp(new FSI::Robin::InterfaceForceNormF(*this,
+                                                     "interface force",
+                                                     nlParams.get("Norm abs F", 1.0e-6)));
+  converged->addStatusTest(absforce);
+}
 
 #endif

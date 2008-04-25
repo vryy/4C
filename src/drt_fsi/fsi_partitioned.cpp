@@ -684,7 +684,7 @@ FSI::Partitioned::CreateLinearSystem(ParameterList& nlParams,
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::StatusTest::Combo>
 FSI::Partitioned::CreateStatusTest(ParameterList& nlParams,
-                                                Teuchos::RCP<NOX::Epetra::Group> grp)
+                                   Teuchos::RCP<NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
   Teuchos::RCP<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
@@ -697,6 +697,20 @@ FSI::Partitioned::CreateStatusTest(ParameterList& nlParams,
   combo->addStatusTest(converged);
   combo->addStatusTest(maxiters);
 
+  // setup the real tests
+  CreateStatusTest(nlParams,grp,converged);
+
+  return combo;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void
+FSI::Partitioned::CreateStatusTest(ParameterList& nlParams,
+                                   Teuchos::RCP<NOX::Epetra::Group> grp,
+                                   Teuchos::RCP<NOX::StatusTest::Combo> converged)
+{
   Teuchos::RCP<NOX::StatusTest::NormF> absresid =
     Teuchos::rcp(new NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
   converged->addStatusTest(absresid);
@@ -717,8 +731,6 @@ FSI::Partitioned::CreateStatusTest(ParameterList& nlParams,
 
   //Teuchos::RCP<NOX::StatusTest::NormWRMS> wrms     = Teuchos::rcp(new NOX::StatusTest::NormWRMS(1.0e-2, 1.0e-8));
   //converged->addStatusTest(wrms);
-
-  return combo;
 }
 
 
