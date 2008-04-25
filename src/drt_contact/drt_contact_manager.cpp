@@ -27,6 +27,12 @@ discret_(discret),
 activesetconv_(false),
 isincontact_(false)
 {
+#ifdef CONTACTMESHTYING
+#ifndef CONTACTSTICKING
+  dserror("ERROR: Contact_Manager: Mesh Tying option only in combination with sticking!");
+#endif
+#endif
+  
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
 
   // let's check for contact boundary conditions in discret
@@ -835,10 +841,12 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
   feffnew->Update(1.0,*fimodexp,0.0,*tfamodexp,1.0);
 #endif // #ifndef CONTACTSTICKING
   
+#ifndef CONTACTMESHTYING
   // add weighted gap vector to feffnew, if existing
   RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
   if (gact->GlobalLength()) LINALG::Export(*gact,*gexp);
   feffnew->Update(1.0,*gexp,1.0);
+#endif // #ifndef CONTACTMESHTYING
   
   /**********************************************************************/
   /* Replace kteff and feff by kteffnew and feffnew                   */
@@ -1255,10 +1263,12 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::Export(*fi,*fiexp);
   if (gidofs->NumGlobalElements()) feffnew->Update(1.0,*fiexp,1.0);
   
+#ifndef CONTACTMESHTYING
   // add weighted gap vector to feffnew, if existing
   RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
   LINALG::Export(*gact,*gexp);
   if (gact->GlobalLength()) feffnew->Update(1.0,*gexp,1.0);
+#endif // #ifndef CONTACTMESHTYING
   
 #ifndef CONTACTSTICKING
   // add a subvector to feffnew
@@ -1526,8 +1536,13 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
         //if (nz<0) // no averaging of Lagrange multipliers
         if ((0.5*nz+0.5*nzold)<0) // averaging of Lagrange multipliers
         {
-          cnode->Active() = false; //set to true for mesh tying
-          activesetconv_ = false;  //set to true for mesh tying
+#ifndef CONTACTMESHTYING
+          cnode->Active() = false;
+          activesetconv_ = false;
+#else
+          cnode->Active() = true; //set all nodes active for mesh tying
+          activesetconv_ = true;  //no active set loop for mesh tying
+#endif // #ifndef CONTACTMESHTYING
         }
         
         cout << "ACTIVE: " << i << " " << j << " " << gid << " "

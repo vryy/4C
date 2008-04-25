@@ -23,6 +23,7 @@ Maintainer: Alexander Popp
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
 //#define CONTACTBASISTRAFO      /* flag for contact basis transformation */
 //#define CONTACTSTICKING        /* flag for tangential sticking condition */
+//#define CONTACTMESHTYING       /* flag for mesh tying algorithms */
 //#define CONTACTONEMORTARLOOP   /* flag for computation of D,M matrices */
 
 /************************************************************************/
