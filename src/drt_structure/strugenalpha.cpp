@@ -214,8 +214,9 @@ fsisurface_(NULL)
 
   //--------------------------- calculate consistent initial accelerations
   {
-    RefCountPtr<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,false);
-    if (damping) damp_->Multiply(false,*vel_,*rhs);
+    RefCountPtr<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
+    if (damping) 
+      damp_->Multiply(false,*vel_,*rhs);
     rhs->Update(-1.0,*fint_,1.0,*fext_,-1.0);
     Epetra_Vector rhscopy(*rhs);
     rhs->Multiply(1.0,*invtoggle_,rhscopy,0.0);
