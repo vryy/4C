@@ -29,25 +29,24 @@ Maintainer: Ulrich Kuettler
 /*!
 \brief INPUTPARAMS: Namespace for baci enums of input parameters
 
+// This namespace should one day contain all the enums now still
+// defined in the various old c-headers (enums.h, dynamic.h,...)
+// The enums are used to represent the different values of string
+// input variables within baci. The idea behind this new namespace
+// is twofold: first, of course, the old c-headers should go away
+// one day and we have to establish an alternative for them.
+// Second, it makes sense to define the valid parameters on a
+// global level and not within the different types of problems.
+// Of course, then drt_validparameters.H has to be included
+// wherever we want to work with the enums! 
+// (a.popp 04/08)
+
 */
 namespace INPUTPARAMS
-{
-
-  // This namespace should one day contain all the enums now still
-  // defined in the various old c-headers (enums.h, dynamic.h,...)
-  // The enums are used to represent the different values of string
-  // input variables within baci. The idea behind this new namespace
-  // is twofold: first, of course, the old c-headers should go away
-  // one day and we have to establish an alternative for them.
-  // Second, it makes sense to define the valid parameters on a
-  // global level and not within the different types of problems.
-  // Of course, then drt_validparameters.H has to be included
-  // wherever we want to work with the enums! 
-  // (a.popp 04/08)
-
+{  
   //-------------------------------------------STRUCTURAL CONTACT
 
-  // ContactType: type of structural contact problem
+  /// Type of structural contact problem
   // (this enum represents the input file parameter CONTACT)
   enum ContactType
   {
@@ -57,7 +56,7 @@ namespace INPUTPARAMS
     contact_meshtying
   };
     
-  // ContactFrictionType: type of contact friction law
+  /// Type of contact friction law
   // (this enum represents the input file parameter FRICTION)
   enum ContactFrictionType
   {
