@@ -247,15 +247,18 @@ private:
   ConstraintElement3& operator = (const ConstraintElement3& old);
   
   void ComputeElementNormal(const LINALG::SerialDenseMatrix& xc,
-      LINALG::SerialDenseVector& elevector);
+      LINALG::SerialDenseVector& elenormal);
   
-  double ComputeNormalDist(const LINALG::SerialDenseMatrix& xc);
+  double ComputeNormalDist(const LINALG::SerialDenseMatrix& xc,
+      const LINALG::SerialDenseVector& elenormal);
   
   void ComputeFirstDeriv(const LINALG::SerialDenseMatrix&,
-      LINALG::SerialDenseVector& elevector);
+      LINALG::SerialDenseVector& elevector,
+      const LINALG::SerialDenseVector& elenormal);
   
   void ComputeSecondDeriv(const LINALG::SerialDenseMatrix&,
-      LINALG::SerialDenseMatrix& elevector);
+      LINALG::SerialDenseMatrix& elevector,
+      const LINALG::SerialDenseVector& elenormal);
 
 }; // class ConstraintElement3
 
