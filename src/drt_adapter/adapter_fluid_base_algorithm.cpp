@@ -186,15 +186,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
 
   // ------------------------------------------- Robin scheme parameters
-  if (Teuchos::getIntegralValue<int>(prbdyn,"FLUIDROBIN"))
-  {
-    fluidtimeparams->set<double>("alpharobinf",prbdyn.get<double>("ALPHA_F"));
-    fluidtimeparams->set<bool>("fluidrobin",true);
-  }
-  else
-  {
-    fluidtimeparams->set<bool>("fluidrobin",false);
-  }
+  INPUTPARAMS::FSIPartitionedCouplingMethod method =
+    Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(prbdyn,"PARTITIONED");
+  fluidtimeparams->set<bool>("fluidrobin",
+                             method==INPUTPARAMS::fsi_RobinNeumann or method==INPUTPARAMS::fsi_RobinRobin);
+  fluidtimeparams->set<double>("alpharobinf",prbdyn.get<double>("ALPHA_F"));
 
   // --------------------------sublist containing turbulence parameters
   {

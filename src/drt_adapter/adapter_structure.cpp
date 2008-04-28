@@ -601,7 +601,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
     genalphaparams->set<string>("equilibrium iteration","full newton");
     break;
   }
-  
+
   switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
   {
   case struct_strain_none:
@@ -642,9 +642,12 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
     // robin flags
-    genalphaparams->set<double>("alpha s",fsidyn.get<double>("ALPHA_S"));
+    INPUTPARAMS::FSIPartitionedCouplingMethod method =
+      Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
     genalphaparams->set<bool>  ("structrobin",
-                                Teuchos::getIntegralValue<int>(fsidyn,"STRUCTROBIN"));
+                                method==INPUTPARAMS::fsi_DirichletRobin or method==INPUTPARAMS::fsi_RobinRobin);
+
+    genalphaparams->set<double>("alpha s",fsidyn.get<double>("ALPHA_S"));
 
     if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") == fsi_iter_monolithic)
     {

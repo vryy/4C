@@ -452,13 +452,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           INPUTPARAMS::contact_meshtying,INPUTPARAMS::contact_meshtying,
                                           INPUTPARAMS::contact_meshtying),
                                &scontact);
-  
+
   setStringToIntegralParameter("INIT_CONTACT","No","If chosen all slave nodes are set active at t=0",
                                yesnotuple,yesnovalue,&scontact);
-  
+
   setStringToIntegralParameter("BASISTRAFO","No","If chosen basis transformation is applied to displacements",
                                 yesnotuple,yesnovalue,&scontact);
-  
+
   setStringToIntegralParameter("FRICTION","None","Type of friction law",
                                 tuple<std::string>("None","none",
                                                    "Stick","stick",
@@ -469,7 +469,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                            INPUTPARAMS::friction_tresca,INPUTPARAMS::friction_tresca,
                                            INPUTPARAMS::friction_coulomb,INPUTPARAMS::friction_coulomb),
                                 &scontact);
-  
+
   DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
 
@@ -935,14 +935,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  fsi_iter_monolithic).append(fsi_pseudo_structureale),
                                &fsidyn);
 
-  setStringToIntegralParameter("FLUIDROBIN","no",
-			       "Robin coupling for fluid field",
-			       yesnotuple,yesnovalue,
-			       &fsidyn);
-
-  setStringToIntegralParameter("STRUCTROBIN","no",
-			       "Robin coupling for structure field",
-			       yesnotuple,yesnovalue,
+  setStringToIntegralParameter("PARTITIONED","DirichletNeumann",
+                               "Coupling strategies for partitioned FSI solvers. Most of the time Dirichlet-Neumann is just right.",
+                               tuple<std::string>(
+                                 "DirichletNeumann",
+                                 "RobinNeumann",
+                                 "DirichletRobin",
+                                 "RobinRobin"
+                                 ),
+                               tuple<INPUTPARAMS::FSIPartitionedCouplingMethod>(
+                                 INPUTPARAMS::fsi_DirichletNeumann,
+                                 INPUTPARAMS::fsi_RobinNeumann,
+                                 INPUTPARAMS::fsi_DirichletRobin,
+                                 INPUTPARAMS::fsi_RobinRobin
+                                 ),
 			       &fsidyn);
 
   DoubleParameter("ALPHA_F",-1.0,"Robin parameter fluid",&fsidyn);

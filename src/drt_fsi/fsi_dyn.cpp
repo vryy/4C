@@ -6,7 +6,6 @@
 #include <set>
 #include <functional>
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_dyn.H"
@@ -17,6 +16,7 @@
 #include "fsi_fluid_ale.H"
 #include "fsi_utils.H"
 
+#include "../drt_lib/drt_validparameters.H"
 #include "../drt_lib/drt_resulttest.H"
 
 #ifdef PARALLEL
@@ -167,14 +167,16 @@ void fsi_ale_drt()
 
     Teuchos::RCP<FSI::Partitioned> fsi;
 
-    if (Teuchos::getIntegralValue<int>(fsidyn,"FLUIDROBIN") or
-        Teuchos::getIntegralValue<int>(fsidyn,"STRUCTROBIN"))
+    INPUTPARAMS::FSIPartitionedCouplingMethod method =
+      Teuchos::getIntegralValue<INPUTPARAMS::FSIPartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+
+    if (method==INPUTPARAMS::fsi_DirichletNeumann)
     {
-      fsi = Teuchos::rcp(new FSI::Robin(comm));
+      fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
     }
     else
     {
-      fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
+      fsi = Teuchos::rcp(new FSI::Robin(comm));
     }
 
     if (genprob.restart)

@@ -1092,6 +1092,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
             // different from the matrix local ids.
             //
             // Note: This assemble might fail if we have a block matrix here.
+            // (No, it won't since the matrix is already filled. :] )
             sysmat_->Assemble(scale,gid,gid);
           }
         }

@@ -25,6 +25,7 @@ Maintainer: Ulrich Kuettler
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*!
 \brief INPUTPARAMS: Namespace for baci enums of input parameters
@@ -38,33 +39,44 @@ Maintainer: Ulrich Kuettler
 // Second, it makes sense to define the valid parameters on a
 // global level and not within the different types of problems.
 // Of course, then drt_validparameters.H has to be included
-// wherever we want to work with the enums! 
+// wherever we want to work with the enums!
 // (a.popp 04/08)
 
 */
 namespace INPUTPARAMS
-{  
+{
   //-------------------------------------------STRUCTURAL CONTACT
 
   /// Type of structural contact problem
-  // (this enum represents the input file parameter CONTACT)
+  /// (this enum represents the input file parameter CONTACT)
   enum ContactType
   {
-    contact_none,  
+    contact_none,
     contact_normal,
     contact_frictional,
     contact_meshtying
   };
-    
+
   /// Type of contact friction law
-  // (this enum represents the input file parameter FRICTION)
+  /// (this enum represents the input file parameter FRICTION)
   enum ContactFrictionType
   {
     friction_none,
     friction_stick,
     friction_tresca,
-    friction_coulomb    
-  }; 
+    friction_coulomb
+  };
+
+  //----------------------------------------------------------FSI
+
+  /// Type of partitioned coupling for FSI problems
+  enum FSIPartitionedCouplingMethod
+  {
+    fsi_DirichletNeumann,
+    fsi_RobinNeumann,
+    fsi_DirichletRobin,
+    fsi_RobinRobin
+  };
 }
 
 namespace DRT {
