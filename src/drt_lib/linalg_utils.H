@@ -207,6 +207,14 @@ namespace LINALG
                       const char eigv,
                       const bool postproc=false);
   /*!
+  \brief Explicit inverse and determinant of nonsymmetric 3x3 matrix
+
+  \param A (in/out): Matrix to be inverted
+  \param dim (in) :  Dimension of matrix
+  */
+  double NonsymInverse3x3(Epetra_SerialDenseMatrix& A);
+
+  /*!
   \brief Invert a symmetric dim*dim square matrix
 
   \param A (in/out): Matrix to be inverted

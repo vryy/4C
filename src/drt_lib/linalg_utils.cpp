@@ -314,6 +314,40 @@ RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
   return LINALG::Multiply(A,transA,*tmp,false,complete);
 }
 
+/*----------------------------------------------------------------------*
+ |  invert a dense symmetric matrix  (public)                mwgee 12/06|
+ *----------------------------------------------------------------------*/
+double LINALG::NonsymInverse3x3(Epetra_SerialDenseMatrix& A)
+{
+#ifdef DEBUG
+  if (A.M() != A.N()) dserror("Matrix is not square");
+  if (A.M() != 3) dserror("Dimension supplied is not 3: dim=%d",A.M());
+#endif
+
+  const double b00 = A(0,0);
+  const double b01 = A(0,1);
+  const double b02 = A(0,2);
+  const double b10 = A(1,0);
+  const double b11 = A(1,1);
+  const double b12 = A(1,2);
+  const double b20 = A(2,0);
+  const double b21 = A(2,1);
+  const double b22 = A(2,2);
+  A(0,0) =   b11*b22 - b21*b12;
+  A(1,0) = - b10*b22 + b20*b12;
+  A(2,0) =   b10*b21 - b20*b11;
+  A(0,1) = - b01*b22 + b21*b02;
+  A(1,1) =   b00*b22 - b20*b02;
+  A(2,1) = - b00*b21 + b20*b01;
+  A(0,2) =   b01*b12 - b11*b02;
+  A(1,2) = - b00*b12 + b10*b02;
+  A(2,2) =   b00*b11 - b10*b01;
+  const double det = b00*A(0,0)+b01*A(1,0)+b02*A(2,0);
+  if (det==0.0) dserror("Determinant of 3x3 matrix is exactly zero");
+  A.Scale(1./det);
+  return det;
+}
+
 
 #ifdef LINUX_MUENCH
 #define CCA_APPEND_U (1)
