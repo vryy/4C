@@ -279,11 +279,6 @@ public:
 
   //@}
 
-
-  //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag whether process of rewinding is done
-  bool                                            donerewinding_;
-
 protected:
 
   //! action parameters recognized by so_tet10

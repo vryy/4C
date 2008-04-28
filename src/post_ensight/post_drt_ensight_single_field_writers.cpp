@@ -45,7 +45,11 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   }
   if (straintype_!="none")
   {
+    // although appearing here twice, only one function call to PostStress
+    // is really postprocessing Gauss point strains, since only _either_
+    // Green-Lagrange _or_ Euler-Almansi strains are written during simulation!
     PostStress("gauss_GL_strains_xyz", straintype_);
+    PostStress("gauss_EA_strains_xyz", straintype_);
   }
 }
 

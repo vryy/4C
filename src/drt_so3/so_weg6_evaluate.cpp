@@ -140,12 +140,14 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix stress(NUMGPT_WEG6,NUMSTR_WEG6);
       Epetra_SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
       bool cauchy = params.get<bool>("cauchy", false);
-      sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy);
+      string iostrain = params.get<string>("iostrain", "none");
+      if (iostrain == "euler_almansi") sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy,true);
+      else sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy,false);
       AddtoPack(*stressdata, stress);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
       {
         RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
-        if (gl==null) 
+        if (gl==null)
           dserror("Cannot output prestrains");
         if (gl->M() != strain.M() || gl->N() != strain.N())
           dserror("Mismatch in dimension");
@@ -156,7 +158,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
             tmp(i,j) *= 0.5;
         strain += tmp;
       }
-#endif      
+#endif
       AddtoPack(*straindata, strain);
     }
     break;
@@ -280,10 +282,10 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     }
     break;
 
-#ifdef PRESTRESS    
+#ifdef PRESTRESS
     // in case of prestressing, make a snapshot of the current green-Lagrange strains and add them to
     // the previously stored GL strains in an incremental manner
-    case update_gl: 
+    case update_gl:
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -304,7 +306,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       (*gl) += strain;
     }
     break;
-#endif    
+#endif
 
     default:
       dserror("Unknown type of action for Solid3");
@@ -340,7 +342,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       Epetra_SerialDenseMatrix* elestress,      // element stresses
       Epetra_SerialDenseMatrix* elestrain,      // strains at GP
       const double              time,           // current absolute time
-      const bool                cauchy)         // stress output option
+      const bool                cauchy,         // stress output option
+      const bool                euler_almansi)  // strain output option
 {
 
 /* ============================================================================*
@@ -434,11 +437,37 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 
     // return gp strains (only in case of stress/strain output)
     if (elestrain != NULL){
-      for (int i = 0; i < 3; ++i) {
-        (*elestrain)(gp,i) = glstrain(i);
+      if (!euler_almansi) {
+        for (int i = 0; i < 3; ++i) {
+          (*elestrain)(gp,i) = glstrain(i);
+        }
+        for (int i = 3; i < 6; ++i) {
+          (*elestrain)(gp,i) = 0.5 * glstrain(i);
+        }
       }
-      for (int i = 3; i < 6; ++i) {
-        (*elestrain)(gp,i) = 0.5 * glstrain(i);
+      else{
+        LINALG::SerialDenseMatrix gl(NUMDIM_WEG6,NUMDIM_WEG6);
+        gl(0,0) = glstrain(0);
+        gl(0,1) = 0.5*glstrain(3);
+        gl(0,2) = 0.5*glstrain(5);
+        gl(1,0) = gl(0,1);
+        gl(1,1) = glstrain(1);
+        gl(1,2) = 0.5*glstrain(4);
+        gl(2,0) = gl(0,2);
+        gl(2,1) = gl(1,2);
+        gl(2,2) = glstrain(2);
+
+        LINALG::SerialDenseMatrix temp(NUMDIM_WEG6,NUMDIM_WEG6);
+        LINALG::SerialDenseMatrix euler_almansi(NUMDIM_WEG6,NUMDIM_WEG6);
+        temp.Multiply('N','N',1.0,gl,defgrd,0.);
+        euler_almansi.Multiply('T','N',1.0,defgrd,temp,0.);
+
+        (*elestrain)(gp,0) = euler_almansi(0,0);
+        (*elestrain)(gp,1) = euler_almansi(1,1);
+        (*elestrain)(gp,2) = euler_almansi(2,2);
+        (*elestrain)(gp,3) = euler_almansi(0,1);
+        (*elestrain)(gp,4) = euler_almansi(1,2);
+        (*elestrain)(gp,5) = euler_almansi(0,2);
       }
     }
 
@@ -449,10 +478,10 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       if (gl==null) dserror("Prestress array not initialized");
       if (gl->M() != NUMGPT_WEG6 || gl->N() != NUMSTR_WEG6)
         dserror("Prestress array not initialized");
-      for (int i=0; i<6; ++i) 
+      for (int i=0; i<6; ++i)
         glstrain(i) += (*gl)(gp,i);
     }
-#endif    
+#endif
 
     /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
@@ -656,69 +685,6 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
 {
-  int j =0;
-  bool skiptherest=false;
-
-  while (!dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(j)))
-  {
-    j++;
-    // stop, if all elements on this proc (including ghost elements) have been visited
-    if (j==dis.NumMyColElements())
-    {
-      skiptherest=true;
-      break;
-    }
-  }
-
-  if (!skiptherest)
-  {
-  DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(j));
-  if (!actele->donerewinding_)
-    {
-      DRT::UTILS::Rewinding3D(dis);
-      dis.FillComplete(false,false,false);
-
-	  for (int i=0; i<dis.NumMyColElements(); ++i)
-	    {
-		  // get the actual element
-		  if (dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i)))
-		  {
-			  DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i));
-			  actele->donerewinding_ = true;
-		  }
-		  else if (dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i)))
-		  {
-			  DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
-			  actele->donerewinding_ = true;
-		  }
-		  else if (dynamic_cast<DRT::ELEMENTS::So_tet4*>(dis.lColElement(i)))
-		  {
-			  DRT::ELEMENTS::So_tet4* actele = dynamic_cast<DRT::ELEMENTS::So_tet4*>(dis.lColElement(i));
-		  	  actele->donerewinding_ = true;
-		  }
-		  else if (dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i)))
-		  {
-			  DRT::ELEMENTS::So_tet10* actele = dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i));
-		  	  actele->donerewinding_ = true;
-		  }
-		  else if (dynamic_cast<DRT::ELEMENTS::SoDisp*>(dis.lColElement(i)))
-		  {
-			  DRT::ELEMENTS::SoDisp* actele = dynamic_cast<DRT::ELEMENTS::SoDisp*>(dis.lColElement(i));
-		  	  actele->donerewinding_ = true;
-		  }
-		  else
-		  {
-			  cout << "???" << endl;
-		  }
-
-	    }
-	// fill complete again to reconstruct element-node pointers,
-	// but without element init, etc.
-	dis.FillComplete(false,false,false);
-    }
-  }
-
-
   return 0;
 }
 

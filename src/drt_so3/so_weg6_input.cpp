@@ -68,7 +68,7 @@ bool DRT::ELEMENTS::So_weg6::ReadElement()
 
   // we expect kintype to be total lagrangian
   kintype_ = sow6_totlag;
-   
+
   // read kinematic type
   char buffer[50];
   frchar("KINEM",buffer,&ierr);
@@ -86,8 +86,6 @@ bool DRT::ELEMENTS::So_weg6::ReadElement()
    }
    else dserror("Reading of SO_WEG6 element failed");
   }
-  // Initialize winding flags
-  donerewinding_ = false;
 
   return true;
 } // So_weg6::ReadElement()

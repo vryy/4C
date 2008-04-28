@@ -99,8 +99,6 @@ void DRT::ELEMENTS::So_tet4::Pack(vector<char>& data) const
   AddtoPack(data,stresstype_);
   // kintype_
   AddtoPack(data,kintype_);
-  // rewind flags
-  AddtoPack(data,donerewinding_);
 
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -133,8 +131,6 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,stresstype_);
   // kintype_
   ExtractfromPack(position,data,kintype_);
-  // rewinding flags
-  ExtractfromPack(position,data,donerewinding_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

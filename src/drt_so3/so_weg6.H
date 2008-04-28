@@ -262,10 +262,6 @@ public:
 
   //@}
 
-  //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag whether process of rewinding is done
-  bool                                            donerewinding_;
-
 protected:
 
   //! action parameters recognized by so_hex8
@@ -331,7 +327,8 @@ protected:
                                  Epetra_SerialDenseMatrix* elestress,
                                  Epetra_SerialDenseMatrix* elestrain,
                                  const double              time,
-                                 const bool                cauchy = false);
+                                 const bool                cauchy = false,
+                                 const bool                euler_almansi = false);
 
   void sow6_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,

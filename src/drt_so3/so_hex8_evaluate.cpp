@@ -142,12 +142,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix stress(NUMGPT_SOH8,NUMSTR_SOH8);
       Epetra_SerialDenseMatrix strain(NUMGPT_SOH8,NUMSTR_SOH8);
       bool cauchy = params.get<bool>("cauchy", false);
-      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy);
+      string iostrain = params.get<string>("iostrain", "none");
+      if (iostrain == "euler_almansi") soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy,true);
+      else soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy,false);
       AddtoPack(*stressdata, stress);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
       {
         RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
-        if (gl==null) 
+        if (gl==null)
           dserror("Cannot output prestrains");
         if (gl->M() != strain.M() || gl->N() != strain.N())
           dserror("Mismatch in dimension");
@@ -158,7 +160,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
             tmp(i,j) *= 0.5;
         strain += tmp;
       }
-#endif      
+#endif
       AddtoPack(*straindata, strain);
     }
     break;
@@ -333,10 +335,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     }
     break;
 
-#ifdef PRESTRESS    
+#ifdef PRESTRESS
     // in case of prestressing, make a snapshot of the current green-Lagrange strains and add them to
     // the previously stored GL strains in an incremental manner
-    case update_gl: 
+    case update_gl:
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -357,7 +359,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       (*gl) += strain;
     }
     break;
-#endif    
+#endif
 
     default:
       dserror("Unknown type of action for Solid3");
@@ -455,7 +457,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       Epetra_SerialDenseMatrix* elestress,      // stresses at GP
       Epetra_SerialDenseMatrix* elestrain,      // strains at GP
       const double              time,           // current absolute time
-      const bool                cauchy)         // stress output option
+      const bool                cauchy,         // stress output option
+      const bool                euler_almansi)  // strain output option
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
@@ -580,7 +583,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     // gee: do this once upon construction, because it does not
     // change in the calculation (material frame)
     // also do explicitly without solver
-    
+
     /* compute derivatives N_XYZ at gp w.r.t. material coordinates
     ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
     ** Inverse of Jacobian is therefore not explicitly computed
@@ -648,14 +651,40 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
 
     // return gp strains (only in case of stress/strain output)
     if (elestrain != NULL){
-      for (int i = 0; i < 3; ++i) {
-        (*elestrain)(gp,i) = glstrain(i);
+      if (!euler_almansi) {
+        for (int i = 0; i < 3; ++i) {
+          (*elestrain)(gp,i) = glstrain(i);
+        }
+        for (int i = 3; i < 6; ++i) {
+          (*elestrain)(gp,i) = 0.5 * glstrain(i);
+        }
       }
-      for (int i = 3; i < 6; ++i) {
-        (*elestrain)(gp,i) = 0.5 * glstrain(i);
+      else{
+        LINALG::SerialDenseMatrix gl(NUMDIM_SOH8,NUMDIM_SOH8);
+        gl(0,0) = glstrain(0);
+        gl(0,1) = 0.5*glstrain(3);
+        gl(0,2) = 0.5*glstrain(5);
+        gl(1,0) = gl(0,1);
+        gl(1,1) = glstrain(1);
+        gl(1,2) = 0.5*glstrain(4);
+        gl(2,0) = gl(0,2);
+        gl(2,1) = gl(1,2);
+        gl(2,2) = glstrain(2);
+
+        LINALG::SerialDenseMatrix temp(NUMDIM_SOH8,NUMDIM_SOH8);
+        LINALG::SerialDenseMatrix euler_almansi(NUMDIM_SOH8,NUMDIM_SOH8);
+        temp.Multiply('N','N',1.0,gl,defgrd,0.);
+        euler_almansi.Multiply('T','N',1.0,defgrd,temp,0.);
+
+        (*elestrain)(gp,0) = euler_almansi(0,0);
+        (*elestrain)(gp,1) = euler_almansi(1,1);
+        (*elestrain)(gp,2) = euler_almansi(2,2);
+        (*elestrain)(gp,3) = euler_almansi(0,1);
+        (*elestrain)(gp,4) = euler_almansi(1,2);
+        (*elestrain)(gp,5) = euler_almansi(0,2);
       }
     }
-    
+
 #if defined(PRESTRESS) || defined(POSTSTRESS)
     {
       // note: must be AFTER strains are output above!
@@ -663,10 +692,10 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       if (gl==null) dserror("Prestress array not initialized");
       if (gl->M() != NUMGPT_SOH8 || gl->N() != NUMSTR_SOH8)
         dserror("Prestress array not initialized");
-      for (int i=0; i<6; ++i) 
+      for (int i=0; i<6; ++i)
         glstrain(i) += (*gl)(gp,i);
     }
-#endif    
+#endif
 
     /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
@@ -964,55 +993,6 @@ void DRT::ELEMENTS::So_hex8::soh8_shapederiv(
 
 int DRT::ELEMENTS::Soh8Register::Initialize(DRT::Discretization& dis)
 {
-  int j =0;
-  while (!dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(j)))
-  {
-	  j++;
-  }
-  DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(j));
-  if (!actele->donerewinding_)
-    {
-      DRT::UTILS::Rewinding3D(dis);
-      dis.FillComplete(false,false,false);
-	  for (int i=0; i<dis.NumMyColElements(); ++i)
-	    {
-		  // get the actual element
-		  if (dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i)))
-		  {
-			  DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i));
-			  actele->donerewinding_ = true;
-		  }
-		  else if (dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i)))
-		  {
-			  DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
-			  actele->donerewinding_ = true;
-		  }
-		  else if (dynamic_cast<DRT::ELEMENTS::So_tet4*>(dis.lColElement(i)))
-		  {
-			  DRT::ELEMENTS::So_tet4* actele = dynamic_cast<DRT::ELEMENTS::So_tet4*>(dis.lColElement(i));
-		  	  actele->donerewinding_ = true;
-		  }
-		  else if (dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i)))
-		  {
-			  DRT::ELEMENTS::So_tet10* actele = dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i));
-		  	  actele->donerewinding_ = true;
-		  }
-		  else if (dynamic_cast<DRT::ELEMENTS::SoDisp*>(dis.lColElement(i)))
-		  {
-			  DRT::ELEMENTS::SoDisp* actele = dynamic_cast<DRT::ELEMENTS::SoDisp*>(dis.lColElement(i));
-		  	  actele->donerewinding_ = true;
-		  }
-		  else
-		  {
-			  cout << "???" << endl;
-		  }
-	    }
-	  // fill complete again to reconstruct element-node pointers,
-	  // but without element init, etc.
-	  dis.FillComplete(false,false,false);
-
-    }
-
   return 0;
 }
 

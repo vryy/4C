@@ -134,7 +134,9 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix stress(NUMGPT_SOH8,NUMSTR_SOH8);
       Epetra_SerialDenseMatrix strain(NUMGPT_SOH8,NUMSTR_SOH8);
       bool cauchy = params.get<bool>("cauchy", false);
-      sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy);
+      string iostrain = params.get<string>("iostrain", "none");
+      if (iostrain != "euler_almansi") sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy);
+      else    dserror("requested option not yet implemented for solidsh8");
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -590,7 +592,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     } // ------------------------------------------------------------------ EAS
 
     // return gp strains (only in case of stress/strain output)
-    if (elestress != NULL){
+    if (elestrain != NULL){
       for (int i = 0; i < 3; ++i) {
         (*elestrain)(gp,i) = glstrain(i);
       }

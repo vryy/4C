@@ -498,7 +498,7 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
   int    updevrydisp   = params_->get<int>   ("io disp every nstep"    ,1);
   string iostress      = params_->get<string>("io structural stress"   ,"none");
   int    updevrystress = params_->get<int>   ("io stress every nstep"  ,10);
-  bool   iostrain      = params_->get<bool>  ("io structural strain"   ,false);
+  string iostrain      = params_->get<string>("io structural strain"   ,"none");
   int    writeresevry  = params_->get<int>   ("write restart every"    ,0);
 
   bool isdatawritten = false;
@@ -572,6 +572,7 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
     {
       p.set("cauchy", false);
     }
+    p.set("iostrain", iostrain);
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("residual displacement",zeros_);
@@ -588,9 +589,16 @@ void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
     {
       output->WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_->ElementColMap());
     }
-    if (iostrain)
+    if (iostrain != "none")
     {
-      output->WriteVector("gauss_GL_strains_xyz",*strain,*discret_->ElementColMap());
+      if (iostrain == "euler_almansi")
+      {
+        output->WriteVector("gauss_EA_strains_xyz",*strain,*discret_->ElementColMap());
+      }
+      else
+      {
+        output->WriteVector("gauss_GL_strains_xyz",*strain,*discret_->ElementColMap());
+      }
     }
   }
 

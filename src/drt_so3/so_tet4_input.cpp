@@ -8,7 +8,7 @@ Maintainer: Moritz Frenzel
             http://www.lnm.mw.tum.de
             089 - 289-15240
 writen by : Alexander Volf
-			alexander.volf@mytum.de     
+			alexander.volf@mytum.de
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -58,9 +58,6 @@ bool DRT::ELEMENTS::So_tet4::ReadElement()
   for (int i=0; i<nnode; ++i) nodes[i]--;
 
   SetNodeIds(nnode,nodes);
- 
-  // Initialize winding flags
-  donerewinding_ = false;
 
   // read number of material model
   int material = 0;
@@ -70,7 +67,7 @@ bool DRT::ELEMENTS::So_tet4::ReadElement()
 
   // we expect kintype to be total lagrangian
   kintype_ = so_tet4_totlag;
-   
+
   // read kinematic type
   char buffer[50];
   frchar("KINEM",buffer,&ierr);

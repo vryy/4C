@@ -36,7 +36,6 @@ data_()
   lines_.resize(0);
   lineptrs_.resize(0);
   kintype_ = sow6_totlag;
-  donerewinding_ = false;
 #if defined(PRESTRESS) || defined(POSTSTRESS)  
   glprestrain_ = rcp(new Epetra_SerialDenseMatrix(NUMGPT_WEG6,NUMSTR_WEG6));
 #endif
@@ -55,8 +54,7 @@ volume_(old.volume_),
 surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
-lineptrs_(old.lineptrs_),
-donerewinding_(old.donerewinding_)
+lineptrs_(old.lineptrs_)
 {
 #if defined(PRESTRESS) || defined(POSTSTRESS)  
   glprestrain_ = rcp(new Epetra_SerialDenseMatrix(*(old.glprestrain_)));
@@ -100,8 +98,6 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   // kintype_
   AddtoPack(data,kintype_);
-  // rewind flags
-  AddtoPack(data,donerewinding_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -131,8 +127,6 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
   // kintype_
   ExtractfromPack(position,data,kintype_);
-  // rewinding flags
-  ExtractfromPack(position,data,donerewinding_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
@@ -244,7 +238,7 @@ DRT::Element** DRT::ELEMENTS::So_weg6::Surfaces()
   surfaces_.resize(nsurf);
   surfaceptrs_.resize(nsurf);
   // first the 3 quad surfaces (#0..2)
-  for (int qisurf = 0; qisurf < 3; ++qisurf) 
+  for (int qisurf = 0; qisurf < 3; ++qisurf)
   {
         const int nnode_surf = 4;
         const int surfid = qisurf;
@@ -258,7 +252,7 @@ DRT::Element** DRT::ELEMENTS::So_weg6::Surfaces()
         surfaceptrs_[qisurf] = surfaces_[qisurf].get();
   };
   // then the tri's...
-  for (int tisurf = 0; tisurf < 2; ++tisurf) 
+  for (int tisurf = 0; tisurf < 2; ++tisurf)
   {
       const int nnode_surf = 3;
       const int surfid = tisurf + 3;

@@ -34,7 +34,6 @@ data_()
   surfaceptrs_.resize(0);
   lines_.resize(0);
   lineptrs_.resize(0);
-  donerewinding_ = false;
   return;
 }
 
@@ -48,8 +47,7 @@ data_(old.data_),
 surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
-lineptrs_(old.lineptrs_),
-donerewinding_(old.donerewinding_)
+lineptrs_(old.lineptrs_)
 {
   return;
 }
@@ -79,7 +77,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::SoDisp::Shape() const
     case 27: return hex27;
     case  6: return wedge6;
     case 15: return wedge15;
-    case  5: return pyramid5; 
+    case  5: return pyramid5;
     default:
       dserror("unexpected number of nodes %d", NumNode());
     }
@@ -105,8 +103,6 @@ void DRT::ELEMENTS::SoDisp::Pack(vector<char>& data) const
   AddtoPack(data,stresstype_);
   // kintype_
   AddtoPack(data,kintype_);
-  // rewind flags
-  AddtoPack(data,donerewinding_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -135,8 +131,6 @@ void DRT::ELEMENTS::SoDisp::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,stresstype_);
   // kintype_
   ExtractfromPack(position,data,kintype_);
-  // rewinding flags
-  ExtractfromPack(position,data,donerewinding_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
@@ -194,7 +188,7 @@ DRT::Element** DRT::ELEMENTS::SoDisp::Volumes()
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::SoDisp::Surfaces()
 {
-  
+
     const DiscretizationType distype = Shape();
     const int nsurf = NumSurface();
     surfaces_.resize(nsurf);
@@ -274,7 +268,7 @@ void DRT::ELEMENTS::SoDisp::CreateSurfacesHex(const int& nsurf,
 void DRT::ELEMENTS::SoDisp::CreateSurfacesWegde6(const int& nsurf)
 {
     // first the 3 quad surfaces (#0..2)
-    for (int qisurf = 0; qisurf < 3; ++qisurf) 
+    for (int qisurf = 0; qisurf < 3; ++qisurf)
     {
           const int nnode_surf = 4;
           const int surfid = qisurf;
@@ -288,7 +282,7 @@ void DRT::ELEMENTS::SoDisp::CreateSurfacesWegde6(const int& nsurf)
           surfaceptrs_[qisurf] = surfaces_[qisurf].get();
     };
     // then the tri's...
-    for (int tisurf = 0; tisurf < 2; ++tisurf) 
+    for (int tisurf = 0; tisurf < 2; ++tisurf)
     {
         const int nnode_surf = 3;
         const int surfid = tisurf + 3;
@@ -307,7 +301,7 @@ void DRT::ELEMENTS::SoDisp::CreateSurfacesWegde6(const int& nsurf)
 void DRT::ELEMENTS::SoDisp::CreateSurfacesWegde15(const int& nsurf)
 {
     // first the 3 quad surfaces (#0..2)
-    for (int qisurf = 0; qisurf < 3; ++qisurf) 
+    for (int qisurf = 0; qisurf < 3; ++qisurf)
     {
       const int nnode_surf = 8;
       int nodeids[nnode_surf];
@@ -320,7 +314,7 @@ void DRT::ELEMENTS::SoDisp::CreateSurfacesWegde15(const int& nsurf)
       surfaceptrs_[qisurf] = surfaces_[qisurf].get();
     };
     // then the tri's...
-    for (int tisurf = 0; tisurf < 2; ++tisurf) 
+    for (int tisurf = 0; tisurf < 2; ++tisurf)
     {
         const int nnode_surf = 6;
         const int surfid = tisurf + 3;
@@ -446,106 +440,6 @@ void DRT::ELEMENTS::SoDispRegister::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::SoDispRegister::Initialize(DRT::Discretization& dis)
 {
-  bool dofillcompleteagain = false;
-  //-------------------- loop all my column elements and check rewinding
-  for (int i=0; i<dis.NumMyColElements(); ++i)
-  {
-    // get the actual element
-    if (dis.lColElement(i)->Type() != DRT::Element::element_sodisp) continue;
-    DRT::ELEMENTS::SoDisp* actele = dynamic_cast<DRT::ELEMENTS::SoDisp*>(dis.lColElement(i));
-    if (!actele) dserror("cast to SoDisp* failed");
-    
-    const DRT::Element::DiscretizationType distype = actele->Shape();
-    bool possiblytorewind = false;
-    switch(distype)
-    {
-    case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
-        possiblytorewind = true;
-        break;
-    case DRT::Element::tet4: case DRT::Element::tet10:
-        possiblytorewind = true;
-        break;
-    case DRT::Element::wedge6: case DRT::Element::wedge15:
-        possiblytorewind = true;
-        break;
-    case DRT::Element::pyramid5:
-        possiblytorewind = true;
-        break;
-    default:
-        dserror("invalid discretization type for fluid3");
-    }
-    
-    if ( (possiblytorewind) && (!actele->donerewinding_) ) {
-      const bool rewind = checkRewinding3D(actele);
-
-      if (rewind) {
-        if (distype==DRT::Element::tet4){
-          const int iel = actele->NumNode();
-          vector<int> new_nodeids(iel);
-          const int* old_nodeids;
-          old_nodeids = actele->NodeIds();
-          // rewinding of nodes to arrive at mathematically positive element
-          new_nodeids[0] = old_nodeids[0];
-          new_nodeids[1] = old_nodeids[2];
-          new_nodeids[2] = old_nodeids[1];
-          new_nodeids[3] = old_nodeids[3];
-          actele->SetNodeIds(iel, &new_nodeids[0]);
-        }
-        else if (distype==DRT::Element::hex8){
-          const int iel = actele->NumNode();
-          vector<int> new_nodeids(iel);
-          const int* old_nodeids;
-          old_nodeids = actele->NodeIds();
-          // rewinding of nodes to arrive at mathematically positive element
-          new_nodeids[0] = old_nodeids[4];
-          new_nodeids[1] = old_nodeids[5];
-          new_nodeids[2] = old_nodeids[6];
-          new_nodeids[3] = old_nodeids[7];
-          new_nodeids[4] = old_nodeids[0];
-          new_nodeids[5] = old_nodeids[1];
-          new_nodeids[6] = old_nodeids[2];
-          new_nodeids[7] = old_nodeids[3];
-          actele->SetNodeIds(iel, &new_nodeids[0]);
-        }
-        else if (distype==DRT::Element::wedge6){
-          const int iel = actele->NumNode();
-          vector<int> new_nodeids(iel);
-          const int* old_nodeids;
-          old_nodeids = actele->NodeIds();
-          // rewinding of nodes to arrive at mathematically positive element
-          new_nodeids[0] = old_nodeids[3];
-          new_nodeids[1] = old_nodeids[4];
-          new_nodeids[2] = old_nodeids[5];
-          new_nodeids[3] = old_nodeids[0];
-          new_nodeids[4] = old_nodeids[1];
-          new_nodeids[5] = old_nodeids[2];
-          actele->SetNodeIds(iel, &new_nodeids[0]);
-        }
-        else if (distype == DRT::Element::pyramid5){
-          const int iel = actele->NumNode();
-          vector<int> new_nodeids(iel);
-          const int* old_nodeids;
-          old_nodeids = actele->NodeIds();
-          // rewinding of nodes to arrive at mathematically positive element
-          new_nodeids[1] = old_nodeids[3];
-          new_nodeids[3] = old_nodeids[1];
-          // the other nodes can stay the same
-          new_nodeids[0] = old_nodeids[0];
-          new_nodeids[2] = old_nodeids[2];
-          new_nodeids[4] = old_nodeids[4];
-          actele->SetNodeIds(iel, &new_nodeids[0]);
-        }
-        else dserror("no rewinding scheme for this type of fluid3");
-      }
-      // process of rewinding done
-      actele->donerewinding_ = true;
-      dofillcompleteagain = true;
-    }
-  }
-  // fill complete again to reconstruct element-node pointers,
-  // but without element init, etc.
-  if(dofillcompleteagain) dis.FillComplete(false,false,false);
-  
   return 0;
 }
 

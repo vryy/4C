@@ -75,21 +75,21 @@ void stru_static_drt()
 
   // set degrees of freedom in the discretization
   if (!actdis->Filled()) actdis->FillComplete();
-  
+
   // -------------------------------------------------------------------
   // check for contact case
   // -------------------------------------------------------------------
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
   bool contact = Teuchos::getIntegralValue<int>(scontact,"CONTACT");
   bool initialcontact = Teuchos::getIntegralValue<int>(scontact,"INIT_CONTACT");
-  
+
   if (contact)
   {
     // leave and call special routine for statics with contact
     CONTACT::contact_stru_static_drt(initialcontact);
     return;
-  } 
-  
+  }
+
   // -------------------------------------------------------------------
   // get a communicator and myrank
   // -------------------------------------------------------------------
@@ -251,6 +251,22 @@ void stru_static_drt()
     iostress = "none";
     break;
   }
+  string iostrain;
+  switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
+  {
+  case struct_strain_none:
+    iostrain = "none";
+    break;
+  case struct_strain_ea:
+    iostrain = "euler_almansi";
+    break;
+  case struct_strain_gl:
+    iostrain = "green_lagrange";
+    break;
+  default:
+    iostrain = "none";
+    break;
+  }
   if (!mod_stress && iostress!="none")
   {
     // create the parameters for the discretization
@@ -272,6 +288,7 @@ void stru_static_drt()
     {
       p.set("cauchy", false);
     }
+    p.set("iostrain", iostrain);
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("residual displacement",zeros);
@@ -286,9 +303,16 @@ void stru_static_drt()
     {
       output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
     }
-    if (Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRAIN")==1)
+    if (iostrain != "none")
     {
-      output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+      if (iostrain == "euler_almansi")
+      {
+        output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
+      }
+      else
+      {
+        output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+      }
     }
   }
 
@@ -504,6 +528,23 @@ void stru_static_drt()
       iostress = "none";
       break;
     }
+    string iostrain;
+    switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
+    {
+    case struct_strain_none:
+      iostrain = "none";
+      break;
+    case struct_strain_ea:
+      iostrain = "euler_almansi";
+      break;
+    case struct_strain_gl:
+      iostrain = "green_lagrange";
+      break;
+    default:
+      iostrain = "none";
+      break;
+    }
+
     if (!mod_stress && iostress!="none")
     {
       // create the parameters for the discretization
@@ -525,6 +566,7 @@ void stru_static_drt()
       {
         p.set("cauchy", false);
       }
+      p.set("iostrain", iostrain);
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("residual displacement",zeros);
@@ -541,9 +583,16 @@ void stru_static_drt()
       {
         output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
       }
-      if (Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRAIN")==1)
+      if (iostrain != "none")
       {
-        output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+        if (iostrain == "euler_almansi")
+        {
+          output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
+        }
+        else
+        {
+          output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+        }
       }
     }
 

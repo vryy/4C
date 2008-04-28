@@ -152,7 +152,9 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix stress(NUMGPT_SOTET10,NUMSTR_SOTET10);
       Epetra_SerialDenseMatrix strain(NUMGPT_SOTET10,NUMSTR_SOTET10);
       bool cauchy = params.get<bool>("cauchy", false);
-      so_tet10_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy);
+      string iostrain = params.get<string>("iostrain", "none");
+      if (iostrain!="euler_almansi") so_tet10_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy);
+      else dserror("requested option not yet implemented for tet10");
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -579,7 +581,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 	#endif //VERBOSE_OUTPUT
 
     // return gp strains (only in case of stress/strain output)
-   if (elestress != NULL){
+   if (elestrain != NULL){
       for (int i = 0; i < 3; ++i) {
         (*elestrain)(gp,i) = glstrain(i);
       }
@@ -779,60 +781,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 
 int DRT::ELEMENTS::Sotet10Register::Initialize(DRT::Discretization& dis)
 {
-	  int j =0;
-	  while (!dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(j)))
-	  {
-		  j++;
-	  }
-	  DRT::ELEMENTS::So_tet10* actele = dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(j));
-	  if (!actele->donerewinding_)
-	    {
-	      DRT::UTILS::Rewinding3D(dis);
-	      dis.FillComplete(false,false,false);
-		for (int i=0; i<dis.NumMyColElements(); ++i)
-		{
-			// get the actual element
-			if (dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i)))
-			{
-				DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i));
-				actele->donerewinding_ = true;
-			}
-			else if (dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i)))
-			{
-				DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
-				actele->donerewinding_ = true;
-			}
-			else if (dynamic_cast<DRT::ELEMENTS::So_tet4*>(dis.lColElement(i)))
-			{
-				DRT::ELEMENTS::So_tet4* actele = dynamic_cast<DRT::ELEMENTS::So_tet4*>(dis.lColElement(i));
-			  	actele->donerewinding_ = true;
-			}
-			else if (dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i)))
-			{
-				DRT::ELEMENTS::So_tet10* actele = dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i));
-				actele->donerewinding_ = true;
-			}
-			else if (dynamic_cast<DRT::ELEMENTS::SoDisp*>(dis.lColElement(i)))
-			{
-				DRT::ELEMENTS::SoDisp* actele = dynamic_cast<DRT::ELEMENTS::SoDisp*>(dis.lColElement(i));
-				actele->donerewinding_ = true;
-			}
-			else
-			{
-				cout << "???" << endl;
-			}
-		}
-		// fill complete again to reconstruct element-node pointers,
-		// but without element init, etc.
-		dis.FillComplete(false,false,false);
-	    }
-	  for (int i=0; i<dis.NumMyColElements(); ++i)
-	    {
-	      // get the actual element
-	      DRT::ELEMENTS::So_tet10* actele = dynamic_cast<DRT::ELEMENTS::So_tet10*>(dis.lColElement(i));
-	      actele->donerewinding_ = true;
-	    }
-	  return 0;
+  return 0;
 }
 
 

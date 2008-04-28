@@ -56,7 +56,7 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
     distype2NumNodes[tet4]  = 4;
     distype2NumNodes[tet10] = 10;
     distype2NumNodes[pyramid5] = 5;
-    
+
     // read element's nodes
     int   ierr = 0;
     int   nnode = 0;
@@ -64,7 +64,7 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
     DiscretizationType distype;
 
     Gid2DisType::iterator iter;
-    for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ ) 
+    for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ )
     {
         const string eletext = iter->first;
         frchk(eletext.c_str(), &ierr);
@@ -77,9 +77,9 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
             break;
         }
     }
-    
+
     //cout << "reading " << DRT::DistypeToString(distype) << endl;
-    
+
     const bool allowed_element = (distype == hex27) || (distype == hex20) || (distype == tet10) || (distype == wedge15);
     // The intention of this element is to help debugging the xfem intersection routines.
     // The element is purely displacement based and has not been tested for correct computation
@@ -88,7 +88,7 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
 //    {
 //        dserror("Only quadratic order for DISP (displacement based) element. LOCKING!\n for linear elements, use EAS enabled elements");
 //    }
-    
+
     // reduce node numbers by one
     for (int i=0; i<nnode; ++i) nodes[i]--;
 
@@ -113,14 +113,14 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
         dsassert(ierr==1, "Reading of SOLID3 element failed: GP\n");
         switch (ngp[0])
         {
-        case 1:  
-            gaussrule_ = DRT::UTILS::intrule_hex_1point; 
-            break; 
-        case 2:  
-            gaussrule_ = DRT::UTILS::intrule_hex_8point; 
+        case 1:
+            gaussrule_ = DRT::UTILS::intrule_hex_1point;
             break;
-        case 3:  
-            gaussrule_ = DRT::UTILS::intrule_hex_27point; 
+        case 2:
+            gaussrule_ = DRT::UTILS::intrule_hex_8point;
+            break;
+        case 3:
+            gaussrule_ = DRT::UTILS::intrule_hex_27point;
             break;
         default:
             dserror("Reading of SOLID3 element failed: Gaussrule for hexaeder not supported!\n");
@@ -133,11 +133,11 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
         dsassert(ierr==1, "Reading of SOLID3 element failed: GP_PYRAMID\n");
         switch (ngp[0])
         {
-        case 1:  
-            gaussrule_ = DRT::UTILS::intrule_pyramid_1point; 
-            break; 
-        case 8:  
-            gaussrule_ = DRT::UTILS::intrule_pyramid_8point; 
+        case 1:
+            gaussrule_ = DRT::UTILS::intrule_pyramid_1point;
+            break;
+        case 8:
+            gaussrule_ = DRT::UTILS::intrule_pyramid_8point;
             break;
         default:
             dserror("Reading of SOLID3 element failed: Gaussrule for pyramid not supported!\n");
@@ -186,7 +186,7 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
 
     // we expect kintype to be total lagrangian
     kintype_ = sodisp_totlag;
-    
+
     // eventually read kinematic type
     frchar("KINEM",buffer,&ierr);
     if (ierr)
@@ -209,9 +209,6 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
     const DRT::UTILS::IntegrationPoints3D  intpoints = DRT::UTILS::getIntegrationPoints3D(gaussrule_);
     numgpt_disp_ = intpoints.nquad;      // total gauss points per element
 
-    // Initialize winding flags
-    donerewinding_ = false;
-    
   return true;
 
 } // SoDisp::ReadElement()

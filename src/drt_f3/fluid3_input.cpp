@@ -201,10 +201,6 @@ bool DRT::ELEMENTS::Fluid3::ReadElement()
         dserror("Reading of FLUID3 element failed: integration points\n");
     } // end switch distype
 
-    // Initialize winding flags
-    donerewinding_ = false;
-
-
     // read net algo
     frchar("NA",buffer,&ierr);
     if (ierr==1)

@@ -390,7 +390,7 @@ private:
     tau_not_defined
   };
 
-  
+
   //! physical turbulence models recognized by fluid3_genalpha implementation
   enum TurbModelAction
   {
@@ -421,13 +421,6 @@ private:
   vector<RefCountPtr<DRT::ELEMENTS::Fluid3Line> > lines_;
   //! vector of lines adjacent to this element
   vector<DRT::ELEMENTS::Fluid3Line*>              lineptrs_;
-
-
-  //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag to rewind this element, must be availabale for friend class fluid3register
-protected:
-  //! flag whether process of rewinding is done
-  bool                                            donerewinding_;
 
 private:
   //! factor including Smagorinsky's constant
@@ -1093,12 +1086,12 @@ private:
                           	      vector<int>&               lm,
                           	      Epetra_SerialDenseVector&  elevec1,
                                       const std::vector<double>& edispnp);
-  
+
   void FlowRateParameterCaculation(ParameterList& params,
                   DRT::Discretization&       discretization,
                   vector<int>&               lm,
                   Epetra_SerialDenseVector&  elevec1);
-  
+
   void ImpedanceIntegration(ParameterList& params,
           DRT::Discretization&       discretization,
           vector<int>&               lm,

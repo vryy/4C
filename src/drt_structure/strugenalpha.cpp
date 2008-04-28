@@ -2636,7 +2636,7 @@ void StruGenAlpha::UpdateandOutput()
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
   string iostress      = params_.get<string>("io structural stress"   ,"none");
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
-  bool   iostrain      = params_.get<bool>  ("io structural strain"   ,false);
+  string iostrain      = params_.get<string>("io structural strain"   ,"none");
 
   int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
 
@@ -2806,6 +2806,7 @@ void StruGenAlpha::UpdateandOutput()
     {
       p.set("cauchy", false);
     }
+    p.set("iostrain", iostrain);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);
@@ -2822,9 +2823,16 @@ void StruGenAlpha::UpdateandOutput()
     {
       output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementColMap());
     }
-    if (iostrain)
+    if (iostrain != "none")
     {
-      output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
+      if (iostrain == "euler_almansi")
+      {
+        output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementColMap());
+      }
+      else
+      {
+        output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
+      }
     }
   }
 

@@ -325,10 +325,6 @@ public:
   const vector<double> GetFibervec(){return fiberdirection_;};
   const vector<double> soh8_ElementCenterRefeCoords();
 
-  //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag whether process of rewinding is done
-  bool                                            donerewinding_;
-
   //@}
 
 protected:
@@ -427,7 +423,8 @@ protected:
                                  Epetra_SerialDenseMatrix* stresses,
                                  Epetra_SerialDenseMatrix* elestrain,
                                  const double              time,
-                                 bool cauchy = false);
+                                 bool                      cauchy = false,
+                                 bool                      euler_almansi = false);
 
   void soh8_expol(Epetra_SerialDenseMatrix& stresses,
                   Epetra_SerialDenseMatrix& nodalstresses);

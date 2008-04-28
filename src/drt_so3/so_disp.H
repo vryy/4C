@@ -64,7 +64,7 @@ public:
   friend class SoDispRegister;
   friend class SoDispSurface;
   friend class SoDispLine;
-  friend class Integrator_SoDisp; 
+  friend class Integrator_SoDisp;
   //@}
   //! @name Constructors and destructors and related methods
 
@@ -271,12 +271,6 @@ public:
 
 
   //@}
-  
-  //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag to rewind this element, must be availabale for friend class fluid3register
-
-  //! flag whether process of rewinding is done
-  bool                                            donerewinding_;
 
 protected:
 
@@ -333,7 +327,7 @@ protected:
   vector<DRT::ELEMENTS::SoDispLine*>              lineptrs_;
   //! Gaussrule
   DRT::UTILS::GaussRule3D                         gaussrule_;
-  
+
   int numnod_disp_;      // number of nodes
   int numdof_disp_;     // total dofs per element
   int numgpt_disp_;      // total gauss points per element
@@ -360,15 +354,15 @@ protected:
 
   /*!
   \brief Create a integrator for the SoDisp element
-  
-  this constructor provides Object Oriented So_integrator functionality by adapting the strictly procedural 
+
+  this constructor provides Object Oriented So_integrator functionality by adapting the strictly procedural
   DRT::UTILS::IntegrationPoints3D struct.
-  */     
+  */
   class Integrator_SoDisp : public DRT::ELEMENTS::So_integrator
   {
   	public:
   		Integrator_SoDisp(DRT::ELEMENTS::SoDisp& this_element);
-  }; 
+  };
 
   /*********** became obsolete ************************/
   void sodisp_shapederiv(Epetra_SerialDenseMatrix** shapefct,
@@ -386,13 +380,13 @@ protected:
 
   void CreateSurfacesHex(const int& nsurf,
                          const int& nnode);
-  
-  void CreateSurfacesWegde6(const int& nsurf);
-  
-  void CreateSurfacesWegde15(const int& nsurf);
-  
 
-  
+  void CreateSurfacesWegde6(const int& nsurf);
+
+  void CreateSurfacesWegde15(const int& nsurf);
+
+
+
 }; // class SoDisp
 
 //=======================================================================
@@ -485,7 +479,7 @@ public:
   field of averaged directors at nodes.
   */
   int Initialize(DRT::Discretization& dis);
-  
+
 
 private:
 
@@ -527,10 +521,10 @@ public:
   */
   SoDispSurface(int id, int owner, int nnode, const int* nodeids,
              DRT::Node** nodes, DRT::ELEMENTS::SoDisp* parent, const int lsurface);
-             
+
   /*!
   \brief Standard Constructor
-         
+
          When sending surface elements around, we need a constructor without nodal
          pointers. They will be added later, after all nodes have been send.
          We (the XFEM users) send surfaces between processors around to perform
@@ -540,7 +534,7 @@ public:
   \param owner: Processor owning this surface
   */
   SoDispSurface(int id, int owner);
-  
+
   /*!
   \brief Copy Constructor
 
@@ -627,13 +621,13 @@ public:
   \brief Return number of lines of this element
   */
   virtual int NumLine() const {return DRT::UTILS::getNumberOfElementLines(Shape());}
-  
+
   /*!
   \brief Get vector of ptrs to the lines of this element
 
   */
   virtual DRT::Element** Lines();
-  
+
   /*!
   \brief Print this element
   */
@@ -686,7 +680,7 @@ public:
                Epetra_SerialDenseVector& elevec3);
 
   //@}
-  
+
   //! @name Evaluate methods
 
   /*!
@@ -710,7 +704,7 @@ public:
                               Epetra_SerialDenseVector& elevec1);
 
   //@}
-  
+
 private:
 
   // don't want = operator
@@ -721,16 +715,16 @@ private:
   {
     none
   };
-  
+
   //! The parent element of this surface
   DRT::ELEMENTS::SoDisp* parent_;
-  
+
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
-  
+
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
-  
+
   //! vector of lines adjacent to this element
   vector<RefCountPtr<DRT::ELEMENTS::SoDispLine> > lines_;
   //! vector of lines adjacent to this element
@@ -740,13 +734,13 @@ private:
         double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
         const Epetra_SerialDenseMatrix* xs,    // (i) element coords
         const Epetra_SerialDenseMatrix deriv); // (i) shape funct derivs
-  
+
   void CreateLinesTri(const int& nline,
                       const int& nnode);
 
   void CreateLinesQuad(const int& nline,
                        const int& nnode);
-  
+
 }; // class SoDispSurface
 
 /*!

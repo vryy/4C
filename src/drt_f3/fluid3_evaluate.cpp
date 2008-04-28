@@ -211,14 +211,14 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
   //if (mat->MaterialType()!=m_fluid && mat->MaterialType() != m_carreauyasuda)
   //  dserror("fluid material expected but got type %d", mat->MaterialType());
 
-  if( mat->MaterialType()    != m_carreauyasuda 
+  if( mat->MaterialType()    != m_carreauyasuda
       && mat->MaterialType() != m_modpowerlaw
       && mat->MaterialType() != m_fluid)
       	  dserror("Material law is not a fluid");
-  
-  
+
+
   MATERIAL* actmat = NULL;
-  
+
   if(mat->MaterialType()== m_fluid)
 	  actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
   else if(mat->MaterialType()== m_carreauyasuda)
@@ -227,7 +227,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 	  actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
   else
 	  dserror("fluid material expected but got type %d", mat->MaterialType());
-  
+
   switch(act)
   {
     //--------------------------------------------------
@@ -431,7 +431,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         TauType whichtau = tau_not_defined;
         {
           const string taudef = stablist.get<string>("DEFINITION_TAU");
-          
+
           if(taudef == "Barrenechea_Franca_Valentin_Wall")
           {
             whichtau = franca_barrenechea_valentin_wall;
@@ -707,7 +707,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           dens = actmat->m.modpowerlaw->density;
         else
           dserror("no fluid material found");
-          
+
         params.set("density", dens);
 
       }
@@ -1217,7 +1217,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         TauType whichtau = tau_not_defined;
         {
           const string taudef = stablist.get<string>("DEFINITION_TAU");
-          
+
           if(taudef == "Barrenechea_Franca_Valentin_Wall")
           {
             whichtau = franca_barrenechea_valentin_wall;
@@ -1513,7 +1513,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           dens = actmat->m.modpowerlaw->density;
         else
           dserror("no fluid material found");
-          
+
         params.set("density", dens);
       }
       break;
@@ -1621,23 +1621,23 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             RefCountPtr<const Epetra_Vector> dispnp
               =
               discretization.GetState("dispnp");
-            
+
             // get intermediate grid velocities
             RefCountPtr<const Epetra_Vector> gridvelaf
               =
               discretization.GetState("gridvelaf");
-            
+
             if (dispnp==null || gridvelaf==null)
             {
               dserror("Cannot get state vectors 'dispnp' and/or 'gridvelaf'");
             }
-            
+
             vector<double> mydispnp(lm.size());
             DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
-            
+
             vector<double> mygridvelaf(lm.size());
             DRT::UTILS::ExtractMyValues(*gridvelaf,mygridvelaf,lm);
-            
+
             // extract velocity part from "mygridvelaf" and get
             // set element displacements
             for (int i=0;i<numnode;++i)
@@ -1645,13 +1645,13 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
               egridvelaf(0,i) = mygridvelaf[0+(i*4)];
               egridvelaf(1,i) = mygridvelaf[1+(i*4)];
               egridvelaf(2,i) = mygridvelaf[2+(i*4)];
-              
+
               edispnp(0,i)    = mydispnp   [0+(i*4)];
               edispnp(1,i)    = mydispnp   [1+(i*4)];
               edispnp(2,i)    = mydispnp   [2+(i*4)];
             }
           }
-          
+
           // --------------------------------------------------
           // set parameters for time integration
           ParameterList& timelist = params.sublist("time integration parameters");
@@ -1707,7 +1707,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           TauType whichtau = tau_not_defined;
           {
             const string taudef = stablist.get<string>("DEFINITION_TAU");
-            
+
             if(taudef == "Barrenechea_Franca_Valentin_Wall")
             {
               whichtau = franca_barrenechea_valentin_wall;
@@ -1724,7 +1724,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
           // flag for higher order elements
           bool higher_order_ele = isHigherOrderElement(Shape());
-          
+
           // overrule higher_order_ele if input-parameter is set
           // this might be interesting for fast (but slightly
           // less accurate) computations
@@ -1748,21 +1748,21 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           double mean_spreacc_sq = 0;
           double mean_sprenp_sq  = 0;
 
-          
+
           mean_res       = 0;
           mean_sacc      = 0;
           mean_svelaf    = 0;
           mean_res_sq    = 0;
           mean_sacc_sq   = 0;
           mean_svelaf_sq = 0;
-          
+
           RefCountPtr<vector<double> > incrres      = params.get<RefCountPtr<vector<double> > >("incrres"         );
           RefCountPtr<vector<double> > incrres_sq   = params.get<RefCountPtr<vector<double> > >("incrres_sq"      );
           RefCountPtr<vector<double> > incrsacc     = params.get<RefCountPtr<vector<double> > >("incrsacc"        );
           RefCountPtr<vector<double> > incrsacc_sq  = params.get<RefCountPtr<vector<double> > >("incrsacc_sq"     );
           RefCountPtr<vector<double> > incrsvelaf   = params.get<RefCountPtr<vector<double> > >("incrsvelaf"      );
           RefCountPtr<vector<double> > incrsvelaf_sq= params.get<RefCountPtr<vector<double> > >("incrsvelaf_sq"   );
-                    
+
           RefCountPtr<vector<double> > incrresC     = params.get<RefCountPtr<vector<double> > >("incrresC"        );
           RefCountPtr<vector<double> > incrresC_sq  = params.get<RefCountPtr<vector<double> > >("incrresC_sq"     );
           RefCountPtr<vector<double> > spressacc    = params.get<RefCountPtr<vector<double> > >("incrspressacc"   );
@@ -1774,7 +1774,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
           if(planecoords==null)
             dserror("planecoords is null, but need channel_flow_of_height_2\n");
-          
+
           // --------------------------------------------------
           // calculate element coefficient matrix
           DRT::ELEMENTS::Fluid3GenalphaResVMM::Impl(this)->CalcRes(this,
@@ -1791,7 +1791,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                                                    dt,
                                                                    time,
                                                                    tds,
-                                                                   whichtau, 
+                                                                   whichtau,
                                                                    higher_order_ele,
                                                                    mean_res,
                                                                    mean_sacc,
@@ -1805,7 +1805,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                                                    mean_resC_sq,
                                                                    mean_spreacc_sq,
                                                                    mean_sprenp_sq);
-          
+
           //this will be the y-coordinate of a point in the element interior
           double center = 0;
 
@@ -1844,7 +1844,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
             (*incrres_sq   )[3*nlayer+mm] += mean_res_sq   (mm);
             (*incrsacc     )[3*nlayer+mm] += mean_sacc     (mm);
             (*incrsacc_sq  )[3*nlayer+mm] += mean_sacc_sq  (mm);
-            
+
             (*incrsvelaf   )[3*nlayer+mm] += mean_svelaf   (mm);
             (*incrsvelaf_sq)[3*nlayer+mm] += mean_svelaf_sq(mm);
           }
@@ -2048,7 +2048,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           dens = actmat->m.modpowerlaw->density;
         else
           dserror("no fluid material found");
-          
+
         params.set("density", dens);
       }
       break;
@@ -3406,106 +3406,6 @@ bool DRT::ELEMENTS::Fluid3::isHigherOrderElement(
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Fluid3Register::Initialize(DRT::Discretization& dis)
 {
-  bool dofillcompleteagain = false;
-  //-------------------- loop all my column elements and check rewinding
-  for (int i=0; i<dis.NumMyColElements(); ++i)
-  {
-    // get the actual element
-    if (dis.lColElement(i)->Type() != DRT::Element::element_fluid3) continue;
-    DRT::ELEMENTS::Fluid3* actele = dynamic_cast<DRT::ELEMENTS::Fluid3*>(dis.lColElement(i));
-    if (!actele) dserror("cast to Fluid3* failed");
-
-    const DRT::Element::DiscretizationType distype = actele->Shape();
-    bool possiblytorewind = false;
-    switch(distype)
-    {
-    case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
-        possiblytorewind = true;
-        break;
-    case DRT::Element::tet4: case DRT::Element::tet10:
-        possiblytorewind = true;
-        break;
-    case DRT::Element::wedge6: case DRT::Element::wedge15:
-        possiblytorewind = true;
-        break;
-    case DRT::Element::pyramid5:
-        possiblytorewind = true;
-        break;
-    default:
-        dserror("invalid discretization type for fluid3");
-    }
-
-    if ( (possiblytorewind) && (!actele->donerewinding_) ) {
-      const bool rewind = checkRewinding3D(actele);
-
-      if (rewind) {
-        if (distype==DRT::Element::tet4){
-          int iel = actele->NumNode();
-          vector<int> new_nodeids(iel);
-          const int* old_nodeids;
-          old_nodeids = actele->NodeIds();
-          // rewinding of nodes to arrive at mathematically positive element
-          new_nodeids[0] = old_nodeids[0];
-          new_nodeids[1] = old_nodeids[2];
-          new_nodeids[2] = old_nodeids[1];
-          new_nodeids[3] = old_nodeids[3];
-          actele->SetNodeIds(iel, &new_nodeids[0]);
-        }
-        else if (distype==DRT::Element::hex8){
-          int iel = actele->NumNode();
-          vector<int> new_nodeids(iel);
-          const int* old_nodeids;
-          old_nodeids = actele->NodeIds();
-          // rewinding of nodes to arrive at mathematically positive element
-          new_nodeids[0] = old_nodeids[4];
-          new_nodeids[1] = old_nodeids[5];
-          new_nodeids[2] = old_nodeids[6];
-          new_nodeids[3] = old_nodeids[7];
-          new_nodeids[4] = old_nodeids[0];
-          new_nodeids[5] = old_nodeids[1];
-          new_nodeids[6] = old_nodeids[2];
-          new_nodeids[7] = old_nodeids[3];
-          actele->SetNodeIds(iel, &new_nodeids[0]);
-        }
-        else if (distype==DRT::Element::wedge6){
-          int iel = actele->NumNode();
-          vector<int> new_nodeids(iel);
-          const int* old_nodeids;
-          old_nodeids = actele->NodeIds();
-          // rewinding of nodes to arrive at mathematically positive element
-          new_nodeids[0] = old_nodeids[3];
-          new_nodeids[1] = old_nodeids[4];
-          new_nodeids[2] = old_nodeids[5];
-          new_nodeids[3] = old_nodeids[0];
-          new_nodeids[4] = old_nodeids[1];
-          new_nodeids[5] = old_nodeids[2];
-          actele->SetNodeIds(iel, &new_nodeids[0]);
-        }
-        else if (distype == DRT::Element::pyramid5){
-          int iel = actele->NumNode();
-          vector<int> new_nodeids(iel);
-          const int* old_nodeids;
-          old_nodeids = actele->NodeIds();
-          // rewinding of nodes to arrive at mathematically positive element
-          new_nodeids[1] = old_nodeids[3];
-          new_nodeids[3] = old_nodeids[1];
-          // the other nodes can stay the same
-          new_nodeids[0] = old_nodeids[0];
-          new_nodeids[2] = old_nodeids[2];
-          new_nodeids[4] = old_nodeids[4];
-          actele->SetNodeIds(iel, &new_nodeids[0]);
-        }
-        else dserror("no rewinding scheme for this type of fluid3");
-      }
-      // process of rewinding done
-      actele->donerewinding_ = true;
-      dofillcompleteagain = true;
-    }
-  }
-  // fill complete again to reconstruct element-node pointers,
-  // but without element init, etc.
-  if(dofillcompleteagain) dis.FillComplete(false,false,false);
-
   return 0;
 }
 

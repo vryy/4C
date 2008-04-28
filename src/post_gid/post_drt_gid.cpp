@@ -265,7 +265,7 @@ void write_mesh(PostProblem* problem, int disnum)
 
     WriteDiscretizationNodes(dis,field);
     WriteDiscretizationElements(dis);
-    
+
     GiD_EndMesh();
     break;
 
@@ -274,7 +274,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("line2",GiD_3D,GiD_Linear,2);
- 
+
     WriteDiscretizationNodes(dis,field);
     WriteDiscretizationElements(dis);
 
@@ -287,7 +287,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("so_hex27",GiD_3D,GiD_Hexahedra,27);
-    
+
     WriteDiscretizationNodes(dis,field);
     WriteDiscretizationElements(dis);
 
@@ -298,7 +298,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("tet4",GiD_3D,GiD_Tetrahedra,4);
-    
+
     WriteDiscretizationNodes(dis,field);
     WriteDiscretizationElements(dis);
 
@@ -309,7 +309,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("tet10",GiD_3D,GiD_Tetrahedra,10);
-    
+
     WriteDiscretizationNodes(dis,field);
     WriteDiscretizationElements(dis);
 
@@ -320,7 +320,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("quad4",GiD_3D,GiD_Quadrilateral,4);
-    
+
     WriteDiscretizationNodes(dis,field);
     WriteDiscretizationElements(dis);
 
@@ -331,7 +331,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("quad8",GiD_3D,GiD_Quadrilateral,8);
-    
+
     WriteDiscretizationNodes(dis,field);
     WriteDiscretizationElements(dis);
 
@@ -343,7 +343,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("quad9",GiD_3D,GiD_Quadrilateral,9);
-    
+
     WriteDiscretizationNodes(dis,field);
     WriteDiscretizationElements(dis);
 
@@ -354,7 +354,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("tri3",GiD_3D,GiD_Triangle,3);
-    
+
     WriteDiscretizationNodes(dis,field);
     WriteDiscretizationElements(dis);
 
@@ -365,7 +365,7 @@ void write_mesh(PostProblem* problem, int disnum)
     GiD_EndGaussPoint();
 
     GiD_BeginMesh("tri6",GiD_3D,GiD_Triangle,6);
-    
+
     WriteDiscretizationNodes(dis,field);
     WriteDiscretizationElements(dis);
 
@@ -436,6 +436,10 @@ int main(int argc, char** argv)
       if (map_has_map(result.group(), "gauss_GL_strains_xyz"))
       {
         write_serialdensematrix_result("gauss_GL_strains_xyz", field, &result);
+      }
+      if (map_has_map(result.group(), "gauss_EA_strains_xyz"))
+      {
+        write_serialdensematrix_result("gauss_EA_strains_xyz", field, &result);
       }
     }
   }

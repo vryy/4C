@@ -114,9 +114,6 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
   //Initialize fiber vector
   //fiberdirection_.resize(3);
 
-  // Initialize winding flags
-  donerewinding_ = false;
-
   return true;
 } // So_hex8::ReadElement()
 

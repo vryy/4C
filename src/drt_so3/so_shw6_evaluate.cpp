@@ -134,7 +134,9 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix stress(NUMGPT_WEG6,NUMSTR_WEG6);
       Epetra_SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
       bool cauchy = params.get<bool>("cauchy", false);
-      soshw6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy);
+      string iostrain = params.get<string>("iostrain", "none");
+      if (iostrain!="euler_almansi") soshw6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy);
+      else dserror("requested option not yet implemented for solidshw6");
       //cout << "gpstress: " << stress << endl;
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
@@ -487,7 +489,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     glstrain.Multiply('N','N',1.0,TinvT,lstrain,1.0);
 
     // return gp strains (only in case of stress/strain output)
-    if (elestress != NULL){
+    if (elestrain != NULL){
       for (int i = 0; i < 3; ++i) {
         (*elestrain)(gp,i) = glstrain(i);
       }

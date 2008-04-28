@@ -107,7 +107,7 @@ namespace UTILS
   //! Rectangular surface of pyramid5
   const int eleNodeNumbering_pyramid5_quadsurfaces[1][4]= {
           {0, 1, 2, 3}};
-  
+
   //! Triangular surfaces of pyramid5
   const int eleNodeNumbering_pyramid5_trisurfaces[4][3]={
     {0,1,4},
@@ -224,20 +224,20 @@ namespace UTILS
   /*!
  \brief Returns the number of nodes
         for each discretization type
-        
+
  \return number of nodes of the discretization type
- */ 
- int getNumberOfElementNodes( 
+ */
+ int getNumberOfElementNodes(
    const DRT::Element::DiscretizationType&     distype
    );
-  
+
   /*!
   \brief Returns the number of nodes
          for each discretization type
          - template version
-       
+
   \return number of nodes of the discretization type
-  */  
+  */
   template <DRT::Element::DiscretizationType DISTYPE>
   inline int getNumberOfElementNodes()
   {
@@ -256,20 +256,20 @@ namespace UTILS
      case DRT::Element::hex20:        return 20;   break;
      case DRT::Element::hex27:        return 27;   break;
      case DRT::Element::tet4:         return 4;    break;
-     case DRT::Element::tet10:        return 10;   break;   
+     case DRT::Element::tet10:        return 10;   break;
      default:
-         dserror("discretization type not yet implemented");    
+         dserror("discretization type not yet implemented");
          return -1;
      }
   }
- 
+
    /*!
   \brief Returns the number of corner nodes
          for each discretization type
-         
+
   \return number of corner nodes of the discretization type
-  */ 
-  int getNumberOfElementCornerNodes( 
+  */
+  int getNumberOfElementCornerNodes(
     const DRT::Element::DiscretizationType&     distype
     );
 
@@ -291,50 +291,50 @@ namespace UTILS
   /*!
   \brief Fills a vector< vector<int> > with all nodes for every surface
          for each discretization type
-         
+
   \return map with all nodes for each surface
   */
-  vector< vector<int> > getEleNodeNumberingSurfaces( 
+  vector< vector<int> > getEleNodeNumberingSurfaces(
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
   /*!
   \brief Fills a vector< vector<int> > with all nodes for every line
          for each discretization type
-  
+
   \return map with all nodes for each line
   */
-  vector< vector<int> > getEleNodeNumberingLines(    
+  vector< vector<int> > getEleNodeNumberingLines(
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
   /*!
   \brief Fills a vector< vector<int> > with all surfaces for every line
          for each discretization type
-         
+
   \return map with surfaces adjacent to each line
-  */                                                                    
-  vector< vector<int> > getEleNodeNumbering_lines_surfaces(  
+  */
+  vector< vector<int> > getEleNodeNumbering_lines_surfaces(
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
   /*!
   \brief Fills a vector< vector<int> > with all surfaces for every node
          for each discretization type
-         
+
   \return map with all surfaces adjacent to each node
-  */                                           
-  vector< vector<int> > getEleNodeNumbering_nodes_surfaces(  
+  */
+  vector< vector<int> > getEleNodeNumbering_nodes_surfaces(
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
   /*!
   \brief Fills a vector< vector<int> > with reference coordinates for each node
          for each discretization type
-         
+
   \return map of reference coordinates for all nodes
   */
-  vector< vector< double > > getEleNodeNumbering_nodes_reference( 
+  vector< vector< double > > getEleNodeNumbering_nodes_reference(
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
@@ -368,13 +368,13 @@ namespace UTILS
     double*                                     coord,      ///< coordinates
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
-    
+
   /*!
-  \brief    Returns the index of a  higher order node lying 
+  \brief    Returns the index of a  higher order node lying
             between two given corner nodes of an edge of an higher order element
             for each discretization type
-            
-  */   
+
+  */
   int getHigherOrderIndex(
     const int                                   index1,     ///< index of corner node
     const int                                   index2,     ///< index of corner node
@@ -383,49 +383,49 @@ namespace UTILS
 
   /*!
   \brief    Returns the dimension of an element
-            
-  */   
+
+  */
   int getDimension(
     const DRT::Element*   element     ///< element
     );
-  
+
   /*!
   \brief    Returns the dimension of an element based on its discretization-type
-            
-  */   
+
+  */
   int getDimension(
 		  const DRT::Element::DiscretizationType distype///< element-discretization type
     );
-  
+
   /*!
   \brief    Returns the dimension of an element based on its discretization-type
             Template version
-            
-  */  
+
+  */
   template <DRT::Element::DiscretizationType DISTYPE>
   inline int getDimension()
   {
       int dim = 0;
-      
+
       switch(DISTYPE)
       {
           case DRT::Element::line2 :  case DRT::Element::line3 :
           {
-              dim = 1;      
+              dim = 1;
               break;
           }
           case DRT::Element::quad4 : case DRT::Element::quad8 : case DRT::Element::quad9 :
           case DRT::Element::tri3 : case DRT::Element::tri6 :
           {
-              dim = 2;   
+              dim = 2;
               break;
           }
           case DRT::Element::hex8 : case DRT::Element::hex20 : case DRT::Element::hex27 :
           case DRT::Element::tet4 : case DRT::Element::tet10 :
           {
-              dim = 3;      
+              dim = 3;
               break;
-          }   
+          }
           default:
               dserror("discretization type is not yet implemented");
       }
@@ -433,23 +433,9 @@ namespace UTILS
   }
 
   /*!
-   * \brief check, whether NodeIds need rewinding due to wrong input from mesher,
-   * based on negative Jacobian determinant.
-   * \return boolean rewind or not rewind
-   */
-  bool checkRewinding3D(const DRT::Element* ele);
-  
-  
-
-  /*!
-   * \Rewindes NodeIds if checkRewinding3D returned a true boolean
-  */ 
-  void Rewinding3D(DRT::Discretization& dis);
-    
-  /*!
   \brief    Returns the geometric center of the element in local coordinates
-            
-  */   
+
+  */
   blitz::Array<double,1> getLocalCenterPosition(
     const DRT::Element::DiscretizationType   distype     ///< shape of the element
     );

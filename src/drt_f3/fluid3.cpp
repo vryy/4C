@@ -120,8 +120,6 @@ void DRT::ELEMENTS::Fluid3::Pack(vector<char>& data) const
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   // is_ale_
   AddtoPack(data,is_ale_);
-  // rewinding bools
-  AddtoPack(data,donerewinding_);
   // Cs_delta_sq_, the Smagorinsky constant for the dynamic Smagorinsky model
   AddtoPack(data,Cs_delta_sq_);
 
@@ -173,9 +171,6 @@ void DRT::ELEMENTS::Fluid3::Unpack(const vector<char>& data)
   // extract Cs_delta_sq_, the Smagorinsky constant for the dynamic
   // Smagorinsky model
   ExtractfromPack(position,data,Cs_delta_sq_);
-  // rewinding bools
-  ExtractfromPack(position,data,donerewinding_);
-
 
   // history variables (subscale velocities, accelerations and pressure)
   {

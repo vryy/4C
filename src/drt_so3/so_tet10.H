@@ -276,12 +276,6 @@ public:
                               Epetra_SerialDenseVector& elevec1);
 
 
-  //@}
-
-  //! some distypes need rewinding of NodeIds due to bad input from mesher
-  //! flag whether process of rewinding is done
-  bool                                            donerewinding_;
-
 protected:
 
   //! action parameters recognized by so_tet10
@@ -723,7 +717,7 @@ private:
         double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
         const Epetra_SerialDenseMatrix* xs,    // (i) element coords
         const Epetra_SerialDenseMatrix deriv); // (i) shape funct derivs
-  
+
   /*void sotet10_surface_integ(	//became obsolete !!!!!!!!!!!!!!!!
       vector<double>* funct,                 // (o) shape functions
       double* sqrtdetg,                      // (o) pointer to sqrt of det(g)

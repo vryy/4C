@@ -57,6 +57,15 @@ typedef enum _STRUCT_STRESS_TYP
                        struct_stress_pk      /*  output of 2nd Piola-Kirchhoff stresses*/
 } STRUCT_STRESS_TYP;
 
+/*----------------------------------------------------------------------*
+ | STRUCTURAL STRAIN TYPES                                  lw 04/08    |
+ *----------------------------------------------------------------------*/
+typedef enum _STRUCT_STRAIN_TYP
+{
+                       struct_strain_none,   /* no strain output */
+                       struct_strain_ea,     /* output of Euler-Almansi strains */
+                       struct_strain_gl      /* output of Green-Lagrange strains */
+} STRUCT_STRAIN_TYP;
 
 /*----------------------------------------------------------------------*
  | FIELD TYPES                                            m.gee 7/01    |

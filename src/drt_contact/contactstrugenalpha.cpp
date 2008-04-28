@@ -30,7 +30,7 @@ StruGenAlpha(params,dis,solver,output)
   // see whether we assume initial contact at t=0
   // -------------------------------------------------------------------
   bool initialcontact = params_.get<bool>("init contact",false);
-    
+
   // -------------------------------------------------------------------
   // see whether we have contact boundary conditions
   // and create contact manager if so
@@ -206,19 +206,19 @@ void ContactStruGenAlpha::ConsistentPredictor()
   //------------------------------------------------------------ contact
   RCP<Epetra_Vector> zm = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
-  
+
   // update of mid-point LM (equal to last end-point)
   zm->Update(1.0,*zn,0.0);
-  
-  // evaluate Mortar coupling matrices for contact forces 
+
+  // evaluate Mortar coupling matrices for contact forces
   {
     contactmanager_->Initialize(0);
     contactmanager_->SetState("displacement",dism_);
-        
+
     // (almost) all contact stuff is done here!
     contactmanager_->EvaluateMortar();
   }
-      
+
   // add contact forces
   contactmanager_->ContactForces(fresm_);
   RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
@@ -394,19 +394,19 @@ void ContactStruGenAlpha::ConstantPredictor()
   //------------------------------------------------------------ contact
   RCP<Epetra_Vector> zm = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
-  
+
   // update of mid-point LM (equal to last end-point)
   zm->Update(1.0,*zn,0.0);
-  
-  // evaluate Mortar coupling matrices for contact forces 
+
+  // evaluate Mortar coupling matrices for contact forces
   {
     contactmanager_->Initialize(0);
     contactmanager_->SetState("displacement",dism_);
-        
+
     // (almost) all contact stuff is done here!
     contactmanager_->EvaluateMortar();
   }
-      
+
   // add contact forces
   contactmanager_->ContactForces(fresm_);
   RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
@@ -948,7 +948,7 @@ void ContactStruGenAlpha::UpdateandOutput()
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
   string iostress      = params_.get<string>("io structural stress"   ,"none");
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
-  bool   iostrain      = params_.get<bool>  ("io structural strain"   ,false);
+  string iostrain      = params_.get<string>("io structural strain"   ,"none");
 
   int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
 
@@ -977,16 +977,16 @@ void ContactStruGenAlpha::UpdateandOutput()
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0,*fextn_,0.0);
-  
+
   //--------------------------------- update contact Lagrange multipliers
   RCP<Epetra_Vector> zm = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zoldm = contactmanager_->LagrMultOld();
   RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
-  
+
   // Lagrange multipliers at end-point
   // z_{n+1} = 1./(1.-alphaf) * z_{n+1-alpha_f} - alphaf/(1.-alphaf) * z_n
   zn->Update(1./(1.-alphaf),*zm,-alphaf/(1.-alphaf));
-  
+
   // Lagrange multipliers at generalized mid-point
   // we need these for checking the active set in the next time step
   zoldm->Update(1.0,*zm,0.0);
@@ -1023,7 +1023,7 @@ void ContactStruGenAlpha::UpdateandOutput()
     output_.WriteVector("fexternal",fext_);
 
     isdatawritten = true;
-    
+
     // write restart information for contact
     RCP<Epetra_Vector> activetoggle = contactmanager_->WriteRestart();
     output_.WriteVector("lagrmultend",zn);
@@ -1074,6 +1074,7 @@ void ContactStruGenAlpha::UpdateandOutput()
     {
       p.set("cauchy", false);
     }
+    p.set("iostrain", iostrain);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);
@@ -1086,8 +1087,17 @@ void ContactStruGenAlpha::UpdateandOutput()
       output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementColMap());
     else
       output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementColMap());
-    if (iostrain)
-      output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
+    if (iostrain != "none")
+    {
+      if (iostrain == "euler_almansi")
+      {
+        output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementColMap());
+      }
+      else
+      {
+        output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementColMap());
+      }
+    }
   }
 
   //---------------------------------------------------------- print out
@@ -1135,7 +1145,7 @@ void ContactStruGenAlpha::Integrate()
 
   // iteration counter for active set loop
   int numiteractive = 0;
-  
+
   // Newton as nonlinear iteration scheme
   if (equil=="full newton")
   {
@@ -1144,7 +1154,7 @@ void ContactStruGenAlpha::Integrate()
     {
       contactmanager_->ActiveSetConverged() = false;
       numiteractive = 0;
-      
+
       // LOOP2: active set strategy
       while (contactmanager_->ActiveSetConverged()==false)
       {
@@ -1158,7 +1168,7 @@ void ContactStruGenAlpha::Integrate()
         // update of active set
         numiteractive++;
         contactmanager_->UpdateActiveSet(numiteractive,dism_);
-        
+
       }
       UpdateandOutput();
     }
