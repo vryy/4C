@@ -442,7 +442,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
   }/* ==================================================== end of Loop over GP */
 
   return 0;
-} // DRT::ELEMENTS::Shell8::s8_EvaluateNeumann
+} // DRT::ELEMENTS::So_hex8::EvaluateNeumann
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
@@ -601,10 +601,6 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
     if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
 
-	/*cout << deriv_gp;
-    cout << int_hex8.deriv_gp[gp];
-    getchar();*/
-
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
     defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,1.0);
@@ -622,15 +618,6 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     glstrain(3) = cauchygreen(0,1);
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
-
-//    // debugging of EAS with hyperpoly
-//    Epetra_SerialDenseMatrix cmat_disp(NUMSTR_SOH8,NUMSTR_SOH8);
-//    Epetra_SerialDenseVector stress_disp(NUMSTR_SOH8);
-//    double density_disp;
-//    const int ele_ID_disp = Id();
-//    soh8_mat_sel(&stress_disp,&cmat_disp,&density_disp,&glstrain, &defgrd, gp, ele_ID_disp, time);
-//    Epetra_SerialDenseVector glstrain_disp(glstrain);
-//    // debugging of EAS with hyperpoly
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone) {
@@ -834,16 +821,6 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       }
     }
 
-//    // debugging of EAS with hyperpoly
-//    Epetra_SerialDenseVector DE(glstrain);
-//    DE.Scale(-1.0);
-//    DE += glstrain_disp;
-//    Epetra_SerialDenseVector DS(stress);
-//    DS.Scale(-1.0);
-//    DS += stress_disp;
-//    //cout << endl << "Delta E: " << DE;
-//    //cout << endl << "Delta S: " << DS;
-
     if (force != NULL && stiffmatrix != NULL) {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       (*force).Multiply('T', 'N', detJ * int_hex8.weights(gp), bop, stress,
@@ -896,7 +873,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     }
 
     if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
-      // integrate concistent mass matrix
+      // integrate consistent mass matrix
       for (int inod=0; inod<NUMNOD_SOH8; ++inod) {
         for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod) {
           double massfactor = (int_hex8.shapefct_gp[gp])(inod) * density * (int_hex8.shapefct_gp[gp])(jnod)
@@ -931,17 +908,14 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
 
       // store current EAS data in history
       for (int i=0; i<neas_; ++i) {
-        for (int j=0; j<neas_; ++j)
-          (*oldKaainv)(i, j) = Kaa(i,j);
-        for (int j=0; j<NUMDOF_SOH8; ++j)
-          (*oldKda)(i, j) = Kda(i,j);
+        for (int j=0; j<neas_; ++j) (*oldKaainv)(i, j) = Kaa(i,j);
+        for (int j=0; j<NUMDOF_SOH8; ++j) (*oldKda)(i, j) = Kda(i,j);
         (*oldfeas)(i, 0) = feas(i);
       }
     } // -------------------------------------------------------------------- EAS
-    //improvement?: SymmetriseMatrix(*stiffmatrix);
   }
   return;
-} // DRT::ELEMENTS::Shell8::s8_nlnstiffmass
+} // DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass
 
 
 /*----------------------------------------------------------------------*

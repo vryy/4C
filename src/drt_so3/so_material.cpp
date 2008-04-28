@@ -388,6 +388,14 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_mat_sel(
       
       break;
     }
+    case m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */
+    {
+      MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
+      moon->Evaluate(glstrain,cmat,stress);
+      *density = moon->Density();
+
+      break;
+    }
     case m_neohooke: /*----------------- NeoHookean Material */
     {
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());

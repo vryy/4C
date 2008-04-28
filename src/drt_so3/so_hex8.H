@@ -57,6 +57,15 @@ class Soh8Register;
 /*!
 \brief A C++ version of the 8-node hex solid element
 
+A structural 8-node hexahedral solid element for large deformations. As its
+discretization is fixed many data structures are evaluated just once and kept 
+for performance (e.g. shape functions, derivatives, etc.,
+see DRT::ELEMENTS::So_hex8::Integrator_So_hex8). It heavily uses
+Epetra objects and methods and therefore relies on their performance.
+
+There are 2 sets of EAS enhancements for GL-strains to alleviate locking
+(see DRT::ELEMENTS::So_hex8::EASType).
+
 \author frenzel (frenzel@lnm.mw.tum.de)
 */
 class So_hex8 : public DRT::Element
@@ -350,7 +359,7 @@ protected:
     update_gl
   };
 
-  //! kinematic types of so_hex8
+  //! kinematic types of so_hex8, but yet only total-lagrangian is implemented
   enum KinematicType
   {
     soh8_geolin,
@@ -369,7 +378,21 @@ protected:
     soh8_stress_nd123,
     soh8_stress_cxyz     // interpolated element center stresses
   };
-  //! EAS technology types of so_hex8
+  
+  /*!
+   * \brief EAS technology enhancement types of so_hex8
+   * 
+   * Solid Hex8 has EAS enhancement of GL-strains to avoid locking.
+   * \param soh8_easmild: 9 parameters consisting of modes to alleviate
+   * shear locking (bending) and main incompressibility modes
+   * \param soh8_easfull: 21 parameters to prevent almost all locking modes.
+   * Equivalent to all 30 parameters to fully complete element 
+   * with quadratic modes (see Andelfinger 1993 for details) and therefore 
+   * also suitable for distorted elements.
+   * \param soh8_eassoh8: related to Solid-Shell, 7 parameters to alleviate
+   * inplane (membrane) locking and main modes for Poisson-locking
+   * \param soh8_easnone: no EAS i.e. displacement based with tremendous locking
+   */
   enum EASType
   {
     soh8_easfull,
@@ -381,7 +404,7 @@ protected:
   KinematicType                                    kintype_;
   //! type of EAS technology
   EASType                                          eastype_;
-  //! number of EAS parameters (alphas)
+  //! number of EAS parameters (alphas), defined by 'EASType'
   int                                              neas_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                   data_;
@@ -407,13 +430,15 @@ protected:
 
   //! vector in thickness direction for compatibility with sosh8
   vector<double>                                   thickvec_;
+  //! vector for fiber direction, needs better place in future
   vector<double>                                   fiberdirection_;
 
   // internal calculation methods
 
-  // don't want = operator
+  //! don't want = operator
   So_hex8& operator = (const So_hex8& old);
 
+  //! Calculate nonlinear stiffness and mass matrix
   virtual void soh8_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
@@ -426,6 +451,7 @@ protected:
                                  bool                      cauchy = false,
                                  bool                      euler_almansi = false);
 
+  //! Extrapolate Gauss-point values (e.g. stresses) to nodes
   void soh8_expol(Epetra_SerialDenseMatrix& stresses,
                   Epetra_SerialDenseMatrix& nodalstresses);
 
@@ -445,9 +471,27 @@ protected:
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
   /***************OBSOLETE**********************************/
-  // the deformation gradient, Gauss point number, element ID and the
-  // action parameter (default: empty string) is needed only for multi-scale
-  // materials
+  
+  /*!
+   * \brief Interface to material laws working with soh8.
+   * 
+   * Here the interface to any material takes place. Stress and C-mat must be retrieved
+   * whereas all necessary data is passed. Add whatever your material needs, but
+   * make sure that exchange is not overdone performance-wise.
+   * Right now EAS is based on GL-Strains which is ok for any hyperelastic material.
+   * This means that e.g. the deformation gradient is not alleviated from locking
+   * and therefore only to be used with disp-based soh8.
+   * 
+   * \param *stress (out): Voigt-Vector of stresses at current gp
+   * \param *cmat (out): Elasticity matrix at current gp
+   * \param *density (out): density of material
+   * \param *glstrain (in): Voigt-Vector of GL-strains at current gp
+   * \param *defgrd (in): F at current gp, CAUTION! only for disp-based soh8
+   * \param gp (in): current gp
+   * \param ele_ID (in): current element Id
+   * \param time (in): current algorithmic time
+   * \param action (in): action for material law (default empty)
+   * */
   void soh8_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
@@ -458,9 +502,10 @@ protected:
                     const double time,
                     const string action = string());
 
-  // EAS technology section
+  //! EAS technology, init
   void soh8_easinit();
 
+  //! EAS technology, setup necessary data
   void soh8_eassetup(
           Epetra_SerialDenseMatrix** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
@@ -783,7 +828,7 @@ protected:
 
 private:
 
-  // don't want = operator
+  //! don't want = operator
   Soh8Surface& operator = (const Soh8Surface& old);
 
   //! The parent element of this surface
