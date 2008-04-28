@@ -601,6 +601,23 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
     genalphaparams->set<string>("equilibrium iteration","full newton");
     break;
   }
+  
+  switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
+  {
+  case struct_strain_none:
+    genalphaparams->set<string>("io structural strain", "none");
+  break;
+  case struct_strain_ea:
+    genalphaparams->set<string>("io structural strain", "euler_almansi");
+  break;
+  case struct_strain_gl:
+    genalphaparams->set<string>("io structural strain", "green_lagrange");
+  break;
+  default:
+    genalphaparams->set<string>("io structural strain", "none");
+  break;
+  }
+
 
   // set predictor (takes values "constant" "consistent")
   switch (Teuchos::getIntegralValue<int>(sdyn,"PREDICT"))
