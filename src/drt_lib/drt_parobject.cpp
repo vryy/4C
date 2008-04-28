@@ -142,17 +142,20 @@ void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data, ve
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
-                                Epetra_SerialDenseMatrix& stuff)
+                                     Epetra_SerialDenseMatrix& stuff)
 {
   int m = 0;
   ExtractfromPack(position,data,m);
   int n = 0;
   ExtractfromPack(position,data,n);
   stuff.Reshape(m,n);
-  double* A = stuff.A();
-  ExtractfromPack(position,data,A,n*m*sizeof(double));
+  double* a = stuff.A();
+  if(m*n)
+    ExtractfromPack(position,data,a,n*m*sizeof(double));
   return;
 }
+
+
 /*----------------------------------------------------------------------*
  | a string specialization                                     (public) |
  |                                                            gee 02/07 |

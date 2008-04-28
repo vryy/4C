@@ -15,7 +15,7 @@ Maintainer: Michael Gee
 
 #include "vector"
 #include "string"
-#include "Epetra_SerialDenseMatrix.h"
+#include "linalg_serialdensematrix.H"
 
 using namespace std;
 
@@ -122,7 +122,9 @@ using namespace std;
 #define ParObject_ModPowerLaw           (int)97
 #define ParObject_ConstraintElement3    (int)98
 #define ParObject_ConstraintElement3Register (int)99
-#define ParObject_MooneyRivlin          (int)100
+#define ParObject_StructuralSurface     (int)100
+#define ParObject_StructuralLine        (int)101
+#define ParObject_MooneyRivlin          (int)102
 
 namespace DRT
 {
@@ -447,6 +449,7 @@ public:
 
   */
   static void ExtractfromPack(int& position, const vector<char>& data, Epetra_SerialDenseMatrix& stuff);
+
 
   /*!
   \brief Extract stuff from a char vector data and increment position

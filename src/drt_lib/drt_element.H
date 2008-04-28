@@ -105,6 +105,8 @@ public:
     element_sodispvolume,
     element_sodispsurface,
     element_sodispline,
+    element_structuralsurface,
+    element_structuralline,
     element_contact,
     element_so_shw6,
     element_beam2,
