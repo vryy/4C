@@ -446,6 +446,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
         }
       }
       else{
+        // rewriting Green-Lagrange strains in matrix format
         LINALG::SerialDenseMatrix gl(NUMDIM_WEG6,NUMDIM_WEG6);
         gl(0,0) = glstrain(0);
         gl(0,1) = 0.5*glstrain(3);
@@ -457,53 +458,14 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
         gl(2,1) = gl(1,2);
         gl(2,2) = glstrain(2);
 
-         // determinant of deformation gradient
-        double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
-                      defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
-                      defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
-                      defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
-                      defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
-                      defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
-
         // inverse of deformation gradient
-        LINALG::SerialDenseMatrix invdefgrd(NUMDIM_WEG6,NUMDIM_WEG6);
-        invdefgrd(0,0) = defgrd(1,1)*defgrd(2,2)-defgrd(1,2)*defgrd(2,1);
-        invdefgrd(0,1) = defgrd(0,2)*defgrd(2,1)-defgrd(2,2)*defgrd(0,1);
-        invdefgrd(0,2) = defgrd(0,1)*defgrd(1,2)-defgrd(1,1)*defgrd(0,2);
-        invdefgrd(1,0) = defgrd(1,2)*defgrd(2,0)-defgrd(2,2)*defgrd(1,0);
-        invdefgrd(1,1) = defgrd(0,0)*defgrd(2,2)-defgrd(2,0)*defgrd(0,2);
-        invdefgrd(1,2) = defgrd(0,2)*defgrd(1,0)-defgrd(1,2)*defgrd(0,0);
-        invdefgrd(2,0) = defgrd(1,0)*defgrd(2,1)-defgrd(2,0)*defgrd(1,1);
-        invdefgrd(2,1) = defgrd(0,1)*defgrd(2,0)-defgrd(2,1)*defgrd(0,0);
-        invdefgrd(2,2) = defgrd(0,0)*defgrd(1,1)-defgrd(1,0)*defgrd(0,1);
-
-        invdefgrd.Scale(1.0/detF);
-
-        // inverse of transposed deformation gradient
-        LINALG::SerialDenseMatrix transdefgrd(NUMDIM_WEG6,NUMDIM_WEG6);
-        for (int i=0;i<NUMDIM_WEG6;++i)
-        {
-          for (int j=0;j<NUMDIM_WEG6;++j)
-            transdefgrd(i,j)=defgrd(j,i);
-        }
-        LINALG::SerialDenseMatrix invtransdefgrd(NUMDIM_WEG6,NUMDIM_WEG6);
-        invtransdefgrd(0,0) = transdefgrd(1,1)*transdefgrd(2,2)-transdefgrd(1,2)*transdefgrd(2,1);
-        invtransdefgrd(0,1) = transdefgrd(0,2)*transdefgrd(2,1)-transdefgrd(2,2)*transdefgrd(0,1);
-        invtransdefgrd(0,2) = transdefgrd(0,1)*transdefgrd(1,2)-transdefgrd(1,1)*transdefgrd(0,2);
-        invtransdefgrd(1,0) = transdefgrd(1,2)*transdefgrd(2,0)-transdefgrd(2,2)*transdefgrd(1,0);
-        invtransdefgrd(1,1) = transdefgrd(0,0)*transdefgrd(2,2)-transdefgrd(2,0)*transdefgrd(0,2);
-        invtransdefgrd(1,2) = transdefgrd(0,2)*transdefgrd(1,0)-transdefgrd(1,2)*transdefgrd(0,0);
-        invtransdefgrd(2,0) = transdefgrd(1,0)*transdefgrd(2,1)-transdefgrd(2,0)*transdefgrd(1,1);
-        invtransdefgrd(2,1) = transdefgrd(0,1)*transdefgrd(2,0)-transdefgrd(2,1)*transdefgrd(0,0);
-        invtransdefgrd(2,2) = transdefgrd(0,0)*transdefgrd(1,1)-transdefgrd(1,0)*transdefgrd(0,1);
-
-        invtransdefgrd.Scale(1.0/detF);  // the determinant is the same for F and the transpose of F
+        Epetra_SerialDenseMatrix invdefgrd(defgrd); // make a copy here otherwise defgrd is destroyed!
+        LINALG::NonsymInverse3x3(invdefgrd);
 
         LINALG::SerialDenseMatrix temp(NUMDIM_WEG6,NUMDIM_WEG6);
         LINALG::SerialDenseMatrix euler_almansi(NUMDIM_WEG6,NUMDIM_WEG6);
         temp.Multiply('N','N',1.0,gl,invdefgrd,0.);
-        euler_almansi.Multiply('N','N',1.0,invtransdefgrd,temp,0.);
-
+        euler_almansi.Multiply('T','N',1.0,invdefgrd,temp,0.);
 
         (*elestrain)(gp,0) = euler_almansi(0,0);
         (*elestrain)(gp,1) = euler_almansi(1,1);
