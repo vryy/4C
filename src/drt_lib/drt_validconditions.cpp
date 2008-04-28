@@ -431,14 +431,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   std::vector<Teuchos::RCP<ConditionComponent> > fluidstresscomponents;
 
   Teuchos::RCP<ConditionDefinition> linefluidstress =
-    Teuchos::rcp(new ConditionDefinition("DESIGN LINE STRESS CALC CONDITIONS",
+    Teuchos::rcp(new ConditionDefinition("DESIGN FLUID STRESS CALC LINE CONDITIONS",
                                          "FluidStressCalc",
                                          "Line Fluid Stress Calculation",
                                          DRT::Condition::FluidStressCalc,
                                          true,
                                          DRT::Condition::Line));
   Teuchos::RCP<ConditionDefinition> surffluidstress =
-    Teuchos::rcp(new ConditionDefinition("DESIGN FLUIDSTRESS COUPLING SURF CONDITIONS",
+    Teuchos::rcp(new ConditionDefinition("DESIGN FLUID STRESS CALC SURF CONDITIONS",
                                          "FluidStressCalc",
                                          "Surf Fluid Stress Calculation",
                                          DRT::Condition::FluidStressCalc,
