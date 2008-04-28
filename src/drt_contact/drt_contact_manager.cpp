@@ -12,6 +12,10 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_validparameters.H"
+
 #include "drt_contact_manager.H"
 #include "drt_cnode.H"
 #include "drt_celement.H"
@@ -22,7 +26,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
-CONTACT::Manager::Manager(DRT::Discretization& discret, bool initialcontact) :
+CONTACT::Manager::Manager(DRT::Discretization& discret) :
 discret_(discret),
 activesetconv_(false),
 isincontact_(false)
@@ -33,6 +37,10 @@ isincontact_(false)
 #endif
 #endif
   
+  // read and check contact input parameters
+  ReadAndCheckInput();
+  
+  // check for FillComplete of discretization
   if (!Discret().Filled()) dserror("Discretization is not fillcomplete");
 
   // let's check for contact boundary conditions in discret
@@ -216,6 +224,7 @@ isincontact_(false)
   
   // initialize active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
+  bool initialcontact = scontact_.get("initial contact",false);
   for (int i=0;i<(int)interface_.size();++i)
   {
     interface_[i]->InitializeActiveSet(initialcontact);
@@ -265,6 +274,82 @@ void CONTACT::Manager::Print(ostream& os) const
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  read and check input parameters (public)                  popp 04/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Manager::ReadAndCheckInput()
+{
+  // read parameter list from DRT::Problem
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
+  
+  switch (Teuchos::getIntegralValue<int>(input,"CONTACT"))
+  {
+    case INPUTPARAMS::contact_none:
+      scontact_.set<string>("contact type","none");
+      break;
+    case INPUTPARAMS::contact_normal:
+      scontact_.set<string>("contact type","normal");
+      break;
+    case INPUTPARAMS::contact_frictional:
+      scontact_.set<string>("contact type","frictional");
+      break;
+    case INPUTPARAMS::contact_meshtying:
+      scontact_.set<string>("contact type","meshtying");
+      break;
+    default:
+      dserror("Cannot cope with choice of contact type");
+      break;
+  }
+  
+  scontact_.set<bool> ("initial contact",Teuchos::getIntegralValue<int>(input,"INIT_CONTACT"));
+  scontact_.set<bool> ("basis transformation",Teuchos::getIntegralValue<int>(input,"BASISTRAFO"));
+  
+  switch (Teuchos::getIntegralValue<int>(input,"FRICTION"))
+  {
+    case INPUTPARAMS::friction_none:
+      scontact_.set<string>("friction type","none");
+      break;
+    case INPUTPARAMS::friction_stick:
+      scontact_.set<string>("friction type","stick");
+      break;
+    case INPUTPARAMS::friction_tresca:
+      scontact_.set<string>("friction type","tresca");
+      break;
+    case INPUTPARAMS::friction_coulomb:
+      scontact_.set<string>("friction type","coulomb");
+      break;
+    default:
+      dserror("Cannot cope with choice of friction type");
+      break;
+  }
+  
+  scontact_.set<double> ("friction bound",input.get<double>("FRBOUND"));
+  scontact_.set<double> ("friction coefficient",input.get<double>("FRCOEFF"));
+  
+  // check contact input parameters
+  string ctype   = scontact_.get<string>("contact type","none");
+  bool init      = scontact_.get<bool>("initial contact",false);
+  //bool btrafo    = scontact_.get<bool>("basis transformation",false);
+  string ftype   = scontact_.get<string>("friction type","none");
+  //double frbound = scontact_.get<double>("friction bound",0.0);
+  //double frcoeff = scontact_.get<double>("friction coeffiecient",0.0);
+  
+  if (ctype=="normal" && ftype !="none")
+    dserror("Friction law supplied for normal contact");
+  if (ctype=="frictional" && ftype=="none")
+    dserror("No friction law supplied for frictional contact");
+  if (ctype=="frictional" && ftype=="tresca")
+    dserror("Tresca friction law not yet implemented");
+  if (ctype=="frictional" && ftype=="coulomb")
+      dserror("Coulomb friction law not yet implemented");
+  if (ctype=="meshtying" && !init)
+    scontact_.set<bool>("initial contact",true);
+  if (ctype=="meshtying" && ftype!="stick")
+    scontact_.set<string>("friction type","stick");
+    
+  return true;
+}
+  
 /*----------------------------------------------------------------------*
  |  write restart information for contact (public)            popp 03/08|
  *----------------------------------------------------------------------*/
@@ -397,14 +482,35 @@ void CONTACT::Manager::EvaluateMortar()
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate contact (public)                                 popp 11/07|
+ |  evaluate contact (public)                                 popp 04/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
                                 RCP<Epetra_Vector> feff, int numiter)
 { 
+  // check if basis transformation should be applied
+  bool btrafo = scontact_.get<bool>("basis transformation",false);
+  
+  if (btrafo)
+    EvaluateBasisTrafo(kteff,feff,numiter);
+  else
+    EvaluateNoBasisTrafo(kteff,feff,numiter);
+    
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate contact with basis transformation (public)       popp 11/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
+                                          RCP<Epetra_Vector> feff, int numiter)
+{ 
   // FIXME: Currently only the old LINALG::Multiply method is used,
   // because there are still problems with the transposed version of
   // MLMultiply if a row has no entries! One day we should use ML...
+  
+  // input parameters
+  string ctype   = scontact_.get<string>("contact type","none");
+  string ftype   = scontact_.get<string>("friction type","none");
   
   /**********************************************************************/
   /* evaluate interfaces                                                */
@@ -808,17 +914,21 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
   // add matrix of normals to kteffnew
   kteffnew->Add(*nmatrix_,false,1.0,1.0);
 
-  
-#ifndef CONTACTSTICKING
-  // add submatrices with tangents to kteffnew, if existing
-  if (tkanmod!=null) kteffnew->Add(*tkanmod,false,1.0,1.0);
-  if (tkammod!=null) kteffnew->Add(*tkammod,false,1.0,1.0);
-  if (tkaimod!=null) kteffnew->Add(*tkaimod,false,1.0,1.0);
-  if (tkaamod!=null) kteffnew->Add(*tkaamod,false,1.0,1.0);
-#else
-  // add matrix of tangents to kteffnew
-  if (tmatrix_!=null) kteffnew->Add(*tmatrix_,false,1.0,1.0);
-#endif // #ifndef CONTACTSTICKING
+  if (ftype=="none")
+  {
+    // add submatrices with tangents to kteffnew, if existing
+    if (tkanmod!=null) kteffnew->Add(*tkanmod,false,1.0,1.0);
+    if (tkammod!=null) kteffnew->Add(*tkammod,false,1.0,1.0);
+    if (tkaimod!=null) kteffnew->Add(*tkaimod,false,1.0,1.0);
+    if (tkaamod!=null) kteffnew->Add(*tkaamod,false,1.0,1.0);
+  }
+  else if (ftype=="stick")
+  {
+    // add matrix of tangents to kteffnew
+    if (tmatrix_!=null) kteffnew->Add(*tmatrix_,false,1.0,1.0);
+  }
+  else
+    dserror("ERROR: Evaluate: Invalid type of friction law");
   
   // FillComplete kteffnew (square)
   kteffnew->Complete();
@@ -835,18 +945,21 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
   RCP<Epetra_Vector> tfamodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
   if (fimod!=null) LINALG::Export(*fimod,*fimodexp);
   if (tfamod!=null) LINALG::Export(*tfamod,*tfamodexp);
-#ifndef CONTACTSTICKING
-  feffnew->Update(1.0,*fimodexp,1.0,*tfamodexp,1.0);
-#else
-  feffnew->Update(1.0,*fimodexp,0.0,*tfamodexp,1.0);
-#endif // #ifndef CONTACTSTICKING
   
-#ifndef CONTACTMESHTYING
-  // add weighted gap vector to feffnew, if existing
-  RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-  if (gact->GlobalLength()) LINALG::Export(*gact,*gexp);
-  feffnew->Update(1.0,*gexp,1.0);
-#endif // #ifndef CONTACTMESHTYING
+  if (ftype=="none")
+   feffnew->Update(1.0,*fimodexp,1.0,*tfamodexp,1.0);
+  else if (ftype=="stick")
+    feffnew->Update(1.0,*fimodexp,0.0,*tfamodexp,1.0);
+  else
+    dserror("ERROR: Evaluate: Invalid type of friction law");
+  
+  if (ctype!="meshtying")
+  {
+    // add weighted gap vector to feffnew, if existing
+    RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+    if (gact->GlobalLength()) LINALG::Export(*gact,*gexp);
+    feffnew->Update(1.0,*gexp,1.0);
+  }
   
   /**********************************************************************/
   /* Replace kteff and feff by kteffnew and feffnew                   */
@@ -874,6 +987,10 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // because there are still problems with the transposed version of
   // MLMultiply if a row has no entries! One day we should use ML...
   
+  // input parameters
+  string ctype   = scontact_.get<string>("contact type","none");
+  string ftype   = scontact_.get<string>("friction type","none");
+    
   /**********************************************************************/
   /* evaluate interfaces                                                */
   /* (nodal normals, projections, Mortar integration, Mortar assembly)  */
@@ -1172,7 +1289,6 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
   // nmatrix: nothing to do
   
-#ifndef CONTACTSTICKING
   // kan: multiply with tmatrix
   RCP<LINALG::SparseMatrix> kanmod = LINALG::Multiply(*tmatrix_,false,*kan,false,true);
   
@@ -1184,10 +1300,9 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
       
   // kaa: multiply with tmatrix
   RCP<LINALG::SparseMatrix> kaamod = LINALG::Multiply(*tmatrix_,false,*kaa,false,true);
-#else
+  
   // t*mbaractive: do the multiplication
   RCP<LINALG::SparseMatrix> tmhata = LINALG::Multiply(*tmatrix_,false,*mhata,false,true);
-#endif // #ifndef CONTACTSTICKING
   
   // fn: nothing to do
   
@@ -1233,17 +1348,22 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // add matrix n to kteffnew
   if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmatrix_,false,1.0,1.0);
     
-#ifndef CONTACTSTICKING
-  // add a submatrices to kteffnew
-  if (gactivet_->NumGlobalElements()) kteffnew->Add(*kanmod,false,1.0,1.0);
-  if (gactivet_->NumGlobalElements()) kteffnew->Add(*kammod,false,1.0,1.0);
-  if (gactivet_->NumGlobalElements()) kteffnew->Add(*kaimod,false,1.0,1.0);
-  if (gactivet_->NumGlobalElements()) kteffnew->Add(*kaamod,false,1.0,1.0);
-#else
-  // add matrices t and tmhata to kteffnew
-  if (gactivet_->NumGlobalElements()) kteffnew->Add(*tmatrix_,false,1.0,1.0);
-  if (gactivet_->NumGlobalElements()) kteffnew->Add(*tmhata,false,-1.0,1.0);
-#endif // #ifdef CONTACTSTICKING
+  if (ftype=="none")
+  {
+    // add a submatrices to kteffnew
+    if (gactivet_->NumGlobalElements()) kteffnew->Add(*kanmod,false,1.0,1.0);
+    if (gactivet_->NumGlobalElements()) kteffnew->Add(*kammod,false,1.0,1.0);
+    if (gactivet_->NumGlobalElements()) kteffnew->Add(*kaimod,false,1.0,1.0);
+    if (gactivet_->NumGlobalElements()) kteffnew->Add(*kaamod,false,1.0,1.0);
+  }
+  else if (ftype=="stick")
+  {
+    // add matrices t and tmhata to kteffnew
+    if (gactivet_->NumGlobalElements()) kteffnew->Add(*tmatrix_,false,1.0,1.0);
+    if (gactivet_->NumGlobalElements()) kteffnew->Add(*tmhata,false,-1.0,1.0);
+  }
+  else
+    dserror("ERROR: Evaluate: Invalid type of friction law");
   
   // FillComplete kteffnew (square)
   kteffnew->Complete();
@@ -1263,20 +1383,27 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::Export(*fi,*fiexp);
   if (gidofs->NumGlobalElements()) feffnew->Update(1.0,*fiexp,1.0);
   
-#ifndef CONTACTMESHTYING
-  // add weighted gap vector to feffnew, if existing
-  RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-  LINALG::Export(*gact,*gexp);
-  if (gact->GlobalLength()) feffnew->Update(1.0,*gexp,1.0);
-#endif // #ifndef CONTACTMESHTYING
+  if (ctype!="meshtying")
+  {
+    // add weighted gap vector to feffnew, if existing
+    RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+    LINALG::Export(*gact,*gexp);
+    if (gact->GlobalLength()) feffnew->Update(1.0,*gexp,1.0);
+  }
   
-#ifndef CONTACTSTICKING
-  // add a subvector to feffnew
-  RCP<Epetra_Vector> famodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-  LINALG::Export(*famod,*famodexp);
-  if (gactivenodes_->NumGlobalElements())feffnew->Update(1.0,*famodexp,1.0);
-#endif // #ifndef CONTACTSTICKING
-    
+  if (ftype=="none")
+  {
+    // add a subvector to feffnew
+    RCP<Epetra_Vector> famodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+    LINALG::Export(*famod,*famodexp);
+    if (gactivenodes_->NumGlobalElements())feffnew->Update(1.0,*famodexp,1.0);
+  }
+  else if (ftype=="stick")
+  {
+    // do nothing here
+  }
+  else
+    dserror("ERROR: Invalid type of friction law");  
   
   /**********************************************************************/
   /* Replace kteff and feff by kteffnew and feffnew                     */
@@ -1294,9 +1421,25 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
 }
 
 /*----------------------------------------------------------------------*
- |  Transform displacement increment vector (public)          popp 02/08|
+ |  Recover disp function (public)                            popp 04/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
+{ 
+  // check if basis transformation should be applied
+  bool btrafo = scontact_.get<bool>("basis transformation",false);
+  
+  if (btrafo)
+    RecoverDispBasisTrafo(disi);
+  else
+    RecoverDispNoBasisTrafo(disi);
+    
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Transform displacement increment vector (public)          popp 02/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::RecoverDispBasisTrafo(RCP<Epetra_Vector>& disi)
 { 
 #ifdef CONTACTCHECKHUEEBER
   // debugging (check S. Hüeber)
@@ -1460,6 +1603,9 @@ void CONTACT::Manager::RecoverDispNoBasisTrafo(RCP<Epetra_Vector>& disi)
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dism)
 {
+  // get input parameter ctype
+  string ctype   = scontact_.get<string>("contact type","none");
+  
   // assume that active set has converged and check for opposite
   activesetconv_=true;
   
@@ -1536,13 +1682,16 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
         //if (nz<0) // no averaging of Lagrange multipliers
         if ((0.5*nz+0.5*nzold)<0) // averaging of Lagrange multipliers
         {
-#ifndef CONTACTMESHTYING
-          cnode->Active() = false;
-          activesetconv_ = false;
-#else
-          cnode->Active() = true; //set all nodes active for mesh tying
-          activesetconv_ = true;  //no active set loop for mesh tying
-#endif // #ifndef CONTACTMESHTYING
+          if (ctype!="meshtying")
+          {
+            cnode->Active() = false;
+            activesetconv_ = false;
+          }
+          else
+          {
+            cnode->Active() = true;   // set all nodes active for mesh tying
+            activesetconv_ = true;    // no active set loop for mesh tying
+          }
         }
         
         cout << "ACTIVE: " << i << " " << j << " " << gid << " "

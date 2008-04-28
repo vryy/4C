@@ -71,7 +71,7 @@ namespace CONTACT
 /*----------------------------------------------------------------------*
   | structural nonlinear static with contact                popp 03/08  |
  *----------------------------------------------------------------------*/
-void contact_stru_static_drt(bool initialcontact)
+void contact_stru_static_drt()
 {
   // -------------------------------------------------------------------
   // access the discretization
@@ -91,7 +91,7 @@ void contact_stru_static_drt(bool initialcontact)
   if (!contactconditions.size()) dserror("No contact boundary conditions present");
   
   // create contact manager to organize all contact-related things
-  contactmanager = rcp(new CONTACT::Manager(*actdis,initialcontact));
+  contactmanager = rcp(new CONTACT::Manager(*actdis));
   
   // -------------------------------------------------------------------
   // get a communicator and myrank
@@ -254,6 +254,22 @@ void contact_stru_static_drt(bool initialcontact)
     iostress = "none";
     break;
   }
+  string iostrain;
+  switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
+  {
+  case struct_strain_none:
+    iostrain = "none";
+    break;
+  case struct_strain_gl:
+    iostrain = "green_lagrange";
+    break;
+  case struct_strain_ea:
+    iostrain = "euler_almansi";
+    break;
+  default:
+    iostrain = "none";
+    break;
+  }
   if (!mod_stress && iostress!="none")
   {
     // create the parameters for the discretization
@@ -275,6 +291,7 @@ void contact_stru_static_drt(bool initialcontact)
     {
       p.set("cauchy", false);
     }
+    p.set("iostrain", iostrain);
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("residual displacement",zeros);
@@ -282,16 +299,19 @@ void contact_stru_static_drt(bool initialcontact)
     actdis->Evaluate(p,null,null,null,null,null);
     actdis->ClearState();
     if (iostress == "cauchy")
-    {
       output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementColMap()));
-    }
     else
-    {
       output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
-    }
-    if (Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRAIN")==1)
+    if (iostrain != "none")
     {
-      output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+      if (iostrain == "euler_almansi")
+      {
+        output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
+      }
+      else
+      {
+        output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+      }
     }
   }
 
@@ -384,11 +404,7 @@ void contact_stru_static_drt(bool initialcontact)
           contactmanager->SetState("displacement",disn);
   
           // (almost) all contact stuff is done here!
-#ifdef CONTACTBASISTRAFO
           contactmanager->Evaluate(stiff_mat,fresm,numiter);
-#else
-          contactmanager->EvaluateNoBasisTrafo(stiff_mat,fresm,numiter);
-#endif // #ifdef CONTACTBASISTRAFO
         }
         
         //----------------------- apply dirichlet BCs to system of equations
@@ -409,11 +425,7 @@ void contact_stru_static_drt(bool initialcontact)
         
         //------------------------------------ transform disi due to contact
         {
-#ifdef CONTACTBASISTRAFO
           contactmanager->RecoverDisp(disi);
-#else
-          contactmanager->RecoverDispNoBasisTrafo(disi);
-#endif // #ifdef CONTACTBASISTRAFO
         }
         
         // update displacements
@@ -569,6 +581,22 @@ void contact_stru_static_drt(bool initialcontact)
       iostress = "none";
       break;
     }
+    string iostrain;
+    switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
+    {
+    case struct_strain_none:
+      iostrain = "none";
+      break;
+    case struct_strain_gl:
+      iostrain = "green_lagrange";
+      break;
+    case struct_strain_ea:
+      iostrain = "euler_almansi";
+      break;
+    default:
+      iostrain = "none";
+      break;
+    }
     if (!mod_stress && iostress!="none")
     {
       // create the parameters for the discretization
@@ -582,7 +610,7 @@ void contact_stru_static_drt(bool initialcontact)
       Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
       p.set("stress", stress);
       p.set("strain", strain);
-      if (iostress=="cauchy")   // output of Cauchy stresses instead of 2PK stresses
+      if (iostress == "cauchy")   // output of Cauchy stresses instead of 2PK stresses
       {
         p.set("cauchy", true);
       }
@@ -590,25 +618,27 @@ void contact_stru_static_drt(bool initialcontact)
       {
         p.set("cauchy", false);
       }
+      p.set("iostrain", iostrain);
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("residual displacement",zeros);
       actdis->SetState("displacement",dis);
       actdis->Evaluate(p,null,null,null,null,null);
       actdis->ClearState();
-      if (!isdatawritten) output.NewStep(istep, timen);
-      isdatawritten = true;
-      if (iostress=="cauchy")
-      {
+      if (iostress == "cauchy")
         output.WriteVector("gauss_cauchy_stresses_xyz",*stress,*(actdis->ElementColMap()));
-      }
       else
-      {
         output.WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis->ElementColMap()));
-      }
-      if (Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRAIN")==1)
+      if (iostrain != "none")
       {
-        output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+        if (iostrain == "euler_almansi")
+        {
+          output.WriteVector("gauss_EA_strains_xyz",*strain,*(actdis->ElementColMap()));
+        }
+        else
+        {
+          output.WriteVector("gauss_GL_strains_xyz",*strain,*(actdis->ElementColMap()));
+        }
       }
     }
 

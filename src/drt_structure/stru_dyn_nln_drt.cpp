@@ -173,9 +173,6 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("tolerance residual",sdyn.get<double>("TOLRES"));
       genalphaparams.set<double>("tolerance constraint",sdyn.get<double>("TOLCONSTR"));
 
-      genalphaparams.set<bool>  ("contact",Teuchos::getIntegralValue<int>(scontact,"CONTACT"));
-      genalphaparams.set<bool>  ("init contact",Teuchos::getIntegralValue<int>(scontact,"INIT_CONTACT"));
-
       genalphaparams.set<double>("uzawa parameter",sdyn.get<double>("UZAWAPARAM"));
       genalphaparams.set<int>   ("uzawa maxiter",sdyn.get<int>("UZAWAMAXITER"));
       genalphaparams.set<string>("uzawa algorithm",sdyn.get<string>("UZAWAALGO"));
@@ -263,9 +260,29 @@ void dyn_nlnstructural_drt()
           dserror("Cannot cope with choice of predictor");
           break;
       }
-
+      
+      // detect if contact is present
+      bool contact = false;
+      switch (Teuchos::getIntegralValue<int>(scontact,"CONTACT"))
+      {
+        case INPUTPARAMS::contact_none:
+          contact = false;
+          break;
+        case INPUTPARAMS::contact_normal:
+          contact = true;
+          break;
+        case INPUTPARAMS::contact_frictional:
+          contact = true;
+          break;
+        case INPUTPARAMS::contact_meshtying:
+          contact = true;
+          break;
+        default:
+          dserror("Cannot cope with choice of contact type");
+          break;
+      }
+      
       // create the time integrator
-      bool contact = genalphaparams.get("contact",false);
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator;
       if (!contact && !inv_analysis)

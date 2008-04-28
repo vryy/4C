@@ -27,11 +27,6 @@ ContactStruGenAlpha::ContactStruGenAlpha(ParameterList& params,
 StruGenAlpha(params,dis,solver,output)
 {
   // -------------------------------------------------------------------
-  // see whether we assume initial contact at t=0
-  // -------------------------------------------------------------------
-  bool initialcontact = params_.get<bool>("init contact",false);
-
-  // -------------------------------------------------------------------
   // see whether we have contact boundary conditions
   // and create contact manager if so
   // -------------------------------------------------------------------
@@ -39,7 +34,7 @@ StruGenAlpha(params,dis,solver,output)
     vector<DRT::Condition*> contactconditions(0);
     discret_.GetCondition("Contact",contactconditions);
     if (!contactconditions.size()) dserror("No contact boundary conditions present");
-    contactmanager_ = rcp(new CONTACT::Manager(discret_,initialcontact));
+    contactmanager_ = rcp(new CONTACT::Manager(discret_));
   }
   return;
 } // ContactStruGenAlpha::ContactStruGenAlpha
@@ -498,11 +493,7 @@ void ContactStruGenAlpha::FullNewton()
       contactmanager_->SetState("displacement",dism_);
 
       // (almost) all contact stuff is done here!
-#ifdef CONTACTBASISTRAFO
       contactmanager_->Evaluate(stiff_,fresm_,numiter);
-#else
-      contactmanager_->EvaluateNoBasisTrafo(stiff_,fresm_,numiter);
-#endif // #ifdef CONTACTBASISTRAFO
     }
 
     //----------------------- apply dirichlet BCs to system of equations
@@ -518,11 +509,7 @@ void ContactStruGenAlpha::FullNewton()
 
     //------------------------------------ transform disi due to contact
     {
-#ifdef CONTACTBASISTRAFO
       contactmanager_->RecoverDisp(disi_);
-#else
-      contactmanager_->RecoverDispNoBasisTrafo(disi_);
-#endif // #ifdef CONTACTBASISTRAFO
     }
 
     //---------------------------------- update mid configuration values

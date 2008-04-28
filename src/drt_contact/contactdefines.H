@@ -21,9 +21,6 @@ Maintainer: Alexander Popp
 
 #define CONTACTWNORMAL           /* flag for weighted nodal normal calc. */
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
-//#define CONTACTBASISTRAFO      /* flag for contact basis transformation */
-//#define CONTACTSTICKING        /* flag for tangential sticking condition */
-//#define CONTACTMESHTYING       /* flag for mesh tying algorithms */
 //#define CONTACTONEMORTARLOOP   /* flag for computation of D,M matrices */
 
 /************************************************************************/
@@ -46,7 +43,7 @@ Maintainer: Alexander Popp
 
 namespace CONTACT {
   // static solution routine
-  void contact_stru_static_drt(bool initialcontact);
+  void contact_stru_static_drt();
 }
 
 #endif  // #ifndef CONTACTDEFINES_H

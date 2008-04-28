@@ -25,6 +25,7 @@ Maintainer: Moritz Frenzel
 #include "stru_static_drt.H"
 #include "../io/io_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_validparameters.H"
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "stru_resulttest.H"
 
@@ -80,13 +81,32 @@ void stru_static_drt()
   // check for contact case
   // -------------------------------------------------------------------
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
-  bool contact = Teuchos::getIntegralValue<int>(scontact,"CONTACT");
-  bool initialcontact = Teuchos::getIntegralValue<int>(scontact,"INIT_CONTACT");
+ 
+  // detect if contact is present
+  bool contact = false;
+  switch (Teuchos::getIntegralValue<int>(scontact,"CONTACT"))
+  {
+    case INPUTPARAMS::contact_none:
+      contact = false;
+      break;
+    case INPUTPARAMS::contact_normal:
+      contact = true;
+      break;
+    case INPUTPARAMS::contact_frictional:
+      contact = true;
+      break;
+    case INPUTPARAMS::contact_meshtying:
+      contact = true;
+      break;
+    default:
+      dserror("Cannot cope with choice of contact type");
+      break;
+  }
 
   if (contact)
   {
     // leave and call special routine for statics with contact
-    CONTACT::contact_stru_static_drt(initialcontact);
+    CONTACT::contact_stru_static_drt();
     return;
   }
 

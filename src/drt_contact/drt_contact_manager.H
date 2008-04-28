@@ -54,9 +54,8 @@ public:
   input discretization.
   
   \param discret (in): A discretization containing contact boundary conditions
-  \param initialcontact (in): true, if contact at t=0 assumed (full active set)
   */
-  explicit Manager(DRT::Discretization& discret, bool initialcontact);
+  explicit Manager(DRT::Discretization& discret);
 
 
   /*!
@@ -139,11 +138,17 @@ public:
   //! @name Evaluation methods
   
   /*!
-  \brief Write restart information for contact
+  \brief Read and check contact input parameters
   
   */
-  RCP<Epetra_Vector> WriteRestart();
+  bool ReadAndCheckInput();
   
+  /*!
+  \brief Write restart information for contact
+    
+  */
+  RCP<Epetra_Vector> WriteRestart();
+    
   /*!
   \brief Read restart information for contact
   
@@ -175,6 +180,12 @@ public:
     
   /*!
   \brief Evaluate contact
+        
+  */
+  void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
+  
+  /*!
+  \brief Evaluate contact (with basis transformation)
   
   This is the main routine of our contact algorithms on a global level.
   It includes the evaluation of the current Mortar operators D and M
@@ -185,7 +196,7 @@ public:
   splitting and a lot of matrix-vector calculation is done! 
    
   */
-  void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
+  void EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
   
   /*!
   \brief Evaluate contact (without basis transformation)
@@ -195,6 +206,12 @@ public:
     
   /*!
   \brief Transform displacement increment vector
+  
+  */
+  void RecoverDisp(RCP<Epetra_Vector>& disi);
+    
+  /*!
+  \brief Transform displacement increment vector (with basis transformation)
   
   During the setup of the global tangent stiffness the so-called basis
   transformation introduced the incremental jump of displacements
@@ -207,7 +224,7 @@ public:
   statically condensated during the setup of the global problem!
   
   */
-  void RecoverDisp(RCP<Epetra_Vector>& disi);
+  void RecoverDispBasisTrafo(RCP<Epetra_Vector>& disi);
   
   /*!
   \brief RecoverDisp (without basis transformation)
@@ -245,6 +262,7 @@ protected:
 
   DRT::Discretization&               discret_;        // the underlying problem discretization
   vector<RCP<CONTACT::Interface> >   interface_;      // contact interfaces
+  Teuchos::ParameterList             scontact_;       // containing contact input parameters
   
   RCP<Epetra_Map>                    gsnoderowmap_;   // global slave node row map (of all interfaces)
   RCP<Epetra_Map>                    gsdofrowmap_;    // global slave dof row map (of all interfaces)

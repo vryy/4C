@@ -441,8 +441,37 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scontact = list->sublist("STRUCTURAL CONTACT",false,"");
 
-  setStringToIntegralParameter("CONTACT","No","",yesnotuple,yesnovalue,&scontact);
-  setStringToIntegralParameter("INIT_CONTACT","No","",yesnotuple,yesnovalue,&scontact);
+  setStringToIntegralParameter("CONTACT","None","Type of structural contact",
+                               tuple<std::string>("None","none",
+                                                  "Normal","normal",
+                                                  "Frictional","frictional",
+                                                  "MeshTying","Meshtying","meshtying"),
+                               tuple<int>(INPUTPARAMS::contact_none,INPUTPARAMS::contact_none,
+                                          INPUTPARAMS::contact_normal,INPUTPARAMS::contact_normal,
+                                          INPUTPARAMS::contact_frictional,INPUTPARAMS::contact_frictional,
+                                          INPUTPARAMS::contact_meshtying,INPUTPARAMS::contact_meshtying,
+                                          INPUTPARAMS::contact_meshtying),
+                               &scontact);
+  
+  setStringToIntegralParameter("INIT_CONTACT","No","If chosen all slave nodes are set active at t=0",
+                               yesnotuple,yesnovalue,&scontact);
+  
+  setStringToIntegralParameter("BASISTRAFO","No","If chosen basis transformation is applied to displacements",
+                                yesnotuple,yesnovalue,&scontact);
+  
+  setStringToIntegralParameter("FRICTION","None","Type of friction law",
+                                tuple<std::string>("None","none",
+                                                   "Stick","stick",
+                                                   "Tresca","tresca",
+                                                   "Coulomb","coulomb"),
+                                tuple<int>(INPUTPARAMS::friction_none,INPUTPARAMS::friction_none,
+                                           INPUTPARAMS::friction_stick,INPUTPARAMS::friction_stick,
+                                           INPUTPARAMS::friction_tresca,INPUTPARAMS::friction_tresca,
+                                           INPUTPARAMS::friction_coulomb,INPUTPARAMS::friction_coulomb),
+                                &scontact);
+  
+  DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
+  DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
