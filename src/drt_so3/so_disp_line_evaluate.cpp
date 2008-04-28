@@ -33,18 +33,18 @@ int DRT::ELEMENTS::SoDispLine::Evaluate(	ParameterList& params,
                                     		Epetra_SerialDenseVector& elevec2,
                                     		Epetra_SerialDenseVector& elevec3)
 {
-	DRT::ELEMENTS::SoDispLine::ActionType act = SoDispLine::none;
-	string action = params.get<string>("action","none");
-	if (action == "none") dserror("No action supplied");
-  	else dserror("Unknown type of action for SoDisp_Line");
+  DRT::ELEMENTS::SoDispLine::ActionType act = SoDispLine::none;
+  string action = params.get<string>("action","none");
+  if (action == "none") dserror("No action supplied");
+  else dserror("Unknown type of action for SoDisp_Line");
   	
-    switch(act)
-    {
-    default:
-        dserror("Unknown type of action for SoDisp_Line");
-  	} // end of switch(act)
+  switch(act)
+  {
+  default:
+    dserror("Unknown type of action for SoDisp_Line");
+  } // end of switch(act)
     
-  	return 0;
+  return 0;
 }
 
 
@@ -57,8 +57,8 @@ int DRT::ELEMENTS::SoDispLine::EvaluateNeumann(	ParameterList& params,
                                            		vector<int>&              lm,
                                            		Epetra_SerialDenseVector& elevec1)
 {  
- 	dserror("Neumann condition on line not implemented");
-	return 0;
+  dserror("Neumann condition on line not implemented");
+  return 0;
 }
 
 
