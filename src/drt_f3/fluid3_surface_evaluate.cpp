@@ -300,7 +300,7 @@ void  DRT::ELEMENTS::Fluid3Surface::f3_metric_tensor_for_surface(
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate shapefunctions over surface (private)          g.bau 07/07|
+ |  Integrate shapefunctions over surface (private)            gjb 07/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
                   DRT::Discretization&       discretization,
@@ -310,16 +310,8 @@ void DRT::ELEMENTS::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
 {
   // there are 3 velocities and 1 pressure
   const int numdf = 4;
-printf("here");
-//  const double thsl = params.get("thsl",1.0);
 
   const DiscretizationType distype = this->Shape();
-
-/*  // find out whether we will use a time curve
-  bool usetime = true;
-  const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
-*/
 
   // set number of nodes
   const int iel   = this->NumNode();
@@ -345,13 +337,13 @@ printf("here");
 
     // allocate vector for shape functions and matrix for derivatives
   Epetra_SerialDenseVector      funct       (iel);
-  Epetra_SerialDenseMatrix 	deriv       (2,iel);
+  Epetra_SerialDenseMatrix      deriv       (2,iel);
 
   // node coordinates
   Epetra_SerialDenseMatrix      xyze        (3,iel);
 
   // the metric tensor and the area of an infintesimal surface element
-  Epetra_SerialDenseMatrix 	metrictensor(2,2);
+  Epetra_SerialDenseMatrix      metrictensor(2,2);
   double                        drs;
 
   // get node coordinates
@@ -394,19 +386,15 @@ printf("here");
     f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
 
     // values are multiplied by the product from inf. area element,
-    // the gauss weight and the constant
-    // belonging to the time integration algorithm (theta*dt for
-    // one step theta, 2/3 for bdf with dt const.)
+    // the gauss weight 
 
-    //const double fac = intpoints.qwgt[gpid] * drs * thsl;
     const double fac = intpoints.qwgt[gpid] * drs;
 
     for (int node=0;node<iel;++node)
     {
       for(int dim=0;dim<3;dim++)
       {
-        elevec1[node*numdf+dim]+=
-          funct[node] * fac;
+        elevec1[node*numdf+dim]+= funct[node] * fac;
       }
     }
 
