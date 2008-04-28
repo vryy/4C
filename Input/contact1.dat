@@ -68,8 +68,12 @@ TOLRES		 1.0E-06
 TOLDISP      1.0E-06
 MAXITER      50
 ------------------------------------------------STRUCTURAL CONTACT
-CONTACT        Yes
+CONTACT        Normal
 INIT_CONTACT   No
+BASISTRAFO     No
+FRICTION       None
+FRBOUND        0.0
+FRCOEFF        0.0
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
