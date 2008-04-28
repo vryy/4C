@@ -282,6 +282,7 @@ bool CONTACT::Manager::ReadAndCheckInput()
   // read parameter list from DRT::Problem
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->StructuralContactParams();
   
+  // read contact type
   switch (Teuchos::getIntegralValue<int>(input,"CONTACT"))
   {
     case INPUTPARAMS::contact_none:
@@ -301,9 +302,11 @@ bool CONTACT::Manager::ReadAndCheckInput()
       break;
   }
   
+  // read initial contact and basis trafo flags
   scontact_.set<bool> ("initial contact",Teuchos::getIntegralValue<int>(input,"INIT_CONTACT"));
   scontact_.set<bool> ("basis transformation",Teuchos::getIntegralValue<int>(input,"BASISTRAFO"));
   
+  // read friction type
   switch (Teuchos::getIntegralValue<int>(input,"FRICTION"))
   {
     case INPUTPARAMS::friction_none:
@@ -323,6 +326,7 @@ bool CONTACT::Manager::ReadAndCheckInput()
       break;
   }
   
+  // read friction parameters
   scontact_.set<double> ("friction bound",input.get<double>("FRBOUND"));
   scontact_.set<double> ("friction coefficient",input.get<double>("FRCOEFF"));
   
@@ -334,6 +338,7 @@ bool CONTACT::Manager::ReadAndCheckInput()
   //double frbound = scontact_.get<double>("friction bound",0.0);
   //double frcoeff = scontact_.get<double>("friction coeffiecient",0.0);
   
+  // invalid parameter combinations
   if (ctype=="normal" && ftype !="none")
     dserror("Friction law supplied for normal contact");
   if (ctype=="frictional" && ftype=="none")
@@ -341,7 +346,9 @@ bool CONTACT::Manager::ReadAndCheckInput()
   if (ctype=="frictional" && ftype=="tresca")
     dserror("Tresca friction law not yet implemented");
   if (ctype=="frictional" && ftype=="coulomb")
-      dserror("Coulomb friction law not yet implemented");
+    dserror("Coulomb friction law not yet implemented");
+  
+  // overrule input in certain cases
   if (ctype=="meshtying" && !init)
     scontact_.set<bool>("initial contact",true);
   if (ctype=="meshtying" && ftype!="stick")
