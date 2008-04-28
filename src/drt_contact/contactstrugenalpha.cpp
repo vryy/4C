@@ -20,10 +20,10 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/07|
  *----------------------------------------------------------------------*/
-ContactStruGenAlpha::ContactStruGenAlpha(ParameterList& params,
-                                         DRT::Discretization& dis,
-                                         LINALG::Solver& solver,
-                                         IO::DiscretizationWriter& output) :
+CONTACT::ContactStruGenAlpha::ContactStruGenAlpha(ParameterList& params,
+                                                  DRT::Discretization& dis,
+                                                  LINALG::Solver& solver,
+                                                  IO::DiscretizationWriter& output) :
 StruGenAlpha(params,dis,solver,output)
 {
   // -------------------------------------------------------------------
@@ -43,7 +43,7 @@ StruGenAlpha(params,dis,solver,output)
 /*----------------------------------------------------------------------*
  |  do consistent predictor step (public)                    mwgee 07/07|
  *----------------------------------------------------------------------*/
-void ContactStruGenAlpha::ConsistentPredictor()
+void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -249,7 +249,7 @@ void ContactStruGenAlpha::ConsistentPredictor()
 /*----------------------------------------------------------------------*
  |  do constant predictor step (public)                      mwgee 03/07|
  *----------------------------------------------------------------------*/
-void ContactStruGenAlpha::ConstantPredictor()
+void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 {
 
   // -------------------------------------------------------------------
@@ -437,7 +437,7 @@ void ContactStruGenAlpha::ConstantPredictor()
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             mwgee 03/07|
  *----------------------------------------------------------------------*/
-void ContactStruGenAlpha::FullNewton()
+void CONTACT::ContactStruGenAlpha::FullNewton()
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -650,7 +650,7 @@ void ContactStruGenAlpha::FullNewton()
 /*----------------------------------------------------------------------*
  |  do pseudo transient continuation (public)                mwgee 03/07|
  *----------------------------------------------------------------------*/
-void ContactStruGenAlpha::PTC()
+void CONTACT::ContactStruGenAlpha::PTC()
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -915,7 +915,7 @@ void ContactStruGenAlpha::PTC()
 /*----------------------------------------------------------------------*
  |  do update and output (public)                            mwgee 03/07|
  *----------------------------------------------------------------------*/
-void ContactStruGenAlpha::UpdateandOutput()
+void CONTACT::ContactStruGenAlpha::UpdateandOutput()
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -1115,7 +1115,7 @@ void ContactStruGenAlpha::UpdateandOutput()
 /*----------------------------------------------------------------------*
  |  integrate in time          (static/public)               popp  02/08|
  *----------------------------------------------------------------------*/
-void ContactStruGenAlpha::Integrate()
+void CONTACT::ContactStruGenAlpha::Integrate()
 {
   int    step  = params_.get<int>   ("step" ,0);
   int    nstep = params_.get<int>   ("nstep",5);
@@ -1199,7 +1199,7 @@ void ContactStruGenAlpha::Integrate()
 /*----------------------------------------------------------------------*
  |  read restart (public)                                    mwgee 06/07|
  *----------------------------------------------------------------------*/
-void ContactStruGenAlpha::ReadRestart(int step)
+void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
 {
   RCP<DRT::Discretization> rcpdiscret = rcp(&discret_);
   rcpdiscret.release();

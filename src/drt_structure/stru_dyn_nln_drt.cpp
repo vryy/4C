@@ -290,7 +290,7 @@ void dyn_nlnstructural_drt()
       else 
       {
         if (!inv_analysis)
-          tintegrator = rcp(new ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
+          tintegrator = rcp(new CONTACT::ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
         else
           tintegrator = rcp(new Inv_analysis(genalphaparams,*actdis,solver,output));
       }

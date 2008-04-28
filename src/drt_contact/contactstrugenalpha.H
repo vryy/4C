@@ -15,6 +15,11 @@ Maintainer: Alexander Popp
 
 #include "../drt_structure/strugenalpha.H"
 
+namespace CONTACT
+{
+
+// forward declarations
+
 /*!
 \brief Generalized Alpha time integration for structural problems with contact
 
@@ -94,6 +99,7 @@ protected:
   RCP<CONTACT::Manager>         contactmanager_;
 
 }; // class ContactStruGenAlpha
+} // namespace CONTACT
 
 #endif  // #ifndef CONTACTSTRUGENALPHA_H
 #endif  // #ifdef CCADISCRET
