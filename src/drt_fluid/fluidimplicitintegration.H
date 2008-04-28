@@ -437,7 +437,7 @@ protected:
   RCP<PeriodicBoundaryConditions> pbc_;
 
   /// connection between master and slave nodes on this proc
-  map<int,vector<int> >     mapmastertoslave_;
+  map<int,vector<int> >     pbcmapmastertoslave_;
 
   /// my elements grouped for faster evaluation
   RCP<DRT::EGROUP::ElementGroupManager> egm_;

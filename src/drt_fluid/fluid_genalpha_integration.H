@@ -785,7 +785,7 @@ private:
   //         --------------------------------------------------------
   //
   //! the connection between master and slave nodes on this proc
-  map<int,vector<int> >     mapmastertoslave_;
+  map<int,vector<int> >     pbcmapmastertoslave_;
   //@}
 
   //! @name vectors used for filtering (for dynamic Smagorinsky model)

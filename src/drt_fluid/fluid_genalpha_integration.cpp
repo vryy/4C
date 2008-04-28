@@ -103,7 +103,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   PeriodicBoundaryConditions::PeriodicBoundaryConditions pbc(discret_);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
 
-  mapmastertoslave_ = pbc.ReturnAllCoupledNodesOnThisProc();
+  pbcmapmastertoslave_ = pbc.ReturnAllCoupledNodesOnThisProc();
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
@@ -1551,10 +1551,10 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
             // yes, we have one
 
             // get the list of all his slavenodes
-            map<int, vector<int> >::iterator master = mapmastertoslave_.find(lnode->Id());
+            map<int, vector<int> >::iterator master = pbcmapmastertoslave_.find(lnode->Id());
 
             // slavenodes are ignored
-            if(master == mapmastertoslave_.end())
+            if(master == pbcmapmastertoslave_.end())
             {
               // the node is a slave --- so don't do anything
               continue;
@@ -2114,10 +2114,10 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     if (mypbc.size()>0)
     {
       // get the list of all his slavenodes
-      map<int, vector<int> >::iterator master = mapmastertoslave_.find(lnode->Id());
+      map<int, vector<int> >::iterator master = pbcmapmastertoslave_.find(lnode->Id());
 
       // slavenodes are ignored
-      if(master == mapmastertoslave_.end())
+      if(master == pbcmapmastertoslave_.end())
       {
         // the node is a slave --- so don't do anything
         continue;
@@ -2139,10 +2139,10 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     // slavenodes are treated like they were identical!
     if(ispbcmaster == true)
     {
-      for (unsigned slavecount = 0;slavecount<mapmastertoslave_[lnode->Id()].size();++slavecount)
+      for (unsigned slavecount = 0;slavecount<pbcmapmastertoslave_[lnode->Id()].size();++slavecount)
       {
         // get the corresponding slavenodes
-        DRT::Node*  slavenode = discret_->gNode(mapmastertoslave_[lnode->Id()][slavecount]);
+        DRT::Node*  slavenode = discret_->gNode(pbcmapmastertoslave_[lnode->Id()][slavecount]);
 
         // add the elements
         for(int rr=0;rr<slavenode->NumElement();++rr)
@@ -2233,10 +2233,10 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
     // for masternodes, all slavenodes get the same values
     if (ispbcmaster == true)
     {
-      for (unsigned slavecount = 0;slavecount<mapmastertoslave_[lnode->Id()].size();++slavecount)
+      for (unsigned slavecount = 0;slavecount<pbcmapmastertoslave_[lnode->Id()].size();++slavecount)
       {
         // get the corresponding slavenodes
-        DRT::Node*  slavenode = discret_->gNode(mapmastertoslave_[lnode->Id()][slavecount]);
+        DRT::Node*  slavenode = discret_->gNode(pbcmapmastertoslave_[lnode->Id()][slavecount]);
 
         int    slaveid  = (slavenode->Id());
 

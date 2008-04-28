@@ -121,7 +121,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
   pbc_->UpdateDofsForPeriodicBoundaryConditions();
 
-  mapmastertoslave_ = pbc_->ReturnAllCoupledNodesOnThisProc();
+  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledNodesOnThisProc();
 
   // -------------------------------------------------------------------
   // Build element group. This might change some element orientations.
@@ -766,7 +766,7 @@ void FluidImplicitTimeInt::PrepareTimeStep()
   // -------------------------------------------------------------------
   //
   // We cannot have a predictor in case of monolithic FSI here. There needs to
-  // be a way to ture this off.
+  // be a way to turn this off.
   if (extrapolationpredictor_)
   {
     if (step_>1)
@@ -2032,10 +2032,10 @@ void FluidImplicitTimeInt::SetInitialFlowField(
           // yes, we have one
 
           // get the list of all his slavenodes
-          map<int, vector<int> >::iterator master = mapmastertoslave_.find(lnode->Id());
+          map<int, vector<int> >::iterator master = pbcmapmastertoslave_.find(lnode->Id());
 
           // slavenodes are ignored
-          if(master == mapmastertoslave_.end()) continue;
+          if(master == pbcmapmastertoslave_.end()) continue;
         }
 
         // add random noise on initial function field
