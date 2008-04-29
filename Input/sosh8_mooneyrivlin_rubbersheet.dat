@@ -49,10 +49,8 @@ OUTPUT_GID                      No
 OUTPUT_OUT                      Yes
 STRUCT_DISP                     Yes
 STRUCT_SM_DISP                  No
-STRUCT_SM_STRESS                No
 STRUCT_STRESS                   2PK
 STRUCT_STRAIN                   Yes
-STRUCT_STRESS_SMO               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 --------------------------------------------------------PROBLEM TYP
