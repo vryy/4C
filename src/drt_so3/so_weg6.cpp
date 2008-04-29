@@ -39,6 +39,10 @@ data_()
 #if defined(PRESTRESS) || defined(POSTSTRESS)  
   glprestrain_ = rcp(new Epetra_SerialDenseMatrix(NUMGPT_WEG6,NUMSTR_WEG6));
 #endif
+  invJ_.resize(NUMGPT_WEG6);
+  detJ_.resize(NUMGPT_WEG6);
+  for (int i=0; i<NUMGPT_WEG6; ++i)
+    invJ_[i].Shape(3,3);
   return;
 }
 
@@ -54,11 +58,18 @@ volume_(old.volume_),
 surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
-lineptrs_(old.lineptrs_)
+lineptrs_(old.lineptrs_),
+detJ_(old.detJ_)
 {
 #if defined(PRESTRESS) || defined(POSTSTRESS)  
   glprestrain_ = rcp(new Epetra_SerialDenseMatrix(*(old.glprestrain_)));
 #endif
+  invJ_.resize(old.invJ_.size());
+  for (int i=0; i<(int)invJ_.size(); ++i)
+  {
+    invJ_[i].Shape(old.invJ_[i].M(),old.invJ_[i].N());
+    invJ_[i] = old.invJ_[i];
+  }
   return;
 }
 
@@ -106,6 +117,15 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
   AddtoPack(data,*glprestrain_);
 #endif  
 
+  // detJ_
+  AddtoPack(data,detJ_);
+  
+  // invJ_
+  const int size = (int)invJ_.size();
+  AddtoPack(data,size);
+  for (int i=0; i<size; ++i)
+    AddtoPack(data,invJ_[i]);
+
   return;
 }
 
@@ -134,6 +154,14 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
 #if defined(PRESTRESS) || defined(POSTSTRESS)  
   ExtractfromPack(position,data,*glprestrain_);
 #endif  
+  // detJ_
+  ExtractfromPack(position,data,detJ_);
+  // invJ_
+  int size;
+  ExtractfromPack(position,data,size);
+  invJ_.resize(size);
+  for (int i=0; i<size; ++i)
+    ExtractfromPack(position,data,invJ_[i]);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -224,8 +252,9 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_weg6::ElementRegister() cons
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::So_weg6::Volumes()
 {
+  dserror("So_weg6 does not return volumes");
   volume_.resize(1);
-  return 0;
+  return NULL;
 }
 
  /*----------------------------------------------------------------------*

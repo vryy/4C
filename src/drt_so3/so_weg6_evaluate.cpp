@@ -319,7 +319,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_weg6::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::So_weg6::EvaluateNeumann(ParameterList&           params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -327,6 +327,46 @@ int DRT::ELEMENTS::So_weg6::EvaluateNeumann(ParameterList& params,
 {
   dserror("Body force of wedge6 not implemented");
   return 0;
+}
+
+/*----------------------------------------------------------------------*
+ |  init the element jacobian mapping (protected)              gee 04/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
+{
+/* pointer to (static) shape function array
+ * for each node, evaluated at each gp*/
+  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_WEG6][NUMGPT_WEG6]
+/* pointer to (static) shape function derivatives array
+ * for each node wrt to each direction, evaluated at each gp*/
+  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_WEG6*NUMDIM][NUMNOD_WEG6]
+/* pointer to (static) weight factors at each gp */
+  Epetra_SerialDenseVector* weights;  //[NUMGPT_WEG6]
+  sow6_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+
+  LINALG::SerialDenseMatrix xrefe(NUMNOD_WEG6,NUMDIM_WEG6);
+  for (int i=0; i<NUMNOD_WEG6; ++i)
+  {
+    xrefe(i,0) = Nodes()[i]->X()[0];
+    xrefe(i,1) = Nodes()[i]->X()[1];
+    xrefe(i,2) = Nodes()[i]->X()[2];
+  }
+  invJ_.resize(NUMGPT_WEG6);
+  detJ_.resize(NUMGPT_WEG6);
+  for (int gp=0; gp<NUMGPT_WEG6; ++gp)
+  {
+    // get submatrix of deriv at actual gp
+    LINALG::SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
+    for (int m=0; m<NUMDIM_WEG6; ++m) {
+      for (int n=0; n<NUMGPT_WEG6; ++n) {
+        deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
+      }
+    }
+    invJ_[gp].Shape(NUMDIM_WEG6,NUMDIM_WEG6);
+    invJ_[gp].Multiply('N','N',1.0,deriv_gp,xrefe,0.0);
+    detJ_[gp] = LINALG::NonsymInverse3x3(invJ_[gp]);
+  }
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -361,8 +401,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 /* ============================================================================*/
 
   // update element geometry
-  Epetra_SerialDenseMatrix xrefe(NUMNOD_WEG6,NUMDIM_WEG6);  // material coord. of element
-  Epetra_SerialDenseMatrix xcurr(NUMNOD_WEG6,NUMDIM_WEG6);  // current  coord. of element
+  LINALG::SerialDenseMatrix xrefe(NUMNOD_WEG6,NUMDIM_WEG6);  // material coord. of element
+  LINALG::SerialDenseMatrix xcurr(NUMNOD_WEG6,NUMDIM_WEG6);  // current  coord. of element
   for (int i=0; i<NUMNOD_WEG6; ++i){
     xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];
@@ -379,55 +419,35 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
   for (int gp=0; gp<NUMGPT_WEG6; ++gp) {
 
     // get submatrix of deriv at actual gp
-    Epetra_SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
+    LINALG::SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
     for (int m=0; m<NUMDIM_WEG6; ++m) {
       for (int n=0; n<NUMGPT_WEG6; ++n) {
         deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
       }
     }
 
-    /* compute the Jacobian matrix which looks like:
-    **         [ x_,r  y_,r  z_,r ]
-    **     J = [ x_,s  y_,s  z_,s ]
-    **         [ x_,t  y_,t  z_,t ]
+    /* get the inverse of the Jacobian matrix which looks like:
+    **            [ x_,r  y_,r  z_,r ]^-1
+    **     J^-1 = [ x_,s  y_,s  z_,s ]
+    **            [ x_,t  y_,t  z_,t ]
     */
-    Epetra_SerialDenseMatrix jac(NUMDIM_WEG6,NUMDIM_WEG6);
-    jac.Multiply('N','N',1.0,deriv_gp,xrefe,1.0);
-
-    // compute determinant of Jacobian by Sarrus' rule
-    double detJ= jac(0,0) * jac(1,1) * jac(2,2)
-               + jac(0,1) * jac(1,2) * jac(2,0)
-               + jac(0,2) * jac(1,0) * jac(2,1)
-               - jac(0,0) * jac(1,2) * jac(2,1)
-               - jac(0,1) * jac(1,0) * jac(2,2)
-               - jac(0,2) * jac(1,1) * jac(2,0);
-    if (abs(detJ) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
-    else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
-
-    /* compute derivatives N_XYZ at gp w.r.t. material coordinates
-    ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
-    ** Inverse of Jacobian is therefore not explicitly computed
-    */
-    Epetra_SerialDenseMatrix N_XYZ(NUMDIM_WEG6,NUMNOD_WEG6);
-    Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
-    solve_for_inverseJac.SetMatrix(jac);            // set A=jac
-    solve_for_inverseJac.SetVectors(N_XYZ,deriv_gp);// set X=N_XYZ, B=deriv_gp
-    solve_for_inverseJac.FactorWithEquilibration(true);
-    int err2 = solve_for_inverseJac.Factor();
-    int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
-    if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
+    LINALG::SerialDenseMatrix N_XYZ(NUMDIM_WEG6,NUMNOD_WEG6);
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    N_XYZ.Multiply('N','N',1.0,invJ_[gp],deriv_gp,0.0);
+    const double detJ = detJ_[gp];
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    Epetra_SerialDenseMatrix defgrd(NUMDIM_WEG6,NUMDIM_WEG6);
-    defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,1.0);
+    LINALG::SerialDenseMatrix defgrd(NUMDIM_WEG6,NUMDIM_WEG6);
+    defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,0.0);
 
     // Right Cauchy-Green tensor = F^T * F
-    Epetra_SerialDenseMatrix cauchygreen(NUMDIM_WEG6,NUMDIM_WEG6);
-    cauchygreen.Multiply('T','N',1.0,defgrd,defgrd,1.0);
+    LINALG::SerialDenseMatrix cauchygreen(NUMDIM_WEG6,NUMDIM_WEG6);
+    cauchygreen.Multiply('T','N',1.0,defgrd,defgrd,0.0);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain(NUMSTR_WEG6);
+    LINALG::SerialDenseVector glstrain(NUMSTR_WEG6);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -508,7 +528,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    Epetra_SerialDenseMatrix bop(NUMSTR_WEG6,NUMDOF_WEG6);
+    LINALG::SerialDenseMatrix bop(NUMSTR_WEG6,NUMDOF_WEG6);
     for (int i=0; i<NUMNOD_WEG6; ++i) {
       bop(0,NODDOF_WEG6*i+0) = defgrd(0,0)*N_XYZ(0,i);
       bop(0,NODDOF_WEG6*i+1) = defgrd(1,0)*N_XYZ(0,i);
@@ -588,8 +608,8 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
-      Epetra_SerialDenseMatrix cb(NUMSTR_WEG6,NUMDOF_WEG6);
-      cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
+      LINALG::SerialDenseMatrix cb(NUMSTR_WEG6,NUMDOF_WEG6);
+      cb.Multiply('N','N',1.0,cmat,bop,0.0);          // temporary C . B
       (*stiffmatrix).Multiply('T','N',detJ * (*weights)(gp),bop,cb,1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
@@ -628,7 +648,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
    /* =========================================================================*/
 
   return;
-} // DRT::ELEMENTS::Shell8::s8_nlnstiffmass
+} 
 
 
 
@@ -686,10 +706,17 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
 }  // of sow6_shapederiv
 
 /*----------------------------------------------------------------------*
- |  init the element (public)                                  maf 07/07|
+ |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
 {
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->Type() != DRT::Element::element_so_weg6) continue;
+    DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_weg6* failed");
+    actele->InitJacobianMapping();
+  }
   return 0;
 }
 

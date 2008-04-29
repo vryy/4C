@@ -290,19 +290,23 @@ protected:
     sow6_updlag
   };
   //! kinematic type
-  KinematicType                                   kintype_;
+  KinematicType                                    kintype_;
   //! container containing all kind of solid3 thisandthat
-  DRT::Container                                  data_;
+  DRT::Container                                   data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::ELEMENTS::Sow6Volume> > volume_;
+  vector<RefCountPtr<DRT::ELEMENTS::Sow6Volume> >  volume_;
   //! vector of surfaces of this element
   vector<RefCountPtr<DRT::ELEMENTS::Sow6Surface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::ELEMENTS::Sow6Surface*>           surfaceptrs_;
+  vector<DRT::ELEMENTS::Sow6Surface*>              surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::Sow6Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::Sow6Line> >    lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::Sow6Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::Sow6Line*>                 lineptrs_;
+  //! vector of inverses of the jacobian in material frame
+  vector<Epetra_SerialDenseMatrix>                 invJ_;
+  //! determinant of Jacobian in material frame
+  vector<double>                                   detJ_;
 
   //! green lagrange strains storage needed for prestressing structures
 #if defined(PRESTRESS) || defined(POSTSTRESS)
@@ -311,12 +315,17 @@ protected:
   RCP<Epetra_SerialDenseMatrix>                    glprestrain_;
 #endif
 
+  
 
 
   // internal calculation methods
 
   // don't want = operator
   So_weg6& operator = (const So_weg6& old);
+
+  // init the inverse of the jacobian and its determinant
+  // in the material configuration
+  virtual void InitJacobianMapping();
 
   virtual void sow6_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
