@@ -146,10 +146,16 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
       {
         if (*i==this)
           break;
-        if (count > (*i)->dofrowmap_->MinAllGID())
-          dserror("dof sets numbers not assigned continuously: %d %d",
-                  count,(*i)->dofrowmap_->MinAllGID());
-        count = (*i)->dofrowmap_->MaxAllGID() + 1;
+
+        // ignore empty (no yet initialized) dof row maps
+        // (This is not supposed to happen... Axel thinks different...)
+        if ((*i)->dofrowmap_->NumGlobalElements()>0)
+        {
+          if (count > (*i)->dofrowmap_->MinAllGID())
+            dserror("dof sets numbers not assigned continuously: %d %d",
+                    count,(*i)->dofrowmap_->MinAllGID());
+          count = (*i)->dofrowmap_->MaxAllGID() + 1;
+        }
       }
   }
 
