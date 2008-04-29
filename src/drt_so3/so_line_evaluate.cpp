@@ -127,7 +127,8 @@ void DRT::ELEMENTS::StructuralLine::LineIntegration(double&                     
 {
   // compute dXYZ / drs
   LINALG::SerialDenseMatrix dxyzdrs(1,3);
-  dxyzdrs.Multiply('T','N',1.0,deriv,x,0.0);
+  dxyzdrs.Scale(0.0);
+  dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
   dL=0.0;
   for (int i=0; i<3; ++i) dL += dxyzdrs(0,i)*dxyzdrs(0,i);
   dL = sqrt(dL);
