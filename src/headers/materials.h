@@ -187,8 +187,8 @@ typedef struct _FLUID
  *----------------------------------------------------------------------*/
 typedef struct _CARREAUYASUDA
 {
-     DOUBLE                    mu_0; 		/* zero-shear viscosity */
-     DOUBLE                    mu_inf;		/* infinite-shear viscosity */
+     DOUBLE                    nu_0; 		/* zero-shear viscosity */
+     DOUBLE                    nu_inf;		/* infinite-shear viscosity */
      DOUBLE                    lambda;      /* characteristic time */
      DOUBLE                    a_param;		/* constant parameter */
      DOUBLE                    b_param;     /* constant parameter */

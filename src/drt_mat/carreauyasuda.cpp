@@ -68,8 +68,8 @@ void MAT::CarreauYasuda::Evaluate(const blitz::Array<double,2>& 	velderiv,
 {
 	
   // get material parameters
-  double mu_0 	= matdata_->m.carreauyasuda->mu_0;          // parameter for zero-shear viscosity
-  double mu_inf = matdata_->m.carreauyasuda->mu_inf;      	// parameter for infinite-shear viscosity
+  double nu_0 	= matdata_->m.carreauyasuda->nu_0;          // parameter for zero-shear viscosity
+  double nu_inf = matdata_->m.carreauyasuda->nu_inf;      	// parameter for infinite-shear viscosity
   double lambda = matdata_->m.carreauyasuda->lambda;      	// parameter for characteristic time
   double a 		= matdata_->m.carreauyasuda->a_param;  		// constant parameter
   double b 		= matdata_->m.carreauyasuda->b_param;  		// constant parameter
@@ -90,7 +90,7 @@ void MAT::CarreauYasuda::Evaluate(const blitz::Array<double,2>& 	velderiv,
   // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
   // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
   const double tmp = pow(lambda*rateofshear,b);
-  visc_caryas = mu_inf + ((mu_0 - mu_inf)/pow((1 + tmp),a));
+  visc_caryas = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
 }
 
 #endif

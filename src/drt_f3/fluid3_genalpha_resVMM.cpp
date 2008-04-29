@@ -576,8 +576,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   // compute nonlinear viscosity according to the Carreau-Yasuda model
   if(material->mattyp == m_carreauyasuda)
   {   
-    double mu_0 	= material->m.carreauyasuda->mu_0;          // parameter for zero-shear viscosity
-    double mu_inf   = material->m.carreauyasuda->mu_inf;      	// parameter for infinite-shear viscosity
+    double nu_0 	= material->m.carreauyasuda->nu_0;          // parameter for zero-shear viscosity
+    double nu_inf   = material->m.carreauyasuda->nu_inf;      	// parameter for infinite-shear viscosity
     double lambda   = material->m.carreauyasuda->lambda;      	// parameter for characteristic time
     double a 		= material->m.carreauyasuda->a_param;  	    // constant parameter
     double b 		= material->m.carreauyasuda->b_param;  	    // constant parameter
@@ -596,7 +596,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
     // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
     const double tmp = pow(lambda*rateofshear,b);
-    visc = mu_inf + ((mu_0 - mu_inf)/pow((1 + tmp),a));
+    visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
   }
   else if(material->mattyp == m_modpowerlaw)
   {
