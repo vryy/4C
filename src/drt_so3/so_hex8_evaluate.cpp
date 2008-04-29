@@ -445,6 +445,30 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(ParameterList& params,
 } // DRT::ELEMENTS::So_hex8::EvaluateNeumann
 
 /*----------------------------------------------------------------------*
+ |  init the element jacobian mapping (protected)              gee 04/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
+{
+  const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
+  LINALG::SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);
+  for (int i=0; i<NUMNOD_SOH8; ++i)
+  {
+    xrefe(i,0) = Nodes()[i]->X()[0];
+    xrefe(i,1) = Nodes()[i]->X()[1];
+    xrefe(i,2) = Nodes()[i]->X()[2];
+  }
+  invJ_.resize(NUMGPT_SOH8);
+  detJ_.resize(NUMGPT_SOH8);
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  {
+    invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
+    invJ_[gp].Multiply('N','N',1.0,int_hex8.deriv_gp[gp],xrefe,0.0);
+    detJ_[gp] = LINALG::NonsymInverse3x3(invJ_[gp]);
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
@@ -467,18 +491,13 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
 /* ============================================================================*/
 
   // update element geometry
-  Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element
-  Epetra_SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);  // current  coord. of element
-  for (int i=0; i<NUMNOD_SOH8; ++i){
-#if 0 //NODE TRANSLATION AROUND ZERO TO GAIN ACCURACY
-    xrefe(i,0) = Nodes()[i]->X()[0]-Nodes()[0]->X()[0];
-    xrefe(i,1) = Nodes()[i]->X()[1]-Nodes()[0]->X()[1];
-    xrefe(i,2) = Nodes()[i]->X()[2]-Nodes()[0]->X()[2];
-#else
+  LINALG::SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);  // material coord. of element
+  LINALG::SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);  // current  coord. of element
+  for (int i=0; i<NUMNOD_SOH8; ++i)
+  {
     xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
-#endif
 
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
@@ -489,17 +508,17 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
   */
   // in any case declare variables, sizes etc. only in eascase
-  Epetra_SerialDenseMatrix* alpha;  // EAS alphas
-  Epetra_SerialDenseMatrix* M_GP;   // EAS matrix M at all GPs
-  Epetra_SerialDenseMatrix M;       // EAS matrix M at current GP
+  Epetra_SerialDenseMatrix* alpha = NULL;  // EAS alphas
+  Epetra_SerialDenseMatrix* M_GP = NULL;   // EAS matrix M at all GPs
+  LINALG::SerialDenseMatrix M;       // EAS matrix M at current GP
   Epetra_SerialDenseVector feas;    // EAS portion of internal forces
   Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
   Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
   double detJ0;                     // detJ(origin)
   Epetra_SerialDenseMatrix T0invT;  // trafo matrix
-  Epetra_SerialDenseMatrix* oldfeas;   // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv; // EAS history
-  Epetra_SerialDenseMatrix* oldKda;    // EAS history
+  Epetra_SerialDenseMatrix* oldfeas = NULL;   // EAS history
+  Epetra_SerialDenseMatrix* oldKaainv = NULL; // EAS history
+  Epetra_SerialDenseMatrix* oldKda = NULL;    // EAS history
   if (eastype_ != soh8_easnone) {
     /*
     ** EAS Update of alphas:
@@ -515,7 +534,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
 
     // we need the (residual) displacement at the previous step
-    Epetra_SerialDenseVector res_d(NUMDOF_SOH8);
+    LINALG::SerialDenseVector res_d(NUMDOF_SOH8);
     for (int i = 0; i < NUMDOF_SOH8; ++i) {
       res_d(i) = residual[i];
     }
@@ -552,66 +571,28 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   /* =========================================================================*/
   for (int gp=0; gp<NUMGPT_SOH8; ++gp) {
 
-    /* compute the Jacobian matrix which looks like:
-    **         [ x_,r  y_,r  z_,r ]
-    **     J = [ x_,s  y_,s  z_,s ]
-    **         [ x_,t  y_,t  z_,t ]
+    /* get the inverse of the Jacobian matrix which looks like:
+    **            [ x_,r  y_,r  z_,r ]^-1
+    **     J^-1 = [ x_,s  y_,s  z_,s ]
+    **            [ x_,t  y_,t  z_,t ]
     */
-    Epetra_SerialDenseMatrix jac(NUMDIM_SOH8,NUMDIM_SOH8);
-    jac.Multiply('N','N',1.0,int_hex8.deriv_gp[gp],xrefe,1.0);
-
-    // compute determinant of Jacobian by Sarrus' rule
-    #if 0 // SIMPLE DOUBLE DET COMPUTATION
-    double detJ= jac(0,0) * jac(1,1) * jac(2,2)
-               + jac(0,1) * jac(1,2) * jac(2,0)
-               + jac(0,2) * jac(1,0) * jac(2,1)
-               - jac(0,0) * jac(1,2) * jac(2,1)
-               - jac(0,1) * jac(1,0) * jac(2,2)
-               - jac(0,2) * jac(1,1) * jac(2,0);
-    #else
-    double detJ= (long double)jac(0,0) * (long double)jac(1,1) * (long double)jac(2,2)
-               + (long double)jac(0,1) * (long double)jac(1,2) * (long double)jac(2,0)
-               + (long double)jac(0,2) * (long double)jac(1,0) * (long double)jac(2,1)
-               - (long double)jac(0,0) * (long double)jac(1,2) * (long double)jac(2,1)
-               - (long double)jac(0,1) * (long double)jac(1,0) * (long double)jac(2,2)
-               - (long double)jac(0,2) * (long double)jac(1,1) * (long double)jac(2,0);
-    #endif
-
-    if (detJ == 0.0) dserror("ZERO JACOBIAN DETERMINANT");
-    else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
-
-    // gee: do this once upon construction, because it does not
-    // change in the calculation (material frame)
-    // also do explicitly without solver
-
-    /* compute derivatives N_XYZ at gp w.r.t. material coordinates
-    ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
-    ** Inverse of Jacobian is therefore not explicitly computed
-    */
-    Epetra_SerialDenseMatrix N_XYZ(NUMDIM_SOH8,NUMNOD_SOH8);
-    Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
-    solve_for_inverseJac.SetMatrix(jac);            // set A=jac
-    /* (unfortunately) we need a redundant copy of derivatives matrix
-     *  as the solver factorisation changes it */
-    Epetra_SerialDenseMatrix temp_deriv(int_hex8.deriv_gp[gp]);
-    solve_for_inverseJac.SetVectors(N_XYZ,temp_deriv);// set X=N_XYZ, B=deriv_gp
-    solve_for_inverseJac.FactorWithEquilibration(true);
-    //solve_for_inverseJac.EquilibrateMatrix();
-    int err2 = solve_for_inverseJac.Factor();
-    int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
-    if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
+    LINALG::SerialDenseMatrix N_XYZ(NUMDIM_SOH8,NUMNOD_SOH8);
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    N_XYZ.Multiply('N','N',1.0,invJ_[gp],int_hex8.deriv_gp[gp],0.0);
+    const double detJ = detJ_[gp];
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    Epetra_SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
-    defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,1.0);
+    LINALG::SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
+    defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,0.0);
 
     // Right Cauchy-Green tensor = F^T * F
-    Epetra_SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
-    cauchygreen.Multiply('T','N',1.0,defgrd,defgrd,1.0);
+    LINALG::SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
+    cauchygreen.Multiply('T','N',1.0,defgrd,defgrd,0.0);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain(NUMSTR_SOH8);
+    LINALG::SerialDenseVector glstrain(NUMSTR_SOH8);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -620,17 +601,19 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     glstrain(5) = cauchygreen(2,0);
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
-    if (eastype_ != soh8_easnone) {
+    if (eastype_ != soh8_easnone) 
+    {
+      LINALG::SerialDenseMatrix Mtemp(NUMSTR_SOH8,neas_);
+      M.LightShape(NUMSTR_SOH8,neas_);
       // get EAS matrix M at current gausspoint gp
-      M.Shape(NUMSTR_SOH8,neas_);
       for (int m=0; m<NUMSTR_SOH8; ++m) {
         for (int n=0; n<neas_; ++n) {
-          M(m,n)=(*M_GP)(NUMSTR_SOH8*gp+m,n);
+          Mtemp(m,n)=(*M_GP)(NUMSTR_SOH8*gp+m,n);
         }
       }
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
-      Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
+      //Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
       M.Multiply('N','N',detJ0/detJ,T0invT,Mtemp,0.0);
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       glstrain.Multiply('N','N',1.0,M,(*alpha),1.0);
@@ -709,7 +692,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    Epetra_SerialDenseMatrix bop(NUMSTR_SOH8,NUMDOF_SOH8);
+    LINALG::SerialDenseMatrix bop(NUMSTR_SOH8,NUMDOF_SOH8);
     for (int i=0; i<NUMNOD_SOH8; ++i) {
       bop(0,NODDOF_SOH8*i+0) = defgrd(0,0)*N_XYZ(0,i);
       bop(0,NODDOF_SOH8*i+1) = defgrd(1,0)*N_XYZ(0,i);
@@ -789,8 +772,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       (*force).Multiply('T', 'N', detJ * int_hex8.weights(gp), bop, stress,
           1.0);
 
-      Epetra_SerialDenseMatrix cb(NUMSTR_SOH8, NUMDOF_SOH8);
-      cb.Multiply('N', 'N', 1.0, cmat, bop, 1.0); // temporary C . Bl
+      LINALG::SerialDenseMatrix cb(NUMSTR_SOH8, NUMDOF_SOH8);
+      cb.Multiply('N', 'N', 1.0, cmat, bop, 0.0); // temporary C . Bl
 
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -823,7 +806,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       if (eastype_ != soh8_easnone) {
         double integrationfactor = detJ * int_hex8.weights(gp);
         // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
-        Epetra_SerialDenseMatrix cM(NUMSTR_SOH8, neas_); // temporary c . M
+        LINALG::SerialDenseMatrix cM(NUMSTR_SOH8, neas_); // temporary c . M
         cM.Multiply('N', 'N', 1.0, cmat, M, 0.0);
         Kaa.Multiply('T', 'N', integrationfactor, M, cM, 1.0);
 
@@ -860,8 +843,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       solve_for_inverseKaa.SetMatrix(Kaa);
       solve_for_inverseKaa.Invert();
 
-      Epetra_SerialDenseMatrix KdaKaa(NUMDOF_SOH8, neas_); // temporary Kda.Kaa^{-1}
-      KdaKaa.Multiply('T', 'N', 1.0, Kda, Kaa, 1.0);
+      LINALG::SerialDenseMatrix KdaKaa(NUMDOF_SOH8, neas_); // temporary Kda.Kaa^{-1}
+      KdaKaa.Multiply('T', 'N', 1.0, Kda, Kaa, 0.0);
 
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
       (*stiffmatrix).Multiply('N', 'N', -1.0, KdaKaa, Kda, 1.0);
@@ -967,13 +950,21 @@ void DRT::ELEMENTS::So_hex8::soh8_shapederiv(
 
 
 /*----------------------------------------------------------------------*
- |  init the element (public)                                  maf 07/07|
+ |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-
 int DRT::ELEMENTS::Soh8Register::Initialize(DRT::Discretization& dis)
 {
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->Type() != DRT::Element::element_so_hex8) continue;
+    DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
+    if (!actele) dserror("cast to So_hex8* failed");
+    actele->InitJacobianMapping();
+  }
   return 0;
 }
+
+
 
 
 #endif  // #ifdef CCADISCRET

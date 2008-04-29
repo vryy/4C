@@ -39,6 +39,10 @@ data_()
 #if defined(PRESTRESS) || defined(POSTSTRESS)  
   glprestrain_ = rcp(new Epetra_SerialDenseMatrix(NUMGPT_SOH8,NUMSTR_SOH8));
 #endif
+  invJ_.resize(NUMGPT_SOH8);
+  detJ_.resize(NUMGPT_SOH8);
+  for (int i=0; i<NUMGPT_SOH8; ++i)
+    invJ_[i].Shape(3,3);
   return;
 }
 
@@ -58,11 +62,18 @@ surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
 lineptrs_(old.lineptrs_),
 thickvec_(old.thickvec_),
-fiberdirection_(old.fiberdirection_)
+fiberdirection_(old.fiberdirection_),
+detJ_(old.detJ_)
 {
 #if defined(PRESTRESS) || defined(POSTSTRESS)  
   glprestrain_ = rcp(new Epetra_SerialDenseMatrix(*(old.glprestrain_)));
 #endif
+  invJ_.resize(old.invJ_.size());
+  for (int i=0; i<(int)invJ_.size(); ++i)
+  {
+    invJ_[i].Shape(old.invJ_[i].M(),old.invJ_[i].N());
+    invJ_[i] = old.invJ_[i];
+  }
   return;
 }
 
@@ -113,9 +124,21 @@ void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
+
 #if defined(PRESTRESS) || defined(POSTSTRESS)  
+  // glprestrain_
   AddtoPack(data,*glprestrain_);
 #endif  
+
+  // detJ_
+  AddtoPack(data,detJ_);
+  
+  // invJ_
+  const int size = (int)invJ_.size();
+  AddtoPack(data,size);
+  for (int i=0; i<size; ++i)
+    AddtoPack(data,invJ_[i]);
+    
 
   return;
 }
@@ -150,8 +173,20 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 #if defined(PRESTRESS) || defined(POSTSTRESS)  
+  // glprestrain_
   ExtractfromPack(position,data,*glprestrain_);
-#endif  
+#endif
+  // detJ_
+  ExtractfromPack(position,data,detJ_);
+  // invJ_
+  int size;
+  ExtractfromPack(position,data,size);
+  invJ_.resize(size);
+  for (int i=0; i<size; ++i)
+  {
+    invJ_[i].Shape(0,0);
+    ExtractfromPack(position,data,invJ_[i]);
+  }
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

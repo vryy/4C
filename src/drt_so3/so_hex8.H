@@ -418,6 +418,10 @@ protected:
   vector<RefCountPtr<DRT::ELEMENTS::Soh8Line> >    lines_;
   //! vector of lines adjacent to this element
   vector<DRT::ELEMENTS::Soh8Line*>                 lineptrs_;
+  //! vector of inverses of the jacobian in material frame
+  vector<Epetra_SerialDenseMatrix>                 invJ_;
+  //! determinant of Jacobian in material frame
+  vector<double>                                   detJ_;
 
   //! green lagrange strains storage needed for prestressing structures
 #if defined(PRESTRESS) || defined(POSTSTRESS)
@@ -425,7 +429,7 @@ protected:
   { return glprestrain_; }
   RCP<Epetra_SerialDenseMatrix>                    glprestrain_;
 #endif
-  
+
 
 
   //! vector in thickness direction for compatibility with sosh8
@@ -438,7 +442,12 @@ protected:
   //! don't want = operator
   So_hex8& operator = (const So_hex8& old);
 
-  //! Calculate nonlinear stiffness and mass matrix
+
+  // init the inverse of the jacobian and its determinant
+  // in the material configuration
+  virtual void InitJacobianMapping();
+
+  //! Calculate nonlinear stiffness and mass matrix  
   virtual void soh8_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
@@ -617,7 +626,7 @@ public:
   /*!
   \brief Call Element init routines
 
-  The method performs all steps needed to init the wedge elements,
+  The method performs all steps needed to init the elements,
   e.g. defines shell-thickness direction
   */
   int Initialize(DRT::Discretization& dis);
