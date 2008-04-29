@@ -196,6 +196,7 @@ fsisurface_(NULL)
   // -------------------------------------------------------------------
     //initialize Constraint Manager
     constrMan_=rcp(new ConstrManager(Discretization(), dis_, params_));
+    dofrowmap = discret_.DofRowMap();
     // Check for surface stress conditions due to interfacial phenomena
     vector<DRT::Condition*> surfstresscond(0);
     discret_.GetCondition("SurfaceStress",surfstresscond);
@@ -214,6 +215,7 @@ fsisurface_(NULL)
 
   //--------------------------- calculate consistent initial accelerations
   {
+
     RefCountPtr<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
     if (damping)
       damp_->Multiply(false,*vel_,*rhs);

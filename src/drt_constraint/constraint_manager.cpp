@@ -91,8 +91,6 @@ actdisc_(discr)
     newdofset = null;
     constraintdis_->FillComplete(true,true,true,false);
     
-    cout << *constraintdis_ <<  endl;
-
     for (unsigned int i=0;i<constrcond.size();i++)
     {
       const vector<double>*    MPCampl  = constrcond[i]->Get<vector<double> >("Amplitude");
@@ -112,7 +110,7 @@ actdisc_(discr)
         p.set("MinID",(*MPCcondID)[0]);
       }
     }
-    havenodeconstraint_=false;
+    havenodeconstraint_=true;
   }
   //----------------------------------------------------
   //-----------include possible further constraints here
@@ -196,7 +194,6 @@ actdisc_(discr)
     SynchronizeSumConstraint(p1,initialmonvalues_,"computed volume",numMonitorID_,minMonitorID_);
     SynchronizeSumConstraint(p1,initialmonvalues_,"computed area",numMonitorID_,minMonitorID_);
   }
- 
   return;
 }
 
@@ -222,12 +219,6 @@ void ConstrManager::StiffnessAndInternalForces(
     //Evaluate volume at predicted ENDpoint D_{n+1}
     // action for elements
     p.set("action","calc_struct_volconstrstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",true);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",time);
     p.set("MinID",minConstrID_);
@@ -250,12 +241,6 @@ void ConstrManager::StiffnessAndInternalForces(
     //Evaluate volume at predicted ENDpoint D_{n+1}
     // action for elements
     p.set("action","calc_struct_areaconstrstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",true);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",time);
     p.set("MinID",minConstrID_);
@@ -278,12 +263,6 @@ void ConstrManager::StiffnessAndInternalForces(
     //Evaluate volume at predicted ENDpoint D_{n+1}
     // action for elements
     p.set("action","calc_struct_areaconstrstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",true);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",time);
     p.set("MinID",minConstrID_);
@@ -300,33 +279,10 @@ void ConstrManager::StiffnessAndInternalForces(
     actdisc_->EvaluateCondition(p,stiff,constrMatrix_,fint,null,null,"AreaConstraint_2D");
     SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
   }
-  //Deal with area constraints in 2D
+  //Deal with MPC
   if (havenodeconstraint_)
   {
-    //Evaluate volume at predicted ENDpoint D_{n+1}
-    // action for elements
-    p.set("action","calc_areaconstrstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",true);
-    p.set("assemble vector 3",false);
-    // other parameters that might be needed by the elements
-    p.set("total time",time);
-    p.set("MinID",minConstrID_);
-    p.set("MaxID",maxConstrID_);
-    p.set("NumberofID",numConstrID_);        
-    // Convert Epetra_Vector constaining lagrange multipliers to an completely
-    // redundant Epetra_vector since every element with the constraint condition needs them
-    RCP<Epetra_Map> reducedmap = LINALG::AllreduceEMap(*constrmap_);
-    RCP<Epetra_Vector> lagrMultVecDense = rcp(new Epetra_Vector(*reducedmap));
-    LINALG::Export(*lagrMultVec_,*lagrMultVecDense);
-    p.set("LagrMultVector",lagrMultVecDense);
-    actdisc_->ClearState();
-    actdisc_->SetState("displacement",disp);
-    actdisc_->EvaluateCondition(p,stiff,constrMatrix_,fint,null,null,"AreaConstraint_2D");
-    SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
+    cout<<"No evaluation implemented"<<endl;
   }
   
   //----------------------------------------------------
