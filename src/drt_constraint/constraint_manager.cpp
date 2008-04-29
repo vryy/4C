@@ -14,6 +14,7 @@ Maintainer: Thomas Kloeppel
 #ifdef CCADISCRET
 
 #include "constraint_manager.H"
+#include "mpcdofset.H"
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "iostream"
 #include "../drt_fsi/fsi_utils.H"
@@ -80,6 +81,18 @@ actdisc_(discr)
     CreateDiscretizationFromCondition(constrcond,"ConstrDisc","CONSTRELE3");
     // get user specified amplitude of movement and store it as initial value
     
+    // now reconstruct the extended colmap
+    RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, constraintdis_);
+    
+    actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
+    
+    RCP<DRT::DofSet> newdofset = rcp(new MPCDofSet(actdisc_));
+    constraintdis_->ReplaceDofSet(newdofset);
+    newdofset = null;
+    constraintdis_->FillComplete(true,true,true,false);
+    
+    cout << *constraintdis_ <<  endl;
+
     for (unsigned int i=0;i<constrcond.size();i++)
     {
       const vector<double>*    MPCampl  = constrcond[i]->Get<vector<double> >("Amplitude");
@@ -99,7 +112,7 @@ actdisc_(discr)
         p.set("MinID",(*MPCcondID)[0]);
       }
     }
-    havenodeconstraint_=true;
+    havenodeconstraint_=false;
   }
   //----------------------------------------------------
   //-----------include possible further constraints here
@@ -642,6 +655,35 @@ void ConstrManager::SortConstraintNodes(
   nodeids[2]=temp[(*NodeID3)[0]-1];
   nodeids[3]=temp[(*NodeID4)[0]-1];
   return;
+}
+
+RCP<Epetra_Map> ConstrManager::ComputeNodeColMap(
+        const RCP<DRT::Discretization> sourcedis,
+        const RCP<DRT::Discretization> constraintdis
+        ) const
+{
+    const Epetra_Map* oldcolnodemap = sourcedis->NodeColMap();
+    
+    vector<int> mycolnodes(oldcolnodemap->NumMyElements());
+    oldcolnodemap->MyGlobalElements (&mycolnodes[0]);
+    for (int inode = 0; inode != constraintdis->NumMyColNodes(); ++inode)
+    {
+        const DRT::Node* newnode = constraintdis->lColNode(inode);
+        const int gid = newnode->Id();
+        if (!(sourcedis->HaveGlobalNode(gid)))
+        {
+            //cout << "add gid" << gid << endl;
+            mycolnodes.push_back(gid);
+        }
+    }
+        
+    // now reconstruct the extended colmap
+    RCP<Epetra_Map> newcolnodemap = rcp(new Epetra_Map(-1,
+                                       mycolnodes.size(),
+                                       &mycolnodes[0],
+                                       0,
+                                       sourcedis->Comm()));
+    return newcolnodemap;
 }
 
 #endif

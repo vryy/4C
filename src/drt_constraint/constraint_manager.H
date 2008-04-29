@@ -291,6 +291,13 @@ private:
     void SortConstraintNodes(
         vector<int>& nodeids,
         DRT::Condition*      condname);
+    
+    /// find col node map so that we can evaluate the constraint elements
+    RCP<Epetra_Map> ComputeNodeColMap(
+            const RCP<DRT::Discretization> sourcedis,
+            const RCP<DRT::Discretization> constraintdis
+            ) const;
+    
     //@}
 
 private:
