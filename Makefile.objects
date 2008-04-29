@@ -476,6 +476,10 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8_surface.o \
                 src/drt_so3/so_shw6.o \
                 src/drt_so3/so_shw6_evaluate.o \
                 src/drt_so3/so_shw6_input.o \
+                src/drt_so3/so_surface.o \
+                src/drt_so3/so_surface_evaluate.o \
+                src/drt_so3/so_line.o \
+                src/drt_so3/so_line_evaluate.o
 #--------------------------------------------------------- brick1
 OBJS_BRICK1   = src/brick1/c1_out.o \
                 src/brick1/c1_gid.o \
