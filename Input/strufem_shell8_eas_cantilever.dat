@@ -73,7 +73,7 @@ UZAWAPARAM   1.0
 UZAWAMAXITER 20
 UZAWAALGO    newtonlinuzawa
 ------------------------------------------------STRUCTURAL CONTACT
-CONTACT          No
+CONTACT          None
 INIT_CONTACT     No
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int

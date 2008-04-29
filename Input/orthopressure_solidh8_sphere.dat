@@ -67,7 +67,7 @@ TOLRES       1.0E-04
 MAXITER      50
 UZAWAPARAM   1.0
 ----------------------------------------------------------STRUCTURAL CONTACT
-CONTACT                         No
+CONTACT                         None
 INIT_CONTACT                    No
 ---------------------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP                      Nlin_Time_Int

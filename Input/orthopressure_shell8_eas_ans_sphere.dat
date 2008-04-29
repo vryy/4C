@@ -72,7 +72,7 @@ ADAPTCONV_BETTER 0.1
 MAXITER      50
 UZAWAPARAM   1.0
 ------------------------------------------------STRUCTURAL CONTACT
-CONTACT          No
+CONTACT          None
 INIT_CONTACT     No
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
