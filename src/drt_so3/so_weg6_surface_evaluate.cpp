@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file so_weg6_surface.cpp
+\file so_weg6_surface_evaluate.cpp
 \brief
 
 <pre>
