@@ -611,7 +611,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     dserror("trying to use uninitialised 2D gaussrule");
   }
   default:
-    dserror("unknown 2D integration rule");
+    dserror("unknown 2D integration rule, GaussRule2D: %d",gaussrule);
   }
 }
 
