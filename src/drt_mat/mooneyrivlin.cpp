@@ -105,6 +105,7 @@ For references see Holzapfel p. 245, Simo&Miehe 1992, Klinkel et al 2007.
 Parameters are mu_1, mu_2, a_1, a_2 and Lambda = kappa - 2/3 mu as penalty factor 
 to effectuate incompressibility (shear modulus mu = (mu_1 a_1 + mu_2 a_2)/2 )
 
+Mind that it is not stress-free in reference configuration!
 */
 
 void MAT::MooneyRivlin::Evaluate(const Epetra_SerialDenseVector* glstrain,
