@@ -42,15 +42,13 @@ Maintainer: Axel Gerstenberger
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 XFluidImplicitTimeInt::XFluidImplicitTimeInt(
-		RCP<DRT::Discretization> fluiddis,
-		//RCP<DRT::Discretization> cutterdis,
+		RCP<DRT::Discretization> actdis,
 		LINALG::Solver&       solver,
 		ParameterList&        params,
 		IO::DiscretizationWriter& output,
 		const bool alefluid) :
   // call constructor for "nontrivial" objects
-  discret_(fluiddis),
-  //cutterdiscret_(cutterdis),
+  discret_(actdis),
   solver_ (solver),
   params_ (params),
   output_ (output),
@@ -69,7 +67,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // get the processor ID from the communicator
   // -------------------------------------------------------------------
   myrank_  = discret_->Comm().MyPID();
-            
+
   // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
@@ -101,6 +99,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   if (!discret_->Filled()) discret_->FillComplete();
   
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -603,8 +602,8 @@ void XFluidImplicitTimeInt::NonlinearSolve(RCP<DRT::Discretization> cutterdiscre
 
   const int itemax  = params_.get<int>   ("max nonlin iter steps");
 
-  double dtsolve = 0;
-  double dtele   = 0;
+  double dtsolve = 0.0;
+  double dtele   = 0.0;
 
   if (myrank_ == 0)
   {
@@ -679,6 +678,9 @@ void XFluidImplicitTimeInt::NonlinearSolve(RCP<DRT::Discretization> cutterdiscre
         density = eleparams.get("density", 0.0);
         if (density <= 0.0) dserror("recieved illegal density value");
 
+        // How to extract the density from the fluid material?
+        trueresidual_->Update(density/dta_/theta_,*residual_,0.0);
+
         // finalize the complete matrix
         sysmat_->Complete();
       }
@@ -686,9 +688,6 @@ void XFluidImplicitTimeInt::NonlinearSolve(RCP<DRT::Discretization> cutterdiscre
       // end time measurement for element
       dtele=ds_cputime()-tcpu;
     }
-
-    // How to extract the density from the fluid material?
-    trueresidual_->Update(density/dta_/theta_,*residual_,0.0);
 
     // blank residual DOFs which are on Dirichlet BC
     // We can do this because the values at the dirichlet positions
@@ -868,7 +867,6 @@ void XFluidImplicitTimeInt::NonlinearSolve(RCP<DRT::Discretization> cutterdiscre
         double currresidual = max(vresnorm,presnorm);
         currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
         currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
-        // the 'better' value should be an input parameter?
         solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
       solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1);
@@ -979,7 +977,7 @@ void XFluidImplicitTimeInt::LinearSolve(RCP<DRT::Discretization> cutterdiscret)
   }
   // end time measurement for element
   const double dtele = ds_cputime() - tcpuele;
-  
+
   //--------- Apply dirichlet boundary conditions to system of equations
   //          residual velocities (and pressures) are supposed to be zero at
   //          boundary conditions
@@ -998,7 +996,7 @@ void XFluidImplicitTimeInt::LinearSolve(RCP<DRT::Discretization> cutterdiscret)
   {
     // time measurement: solver
     TimeMonitor solvemonitor(*timesolver_);
-  
+
     /* possibly we could accelerate it if the reset variable
        is true only every fifth step, i.e. set the last argument to false
        for 4 of 5 timesteps or so. */
