@@ -36,7 +36,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   {
     neum_none,
     neum_live,
-    neum_orthopressure,
+    neum_orthopressure
   };
   // spatial or material configuration depends on the type of load
   enum Configuration
@@ -44,7 +44,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     config_none,
     config_material,
     config_spatial,
-    config_both,
+    config_both
   };
   
   Configuration config = config_none;
