@@ -229,7 +229,22 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   }
 
   params->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
-  params->set<bool>  ("io structural strain",Teuchos::getIntegralValue<int>(ioflags,"STRUCT_STRAIN"));
+
+  switch (Teuchos::getIntegralValue<STRUCT_STRAIN_TYP>(ioflags,"STRUCT_STRAIN"))
+  {
+  case struct_strain_none:
+    params->set<string>("io structural strain", "none");
+    break;
+  case struct_strain_ea:
+    params->set<string>("io structural strain", "euler_almansi");
+    break;
+  case struct_strain_gl:
+    params->set<string>("io structural strain", "green_lagrange");
+    break;
+  default:
+    params->set<string>("io structural strain", "none");
+    break;
+  }
 
   params->set<int>   ("restart",probtype.get<int>("RESTART"));
   params->set<int>   ("write restart every",sdyn.get<int>("RESTARTEVRY"));
