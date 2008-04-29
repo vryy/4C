@@ -71,8 +71,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("MU_0"   ,&(localmat.m.carreauyasuda->mu_0)      ,&ierr);
       frdouble("MU_INF" ,&(localmat.m.carreauyasuda->mu_inf)    ,&ierr);
       frdouble("LAMBDA" ,&(localmat.m.carreauyasuda->lambda)    ,&ierr);
-      frdouble("A"      ,&(localmat.m.carreauyasuda->a)         ,&ierr);
-      frdouble("B"      ,&(localmat.m.carreauyasuda->b)         ,&ierr);
+      frdouble("APARAM" ,&(localmat.m.carreauyasuda->a_param)   ,&ierr);
+      frdouble("BPARAM" ,&(localmat.m.carreauyasuda->b_param)   ,&ierr);
       frdouble("DENSITY",&(localmat.m.carreauyasuda->density)   ,&ierr);
    }
    frchk("MAT_modpowerlaw",&ierr);  
@@ -80,9 +80,9 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       localmat.mattyp = m_modpowerlaw;
       localmat.m.modpowerlaw = new _MODPOWERLAW();
-      frdouble("M"      ,&(localmat.m.modpowerlaw->m)      ,&ierr);
+      frdouble("MCONS"  ,&(localmat.m.modpowerlaw->m_cons) ,&ierr);
       frdouble("DELTA"  ,&(localmat.m.modpowerlaw->delta)  ,&ierr);
-      frdouble("A"      ,&(localmat.m.modpowerlaw->a)      ,&ierr);
+      frdouble("AEXP"   ,&(localmat.m.modpowerlaw->a_exp)  ,&ierr);
       frdouble("DENSITY",&(localmat.m.modpowerlaw->density),&ierr);
    }
    frchk("MAT_condif",&ierr);

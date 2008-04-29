@@ -68,16 +68,16 @@ void MAT::ModPowerLaw::Evaluate(const blitz::Array<double,2>& 	velderiv,
 {
 	
   // get material parameters
-  double m  	= matdata_->m.modpowerlaw->m;           // consistency constant 
+  double m  	= matdata_->m.modpowerlaw->m_cons;      // consistency constant 
   double delta 	= matdata_->m.modpowerlaw->delta;       // safety factor
-  double a      = matdata_->m.modpowerlaw->a;      	    // exponent
+  double a      = matdata_->m.modpowerlaw->a_exp;      	// exponent
  
 
   // compute shear rate 
   double rateofshear = 0.0;
   blitz::firstIndex i;    // Placeholder for the first index
   blitz::secondIndex j;   // Placeholder for the second index
-  blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain tensor
+  blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
   epsilon = 0.5 * ( velderiv(i,j) + velderiv(j,i) );
   
   for(int rr=0;rr<3;rr++)

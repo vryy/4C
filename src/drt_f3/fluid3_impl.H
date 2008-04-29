@@ -192,7 +192,7 @@ namespace ELEMENTS
       const DRT::Element::DiscretizationType  distype,
       const enum Fluid3::TauType              whichtau,
       struct _MATERIAL*                       material,
-      double                                  visc,
+      double&                                 visc,
       const double                            timefac,
       const double                            dt,
       const enum Fluid3::TurbModelAction      turb_mod_action,

@@ -577,14 +577,14 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   if(material->mattyp == m_carreauyasuda)
   {   
     double mu_0 	= material->m.carreauyasuda->mu_0;          // parameter for zero-shear viscosity
-    double mu_inf = material->m.carreauyasuda->mu_inf;      	// parameter for infinite-shear viscosity
-    double lambda = material->m.carreauyasuda->lambda;      	// parameter for characteristic time
-    double a 		= material->m.carreauyasuda->a;  			// constant parameter
-    double b 		= material->m.carreauyasuda->b;  			// constant parameter
+    double mu_inf   = material->m.carreauyasuda->mu_inf;      	// parameter for infinite-shear viscosity
+    double lambda   = material->m.carreauyasuda->lambda;      	// parameter for characteristic time
+    double a 		= material->m.carreauyasuda->a_param;  	    // constant parameter
+    double b 		= material->m.carreauyasuda->b_param;  	    // constant parameter
 
     // compute shear rate 
     double rateofshear = 0.0;
-    blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain tensor
+    blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
     epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
    
     for(int rr=0;rr<3;rr++)
@@ -601,15 +601,15 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   else if(material->mattyp == m_modpowerlaw)
   {
     // get material parameters
-    double m  	  = material->m.modpowerlaw->m;           // consistency constant 
+    double m  	  = material->m.modpowerlaw->m_cons;      // consistency constant 
     double delta  = material->m.modpowerlaw->delta;       // safety factor
-    double a      = material->m.modpowerlaw->a;      	  // exponent
+    double a      = material->m.modpowerlaw->a_exp;       // exponent
  
     // compute shear rate 
     double rateofshear = 0.0;
     blitz::firstIndex i;    // Placeholder for the first index
     blitz::secondIndex j;   // Placeholder for the second index
-    blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain tensor
+    blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
     epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
   
     for(int rr=0;rr<3;rr++)

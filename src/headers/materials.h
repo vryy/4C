@@ -190,8 +190,8 @@ typedef struct _CARREAUYASUDA
      DOUBLE                    mu_0; 		/* zero-shear viscosity */
      DOUBLE                    mu_inf;		/* infinite-shear viscosity */
      DOUBLE                    lambda;      /* characteristic time */
-     DOUBLE                    a;			/* constant parameter */
-     DOUBLE                    b;           /* constant parameter */
+     DOUBLE                    a_param;		/* constant parameter */
+     DOUBLE                    b_param;     /* constant parameter */
      DOUBLE                    density;     /* density */
 } CARREAUYASUDA;
 
@@ -202,10 +202,10 @@ typedef struct _CARREAUYASUDA
  *----------------------------------------------------------------------*/
 typedef struct _MODPOWERLAW
 {
-     DOUBLE                    m; 		    /* consistency */
-     DOUBLE                    delta;       /* safety factor */
-     DOUBLE                    a;			/* exponent */
-     DOUBLE                    density;     /* density */
+     DOUBLE                    m_cons; 		    /* consistency */
+     DOUBLE                    delta;       	/* safety factor */
+     DOUBLE                    a_exp;			/* exponent */
+     DOUBLE                    density;     	/* density */
 } MODPOWERLAW;
 
 

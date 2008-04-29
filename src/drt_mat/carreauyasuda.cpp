@@ -71,14 +71,14 @@ void MAT::CarreauYasuda::Evaluate(const blitz::Array<double,2>& 	velderiv,
   double mu_0 	= matdata_->m.carreauyasuda->mu_0;          // parameter for zero-shear viscosity
   double mu_inf = matdata_->m.carreauyasuda->mu_inf;      	// parameter for infinite-shear viscosity
   double lambda = matdata_->m.carreauyasuda->lambda;      	// parameter for characteristic time
-  double a 		= matdata_->m.carreauyasuda->a;  			// constant parameter
-  double b 		= matdata_->m.carreauyasuda->b;  			// constant parameter
+  double a 		= matdata_->m.carreauyasuda->a_param;  		// constant parameter
+  double b 		= matdata_->m.carreauyasuda->b_param;  		// constant parameter
 
   // compute shear rate 
   double rateofshear = 0.0;
   blitz::firstIndex i;    // Placeholder for the first index
   blitz::secondIndex j;   // Placeholder for the second index
-  blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain tensor
+  blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
   epsilon = 0.5 * ( velderiv(i,j) + velderiv(j,i) );
   
   for(int rr=0;rr<3;rr++)
