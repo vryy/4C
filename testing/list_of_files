@@ -161,14 +161,14 @@ Input/strufem_tet10_disp_cantilever.dat                 x        x        -     
 Input/strufem_ctet10_disp_cantilever.dat                x        x        -        -        -        -
 Input/strufem_ctet10_disp_cantilever.dat                x        x        -        -        -        -
 Input/strufem_wedge6_disp_cantilever.dat                x        x        -        -        -        -
-Input/sosh8_thin_nonlinear_pinched_hemisphere.dat       x        x
-Input/soshw6_thin_nonlinear_pinched_hemisphere.dat      x        x
-Input/sosh8_freeflying_ruler.dat                        x        x
-Input/sohex8_easfull_cooks_nl.dat                       x        x
-Input/sohex8_easmild_cooks_nl.dat                       x        x
-Input/sohex8_easfull_cooks_nl.dat                       x        x
-Input/sotet10_cooks_nl.dat                              x        x
-Input/sosh8_mooneyrivlin_rubbersheet.dat                x        x
-Input/constr3D_shrinking.dat                            x        x
-Input/constr2D_shrinking.dat                            x        x
-Input/constr2D_fsi.dat                                  x        x
+Input/sosh8_thin_nonlinear_pinched_hemisphere.dat       x        x        -        -        -        -
+Input/soshw6_thin_nonlinear_pinched_hemisphere.dat      x        x        -        -        -        -
+Input/sosh8_freeflying_ruler.dat                        x        x        -        -        -        -
+Input/sohex8_easfull_cooks_nl.dat                       x        x        -        -        -        -
+Input/sohex8_easmild_cooks_nl.dat                       x        x        -        -        -        -
+Input/sohex8_easfull_cooks_nl.dat                       x        x        -        -        -        -
+Input/sotet10_cooks_nl.dat                              x        x        -        -        -        -
+Input/sosh8_mooneyrivlin_rubbersheet.dat                x        x        -        -        -        -
+Input/constr3D_shrinking.dat                            x        x        -        -        -        -
+Input/constr2D_shrinking.dat                            x        x        -        -        -        -
+Input/constr2D_fsi.dat                                  x        x        -        -        -        -
