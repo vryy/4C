@@ -566,7 +566,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     // Est = (1+r)/2 * Est(SP B) + (1-r)/2 * Est(SP D)
     lstrain(4) = 0.5*(1+r[gp]) * (dxdt_B - dXdt_B) + 0.5*(1-r[gp]) * (dxdt_D - dXdt_D);
     // E13: remedy of transverse shear locking
-    // Ert = (1-s)/2 * Est(SP A) + (1+s)/2 * Est(SP C)
+    // Ert = (1-s)/2 * Ert(SP A) + (1+s)/2 * Ert(SP C)
     lstrain(5) = 0.5*(1-s[gp]) * (dydt_A - dYdt_A) + 0.5*(1+s[gp]) * (dydt_C - dYdt_C);
     // ANS modification of strains ************************************** ANS
 
@@ -678,8 +678,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
           Epetra_SerialDenseVector G_ij(NUMSTR_SOH8);
           G_ij(0) = deriv_gp(0, inod) * deriv_gp(0, jnod); // rr-dir
           G_ij(1) = deriv_gp(1, inod) * deriv_gp(1, jnod); // ss-dir
-          G_ij(3) = deriv_gp(0, inod) * deriv_gp(1, jnod) + deriv_gp(1, inod)
-              * deriv_gp(0, jnod); //rs-dir
+          G_ij(3) = deriv_gp(0, inod) * deriv_gp(1, jnod)
+                  + deriv_gp(1, inod) * deriv_gp(0, jnod); // rs-dir
           // ANS modification in tt-dir
           G_ij(2) = 0.25*(1-r[gp])*(1-s[gp]) * (*deriv_sp)(2+4*NUMDIM_SOH8,inod) * (*deriv_sp)(2+4*NUMDIM_SOH8,jnod)
                    +0.25*(1+r[gp])*(1-s[gp]) * (*deriv_sp)(2+5*NUMDIM_SOH8,inod) * (*deriv_sp)(2+5*NUMDIM_SOH8,jnod)

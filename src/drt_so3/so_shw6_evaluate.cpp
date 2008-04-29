@@ -311,8 +311,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_WEG6+2];
   }
 
-  for (int i=0; i<NUMDOF_WEG6; ++i) cout << disp[i] << ",";
-  cout << endl;
+//  for (int i=0; i<NUMDOF_WEG6; ++i) cout << disp[i] << ",";
+//  cout << endl;
 
   /*
   ** ANS Element technology to remedy
@@ -387,27 +387,27 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
         bop_loc(0,inode*3+dim) = deriv_gp(0,inode) * jac_cur(0,dim);
         // B_loc_ss = N_s.X_s
         bop_loc(1,inode*3+dim) = deriv_gp(1,inode) * jac_cur(1,dim);
-//        // B_loc_tt = interpolation along (r x s) of ANS B_loc_tt
-//        //          = (1-r-s) * B_ans(SP C) + r * B_ans(SP D) + s * B_ans(SP E)
-//        bop_loc(2,inode*3+dim) = (1-r-s) * B_ans_loc(0+2*num_ans,inode*3+dim)
-//                                + r      * B_ans_loc(0+3*num_ans,inode*3+dim)
-//                                + s      * B_ans_loc(0+4*num_ans,inode*3+dim);
+        // B_loc_tt = interpolation along (r x s) of ANS B_loc_tt
+        //          = (1-r-s) * B_ans(SP C) + r * B_ans(SP D) + s * B_ans(SP E)
+        bop_loc(2,inode*3+dim) = (1-r-s) * B_ans_loc(0+2*num_ans,inode*3+dim)
+                                + r      * B_ans_loc(0+3*num_ans,inode*3+dim)
+                                + s      * B_ans_loc(0+4*num_ans,inode*3+dim);
         // B_loc_rs = N_r.X_s + N_s.X_r
         bop_loc(3,inode*3+dim) = deriv_gp(0,inode) * jac_cur(1,dim)
                                 +deriv_gp(1,inode) * jac_cur(0,dim);
-//        // B_loc_st = interpolation along r of ANS B_loc_st
-//        //          = r * B_ans(SP B)
-//        bop_loc(4,inode*3+dim) = r * B_ans_loc(1+1*num_ans,inode*3+dim);
-//        // B_loc_rt = interpolation along s of ANS B_loc_rt
-//        //          = s * B_ans(SP A)
-//        bop_loc(5,inode*3+dim) = s * B_ans_loc(2+0*num_ans,inode*3+dim);
+        // B_loc_st = interpolation along r of ANS B_loc_st
+        //          = r * B_ans(SP B)
+        bop_loc(4,inode*3+dim) = r * B_ans_loc(1+1*num_ans,inode*3+dim);
+        // B_loc_rt = interpolation along s of ANS B_loc_rt
+        //          = s * B_ans(SP A)
+        bop_loc(5,inode*3+dim) = s * B_ans_loc(2+0*num_ans,inode*3+dim);
 
-        // testing without ans:
-        bop_loc(2,inode*3+dim) = deriv_gp(2,inode) * jac_cur(2,dim);
-        bop_loc(4,inode*3+dim) = deriv_gp(1,inode) * jac_cur(2,dim)
-                                +deriv_gp(2,inode) * jac_cur(1,dim);
-        bop_loc(5,inode*3+dim) = deriv_gp(0,inode) * jac_cur(2,dim)
-                                +deriv_gp(2,inode) * jac_cur(0,dim);
+//        // testing without ans:
+//        bop_loc(2,inode*3+dim) = deriv_gp(2,inode) * jac_cur(2,dim);
+//        bop_loc(4,inode*3+dim) = deriv_gp(1,inode) * jac_cur(2,dim)
+//                                +deriv_gp(2,inode) * jac_cur(1,dim);
+//        bop_loc(5,inode*3+dim) = deriv_gp(0,inode) * jac_cur(2,dim)
+//                                +deriv_gp(2,inode) * jac_cur(0,dim);
       }
     }
 
@@ -435,16 +435,16 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
        +(jac_cur(0,0)*jac_cur(1,0) + jac_cur(0,1)*jac_cur(1,1) + jac_cur(0,2)*jac_cur(1,2))
        -(jac(0,0)*jac(1,0)         + jac(0,1)*jac(1,1)         + jac(0,2)*jac(1,2)));
 
-    // testing without ans:
-    lstrain(2)= 0.5 * (
-       +(jac_cur(2,0)*jac_cur(2,0) + jac_cur(2,1)*jac_cur(2,1) + jac_cur(2,2)*jac_cur(2,2))
-       -(jac(2,0)*jac(2,0)         + jac(2,1)*jac(2,1)         + jac(2,2)*jac(2,2)));
-    lstrain(4)= (
-       +(jac_cur(1,0)*jac_cur(2,0) + jac_cur(1,1)*jac_cur(2,1) + jac_cur(1,2)*jac_cur(2,2))
-       -(jac(1,0)*jac(2,0)         + jac(1,1)*jac(2,1)         + jac(1,2)*jac(2,2)));
-    lstrain(5)= (
-       +(jac_cur(0,0)*jac_cur(2,0) + jac_cur(0,1)*jac_cur(2,1) + jac_cur(0,2)*jac_cur(2,2))
-       -(jac(0,0)*jac(2,0)         + jac(0,1)*jac(2,1)         + jac(0,2)*jac(2,2)));
+//    // testing without ans:
+//    lstrain(2)= 0.5 * (
+//       +(jac_cur(2,0)*jac_cur(2,0) + jac_cur(2,1)*jac_cur(2,1) + jac_cur(2,2)*jac_cur(2,2))
+//       -(jac(2,0)*jac(2,0)         + jac(2,1)*jac(2,1)         + jac(2,2)*jac(2,2)));
+//    lstrain(4)= (
+//       +(jac_cur(1,0)*jac_cur(2,0) + jac_cur(1,1)*jac_cur(2,1) + jac_cur(1,2)*jac_cur(2,2))
+//       -(jac(1,0)*jac(2,0)         + jac(1,1)*jac(2,1)         + jac(1,2)*jac(2,2)));
+//    lstrain(5)= (
+//       +(jac_cur(0,0)*jac_cur(2,0) + jac_cur(0,1)*jac_cur(2,1) + jac_cur(0,2)*jac_cur(2,2))
+//       -(jac(0,0)*jac(2,0)         + jac(0,1)*jac(2,1)         + jac(0,2)*jac(2,2)));
 
     // ANS modification of strains ************************************** ANS
     double dydt_A = 0.0; double dYdt_A = 0.0; const int spA = 0;
@@ -459,37 +459,37 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
 
     // vector product of rows of jacobians at corresponding sampling point
     for (int dim = 0; dim < NUMDIM_WEG6; ++dim) {
-      dydt_A += jac_cur_sps(ydir+spA*NUMDIM_WEG6,dim) * jac_cur_sps(dim+spA*NUMDIM_WEG6,zdir);
-      dYdt_A += jac_sps(ydir+spA*NUMDIM_WEG6,dim)     * jac_sps(dim+spA*NUMDIM_WEG6,zdir);
-      dxdt_B += jac_cur_sps(xdir+spB*NUMDIM_WEG6,dim) * jac_cur_sps(dim+spB*NUMDIM_WEG6,zdir);
-      dXdt_B += jac_sps(xdir+spB*NUMDIM_WEG6,dim)     * jac_sps(dim+spB*NUMDIM_WEG6,zdir);
+      dydt_A += jac_cur_sps(xdir+spA*NUMDIM_WEG6,dim) * jac_cur_sps(zdir+spA*NUMDIM_WEG6,dim);
+      dYdt_A += jac_sps(xdir+spA*NUMDIM_WEG6,dim)     * jac_sps(zdir+spA*NUMDIM_WEG6,dim);
+      dxdt_B += jac_cur_sps(ydir+spB*NUMDIM_WEG6,dim) * jac_cur_sps(zdir+spB*NUMDIM_WEG6,dim);
+      dXdt_B += jac_sps(ydir+spB*NUMDIM_WEG6,dim)     * jac_sps(zdir+spB*NUMDIM_WEG6,dim);
 
-      dzdt_C += jac_cur_sps(zdir+spC*NUMDIM_WEG6,dim) * jac_cur_sps(dim+spC*NUMDIM_WEG6,zdir);
-      dZdt_C += jac_sps(zdir+spC*NUMDIM_WEG6,dim)     * jac_sps(dim+spC*NUMDIM_WEG6,zdir);
-      dzdt_D += jac_cur_sps(zdir+spD*NUMDIM_WEG6,dim) * jac_cur_sps(dim+spD*NUMDIM_WEG6,zdir);
-      dZdt_D += jac_sps(zdir+spD*NUMDIM_WEG6,dim)     * jac_sps(dim+spD*NUMDIM_WEG6,zdir);
-      dzdt_E += jac_cur_sps(zdir+spE*NUMDIM_WEG6,dim) * jac_cur_sps(dim+spE*NUMDIM_WEG6,zdir);
-      dZdt_E += jac_sps(zdir+spE*NUMDIM_WEG6,dim)     * jac_sps(dim+spE*NUMDIM_WEG6,zdir);
-    }
-//    // E33: remedy of curvature thickness locking
-//    // Ett = 0.5* ( (1-r-s) * Ett(SP C) + r * Ett(SP D) + s * Ett(SP E) )
-//    lstrain(2) = 0.5 * ( (1-r-s) * (dzdt_C - dZdt_C)
-//                        + r * (dzdt_D - dZdt_D)
-//                        + s * (dzdt_E - dZdt_E));
-//    // E23: remedy of transverse shear locking
-//    // Est = r * Est(SP B)
-//    lstrain(4) = r * (dxdt_B - dXdt_B);
-//    // E13: remedy of transverse shear locking
-//    // Ert = s * Est(SP A)
-//    lstrain(5) = s * (dydt_A - dYdt_A);
-//    // ANS modification of strains ************************************** ANS
+      dzdt_C += jac_cur_sps(zdir+spC*NUMDIM_WEG6,dim) * jac_cur_sps(zdir+spC*NUMDIM_WEG6,dim);
+      dZdt_C += jac_sps(zdir+spC*NUMDIM_WEG6,dim)     * jac_sps(zdir+spC*NUMDIM_WEG6,dim);
+      dzdt_D += jac_cur_sps(zdir+spD*NUMDIM_WEG6,dim) * jac_cur_sps(zdir+spD*NUMDIM_WEG6,dim);
+      dZdt_D += jac_sps(zdir+spD*NUMDIM_WEG6,dim)     * jac_sps(zdir+spD*NUMDIM_WEG6,dim);
+      dzdt_E += jac_cur_sps(zdir+spE*NUMDIM_WEG6,dim) * jac_cur_sps(zdir+spE*NUMDIM_WEG6,dim);
+      dZdt_E += jac_sps(zdir+spE*NUMDIM_WEG6,dim)     * jac_sps(zdir+spE*NUMDIM_WEG6,dim);
+}
+    // E33: remedy of curvature thickness locking
+    // Ett = 0.5* ( (1-r-s) * Ett(SP C) + r * Ett(SP D) + s * Ett(SP E) )
+    lstrain(2) = 0.5 * ( (1-r-s) * (dzdt_C - dZdt_C)
+                        + r * (dzdt_D - dZdt_D)
+                        + s * (dzdt_E - dZdt_E));
+    // E23: remedy of transverse shear locking
+    // Est = r * Est(SP B)
+    lstrain(4) = r * (dxdt_B - dXdt_B);
+    // E13: remedy of transverse shear locking
+    // Ert = s * Est(SP A)
+    lstrain(5) = s * (dydt_A - dYdt_A);
+    // ANS modification of strains ************************************** ANS
 
     // transformation of local glstrains 'back' to global(material) space
     Epetra_SerialDenseVector glstrain(NUMSTR_WEG6);
     glstrain.Multiply('N','N',1.0,TinvT,lstrain,1.0);
 
     // return gp strains (only in case of stress/strain output)
-    if (elestrain != NULL){
+    if (elestress != NULL){
       for (int i = 0; i < 3; ++i) {
         (*elestrain)(gp,i) = glstrain(i);
       }
@@ -537,22 +537,33 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
           Epetra_SerialDenseVector G_ij(NUMSTR_WEG6);
           G_ij(0) = deriv_gp(0, inod) * deriv_gp(0, jnod); // rr-dir
           G_ij(1) = deriv_gp(1, inod) * deriv_gp(1, jnod); // ss-dir
-          G_ij(3) = deriv_gp(0, inod) * deriv_gp(1, jnod) + deriv_gp(1, inod)
-              * deriv_gp(0, jnod); //rs-dir
+          G_ij(3) = deriv_gp(0, inod) * deriv_gp(1, jnod)
+                  + deriv_gp(1, inod) * deriv_gp(0, jnod); // rs-dir
+          
+//          // testing without ANS:
+//          G_ij(2) = deriv_gp(2, inod) * deriv_gp(2, jnod); // tt-dir
+//          G_ij(4) = deriv_gp(1, inod) * deriv_gp(2, jnod)
+//                  + deriv_gp(2, inod) * deriv_gp(1, jnod); // st-dir
+//          G_ij(5) = deriv_gp(0, inod) * deriv_gp(2, jnod)
+//                  + deriv_gp(2, inod) * deriv_gp(0, jnod); // rt-dir
+          
           // ANS modification in tt-dir
           G_ij(2) = (1-r-s) * (*deriv_sp)(zdir+spC*NUMDIM_WEG6, inod)
-              * (*deriv_sp)(zdir+spC*NUMDIM_WEG6, jnod) + r * (*deriv_sp)(zdir
-              +spD*NUMDIM_WEG6, inod) * (*deriv_sp)(zdir+spD*NUMDIM_WEG6, jnod)
-              + s * (*deriv_sp)(zdir+spE*NUMDIM_WEG6, inod) * (*deriv_sp)(zdir
-                  +spE*NUMDIM_WEG6, jnod);
+                            * (*deriv_sp)(zdir+spC*NUMDIM_WEG6, jnod)
+                   + r * (*deriv_sp)(zdir+spD*NUMDIM_WEG6, inod)
+                       * (*deriv_sp)(zdir+spD*NUMDIM_WEG6, jnod)
+                   + s * (*deriv_sp)(zdir+spE*NUMDIM_WEG6, inod)
+                       * (*deriv_sp)(zdir+spE*NUMDIM_WEG6, jnod);
           // ANS modification in st-dir
-          G_ij(4) = 0.5*(r * ((*deriv_sp)(ydir+spB*NUMDIM_WEG6, inod)
-              * (*deriv_sp)(zdir+spB*NUMDIM_WEG6, jnod) +(*deriv_sp)(zdir+spB
-              *NUMDIM_WEG6, inod) * (*deriv_sp)(ydir+spB*NUMDIM_WEG6, jnod)));
+          G_ij(4) = r * ((*deriv_sp)(ydir+spB*NUMDIM_WEG6, inod)
+                          *(*deriv_sp)(zdir+spB*NUMDIM_WEG6, jnod)
+                          +(*deriv_sp)(zdir+spB*NUMDIM_WEG6, inod)
+                          *(*deriv_sp)(ydir+spB*NUMDIM_WEG6, jnod));
           // ANS modification in rt-dir
-          G_ij(5) = 0.5*(s * ((*deriv_sp)(xdir+spA*NUMDIM_WEG6, inod)
-              * (*deriv_sp)(zdir+spA*NUMDIM_WEG6, jnod) +(*deriv_sp)(zdir+spA
-              *NUMDIM_WEG6, inod) * (*deriv_sp)(xdir+spA*NUMDIM_WEG6, jnod)));
+          G_ij(5) = s * ((*deriv_sp)(xdir+spA*NUMDIM_WEG6, inod)
+                          *(*deriv_sp)(zdir+spA*NUMDIM_WEG6, jnod)
+                          +(*deriv_sp)(zdir+spA*NUMDIM_WEG6, inod)
+                          *(*deriv_sp)(xdir+spA*NUMDIM_WEG6, jnod));
           // transformation of local(parameter) space 'back' to global(material) space
           Epetra_SerialDenseVector G_ij_glob(NUMSTR_WEG6);
           G_ij_glob.Multiply('N', 'N', 1.0, TinvT, G_ij, 0.0);
