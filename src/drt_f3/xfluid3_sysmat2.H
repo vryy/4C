@@ -1857,13 +1857,15 @@ void static Sysmat(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta^\boundary
-            XFEM::PosEtaBoundary pos_eta_boundary(2);
+            static XFEM::PosEtaBoundary pos_eta_boundary(2);
             pos_eta_boundary(0) = intpoints.qxg[iquad][0];
             pos_eta_boundary(1) = intpoints.qxg[iquad][1];
       
             // coordinates of the current integration point in element coordinates \xi
-            const XFEM::PosXiBoundary posXiBoundary(mapEtaBToXiB(*cell, pos_eta_boundary));
-            const XFEM::PosXiDomain posXiDomain(mapEtaBToXiD(*cell, pos_eta_boundary));
+            static XFEM::PosXiBoundary posXiBoundary(2);
+            posXiBoundary = mapEtaBToXiB(*cell, pos_eta_boundary);
+            static XFEM::PosXiBoundary posXiDomain(3);
+            posXiDomain = mapEtaBToXiD(*cell, pos_eta_boundary);
             const double detcell = abs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
 
             // shape functions and their first derivatives
@@ -1883,13 +1885,16 @@ void static Sysmat(
             //DRT::UTILS::shape_function_3D_deriv1(deriv_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
             
             // position of the gausspoint in physical coordinates
-            const BlitzVec gauss_pos_xyz(blitz::sum(funct_boundary(j)*xyze_boundary(i,j),j));
+            static BlitzVec gauss_pos_xyz(3);
+            gauss_pos_xyz = blitz::sum(funct_boundary(j)*xyze_boundary(i,j),j);
       
             // get jacobian matrix d x / d \xi  (3x2)
-            const BlitzMat dxyzdrs(blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k));
+            static BlitzMat dxyzdrs(3,2);
+            dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
             
             // compute covariant metric tensor G for surface element (2x2)
-            const BlitzMat metric(blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k));
+            static BlitzMat metric(2,2);
+            metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
             //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
             
             // compute global derivates
@@ -1974,7 +1979,8 @@ void static Sysmat(
             const BlitzVec normalvec(computeNormalToBoundaryElement(deriv_boundary, xyze_boundary));
       
             // get velocities (n+g,i) at integration point
-            const BlitzVec velint(blitz::sum(shp(j)*evelnp(i,j),j));
+            BlitzVec velint(3);
+            velint = blitz::sum(shp(j)*evelnp(i,j),j);
             
             // get discontinous pressure
             const double discpres(blitz::sum(shp_discpres*ediscprenp));
@@ -2099,7 +2105,8 @@ void static Sysmat(
             assembler.template Matrix<Velz,Tauzy>(shp, -timefacfac*normalvec(1), shp_tau);
             assembler.template Matrix<Velz,Tauzz>(shp, -timefacfac*normalvec(2), shp_tau);
             
-            const BlitzVec tau_times_n(blitz::sum(tau(i,j)*normalvec(j),j));
+            static BlitzVec tau_times_n(3);
+            tau_times_n = blitz::sum(tau(i,j)*normalvec(j),j);
             assembler.template Vector<Velx>(shp, timefacfac*tau_times_n(0));
             assembler.template Vector<Vely>(shp, timefacfac*tau_times_n(1));
             assembler.template Vector<Velz>(shp, timefacfac*tau_times_n(2));
