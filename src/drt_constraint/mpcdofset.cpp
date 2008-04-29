@@ -59,7 +59,6 @@ void MPCDofSet::TransferDegreesOfFreedom(
         const bool unique_and_unchanging_dofnumbers
         )
 {
-    //sourcedis.Print(cout);
     if (!sourcedis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
     if (!sourcedis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
     if (!sourcedis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
@@ -68,27 +67,22 @@ void MPCDofSet::TransferDegreesOfFreedom(
     if (!newdis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
     if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
     
-    //AssignDegreesOfFreedom(newdis, start, unique_and_unchanging_dofnumbers);
     
     if (!newdis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
     if (!newdis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
     if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
     
-//    cout << "before " << endl << (*this) << endl;
+    if (!sourcedis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
+    if (!sourcedis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
+    if (!sourcedis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
+
+    if (!newdis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
+    if (!newdis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
+    if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
+
     
-//    cout << newdis << endl;
+    
  
-    if (!sourcedis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
-    if (!sourcedis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
-    if (!sourcedis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
-
-    if (!newdis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
-    if (!newdis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
-    if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
-
-    
-    
-    cout << "Row DOFs" << endl;
     vector<int> dofrowvec(dofrowmap_->NumMyElements(),1000);
     // now for the nodes
     int counter = 0;
@@ -101,14 +95,12 @@ void MPCDofSet::TransferDegreesOfFreedom(
         dsassert(dofs.size()==3, "number of dofs is not 3!");
         
         const int newlid = newnode->LID();
-        //const int newfirstidx = (*idxcolnodes_)[newlid];
         const int numdofs = (*numdfcolnodes_)[newlid];
         dsassert(numdofs==3, "number of dofs is not 3!");
         for (int idof = 0; idof < numdofs; ++idof)
         {
             dofrowvec[counter] = dofs[idof];
             counter++;
-            //cout << 
         }
     }
     // now for the elements
@@ -124,23 +116,18 @@ void MPCDofSet::TransferDegreesOfFreedom(
         const int numdofs = (*numdfcolelements_)[newlid];
         for (int idof = 0; idof < numdofs; ++idof)
         {
-            dserror("I shouldn't be here!!!");
             dofrowvec[counter] = dofs[idof];
             counter++;
         }
     }
-    cout << *dofrowmap_ << endl;
     if (!dofrowmap_->UniqueGIDs()) dserror("before, Dof row map is not unique");
     dofrowmap_ = rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
-    cout << *dofrowmap_ << endl;
     if (!dofrowmap_->UniqueGIDs()) dserror("after, Dof row map is not unique");
     
     
     //sourcedis.Print(cout);
     
-    cout << "Col DOFs" << endl;
     vector<int> dofcolvec(dofcolmap_->NumMyElements());
-    cout << "now for the nodes" << endl;
     int colcounter = 0;
     for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
     {
@@ -156,9 +143,6 @@ void MPCDofSet::TransferDegreesOfFreedom(
             colcounter++;
         }
     }
-    //exit(0);
-    cout << "now for the elements" << endl;
-    //cout << sourcedis.Comm().MyPID() << newdis.NumMyColElements() << endl;
     for (int inode = 0; inode != newdis.NumMyColElements(); ++inode)
     {
         const DRT::Element* newelement = newdis.lColElement(inode);
