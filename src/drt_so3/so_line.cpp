@@ -30,17 +30,6 @@ lline_(lline)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                         gee 04/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::StructuralLine::StructuralLine(const DRT::ELEMENTS::StructuralLine& old) :
-DRT::Element(old),
-parent_(old.parent_),
-lline_(old.lline_)
-{
   // type of gaussian integration
   switch(Shape())
   {
@@ -53,6 +42,18 @@ lline_(old.lline_)
   default: 
       dserror("shape type unknown!\n");
   }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  copy-ctor (public)                                         gee 04/08|
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::StructuralLine::StructuralLine(const DRT::ELEMENTS::StructuralLine& old) :
+DRT::Element(old),
+parent_(old.parent_),
+lline_(old.lline_),
+gaussrule_(old.gaussrule_)
+{
   return;
 }
 

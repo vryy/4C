@@ -16,6 +16,8 @@ using namespace Teuchos;
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/material.H"
+#include "so_surface.H"
+#include "so_line.H"
 
 // Several parameters which are fixed for Solid Wedge6
 const int NUMNOD_WEG6 = 6;      // number of nodes
@@ -37,8 +39,6 @@ namespace ELEMENTS
 {
 // forward declarations
 class Sow6Volume;
-class Sow6Surface;
-class Sow6Line;
 class Sow6Register;
 
 /*!
@@ -51,8 +51,6 @@ class So_weg6 : public DRT::Element
 public:
   //! @name Friends
   friend class Sow6Register;
-  friend class Sow6Surface;
-  friend class Sow63Line;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -89,17 +87,17 @@ public:
   /*!
   \brief Return number of volumes of this element
   */
-  virtual int NumVolume() const {return 1;}
+  virtual inline int NumVolume() const {return 1;}
 
   /*!
   \brief Return number of surfaces of this element
   */
-  virtual int NumSurface() const {return 5;}
+  virtual inline int NumSurface() const {return 5;}
 
   /*!
   \brief Return number of lines of this element
   */
-  virtual int NumLine() const {return 9;}
+  virtual inline int NumLine() const {return 9;}
 
   /*!
   \brief Get vector of ptrs to the lines of this element
@@ -125,7 +123,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_So_weg6;}
+  virtual inline int UniqueParObjectId() const { return ParObject_So_weg6;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -294,15 +292,15 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                   data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::ELEMENTS::Sow6Volume> >  volume_;
+  vector<RCP<DRT::ELEMENTS::Sow6Volume> >          volume_;
   //! vector of surfaces of this element
-  vector<RefCountPtr<DRT::ELEMENTS::Sow6Surface> > surfaces_;
+  vector<RCP<DRT::ELEMENTS::StructuralSurface> >   surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::ELEMENTS::Sow6Surface*>              surfaceptrs_;
+  vector<DRT::ELEMENTS::StructuralSurface*>        surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::Sow6Line> >    lines_;
+  vector<RCP<DRT::ELEMENTS::StructuralLine> >      lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::Sow6Line*>                 lineptrs_;
+  vector<DRT::ELEMENTS::StructuralLine*>           lineptrs_;
   //! vector of inverses of the jacobian in material frame
   vector<Epetra_SerialDenseMatrix>                 invJ_;
   //! determinant of Jacobian in material frame
@@ -457,7 +455,7 @@ private:
 //=======================================================================
 //=======================================================================
 
-
+#if 0
 /*!
 \brief An element representing a surface of a So_weg6 element
 
@@ -790,7 +788,7 @@ private:
   int                    lline_;
 
 }; // class Sow6Line
-
+#endif
 
 
 

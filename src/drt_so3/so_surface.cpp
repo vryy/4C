@@ -64,7 +64,8 @@ gaussrule_(DRT::UTILS::intrule2D_undefined)
 DRT::ELEMENTS::StructuralSurface::StructuralSurface(const DRT::ELEMENTS::StructuralSurface& old) :
 DRT::Element(old),
 parent_(old.parent_),
-lsurface_(old.lsurface_)
+lsurface_(old.lsurface_),
+gaussrule_(old.gaussrule_)
 {
   return;
 }

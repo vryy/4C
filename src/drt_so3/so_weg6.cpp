@@ -263,6 +263,14 @@ DRT::Element** DRT::ELEMENTS::So_weg6::Volumes()
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::So_weg6::Surfaces()
 {
+  // once constructed do not reconstruct again
+  // make sure they exist
+  if ((int)surfaces_.size()    == NumSurface() &&
+      (int)surfaceptrs_.size() == NumSurface() &&
+      dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(surfaceptrs_[0]) )
+    return (DRT::Element**)(&(surfaceptrs_[0]));
+    
+  
   const int nsurf = NumSurface();
   surfaces_.resize(nsurf);
   surfaceptrs_.resize(nsurf);
@@ -270,14 +278,13 @@ DRT::Element** DRT::ELEMENTS::So_weg6::Surfaces()
   for (int qisurf = 0; qisurf < 3; ++qisurf)
   {
         const int nnode_surf = 4;
-        const int surfid = qisurf;
-        int nodeids[nnode_surf];
-        DRT::Node* nodes[nnode_surf];
+        int nodeids[4];
+        DRT::Node* nodes[4];
         for (int qinode = 0; qinode < nnode_surf; ++qinode) {
-          nodeids[qinode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[surfid][qinode]];
-          nodes[qinode] = Nodes()[eleNodeNumbering_wedge15_quadsurfaces[surfid][qinode]];
+          nodeids[qinode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[qisurf][qinode]];
+          nodes[qinode] = Nodes()[eleNodeNumbering_wedge15_quadsurfaces[qisurf][qinode]];
         }
-        surfaces_[qisurf] = rcp(new DRT::ELEMENTS::Sow6Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+        surfaces_[qisurf] = rcp(new DRT::ELEMENTS::StructuralSurface(qisurf,Owner(),nnode_surf,nodeids,nodes,this,qisurf));
         surfaceptrs_[qisurf] = surfaces_[qisurf].get();
   };
   // then the tri's...
@@ -291,7 +298,7 @@ DRT::Element** DRT::ELEMENTS::So_weg6::Surfaces()
         nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[tisurf][tinode]];
         nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[tisurf][tinode]];
       }
-      surfaces_[surfid] = rcp(new DRT::ELEMENTS::Sow6Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
+      surfaces_[surfid] = rcp(new DRT::ELEMENTS::StructuralSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
       surfaceptrs_[surfid] = surfaces_[surfid].get();
   };
   return (DRT::Element**)(&(surfaceptrs_[0]));
@@ -302,10 +309,30 @@ DRT::Element** DRT::ELEMENTS::So_weg6::Surfaces()
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::So_weg6::Lines()
 {
-  dserror("So_weg6 lines not yet implemented");
+  // once constructed do not reconstruct again
+  // make sure they exist
+  if ((int)lines_.size()    == NumLine() &&
+      (int)lineptrs_.size() == NumLine() &&
+      dynamic_cast<DRT::ELEMENTS::StructuralLine*>(lineptrs_[0]) )
+    return (DRT::Element**)(&(lineptrs_[0]));
+
   const int nline = NumLine();
   lines_.resize(nline);
   lineptrs_.resize(nline);
+  
+  for (int i=0; i<nline; ++i)
+  {
+    const int numnode = 2;
+    int nodeids[2];
+    DRT::Node* nodes[2];
+    for (int j=0; j<numnode; ++j)
+    {
+      nodeids[j] = eleNodeNumbering_wedge15_lines[i][j];
+      nodes[j] = Nodes()[eleNodeNumbering_wedge15_lines[i][j]];
+    }
+    lines_[i] = rcp(new DRT::ELEMENTS::StructuralLine(i,Owner(),numnode,nodeids,nodes,this,i));
+    lineptrs_[i] = lines_[i].get();
+  }
   return (DRT::Element**)(&(lineptrs_[0]));
 }
 
