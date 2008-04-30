@@ -468,7 +468,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     #ifdef VERBOSE_OUTPUT
     cout << "jac\n" << jac;
     cout << "xrefe\n" << xrefe;
-	#endif //VERBOSE_OUTPUT
+    #endif //VERBOSE_OUTPUT
 
     /* compute partial derivatives at gp xsi_1, xsi_2, xsi_3, xsi_4 material coordinates
     ** by solving   Jac . partials = I_aug   for partials

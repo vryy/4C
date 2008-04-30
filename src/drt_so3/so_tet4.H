@@ -31,6 +31,9 @@ using namespace Teuchos;
 
 #include "../drt_mat/material.H"
 
+#include "so_surface.H"
+#include "so_line.H"
+
 #define NUMNOD_SOTET4       4      // number of nodes
 #define NODDOF_SOTET4       3      // number of dofs per node
 #define NUMDOF_SOTET4      12      // total dofs per element
@@ -53,8 +56,6 @@ namespace ELEMENTS
 {
 // forward declarations
 class Sotet4Volume;
-class Sotet4Surface;
-class Sotet4Line;
 class Sotet4Register;
 
 /*!
@@ -69,8 +70,6 @@ public:
 
   //! @name Friends
   friend class Sotet4Register;
-  friend class Sotet4Surface;
-  friend class Sotet4Line;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -305,7 +304,7 @@ protected:
     so_tet4_totlag,
     so_tet4_updlag
   };
-  enum StressType//###################
+  enum StressType
   {
     so_tet4_stress_none,
     so_tet4_stress_gpxyz,
@@ -317,27 +316,27 @@ protected:
   };
 
   //! kinematic type
-  KinematicType                                   kintype_;
+  KinematicType                                            kintype_;
   //! type of stress evaluation
-  StressType                                      stresstype_;
+  StressType                                               stresstype_;
   //! no. gaussian points in each spatial dimension
-  int                                             ngp_[3];
+  int                                                      ngp_[3];
   //! number of the material law
-  int                                             material_;
+  int                                                      material_;
 
-  DRT::Container                                  data_;
+  DRT::Container                                           data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::ELEMENTS::Sotet4Volume> > volume_;
+  vector<RefCountPtr<DRT::ELEMENTS::Sotet4Volume> >        volume_;
   //! vector of surfaces of this element
-    vector<RefCountPtr<DRT::ELEMENTS::Sotet4Surface> > surfaces_;
+    vector<RefCountPtr<DRT::ELEMENTS::StructuralSurface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::ELEMENTS::Sotet4Surface*>           surfaceptrs_;
+  vector<DRT::ELEMENTS::StructuralSurface*>                surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::Sotet4Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::StructuralLine> >      lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::Sotet4Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::StructuralLine*>                   lineptrs_;
   //! vector of history variables for each Gauss point
-  vector<RefCountPtr<MAT::Material> >                mat_;
+  vector<RefCountPtr<MAT::Material> >                      mat_;
 
 
 
@@ -345,6 +344,7 @@ protected:
 
   // don't want = operator
   So_tet4& operator = (const So_tet4& old);
+  
   virtual void so_tet4_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
@@ -471,6 +471,7 @@ private:
 //=======================================================================
 
 
+#if 0
 /*!
 \brief An element representing a surface of a So_tet4 element
 
@@ -808,7 +809,7 @@ private:
   int                    lline_;
 
 }; // class Sotet4Line
-
+#endif
 
 
 
