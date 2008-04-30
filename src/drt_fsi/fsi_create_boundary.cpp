@@ -47,7 +47,7 @@ RCP<DRT::Discretization> CreateDiscretizationFromCondition(
     
   RCP<DRT::Discretization> boundarydis = rcp(new DRT::Discretization(discret_name,com));
 
-  if (!cutterdis->Filled()) cutterdis->FillComplete(true,true,true,false);
+  if (!cutterdis->Filled()) cutterdis->FillComplete();
 
   const int myrank = boundarydis->Comm().MyPID();
   
@@ -219,7 +219,7 @@ RCP<DRT::Discretization> CreateDiscretizationFromCondition(
   boundarydis->ExportColumnElements(*boundaryelecolmap);
 
   // Now we are done. :)
-  boundarydis->FillComplete(true,true,true,false);
+  boundarydis->FillComplete();
   //cout << (*boundarydis) << endl;
   
   return boundarydis;

@@ -119,7 +119,7 @@ void DRT::DofSet::Reset()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int start, const bool unique_and_unchanging_dofnumbers)
+int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int start)
 {
   if (!dis.Filled()) dserror("discretization Filled()==false");
   if (!dis.NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");
@@ -136,27 +136,30 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const int sta
 
   int count=0;
 
-  if (unique_and_unchanging_dofnumbers)
+  // We assume that all dof sets before this one have been set up. Otherwise
+  // we'd have to reorder the list.
+  for (std::list<DofSet*>::const_iterator i=dofsets_.begin();
+       i!=dofsets_.end();
+       ++i)
   {
-      // We assume that all dof sets before this one have been set up. Otherwise
-      // we'd have to reorder the list.
-      for (std::list<DofSet*>::iterator i=dofsets_.begin();
-           i!=dofsets_.end();
-           ++i)
-      {
-        if (*i==this)
-          break;
+    if (*i==this)
+      break;
 
-        // ignore empty (no yet initialized) dof row maps
-        // (This is not supposed to happen... Axel thinks different...)
-        if ((*i)->dofrowmap_->NumGlobalElements()>0)
-        {
-          if (count > (*i)->dofrowmap_->MinAllGID())
-            dserror("dof sets numbers not assigned continuously: %d %d",
-                    count,(*i)->dofrowmap_->MinAllGID());
-          count = (*i)->dofrowmap_->MaxAllGID() + 1;
-        }
+    // ignore empty (no yet initialized) dof row maps
+    // (This is not supposed to happen... Axel thinks different...)
+    if ((*i)->dofrowmap_->NumGlobalElements()>0)
+    {
+      if (count > (*i)->dofrowmap_->MinAllGID())
+      {
+        dserror("dof sets numbers not assigned continuously: %d %d",
+                count,(*i)->dofrowmap_->MinAllGID());
       }
+      count = (*i)->dofrowmap_->MaxAllGID() + 1;
+    }
+    else
+    {
+      cout << " --> We have dofrowmap_->NumGlobalElements() = " << ((*i)->dofrowmap_->NumGlobalElements()) << endl;
+    }
   }
 
   // Now this is tricky. We have to care for nodes and elements, both

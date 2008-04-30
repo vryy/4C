@@ -41,7 +41,7 @@ PBCDofSet::~PBCDofSet()
  |  this function is a specialisation of the AssignDegreesOfFreedom of  |
  |  the base class DofSet                                               |
  *----------------------------------------------------------------------*/
-int PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start, const bool unique_and_unchanging_dofnumbers)
+int PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
 {
   if (!dis.Filled()) dserror("discretization Filled()==false");
   if (!dis.NodeRowMap()->UniqueGIDs()) dserror("Nodal row map is not unique");

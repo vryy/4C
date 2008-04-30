@@ -92,7 +92,7 @@ actdisc_(discr)
     RCP<DRT::DofSet> newdofset = rcp(new MPCDofSet(actdisc_));
     constraintdis_->ReplaceDofSet(newdofset);
     newdofset = null;
-    constraintdis_->FillComplete(true,true,true,false);
+    constraintdis_->FillComplete();
     
     //Fill MPC Vectors
     SetupMPC(MPCamplitudes,MPCcondIDs,constrcond,p);
@@ -483,7 +483,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
 
   if (!actdisc_->Filled())
   {
-    actdisc_->FillComplete(true,true,true,false);
+    actdisc_->FillComplete();
   }
 
   const int myrank = newdis->Comm().MyPID();
@@ -582,7 +582,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
   
   }
    
-  newdis->FillComplete(true,true,true,false);
+  newdis->FillComplete();
   return newdis;
 }
 

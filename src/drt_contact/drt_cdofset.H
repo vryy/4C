@@ -54,7 +54,7 @@ public:
   //! @name Construction
 
   /// Assign dof numbers to all elements and nodes of the discretization.
-  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start, const bool unique_and_unchanging_dofnumbers = true);
+  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start);
 
   //@}
 

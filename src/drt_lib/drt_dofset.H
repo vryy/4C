@@ -222,7 +222,7 @@ public:
   //! @name Construction
 
   /// Assign dof numbers using all elements and nodes of the discretization.
-  virtual int AssignDegreesOfFreedom(const Discretization& dis, const int start, const bool unique_and_unchanging_dofnumbers);
+  virtual int AssignDegreesOfFreedom(const Discretization& dis, const int start);
 
   /// reset all internal variables
   virtual void Reset();

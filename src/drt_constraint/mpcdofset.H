@@ -50,15 +50,13 @@ public:
   /// Assign dof numbers to all elements and nodes of the discretization.
   virtual int AssignDegreesOfFreedom(
           const DRT::Discretization& dis,
-          const int start,
-          const bool unique_and_unchanging_dofnumbers = true);
+          const int start);
 
   /// Assign dof numbers for new discretization using dof numbering from source discretization.
   void TransferDegreesOfFreedom(
           const DRT::Discretization& sourcedis,    ///< source discret
           const DRT::Discretization& newdis,       ///< discretization that gets dof numbering from source discret
-          const int start,                    ///< offset for dof numbering (obsolete)
-          const bool unique_and_unchanging_dofnumbers
+          const int                  start         ///< offset for dof numbering (obsolete)
           );
   
   //@}

@@ -32,7 +32,7 @@ DRT::DofSet()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int CONTACT::CDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start, const bool unique_and_unchanging_dofnumbers)
+int CONTACT::CDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
 {
   // Important remark (popp, 04/08):
   // We explicitly set the flag "unique_and_unchanging_dofnumbers" = false!
@@ -44,7 +44,7 @@ int CONTACT::CDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, con
   // with multiple discretizations! (FIXME)
   
   // first, we call the standard AssignDegreesOfFreedom from the base class
-  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,start,false);
+  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,start);
   
   // now we'll get ourselves the row and column dof maps from the base class and replace
   // them with our own version of them

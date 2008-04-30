@@ -32,7 +32,7 @@ sourcedis_(sourcedis)
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int MPCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start, const bool unique_and_unchanging_dofnumbers)
+int MPCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
 {
   // Important remark (popp, 04/08):
   // We explicitly set the flag "unique_and_unchanging_dofnumbers" = false!
@@ -44,9 +44,9 @@ int MPCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int 
   // with multiple discretizations! (FIXME)
   
   // first, we call the standard AssignDegreesOfFreedom from the base class
-  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,start,false);
+  int count = DRT::DofSet::AssignDegreesOfFreedom(dis,start);
   
-  TransferDegreesOfFreedom(*sourcedis_, dis, start, unique_and_unchanging_dofnumbers);
+  TransferDegreesOfFreedom(*sourcedis_, dis, start);
     
   return count;
 }
@@ -55,8 +55,7 @@ int MPCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int 
 void MPCDofSet::TransferDegreesOfFreedom(
         const DRT::Discretization& sourcedis,
         const DRT::Discretization& newdis,
-        const int start,
-        const bool unique_and_unchanging_dofnumbers
+        const int start
         )
 {
     if (!sourcedis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
