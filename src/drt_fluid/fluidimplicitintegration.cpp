@@ -2262,46 +2262,31 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  calculate (wall) stresses (public)                         gjb 07/07|
+ |  calculate traction vector at (Dirichlet) boundary (public) gjb 07/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-RefCountPtr<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
+Teuchos::RCP<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
 {
-  ParameterList eleparams;
-  // set action for elements
-  eleparams.set("action","integrate_Shapefunction");
-
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // create vector (+ initialization with zeros)
-  RefCountPtr<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
-
-  // call loop over elements to evaluate the condition
-  discret_->ClearState();
-  const string condstring("FluidStressCalc");
-  discret_->EvaluateCondition(eleparams,integratedshapefunc,condstring);
-  discret_->ClearState();
+  string condstring("FluidStressCalc");
+  Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
 
   // compute traction values at specified nodes; otherwise do not touch the zero values
   for (int i=0;i<integratedshapefunc->MyLength();i++)
   {
     if ((*integratedshapefunc)[i] != 0.0)
     {
-      // overwerite integratedshapefunc values with the calculated traction coefficients
+      // overwrite integratedshapefunc values with the calculated traction coefficients,
+      // which are reconstructed out of the nodal forces (trueresidual_) using the
+      // same shape functions on the boundary as for velocity and pressure.
       (*integratedshapefunc)[i] = (*trueresidual_)[i]/(*integratedshapefunc)[i];
     }
   }
 
-  // compute traction values at nodes   ---not used any more-----
-  // component-wise calculation:  traction := 0.0*traction + 1.0*(trueresidual_ / integratedshapefunc_)
-  // int err = traction->ReciprocalMultiply(1.0,*integratedshapefunc,*trueresidual_,0.0);
-  // if (err > 0) dserror("error in traction->ReciprocalMultiply");
-
+  // inform the user
+  if (myrank_==0)
+    cout<<"\ncomputed traction at specified Dirichlet boundaries\n\n";
 
   return integratedshapefunc;
 
@@ -2938,7 +2923,10 @@ Teuchos::RCP<Epetra_Vector> FluidImplicitTimeInt::IntegrateInterfaceShape(std::s
 
   // call loop over elements
   discret_->ClearState();
-  discret_->SetState("dispnp", dispnp_);
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+  }
   discret_->EvaluateCondition(eleparams,integratedshapefunc,condname);
   discret_->ClearState();
 
