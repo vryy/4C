@@ -41,7 +41,7 @@ ADAPTER::ConDifTimeIntegration::~ConDifTimeIntegration()
 {
 }
 
-#if 1
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ConDifImplicit::ConDifImplicit(
@@ -115,6 +115,5 @@ void ADAPTER::ConDifImplicit::Solve()
 {
   condif_.Solve();
 }
-#endif
 
 #endif  // #ifdef CCADISCRET

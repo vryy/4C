@@ -75,7 +75,7 @@ void ELCH::Algorithm::PrepareTimeStep()
   time_ += dt_;
   if (Comm().MyPID()==0)
   {
-    cout<<"******************\n   FLUID SOLVER  \n******************\n";
+    cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
   }
 
   FluidField().PrepareTimeStep();

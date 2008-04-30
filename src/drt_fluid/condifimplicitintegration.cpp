@@ -1081,12 +1081,12 @@ void CondifImplicitTimeInt::SetInitialField()
   vector<DRT::Condition*> cond;
   discret_->GetCondition("InitialField", cond);
 
-  if (cond.size() > 1) dserror("only one initial field condition allowed");
-
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   
   for (unsigned i=0; i<cond.size(); ++i)
   {
+    cout<<"Applied InitialField Condition "<<i<<endl; 
+    
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
@@ -1110,7 +1110,6 @@ void CondifImplicitTimeInt::SetInitialField()
         phinp_->ReplaceMyValues(1,&phi,&lid);
         phin_->ReplaceMyValues(1,&phi,&lid);
         phinm_->ReplaceMyValues(1,&phi,&lid);
-        cout<<"set initial value"<<endl;
       }
     }
   }
