@@ -181,8 +181,7 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
 {
 
   cout << "XFluidImpl::NonlinearSolve()" << endl;
-  fluid_.NonlinearSolve(soliddis_);  // this will be replaced by the next line, once we have the tree
-  //fluid_.NonlinearSolve(boundarydis_solidparalleldistrib_);
+  fluid_.NonlinearSolve(boundarydis_fluidparalleldistrib_,soliddis_);
 }
 
 

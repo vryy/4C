@@ -114,7 +114,10 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::Integrate(RCP<DRT::Discretization> cutterdiscret)
+void XFluidImplicitTimeInt::Integrate(
+        RCP<DRT::Discretization> cutterdiscret,
+        RCP<DRT::Discretization> submerseddiscret
+        )
 {
   // bound for the number of startsteps
   const int    numstasteps         =params_.get<int>   ("number of start steps");
@@ -147,7 +150,7 @@ void XFluidImplicitTimeInt::Integrate(RCP<DRT::Discretization> cutterdiscret)
 
   if (timealgo_==timeint_stationary)
     // stationary case
-    SolveStationaryProblem(cutterdiscret);
+    SolveStationaryProblem(cutterdiscret,submerseddiscret);
 
   else  // instationary case
   {
@@ -163,7 +166,7 @@ void XFluidImplicitTimeInt::Integrate(RCP<DRT::Discretization> cutterdiscret)
     }
 
     // continue with the final time integration
-    TimeLoop(cutterdiscret);
+    TimeLoop(cutterdiscret,submerseddiscret);
   }
 
   // end total time measurement
@@ -187,7 +190,10 @@ void XFluidImplicitTimeInt::Integrate(RCP<DRT::Discretization> cutterdiscret)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::TimeLoop(RCP<DRT::Discretization> cutterdiscret)
+void XFluidImplicitTimeInt::TimeLoop(
+        RCP<DRT::Discretization> cutterdiscret,
+        RCP<DRT::Discretization> submerseddiscret
+        )
 {
   // time measurement: time loop
   TimeMonitor monitor(*timetimeloop_);
@@ -232,13 +238,13 @@ void XFluidImplicitTimeInt::TimeLoop(RCP<DRT::Discretization> cutterdiscret)
       // -----------------------------------------------------------------
       //                     solve nonlinear equation
       // -----------------------------------------------------------------
-      NonlinearSolve(cutterdiscret);
+      NonlinearSolve(cutterdiscret,submerseddiscret);
       break;
     case 1:
       // -----------------------------------------------------------------
       //                     solve linearised equation
       // -----------------------------------------------------------------
-      LinearSolve(cutterdiscret);
+      LinearSolve(cutterdiscret,submerseddiscret);
       break;
     default:
       dserror("Type of dynamics unknown!!");
@@ -447,7 +453,10 @@ void XFluidImplicitTimeInt::PrepareNonlinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(RCP<DRT::Discretization> cutterdiscret)
+void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
+        RCP<DRT::Discretization> cutterdiscret,
+        RCP<DRT::Discretization> submerseddiscret
+        )
 {
   // within this routine, no parallel re-distribution is allowed to take place
   // before and after this function, it's ok to do that
@@ -455,7 +464,7 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(RCP<DRT::Discretization> 
   // calling this function multiple times always results in the same solution vectors
     
   // compute Intersection
-  RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret));
+  RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret,submerseddiscret));
 
   // apply enrichments
   RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
@@ -578,10 +587,13 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(RCP<DRT::Discretization> 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::NonlinearSolve(RCP<DRT::Discretization> cutterdiscret)
+void XFluidImplicitTimeInt::NonlinearSolve(
+        RCP<DRT::Discretization> cutterdiscret,
+        RCP<DRT::Discretization> submerseddiscret
+        )
 {
     
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  ComputeInterfaceAndSetDOFs(cutterdiscret,submerseddiscret);
   
   PrepareNonlinearSolve();
     
@@ -917,10 +929,13 @@ drawbacks:
 - some effort has to be made if correct nodal forces are required as this
   implementation does a total solve rather than an incremental one.
 */
-void XFluidImplicitTimeInt::LinearSolve(RCP<DRT::Discretization> cutterdiscret)
+void XFluidImplicitTimeInt::LinearSolve(
+        RCP<DRT::Discretization> cutterdiscret,
+        RCP<DRT::Discretization> submerseddiscret
+        )
 {
   
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  ComputeInterfaceAndSetDOFs(cutterdiscret,submerseddiscret);
   
   PrepareNonlinearSolve();
   
@@ -1363,12 +1378,13 @@ void XFluidImplicitTimeInt::UpdateGridv()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::SetInitialFlowField(
-  RCP<DRT::Discretization> cutterdiscret,
+        RCP<DRT::Discretization> cutterdiscret,
+        RCP<DRT::Discretization> submerseddiscret,
   int whichinitialfield,
   int startfuncno
   )
 {
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  ComputeInterfaceAndSetDOFs(cutterdiscret,submerseddiscret);
   
   //------------------------------------------------------- beltrami flow
   if(whichinitialfield == 8)
@@ -1572,10 +1588,13 @@ void XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::SolveStationaryProblem(RCP<DRT::Discretization> cutterdiscret)
+void XFluidImplicitTimeInt::SolveStationaryProblem(
+        RCP<DRT::Discretization> cutterdiscret,
+        RCP<DRT::Discretization> submerseddiscret
+        )
 {
   
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  ComputeInterfaceAndSetDOFs(cutterdiscret,submerseddiscret);
   
   PrepareNonlinearSolve();
   
@@ -1653,7 +1672,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(RCP<DRT::Discretization> cutt
     // -------------------------------------------------------------------
     //                     solve nonlinear equation system
     // -------------------------------------------------------------------
-    NonlinearSolve(cutterdiscret);
+    NonlinearSolve(cutterdiscret,submerseddiscret);
 
 
     // -------------------------------------------------------------------

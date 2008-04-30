@@ -37,8 +37,9 @@ public:
 
     //! constructor
     explicit InterfaceHandle(
-            const RCP<DRT::Discretization>        xfemdis,    ///< discretization that will be intersected
-            const RCP<DRT::Discretization>        cutterdis   ///< discretization with intersecting XFEM condition
+            const RCP<DRT::Discretization>        xfemdis,      ///< discretization that will be intersected
+            const RCP<DRT::Discretization>        cutterdis,    ///< discretization with intersecting XFEM condition
+            const RCP<DRT::Discretization>        submerseddis  ///< discretization with intersecting XFEM condition
             );
     //! destructor
     ~InterfaceHandle();
@@ -50,6 +51,8 @@ public:
     RCP<DRT::Discretization> xfemdis() const {return xfemdis_;};
     //! return pointer to the intersecting discretization
     RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
+    //! return pointer to the sumbersed discretization (only used for enrichment calulation -> will go away
+    RCP<DRT::Discretization> submerseddis() const {return submerseddis_;};
     
     //! get copy of map with all domain integration cells on this proc
     std::map<int,DomainIntCells> elementalDomainIntCells() const {return elementalDomainIntCells_;};
@@ -106,8 +109,11 @@ private:
     //! intersected domain
     RCP<DRT::Discretization> xfemdis_;
     
-    //! domain that intersects the xfemdis_
+    //! domain that intersects the xfemdis_, should be a boundary discretization
     RCP<DRT::Discretization> cutterdis_;
+    
+    //! domain that is submersed in the xfemdis_, used for enrichment evaluation -> will go away
+    RCP<DRT::Discretization> submerseddis_;
     
     //! integration cells for domain
     map<int, DomainIntCells > elementalDomainIntCells_;

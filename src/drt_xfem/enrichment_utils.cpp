@@ -40,7 +40,7 @@ std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(
     for (std::set<XFEM::Enrichment>::const_iterator enriter =
         enrset.begin(); enriter != enrset.end(); ++enriter)
     {
-        const double enrval = enriter->EnrValue(actpos, ih->cutterdis(), approachdirection);
+        const double enrval = enriter->EnrValue(actpos, ih->submerseddis(), approachdirection);
         enrvals.insert(make_pair((*enriter), enrval));
     }
     return enrvals;
@@ -86,8 +86,8 @@ void XFEM::ComputeEnrichedNodalShapefunction(
             if (enrfield->getField() == field)
             {
                 //const XFEM::Enrichment enr = enrfield->getEnrichment();
-                //const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->cutterdis());
-                //const double enrval = enr.EnrValue(actpos, ih->cutterdis(), approachdirection);
+                //const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->submerseddis());
+                //const double enrval = enr.EnrValue(actpos, ih->submerseddis(), approachdirection);
                 const double enrval = enrvals.find(enrfield->getEnrichment())->second;
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 dofcounter += 1;
@@ -139,8 +139,8 @@ void XFEM::ComputeEnrichedNodalShapefunction(
             if (enrfield->getField() == field)
             {
 //                const XFEM::Enrichment enr = enrfield->getEnrichment();
-//                //const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->cutterdis());
-//                const double enrval = enr.EnrValue(actpos, ih->cutterdis(), approachdirection);
+//                //const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->submerseddis());
+//                const double enrval = enr.EnrValue(actpos, ih->submerseddis(), approachdirection);
                 const double enrval = enrvals.find(enrfield->getEnrichment())->second;
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
@@ -194,8 +194,8 @@ void XFEM::ComputeEnrichedNodalShapefunction(
             if (enrfield->getField() == field)
             {
 //                const XFEM::Enrichment enr = enrfield->getEnrichment();
-//                //const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->cutterdis());
-//                const double enrval = enr.EnrValue(actpos, ih->cutterdis(), approachdirection);
+//                //const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->submerseddis());
+//                const double enrval = enr.EnrValue(actpos, ih->submerseddis(), approachdirection);
                 const double enrval = enrvals.find(enrfield->getEnrichment())->second;
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
@@ -239,7 +239,7 @@ void XFEM::ComputeEnrichedElementShapefunction(
             if (enrfield->getField() == field)
             {
 //                const XFEM::Enrichment enr = enrfield->getEnrichment();
-//                const double enrval = enr.EnrValue(actpos, ih->cutterdis(), approachdirection);
+//                const double enrval = enr.EnrValue(actpos, ih->submerseddis(), approachdirection);
                 const double enrval = enrvals.find(enrfield->getEnrichment())->second;
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 dofcounter += 1;                
@@ -284,7 +284,7 @@ void XFEM::ComputeEnrichedElementShapefunction(
             if (enrfield->getField() == field)
             {
                 //const XFEM::Enrichment enr = enrfield->getEnrichment();
-                //const double enrval = enr.EnrValue(actpos, ih->cutterdis(), approachdirection);
+                //const double enrval = enr.EnrValue(actpos, ih->submerseddis(), approachdirection);
                 const double enrval = enrvals.find(enrfield->getEnrichment())->second;
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
