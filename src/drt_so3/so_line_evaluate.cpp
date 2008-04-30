@@ -115,6 +115,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(ParameterList&            par
     }
 
   }
+
   return 0;
 }
 
