@@ -149,7 +149,7 @@ Input/soweg6_disp_patchtest.dat                         x        x        -     
 Input/sotet4_patchtest.dat                              x        x        -        -        -        -
 Input/sotet10_patchtest.dat                             x        x        -        -        -        -
 Input/soctet10_patchtest.dat                            x        x        -        -        -        -
-Input/orthopressure_shell8_eas_ans_sphere.dat           x        x        -        -        -        -
+Input/orthopressure_shell8_eas_ans_sphere.dat           x        x        -        -        x        x
 Input/orthopressure_solidh8_eas_sphere.dat              x        x        -        -        -        -
 Input/orthopressure_solidh8_sphere.dat                  x        x        -        -        -        -
 Input/orthopressure_solidw6_sphere.dat                  x        x        -        -        -        -

@@ -23,6 +23,7 @@ NUMDF        6
 PROBLEMTYP                      Structure
 TIMETYP                         Dynamic
 RESTART                         0
+//!RESTART                      8
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  0
 NUMSTRUCDIS  1
@@ -51,7 +52,7 @@ DYNAMICTYP   Gen_Alfa
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
-RESTARTEVRY  20
+RESTARTEVRY  2
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     0.0001  
 NUMSTEP      10
