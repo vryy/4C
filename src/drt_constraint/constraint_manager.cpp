@@ -78,38 +78,25 @@ actdisc_(discr)
   // Deal with MPC
   if (constrcond.size())
   {
-    CreateDiscretizationFromCondition(constrcond,"ConstrDisc","CONSTRELE3");
-    // get user specified amplitude of movement and store it as initial value
-    
+    // Construct special constraint discretization consisting of constraint elements
+    constraintdis_=CreateDiscretizationFromCondition(constrcond,"ConstrDisc","CONSTRELE3");
+        
     // now reconstruct the extended colmap
     RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, constraintdis_);
     
+    //Redistribute underlying discretization to have ghosting in the same way as in the 
+    //constraint discretization
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
     
+    // Change dof's in constraint discretization to fit underlying discretization
     RCP<DRT::DofSet> newdofset = rcp(new MPCDofSet(actdisc_));
     constraintdis_->ReplaceDofSet(newdofset);
     newdofset = null;
     constraintdis_->FillComplete(true,true,true,false);
     
-    for (unsigned int i=0;i<constrcond.size();i++)
-    {
-      const vector<double>*    MPCampl  = constrcond[i]->Get<vector<double> >("Amplitude");
-      const vector<int>*    MPCcondID  = constrcond[i]->Get<vector<int> >("ConditionID");
-      MPCamplitudes[i]=(*MPCampl)[0];
-      MPCcondIDs[i]=(*MPCcondID)[0]-1;
-      // element write condition IDs (min and max) to parameter list. Here we have to do it ourselves
-      // since we do not call any element action
-      const int maxID=p.get("MaxID",0);
-      const int minID=p.get("MinID",1000000);
-      if (maxID<(*MPCcondID)[0])
-      {
-        p.set("MaxID",(*MPCcondID)[0]);
-      }
-      if (minID>(*MPCcondID)[0])
-      {
-        p.set("MinID",(*MPCcondID)[0]);
-      }
-    }
+    //Fill MPC Vectors
+    SetupMPC(MPCamplitudes,MPCcondIDs,constrcond,p);
+    
     havenodeconstraint_=true;
   }
   //----------------------------------------------------
@@ -282,7 +269,7 @@ void ConstrManager::StiffnessAndInternalForces(
   //Deal with MPC
   if (havenodeconstraint_)
   {
-    cout<<"No evaluation implemented"<<endl;
+    cout<< "No evaluation for MPC implemented, yet" <<endl;
   }
   
   //----------------------------------------------------
@@ -339,6 +326,7 @@ void ConstrManager::UpdateLagrIncr(double factor, Epetra_Vector vect)
   lagrMultInc_->Update(factor,vect,factor,*constrainterr_,1.0);
   return;
 }
+
 /*----------------------------------------------------------------------*
 |(public)                                                       tk 01/08|
 |Add scaled error of constraint to Lagrange multiplier.                 |
@@ -484,18 +472,21 @@ void ConstrManager::SynchronizeMinConstraint(ParameterList& params,
 }
 
 
-void ConstrManager::CreateDiscretizationFromCondition
+RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
         (   vector< DRT::Condition* >      constrcondvec,
             const string&             discret_name,
             const string&             element_name)
 {
   RCP<Epetra_Comm> com = rcp(actdisc_->Comm().Clone());
   
-  constraintdis_ = rcp(new DRT::Discretization(discret_name,com));
+  RCP<DRT::Discretization> newdis = rcp(new DRT::Discretization(discret_name,com));
 
-  if (!actdisc_->Filled()) actdisc_->FillComplete(true,true,true,false);
+  if (!actdisc_->Filled())
+  {
+    actdisc_->FillComplete(true,true,true,false);
+  }
 
-  const int myrank = constraintdis_->Comm().MyPID();
+  const int myrank = newdis->Comm().MyPID();
   
  if(constrcondvec.size()==0)
       dserror("number of multi point constraint conditions = 0 --> cannot create constraint discretization");
@@ -515,7 +506,7 @@ void ConstrManager::CreateDiscretizationFromCondition
     vector<int> ngid=*(constrcondvec[j]->Nodes());
     const int numnodes=ngid.size();
     // We sort the global node ids according to the definition of the boundary condition
-    SortConstraintNodes(ngid, constrcondvec[j]);
+    ReorderConstraintNodes(ngid, constrcondvec[j]);
      
     remove_copy_if(&ngid[0], &ngid[0]+numnodes,
                      inserter(rownodeset, rownodeset.begin()),
@@ -531,7 +522,7 @@ void ConstrManager::CreateDiscretizationFromCondition
       if (rownodeset.find(gid)!=rownodeset.end())
       {
         const DRT::Node* standardnode = actdisc_->lRowNode(i);
-        constraintdis_->AddNode(rcp(new DRT::Node(gid, standardnode->X(), myrank)));
+        newdis->AddNode(rcp(new DRT::Node(gid, standardnode->X(), myrank)));
       }
     }
     //build unique node row map
@@ -541,7 +532,7 @@ void ConstrManager::CreateDiscretizationFromCondition
                                                                boundarynoderowvec.size(),
                                                                &boundarynoderowvec[0],
                                                                0,
-                                                               constraintdis_->Comm()));
+                                                               newdis->Comm()));
     boundarynoderowvec.clear();
 
     //build overlapping node column map
@@ -551,7 +542,7 @@ void ConstrManager::CreateDiscretizationFromCondition
                                                                constraintnodecolvec.size(),
                                                                &constraintnodecolvec[0],
                                                                0,
-                                                               constraintdis_->Comm()));
+                                                               newdis->Comm()));
     constraintnodecolvec.clear();
     
     
@@ -566,13 +557,13 @@ void ConstrManager::CreateDiscretizationFromCondition
   
       // add constraint element
       
-      constraintdis_->AddElement(constraintele);
+      newdis->AddElement(constraintele);
 
     }
     // now care about the parallel distribution and ghosting.
     // So far every processor only knows about his nodes
         
-    constraintdis_->ExportColumnNodes(*constraintnodecolmap);
+    newdis->ExportColumnNodes(*constraintnodecolmap);
   
     RefCountPtr< Epetra_Map > constraintelerowmap;
     RefCountPtr< Epetra_Map > constraintelecolmap;
@@ -581,21 +572,21 @@ void ConstrManager::CreateDiscretizationFromCondition
     // build resonable maps for elements from the
     // already valid and final node maps
     // note that nothing is actually redistributed in here
-    constraintdis_->BuildElementRowColumn(*constraintnoderowmap, *constraintnodecolmap, constraintelerowmap, constraintelecolmap);
+    newdis->BuildElementRowColumn(*constraintnoderowmap, *constraintnodecolmap, constraintelerowmap, constraintelecolmap);
   
     // we can now export elements to resonable row element distribution
-    constraintdis_->ExportRowElements(*constraintelerowmap);
+    newdis->ExportRowElements(*constraintelerowmap);
   
     // export to the column map / create ghosting of elements
-    constraintdis_->ExportColumnElements(*constraintelecolmap);
+    newdis->ExportColumnElements(*constraintelecolmap);
   
   }
    
-  constraintdis_->FillComplete(true,true,true,false);
-  return;
+  newdis->FillComplete(true,true,true,false);
+  return newdis;
 }
 
-void ConstrManager::SortConstraintNodes(
+void ConstrManager::ReorderConstraintNodes(
     vector<int>& nodeids,
     DRT::Condition*      cond)
 {
@@ -628,7 +619,6 @@ RCP<Epetra_Map> ConstrManager::ComputeNodeColMap(
         const int gid = newnode->Id();
         if (!(sourcedis->HaveGlobalNode(gid)))
         {
-            //cout << "add gid" << gid << endl;
             mycolnodes.push_back(gid);
         }
     }
@@ -640,6 +630,33 @@ RCP<Epetra_Map> ConstrManager::ComputeNodeColMap(
                                        0,
                                        sourcedis->Comm()));
     return newcolnodemap;
+}
+
+void ConstrManager::SetupMPC(vector<double>& amplit, 
+    vector<int>& IDs, 
+    const vector<DRT::Condition*>& constrcond,
+    Teuchos::ParameterList& p)
+{
+  for (unsigned int i=0;i<constrcond.size();i++)
+  {
+    const vector<double>*    MPCampl  = constrcond[i]->Get<vector<double> >("Amplitude");
+    const vector<int>*    MPCcondID  = constrcond[i]->Get<vector<int> >("ConditionID");
+    amplit[i]=(*MPCampl)[0];
+    IDs[i]=(*MPCcondID)[0]-1;
+    // element write condition IDs (min and max) to parameter list. Here we have to do it ourselves
+    // since we do not call any element action
+    const int maxID=p.get("MaxID",0);
+    const int minID=p.get("MinID",1000000);
+    if (maxID<(*MPCcondID)[0])
+    {
+      p.set("MaxID",(*MPCcondID)[0]);
+    }
+    if (minID>(*MPCcondID)[0])
+    {
+      p.set("MinID",(*MPCcondID)[0]);
+    }
+  }
+  return;
 }
 
 #endif

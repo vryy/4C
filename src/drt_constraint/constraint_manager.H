@@ -282,13 +282,13 @@ private:
     
     void ManageIDs(ParameterList& params,int& minID, int& maxID, int& numID);
     
-    void CreateDiscretizationFromCondition(
+    RCP<DRT::Discretization> CreateDiscretizationFromCondition(
             vector< DRT::Condition* >      constrcond, 
             const string&             discret_name,
             const string&             element_name
             );
     
-    void SortConstraintNodes(
+    void ReorderConstraintNodes(
         vector<int>& nodeids,
         DRT::Condition*      condname);
     
@@ -297,6 +297,13 @@ private:
             const RCP<DRT::Discretization> sourcedis,
             const RCP<DRT::Discretization> constraintdis
             ) const;
+    
+    void SetupMPC(
+        vector<double>& amplit, 
+        vector<int>& IDs, 
+        const vector<DRT::Condition*>& constrcond,
+        ParameterList& param
+        );
     
     //@}
 
