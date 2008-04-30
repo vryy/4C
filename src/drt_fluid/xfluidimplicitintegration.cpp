@@ -97,7 +97,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
-  
+
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 
@@ -347,7 +347,7 @@ void XFluidImplicitTimeInt::PrepareTimeStep()
     theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
   }
 }
-  
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -359,7 +359,7 @@ void XFluidImplicitTimeInt::PrepareTimeStep()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::PrepareNonlinearSolve()
 {
-  
+
   // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
   //
@@ -460,9 +460,9 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 {
   // within this routine, no parallel re-distribution is allowed to take place
   // before and after this function, it's ok to do that
-    
+
   // calling this function multiple times always results in the same solution vectors
-    
+
   // compute Intersection
   RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret,submerseddiscret));
 
@@ -482,25 +482,25 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
       eleparams.set("assemble vector 3",false);
       discret_->Evaluate(eleparams,null,null,null,null,null);
   }
-  
+
   // store old (proc-overlapping) dofmap, compute new one and return it
   Epetra_Map olddofrowmap = *discret_->DofRowMap();
   discret_->FillComplete();
   Epetra_Map newdofrowmap = *discret_->DofRowMap();
-  
+
   discret_->ComputeNullSpaceIfNecessary(solver_.Params());
-  
+
   XFEM::DofPosMap oldDofDistributionMap(dofDistributionMap_);
   dofmanager->fillDofDistributionMap(dofDistributionMap_);
-  
+
   cout << "switching " << endl;
-  
+
   // create switcher
   const XFEM::DofDistributionSwitcher dofswitch(
           ih, dofmanager,
           olddofrowmap, newdofrowmap,
           oldDofDistributionMap, dofDistributionMap_);
-  
+
   // --------------------------------------------
   // switch state vectors to new dof distribution
   // --------------------------------------------
@@ -541,15 +541,15 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   trueresidual_ = LINALG::CreateVector(newdofrowmap,true);
   rhs_          = LINALG::CreateVector(newdofrowmap,true);
   incvel_       = LINALG::CreateVector(newdofrowmap,true);
-  
-  
+
+
   // -------------------------------------------------------------------
   // get a vector layout from the discretization for a vector which only
   // contains the velocity dofs and for one vector which only contains
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
   FLUID_UTILS::SetupXFluidSplit(*discret_,dofmanager,velpressplitter_);
-  
+
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
   // one system matrix!
@@ -574,7 +574,7 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
     blocksysmat->SetNumdim(numdim);
     sysmat_ = blocksysmat;
   }
-  
+
 }
 
 
@@ -592,11 +592,11 @@ void XFluidImplicitTimeInt::NonlinearSolve(
         RCP<DRT::Discretization> submerseddiscret
         )
 {
-    
+
   ComputeInterfaceAndSetDOFs(cutterdiscret,submerseddiscret);
-  
+
   PrepareNonlinearSolve();
-    
+
   // time measurement: nonlinear iteration
   TimeMonitor monitor(*timenlnitlin_);
 
@@ -934,11 +934,11 @@ void XFluidImplicitTimeInt::LinearSolve(
         RCP<DRT::Discretization> submerseddiscret
         )
 {
-  
+
   ComputeInterfaceAndSetDOFs(cutterdiscret,submerseddiscret);
-  
+
   PrepareNonlinearSolve();
-  
+
   // time measurement: linearised fluid
   TimeMonitor monitor(*timenlnitlin_);
 
@@ -1128,7 +1128,7 @@ void XFluidImplicitTimeInt::TimeUpdate()
           velnp_, veln_, velnm_,
           timealgo_, step_, theta_, dta_, dtp_,
           accn_, accnm_);
-  
+
   // solution of this step becomes most recent solution of the last step
   velnm_->Update(1.0,*veln_ ,0.0);
   veln_ ->Update(1.0,*velnp_,0.0);
@@ -1385,7 +1385,7 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
   )
 {
   ComputeInterfaceAndSetDOFs(cutterdiscret,submerseddiscret);
-  
+
   //------------------------------------------------------- beltrami flow
   if(whichinitialfield == 8)
   {
@@ -1593,11 +1593,11 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
         RCP<DRT::Discretization> submerseddiscret
         )
 {
-  
+
   ComputeInterfaceAndSetDOFs(cutterdiscret,submerseddiscret);
-  
+
   PrepareNonlinearSolve();
-  
+
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
   TimeMonitor monitor(*timetimeloop_);
 

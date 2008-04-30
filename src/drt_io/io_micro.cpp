@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file io_drt_micro.cpp
-
 \brief output context of micro discretization
 
 <pre>
@@ -13,6 +11,7 @@ Maintainer: Lena Wiechert
 */
 /*----------------------------------------------------------------------*/
 
+#if 0
 #ifdef CCADISCRET
 
 #include <iostream>
@@ -24,8 +23,8 @@ Maintainer: Lena Wiechert
 #endif
 
 #include "compile_settings.h"
-#include "io_drt_micro.H"
-#include "io_drt.H"
+#include "io_micro.H"
+#include "io.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -200,4 +199,5 @@ IO::MicroDiscretizationReader::~MicroDiscretizationReader()
 }
 
 
+#endif
 #endif

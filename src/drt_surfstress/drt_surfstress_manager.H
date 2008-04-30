@@ -20,7 +20,7 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../io/io_drt.H"
+#include "../drt_io/io.H"
 
 
 using namespace std;

@@ -23,7 +23,8 @@ Maintainer: Lena Wiechert
 
 #include "../drt_lib/drt_condition.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../io/io_drt_micro.H"
+#include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
 
 //#include "../drt_fsi/fsi_debug.H"
 
@@ -485,7 +486,7 @@ void MicroStatic::FullNewton()
 /*----------------------------------------------------------------------*
  |  write output (public)                                       lw 02/08|
  *----------------------------------------------------------------------*/
-void MicroStatic::Output(RefCountPtr<MicroDiscretizationWriter> output,
+void MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
                          const double time,
                          const int istep,
                          const double dt)
@@ -650,7 +651,8 @@ void MicroStatic::ReadRestart(int step,
                               RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
                               string name)
 {
-  IO::MicroDiscretizationReader reader(discret_, step, name);
+  RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(name));
+  IO::DiscretizationReader reader(discret_, inputcontrol, step);
   double time  = reader.ReadDouble("time");
   int    rstep = reader.ReadInt("step");
   if (rstep != step) dserror("Time step on file not equal to given step");

@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file io_drt.H
-
 \brief output context of one discretization
 
 <pre>
@@ -13,6 +11,8 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
+#if 0
+
 #ifndef IO_DRT_MICRO_H
 #define IO_DRT_MICRO_H
 
@@ -21,14 +21,14 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_BlockMap.h>
 
-#include "io_drt.H"
+#include "io.H"
 
 #include <map>
 #include <string>
 
 #include "../drt_lib/drt_discret.H"
-#include "io.h"
-#include "hdf_reader.H"
+//#include "io.h"
+#include "io_hdf.H"
 
 #ifdef BINIO
 #include <H5LT.h>
@@ -87,5 +87,6 @@ private:
 
 }
 
+#endif
 #endif
 #endif

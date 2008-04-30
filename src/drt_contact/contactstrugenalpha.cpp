@@ -14,7 +14,10 @@ Maintainer: Alexander Popp
 
 #include "contactstrugenalpha.H"
 #include "contactdefines.H"
-#include "iostream"
+
+#include "../drt_lib/drt_globalproblem.H"
+
+#include <iostream>
 
 
 /*----------------------------------------------------------------------*

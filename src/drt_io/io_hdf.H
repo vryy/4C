@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file hdf_reader.H
-
 \brief Helpers to read HDF5 based output.
 
 <pre>
@@ -13,8 +11,8 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef HDF_READER_H
-#define HDF_READER_H
+#ifndef IO_HDF_H
+#define IO_HDF_H
 
 #ifdef CCADISCRET
 #ifdef BINIO
@@ -88,7 +86,7 @@ public:
    */
   RefCountPtr<std::vector<char> > ReadElementData(int step, int new_proc_num, int my_id) const;
 
-  //! 
+  //!
   /*!
    * \brief read the packed nodal data from the mesh files
    * \note: this function should only be called while the HDFReader reads
@@ -196,4 +194,4 @@ private:
 
 #endif
 #endif
-#endif // HDF_READER_H
+#endif

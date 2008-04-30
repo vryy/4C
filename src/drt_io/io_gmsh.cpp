@@ -16,7 +16,7 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include <blitz/array.h>
 
-#include "gmsh.H"
+#include "io_gmsh.H"
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
@@ -31,9 +31,9 @@ string IO::GMSH::CoordinatesToString(
         const DRT::Element::DiscretizationType distype)
 {
     stringstream pos_array_string;
-    
+
     const int numnode = distypeToGmshNumNode(distype);
-    
+
     // coordinates
     pos_array_string << "(";
     for (int inen = 0; inen < numnode;++inen)
@@ -55,9 +55,9 @@ string IO::GMSH::CoordinatesToString(
         const DRT::Element::DiscretizationType distype)
 {
     stringstream pos_array_string;
-    
+
     const int numnode = distypeToGmshNumNode(distype);
-    
+
     // coordinates
     pos_array_string << "(";
     for (int inen = 0; inen < numnode;++inen)
@@ -79,9 +79,9 @@ string IO::GMSH::ScalarToString(
         const DRT::Element::DiscretizationType distype)
 {
     stringstream pos_array_string;
-    
+
     const int numnode = distypeToGmshNumNode(distype);
-    
+
     // values
     pos_array_string << "{";
     for (int i = 0; i<numnode;++i)
@@ -100,9 +100,9 @@ string IO::GMSH::ScalarFieldToString(
         const DRT::Element::DiscretizationType distype)
 {
     stringstream pos_array_string;
-    
+
     const int numnode = distypeToGmshNumNode(distype);
-    
+
     // values
     pos_array_string << "{";
     for (int i = 0; i<numnode;++i)
@@ -121,10 +121,10 @@ string IO::GMSH::VectorFieldToString(
         const DRT::Element::DiscretizationType  distype)
 {
     stringstream pos_array_string;
-    
+
     const int numnode = distypeToGmshNumNode(distype);
     const int numcomp = 3;
-    
+
     // values
     pos_array_string << "{";
     for (int i = 0; i<numnode;++i)
@@ -149,10 +149,10 @@ string IO::GMSH::elementToString(
         const DRT::Element* ele)
 {
     const DRT::Node*const* nodes = ele->Nodes();
-    
+
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
-    
+
     stringstream pos_array_string;
     pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
     for (int i = 0; i<numnode;++i)
@@ -179,12 +179,12 @@ string IO::GMSH::elementToString(
         const DRT::Element* ele)
 {
     const DRT::Node*const* nodes = ele->Nodes();
-    
+
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
-    
+
     if ((unsigned int)(scalarfield.size()) != (unsigned int)numnode) dserror("Size mismatch: No of Nodes vs Size of Scalarfield");
-    
+
     stringstream pos_array_string;
     pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
     for (int i = 0; i<numnode;++i)
@@ -209,13 +209,13 @@ string IO::GMSH::elementToString(
         const DRT::Element*            ele)
 {
     const DRT::Node*const* nodes = ele->Nodes();
-    
+
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
-    
+
     if ((unsigned int)vectorfield.size() != (unsigned int)numnode) dserror("Size mismatch: No of Nodes vs Size of Vectorfield");
     if ((unsigned int)vectorfield[0].size() != 3) dserror("Size mismatch: Vector of Vectorfield must have length 3");
-    
+
     stringstream pos_array_string;
     pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
     for (int i = 0; i<numnode;++i)
@@ -232,7 +232,7 @@ string IO::GMSH::elementToString(
     pos_array_string << ")";
     // values
     pos_array_string << VectorFieldToString(vectorfield, distype);
-    
+
     return pos_array_string.str();
 }
 
@@ -242,9 +242,9 @@ string IO::GMSH::cellToString(
         const DRT::Element::DiscretizationType  distype)
 {
     stringstream pos_array_string;
-    
+
     pos_array_string << "S" << distypeToGmshElementHeader(distype);
-    
+
     // coordinates
     pos_array_string << CoordinatesToString(coord, distype);
     // values
@@ -255,7 +255,7 @@ string IO::GMSH::cellToString(
 
 string IO::GMSH::disToString(
         const std::string&             s,
-        const double                   scalar, 
+        const double                   scalar,
         const RCP<DRT::Discretization> dis)
 {
     stringstream gmshfilecontent;
@@ -270,8 +270,8 @@ string IO::GMSH::disToString(
 }
 
 string IO::GMSH::disToString(
-        const std::string&                     s, 
-        const double                           scalar, 
+        const std::string&                     s,
+        const double                           scalar,
         const RefCountPtr<DRT::Discretization> dis,
         const map<int, DomainIntCells >&       elementDomainIntCellsMap,
         const map<int, BoundaryIntCells >&     elementBoundaryIntCellsMap)
@@ -310,7 +310,7 @@ std::string IO::GMSH::getConfigString(const int numview)
     for (int iview = 0; iview < numview; ++iview) {
         gmshfilecontent << "View["<<iview<<"].RangeType = 2;   // Value scale range type (1=default, 2=custom, 3=per time step)" << endl;
         gmshfilecontent << "View["<<iview<<"].CustomMax = 1.0; // User-defined maximum value to be displayed" << endl;
-        gmshfilecontent << "View["<<iview<<"].CustomMin = 0.0; // User-defined minimum value to be displayed" << endl;  
+        gmshfilecontent << "View["<<iview<<"].CustomMin = 0.0; // User-defined minimum value to be displayed" << endl;
     }
     return gmshfilecontent.str();
 }
@@ -359,10 +359,10 @@ int IO::GMSH::distypeToGmshNumNode(const DRT::Element::DiscretizationType distyp
 
 
 string IO::GMSH::trifaceToString(const double scalar, const vector<vector<double> >& triface)
-{  
+{
     const DRT::Element::DiscretizationType distype = DRT::Element::tri3;
     const int numnode = distypeToGmshNumNode(distype);
-    
+
     stringstream pos_array_string;
     pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
     for (int i = 0; i<numnode;++i)
@@ -391,10 +391,10 @@ string IO::GMSH::trifaceToString(const double scalar, const vector<vector<double
 
 
 string IO::GMSH::XAABBToString(const double scalar, const vector<vector<double> >& XAABB)
-{  
+{
     const DRT::Element::DiscretizationType distype = DRT::Element::hex8;
     const int numnode = distypeToGmshNumNode(distype);
-    
+
     stringstream pos_array_string;
     pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
     for (int i = 0; i<numnode;++i)

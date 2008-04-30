@@ -774,6 +774,7 @@ return;
 } /* end of inpctrstat */
 
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*
  | input of data for eigensolution                           al 8/02    |
  *----------------------------------------------------------------------*/
@@ -822,6 +823,7 @@ dstrc_exit();
 #endif
 return;
 } /* end of inpctreig */
+#endif
 
 /*----------------------------------------------------------------------*
  | input of eigensolution problem data                       al 8/02    |

@@ -25,7 +25,7 @@ Maintainer: Lena Wiechert
 
 //#include "../drt_stru_multi/microstrugenalpha.H"
 #include "../drt_stru_multi/microstatic.H"
-#include "../io/io_drt_micro.H"
+#include "../drt_io/io_micro.H"
 
 using namespace std;
 using namespace Teuchos;

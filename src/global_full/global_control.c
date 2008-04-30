@@ -19,12 +19,13 @@ Maintainer: Malte Neumann
 #include "../drt_lib/drt_init_control.H"
 #endif
 
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of numfld FIELDs, defined in global_control.c                 |
  *----------------------------------------------------------------------*/
 struct _FIELD         *field;
-
+#endif
 
 
 #ifdef D_MLSTRUCT
@@ -198,6 +199,7 @@ void ntam(
 #endif
 #endif
 
+#ifndef CCADISCRET
 #ifdef BINIO
 
   /* The functions to initialize binary io are quite complex. They make
@@ -216,6 +218,7 @@ void ntam(
    * here some values are already written. */
   init_bin_out_main(allfiles.outputfile_kenner);
 
+#endif
 #endif
 
   /*--------------------------------------------------calculation phase */

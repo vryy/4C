@@ -32,7 +32,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/drt_function.H"
-#include "../io/io_drt.H"
+#include "../drt_io/io.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -133,7 +133,7 @@ public:
 
   */
   void GenAlphaOutput();
-  
+
   /*!
   \brief update velocity field
 

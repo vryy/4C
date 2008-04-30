@@ -31,7 +31,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
-#include "../io/io_drt.H"
+#include "../drt_io/io.H"
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {
@@ -51,20 +51,20 @@ using namespace Teuchos;
 
 /* BEGIN   C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
 #ifdef __cplusplus
-extern "C" 
+extern "C"
 {
 #endif
 /* END     C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
 
-    
 
-    
+
+
 /* headers and prototypes of functions also acessible from c */
 void dyn_condif_drt();
 
 
 
-    
+
 /* BEGIN   C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
 #ifdef __cplusplus
 }

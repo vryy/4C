@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file io_drt.H
-
 \brief output context of one discretization
 
 <pre>
@@ -19,14 +17,15 @@ Maintainer: Ulrich Kuettler
 #ifdef CCADISCRET
 
 #include <Teuchos_RCP.hpp>
+#include <Epetra_Comm.h>
 #include <Epetra_BlockMap.h>
 
 #include <map>
 #include <string>
 
 #include "../drt_lib/drt_discret.H"
-#include "io.h"
-#include "hdf_reader.H"
+//#include "io.h"
+#include "io_hdf.H"
 
 #ifdef BINIO
 #include <H5LT.h>
@@ -41,6 +40,9 @@ extern "C" {
 namespace IO
 {
 
+  class InputControl;
+  class OutputControl;
+
 /*!
   \brief base class of baci restart
 
@@ -52,7 +54,16 @@ class DiscretizationReader
 public:
 
   /// construct reader for a given discretization to read a particular time step
-  explicit DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis, int step);
+  DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis,
+                       Teuchos::RCP<IO::InputControl> input,
+                       int step);
+
+  /// construct reader for a given discretization to read a particular time step
+  /*!
+    Use default control file from global problem.
+   */
+  DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis,
+                       int step);
 
   /// read into given vector
   void ReadVector(Teuchos::RCP<Epetra_Vector> vec, string name);
@@ -84,14 +95,30 @@ private:
   /// find control file entry to given time step
   void FindMeshGroup(int step, MAP* file);
 
-  /// Open data files. You guess it.
-  void OpenDataFiles(MAP* result_step);
+  /// find control file entry to given time step
+  /*!
+    The control file entry with the given caption those field and step match
+    my discretization and step. From that we need a backward search to find
+    the entry that links to the binary files that cover our entry.
+   */
+  void FindGroup(int step,
+                 MAP* file,
+                 const char* caption,
+                 const char* filestring,
+                 MAP*& result_info,
+                 MAP*& file_info);
 
-  /// Open mesh files. You guess it.
-  void OpenMeshFiles(MAP* result_step);
+#ifdef BINIO
+
+  /// Open data files.
+  Teuchos::RCP<HDFReader> OpenFiles(const char* filestring, MAP* result_step);
+#endif
 
   //! my discretization
   Teuchos::RCP<DRT::Discretization> dis_;
+
+  /// my input control file
+  Teuchos::RCP<IO::InputControl> input_;
 
   /// control file entry of this step
   MAP *restart_step_;
@@ -126,7 +153,14 @@ public:
   };
 
   /// Writer constructor always needs a discretization
-  explicit DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis, int probnum=0);
+  DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis,
+                       Teuchos::RCP<OutputControl> output);
+
+  /// Writer constructor always needs a discretization
+  /*!
+    Use default control file from global problem.
+   */
+  explicit DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis);
 
   /// cleanup, close hdf5 files
   virtual ~DiscretizationWriter();
@@ -205,11 +239,6 @@ public:
 
   //@}
 
-protected:
-  string cfname_;
-  FILE* cf_;
-  int steps_per_file_;
-
 private:
 
   //! open new mesh file
@@ -218,11 +247,12 @@ private:
   //! open new result file
   virtual void CreateResultFile(const int step);
 
+  /// test writer preconditions
+  void Check();
+
   //! my discretization
   Teuchos::RCP<DRT::Discretization> dis_;
 
-  int disnum_;
-  int field_pos_;
   int step_;
   double time_;
 
@@ -243,6 +273,8 @@ private:
 
   int resultfile_changed_;
   int meshfile_changed_;
+
+  Teuchos::RCP<OutputControl> output_;
 };
 
 }

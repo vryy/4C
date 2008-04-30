@@ -22,7 +22,7 @@ Maintainer: Moritz Frenzel
 #include "strugenalpha.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../io/io_drt.H"
+#include "../drt_io/io.H"
 
 
 /*!
@@ -40,13 +40,13 @@ public:
     RefCountPtr<Epetra_Vector> vel,  //!< velocities to test
     RefCountPtr<Epetra_Vector> acc  //!< accelerations to test
   );
-  
+
   //! constructor to use when timeintegrator is generalized alpha!
   StruResultTest(StruGenAlpha& tintegrator);
 
   //! \brief structure version of nodal value tests
   //!
-  //! Possible position flags are "dispx", "dispy", "dispz", 
+  //! Possible position flags are "dispx", "dispy", "dispz",
   //!                             "velx", "vely", "velz",
   //!                             "accx", "accy", "accz"
   virtual void TestNode(const _RESULTDESCR* res, int& nerr, int& test_count);

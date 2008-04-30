@@ -1,7 +1,5 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file io_drt.cpp
-
 \brief output context of one discretization
 
 <pre>
@@ -18,98 +16,38 @@ Maintainer: Ulrich Kuettler
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
-#include "io_drt.H"
+#include "io.H"
+#include "io_control.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-using namespace std;
-
-#ifdef BINIO
-
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | vector of numfld FIELDs, defined in global_control.c                 |
- *----------------------------------------------------------------------*/
-extern struct _FIELD      *field;
-
-/*----------------------------------------------------------------------*
-  |                                                       m.gee 06/01    |
-  | general problem data                                                 |
-  | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief The static variables used for output.
-
-  This structure needs to be initialized at startup. The whole output
-  mechanism is based on it.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-extern BIN_OUT_MAIN bin_out_main;
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief The static variables used for input.
-
-  This structure needs to be initialized at startup. The whole input
-  mechanism is based on it.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-extern BIN_IN_MAIN bin_in_main;
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief All fields names.
-
-  \author u.kue
-  \date 08/04
-*/
-/*----------------------------------------------------------------------*/
-extern CHAR* fieldnames[];
-
-#endif
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-static void FindPosition(Teuchos::RCP<DRT::Discretization> dis, int& field_pos, int& disnum, int probnum=0)
+IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis,
+                                               Teuchos::RCP<IO::InputControl> input,
+                                               int step)
+  : dis_(dis),
+    input_(input)
 {
 #ifdef BINIO
-
-  for (field_pos=0; field_pos<genprob.numfld; ++field_pos)
-  {
-    for (disnum=0; disnum<field[field_pos].ndis; ++disnum)
-    {
-      if (DRT::Problem::Instance(probnum)->Dis(field_pos,disnum).get() == dis.get())
-      {
-        return;
-      }
-    }
-  }
-  // no field found
-  dserror("unregistered field object");
+  FindResultGroup(step, input_->ControlFile());
 #endif
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis, int step)
-  : dis_(dis)
+IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization> dis,
+                                               int step)
+  : dis_(dis),
+    input_(DRT::Problem::Instance()->InputControlFile())
 {
 #ifdef BINIO
-  MAP file = bin_in_main.table;
-  FindResultGroup(step, &file);
+  FindResultGroup(step, input_->ControlFile());
 #endif
 }
 
@@ -186,8 +124,7 @@ void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> 
 void IO::DiscretizationReader::ReadMesh(int step)
 {
 #ifdef BINIO
-  MAP file = bin_in_main.table;
-  FindMeshGroup(step, &file);
+  FindMeshGroup(step, input_->ControlFile());
 
   Teuchos::RCP<vector<char> > nodedata =
     meshreader_->ReadNodeData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
@@ -228,37 +165,32 @@ double IO::DiscretizationReader::ReadDouble(string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
+void IO::DiscretizationReader::FindGroup(int step,
+                                         MAP* file,
+                                         const char* caption,
+                                         const char* filestring,
+                                         MAP*& result_info,
+                                         MAP*& file_info)
 {
 #ifdef BINIO
 
-  MAP *result_info = NULL;
   SYMBOL *symbol;
-  int field_pos;
-  int disnum;
-
-  if (dis_->Name() == "Micro Structure")
-    FindPosition(dis_, field_pos, disnum, 1);
-  else
-    FindPosition(dis_, field_pos, disnum);
-
-  FIELD *actfield = &(field[field_pos]);
 
   /*
    * Iterate all symbols under the name "result" and get the one that
    * matches the given step. Note that this iteration starts from the
    * last result group and goes backward. */
 
-  symbol = map_find_symbol(file, "result");
+  std::string name = dis_->Name();
+
+  symbol = map_find_symbol(file, caption);
   while (symbol != NULL)
   {
     if (symbol_is_map(symbol))
     {
       MAP* map;
       symbol_get_map(symbol, &map);
-      if (map_has_string(map, "field", fieldnames[actfield->fieldtyp]) &&
-          map_has_int(map, "field_pos", field_pos) &&
-          map_has_int(map, "discretization", disnum) &&
+      if (map_has_string(map, "field", name.c_str()) and
           map_has_int(map, "step", step))
       {
         result_info = map;
@@ -269,7 +201,9 @@ void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
   }
   if (symbol == NULL)
   {
-    dserror("No restart entry for step %d in symbol table. Control file corrupt?",step);
+    dserror("No restart entry for discretization '%s' step %d in symbol table. "
+            "Control file corrupt?",
+            name.c_str(),step);
   }
 
   /*--------------------------------------------------------------------*/
@@ -285,16 +219,14 @@ void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
     {
       MAP* map;
       symbol_get_map(symbol, &map);
-      if (map_has_string(map, "field", fieldnames[actfield->fieldtyp]) &&
-          map_has_int(map, "field_pos", field_pos) &&
-          map_has_int(map, "discretization", disnum))
+      if (map_has_string(map, "field", name.c_str()))
       {
         /*
          * If one of these files is here the other one has to be
          * here, too. If it's not, it's a bug in the input. */
-        if (map_symbol_count(map, "result_file") > 0)
+        if (map_symbol_count(map, filestring) > 0)
         {
-          OpenDataFiles(map);
+          file_info = map;
           break;
         }
       }
@@ -308,11 +240,27 @@ void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
     dserror("no restart file definitions found in control file");
   }
 
-  restart_step_ = result_info;
-
-  return;
 #endif
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
+{
+#ifdef BINIO
+
+  MAP *result_info = NULL;
+  MAP *file_info = NULL;
+
+  FindGroup(step,file,"result","result_file",result_info,file_info);
+  reader_ = OpenFiles("result_file",file_info);
+
+  restart_step_ = result_info;
+
+#endif
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -321,130 +269,32 @@ void IO::DiscretizationReader::FindMeshGroup(int step, MAP* file)
 #ifdef BINIO
 
   MAP *result_info = NULL;
-  SYMBOL *symbol;
-  int field_pos;
-  int disnum;
+  MAP *file_info = NULL;
 
-  if (dis_->Name() == "Micro Structure")
-    FindPosition(dis_, field_pos, disnum, 1);
-  else
-    FindPosition(dis_, field_pos, disnum);
+  FindGroup(step,file,"field","mesh_file",result_info,file_info);
+  meshreader_ = OpenFiles("mesh_file",file_info);
 
-  FIELD *actfield = &(field[field_pos]);
+  // We do not need result_info as we are interested in the mesh files only.
 
-  /*
-   * Iterate all symbols under the name "result" and get the one that
-   * matches the given step. Note that this iteration starts from the
-   * last result group and goes backward. */
-
-  symbol = map_find_symbol(file, "field");
-  while (symbol != NULL)
-  {
-    if (symbol_is_map(symbol))
-    {
-      MAP* map;
-      symbol_get_map(symbol, &map);
-      if (map_has_string(map, "field", fieldnames[actfield->fieldtyp]) &&
-          map_has_int(map, "field_pos", field_pos) &&
-          map_has_int(map, "discretization", disnum) &&
-          map_has_int(map, "step", step))
-      {
-        result_info = map;
-        break;
-      }
-    }
-    symbol = symbol->next;
-  }
-  if (symbol == NULL)
-  {
-    dserror("No restart entry for step %d in symbol table. Control file corrupt?",step);
-  }
-
-  /*--------------------------------------------------------------------*/
-  /* open file to read */
-
-  /* We have a symbol and its map that corresponds to the step we are
-   * interessted in. Now we need to continue our search to find the
-   * step that defines the output file used for our step. */
-
-  while (symbol != NULL)
-  {
-    if (symbol_is_map(symbol))
-    {
-      MAP* map;
-      symbol_get_map(symbol, &map);
-      if (map_has_string(map, "field", fieldnames[actfield->fieldtyp]) &&
-          map_has_int(map, "field_pos", field_pos) &&
-          map_has_int(map, "discretization", disnum))
-      {
-        /*
-         * If one of these files is here the other one has to be
-         * here, too. If it's not, it's a bug in the input. */
-        if (map_symbol_count(map, "mesh_file") > 0)
-        {
-          OpenMeshFiles(map);
-          break;
-        }
-      }
-    }
-    symbol = symbol->next;
-  }
-
-  /* No restart files defined? */
-  if (symbol == NULL)
-  {
-    dserror("no restart file definitions found in control file");
-  }
-
-  return;
 #endif
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::OpenDataFiles(MAP* result_step)
-{
+
 #ifdef BINIO
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<IO::HDFReader>
+IO::DiscretizationReader::OpenFiles(const char* filestring,
+                                    MAP* result_step)
+{
   int numoutputproc;
   if (!map_find_int(result_step,"num_output_proc",&numoutputproc))
   {
     numoutputproc = 1;
   }
 
-  string name = bin_out_main.name;
-
-  string dirname;
-  string::size_type pos = name.find_last_of('/');
-  if (pos==string::npos)
-  {
-    dirname = "";
-  }
-  else
-  {
-    dirname = name.substr(0,pos+1);
-  }
-
-  string filename;
-  filename = map_read_string(result_step, "result_file");
-
-  reader_ = rcp(new HDFReader(dirname));
-  reader_->Open(filename,numoutputproc);
-#endif
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void IO::DiscretizationReader::OpenMeshFiles(MAP* result_step)
-{
-#ifdef BINIO
-  int numoutputproc;
-  if (!map_find_int(result_step,"num_output_proc",&numoutputproc))
-  {
-    numoutputproc = 1;
-  }
-
-  const string name = bin_out_main.name;
+  const string name = input_->FileName();
 
   string dirname;
   const string::size_type pos = name.find_last_of('/');
@@ -457,20 +307,22 @@ void IO::DiscretizationReader::OpenMeshFiles(MAP* result_step)
     dirname = name.substr(0,pos+1);
   }
 
-  const string filename = map_read_string(result_step, "mesh_file");
+  const string filename = map_read_string(result_step, filestring);
 
-  meshreader_ = rcp(new HDFReader(dirname));
-  meshreader_->Open(filename,numoutputproc);
-#endif
+  Teuchos::RCP<HDFReader> reader = rcp(new HDFReader(dirname));
+  reader->Open(filename,numoutputproc);
+  return reader;
 }
 
+#endif
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis, int probnum):
+IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis,
+                                               Teuchos::RCP<OutputControl> output)
+  :
   dis_(dis),
-  disnum_(0),
-  field_pos_(0),
   step_(0),
   time_(0),
 #ifdef BINIO
@@ -482,17 +334,39 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
   resultgroup_(-1),
 #endif
   resultfile_changed_(-1),
-  meshfile_changed_(-1)
-
+  meshfile_changed_(-1),
+  output_(output)
 {
 #ifdef BINIO
-  cfname_ = bin_out_main.name;
-  cf_ = bin_out_main.control_file;
-  steps_per_file_ = bin_out_main.steps_per_file;
+  Check();
+#else
+  cerr << "compiled without BINIO: no output will be written\n";
 #endif
+}
 
-  FindPosition(dis_, field_pos_, disnum_, probnum);
-#ifndef BINIO
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis)
+  :
+  dis_(dis),
+  step_(0),
+  time_(0),
+#ifdef BINIO
+  meshfile_(-1),
+  resultfile_(-1),
+  meshfilename_(),
+  resultfilename_(),
+  meshgroup_(-1),
+  resultgroup_(-1),
+#endif
+  resultfile_changed_(-1),
+  meshfile_changed_(-1),
+  output_(DRT::Problem::Instance()->OutputControlFile())
+{
+#ifdef BINIO
+  Check();
+#else
   cerr << "compiled without BINIO: no output will be written\n";
 #endif
 }
@@ -525,17 +399,32 @@ IO::DiscretizationWriter::~DiscretizationWriter()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::Check()
+{
+  // The discretization name will appear in the control file and the post
+  // filters expect certain names (for certain types of fields). Thus we
+  // restrict the names that can be given to a discretization.
+  //
+  // If you want to create a dummy discretization choose the name 'none'.
+  char* names[] = FIELDNAMES;
+  for (int i=0; names[i]!=NULL; ++i)
+    if (dis_->Name()==names[i])
+      return;
+  dserror("illegal discretization name '%s'",dis_->Name().c_str());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::CreateMeshFile(const int step)
 {
 #ifdef BINIO
 
   ostringstream meshname;
 
-  meshname << cfname_
+  meshname << output_->FileName()
            << ".mesh."
-           << fieldnames[field[field_pos_].fieldtyp]
-           << ".f" << field_pos_
-           << ".d" << disnum_
+           << dis_->Name()
            << ".s" << step
     ;
   meshfilename_ = meshname.str();
@@ -569,11 +458,9 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
 #ifdef BINIO
 
   ostringstream resultname;
-  resultname << cfname_
+  resultname << output_->FileName()
              << ".result."
-             << fieldnames[field[field_pos_].fieldtyp]
-             << ".f" << field_pos_
-             << ".d" << disnum_
+             << dis_->Name()
              << ".s" << step
     ;
   resultfilename_ = resultname.str();
@@ -625,8 +512,8 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
     }
   }
 
-  if (step_ - resultfile_changed_ >= steps_per_file_
-      || resultfile_changed_ == -1)
+  if (step_ - resultfile_changed_ >= output_->FileSteps() or
+      resultfile_changed_ == -1)
   {
     CreateResultFile(step_);
     write_file = true;
@@ -638,26 +525,18 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
 
   if (dis_->Comm().MyPID() == 0)
   {
-    fprintf(cf_,
-            "result:\n"
-            "    field = \"%s\"\n"
-            "    field_pos = %i\n"
-            "    discretization = %i\n"
-            "    time = %f\n"
-            "    step = %i\n\n",
-            fieldnames[field[field_pos_].fieldtyp],
-            field_pos_,
-            disnum_,
-            time,
-            step
-      );
+    output_->ControlFile()
+      << "result:\n"
+      << "    field = \"" << dis_->Name() << "\"\n"
+      << "    time = " << time << "\n"
+      << "    step = " << step << "\n\n";
+
     if (write_file)
     {
       if (dis_->Comm().NumProc() > 1)
       {
-        fprintf(cf_,
-                "    num_output_proc = %d\n",
-                dis_->Comm().NumProc());
+        output_->ControlFile()
+          << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
       }
       string filename;
       const string::size_type pos = resultfilename_.find_last_of('/');
@@ -665,12 +544,10 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
         filename = resultfilename_;
       else
         filename = resultfilename_.substr(pos+1);
-      fprintf(cf_,
-              "    result_file = \"%s\"\n\n",
-              filename.c_str()
-        );
+      output_->ControlFile()
+        << "    result_file = \"" << filename << "\"\n\n";
     }
-    fflush(cf_);
+    output_->ControlFile() << std::flush;
   }
   const herr_t status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
   if (status < 0)
@@ -689,11 +566,8 @@ void IO::DiscretizationWriter::WriteDouble(const string name, const double value
 
   if (dis_->Comm().MyPID() == 0)
   {
-    fprintf(cf_,
-            "    %s = %f\n\n",
-            name.c_str(), value
-      );
-    fflush(cf_);
+    output_->ControlFile()
+      << "    " << name << " = " << value << "\n\n" << std::flush;
   }
 
 #endif
@@ -708,11 +582,8 @@ void IO::DiscretizationWriter::WriteInt(const string name, const int value)
 
   if (dis_->Comm().MyPID() == 0)
   {
-    fprintf(cf_,
-            "    %s = %i\n\n",
-            name.c_str(), value
-      );
-    fflush(cf_);
+    output_->ControlFile()
+      << "    " << name << " = " << value << "\n\n" << std::flush;
   }
 #endif
 }
@@ -802,19 +673,13 @@ void IO::DiscretizationWriter::WriteVector(const string name,
     default:
       dserror("unknown vector type %d", vt);
     }
-    fprintf(cf_,
-            "    %s:\n"
-            "        type = \"%s\"\n"
-            "        columns = %d\n"
-            "        values = \"%s\"\n"
-            "        ids = \"%s\"\n\n",  // different names + other informations?
-            name.c_str(),
-            vectortype.c_str(),
-            vec->NumVectors(),
-            valuename.c_str(),
-            idname.c_str()
-      );
-    fflush(cf_);
+    output_->ControlFile()
+      << "    " << name << ":\n"
+      << "        type = \"" << vectortype << "\"\n"
+      << "        columns = " << vec->NumVectors() << "\n"
+      << "        values = \"" << valuename.c_str() << "\"\n"
+      << "        ids = \"" << idname.c_str() << "\"\n\n"  // different names + other informations?
+      << std::flush;
   }
   const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
   if (flush_status < 0)
@@ -903,19 +768,13 @@ void IO::DiscretizationWriter::WriteVector(const string name,
     default:
       dserror("unknown vector type %d", vt);
     }
-    fprintf(cf_,
-            "    %s:\n"
-            "        type = \"%s\"\n"
-            "        columns = %d\n"
-            "        values = \"%s\"\n"
-            "        ids = \"%s\"\n\n",  // different names + other informations?
-            name.c_str(),
-            vectortype.c_str(),
-            1,
-            valuename.c_str(),
-            idname.c_str()
-      );
-    fflush(cf_);
+    output_->ControlFile()
+      << "    " << name << ":\n"
+      << "        type = \"" << vectortype << "\"\n"
+      << "        columns = 1\n"
+      << "        values = \"" << valuename << "\"\n"
+      << "        ids = \"" << idname << "\"\n\n" // different names + other informations?
+      << std::flush;
   }
   const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
   if (flush_status < 0)
@@ -960,8 +819,8 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 
   bool write_file = false;
 
-  if (step - meshfile_changed_ >= steps_per_file_
-    || meshfile_changed_ == -1)
+  if (step - meshfile_changed_ >= output_->FileSteps() or
+      meshfile_changed_ == -1)
   {
     CreateMeshFile(step);
     write_file = true;
@@ -995,35 +854,21 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 
     WriteCondition("XFEMCoupling");
 
-    fprintf(cf_,
-            "field:\n"
-            "    field = \"%s\"\n"
-            "    field_pos = %i\n"
-            "    discretization = %i\n"
-            "    dis_name = \"%s\"\n\n"
-            "    step = %i\n"
-            "    time = %f\n\n"
-            "    num_nd = %i\n"
-            "    num_ele = %i\n"
-            "    num_dof = %i\n\n",
-            fieldnames[field[field_pos_].fieldtyp],
-            field_pos_,
-            disnum_,
-            dis_->Name().c_str(),
-            step,
-            time,
-            dis_->NumGlobalNodes(),
-            dis_->NumGlobalElements(),
-            dis_->DofRowMap()->NumGlobalElements()  // is that right ???
-
-      );
+    output_->ControlFile()
+      << "field:\n"
+      << "    field = \"" << dis_->Name() << "\"\n"
+      << "    step = " << step << "\n"
+      << "    time = " << time << "\n\n"
+      << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
+      << "    num_ele = " << dis_->NumGlobalElements() << "\n"
+      << "    num_dof = " << dis_->DofRowMap()->NumGlobalElements() << "\n\n"
+      ;
     if (write_file)
     {
       if (dis_->Comm().NumProc() > 1)
       {
-        fprintf(cf_,
-                "    num_output_proc = %d\n",
-                dis_->Comm().NumProc());
+        output_->ControlFile()
+          << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
       }
       string filename;
       string::size_type pos = meshfilename_.find_last_of('/');
@@ -1031,11 +876,10 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
         filename = meshfilename_;
       else
         filename = meshfilename_.substr(pos+1);
-      fprintf(cf_,
-              "    mesh_file = \"%s\"\n\n",
-              filename.c_str());
+      output_->ControlFile()
+        << "    mesh_file = \"" << filename << "\"\n\n";
     }
-    fflush(cf_);
+    output_->ControlFile() << std::flush;
   }
   const herr_t flush_status = H5Fflush(meshgroup_,H5F_SCOPE_LOCAL);
   if (flush_status < 0)

@@ -41,7 +41,7 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
   int step = map_read_int(result->group(), "step");
 
   ostringstream buf;
-  buf << fieldnames[field->type()] << "_" << result_name;
+  buf << field->name() << "_" << result_name;
 
   RefCountPtr<Epetra_Vector> data = result->read_result(result_name);
   const Epetra_BlockMap& datamap = data->Map();
@@ -166,7 +166,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   int step = map_read_int(result->group(), "step");
 
   ostringstream buf;
-  buf << fieldnames[field->type()] << "_" << result_name;
+  buf << field->name() << "_" << result_name;
 
   const RefCountPtr<std::map<int,RefCountPtr<Epetra_SerialDenseMatrix> > > map
     = result->read_result_serialdensematrix(result_name);

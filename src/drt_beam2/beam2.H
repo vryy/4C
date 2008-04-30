@@ -35,7 +35,6 @@ using namespace Teuchos;
 #include "../drt_lib/drt_utils.H"
 //including random number library of blitz for statistical forces
 #include <random/normal.h>
-#include "../io/hdf_reader.H"
 
 
 // forward declarations
@@ -88,13 +87,13 @@ public:
 
   /*!
   \brief Deep copy this instance of Beam2 and return pointer to the copy
-    
+
   The Clone() method is used by the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
 .
   */
   virtual DRT::Element* Clone() const;
-  
+
    /*!
   \brief Get shape type of element
   */
@@ -164,7 +163,7 @@ public:
   \brief Print this element
   */
   virtual void Print(ostream& os) const;
-  
+
 
   //@}
 
@@ -247,13 +246,13 @@ public:
                               DRT::Condition&           condition,
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
-  
+
   void Arbeit(double& AN,double& AM,double& AQ, double& xv);
   void Thermik(double& kT);
-                              
+
   //@}
 
-  
+
 private:
 
   //! action parameters recognized by beam2
@@ -271,34 +270,34 @@ private:
     calc_struct_update_istep,
     calc_struct_update_genalpha_imrlike
   };
-  
+
   //! container containing all kind of beam2 thisandthat
-  DRT::Container data_;  
-  
+  DRT::Container data_;
+
   //! material type
   int material_;
-  
+
   //! length in reference configuration
   double lrefe_;
-  
+
   //! cross section area
   double crosssec_;
-  
+
    //! cross section area including shear corretion factor
   double crosssecshear_;
-  
+
   //! moment of inertia of area
   double mominer_;
-  
+
   //! flag determining if consistent or lumped mass matrix
   int lumpedflag_;
-  
+
   //! thermal energy responsible for statistical forces
   double thermalenergy_;
-  
+
   //! rounded number of half rotations the beam has already carried out counter clockwise;
   int halfrotations_;
-  
+
   //! angle relative to x-axis in reference configuration
   double beta0_;
 
@@ -306,18 +305,18 @@ private:
   double Arbeit_M;
   double Arbeit_Q;
   double x_verschiebung;
-  
+
    //! vector of lines of this element (length 1)
-  vector<DRT::Element*> lines_; 
- 
-  //! gaussrule_ will be initialized automatically to a 2 point integration rule 
+  vector<DRT::Element*> lines_;
+
+  //! gaussrule_ will be initialized automatically to a 2 point integration rule
   DRT::UTILS::GaussRule1D gaussrule_;
 
 
-  
+
   // internal calculation methods
-  
-  
+
+
   //internal geometric calculations
   void b2_local_aux(LINALG::SerialDenseMatrix& B_curr,
                     LINALG::SerialDenseVector& r_curr,
@@ -328,20 +327,20 @@ private:
                     const double& lrefe_);
 
   //calculation of nonlinear stiffness and mass matrix
-  void b2_nlnstiffmass(vector<double>&           disp, 
+  void b2_nlnstiffmass(vector<double>&           disp,
                        Epetra_SerialDenseMatrix& stiffmatrix,
                        Epetra_SerialDenseMatrix& massmatrix,
                        Epetra_SerialDenseVector& force);
-  
+
   //calculation of nonlinear stiffness approximated by finite differences; this function should
   //be activated only for bug fixing
-  
+
   Epetra_SerialDenseMatrix b2_nlnstiff_approx(vector<double>& disp, double h_rel);
-  
-			    
+
+
   // don't want = operator
   Beam2& operator = (const Beam2& old);
-  
+
 
 }; // class Beam2
 
@@ -364,7 +363,7 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 class Beam2Register : public DRT::ElementRegister
 {
 public:
-	
+
   //! @name Friends
   friend class Beam2;
 
@@ -372,7 +371,7 @@ public:
 
   /*!
   \brief Standard Constructor
-  
+
   */
   Beam2Register(DRT::Element::ElementType etype);
 
@@ -380,22 +379,22 @@ public:
   \brief Copy Constructor
 
   Makes a deep copy of an Beam2Register
-  
+
   */
   Beam2Register(const DRT::ELEMENTS::Beam2Register& old);
 
   /*!
   \brief Deep copy this instance of Beam2Register and return pointer to the copy
-  
+
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
-  
+
   */
   DRT::ELEMENTS::Beam2Register* Clone() const;
 
   /*!
   \brief Return unique ParObject id
-  
+
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
@@ -403,15 +402,15 @@ public:
 
   /*!
   \brief Pack this class so it can be communicated
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
-  
+
   */
   virtual void Pack(vector<char>& data) const;
 
   /*!
   \brief Unpack data from a char vector into this class
-  
+
   \ref Pack and \ref Unpack are used to communicate this element
 
   */
@@ -438,7 +437,7 @@ public:
 
   /*!
   \brief Call Element init routines
-  
+
   The method performs all steps needed to init the Beam2 elements. it e.g. calculates the
   field of averaged directors at nodes.
   */

@@ -23,7 +23,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../io/gmsh.H"
+#include "../drt_io/io_gmsh.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/material.H"
 
@@ -34,7 +34,7 @@ using namespace LINALG; // our linear algebra
 /*----------------------------------------------------------------------*
  |  find shell-thickness direction via Jacobian                maf 07/07|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthickdir() 
+DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthickdir()
 {
   // update element geometry
   Epetra_SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8); // material coord. of element
@@ -55,7 +55,7 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
                 -0.125,+0.125,+0.125};
   // shape function derivatives, evaluated at origin (r=s=t=0.0)
   Epetra_DataAccess CV = Copy;
-  Epetra_SerialDenseMatrix df0(CV, df0_vector, NUMDIM_SOH8, NUMDIM_SOH8, 
+  Epetra_SerialDenseMatrix df0(CV, df0_vector, NUMDIM_SOH8, NUMDIM_SOH8,
   NUMNOD_SOH8);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
@@ -67,20 +67,20 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   solve_for_inverseJ0.SetMatrix(iJ0);
   int err = solve_for_inverseJ0.Invert();
   if (err != 0) dserror("Inversion of Jacobian0 failed");
-  
+
   // separate "stretch"-part of J-mapping between parameter and global space
-  Epetra_SerialDenseMatrix jac0stretch(3,3); 
+  Epetra_SerialDenseMatrix jac0stretch(3,3);
   jac0stretch.Multiply('T','N',1.0,iJ0,iJ0,0.0); // jac0stretch = J^{-T}J
   double r_stretch = sqrt(jac0stretch(0,0));
   double s_stretch = sqrt(jac0stretch(1,1));
   double t_stretch = sqrt(jac0stretch(2,2));
-  
+
   // minimal stretch equivalents with "thinnest" direction
   double max_stretch = max(r_stretch, max(s_stretch, t_stretch));
-  
+
   ThicknessDirection thickdir; // of actual element
   int thick_index;
-  
+
   if (max_stretch == r_stretch) {
     if ((max_stretch / s_stretch <= 1.5) || (max_stretch / t_stretch <=1.5)) {
       cout << "ID: " << this->Id() << ", has aspect ratio of: ";
@@ -118,7 +118,7 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
   // return doubles of thickness-vector
   thickvec_.resize(3);
   thickvec_[0] = glo_thickvec(0); thickvec_[1] = glo_thickvec(1); thickvec_[2] = glo_thickvec(2);
-  
+
 
   // set fiber direction for anisotropic material law
   sosh8_setcylinderfiberdirection(xrefe);
@@ -155,13 +155,13 @@ void DRT::ELEMENTS::So_sh8::sosh8_setcylinderfiberdirection(const Epetra_SerialD
   fiberdirection_[0] = circ(0);
   fiberdirection_[1] = circ(1);
   fiberdirection_[2] = sqrt(circ(0)*circ(0) + circ(1)*circ(1));
-  
+
 //  fiberdirection_[0] = circ(0);
 //  fiberdirection_[1] = circ(1);
 //  fiberdirection_[2] = circ(2);
-  
+
   return;
-  
+
 }
 
 void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8])
@@ -250,7 +250,7 @@ void DRT::ELEMENTS::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& 
     vector<double> ec = actele->soh8_ElementCenterRefeCoords();
     //gmshfilecontent << "VP(0,0,0){1,1.3,1.7};" << endl;
     gmshfilecontent << "VP(" << scientific << ec[0] << "," << ec[1] << "," << ec[2] << ")";
-    gmshfilecontent << "{" << scientific << pv[0] << "," << pv[1] << "," << pv[2] << "};" << endl; 
+    gmshfilecontent << "{" << scientific << pv[0] << "," << pv[1] << "," << pv[2] << "};" << endl;
   }
   gmshfilecontent << "};" << endl;
   // plot vectors
@@ -271,10 +271,10 @@ void DRT::ELEMENTS::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& 
     else{
       pv = actele->GetFibervec();
     }
-      
+
     //gmshfilecontent << "VP(0,0,0){1,1.3,1.7};" << endl;
     gmshfilecontent << "VP(" << scientific << ec[0] << "," << ec[1] << "," << ec[2] << ")";
-    gmshfilecontent << "{" << scientific << pv[0] << "," << pv[1] << "," << pv[2] << "};" << endl; 
+    gmshfilecontent << "{" << scientific << pv[0] << "," << pv[1] << "," << pv[2] << "};" << endl;
   }
   gmshfilecontent << "};" << endl;
   f_system << gmshfilecontent.str();

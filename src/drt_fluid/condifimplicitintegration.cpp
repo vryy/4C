@@ -21,6 +21,7 @@ Maintainer: Volker Gravemeier
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include "../drt_lib/drt_globalproblem.H"
 #include "condifimplicitintegration.H"
 #include "drt_periodicbc.H"
 #include "vm3_solver.H"
@@ -235,7 +236,7 @@ void CondifImplicitTimeInt::Integrate()
   }
 
   // end total time measurement
-  tm0_ref_ = null; 
+  tm0_ref_ = null;
 
   // print the results of time measurements
   //cout<<endl<<endl;

@@ -13,9 +13,9 @@ Maintainer: Volker Gravemeier
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include "../drt_lib/drt_globalproblem.H"
 #include "condif_genalpha_integration.H"
 
-extern Teuchos::RefCountPtr<Teuchos::ParameterList> globalparameterlist;
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -196,14 +196,14 @@ void CondifGenAlphaIntegration::TimeLoop()
 
   if (myrank_==0)
   {
-    cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << &endl;
-    cout << "                             alpha_M = " << alphaM_ << &endl;
-    cout << "                             gamma   = " << gamma_  << &endl <<&endl;
+    cout << "Generalized Alpha parameter: alpha_F = " << alphaF_ << endl;
+    cout << "                             alpha_M = " << alphaM_ << endl;
+    cout << "                             gamma   = " << gamma_  << endl <<endl;
 
-    cout <<  "                             " << "INERTIA         = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("INERTIA")        <<&endl;
-    cout <<  "                             " << "SUPG            = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("SUPG")           <<&endl;
-    cout <<  "                             " << "VSTAB           = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("VSTAB")          <<&endl;
-    cout << &endl;
+//     cout <<  "                             " << "INERTIA         = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("INERTIA")        <<endl;
+//     cout <<  "                             " << "SUPG            = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("SUPG")           <<endl;
+//     cout <<  "                             " << "VSTAB           = " << ((*globalparameterlist).sublist("FluidStabilisation")).get<string>("VSTAB")          <<endl;
+//     cout << endl;
 
   }
 
@@ -543,7 +543,8 @@ void CondifGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // parameters for stabilisation
   {
-    eleparams.sublist("stabilisation") = (*globalparameterlist).sublist("FluidStabilisation");
+    //eleparams.sublist("stabilisation") = (*globalparameterlist).sublist("FluidStabilisation");
+    dserror("need to get stabilization flags from normal parameter list -- Uli");
   }
 
   // set vector values needed by elements

@@ -566,7 +566,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   areaconstraint2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   areaconstraint2D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   condlist.push_back(areaconstraint2D);
-  
+
   /*--------------------------------------------------------------------*/
   // area monitor 2D
 
@@ -580,12 +580,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   areamonitor2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   condlist.push_back(areamonitor2D);
-  
+
   /*--------------------------------------------------------------------*/
   // Impedance condition
 
   Teuchos::RCP<ConditionDefinition> impedancebc =
-  Teuchos::rcp(new ConditionDefinition("IMPEDANCE CONDITIONS",
+    Teuchos::rcp(new ConditionDefinition("IMPEDANCE CONDITIONS",
                                          "ImpedanceCond",
                                          "Surface Volume Constraint",
                                          DRT::Condition::ImpedanceCond,
@@ -595,7 +595,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   impedancebc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   AddNamedReal(impedancebc,"timeperiod");
   condlist.push_back(impedancebc);
-  
+
   /*--------------------------------------------------------------------*/
     // area monitor 2D
 
@@ -615,7 +615,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 3")));
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 4")));
   condlist.push_back(nodeonplaneconst3D);
-  
+
   return vc;
 }
 

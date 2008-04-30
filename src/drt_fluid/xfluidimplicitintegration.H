@@ -40,7 +40,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_lib/linalg_systemmatrix.H"
-#include "../io/io_drt.H"
+#include "../drt_io/io.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_xfem/dof_management.H"
 
@@ -116,7 +116,7 @@ public:
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
-  
+
   /// setup the variables to do a new nonlinear iteration
   void PrepareNonlinearSolve();
 
@@ -129,7 +129,7 @@ public:
           RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
           RCP<DRT::Discretization> submerseddiscret   ///< domain discretization used to calculate enrichment values (to be removed)
           );
-  
+
   /*!
   \brief compute Interface
   */
@@ -321,7 +321,7 @@ protected:
    *  should always fit to the current Epetra_Maps in this class
    */
   XFEM::DofPosMap    dofDistributionMap_;
-  
+
   /// (standard) system matrix
   RCP<LINALG::SparseOperator> sysmat_;
 

@@ -18,6 +18,7 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 
 #ifdef TRILINOS_PACKAGE
+#ifndef CCADISCRET
 
 #include <string>
 #include <sstream>
@@ -213,4 +214,5 @@ extern "C" void input_ReadGlobalParameterList()
   input_ReadParameterList(*globalparameterlist);
 }
 
+#endif
 #endif

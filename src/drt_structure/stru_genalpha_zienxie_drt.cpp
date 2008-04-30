@@ -29,7 +29,7 @@ Maintainer: Michael Gee
 /* #include "../drt_timada/timeadaptivity.H" */
 #include "../drt_timada/ta_zienkiewiczxie.H"
 #include "../drt_structure/strugenalpha.H"
-#include "../io/io_drt.H"
+#include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/

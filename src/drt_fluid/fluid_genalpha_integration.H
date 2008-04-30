@@ -69,7 +69,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_lib/linalg_systemmatrix.H"
-#include "../io/io_drt.H"
+#include "../drt_io/io.H"
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"

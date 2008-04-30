@@ -6,7 +6,7 @@
 
      o one-step-theta time-integration scheme
 
-     o two-step BDF2 time-integration scheme 
+     o two-step BDF2 time-integration scheme
        (with potential one-step-theta start algorithm)
 
      o generalized-alpha time-integration scheme

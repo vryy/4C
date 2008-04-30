@@ -23,7 +23,7 @@ Maintainer: Moritz Frenzel
 #endif
 
 #include "stru_static_drt.H"
-#include "../io/io_drt.H"
+#include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 #include "../drt_lib/linalg_systemmatrix.H"
@@ -81,7 +81,7 @@ void stru_static_drt()
   // check for contact case
   // -------------------------------------------------------------------
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
- 
+
   // detect if contact is present
   bool contact = false;
   switch (Teuchos::getIntegralValue<int>(scontact,"CONTACT"))

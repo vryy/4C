@@ -114,7 +114,7 @@ double ADAPTER::FluidAle::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
-                                              Teuchos::RCP<Epetra_Vector> ivel)
+                                       Teuchos::RCP<Epetra_Vector> ivel)
 {
 
   const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();

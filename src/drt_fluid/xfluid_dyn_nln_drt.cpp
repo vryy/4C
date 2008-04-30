@@ -115,7 +115,7 @@ void xdyn_fluid_drt()
       // solid displacement (to be removed)
       const Epetra_Map* soliddofrowmap = soliddis->DofRowMap();
       RCP<Epetra_Vector> soliddispnp = LINALG::CreateVector(*soliddofrowmap,true);
-      
+
       solidoutput.NewStep    (0,0.0);
       soliddispnp->PutScalar(0.0);
       solidoutput.WriteVector("soliddispnp", soliddispnp);

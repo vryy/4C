@@ -469,8 +469,12 @@ DOUBLE map_read_real(MAP* map, const CHAR* key)
   dstrc_enter("map_read_real");
 #endif
 
-  if (!map_find_real(map, key, &real)) {
-    dserror("no real attribute '%s' in map", key);
+  if (!map_find_real(map, key, &real))
+  {
+    INT value;
+    if (!map_find_int(map, key, &value))
+      dserror("no real attribute '%s' in map", key);
+    real = value;
   }
 
 #ifdef DEBUG

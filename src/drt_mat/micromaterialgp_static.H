@@ -70,7 +70,7 @@ private:
   static int microstaticcounter_;
 
   /// microstructure discretization writer
-  RefCountPtr<MicroDiscretizationWriter> micro_output_;
+  RefCountPtr<DiscretizationWriter> micro_output_;
 
   /// my vector of displacements
   RefCountPtr<Epetra_Vector> dis_;

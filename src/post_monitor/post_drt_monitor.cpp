@@ -39,49 +39,24 @@ public:
 MonWriter(PostProblem& problem, string& infieldtype, int node):
   myrank_(problem.comm()->MyPID()) // get my processor id
   {
-	
-	// determine the owner of the node 
+
+	// determine the owner of the node
 	nodeowner_=false;
 
 	int numdis = problem.num_discr();
 	string fieldtype="";
 	// loop over all available discretizations
-	for (int i=0;i<numdis;++i)		
+	for (int i=0;i<numdis;++i)
 	{
 		PostField* field = problem.get_discretization(i);
-		switch(field->type())
-		{
-		case none:
-			fieldtype = "none";
-			break;
-		case fluid:
-			fieldtype = "fluid";
-			break;
-		case ale:
-			fieldtype = "ale";			
-			break;
-		case structure:
-			fieldtype = "structure";
-			break;		
-		case thermal:
-			fieldtype = "thermal";
-			break;		
-		case pressure:
-			fieldtype = "pressure";
-		case condif:
-		    fieldtype = "condif";
-		case boundary:
-		    fieldtype = "boundary";
-		}
-
-		if (fieldtype==infieldtype)
+		if (field->name()==infieldtype)
 		{
 			// pointer (rcp) to actual discretisation
 			RCP< DRT::Discretization > mydiscrete = field->discretization();
 			// store, if this node belongs to me
 			if (mydiscrete->HaveGlobalNode(node))
 			{
-				nodeowner_ = mydiscrete->HaveGlobalNode(node); 
+				nodeowner_ = mydiscrete->HaveGlobalNode(node);
 			}
 		}
 	}// end loop over dis
@@ -134,11 +109,11 @@ private:
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node)
-{		
+{
   // create my output file
   string filename = problem.outname() + ".mon";
   ofstream outfile;
-  if (nodeowner_) 
+  if (nodeowner_)
   {
     outfile.open(filename.c_str());
   }
@@ -157,7 +132,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
   // global nodal dof numbers
   std::vector<int> gdof;
 
-  if (nodeowner_) 
+  if (nodeowner_)
   {
     // test, if this node belongs to me
     bool ismynode = mydiscrete->HaveGlobalNode(node);
@@ -189,7 +164,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
     // set some dummy values
     for(int i=0; i < dim+1; ++i)
     {
-      gdof.push_back(-1); 
+      gdof.push_back(-1);
     }
   }
 
@@ -198,18 +173,18 @@ void MonWriter::WriteMonFile(PostProblem& problem, string& infieldtype, int node
 
   // this is a loop over all time steps that should be written
   // writing step size is considered
-  if (nodeowner_) 
+  if (nodeowner_)
   {
     while(result.next_result())
       WriteResult(outfile,result,gdof,dim);
   }
 
-  if (outfile.is_open()) 
+  if (outfile.is_open())
     outfile.close();
 }
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------*/
 class FieldMonWriter : public MonWriter
 {
 public:
@@ -236,7 +211,7 @@ PostField* FieldMonWriter::GetFieldPtr(PostProblem& problem)
 
 
 /*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------*/
 class FluidMonWriter : public FieldMonWriter
 {
 public:
@@ -289,9 +264,9 @@ void FluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
     outfile << "# step   time     u_x      u_y      p\n";
     break;
   case 3:
-   outfile << "# step   time     u_x      u_y      u_z      p\n";  
+   outfile << "# step   time     u_x      u_y      u_z      p\n";
    break;
-  default: 
+  default:
     dserror("Number of dimensions in space differs from 2 and 3!");
   }
 }
@@ -369,9 +344,9 @@ void StructMonWriter::WriteTableHead(ofstream& outfile, int dim)
     outfile << "# step   time     d_x      d_y      v_x      v_y      a_x      a_y\n";
     break;
   case 3:
-   outfile << "# step   time     d_x      d_y      d_z      v_x      v_y      v_z      a_x      a_y      a_z\n";  
+   outfile << "# step   time     d_x      d_y      d_z      v_x      v_y      v_z      a_x      a_y      a_z\n";
    break;
-  default: 
+  default:
     dserror("Number of dimensions in space differs from 2 and 3!");
   }
 }
@@ -472,9 +447,9 @@ void AleMonWriter::WriteTableHead(ofstream& outfile, int dim)
     outfile << "# step   time     d_x      d_y\n";
     break;
   case 3:
-   outfile << "# step   time     d_x      d_y      d_z\n";  
+   outfile << "# step   time     d_x      d_y      d_z\n";
    break;
-  default: 
+  default:
     dserror("Number of dimensions in space differs from 2 and 3!");
   }
 }
@@ -530,7 +505,7 @@ PostField* FsiFluidMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
-  if (myfield->type() != fluid)
+  if (myfield->name() != "fluid")
     dserror("Fieldtype of field 1 is not fluid.");
   return myfield;
 }
@@ -548,9 +523,9 @@ void FsiFluidMonWriter::WriteTableHead(ofstream& outfile, int dim)
     outfile << "# step   time     d_x      d_y      u_x      u_y      p\n";
     break;
   case 3:
-   outfile << "# step   time     d_x      d_y      d_z     u_x      u_y      u_z      p\n";  
+   outfile << "# step   time     d_x      d_y      d_z     u_x      u_y      u_z      p\n";
    break;
-  default: 
+  default:
     dserror("Number of dimensions in space differs from 2 and 3!");
   }
 }
@@ -569,7 +544,7 @@ void FsiFluidMonWriter::WriteResult(ofstream& outfile, PostResult& result, std::
     outfile << (*resvec)[lid] << "   ";
   }
 
- 
+
   // get actual result vector for velocity
   resvec = result.read_result("velnp");
   const Epetra_BlockMap& velmap = resvec->Map();
@@ -614,7 +589,7 @@ PostField* FsiStructMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(0);
-  if (myfield->type() != structure)
+  if (myfield->name() != "structure")
     dserror("Fieldtype of field 1 is not structure.");
   return myfield;
 }
@@ -655,7 +630,7 @@ PostField* FsiAleMonWriter::GetFieldPtr(PostProblem& problem)
 {
   // get pointer to discretisation of actual field
   PostField* myfield = problem.get_discretization(1);
-  if (myfield->type() != fluid)
+  if (myfield->name() != "fluid")
     dserror("Fieldtype of field 1 is not fluid.");
   return myfield;
 }
@@ -685,7 +660,7 @@ int main(int argc, char** argv)
   my_comlinproc.setDocString("Post DRT monitoring filter\n\nwrite nodal result data of specified node into outfile.mon");
 
   bool required=true;
-  /* Set an additional integer command line option which is the global node Id 
+  /* Set an additional integer command line option which is the global node Id
      of the node you're interested in */
   int node = 0;
   my_comlinproc.setOption("node", &node, "Global node number",required);
@@ -696,7 +671,7 @@ int main(int argc, char** argv)
   // my post processing problem itself
   PostProblem problem(my_comlinproc,argc,argv);
 
-    
+
   switch (problem.Problemtype())
   {
     case prb_fsi:

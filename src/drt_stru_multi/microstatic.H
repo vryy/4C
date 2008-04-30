@@ -34,7 +34,7 @@ Maintainer: Lena Wiechert
 #include <Epetra_Map.h>
 #include <Teuchos_RefCountPtr.hpp>
 
-#include "../io/io_drt_micro.H"
+#include "../drt_io/io.H"
 #include "../drt_lib/drt_parobject.H"
 
 using namespace Teuchos;
@@ -116,7 +116,7 @@ public:
   \brief write update
 
   */
-  void Output(RefCountPtr<MicroDiscretizationWriter> output,
+  void Output(RefCountPtr<DiscretizationWriter> output,
               const double time,
               const int istep,
               const double dt);

@@ -25,6 +25,7 @@ Maintainer: Peter Gamnitzer
 
 #include "fluidimplicitintegration.H"
 
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_ana.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "drt_periodicbc.H"

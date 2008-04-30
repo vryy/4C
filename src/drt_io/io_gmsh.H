@@ -1,6 +1,4 @@
 /*!
-\file gmsh.H
-
 \brief simple element print library for Gmsh (mostly for debuging, only sequential)
 
 <pre>

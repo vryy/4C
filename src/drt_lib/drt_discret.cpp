@@ -21,7 +21,6 @@ Maintainer: Michael Gee
 #include "linalg_utils.H"
 
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 11/06|
  |  comm             (in)  a communicator object                        |

@@ -219,9 +219,6 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
   Write(file, "element id off");
 
   // part + partnumber + comment
-  // careful! field_->field_pos() returns the position of the ccarat
-  // field, ignoring the discretizations. So if there are many
-  // discretizations in one field, we have to do something different...
   Write(file, "part");
   Write(file, field_->field_pos()+1);
   Write(file, field_->name() + " field");

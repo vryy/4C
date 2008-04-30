@@ -743,11 +743,12 @@ void dserror_func(
 #endif
 #endif
 
+#ifndef CCADISCRET
 #ifdef BINIO
   /* This causes communication in the parallel case. */
   io_emergency_close_files();
 #endif
-
+#endif
 
 #ifdef PARALLEL
   MPI_Abort(MPI_COMM_WORLD,EXIT_FAILURE);

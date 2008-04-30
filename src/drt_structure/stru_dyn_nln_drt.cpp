@@ -26,7 +26,7 @@ Maintainer: Michael Gee
 #include "stru_genalpha_zienxie_drt.H"
 #include "strugenalpha.H"
 #include "../drt_contact/contactstrugenalpha.H"
-#include "../io/io_drt.H"
+#include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 #include "stru_resulttest.H"
@@ -260,7 +260,7 @@ void dyn_nlnstructural_drt()
           dserror("Cannot cope with choice of predictor");
           break;
       }
-      
+
       // detect if contact is present
       bool contact = false;
       switch (Teuchos::getIntegralValue<int>(scontact,"CONTACT"))
@@ -281,13 +281,13 @@ void dyn_nlnstructural_drt()
           dserror("Cannot cope with choice of contact type");
           break;
       }
-      
+
       // create the time integrator
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator;
       if (!contact && !inv_analysis)
         tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
-      else 
+      else
       {
         if (!inv_analysis)
           tintegrator = rcp(new CONTACT::ContactStruGenAlpha(genalphaparams,*actdis,solver,output));

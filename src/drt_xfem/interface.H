@@ -22,7 +22,7 @@ Maintainer: Axel Gerstenberger
 #include "integrationcell.H"
 #include "../drt_lib/drt_discret.H"
 #include "intersection.H"
-#include "../io/gmsh.H"
+#include "../drt_io/io_gmsh.H"
 
 namespace XFEM
 {
@@ -46,14 +46,15 @@ public:
 
     //! return string representation of the interface handle
     string toString() const;
-    
+
     //! return pointer to the intersected discretization
     RCP<DRT::Discretization> xfemdis() const {return xfemdis_;};
     //! return pointer to the intersecting discretization
     RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
+
     //! return pointer to the sumbersed discretization (only used for enrichment calulation -> will go away
     RCP<DRT::Discretization> submerseddis() const {return submerseddis_;};
-    
+
     //! get copy of map with all domain integration cells on this proc
     std::map<int,DomainIntCells> elementalDomainIntCells() const {return elementalDomainIntCells_;};
     //! get copy if map with all boundary integration cells on this proc
@@ -64,12 +65,12 @@ public:
             const int                              gid,     ///< unique global element id
             const DRT::Element::DiscretizationType distype  ///< shape of thefinite element
             ) const;
-    
+
     //! return list of boundary integrationcells for a given global element id, returned list can be empty -> always terminates
     BoundaryIntCells GetBoundaryIntCells(
             const int                              gid      ///< unique global element id
             ) const;
-    
+
 //    set<int> getSetOfIntersectedElementIds() const
 //    {
 //        set<int> eleidset;
@@ -87,7 +88,7 @@ public:
     bool ElementIntersected(
             const int element_gid   ///< unique global element id
             ) const;
-    
+
     /*!
      * get pointer to boundary element
      * \return pointer to boundary element
@@ -104,28 +105,28 @@ public:
         }
         return tmp->second;
     }
-    
+
 private:
     //! intersected domain
     const RCP<DRT::Discretization> xfemdis_;
-    
+
     //! domain that intersects the xfemdis_, should be a boundary discretization (surface of structure)
     RCP<DRT::Discretization> cutterdis_;
-    
+
     //! domain (structure) that is submersed in the xfemdis_, used for enrichment evaluation -> will go away
     const RCP<DRT::Discretization> submerseddis_;
-    
+
     //! integration cells for domain
     map<int, DomainIntCells > elementalDomainIntCells_;
-    
+
     //! integration cells for boundary
     map<int, BoundaryIntCells > elementalBoundaryIntCells_;
-    
+
     /*! list of boundary elements that intersect volume elements on this processor
      *  first integer is the global surface ele id to allow easy access
      */
     map<int, DRT::Element* > boundaryElements_;
-    
+
     //! store all additional nodes for the cutter elements that are not already on this proc (int = gid of node)
     map<int, RCP<DRT::Node> > cutterNodeMap_;
 

@@ -23,7 +23,7 @@ Maintainer: Lena Wiechert
 
 #include "../drt_stru_multi/microstatic.H"
 
-#include "../io/io_drt_micro.H"
+#include "../drt_io/io_control.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -104,15 +104,48 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
 
 
   // set up micro output
-  micro_output_ = rcp(new MicroDiscretizationWriter(actdis, 1, ele_ID_, gp_));
+  //
+  // Get the macro output prefix and insert element and gauss point
+  // identifier. We use the original name here and rely on our (micro)
+  // OutputControl object below to act just like the macro (default)
+  // OutputControl. In particular we assume that there are always micro and
+  // macro control files on restart.
+  RCP<IO::OutputControl> macrocontrol = DRT::Problem::Instance(0)->OutputControlFile();
+  std::string microprefix = macrocontrol->RestartName();
+
+  unsigned pos = microprefix.rfind('-');
+  if (pos!=std::string::npos)
+  {
+    std::string number = microprefix.substr(pos+1);
+    std::string prefix = microprefix.substr(0,pos);
+
+    ostringstream s;
+    s << prefix << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
+    microprefix = s.str();
+  }
+  else
+  {
+    ostringstream s;
+    s << microprefix << "_el" << ele_ID_ << "_gp" << gp_;
+    microprefix = s.str();
+  }
+
+  RCP<OutputControl> microcontrol =
+    rcp(new OutputControl(actdis->Comm(),
+                          DRT::Problem::Instance(1)->ProblemType(),
+                          "micro-input-file-not-known",
+                          microprefix,
+                          genprob.ndim,
+                          genprob.restart,
+                          macrocontrol->FileSteps()));
+  micro_output_ = rcp(new DiscretizationWriter(actdis,microcontrol));
 
   // do restart if demanded from input file
   istep_ = 0;
   if (genprob.restart)
   {
     istep_ = genprob.restart;
-    string restartname = micro_output_->GetRestartFileName();
-    microstatic_->ReadRestart(istep_, dis_, lastalpha_, restartname);
+    microstatic_->ReadRestart(istep_, dis_, lastalpha_, microprefix);
     // both dis_ and dism_ are the same
     dism_->Update(1.0, *dis_, 0.0);
     // both lastalpha and oldalpha are the same

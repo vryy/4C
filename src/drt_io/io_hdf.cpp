@@ -16,7 +16,7 @@ Maintainer: Ulrich Kuettler
 #ifdef BINIO
 
 #include <iostream>
-#include "hdf_reader.H"
+#include "io_hdf.H"
 
 using namespace std;
 
@@ -86,7 +86,7 @@ RefCountPtr<std::vector<char> > IO::HDFReader::ReadElementData(int step, int new
   return ReadCharData(path.str(),start,end);
 }
 
-#if 1
+
 /*----------------------------------------------------------------------*
  * reads the packed bc data from the mesh files
  * Note: this function should only be called when the HDFReader opened
@@ -130,7 +130,7 @@ RefCountPtr<std::vector<char> > IO::HDFReader::ReadCondition(
 
   return block;
 }
-#endif
+
 
 /*----------------------------------------------------------------------*
  * reads the packed node data from the mesh files

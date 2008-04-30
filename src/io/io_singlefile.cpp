@@ -51,6 +51,8 @@ All io is done using chunks.
 
 #ifdef BINIO
 
+#ifndef CCADISCRET
+
 /*!
   \addtogroup IO
 *//*! @{ (documentation module open)*/
@@ -390,7 +392,6 @@ void init_bin_out_main(CHAR* outputname)
               basename);
     }
 
-#ifndef CCADISCRET
     // So this is old stuff. Not used with the new discretization.
 
     /* Write some internal enums. Afterwards we are free to use the
@@ -426,8 +427,6 @@ void init_bin_out_main(CHAR* outputname)
        * element chunks. */
       out_print_element_versions(bin_out_main.control_file);
     }
-
-#endif
 
     fflush(bin_out_main.control_file);
   }
@@ -471,7 +470,6 @@ void init_bin_in_main(CHAR* inputname)
 #endif
 }
 
-#ifndef CCADISCRET
 
 /*======================================================================*/
 /* Now here are utility functions that are concerned with the proper

@@ -15,7 +15,8 @@ Maintainer: Michael Gee
 #include <iostream>
 
 #include "strugenalpha.H"
-#include "../io/io_drt.H"
+#include "../drt_io/io.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*

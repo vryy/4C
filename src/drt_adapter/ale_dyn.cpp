@@ -21,7 +21,7 @@
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../io/io_drt.H"
+#include "../drt_io/io.H"
 
 
 /*----------------------------------------------------------------------*
@@ -81,6 +81,7 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   SOLVAR        *actsolv  = &solv[0];
 
+  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
 
   // -------------------------------------------------------------------
@@ -99,6 +100,12 @@ void dyn_ale_drt()
 
   int aletype = Teuchos::getIntegralValue<int>(adyn,"ALE_TYPE");
   ADAPTER::AleLinear ale(actdis, solver, params, output, aletype);
+
+  if (probtype.get<int>("RESTART"))
+  {
+    // read the restart information, set vectors and variables
+    ale.ReadRestart(probtype.get<int>("RESTART"));
+  }
 
   ale.BuildSystemMatrix();
   ale.Integrate();

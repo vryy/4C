@@ -16,6 +16,7 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include "../drt_lib/drt_globalproblem.H"
 #include "fluid_genalpha_integration.H"
 #include "vm3_solver.H"
 #include "fluid_utils.H"
@@ -1801,7 +1802,7 @@ void FluidGenAlphaIntegration::GenAlphaTakeSample()
   // --------------------------------------------------------------------
   // add up X, X^2 for velocities and pressure
   turbulencestatistics_->DoTimeSample(velnp_,*force_);
-  
+
   // create the parameters for the discretization
   ParameterList eleparams;
 
@@ -1815,39 +1816,39 @@ void FluidGenAlphaIntegration::GenAlphaTakeSample()
   // other parameters that might be needed by the elements
   {
     ParameterList& timelist = eleparams.sublist("time integration parameters");
-    
+
     timelist.set("alpha_M",alphaM_);
     timelist.set("alpha_F",alphaF_);
     timelist.set("gamma"  ,gamma_ );
     timelist.set("time"   ,time_  );
     timelist.set("dt"     ,dt_    );
   }
-  
+
   // parameters for stabilisation
   {
     eleparams.sublist("STABILIZATION")    = params_.sublist("STABILIZATION");
   }
-  
+
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("u and p (n+1      ,trial)",velnp_);
   discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
   discret_->SetState("acc     (n+alpha_M,trial)",accam_);
-  
+
   if (alefluid_)
   {
     discret_->SetState("dispnp"    , dispnp_   );
     discret_->SetState("gridvelaf" , gridvelaf_);
   }
-  
+
   // get ordered layers of elements in which values are averaged
   if (planecoords_ == null)
   {
     planecoords_ = rcp( new vector<double>((turbulencestatistics_->ReturnNodePlaneCoords()).size()));
   }
-  
+
   (*planecoords_) = turbulencestatistics_->ReturnNodePlaneCoords();
-  
+
   //--------------------------------------------------
   // (in plane) averaged values of resM (^2)
   //--------------------------------------------------
@@ -1858,102 +1859,102 @@ void FluidGenAlphaIntegration::GenAlphaTakeSample()
   RefCountPtr<vector<double> > global_incrres;
   global_incrres=  rcp(new vector<double> );
   global_incrres->resize(3*(planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > local_incrres_sq;
   local_incrres_sq=  rcp(new vector<double> );
   local_incrres_sq->resize(3*(planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > global_incrres_sq;
   global_incrres_sq=  rcp(new vector<double> );
   global_incrres_sq->resize(3*(planecoords_->size()-1),0.0);
-  
+
   //--------------------------------------------------
   // (in plane) averaged values of sacc (^2)
   //--------------------------------------------------
   RefCountPtr<vector<double> > local_incrsacc;
   local_incrsacc=  rcp(new vector<double> );
   local_incrsacc->resize(3*(planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > global_incrsacc;
   global_incrsacc=  rcp(new vector<double> );
   global_incrsacc->resize(3*(planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > local_incrsacc_sq;
   local_incrsacc_sq=  rcp(new vector<double> );
   local_incrsacc_sq->resize(3*(planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > global_incrsacc_sq;
   global_incrsacc_sq=  rcp(new vector<double> );
   global_incrsacc_sq->resize(3*(planecoords_->size()-1),0.0);
-  
+
   //--------------------------------------------------
   // (in plane) averaged values of svelaf (^2)
   //--------------------------------------------------
   RefCountPtr<vector<double> > local_incrsvelaf;
   local_incrsvelaf=  rcp(new vector<double> );
   local_incrsvelaf->resize(3*(planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > global_incrsvelaf;
   global_incrsvelaf=  rcp(new vector<double> );
   global_incrsvelaf->resize(3*(planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > local_incrsvelaf_sq;
   local_incrsvelaf_sq=  rcp(new vector<double> );
   local_incrsvelaf_sq->resize(3*(planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > global_incrsvelaf_sq;
   global_incrsvelaf_sq=  rcp(new vector<double> );
   global_incrsvelaf_sq->resize(3*(planecoords_->size()-1),0.0);
-  
+
   //--------------------------------------------------
   // (in plane) averaged values of resC (^2)
   //--------------------------------------------------
   RefCountPtr<vector<double> > local_incrresC;
   local_incrresC=  rcp(new vector<double> );
   local_incrresC->resize((planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > global_incrresC;
   global_incrresC=  rcp(new vector<double> );
   global_incrresC->resize((planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > local_incrresC_sq;
   local_incrresC_sq=  rcp(new vector<double> );
   local_incrresC_sq->resize((planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > global_incrresC_sq;
   global_incrresC_sq=  rcp(new vector<double> );
   global_incrresC_sq->resize((planecoords_->size()-1),0.0);
-  
+
   //--------------------------------------------------
   // (in plane) averaged values of spressacc (^2)
   //--------------------------------------------------
   RefCountPtr<vector<double> > local_incrspressacc;
   local_incrspressacc=  rcp(new vector<double> );
   local_incrspressacc->resize((planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > global_incrspressacc;
   global_incrspressacc=  rcp(new vector<double> );
   global_incrspressacc->resize((planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > local_incrspressacc_sq;
   local_incrspressacc_sq=  rcp(new vector<double> );
   local_incrspressacc_sq->resize((planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > global_incrspressacc_sq;
   global_incrspressacc_sq=  rcp(new vector<double> );
   global_incrspressacc_sq->resize((planecoords_->size()-1),0.0);
-  
+
   //--------------------------------------------------
   // (in plane) averaged values of spressnp (^2)
   //--------------------------------------------------
   RefCountPtr<vector<double> > local_incrspressnp;
   local_incrspressnp=  rcp(new vector<double> );
   local_incrspressnp->resize((planecoords_->size()-1),0.0);
-  
+
   RefCountPtr<vector<double> > global_incrspressnp;
   global_incrspressnp=  rcp(new vector<double> );
   global_incrspressnp->resize((planecoords_->size()-1),0.0);
-      
+
   RefCountPtr<vector<double> > local_incrspressnp_sq;
   local_incrspressnp_sq=  rcp(new vector<double> );
   local_incrspressnp_sq->resize((planecoords_->size()-1),0.0);
@@ -1962,7 +1963,7 @@ void FluidGenAlphaIntegration::GenAlphaTakeSample()
   global_incrspressnp_sq=  rcp(new vector<double> );
   global_incrspressnp_sq->resize((planecoords_->size()-1),0.0);
 
-      
+
   // pass pointers to local sum vectors to the element
   eleparams.set<RefCountPtr<vector<double> > >("planecoords_"    ,planecoords_          );
   eleparams.set<RefCountPtr<vector<double> > >("incrres"         ,local_incrres         );
@@ -1991,21 +1992,21 @@ void FluidGenAlphaIntegration::GenAlphaTakeSample()
   discret_->Comm().SumAll(&((*local_incrres_sq    )[0]),
                           &((*global_incrres_sq   )[0]),
                           3*(planecoords_->size()-1));
-  
+
   discret_->Comm().SumAll(&((*local_incrsacc      )[0]),
                           &((*global_incrsacc     )[0]),
                           3*(planecoords_->size()-1));
   discret_->Comm().SumAll(&((*local_incrsacc_sq   )[0]),
                           &((*global_incrsacc_sq  )[0]),
                           3*(planecoords_->size()-1));
-  
+
   discret_->Comm().SumAll(&((*local_incrsvelaf    )[0]),
                           &((*global_incrsvelaf   )[0]),
                           3*(planecoords_->size()-1));
   discret_->Comm().SumAll(&((*local_incrsvelaf_sq )[0]),
                           &((*global_incrsvelaf_sq)[0]),
                           3*(planecoords_->size()-1));
-  
+
   // compute global sums, incompressibility residuals
   discret_->Comm().SumAll(&((*local_incrresC      )[0]),
                           &((*global_incrresC     )[0]),
@@ -2013,14 +2014,14 @@ void FluidGenAlphaIntegration::GenAlphaTakeSample()
   discret_->Comm().SumAll(&((*local_incrresC_sq   )[0]),
                           &((*global_incrresC_sq  )[0]),
                           (planecoords_->size()-1));
-  
+
   discret_->Comm().SumAll(&((*local_incrspressacc    )[0]),
                           &((*global_incrspressacc   )[0]),
                           (planecoords_->size()-1));
   discret_->Comm().SumAll(&((*local_incrspressacc_sq )[0]),
                           &((*global_incrspressacc_sq)[0]),
                           (planecoords_->size()-1));
-  
+
   discret_->Comm().SumAll(&((*local_incrspressnp     )[0]),
                           &((*global_incrspressnp    )[0]),
                           (planecoords_->size()-1));
@@ -2028,7 +2029,7 @@ void FluidGenAlphaIntegration::GenAlphaTakeSample()
                           &((*global_incrspressnp_sq )[0]),
                           (planecoords_->size()-1));
 
-      
+
   turbulencestatistics_->AddToResAverage(global_incrres         ,
                                          global_incrres_sq      ,
                                          global_incrsacc        ,
@@ -2468,19 +2469,19 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         // general
 
         string stabtype =stabparams->get<string>("STABTYPE");
-        
+
         cout << "Stabilization type         : ";
-        cout << stabtype; 
+        cout << stabtype;
         cout << endl;
 
         if (stabtype == "residual_based"||stabtype == "inconsistent")
         {
           cout << "                             ";
           cout << "tau according to ";
-          cout << stabparams->get<string>("DEFINITION_TAU"); 
+          cout << stabparams->get<string>("DEFINITION_TAU");
           cout << endl;
         }
-        
+
         // time-dependent subgrid scales
         cout << "                             ";
         cout << stabparams->get<string>("TDS")<< endl;

@@ -88,9 +88,6 @@ void ntainp_ccadiscret()
   // read static control data
   else inpctrstat();
 
-  // read input of eigensolution control data
-  inpctreig();
-
   // read all types of geometry related conditions (e.g. boundary conditions)
   // Also read time and space functions and local coord systems
   problem->ReadConditions(reader);
@@ -99,6 +96,11 @@ void ntainp_ccadiscret()
   inp_resultdescr();
 
   // all reading is done at this point!
+
+  // create control file for output and read restart data if required
+  problem->OpenControlFile(*comm,
+                           allfiles.inputfile_name,
+                           allfiles.outputfile_kenner);
 
   return;
 } // end of ntainp_ccadiscret()

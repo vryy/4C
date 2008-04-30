@@ -20,7 +20,7 @@ Maintainer: Ulrich Kuettler
 #include <stack>
 #include "post_drt_common.H"
 
-#include "../io/hdf_reader.H"
+#include "../drt_io/io_hdf.H"
 #include <sstream>
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -31,12 +31,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #endif
-
-extern "C" {
-
-  void create_communicators();
-
-}
 
 /*----------------------------------------------------------------------*
  * Some functions and global variables, most of them are only
@@ -50,16 +44,12 @@ extern "C" {
  * properly. */
 struct _FILES   allfiles;
 struct _PAR     par;
-struct _FIELD  *field;
 struct _GENPROB genprob;
 struct _MATERIAL *mat;
 struct _IO_FLAGS ioflags;
 
-// not actually used, but referenced in par_assignmesh.c
-struct _PARTITION  *partition;
+// not actually used here, but referenced by global problem
 struct _SOLVAR  *solv;
-
-const char* fieldnames[] = FIELDNAMES;
 
 
 
@@ -190,21 +180,32 @@ PostProblem::~PostProblem()
  *----------------------------------------------------------------------*/
 PostField* PostProblem::get_discretization(int num)
 {
-  for (unsigned i=0; i<fields_.size(); ++i)
-  {
-    if (fields_[i].field_pos()==num)
-      return &fields_[i];
-  }
-  dserror("no field with position %d", num);
-  return NULL;
+  return &fields_[num];
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int PostProblem::field_pos(const PostField* field) const
+{
+  for (vector<PostField>::const_iterator i = fields_.begin();
+       i!=fields_.end();
+       ++i)
+  {
+    if (&*i==field)
+    {
+      return field - &fields_[0];
+    }
+  }
+  dserror("field not in list");
+  return -1;
+}
 
 
 /*----------------------------------------------------------------------*
  * returns the Epetra Communicator object
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Comm> PostProblem::comm()
+RCP<Epetra_Comm> PostProblem::comm()
 {
   return comm_;
 }
@@ -223,13 +224,11 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
 #ifdef PARALLEL
   MPI_Comm_rank(MPI_COMM_WORLD, &par.myrank);
   MPI_Comm_size(MPI_COMM_WORLD, &par.nprocs);
-  Epetra_MpiComm* com = new Epetra_MpiComm(MPI_COMM_WORLD);
-  comm_ = rcp(com);
+  comm_ = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
 #else
   par.myrank=0;
   par.nprocs=1;
-  Epetra_SerialComm* com = new Epetra_SerialComm();
-  comm_ = rcp(com);
+  comm_ = rcp(new Epetra_SerialComm());
 #endif
 
   /* The warning system is not set up. It's rather stupid anyway. */
@@ -369,7 +368,6 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
       counter += 1;
     }
   }
-
 }
 
 /*----------------------------------------------------------------------*
@@ -408,14 +406,12 @@ void PostProblem::read_meshes()
     MAP* meshmap = meshstack.top();
     meshstack.pop();
 
-    int field_pos = map_read_int(meshmap, "field_pos");
-    int disnum = map_read_int(meshmap, "discretization");
+    std::string name = map_read_string(meshmap, "field");
 
     bool havefield = false;
     for (unsigned i=0; i<fields_.size(); ++i)
     {
-      if (fields_[i].field_pos()==field_pos and
-          fields_[i].disnum()==disnum)
+      if (fields_[i].name()==name)
       {
         havefield = true;
         break;
@@ -447,30 +443,26 @@ void PostProblem::read_meshes()
       IO::HDFReader reader = IO::HDFReader(input_dir_);
       reader.Open(filename,num_output_procs);
 
-      RefCountPtr<vector<char> > node_data =
+      RCP<vector<char> > node_data =
         reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
       currfield.discretization()->UnPackMyNodes(node_data);
 
-      RefCountPtr<vector<char> > element_data =
+      RCP<vector<char> > element_data =
         reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
       currfield.discretization()->UnPackMyElements(element_data);
 
       // read periodic boundary conditions if available
-      RefCountPtr<vector<char> > cond_pbcsline =
+      RCP<vector<char> > cond_pbcsline =
         reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
       currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
-      RefCountPtr<vector<char> > cond_pbcssurf =
+      RCP<vector<char> > cond_pbcssurf =
         reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
       currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
 
       // read XFEMCoupling boundary conditions if available
-      RefCountPtr<vector<char> > cond_xfem =
+      RCP<vector<char> > cond_xfem =
         reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "XFEMCoupling");
       currfield.discretization()->UnPackCondition(cond_xfem, "XFEMCoupling");
-
-      // before we can call discretization functions (in parallel) we
-      // need field based communicators.
-      create_communicators();
 
       // setup of parallel layout: create ghosting of already distributed nodes+elems
 #ifdef PARALLEL
@@ -495,72 +487,25 @@ void PostProblem::read_meshes()
 }
 
 /*----------------------------------------------------------------------*
- * creates and returns a PostField insance from a field MAP. keeps
- * track of global field variable (private)
+ * creates and returns a PostField instance from a field MAP. (private)
  *----------------------------------------------------------------------*/
 PostField PostProblem::getfield(MAP* field_info)
 {
-  int field_pos = map_read_int(field_info, "field_pos");
-  int disnum = map_read_int(field_info, "discretization");
   char* field_name = map_read_string(field_info, "field");
-  char* dis_name = map_read_string(field_info, "dis_name");
   int numnd = map_read_int(field_info, "num_nd");
   int numele = map_read_int(field_info, "num_ele");
   int type;
 
-  const char* fieldnames[] = FIELDNAMES;
-  int i;
-  for (i=0; fieldnames[i]!=NULL; ++i)
-  {
-    if (strcmp(fieldnames[i], field_name)==0)
-    {
-      type = i;
-      break;
-    }
-  }
-  if (fieldnames[i]==NULL)
-  {
-    type = i;
-    dserror("unknown field type '%d'", i);
-  }
-
-  if (field_pos >= genprob.numfld)
-  {
-    if (field)
-    {
-      field = (FIELD*)CCAREALLOC(field,(field_pos+1)*sizeof(FIELD));
-    }
-    else
-    {
-      field = (FIELD*)CCAMALLOC((field_pos+1)*sizeof(FIELD));
-    }
-
-    for (i=genprob.numfld; i<field_pos+1; ++i)
-    {
-      field[i].dis = NULL;
-      field[i].ndis = 0;
-    }
-    genprob.numfld = field_pos+1;
-  }
-
-  field[field_pos].fieldtyp = (FIELDTYP)type;
-
-  if (field[field_pos].ndis <= disnum)
-  {
-    field[field_pos].ndis = disnum+1;
-  }
-
-  RefCountPtr<DRT::Discretization> dis = rcp(new DRT::Discretization(dis_name,comm_));
-  DRT::Problem::Instance()->SetDis(field_pos, disnum, dis);
-  return PostField(dis, this, field_pos, field_name,
-                   (FIELDTYP)type, disnum,numnd,numele);
+  RCP<DRT::Discretization> dis = rcp(new DRT::Discretization(field_name,comm_));
+  //DRT::Problem::Instance()->SetDis(field_pos, disnum, dis);
+  return PostField(dis, this, field_name, (FIELDTYP)type, numnd, numele);
 }
 
 
 /*-----------------------------------------------------------------------*
  * set up the parallel discretization layout(ghosting!) (private) gjb 11/07
  *-----------------------------------------------------------------------*/
-void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
+void PostProblem::setup_ghosting(RCP<DRT::Discretization> dis)
 {
   // this section is strongly oriented on what is done during the
   // usual BACI setup phase.
@@ -585,12 +530,12 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
   }
 
   // now create a preliminary node row map
-  RefCountPtr<Epetra_Map> rownodes = rcp(new Epetra_Map(-1,nids.size(),&nids[0],0,*comm_));
+  RCP<Epetra_Map> rownodes = rcp(new Epetra_Map(-1,nids.size(),&nids[0],0,*comm_));
   nids.clear();
 
   // construct graphs
-  RefCountPtr<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
-  RefCountPtr<Epetra_CrsGraph> finalgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
+  RCP<Epetra_CrsGraph> graph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
+  RCP<Epetra_CrsGraph> finalgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
 
 #if 0
   //cout<<dis->NumMyColNodes()<<endl;
@@ -675,9 +620,9 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
   if (err) dserror("graph->FillComplete returned %d",err);
 
   // create transformation object
-  RefCountPtr<EpetraExt::CrsGraph_Transpose::CrsGraph_Transpose> graphtransposer = rcp(new EpetraExt::CrsGraph_Transpose());
+  RCP<EpetraExt::CrsGraph_Transpose::CrsGraph_Transpose> graphtransposer = rcp(new EpetraExt::CrsGraph_Transpose());
   // create graph object
-  RefCountPtr<Epetra_CrsGraph> tgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
+  RCP<Epetra_CrsGraph> tgraph = rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
   Epetra_CrsGraph& new_graph = ((*tgraph));
   // finally do the transposition
   new_graph=(*graphtransposer)(*graph);
@@ -738,7 +683,7 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
                                 brow.MyGlobalElements(),
                                 0,
                                 *comm_));
-  RefCountPtr<Epetra_Map> colnodes;
+  RCP<Epetra_Map> colnodes;
   colnodes = rcp(new Epetra_Map(bcol.NumGlobalElements(),
                                 bcol.NumMyElements(),
                                 bcol.MyGlobalElements(),
@@ -762,8 +707,8 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
   dis->ExportColumnNodes(*colnodes);
 
   // now we do the element stuff
-  RefCountPtr<Epetra_Map> elerowmap;
-  RefCountPtr<Epetra_Map> elecolmap;
+  RCP<Epetra_Map> elerowmap;
+  RCP<Epetra_Map> elecolmap;
 
   // now we have all elements in a linear map roweles
   // build resonable maps for elements from the
@@ -788,15 +733,13 @@ void PostProblem::setup_ghosting(RefCountPtr<DRT::Discretization> dis)
 /*----------------------------------------------------------------------*
  * The Constructor of PostField
  *----------------------------------------------------------------------*/
-PostField::PostField(string name, RefCountPtr<Epetra_Comm> comm,
-                     PostProblem* problem, int field_pos, string field_name,
-                     FIELDTYP type, int disnum, const int numnd, const int numele):
+PostField::PostField(string name, RCP<Epetra_Comm> comm,
+                     PostProblem* problem, string field_name,
+                     FIELDTYP type, const int numnd, const int numele):
   dis_(rcp(new DRT::Discretization(name,comm))),
   problem_(problem),
-  field_pos_(field_pos),
   field_name_(field_name),
   type_(type),
-  disnum_(disnum),
   numnd_(numnd),
   numele_(numele)
 {
@@ -806,15 +749,13 @@ PostField::PostField(string name, RefCountPtr<Epetra_Comm> comm,
  * Another Constructor of PostField. This one takes the discretization
  * directly
  *----------------------------------------------------------------------*/
-PostField::PostField(RefCountPtr<DRT::Discretization> dis, PostProblem* problem,
-                     int field_pos, string field_name, FIELDTYP type,
-                     int disnum, const int numnd, const int numele)
+PostField::PostField(RCP<DRT::Discretization> dis, PostProblem* problem,
+                     string field_name, FIELDTYP type,
+                     const int numnd, const int numele)
   : dis_(dis),
     problem_(problem),
-    field_pos_(field_pos),
     field_name_(field_name),
     type_(type),
-    disnum_(disnum),
     numnd_(numnd),
     numele_(numele)
 {
@@ -968,10 +909,7 @@ int PostResult::next_result(const string& groupname)
 /*----------------------------------------------------------------------*/
 int PostResult::match_field_result(MAP* result_group) const
 {
-  return (strcmp(map_read_string(result_group, "field"),
-                 fieldnames[field_->type()]) == 0) &&
-    (map_read_int(result_group, "field_pos") == field_->field_pos()) &&
-    (map_read_int(result_group, "discretization") == field_->disnum());
+  return field_->name()==map_read_string(result_group, "field");
 }
 
 /*----------------------------------------------------------------------*
@@ -1002,7 +940,7 @@ void PostResult::open_result_files(MAP* field_info)
  * reads the data of the result vector 'name' from the current result
  * block and returns it as an Epetra Vector.
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_Vector> PostResult::read_result(const string name)
+RCP<Epetra_Vector> PostResult::read_result(const string name)
 {
   MAP* result = map_read_map(group_, name.c_str());
   int columns;
@@ -1019,10 +957,10 @@ RefCountPtr<Epetra_Vector> PostResult::read_result(const string name)
  * block and returns it as an std::vector<char>. the corresponding
  * elemap is returned, too.
  *----------------------------------------------------------------------*/
-RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > >
+RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > >
 PostResult::read_result_serialdensematrix(const string name)
 {
-  RefCountPtr<Epetra_Comm> comm = field_->problem()->comm();
+  RCP<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, name.c_str());
   string id_path = map_read_string(result, "ids");
   string value_path = map_read_string(result, "values");
@@ -1034,17 +972,17 @@ PostResult::read_result_serialdensematrix(const string name)
   if (columns != 1)
     dserror("got multivector with name '%s', vector<char> expected", name.c_str());
 
-  RefCountPtr<Epetra_Map> elemap;
-  RefCountPtr<std::vector<char> > data = file_.ReadResultDataVecChar(id_path, value_path, columns,
+  RCP<Epetra_Map> elemap;
+  RCP<std::vector<char> > data = file_.ReadResultDataVecChar(id_path, value_path, columns,
                                                                      *comm, elemap);
 
-  RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > mapdata = rcp(new std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> >);
+  RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > mapdata = rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   int position=0;
 //   cout << "elemap:\n" << *elemap << endl;
 //   cout << "myelenum: " << elemap->NumMyElements() << endl;
   for (int i=0;i<elemap->NumMyElements();++i)
   {
-    RefCountPtr<Epetra_SerialDenseMatrix> gpstress = rcp(new Epetra_SerialDenseMatrix);
+    RCP<Epetra_SerialDenseMatrix> gpstress = rcp(new Epetra_SerialDenseMatrix);
     DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
     (*mapdata)[elemap->GID(i)]=gpstress;
   }
@@ -1056,9 +994,9 @@ PostResult::read_result_serialdensematrix(const string name)
  * reads the data of the result vector 'name' from the current result
  * block and returns it as an Epetra Vector.
  *----------------------------------------------------------------------*/
-RefCountPtr<Epetra_MultiVector> PostResult::read_multi_result(const string name)
+RCP<Epetra_MultiVector> PostResult::read_multi_result(const string name)
 {
-  RefCountPtr<Epetra_Comm> comm = field_->problem()->comm();
+  RCP<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, name.c_str());
   string id_path = map_read_string(result, "ids");
   string value_path = map_read_string(result, "values");

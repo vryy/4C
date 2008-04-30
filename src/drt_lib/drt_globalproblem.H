@@ -19,7 +19,7 @@ Maintainer: Ulrich Kuettler
 
 #include <vector>
 
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
 #include "drt_discret.H"
@@ -36,6 +36,12 @@ extern "C" /* stuff which is c and is accessed from c++ */
 
 using namespace std;
 using namespace Teuchos;
+
+namespace IO
+{
+  class OutputControl;
+  class InputControl;
+}
 
 namespace DRT
 {
@@ -133,7 +139,7 @@ public:
   /// @name Instances
 
   /// return an instance of this class
-  static RefCountPtr<Problem> Instance(int num=0);
+  static RCP<Problem> Instance(int num=0);
 
   /// return number of problem instances
   static unsigned NumInstances() { return instances_.size(); }
@@ -163,6 +169,27 @@ public:
 
   /// input of conditions
   void ReadConditions(const DRT::INPUT::DatFileReader& reader);
+
+  //@}
+
+  /// @name General query methods
+  /// Once and for all definitions
+
+  /// give string name of my problem type
+  std::string ProblemType() const;
+
+  //@}
+
+  /// @name Control file
+
+  /// create control file for output and read restart data if required
+  void OpenControlFile(const Epetra_Comm& comm, std::string inputfile, std::string prefix);
+
+  /// control file for restart read
+  Teuchos::RCP<IO::InputControl> InputControlFile() { return inputcontrol_; }
+
+  /// control file for normal output
+  Teuchos::RCP<IO::OutputControl> OutputControlFile() { return outputcontrol_; }
 
   //@}
 
@@ -202,7 +229,7 @@ public:
   /// @name Discretizations
 
   /// find a particular discretization
-  RefCountPtr<Discretization> Dis(int fieldnum, int disnum) const;
+  RCP<Discretization> Dis(int fieldnum, int disnum) const;
 
   /// tell number of known fields
   unsigned NumFields() const { return discretizations_.size(); }
@@ -211,10 +238,10 @@ public:
   unsigned NumDis(int fieldnum) const { return discretizations_[fieldnum].size(); }
 
   /// add a discretization to a specific field
-  void AddDis(int fieldnum, RefCountPtr<Discretization> dis);
+  void AddDis(int fieldnum, RCP<Discretization> dis);
 
   /// set given discretization to specific field at specific position
-  void SetDis(int fieldnum, int disnum, RefCountPtr<Discretization> dis);
+  void SetDis(int fieldnum, int disnum, RCP<Discretization> dis);
 
   //@}
 
@@ -255,19 +282,22 @@ private:
   Problem& operator=(const Problem&);
 
   /// the single instance
-  static vector<RefCountPtr<Problem> > instances_;
+  static vector<RCP<Problem> > instances_;
 
   /// setup solver structure
   void InputSolverControl(std::string section, _SOLVAR* solv);
 
   /// discretizations of this problem
-  vector<vector<RefCountPtr<Discretization> > > discretizations_;
+  vector<vector<RCP<Discretization> > > discretizations_;
 
   /// material vector
   vector<_MATERIAL> material_;
 
   /// solver vector
   vector<_SOLVAR> solver_;
+
+  Teuchos::RCP<IO::InputControl>  inputcontrol_;
+  Teuchos::RCP<IO::OutputControl> outputcontrol_;
 };
 
 }

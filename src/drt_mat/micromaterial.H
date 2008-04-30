@@ -29,8 +29,8 @@ Maintainer: Lena Wiechert
 #include <Epetra_Comm.h>
 #include <Teuchos_RefCountPtr.hpp>
 
-#include "../io/io_drt.H"
-#include "../io/io_drt_micro.H"
+#include "../drt_io/io.H"
+#include "../drt_io/io_micro.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "material.H"

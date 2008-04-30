@@ -31,14 +31,14 @@ The new filters can be used in parallel.
 #include <vector>
 #include <string>
 
-#include "../io/hdf_reader.H"
+#include "../drt_io/io_hdf.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
 
 #include "../drt_lib/drt_discret.H"
-#include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
 
 extern "C" {
@@ -114,13 +114,15 @@ public:
   vector<MAP*>* result_groups() { return &result_group_; }
 
   //! returns the number of discretizations
-  int num_discr();
+  int num_discr() { return static_cast<int>(fields_.size()); }
 
   //! returns the number of dimensions the problem has
   int num_dim() const { return ndim_; }
 
   //! returns a pointer to the num-th discretization
   PostField* get_discretization(int num);
+
+  int field_pos(const PostField* field) const;
 
   int num_output_procs() const;
 
@@ -133,7 +135,7 @@ public:
   //! returns the step parameter the user specified
   int step() const { return step_; }
 
-  RefCountPtr<Epetra_Comm> comm();
+  RCP<Epetra_Comm> comm();
 
   //! returns the directory name in which the control files and data files are
   string input_dir() { return input_dir_; }
@@ -169,7 +171,7 @@ private:
   PostField getfield(MAP* field_info);
 
   //! creates the ghosting needed for a parallel discretization layout
-  void setup_ghosting(RefCountPtr<DRT::Discretization> dis);
+  void setup_ghosting(RCP<DRT::Discretization> dis);
 
   //! type of the problem we post process
   PROBLEM_TYP problemtype_;
@@ -209,7 +211,7 @@ private:
   vector<MAP*> result_group_;
 
   string input_dir_;
-  RefCountPtr<Epetra_Comm> comm_;
+  RCP<Epetra_Comm> comm_;
 };
 
 
@@ -230,11 +232,11 @@ class PostField
 public:
   // @{ \name Constructors and destructors
 
-  PostField(string name, RefCountPtr<Epetra_Comm> comm, PostProblem* problem,
-            int field_pos, string field_name, FIELDTYP type, int disnum,
+  PostField(string name, RCP<Epetra_Comm> comm, PostProblem* problem,
+            string field_name, FIELDTYP type,
             const int numnd, const int numele);
-  PostField(RefCountPtr<DRT::Discretization> dis, PostProblem* problem,
-            int field_pos, string field_name, FIELDTYP type, int disnum,
+  PostField(RCP<DRT::Discretization> dis, PostProblem* problem,
+            string field_name, FIELDTYP type,
             const int numnd, const int numele);
 
   ~PostField();
@@ -244,7 +246,7 @@ public:
   // @{ \name Access methods
 
   //! returns the discretization of this field
-  RefCountPtr<DRT::Discretization> discretization() { return dis_; }
+  RCP<DRT::Discretization> discretization() { return dis_; }
 
   //! returns the number of output processors
   int num_output_procs() const { return num_output_procs_; }
@@ -255,20 +257,14 @@ public:
   //! returns the number of global Dof-Ids
   int global_id_num() const { return dis_->DofRowMap()->NumGlobalElements(); }
 
-  //! returns the number of the discretization stored in this field
-  int disnum() const { return disnum_; }
-
   //! returns the PostProbem instance
   PostProblem* problem() { return problem_; }
-
-  //! returns the index of this field
-  int field_pos() const { return field_pos_; }
 
   //! returns the name of the field
   string name() const { return field_name_; }
 
   //! returns the type of this field
-  FIELDTYP type() const { return type_; }
+  //FIELDTYP type() const { return type_; }
 
   //! returns the number of nodes
   int num_nodes() const { return numnd_; }
@@ -276,16 +272,16 @@ public:
   //! returns the number of elements
   int num_elements() const { return numele_; }
 
+  int field_pos() const { return problem_->field_pos(this); }
+
   //@}
 
 private:
-  RefCountPtr<DRT::Discretization> dis_;
+  RCP<DRT::Discretization> dis_;
   PostProblem* problem_;
   int num_output_procs_;
-  int field_pos_;
   string field_name_;
   FIELDTYP type_;
-  int disnum_;
   int numnd_;
   int numele_;
 };
@@ -339,7 +335,7 @@ public:
   // \param name (in): result vector name inside the control file
   //
   // \returns vector with results read
-  RefCountPtr<Epetra_Vector> read_result(const string name);
+  RCP<Epetra_Vector> read_result(const string name);
 
   //! reads the data of the result vector 'name' from the current result block
   //
@@ -347,14 +343,14 @@ public:
   // \param elemap (out): element map
   //
   // \returns vector with results read
-  RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > read_result_serialdensematrix(const string name);
+  RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > read_result_serialdensematrix(const string name);
 
   //! reads the data of the result vector 'name' from the current result block
   //
   // \param name (in): result vector name inside the control file
   //
   // \returns vector with results read
-  RefCountPtr<Epetra_MultiVector> read_multi_result(const string name);
+  RCP<Epetra_MultiVector> read_multi_result(const string name);
 
   //@}
 
@@ -394,12 +390,6 @@ private:
   MAP* group_;
   IO::HDFReader file_;
 };
-
-
-inline int PostProblem::num_discr()
-{
-  return static_cast<int>(fields_.size());
-}
 
 
 #endif

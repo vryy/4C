@@ -10,8 +10,8 @@ Maintainer: Malte Neumann
 </pre>
 
 ---------------------------------------------------------------------*/
-/* #ifndef CCADISCRET */
-/* create_communicators is still used by our drt filters?! */
+#ifndef CCADISCRET
+
 #include "../headers/standardtypes.h"
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -175,4 +175,4 @@ return;
 } /* end of create_communicators */
 
 /*! @} (documentation module close)*/
-/* #endif */
+#endif
