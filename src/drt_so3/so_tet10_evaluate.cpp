@@ -757,21 +757,40 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 ** =============================================================================*/
   const static DRT::ELEMENTS::Integrator_tet10_14point tet10_mass;
 /* ============================================================================*/
-  for (int gp=0; gp<tet10_mass.num_gp; gp++) {
-    if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
+  if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
+    for (int gp=0; gp<tet10_mass.num_gp; gp++) {
       //integrate concistent mass matrix
+      Epetra_SerialDenseMatrix jac(NUMDIM_SOTET10,NUMDIM_SOTET10);
+      jac.Multiply('N','N',1.0,tet10_mass.deriv_gp[gp],xrefe,0.0);
+
+      // compute determinant of Jacobian by Sarrus' rule
+      double detJ2= jac(0,0) * jac(1,1) * jac(2,2)
+                 + jac(0,1) * jac(1,2) * jac(2,0)
+                 + jac(0,2) * jac(1,0) * jac(2,1)
+                 - jac(0,0) * jac(1,2) * jac(2,1)
+                 - jac(0,1) * jac(1,0) * jac(2,2)
+                 - jac(0,2) * jac(1,1) * jac(2,0);
+      if (abs(detJ2) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
+      else if (detJ2 < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
       for (int inod=0; inod<NUMNOD_SOTET10; ++inod) {
         for (int jnod=0; jnod<NUMNOD_SOTET10; ++jnod) {
-          double massfactor = tet10_mass.shapefct_gp[gp](inod) * density *\
-          				 tet10_mass.shapefct_gp[gp](jnod)  * detJ *\
-          				  tet10_mass.weights(gp);    // intermediate factor
+          double massfactor = (tet10_mass.shapefct_gp[gp])(inod) * density *\
+          				            (tet10_mass.shapefct_gp[gp])(jnod)  * detJ2 *\
+          				            (tet10_mass.weights)(gp);    // intermediate factor
           (*massmatrix)(NUMDIM_SOTET10*inod+0,NUMDIM_SOTET10*jnod+0) += massfactor;
           (*massmatrix)(NUMDIM_SOTET10*inod+1,NUMDIM_SOTET10*jnod+1) += massfactor;
           (*massmatrix)(NUMDIM_SOTET10*inod+2,NUMDIM_SOTET10*jnod+2) += massfactor;
         }
       }
-    } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
-  }
+    }
+//    double masssum = 0.0;
+//    for (int i=0; i<NUMDOF_SOTET10; ++i){
+//      for (int j=0; j<NUMDOF_SOTET10; ++j) {
+//        masssum += (*massmatrix)(i,j);
+//      }
+//    }
+//    cout << "masssum: " << masssum << endl;
+  } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
   #ifdef VERBOSE_OUTPUT
   cout << (*stiffmatrix);
   #endif //VERBOSE_OUTPUT

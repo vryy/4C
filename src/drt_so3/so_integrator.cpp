@@ -56,7 +56,7 @@ DRT::ELEMENTS::So_hex8::Integrator_So_hex8::Integrator_So_hex8()
     
 #if 1 //OUR SHAPE FUNCTIONS
 
-  #if 1 // long double GP
+  #if 0 // long double GP
     const long double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
     const long double gpw      = 1.0;              // weight at every gp for linear fct
 
@@ -504,6 +504,7 @@ DRT::ELEMENTS::Integrator_tet10_4point::Integrator_tet10_4point(void)
  *----------------------------------------------------------------------*/  
 DRT::ELEMENTS::Integrator_tet10_14point::Integrator_tet10_14point(void)
 {
+#if 0
   const int number_gp =14;
   // forward initialization of necessary attributes
   num_gp = number_gp;
@@ -631,7 +632,32 @@ DRT::ELEMENTS::Integrator_tet10_14point::Integrator_tet10_14point(void)
     (deriv_gp[gp])(9,3) = 4 * xsi3[gp];
     
   }
-  
+#else
+  num_gp = 10;
+  num_nodes = NUMNOD_SOTET10;
+  num_coords = NUMDIM_SOTET10;
+  shapefct_gp.resize(num_gp);
+  deriv_gp.resize(num_gp);
+  weights.Size(num_gp);
+  const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_10point;
+  const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(gaussrule);
+  const DRT::Element::DiscretizationType distype = DRT::Element::tet10;
+  for (int igp = 0; igp < intpoints.nquad; ++igp) {
+    const double r = intpoints.qxg[igp][0];
+    const double s = intpoints.qxg[igp][1];
+    const double t = intpoints.qxg[igp][2];
+
+    Epetra_SerialDenseVector funct(num_nodes);
+    Epetra_SerialDenseMatrix deriv(num_coords, num_nodes);
+    DRT::UTILS::shape_function_3D(funct, r, s, t, distype);
+    DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, distype);
+    
+    shapefct_gp[igp] = funct;
+    deriv_gp[igp]    = deriv;
+    weights[igp] = intpoints.qwgt[igp]; // return adress of static object to target of pointer
+  }
+
+#endif 
 }
 
 /*----------------------------------------------------------------------*
