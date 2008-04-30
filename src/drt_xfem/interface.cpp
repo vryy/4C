@@ -37,8 +37,9 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	        elementalBoundaryIntCells_,
 	        cutterElementMap,
 	        cutterNodeMap);
-	std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
-	std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
+	//std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
+	//std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
+	dsassert(elementalDomainIntCells_.size() == elementalBoundaryIntCells_.size(), "mismatch in cutted elements maps!");
   
 	boundaryElements_.clear();
 	map< int, set< DRT::Element* > >::iterator paar;

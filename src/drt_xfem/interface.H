@@ -38,8 +38,8 @@ public:
     //! constructor
     explicit InterfaceHandle(
             const RCP<DRT::Discretization>        xfemdis,      ///< discretization that will be intersected
-            const RCP<DRT::Discretization>        cutterdis,    ///< discretization with intersecting XFEM condition
-            const RCP<DRT::Discretization>        submerseddis  ///< discretization with intersecting XFEM condition
+            const RCP<DRT::Discretization>        cutterdis,    ///< discretization with boundary elements
+            const RCP<DRT::Discretization>        submerseddis  ///< discretization with structure elements
             );
     //! destructor
     ~InterfaceHandle();
@@ -107,13 +107,13 @@ public:
     
 private:
     //! intersected domain
-    RCP<DRT::Discretization> xfemdis_;
+    const RCP<DRT::Discretization> xfemdis_;
     
-    //! domain that intersects the xfemdis_, should be a boundary discretization
+    //! domain that intersects the xfemdis_, should be a boundary discretization (surface of structure)
     RCP<DRT::Discretization> cutterdis_;
     
-    //! domain that is submersed in the xfemdis_, used for enrichment evaluation -> will go away
-    RCP<DRT::Discretization> submerseddis_;
+    //! domain (structure) that is submersed in the xfemdis_, used for enrichment evaluation -> will go away
+    const RCP<DRT::Discretization> submerseddis_;
     
     //! integration cells for domain
     map<int, DomainIntCells > elementalDomainIntCells_;
@@ -126,7 +126,7 @@ private:
      */
     map<int, DRT::Element* > boundaryElements_;
     
-    //! store all additional nodes for the cutter elements that are not already on this proc
+    //! store all additional nodes for the cutter elements that are not already on this proc (int = gid of node)
     map<int, RCP<DRT::Node> > cutterNodeMap_;
 
 };
