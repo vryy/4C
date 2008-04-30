@@ -118,7 +118,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   default: dserror("Unknown case of frame");
   break;
   }
-  
+
   // allocate vector for shape functions and matrix for derivatives
   LINALG::SerialDenseVector  funct(numnode);
   LINALG::SerialDenseMatrix  deriv(2,numnode);
