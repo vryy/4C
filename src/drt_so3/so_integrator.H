@@ -35,6 +35,7 @@ using namespace Teuchos;
 
 #include "../drt_mat/material.H"
 
+// gee: note that these are also defined in so_tet10.H
 #define NUMNOD_SOTET10      10      // number of nodes
 #define NODDOF_SOTET10       3      // number of dofs per node
 #define NUMDOF_SOTET10      30      // total dofs per element

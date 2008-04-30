@@ -29,7 +29,10 @@ using namespace Teuchos;
 #include "../drt_lib/drt_node.H"
 
 #include "../drt_mat/material.H"
+#include "so_surface.H"
+#include "so_line.H"
 
+// gee: note that these are also defined in so_integrator.H
 #define NUMNOD_SOTET10      10      // number of nodes
 #define NODDOF_SOTET10       3      // number of dofs per node
 #define NUMDOF_SOTET10      30      // total dofs per element
@@ -52,8 +55,6 @@ namespace ELEMENTS
 {
 // forward declarations
 class Sotet10Volume;
-class Sotet10Surface;
-class Sotet10Line;
 class Sotet10Register;
 
 /*!
@@ -68,8 +69,6 @@ public:
 
   //! @name Friends
   friend class Sotet10Register;
-  friend class Sotet10Surface;
-  friend class Sotet10Line;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -314,27 +313,27 @@ protected:
   };
 
   //! kinematic type
-  KinematicType                                   kintype_;
+  KinematicType                                            kintype_;
   //! type of stress evaluation
-  StressType                                      stresstype_;
+  StressType                                               stresstype_;
   //! no. gaussian points in each spatial dimension
-  int                                             ngp_[3];
+  int                                                      ngp_[3];
   //! number of the material law
-  int                                             material_;
+  int                                                      material_;
 
-  DRT::Container                                  data_;
+  DRT::Container                                           data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::ELEMENTS::Sotet10Volume> > volume_;
+  vector<RefCountPtr<DRT::ELEMENTS::Sotet10Volume> >       volume_;
   //! vector of surfaces of this element
-    vector<RefCountPtr<DRT::ELEMENTS::Sotet10Surface> > surfaces_;
+    vector<RefCountPtr<DRT::ELEMENTS::StructuralSurface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::ELEMENTS::Sotet10Surface*>           surfaceptrs_;
+  vector<DRT::ELEMENTS::StructuralSurface*>                surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::Sotet10Line> > lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::StructuralLine> >      lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::Sotet10Line*>              lineptrs_;
+  vector<DRT::ELEMENTS::StructuralLine*>                   lineptrs_;
   //! vector of history variables for each Gauss point
-  vector<RefCountPtr<MAT::Material> >                mat_;
+  vector<RefCountPtr<MAT::Material> >                      mat_;
 
 
 
@@ -448,7 +447,6 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
 /*!
 \brief A register for tet10 element
 
-\author gee (gee@lnm.mw.tum.de)
 */
 
 class Sotet10Register : public DRT::ElementRegister
@@ -544,7 +542,7 @@ private:
 //=======================================================================
 //=======================================================================
 
-
+#if 0
 /*!
 \brief An element representing a surface of a So_tet10 element
 
@@ -887,7 +885,7 @@ private:
   int                    lline_;
 
 }; // class Sotet10Line
-
+#endif
 
 
 
