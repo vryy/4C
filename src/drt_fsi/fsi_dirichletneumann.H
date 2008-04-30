@@ -95,8 +95,6 @@ protected:
                                                const FillType fillFlag);
 
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
-  virtual void UpdateDisplacement(Teuchos::RCP<Epetra_Vector>& idispn,
-                                  const Epetra_Vector& finalSolution);
 
 private:
 

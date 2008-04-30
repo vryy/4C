@@ -64,7 +64,7 @@ namespace FSI
     virtual ~Algorithm();
 
     /// read restart data
-    void ReadRestart(int step);
+    virtual void ReadRestart(int step);
 
     /// communicator
     const Epetra_Comm& Comm() const { return comm_; }
@@ -83,13 +83,13 @@ namespace FSI
     bool NotFinished() { return step_ < nstep_ and time_ <= maxtime_; }
 
     /// start a new time step
-    void PrepareTimeStep();
+    virtual void PrepareTimeStep();
 
     /// take current results for converged and save for next time step
-    void Update();
+    virtual void Update();
 
     /// write output
-    void Output();
+    virtual void Output();
 
     /// set method name for screen output
     void SetMethod(std::string method) { method_ = method; }

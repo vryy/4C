@@ -451,8 +451,8 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
         utils_->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
 
     // Get the Epetra_Vector with the final solution from the solver
-    const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver->getSolutionGroup());
-    const Epetra_Vector& finalSolution = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getX())).getEpetraVector();
+    //const NOX::Epetra::Group& finalGroup = dynamic_cast<const NOX::Epetra::Group&>(solver->getSolutionGroup());
+    //const Epetra_Vector& finalSolution = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getX())).getEpetraVector();
     //const Epetra_Vector& finalF        = (dynamic_cast<const NOX::Epetra::Vector&>(finalGroup.getF())).getEpetraVector();
 
 #if 0
@@ -469,7 +469,8 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     }
 #endif
 
-    UpdateDisplacement(idispn_,finalSolution);
+    // really extract final displacement
+    idispn_ = InterfaceDisp();
 
     // End Nonlinear Solver **************************************
 
@@ -739,15 +740,6 @@ FSI::Partitioned::CreateStatusTest(ParameterList& nlParams,
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InitialGuess()
 {
   return StructureField().PredictInterfaceDispnp();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::Partitioned::UpdateDisplacement(Teuchos::RCP<Epetra_Vector>& idispn,
-                                          const Epetra_Vector& finalSolution)
-{
-  idispn->Update(1.0, finalSolution, 0.0);
 }
 
 

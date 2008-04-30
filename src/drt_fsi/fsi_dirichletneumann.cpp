@@ -120,16 +120,4 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumann::InitialGuess()
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::DirichletNeumann::UpdateDisplacement(Teuchos::RCP<Epetra_Vector>& idispn,
-                                               const Epetra_Vector& finalSolution)
-{
-  if (displacementcoupling_)
-    idispn->Update(1.0, finalSolution, 0.0);
-  else
-    idispn = InterfaceDisp();
-}
-
-
 #endif

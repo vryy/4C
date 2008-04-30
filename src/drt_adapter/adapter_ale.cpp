@@ -224,13 +224,13 @@ void ADAPTER::AleLinear::Output()
   output_->NewStep    (step_,time_);
   output_->WriteVector("dispnp", dispnp_);
 
-//   if (restartstep_ == uprestart_)
-//   {
-//     restartstep_ = 0;
+  if (restartstep_ == uprestart_)
+  {
+    restartstep_ = 0;
 
-//     // add restart data
-//     output_->WriteVector("dispn", dispn_);
-//   }
+    // add restart data
+    output_->WriteVector("dispn", dispn_);
+  }
 }
 
 
@@ -308,16 +308,17 @@ void ADAPTER::AleLinear::ReadRestart(int step)
   step_ = reader.ReadInt("step");
 
   reader.ReadVector(dispnp_, "dispnp");
+  reader.ReadVector(dispn_,  "dispn");
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 ADAPTER::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
-                              Teuchos::RCP<LINALG::Solver> solver,
-                              Teuchos::RCP<ParameterList> params,
-                              Teuchos::RCP<IO::DiscretizationWriter> output,
-                              bool dirichletcond)
+                                Teuchos::RCP<LINALG::Solver> solver,
+                                Teuchos::RCP<ParameterList> params,
+                                Teuchos::RCP<IO::DiscretizationWriter> output,
+                                bool dirichletcond)
   : discret_(actdis),
     solver_ (solver),
     params_ (params),
@@ -482,6 +483,14 @@ void ADAPTER::AleSprings::Output()
 
   output_->NewStep    (step_,time_);
   output_->WriteVector("dispnp", dispnp_);
+
+  if (restartstep_ == uprestart_)
+  {
+    restartstep_ = 0;
+
+    // add restart data
+    output_->WriteVector("dispn", dispn_);
+  }
 }
 
 
@@ -561,6 +570,7 @@ void ADAPTER::AleSprings::ReadRestart(int step)
   step_ = reader.ReadInt("step");
 
   reader.ReadVector(dispnp_, "dispnp");
+  reader.ReadVector(dispn_,  "dispn");
 }
 
 

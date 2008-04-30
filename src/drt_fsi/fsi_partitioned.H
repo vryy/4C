@@ -97,8 +97,6 @@ protected:
   /// default is displacement, but subclasses might change that
 
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
-  virtual void UpdateDisplacement(Teuchos::RCP<Epetra_Vector>& idispn,
-                                  const Epetra_Vector& finalSolution);
 
   //@}
 
