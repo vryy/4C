@@ -2621,6 +2621,16 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
  *----------------------------------------------------------------------*/
 void StruGenAlpha::UpdateandOutput()
 {
+  Update();
+  Output();
+  return;
+} // StruGenAlpha::UpdateandOutput()
+
+/*----------------------------------------------------------------------*
+ |  do update (public)                                       mwgee 03/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::Update()
+{
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -2629,21 +2639,13 @@ void StruGenAlpha::UpdateandOutput()
   double timen         = time + dt;  // t_{n+1}
   int    step          = params_.get<int>   ("step"                   ,0);
   int    istep         = step + 1;  // n+1
-  int    nstep         = params_.get<int>   ("nstep"                  ,5);
-  int    numiter       = params_.get<int>   ("num iterations"         ,-1);
 
   double alpham        = params_.get<double>("alpha m"                ,0.378);
   double alphaf        = params_.get<double>("alpha f"                ,0.459);
 
-  bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
-  int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
   string iostress      = params_.get<string>("io structural stress"   ,"none");
-  int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
   string iostrain      = params_.get<string>("io structural strain"   ,"none");
 
-  int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
-
-  bool   printscreen   = params_.get<bool>  ("print to screen"        ,true);
   bool   printerr      = params_.get<bool>  ("print to err"           ,true);
   FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
   if (!errfile) printerr = false;
@@ -2734,6 +2736,34 @@ void StruGenAlpha::UpdateandOutput()
   {
     surf_stress_man_->Update();
   }
+}
+
+/*----------------------------------------------------------------------*
+ |  do output (public)                                       mwgee 03/07|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::Output()
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double timen         = params_.get<double>("total time"             ,0.0);
+  double dt            = params_.get<double>("delta time"             ,0.01);
+  int    istep         = params_.get<int>   ("step"                   ,0);
+  int    nstep         = params_.get<int>   ("nstep"                  ,5);
+  int    numiter       = params_.get<int>   ("num iterations"         ,-1);
+
+  bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
+  int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
+  string iostress      = params_.get<string>("io structural stress"   ,"none");
+  int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
+  string iostrain      = params_.get<string>("io structural strain"   ,"none");
+
+  int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
+
+  bool   printscreen   = params_.get<bool>  ("print to screen"        ,true);
+  bool   printerr      = params_.get<bool>  ("print to err"           ,true);
+  FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
+  if (!errfile) printerr = false;
 
   bool isdatawritten = false;
 
@@ -2857,10 +2887,7 @@ void StruGenAlpha::UpdateandOutput()
       fflush(errfile);
     }
   }
-
-  return;
-} // StruGenAlpha::UpdateandOutput()
-
+}
 
 /*----------------------------------------------------------------------*
  |  determine new state at t_{n+1} (public)                bborn 11/07  |

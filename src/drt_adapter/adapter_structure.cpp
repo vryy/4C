@@ -259,7 +259,7 @@ void ADAPTER::StructureGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureGenAlpha::Update()
 {
-  structure_.UpdateandOutput();
+  structure_.Update();
 }
 
 
@@ -267,7 +267,7 @@ void ADAPTER::StructureGenAlpha::Update()
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureGenAlpha::Output()
 {
-  // noop
+  structure_.Output();
 }
 
 
@@ -517,7 +517,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
 
-  const Teuchos::ParameterList& size     = DRT::Problem::Instance()->ProblemSizeParams();
+  //const Teuchos::ParameterList& size     = DRT::Problem::Instance()->ProblemSizeParams();
 
   if ((actdis->Comm()).MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
