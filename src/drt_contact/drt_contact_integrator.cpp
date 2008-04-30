@@ -239,6 +239,11 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
     CONTACT::Projector projector(true);
     projector.ProjectGaussPoint(sele,sxi,mele,mxi);
     
+    // simple version (no Gauss point projection)
+    // double test[2] = {0.0, 0.0};
+    // test[0] = 0.5*(1-eta[0])*mxib + 0.5*(1+eta[0])*mxia;
+    // mxi[0]=test[0];
+    
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
     {
@@ -537,6 +542,11 @@ RCP<Epetra_SerialDenseVector> CONTACT::Integrator::IntegrateG(CONTACT::CElement&
     // project Gauss point onto master element
     CONTACT::Projector projector(true);
     projector.ProjectGaussPoint(sele,sxi,mele,mxi);
+    
+    // simple version (no Gauss point projection)
+    // double test[2] = {0.0, 0.0};
+    // test[0] = 0.5*(1-eta[0])*mxib + 0.5*(1+eta[0])*mxia;
+    // mxi[0]=test[0];
     
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
