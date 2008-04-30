@@ -35,11 +35,11 @@ using namespace DRT::UTILS;
 int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
-                                    LINALG::SerialDenseMatrix& elemat1,
-                                    LINALG::SerialDenseMatrix& elemat2,
-                                    LINALG::SerialDenseVector& elevec1,
-                                    LINALG::SerialDenseVector& elevec2,
-                                    LINALG::SerialDenseVector& elevec3)
+                                    Epetra_SerialDenseMatrix& elemat1,
+                                    Epetra_SerialDenseMatrix& elemat2,
+                                    Epetra_SerialDenseVector& elevec1,
+                                    Epetra_SerialDenseVector& elevec2,
+                                    Epetra_SerialDenseVector& elevec3)
 {
   ActionType act = none;
 
@@ -151,7 +151,7 @@ double DRT::ELEMENTS::ConstraintElement3::ComputeNormalDist(const LINALG::Serial
 }
 
 void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDeriv(const LINALG::SerialDenseMatrix& xc,
-                                                          LINALG::SerialDenseVector& elevector,
+    Epetra_SerialDenseVector& elevector,
                                                           const LINALG::SerialDenseVector& normal)
 { 
   double normsquare=pow(normal.Norm2(),2);
@@ -231,7 +231,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDeriv(const LINALG::SerialDe
 }
 
 void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialDenseMatrix& xc,
-    LINALG::SerialDenseMatrix& elematrix,
+    Epetra_SerialDenseMatrix& elematrix,
     const LINALG::SerialDenseVector& normal)
 {
   

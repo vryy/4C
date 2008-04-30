@@ -204,11 +204,11 @@ public:
   int Evaluate(ParameterList& params,
                DRT::Discretization&      discretization,
                vector<int>&              lm,
-               LINALG::SerialDenseMatrix& elemat1,
-               LINALG::SerialDenseMatrix& elemat2,
-               LINALG::SerialDenseVector& elevec1,
-               LINALG::SerialDenseVector& elevec2,
-               LINALG::SerialDenseVector& elevec3);
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
 
 
   /*!
@@ -252,12 +252,12 @@ private:
   double ComputeNormalDist(const LINALG::SerialDenseMatrix& xc,
       const LINALG::SerialDenseVector& elenormal);
   
-  void ComputeFirstDeriv(const LINALG::SerialDenseMatrix&,
-      LINALG::SerialDenseVector& elevector,
+  void ComputeFirstDeriv(const LINALG::SerialDenseMatrix& xc,
+      Epetra_SerialDenseVector& elevector,
       const LINALG::SerialDenseVector& elenormal);
   
   void ComputeSecondDeriv(const LINALG::SerialDenseMatrix&,
-      LINALG::SerialDenseMatrix& elevector,
+      Epetra_SerialDenseMatrix& elevector,
       const LINALG::SerialDenseVector& elenormal);
 
 }; // class ConstraintElement3
