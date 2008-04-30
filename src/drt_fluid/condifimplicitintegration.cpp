@@ -186,6 +186,9 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
     }
   }
 
+  // set initial field
+  SetInitialField();
+
   // end time measurement for initialization
   tm1_ref_ = null;
 
@@ -301,7 +304,7 @@ void CondifImplicitTimeInt::TimeLoop()
     //  phidtn_  = (phinp_-phin_) / (dt)
     //
     // -------------------------------------------------------------------
-    TimeUpdate();
+    Update();
 
 
     // -------------------------------------------------------------------
@@ -520,7 +523,7 @@ void CondifImplicitTimeInt::Solve(
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("phinp",phinp_);
-    discret_->SetState("hist"  ,hist_ );
+    discret_->SetState("hist" ,hist_ );
 
 #if 0
     // AVMS solver: VM3 solution approach with extended matrix system
@@ -677,7 +680,7 @@ void CondifImplicitTimeInt::Solve(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifImplicitTimeInt::TimeUpdate()
+void CondifImplicitTimeInt::Update()
 {
 
   // update time derivative of phi
@@ -778,7 +781,7 @@ void CondifImplicitTimeInt::Output()
 
       output_.NewStep    (step_,time_);
       output_.WriteVector("phinp", phinp_);
-      output_.WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);
+      output_.WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
       //output_.WriteVector("residual", residual_);
 
       // write domain decomposition for visualization (only once!)
@@ -993,7 +996,7 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
 void CondifImplicitTimeInt::SetVelocityField(int veltype, int velfuncno)
 {
     if (veltype != cdvel_)
-        dserror("velocity field type does not match!");
+        dserror("velocity field type does not match: got %d, but expected %d!",veltype,cdvel_);
 
     if (veltype == 0) // zero
         convel_->PutScalar(0); // just to be sure!
@@ -1018,6 +1021,102 @@ void CondifImplicitTimeInt::SetVelocityField(int veltype, int velfuncno)
     return;
 
 } // CondifImplicitTimeInt::SetVelocityField
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | update the velocity field                                   gjb 04/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void CondifImplicitTimeInt::SetVelocityField(int veltype, Teuchos::RCP<const Epetra_Vector> extvel)
+{
+  if (veltype != cdvel_)
+    dserror("velocity field type does not match: got %d, but expected %d!",veltype,cdvel_);
+
+  // check vector compatibility and determine space dimension
+  int numdim =-1;
+  if (extvel->MyLength()== (2* convel_->MyLength()))
+    numdim = 2;
+  else if (extvel->MyLength()== (3* convel_->MyLength()))
+    numdim = 3;
+  else
+    dserror("velocity vectors do not match in size");
+
+  if ((numdim == 3) or (numdim == 2))
+  {
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      for(int index=0;index<numdim;++index)
+      {
+        double value = (*extvel)[lnodeid*numdim + index];
+        //printf("myvelocityvalue[%d][%d] = %3.16lf\n",lnodeid,index,value);
+        convel_->ReplaceMyValue(lnodeid, index, value);
+      }
+    }
+  }
+
+  return;
+
+} // CondifImplicitTimeInt::SetVelocityField
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  set initial field for phi                                gjb   04/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void CondifImplicitTimeInt::SetInitialField()
+{
+  // access the initial field condition
+  vector<DRT::Condition*> cond;
+  discret_->GetCondition("InitialField", cond);
+
+  if (cond.size() > 1) dserror("only one initial field condition allowed");
+
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  
+  for (unsigned i=0; i<cond.size(); ++i)
+  {
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+      
+      vector<DRT::Condition*> mycond;
+      lnode->GetCondition("InitialField",mycond);
+ 
+      if (mycond.size()>0)
+      {
+        // the set of degrees of freedom associated with the node
+        vector<int> nodedofset = discret_->Dof(lnode);
+
+        // get initial value from condition
+        double phi = 2.0;
+
+        // set initial value
+        const int gid = nodedofset[0];
+        int lid = dofrowmap->LID(gid);
+        phinp_->ReplaceMyValues(1,&phi,&lid);
+        phin_->ReplaceMyValues(1,&phi,&lid);
+        phinm_->ReplaceMyValues(1,&phi,&lid);
+        cout<<"set initial value"<<endl;
+      }
+    }
+  }
+  
+  return;
+} // CondifImplicitTimeInt::SetInitialField
 
 
 /*----------------------------------------------------------------------*

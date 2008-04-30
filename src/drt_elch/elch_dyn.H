@@ -23,6 +23,7 @@ extern "C"
 
 /* headers and prototypes of functions also accessible from c */
 void elch_dyn();
+void printlogo();
 
 #ifdef __cplusplus
 }

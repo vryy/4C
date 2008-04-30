@@ -149,6 +149,11 @@ CondifGenAlphaIntegration::CondifGenAlphaIntegration(
   // end time measurement for timeloop
   tm7_ref_ = null;
 
+  // maximum number of timesteps
+  endstep_  = params_.get<int>   ("max number timesteps");
+  // maximum simulation time
+  endtime_  = params_.get<double>("total time");
+
   return;
 
 } // CondifGenAlphaIntegration::CondifGenAlphaIntegration
@@ -175,10 +180,7 @@ CondifGenAlphaIntegration::~CondifGenAlphaIntegration()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void CondifGenAlphaIntegration::GenAlphaIntegrateTo(
-  int                endstep,
-  double             endtime
-  )
+void CondifGenAlphaIntegration::TimeLoop()
 {
 
   bool stop_timeloop=false;
@@ -222,7 +224,7 @@ void CondifGenAlphaIntegration::GenAlphaIntegrateTo(
     if (myrank_==0)
     {
       printf("TIME: %11.4E/%11.4E  DT = %11.4E     GenAlpha     STEP = %4d/%4d \n",
-             time_,endtime,dt_,step_,endstep);
+             time_,endtime_,dt_,step_,endstep_);
 
     }
 
@@ -280,7 +282,7 @@ void CondifGenAlphaIntegration::GenAlphaIntegrateTo(
     //                    stop criterium for timeloop
     // -------------------------------------------------------------------
 
-    if(step_>=endstep||time_>=endtime)
+    if(step_>=endstep_||time_>=endtime_)
     {
 	stop_timeloop=true;
     }
@@ -742,7 +744,7 @@ void CondifGenAlphaIntegration::GenAlphaOutput()
     output_.NewStep    (step_,time_);
 
     output_.WriteVector("phinp"   , phinp_);
-    output_.WriteVector("velocity", convel_,IO::DiscretizationWriter::nodevector);
+    output_.WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
 
     // write domain decomposition for visualization (only once!)
     if (step_==upres_)
@@ -814,13 +816,14 @@ void CondifGenAlphaIntegration::ReadRestart(int step)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void CondifGenAlphaIntegration::SetVelocityField(int veltype, int velfuncno)
 {
-    if (veltype != cdvel_)
-        dserror("velocity field type does not match!");
+  if (veltype != cdvel_)
+    dserror("velocity field type does not match: got %d, but expected %d!",veltype,cdvel_);
 
-    if (veltype == 0) // zero
-        convel_->PutScalar(0); // just to be sure!
-    else if (veltype == 1)  // function
-    {
+
+  if (veltype == 0) // zero
+    convel_->PutScalar(0); // just to be sure!
+  else if (veltype == 1)  // function
+  {
     int numdim =3;
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -833,13 +836,29 @@ void CondifGenAlphaIntegration::SetVelocityField(int veltype, int velfuncno)
         convel_->ReplaceMyValue (lnodeid, index, value);
       }
     }
-    }
-    else
-        dserror("error in setVelocityField");
+  }
+  else
+    dserror("error in setVelocityField");
 
-    return;
+  return;
 
 } // CondifGenAlphaIntegration::SetVelocityField
 
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | update the velocity field                                   gjb 04/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void CondifGenAlphaIntegration::SetVelocityField(int veltype, Teuchos::RCP<const Epetra_Vector> extvel)
+{
+  dserror("not implemented.");
+  return;
+
+} // CondifGenAlphaIntegration::SetVelocityField
 
 #endif /* CCADISCRET       */

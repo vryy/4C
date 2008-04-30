@@ -88,10 +88,7 @@ public:
   o Do the timeloop
 
   */
-  void GenAlphaIntegrateTo(
-    int                endstep,
-    double             endtime
-    );
+  void TimeLoop();
 
   /*!
   \brief do predictor-(1)corrector procedure
@@ -142,6 +139,12 @@ public:
 
   */
   void SetVelocityField(int veltype, int velfuncno);
+
+  /*!
+  \brief set the velocity field
+
+  */
+  void SetVelocityField(int veltype, RCP<const Epetra_Vector> extvel);
 
   //@}
 
@@ -210,6 +213,10 @@ private:
   // current time and step
   double                           time_;
   int                              step_;
+  //! max. number of time steps
+  int                       endstep_;
+  //! max. simulation time
+  double                    endtime_;
 
   // current time step size
   double                           dt_;

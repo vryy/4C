@@ -222,7 +222,10 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_fluid_genalpha.o \
                 src/drt_adapter/adapter_xfluid_impl.o \
                 src/drt_adapter/adapter_utils.o \
-                src/drt_adapter/adapter_ale_resulttest.o
+                src/drt_adapter/adapter_ale_resulttest.o \
+                src/drt_adapter/adapter_condif.o \
+                src/drt_adapter/adapter_condif_genalpha.o \
+                src/drt_adapter/adapter_condif_base_algorithm.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \
@@ -1147,4 +1150,5 @@ OBJS_DRT_TIMADA = src/drt_timada/timeadaptivity.o \
 OBJS_INV_ANALYSIS = src/drt_inv_analysis/inv_analysis.o 
 #               electrochemistry
 OBJS_DRT_ELCH = src/drt_elch/elch_dyn.o \
-                src/drt_elch/elch_algorithm.o
+                src/drt_elch/elch_algorithm.o \
+                src/drt_elch/elch_create_condif.o

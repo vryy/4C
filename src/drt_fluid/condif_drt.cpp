@@ -35,10 +35,8 @@ Maintainer: Volker Gravemeier
 #endif
 
 #include "condif_drt.H"
-#include "condifimplicitintegration.H"
-#include "condif_genalpha_integration.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_validparameters.H"
+#include "../drt_adapter/adapter_condif_base_algorithm.H"
 
 
 /*----------------------------------------------------------------------*
@@ -47,26 +45,6 @@ Maintainer: Volker Gravemeier
   | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-
-/*----------------------------------------------------------------------*
- | global variable *solv, vector of lenght numfld of structures SOLVAR  |
- | defined in solver_control.c                                          |
- |                                                                      |
- |                                                       m.gee 11/00    |
- *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
-
 
 
 /*----------------------------------------------------------------------*
@@ -80,177 +58,26 @@ extern struct _SOLVAR  *solv;
  *----------------------------------------------------------------------*/
 void dyn_condif_drt()
 {
-
-  // -------------------------------------------------------------------
-  // access the discretization
-  // -------------------------------------------------------------------
-  RefCountPtr<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(0,0);
-
-  // -------------------------------------------------------------------
-  // set degrees of freedom in the discretization
-  // -------------------------------------------------------------------
-  if (!actdis->Filled()) actdis->FillComplete();
-
-  // -------------------------------------------------------------------
-  // context for output and restart
-  // -------------------------------------------------------------------
-  IO::DiscretizationWriter output(actdis);
-  output.WriteMesh(0,0.0);
-
-  // -------------------------------------------------------------------
-  // set some pointers and variables
-  // -------------------------------------------------------------------
-  SOLVAR        *actsolv  = &solv[0];
-
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+  // create instance of convection diffusion basis algorithm
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
+  Teuchos::RCP<ADAPTER::ConDifBaseAlgorithm> condifonly = rcp(new ADAPTER::ConDifBaseAlgorithm(fdyn)); 
 
-  if (actdis->Comm().MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
-
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-  RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
-  solver.TranslateSolverParameters(*solveparams,actsolv);
-  actdis->ComputeNullSpaceIfNecessary(*solveparams);
-
-  // -------------------------------------------------------------------
-  // set parameters in list required for all schemes
-  // -------------------------------------------------------------------
-  ParameterList condiftimeparams;
-
-  // -----------------------------------------------------velocity field
-  condiftimeparams.set<int>              ("condif velocity field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY"));
-  //condiftimeparams.set<int>              ("condif velocity function number",fdyn.get<int>("CD_VELFUNCNO"));
-
-  // -------------------------------------------------- time integration
-  // the default time step size
-  condiftimeparams.set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
-  // maximum simulation time
-  condiftimeparams.set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
-  // maximum number of timesteps
-  condiftimeparams.set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
-
-  // ----------------------------------------------- restart and output
-  // restart
-  condiftimeparams.set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
-  // solution output
-  condiftimeparams.set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
-
-  // ---------------------------------(fine-scale) subgrid diffusivity?
-  condiftimeparams.set<string>           ("fs subgrid diffusivity"   ,fdyn.get<string>("FSSUGRVISC"));
-
-
-  // -------------------------------------------------------------------
-  // additional parameters and algorithm call depending on respective
-  // time-integration (or stationary) scheme
-  // -------------------------------------------------------------------
-  FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
-  if(iop == timeint_stationary or
-     iop == timeint_one_step_theta or
-     iop == timeint_bdf2
-    )
+  // set velocity field
+  int veltype = Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY");
+  switch (veltype)
   {
-    // -----------------------------------------------------------------
-    // set additional parameters in list for OST/BDF2/stationary scheme
-    // -----------------------------------------------------------------
-    // type of time-integration (or stationary) scheme
-    condiftimeparams.set<FLUID_TIMEINTTYPE>("time int algo",iop);
-    // parameter theta for time-integration schemes
-    condiftimeparams.set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
-    // number of steps for potential start algorithm
-    condiftimeparams.set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
-    // parameter theta for potential start algorithm
-    condiftimeparams.set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
-
-    //------------------------------------------------------------------
-    // create all vectors and variables associated with the time
-    // integration (call the constructor)
-    //------------------------------------------------------------------
-    CondifImplicitTimeInt condifimplicit(actdis,
-                                         solver,
-                                         condiftimeparams,
-                                         output);
-
-    // initial field from restart
-    if (probtype.get<int>("RESTART"))
-    {
-      // read the restart information, set vectors and variables
-      condifimplicit.ReadRestart(probtype.get<int>("RESTART"));
-    }
-
-    // -------------------------------------------------set velocity field
-    int veltype = Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY");
-    switch (veltype)
-    {
-    case 0:  // zero
+    case 0:  // zero  (see case 1)
     case 1:  // function
-      condifimplicit.SetVelocityField(veltype,fdyn.get<int>("CD_VELFUNCNO"));
+      (condifonly->ConDifField()).SetVelocityField(veltype,fdyn.get<int>("CD_VELFUNCNO"));
       break;
-    case 2: //Navier_Stokes
+    case 2:  // Navier_Stokes
       dserror("condif velocity: >>Navier_Stokes<< not implemented.");
     default:
       dserror("unknown velocity field type for convection-diffusion");
-    }
-
-    // call time-integration (or stationary) scheme
-    condifimplicit.Integrate();
-
-  }
-  else if (iop == timeint_gen_alpha)
-  {
-    // -------------------------------------------------------------------
-    // set additional parameters in list for generalized-alpha scheme
-    // -------------------------------------------------------------------
-    // parameter alpha_M for for generalized-alpha scheme
-    condiftimeparams.set<double>           ("alpha_M"                  ,fdyn.get<double>("ALPHA_M"));
-    // parameter alpha_F for for generalized-alpha scheme
-    condiftimeparams.set<double>           ("alpha_F"                  ,fdyn.get<double>("ALPHA_F"));
-
-    //------------------------------------------------------------------
-    // create all vectors and variables associated with the time
-    // integration (call the constructor)
-    //------------------------------------------------------------------
-    CondifGenAlphaIntegration genalphaint(actdis,
-                                          solver,
-                                          condiftimeparams,
-                                          output);
-
-
-    // initial field from restart
-    if (probtype.get<int>("RESTART"))
-    {
-      // read the restart information, set vectors and variables
-      genalphaint.ReadRestart(genprob.restart);
-    }
-
-    // -------------------------------------------------set velocity field
-    int veltype = Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY");
-    switch (veltype)
-    {
-    case 0:  // zero
-    case 1:  // function
-      ;//genalphaint.SetVelocityField(veltype,fdyn.get<int>("CD_VELFUNCNO"));
-    case 3: //Navier_Stokes
-      dserror("condif velocity: >>Navier_Stokes<< not implemented.");
-    default:
-      dserror("unknown velocity field type for convection-diffusion");
-    }
-
-    // call generalized-alpha time-integration scheme
-    genalphaint.GenAlphaIntegrateTo(fdyn.get<int>("NUMSTEP"),fdyn.get<double>("MAXTIME"));
-
-  }
-  else
-  {
-    dserror("Unknown solver type for drt_condif");
   }
 
-  //---------- this is the end. Beautiful friend. My only friend, The end.
-  // thanks to RefCountPtr<> we do not need to delete anything here!
+  // solve the convection-diffusion problem
+  (condifonly->ConDifField()).Integrate();
 
   return;
 

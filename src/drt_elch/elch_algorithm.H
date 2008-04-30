@@ -20,11 +20,8 @@ Maintainer: Georg Bauer
 
 #include <Epetra_Comm.h>
 
-//#include <Teuchos_RCP.hpp>
-//#include <Teuchos_ParameterList.hpp>
-
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
-//#include "fsi_ale.H"
+#include "../drt_adapter/adapter_condif_base_algorithm.H"
 
 
 /*!
@@ -37,18 +34,20 @@ namespace ELCH
   /// ELCH algorithm base
   /*!
 
-    Base class of ELCH algorithms. Derives from FluidBaseAlgorithm.
+    Base class of ELCH algorithms. Derives from FluidBaseAlgorithm
+    and ConDifBaseAlgorithm.
     There can (and will) be different subclasses that implement
     different coupling schemes.
 
     \author gjb
     \date 03/08
    */
-  class Algorithm : public ADAPTER::FluidBaseAlgorithm
+  class Algorithm : public ADAPTER::FluidBaseAlgorithm,
+                    public ADAPTER::ConDifBaseAlgorithm
   {
   public:
 
-    /// create using a Epetra_Comm
+    /// constructor using a Epetra_Comm
     explicit Algorithm(Epetra_Comm& comm);
 
     /// virtual destructor to support polymorph destruction
@@ -65,14 +64,20 @@ namespace ELCH
     /// time step size
     double Dt() const { return dt_; }
 
-    /// step number
+    /// time step number
     int Step() const { return step_; }
 
     /// tests if there are more time steps to do
-    bool NotFinished() { return step_ < nstep_ and time_ <= maxtime_; }
+    bool NotFinished() {return ((step_ < nstep_) and (time_ <= maxtime_));}
 
     /// start a new time step
     void PrepareTimeStep();
+    
+    /// solve Navier-Stokes equations for current time step
+    void DoFluidStep();
+    
+    /// solve transport equations for current time step
+    void DoTransportStep();
 
     /// take current results for converged and save for next time step
     void Update();
@@ -85,8 +90,8 @@ namespace ELCH
     /// communication (mainly for screen output)
     Epetra_Comm& comm_;
 
-    /// velocities and pressures at time n+1
-    RCP<const Epetra_Vector>    velnp_;
+    /// actual velocity field at time n+1
+    RCP<const Epetra_Vector>    velocitynp_;
 
     //! @name Time stepping variables
     int step_;

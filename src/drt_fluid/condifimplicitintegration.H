@@ -121,7 +121,7 @@ public:
          iteration. Current solution becomes old solution of next
          timestep.
   */
-  void TimeUpdate();
+  void Update();
 
   /*!
   \brief update configuration and output to file/screen
@@ -140,6 +140,18 @@ public:
 
   */
   void SetVelocityField(int veltype, int velfuncno);
+  
+  /*!
+  \brief set the velocity field
+
+  */
+  void SetVelocityField(int veltype, RCP<const Epetra_Vector> extvel);
+  
+  /*!
+  \brief set the initial scalar field phi
+
+  */
+  void SetInitialField();
 
 protected:
 
@@ -239,7 +251,6 @@ protected:
   double dtsolve_;
 
 }; // class CondifImplicitTimeInt
-
 
 
 
