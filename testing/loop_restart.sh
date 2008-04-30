@@ -142,13 +142,13 @@ for file in $liste; do
   s_time=`expr $s + 60 \* $m + 60 \* 60 \* $h`
 
 
-
+  restartinput=`dirname $inputfile`/restart_input.dat
 
   if [ "x$PARALLEL" = "xno" ]; then
     # run the executable with the inputfile
 
     # modify the file
-    sed -e 's/^RESTART/\/\/RESTART/g' -e 's/\/\/\!RESTART/RESTART/g' $inputfile > restart_input.dat
+    sed -e 's/^RESTART/\/\/RESTART/g' -e 's/\/\/\!RESTART/RESTART/g' $inputfile > $restartinput
 
     echo '  Running Restart of Input-file...'
     ./$exe restart_input.dat test_out restart >test2.tmp
@@ -157,11 +157,11 @@ for file in $liste; do
     # parallel run
 
     # modify the file
-    sed -e 's/^RESTART/\/\/RESTART/g' -e 's/\/\/\!RESTART/RESTART/g' $inputfile > restart_input.dat
+    sed -e 's/^RESTART/\/\/RESTART/g' -e 's/\/\/\!RESTART/RESTART/g' $inputfile > $restartinput
 
     echo '  Running Restart of Input-file in parallel...'
     $MPIBOOT
-    $MPIRUN -np 2 $MPIRUNARGS ./$exe restart_input.dat test_out restart >test2.tmp
+    $MPIRUN -np 2 $MPIRUNARGS ./$exe $restartinput test_out restart >test2.tmp
     $MPIHALT
     killall $exe >& /dev/null
 
