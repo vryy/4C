@@ -225,9 +225,6 @@ public:
                               Epetra_SerialDenseVector& elevec1);
 
 
-
-  //@}
-
 private:
 
   //! action parameters recognized by bele3
@@ -357,7 +354,6 @@ public:
   //@}
 
 private:
-
 
 }; // class ConstraintElement3Register
 

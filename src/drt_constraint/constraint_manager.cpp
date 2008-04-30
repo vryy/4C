@@ -93,10 +93,8 @@ actdisc_(discr)
     constraintdis_->ReplaceDofSet(newdofset);
     newdofset = null;
     constraintdis_->FillComplete();
-    
     //Fill MPC Vectors
     SetupMPC(MPCamplitudes,MPCcondIDs,constrcond,p);
-    
     havenodeconstraint_=true;
   }
   //----------------------------------------------------
@@ -107,7 +105,7 @@ actdisc_(discr)
   {
     uzawaparam_=params.get<double>("uzawa parameter",1);
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
-    ManageIDs(p,minConstrID_,maxConstrID_,numConstrID_);
+    ManageIDs(p,minConstrID_,maxConstrID_,numConstrID_,MPCcondIDs);
     //initialize constraint Matrix
     constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
     //build domainmap of constrMatrix
@@ -118,14 +116,14 @@ actdisc_(discr)
     //Set initial values to computed volumes and areas and to amplitudes of MPC
     SynchronizeSumConstraint(p,initialvalues_,"computed volume",numConstrID_,minConstrID_);
     SynchronizeSumConstraint(p,initialvalues_,"computed area",numConstrID_,minConstrID_);
+    
     initialvalues_->ReplaceGlobalValues(MPCamplitudes.size(),&(MPCamplitudes[0]),&(MPCcondIDs[0]));
     //Initialize Lagrange Multiplicators, reference values and errors
     actdisc_->ClearState();
     referencevalues_=rcp(new Epetra_Vector(*constrmap_));
     actvalues_=rcp(new Epetra_Vector(*constrmap_));
     actvalues_->Scale(0.0);
-    constrainterr_=rcp(new Epetra_Vector(*constrmap_));
-    
+    constrainterr_=rcp(new Epetra_Vector(*constrmap_));    
     lagrMultVec_=rcp(new Epetra_Vector(*constrmap_));
     lagrMultInc_=rcp(new Epetra_Vector(*constrmap_));
     lagrMultVec_->Scale(0.0);
@@ -269,7 +267,27 @@ void ConstrManager::StiffnessAndInternalForces(
   //Deal with MPC
   if (havenodeconstraint_)
   {
-    cout<< "No evaluation for MPC implemented, yet" <<endl;
+    //Evaluate volume at predicted ENDpoint D_{n+1}
+    // action for elements
+    p.set("action","calc_MPC_stiff");
+    // other parameters that might be needed by the elements
+    p.set("total time",time);
+    p.set("MinID",minConstrID_);
+    p.set("MaxID",maxConstrID_);
+    p.set("NumberofID",numConstrID_);
+    // Convert Epetra_Vector constaining lagrange multipliers to an completely
+    // redundant Epetra_vector since every element with the constraint condition needs them
+    RCP<Epetra_Map> reducedmap = LINALG::AllreduceEMap(*constrmap_);
+    RCP<Epetra_Vector> lagrMultVecDense = rcp(new Epetra_Vector(*reducedmap));
+    LINALG::Export(*lagrMultVec_,*lagrMultVecDense);
+    p.set("LagrMultVector",lagrMultVecDense);
+    constraintdis_->ClearState();
+    constraintdis_->SetState("displacement",disp);    
+    vector<DRT::Condition*> constrcond(0);
+    actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
+    Evaluate(constraintdis_,p,stiff,constrMatrix_,fint,null,null,constrcond);
+    SynchronizeSumConstraint(p,actvalues_,"computed normal distance",numConstrID_,minConstrID_);
+    actdisc_->EvaluateCondition(p,"MPC_NodeOnPlane_3D");    
   }
   
   //----------------------------------------------------
@@ -421,11 +439,35 @@ void ConstrManager::PrintMonitorValues()
  |(private)                                                 tk 11/07    |
  |small subroutine for initialization purposes to determine ID's        |
  *----------------------------------------------------------------------*/
-void ConstrManager::ManageIDs(ParameterList& params, int& minID, int& maxID, int& numID)
+void ConstrManager::ManageIDs(ParameterList& params, 
+    int& minID, 
+    int& maxID, 
+    int& numID,
+    vector<int>& MPCIds)
 {
   actdisc_->Comm().MaxAll(&(params.get("MaxID",0)),&maxID,1);
   actdisc_->Comm().MinAll(&(params.get("MinID",100000)),&minID,1);
   numID=1+maxID-minID;
+  for (unsigned int var = 0; var < MPCIds.size(); ++var) 
+  {
+    MPCIds[var]-=minID;
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |(private)                                                 tk 11/07    |
+ |small subroutine for initialization purposes to determine ID's        |
+ *----------------------------------------------------------------------*/
+void ConstrManager::ManageIDs(ParameterList& params, 
+    int& minID, 
+    int& maxID, 
+    int& numID)
+{
+  actdisc_->Comm().MaxAll(&(params.get("MaxID",0)),&maxID,1);
+  actdisc_->Comm().MinAll(&(params.get("MinID",100000)),&minID,1);
+  numID=1+maxID-minID;
+  
   return;
 }
 
@@ -445,6 +487,26 @@ void ConstrManager::SynchronizeSumConstraint(ParameterList& params,
     double currval=0.0;
     actdisc_->Comm().SumAll(&(params.get(valname,0.0)),&(currval),1);
     vect->SumIntoGlobalValues(1,&currval,&i);
+  }
+  return;
+}
+
+void ConstrManager::SynchronizeSumConstraint(
+                                vector< DRT::Condition* >      constrcondvec,
+                                ParameterList& params,
+                                RCP<Epetra_Vector>& vect,
+                                const char* resultstring, const int numID, const int minID)
+{
+  
+  for (unsigned int i = 0; i < constrcondvec.size(); ++i)
+  {
+    char valname[30];
+    sprintf(valname,"%s %d",resultstring,i);
+    double currval=0.0;
+    actdisc_->Comm().SumAll(&(params.get(valname,0.0)),&(currval),1);
+    const vector<int>*    MPCcondID  = constrcondvec[i]->Get<vector<int> >("ConditionID");
+    int temp =(*MPCcondID)[0]-minID;  
+    vect->SumIntoGlobalValues(1,&currval,&temp);
   }
   return;
 }
@@ -499,7 +561,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
   set<int> colnodeset;
   const Epetra_Map* actnoderowmap = actdisc_->NodeRowMap();
 //  
-  // Loop all conditions is constrcondvec
+  // Loop all conditions in constrcondvec
   for (unsigned int j=0;j<constrcondvec.size();j++)
   {
 
@@ -547,16 +609,20 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
     
     
     int myrank = actdisc_->Comm().MyPID();
-      // create an element with the same global element id
+    
+    
+    // create an element with global element id = condiID
     if (actdisc_->gNode( ngid[0] )->Owner() == myrank )
     {
+      
       RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name, j, myrank);
   
       // set the same global node ids to the ale element
       constraintele->SetNodeIds(ngid.size(), &(ngid[0]));
-  
+//      constraintele->Print(cout);
+//      constraintele->SetCondition("Constraint Condition",rcp(constrcondvec[j],false));
+
       // add constraint element
-      
       newdis->AddElement(constraintele);
 
     }
@@ -583,6 +649,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
   }
    
   newdis->FillComplete();
+  
   return newdis;
 }
 
@@ -642,7 +709,7 @@ void ConstrManager::SetupMPC(vector<double>& amplit,
     const vector<double>*    MPCampl  = constrcond[i]->Get<vector<double> >("Amplitude");
     const vector<int>*    MPCcondID  = constrcond[i]->Get<vector<int> >("ConditionID");
     amplit[i]=(*MPCampl)[0];
-    IDs[i]=(*MPCcondID)[0]-1;
+    IDs[i]=(*MPCcondID)[0];
     // element write condition IDs (min and max) to parameter list. Here we have to do it ourselves
     // since we do not call any element action
     const int maxID=p.get("MaxID",0);
@@ -656,6 +723,78 @@ void ConstrManager::SetupMPC(vector<double>& amplit,
       p.set("MinID",(*MPCcondID)[0]);
     }
   }
+  return;
+}
+
+void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
+                              ParameterList&        params,
+                              RCP<LINALG::SparseOperator> systemmatrix1,
+                              RCP<LINALG::SparseOperator> systemmatrix2,
+                              RCP<Epetra_Vector>    systemvector1,
+                              RCP<Epetra_Vector>    systemvector2,
+                              RCP<Epetra_Vector>    systemvector3,
+                              vector<DRT::Condition*>& constrcond)
+{
+  
+  if (!(disc->Filled())) dserror("FillComplete() was not called");
+  if (!(disc->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
+
+  // see what we have for input
+  bool assemblemat1 = systemmatrix1!=Teuchos::null;
+  bool assemblemat2 = systemmatrix2!=Teuchos::null;
+  bool assemblevec1 = systemvector1!=Teuchos::null;
+  bool assemblevec2 = systemvector2!=Teuchos::null;
+  bool assemblevec3 = systemvector3!=Teuchos::null;
+
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector1;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+  
+  // loop over column elements
+  const int numcolele = disc->NumMyColElements();
+  for (int i=0; i<numcolele; ++i)
+  {
+    DRT::Element* actele = disc->lColElement(i);
+
+    // get element location vector, dirichlet flags and ownerships
+    vector<int> lm;
+    vector<int> lmowner;
+    actele->LocationVector(*disc,lm,lmowner);
+
+    // get dimension of element matrices and vectors
+    // Reshape element matrices and vectors and init to zero
+    const int eledim = (int)lm.size();
+    elematrix1.Shape(eledim,eledim);
+    elematrix2.Shape(eledim,eledim);
+    elevector1.Size(eledim);
+    elevector2.Size(eledim);
+    elevector3.Size(eledim);
+    vector<int> colvec(1);
+    const vector<int>*    MPCcondID  = constrcond[actele->Id()]->Get<vector<int> >("ConditionID");
+    params.set("CondID",(*MPCcondID)[0]);
+    // call the element evaluate method
+    int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
+                               elevector1,elevector2,elevector3);
+    if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),actele->Id(),err);
+
+    if (assemblemat1) systemmatrix1->Assemble(elematrix1,lm,lmowner);
+    if (assemblemat2)
+    {
+      int minID=params.get("MinID",0);
+
+      colvec[0]=(*MPCcondID)[0]-minID;
+      systemmatrix2->Assemble(elevector2,lm,lmowner,colvec);
+    }
+    if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
+    if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
+    if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
+  }
+
+  // for (int i=0; i<numcolele; ++i)
   return;
 }
 

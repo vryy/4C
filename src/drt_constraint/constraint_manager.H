@@ -267,6 +267,11 @@ private:
 
     void SynchronizeSumConstraint(ParameterList& params,
             RCP<Epetra_Vector>& vect,const char* resultstr, const int numID, const int minID);
+    
+    void SynchronizeSumConstraint(
+        vector< DRT::Condition* >      constrcondvec,ParameterList& params,
+            RCP<Epetra_Vector>& vect,const char* resultstr, const int numID, const int minID);
+
 
     /*!
       \brief synchronize processors after evaluating constraints by minimizing values returned woith a parameterlist
@@ -280,7 +285,16 @@ private:
         \brief Setup number of constraint ID's by evaluating the parameterlist returned by elements 
     */
     
-    void ManageIDs(ParameterList& params,int& minID, int& maxID, int& numID);
+    void ManageIDs(ParameterList& params,
+        int& minID, 
+        int& maxID, 
+        int& numID,
+        vector<int>& MPCids);
+    
+    void ManageIDs(ParameterList& params,
+         int& minID, 
+         int& maxID, 
+         int& numID);
     
     RCP<DRT::Discretization> CreateDiscretizationFromCondition(
             vector< DRT::Condition* >      constrcond, 
@@ -305,6 +319,14 @@ private:
         ParameterList& param
         );
     
+    void Evaluate( RCP<DRT::Discretization> disc,
+                                  Teuchos::ParameterList&        params,
+                                  Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                                  Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                                  Teuchos::RCP<Epetra_Vector>    systemvector1,
+                                  Teuchos::RCP<Epetra_Vector>    systemvector2,
+                                  Teuchos::RCP<Epetra_Vector>    systemvector3,
+                                  vector<DRT::Condition*>& constrcond);
     //@}
 
 private:
