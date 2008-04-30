@@ -17,6 +17,16 @@ class Soshw6Register;
 /*!
 \brief A C++ 6-node wedge Solid-Shell element inherited from so_weg6
 
+This element adopts the ANS approach to improve shear and curvature-thickness 
+(trapezoidal) locking. However, being triangular inplane, the ANS evaluation
+points of the shear strains are choosen just on two of three surfaces (See
+also DRT::ELEMENTS::So_shw6::soshw6_anssetup).
+Thus, the element becomes mesh dependent (where in material space lies my
+parameter space), but this is in favour of less pronounced shear locking 
+compared to a invariant formulation (locking free just for certain mesh configurations).
+
+See Diss. Frank Koschnick for details. 
+
 \author frenzel (frenzel@lnm.mw.tum.de)
 */
 class So_shw6 : public So_weg6
@@ -156,6 +166,7 @@ private:
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
 
+  //! Compute stiffness and mass matrix
   virtual void soshw6_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
@@ -167,6 +178,7 @@ private:
                                  const double              time,
                                  const bool                cauchy = false);
 
+  //! Setup ANS interpolation (shear and trapezoidal)
   void soshw6_anssetup(
             const int numsp,              // number of sampling points
             const int numans,             // number of ans strains
@@ -176,6 +188,8 @@ private:
             Epetra_SerialDenseMatrix& jac_sps,     // jac at all sampling points
             Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
             Epetra_SerialDenseMatrix& B_ans_loc); // modified B
+  
+  //! Transformation matrix parameter->material space
   void soshw6_evaluateT(const Epetra_SerialDenseMatrix jac,
                         Epetra_SerialDenseMatrix& TinvT);
 
