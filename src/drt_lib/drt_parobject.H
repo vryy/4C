@@ -63,8 +63,9 @@ using namespace std;
 #define ParObject_So_tet10              (int)38
 #define ParObject_Sotet10Register       (int)39
 #define ParObject_Sotet10Volume         (int)40
-#define ParObject_Sotet10Surface        (int)41
-#define ParObject_Sotet10Line           (int)42
+// these go away at some point
+//#define ParObject_Sotet10Surface        (int)41
+//#define ParObject_Sotet10Line           (int)42
 #define ParObject_NewtonianFluid        (int)43
 #define ParObject_MicroMaterial         (int)44
 #define ParObject_StVenantKirchhoff     (int)45
@@ -87,8 +88,9 @@ using namespace std;
 #define ParObject_So_tet4               (int)61
 #define ParObject_Sotet4Register        (int)62
 #define ParObject_Sotet4Volume          (int)63
-#define ParObject_Sotet4Surface         (int)64
-#define ParObject_Sotet4Line            (int)65
+// these go away at some point
+//#define ParObject_Sotet4Surface         (int)64
+//#define ParObject_Sotet4Line            (int)65
 #define ParObject_So_ctet10             (int)66
 #define ParObject_Soctet10Register      (int)67
 #define ParObject_Soctet10Volume        (int)68
