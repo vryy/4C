@@ -151,7 +151,7 @@ for file in $liste; do
     sed -e 's/^RESTART/\/\/RESTART/g' -e 's/\/\/\!RESTART/RESTART/g' $inputfile > $restartinput
 
     echo '  Running Restart of Input-file...'
-    ./$exe restart_input.dat test_out restart >test2.tmp
+    ./$exe $restartinput test_out restart >test2.tmp
 
   else
     # parallel run
