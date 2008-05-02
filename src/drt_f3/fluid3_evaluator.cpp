@@ -215,10 +215,10 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
           turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
 
       }
-      else
-      {
-        dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
-      }
+    }
+    else
+    {
+      dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) is available");
     }
   }
 
