@@ -30,7 +30,8 @@ writen by : Alexander Volf
 DRT::ELEMENTS::So_tet4::So_tet4(int id, int owner) :
 DRT::Element(id,element_so_tet4,owner),
 material_(0),
-data_()
+data_(),
+V_(-1.0)
 {
   ngp_[0] = ngp_[1] = ngp_[2] = 0;  //whatis ngp_ ???????
   surfaces_.resize(0);
@@ -51,7 +52,8 @@ data_(old.data_),
 surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
-lineptrs_(old.lineptrs_)
+lineptrs_(old.lineptrs_),
+V_(old.V_)
 {
   for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
   return;
@@ -103,6 +105,9 @@ void DRT::ELEMENTS::So_tet4::Pack(vector<char>& data) const
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
+  
+  // V_
+  AddtoPack(data,V_);
 
   return;
 }
@@ -135,6 +140,8 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
+  // V_
+  ExtractfromPack(position,data,V_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -431,7 +438,6 @@ void DRT::ELEMENTS::Sotet4Register::Pack(vector<char>& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-//void DRT::ELEMENTS::Soh8Register::Unpack(const vector<char>& data)
 void DRT::ELEMENTS::Sotet4Register::Unpack(const vector<char>& data)
 {
   int position = 0;
