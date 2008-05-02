@@ -471,7 +471,6 @@ Epetra_SerialDenseVector DRT::ELEMENTS::Condif2::condif2_getbodyforce(
                                            )
 {
   const int iel = NumNode();
-  const int nsd = 2;
 
   Epetra_SerialDenseVector edeadng(iel);
 
