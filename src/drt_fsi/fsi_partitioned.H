@@ -126,6 +126,8 @@ protected:
                                 Teuchos::RCP<NOX::Epetra::Group> grp,
                                 Teuchos::RCP<NOX::StatusTest::Combo> converged);
 
+  Teuchos::RCP<DebugWriter> MyDebugWriter() const { return debugwriter_; }
+
 private:
 
   /// create linear solver framework

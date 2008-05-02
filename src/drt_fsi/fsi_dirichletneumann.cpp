@@ -2,6 +2,7 @@
 #ifdef CCADISCRET
 
 #include "fsi_dirichletneumann.H"
+#include "fsi_debugwriter.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -28,6 +29,12 @@ void FSI::DirichletNeumann::FSIOp(const Epetra_Vector &x, Epetra_Vector &F, cons
     const Teuchos::RCP<Epetra_Vector> idispnp = StructOp(iforce, fillFlag);
 
     F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
+
+    if (MyDebugWriter()!=Teuchos::null)
+    {
+      MyDebugWriter()->WriteVector("idispnp",*idispnp);
+      MyDebugWriter()->WriteVector("iforcen",*iforce);
+    }
   }
   else
   {
@@ -37,6 +44,12 @@ void FSI::DirichletNeumann::FSIOp(const Epetra_Vector &x, Epetra_Vector &F, cons
     const Teuchos::RCP<Epetra_Vector> iforcenp = FluidOp(idisp, fillFlag);
 
     F.Update(1.0, *iforcenp, -1.0, *iforcen, 0.0);
+
+    if (MyDebugWriter()!=Teuchos::null)
+    {
+      MyDebugWriter()->WriteVector("idispn",*idisp);
+      MyDebugWriter()->WriteVector("iforcenp",*iforcenp);
+    }
   }
 }
 

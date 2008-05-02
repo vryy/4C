@@ -785,15 +785,14 @@ bool FSI::Partitioned::computeF(const Epetra_Vector &x, Epetra_Vector &F, const 
   if (!x.Map().UniqueGIDs())
     dserror("source map not unique");
 
+  if (debugwriter_!=Teuchos::null)
+    debugwriter_->NewIteration();
+
   // Do the FSI step. The real work is in here.
   FSIOp(x,F,fillFlag);
 
   if (debugwriter_!=Teuchos::null)
-  {
-    debugwriter_->NewIteration();
-    debugwriter_->WriteVector("x",x);
     debugwriter_->WriteVector("F",F);
-  }
 
   const double endTime = timer.WallTime();
   if (Comm().MyPID()==0)
