@@ -131,6 +131,15 @@ int main(
         condifwriter.WriteFiles();
         break;
     }
+    case prb_none:
+    {
+      // Special problem type that contains one discretization and any number
+      // of vectors. We just want to see whatever there is.
+      PostField* field = problem.get_discretization(0);
+      AnyEnsightWriter writer(field, problem.outname());
+      writer.WriteFiles();
+      break;
+    }
     default:
         dserror("problem type %d not yet supported", problem.Problemtype());
     }

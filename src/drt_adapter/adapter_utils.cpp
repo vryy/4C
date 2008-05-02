@@ -2,7 +2,7 @@
 /*!
 \file adapter_utils.cpp
 
-\brief 
+\brief
 
 <pre>
 Maintainer: Ulrich Kuettler
@@ -130,5 +130,49 @@ void ADAPTER::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
   }
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> ADAPTER::UTILS::ConditionNodeMap(const DRT::Discretization& dis,
+                                                           std::string condname)
+{
+  std::set<int> condnodeset;
+
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+
+  int numrownodes = dis.NumMyRowNodes();
+  for (int i=0; i<numrownodes; ++i)
+  {
+    DRT::Node* node = dis.lRowNode(i);
+
+    // test if node is covered by condition
+    for (unsigned j=0; j<conds.size(); ++j)
+    {
+      const vector<int>* n = conds[j]->Nodes();
+
+      // DRT::Condition nodes are ordered by design! So we can perform a
+      // binary search here.
+      if (std::binary_search(n->begin(), n->end(), node->Id()))
+      {
+        condnodeset.insert(node->Id());
+        break;
+      }
+    }
+  }
+
+  std::vector<int> condnodemapvec;
+  condnodemapvec.reserve(condnodeset.size());
+  condnodemapvec.assign(condnodeset.begin(), condnodeset.end());
+  condnodeset.clear();
+  Teuchos::RCP<Epetra_Map> condnodemap =
+    Teuchos::rcp(new Epetra_Map(-1,
+                                condnodemapvec.size(),
+                                &condnodemapvec[0],
+                                0,
+                                dis.Comm()));
+  condnodemapvec.clear();
+  return condnodemap;
+}
 
 #endif

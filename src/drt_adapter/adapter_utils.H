@@ -2,7 +2,7 @@
 /*!
 \file adapter_utils.H
 
-\brief 
+\brief
 
 <pre>
 Maintainer: Ulrich Kuettler
@@ -40,6 +40,9 @@ namespace ADAPTER
                             std::string condname,
                             LINALG::MapExtractor& extractor);
 
+    /// row map with nodes from condition
+    Teuchos::RCP<Epetra_Map> ConditionNodeMap(const DRT::Discretization& dis,
+                                              std::string condname);
   }
 }
 

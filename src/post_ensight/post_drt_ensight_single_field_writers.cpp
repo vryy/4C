@@ -100,6 +100,16 @@ void ConDifEnsightWriter::WriteAllResults(PostField* field)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void AnyEnsightWriter::WriteAllResults(PostField* field)
+{
+  WriteDofResults(field);
+  WriteNodeResults(field);
+  WriteElementResults(field);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void XFluidEnsightWriter::WriteAllResults(PostField* field)
 {
 //    EnsightWriter::WriteResult("velnp", "velocity", field->problem()->num_dim());

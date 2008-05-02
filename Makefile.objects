@@ -209,6 +209,7 @@ OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_coupling.o \
 		src/drt_fsi/fsi_coupling_mortar.o \
                 src/drt_fsi/fsi_utils.o \
+                src/drt_fsi/fsi_debugwriter.o \
                 src/drt_fsi/fsi_statustest.o \
                 src/drt_fsi/fsi_overlapprec.o
 OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \

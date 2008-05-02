@@ -179,6 +179,22 @@ protected:
 };
 
 
+/// Writer for undefined problem types
+/*
+  Just write all the vectors we have.
+ */
+class AnyEnsightWriter : public EnsightWriter
+{
+public:
+  AnyEnsightWriter(PostField* field, std::string filename)
+    : EnsightWriter(field, filename) {}
+
+protected:
+
+  virtual void WriteAllResults(PostField* field);
+};
+
+
 /*----------------------------------------------------------------------*/
 /*
  \brief Writer for fluid problems including xfem interfaces

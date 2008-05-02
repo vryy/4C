@@ -45,6 +45,7 @@ Maintainer: Ulrich Kuettler
  */
 namespace FSI {
 
+  class DebugWriter;
 
 /// Partitioned FSI base
 /*!
@@ -174,6 +175,9 @@ private:
 
   /// nodes at the fluid-structure interface match
   bool matchingnodes_;
+
+  /// special debugging output
+  Teuchos::RCP<DebugWriter> debugwriter_;
 };
 
 }

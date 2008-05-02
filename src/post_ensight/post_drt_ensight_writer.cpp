@@ -733,7 +733,7 @@ string EnsightWriter::GetEnsightString(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteElementResults(PostField* field)
+void EnsightWriter::WriteAnyResults(PostField* field, const char* type, const ResultType restype)
 {
   PostResult result = PostResult(field_);
   result.next_result();
@@ -751,10 +751,23 @@ void EnsightWriter::WriteElementResults(PostField* field)
     if (map_has_map(result.group(),key))
     {
       MAP* entry = map_read_map(result.group(),key);
-      if (map_has_string(entry, "type", "element"))
+      if (map_has_string(entry, "type", type))
       {
-        int columns = map_read_int(entry, "columns");
-        WriteResult(key,key,elementbased,columns);
+        int dim;
+        // This is bad. We should have a generic way to find how many dofs
+        // there are. Until then this is remains a special purpose routine
+        // that cannot serve everybody.
+        if (restype==elementbased)
+          // for elements we have the number of columns
+          dim = map_read_int(entry, "columns");
+        else if (restype==nodebased)
+          // for node the number of columns might be a same bet as well
+          dim = map_read_int(entry, "columns");
+        else
+          // Normal dof vectors have ndim dofs per node. (But then there are
+          // velocity / pressure vectors and such...)
+          dim = field->problem()->num_dim();
+        WriteResult(key,key,restype,dim);
       }
     }
   }

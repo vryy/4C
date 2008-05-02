@@ -148,8 +148,7 @@ public:
   enum VectorType {
     dofvector,
     nodevector,
-    elementvector,
-    conditionvector
+    elementvector
   };
 
   /// Writer constructor always needs a discretization

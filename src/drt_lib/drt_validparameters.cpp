@@ -83,6 +83,8 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterLi
     const std::string &name = list.name(i);
     Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
 
+    stream << blue2light << "//" << endcolor << '\n';
+
     std::string doc = entry.docString();
     if (doc!="")
     {
@@ -109,9 +111,26 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterLi
         Teuchos::RCP<const Teuchos::Array<std::string> > values = validator->validStringValues();
         if (values!=Teuchos::null)
         {
+          unsigned len = 0;
           for (unsigned i=0; i<values->size(); ++i)
           {
-            stream << blue2light << "//     " << magentalight << (*values)[i] << endcolor << '\n';
+            len += (*values)[i].length()+1;
+          }
+          if (len<74)
+          {
+            stream << blue2light << "//     ";
+            for (int i=0; i<static_cast<int>(values->size())-1; ++i)
+            {
+              stream << magentalight << (*values)[i] << blue2light << ",";
+            }
+            stream << magentalight << (*values)[values->size()-1] << endcolor << '\n';
+          }
+          else
+          {
+            for (unsigned i=0; i<values->size(); ++i)
+            {
+              stream << blue2light << "//     " << magentalight << (*values)[i] << endcolor << '\n';
+            }
           }
         }
       }
@@ -316,7 +335,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   // An empty list. The actual list is arbitrary and not validated.
   //Teuchos::ParameterList& condition =
-  list->sublist("CONDITION NAMES",false,"names of conditions from exodus file");
+  list->sublist("CONDITION NAMES",false,
+                "Names of conditions from exodus file.\n"
+                "This section is not validated, any variable is allowed here.\n"
+                "The names defined in this section can be used by all conditions instead of\n"
+                "a design object number. This section assigns the respective numbers to\n"
+                "the names.");
 
   //ParameterList& stat = list->sublist("STATIC",false,"");
 
@@ -952,6 +976,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ALPHA_F",-1.0,"Robin parameter fluid",&fsidyn);
   DoubleParameter("ALPHA_S",-1.0,"Robin parameter structure",&fsidyn);
 
+  setStringToIntegralParameter("DEBUGOUTPUT","No",
+                               "Output of unconverged interface values during partitioned FSI iteration.\n"
+                               "There will be a new control file for each time step.\n"
+                               "This might be helpful to understand the coupling iteration.",
+                               yesnotuple,yesnovalue,&fsidyn);
+
   setStringToIntegralParameter("PREDICTOR","d(n)+dt*v(n)+0.5*dt^2*a(n)",
                                "Predictor for interface displacements",
                                tuple<std::string>(
@@ -1001,7 +1031,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,0,0,1),
                                &fsidyn);
 
-  setStringToIntegralParameter("COUPFORCE","nodeforce","",
+  setStringToIntegralParameter("COUPFORCE","nodeforce",
+                               "Coupling force. Unused. We always couple with nodal forces.",
                                tuple<std::string>(
                                  "none",
                                  "stress",

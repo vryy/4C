@@ -104,7 +104,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     strcpy(hostname, "unknown host");
 #endif
 
-    controlfile_ << "# ccarat output control file\n"
+    controlfile_ << "# baci output control file\n"
                  << "# created by "
 #if !defined(WIN_MUENCH) && !defined(HPUX_GNU)
                  << user_entry->pw_name

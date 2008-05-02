@@ -10,6 +10,8 @@
 
 #include "../drt_io/io_control.H"
 
+#include "fsi_debugwriter.H"
+
 #include "fsi_nox_aitken.H"
 #include "fsi_nox_extrapolate.H"
 #include "fsi_nox_michler.H"
@@ -57,6 +59,10 @@ FSI::Partitioned::Partitioned(Epetra_Comm& comm)
                     *MBFluidField().Discretization(),
                     comm );
   }
+
+  // enable debugging
+  if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT"))
+    debugwriter_ = Teuchos::rcp(new DebugWriter(StructureField().Discretization()));
 
 #if 0
   // create connection graph of interface elements
@@ -357,6 +363,9 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     // Increment all field counters and predict field values whenever
     // appropriate.
     PrepareTimeStep();
+
+    if (debugwriter_!=Teuchos::null)
+      debugwriter_->NewTimeStep(Step());
 
     // reset all counters
     std::fill(counter_.begin(),counter_.end(),0);
@@ -778,6 +787,13 @@ bool FSI::Partitioned::computeF(const Epetra_Vector &x, Epetra_Vector &F, const 
 
   // Do the FSI step. The real work is in here.
   FSIOp(x,F,fillFlag);
+
+  if (debugwriter_!=Teuchos::null)
+  {
+    debugwriter_->NewIteration();
+    debugwriter_->WriteVector("x",x);
+    debugwriter_->WriteVector("F",F);
+  }
 
   const double endTime = timer.WallTime();
   if (Comm().MyPID()==0)

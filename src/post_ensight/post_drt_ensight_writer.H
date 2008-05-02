@@ -97,7 +97,28 @@ protected:
       \note This method sees only those element results that are defined in
       the first result group.
      */
-    void WriteElementResults(PostField* field);
+    void WriteElementResults(PostField* field) { WriteAnyResults(field,"element",elementbased); }
+
+    /// write all node based results
+    /*!
+      \note This method sees only those node results that are defined in
+      the first result group.
+     */
+    void WriteNodeResults(PostField* field) { WriteAnyResults(field,"node",nodebased); }
+
+    /// write all dof based results
+    /*!
+      \note This method sees only those dof results that are defined in
+      the first result group.
+     */
+    void WriteDofResults(PostField* field) { WriteAnyResults(field,"dof",dofbased); }
+
+    /// write all results of the given type
+    /*!
+      \note This method sees only those results that are defined in the first
+      result group (that is the first time step).
+     */
+    void WriteAnyResults(PostField* field, const char* type, const ResultType restype);
 
     /*!
      \brief write all time steps of a result

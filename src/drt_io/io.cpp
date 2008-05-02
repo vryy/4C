@@ -667,9 +667,6 @@ void IO::DiscretizationWriter::WriteVector(const string name,
     case elementvector:
       vectortype = "element";
       break;
-    case conditionvector:
-      vectortype = "condition";
-      break;
     default:
       dserror("unknown vector type %d", vt);
     }
