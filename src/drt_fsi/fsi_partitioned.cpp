@@ -458,9 +458,6 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     }
 #endif
 
-    // really extract final displacement
-    idispn_ = InterfaceDisp();
-
     // End Nonlinear Solver **************************************
 
     // Output the parameter list
@@ -497,7 +494,12 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
     // ==================================================================
 
+    // prepare field variables for new time step
     Update();
+
+    // really extract final displacement
+    // since we did update, this is very easy to extract
+    idispn_ = StructureField().ExtractInterfaceDispn();
 
     /* write current solution */
     Output();
