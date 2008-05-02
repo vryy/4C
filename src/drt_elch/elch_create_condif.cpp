@@ -1,9 +1,6 @@
 
 #ifdef CCADISCRET
 
-#include <string>
-#include <iostream>
-
 #ifdef PARALLEL
 #include <mpi.h>
 #include <Epetra_MpiComm.h>
@@ -11,18 +8,15 @@
 #include <Epetra_SerialComm.h>
 #endif
 
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
-
-// we need to know all element types for the condif mesh creation
-#include "../drt_f2/fluid2.H"
-#include "../drt_f3/fluid3.H"
-
-#include "../drt_f2/condif2.H"
-
+#include <string>
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fsi/fsi_utils.H"
 #include "../drt_lib/drt_utils.H"
+
+// we need to know all necessary element types for the condif mesh creation
+#include "../drt_f2/fluid2.H"
+#include "../drt_f3/fluid3.H"
+#include "../drt_f2/condif2.H"
 
 
 namespace ELCH{
@@ -77,8 +71,6 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
     if (not found and f2!=NULL)
     {
       found = true;
-      //iscondif = f2->IsAle();
-      //if (isale and myele)
       condiftype.push_back("CONDIF2");
     }
 #endif
@@ -88,9 +80,7 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
     if (not found and f3!=NULL)
     {
       found = true;
-      //isale = f3->IsAle();
-      //if (isale and myele)
-        //aletype.push_back("ALE3");
+        //condiftype.push_back("CONDIF3");
       dserror("cannot create 3D condif element from Fluid3");
     }
 #endif
@@ -220,7 +210,7 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
     // conditions at the condif.
     condifdis->SetCondition("Dirichlet", rcp(new DRT::Condition(*cond[i])));
   }
-  
+
 #if 1
   // a small hack !!
   fluiddis->GetCondition("FluidStressCalc", cond);
@@ -268,4 +258,5 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
   condifdis->FillComplete();
 }
 } // namespace ELCH
+
 #endif  // CCADISCRET

@@ -42,14 +42,14 @@ void elch_dyn()
   if (comm.MyPID()==0) printlogo();
 
   // get discretization ids
-  int disnumff = genprob.numff;
-  int disnumcdf = genprob.numcdf;
+  int disnumff = genprob.numff; // typically 0
+  int disnumcdf = genprob.numcdf; // typically 1
   
-  // get the fluid discretization
+  // access the fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
   if (!fluiddis->Filled()) fluiddis->FillComplete();
 
-  // get the condif discretization
+  // access the (typically empty) condif discretization
   RefCountPtr<DRT::Discretization> condifdis = DRT::Problem::Instance()->Dis(disnumcdf,0);
   if (!condifdis->Filled()) condifdis->FillComplete();
 
@@ -64,7 +64,7 @@ void elch_dyn()
     cout<<"Created necessary condif discretization from fluid field.\n\n";
   }
   else
-    dserror("Fluid AND ConDif discretization present. Not supported.");
+    dserror("Fluid AND ConDif discretization present. This is not supported.");
 
   // create an ELCH::Algorithm instance
   Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm));
@@ -104,7 +104,6 @@ void printlogo()
     cout<<"        \\_____/ /         "<<endl;
     cout<<"          \\____/          "<<endl;
     cout<<"                           "<<endl;
-    //cout << "\n" GRAY_LIGHT "Checking results ..." YELLOW "tttt" END_COLOR "\n";
 }
 
 #endif  // CCADISCRET
