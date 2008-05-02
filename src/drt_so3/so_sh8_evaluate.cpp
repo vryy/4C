@@ -615,7 +615,18 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
         }
       }
       else {                         // return Cauchy stresses
-        dserror("Cauchy stress not yet available for sosh8");
+        // with ANS you do NOT have the correct (locking-free) F, so we 
+        // compute it here JUST for mapping of correct (locking-free) stresses
+        Epetra_SerialDenseMatrix invJ(NUMDIM_SOH8,NUMDIM_SOH8);
+        invJ.Multiply('N','N',1.0,derivs[gp],xrefe,0.0);
+        LINALG::NonsymInverse3x3(invJ);
+        LINALG::SerialDenseMatrix N_XYZ(NUMDIM_SOH8,NUMNOD_SOH8);
+        // compute derivatives N_XYZ at gp w.r.t. material coordinates
+        // by N_XYZ = J^-1 * N_rst
+        N_XYZ.Multiply('N','N',1.0,invJ,derivs[gp],0.0);
+        // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+        LINALG::SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
+        defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,0.0);
         double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
                       defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
                       defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
