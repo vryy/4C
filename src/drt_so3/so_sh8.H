@@ -210,6 +210,7 @@ private:
 
   bool nodes_rearranged_;
 
+  //! Compute stiffness and mass matrix
   void sosh8_nlnstiffmass(vector<int>&              lm,
                          vector<double>&           disp,
                          vector<double>&           residual,
@@ -221,6 +222,14 @@ private:
                          const double              time,
                          const bool                cauchy=false);
 
+  //! Evaluate Hex8 Shapefcts to keep them static
+  const vector<Epetra_SerialDenseVector> sosh8_shapefcts();
+  //! Evaluate Hex8 Derivs to keep them static
+  const vector<Epetra_SerialDenseMatrix> sosh8_derivs();
+  //! Evaluate Hex8 Weights to keep them static
+  const vector<double> sosh8_weights();
+  
+  //! Evaluate all ANS related data at the ANS sampling points
   void sosh8_anssetup(const int numsp,              // number of sampling points
           const int numans,             // number of ans strains
           const Epetra_SerialDenseMatrix& xrefe, // material element coords
@@ -230,13 +239,17 @@ private:
           Epetra_SerialDenseMatrix& jac_cur_sps, // current jac at all sampling points
           Epetra_SerialDenseMatrix&  B_ans_loc); // modified B
 
+  //! Evaluate transformation matrix T (parameter->material) at gp
   void sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,  // actual jacobian
-                       Epetra_SerialDenseMatrix& TinvT);    // corr. T^{-T}
+                       Epetra_SerialDenseMatrix& TinvT);    // T^{-T}
 
+  //! Find "thin"=thickness direction
   ThicknessDirection sosh8_findthickdir();
 
+  //! Debug gmsh-plot to check thickness direction
   void sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8]);
 
+  //! Temporarly method to define fiber direction in cylinder
   void sosh8_setcylinderfiberdirection(const Epetra_SerialDenseMatrix xrefe);
 
 
