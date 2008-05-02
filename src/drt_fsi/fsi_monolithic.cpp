@@ -9,23 +9,13 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
-
 #include "../drt_lib/drt_colors.H"
+
+#include "../drt_io/io_control.H"
 
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
-
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 
 
 
@@ -240,7 +230,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   Teuchos::RefCountPtr<std::ofstream> log;
   if (Comm().MyPID()==0)
   {
-    std::string s = allfiles.outputfile_kenner;
+    std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".iteration");
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
     (*log) << "# num procs      = " << Comm().NumProc() << "\n"

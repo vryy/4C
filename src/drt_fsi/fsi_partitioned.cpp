@@ -6,8 +6,9 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
-
 #include "../drt_lib/drt_colors.H"
+
+#include "../drt_io/io_control.H"
 
 #include "fsi_nox_aitken.H"
 #include "fsi_nox_extrapolate.H"
@@ -24,18 +25,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-
-
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 
 
 /*----------------------------------------------------------------------*/
@@ -342,7 +331,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
   Teuchos::RCP<std::ofstream> log;
   if (Comm().MyPID()==0)
   {
-    std::string s = allfiles.outputfile_kenner;
+    std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
     s.append(".iteration");
     log = Teuchos::rcp(new std::ofstream(s.c_str()));
     (*log) << "# num procs      = " << Comm().NumProc() << "\n"
