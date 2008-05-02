@@ -109,7 +109,9 @@ namespace UTILS {
     void ReadInput();
 
     /// return a specified function
-    Function& Funct(int num) { return *(functions_[num]); }
+    Function& Funct(unsigned int num);
+
+
 
   private:
 

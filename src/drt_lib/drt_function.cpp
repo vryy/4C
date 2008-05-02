@@ -267,6 +267,20 @@ void DRT::UTILS::FunctionManager::ReadInput()
     }
   }
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::UTILS::Function& DRT::UTILS::FunctionManager::Funct(unsigned int num) 
+{ 
+  // ensure that desired function is available (prevents segmentation fault)
+  if (functions_.size()<(num+1)) 
+    dserror("function %d not available",num+1);
+
+  return *(functions_[num]); 
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::UTILS::ExprFunction::ExprFunction()
