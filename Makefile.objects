@@ -224,8 +224,6 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_condif.o \
                 src/drt_adapter/adapter_condif_genalpha.o \
                 src/drt_adapter/adapter_condif_base_algorithm.o \
-                src/drt_adapter/adapter_create_ale.o \
-                src/drt_adapter/adapter_create_boundary.o \
                 src/drt_adapter/adapter_coupling.o \
 		src/drt_adapter/adapter_coupling_mortar.o
 #                pss_full

@@ -24,17 +24,6 @@ namespace FSI
   namespace UTILS
   {
 
-    /// std unary function version of Epetra_Map::MyGID()
-    struct MyGID : public std::unary_function<int, bool>
-    {
-      const Epetra_Map* emap_;
-      MyGID(const Epetra_Map* emap) : emap_(emap) {}
-      bool operator()(int gid) const
-        {
-          return emap_->MyGID(gid);
-        }
-    };
-
     /// write interface jacobian to file
     void DumpJacobian(NOX::Epetra::Interface::Required& interface,
                       double alpha,

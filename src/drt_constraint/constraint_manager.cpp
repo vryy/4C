@@ -17,7 +17,7 @@ Maintainer: Thomas Kloeppel
 #include "mpcdofset.H"
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "iostream"
-#include "../drt_fsi/fsi_utils.H"
+#include "../drt_adapter/adapter_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -27,7 +27,7 @@ ConstrManager::ConstrManager(RCP<DRT::Discretization> discr,
         RCP<Epetra_Vector> disp,
         ParameterList params):
 actdisc_(discr)
-{          
+{
   //Check, what kind of constraining boundary conditions there are
   numConstrID_=0;
   haveareaconstr3D_=false;
@@ -69,7 +69,7 @@ actdisc_(discr)
     actdisc_->EvaluateCondition(p,"AreaConstraint_2D");
     haveareaconstr2D_=true;
   }
-  
+
   // Check for Multi Point Constraint Node on planes in 3D
   actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
   //Initialize Vectors to contain IDs and amplitudes
@@ -80,14 +80,14 @@ actdisc_(discr)
   {
     // Construct special constraint discretization consisting of constraint elements
     constraintdis_=CreateDiscretizationFromCondition(constrcond,"ConstrDisc","CONSTRELE3");
-        
+
     // now reconstruct the extended colmap
     RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, constraintdis_);
-    
-    //Redistribute underlying discretization to have ghosting in the same way as in the 
+
+    //Redistribute underlying discretization to have ghosting in the same way as in the
     //constraint discretization
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-    
+
     // Change dof's in constraint discretization to fit underlying discretization
     RCP<DRT::DofSet> newdofset = rcp(new MPCDofSet(actdisc_));
     constraintdis_->ReplaceDofSet(newdofset);
@@ -116,20 +116,20 @@ actdisc_(discr)
     //Set initial values to computed volumes and areas and to amplitudes of MPC
     SynchronizeSumConstraint(p,initialvalues_,"computed volume",numConstrID_,minConstrID_);
     SynchronizeSumConstraint(p,initialvalues_,"computed area",numConstrID_,minConstrID_);
-    
+
     initialvalues_->ReplaceGlobalValues(MPCamplitudes.size(),&(MPCamplitudes[0]),&(MPCcondIDs[0]));
     //Initialize Lagrange Multiplicators, reference values and errors
     actdisc_->ClearState();
     referencevalues_=rcp(new Epetra_Vector(*constrmap_));
     actvalues_=rcp(new Epetra_Vector(*constrmap_));
     actvalues_->Scale(0.0);
-    constrainterr_=rcp(new Epetra_Vector(*constrmap_));    
+    constrainterr_=rcp(new Epetra_Vector(*constrmap_));
     lagrMultVec_=rcp(new Epetra_Vector(*constrmap_));
     lagrMultInc_=rcp(new Epetra_Vector(*constrmap_));
     lagrMultVec_->Scale(0.0);
     lagrMultInc_->Scale(0.0);
     fact_=rcp(new Epetra_Vector(*constrmap_));
-  } 
+  }
   //-----------------------------Monitors!
   havevolmonitor_=false;
   haveareamonitor3D_=false;
@@ -163,10 +163,10 @@ actdisc_(discr)
     actdisc_->SetState("displacement",disp);
     actdisc_->EvaluateCondition(p1,"AreaMonitor_2D");
     haveareamonitor2D_=true;
-  }  
+  }
   //----------------------------------------------------
   //--------------include possible further monitors here
-  //---------------------------------------------------- 
+  //----------------------------------------------------
   havemonitor_= haveareamonitor3D_||havevolmonitor_||haveareamonitor2D_;
   if (havemonitor_)
   {
@@ -230,7 +230,7 @@ void ConstrManager::StiffnessAndInternalForces(
     p.set("total time",time);
     p.set("MinID",minConstrID_);
     p.set("MaxID",maxConstrID_);
-    p.set("NumberofID",numConstrID_);        
+    p.set("NumberofID",numConstrID_);
     // Convert Epetra_Vector constaining lagrange multipliers to an completely
     // redundant Epetra_vector since every element with the constraint condition needs them
     RCP<Epetra_Map> reducedmap = LINALG::AllreduceEMap(*constrmap_);
@@ -252,7 +252,7 @@ void ConstrManager::StiffnessAndInternalForces(
     p.set("total time",time);
     p.set("MinID",minConstrID_);
     p.set("MaxID",maxConstrID_);
-    p.set("NumberofID",numConstrID_);        
+    p.set("NumberofID",numConstrID_);
     // Convert Epetra_Vector constaining lagrange multipliers to an completely
     // redundant Epetra_vector since every element with the constraint condition needs them
     RCP<Epetra_Map> reducedmap = LINALG::AllreduceEMap(*constrmap_);
@@ -282,19 +282,19 @@ void ConstrManager::StiffnessAndInternalForces(
     LINALG::Export(*lagrMultVec_,*lagrMultVecDense);
     p.set("LagrMultVector",lagrMultVecDense);
     constraintdis_->ClearState();
-    constraintdis_->SetState("displacement",disp);    
+    constraintdis_->SetState("displacement",disp);
     vector<DRT::Condition*> constrcond(0);
     actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
     Evaluate(constraintdis_,p,stiff,constrMatrix_,fint,null,null,constrcond);
     SynchronizeSumConstraint(p,actvalues_,"computed normal distance",numConstrID_,minConstrID_);
-    actdisc_->EvaluateCondition(p,"MPC_NodeOnPlane_3D");    
+    actdisc_->EvaluateCondition(p,"MPC_NodeOnPlane_3D");
   }
-  
+
   //----------------------------------------------------
   //-----------include possible further constraints here
-  //----------------------------------------------------  
+  //----------------------------------------------------
   SynchronizeMinConstraint(p,fact_,"LoadCurveFactor");
-  //Compute current referencevolumes as elemetwise product of timecurvefactor and initialvalues    
+  //Compute current referencevolumes as elemetwise product of timecurvefactor and initialvalues
   referencevalues_->Multiply(1.0,*fact_,*initialvalues_,0.0);
   constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
   actdisc_->ClearState();
@@ -439,16 +439,16 @@ void ConstrManager::PrintMonitorValues()
  |(private)                                                 tk 11/07    |
  |small subroutine for initialization purposes to determine ID's        |
  *----------------------------------------------------------------------*/
-void ConstrManager::ManageIDs(ParameterList& params, 
-    int& minID, 
-    int& maxID, 
+void ConstrManager::ManageIDs(ParameterList& params,
+    int& minID,
+    int& maxID,
     int& numID,
     vector<int>& MPCIds)
 {
   actdisc_->Comm().MaxAll(&(params.get("MaxID",0)),&maxID,1);
   actdisc_->Comm().MinAll(&(params.get("MinID",100000)),&minID,1);
   numID=1+maxID-minID;
-  for (unsigned int var = 0; var < MPCIds.size(); ++var) 
+  for (unsigned int var = 0; var < MPCIds.size(); ++var)
   {
     MPCIds[var]-=minID;
   }
@@ -459,15 +459,15 @@ void ConstrManager::ManageIDs(ParameterList& params,
  |(private)                                                 tk 11/07    |
  |small subroutine for initialization purposes to determine ID's        |
  *----------------------------------------------------------------------*/
-void ConstrManager::ManageIDs(ParameterList& params, 
-    int& minID, 
-    int& maxID, 
+void ConstrManager::ManageIDs(ParameterList& params,
+    int& minID,
+    int& maxID,
     int& numID)
 {
   actdisc_->Comm().MaxAll(&(params.get("MaxID",0)),&maxID,1);
   actdisc_->Comm().MinAll(&(params.get("MinID",100000)),&minID,1);
   numID=1+maxID-minID;
-  
+
   return;
 }
 
@@ -497,7 +497,7 @@ void ConstrManager::SynchronizeSumConstraint(
                                 RCP<Epetra_Vector>& vect,
                                 const char* resultstring, const int numID, const int minID)
 {
-  
+
   for (unsigned int i = 0; i < constrcondvec.size(); ++i)
   {
     char valname[30];
@@ -505,7 +505,7 @@ void ConstrManager::SynchronizeSumConstraint(
     double currval=0.0;
     actdisc_->Comm().SumAll(&(params.get(valname,0.0)),&(currval),1);
     const vector<int>*    MPCcondID  = constrcondvec[i]->Get<vector<int> >("ConditionID");
-    int temp =(*MPCcondID)[0]-minID;  
+    int temp =(*MPCcondID)[0]-minID;
     vect->SumIntoGlobalValues(1,&currval,&temp);
   }
   return;
@@ -529,7 +529,7 @@ void ConstrManager::SynchronizeMinConstraint(ParameterList& params,
     actdisc_->Comm().MinAll(&(params.get(valname,1.0)),&(currval),1);
     vect->ReplaceGlobalValues(1,&currval,&i);
   }
-  
+
   return;
 }
 
@@ -540,7 +540,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
             const string&             element_name)
 {
   RCP<Epetra_Comm> com = rcp(actdisc_->Comm().Clone());
-  
+
   RCP<DRT::Discretization> newdis = rcp(new DRT::Discretization(discret_name,com));
 
   if (!actdisc_->Filled())
@@ -549,10 +549,10 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
   }
 
   const int myrank = newdis->Comm().MyPID();
-  
+
  if(constrcondvec.size()==0)
       dserror("number of multi point constraint conditions = 0 --> cannot create constraint discretization");
-  
+
   // vector with boundary ele id's
   vector<int> egid;
   //egid.reserve(actdisc_->NumMyRowElements());
@@ -560,7 +560,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
   set<int> rownodeset;
   set<int> colnodeset;
   const Epetra_Map* actnoderowmap = actdisc_->NodeRowMap();
-//  
+//
   // Loop all conditions in constrcondvec
   for (unsigned int j=0;j<constrcondvec.size();j++)
   {
@@ -569,14 +569,14 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
     const int numnodes=ngid.size();
     // We sort the global node ids according to the definition of the boundary condition
     ReorderConstraintNodes(ngid, constrcondvec[j]);
-     
+
     remove_copy_if(&ngid[0], &ngid[0]+numnodes,
                      inserter(rownodeset, rownodeset.begin()),
-                     not1(FSI::UTILS::MyGID(actnoderowmap)));
+                     not1(ADAPTER::UTILS::MyGID(actnoderowmap)));
     // copy node ids specified in condition to colnodeset
     copy(&ngid[0], &ngid[0]+numnodes,
           inserter(colnodeset, colnodeset.begin()));
- 
+
     // construct boundary nodes, which use the same global id as the cutter nodes
     for (int i=0; i<actnoderowmap->NumMyElements(); ++i)
     {
@@ -606,17 +606,17 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
                                                                0,
                                                                newdis->Comm()));
     constraintnodecolvec.clear();
-    
-    
+
+
     int myrank = actdisc_->Comm().MyPID();
-    
-    
+
+
     // create an element with global element id = condiID
     if (actdisc_->gNode( ngid[0] )->Owner() == myrank )
     {
-      
+
       RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name, j, myrank);
-  
+
       // set the same global node ids to the ale element
       constraintele->SetNodeIds(ngid.size(), &(ngid[0]));
 //      constraintele->Print(cout);
@@ -628,28 +628,28 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
     }
     // now care about the parallel distribution and ghosting.
     // So far every processor only knows about his nodes
-        
+
     newdis->ExportColumnNodes(*constraintnodecolmap);
-  
+
     RefCountPtr< Epetra_Map > constraintelerowmap;
     RefCountPtr< Epetra_Map > constraintelecolmap;
-  
+
     // now we have all elements in a linear map roweles
     // build resonable maps for elements from the
     // already valid and final node maps
     // note that nothing is actually redistributed in here
     newdis->BuildElementRowColumn(*constraintnoderowmap, *constraintnodecolmap, constraintelerowmap, constraintelecolmap);
-  
+
     // we can now export elements to resonable row element distribution
     newdis->ExportRowElements(*constraintelerowmap);
-  
+
     // export to the column map / create ghosting of elements
     newdis->ExportColumnElements(*constraintelecolmap);
-  
+
   }
-   
+
   newdis->FillComplete();
-  
+
   return newdis;
 }
 
@@ -677,7 +677,7 @@ RCP<Epetra_Map> ConstrManager::ComputeNodeColMap(
         ) const
 {
     const Epetra_Map* oldcolnodemap = sourcedis->NodeColMap();
-    
+
     vector<int> mycolnodes(oldcolnodemap->NumMyElements());
     oldcolnodemap->MyGlobalElements (&mycolnodes[0]);
     for (int inode = 0; inode != constraintdis->NumMyColNodes(); ++inode)
@@ -689,7 +689,7 @@ RCP<Epetra_Map> ConstrManager::ComputeNodeColMap(
             mycolnodes.push_back(gid);
         }
     }
-        
+
     // now reconstruct the extended colmap
     RCP<Epetra_Map> newcolnodemap = rcp(new Epetra_Map(-1,
                                        mycolnodes.size(),
@@ -699,8 +699,8 @@ RCP<Epetra_Map> ConstrManager::ComputeNodeColMap(
     return newcolnodemap;
 }
 
-void ConstrManager::SetupMPC(vector<double>& amplit, 
-    vector<int>& IDs, 
+void ConstrManager::SetupMPC(vector<double>& amplit,
+    vector<int>& IDs,
     const vector<DRT::Condition*>& constrcond,
     Teuchos::ParameterList& p)
 {
@@ -735,7 +735,7 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
                               RCP<Epetra_Vector>    systemvector3,
                               vector<DRT::Condition*>& constrcond)
 {
-  
+
   if (!(disc->Filled())) dserror("FillComplete() was not called");
   if (!(disc->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
 
@@ -753,7 +753,7 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
   Epetra_SerialDenseVector elevector2;
   Epetra_SerialDenseVector elevector3;
 
-  
+
   // loop over column elements
   const int numcolele = disc->NumMyColElements();
   for (int i=0; i<numcolele; ++i)

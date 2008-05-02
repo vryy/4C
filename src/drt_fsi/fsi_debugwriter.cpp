@@ -4,7 +4,6 @@
 
 #include "fsi_debugwriter.H"
 
-#include "../drt_adapter/adapter_create_boundary.H"
 #include "../drt_adapter/adapter_utils.H"
 
 #include "../drt_io/io_control.H"
@@ -34,7 +33,7 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 FSI::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
 {
-  dis_ = CreateDiscretizationFromCondition(dis,"FSICoupling","boundary","BELE3");
+  dis_ = ADAPTER::UTILS::CreateDiscretizationFromCondition(dis,"FSICoupling","boundary","BELE3");
   dis_->FillComplete();
 
   coup_.SetupCoupling(*dis,

@@ -31,8 +31,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../drt_adapter/adapter_create_ale.H"
-#include "../drt_adapter/adapter_create_boundary.H"
+#include "../drt_adapter/adapter_utils.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -58,7 +57,7 @@ void fluid_ale_drt()
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
-    CreateAleDiscretization();
+    ADAPTER::UTILS::CreateAleDiscretization();
 
   Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
 
@@ -86,7 +85,7 @@ void fluid_freesurf_drt()
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
-    CreateAleDiscretization();
+    ADAPTER::UTILS::CreateAleDiscretization();
 
   Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
 
@@ -114,7 +113,7 @@ void fsi_ale_drt()
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
-    CreateAleDiscretization();
+    ADAPTER::UTILS::CreateAleDiscretization();
 
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 

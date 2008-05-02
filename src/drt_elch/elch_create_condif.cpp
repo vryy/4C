@@ -10,8 +10,9 @@
 
 #include <string>
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_fsi/fsi_utils.H"
 #include "../drt_lib/drt_utils.H"
+
+#include "../drt_adapter/adapter_utils.H"
 
 // we need to know all necessary element types for the condif mesh creation
 #include "../drt_f2/fluid2.H"
@@ -30,7 +31,7 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
 
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
   RefCountPtr<DRT::Discretization> condifdis   = DRT::Problem::Instance()->Dis(disnumcdf,0);
-  
+
   if (!fluiddis->Filled()) fluiddis->FillComplete();
 
   // is the second discretization really empty?
@@ -97,7 +98,7 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
       // not belong to this processor
       remove_copy_if(actele->NodeIds(), actele->NodeIds()+actele->NumNode(),
                      inserter(rownodeset, rownodeset.begin()),
-                     not1(FSI::UTILS::MyGID(noderowmap)));
+                     not1(ADAPTER::UTILS::MyGID(noderowmap)));
 
       copy(actele->NodeIds(), actele->NodeIds()+actele->NumNode(),
            inserter(colnodeset, colnodeset.begin()));
@@ -195,7 +196,7 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
 
     // add new condif element to discretization
     condifdis->AddElement(condifele);
-    
+
   }
 
   // conditions
@@ -221,7 +222,7 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
     // conditions at the condif.
     condifdis->SetCondition("InitialField", rcp(new DRT::Condition(*cond[i])));
   }
-  
+
 #endif
 
   // now care about the parallel distribution
