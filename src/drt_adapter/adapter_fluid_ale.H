@@ -25,7 +25,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid_moving_boundary.H"
 #include "adapter_fluid_base_algorithm.H"
 #include "adapter_ale.H"
-#include "../drt_fsi/fsi_coupling.H"
+#include "adapter_coupling.H"
 
 namespace ADAPTER
 {
@@ -98,13 +98,13 @@ namespace ADAPTER
     AleBaseAlgorithm ale_;
 
     /// coupling of fluid and ale (whole field)
-    FSI::Coupling               coupfa_;
+    Coupling               coupfa_;
 
     /// coupling of fluid and ale (interface only)
-    FSI::Coupling               icoupfa_;
+    Coupling               icoupfa_;
 
     /// coupling of fluid and ale at the free surface
-    FSI::Coupling               fscoupfa_;
+    Coupling               fscoupfa_;
 
   };
 

@@ -5,7 +5,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "fsi_coupling.H"
+#include "../drt_adapter/adapter_coupling.H"
 
 namespace IO
 {
@@ -46,7 +46,7 @@ namespace FSI
     Teuchos::RCP<DRT::Discretization> dis_;
 
     /// coupling of field discretization and interface discretization
-    Coupling coup_;
+    ADAPTER::Coupling coup_;
 
     /// current control file
     Teuchos::RCP<IO::OutputControl> control_;

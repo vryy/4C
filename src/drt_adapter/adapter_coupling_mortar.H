@@ -10,7 +10,7 @@
 #include "../drt_lib/drt_discret.H"
 
 
-namespace FSI
+namespace ADAPTER
 {
   /// Couple nonmatching FSI interfaces using mortar method (trilinos::Moertel)
   /*!
@@ -85,7 +85,7 @@ namespace FSI
     RefCountPtr<Epetra_CrsMatrix> Dinv_;
     RefCountPtr<Epetra_CrsMatrix> M_;
   };
-  
+
   /// collect all local nodes and elements in a condition, e.g. an interface
   void FindInterfaceObjects(
     const DRT::Discretization& dis,

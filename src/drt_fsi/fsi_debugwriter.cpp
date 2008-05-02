@@ -4,8 +4,7 @@
 
 #include "fsi_debugwriter.H"
 
-#include "fsi_create_boundary.H"
-
+#include "../drt_adapter/adapter_create_boundary.H"
 #include "../drt_adapter/adapter_utils.H"
 
 #include "../drt_io/io_control.H"

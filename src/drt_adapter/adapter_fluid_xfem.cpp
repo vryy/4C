@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "adapter_fluid_xfem.H"
-#include "../drt_fsi/fsi_create_boundary.H"
+#include "adapter_create_boundary.H"
 
 
 /*----------------------------------------------------------------------*/

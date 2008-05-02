@@ -15,7 +15,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "adapter_xfluid_impl.H"
-#include "../drt_fsi/fsi_create_boundary.H"
+#include "adapter_create_boundary.H"
 
 using namespace Teuchos;
 

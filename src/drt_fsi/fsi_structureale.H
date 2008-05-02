@@ -33,15 +33,16 @@ Maintainer: Thomas Kloeppel
 #include <vector>
 
 #include "fsi_algorithm.H"
-#include "fsi_coupling.H"
-#include "fsi_coupling_mortar.H"
+
+#include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/adapter_coupling_mortar.H"
 
 
 /// FSI: Fluid Structure Interaction
 /*!
   This is the place where we bring fluid and structure together.
  */
-namespace FSI 
+namespace FSI
 {
 
 /// Coupling structure and ALE, while keeping fluid velocities at zero
@@ -65,13 +66,13 @@ protected:
 private:
 
   void Solve();
-  
+
   Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
-    
+
   /// interface structural operator
 
   /// coupling of structure and fluid at the interface, with mortar. Experimental!
-  CouplingMortar         coupsfm_;
+  ADAPTER::CouplingMortar         coupsfm_;
 
   /// nodes at the fluid-structure interface match
   bool matchingnodes_;

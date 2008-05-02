@@ -25,7 +25,7 @@ Maintainer: Ulrich Kuettler
 
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid_ale.H"
-#include "fsi_coupling.H"
+#include "../drt_adapter/adapter_coupling.H"
 
 
 namespace FSI
@@ -110,19 +110,16 @@ namespace FSI
 
     //@}
 
-    Coupling& StructureFluidCoupling() { return coupsf_; }
+    ADAPTER::Coupling& StructureFluidCoupling() { return coupsf_; }
     //Coupling& StructureAleCoupling()   { return coupsa_; }
 
-    const Coupling& StructureFluidCoupling() const { return coupsf_; }
+    const ADAPTER::Coupling& StructureFluidCoupling() const { return coupsf_; }
     //const Coupling& StructureAleCoupling()   const { return coupsa_; }
 
   private:
 
     /// coupling of structure and fluid at the interface
-    Coupling               coupsf_;
-
-    /// coupling of structure and ale at the interface
-    //Coupling               coupsa_;
+    ADAPTER::Coupling               coupsf_;
 
     /// comunication (mainly for screen output)
     Epetra_Comm& comm_;

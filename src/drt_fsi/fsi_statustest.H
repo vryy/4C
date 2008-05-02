@@ -26,7 +26,7 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Import.h>
 #include <Epetra_Vector.h>
 
-#include "fsi_coupling.H"
+#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_lib/linalg_mapextractor.H"
 
 namespace NOX

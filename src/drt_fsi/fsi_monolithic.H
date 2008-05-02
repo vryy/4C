@@ -6,8 +6,7 @@
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_adapter/adapter_ale.H"
-
-#include "fsi_coupling.H"
+#include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/linalg_mapextractor.H"
@@ -103,24 +102,24 @@ namespace FSI
 
     //@}
 
-    Coupling& StructureFluidCoupling() { return coupsf_; }
-    Coupling& StructureAleCoupling()   { return coupsa_; }
-    Coupling& FluidAleCoupling()       { return coupfa_; }
+    ADAPTER::Coupling& StructureFluidCoupling() { return coupsf_; }
+    ADAPTER::Coupling& StructureAleCoupling()   { return coupsa_; }
+    ADAPTER::Coupling& FluidAleCoupling()       { return coupfa_; }
 
-    const Coupling& StructureFluidCoupling() const { return coupsf_; }
-    const Coupling& StructureAleCoupling()   const { return coupsa_; }
-    const Coupling& FluidAleCoupling()       const { return coupfa_; }
+    const ADAPTER::Coupling& StructureFluidCoupling() const { return coupsf_; }
+    const ADAPTER::Coupling& StructureAleCoupling()   const { return coupsa_; }
+    const ADAPTER::Coupling& FluidAleCoupling()       const { return coupfa_; }
 
   private:
 
     /// coupling of structure and fluid at the interface
-    Coupling               coupsf_;
+    ADAPTER::Coupling               coupsf_;
 
     /// coupling of structure and ale at the interface
-    Coupling               coupsa_;
+    ADAPTER::Coupling               coupsa_;
 
     /// coupling of fluid and ale
-    Coupling               coupfa_;
+    ADAPTER::Coupling               coupfa_;
 
     /// comunication (mainly for screen output)
     Epetra_Comm& comm_;

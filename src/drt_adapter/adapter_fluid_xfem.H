@@ -24,7 +24,7 @@ Maintainer: Axel Gerstenberger
 
 #include "adapter_fluid_moving_boundary.H"
 #include "adapter_fluid_base_algorithm.H"
-#include "../drt_fsi/fsi_coupling.H"
+#include "adapter_coupling.H"
 
 namespace ADAPTER
 {
@@ -97,7 +97,7 @@ namespace ADAPTER
     LINALG::MapExtractor                   interface_;
 
     /// coupling of interface in to parallel distributions
-    FSI::Coupling               icoupsf_;
+    Coupling               icoupsf_;
 
     Teuchos::RCP<DRT::Discretization>      boundarydis_solidparalleldistrib_;
     //Teuchos::RCP<DRT::Discretization>      boundarydis_fluidparalleldistrib_;

@@ -22,9 +22,9 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
 
   // right now we use matching meshes at the interface
 
-  FSI::Coupling& coupsf = StructureFluidCoupling();
-  FSI::Coupling& coupsa = StructureAleCoupling();
-  FSI::Coupling& coupfa = FluidAleCoupling();
+  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   // structure to fluid
 
@@ -251,7 +251,7 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   // extract Jacobian matrices and put them into composite system
   // matrix W
 
-  const FSI::Coupling& coupsf = StructureFluidCoupling();
+  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   //const FSI::Coupling& coupsa = StructureAleCoupling();
 
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
@@ -525,7 +525,7 @@ void FSI::MonolithicOverlap::AddFluidInterface(double scale,
 {
   Teuchos::TimeMonitor monitor(*fluidinterfacetimer_);
 
-  const FSI::Coupling& coupsf = StructureFluidCoupling();
+  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
 
   Teuchos::RCP<LINALG::SparseMatrix> pfgg = coupsf.SlaveToPermSlave(fgg);
   Teuchos::RCP<Epetra_CrsMatrix> perm_fgg = pfgg->EpetraMatrix();
@@ -636,7 +636,7 @@ FSI::MonolithicOverlap::ConvertFgiRowmap(const LINALG::SparseMatrix& fgi,
 {
   Teuchos::TimeMonitor monitor(*fgirowmaptimer_);
 
-  const FSI::Coupling& coupsf = StructureFluidCoupling();
+  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
 
   // redistribute fluid matrix to match distribution of structure matrix
 

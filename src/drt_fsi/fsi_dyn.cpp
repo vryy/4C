@@ -31,8 +31,8 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "fsi_create_ale.H"
-#include "fsi_create_boundary.H"
+#include "../drt_adapter/adapter_create_ale.H"
+#include "../drt_adapter/adapter_create_boundary.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |

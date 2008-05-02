@@ -185,8 +185,6 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/condifresulttest.o
 # ----------------------------- drt version of fluid structure interaction
 OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
-                src/drt_fsi/fsi_create_ale.o \
-                src/drt_fsi/fsi_create_boundary.o \
                 src/drt_fsi/fsi_algorithm.o \
                 src/drt_fsi/fsi_partitioned.o \
                 src/drt_fsi/fsi_dirichletneumann.o \
@@ -206,8 +204,6 @@ OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
 		src/drt_fsi/fsi_nox_mpe.o \
 		src/drt_fsi/fsi_nox_epsilon.o \
 		src/drt_fsi/fsi_nox_group.o \
-                src/drt_fsi/fsi_coupling.o \
-		src/drt_fsi/fsi_coupling_mortar.o \
                 src/drt_fsi/fsi_utils.o \
                 src/drt_fsi/fsi_debugwriter.o \
                 src/drt_fsi/fsi_statustest.o \
@@ -227,7 +223,11 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_ale_resulttest.o \
                 src/drt_adapter/adapter_condif.o \
                 src/drt_adapter/adapter_condif_genalpha.o \
-                src/drt_adapter/adapter_condif_base_algorithm.o
+                src/drt_adapter/adapter_condif_base_algorithm.o \
+                src/drt_adapter/adapter_create_ale.o \
+                src/drt_adapter/adapter_create_boundary.o \
+                src/drt_adapter/adapter_coupling.o \
+		src/drt_adapter/adapter_coupling_mortar.o
 #                pss_full
 OBJS_PSS      = src/pss_full/pss_am.o \
                 src/pss_full/pss_ds.o \

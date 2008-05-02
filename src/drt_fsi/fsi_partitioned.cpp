@@ -38,7 +38,7 @@ FSI::Partitioned::Partitioned(Epetra_Comm& comm)
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   SetDefaultParameters(fsidyn,noxparameterlist_);
 
-  FSI::Coupling& coupsf = StructureFluidCoupling();
+  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
 
   if (Teuchos::getIntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
@@ -847,7 +847,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceVelocity(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
-  const FSI::Coupling& coupsf = StructureFluidCoupling();
+  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   if (matchingnodes_)
   {
     return coupsf.MasterToSlave(iv);
@@ -863,7 +863,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructToFluid(Teuchos::RCP<Epetra_
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidToStruct(Teuchos::RCP<Epetra_Vector> iv)
 {
-  const FSI::Coupling& coupsf = StructureFluidCoupling();
+  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   if (matchingnodes_)
   {
     return coupsf.SlaveToMaster(iv);

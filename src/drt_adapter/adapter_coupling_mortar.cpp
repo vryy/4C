@@ -1,7 +1,7 @@
 
 #ifdef CCADISCRET
 
-#include "fsi_coupling_mortar.H"
+#include "adapter_coupling_mortar.H"
 
 #include <mrtr_manager.H>
 
@@ -35,12 +35,12 @@ extern struct _GENPROB genprob;
 
 using namespace std;
 
-FSI::CouplingMortar::CouplingMortar()
+ADAPTER::CouplingMortar::CouplingMortar()
 {
 }
 
 
-void FSI::CouplingMortar::Setup( const DRT::Discretization& masterdis,
+void ADAPTER::CouplingMortar::Setup( const DRT::Discretization& masterdis,
                                  const DRT::Discretization& slavedis,
                                  Epetra_Comm& comm )
 {
@@ -389,7 +389,7 @@ void FSI::CouplingMortar::Setup( const DRT::Discretization& masterdis,
 /*
  * Compute sv = -D^{-1}M(mv)
  */
-RefCountPtr<Epetra_Vector> FSI::CouplingMortar::MasterToSlave(
+RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave(
     RefCountPtr<Epetra_Vector> mv )
 {
     dsassert( masterdofmap_->SameAs( mv->Map() ),
@@ -420,7 +420,7 @@ RefCountPtr<Epetra_Vector> FSI::CouplingMortar::MasterToSlave(
 /*
  * Compute mv = -M^{T}(sv)
  */
-RefCountPtr<Epetra_Vector> FSI::CouplingMortar::SlaveToMaster(
+RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster(
     RefCountPtr<Epetra_Vector> sv )
 {
     dsassert( slavedofmap_->SameAs( sv->Map() ),
@@ -440,7 +440,7 @@ RefCountPtr<Epetra_Vector> FSI::CouplingMortar::SlaveToMaster(
     return mv;
 }
 
-void FSI::FindInterfaceObjects(
+void ADAPTER::FindInterfaceObjects(
     const DRT::Discretization& dis,
     map<int, DRT::Node*>& nodes,
     map<int, RefCountPtr<DRT::Element> >& elements,

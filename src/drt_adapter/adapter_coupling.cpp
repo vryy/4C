@@ -1,7 +1,7 @@
 
 #ifdef CCADISCRET
 
-#include "fsi_coupling.H"
+#include "adapter_coupling.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/linalg_utils.H"
 
@@ -19,14 +19,14 @@ using namespace std;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::Coupling::Coupling()
+ADAPTER::Coupling::Coupling()
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
+void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
                                            const LINALG::MapExtractor& master,
                                            const DRT::Discretization& slavedis,
                                            const LINALG::MapExtractor& slave,
@@ -68,7 +68,7 @@ void FSI::Coupling::SetupConditionCoupling(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
                                   const DRT::Discretization& slavedis,
                                   const std::vector<int>& masternodes,
                                   const std::vector<int>& slavenodes)
@@ -94,7 +94,7 @@ void FSI::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
                                   const DRT::Discretization& slavedis,
                                   const Epetra_Map& masternodes,
                                   const Epetra_Map& slavenodes)
@@ -124,7 +124,7 @@ void FSI::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::SetupCouplingCheap(const DRT::Discretization& masterdis,
+void ADAPTER::Coupling::SetupCouplingCheap(const DRT::Discretization& masterdis,
                                   const DRT::Discretization& slavedis,
                                   const Epetra_Map& masternodes,
                                   const Epetra_Map& slavenodes)
@@ -153,7 +153,7 @@ void FSI::Coupling::SetupCouplingCheap(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::MatchNodes(const DRT::Discretization& masterdis,
+void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
                                const DRT::Discretization& slavedis,
                                std::vector<int>& masternodes,
                                std::vector<int>& permslavenodes,
@@ -199,7 +199,7 @@ void FSI::Coupling::MatchNodes(const DRT::Discretization& masterdis,
   swap(masternodes,patchedmasternodes);
 }
 
-void FSI::Coupling::MatchNodesCheap(const DRT::Discretization& masterdis,
+void ADAPTER::Coupling::MatchNodesCheap(const DRT::Discretization& masterdis,
                                const DRT::Discretization& slavedis,
                                const std::vector<int>& masternodes,
                                std::vector<int>& permslavenodes,
@@ -213,7 +213,7 @@ void FSI::Coupling::MatchNodesCheap(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
+void ADAPTER::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
                                    const DRT::Discretization& slavedis,
                                    Teuchos::RCP<Epetra_Map> masternodemap,
                                    Teuchos::RCP<Epetra_Map> slavenodemap,
@@ -255,7 +255,7 @@ void FSI::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::BuildDofMaps(const DRT::Discretization& dis,
+void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
                                  RCP<const Epetra_Map> nodemap,
                                  RCP<const Epetra_Map> permnodemap,
                                  RCP<const Epetra_Map>& dofmap,
@@ -308,7 +308,7 @@ void FSI::Coupling::BuildDofMaps(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_Vector> mv) const
+Teuchos::RCP<Epetra_Vector> ADAPTER::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_Vector> mv) const
 {
   Teuchos::RCP<Epetra_Vector> sv =
     Teuchos::rcp(new Epetra_Vector(*slavedofmap_));
@@ -321,7 +321,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Coupling::MasterToSlave(Teuchos::RCP<const Epet
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_Vector> sv) const
+Teuchos::RCP<Epetra_Vector> ADAPTER::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_Vector> sv) const
 {
   Teuchos::RCP<Epetra_Vector> mv =
     Teuchos::rcp(new Epetra_Vector(*masterdofmap_));
@@ -334,7 +334,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Coupling::SlaveToMaster(Teuchos::RCP<const Epet
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> FSI::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv) const
+Teuchos::RCP<Epetra_MultiVector> ADAPTER::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv) const
 {
   Teuchos::RCP<Epetra_MultiVector> sv =
     Teuchos::rcp(new Epetra_MultiVector(*slavedofmap_,mv->NumVectors()));
@@ -347,7 +347,7 @@ Teuchos::RCP<Epetra_MultiVector> FSI::Coupling::MasterToSlave(Teuchos::RCP<const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> FSI::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv) const
+Teuchos::RCP<Epetra_MultiVector> ADAPTER::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv) const
 {
   Teuchos::RCP<Epetra_MultiVector> mv =
     Teuchos::rcp(new Epetra_MultiVector(*masterdofmap_,sv->NumVectors()));
@@ -360,7 +360,7 @@ Teuchos::RCP<Epetra_MultiVector> FSI::Coupling::SlaveToMaster(Teuchos::RCP<const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
+void ADAPTER::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
 #ifdef DEBUG
   if (not mv->Map().SameAs(*masterdofmap_))
@@ -382,7 +382,7 @@ void FSI::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv, Teu
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
+void ADAPTER::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
 #ifdef DEBUG
   if (not mv->Map().SameAs(*masterdofmap_))
@@ -404,7 +404,7 @@ void FSI::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teu
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::FillSlaveToMasterMap(std::map<int,int>& rowmap) const
+void ADAPTER::Coupling::FillSlaveToMasterMap(std::map<int,int>& rowmap) const
 {
   for (int i=0; i<slavedofmap_->NumMyElements(); ++i)
   {
@@ -415,7 +415,7 @@ void FSI::Coupling::FillSlaveToMasterMap(std::map<int,int>& rowmap) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> FSI::Coupling::MasterToPermMaster(const LINALG::SparseMatrix& sm) const
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::MasterToPermMaster(const LINALG::SparseMatrix& sm) const
 {
   Teuchos::RCP<Epetra_CrsMatrix> permsm = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*permmasterdofmap_,sm.MaxNumEntries()));
 
@@ -441,7 +441,7 @@ Teuchos::RCP<LINALG::SparseMatrix> FSI::Coupling::MasterToPermMaster(const LINAL
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> FSI::Coupling::SlaveToPermSlave(const LINALG::SparseMatrix& sm) const
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::SlaveToPermSlave(const LINALG::SparseMatrix& sm) const
 {
 #ifdef DEBUG
   if (not sm.RowMap().SameAs(*slavedofmap_))
@@ -474,7 +474,7 @@ Teuchos::RCP<LINALG::SparseMatrix> FSI::Coupling::SlaveToPermSlave(const LINALG:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::Coupling::SetupCouplingMatrices(const Epetra_Map& masterdomainmap, const Epetra_Map& slavedomainmap)
+void ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& masterdomainmap, const Epetra_Map& slavedomainmap)
 {
   // we always use the masterdofmap for the domain
   matmm_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*MasterDofMap(),1,true));

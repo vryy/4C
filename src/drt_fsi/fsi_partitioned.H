@@ -35,8 +35,9 @@ Maintainer: Ulrich Kuettler
 #include <vector>
 
 #include "fsi_algorithm.H"
-#include "fsi_coupling.H"
-#include "fsi_coupling_mortar.H"
+
+#include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/adapter_coupling_mortar.H"
 
 
 /// FSI: Fluid Structure Interaction
@@ -142,7 +143,7 @@ private:
   void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
   /// coupling of structure and fluid at the interface, with mortar. Experimental!
-  CouplingMortar         coupsfm_;
+  ADAPTER::CouplingMortar         coupsfm_;
 
   /// interface displacement from time step begin
   Teuchos::RCP<Epetra_Vector> idispn_;

@@ -32,7 +32,7 @@ FSI::StructureALE::StructureALE(Epetra_Comm& comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
-  FSI::Coupling& coupsf = StructureFluidCoupling();
+  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
 
   if (Teuchos::getIntegralValue<int>(fsidyn,"COUPMETHOD"))
   {
@@ -91,7 +91,7 @@ void FSI::StructureALE::Solve()
 
 Teuchos::RCP<Epetra_Vector> FSI::StructureALE::StructToFluid(Teuchos::RCP<Epetra_Vector> iv)
 {
-  FSI::Coupling& coupsf = StructureFluidCoupling();
+  ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   if (matchingnodes_)
   {
     return coupsf.MasterToSlave(iv);

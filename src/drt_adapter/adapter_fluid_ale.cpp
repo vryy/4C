@@ -24,7 +24,7 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
-                                          std::string condname)
+                            std::string condname)
   : fluid_(prbdyn,true),
     ale_()
 {

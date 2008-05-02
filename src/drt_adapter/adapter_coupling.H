@@ -16,10 +16,10 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_systemmatrix.H"
-#include "fsi_utils.H"
+#include "../drt_fsi/fsi_utils.H"
 
 
-namespace FSI
+namespace ADAPTER
 {
 
   class ConditionDofMap;
@@ -138,7 +138,7 @@ namespace FSI
                        const DRT::Discretization& slavedis,
                        const Epetra_Map& masternodes,
                        const Epetra_Map& slavenodes);
-    
+
     //@}
 
     /** \name Conversion between master and slave */
@@ -239,7 +239,7 @@ namespace FSI
                     std::vector<int>& masternodes,
                     std::vector<int>& permslavenodes,
                     const std::vector<int>& slavenodes);
-    
+
     /// do the actual matching of the master <-> slave pairs
     /*!
       If we already know the partners on the other side then we can do this a lot cheaper without a tree
