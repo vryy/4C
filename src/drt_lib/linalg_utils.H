@@ -206,6 +206,7 @@ namespace LINALG
                       Epetra_SerialDenseVector& L,
                       const char eigv,
                       const bool postproc=false);
+  
   /*!
   \brief Explicit inverse and determinant of nonsymmetric 3x3 matrix
 
@@ -213,6 +214,21 @@ namespace LINALG
   \param dim (in) :  Dimension of matrix
   */
   double NonsymInverse3x3(Epetra_SerialDenseMatrix& A);
+
+  /*!
+  \brief Determinant of a nonsymmetric matrix using SVD
+
+  \return the determinant of the matrix A if nonzero
+  */
+  double DeterminantSVD(const Epetra_SerialDenseMatrix& A);
+  
+  
+  /*!
+  \brief Determinant of a nonsymmetric matrix using LU
+
+  \return the determinant of the matrix A
+  */
+  double DeterminantLU(const Epetra_SerialDenseMatrix& A);
 
   /*!
   \brief Invert a symmetric dim*dim square matrix
