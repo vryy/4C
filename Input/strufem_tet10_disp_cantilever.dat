@@ -54,7 +54,7 @@ RESEVRYSTRS  1
 RESTARTEVRY  20
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     0.0025
-NUMSTEP      300
+NUMSTEP      30
 MAXTIME      0.75
 BETA         0.291
 GAMMA        0.581
@@ -10924,7 +10924,10 @@ MAT       1 MAT_Struct_NeoHooke  YOUNG 1000000.0 NUE 0.45 DENS 0.001
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  1.760857515107355908e+01 TOLERANCE 1e-10
+// with NUMSTEP=300
+//STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  1.760857515107355908e+01 TOLERANCE 1e-10
+// with NUMSTEP=30
+STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  -1.640964400024087055 TOLERANCE 1e-10
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 2.0

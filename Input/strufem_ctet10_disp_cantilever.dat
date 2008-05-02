@@ -54,7 +54,7 @@ RESEVRYSTRS  1
 RESTARTEVRY  20
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     0.0025
-NUMSTEP      300
+NUMSTEP      30
 MAXTIME      0.75
 BETA         0.291
 GAMMA        0.581
