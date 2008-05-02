@@ -84,4 +84,11 @@ void ADAPTER::ConDifImplicit::Solve()
   condif_.Solve();
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> ADAPTER::ConDifImplicit::CreateFieldTest()
+{
+  return Teuchos::rcp(new ConDifResultTest(condif_));
+}
+
 #endif  // #ifdef CCADISCRET

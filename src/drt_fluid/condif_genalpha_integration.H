@@ -52,6 +52,7 @@ using namespace Teuchos;
  */
 class CondifGenAlphaIntegration
 {
+  friend class ConDifResultTest;
 
 public:
 

@@ -38,6 +38,8 @@ Maintainer: Volker Gravemeier
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_condif_base_algorithm.H"
 
+#include "../drt_lib/drt_resulttest.H"
+#include "condifresulttest.H"
 
 /*----------------------------------------------------------------------*
   |                                                       m.gee 06/01    |
@@ -58,6 +60,13 @@ extern struct _GENPROB     genprob;
  *----------------------------------------------------------------------*/
 void dyn_condif_drt()
 {
+  // create a communicator
+#ifdef PARALLEL
+  Epetra_MpiComm comm(MPI_COMM_WORLD);
+#else
+  Epetra_SerialComm comm;
+#endif
+
   // create instance of convection diffusion basis algorithm
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
   Teuchos::RCP<ADAPTER::ConDifBaseAlgorithm> condifonly = rcp(new ADAPTER::ConDifBaseAlgorithm(fdyn)); 
@@ -78,6 +87,11 @@ void dyn_condif_drt()
 
   // solve the convection-diffusion problem
   (condifonly->ConDifField()).Integrate();
+
+  // do result test if required
+  DRT::ResultTestManager testmanager(comm);
+  testmanager.AddFieldTest(condifonly->ConDifField().CreateFieldTest());
+  testmanager.TestAll();
 
   return;
 

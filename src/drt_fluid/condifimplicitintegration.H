@@ -65,6 +65,7 @@ using namespace Teuchos;
 */
 class CondifImplicitTimeInt
 {
+  friend class ConDifResultTest;
 
 public:
 

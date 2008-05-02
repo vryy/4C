@@ -26,7 +26,7 @@ Maintainer: Georg Bauer
 #include <Epetra_Operator.h>
 
 #include "../drt_fluid/condif_genalpha_integration.H"
-
+#include "../drt_fluid/condifresulttest.H"
 #include "adapter_condif_genalpha.H"
 #include "adapter_condif.H"
 #include "adapter_utils.H"
@@ -58,6 +58,7 @@ namespace ADAPTER {
     void ReadRestart(int step);
     void Integrate();
     void Solve();
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
   private:
 

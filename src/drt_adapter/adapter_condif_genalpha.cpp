@@ -77,4 +77,11 @@ void ADAPTER::ConDifGenAlpha::Solve()
   dserror("Gen. Alpha of convection-diffusion not yet supported");
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::ResultTest> ADAPTER::ConDifGenAlpha::CreateFieldTest()
+{
+  return Teuchos::rcp(new ConDifResultTest(condif_));
+}
+
 #endif  // #ifdef CCADISCRET

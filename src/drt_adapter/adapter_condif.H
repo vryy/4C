@@ -26,6 +26,7 @@ Maintainer: Georg Bauer
 #include <Epetra_Operator.h>
 
 #include "../drt_fluid/condifimplicitintegration.H"
+#include "../drt_fluid/condifresulttest.H"
 
 
 /// Algorithm adapter classes for use in multi-field problems
@@ -63,6 +64,8 @@ namespace ADAPTER {
     virtual void SetVelocityField(int veltype, int velfuncno) = 0;
     virtual void SetVelocityField(int veltype, RCP<const Epetra_Vector> extvel) = 0;
 
+    /// create result test for encapulated fluid algorithm
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
   };
   
 #if 1
@@ -83,6 +86,8 @@ namespace ADAPTER {
       virtual void Solve();
       virtual void SetVelocityField(int veltype, int velfuncno);
       virtual void SetVelocityField(int veltype, RCP<const Epetra_Vector> extvel);
+
+      virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
     
     private:
 

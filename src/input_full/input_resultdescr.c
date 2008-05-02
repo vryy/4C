@@ -86,9 +86,15 @@ void inp_resultdescr()
               if (ierr==1) {
                 resultdescr[i].field = thermal;
               }
-              else {
-                dserror("Unknown field type");
-              }
+	      else {
+                frchk("CONDIF",&ierr);
+                if (ierr==1) {
+                  resultdescr[i].field = condif;
+                }
+                else {
+                  dserror("Unknown field type");
+                }
+	      }
             }
           }
         }

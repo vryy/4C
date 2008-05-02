@@ -178,10 +178,11 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/condif_genalpha_integration.o \
                 src/drt_fluid/turbulence_statistics.o \
                 src/drt_fluid/turbulence_statistics_ldc.o \
-		src/drt_fluid/fluidresulttest.o \
-		src/drt_fluid/xfluidresulttest.o \
-		src/drt_fluid/vm3_solver.o \
-		src/drt_fluid/avms_solver.o
+                src/drt_fluid/fluidresulttest.o \
+                src/drt_fluid/xfluidresulttest.o \
+                src/drt_fluid/vm3_solver.o \
+                src/drt_fluid/avms_solver.o \
+                src/drt_fluid/condifresulttest.o
 # ----------------------------- drt version of fluid structure interaction
 OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_create_ale.o \
