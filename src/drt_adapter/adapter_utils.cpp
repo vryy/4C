@@ -18,6 +18,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_coupling_mortar.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils.H"
 
 // we need to know all element types for the ale mesh creation
 #include "../drt_f2/fluid2.H"
