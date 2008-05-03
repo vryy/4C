@@ -21,7 +21,7 @@ Input/c1_mat_itskov.dat                                 x        -        x     
 Input/c1_mat_hyperpolyconvex.dat                        x        -        x        -        -        -
 Input/c1_surftension.dat            	       	 	x	 x	  x	   x        -	     -
 Input/condif2_straight_convection_direct.dat            x        x        -        -        -        -
-Input/condif2_straight_convection_vm3gls.dat            x        x        x        x        -        -
+Input/condif2_straight_convection_vm3gls.dat            x        x        -        -        -        -
 Input/dyn_shell_dirich.dat                              x        x        x        x        -        -
 Input/dyn_shell_neum.dat                                x        x        x        x        -        -
 Input/f2_channel_neumann.dat                            x        x        x        x        -        -
