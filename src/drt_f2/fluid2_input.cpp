@@ -22,16 +22,6 @@ Maintainer: Peter Gamnitzer
 extern "C"
 {
 #include "../headers/standardtypes.h"
-/*!----------------------------------------------------------------------
-  \brief file pointers
-
-  <pre>                                                         m.gee 8/00
-  This structure struct _FILES allfiles is defined in input_control_global.c
-  and the type is in standardtypes.h
-  It holds all file pointers and some variables needed for the FRSYSTEM
-  </pre>
- *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 }
 #include "fluid2.H"
 #include "../drt_lib/drt_utils.H"

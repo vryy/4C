@@ -19,20 +19,7 @@ Maintainer: Moritz Frenzel
 #include "mpi.h"
 #endif
 
-extern "C"
-{
-/*!----------------------------------------------------------------------
-  \brief file pointers
-
-  <pre>                                                         m.gee 8/00
-  This structure struct _FILES allfiles is defined in input_control_global.c
-  and the type is in standardtypes.h
-  It holds all file pointers and some variables needed for the FRSYSTEM
-  </pre>
- *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-}
-#include "so_shw6.H"
+#include "so_shw6.H" //**
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                                maf 04/07|

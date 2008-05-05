@@ -21,19 +21,6 @@ writen by : Alexander Volf
 #include "mpi.h"
 #endif
 
-extern "C"
-{
-/*!----------------------------------------------------------------------
-  \brief file pointers
-
-  <pre>                                                         m.gee 8/00
-  This structure struct _FILES allfiles is defined in input_control_global.c
-  and the type is in standardtypes.h
-  It holds all file pointers and some variables needed for the FRSYSTEM
-  </pre>
- *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-}
 #include "so_tet4.H" //**
 
 /*----------------------------------------------------------------------**########
