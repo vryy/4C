@@ -28,17 +28,6 @@ extern struct _MATERIAL  *mat;
 extern "C"
 {
 #include "../headers/standardtypes.h"
-	
-/*!----------------------------------------------------------------------
-  \brief file pointers
-
-  <pre>                                                         mgit 03/07
-  This structure struct _FILES allfiles is defined in input_control_global.c
-  and the type is in standardtypes.h
-  It holds all file pointers and some variables needed for the FRSYSTEM
-  </pre>
- *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
 }
 
 
@@ -55,7 +44,7 @@ bool DRT::ELEMENTS::Beam3::ReadElement()
   //note: BACI intern type is LINE2, but gid input files work with LIN2
   frchk("LIN2",&ierr);
   // two figures have to be read by frint
-  int nnode=2;
+  const int nnode=2;
   // provide an array of length two in order to store the two node IDs read by frint_n
   int nodes[nnode];
   frint_n("LIN2",nodes,nnode,&ierr);
