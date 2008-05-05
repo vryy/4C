@@ -34,6 +34,7 @@ Maintainer: Alexander Popp
 /* Contact algorithm parameters                                         */
 /************************************************************************/
 
+#define CONTACTCN 1.0            /* weighting factor cn for inexact PDASS */
 #define CONTACTPROJTOL 0.05      /* projection tol. for overlap decision */
 #define CONTACTPROJLIM 1.0e-8    /* no problems with exact node projections */
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton */

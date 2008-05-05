@@ -1640,28 +1640,51 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CNode* cnode = static_cast<CNode*>(node);
       
+      // get weighting factor from nodal D-map
+      double wii;
+      if ((int)((cnode->GetD()).size())==0)
+        wii = 0.0;
+      else
+       wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+      
+      // compute incr. normal displacement and weighted gap
+      double nincr = 0.0;
+      for (int k=0;k<3;++k)
+        nincr += wii * cnode->n()[k] * (*incrjump_)[incrjump_->Map().LID(2*gid)+k];
+      double wgap = (*g_)[g_->Map().LID(gid)];
+      
+      if (cnode->n()[2] != 0.0) dserror("ERROR: UpdateActiveSet: Not yet implemented for 3D!");
+      
+      // compute normal part of Lagrange multiplier
+      double nz = 0.0;
+      double nzold = 0.0;
+      for (int k=0;k<3;++k)
+      {
+        nz += cnode->n()[k] * (*z_)[z_->Map().LID(2*gid)+k];
+        nzold += cnode->n()[k] * (*zold_)[zold_->Map().LID(2*gid)+k];
+      }
+      
+      // define weighting factor cn
+      // *****************************************************************
+      // for our EXACT active set strategy this value can be chosen
+      // arbitrarily, as the contact conditions are satisfied exactly.
+      // Cn only makes a difference for INEXACT active set strategy with
+      // multigrid methods, which will follow in the future.
+      // *****************************************************************
+      double c = CONTACTCN;
+      
       // check nodes of inactive set *************************************
       // (by definition they fulfill the condition z_j = 0)
       // (thus we only have to check ncr.disp. jump and weighted gap)
       if (cnode->Active()==false)
       {
-        // get weighting factor from nodal D-map
-        double wii;
-        if ((int)((cnode->GetD()).size())==0)
-          wii = 0.0;
-        else
-         wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
-        
-        // compute incr. normal displacement and weighted gap
-        double nincr = 0.0;
-        for (int k=0;k<3;++k)
-          nincr += wii * cnode->n()[k] * (*incrjump_)[incrjump_->Map().LID(2*gid)+k];
-        double wgap = (*g_)[g_->Map().LID(gid)];
-        
-        if (cnode->n()[2] != 0.0) dserror("ERROR: UpdateActiveSet: Not yet implemented for 3D!");
+        // check for fulfilment of contact condition
+        // if (abs(nz) > 1e-8)
+        //  dserror("ERROR: UpdateActiveSet: Exact inactive node condition violated "
+        //          "for node ID: %i ", cnode->Id());
         
         // check for penetration
-        if (nincr>wgap)
+        if (nz + c*(nincr-wgap) > 0)
         {
           cnode->Active() = true;
           activesetconv_ = false;
@@ -1677,17 +1700,14 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
       // (thus we only have to check for positive Lagrange multipliers)
       else
       {
-        double nz = 0.0;
-        double nzold = 0.0;
-        for (int k=0;k<3;++k)
-        {
-          nz += cnode->n()[k] * (*z_)[z_->Map().LID(2*gid)+k];
-          nzold += cnode->n()[k] * (*zold_)[zold_->Map().LID(2*gid)+k];
-        }
+        // check for fulfilment of contact condition
+        // if (abs(nincr-wgap) > 1e-8)
+        // dserror("ERROR: UpdateActiveSet: Exact active node condition violated "
+        //         "for node ID: %i ", cnode->Id());
         
         // check for tensile contact forces
-        //if (nz<0) // no averaging of Lagrange multipliers
-        if ((0.5*nz+0.5*nzold)<0) // averaging of Lagrange multipliers
+        //if (nz + c*(nincr-wgap) <= 0) // no averaging of Lagrange multipliers
+        if ((0.5*nz+0.5*nzold) + c*(nincr-wgap) <= 0) // averaging of Lagrange multipliers
         {
           if (ctype!="meshtying")
           {
