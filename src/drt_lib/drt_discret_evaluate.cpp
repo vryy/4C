@@ -571,8 +571,8 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
           systemmatrix2->Assemble(elevector2,lm,lmowner,colvec);
         }
         if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        if (assemblevec2) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        if (assemblevec3) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
+        if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
+        if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
       }
     }
   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
