@@ -15,7 +15,6 @@ Maintainer: Thomas Kloeppel
 
 #include "constraint_manager.H"
 #include "mpcdofset.H"
-#include "../drt_lib/linalg_systemmatrix.H"
 #include "iostream"
 #include "../drt_adapter/adapter_utils.H"
 
@@ -270,7 +269,7 @@ void ConstrManager::StiffnessAndInternalForces(
     //Evaluate volume at predicted ENDpoint D_{n+1}
     // action for elements
     p.set("action","calc_MPC_stiff");
-    // other parameters that might be needed by the elements
+    // other parameters that are needed by the constraint elements
     p.set("total time",time);
     p.set("MinID",minConstrID_);
     p.set("MaxID",maxConstrID_);
@@ -283,6 +282,7 @@ void ConstrManager::StiffnessAndInternalForces(
     p.set("LagrMultVector",lagrMultVecDense);
     constraintdis_->ClearState();
     constraintdis_->SetState("displacement",disp);
+    //conditions to evaluate
     vector<DRT::Condition*> constrcond(0);
     actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
     Evaluate(constraintdis_,p,stiff,constrMatrix_,fint,null,null,constrcond);
@@ -436,7 +436,7 @@ void ConstrManager::PrintMonitorValues()
 }
 
 /*----------------------------------------------------------------------*
- |(private)                                                 tk 11/07    |
+ |(private)                                                 tk 04/08    |
  |small subroutine for initialization purposes to determine ID's        |
  *----------------------------------------------------------------------*/
 void ConstrManager::ManageIDs(ParameterList& params,
@@ -491,25 +491,6 @@ void ConstrManager::SynchronizeSumConstraint(ParameterList& params,
   return;
 }
 
-void ConstrManager::SynchronizeSumConstraint(
-                                vector< DRT::Condition* >      constrcondvec,
-                                ParameterList& params,
-                                RCP<Epetra_Vector>& vect,
-                                const char* resultstring, const int numID, const int minID)
-{
-
-  for (unsigned int i = 0; i < constrcondvec.size(); ++i)
-  {
-    char valname[30];
-    sprintf(valname,"%s %d",resultstring,i);
-    double currval=0.0;
-    actdisc_->Comm().SumAll(&(params.get(valname,0.0)),&(currval),1);
-    const vector<int>*    MPCcondID  = constrcondvec[i]->Get<vector<int> >("ConditionID");
-    int temp =(*MPCcondID)[0]-minID;
-    vect->SumIntoGlobalValues(1,&currval,&temp);
-  }
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |(private)                                                 tk 11/07    |
@@ -533,7 +514,10 @@ void ConstrManager::SynchronizeMinConstraint(ParameterList& params,
   return;
 }
 
-
+/*------------------------------------------------------------------------*
+ |(private)                                                   tk 04/08    |
+ |subroutine creating a new discretization containing constraint elements |
+ *------------------------------------------------------------------------*/
 RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
         (   vector< DRT::Condition* >      constrcondvec,
             const string&             discret_name,
@@ -555,8 +539,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
 
   // vector with boundary ele id's
   vector<int> egid;
-  //egid.reserve(actdisc_->NumMyRowElements());
-//
+
   set<int> rownodeset;
   set<int> colnodeset;
   const Epetra_Map* actnoderowmap = actdisc_->NodeRowMap();
@@ -619,8 +602,6 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
 
       // set the same global node ids to the ale element
       constraintele->SetNodeIds(ngid.size(), &(ngid[0]));
-//      constraintele->Print(cout);
-//      constraintele->SetCondition("Constraint Condition",rcp(constrcondvec[j],false));
 
       // add constraint element
       newdis->AddElement(constraintele);
@@ -653,9 +634,13 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
   return newdis;
 }
 
+/*----------------------------------------------------------------------*
+ |(private)                                                 tk 04/08    |
+ |reorder MPC nodes based on condition input                            |
+ *----------------------------------------------------------------------*/
 void ConstrManager::ReorderConstraintNodes(
     vector<int>& nodeids,
-    DRT::Condition*      cond)
+    const DRT::Condition*      cond)
 {
 
   // get this condition's nodes
@@ -671,6 +656,11 @@ void ConstrManager::ReorderConstraintNodes(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |(private)                                                   tk 04/08  |
+ |recompute nodecolmap of standard discretization to include constrained|
+ |nodes as ghosted nodes                                                |
+ *----------------------------------------------------------------------*/
 RCP<Epetra_Map> ConstrManager::ComputeNodeColMap(
         const RCP<DRT::Discretization> sourcedis,
         const RCP<DRT::Discretization> constraintdis
@@ -699,6 +689,10 @@ RCP<Epetra_Map> ConstrManager::ComputeNodeColMap(
     return newcolnodemap;
 }
 
+/*----------------------------------------------------------------------*
+ |(private)                                                   tk 04/08  |
+ |fill vectors with MPC Ids and amplitudes and update parameter list    |
+ *----------------------------------------------------------------------*/
 void ConstrManager::SetupMPC(vector<double>& amplit,
     vector<int>& IDs,
     const vector<DRT::Condition*>& constrcond,
@@ -726,6 +720,11 @@ void ConstrManager::SetupMPC(vector<double>& amplit,
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |(private)                                                   tk 04/08  |
+ |Evaluate method, calling element evaluates of a discretization and    |
+ |assembing results based on given conditions                           |
+ *----------------------------------------------------------------------*/
 void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
                               ParameterList&        params,
                               RCP<LINALG::SparseOperator> systemmatrix1,
@@ -752,7 +751,6 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
   Epetra_SerialDenseVector elevector1;
   Epetra_SerialDenseVector elevector2;
   Epetra_SerialDenseVector elevector3;
-
 
   // loop over column elements
   const int numcolele = disc->NumMyColElements();
@@ -794,7 +792,6 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
     if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
   }
 
-  // for (int i=0; i<numcolele; ++i)
   return;
 }
 

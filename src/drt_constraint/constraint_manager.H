@@ -259,19 +259,14 @@ public:
 private:
 
     //! name@ Private Member Functions
-    //methods used by constructor and other public functions
+    //methods used by public functions
     /*!
       \brief synchronize processors after evaluating constraints by summing up values returned by elements
       over all processors
     */
-
     void SynchronizeSumConstraint(ParameterList& params,
             RCP<Epetra_Vector>& vect,const char* resultstr, const int numID, const int minID);
     
-    void SynchronizeSumConstraint(
-        vector< DRT::Condition* >      constrcondvec,ParameterList& params,
-            RCP<Epetra_Vector>& vect,const char* resultstr, const int numID, const int minID);
-
 
     /*!
       \brief synchronize processors after evaluating constraints by minimizing values returned woith a parameterlist
@@ -284,49 +279,56 @@ private:
     /*!
         \brief Setup number of constraint ID's by evaluating the parameterlist returned by elements 
     */
+    void ManageIDs(ParameterList& params,
+         int& minID, 
+         int& maxID, 
+         int& numID);
     
+    /*!
+           \brief Setup number of constraint ID's by evaluating the parameterlist returned by elements 
+    */
     void ManageIDs(ParameterList& params,
         int& minID, 
         int& maxID, 
         int& numID,
         vector<int>& MPCids);
     
-    void ManageIDs(ParameterList& params,
-         int& minID, 
-         int& maxID, 
-         int& numID);
-    
+    //! creating a new discretization based on conditions containing constraint elements
     RCP<DRT::Discretization> CreateDiscretizationFromCondition(
-            vector< DRT::Condition* >      constrcond, 
-            const string&             discret_name,
-            const string&             element_name
+            vector< DRT::Condition* >      constrcond, ///< conditions as discretization basis  
+            const string&             discret_name, ///< name of new discretization
+            const string&             element_name ///< name of element type to create
             );
     
+    //! Reorder MPC nodes based on condition input 
     void ReorderConstraintNodes(
-        vector<int>& nodeids,
-        DRT::Condition*      condname);
+        vector<int>& nodeids,  ///< reordered node ids
+        const DRT::Condition*      condname); ///< condition to deal with
     
     /// find col node map so that we can evaluate the constraint elements
     RCP<Epetra_Map> ComputeNodeColMap(
-            const RCP<DRT::Discretization> sourcedis,
-            const RCP<DRT::Discretization> constraintdis
+            const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
+            const RCP<DRT::Discretization> constraintdis ///< constraint discretization prescribing ghosting
             ) const;
     
+    //! fill vectors with MPC Ids and amplitudes and update parameter list
     void SetupMPC(
-        vector<double>& amplit, 
-        vector<int>& IDs, 
-        const vector<DRT::Condition*>& constrcond,
-        ParameterList& param
+        vector<double>& amplit,   ///< vector for MPC amplitudes (as given in the input file)
+        vector<int>& IDs, ///< vector for MPC IDs
+        const vector<DRT::Condition*>& constrcond, ///< conditions to deal with
+        ParameterList& param ///< parameter list given to the elements
         );
     
-    void Evaluate( RCP<DRT::Discretization> disc,
-                                  Teuchos::ParameterList&        params,
-                                  Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-                                  Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-                                  Teuchos::RCP<Epetra_Vector>    systemvector1,
-                                  Teuchos::RCP<Epetra_Vector>    systemvector2,
-                                  Teuchos::RCP<Epetra_Vector>    systemvector3,
-                                  vector<DRT::Condition*>& constrcond);
+    //! Evaluate a discretization and assemble to a rectangular matrix
+    void Evaluate( 
+        RCP<DRT::Discretization> disc,  ///< discretization to evaluate
+        Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
+        Teuchos::RCP<Epetra_Vector>    systemvector1, //< distributed vector that may be filled by aasembly of element contributions
+        Teuchos::RCP<Epetra_Vector>    systemvector2, //< distributed vector that may be filled by aasembly of element contributions
+        Teuchos::RCP<Epetra_Vector>    systemvector3, //< distributed vector that may be filled by aasembly of element contributions
+        vector<DRT::Condition*>& constrcond);  //< conditions determing where to assemble vector into rectangular matrix
     //@}
 
 private:

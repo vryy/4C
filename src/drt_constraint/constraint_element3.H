@@ -243,6 +243,7 @@ private:
   // don't want = operator
   ConstraintElement3& operator = (const ConstraintElement3& old);
   
+  
   void ComputeElementNormal(const LINALG::SerialDenseMatrix& xc,
       LINALG::SerialDenseVector& elenormal);
   
