@@ -16,7 +16,6 @@ Maintainer: Axel Gerstenberger
 
 #include "drt_element.H"
 
-#include "Epetra_Vector.h"
 using namespace std;
 
 namespace DRT

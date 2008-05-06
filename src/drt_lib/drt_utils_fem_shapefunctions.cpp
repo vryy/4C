@@ -25,7 +25,6 @@
 #ifdef CCADISCRET
 
 #include "drt_element.H"
-#include "drt_discret.H"
 #include "drt_utils.H"
 #include "drt_dserror.H"
 

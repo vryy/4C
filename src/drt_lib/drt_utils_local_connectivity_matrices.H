@@ -31,10 +31,8 @@
 #include <blitz/array.h>
 
 #include "drt_element.H"
-#include "Epetra_Vector.h"
 
 using namespace std;
-using namespace Teuchos;
 
 namespace DRT
 {

@@ -31,11 +31,8 @@
 #include <blitz/array.h>
 
 #include "drt_element.H"
-#include "Epetra_Vector.h"
 #include "drt_utils_local_connectivity_matrices.H"
 
-using namespace std;
-using namespace Teuchos;
 
 namespace DRT
 {
