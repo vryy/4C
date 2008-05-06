@@ -75,9 +75,10 @@ void elch_dyn()
   // summarize the performance measurements
   //Teuchos::TimeMonitor::summarize();
 
-  // perform the result test (only fluid field up to now!)
+  // perform the result test
   DRT::ResultTestManager testmanager(comm);
   testmanager.AddFieldTest(elch->FluidField().CreateFieldTest());
+  testmanager.AddFieldTest(elch->ConDifField().CreateFieldTest());  
   testmanager.TestAll();
 
   return;

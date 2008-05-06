@@ -109,8 +109,8 @@ void ELCH::Algorithm::DoTransportStep()
   // prepare time step
   ConDifField().PrepareTimeStep();
   // transfer convective velocity
-  //ConDifField().SetVelocityField(2,velocitynp_);
-  ConDifField().SetVelocityField(1,1);
+  ConDifField().SetVelocityField(2,velocitynp_);
+  //ConDifField().SetVelocityField(1,1);
 
   // solve convection-diffusion equation
   ConDifField().Solve();
