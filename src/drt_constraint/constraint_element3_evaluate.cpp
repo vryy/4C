@@ -91,7 +91,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
       RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
 
       const int minID =params.get("MinID",0);
-      const int condID=params.get("CondID",-1);
+      const int condID=params.get("ConditionID",-1);
       if (condID<0) dserror("What happend here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
