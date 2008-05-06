@@ -795,7 +795,8 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
     elevector3.Size(eledim);
     DRT::Condition& cond = *(constrcond[actele->Id()]);
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-    params.set("ConditionID",(*CondIDVec)[0]);
+    int condID=(*CondIDVec)[0];
+    params.set("ConditionID",condID);
     // call the element evaluate method
     int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
                                elevector1,elevector2,elevector3);
@@ -806,7 +807,7 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
     {
       int minID=params.get("MinID",0);
       vector<int> colvec(1);
-      colvec[0]=(*CondIDVec)[0]-minID;
+      colvec[0]=condID-minID;
       systemmatrix2->Assemble(elevector2,lm,lmowner,colvec);
     }
     if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
@@ -825,7 +826,7 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     char factorname[30];
-    sprintf(factorname,"LoadCurveFactor %d",(*CondIDVec)[0]);
+    sprintf(factorname,"LoadCurveFactor %d",condID);
     params.set(factorname,curvefac);
   }
 
