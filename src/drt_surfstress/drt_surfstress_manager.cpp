@@ -54,12 +54,6 @@ void DRT::SurfStressManager::EvaluateSurfStress(ParameterList& p,
 {
     // action for elements
     p.set("action","calc_surfstress_stiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
 
     discret_.ClearState();
     discret_.SetState("displacement",disp);
