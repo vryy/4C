@@ -268,9 +268,9 @@ private:
 
 
 /*!
-\brief A register for bele3 element
+\brief A register for 3D constraint element
 
-\author axelchen (gerstenberger@lnm.mw.tum.de)
+\author tk (kloeppel@lnm.mw.tum.de)
 */
 class ConstraintElement3Register : public DRT::ElementRegister
 {
