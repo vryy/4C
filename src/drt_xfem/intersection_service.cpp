@@ -164,7 +164,7 @@ BlitzVec XFEM::currentToElementCoordinatesExact(
 \param xsi               (in)       : vector of element coordinates
 \param element           (in)       : element 
 */  
-template <DRT::Element::DiscretizationType DISTYPE>
+template <DRT::Element::DiscretizationType DISTYPE, int dim>
 static inline void updateAForNWE(
     BlitzMat&                           A,
     const BlitzVec&                     xsi,
@@ -172,9 +172,9 @@ static inline void updateAForNWE(
     )                                                  
 {   
     const int numNodes = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
-    const int dim = DRT::UTILS::getDimension<DISTYPE>();
+    //const int dim = DRT::UTILS::getDimension<DISTYPE>();
     static BlitzMat deriv1(dim,numNodes);
-    shape_function_deriv1<DISTYPE,BlitzVec>(xsi, deriv1);
+    shape_function_deriv1<DISTYPE>(xsi, deriv1);
     
     blitz::firstIndex isd;
     blitz::secondIndex jsd;
@@ -194,7 +194,7 @@ static inline void updateAForNWE(
 \param x                 (in)       : node in current coordinates
 \param element           (in)       : element
 */
-template <DRT::Element::DiscretizationType DISTYPE>
+template <DRT::Element::DiscretizationType DISTYPE, int dim>
 static inline void updateRHSForNWE(
         BlitzVec&           b,
         const BlitzVec&     xsi,
@@ -203,11 +203,18 @@ static inline void updateRHSForNWE(
 {
     const int numNodes = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
     static BlitzVec funct(numNodes);
-    shape_function<DISTYPE,BlitzVec>(xsi, funct);
+    shape_function<DISTYPE>(xsi, funct);
     
-    blitz::firstIndex isd;
-    blitz::secondIndex inode;
-    b = x(isd) - blitz::sum(xyze(isd,inode) * funct(inode), inode);
+    //b = x(isd) - blitz::sum(xyze(isd,inode) * funct(inode), inode);
+    for (int isd = 0; isd < 3; ++isd)
+    {
+        b(isd) = x(isd);
+        for (int inode = 0; inode < numNodes; ++inode)
+        {
+            b(isd) -= xyze(isd,inode) * funct(inode);
+        }
+    }
+    
 }
 
 
@@ -243,12 +250,12 @@ static inline bool currentToElementCoordinatesT(
     // initial guess
     xsi = 0.0;
             
-    updateRHSForNWE<DISTYPE>(b, xsi, x, xyze);
+    updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
     
     int iter = 0;
     while(residual > TOL14)
     {   
-        updateAForNWE<DISTYPE>( A, xsi, xyze);
+        updateAForNWE<DISTYPE,dim>( A, xsi, xyze);
    
         if(!gaussElimination<true, dim, 1>(A, b, dx))
         {
@@ -257,7 +264,7 @@ static inline bool currentToElementCoordinatesT(
         }   
         
         xsi += dx;
-        updateRHSForNWE<DISTYPE>(b, xsi, x, xyze);
+        updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
         
         residual = Norm2(b);
         iter++; 

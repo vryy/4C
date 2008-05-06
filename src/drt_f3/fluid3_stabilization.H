@@ -110,7 +110,8 @@ double HK(
   e(2) = intpoints.qxg[0][2];
   const double wquad = intpoints.qwgt[0];
 
-  const BlitzMat deriv_(DRT::UTILS::shape_function_deriv1<DISTYPE,BlitzVec>(e));
+  BlitzMat deriv_(DRT::UTILS::getNumberOfElementNodes<DISTYPE>());
+  DRT::UTILS::shape_function_deriv1<DISTYPE>(e, deriv_);
 
   // get Jacobian matrix and determinant
   const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze(j,k),k));
@@ -160,8 +161,10 @@ BlitzVec CalTauStationary(
   const double wquad = intpoints.qwgt[0];
 
   const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
-  const BlitzVec funct_(DRT::UTILS::shape_function<DISTYPE,BlitzVec>(e));
-  const BlitzMat deriv_(DRT::UTILS::shape_function_deriv1<DISTYPE,BlitzVec>(e));
+  BlitzVec funct_(DRT::UTILS::getNumberOfElementNodes<DISTYPE>());
+  DRT::UTILS::shape_function<DISTYPE>(e,funct_);
+  BlitzMat deriv_(DRT::UTILS::getDimension<DISTYPE>(),DRT::UTILS::getNumberOfElementNodes<DISTYPE>());
+  DRT::UTILS::shape_function_deriv1<DISTYPE>(e, deriv_);
 
   // get element type constant for tau
   const double mk = MK<DISTYPE>();

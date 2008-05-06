@@ -721,14 +721,14 @@ void static Sysmat(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            static XFEM::PosEtaDomain pos_eta(3);
+            static blitz::TinyVector<double,3> pos_eta;
             pos_eta(0) = intpoints.qxg[iquad][0];
             pos_eta(1) = intpoints.qxg[iquad][1];
             pos_eta(2) = intpoints.qxg[iquad][2];
 
             // coordinates of the current integration point in element coordinates \xi
-            static XFEM::PosXiDomain posXiDomain(3);
-            posXiDomain = XFEM::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta);
+            static blitz::TinyVector<double,3> posXiDomain;
+            XFEM::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta, posXiDomain);
             const double detcell = XFEM::detEtaToXi3D<ASSTYPE>(*cell, pos_eta);
             
             // shape functions and their first derivatives
@@ -910,7 +910,7 @@ void static Sysmat(
             const double discpres(blitz::sum(shp_discpres*ediscprenp));
     
             // get viscous stress unknowns
-            static BlitzMat tau(3,3);
+            static blitz::TinyMatrix<double,3,3> tau;
             if (tauele_unknowns_present)
             {
                 tau(0,0) = blitz::sum(shp_tau(_)*etau(0,_)); tau(0,1) = blitz::sum(shp_tau(_)*etau(3,_)); tau(0,2) = blitz::sum(shp_tau(_)*etau(4,_));
@@ -1808,8 +1808,8 @@ void static Sysmat(
             const BlitzMat deriv_boundary(DRT::UTILS::shape_function_2D_deriv1(posXiBoundary(0),posXiBoundary(1),boundaryele->Shape()));
             
             // shape functions and their first derivatives
-            const BlitzVec funct(DRT::UTILS::shape_function<DISTYPE,BlitzVec>(posXiDomain));
-            //const BlitzMat deriv(DRT::UTILS::shape_function_deriv1<DISTYPE,BlitzVec>(posXiDomain));
+            BlitzVec funct(DRT::UTILS::getNumberOfElementNodes<DISTYPE>());
+            DRT::UTILS::shape_function<DISTYPE>(posXiDomain,funct);
       
             const BlitzVec funct_stress(DRT::UTILS::shape_function_3D(posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype));
 

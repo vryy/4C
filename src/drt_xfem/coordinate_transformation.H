@@ -57,6 +57,42 @@ namespace XFEM
   {   
       return pos_eta;
   }
+  
+  //! map position from eta to xi space
+  template<XFEM::AssemblyType ASSTYPE>
+  void mapEtaToXi3D(
+          const XFEM::DomainIntCell& cell,
+          const blitz::TinyVector<double,3>&  pos_eta,
+          blitz::TinyVector<double,3>&  pos_xsi_domain)
+  {   
+      // get cell node coordinates
+      const BlitzMat xyze_cell(cell.NodalPosXiDomainBlitz());
+
+      // create shape function vectors 
+      const BlitzVec funct(DRT::UTILS::shape_function_3D(pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape()));
+      
+      // translate position into from cell coordinates to element coordinates
+      const int numnodes = funct.size();
+      for (int isd = 0; isd < 3; ++isd)
+      {
+          pos_xsi_domain(isd) = 0.0;
+          for (int j = 0; j < numnodes; ++j)
+              pos_xsi_domain(isd) += funct(j)*xyze_cell(isd,j);
+      }
+      return;
+  }
+  //! map position from eta to xi space
+  template<> 
+  void mapEtaToXi3D<XFEM::standard_assembly>(
+          const XFEM::DomainIntCell& cell,
+          const blitz::TinyVector<double,3>&  pos_eta,
+          blitz::TinyVector<double,3>&  pos_xsi_domain)
+  {   
+      pos_xsi_domain(0) = pos_eta(0);
+      pos_xsi_domain(1) = pos_eta(1);
+      pos_xsi_domain(2) = pos_eta(2);
+      return;
+  }
 
   
   
@@ -98,6 +134,44 @@ namespace XFEM
       return 1.0;
   }
   
+  
+  //! get determinante between eta and xi space
+  template<XFEM::AssemblyType ASSTYPE>
+  double detEtaToXi3D(
+          const XFEM::DomainIntCell& cell,
+          const blitz::TinyVector<double,3>&  pos_eta)
+  {   
+      // get node coordinates
+      const BlitzMat xyze_cell(cell.NodalPosXiDomainBlitz());
+
+      // init blitz indices
+      blitz::firstIndex i;    // Placeholder for the first index
+      blitz::secondIndex j;   // Placeholder for the second index
+      blitz::thirdIndex k;    // Placeholder for the third index
+  
+      // get shape function derivative
+      const BlitzMat deriv(DRT::UTILS::shape_function_3D_deriv1(pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape()));
+      // get jacobian matrix ...
+      static BlitzMat xjm(3,3);
+      xjm = blitz::sum(deriv(i,k)*xyze_cell(j,k),k);
+      // ...and its determinante
+      const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                         xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                         xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                         xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                         xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                         xjm(0,1)*xjm(1,0)*xjm(2,2);
+
+      return det;
+  }
+  //! get determinante between eta and xi space
+  template<>
+  double detEtaToXi3D<XFEM::standard_assembly>(
+          const XFEM::DomainIntCell& cell,
+          const blitz::TinyVector<double,3>&  pos_eta)
+  {   
+      return 1.0;
+  }
   
   /////////////////////////////////////////////////////
   // 2d

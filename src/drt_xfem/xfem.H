@@ -23,6 +23,9 @@ namespace XFEM
     typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
     typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
     
+    typedef blitz::TinyVector<double,3> BlitzVec3; ///< a short-cut for a one-dimensional BLITZ vector of length 3
+    typedef blitz::TinyVector<double,2> BlitzVec2; ///< a short-cut for a one-dimensional BLITZ vector of length 2
+    
     typedef BlitzVec PosX;             ///< position in physical coordinates (x,y,z)
     typedef BlitzVec PosXiDomain;      ///< position in element coordinates of domain element (r,s,t)
     typedef BlitzVec PosXiBoundary;    ///< position in element coordinates of boundary element (r,s)
