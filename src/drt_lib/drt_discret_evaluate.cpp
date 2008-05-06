@@ -523,10 +523,6 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
         sprintf(factorname,"LoadCurveFactor %d",(*CondIDVec)[0]);
         params.set(factorname,curvefac);
       }
-      else if (assemblemat2)
-      {
-        dserror("Cannot use SparseMatrix version of condition evaluation for conditions without ConditionID");
-      }
       else
       {
         params.set("LoadCurveFactor",curvefac);
@@ -563,13 +559,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
 
         // assembly
         if (assemblemat1) systemmatrix1->Assemble(elematrix1,lm,lmowner);
-        if (assemblemat2)
-        {
-          int minID=params.get("MinID",0);
-          vector<int> colvec(1);
-          colvec[0]=(*CondIDVec)[0]-minID;
-          systemmatrix2->Assemble(elevector2,lm,lmowner,colvec);
-        }
+        if (assemblemat2) systemmatrix2->Assemble(elematrix2,lm,lmowner);
         if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
         if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
         if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
