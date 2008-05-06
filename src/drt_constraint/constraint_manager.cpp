@@ -664,17 +664,11 @@ void ConstrManager::ReorderConstraintNodes(
     vector<int>& nodeids,
     const DRT::Condition*      cond)
 {
-
   // get this condition's nodes
   vector<int> temp=nodeids;
-  const vector<int>*    NodeID1  = cond->Get<vector<int> >("NodeID 1");
-  const vector<int>*    NodeID2  = cond->Get<vector<int> >("NodeID 2");
-  const vector<int>*    NodeID3  = cond->Get<vector<int> >("NodeID 3");
-  const vector<int>*    NodeID4  = cond->Get<vector<int> >("NodeID 4");
-  nodeids[0]=temp[(*NodeID1)[0]-1];
-  nodeids[1]=temp[(*NodeID2)[0]-1];
-  nodeids[2]=temp[(*NodeID3)[0]-1];
-  nodeids[3]=temp[(*NodeID4)[0]-1];
+  const vector<int>*    constrNode  = cond->Get<vector<int> >("ConstrNode");
+  nodeids[(*constrNode)[0]-1]=temp[3];
+  nodeids[3]=temp[(*constrNode)[0]-1];
   return;
 }
 

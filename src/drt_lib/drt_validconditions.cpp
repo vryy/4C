@@ -610,10 +610,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new RealConditionComponent("Amplitude")));
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 1")));
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 2")));
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 3")));
-  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("NodeID 4")));
+  nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConstrNode")));
   condlist.push_back(nodeonplaneconst3D);
 
   return vc;
