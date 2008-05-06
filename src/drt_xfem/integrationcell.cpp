@@ -204,7 +204,7 @@ vector<vector<double> > DomainIntCell::GetDefaultCoordinates(
 //
 // return the center of the cell in physical coordinates
 //
-BlitzVec DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
+BlitzVec3 DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
     // number of space dimensions
     //const int nsd = 3;
@@ -224,10 +224,20 @@ BlitzVec DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
             this->Shape()));
     
     //interpolate position to x-space
-    blitz::firstIndex isd;
-    blitz::secondIndex inode;
-    static BlitzVec x_interpol(3);
-    x_interpol = blitz::sum(physcoord(isd,inode)*funct(inode),inode);
+    //blitz::firstIndex isd;
+    //blitz::secondIndex inode;
+    //static BlitzVec x_interpol(3);
+    //x_interpol = blitz::sum(physcoord(isd,inode)*funct(inode),inode);
+    
+    static BlitzVec3 x_interpol;
+    for (int isd = 0; isd < 3; ++isd)
+    {
+        x_interpol(isd) = 0.0;
+        for (int inode = 0; inode < DRT::UTILS::getNumberOfElementNodes(this->Shape()); ++inode)
+        {
+            x_interpol(isd) += funct(inode)*physcoord(isd,inode);
+        }
+    }
     
     return x_interpol;
 }

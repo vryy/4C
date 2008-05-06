@@ -623,7 +623,7 @@ bool Intersection::collectInternalPoints(
     const int                       nodeId)
 {
     // current nodal position
-    BlitzVec x(3);
+    BlitzVec3 x;
     x(0) = node->X()[0];
     x(1) = node->X()[1];
     x(2) = node->X()[2];
@@ -1231,7 +1231,7 @@ void Intersection::computeConvexHull(
             BlitzVec    eleCoordSurf(2);
             for(int j = 0; j < 2; j++)
                 eleCoordSurf(j)  = midpoint.coord[j];
-            const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
+            const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
             const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));
             for(int j = 0; j < 3; j++)
                 midpoint.coord[j] = eleCoordVol(j);
@@ -1257,7 +1257,7 @@ void Intersection::computeConvexHull(
                 BlitzVec  eleCoordSurf(2);
                 for(int j = 0; j < 2; j++)
                     eleCoordSurf(j)  = ipoint->coord[j];
-                const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
+                const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
                 const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));
                 for(int j = 0; j < 3; j++)
                     ipoint->coord[j] = eleCoordVol(j);
@@ -1285,7 +1285,7 @@ void Intersection::computeConvexHull(
                     BlitzVec  eleCoordSurf(2);
                     for(int m = 0; m < 2; m++)
                         eleCoordSurf(m)  = vertex[m];
-                    const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
+                    const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
                     const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));
                     for(int m = 0; m < 3; m++)
                         vertex[m] = eleCoordVol(m);
@@ -1315,7 +1315,7 @@ void Intersection::computeConvexHull(
                 BlitzVec  eleCoordSurf(2);
                 for(int j = 0; j < 2; j++)
                     eleCoordSurf(j)  = ipoint->coord[j];
-                const BlitzVec curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
+                const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
                 const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));
                 for(int j = 0; j < 3; j++)
                 {
@@ -2184,7 +2184,7 @@ int Intersection::decideSteinerCase(
 {
     const int pointIndex = adjacentFacesList[steinerIndex][0];
 
-    BlitzVec    x(3);
+    BlitzVec3    x;
     for(int k=0; k<3; k++)
         x(k)   = out.pointlist[pointIndex*3 + k];
 
@@ -3479,8 +3479,8 @@ int Intersection::findIntersectingSurfaceEdge(
 {
 
     int lineIndex = -1;
-    BlitzVec x1(1);
-    BlitzVec x2(1);
+    BlitzVec3 x1;
+    BlitzVec3 x2;
 
     BlitzVec node1 = edgeNode1;
     BlitzVec node2 = edgeNode2;
@@ -3536,7 +3536,7 @@ void Intersection::storeHigherOrderNode(
     tetgenio&                                   out
     ) const
 {
-    BlitzVec curr(3);
+    BlitzVec3 curr;
 
     if(normal)
     {
@@ -3632,7 +3632,7 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     domainCoord[cornerIndex][1] = eleCoordDomainCorner(1);
     domainCoord[cornerIndex][2] = eleCoordDomainCorner(2);
 
-    const BlitzVec physCoordCorner(elementToCurrentCoordinates(xfemElement, eleCoordDomainCorner));
+    const BlitzVec3 physCoordCorner(elementToCurrentCoordinates(xfemElement, eleCoordDomainCorner));
 
     //domainCoord.push_back(trinodes);
 
@@ -3661,7 +3661,7 @@ void Intersection::addCellsToBoundaryIntCellsMap(
 	    domainCoord[cornerIndex+3][1] = eleCoordDomaninHO(1);
 	    domainCoord[cornerIndex+3][2] = eleCoordDomaninHO(2);
 
-	    const BlitzVec physCoordHO(elementToCurrentCoordinates(xfemElement, eleCoordDomaninHO));
+	    const BlitzVec3 physCoordHO(elementToCurrentCoordinates(xfemElement, eleCoordDomaninHO));
 
 	    //domainCoord.push_back(trinodes);
 

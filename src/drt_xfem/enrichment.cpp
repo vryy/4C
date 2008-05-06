@@ -92,7 +92,7 @@ std::string Enrichment::enrTypeToString(const EnrType type) const
  |  get enrichment value                                        ag 11/07|
  *----------------------------------------------------------------------*/
 double Enrichment::EnrValue(
-        const blitz::Array<double,1>& actpos,
+        const BlitzVec3&                actpos,
         const RCP<DRT::Discretization>& cutterdis,
         const XFEM::Enrichment::ApproachFrom approachdirection
         ) const
@@ -179,8 +179,8 @@ double Enrichment::EnrValue(
  *                                                              ag 11/07
  */
 double Enrichment::ModifiedEnrValue(
-        const blitz::Array<double,1>& actpos,
-        const blitz::Array<double,1>& nodalpos,
+        const BlitzVec3&                actpos,
+        const BlitzVec3&                nodalpos,
         const RCP<DRT::Discretization>& cutterdis,
         const XFEM::Enrichment::ApproachFrom approachdirection
         ) const

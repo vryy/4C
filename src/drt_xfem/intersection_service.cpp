@@ -46,13 +46,13 @@ BlitzVec XFEM::computeCrossProduct(
  | GM:      transforms a node in element coordinates         u.may 07/07|
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
-BlitzVec XFEM::elementToCurrentCoordinates(   
+BlitzVec3 XFEM::elementToCurrentCoordinates(   
         const DRT::Element* element,
         const BlitzVec&     eleCoord) 
 {
     const int numNodes = element->NumNode();
     BlitzVec funct(numNodes);
-    static BlitzVec physCoord(3);
+    static BlitzVec3 physCoord;
     
     switch(getDimension(element->Shape()))
     {
@@ -136,9 +136,9 @@ void XFEM::elementToCurrentCoordinatesInPlace(
  *----------------------------------------------------------------------*/  
 BlitzVec XFEM::currentToElementCoordinatesExact(   
     const DRT::Element*               element, 
-    const BlitzVec&                   x) 
+    const BlitzVec3&                   x) 
 {
-    dsassert(x.size() == 3, "current coordinates have to be 3!");
+    //dsassert(x.size() == 3, "current coordinates have to be 3!");
     const int dim = DRT::UTILS::getDimension(element->Shape());
     dsassert(dim == 3, "element has to be 3-dimensional!");
     
@@ -171,15 +171,23 @@ static inline void updateAForNWE(
     const BlitzMat&                     xyze
     )                                                  
 {   
-    const int numNodes = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
+    const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
     //const int dim = DRT::UTILS::getDimension<DISTYPE>();
-    static BlitzMat deriv1(dim,numNodes);
+    static blitz::TinyMatrix<double,dim,DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement> deriv1;
     shape_function_deriv1<DISTYPE>(xsi, deriv1);
     
-    blitz::firstIndex isd;
-    blitz::secondIndex jsd;
-    blitz::thirdIndex inode;
-    A = blitz::sum(xyze(isd,inode) * deriv1(jsd,inode), inode);
+    //A = blitz::sum(xyze(isd,inode) * deriv1(jsd,inode), inode);
+    for (int isd = 0; isd < 3; ++isd)
+    {
+        for (int jsd = 0; jsd < dim; ++jsd)
+        {
+            A(isd,jsd) = 0.0;
+            for (int inode = 0; inode < numNodes; ++inode)
+            {
+                A(isd,jsd) += xyze(isd,inode) * deriv1(jsd,inode);
+            }
+        }
+    }
 }
 
 
@@ -198,11 +206,12 @@ template <DRT::Element::DiscretizationType DISTYPE, int dim>
 static inline void updateRHSForNWE(
         BlitzVec&           b,
         const BlitzVec&     xsi,
-        const BlitzVec&     x,
+        const BlitzVec3&    x,
         const BlitzMat&     xyze)                                                  
 {
-    const int numNodes = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
-    static BlitzVec funct(numNodes);
+    
+    const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    blitz::TinyVector<double,DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement> funct;
     shape_function<DISTYPE>(xsi, funct);
     
     //b = x(isd) - blitz::sum(xyze(isd,inode) * funct(inode), inode);
@@ -231,7 +240,7 @@ static inline void updateRHSForNWE(
 template <DRT::Element::DiscretizationType DISTYPE, int dim>
 static inline bool currentToElementCoordinatesT(
     const DRT::Element*                 element,
-    const BlitzVec&                     x,
+    const BlitzVec3&                    x,
     BlitzVec&                           xsi)
 {
     dsassert(element->Shape() == DISTYPE, "this is a bug in currentToElementCoordinatesT!");
@@ -245,7 +254,7 @@ static inline bool currentToElementCoordinatesT(
     static BlitzVec dx(dim);
     
     static BlitzMat xyze(3, DRT::UTILS::getNumberOfElementNodes<DISTYPE>());
-    fillPositionArrayBlitzT<DISTYPE>(element, xyze);
+    fillPositionArray<DISTYPE>(element, xyze);
     
     // initial guess
     xsi = 0.0;
@@ -284,7 +293,7 @@ static inline bool currentToElementCoordinatesT(
  *----------------------------------------------------------------------*/
 bool XFEM::currentToElementCoordinates(  
     const DRT::Element*                 element,
-    const BlitzVec&                     x,
+    const BlitzVec3&                     x,
     BlitzVec&                           xsi)
 {
     bool nodeWithinElement = false;
@@ -320,7 +329,7 @@ bool XFEM::currentToElementCoordinates(
  |  ICS:    checks if a position is within an XAABB          u.may 06/07|
  *----------------------------------------------------------------------*/
 bool XFEM::isPositionWithinXAABB(    
-    const BlitzVec&                    pos,
+    const BlitzVec3&                   pos,
     const BlitzMat&                    XAABB)
 {
     const int nsd = 3;
@@ -347,8 +356,8 @@ bool XFEM::isPositionWithinXAABB(
  |  ICS:    checks if a pos is within an XAABB               u.may 06/07|
  *----------------------------------------------------------------------*/
 bool XFEM::isLineWithinXAABB(    
-    const BlitzVec&                    pos1,
-    const BlitzVec&                    pos2,
+    const BlitzVec3&                   pos1,
+    const BlitzVec3&                   pos2,
     const BlitzMat&                    XAABB)
 {
     const int nsd = 3;
@@ -393,7 +402,7 @@ bool XFEM::isLineWithinXAABB(
  *----------------------------------------------------------------------*/
 bool XFEM::checkPositionWithinElement(  
     const DRT::Element*                 element,
-    const BlitzVec&                     x)
+    const BlitzVec3&                    x)
 {
     BlitzVec xsi(getDimension(element->Shape()));
     dsassert(getDimension(element->Shape()) == 3, "only valid for 3 dimensional elements");
@@ -418,7 +427,7 @@ bool XFEM::checkPositionWithinElement(
  *----------------------------------------------------------------------*/
 bool XFEM::PositionWithinDiscretization(  
     const RCP<DRT::Discretization>      dis,
-    const BlitzVec&                     x)
+    const BlitzVec3&                    x)
 {
     bool nodeWithinMesh = false;
     
@@ -445,17 +454,17 @@ bool XFEM::PositionWithinDiscretization(
  |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
  *----------------------------------------------------------------------*/
 bool XFEM::PositionWithinCondition(
-        const BlitzVec&                     x_in,
+        const BlitzVec3&                    x_in,
         const int                           xfem_condition_label, 
         const RCP<DRT::Discretization>      cutterdis
     )
 {
     const int nsd = 3;
-    static BlitzVec x(nsd);
-//    for (int isd = 0; isd < nsd; ++isd) {
-//        x(isd) = x_in(isd);
-//    }
-    x = x_in;
+    static BlitzVec3 x;
+    for (int isd = 0; isd < nsd; ++isd) {
+        x(isd) = x_in(isd);
+    }
+//    x = x_in;
 
     // TODO: use label to identify the surface/xfem condition
     
@@ -486,7 +495,7 @@ bool XFEM::PositionWithinCondition(
  *----------------------------------------------------------------------*/
 bool XFEM::searchForNearestPointOnSurface(
     const DRT::Element*                   	surfaceElement,
-    const BlitzVec&     	            	physCoord,
+    const BlitzVec3&                        physCoord,
     BlitzVec&                       		eleCoord,
     BlitzVec&           	              	normal,
     double&									distance)
@@ -500,8 +509,10 @@ bool XFEM::searchForNearestPointOnSurface(
 	
 	if(pointWithinElement)
 	{
-		const BlitzVec x_surface_phys(elementToCurrentCoordinates(surfaceElement, eleCoord));
-		normal = x_surface_phys - physCoord;
+		const BlitzVec3 x_surface_phys(elementToCurrentCoordinates(surfaceElement, eleCoord));
+		normal(0) = x_surface_phys(0) - physCoord(0);
+		normal(1) = x_surface_phys(1) - physCoord(1);
+		normal(2) = x_surface_phys(2) - physCoord(2);
 		distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
 	}
 
@@ -516,7 +527,7 @@ bool XFEM::searchForNearestPointOnSurface(
  *----------------------------------------------------------------------*/
 BlitzVec XFEM::CurrentToSurfaceElementCoordinates(
         const DRT::Element*        	surfaceElement,
-        const BlitzVec&     		physCoord
+        const BlitzVec3&            physCoord
    	    )
 {
 	bool nodeWithinElement = true;
@@ -524,8 +535,8 @@ BlitzVec XFEM::CurrentToSurfaceElementCoordinates(
     BlitzVec eleCoord(2);
     eleCoord = 0.0;
     
-    blitz::firstIndex i;    // Placeholder for the first blitz array index
-    blitz::secondIndex j;   // Placeholder for the second blitz array index
+//    blitz::firstIndex i;    // Placeholder for the first blitz array index
+//    blitz::secondIndex j;   // Placeholder for the second blitz array index
    								
   	const int maxiter = 20;
   	int iter = 0;
@@ -535,11 +546,19 @@ BlitzVec XFEM::CurrentToSurfaceElementCoordinates(
   	    
         // compute Jacobian, f and b
   	    static BlitzMat Jacobi(3,2,blitz::ColumnMajorArray<2>());
-  	    static BlitzVec F(3);
+  	    static BlitzVec3 F;
   	    updateJacobianForMap3To2(Jacobi, eleCoord, surfaceElement);
         updateFForMap3To2(F, eleCoord, physCoord, surfaceElement);
         static BlitzVec b(2);
-        b = blitz::sum(-Jacobi(j,i)*F(j),j);
+        //b = blitz::sum(-Jacobi(j,i)*F(j),j);
+        for (int i = 0; i < 2; ++i)
+        {
+            b(i) = 0.0;
+            for (int j = 0; j < 3; ++j)
+            {
+                b(i) -= Jacobi(j,i)*F(j);
+            }
+        }
      
         const double residual = sqrt(b(0)*b(0)+b(1)*b(1));
         if (residual < TOL14)
@@ -638,9 +657,9 @@ void XFEM::updateJacobianForMap3To2(
  |			space lies on a surface element 							|                 
  *----------------------------------------------------------------------*/
 void XFEM::updateFForMap3To2(
-        BlitzVec&           F,
+        BlitzVec3&          F,
         const BlitzVec&	    xsi,
-        const BlitzVec&	    x,
+        const BlitzVec3&    x,
         const DRT::Element* surfaceElement
         )                                                  
 {   
@@ -668,7 +687,7 @@ void XFEM::updateFForMap3To2(
 void XFEM::updateAForMap3To2(   
         BlitzMat& 		            A,
         const BlitzMat& 	        Jacobi,
-        const BlitzVec&             F,
+        const BlitzVec3&            F,
         const BlitzVec&	            xsi,
         const DRT::Element*         surfaceElement
         )                                                  
@@ -694,7 +713,19 @@ void XFEM::updateAForMap3To2(
 		}
 	}
 	
-	A = blitz::sum(Jacobi(k,i) * Jacobi(k,j), k) + blitz::sum(F(k)*tensor3Ord(k,i,j),k);
+	//A = blitz::sum(Jacobi(k,i) * Jacobi(k,j), k) + blitz::sum(F(k)*tensor3Ord(k,i,j),k);
+	for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            A(i,j) = 0.0;
+            for (int k = 0; k < 3; ++k)
+            {
+                A(i,j) += Jacobi(k,i) * Jacobi(k,j) + F(k)*tensor3Ord(k,i,j);
+            }
+        }
+    }
+	
 }
 
 
@@ -800,7 +831,7 @@ bool XFEM::intersectionOfXAABB(
   /*====================================================================*/
     
     bool intersection =  false;
-    std::vector<BlitzVec> nodes(8, BlitzVec(3));
+    std::vector<BlitzVec3> nodes(8, BlitzVec3());
     
     nodes[0](0) = cutterXAABB(0,0); nodes[0](1) = cutterXAABB(1,0); nodes[0](2) = cutterXAABB(2,0); // node 0   
     nodes[1](0) = cutterXAABB(0,1); nodes[1](1) = cutterXAABB(1,0); nodes[1](2) = cutterXAABB(2,0); // node 1

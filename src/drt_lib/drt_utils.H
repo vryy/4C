@@ -166,17 +166,17 @@ namespace UTILS
    * \author a.ger
    * \date 02/08
    */
-  template <DRT::Element::DiscretizationType distype>
-  void fillPositionArrayBlitzT(
+  template <DRT::Element::DiscretizationType distype, class M>
+  void fillPositionArray(
           const DRT::Element*      ele,
-          blitz::Array<double,2>&  xyze
+          M&                       xyze
           )
   {
       if (distype != ele->Shape())
       {
           dserror("mismatch in distype in template function PositionArrayBlitz");
       }
-      const int numnode = getNumberOfElementNodes<distype>();
+      const int numnode = DRT::UTILS::_switchDisType<distype>::numNodePerElement;
 
       const Node*const* nodes = ele->Nodes();
       if (nodes == NULL)
@@ -192,22 +192,6 @@ namespace UTILS
       }
       return;
   }
-
-  /*!
-   * a common task is to get an array of the positions of all nodes of this element
-   *
-   * this function does just that, so we don't have the associated loop repeated too often
-   *
-   * Note: return value optimization avoids copying the array
-   *
-   * \return Array with 3 dimensional position of all element nodes in the coordinate system of the nodes
-   *
-   * \author a.ger
-   * \date 02/08
-   */
-  Epetra_SerialDenseMatrix PositionArray(
-          const DRT::Element* ele           ///< pointer to element, whose nodes we evaluate for their position
-          );
 
 
 } // namespace UTILS

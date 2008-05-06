@@ -179,7 +179,7 @@ public:
             const BlitzVec&     trialshape
             ) const
     {
-        const int numparam = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
+        const int numparam = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
         for (int ui=0; ui<numparam; ++ui)
         {
             const int trialpos = 4*ui + getFieldNumber<trialfield>();
@@ -199,7 +199,7 @@ public:
             const double        fac
             ) const
     {
-        const int numparam = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
+        const int numparam = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
         for (int vi=0; vi<numparam; ++vi)
         {
             const int testpos = 4*vi + getFieldNumber<testfield>();

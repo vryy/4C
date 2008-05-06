@@ -1035,29 +1035,4 @@ blitz::Array<double,2> DRT::UTILS::PositionArrayBlitz(
     return xyze;
 }
 
-
-/*!
- * \brief create an often used array with 3D nodal positions (Epetra array)
- */
-Epetra_SerialDenseMatrix DRT::UTILS::PositionArray(
-        const DRT::Element* ele
-        )
-{
-    const int numnode = ele->NumNode();
-    Epetra_SerialDenseMatrix xyze(3,numnode);
-    const Node*const* nodes = ele->Nodes();
-    if (nodes == NULL)
-    {
-        dserror("element has no nodal pointers, so getting a position array doesn't make sense!");
-    }
-    for (int inode=0; inode<numnode; inode++)
-    {
-        const double* x = nodes[inode]->X();
-        xyze[0][inode] = x[0];
-        xyze[1][inode] = x[1];
-        xyze[2][inode] = x[2];
-    }
-    return xyze;
-}
-
 #endif  // #ifdef CCADISCRET

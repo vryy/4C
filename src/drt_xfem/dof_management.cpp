@@ -242,7 +242,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         {
             //DRT::Element* actele = ih->xfemdis()->lColElement(i);
             const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
-            const BlitzVec pos(toBlitzArray(actnode->X()));
+            const BlitzVec3 pos(toBlitzArray(actnode->X()));
             const int node_gid = actnode->Id();
 
             double val = 0.0;
@@ -272,7 +272,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
         {
             const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
-            const BlitzVec pos(toBlitzArray(actnode->X()));
+            const BlitzVec3 pos(toBlitzArray(actnode->X()));
             const int node_gid = actnode->Id();
 
             double val = 0.0;
@@ -308,7 +308,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
         {
             const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
-            const BlitzVec pos(toBlitzArray(actnode->X()));
+            const BlitzVec3 pos(toBlitzArray(actnode->X()));
             const int node_gid = actnode->Id();
 
             double val = 0.0;
@@ -344,7 +344,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
         {
             const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
-            const BlitzVec pos(toBlitzArray(actnode->X()));
+            const BlitzVec3 pos(toBlitzArray(actnode->X()));
             const int node_gid = actnode->Id();
 
             double val = 0.0;

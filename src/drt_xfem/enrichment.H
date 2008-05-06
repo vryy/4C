@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 #include <blitz/array.h>
 #include "Teuchos_RefCountPtr.hpp"
 #include "../drt_lib/drt_discret.H"
+#include "xfem.H"
 
 using namespace Teuchos;
 
@@ -124,15 +125,15 @@ public:
 
     //! calculate modified enrichment value based on input \f$\psi(x) - \psi(x_{\mathrm{n}})\f$
     double ModifiedEnrValue(
-            const blitz::Array<double,1>&         actpos,            ///< \f$x\f$
-            const blitz::Array<double,1>&         nodalpos,          ///< \f$x_{\mathrm{Node}}\f$
+            const BlitzVec3&                      actpos,            ///< \f$x\f$
+            const BlitzVec3&                      nodalpos,          ///< \f$x_{\mathrm{Node}}\f$
             const RCP<DRT::Discretization>&       cutterdis,         ///< intersecting discretization
             const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
             ) const;
 
     //! calculate enrichment value based on input \f$\psi(x)\f$
     double EnrValue(
-            const blitz::Array<double,1>&         actpos,            ///< \f$x\f$
+            const BlitzVec3&                      actpos,            ///< \f$x\f$
             const RCP<DRT::Discretization>&       cutterdis,         ///< intersecting discretization
             const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
             ) const;

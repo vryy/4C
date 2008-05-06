@@ -108,7 +108,7 @@ namespace XFEM
     \param eleCoord         (in)    	: vector of element coordinates
     \return                               vector of current coordinates
     */
-    BlitzVec elementToCurrentCoordinates(   
+    BlitzVec3 elementToCurrentCoordinates(   
         const DRT::Element*  element, 
         const BlitzVec&      eleCoord
         );
@@ -136,7 +136,7 @@ namespace XFEM
     */
     BlitzVec currentToElementCoordinatesExact(
             const DRT::Element*         element,
-            const BlitzVec&             x
+            const BlitzVec3&             x
             );
     
     
@@ -152,7 +152,7 @@ namespace XFEM
     */  
     bool currentToElementCoordinates(
         const DRT::Element*                 element,
-        const BlitzVec&                     x,
+        const BlitzVec3&                     x,
         BlitzVec&                           xsi
         );
     
@@ -254,7 +254,7 @@ namespace XFEM
     \return true if node is within the XAABB or false otherwise
     */
     bool isPositionWithinXAABB(
-            const BlitzVec&                    pos,    ///< node to be checked
+            const BlitzVec3&                   pos,    ///< node to be checked
             const BlitzMat&                    XAABB   ///< extended axis-aligned bouning box
             );
     
@@ -266,8 +266,8 @@ namespace XFEM
     \return true if node is within the XAABB or false otherwise
     */
     bool isLineWithinXAABB(
-            const BlitzVec&                    pos1, ///< node to be checked
-            const BlitzVec&                    pos2, ///< node to be checked
+            const BlitzVec3&                   pos1, ///< node to be checked
+            const BlitzVec3&                   pos2, ///< node to be checked
             const BlitzMat&                    XAABB ///< extended axis-aligned bouning box
             );
     
@@ -281,7 +281,7 @@ namespace XFEM
     */  
     bool checkPositionWithinElement(  
         const DRT::Element*                 element,
-        const BlitzVec&                     x
+        const BlitzVec3&                    x
         );   
     
     
@@ -294,7 +294,7 @@ namespace XFEM
     */  
     bool PositionWithinDiscretization(  
         const RCP<DRT::Discretization>      dis,
-        const BlitzVec&                     x);
+        const BlitzVec3&                    x);
     
     
     /*!
@@ -302,7 +302,7 @@ namespace XFEM
            The nonlinear system of equation is solved with help of the Newton-method.
     */  
     bool PositionWithinCondition(
-            const BlitzVec&                   x,                     ///< node in current coordinates
+            const BlitzVec3&                  x,                     ///< node in current coordinates
             const int                         xfem_condition_label, 
             const RCP<DRT::Discretization>    cutterdis              ///< mesh
         );
@@ -324,7 +324,7 @@ namespace XFEM
     */         
     bool searchForNearestPointOnSurface(
             const DRT::Element*                     surfaceElement,
-            const BlitzVec&                         physCoord,
+            const BlitzVec3&                        physCoord,
             BlitzVec&                               eleCoord,
             BlitzVec&                               normal,
             double&                                 distance
@@ -341,7 +341,7 @@ namespace XFEM
     */  
     BlitzVec CurrentToSurfaceElementCoordinates(
         const DRT::Element*      surfaceElement,
-        const BlitzVec&          physCoord
+        const BlitzVec3&         physCoord
         );
     
     
@@ -382,9 +382,9 @@ namespace XFEM
     \param surface element	(in)       	: surface element
     */    
     void updateFForMap3To2(   
-            BlitzVec&                       F,
+            BlitzVec3&                      F,
             const BlitzVec&                 xsi,
-            const BlitzVec&	                x,
+            const BlitzVec3&                x,
             const DRT::Element*            	surfaceElement
             );
     
@@ -402,7 +402,7 @@ namespace XFEM
     void updateAForMap3To2(   
             BlitzMat&                       A,
             const BlitzMat&                 Jacobi,
-            const BlitzVec&                 F,
+            const BlitzVec3&                F,
             const BlitzVec&                 xsi,
             const DRT::Element*             surfaceElement
             );

@@ -625,7 +625,7 @@ void Sysmat(
     
     // get node coordinates of the current element
     static BlitzMat xyze(nsd, numnode);
-    DRT::UTILS::fillPositionArrayBlitzT<DISTYPE>(ele, xyze);
+    DRT::UTILS::fillPositionArray<DISTYPE>(ele, xyze);
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));

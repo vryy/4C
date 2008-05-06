@@ -56,7 +56,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
   dserror("not adapted to xfem (, yet)!!!");
     
   std::vector<DRT::Condition*> myneumcond;
-  const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
+  const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
   // check whether all nodes have a unique VolumeNeumann condition
   int nodecount = 0;
   for (int inode=0;inode<numnode;++inode)
@@ -434,7 +434,7 @@ BlitzMat gder2(
     |                      | | | | | 5 = dsdt
     |                  +-+-+-+-+
     */
-    const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
+    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
     Epetra_SerialDenseMatrix ederxy2(View,derxy2_.data(),6,6,numnode);
 
     Epetra_SerialDenseSolver solver;
@@ -618,14 +618,14 @@ void static Sysmat(
     eforce = 0.0;
     
     // number of nodes for element
-    const int numnode = DRT::UTILS::getNumberOfElementNodes<DISTYPE>();
+    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
     
     // dimension for 3d fluid element
     const int nsd = 3;
     
     // get node coordinates of the current element
     static BlitzMat xyze(nsd, numnode);
-    DRT::UTILS::fillPositionArrayBlitzT<DISTYPE>(ele, xyze);
+    DRT::UTILS::fillPositionArray<DISTYPE>(ele, xyze);
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
@@ -755,8 +755,13 @@ void static Sysmat(
             }
 
             // position of the gausspoint in physical coordinates
-            static BlitzVec gauss_pos_xyz(3);
-            gauss_pos_xyz = blitz::sum(funct(j)*xyze(i,j),j);
+            static BlitzVec3 gauss_pos_xyz;
+            for (int isd = 0; isd < 3; ++isd)
+            {
+                gauss_pos_xyz(isd) = 0.0;
+                for (int inode = 0; inode < numnode; ++inode)
+                    gauss_pos_xyz(isd) += funct(inode)*xyze(isd,inode);
+            }
       
             // get transposed of the jacobian matrix d x / d \xi
             static BlitzMat xjm(3,3);
@@ -1808,7 +1813,7 @@ void static Sysmat(
             const BlitzMat deriv_boundary(DRT::UTILS::shape_function_2D_deriv1(posXiBoundary(0),posXiBoundary(1),boundaryele->Shape()));
             
             // shape functions and their first derivatives
-            BlitzVec funct(DRT::UTILS::getNumberOfElementNodes<DISTYPE>());
+            BlitzVec funct(DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement);
             DRT::UTILS::shape_function<DISTYPE>(posXiDomain,funct);
       
             const BlitzVec funct_stress(DRT::UTILS::shape_function_3D(posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype));
@@ -1820,8 +1825,17 @@ void static Sysmat(
             //DRT::UTILS::shape_function_3D_deriv1(deriv_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
             
             // position of the gausspoint in physical coordinates
-            static BlitzVec gauss_pos_xyz(3);
-            gauss_pos_xyz = blitz::sum(funct_boundary(j)*xyze_boundary(i,j),j);
+//            static BlitzVec gauss_pos_xyz(3);
+//            gauss_pos_xyz = blitz::sum(funct_boundary(j)*xyze_boundary(i,j),j);
+            static BlitzVec3 gauss_pos_xyz;
+            for (int isd = 0; isd < 3; ++isd)
+            {
+                gauss_pos_xyz(isd) = 0.0;
+                for (int inode = 0; inode < numnode; ++inode)
+                {
+                    gauss_pos_xyz(isd) += funct_boundary(inode)*xyze_boundary(isd,inode);
+                }
+            }
       
             // get jacobian matrix d x / d \xi  (3x2)
             static BlitzMat dxyzdrs(3,2);

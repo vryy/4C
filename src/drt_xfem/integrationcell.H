@@ -201,7 +201,7 @@ public:
     std::string toString() const;
     
     //! get geometric center of the cell in physical coordinates
-    BlitzVec GetPhysicalCenterPosition(const DRT::Element& ele) const;
+    BlitzVec3 GetPhysicalCenterPosition(const DRT::Element& ele) const;
 
 private:
     

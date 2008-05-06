@@ -39,9 +39,9 @@ namespace XFEM
     };
     
     //! take a double C array and convert it to a BlitzArray of length 3
-    inline BlitzVec toBlitzArray(const double* x)
+    inline BlitzVec3 toBlitzArray(const double* x)
     {
-        static BlitzVec blitz_x(3);
+        static BlitzVec3 blitz_x;
         blitz_x(0) = x[0];
         blitz_x(1) = x[1];
         blitz_x(2) = x[2];

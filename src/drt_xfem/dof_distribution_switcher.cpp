@@ -114,7 +114,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
             {
                 dserror("bug: the interface is not moving at the moment");
                 const int gnodeid = olddofkey.getGid();
-                const BlitzVec actpos(toBlitzArray(ih_->xfemdis()->gNode(gnodeid)->X()));
+                const BlitzVec3 actpos(toBlitzArray(ih_->xfemdis()->gNode(gnodeid)->X()));
                 const XFEM::FieldEnr oldfieldenr = olddofkey.getFieldEnr();
                 const XFEM::Enrichment oldenr = oldfieldenr.getEnrichment();
                 const double enrval = oldenr.EnrValue(actpos, ih_->submerseddis(), Enrichment::approachUnknown);

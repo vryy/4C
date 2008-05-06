@@ -89,7 +89,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	          XFEM::DomainIntCells::const_iterator cell;
 	          for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
 	          {
-	              const blitz::Array<double,1> cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
+	              const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
 	              gmshfilecontent << "SP(";
 	              gmshfilecontent << scientific << cellcenterpos(0) << ",";
 	              gmshfilecontent << scientific << cellcenterpos(1) << ",";
