@@ -144,7 +144,7 @@ actdisc_(discr)
   {
     p1.set("action","calc_struct_constrvol");
     actdisc_->SetState("displacement",disp);
-    EvaluateCondition(actdisc_,p,null,null,null,null,null,monitcond);
+    EvaluateCondition(actdisc_,p1,null,null,null,null,null,monitcond);
     havevolmonitor_=true;
   }
   // Check for Area Monitor in 3D
@@ -154,7 +154,7 @@ actdisc_(discr)
   {
     p1.set("action","calc_struct_monitarea");
     actdisc_->SetState("displacement",disp);
-    EvaluateCondition(actdisc_,p,null,null,null,null,null,monitcond);
+    EvaluateCondition(actdisc_,p1,null,null,null,null,null,monitcond);
     haveareamonitor3D_=true;
   }
   // Check for Area Monitor in 2D
@@ -164,7 +164,7 @@ actdisc_(discr)
   {
     p1.set("action","calc_struct_constrarea");
     actdisc_->SetState("displacement",disp);
-    EvaluateCondition(actdisc_,p,null,null,null,null,null,monitcond);
+    EvaluateCondition(actdisc_,p1,null,null,null,null,null,monitcond);
     haveareamonitor2D_=true;
   }
   //----------------------------------------------------
@@ -827,6 +827,11 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |(private)                                                   tk 04/08  |
+ |Evaluate method, calling element evaluates of a condition and         |
+ |assembing results based on this conditions                            |
+ *----------------------------------------------------------------------*/
 void ConstrManager::EvaluateCondition(RCP<DRT::Discretization> disc,
     ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
