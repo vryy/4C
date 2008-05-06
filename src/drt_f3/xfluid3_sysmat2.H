@@ -771,7 +771,7 @@ void static Sysmat(
 
             if (det < 0.0)
             {
-                dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %lf", ele->Id(), det);
+                dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
             }
 
             // inverse of jacobian
@@ -1841,7 +1841,7 @@ void static Sysmat(
 
             if (detmetric < 0.0)
             {
-                dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %lf", ele->Id(), detmetric);
+                dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), detmetric);
             }
 
             // compute second global derivative

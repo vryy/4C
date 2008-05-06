@@ -454,7 +454,7 @@ void DRT::ELEMENTS::Condif2::condif2_jaco(const Epetra_SerialDenseMatrix& xyze,
   {
      printf("\n");
      printf("GLOBAL ELEMENT NO.%i\n",Id());
-     printf("NEGATIVE JACOBIAN DETERMINANT: %lf\n",*det);
+     printf("NEGATIVE JACOBIAN DETERMINANT: %f\n",*det);
      dserror("Stopped not regulary!\n");
   }
 

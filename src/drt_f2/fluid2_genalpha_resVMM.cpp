@@ -243,7 +243,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   // check for degenerated elements
   if (det < 0.0)
   {
-    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %lf", ele->Id(), det);
+    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
   }
 
   // get a rough approximation of the element area by a one point gauss
@@ -621,7 +621,7 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     // check for degenerated elements
     if (det < 0.0)
     {
-      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %lf", ele->Id(), det);
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
     }
 
     // set total integration factor

@@ -2254,7 +2254,7 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
     {
         printf("\n");
         printf("GLOBAL ELEMENT NO.%i\n",Id());
-        printf("NEGATIVE JACOBIAN DETERMINANT: %lf\n", det);
+        printf("NEGATIVE JACOBIAN DETERMINANT: %f\n", det);
         dserror("Stopped not regulary!\n");
     }
 
@@ -3338,7 +3338,7 @@ void DRT::ELEMENTS::Fluid3::ConvStresses(
 
     if (det < 0.0)
     {
-      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %lf", Id(), det);
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", Id(), det);
     }
 
     // inverse of jacobian

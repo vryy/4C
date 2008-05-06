@@ -186,7 +186,7 @@ void DRT::ELEMENTS::Fluid3Stationary::Sysmat(
 
     if (det < 0.0)
     {
-      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %lf", ele->Id(), det);
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
     }
 
     // inverse of jacobian
