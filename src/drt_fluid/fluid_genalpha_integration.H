@@ -548,6 +548,11 @@ public:
   */
   void LiftDrag() const;
 
+  /*!
+  \brief calculate traction values at Dirichlet boundaries
+
+  */
+  Teuchos::RCP<Epetra_Vector> CalcStresses();
 
   /// integrate shape functions at nodes marked by condition
   /*!
@@ -653,6 +658,8 @@ private:
   int                       upres_;
   //! count steps till upres_
   int                       writestep_;
+  //! compute and write traction vector
+  int                       writestresses_;
 
   //! parameters for sampling/dumping period
   int samstart_;

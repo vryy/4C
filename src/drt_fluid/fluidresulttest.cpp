@@ -38,8 +38,9 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
 {
-  fluiddis_=fluid.discret_;
-  mysol_   =fluid.velnp_ ;
+  fluiddis_= fluid.discret_;
+  mysol_   = fluid.velnp_ ;
+  mytraction_ = fluid.CalcStresses();
 }
 
 
@@ -47,8 +48,9 @@ FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
 /*----------------------------------------------------------------------*/
 FluidResultTest::FluidResultTest(FluidGenAlphaIntegration& fluid)
 {
-  fluiddis_=fluid.discret_;
-  mysol_   =fluid.velnp_ ;
+  fluiddis_= fluid.discret_;
+  mysol_   = fluid.velnp_;
+  mytraction_ = fluid.CalcStresses();
 }
 
 
@@ -85,6 +87,8 @@ void FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_coun
     }
     else if (position=="velz")
     {
+      if (genprob.ndim==2)
+        dserror("Cannot test result for velz in 2D case.");
       result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,2))];
     }
     else if (position=="pressure")
@@ -102,7 +106,17 @@ void FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_coun
         result = (*mysol_)[velnpmap.LID(fluiddis_->Dof(actnode,3))];
       }
     }
-    else
+    else if (position=="tractionx")
+      result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(actnode,0))];
+    else if (position=="tractiony")
+      result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(actnode,1))];
+    else if (position=="tractionz")
+    {
+      if (genprob.ndim==2)
+        dserror("Cannot test result for tractionz in 2D case.");
+      result = (*mytraction_)[(mytraction_->Map()).LID(fluiddis_->Dof(actnode,2))];
+    }
+      else
     {
       dserror("position '%s' not supported in fluid testing", position.c_str());
     }

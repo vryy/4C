@@ -50,7 +50,8 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   uprestart_(params.get("write restart every", -1)),
   restartstep_(0),
   upres_(params.get("write solution every", -1)),
-  writestep_(0)
+  writestep_(0),
+  writestresses_(params.get("write stresses", 0))
 {
 
   // -------------------------------------------------------------------
@@ -810,6 +811,13 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
       output_.WriteVector("dispnp", dispnp_);
     }
 
+    //only perform stress calculation when output is needed
+    if (writestresses_)
+    {
+     RefCountPtr<Epetra_Vector> traction = CalcStresses();
+     output_.WriteVector("traction",traction);
+    }
+
     // do restart if we have to
     if (restartstep_ == uprestart_)
     {
@@ -855,6 +863,13 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
       output_.WriteVector("dispnp", dispnp_);
       output_.WriteVector("dispn"   ,dispn_   );
       output_.WriteVector("gridveln",gridveln_);
+    }
+
+    //only perform stress calculation when output is needed
+    if (writestresses_)
+    {
+     RefCountPtr<Epetra_Vector> traction = CalcStresses();
+     output_.WriteVector("traction",traction);
     }
 
     // write mesh in each restart step --- the elements are required since
@@ -3026,6 +3041,40 @@ void FluidGenAlphaIntegration::LiftDrag() const
 }//FluidGenAlphaIntegration::LiftDrag
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  calculate traction vector at (Dirichlet) boundary (public) gjb 05/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+Teuchos::RCP<Epetra_Vector> FluidGenAlphaIntegration::CalcStresses()
+{
+  string condstring("FluidStressCalc");
+  Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
+
+  // compute traction values at specified nodes; otherwise do not touch the zero values
+  for (int i=0;i<integratedshapefunc->MyLength();i++)
+  {
+    if ((*integratedshapefunc)[i] != 0.0)
+    {
+      // overwrite integratedshapefunc values with the calculated traction coefficients,
+      // which are reconstructed out of the nodal forces (trueresidual_) using the
+      // same shape functions on the boundary as for velocity and pressure.
+      (*integratedshapefunc)[i] = (*force_)[i]/(*integratedshapefunc)[i];
+    }
+  }
+
+  // inform the user
+  if (myrank_==0)
+    cout<<"\ncomputed traction at specified Dirichlet boundaries\n\n";
+
+  return integratedshapefunc;
+
+} // FluidGenAlphaIntegration::CalcStresses()
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -3048,7 +3097,10 @@ Teuchos::RCP<Epetra_Vector> FluidGenAlphaIntegration::IntegrateInterfaceShape(
 
   // call loop over elements
   discret_->ClearState();
-  discret_->SetState("dispnp", dispnp_);
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+  }
   discret_->EvaluateCondition(eleparams,integratedshapefunc,condname);
   discret_->ClearState();
 

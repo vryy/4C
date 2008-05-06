@@ -58,6 +58,7 @@ private:
 
   RefCountPtr<DRT::Discretization> fluiddis_;
   RefCountPtr<Epetra_Vector>       mysol_;
+  RefCountPtr<Epetra_Vector>       mytraction_;
 };
 
 
