@@ -260,6 +260,27 @@ namespace UTILS
          return -1;
      }
   }
+  
+  //! Template Meta Programming version of switch over discretization type
+  /*!
+   * \warning experimental, such feature has to be discussed before it is used all over the place
+   */
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct _switchDisType {static const int numNodePerElement = -1;};
+  template<> struct _switchDisType<DRT::Element::dis_none> {static const int numNodePerElement = 0;};
+  template<> struct _switchDisType<DRT::Element::point1>   {static const int numNodePerElement = 1;};
+  template<> struct _switchDisType<DRT::Element::line2>    {static const int numNodePerElement = 2;};
+  template<> struct _switchDisType<DRT::Element::line3>    {static const int numNodePerElement = 3;};
+  template<> struct _switchDisType<DRT::Element::quad4>    {static const int numNodePerElement = 4;};
+  template<> struct _switchDisType<DRT::Element::quad8>    {static const int numNodePerElement = 8;};
+  template<> struct _switchDisType<DRT::Element::quad9>    {static const int numNodePerElement = 9;};
+  template<> struct _switchDisType<DRT::Element::tri3>     {static const int numNodePerElement = 3;};
+  template<> struct _switchDisType<DRT::Element::tri6>     {static const int numNodePerElement = 6;};
+  template<> struct _switchDisType<DRT::Element::hex8>     {static const int numNodePerElement = 8;};
+  template<> struct _switchDisType<DRT::Element::hex20>    {static const int numNodePerElement = 20;};
+  template<> struct _switchDisType<DRT::Element::hex27>    {static const int numNodePerElement = 27;};
+  template<> struct _switchDisType<DRT::Element::tet4>     {static const int numNodePerElement = 4;};
+  template<> struct _switchDisType<DRT::Element::tet10>    {static const int numNodePerElement = 10;};
 
    /*!
   \brief Returns the number of corner nodes
