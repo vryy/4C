@@ -10,6 +10,7 @@
 
 #include "fsi_dyn.H"
 #include "fsi_dirichletneumann.H"
+#include "fsi_robinneumann.H"
 #include "fsi_robin.H"
 #include "fsi_monolithicoverlap.H"
 #include "fsi_structureale.H"
@@ -172,6 +173,10 @@ void fsi_ale_drt()
     if (method==INPUTPARAMS::fsi_DirichletNeumann)
     {
       fsi = Teuchos::rcp(new FSI::DirichletNeumann(comm));
+    }
+    else if (method==INPUTPARAMS::fsi_RobinNeumann)
+    {
+      fsi = Teuchos::rcp(new FSI::RobinNeumann(comm));
     }
     else
     {
