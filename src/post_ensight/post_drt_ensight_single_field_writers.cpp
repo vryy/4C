@@ -608,7 +608,7 @@ vector<double> computeScalarCellNodeValues(
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const blitz::Array<double,1> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const blitz::TinyVector<double,3> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
   // cell corner nodes
   //const blitz::Array<double,2> cellnodeposvectors = cell.NodalPosXYZ(ele);
