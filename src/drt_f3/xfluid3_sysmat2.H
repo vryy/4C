@@ -21,6 +21,7 @@ Maintainer: Axel Gerstenberger
 
 #include <math.h>
 #include "xfluid3.H"
+#include "xfluid3_utils.H"
 #include <blitz/array.h>
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -37,7 +38,6 @@ Maintainer: Axel Gerstenberger
 
 using namespace std;
 using namespace XFEM::PHYSICS;
-
 
 namespace XFLUID
 {
@@ -491,26 +491,7 @@ BlitzVec computeNormalToBoundaryElement(
   
   
   
-/*! get number of unknowns for this field
- * use the dofmanager in the general case,
- * otherwise use a given number numnode
- */
-template<XFEM::AssemblyType>
-int getNumParam(
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field     field,
-        const int)
-{
-    return dofman.NumDofPerField(field);
-}
-template<> 
-int getNumParam<XFEM::standard_assembly>(
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field     field,
-        const int numnode)
-{
-    return numnode;
-}
+
 
 /*!
  \brief get optimal gaussrule for given discretization type
@@ -694,8 +675,8 @@ void static Sysmat(
     
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
     const int numparamvelx = getNumParam<ASSTYPE>(dofman, Velx, numnode);
-    const int numparamvely = getNumParam<ASSTYPE>(dofman, Vely, numnode);
-    const int numparamvelz = getNumParam<ASSTYPE>(dofman, Velz, numnode);
+//    const int numparamvely = getNumParam<ASSTYPE>(dofman, Vely, numnode);
+//    const int numparamvelz = getNumParam<ASSTYPE>(dofman, Velz, numnode);
     const int numparampres = getNumParam<ASSTYPE>(dofman, Pres, numnode);
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
@@ -710,53 +691,7 @@ void static Sysmat(
     BlitzMat evelnp_hist(3,numparamvelx,blitz::ColumnMajorArray<2>());
     BlitzMat etau(6,numparamtauxx,blitz::ColumnMajorArray<2>());
     
-    const vector<int>& velxdof(dofman.LocalDofPosPerField(Velx));
-    const vector<int>& velydof(dofman.LocalDofPosPerField(Vely));
-    const vector<int>& velzdof(dofman.LocalDofPosPerField(Velz));
-    const vector<int>& presdof(dofman.LocalDofPosPerField(Pres));
-    
-    for (int iparam=0; iparam<numparamvelx; ++iparam)
-    {
-        evelnp(     0,iparam) = locval[     velxdof[iparam]];
-        evelnp_hist(0,iparam) = locval_hist[velxdof[iparam]];
-    }
-    for (int iparam=0; iparam<numparamvely; ++iparam)
-    {
-        evelnp(     1,iparam) = locval[     velydof[iparam]];
-        evelnp_hist(1,iparam) = locval_hist[velydof[iparam]];
-    }
-    for (int iparam=0; iparam<numparamvelz; ++iparam)
-    {
-        evelnp(     2,iparam) = locval[     velzdof[iparam]];
-        evelnp_hist(2,iparam) = locval_hist[velzdof[iparam]];
-    }
-    for (int iparam=0; iparam<numparampres; ++iparam)
-        eprenp(iparam) = locval[presdof[iparam]];
-    if (tauele_unknowns_present)
-    {
-        const int numparamtauyy = getNumParam<ASSTYPE>(dofman, Tauyy, 1);
-        const int numparamtauzz = getNumParam<ASSTYPE>(dofman, Tauzz, 1);
-        const int numparamtauxy = getNumParam<ASSTYPE>(dofman, Tauxy, 1);
-        const int numparamtauxz = getNumParam<ASSTYPE>(dofman, Tauxz, 1);
-        const int numparamtauyz = getNumParam<ASSTYPE>(dofman, Tauyz, 1);
-        const vector<int>& tauxxdof(dofman.LocalDofPosPerField(Tauxx));
-        const vector<int>& tauyydof(dofman.LocalDofPosPerField(Tauyy));
-        const vector<int>& tauzzdof(dofman.LocalDofPosPerField(Tauzz));
-        const vector<int>& tauxydof(dofman.LocalDofPosPerField(Tauxy));
-        const vector<int>& tauxzdof(dofman.LocalDofPosPerField(Tauxz));
-        const vector<int>& tauyzdof(dofman.LocalDofPosPerField(Tauyz));
-        for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = locval[tauxxdof[iparam]];
-        for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = locval[tauyydof[iparam]];
-        for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = locval[tauzzdof[iparam]];
-        for (int iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = locval[tauxydof[iparam]];
-        for (int iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = locval[tauxzdof[iparam]];
-        for (int iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = locval[tauyzdof[iparam]];
-    }
-    if (discpres_unknowns_present)
-    {
-        const vector<int>& discpresdof(dofman.LocalDofPosPerField(DiscPres));
-        for (int iparam=0; iparam<numparamdiscpres; ++iparam)   ediscprenp(iparam) = locval[discpresdof[iparam]];
-    }
+    XFEM::fillElementUnknownsArrays<DISTYPE,ASSTYPE>(dofman, numnode, locval, locval_hist, evelnp, evelnp_hist, eprenp, etau, ediscprenp);
     
     // stabilization parameter
     const double hk = XFLUID::HK<DISTYPE>(evelnp,visc,xyze);

@@ -21,6 +21,7 @@ Maintainer: Axel Gerstenberger
 
 #include <math.h>
 #include "xfluid3.H"
+#include "xfluid3_utils.H"
 #include <blitz/array.h>
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -450,8 +451,8 @@ BlitzMat gder2(
 
 //! calculate element normal in gausspoint (r,s)
 BlitzVec computeNormalToBoundaryElement(
-        const BlitzMat& deriv,                  ///< shape functions derivative
-        const BlitzMat& xs                      ///< element nodal coordinates in x space
+        const BlitzMat& deriv,                  ///< shape functions derivative in (r,s)
+        const BlitzMat& xs                      ///< boundary element nodal coordinates in (x,y,z) space
         )
 {
     // init blitz indices
@@ -490,26 +491,7 @@ BlitzVec computeNormalToBoundaryElement(
   
   
   
-/*! get number of unknowns for this field
- * use the dofmanager in the general case,
- * otherwise use a given number numnode
- */
-template<XFEM::AssemblyType>
-int getNumParam(
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field     field,
-        const int)
-{
-    return dofman.NumDofPerField(field);
-}
-template<> 
-int getNumParam<XFEM::standard_assembly>(
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field     field,
-        const int numnode)
-{
-    return numnode;
-}
+
 
 /*!
  \brief get optimal gaussrule for given discretization type
