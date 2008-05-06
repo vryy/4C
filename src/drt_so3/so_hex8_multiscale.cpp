@@ -20,6 +20,7 @@ Maintainer: Lena Wiechert
 #include "so_hex8.H"
 #include "../drt_lib/drt_utils.H"
 #include "Epetra_SerialDenseSolver.h"
+#include "../drt_mat/micromaterial.H"
 
 using namespace std; // cout etc.
 
@@ -280,6 +281,24 @@ void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(ParameterList&  params)
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Read restart on the microscale                              lw 05/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_read_restart_multi(ParameterList& params)
+{
+  const int ele_ID = Id();
+  RefCountPtr<MAT::Material> mat = Material();
+
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  {
+
+    MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+
+    micro->Evaluate(NULL, NULL, NULL, NULL, gp, ele_ID, 0., "multi_readrestart");
+  }
+  return;
+}
 
 #endif
 #endif

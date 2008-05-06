@@ -255,4 +255,9 @@ void symbol_print(FILE* f, CHAR* key, SYMBOL* symbol, INT indent);
 void parse_control_file(MAP* map, const CHAR* filename);
 
 
+/* Read the control file given by name. Put its contents into the map.
+ * (serial only!)*/
+void parse_control_file_serial(MAP* map, const CHAR* filename);
+
+
 #endif

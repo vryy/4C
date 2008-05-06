@@ -68,6 +68,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
   else if (action=="eas_set_multi")                               act = So_hex8::eas_set_multi;
   else if (action=="calc_homog_stressdens")                       act = So_hex8::calc_homog_stressdens;
   else if (action=="postprocess_stress")                          act = So_hex8::postprocess_stress;
+  else if (action=="multi_readrestart")                           act = So_hex8::multi_readrestart;
 #ifdef PRESTRESS
   else if (action=="calc_struct_prestress_update_green_lagrange") act = So_hex8::update_gl;
 #endif
@@ -332,6 +333,15 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       if (eastype_ != soh8_easnone) {
         soh8_set_eas_multi(params);
       }
+    }
+    break;
+
+    // read restart of microscale
+    case multi_readrestart: {
+      RefCountPtr<MAT::Material> mat = Material();
+
+      if (mat->MaterialType()==m_struct_multiscale)
+        soh8_read_restart_multi(params);
     }
     break;
 
@@ -601,7 +611,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     glstrain(5) = cauchygreen(2,0);
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
-    if (eastype_ != soh8_easnone) 
+    if (eastype_ != soh8_easnone)
     {
       LINALG::SerialDenseMatrix Mtemp(NUMSTR_SOH8,neas_);
       M.LightShape(NUMSTR_SOH8,neas_);

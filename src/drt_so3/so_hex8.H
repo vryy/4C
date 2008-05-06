@@ -58,7 +58,7 @@ class Soh8Register;
 \brief A C++ version of the 8-node hex solid element
 
 A structural 8-node hexahedral solid element for large deformations. As its
-discretization is fixed many data structures are evaluated just once and kept 
+discretization is fixed many data structures are evaluated just once and kept
 for performance (e.g. shape functions, derivatives, etc.,
 see DRT::ELEMENTS::So_hex8::Integrator_So_hex8). It heavily uses
 Epetra objects and methods and therefore relies on their performance.
@@ -356,7 +356,8 @@ protected:
     eas_init_multi,
     eas_set_multi,
     postprocess_stress,
-    update_gl
+    update_gl,
+    multi_readrestart
   };
 
   //! kinematic types of so_hex8, but yet only total-lagrangian is implemented
@@ -378,16 +379,16 @@ protected:
     soh8_stress_nd123,
     soh8_stress_cxyz     // interpolated element center stresses
   };
-  
+
   /*!
    * \brief EAS technology enhancement types of so_hex8
-   * 
+   *
    * Solid Hex8 has EAS enhancement of GL-strains to avoid locking.
    * \param soh8_easmild: 9 parameters consisting of modes to alleviate
    * shear locking (bending) and main incompressibility modes
    * \param soh8_easfull: 21 parameters to prevent almost all locking modes.
-   * Equivalent to all 30 parameters to fully complete element 
-   * with quadratic modes (see Andelfinger 1993 for details) and therefore 
+   * Equivalent to all 30 parameters to fully complete element
+   * with quadratic modes (see Andelfinger 1993 for details) and therefore
    * also suitable for distorted elements.
    * \param soh8_eassoh8: related to Solid-Shell, 7 parameters to alleviate
    * inplane (membrane) locking and main modes for Poisson-locking
@@ -447,7 +448,7 @@ protected:
   // in the material configuration
   virtual void InitJacobianMapping();
 
-  //! Calculate nonlinear stiffness and mass matrix  
+  //! Calculate nonlinear stiffness and mass matrix
   virtual void soh8_nlnstiffmass(vector<int>&              lm,
                                  vector<double>&           disp,
                                  vector<double>&           residual,
@@ -480,17 +481,17 @@ protected:
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
   /***************OBSOLETE**********************************/
-  
+
   /*!
    * \brief Interface to material laws working with soh8.
-   * 
+   *
    * Here the interface to any material takes place. Stress and C-mat must be retrieved
    * whereas all necessary data is passed. Add whatever your material needs, but
    * make sure that exchange is not overdone performance-wise.
    * Right now EAS is based on GL-Strains which is ok for any hyperelastic material.
    * This means that e.g. the deformation gradient is not alleviated from locking
    * and therefore only to be used with disp-based soh8.
-   * 
+   *
    * \param *stress (out): Voigt-Vector of stresses at current gp
    * \param *cmat (out): Elasticity matrix at current gp
    * \param *density (out): density of material
@@ -533,6 +534,8 @@ protected:
   void soh8_set_eas_multi(ParameterList&  params);
 
   void soh8_eas_init_multi(ParameterList&  params);
+
+  void soh8_read_restart_multi(ParameterList& params);
 
 
   vector<double> getthicknessvector() const {dserror("not implemented"); return vector<double>(3);};

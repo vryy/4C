@@ -2055,6 +2055,68 @@ end:
 /*----------------------------------------------------------------------*/
 /*!
   \brief Parse the file given by name and fill the map with this
+  file's content (serial only!)
+
+  \author lw
+  \date 05/08
+*/
+/*----------------------------------------------------------------------*/
+void parse_control_file_serial(MAP* map, const CHAR* filename)
+{
+  PARSER_DATA data;
+
+#ifdef DEBUG
+  dstrc_enter("parse_control_file_serial");
+#endif
+
+  /*
+   * So here we are. Before the symbol table can be filled with values
+   * it has to be initialized. That is we expect to get an
+   * uninitialized (virgin) map. */
+  init_map(map);
+
+  data.tok = tok_none;
+  data.lineno = 1;
+  data.pos = 0;
+  data.indent_level = 0;
+  data.indent_step = -1;
+
+  INT bytes_read;
+  FILE* file;
+  file = fopen(filename, "rb");
+
+  if (file==NULL) {
+    dserror("cannot read file '%s'", filename);
+  }
+
+  /* find out the control file size */
+  fseek(file, 0, SEEK_END);
+  data.file_size = ftell(file);
+
+  /* read file to local buffer */
+  data.file_buffer = CCAMALLOC((data.file_size+1)*sizeof(CHAR));
+  fseek(file, 0, SEEK_SET);
+  bytes_read = fread(data.file_buffer, sizeof(CHAR), data.file_size, file);
+  if (bytes_read != data.file_size) {
+    dserror("failed to read file %s", filename);
+  }
+  /* a trailing zero helps a lot */
+  data.file_buffer[data.file_size] = '\0';
+
+  fclose(file);
+    
+  parse_definitions(&data, map);
+  destroy_parser_data(&data);
+  
+#ifdef DEBUG
+  dstrc_exit();
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*!
+  \brief Parse the file given by name and fill the map with this
   file's content.
 
   \author u.kue

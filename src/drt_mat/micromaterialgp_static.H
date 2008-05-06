@@ -35,11 +35,13 @@ public:
 
   /// construct an instance of MicroMaterial for a given Gauss point
   /// and microscale discretization
-  MicroMaterialGP(const int gp, const int ele_ID);
+  MicroMaterialGP(const int gp, const int ele_ID, const bool eleowner, const double time);
 
   /// destructor
   ~MicroMaterialGP();
 
+  /// Read restart
+  void ReadRestart();
 
   /// Perform microscale simulation
   void PerformMicroSimulation(const Epetra_SerialDenseMatrix* defgrd,
@@ -47,7 +49,8 @@ public:
                               Epetra_SerialDenseMatrix* cmat,
                               double* density,
                               const double time,
-                              string action);
+                              string action,
+                              const bool eleowner);
 
   /// Set up microscale static "time integrator"
   void SetUpMicroStatic();
@@ -96,6 +99,9 @@ private:
 
   /// timestep size
   double dt_;
+
+  /// restart name
+  string restartname_;
 
 };
 }

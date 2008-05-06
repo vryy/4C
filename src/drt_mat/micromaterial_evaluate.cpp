@@ -31,6 +31,13 @@ using namespace std;
 using namespace Teuchos;
 using namespace IO;
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 
 // This function has to be separated from the remainder of the
 // MicroMaterial class. MicroMaterialGP is NOT a member of
@@ -59,23 +66,33 @@ void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
   RefCountPtr<DRT::Problem> micro_problem = DRT::Problem::Instance(1);
   micro_problem->ActivateMaterial();
 
+  // avoid writing output also for ghosted elements
+  const bool eleowner = DRT::Problem::Instance(0)->Dis(genprob.numsf,0)->ElementRowMap()->MyGID(ele_ID);
 
   if (gp > static_cast<int>(matgp_.size())-1)
   {
     matgp_.resize(gp+1);
-    matgp_[gp] = rcp(new MicroMaterialGP(gp, ele_ID));
+    matgp_[gp] = rcp(new MicroMaterialGP(gp, ele_ID, eleowner, time));
   }
 
-  // perform microscale simulation and homogenization
-
   RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
-  actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat, density, time, action);
+
+  // read restart if necessary
+  if (action == "multi_readrestart")
+  {
+    actmicromatgp->ReadRestart();
+  }
+  // perform microscale simulation and homogenization (if fint and stiff/mass or stress calculation is required)
+  else
+  {
+    actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat, density, time, action, eleowner);
+  }
 
   // reactivate macroscale material
-
   RefCountPtr<DRT::Problem> macro_problem = DRT::Problem::Instance(0);
   macro_problem->ActivateMaterial();
 
+  return;
 }
 
 #endif
