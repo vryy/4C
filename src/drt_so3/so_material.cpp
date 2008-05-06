@@ -40,6 +40,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
+#include "../drt_mat/hyperpolyconvex_ogden.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -84,7 +85,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case m_anisotropic_balzani:
     {
       MAT::AnisotropicBalzani* anba = static_cast <MAT::AnisotropicBalzani*>(mat.get());
-      
+
       double avec[3]= {0.0};
       if (this->Type() != DRT::Element::element_sosh8){
         // fiber direction for z-cylinder, calculated via cross-product and beta=45°
@@ -137,6 +138,13 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(glstrain,cmat,stress);
       *density = aaa->Density();
+      break;
+    }
+    case m_hyperpolyogden: /*-- slightly compressible hyperelastic polyconvex material for alveoli*/
+    {
+      MAT::HyperPolyOgden* hpo = static_cast <MAT::HyperPolyOgden*>(mat.get());
+      hpo->Evaluate(glstrain,cmat,stress);
+      *density = hpo->Density();
       break;
     }
     default:
@@ -381,11 +389,11 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_mat_sel(
     case m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
-      
+
       stvk->Evaluate(glstrain,cmat,stress);
-      
+
       *density = stvk->Density();
-      
+
       break;
     }
     case m_mooneyrivlin: /*----------------- Mooney-Rivlin Material */

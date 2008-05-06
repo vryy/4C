@@ -128,6 +128,7 @@ using namespace std;
 #define ParObject_StructuralSurface     (int)100
 #define ParObject_StructuralLine        (int)101
 #define ParObject_MooneyRivlin          (int)102
+#define ParObject_HyperPolyOgden        (int)103
 
 namespace DRT
 {

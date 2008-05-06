@@ -66,7 +66,7 @@ int MAT::MicroMaterialGP::microstaticcounter_;
 /// construct an instance of MicroMaterial for a given Gauss point and
 /// microscale discretization
 
-MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
+MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool eleowner, const double time)
   : gp_(gp),
     ele_ID_(ele_ID)
 {
@@ -92,16 +92,13 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
   // create and initialize "empty" EAS history map
   EasInit();
 
-  RefCountPtr<DRT::Discretization> actdis = DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
-
   // Check for surface stress conditions due to interfacial phenomena
   vector<DRT::Condition*> surfstresscond(0);
-  actdis->GetCondition("SurfaceStress",surfstresscond);
+  microdis->GetCondition("SurfaceStress",surfstresscond);
   if (surfstresscond.size())
   {
-    surf_stress_man_=rcp(new DRT::SurfStressManager(*actdis));
+    surf_stress_man_=rcp(new DRT::SurfStressManager(*microdis));
   }
-
 
   // set up micro output
   //
@@ -112,50 +109,65 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
   // macro control files on restart.
   RCP<IO::OutputControl> macrocontrol = DRT::Problem::Instance(0)->OutputControlFile();
   std::string microprefix = macrocontrol->RestartName();
+  std::string micronewprefix = macrocontrol->NewOutputFileName();
 
+  // figure out how the file we restart from is called on the microscale
   unsigned pos = microprefix.rfind('-');
   if (pos!=std::string::npos)
   {
     std::string number = microprefix.substr(pos+1);
     std::string prefix = microprefix.substr(0,pos);
-
     ostringstream s;
-    s << prefix << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
+    s << prefix << "_el" << ele_ID_ << "_gp" << gp_;
     microprefix = s.str();
+    s << "-" << number;
+    restartname_ = s.str();
   }
   else
   {
     ostringstream s;
     s << microprefix << "_el" << ele_ID_ << "_gp" << gp_;
-    microprefix = s.str();
+    restartname_ = s.str();
   }
 
-  RCP<OutputControl> microcontrol =
-    rcp(new OutputControl(actdis->Comm(),
-                          DRT::Problem::Instance(1)->ProblemType(),
-                          "micro-input-file-not-known",
-                          microprefix,
-                          genprob.ndim,
-                          genprob.restart,
-                          macrocontrol->FileSteps()));
-  micro_output_ = rcp(new DiscretizationWriter(actdis,microcontrol));
+  if (eleowner)
+  {
+    // figure out how the new output file is called on the microscale
+    // note: the trailing number must be the same as on the macroscale
+    std::string newfilename;
+    unsigned pos = micronewprefix.rfind('-');
+    if (pos!=std::string::npos)
+    {
+      std::string number = micronewprefix.substr(pos+1);
+      std::string prefix = micronewprefix.substr(0,pos);
+      ostringstream s;
+      s << prefix << "_el" << ele_ID_ << "_gp" << gp_ << "-" << number;
+      newfilename = s.str();
+    }
+    else
+    {
+      ostringstream s;
+      s << micronewprefix << "_el" << ele_ID_ << "_gp" << gp_;
+      newfilename = s.str();
+    }
 
-  // do restart if demanded from input file
+    RCP<OutputControl> microcontrol =
+      rcp(new OutputControl(microdis->Comm(),
+                            DRT::Problem::Instance(1)->ProblemType(),
+                            "micro-input-file-not-known",
+                            restartname_,
+                            newfilename,
+                            genprob.ndim,
+                            genprob.restart,
+                            macrocontrol->FileSteps()));
+
+    micro_output_ = rcp(new DiscretizationWriter(microdis,microcontrol));
+  }
+
   istep_ = 0;
-  if (genprob.restart)
-  {
-    istep_ = genprob.restart;
-    microstatic_->ReadRestart(istep_, dis_, lastalpha_, microprefix);
-    // both dis_ and dism_ are the same
-    dism_->Update(1.0, *dis_, 0.0);
-    // both lastalpha and oldalpha are the same
-    *oldalpha_ = *lastalpha_;
-    microstatic_->SetOldState(dis_, dism_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
-  }
-  else
-  {
-    micro_output_->WriteMesh(istep_, microstatic_->GetTime());
-  }
+
+  if (eleowner) micro_output_->WriteMesh(istep_, microstatic_->GetTime());
+
 
   // we are using the same structural dynamic parameters as on the
   // macroscale, so to avoid checking the equivalence of the reader
@@ -164,7 +176,6 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID)
   // (hard coded)!
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
-//   timen_ = microstatic_->GetTime();
   // we set the microscale time _ALWAYS_ to 0 (also in restart case)
   // in order to handle the implicit update query!!!
   timen_ = 0.;
@@ -181,6 +192,18 @@ MAT::MicroMaterialGP::~MicroMaterialGP()
     microstatic_ = Teuchos::null;
 }
 
+
+/// Read restart
+
+void MAT::MicroMaterialGP::ReadRestart()
+{
+  istep_ = genprob.restart;
+  microstatic_->ReadRestart(istep_, dis_, lastalpha_, restartname_);
+  // both dis_ and dism_ are the same
+  dism_->Update(1.0, *dis_, 0.0);
+  // both lastalpha and oldalpha are the same
+  *oldalpha_ = *lastalpha_;
+}
 
 /// Set up microscale generalized alpha
 
@@ -311,7 +334,8 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
                                                   Epetra_SerialDenseMatrix* cmat,
                                                   double* density,
                                                   const double time,
-                                                  string action)
+                                                  string action,
+                                                  const bool eleowner)
 {
   // this is a comparison of two doubles, but since timen_ is always a
   // copy of time as long as we are within a time step, any variation
@@ -340,12 +364,14 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
     // necessary at all. Problem: we don't get any output for the very
     // last time step since the macro-program finishes and the
     // micro-program is not called again to write output.
+    // Note: only the process owning the corresponding macro-element
+    // is writing output here!
 
     // We don't want to write results after just having constructed
     // the StruGenAlpha class which corresponds to a total time of 0.
     // (in the calculation phase, total time is instantly set to the first
     // time step)
-    if (timen_ != 0.)
+    if (timen_ != 0. && eleowner)
       microstatic_->Output(micro_output_, timen_, istep_, dt_);
     timen_ = time;
     istep_++;

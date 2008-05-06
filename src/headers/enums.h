@@ -298,6 +298,7 @@ typedef enum _MATERIAL_TYP
                        m_dam_mp,       /* isotropic damage model -> mazars/pijadier-cabot*/
                        m_damage_ge,    /* isotropic gradient enhanced damage model */
                        m_hyper_polyconvex, /* hyperelastic polyconvex energy strain function following Holzapfel*/
+                       m_hyperpolyogden,   /* slightly compressible hyperelastic polyconvex energy strain function following Holzapfel*/
                        m_itskov,       /* hyperelastic polyconvex energy strain function following Itskov */
                        m_quadratic_aniso, /* hyperelastic polyconvex energy strain function following Itskov */
                        m_anisotropic_balzani,  /* anisotropic polyconvex material*/

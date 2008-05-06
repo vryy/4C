@@ -87,7 +87,7 @@ double MAT::AAAneohooke::Density()
  |  Evaluate Material                             (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*
 
- plain strain energy function 
+ plain strain energy function
 
  W    = alpha (Ic*IIIc^(-1/3) -3) + beta (Ic*IIIc^(-1/3)-3)²
 
@@ -98,7 +98,7 @@ double MAT::AAAneohooke::Density()
 
  and modified to slight compressibility
 
- here 
+ here
 
  Ic   .. first invariant of right Cauchy-Green tensor C
  IIIc .. second invariant of right Cauchy-Green tensor C
@@ -192,8 +192,8 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   //=========================
   double isochor1 = 2.0*(alpha*pow(iiinv,third)
 			 + 2.0*beta*inv - 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
-  double isochor2 = -twthi*inv*(alpha*pow(iiinv,third) 
-				+ 2.0*beta*inv 
+  double isochor2 = -twthi*inv*(alpha*pow(iiinv,third)
+				+ 2.0*beta*inv
 				- 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
 
   // contribution: Cinv
@@ -208,7 +208,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // 2nd step: volumetric part
   //==========================
   double scalar = komp/beta2 * (1.0-pow(detf,-beta2));
-  
+
   // initialise PKtwo with volumetric part
   Epetra_SerialDenseVector pktwovol(invc);
   pktwovol.Scale(scalar);
@@ -229,11 +229,11 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // deltas (see also Holzapfel p.261)
   // note that these deltas serve for the isochoric part only
   double delta1 = 8.0 * beta * pow(iiinv,-twthi);
-  double delta3 = -4./3 * ( alpha*pow(iiinv,third) + 4.*beta*inv 
+  double delta3 = -4./3 * ( alpha*pow(iiinv,third) + 4.*beta*inv
 			    - 6*beta*pow(iiinv,third) ) * pow(iiinv,-twthi);
-  double delta6 = 4./9 * inv *( alpha*pow(iiinv,third) + 4.*beta*inv 
+  double delta6 = 4./9 * inv *( alpha*pow(iiinv,third) + 4.*beta*inv
 			        - 6*beta*pow(iiinv,third)) * pow(iiinv,-twthi);
-  double delta7 = 4./3 * inv *( alpha*pow(iiinv,third) + 2.*beta*inv 
+  double delta7 = 4./3 * inv *( alpha*pow(iiinv,third) + 2.*beta*inv
 				- 6*beta*pow(iiinv,third)) * pow(iiinv,-twthi);
 
   // contribution: I \obtimes I
@@ -244,7 +244,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // contribution: Cinv \otimes Cinv
   for (int i = 0; i < 6; i++)
     for (int j = 0; j < 6; j++)
-    {  
+    {
       // contribution: Cinv \otimes I + I \otimes Cinv
       (*cmat)(i,j) += delta3 * ( identity(i)*invc(j) + invc(i)*identity(j) );
       // contribution: Cinv \otimes Cinv
@@ -252,7 +252,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
     }
 
   // contribution: boeppel-product
-  AddtoCmatboeppelProduct((*cmat),invc,delta7);
+  AddtoCmatHolzapfelProduct((*cmat),invc,delta7);
 
   // 2nd step: volumetric part
   //==========================
@@ -265,76 +265,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
       (*cmat)(i,j) += delta6 * invc(i)*invc(j);
 
   // contribution: boeppel-product
-  AddtoCmatboeppelProduct((*cmat),invc,delta7);
-
-  return;
-}
-
-
-
-
-/*----------------------------------------------------------------------*
- |  Determine boeppel product                     (public)  chfoe 04/08 |
- *----------------------------------------------------------------------*
- we need the derivative
-
- \partial tensor(C)^-1
------------------------
-  \partial tensor(C)
-
-  which yields the following product
-
-  - ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
-
-  for more details see Holzapfel p. 254
-
- */
-void MAT::AAAneohooke::AddtoCmatboeppelProduct( Epetra_SerialDenseMatrix& cmat,
-						Epetra_SerialDenseVector& invc,
-						double scalar)
-{
-  // and the 'boeppel-product' for the expression d(invc)/dc (see Holzapfel p. 254)
-  cmat(0,0) += scalar * invc(0)*invc(0);
-  cmat(0,1) += scalar * invc(3)*invc(3);
-  cmat(0,2) += scalar * invc(5)*invc(5);
-  cmat(0,3) += scalar * invc(0)*invc(3);
-  cmat(0,4) += scalar * invc(3)*invc(5);
-  cmat(0,5) += scalar * invc(0)*invc(5);
-
-  cmat(1,0)  = cmat(0,1);
-  cmat(1,1) += scalar * invc(1)*invc(1);
-  cmat(1,2) += scalar * invc(4)*invc(4);
-  cmat(1,3) += scalar * invc(3)*invc(1);
-  cmat(1,4) += scalar * invc(1)*invc(4);
-  cmat(1,5) += scalar * invc(3)*invc(4);
-
-  cmat(2,0)  = cmat(0,2);
-  cmat(2,1)  = cmat(1,2);
-  cmat(2,2) += scalar * invc(2)*invc(2);
-  cmat(2,3) += scalar * invc(5)*invc(4);
-  cmat(2,4) += scalar * invc(4)*invc(2);
-  cmat(2,5) += scalar * invc(5)*invc(2);
-
-  cmat(3,0)  = cmat(0,3);
-  cmat(3,1)  = cmat(1,3);
-  cmat(3,2)  = cmat(2,3);
-  cmat(3,3) += scalar * 0.5*( invc(0)*invc(1) + invc(3)*invc(3) );
-  cmat(3,4) += scalar * 0.5*( invc(3)*invc(4) + invc(5)*invc(1) );
-  cmat(3,5) += scalar * 0.5*( invc(0)*invc(4) + invc(5)*invc(3) );
-
-  cmat(4,0)  = cmat(0,4);
-  cmat(4,1)  = cmat(1,4);
-  cmat(4,2)  = cmat(2,4);
-  cmat(4,3)  = cmat(3,4);
-  cmat(4,4) += scalar * 0.5*( invc(1)*invc(2) + invc(4)*invc(4) );
-  cmat(4,5) += scalar * 0.5*( invc(3)*invc(2) + invc(4)*invc(5) );
-
-  cmat(5,0)  = cmat(0,5);
-  cmat(5,1)  = cmat(1,5);
-  cmat(5,2)  = cmat(2,5);
-  cmat(5,3)  = cmat(3,5);
-  cmat(5,4)  = cmat(4,5);
-  cmat(5,5) += scalar * 0.5*( invc(0)*invc(2) + invc(5)*invc(5) );
+  AddtoCmatHolzapfelProduct((*cmat),invc,delta7);
 
   return;
 }

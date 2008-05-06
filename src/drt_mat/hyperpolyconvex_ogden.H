@@ -1,5 +1,5 @@
-#ifndef AAANEOHOOKE_H_
-#define AAANEOHOOKE_H_
+#ifndef HYPERPOLYOGDEN_H_
+#define HYPERPOLYOGDEN_H_
 #ifdef CCADISCRET
 
 #include "material.H"
@@ -9,16 +9,16 @@
 
 namespace MAT
 {
-  class AAAneohooke : public Material
+  class HyperPolyOgden : public Material
   {
 
   public:
 
     // empty constructor
-    AAAneohooke();
+    HyperPolyOgden();
 
     // constructor with given material parameters
-    AAAneohooke(MATERIAL* matdata);
+    HyperPolyOgden(MATERIAL* matdata);
 
     //! @name Packing and Unpacking
 
@@ -28,7 +28,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_AAAneohooke; }
+    virtual int UniqueParObjectId() const { return ParObject_HyperPolyOgden; }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -61,7 +61,7 @@ namespace MAT
     double Density();
 
     // material type
-    virtual MATERIAL_TYP MaterialType() const { return m_aaaneohooke; }
+    virtual MATERIAL_TYP MaterialType() const { return m_hyperpolyogden; }
 
     // THE material routine
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
@@ -76,4 +76,4 @@ namespace MAT
 }
 
 #endif  // CCADISCRET
-#endif  // AAANEOHOOKE_H_
+#endif  // HYPERPOLYOGDEN_H_

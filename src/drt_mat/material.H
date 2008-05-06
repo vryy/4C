@@ -19,6 +19,7 @@ Maintainer: Lena Wiechert
 #ifdef CCADISCRET
 
 #include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_SerialDenseVector.h>
 #include "../drt_lib/drt_parobject.H"
 
 #ifdef PARALLEL
@@ -118,6 +119,18 @@ public:
                                    const Epetra_SerialDenseMatrix& A,
                                    const Epetra_SerialDenseMatrix& B,
                                    const double ScalarThis);
+
+  /*!
+  \brief Add 'Holzapfel product' contribution to constitutive tensor
+  using Voigt notation
+
+  \param cmat (in/out): Material tangent matrix(6x6) to be modified
+  \param invc   (in)  : Inverse right Cauchy-Green vector(6)
+  \param scalar (in)  : scalar corresponding to delta7
+  */
+  void AddtoCmatHolzapfelProduct( Epetra_SerialDenseMatrix& cmat,
+                                  Epetra_SerialDenseVector& invc,
+                                  const double scalar);
 
 
 

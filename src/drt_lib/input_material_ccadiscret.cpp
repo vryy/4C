@@ -60,10 +60,10 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("VISCOSITY",&(localmat.m.fluid->viscosity),&ierr);
       if (localmat.m.fluid->viscosity <= 0.0) dserror("MAT_fluid: viscosity is not positive: %f",localmat.m.fluid->viscosity);
       frdouble("DENS"  ,&(localmat.m.fluid->density)  ,&ierr);
-      if (localmat.m.fluid->density <= 0.0) dserror("MAT_fluid: density is not positive: %f",localmat.m.fluid->density);    
+      if (localmat.m.fluid->density <= 0.0) dserror("MAT_fluid: density is not positive: %f",localmat.m.fluid->density);
       frdouble("GAMMA",&(localmat.m.fluid->gamma)  ,&ierr);
    }
-   frchk("MAT_carreauyasuda",&ierr);  
+   frchk("MAT_carreauyasuda",&ierr);
    if (ierr==1)
    {
       localmat.mattyp = m_carreauyasuda;
@@ -75,7 +75,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("BPARAM" ,&(localmat.m.carreauyasuda->b_param)   ,&ierr);
       frdouble("DENSITY",&(localmat.m.carreauyasuda->density)   ,&ierr);
    }
-   frchk("MAT_modpowerlaw",&ierr);  
+   frchk("MAT_modpowerlaw",&ierr);
    if (ierr==1)
    {
       localmat.mattyp = m_modpowerlaw;
@@ -480,11 +480,23 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       localmat.mattyp      = m_hyper_polyconvex;
       localmat.m.hyper_polyconvex = new HYPER_POLYCONVEX();
       frdouble("C"       ,&(localmat.m.hyper_polyconvex->c)       ,&ierr);
-      frdouble("K1"      ,&(localmat.m.hyper_polyconvex->k1)     ,&ierr);
-      frdouble("K2"      ,&(localmat.m.hyper_polyconvex->k2)        ,&ierr);
-      frdouble("EPSILON" ,&(localmat.m.hyper_polyconvex->epsilon)    ,&ierr);
-      frdouble("GAMMA"   ,&(localmat.m.hyper_polyconvex->gamma)    ,&ierr);
-      frdouble("DENS"    ,&(localmat.m.hyper_polyconvex->density)     ,&ierr);
+      frdouble("K1"      ,&(localmat.m.hyper_polyconvex->k1)      ,&ierr);
+      frdouble("K2"      ,&(localmat.m.hyper_polyconvex->k2)      ,&ierr);
+      frdouble("EPSILON" ,&(localmat.m.hyper_polyconvex->epsilon) ,&ierr);
+      frdouble("GAMMA"   ,&(localmat.m.hyper_polyconvex->gamma)   ,&ierr);
+      frdouble("DENS"    ,&(localmat.m.hyper_polyconvex->density) ,&ierr);
+   }
+   frchk("MAT_Struct_HyperPolyconvexOgden",&ierr);
+   if (ierr==1)
+   {
+     localmat.mattyp      = m_hyperpolyogden;
+     localmat.m.hyper_poly_ogden = new HYPER_POLY_OGDEN();
+     frdouble("YOUNG"   ,&(localmat.m.hyper_poly_ogden->youngs)  ,&ierr);
+     frdouble("NUE"     ,&(localmat.m.hyper_poly_ogden->poisson) ,&ierr);
+     frdouble("C"       ,&(localmat.m.hyper_poly_ogden->c)       ,&ierr);
+     frdouble("K1"      ,&(localmat.m.hyper_poly_ogden->k1)      ,&ierr);
+     frdouble("K2"      ,&(localmat.m.hyper_poly_ogden->k2)      ,&ierr);
+     frdouble("DENS"    ,&(localmat.m.hyper_poly_ogden->density) ,&ierr);
    }
    // Anisotropic Polyconvex Material Law based on Balzani et. al.
    frchk("MAT_ANISOTROPIC_BALZANI",&ierr);

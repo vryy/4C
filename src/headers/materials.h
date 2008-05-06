@@ -51,6 +51,7 @@ typedef struct _MATERIAL
      struct _DAM_MP           *dam_mp;       /* isotropic damage material (mazars-pijadier-cabot)*/
      struct _DAMAGE_GE        *damage_ge;    /* isotropic gradient enhanced damage material */
      struct _HYPER_POLYCONVEX *hyper_polyconvex; /* hyperelastic polyconvex energy strain function */
+     struct _HYPER_POLY_OGDEN *hyper_poly_ogden; /* slightly compressible hyperelastic polyconvex energy strain function */
      struct _ITSKOV           *itskov;       /* Itskov material for isotropic case */
      struct _QUADRATIC_ANISO  *quadratic_aniso;       /* Anisotropic quadratic material */
      struct _ANISOTROPIC_BALZANI *anisotropic_balzani; /* anisotropic hyperelastic polyconvex material */
@@ -602,6 +603,18 @@ typedef struct _HYPER_POLYCONVEX
      DOUBLE                    gamma;
      DOUBLE					   density;
 } HYPER_POLYCONVEX;
+/*----------------------------------------------------------------------*
+ | slightly compressible hyperpolyconvex                     lw 4/08    |
+ *----------------------------------------------------------------------*/
+typedef struct _HYPER_POLY_OGDEN
+{
+     DOUBLE                    youngs;        /* Young's modulus */
+     DOUBLE                    poisson;       /* Poisson ratio */
+     DOUBLE                    c;             /* ground substance parameter */
+     DOUBLE                    k1;	      /* fiber parameter */
+     DOUBLE                    k2;            /* fiber parameter */  
+     DOUBLE                    density;        /* material specific weight */
+} HYPER_POLY_OGDEN;
 /*----------------------------------------------------------------------*
  | hyperelastic polyconvex material based on                   ah 10/07 |
  | Itskov                                                               |

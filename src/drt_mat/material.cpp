@@ -26,6 +26,7 @@ Maintainer: Lena Wiechert
 #include "mooneyrivlin.H"
 #include "carreauyasuda.H"
 #include "modpowerlaw.H"
+#include "hyperpolyconvex_ogden.H"
 
 extern struct _MATERIAL *mat;
 
@@ -66,6 +67,8 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     return Teuchos::rcp(new MicroMaterial(actmat));
   case m_hyper_polyconvex:
     return Teuchos::rcp(new HyperPolyconvex(actmat));
+  case m_hyperpolyogden:
+    return Teuchos::rcp(new HyperPolyOgden(actmat));
   case m_anisotropic_balzani:
     return Teuchos::rcp(new AnisotropicBalzani(actmat));
   case m_mooneyrivlin:
@@ -77,9 +80,9 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case m_condif:
     return Teuchos::rcp(new ConvecDiffus(actmat));
   case m_carreauyasuda:
-      return Teuchos::rcp(new CarreauYasuda(actmat));
+    return Teuchos::rcp(new CarreauYasuda(actmat));
   case m_modpowerlaw:
-        return Teuchos::rcp(new ModPowerLaw(actmat));
+    return Teuchos::rcp(new ModPowerLaw(actmat));
   case m_pl_mises_3D:
   case m_pl_mises:
   case m_pl_hoff:
@@ -111,6 +114,85 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   }
 
   return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Add 'Holzapfel product' contribution to constitutive tensor         |
+ |  using Voigt notation                                                |
+ |                                                (public)  chfoe 04/08 |
+ *----------------------------------------------------------------------*
+
+ This function adds the following contribution to the given constitutive
+ matrix cmat(6,6) based on the inverse of the right Cauchy-Green vector
+ invc(6):
+
+ scalar * ( Cinv boeppel Cinv )
+
+ For that purpose we need the derivative
+
+  \partial tensor(C)^-1
+ -----------------------
+   \partial tensor(C)
+
+ which yields the following product
+
+  - ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
+
+ For more details see Holzapfel p. 254
+
+ */
+void MAT::AddtoCmatHolzapfelProduct( Epetra_SerialDenseMatrix& cmat,
+                                     Epetra_SerialDenseVector& invc,
+                                     const double scalar)
+{
+  if (cmat.M()!=6 or cmat.N()!=6 or invc.Length()!=6)
+    dserror("Wrong dimensions in function AddtoCmatboeppelProduct");
+
+  // and the 'boeppel-product' for the expression d(invc)/dc (see Holzapfel p. 254)
+  cmat(0,0) += scalar * invc(0)*invc(0);
+  cmat(0,1) += scalar * invc(3)*invc(3);
+  cmat(0,2) += scalar * invc(5)*invc(5);
+  cmat(0,3) += scalar * invc(0)*invc(3);
+  cmat(0,4) += scalar * invc(3)*invc(5);
+  cmat(0,5) += scalar * invc(0)*invc(5);
+
+  cmat(1,0)  = cmat(0,1);
+  cmat(1,1) += scalar * invc(1)*invc(1);
+  cmat(1,2) += scalar * invc(4)*invc(4);
+  cmat(1,3) += scalar * invc(3)*invc(1);
+  cmat(1,4) += scalar * invc(1)*invc(4);
+  cmat(1,5) += scalar * invc(3)*invc(4);
+
+  cmat(2,0)  = cmat(0,2);
+  cmat(2,1)  = cmat(1,2);
+  cmat(2,2) += scalar * invc(2)*invc(2);
+  cmat(2,3) += scalar * invc(5)*invc(4);
+  cmat(2,4) += scalar * invc(4)*invc(2);
+  cmat(2,5) += scalar * invc(5)*invc(2);
+
+  cmat(3,0)  = cmat(0,3);
+  cmat(3,1)  = cmat(1,3);
+  cmat(3,2)  = cmat(2,3);
+  cmat(3,3) += scalar * 0.5*( invc(0)*invc(1) + invc(3)*invc(3) );
+  cmat(3,4) += scalar * 0.5*( invc(3)*invc(4) + invc(5)*invc(1) );
+  cmat(3,5) += scalar * 0.5*( invc(0)*invc(4) + invc(5)*invc(3) );
+
+  cmat(4,0)  = cmat(0,4);
+  cmat(4,1)  = cmat(1,4);
+  cmat(4,2)  = cmat(2,4);
+  cmat(4,3)  = cmat(3,4);
+  cmat(4,4) += scalar * 0.5*( invc(1)*invc(2) + invc(4)*invc(4) );
+  cmat(4,5) += scalar * 0.5*( invc(3)*invc(2) + invc(4)*invc(5) );
+
+  cmat(5,0)  = cmat(0,5);
+  cmat(5,1)  = cmat(1,5);
+  cmat(5,2)  = cmat(2,5);
+  cmat(5,3)  = cmat(3,5);
+  cmat(5,4)  = cmat(4,5);
+  cmat(5,5) += scalar * 0.5*( invc(0)*invc(2) + invc(5)*invc(5) );
+
+  return;
 }
 
 

@@ -66,6 +66,7 @@ extern "C"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/hyperpolyconvex.H"
+#include "../drt_mat/hyperpolyconvex_ogden.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/convecdiffus.H"
@@ -443,6 +444,12 @@ break;
       MAT::HyperPolyconvex* hyperpoly = new MAT::HyperPolyconvex();
       hyperpoly->Unpack(data);
       return hyperpoly;
+    }
+    case ParObject_HyperPolyOgden:
+    {
+      MAT::HyperPolyOgden* hpo = new MAT::HyperPolyOgden();
+      hpo->Unpack(data);
+      return hpo;
     }
     case ParObject_AnisotropicBalzani:
     {
