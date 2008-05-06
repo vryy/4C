@@ -18,7 +18,6 @@ Maintainer: Michael Gee
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/07|
  *----------------------------------------------------------------------*/
@@ -3145,6 +3144,16 @@ void StruGenAlpha::ReadRestart(int step)
     reader.ReadVector(A_old, "Aold");
     reader.ReadVector(con_quot, "conquot");
     surf_stress_man_->SetHistory(A_old,con_quot);
+  }
+
+  if (DRT::Problem::Instance()->ProblemType()=="struct_multi")
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","multi_readrestart");
+    discret_.Evaluate(p,null,null,null,null,null);
+    discret_.ClearState();
   }
 
   if (constrMan_->HaveConstraint())

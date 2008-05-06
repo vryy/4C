@@ -33,6 +33,15 @@ namespace IO
                   int restart,
                   int filesteps);
 
+    OutputControl(const Epetra_Comm& comm,
+                  std::string problemtype,
+                  std::string inputfile,
+                  std::string restartfilename,
+                  std::string outputfilename,
+                  int ndim,
+                  int restart,
+                  int filesteps);
+
     /// output prefix we write to
     /*!
       In case of restart this will be different from the read prefix.
@@ -48,6 +57,8 @@ namespace IO
       \note might contain path
      */
     std::string RestartName() const { return restartname_; }
+
+    std::string NewOutputFileName() const { return filename_; }
 
     /// open control file
     std::fstream& ControlFile() { return controlfile_; }
@@ -67,7 +78,7 @@ namespace IO
   class InputControl
   {
   public:
-    InputControl(std::string filename);
+    InputControl(std::string filename, const bool serial=false);
     ~InputControl();
 
     MAP* ControlFile() { return &table_; }

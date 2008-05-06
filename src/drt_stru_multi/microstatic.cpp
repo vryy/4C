@@ -651,7 +651,7 @@ void MicroStatic::ReadRestart(int step,
                               RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
                               string name)
 {
-  RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(name));
+  RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(name, true));
   IO::DiscretizationReader reader(discret_, inputcontrol, step);
   double time  = reader.ReadDouble("time");
   int    rstep = reader.ReadInt("step");

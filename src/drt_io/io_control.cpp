@@ -134,12 +134,94 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::InputControl::InputControl(std::string filename)
+IO::OutputControl::OutputControl(const Epetra_Comm& comm,
+                                 std::string problemtype,
+                                 std::string inputfile,
+                                 std::string restartname,
+                                 std::string outputname,
+                                 int ndim,
+                                 int restart,
+                                 int filesteps)
+  : filename_(outputname),
+    restartname_(restartname),
+    filesteps_(filesteps)
+{
+  if (restart)
+  {
+    if (comm.NumProc()>1)
+    {
+      int length = filename_.length();
+      std::vector<int> name(filename_.begin(),filename_.end());
+      int err = comm.Broadcast(&length, 1, 0);
+      if (err)
+        dserror("communication error");
+      name.resize(length);
+      err = comm.Broadcast(&name[0], length, 0);
+      if (err)
+        dserror("communication error");
+      filename_.assign(name.begin(),name.end());
+    }
+  }
+
+  if (comm.MyPID()==0)
+  {
+    std::stringstream name;
+    name << filename_ << ".control";
+    controlfile_.open(name.str().c_str(),std::ios_base::out);
+    if (not controlfile_)
+      dserror("could not open control file '%s' for writing", name.str().c_str());
+
+    time_t time_value;
+    time_value = time(NULL);
+
+    char hostname[31];
+    struct passwd *user_entry;
+#ifndef WIN_MUENCH
+    user_entry = getpwuid(getuid());
+    gethostname(hostname, 30);
+#else
+    strcpy(hostname, "unknown host");
+#endif
+
+    controlfile_ << "# baci output control file\n"
+                 << "# created by "
+#if !defined(WIN_MUENCH) && !defined(HPUX_GNU)
+                 << user_entry->pw_name
+#else
+                 << "unknown"
+#endif
+                 << " on " << hostname << " at " << ctime(&time_value)
+                 << "# using code revision " CHANGEDREVISION " from " CHANGEDDATE " \n\n"
+                 << "input_file = \"" << inputfile << "\"\n"
+                 << "problem_type = \"" << problemtype << "\"\n"
+                 << "ndim = " << ndim << "\n"
+                 << "\n";
+
+    // insert back reference
+    if (restart)
+    {
+      controlfile_ << "restarted_run = \""
+                   << restartname
+                   << "\"\n\n";
+    }
+
+    controlfile_ << std::flush;
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+IO::InputControl::InputControl(std::string filename, const bool serial)
   : filename_(filename)
 {
   std::stringstream name;
   name << filename << ".control";
-  parse_control_file(&table_, name.str().c_str());
+
+  if (!serial)
+    parse_control_file(&table_, name.str().c_str());
+  else
+    parse_control_file_serial(&table_, name.str().c_str());
 }
 
 
