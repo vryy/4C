@@ -79,10 +79,10 @@ EXODUS::Mesh::Mesh(string exofilename)
   }
 
   // Get all ElementBlocks
-  int epropID[num_elem_blk];
-  int ebids[num_elem_blk];
-  error = ex_get_elem_blk_ids(exoid_,ebids);
-  error = ex_get_prop_array(exoid_, EX_ELEM_BLOCK, "ID", epropID);
+  vector<int> epropID(num_elem_blk);
+  vector<int> ebids(num_elem_blk);
+  error = ex_get_elem_blk_ids(exoid_,&(ebids[0]));
+  error = ex_get_prop_array(exoid_, EX_ELEM_BLOCK, "ID", &(epropID[0]));
   for (int i = 0; i < num_elem_blk; ++i) 
   {
 	  // Read Element Blocks into Map
@@ -118,8 +118,8 @@ EXODUS::Mesh::Mesh(string exofilename)
   
   // get all NodeSets
   map<int,NodeSet> prelimNodeSets;   // prelim due to possible prop names
-  int npropID[num_node_sets];
-  error = ex_get_prop_array(exoid_, EX_NODE_SET, "ID", npropID);
+  vector<int> npropID(num_node_sets);
+  error = ex_get_prop_array(exoid_, EX_NODE_SET, "ID", &(npropID[0]));
   for (int i = 0; i < num_node_sets; ++i) {
     // Read NodeSet params
     int num_nodes_in_set,num_df_in_set;
@@ -132,8 +132,8 @@ EXODUS::Mesh::Mesh(string exofilename)
     string nodesetname(mychar, int(MAX_STR_LENGTH));
 
     // get nodes in node set
-    int node_set_node_list[num_nodes_in_set];
-    error = ex_get_node_set (exoid_, npropID[i], node_set_node_list);
+    vector<int> node_set_node_list(num_nodes_in_set);
+    error = ex_get_node_set (exoid_, npropID[i], &(node_set_node_list[0]));
     if (error != 0) dserror("error reading node set");
     set<int> nodes_in_set;
     for (int j = 0; j < num_nodes_in_set; ++j) nodes_in_set.insert(node_set_node_list[j]);
@@ -179,8 +179,8 @@ EXODUS::Mesh::Mesh(string exofilename)
   // ***************************************************************************
   
   // get all SideSets
-  int spropID[num_side_sets];
-  error = ex_get_prop_array(exoid_, EX_SIDE_SET, "ID", spropID);
+  vector<int> spropID(num_side_sets);
+  error = ex_get_prop_array(exoid_, EX_SIDE_SET, "ID", &(spropID[0]));
   for (int i = 0; i < num_side_sets; ++i) {
     // get SideSet name
     char mychar[MAX_STR_LENGTH+1];
@@ -193,9 +193,9 @@ EXODUS::Mesh::Mesh(string exofilename)
     error = ex_get_side_set_param (exoid_, spropID[i], &num_side_in_set,&num_dist_fact_in_set);
     
     // get SideSet
-    int side_set_elem_list[num_side_in_set];
-    int side_set_side_list[num_side_in_set];
-    error = ex_get_side_set (exoid_, spropID[i], side_set_elem_list,side_set_side_list);
+    vector<int> side_set_elem_list(num_side_in_set);
+    vector<int> side_set_side_list(num_side_in_set);
+    error = ex_get_side_set (exoid_, spropID[i], &(side_set_elem_list[0]),&(side_set_side_list[0]));
     if (error != 0) dserror("error reading side set");
     map<int,vector<int> > sides_in_set;
     for (int j = 0; j < num_side_in_set; ++j){
