@@ -48,14 +48,15 @@ static BlitzMat ComputePhysicalCoordinates(
     BlitzMat physicalCoordinates(3, nen_cell);
     physicalCoordinates = 0.0;
     // for each cell node, compute physical position
+    BlitzVec funct(ele.NumNode());
     for (int inen = 0; inen < nen_cell; ++inen)
     {
         // shape functions
-        const BlitzVec funct(DRT::UTILS::shape_function_3D(
+        DRT::UTILS::shape_function_3D(funct,
                 nodalPosXiDomain(0, inen),
                 nodalPosXiDomain(1, inen),
                 nodalPosXiDomain(2, inen),
-                ele.Shape()));
+                ele.Shape());
 
         blitz::firstIndex i;    // Placeholder for the first index
         blitz::secondIndex j;   // Placeholder for the second index
@@ -101,10 +102,10 @@ public:
 
      \return distype_
      */
-    inline DRT::Element::DiscretizationType Shape() const {return distype_;};
+    DRT::Element::DiscretizationType Shape() const {return distype_;};
     
     //! returns a string representation of the IntegrationCell
-    inline std::string toString() const;
+    std::string toString() const;
 
 protected:
 
@@ -171,28 +172,28 @@ public:
 
      \return distype_
      */
-    inline DRT::Element::DiscretizationType Shape() const {return distype_;};
+    DRT::Element::DiscretizationType Shape() const {return distype_;};
     
     /*!
      \brief returns number of nodes
 
      \return number of nodes
      */
-    inline int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(distype_);};
+    int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(distype_);};
     
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
 
      \return cells nodal coordinates  
      */
-    inline BlitzMat NodalPosXiDomainBlitz() const {return nodalpos_xi_domain_blitz_;};
+    BlitzMat NodalPosXiDomainBlitz() const {return nodalpos_xi_domain_blitz_;};
     
     /*!
      \brief returns the coordinates of the integration cell in physical coordinates
 
      \return cells nodal coordinates  
      */
-    inline BlitzMat NodalPosXYZ(const DRT::Element& ele) const
+    BlitzMat NodalPosXYZ(const DRT::Element& ele) const
     {
         return ComputePhysicalCoordinates<DomainIntCell>(ele, (*this));
     };
@@ -277,14 +278,14 @@ public:
 
      \return number of nodes
      */
-    inline int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(distype_);};
+    int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(distype_);};
     
     /*!
      \brief returns the coordinates of the integration cell in physical coordinates
 
      \return cells nodal coordinates  
      */
-    inline BlitzMat NodalPosXYZ(
+    BlitzMat NodalPosXYZ(
             const DRT::Element& ele  ///< parent element, where the integration cell is located in
             ) const
     {
@@ -296,17 +297,17 @@ public:
 
      \return cells nodal coordinates  
      */
-    inline BlitzMat NodalPosXiDomainBlitz() const {return nodalpos_xi_domain_blitz_;};
+    BlitzMat NodalPosXiDomainBlitz() const {return nodalpos_xi_domain_blitz_;};
     
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
 
      \return cells nodal coordinates  
      */
-    inline BlitzMat NodalPosXiBoundaryBlitz() const {return nodalpos_xi_boundary_blitz_;};
+    BlitzMat NodalPosXiBoundaryBlitz() const {return nodalpos_xi_boundary_blitz_;};
     
     //! return "parent" cutter element id (global id)
-    inline int GetSurfaceEleGid() const {return surface_ele_gid_;}
+    int GetSurfaceEleGid() const {return surface_ele_gid_;}
     
     //! return string representation of the BoundaryIntCell
     std::string toString() const;

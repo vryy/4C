@@ -90,13 +90,13 @@ public:
      * \return set with enriched fields
      * 
      */
-    inline const std::set<FieldEnr>& FieldEnrSetPerElement() const
+    const std::set<FieldEnr>& FieldEnrSetPerElement() const
     {
         return elementDofs_;
     };
     
     //! function that returns node specific number of dofs or the given default number
-    inline int NumDofPerNode(
+    int NumDofPerNode(
             const int gid,            ///< unique global node id
             const int defaultnumdof   ///< default number of degrees of freedom to be returned
             ) const
@@ -110,13 +110,13 @@ public:
     };
     
     //! function that returns element specific number of dofs or the given default number
-    inline int NumDofPerElement() const
+    int NumDofPerElement() const
     {
         return elementDofs_.size()*numVirtualNodes_;
     };
     
     //! function that returns element specific number of dofs or the given default number
-    inline int NumVirtualNodes() const
+    int NumVirtualNodes() const
     {
         return numVirtualNodes_;
     };
@@ -125,7 +125,7 @@ public:
      *  standard x displacements at each node and 2 enriched x displacements, this function will return 6
      *  we do not distuingish between nodal and element dofs
      */
-    inline int NumDofPerField(
+    int NumDofPerField(
             const XFEM::PHYSICS::Field  field  ///< field for which we seek the number of DOFs
             ) const
     {
@@ -138,13 +138,13 @@ public:
     };
     
     //! return reference to list of local positions in a array of dofs
-    inline const std::vector<int>& LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
+    const std::vector<int>& LocalDofPosPerField(const XFEM::PHYSICS::Field field) const
     {
         return paramsLocalEntries_.find(field)->second;
     };
     
     //! return unique enrichments for this proc
-    inline const std::set<XFEM::Enrichment>& getUniqueEnrichments() const
+    const std::set<XFEM::Enrichment>& getUniqueEnrichments() const
     {
         return unique_enrichments_;
     }
@@ -239,12 +239,6 @@ public:
             const DRT::Element& ele,
             const XFEM::ElementDofManager& eledofman
             ) const;
-    
-    //! return unique enrichments for this proc
-//    inline const std::set<XFEM::Enrichment>& getUniqueEnrichments() const
-//    {
-//        return unique_enrichments_;
-//    }
     
     void fillDofDistributionMap(
             DofPosMap&   NodalDofDistributionMap

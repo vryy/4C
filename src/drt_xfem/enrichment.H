@@ -75,13 +75,13 @@ public:
     std::string enrTypeToString(const EnrType type) const;
     
     //! return label of the condition that this enrichment belongs to
-    inline int XFEMConditionLabel() const
+    int XFEMConditionLabel() const
     {
         return xfemconditionlabel_;
     };
     
     //! return type of enrichment
-    inline EnrType Type() const
+    EnrType Type() const
     {
         return type_;
     };
