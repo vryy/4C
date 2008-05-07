@@ -860,9 +860,11 @@ void ConstrManager::EvaluateCondition(RCP<DRT::Discretization> disc,
         curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
       // Get ConditionID of current condition if defined and write value in parameterlist
+      
       const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
       int condID=(*CondIDVec)[0];
       params.set("ConditionID",condID);
+      params.set<RefCountPtr<DRT::Condition> > ("condition",rcp(&cond,false));
       char factorname[30];
       sprintf(factorname,"LoadCurveFactor %d",condID);
       params.set(factorname,curvefac);
