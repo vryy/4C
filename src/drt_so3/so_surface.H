@@ -254,14 +254,14 @@ protected:
   }
   
   //! Submethod to compute the enclosed volume for vlume constraint boundary condition
-   double ComputeConstrVols(const Epetra_SerialDenseMatrix& xscurr);
+   double ComputeConstrVols(const LINALG::SerialDenseMatrix& xscurr);
 
    //! Submethod to compute necessary change to stiffness matrix due to the constraints
-   void ComputeVolConstrStiff(const Epetra_SerialDenseMatrix& xscurr,
+   void ComputeVolConstrStiff(const LINALG::SerialDenseMatrix& xscurr,
        Epetra_SerialDenseMatrix& elematrix);
 
    //! Submethod to compute first derivatives of constraint volumes w.r.t. the displacements
-   void ComputeVolConstrDeriv(const Epetra_SerialDenseMatrix& xscurr,
+   void ComputeVolConstrDeriv(const LINALG::SerialDenseMatrix& xscurr,
        Epetra_SerialDenseVector& elevector1);
   
 }; // class StructuralSurface : public DRT::Element

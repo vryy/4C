@@ -248,105 +248,85 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
       //just compute the enclosed volume (e.g. for initialization)
       case calc_struct_constrvol:
       {
-//        if (distype!=quad4)
-//          dserror("Volume Constraint only works for quad4 surfaces!");
-//        //We are not interested in volume of ghosted elements
-//        if(Comm.MyPID()==Owner())
-//        {
-//          // element geometry update
-//          RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-//          if (disp==null) dserror("Cannot get state vector 'displacement'");
-//          vector<double> mydisp(lm.size());
-//          DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-//          const int numnod = 4;
-//          Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
-//          Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
-//          for (int i=0; i<numnod; ++i)
-//          {
-//            xsrefe(i,0) = Nodes()[i]->X()[0];
-//            xsrefe(i,1) = Nodes()[i]->X()[1];
-//            xsrefe(i,2) = Nodes()[i]->X()[2];
-//
-//            xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
-//            xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
-//            xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
-//          }
-//          //call submethod
-//          double volumeele =  ComputeConstrVols(xscurr);
-//
-//          // get RIGHT volume out of parameterlist and maximum ConditionID
-//          char volname[30];
-//          const int ID =params.get("ConditionID",-1);
-//          const int maxID=params.get("MaxID",0);
-//          const int minID=params.get("MinID",1000000);
-//          if (ID<0)
-//          {
-//            dserror("Condition ID for volume constraint missing!");
-//          }
-//          if (maxID<ID)
-//          {
-//            params.set("MaxID",ID);
-//          }
-//          if (minID>ID)
-//          {
-//            params.set("MinID",ID);
-//          }
-//          sprintf(volname,"computed volume %d",ID);
-//          double volumecond = params.get(volname,0.0);
-//          //update volume in parameter list
-//          params.set(volname, volumecond+volumeele);
-//        }
+        if (distype!=quad4)
+          dserror("Volume Constraint so far only works for quad4 surfaces!");
+        //We are not interested in volume of ghosted elements
+        if(Comm.MyPID()==Owner())
+        {
+          // element geometry update
+          RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+          if (disp==null) dserror("Cannot get state vector 'displacement'");
+          vector<double> mydisp(lm.size());
+          DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+          const int numdim = 3;
+          LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+          SpatialConfiguration(xscurr,mydisp);
+          //call submethod
+          double volumeele =  ComputeConstrVols(xscurr);
+
+          // get RIGHT volume out of parameterlist and maximum ConditionID
+          char volname[30];
+          const int ID =params.get("ConditionID",-1);
+          const int maxID=params.get("MaxID",0);
+          const int minID=params.get("MinID",1000000);
+          if (ID<0)
+          {
+            dserror("Condition ID for volume constraint missing!");
+          }
+          if (maxID<ID)
+          {
+            params.set("MaxID",ID);
+          }
+          if (minID>ID)
+          {
+            params.set("MinID",ID);
+          }
+          sprintf(volname,"computed volume %d",ID);
+          double volumecond = params.get(volname,0.0);
+          //update volume in parameter list
+          params.set(volname, volumecond+volumeele);
+        }
 
       }
       break;
       case calc_struct_volconstrstiff:
       {
-//        if (distype!=quad4)
-//          dserror("Volume Constraint only works for quad4 surfaces!");
-//        // element geometry update
-//        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-//        if (disp==null) dserror("Cannot get state vector 'displacement'");
-//        vector<double> mydisp(lm.size());
-//        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-//        const int numnod=NumNode();
-//        Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
-//        Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
-//        for (int i=0; i<numnod; ++i)
-//        {
-//          xsrefe(i,0) = Nodes()[i]->X()[0];
-//          xsrefe(i,1) = Nodes()[i]->X()[1];
-//          xsrefe(i,2) = Nodes()[i]->X()[2];
-//
-//          xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
-//          xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
-//          xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
-//        }
-//        //call submethods
-//        ComputeVolConstrStiff(xscurr,elematrix1);
-//        ComputeVolConstrDeriv(xscurr,elevector1);
-//        //apply the right lagrange multiplier and right signs to matrix and vectors
-//        const int ID =params.get("ConditionID",-1);
-//        RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
-//        if (ID<0)
-//        {
-//          dserror("Condition ID for volume constraint missing!");
-//        }
-//        const int minID =params.get("MinID",0);
-//        //update corresponding column in "constraint" matrix
-//        elevector2=elevector1;
-//        elevector1.Scale(1*(*lambdav)[ID-minID]);
-//        elematrix1.Scale(1*(*lambdav)[ID-minID]);
-//        //call submethod for volume evaluation
-//        if(Comm.MyPID()==Owner())
-//        {
-//          double volumeele = ComputeConstrVols(xscurr);
-//          // get RIGHT volume out of parameterlist and maximum ConditionID
-//          char volname[30];
-//          sprintf(volname,"computed volume %d",ID);
-//          double volumecond = params.get(volname,0.0);
-//          //update volume in parameter list
-//          params.set(volname, volumecond+volumeele);
-//        }
+        if (distype!=quad4)
+          dserror("Volume Constraint only works for quad4 surfaces!");
+        // element geometry update
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vector 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        const int numdim =3;
+        LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+        SpatialConfiguration(xscurr,mydisp);
+        //call submethods
+        ComputeVolConstrStiff(xscurr,elematrix1);
+        ComputeVolConstrDeriv(xscurr,elevector1);
+        //apply the right lagrange multiplier and right signs to matrix and vectors
+        const int ID =params.get("ConditionID",-1);
+        RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
+        if (ID<0)
+        {
+          dserror("Condition ID for volume constraint missing!");
+        }
+        const int minID =params.get("MinID",0);
+        //update corresponding column in "constraint" matrix
+        elevector2=elevector1;
+        elevector1.Scale(1*(*lambdav)[ID-minID]);
+        elematrix1.Scale(1*(*lambdav)[ID-minID]);
+        //call submethod for volume evaluation
+        if(Comm.MyPID()==Owner())
+        {
+          double volumeele = ComputeConstrVols(xscurr);
+          // get RIGHT volume out of parameterlist and maximum ConditionID
+          char volname[30];
+          sprintf(volname,"computed volume %d",ID);
+          double volumecond = params.get(volname,0.0);
+          //update volume in parameter list
+          params.set(volname, volumecond+volumeele);
+        }
       }
 
       break;
@@ -528,139 +508,121 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
 
       //compute the area (e.g. for initialization)
       case calc_struct_monitarea:
+      {
+        if (distype!=quad4)
+          dserror("Area monitor only works for quad4 surfaces!");
+        //We are not interested in volume of ghosted elements
+        if(Comm.MyPID()==Owner())
         {
-//          if (distype!=quad4)
-//            dserror("Area Constraint only works for quad4 surfaces!");
-//          //We are not interested in volume of ghosted elements
-//          if(Comm.MyPID()==Owner())
-//          {
-//            // element geometry update
-//            RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-//            if (disp==null) dserror("Cannot get state vector 'displacement'");
-//            vector<double> mydisp(lm.size());
-//            DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-//            const int numnod = 4;
-//            Epetra_SerialDenseMatrix xsrefe(numnod,NUMDIM_SOH8);  // material coord. of element
-//            Epetra_SerialDenseMatrix xscurr(numnod,NUMDIM_SOH8);  // material coord. of element
-//
-//            //get required projection method
-//            enum ProjType
-//            {
-//              none,
-//              xy,
-//              yz,
-//              xz
-//            };
-//            ProjType protype;
-//
-//            RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
-//            const string* type = condition->Get<string>("projection");
-//
-//            if (!type) protype =none;
-//            else if (*type == "xy") protype = xy;
-//            else if (*type == "yz") protype = yz;
-//            else if (*type == "xz") protype = xz;
-//            else protype = none;
-//
-//            for (int i=0; i<numnod; ++i)
-//            {
-//              xsrefe(i,0) = Nodes()[i]->X()[0];
-//              xsrefe(i,1) = Nodes()[i]->X()[1];
-//              xsrefe(i,2) = Nodes()[i]->X()[2];
-//
-//              // To compute monitored area consider required projection method
-//              // and set according coordinates to zero
-//              if (protype == yz)
-//              {
-//                xscurr(i,0)=0;
-//              }
-//              else
-//              {
-//                xscurr(i,0) = xsrefe(i,0) + mydisp[i*NODDOF_SOH8+0];
-//              }
-//              if (protype == xz)
-//              {
-//                xscurr(i,1)=0;
-//              }
-//              else
-//              {
-//                xscurr(i,1) = xsrefe(i,1) + mydisp[i*NODDOF_SOH8+1];
-//              }
-//              if (protype == xy)
-//              {
-//                xscurr(i,2)=0;
-//              }
-//              else
-//              {
-//                xscurr(i,2) = xsrefe(i,2) + mydisp[i*NODDOF_SOH8+2];
-//              }
-//            }
-//
-//            double areaele=0.0;
-//            const int ngp = 4;
-//
-//            // gauss parameters
-//            const double gpweight = 1.0;
-//            const double gploc    = 1.0/sqrt(3.0);
-//            Epetra_SerialDenseMatrix gpcoord (ngp,2);
-//            gpcoord(0,0) = - gploc;
-//            gpcoord(0,1) = - gploc;
-//            gpcoord(1,0) =   gploc;
-//            gpcoord(1,1) = - gploc;
-//            gpcoord(2,0) = - gploc;
-//            gpcoord(2,1) =   gploc;
-//            gpcoord(3,0) =   gploc;
-//            gpcoord(3,1) =   gploc;
-//
-//            for (int gpid = 0; gpid < 4; ++gpid) {    // loop over intergration points
-//              vector<double> funct(ngp);              // 4 shape function values
-//              double drs;                             // surface area factor
-//              vector<double> normal(NUMDIM_SOH8);
-//
-//              soh8_surface_integ(&funct,&drs,&normal,&xscurr,gpcoord(gpid,0),gpcoord(gpid,1));
-//
-//              double fac = gpweight * drs;
-//              areaele += fac;
-//
-//            }
-//
-//            // get RIGHT volume out of parameterlist and maximum ConditionID
-//            char areaname[30];
-//            const int ID =params.get("ConditionID",-1);
-//            const int maxID=params.get("MaxID",0);
-//            const int minID=params.get("MinID",1000000);
-//            if (ID<0)
-//            {
-//              dserror("Condition ID for area constraint missing!");
-//            }
-//            if (maxID<ID)
-//            {
-//              params.set("MaxID",ID);
-//            }
-//            if (minID>ID)
-//            {
-//              params.set("MinID",ID);
-//            }
-//            sprintf(areaname,"computed area %d",ID);
-//            double areacond = params.get(areaname,0.0);
-//            //update area in parameter list
-//            params.set(areaname, areacond+areaele);
-//          }
+          // element geometry update
+          RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+          if (disp==null) dserror("Cannot get state vector 'displacement'");
+          vector<double> mydisp(lm.size());
+          DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+          const int numdim = 3;
+          LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+          SpatialConfiguration(xscurr,mydisp);
+          
 
+          //get required projection method
+          enum ProjType
+          {
+            none,
+            xy,
+            yz,
+            xz
+          };
+          ProjType protype;
+
+          RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+          const string* type = condition->Get<string>("projection");
+          
+          protype = none;
+          if (!type);
+          else if (*type == "xy") protype = xy;
+          else if (*type == "yz") protype = yz;
+          else if (*type == "xz") protype = xz;
+
+          // To compute monitored area consider required projection method
+          // and set according coordinates to zero
+          if (protype == yz)
+          {
+            xscurr(0,0)=0;
+            xscurr(1,0)=0;
+            xscurr(2,0)=0;
+          }
+          else if (protype == xz)
+          {
+            xscurr(0,1)=0;
+            xscurr(1,1)=0;
+            xscurr(2,1)=0;
+          }
+          else if (protype == xy)
+          {
+            xscurr(0,2)=0;
+            xscurr(1,2)=0;
+            xscurr(2,2)=0;
+          }
+
+          double areaele=0.0;
+          const DRT::UTILS::IntegrationPoints2D  intpoints = 
+                                               getIntegrationPoints2D(gaussrule_);
+          // allocate matrix for derivatives of shape functions
+          LINALG::SerialDenseMatrix  deriv(2,NumNode());
+
+          for (int gp=0; gp<intpoints.nquad; gp++)
+          {
+            const double e0 = intpoints.qxg[gp][0];
+            const double e1 = intpoints.qxg[gp][1];
+
+            // get shape functions and derivatives in the plane of the element
+            DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
+
+            vector<double> normal(3);
+            double detA;
+            SurfaceIntegration(detA,normal,xscurr,deriv);
+            const double fac = intpoints.qwgt[gp] * detA;
+            areaele += fac;
+
+          }
+
+          // get RIGHT volume out of parameterlist and maximum ConditionID
+          char areaname[30];
+          const int ID =params.get("ConditionID",-1);
+          const int maxID=params.get("MaxID",0);
+          const int minID=params.get("MinID",1000000);
+          if (ID<0)
+          {
+            dserror("Condition ID for area constraint missing!");
+          }
+          if (maxID<ID)
+          {
+            params.set("MaxID",ID);
+          }
+          if (minID>ID)
+          {
+            params.set("MinID",ID);
+          }
+          sprintf(areaname,"computed area %d",ID);
+          double areacond = params.get(areaname,0.0);
+          //update area in parameter list
+          params.set(areaname, areacond+areaele);
         }
-        break;
-        case calc_struct_constrarea:
-        {
-          dserror("Element routines for area constraint in 3D not implemented yet!");
-        }
-        break;
-        case calc_struct_areaconstrstiff:
-        {
-          dserror("Element routines for area constraint in 3D not implemented yet!");
-        }
-        break;
-        default:
-          dserror("Unimplemented type of action for StructuralSurface");
+
+      }
+      break;
+      case calc_struct_constrarea:
+      {
+        dserror("Element routines for area constraint in 3D not implemented yet!");
+      }
+      break;
+      case calc_struct_areaconstrstiff:
+      {
+        dserror("Element routines for area constraint in 3D not implemented yet!");
+      }
+      break;
+      default:
+        dserror("Unimplemented type of action for StructuralSurface");
 
   }
   return 0;
@@ -670,7 +632,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
  * Compute Volume between surface and xy-plane.                 tk 10/07*
  * Yields to the enclosed volume when summed up over all elements       *
  * ---------------------------------------------------------------------*/
-double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(const Epetra_SerialDenseMatrix& xc)
+double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(const LINALG::SerialDenseMatrix& xc)
 {
   double volume =0;
   //Formula for volume computation based on calculation of Ulrich done
@@ -722,7 +684,7 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(const Epetra_SerialDe
  * Compute influence of volume constraint on stiffness matrix.  tk 10/07*
  * Second derivatives of volume with respect to the displacements       *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::ComputeVolConstrStiff(const Epetra_SerialDenseMatrix& xc,
+void DRT::ELEMENTS::StructuralSurface::ComputeVolConstrStiff(const LINALG::SerialDenseMatrix& xc,
     Epetra_SerialDenseMatrix& elematrix)
 {
   //Second derivatives of volume with respect to the displacements.
@@ -889,7 +851,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolConstrStiff(const Epetra_Serial
  * Compute first derivatives of volume                          tk 10/07*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::ComputeVolConstrDeriv(const Epetra_SerialDenseMatrix& xc,
+void DRT::ELEMENTS::StructuralSurface::ComputeVolConstrDeriv(const LINALG::SerialDenseMatrix& xc,
     Epetra_SerialDenseVector& elevector)
 {
       
