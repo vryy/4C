@@ -649,6 +649,7 @@ void MicroStatic::SetDefaults(ParameterList& params)
 void MicroStatic::ReadRestart(int step,
                               RCP<Epetra_Vector> dis,
                               RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
+                              RefCountPtr<DRT::SurfStressManager> surf_stress_man,
                               string name)
 {
   RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(name, true));
@@ -668,14 +669,14 @@ void MicroStatic::ReadRestart(int step,
   params_->set<double>("total time",time);
   params_->set<int>   ("step",rstep);
 
-  if (surf_stress_man_!=null)
+  if (surf_stress_man!=null)
   {
-    RCP<Epetra_Map> surfmap=surf_stress_man_->GetSurfRowmap();
+    RCP<Epetra_Map> surfmap=surf_stress_man->GetSurfRowmap();
     RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
     RCP<Epetra_Vector> con_quot = LINALG::CreateVector(*surfmap,true);
     reader.ReadVector(A_old, "Aold");
     reader.ReadVector(con_quot, "conquot");
-    surf_stress_man_->SetHistory(A_old, con_quot);
+    surf_stress_man->SetHistory(A_old, con_quot);
   }
 
   reader.ReadSerialDenseMatrix(lastalpha, "alpha");
@@ -823,7 +824,8 @@ void MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
 void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
                                     RefCountPtr<Epetra_Vector> dism,
                                     RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha,
-                                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha)
+                                    RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
+                                    RefCountPtr<DRT::SurfStressManager> surf_stress_man)
 {
   // these updates hold for an imr-like generalized alpha time integration
   // -> if another time integration scheme should be used, this needs
@@ -833,9 +835,9 @@ void MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
   dis->Update(1.0/(1.0-alphaf), *dism, -alphaf/(1.0-alphaf));
   dism->Update(1.0, *dis, 0.0);
 
-  if (surf_stress_man_!=null)
+  if (surf_stress_man!=null)
   {
-    surf_stress_man_->Update();
+    surf_stress_man->Update();
   }
 
   const Epetra_Map* elemap = discret_->ElementRowMap();

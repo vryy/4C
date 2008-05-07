@@ -198,7 +198,7 @@ MAT::MicroMaterialGP::~MicroMaterialGP()
 void MAT::MicroMaterialGP::ReadRestart()
 {
   istep_ = genprob.restart;
-  microstatic_->ReadRestart(istep_, dis_, lastalpha_, restartname_);
+  microstatic_->ReadRestart(istep_, dis_, lastalpha_, surf_stress_man_, restartname_);
   // both dis_ and dism_ are the same
   dism_->Update(1.0, *dis_, 0.0);
   // both lastalpha and oldalpha are the same
@@ -344,7 +344,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
   // note that timen_ is set in the following if statement!
   if (time != timen_ && timen_ != 0.)
   {
-    microstatic_->UpdateNewTimeStep(dis_, dism_, oldalpha_, lastalpha_);
+    microstatic_->UpdateNewTimeStep(dis_, dism_, oldalpha_, lastalpha_, surf_stress_man_);
   }
 
   // set displacements and EAS data of last step

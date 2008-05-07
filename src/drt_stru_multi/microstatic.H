@@ -79,6 +79,7 @@ public:
   void ReadRestart(int step,
                    RCP<Epetra_Vector> dis,
                    RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha,
+                   RCP<DRT::SurfStressManager> surf_stress_man,
                    string name);
 
   /*!
@@ -110,7 +111,8 @@ public:
   void UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
                          RefCountPtr<Epetra_Vector> dism,
                          RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
-                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha);
+                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > alpha,
+                         RefCountPtr<DRT::SurfStressManager> surf_stress_man);
 
   /*!
   \brief write update
