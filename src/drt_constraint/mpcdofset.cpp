@@ -80,8 +80,6 @@ void MPCDofSet::TransferDegreesOfFreedom(
     if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
 
     
-    
- 
     vector<int> dofrowvec(dofrowmap_->NumMyElements(),1000);
     // now for the nodes
     int counter = 0;
@@ -102,29 +100,11 @@ void MPCDofSet::TransferDegreesOfFreedom(
             counter++;
         }
     }
-    // now for the elements
-    for (int inode = 0; inode != newdis.NumMyRowElements(); ++inode)
-    {
-        const DRT::Element* newnode = newdis.lRowElement(inode);
-        const DRT::Element* sourcenode = sourcedis.gElement(newnode->Id());
-        
-        const vector<int> dofs = sourcedis.Dof(sourcenode);
-        
-        const int newlid = newnode->LID();
-        //const int newfirstidx = (*idxcolelements_)[newlid];
-        const int numdofs = (*numdfcolelements_)[newlid];
-        for (int idof = 0; idof < numdofs; ++idof)
-        {
-            dofrowvec[counter] = dofs[idof];
-            counter++;
-        }
-    }
+  
+    
     if (!dofrowmap_->UniqueGIDs()) dserror("before, Dof row map is not unique");
     dofrowmap_ = rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
     if (!dofrowmap_->UniqueGIDs()) dserror("after, Dof row map is not unique");
-    
-    
-    //sourcedis.Print(cout);
     
     vector<int> dofcolvec(dofcolmap_->NumMyElements());
     int colcounter = 0;
@@ -138,20 +118,6 @@ void MPCDofSet::TransferDegreesOfFreedom(
         const int numdofs = (*numdfcolnodes_)[newlid];
         for (int idof = 0; idof < numdofs; ++idof)
         {
-            dofcolvec[colcounter] = dofs[idof];
-            colcounter++;
-        }
-    }
-    for (int inode = 0; inode != newdis.NumMyColElements(); ++inode)
-    {
-        const DRT::Element* newelement = newdis.lColElement(inode);
-        const DRT::Element* sourceelement = sourcedis.gElement(newelement->Id());
-        const vector<int> dofs = sourcedis.Dof(sourceelement);
-        const int newlid = newelement->LID();
-        const int numdofs = (*numdfcolelements_)[newlid];
-        for (int idof = 0; idof < numdofs; ++idof)
-        {
-            dserror("I shouldn't be here!");
             dofcolvec[colcounter] = dofs[idof];
             colcounter++;
         }

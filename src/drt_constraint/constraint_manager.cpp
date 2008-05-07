@@ -71,7 +71,6 @@ actdisc_(discr)
     EvaluateCondition(actdisc_,p,null,null,null,null,null,constrcond);
     haveareaconstr2D_=true;
   }
-
   // Check for Multi Point Constraint Node on planes in 3D
   actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
   //Initialize Vectors to contain IDs and amplitudes
@@ -82,14 +81,11 @@ actdisc_(discr)
   {
     // Construct special constraint discretization consisting of constraint elements
     constraintdis_=CreateDiscretizationFromCondition(constrcond,"ConstrDisc","CONSTRELE3");
-
     // now reconstruct the extended colmap
     RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, constraintdis_);
-
     //Redistribute underlying discretization to have ghosting in the same way as in the
     //constraint discretization
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
-
     // Change dof's in constraint discretization to fit underlying discretization
     RCP<DRT::DofSet> newdofset = rcp(new MPCDofSet(actdisc_));
     constraintdis_->ReplaceDofSet(newdofset);
@@ -556,11 +552,11 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
 
   const int myrank = newdis->Comm().MyPID();
 
- if(constrcondvec.size()==0)
+  if(constrcondvec.size()==0)
       dserror("number of multi point constraint conditions = 0 --> cannot create constraint discretization");
 
   // vector with boundary ele id's
-  vector<int> egid;
+  //vector<int> egid;
 
   set<int> rownodeset;
   set<int> colnodeset;
@@ -615,13 +611,9 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
 
     int myrank = actdisc_->Comm().MyPID();
 
-
-    // create an element with global element id = condiID
-    if (actdisc_->gNode( ngid[0] )->Owner() == myrank )
+    if (myrank == 0)
     {
-
       RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name, j, myrank);
-
       // set the same global node ids to the ale element
       constraintele->SetNodeIds(ngid.size(), &(ngid[0]));
 
@@ -650,9 +642,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
     newdis->ExportColumnElements(*constraintelecolmap);
 
   }
-
   newdis->FillComplete();
-
   return newdis;
 }
 
