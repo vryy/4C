@@ -79,7 +79,7 @@ public:
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield>
-    inline void Matrix(
+    void Matrix(
             const BlitzVec&     testshape,
             const double        fac,
             const BlitzVec&     trialshape
@@ -116,7 +116,7 @@ public:
     
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
-    inline void Vector(
+    void Vector(
             const BlitzVec&     testshape,
             const double        fac
             ) const
@@ -173,7 +173,7 @@ public:
     //! assemble one expression for the element stiffness matrix for a given test and trial field
     template <XFEM::PHYSICS::Field testfield,
               XFEM::PHYSICS::Field trialfield>
-    inline void Matrix(
+    void Matrix(
             const BlitzVec&     testshape,
             const double        fac,
             const BlitzVec&     trialshape
@@ -194,7 +194,7 @@ public:
     
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
-    inline void Vector(
+    void Vector(
             const BlitzVec&     testshape,
             const double        fac
             ) const

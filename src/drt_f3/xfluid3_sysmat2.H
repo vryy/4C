@@ -29,6 +29,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/intersection_service.H"
 #include "../drt_xfem/coordinate_transformation.H"
+#include "../drt_xfem/blitz_tiny_operation.H"
 #include "../drt_lib/drt_utils.H"
 #include "fluid3_stabilization.H"
 #include "xfluid3_local_assembler.H"
@@ -241,13 +242,16 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
    |                                          'chainrulerhs'
    |
    *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType DISTYPE>
-BlitzMat gder2(
-        const BlitzMat& xjm,
-        const BlitzMat& derxy,
-        const BlitzMat& deriv2,
-        const BlitzMat& xyze)
+template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2, class M3, class M4>
+void gder2(
+        const M1& xjm,
+        const M2& derxy,
+        const M3& deriv2,
+        const M4& xyze,
+        BlitzMat& derxy2_)
 {
+    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    
     blitz::firstIndex i;    // Placeholder for the first index
     blitz::secondIndex j;   // Placeholder for the second index
     blitz::thirdIndex k;    // Placeholder for the third index
@@ -350,7 +354,10 @@ BlitzMat gder2(
     |
     */
 
-    const BlitzMat xder2(blitz::sum(deriv2(i,k)*xyze(j,k),k));
+    //const BlitzMat xder2(blitz::sum(deriv2(i,k)*xyze(j,k),k));
+    static BlitzMat xder2(6,3);
+    //static blitz::TinyMatrix<double,6,3> xder2;
+    MMt_product<6,3,numnode>(deriv2,xyze,xder2);
 
     /*
     |        0...iel-1             0 1 2
@@ -371,7 +378,18 @@ BlitzMat gder2(
     |       chainrulerhs          xder2
     */
 
-    BlitzMat derxy2_(deriv2 - blitz::sum(xder2(i,k)*derxy(k,j),k));
+    //derxy2_ = deriv2 - blitz::sum(xder2(i,k)*derxy(k,j),k);
+    for (int i = 0; i < 6; ++i)
+    {
+        for (int j = 0; j < numnode; ++j)
+        {
+            derxy2_(i,j) = deriv2(i,j);
+            for (int k = 0; k < 3; ++k)
+            {
+                derxy2_(i,j) -= xder2(i,k)*derxy(k,j);
+            }
+        }
+    }
 
     /*
     |        0...iel-1            0...iel-1         0...iel-1
@@ -434,7 +452,6 @@ BlitzMat gder2(
     |                      | | | | | 5 = dsdt
     |                  +-+-+-+-+
     */
-    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
     Epetra_SerialDenseMatrix ederxy2(View,derxy2_.data(),6,6,numnode);
 
     Epetra_SerialDenseSolver solver;
@@ -445,7 +462,7 @@ BlitzMat gder2(
     solver.SetVectors(ederxy2,ederxy2);
     solver.Solve();
 
-    return derxy2_;
+    return;
 }
   
 
@@ -575,19 +592,19 @@ bool secondDerivativesAvailable()
     Calculate inverse of a matrix
 
    */
-BlitzMat Inverse3x3(const BlitzMat& xjm_, const double det)
+template<class M1, class M2>
+void Inverse3x3(const M1& xjm_, const double det, M2& inverse)
 {
-    static BlitzMat xji_(3,3,blitz::ColumnMajorArray<2>());
-    xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
-    xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
-    xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
-    xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
-    xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
-    xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
-    xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
-    xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
-    xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
-    return xji_;
+    inverse(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
+    inverse(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
+    inverse(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
+    inverse(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
+    inverse(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
+    inverse(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
+    inverse(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
+    inverse(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
+    inverse(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
+    return;
 }
   
 /*!
@@ -624,7 +641,7 @@ void static Sysmat(
     const int nsd = 3;
     
     // get node coordinates of the current element
-    static BlitzMat xyze(nsd, numnode);
+    static blitz::TinyMatrix<double,nsd,numnode> xyze;
     DRT::UTILS::fillPositionArray<DISTYPE>(ele, xyze);
 
     // dead load in element nodes
@@ -721,15 +738,15 @@ void static Sysmat(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            static blitz::TinyVector<double,3> pos_eta;
-            pos_eta(0) = intpoints.qxg[iquad][0];
-            pos_eta(1) = intpoints.qxg[iquad][1];
-            pos_eta(2) = intpoints.qxg[iquad][2];
+            static XFEM::PosEtaDomain pos_eta_domain;
+            pos_eta_domain(0) = intpoints.qxg[iquad][0];
+            pos_eta_domain(1) = intpoints.qxg[iquad][1];
+            pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
             // coordinates of the current integration point in element coordinates \xi
-            static blitz::TinyVector<double,3> posXiDomain;
-            XFEM::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta, posXiDomain);
-            const double detcell = XFEM::detEtaToXi3D<ASSTYPE>(*cell, pos_eta);
+            static XFEM::PosXiDomain posXiDomain;
+            XFEM::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
+            const double detcell = XFEM::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
             
             // shape functions and their first derivatives
             static BlitzVec funct(numnode);
@@ -756,16 +773,20 @@ void static Sysmat(
 
             // position of the gausspoint in physical coordinates
             static BlitzVec3 gauss_pos_xyz;
-            for (int isd = 0; isd < 3; ++isd)
-            {
-                gauss_pos_xyz(isd) = 0.0;
-                for (int inode = 0; inode < numnode; ++inode)
-                    gauss_pos_xyz(isd) += funct(inode)*xyze(isd,inode);
-            }
+            MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
+//            for (int isd = 0; isd < 3; ++isd)
+//            {
+//                gauss_pos_xyz(isd) = 0.0;
+//                for (int inode = 0; inode < numnode; ++inode)
+//                    gauss_pos_xyz(isd) += funct(inode)*xyze(isd,inode);
+//            }
       
             // get transposed of the jacobian matrix d x / d \xi
-            static BlitzMat xjm(3,3);
-            xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
+            //static BlitzMat xjm(3,3);
+            //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
+            static blitz::TinyMatrix<double,3,3> xjm;
+            MMt_product<3,3,numnode>(deriv,xyze,xjm);
+
             const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                                xjm(0,1)*xjm(1,2)*xjm(2,0)+
                                xjm(0,2)*xjm(1,0)*xjm(2,1)-
@@ -781,7 +802,7 @@ void static Sysmat(
 
             // inverse of jacobian
             static BlitzMat xji(3,3);
-            xji = Inverse3x3(xjm, det);
+            Inverse3x3(xjm, det, xji);
 
             // compute global derivates
             static BlitzMat derxy(3, DRT::UTILS::getNumberOfElementNodes(DISTYPE));
@@ -797,7 +818,7 @@ void static Sysmat(
             {
                 static BlitzMat deriv2(6,numnode,blitz::ColumnMajorArray<2>());
                 DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-                derxy2 = gder2<DISTYPE>(xjm, derxy, deriv2, xyze);
+                gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
             }
             else
             {
@@ -1797,14 +1818,14 @@ void static Sysmat(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta^\boundary
-            static XFEM::PosEtaBoundary pos_eta_boundary(2);
+            static XFEM::PosEtaBoundary pos_eta_boundary;
             pos_eta_boundary(0) = intpoints.qxg[iquad][0];
             pos_eta_boundary(1) = intpoints.qxg[iquad][1];
       
             // coordinates of the current integration point in element coordinates \xi
-            static XFEM::PosXiBoundary posXiBoundary(2);
+            static XFEM::PosXiBoundary posXiBoundary;
             posXiBoundary = mapEtaBToXiB(*cell, pos_eta_boundary);
-            static XFEM::PosXiBoundary posXiDomain(3);
+            static XFEM::PosXiDomain posXiDomain;
             posXiDomain = mapEtaBToXiD(*cell, pos_eta_boundary);
             const double detcell = abs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
 

@@ -23,12 +23,15 @@ Maintainer: Axel Gerstenberger
 #include <blitz/array.h>
 #include "../drt_xfem/xfem.H"
 #include "../drt_xfem/integrationcell.H"
+#include "../drt_xfem/blitz_tiny_operation.H"
 #include "../drt_lib/drt_utils.H"
 
 
 namespace XFEM
 {
   
+  using namespace LINALG::DENSE;
+
   //! map position from eta to xi space
   template<XFEM::AssemblyType ASSTYPE>
   XFEM::PosXiDomain mapEtaToXi3D(
@@ -38,15 +41,22 @@ namespace XFEM
       // get cell node coordinates
       const BlitzMat xyze_cell(cell.NodalPosXiDomainBlitz());
 
-      // create shape function vectors 
-      const BlitzVec funct(DRT::UTILS::shape_function_3D(pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape()));
+      // create shape function vectors
+      const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
+      
+      BlitzVec funct(numnodecell);
+      DRT::UTILS::shape_function_3D(funct, pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape());
 
       // init blitz indices
       blitz::firstIndex i;    // Placeholder for the first index
       blitz::secondIndex j;   // Placeholder for the second index
       
       // translate position into from cell coordinates to element coordinates
-      const BlitzVec pos_xsi_domain(blitz::sum(funct(j)*xyze_cell(i,j),j));
+      //const BlitzVec pos_xsi_domain(blitz::sum(funct(j)*xyze_cell(i,j),j));
+      if (numnodecell != 4) dserror("numnode of integrationcell is not 4");
+      XFEM::PosXiDomain pos_xsi_domain;
+      MV_product<3,4>(xyze_cell, funct, pos_xsi_domain);
+      
       return pos_xsi_domain;
   }
   //! map position from eta to xi space
@@ -62,14 +72,14 @@ namespace XFEM
   template<XFEM::AssemblyType ASSTYPE>
   void mapEtaToXi3D(
           const XFEM::DomainIntCell& cell,
-          const blitz::TinyVector<double,3>&  pos_eta,
-          blitz::TinyVector<double,3>&  pos_xsi_domain)
+          const PosEtaDomain&  pos_eta_domain,
+          PosXiDomain&  pos_xsi_domain)
   {   
       // get cell node coordinates
       const BlitzMat xyze_cell(cell.NodalPosXiDomainBlitz());
 
       // create shape function vectors 
-      const BlitzVec funct(DRT::UTILS::shape_function_3D(pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape()));
+      const BlitzVec funct(DRT::UTILS::shape_function_3D(pos_eta_domain(0),pos_eta_domain(1),pos_eta_domain(2),cell.Shape()));
       
       // translate position into from cell coordinates to element coordinates
       const int numnodes = funct.size();
@@ -85,12 +95,12 @@ namespace XFEM
   template<> 
   void mapEtaToXi3D<XFEM::standard_assembly>(
           const XFEM::DomainIntCell& cell,
-          const blitz::TinyVector<double,3>&  pos_eta,
-          blitz::TinyVector<double,3>&  pos_xsi_domain)
+          const PosEtaDomain&  pos_eta_domain,
+          PosXiDomain&  pos_xsi_domain)
   {   
-      pos_xsi_domain(0) = pos_eta(0);
-      pos_xsi_domain(1) = pos_eta(1);
-      pos_xsi_domain(2) = pos_eta(2);
+      pos_xsi_domain(0) = pos_eta_domain(0);
+      pos_xsi_domain(1) = pos_eta_domain(1);
+      pos_xsi_domain(2) = pos_eta_domain(2);
       return;
   }
 
@@ -115,6 +125,7 @@ namespace XFEM
       // get jacobian matrix ...
       static BlitzMat xjm(3,3);
       xjm = blitz::sum(deriv(i,k)*xyze_cell(j,k),k);
+      //MMt_product<3,3,4>(deriv, xyze_cell, xjm);
       // ...and its determinante
       const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                          xjm(0,1)*xjm(1,2)*xjm(2,0)+
@@ -134,44 +145,44 @@ namespace XFEM
       return 1.0;
   }
   
-  
-  //! get determinante between eta and xi space
-  template<XFEM::AssemblyType ASSTYPE>
-  double detEtaToXi3D(
-          const XFEM::DomainIntCell& cell,
-          const blitz::TinyVector<double,3>&  pos_eta)
-  {   
-      // get node coordinates
-      const BlitzMat xyze_cell(cell.NodalPosXiDomainBlitz());
-
-      // init blitz indices
-      blitz::firstIndex i;    // Placeholder for the first index
-      blitz::secondIndex j;   // Placeholder for the second index
-      blitz::thirdIndex k;    // Placeholder for the third index
-  
-      // get shape function derivative
-      const BlitzMat deriv(DRT::UTILS::shape_function_3D_deriv1(pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape()));
-      // get jacobian matrix ...
-      static BlitzMat xjm(3,3);
-      xjm = blitz::sum(deriv(i,k)*xyze_cell(j,k),k);
-      // ...and its determinante
-      const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
-                         xjm(0,1)*xjm(1,2)*xjm(2,0)+
-                         xjm(0,2)*xjm(1,0)*xjm(2,1)-
-                         xjm(0,2)*xjm(1,1)*xjm(2,0)-
-                         xjm(0,0)*xjm(1,2)*xjm(2,1)-
-                         xjm(0,1)*xjm(1,0)*xjm(2,2);
-
-      return det;
-  }
-  //! get determinante between eta and xi space
-  template<>
-  double detEtaToXi3D<XFEM::standard_assembly>(
-          const XFEM::DomainIntCell& cell,
-          const blitz::TinyVector<double,3>&  pos_eta)
-  {   
-      return 1.0;
-  }
+//  
+//  //! get determinante between eta and xi space
+//  template<XFEM::AssemblyType ASSTYPE>
+//  double detEtaToXi3D(
+//          const XFEM::DomainIntCell& cell,
+//          const blitz::TinyVector<double,3>&  pos_eta)
+//  {   
+//      // get node coordinates
+//      const BlitzMat xyze_cell(cell.NodalPosXiDomainBlitz());
+//
+//      // init blitz indices
+//      blitz::firstIndex i;    // Placeholder for the first index
+//      blitz::secondIndex j;   // Placeholder for the second index
+//      blitz::thirdIndex k;    // Placeholder for the third index
+//  
+//      // get shape function derivative
+//      const BlitzMat deriv(DRT::UTILS::shape_function_3D_deriv1(pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape()));
+//      // get jacobian matrix ...
+//      static BlitzMat xjm(3,3);
+//      xjm = blitz::sum(deriv(i,k)*xyze_cell(j,k),k);
+//      // ...and its determinante
+//      const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+//                         xjm(0,1)*xjm(1,2)*xjm(2,0)+
+//                         xjm(0,2)*xjm(1,0)*xjm(2,1)-
+//                         xjm(0,2)*xjm(1,1)*xjm(2,0)-
+//                         xjm(0,0)*xjm(1,2)*xjm(2,1)-
+//                         xjm(0,1)*xjm(1,0)*xjm(2,2);
+//
+//      return det;
+//  }
+//  //! get determinante between eta and xi space
+//  template<>
+//  double detEtaToXi3D<XFEM::standard_assembly>(
+//          const XFEM::DomainIntCell& cell,
+//          const blitz::TinyVector<double,3>&  pos_eta)
+//  {   
+//      return 1.0;
+//  }
   
   /////////////////////////////////////////////////////
   // 2d
@@ -181,6 +192,9 @@ namespace XFEM
           const XFEM::BoundaryIntCell& cell,
           const XFEM::PosEtaBoundary&  pos_eta)
   {   
+      // create shape function vectors
+      const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
+      
       // get cell node coordinates
       const BlitzMat xyze_cell(cell.NodalPosXiBoundaryBlitz());
 
@@ -192,7 +206,10 @@ namespace XFEM
       blitz::secondIndex j;   // Placeholder for the second index
       
       // translate position into from cell coordinates to element coordinates
-      const BlitzVec pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
+      //const BlitzVec pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
+      if (numnodecell != 3) dserror("numnode of integrationcell is not 3");
+      XFEM::PosXiBoundary pos_xsi_boundary;
+      MV_product<2,3>(xyze_cell, funct, pos_xsi_boundary);
       return pos_xsi_boundary;
   }
   
@@ -212,8 +229,11 @@ namespace XFEM
       blitz::secondIndex j;   // Placeholder for the second index
       
       // translate position into from cell coordinates to element coordinates
-      const BlitzVec pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
-      return pos_xsi_boundary;
+      //const BlitzVec pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
+      XFEM::PosXiDomain pos_xsi_domain;
+      MV_product<3,3>(xyze_cell, funct, pos_xsi_domain);
+      
+      return pos_xsi_domain;
   }
 
   
@@ -221,7 +241,7 @@ namespace XFEM
 //! get determinante between \f$\eta^{\Gamma (e)}\f$ and \f$\xi^{\Gamma (e)}\f$ space
 double detEtaBToXiB(
         const XFEM::BoundaryIntCell& cell,
-        const XFEM::PosEtaDomain&  pos_eta)
+        const XFEM::PosEtaBoundary&  pos_eta)
 {   
     // get node coordinates
     const BlitzMat xyze_cell(cell.NodalPosXiBoundaryBlitz());
