@@ -167,9 +167,29 @@ public:
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
 
+  virtual int Evaluate(ParameterList& params,
+                       DRT::Discretization&      discretization,
+                       vector<int>&              lm,
+                       Epetra_SerialDenseMatrix& elematrix1,
+                       Epetra_SerialDenseMatrix& elematrix2,
+                       Epetra_SerialDenseVector& elevector1,
+                       Epetra_SerialDenseVector& elevector2,
+                       Epetra_SerialDenseVector& elevector3);
 
 protected:
 
+  enum ActionType
+  {
+    none,
+    calc_struct_constrvol,
+    calc_struct_volconstrstiff,
+    calc_struct_constrarea,
+    calc_init_vol,
+    calc_surfstress_stiff,
+    calc_struct_areaconstrstiff,
+    calc_struct_monitarea
+  };
+    
   // don't want = operator
   StructuralSurface& operator = (const StructuralSurface& old);
 
@@ -232,6 +252,17 @@ protected:
     }
     return;
   }
+  
+  //! Submethod to compute the enclosed volume for vlume constraint boundary condition
+   double ComputeConstrVols(const Epetra_SerialDenseMatrix& xscurr);
+
+   //! Submethod to compute necessary change to stiffness matrix due to the constraints
+   void ComputeVolConstrStiff(const Epetra_SerialDenseMatrix& xscurr,
+       Epetra_SerialDenseMatrix& elematrix);
+
+   //! Submethod to compute first derivatives of constraint volumes w.r.t. the displacements
+   void ComputeVolConstrDeriv(const Epetra_SerialDenseMatrix& xscurr,
+       Epetra_SerialDenseVector& elevector1);
   
 }; // class StructuralSurface : public DRT::Element
 
