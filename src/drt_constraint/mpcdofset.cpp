@@ -66,22 +66,8 @@ void MPCDofSet::TransferDegreesOfFreedom(
     if (!newdis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
     if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
     
-    
-    if (!newdis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
-    if (!newdis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
-    if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
-    
-    if (!sourcedis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
-    if (!sourcedis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
-    if (!sourcedis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
-
-    if (!newdis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
-    if (!newdis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
-    if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
-
-    
-    vector<int> dofrowvec(dofrowmap_->NumMyElements(),1000);
-    // now for the nodes
+    //build dofrowmap
+    vector<int> dofrowvec(dofrowmap_->NumMyElements());
     int counter = 0;
     for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
     {
@@ -100,12 +86,9 @@ void MPCDofSet::TransferDegreesOfFreedom(
             counter++;
         }
     }
-  
-    
-    if (!dofrowmap_->UniqueGIDs()) dserror("before, Dof row map is not unique");
     dofrowmap_ = rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
-    if (!dofrowmap_->UniqueGIDs()) dserror("after, Dof row map is not unique");
     
+    //build dofcolvec
     vector<int> dofcolvec(dofcolmap_->NumMyElements());
     int colcounter = 0;
     for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
