@@ -37,7 +37,19 @@ namespace LINALG {
                 }
             }
         }
-    
+        //! matrix vector product
+        template<int ni, int nj, class M1, class V1, class V2>
+        inline void MtV_product(const M1& m, const V1& v, V2& rv)
+        {
+            for (int i = 0; i < ni; ++i)
+            {
+                rv(i) = 0.0;
+                for (int j = 0; j < nj; ++j)
+                {
+                    rv(i) += m(j,i)*v(j);
+                }
+            }
+        }    
     }
 }
 #endif /*BLITZ_TINY_OPERATION_H_*/
