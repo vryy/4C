@@ -492,9 +492,9 @@ NumElePerDisType XFluidEnsightWriter::GetNumElePerDisType(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void XFluidEnsightWriter::WriteResult(
-  const string groupname,
-  const string name,
-  const set<XFEM::PHYSICS::Field> fieldset
+  const string& groupname,
+  const string& name,
+  const set<XFEM::PHYSICS::Field>& fieldset
   )
 {
   // Intersection
@@ -592,7 +592,7 @@ vector<double> computeScalarCellNodeValues(
   const XFEM::ElementDofManager& dofman,
   const XFEM::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const blitz::Array<double,1> elementvalues
+  const blitz::Array<double,1>& elementvalues
   )
 {
   const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
@@ -618,11 +618,12 @@ vector<double> computeScalarCellNodeValues(
     //const blitz::Array<double,1> cellnodepos = cellnodeposvectors(_,inen);
 
     // shape functions
-    const blitz::Array<double,1> funct(DRT::UTILS::shape_function_3D(
+    blitz::Array<double,1> funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
+    DRT::UTILS::shape_function_3D(funct,
       nodalPosXiDomain(0,inen),
       nodalPosXiDomain(1,inen),
       nodalPosXiDomain(2,inen),
-      ele.Shape()));
+      ele.Shape());
 
     XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
     // interpolate value
@@ -643,9 +644,9 @@ void XFluidEnsightWriter::WriteNodalResultStep(
   ofstream& file,
   PostResult& result,
   map<string, vector<ofstream::pos_type> >& resultfilepos,
-  const string groupname,
-  const string name,
-  const set<XFEM::PHYSICS::Field> fieldset,
+  const string& groupname,
+  const string& name,
+  const set<XFEM::PHYSICS::Field>& fieldset,
   const RCP<XFEM::InterfaceHandle> ih,
   const RCP<XFEM::DofManager> dofman
   ) const

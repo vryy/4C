@@ -282,17 +282,17 @@ protected:
      \date 03/07
      */
     void WriteResult(
-            const string groupname, ///< name of the result group in the control file
-            const string name,      ///< name of the result to be written
-            const set<XFEM::PHYSICS::Field> fieldset
+            const string& groupname, ///< name of the result group in the control file
+            const string& name,      ///< name of the result to be written
+            const set<XFEM::PHYSICS::Field>& fieldset
             );
     void WriteNodalResultStep(
             ofstream& file,
             PostResult& result,
             map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string groupname,
-            const string name,
-            const set<XFEM::PHYSICS::Field> fieldset,
+            const string& groupname,
+            const string& name,
+            const set<XFEM::PHYSICS::Field>& fieldset,
             const RCP<XFEM::InterfaceHandle> ih,
             const RCP<XFEM::DofManager> dofman
             ) const;
