@@ -92,7 +92,7 @@ ADAPTER::ConDifBaseAlgorithm::ConDifBaseAlgorithm(const Teuchos::ParameterList& 
 
   // -----------------------------------------------condif initial field
   condiftimeparams->set<int>              ("condif initial field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_INITIALFIELD"));
-  condiftimeparams->set<int>              ("condif initial field func number",fdyn.get<int>("CD_INITIALFIELDFUNCNO"));
+  condiftimeparams->set<int>              ("condif initial field func number",fdyn.get<int>("CD_INITFUNCNO"));
   
   // -----------------------------------------------------velocity field
   condiftimeparams->set<int>              ("condif velocity field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY"));

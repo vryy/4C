@@ -634,7 +634,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &fdyn);
 
-  IntParameter("CD_VELFUNCNO",1,"function number for con-dif velocity field",&fdyn);
+  IntParameter("CD_VELFUNCNO",0,"function number for con-dif velocity field",&fdyn);
   
   setStringToIntegralParameter("CD_INITIALFIELD","zero_field",
                                "Initial Field for convection-diffusion",
@@ -645,7 +645,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &fdyn);
 
-  IntParameter("CD_INITIALFIELDFUNCNO",-1,"function number for con-dif initial field",&fdyn);
+  IntParameter("CD_INITFUNCNO",0,"function number for con-dif initial field",&fdyn);
 
   setStringToIntegralParameter("FSSUGRVISC","No","fine-scale subgrid diffusivity/viscosity",
                                tuple<std::string>(
