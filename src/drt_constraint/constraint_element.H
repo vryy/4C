@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file constraint_element3.H
+\file constraint_element.H
 
 <pre>
 Maintainer: Thomas Kloeppel
@@ -10,8 +10,8 @@ Maintainer: Thomas Kloeppel
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef CONSTRAINT_ELEMENT3_H
-#define CONSTRAINT_ELEMENT3_H
+#ifndef CONSTRAINT_ELEMENT_H
+#define CONSTRAINT_ELEMENT_H
 
 
 #include "Teuchos_RefCountPtr.hpp"

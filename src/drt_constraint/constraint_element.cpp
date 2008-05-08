@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file constraint_element3.cpp
+\file constraint_element.cpp
 \brief
 
 <pre>
@@ -12,7 +12,7 @@ Maintainer: Thomas Kloeppel
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "constraint_element3.H"
+#include "constraint_element.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
