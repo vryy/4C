@@ -516,17 +516,17 @@ break;
       ele->Unpack(data);
       return ele;
     }
-    case ParObject_ConstraintElement3:
+    case ParObject_ConstraintElement:
     {
-      DRT::ELEMENTS::ConstraintElement3* object = new DRT::ELEMENTS::ConstraintElement3(-1,-1);
+      DRT::ELEMENTS::ConstraintElement* object = new DRT::ELEMENTS::ConstraintElement(-1,-1);
       object->Unpack(data);
       return object;
     }
     break;
-    case ParObject_ConstraintElement3Register:
+    case ParObject_ConstraintElementRegister:
     {
-      DRT::ELEMENTS::ConstraintElement3Register* object =
-                      new DRT::ELEMENTS::ConstraintElement3Register(DRT::Element::element_constraintelement3);
+      DRT::ELEMENTS::ConstraintElementRegister* object =
+                      new DRT::ELEMENTS::ConstraintElementRegister(DRT::Element::element_constraintelement);
       object->Unpack(data);
       return object;
     }
@@ -675,7 +675,7 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
     break;
     case constrele3:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement3(id,owner));
+      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::ConstraintElement(id,owner));
       return ele;
     }
     break;

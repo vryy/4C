@@ -75,11 +75,10 @@ void MPCDofSet::TransferDegreesOfFreedom(
         const DRT::Node* sourcenode = sourcedis.gNode(newnode->Id());
         
         const vector<int> dofs = sourcedis.Dof(sourcenode);
-        dsassert(dofs.size()==3, "number of dofs is not 3!");
         
         const int newlid = newnode->LID();
         const int numdofs = (*numdfcolnodes_)[newlid];
-        dsassert(numdofs==3, "number of dofs is not 3!");
+        dsassert(sourcedis.NumDof(sourcenode)==newdis.NumDof(newnode), "number of dofs does not match!");
         for (int idof = 0; idof < numdofs; ++idof)
         {
             dofrowvec[counter] = dofs[idof];

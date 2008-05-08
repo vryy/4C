@@ -32,24 +32,24 @@ namespace DRT
 {
 // forward declarations
 class Discretization;
-class ConstraintElement3Register;
+class ConstraintElementRegister;
 
 namespace ELEMENTS
 {
 // forward declarations
-//class ConstraintElement3Line;
+//class ConstraintElementLine;
 
 /*!
 \brief A 3D constraint element with no physics attached
 
 \author tk (kloeppel@lnm.mw.tum.de)
 */
-class ConstraintElement3 : public DRT::Element
+class ConstraintElement : public DRT::Element
 {
 public:
 
   //! @name Friends
-  friend class ConstraintElement3Register;
+  friend class ConstraintElementRegister;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -59,7 +59,7 @@ public:
 
   \param id : A unique global id
   */
-  ConstraintElement3(int id, int owner);
+  ConstraintElement(int id, int owner);
 
   /*!
   \brief Copy Constructor
@@ -67,10 +67,10 @@ public:
   Makes a deep copy of a Element
 
   */
-  ConstraintElement3(const ConstraintElement3& old);
+  ConstraintElement(const ConstraintElement& old);
 
   /*!
-  \brief Deep copy this instance of ConstraintElement3 and return pointer to the copy
+  \brief Deep copy this instance of ConstraintElement and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
@@ -83,7 +83,7 @@ public:
   */
   virtual DiscretizationType Shape() const
   {
-      dserror("ConstraintElement3 has no shape!");
+      dserror("ConstraintElement has no shape!");
       return DRT::Element::dis_none;
   };
 
@@ -93,7 +93,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_ConstraintElement3;}
+  virtual int UniqueParObjectId() const { return ParObject_ConstraintElement;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -115,7 +115,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~ConstraintElement3();
+  virtual ~ConstraintElement();
 
   //@}
 
@@ -131,8 +131,18 @@ public:
   number of degrees of freedom per node along the way for each of it's nodes
   separately.
   */
-  virtual int NumDofPerNode(const DRT::Node& node) const {return 3;}
+  virtual int NumDofPerNode(const DRT::Node& node) const {return numdof_;}
 
+  /*!
+  \brief Set number of degrees of freedom of all connected nodes
+
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+  */
+  void SetNumDofPerNode(const int numdof) {numdof_ = numdof;}
+  
   /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
@@ -240,8 +250,11 @@ private:
   //! vector of surfaces of this element (length 1)
   vector<DRT::Element*>                           surface_;
 
+  //! vector of surfaces of this element (length 1)
+  int                                             numdof_;
+  
   // don't want = operator
-  ConstraintElement3& operator = (const ConstraintElement3& old);
+  ConstraintElement& operator = (const ConstraintElement& old);
   
   
   void ComputeElementNormal(const LINALG::SerialDenseMatrix& xc,
@@ -258,7 +271,7 @@ private:
       Epetra_SerialDenseMatrix& elevector,
       const LINALG::SerialDenseVector& elenormal);
 
-}; // class ConstraintElement3
+}; // class ConstraintElement
 
 
 //=======================================================================
@@ -272,7 +285,7 @@ private:
 
 \author tk (kloeppel@lnm.mw.tum.de)
 */
-class ConstraintElement3Register : public DRT::ElementRegister
+class ConstraintElementRegister : public DRT::ElementRegister
 {
 public:
 
@@ -282,24 +295,24 @@ public:
   \brief Standard Constructor
 
   */
-  ConstraintElement3Register(DRT::Element::ElementType etype);
+  ConstraintElementRegister(DRT::Element::ElementType etype);
 
   /*!
   \brief Copy Constructor
 
-  Makes a deep copy of an ConstraintElement3Register
+  Makes a deep copy of an ConstraintElementRegister
 
   */
-  ConstraintElement3Register(const DRT::ELEMENTS::ConstraintElement3Register& old);
+  ConstraintElementRegister(const DRT::ELEMENTS::ConstraintElementRegister& old);
 
   /*!
-  \brief Deep copy this instance of ConstraintElement3Register and return pointer to the copy
+  \brief Deep copy this instance of ConstraintElementRegister and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
 
   */
-  DRT::ELEMENTS::ConstraintElement3Register* Clone() const;
+  DRT::ELEMENTS::ConstraintElementRegister* Clone() const;
 
   /*!
   \brief Return unique ParObject id
@@ -307,7 +320,7 @@ public:
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ParObject_ConstraintElement3Register;}
+  virtual int UniqueParObjectId() const { return ParObject_ConstraintElementRegister;}
 
   /*!
   \brief Pack this class so it can be communicated
@@ -329,7 +342,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~ConstraintElement3Register();
+  virtual ~ConstraintElementRegister();
 
   //@}
 
@@ -356,7 +369,7 @@ public:
 
 private:
 
-}; // class ConstraintElement3Register
+}; // class ConstraintElementRegister
 
 } // namespace ELEMENTS
 } // namespace DRT

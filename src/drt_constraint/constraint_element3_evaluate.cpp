@@ -32,7 +32,7 @@ using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -48,7 +48,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
   if (action == "none") return 0;
   else if (action=="calc_MPC_stiff")       act = calc_MPC_stiffness;
   else
-    dserror("Unknown type of action for ConstraintElement3");
+    dserror("Unknown type of action for ConstraintElement");
 
   switch (act)
   {
@@ -115,12 +115,12 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
   return 0;
 
 
-} // end of DRT::ELEMENTS::ConstraintElement3::Evaluate
+} // end of DRT::ELEMENTS::ConstraintElement::Evaluate
 
 
 
 
-int DRT::ELEMENTS::ConstraintElement3::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::ConstraintElement::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
@@ -130,7 +130,7 @@ int DRT::ELEMENTS::ConstraintElement3::EvaluateNeumann(ParameterList& params,
   return 0;
 }
 
-void DRT::ELEMENTS::ConstraintElement3::ComputeElementNormal(const LINALG::SerialDenseMatrix& xc,
+void DRT::ELEMENTS::ConstraintElement::ComputeElementNormal(const LINALG::SerialDenseMatrix& xc,
     LINALG::SerialDenseVector& elenorm)
 {
   elenorm[0]=-(xc(0,2)*xc(1,1)) + xc(0,1)*xc(1,2) + xc(0,2)*xc(2,1) -
@@ -142,14 +142,14 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeElementNormal(const LINALG::Seria
   return ;
 }
 
-double DRT::ELEMENTS::ConstraintElement3::ComputeNormalDist(const LINALG::SerialDenseMatrix& xc,
+double DRT::ELEMENTS::ConstraintElement::ComputeNormalDist(const LINALG::SerialDenseMatrix& xc,
     const LINALG::SerialDenseVector& normal)
 {
    return (-(normal[0]*(xc(0,0) - xc(3,0))) + normal[1]*(-xc(0,1) + xc(3,1)) - normal[2]*
       (xc(0,2) - xc(3,2)))/(-normal.Norm2());
 }
 
-void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDeriv(const LINALG::SerialDenseMatrix& xc,
+void DRT::ELEMENTS::ConstraintElement::ComputeFirstDeriv(const LINALG::SerialDenseMatrix& xc,
     Epetra_SerialDenseVector& elevector,
                                                           const LINALG::SerialDenseVector& normal)
 { 
@@ -229,7 +229,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDeriv(const LINALG::SerialDe
   return;
 }
 
-void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialDenseMatrix& xc,
+void DRT::ELEMENTS::ConstraintElement::ComputeSecondDeriv(const LINALG::SerialDenseMatrix& xc,
     Epetra_SerialDenseMatrix& elematrix,
     const LINALG::SerialDenseVector& normal)
 {
@@ -1771,7 +1771,7 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv(const LINALG::SerialD
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ConstraintElement3Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::ConstraintElementRegister::Initialize(DRT::Discretization& dis)
 {
   return 0;
 }

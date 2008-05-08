@@ -14,6 +14,7 @@ Maintainer: Thomas Kloeppel
 #ifdef CCADISCRET
 
 #include "constraint_manager.H"
+#include "constraint_element3.H"
 #include "mpcdofset.H"
 #include "iostream"
 #include "../drt_adapter/adapter_utils.H"
@@ -81,6 +82,19 @@ actdisc_(discr)
   {
     // Construct special constraint discretization consisting of constraint elements
     constraintdis_=CreateDiscretizationFromCondition(constrcond,"ConstrDisc","CONSTRELE3");
+    // find typical numdof of basis discretization (may not work for XFEM)
+    const DRT::Element* actele = actdisc_->lColElement(0);
+    const DRT::Node*const* nodes = actele->Nodes();
+    const int mpc_numdof = actdisc_->NumDof(nodes[0]);
+    
+    // change numdof for all constraint elements
+    const int numcolele = constraintdis_->NumMyColElements();
+    for (int i=0; i<numcolele; ++i)
+    {
+      DRT::ELEMENTS::ConstraintElement* mpcele = dynamic_cast<DRT::ELEMENTS::ConstraintElement*>(constraintdis_->lColElement(i));
+      mpcele->SetNumDofPerNode(mpc_numdof);
+    }
+    constraintdis_->FillComplete();
     // now reconstruct the extended colmap
     RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, constraintdis_);
     //Redistribute underlying discretization to have ghosting in the same way as in the
