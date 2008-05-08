@@ -17,7 +17,10 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include "../drt_lib/drt_globalproblem.H"
-
+#include <Epetra_Time.h>
+#if 0
+#include "../drt_io/io_gmsh.H"
+#endif
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -49,19 +52,24 @@ void elch_dyn()
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
   if (!fluiddis->Filled()) fluiddis->FillComplete();
 
+  if (fluiddis->NumGlobalNodes()==0)
+    dserror("No fluid discretization found!");
+#if 0
+  std::ofstream f_system("mydiscretization.pos");
+  f_system<<IO::GMSH::disToString("Fluid",0,fluiddis);
+#endif  
   // access the (typically empty) condif discretization
   RefCountPtr<DRT::Discretization> condifdis = DRT::Problem::Instance()->Dis(disnumcdf,0);
   if (!condifdis->Filled()) condifdis->FillComplete();
 
-  if (fluiddis->NumGlobalNodes()==0)
-    dserror("No fluid discretization found!");
-
   // create condif elements if the condif discretization is empty
   if (condifdis->NumGlobalNodes()==0)
   {
+    Epetra_Time time(comm);
     ELCH::CreateConDifDiscretization(disnumff,disnumcdf);
     if (comm.MyPID()==0)
-    cout<<"Created necessary condif discretization from fluid field.\n\n";
+    cout<<"Created necessary condif discretization from fluid field in...."
+    <<time.ElapsedTime() << " secs\n\n";
   }
   else
     dserror("Fluid AND ConDif discretization present. This is not supported.");
@@ -69,11 +77,19 @@ void elch_dyn()
   // create an ELCH::Algorithm instance
   Teuchos::RCP<ELCH::Algorithm> elch = Teuchos::rcp(new ELCH::Algorithm(comm));
 
+  if (genprob.restart)
+  {
+    // read the restart information, set vectors and variables
+    //elch->ReadRestart(genprob.restart);
+    dserror("restart not yet available");
+    exit(1);
+  }
+  
   // solve the whole electrochemistry problem
   elch->TimeLoop();
 
   // summarize the performance measurements
-  //Teuchos::TimeMonitor::summarize();
+  Teuchos::TimeMonitor::summarize();
 
   // perform the result test
   DRT::ResultTestManager testmanager(comm);

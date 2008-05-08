@@ -89,7 +89,6 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
     if (not found)
       dserror("unsupported fluid element type '%s'", typeid(*actele).name());
 
-    //if (isale)
     {
       if (myele)
         egid.push_back(actele->Id());
@@ -203,16 +202,17 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
 
   // copy the conditions to the condif discretization
   vector<DRT::Condition*> cond;
-  fluiddis->GetCondition("ALEDirichlet", cond);
+  fluiddis->GetCondition("TransportDirichlet", cond);
   for (unsigned i=0; i<cond.size(); ++i)
   {
     // We use the same nodal ids and therefore we can just copy the
     // conditions. But here we rename it. So we have nice dirichlet
-    // conditions at the condif.
+    // conditions at the condif discretization.
     condifdis->SetCondition("Dirichlet", rcp(new DRT::Condition(*cond[i])));
+    cout<<"...transferred ConDif Dirichlet condition no. "<<i+1<<endl;
   }
 
-#if 1
+#if 0
   // a small hack !!
   fluiddis->GetCondition("FluidStressCalc", cond);
   for (unsigned i=0; i<cond.size(); ++i)

@@ -90,6 +90,10 @@ ADAPTER::ConDifBaseAlgorithm::ConDifBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   RCP<ParameterList> condiftimeparams= rcp(new ParameterList());
 
+  // -----------------------------------------------condif initial field
+  condiftimeparams->set<int>              ("condif initial field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_INITIALFIELD"));
+  condiftimeparams->set<int>              ("condif initial field func number",fdyn.get<int>("CD_INITIALFIELDFUNCNO"));
+  
   // -----------------------------------------------------velocity field
   condiftimeparams->set<int>              ("condif velocity field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY"));
   condiftimeparams->set<int>              ("condif velocity function number",fdyn.get<int>("CD_VELFUNCNO"));
@@ -139,7 +143,6 @@ ADAPTER::ConDifBaseAlgorithm::ConDifBaseAlgorithm(const Teuchos::ParameterList& 
     // integration (call the constructor)
     //------------------------------------------------------------------
     condif_ = rcp(new ADAPTER::ConDifImplicit(actdis, solver, condiftimeparams, output));
-    //condif_ = rcp(new CondifImplicitTimeInt(actdis, solver, condiftimeparams, output));
 
 #if 0     
     // initial field from restart

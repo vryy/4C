@@ -152,7 +152,7 @@ public:
   \brief set the initial scalar field phi
 
   */
-  void SetInitialField();
+  void SetInitialField(int init,int startfuncno);
 
 protected:
 

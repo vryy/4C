@@ -168,6 +168,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          false,
                                          DRT::Condition::Surface));
 
+  // Dirichlet conditions for transport problems
+  Teuchos::RCP<ConditionDefinition> pointtransportdirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT TRANSPORT DIRICH CONDITIONS",
+                                         "TransportDirichlet",
+                                         "Point Dirichlet",
+                                         DRT::Condition::PointDirichlet,
+                                         false,
+                                         DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> linetransportdirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE TRANSPORT DIRICH CONDITIONS",
+                                         "TransportDirichlet",
+                                         "Line Dirichlet",
+                                         DRT::Condition::LineDirichlet,
+                                         false,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surftransportdirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF TRANSPORT DIRICH CONDITIONS",
+                                         "TransportDirichlet",
+                                         "Surface Dirichlet",
+                                         DRT::Condition::SurfaceDirichlet,
+                                         false,
+                                         DRT::Condition::Surface));
+
   for (unsigned i=0; i<dirichletcomponents.size(); ++i)
   {
     pointdirichlet->AddComponent(dirichletcomponents[i]);
@@ -178,6 +201,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     pointaledirichlet->AddComponent(dirichletcomponents[i]);
     linealedirichlet->AddComponent(dirichletcomponents[i]);
     surfaledirichlet->AddComponent(dirichletcomponents[i]);
+
+    pointtransportdirichlet->AddComponent(dirichletcomponents[i]);
+    linetransportdirichlet->AddComponent(dirichletcomponents[i]);
+    surftransportdirichlet->AddComponent(dirichletcomponents[i]);
   }
 
   condlist.push_back(pointdirichlet);
@@ -188,6 +215,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(pointaledirichlet);
   condlist.push_back(linealedirichlet);
   condlist.push_back(surfaledirichlet);
+
+  condlist.push_back(pointtransportdirichlet);
+  condlist.push_back(linetransportdirichlet);
+  condlist.push_back(surftransportdirichlet);
 
   /*--------------------------------------------------------------------*/
   // contact

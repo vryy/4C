@@ -188,7 +188,7 @@ CondifImplicitTimeInt::CondifImplicitTimeInt(RefCountPtr<DRT::Discretization> ac
   }
 
   // set initial field
-  SetInitialField();
+  SetInitialField(params_.get<int>("condif initial field"), params_.get<int>("condif initial field func number"));
 
   // end time measurement for initialization
   tm1_ref_ = null;
@@ -1076,45 +1076,78 @@ void CondifImplicitTimeInt::SetVelocityField(int veltype, Teuchos::RCP<const Epe
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void CondifImplicitTimeInt::SetInitialField()
+void CondifImplicitTimeInt::SetInitialField(int init, int startfuncno)
 {
-  // access the initial field condition
-  vector<DRT::Condition*> cond;
-  discret_->GetCondition("InitialField", cond);
-
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  
-  for (unsigned i=0; i<cond.size(); ++i)
+  if (init == 0) // zero_field
+  { // just to be sure!
+    phinp_->PutScalar(0);
+    phinm_->PutScalar(0); 
+    phin_->PutScalar(0);
+  }
+  else if (init == 1)  // field_by_function
   {
-    cout<<"Applied InitialField Condition "<<i<<endl; 
-    
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
-      
-      vector<DRT::Condition*> mycond;
-      lnode->GetCondition("InitialField",mycond);
- 
-      if (mycond.size()>0)
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      const int gid = nodedofset[0];
+      int lid = dofrowmap->LID(gid);
+      double phi0=DRT::UTILS::FunctionManager::Instance().Funct(startfuncno-1).Evaluate(0,lnode->X());
+
+      phinp_->ReplaceMyValues(1,&phi0,&lid);
+      phin_->ReplaceMyValues(1,&phi0,&lid);
+      phinm_->ReplaceMyValues(1,&phi0,&lid);
+    }
+  }
+  else if (init==2) // field_by_condition
+  {
+    dserror("Initialfield by condition not finished yet;");
+    // access the initial field condition
+    vector<DRT::Condition*> cond;
+    discret_->GetCondition("InitialField", cond);
+
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    for (unsigned i=0; i<cond.size(); ++i)
+    {
+      cout<<"Applied InitialField Condition "<<i<<endl; 
+
+      // loop all nodes on the processor
+      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
       {
-        // the set of degrees of freedom associated with the node
-        vector<int> nodedofset = discret_->Dof(lnode);
+        // get the processor local node
+        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
 
-        // get initial value from condition
-        double phi = 2.0;
+        vector<DRT::Condition*> mycond;
+        lnode->GetCondition("InitialField",mycond);
 
-        // set initial value
-        const int gid = nodedofset[0];
-        int lid = dofrowmap->LID(gid);
-        phinp_->ReplaceMyValues(1,&phi,&lid);
-        phin_->ReplaceMyValues(1,&phi,&lid);
-        phinm_->ReplaceMyValues(1,&phi,&lid);
+        if (mycond.size()>0)
+        {
+          // the set of degrees of freedom associated with the node
+          vector<int> nodedofset = discret_->Dof(lnode);
+
+          // get initial value from condition
+          double phi0 = 2.0;
+
+          // set initial value
+          const int gid = nodedofset[0];
+          int lid = dofrowmap->LID(gid);
+          phinp_->ReplaceMyValues(1,&phi0,&lid);
+          phin_->ReplaceMyValues(1,&phi0,&lid);
+          phinm_->ReplaceMyValues(1,&phi0,&lid);
+        }
       }
     }
   }
-  
+  else
+    dserror("unknown option for condif initial field: %d", init);
+
   return;
 } // CondifImplicitTimeInt::SetInitialField
 
