@@ -116,7 +116,7 @@ private:
     //! domain (structure) that is submersed in the xfemdis_, used for enrichment evaluation -> will go away
     const RCP<DRT::Discretization> submerseddis_;
 
-    //! integration cells for domain
+    //! integration cells for domain (global id for element -> list of volume integration cells)
     map<int, DomainIntCells > elementalDomainIntCells_;
 
     //! integration cells for boundary
