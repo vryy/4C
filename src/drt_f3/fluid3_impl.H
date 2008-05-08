@@ -179,6 +179,7 @@ namespace ELEMENTS
       \param Cs               (i) Smagorinsky model parameter
       \param Cs_delta_sq      (i) Model parameter computed by dynamic Smagorinsky
                                   approach (Cs*h*h)
+      \param viscturb         (o) kinematic viscosity turbulence
       \param visceff          (i) nu+nu_turbulent
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input
@@ -198,10 +199,26 @@ namespace ELEMENTS
       const enum Fluid3::TurbModelAction      turb_mod_action,
       double&                                 Cs,
       double&                                 Cs_delta_sq,
+      double&								  viscturb,
       double&                                 visceff,
       double&                                 l_tau,
       const enum Fluid3::StabilisationAction  fssgv);
 
+    
+    /*!
+         \brief calculates viscosity at every gaussian point
+
+  		 \param material		 (i) material
+         \param visc             (o) kinematic material viscosity
+         \param viscturb         (o) kinematic viscosity turbulence
+         \param visceff          (o) nu+nu_turbulent   
+    */
+    void CalVisc_AtGaussianPoint(  
+      struct _MATERIAL*                       material,
+      double&                           	  visc,
+      double								  viscturb,
+      double&                                 visceff);
+    
     /*!
      * \brief calculate the body force from the nodes condition
      */
