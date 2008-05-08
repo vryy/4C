@@ -541,13 +541,13 @@ void Intersection::getCutterElementsInParallel(
                 const int actCutterId = actCutter->Id() + cutterIdAdd;
   				count++;
 
-  				const BlitzMat cutterXAABB(computeFastXAABB(actCutter));
+  				const BlitzMat3x2 cutterXAABB(computeFastXAABB(actCutter));
 
   				for(int k = 0; k < xfemdis->NumMyColElements(); k++)
     			{
         			const DRT::Element* xfemElement = xfemdis->lColElement(k);
        				initializeXFEM(k, xfemElement);
-  					const BlitzMat    xfemXAABB(computeFastXAABB(xfemElement));
+  					const BlitzMat3x2    xfemXAABB(computeFastXAABB(xfemElement));
             		const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
             		//debugXAABBIntersection( cutterXAABB, xfemXAABB, actCutter, xfemElement, i, k);
 
