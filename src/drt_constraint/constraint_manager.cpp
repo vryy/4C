@@ -542,7 +542,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
             const string&             element_name)
 {
   RCP<Epetra_Comm> com = rcp(actdisc_->Comm().Clone());
-
+  
   RCP<DRT::Discretization> newdis = rcp(new DRT::Discretization(discret_name,com));
 
   if (!actdisc_->Filled())
@@ -740,7 +740,6 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
                               RCP<Epetra_Vector>    systemvector3,
                               vector<DRT::Condition*>& constrcond)
 {
-
   if (!(disc->Filled())) dserror("FillComplete() was not called");
   if (!(disc->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
 
@@ -781,6 +780,7 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
     int condID=(*CondIDVec)[0];
     params.set("ConditionID",condID);
+    params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
     // call the element evaluate method
     int err = actele->Evaluate(params,*disc,lm,elematrix1,elematrix2,
                                elevector1,elevector2,elevector3);
@@ -864,12 +864,11 @@ void ConstrManager::EvaluateCondition(RCP<DRT::Discretization> disc,
       const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
       int condID=(*CondIDVec)[0];
       params.set("ConditionID",condID);
-      params.set<RefCountPtr<DRT::Condition> > ("condition",rcp(&cond,false));
       char factorname[30];
       sprintf(factorname,"LoadCurveFactor %d",condID);
       params.set(factorname,curvefac);
       
-//      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
+      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
 
       // define element matrices and vectors
       Epetra_SerialDenseMatrix elematrix1;
