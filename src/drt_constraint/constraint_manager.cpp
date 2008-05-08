@@ -74,6 +74,11 @@ actdisc_(discr)
   }
   // Check for Multi Point Constraint Node on planes in 3D
   actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
+  if (!constrcond.size())
+  {
+    actdisc_->GetCondition("MPC_NodeOnLine_2D",constrcond);
+    dserror("Sorry, no element evaluations implemented, yet!");
+  }
   //Initialize Vectors to contain IDs and amplitudes
   vector<double> MPCamplitudes(constrcond.size());
   vector<int> MPCcondIDs(constrcond.size());
@@ -81,20 +86,9 @@ actdisc_(discr)
   if (constrcond.size())
   {
     // Construct special constraint discretization consisting of constraint elements
-    constraintdis_=CreateDiscretizationFromCondition(constrcond,"ConstrDisc","CONSTRELE3");
-    // find typical numdof of basis discretization (may not work for XFEM)
-    const DRT::Element* actele = actdisc_->lColElement(0);
-    const DRT::Node*const* nodes = actele->Nodes();
-    const int mpc_numdof = actdisc_->NumDof(nodes[0]);
-    
-    // change numdof for all constraint elements
-    const int numcolele = constraintdis_->NumMyColElements();
-    for (int i=0; i<numcolele; ++i)
-    {
-      DRT::ELEMENTS::ConstraintElement* mpcele = dynamic_cast<DRT::ELEMENTS::ConstraintElement*>(constraintdis_->lColElement(i));
-      mpcele->SetNumDofPerNode(mpc_numdof);
-    }
-    constraintdis_->FillComplete();
+    constraintdis_=CreateDiscretizationFromCondition(constrcond,"ConstrDisc","CONSTRELE");
+    ReplaceNumDof(actdisc_,constraintdis_);
+    //exit(0);
     // now reconstruct the extended colmap
     RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, constraintdis_);
     //Redistribute underlying discretization to have ghosting in the same way as in the
@@ -670,12 +664,55 @@ void ConstrManager::ReorderConstraintNodes(
 {
   // get this condition's nodes
   vector<int> temp=nodeids;
-  const vector<int>*    constrNode  = cond->Get<vector<int> >("ConstrNode");
-  nodeids[(*constrNode)[0]-1]=temp[3];
-  nodeids[3]=temp[(*constrNode)[0]-1];
+  if (nodeids.size()==4)
+  {
+    
+    const vector<int>*    constrNode  = cond->Get<vector<int> >("ConstrNode");
+    nodeids[(*constrNode)[0]-1]=temp[3];
+    nodeids[3]=temp[(*constrNode)[0]-1];
+  }
+  else if (nodeids.size()==3)
+  {
+    const vector<int>*    constrNode1  = cond->Get<vector<int> >("ConstrNode 1");
+    const vector<int>*    constrNode2  = cond->Get<vector<int> >("ConstrNode 2");
+    const vector<int>*    constrNode3  = cond->Get<vector<int> >("ConstrNode 3");
+    nodeids[0]=temp[(*constrNode1)[0]-1];
+    nodeids[1]=temp[(*constrNode2)[0]-1];
+    nodeids[2]=temp[(*constrNode3)[0]-1];
+  }
+  else
+  {
+    dserror("strange number of nodes for a MPC! Should be 3 (2D) or 4 (3D)");
+  }
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |(private)                                                   tk 05/08  |
+ |replace numdofs in elements of constraint discretization              |
+ *----------------------------------------------------------------------*/
+void ConstrManager::ReplaceNumDof(
+        const RCP<DRT::Discretization> sourcedis,
+        const RCP<DRT::Discretization> constraintdis
+        ) const
+{
+  // find typical numdof of basis discretization (may not work for XFEM)
+  const DRT::Element* actele = sourcedis->lColElement(0);
+  const DRT::Node*const* nodes = actele->Nodes();
+  const int mpc_numdof = sourcedis->NumDof(nodes[0]);
+  
+  // change numdof for all constraint elements
+  const int numcolele = constraintdis->NumMyColElements();
+  for (int i=0; i<numcolele; ++i)
+  {
+    DRT::ELEMENTS::ConstraintElement* mpcele = dynamic_cast<DRT::ELEMENTS::ConstraintElement*>(constraintdis->lColElement(i));
+    mpcele->SetNumDofPerNode(mpc_numdof);
+  }
+  constraintdis->FillComplete();
+  return;
+ }
+ 
+ 
 /*----------------------------------------------------------------------*
  |(private)                                                   tk 04/08  |
  |recompute nodecolmap of standard discretization to include constrained|

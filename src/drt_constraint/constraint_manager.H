@@ -306,6 +306,12 @@ private:
         vector<int>& nodeids,  ///< reordered node ids
         const DRT::Condition*      condname); ///< condition to deal with
     
+    ///replace numdofs in elements of constraint discretization
+    void ReplaceNumDof(
+            const RCP<DRT::Discretization> sourcedis,       ///< basis discretization
+            const RCP<DRT::Discretization> constraintdis    ///< discretization with elements to modify
+            ) const;
+    
     /// find col node map so that we can evaluate the constraint elements
     RCP<Epetra_Map> ComputeNodeColMap(
             const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute

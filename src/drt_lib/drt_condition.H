@@ -94,7 +94,8 @@ public:
     AreaMonitor_3D,
     AreaMonitor_2D,
     ImpedanceCond,
-    MPC_NodeOnPlane_3D
+    MPC_NodeOnPlane_3D,
+    MPC_NodeOnLine_2D
   };
 
   /*!

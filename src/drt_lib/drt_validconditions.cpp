@@ -628,7 +628,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(impedancebc);
 
   /*--------------------------------------------------------------------*/
-    // area monitor 2D
+  // Multi point constraint in 3D for a node over a plane
 
   Teuchos::RCP<ConditionDefinition> nodeonplaneconst3D =
     Teuchos::rcp(new ConditionDefinition("DESIGN MULTIPOINT CONSTRAINT 3D",
@@ -643,6 +643,28 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConstrNode")));
   condlist.push_back(nodeonplaneconst3D);
+  
+  /*--------------------------------------------------------------------*/
+  // Multi point constraint in 2D for a node on a line
+  Teuchos::RCP<ConditionDefinition> nodeonlineconst2D =
+      Teuchos::rcp(new ConditionDefinition("DESIGN MULTIPOINT CONSTRAINT 2D",
+                                           "MPC_NodeOnLine_2D",
+                                           "Node on Line Constraint",
+                                           DRT::Condition::MPC_NodeOnLine_2D,
+                                           false,
+                                           DRT::Condition::Line));
+
+  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  nodeonlineconst2D->AddComponent(Teuchos::rcp(new RealConditionComponent("Amplitude")));
+  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConstrNode 1")));
+  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConstrNode 2")));
+  nodeonlineconst2D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConstrNode 3")));
+  nodeonlineconst2D->AddComponent(Teuchos::rcp(new StringConditionComponent("control value","dist",
+        Teuchos::tuple<std::string>("dist","angle"),
+        Teuchos::tuple<std::string>("dist","angle"),
+        true)));
+    condlist.push_back(nodeonlineconst2D);
 
   return vc;
 }
