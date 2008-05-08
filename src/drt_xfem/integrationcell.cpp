@@ -213,8 +213,8 @@ BlitzVec3 DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) cons
     const BlitzMat physcoord = this->NodalPosXYZ(ele);
     
     // center in local coordinates
-    static BlitzVec localcenterpos(3);
-    localcenterpos = DRT::UTILS::getLocalCenterPosition(this->Shape());
+    static BlitzVec3 localcenterpos;
+    localcenterpos = DRT::UTILS::getLocalCenterPosition<3>(this->Shape());
 
     // shape functions
     const BlitzVec funct(DRT::UTILS::shape_function_3D(
