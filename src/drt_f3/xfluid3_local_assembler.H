@@ -2,7 +2,7 @@
 /*!
 \file xfluid3_local_assembler.H
 
-\brief rotuines to assemble element stiffness matrix and vector
+\brief routines to assemble element stiffness matrix and vector
 
 <pre>
 Maintainer: Axel Gerstenberger
@@ -27,31 +27,24 @@ using namespace XFEM;
 
 
 //! for non-xfem elements, figure out the order of unknowns per node in the array
-template <XFEM::PHYSICS::Field field> int getFieldNumber()
-{
-    dserror("this field does not belong to the 3d fluid");
-    return -1;
-}
-template <> int getFieldNumber<XFEM::PHYSICS::Velx>() {return 0;}
-template <> int getFieldNumber<XFEM::PHYSICS::Vely>() {return 1;}
-template <> int getFieldNumber<XFEM::PHYSICS::Velz>() {return 2;}
-template <> int getFieldNumber<XFEM::PHYSICS::Pres>() {return 3;}
-
+template<XFEM::PHYSICS::Field field>
+struct FieldNum {static const int pos = -1;};
+template<> struct FieldNum<XFEM::PHYSICS::Velx> {static const int pos = 0;};
+template<> struct FieldNum<XFEM::PHYSICS::Vely> {static const int pos = 1;};
+template<> struct FieldNum<XFEM::PHYSICS::Velz> {static const int pos = 2;};
+template<> struct FieldNum<XFEM::PHYSICS::Pres> {static const int pos = 3;};
 
 //! for the viscous stress, replace shear stress components with symmetric part
 template <XFEM::PHYSICS::Field FIELD>
-XFEM::PHYSICS::Field mangle()
-{
-    return FIELD;
-}
-template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Sigmayx>() {return XFEM::PHYSICS::Sigmaxy;}
-template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Sigmazx>() {return XFEM::PHYSICS::Sigmaxz;}
-template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Sigmazy>() {return XFEM::PHYSICS::Sigmayz;}
-template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Tauyx>() {return XFEM::PHYSICS::Tauxy;}
-template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Tauzx>() {return XFEM::PHYSICS::Tauxz;}
-template <> XFEM::PHYSICS::Field mangle<XFEM::PHYSICS::Tauzy>() {return XFEM::PHYSICS::Tauyz;}
+struct Mangle {static const XFEM::PHYSICS::Field name = FIELD;};
+template<> struct Mangle<XFEM::PHYSICS::Sigmayx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxy;};
+template<> struct Mangle<XFEM::PHYSICS::Sigmazx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxz;};
+template<> struct Mangle<XFEM::PHYSICS::Sigmazy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmayz;};
+template<> struct Mangle<XFEM::PHYSICS::Tauyx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxy;};
+template<> struct Mangle<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxz;};
+template<> struct Mangle<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauyz;};
 
-
+//! class that assembles one after another integral of the weak form into the stiffness matrix
 template <DRT::Element::DiscretizationType DISTYPE, 
           XFEM::AssemblyType ASSEMBLYTYPE>
 class LocalAssembler
@@ -81,12 +74,12 @@ public:
               XFEM::PHYSICS::Field trialfield>
     void Matrix(
             const BlitzVec&     testshape,
-            const double        fac,
+            const double&       fac,
             const BlitzVec&     trialshape
             ) const
     {
-        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField(mangle<testfield>());
-        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField(mangle<trialfield>());
+        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField(Mangle<testfield>::name);
+        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField(Mangle<trialfield>::name);
         
 //        const int numparamtest  = testdof.size();
 //        const int numparamtrial = trialdof.size();
@@ -118,10 +111,10 @@ public:
     template <XFEM::PHYSICS::Field testfield>
     void Vector(
             const BlitzVec&     testshape,
-            const double        fac
+            const double&       fac
             ) const
     {
-        const std::vector<int>& testdof = dofman_.LocalDofPosPerField(mangle<testfield>());
+        const std::vector<int>& testdof = dofman_.LocalDofPosPerField(Mangle<testfield>::name);
         
 //        const int numparamtest  = testdof.size();
 //        
@@ -175,18 +168,18 @@ public:
               XFEM::PHYSICS::Field trialfield>
     void Matrix(
             const BlitzVec&     testshape,
-            const double        fac,
+            const double&       fac,
             const BlitzVec&     trialshape
             ) const
     {
         const int numparam = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
         for (int ui=0; ui<numparam; ++ui)
         {
-            const int trialpos = 4*ui + getFieldNumber<trialfield>();
+            const int trialpos = 4*ui + FieldNum<trialfield>::pos;
             const double multiply = fac*trialshape(ui);
             for (int vi=0; vi<numparam; ++vi)
             {
-                const int testpos = 4*vi + getFieldNumber<testfield>();
+                const int testpos = 4*vi + FieldNum<testfield>::pos;
                 estif_(testpos, trialpos) += testshape(vi)*multiply ;
             }
         }
@@ -196,13 +189,13 @@ public:
     template <XFEM::PHYSICS::Field testfield>
     void Vector(
             const BlitzVec&     testshape,
-            const double        fac
+            const double&       fac
             ) const
     {
         const int numparam = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
         for (int vi=0; vi<numparam; ++vi)
         {
-            const int testpos = 4*vi + getFieldNumber<testfield>();
+            const int testpos = 4*vi + FieldNum<testfield>::pos;
             eforce_(testpos) += fac*testshape(vi);
         }
     }

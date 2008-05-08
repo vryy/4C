@@ -172,17 +172,12 @@ namespace UTILS
           M&                       xyze
           )
   {
-      if (distype != ele->Shape())
-      {
-          dserror("mismatch in distype in template function PositionArrayBlitz");
-      }
+      dsassert(distype == ele->Shape(), "mismatch in distype");
       const int numnode = DRT::UTILS::_switchDisType<distype>::numNodePerElement;
 
       const Node*const* nodes = ele->Nodes();
-      if (nodes == NULL)
-      {
-          dserror("element has no nodal pointers, so getting a position array doesn't make sense!");
-      }
+      dsassert(nodes != NULL, "element has no nodal pointers, so getting a position array doesn't make sense!");
+      
       for (int inode=0; inode<numnode; inode++)
       {
           const double* x = nodes[inode]->X();

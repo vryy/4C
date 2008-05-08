@@ -217,11 +217,12 @@ BlitzVec3 DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) cons
     localcenterpos = DRT::UTILS::getLocalCenterPosition<3>(this->Shape());
 
     // shape functions
-    const BlitzVec funct(DRT::UTILS::shape_function_3D(
+    BlitzVec funct(DRT::UTILS::getNumberOfElementNodes(this->Shape()));
+    DRT::UTILS::shape_function_3D(funct,
             localcenterpos(0),
             localcenterpos(1),
             localcenterpos(2),
-            this->Shape()));
+            this->Shape());
     
     //interpolate position to x-space
     //blitz::firstIndex isd;

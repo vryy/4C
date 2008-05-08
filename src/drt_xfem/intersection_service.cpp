@@ -130,31 +130,6 @@ void XFEM::elementToCurrentCoordinatesInPlace(
     }
 }
 
-/*----------------------------------------------------------------------*
- | GM:  transforms a node in current coordinates            u.may 07/07 |
- |      into element coordinates                                        |
- *----------------------------------------------------------------------*/  
-BlitzVec XFEM::currentToElementCoordinatesExact(   
-    const DRT::Element*               element, 
-    const BlitzVec3&                   x) 
-{
-    //dsassert(x.size() == 3, "current coordinates have to be 3!");
-    const int dim = DRT::UTILS::getDimension(element->Shape());
-    dsassert(dim == 3, "element has to be 3-dimensional!");
-    
-    BlitzVec xsi(dim);
-    currentToElementCoordinates(element, x, xsi);
-   
-    // rounding 1 and -1 to be exact for the CDT
-    for(int j = 0; j < 3; j++)
-    {
-        if( fabs((fabs(xsi(j))-1.0)) < TOL7 &&  xsi(j) < 0)    xsi(j) = -1.0;
-        if( fabs((fabs(xsi(j))-1.0)) < TOL7 &&  xsi(j) > 0)    xsi(j) =  1.0;      
-    }
-    return xsi;
-}     
-
-
 /*!
 \brief updates the system matrix at the corresponding element coordinates for the 
        computation if a node in current coordinates lies within an element 
@@ -164,16 +139,15 @@ BlitzVec XFEM::currentToElementCoordinatesExact(
 \param xsi               (in)       : vector of element coordinates
 \param element           (in)       : element 
 */  
-template <DRT::Element::DiscretizationType DISTYPE, int dim>
+template <DRT::Element::DiscretizationType DISTYPE, int dim, class M1, class V, class M2>
 static inline void updateAForNWE(
-    BlitzMat&                           A,
-    const BlitzVec&                     xsi,
-    const BlitzMat&                     xyze
+    M1&                           A,
+    const V&                      xsi,
+    const M2&                     xyze
     )                                                  
 {   
     const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
-    //const int dim = DRT::UTILS::getDimension<DISTYPE>();
-    static blitz::TinyMatrix<double,dim,DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement> deriv1;
+    static blitz::TinyMatrix<double,dim,numNodes> deriv1;
     shape_function_deriv1<DISTYPE>(xsi, deriv1);
     
     //A = blitz::sum(xyze(isd,inode) * deriv1(jsd,inode), inode);
@@ -202,16 +176,16 @@ static inline void updateAForNWE(
 \param x                 (in)       : node in current coordinates
 \param element           (in)       : element
 */
-template <DRT::Element::DiscretizationType DISTYPE, int dim>
+template <DRT::Element::DiscretizationType DISTYPE, int dim, class V1, class V2, class V3, class M1>
 static inline void updateRHSForNWE(
-        BlitzVec&           b,
-        const BlitzVec&     xsi,
-        const BlitzVec3&    x,
-        const BlitzMat&     xyze)                                                  
+        V1&          b,
+        const V2&    xsi,
+        const V3&    x,
+        const M1&    xyze)                                                  
 {
     
     const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
-    blitz::TinyVector<double,DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement> funct;
+    blitz::TinyVector<double,numNodes> funct;
     shape_function<DISTYPE>(xsi, funct);
     
     //b = x(isd) - blitz::sum(xyze(isd,inode) * funct(inode), inode);
@@ -241,22 +215,22 @@ template <DRT::Element::DiscretizationType DISTYPE, int dim>
 static inline bool currentToElementCoordinatesT(
     const DRT::Element*                 element,
     const BlitzVec3&                    x,
-    BlitzVec&                           xsi)
+    BlitzVec&                           xsi_out)
 {
     dsassert(element->Shape() == DISTYPE, "this is a bug in currentToElementCoordinatesT!");
     bool nodeWithinElement = true;
-    //const int dim = DRT::UTILS::getDimension<DISTYPE>();
     const int maxiter = 20;
     double residual = 1.0;
     
-    static BlitzMat A(dim,dim);
-    static BlitzVec b(dim);
-    static BlitzVec dx(dim);
+    static blitz::TinyMatrix<double,dim,dim> A;
+    static blitz::TinyVector<double,dim> b;
+    static blitz::TinyVector<double,dim> dx;
     
-    static BlitzMat xyze(3, DRT::UTILS::getNumberOfElementNodes<DISTYPE>());
+    static blitz::TinyMatrix<double,3,DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement> xyze;
     fillPositionArray<DISTYPE>(element, xyze);
     
     // initial guess
+    static blitz::TinyVector<double,dim> xsi;
     xsi = 0.0;
             
     updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
@@ -284,6 +258,9 @@ static inline bool currentToElementCoordinatesT(
             break;
         }   
     }
+    for (int isd = 0; isd < dim; ++isd)
+        xsi_out(isd) = xsi(isd);
+    
     return nodeWithinElement;
 }
 
@@ -330,7 +307,7 @@ bool XFEM::currentToElementCoordinates(
  *----------------------------------------------------------------------*/
 bool XFEM::isPositionWithinXAABB(    
     const BlitzVec3&                   pos,
-    const BlitzMat&                    XAABB)
+    const BlitzMat3x2&                 XAABB)
 {
     const int nsd = 3;
     bool isWithin = true;
@@ -358,7 +335,7 @@ bool XFEM::isPositionWithinXAABB(
 bool XFEM::isLineWithinXAABB(    
     const BlitzVec3&                   pos1,
     const BlitzVec3&                   pos2,
-    const BlitzMat&                    XAABB)
+    const BlitzMat3x2&                 XAABB)
 {
     const int nsd = 3;
     bool isWithin = true;
@@ -734,11 +711,11 @@ void XFEM::updateAForMap3To2(
  |  ICS:    computes an extended axis-aligned bounding box   u.may 06/07|
  |          XAABB for a given element                                   |
  *----------------------------------------------------------------------*/
-BlitzMat XFEM::computeFastXAABB( 
+BlitzMat3x2 XFEM::computeFastXAABB( 
     const DRT::Element* element)
 {
     const int nsd = 3;
-    BlitzMat XAABB(nsd, 2);
+    BlitzMat3x2 XAABB;
     
     // first node
     const double* pos = element->Nodes()[0]->X();
@@ -786,8 +763,8 @@ BlitzMat XFEM::computeFastXAABB(
  |  ICS:    checks if two XAABB's intersect                  u.may 06/07|
  *----------------------------------------------------------------------*/
 bool XFEM::intersectionOfXAABB(  
-    const BlitzMat&     cutterXAABB, 
-    const BlitzMat&     xfemXAABB)
+    const BlitzMat3x2&     cutterXAABB, 
+    const BlitzMat3x2&     xfemXAABB)
 {
     
   /*====================================================================*/
@@ -831,7 +808,7 @@ bool XFEM::intersectionOfXAABB(
   /*====================================================================*/
     
     bool intersection =  false;
-    std::vector<BlitzVec3> nodes(8, BlitzVec3());
+    static std::vector<BlitzVec3> nodes(8, BlitzVec3());
     
     nodes[0](0) = cutterXAABB(0,0); nodes[0](1) = cutterXAABB(1,0); nodes[0](2) = cutterXAABB(2,0); // node 0   
     nodes[1](0) = cutterXAABB(0,1); nodes[1](1) = cutterXAABB(1,0); nodes[1](2) = cutterXAABB(2,0); // node 1

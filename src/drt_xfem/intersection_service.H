@@ -68,6 +68,28 @@ namespace XFEM
     }
      
     /*!
+    \brief calculate quadratic norm
+    \param v (in) : BlitzVec
+    \return normalized BlitzVec 
+    */   
+    inline double Norm2(   
+        const blitz::TinyVector<double,1>&     v)
+    {
+        return abs(v(0));
+    }
+
+    /*!
+    \brief calculate quadratic norm
+    \param v (in) : BlitzVec
+    \return normalized BlitzVec 
+    */   
+    inline double Norm2(   
+        const blitz::TinyVector<double,3>&     v)
+    {
+        return sqrt(v(0)*v(0) + v(1)*v(1) + v(2)*v(2));
+    }
+    
+    /*!
     \brief normalizes a vector, such that the resulting length is 1
     \return normalized BlitzVec 
     */   
@@ -128,20 +150,6 @@ namespace XFEM
     
     /*!
     \brief transforms a point in current coordinates to a point
-           in element coordinates with respect to a given element
-
-    \param element          (in)        : element
-    \param xsi              (in/out)    : vector of current coordinates/
-    \return                               vector of element coordinates
-    */
-    BlitzVec currentToElementCoordinatesExact(
-            const DRT::Element*         element,
-            const BlitzVec3&             x
-            );
-    
-    
-    /*!
-    \brief transforms a point in current coordinates to a point
            in element coordinates with respect to a given element       
            The nonlinear system of equation is solved with help of the Newton-method.
 
@@ -152,9 +160,39 @@ namespace XFEM
     */  
     bool currentToElementCoordinates(
         const DRT::Element*                 element,
-        const BlitzVec3&                     x,
+        const BlitzVec3&                    x,
         BlitzVec&                           xsi
         );
+    
+    
+    /*!
+    \brief transforms a point in current coordinates to a point
+           in element coordinates with respect to a given element
+
+    \param element          (in)        : element
+    \param xsi              (in/out)    : vector of current coordinates/
+    \tparam dim                         : dimension of the element parameter space
+    \return                               vector of element coordinates
+    */
+    template<int dim>
+    BlitzVec currentToElementCoordinatesExact(
+            const DRT::Element*         element,
+            const BlitzVec3&            x
+            )
+    {
+        dsassert(DRT::UTILS::getDimension(element->Shape()) == dim, "element has to be 3-dimensional!");
+        
+        BlitzVec xsi(dim);
+        currentToElementCoordinates(element, x, xsi);
+       
+        // rounding 1 and -1 to be exact for the CDT
+        for(int j = 0; j < dim; j++)
+        {
+            if( fabs((fabs(xsi(j))-1.0)) < TOL7 &&  xsi(j) < 0)    xsi(j) = -1.0;
+            if( fabs((fabs(xsi(j))-1.0)) < TOL7 &&  xsi(j) > 0)    xsi(j) =  1.0;      
+        }
+        return xsi;
+    } 
     
     
     /*!
@@ -255,7 +293,7 @@ namespace XFEM
     */
     bool isPositionWithinXAABB(
             const BlitzVec3&                   pos,    ///< node to be checked
-            const BlitzMat&                    XAABB   ///< extended axis-aligned bouning box
+            const BlitzMat3x2&                 XAABB   ///< extended axis-aligned bouning box
             );
     
     
@@ -268,7 +306,7 @@ namespace XFEM
     bool isLineWithinXAABB(
             const BlitzVec3&                   pos1, ///< node to be checked
             const BlitzVec3&                   pos2, ///< node to be checked
-            const BlitzMat&                    XAABB ///< extended axis-aligned bouning box
+            const BlitzMat3x2&                 XAABB ///< extended axis-aligned bouning box
             );
     
     
@@ -415,7 +453,7 @@ namespace XFEM
     \param  element          (in)      : element
     \return extended axis-aligned bounding box  (XAABB) for an element
     */
-    BlitzMat computeFastXAABB( 
+    BlitzMat3x2 computeFastXAABB( 
             const DRT::Element*   element
             );
     
@@ -428,8 +466,8 @@ namespace XFEM
     \return true if the XAABB's intersect or false otherwise
     */
     bool intersectionOfXAABB(
-            const BlitzMat&    cutterXAABB,
-            const BlitzMat&    xfemXAABB
+            const BlitzMat3x2&    cutterXAABB,
+            const BlitzMat3x2&    xfemXAABB
             );
     
 }

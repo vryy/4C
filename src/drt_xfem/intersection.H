@@ -1116,8 +1116,8 @@ class Intersection
         \param noX               (in)    : id of the xfem element
         */
         void debugXAABBIntersection(
-            const BlitzMat    cutterXAABB,
-            const BlitzMat    xfemXAABB,
+            const BlitzMat3x2    cutterXAABB,
+            const BlitzMat3x2    xfemXAABB,
             const DRT::Element*               cutterElement,
             const DRT::Element*               xfemElement,
             const int                         noC,

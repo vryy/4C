@@ -421,34 +421,32 @@ namespace UTILS
             Template version
 
   */
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToDim {static const int dim = -1;};
+  template<> struct DisTypeToDim<DRT::Element::dis_none> {static const int dim = -1;};
+  template<> struct DisTypeToDim<DRT::Element::point1>   {static const int dim = 0;};
+  template<> struct DisTypeToDim<DRT::Element::line2>    {static const int dim = 1;};
+  template<> struct DisTypeToDim<DRT::Element::line3>    {static const int dim = 1;};
+  template<> struct DisTypeToDim<DRT::Element::quad4>    {static const int dim = 2;};
+  template<> struct DisTypeToDim<DRT::Element::quad8>    {static const int dim = 2;};
+  template<> struct DisTypeToDim<DRT::Element::quad9>    {static const int dim = 2;};
+  template<> struct DisTypeToDim<DRT::Element::tri3>     {static const int dim = 2;};
+  template<> struct DisTypeToDim<DRT::Element::tri6>     {static const int dim = 2;};
+  template<> struct DisTypeToDim<DRT::Element::hex8>     {static const int dim = 3;};
+  template<> struct DisTypeToDim<DRT::Element::hex20>    {static const int dim = 3;};
+  template<> struct DisTypeToDim<DRT::Element::hex27>    {static const int dim = 3;};
+  template<> struct DisTypeToDim<DRT::Element::tet4>     {static const int dim = 3;};
+  template<> struct DisTypeToDim<DRT::Element::tet10>    {static const int dim = 3;};
+  
+  /*!
+  \brief    Returns the dimension of an element based on its discretization-type
+            Template version
+
+  */
   template <DRT::Element::DiscretizationType DISTYPE>
   inline int getDimension()
   {
-      int dim = 0;
-
-      switch(DISTYPE)
-      {
-          case DRT::Element::line2 :  case DRT::Element::line3 :
-          {
-              dim = 1;
-              break;
-          }
-          case DRT::Element::quad4 : case DRT::Element::quad8 : case DRT::Element::quad9 :
-          case DRT::Element::tri3 : case DRT::Element::tri6 :
-          {
-              dim = 2;
-              break;
-          }
-          case DRT::Element::hex8 : case DRT::Element::hex20 : case DRT::Element::hex27 :
-          case DRT::Element::tet4 : case DRT::Element::tet10 :
-          {
-              dim = 3;
-              break;
-          }
-          default:
-              dserror("discretization type is not yet implemented");
-      }
-      return dim;
+      return DisTypeToDim<DISTYPE>::dim;
   }
 
   /*!

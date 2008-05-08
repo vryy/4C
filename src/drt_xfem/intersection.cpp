@@ -99,7 +99,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
         DRT::Element* xfemElement = xfemdis->lColElement(k);
         initializeXFEM(k, xfemElement);
 
-        const BlitzMat xfemXAABB = computeFastXAABB(xfemElement);
+        const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement);
 
         startPointList();
 
@@ -119,7 +119,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
                 DRT::Element*  cutterElement = iterGeo->second.get();
                 if(cutterElement == NULL) dserror("geometry does not obtain elements");
 
-                const BlitzMat    cutterXAABB(computeFastXAABB(cutterElement));
+                const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement));
 
                 const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
 
@@ -1232,7 +1232,7 @@ void Intersection::computeConvexHull(
             for(int j = 0; j < 2; j++)
                 eleCoordSurf(j)  = midpoint.coord[j];
             const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
-            const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));
+            const BlitzVec eleCoordVol(currentToElementCoordinatesExact<3>(xfemElement, curCoordVol));
             for(int j = 0; j < 3; j++)
                 midpoint.coord[j] = eleCoordVol(j);
         }
@@ -1258,7 +1258,7 @@ void Intersection::computeConvexHull(
                 for(int j = 0; j < 2; j++)
                     eleCoordSurf(j)  = ipoint->coord[j];
                 const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
-                const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));
+                const BlitzVec eleCoordVol(currentToElementCoordinatesExact<3>(xfemElement, curCoordVol));
                 for(int j = 0; j < 3; j++)
                     ipoint->coord[j] = eleCoordVol(j);
             }
@@ -1286,7 +1286,7 @@ void Intersection::computeConvexHull(
                     for(int m = 0; m < 2; m++)
                         eleCoordSurf(m)  = vertex[m];
                     const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
-                    const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));
+                    const BlitzVec eleCoordVol(currentToElementCoordinatesExact<3>(xfemElement, curCoordVol));
                     for(int m = 0; m < 3; m++)
                         vertex[m] = eleCoordVol(m);
                 }
@@ -1316,7 +1316,7 @@ void Intersection::computeConvexHull(
                 for(int j = 0; j < 2; j++)
                     eleCoordSurf(j)  = ipoint->coord[j];
                 const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
-                const BlitzVec eleCoordVol(currentToElementCoordinatesExact(xfemElement, curCoordVol));
+                const BlitzVec eleCoordVol(currentToElementCoordinatesExact<3>(xfemElement, curCoordVol));
                 for(int j = 0; j < 3; j++)
                 {
                     ipoint->coord[j] = eleCoordVol(j);
@@ -3552,7 +3552,7 @@ void Intersection::storeHigherOrderNode(
         const DRT::Element* lineele = surfaceElement->Lines()[lineIndex];
         curr = elementToCurrentCoordinates(lineele, xsiLine);
     }
-    xsi = currentToElementCoordinatesExact(xfemElement, curr);
+    xsi = currentToElementCoordinatesExact<3>(xfemElement, curr);
 
     //printf("xsiold0 = %20.16f\t, xsiold1 = %20.16f\t, xsiold2 = %20.16f\n", out.pointlist[index*3], out.pointlist[index*3+1], out.pointlist[index*3+2]);
 
@@ -3684,8 +3684,8 @@ void Intersection::addCellsToBoundaryIntCellsMap(
  |  DB:     Debug only                                       u.may 06/07|
  *----------------------------------------------------------------------*/
 void Intersection::debugXAABBIntersection(
-        const BlitzMat cutterXAABB,
-        const BlitzMat xfemXAABB,
+        const BlitzMat3x2 cutterXAABB,
+        const BlitzMat3x2 xfemXAABB,
         const DRT::Element* cutterElement,
         const DRT::Element* xfemElement,
         const int noC,

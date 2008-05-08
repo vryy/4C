@@ -419,11 +419,11 @@ static void svdcmp(
     \tparam order    (in)    : ???
     \return true if matrix is not singular , false if matrix is singular
     */
-    template<bool do_piv, int dim, int order>
+    template<bool do_piv, int dim, int order, class M, class V1, class V2>
     inline bool gaussElimination(
-            BlitzMat&                   A,  ///< (in)    : system matrix
-            BlitzVec&                   b,  ///< (in)    : right-hand-side
-            BlitzVec&                   x   ///< (out)   : solution vector
+            M&                    A,  ///< (in)    : system matrix
+            V1&                   b,  ///< (in)    : right-hand-side
+            V2&                   x   ///< (out)   : solution vector
             )
     {
         bool solution = true;
