@@ -25,8 +25,12 @@ or the well-known .dat file is created.
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
 #include "../drt_lib/drt_validparameters.H"
+#include "../drt_lib/drt_validconditions.H"
+#include "../drt_lib/drt_conditiondefinition.H"
 #include "pre_exodus_reader.H"
 #include "pre_exodus_soshextrusion.H"
+#include "pre_exodus_writedat.H"
+#include "pre_exodus_readbc.H"
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
@@ -98,6 +102,9 @@ int main(
     mymesh.Print(cout);
     //mymesh.CloseExo();
 
+    // declare empty map for holding "boundary" conditions
+    vector<map<int,EXODUS::bc_entity> > conditions(3);
+    
     // generate solid shell extrusion based on exodus file
     if (soshthickness!=0.0){
       if (exofile=="") dserror("no exofile specified for extrusion");
@@ -124,8 +131,9 @@ int main(
       
       // write mesh verbosely
       defaultbc<<"----------- Mesh contents -----------"<<endl<<endl;
-      mymesh.Print(defaultbc, true);
+      mymesh.Print(defaultbc, false);
 
+      /*
       // show all necessary bc and element specifications (suggestion for user)     
       defaultbc<<"-----------Please specify:-----------"<<endl<<endl;
 	    defaultbc<<"\\\\SYNTAX:"<<endl;
@@ -147,10 +155,59 @@ int main(
       << "\\\\boundr_cond=\"NEUMANN\"\"E 1 - 1  0 0 1 0 0 0 0.0 0.0 1.0 0.0 0.0 0.0 Live Mid\" "<<endl<<endl;
       defaultbc<<"\\\\matr6 =\"DSURF\"\"4\" "<<endl
       <<"\\\\boundr_cond=\"DIRICH\"\"E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0\" "<<endl<<endl;
-
-      defaultbc<<"------------------------------------------------"<<endl<<endl;
+      */
       
-      int numEntities = mymesh.GetNumElementBlocks() + mymesh.GetNumNodeSets() + mymesh.GetNumSideSets();
+      defaultbc << "MIND that you can specify a condittion also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'"<<endl;
+      defaultbc<<"------------------------------------------------BCSPECS"<<endl<<endl;
+      
+      
+      // write ElementBlocks with specification proposal
+      const map<int,EXODUS::ElementBlock> myblocks = mymesh.GetElementBlocks();
+      map<int,EXODUS::ElementBlock>::const_iterator it;
+      for (it = myblocks.begin(); it != myblocks.end(); ++it){
+        it->second.Print(defaultbc);
+        defaultbc<<"*eb"<< it->first << "=\"ELEMENT\""<<endl
+        <<"sectionname=\"\""<<endl
+        <<"description=\"\""<<endl
+        <<"elementname=\"\""<<endl
+        <<"elementshape=\""
+        << DRT::DistypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""
+        <<endl;
+      }
+      
+      // write NodeSets with specification proposal
+      const map<int,EXODUS::NodeSet> mynodesets = mymesh.GetNodeSets();
+      map<int,EXODUS::NodeSet>::const_iterator ins;
+      for (ins =mynodesets.begin(); ins != mynodesets.end(); ++ins){
+        ins->second.Print(defaultbc);
+        defaultbc<<"*ns"<< ins->first << "=\"CONDITION\""<<endl
+        <<"sectionname=\"\""<<endl
+        <<"description=\"\""<<endl
+        <<endl;
+      }
+      
+      // write SideSets with specification proposal
+      const map<int,EXODUS::SideSet> mysidesets = mymesh.GetSideSets();
+      map<int,EXODUS::SideSet>::const_iterator iss;
+      for (iss = mysidesets.begin(); iss!=mysidesets.end(); ++iss){
+        iss->second.Print(defaultbc);
+        defaultbc<<"*ss"<< iss->first << "=\"CONDITION\""<<endl
+        <<"sectionname=\"\""<<endl
+        <<"description=\"\""<<endl
+        <<endl;
+      }
+
+      // print validconditions as proposal
+      defaultbc << "-----------------------------------------VALIDCONDITIONS"<< endl;
+      Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
+      DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc,*condlist);
+      
+      //(*condlist)[0]->Print(cout,NULL,true);
+
+
+      
+      /*
+      int numEntities =  + mymesh.GetNumNodeSets() + mymesh.GetNumSideSets();
       for (int i = 0; i < numEntities; ++i) 
       {    
           defaultbc<<"*matr"<<i+1<<"=\"\"\"\""<<endl
@@ -158,10 +215,24 @@ int main(
           <<"type=\"\"\"\"\"\""<<endl
           <<"prop=\"\""<<endl<<endl;
       }
+      */
 
       // close default bc specification file
       if (defaultbc.is_open()) 
         defaultbc.close();
+    }
+    else
+    {
+      // read provided bc-file
+      conditions = EXODUS::ReadBCFile(bcfile);
+      
+      if ((signed) conditions[0].size() != mymesh.GetNumElementBlocks()){
+        cout << "You specified only " << conditions[0].size() << " ElementBlocks of " << mymesh.GetNumElementBlocks() << " in the provided mesh!" << endl;
+      } else if ((signed) conditions[1].size() != mymesh.GetNumNodeSets()){
+        cout << "You specified only " << conditions[1].size() << " NodeSets of " << mymesh.GetNumNodeSets() << " in the provided mesh!" << endl;
+      } else if ((signed) conditions[2].size() != mymesh.GetNumSideSets()){
+        cout << "You specified only " << conditions[2].size() << " SideSets of " << mymesh.GetNumSideSets() << " in the provided mesh!" << endl;
+      }
     }
 
     if (headfile=="")
@@ -190,7 +261,7 @@ int main(
     else
     {
       // read and check the provided header file
-      cout << "ckecking given header file "<<headfile<< endl;
+      cout << "checking given header file "<<headfile<< endl;
 
 #ifdef PARALLEL
       int myrank = 0;
@@ -204,22 +275,33 @@ int main(
         RefCountPtr<Epetra_Comm> comm = rcp(com);
 #endif
 
-      Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
-      DRT::INPUT::DatFileReader reader(headfile.c_str(), comm, false);
-
-      // do reading AND validation!
-      problem->ReadParameter(reader);
-
-      //the header file is valid --> go on
-
-      // clean up
-      problem->Done();
+//      Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+//      DRT::INPUT::DatFileReader reader(headfile.c_str(), comm, false);
+//
+//      // do reading AND validation!
+//      problem->ReadParameter(reader);
+//
+//      //the header file is valid --> go on
+//
+//      // clean up
+//      problem->Done();
     }
 
 #ifdef PARALLEL
   MPI_Finalize();
 #endif
 
+  if (datfile=="")
+  {
+    // default dat file, later
+  }
+  else
+  {
+    cout << "creating datfile " << datfile << endl;
+    EXODUS::WriteDatFile(datfile, mymesh, headfile, conditions);
+  }
+
+  
   return 0;
 
 }

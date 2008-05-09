@@ -17,7 +17,6 @@ is handed to a c++ object mesh.
 /*----------------------------------------------------------------------*/
 #ifdef D_EXODUS
 #include "pre_exodus_reader.H"
-#include "pre_node.H"
 #include "Epetra_SerialComm.h"
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
@@ -347,6 +346,21 @@ void EXODUS::Mesh::Print(ostream & os, bool verbose) const
       it3->second.Print(os);
     }
   }
+}
+
+EXODUS::ElementBlock EXODUS::Mesh::GetElementBlock(const int id) const
+{
+  return (elementBlocks_.find(id))->second;
+}
+
+EXODUS::NodeSet EXODUS::Mesh::GetNodeSet(const int id) const
+{
+  return (nodeSets_.find(id))->second;
+}
+
+EXODUS::SideSet EXODUS::Mesh::GetSideSet(const int id) const
+{
+  return (sideSets_.find(id))->second;
 }
 
 void EXODUS::Mesh::PrintNodes(ostream& os, bool storeid) const

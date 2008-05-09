@@ -62,6 +62,8 @@ const map<int,vector<int> > EleNeighbors(const map<int,vector<int> >ele_conn, co
 
 const set<int> FreeEdgeNodes(const map<int,vector<int> >& ele_conn, const map<int,vector<int> >& ele_nbrs);
 
+const set<int> FindExtrudedNodes(const set<int>& freedgenodes, const map<int,vector<int> >& nodepair,const set<int>& ns);
+
 set<int> FreeFaceNodes(const set<int>& freedgenodes, const map<int,vector<int> >& nodepair);
 
 bool FindinVec(const int id,vector<int> vec);

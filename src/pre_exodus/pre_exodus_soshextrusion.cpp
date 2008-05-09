@@ -17,8 +17,6 @@ Here everything related with solid-shell body extrusion
 #ifdef D_EXODUS
 #include "pre_exodus_soshextrusion.H"
 #include "pre_exodus_reader.H"
-#include "pre_node.H"
-#include "pre_element.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -35,6 +33,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
   int highestns = basemesh.GetNumNodeSets();
   map<int,EXODUS::ElementBlock> ebs = basemesh.GetElementBlocks();
   map<int,EXODUS::ElementBlock>::const_iterator i_ebs;
+
+  map<int,EXODUS::NodeSet> nss = basemesh.GetNodeSets();
+  map<int,EXODUS::NodeSet>::const_iterator i_nss;
 
   map<int,EXODUS::SideSet> sss = basemesh.GetSideSets();
   map<int,EXODUS::SideSet>::const_iterator i_sss;
@@ -446,7 +447,22 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness
     default: dserror("unrecognized extrude type");
     }
     
-    // create new NodeSet with all nodes at newly created "free" faces
+    /* Create new "extruded" NodeSet of existing NodeSet, 
+     * e.g. a new surface NodeSet out of an existing line NodeSet */
+    for (i_nss = nss.begin(); i_nss != nss.end(); ++i_nss ){
+      EXODUS::NodeSet existing_ns = i_nss->second;
+      const set<int> extruded_nodes = FindExtrudedNodes(free_edge_nodes,node_pair,existing_ns.GetNodeSet());
+      std::ostringstream nodesetname;
+      nodesetname << "ext" << existing_ns.GetName() << i_nss->first;
+      EXODUS::NodeSet newnodeset(extruded_nodes,nodesetname.str(),nodesetname.str());
+      newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,newnodeset));
+      highestns ++;
+    }
+    
+
+    
+    // additionally create new NodeSet with ALL nodes at newly created "free" faces
+    // this is the sum of above, but could be handy for applying just one BC
     set<int> free_nodes = FreeFaceNodes(free_edge_nodes,node_pair);
     string nodesetname = "extruded_surface";
     EXODUS::NodeSet newnodeset(free_nodes,nodesetname,nodesetname);
@@ -612,6 +628,21 @@ const set<int> EXODUS::FreeEdgeNodes(const map<int,vector<int> >& ele_conn, cons
   
   return freenodes;
 }
+
+const set<int> EXODUS::FindExtrudedNodes(const set<int>& freedgenodes, const map<int,vector<int> >& nodepair,const set<int>& ns)
+{
+  set<int> extr_nodes;
+  set<int>::const_iterator it;
+  for (it=ns.begin(); it != ns.end(); ++it){
+    if (freedgenodes.find(*it) != freedgenodes.end()){
+      //extr_nodes.insert(*it);   // insert also basenode
+      vector<int> extnodes = nodepair.find(*it)->second;
+      for(unsigned int i=0; i<extnodes.size(); ++i) extr_nodes.insert(extnodes[i]);
+    }
+  }
+  return extr_nodes;
+}
+
 
 set<int> EXODUS::FreeFaceNodes(const set<int>& freedgenodes, const map<int,vector<int> >& nodepair)
 {

@@ -25,7 +25,6 @@ is handed to a c++ object mesh.
 #include <Teuchos_RefCountPtr.hpp>
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_element.H"
-//include "pre_node.H"
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {
@@ -96,17 +95,26 @@ public:
   //! Get Number of ElementBlocks
   int GetNumElementBlocks() const {return elementBlocks_.size();}
   
+  //! Get one ElementBlock
+  ElementBlock GetElementBlock(const int id) const;
+  
   //! Get NodeSet map
   map<int,NodeSet> GetNodeSets() const {return nodeSets_;}
   
   //! Get Number of NodeSets
   int GetNumNodeSets() const {return nodeSets_.size();}
   
+  //! Get one NodeSet
+  NodeSet GetNodeSet(const int id) const; 
+  
   //! Get SideSet map
   map<int,SideSet> GetSideSets() const {return sideSets_;}
   
   //! Get Number of SideSets
   int GetNumSideSets() const {return sideSets_.size();}
+  
+  //! Get onde SideSet
+  SideSet GetSideSet(const int id) const;
   
   //! Get Side Set Connectivity with Global Nodes
   map<int,vector<int> > GetSideSetConn(const SideSet sideset) const;
