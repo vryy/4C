@@ -211,12 +211,13 @@ static inline void updateRHSForNWE(
 \param x                    (in)        : node in current coordinates \f$(x, y, z)\f$
 \param xsi                  (inout)     : node in element coordinates
 */  
-template <DRT::Element::DiscretizationType DISTYPE, int dim>
-static inline bool currentToElementCoordinatesT(
+template <DRT::Element::DiscretizationType DISTYPE>
+static inline bool currentToVolumeElementCoordinatesT(
     const DRT::Element*                 element,
     const BlitzVec3&                    x,
-    BlitzVec&                           xsi_out)
+    BlitzVec3&                          xsi)
 {
+    const int dim = 3;
     dsassert(element->Shape() == DISTYPE, "this is a bug in currentToElementCoordinatesT!");
     bool nodeWithinElement = true;
     const int maxiter = 20;
@@ -230,7 +231,6 @@ static inline bool currentToElementCoordinatesT(
     fillPositionArray<DISTYPE>(element, xyze);
     
     // initial guess
-    static blitz::TinyVector<double,dim> xsi;
     xsi = 0.0;
             
     updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
@@ -258,8 +258,6 @@ static inline bool currentToElementCoordinatesT(
             break;
         }   
     }
-    for (int isd = 0; isd < dim; ++isd)
-        xsi_out(isd) = xsi(isd);
     
     return nodeWithinElement;
 }
@@ -268,28 +266,22 @@ static inline bool currentToElementCoordinatesT(
  | GM:  transforms a node in current coordinates            u.may 12/07 |
  |      into element coordinates                                        | 
  *----------------------------------------------------------------------*/
-bool XFEM::currentToElementCoordinates(  
+bool XFEM::currentToVolumeElementCoordinates(  
     const DRT::Element*                 element,
-    const BlitzVec3&                     x,
-    BlitzVec&                           xsi)
+    const BlitzVec3&                    x,
+    BlitzVec3&                          xsi)
 {
     bool nodeWithinElement = false;
     switch (element->Shape())
     {
     case DRT::Element::hex8:
-        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::hex8, 3>(element, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex8>(element, x, xsi);
         break;
     case DRT::Element::hex20:
-        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::hex20, 3>(element, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex20>(element, x, xsi);
         break;
     case DRT::Element::hex27:
-        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::hex27, 3>(element, x, xsi);
-        break;
-    case DRT::Element::line2:
-        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::line2, 1>(element, x, xsi);
-        break;
-    case DRT::Element::line3:
-        nodeWithinElement = currentToElementCoordinatesT<DRT::Element::line3, 1>(element, x, xsi);
+        nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex27>(element, x, xsi);
         break;
     default:
         cout << DistypeToString(element->Shape()) << endl;
@@ -381,9 +373,9 @@ bool XFEM::checkPositionWithinElement(
     const DRT::Element*                 element,
     const BlitzVec3&                    x)
 {
-    BlitzVec xsi(getDimension(element->Shape()));
     dsassert(getDimension(element->Shape()) == 3, "only valid for 3 dimensional elements");
-    bool nodeWithinElement = currentToElementCoordinates(element, x, xsi);
+    BlitzVec3 xsi;
+    bool nodeWithinElement = currentToVolumeElementCoordinates(element, x, xsi);
     //printf("iter = %d\n", iter);
     //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0),xsi(1),xsi(2), residual, TOL14);
     
@@ -562,38 +554,6 @@ BlitzVec XFEM::CurrentToSurfaceElementCoordinates(
     //printf("iter = %d\n", iter);
     //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
 	return eleCoord;
-}
-
-
-/*
- * checks if a position in element coordinates lies within a certain surfaceElement
- */  
-bool XFEM::checkPositionWithinElementParameterSpace(
-        const BlitzVec&                        eleCoord,
-        const DRT::Element::DiscretizationType distype
-        )
-{
-    if (distype != DRT::Element::line2 and
-            distype != DRT::Element::line3 and
-            distype != DRT::Element::quad4 and 
-            distype != DRT::Element::quad8 and 
-            distype != DRT::Element::quad9 and
-            distype != DRT::Element::hex8 and
-            distype != DRT::Element::hex20 and 
-            distype != DRT::Element::hex27)
-        dserror("function only defined for rectangular element types at the moment");
-    
-    bool nodeWithinElement = true;
-    
-    // loop over r and s (local coordinates)
-    for(int i=0; i<DRT::UTILS::getDimension(distype); i++)
-        if( (fabs(eleCoord(i))-1.0) > TOL7)     
-        {    
-            nodeWithinElement = false;
-            break;
-        }
-    
-    return nodeWithinElement;
 }
 
 

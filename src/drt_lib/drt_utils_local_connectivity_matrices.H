@@ -358,11 +358,11 @@ namespace UTILS
     );
 
   /*!
-  \brief Fills an array with the surface ID s a point in reference coordinates
+  \brief Fills an array with the surface ID s a point in 3d reference coordinates
   \      is lying on for each discretization type
   */
   int getSurfaces(
-    const blitz::Array<double,1>&               rst,        ///< point in reference coordinates
+    const blitz::TinyVector<double,3>&          rst,        ///< point in reference coordinates
     int*                                        surfaces,   ///< surfaces the point is lying on
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );

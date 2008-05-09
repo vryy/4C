@@ -628,8 +628,8 @@ bool Intersection::collectInternalPoints(
     x(1) = node->X()[1];
     x(2) = node->X()[2];
 
-    BlitzVec xsi(3);
-    currentToElementCoordinates(xfemElement, x, xsi);
+    BlitzVec3 xsi;
+    currentToVolumeElementCoordinates(xfemElement, x, xsi);
     const bool nodeWithinElement = checkPositionWithinElementParameterSpace(xsi, xfemElement->Shape());
     // debugNodeWithinElement(xfemElement,node, xsi, elemId ,nodeId, nodeWithinElement);
 
@@ -664,7 +664,7 @@ bool Intersection::collectInternalPoints(
  *----------------------------------------------------------------------*/
 bool Intersection::setInterfacePointBoundaryStatus(
         const DRT::Element::DiscretizationType  xfemDistype,
-        const BlitzVec&                         xsi,
+        const BlitzVec3&                        xsi,
         InterfacePoint&                         ip
         ) const
 {
@@ -719,11 +719,11 @@ bool Intersection::collectIntersectionPoints(
     bool&                           xfemIntersection
     ) const
 {
-    static BlitzVec xsi(3);
+    static BlitzVec3 xsi;
     xsi = 0.0;
 
-    static BlitzVec upLimit(3);
-    static BlitzVec loLimit(3);
+    static BlitzVec3 upLimit;
+    static BlitzVec3 loLimit;
 
     // for hex elements
     upLimit  =  1.0;
@@ -757,8 +757,8 @@ bool Intersection::collectIntersectionPoints(
 template<DRT::Element::DiscretizationType surftype,
          DRT::Element::DiscretizationType linetype>
 void updateAForCSI(
-        BlitzMat&         A,
-        const BlitzVec&   xsi,
+        BlitzMat3x3&                      A,
+        const BlitzVec3&                  xsi,
         const DRT::Element*               surfaceElement,
         const DRT::Element*               lineElement
         )
@@ -808,8 +808,8 @@ void updateAForCSI(
 template<DRT::Element::DiscretizationType surftype,
          DRT::Element::DiscretizationType linetype>
 void updateRHSForCSI(
-        BlitzVec&         b,
-        const BlitzVec&   xsi,
+        BlitzVec3&         b,
+        const BlitzVec3&   xsi,
         const DRT::Element*               surfaceElement,
         const DRT::Element*               lineElement
         )
@@ -854,7 +854,7 @@ return true if resulting system is singular , false otherwise
 template<DRT::Element::DiscretizationType surftype,
          DRT::Element::DiscretizationType linetype>
 bool computeSingularCSI(
-        BlitzVec&   xsi,
+        BlitzVec3&                  xsi,
         const DRT::Element*         surfaceElement,
         const DRT::Element*         lineElement
         )
@@ -863,9 +863,9 @@ bool computeSingularCSI(
     int iter = 0;
     const int maxiter = 5;
     double residual = 1.0;
-    static BlitzMat A(3,3);
-    static BlitzVec b(3);
-    static BlitzVec dx(3);
+    static BlitzMat3x3 A;
+    static BlitzVec3   b;
+    static BlitzVec3   dx;
 
     updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, lineElement);
 
@@ -900,18 +900,18 @@ template<DRT::Element::DiscretizationType surftype,
 bool computeCurveSurfaceIntersectionT(
     const DRT::Element*               surfaceElement,
     const DRT::Element*               lineElement,
-    BlitzVec&                         xsi,
-    const BlitzVec&                   upLimit,
-    const BlitzVec&                   loLimit
+    BlitzVec3&                        xsi,
+    const BlitzVec3&                  upLimit,
+    const BlitzVec3&                  loLimit
     )
 {
     bool intersection = true;
     int iter = 0;
     const int maxiter = 30;
     double residual = 1.0;
-    static BlitzMat A(3,3);
-    static BlitzVec b(3);
-    static BlitzVec dx(3);
+    static BlitzMat3x3 A;
+    static BlitzVec3   b;
+    static BlitzVec3   dx;
 
     updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, lineElement);
 
@@ -961,9 +961,9 @@ bool computeCurveSurfaceIntersectionT(
 bool Intersection::computeCurveSurfaceIntersection(
     const DRT::Element*               surfaceElement,
     const DRT::Element*               lineElement,
-    BlitzVec&                         xsi,
-    const BlitzVec&                   upLimit,
-    const BlitzVec&                   loLimit) const
+    BlitzVec3&                        xsi,
+    const BlitzVec3&                  upLimit,
+    const BlitzVec3&                  loLimit) const
 {
     if (lineElement->Shape() == DRT::Element::line2)
     {
@@ -1026,16 +1026,16 @@ int Intersection::computeNewStartingPoint(
     const DRT::Element*                lineElement,
     const int                          surfaceId,
     const int                          lineId,
-    const BlitzVec&    xsiOld,
-    const BlitzVec&    upLimit,
-    const BlitzVec&    loLimit,
+    const BlitzVec3&                   xsiOld,
+    const BlitzVec3&                   upLimit,
+    const BlitzVec3&                   loLimit,
     std::vector<InterfacePoint>&       interfacePoints,
     const bool                         lines
     ) const
 {
     bool interval = true;
 	int numInterfacePoints = 0;
-	BlitzVec xsi(3);
+	BlitzVec3 xsi;
 
     //printf("xsi = %f   %f   %f\n", fabs(xsi(0)), fabs(xsi(1)), fabs(xsi(2)) );
     //printf("lolimit = %f   %f   %f\n", fabs(loLimit(0)), fabs(loLimit(1)), fabs(loLimit(2)) );
@@ -1044,7 +1044,9 @@ int Intersection::computeNewStartingPoint(
     if(comparePoints<3>(upLimit, loLimit))
         interval = false;
 
-    xsi = 0.5 * (upLimit + loLimit);
+    xsi = upLimit;
+    xsi += loLimit;
+    xsi *= 0.5;
 
 	bool intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
 
@@ -1068,9 +1070,9 @@ int Intersection::computeNewStartingPoint(
 int Intersection::addIntersectionPoint(
     const DRT::Element*             surfaceElement,
     const DRT::Element*             lineElement,
-    const BlitzVec&	xsi,
-    const BlitzVec& upLimit,
-    const BlitzVec& loLimit,
+    const BlitzVec3&                xsi,
+    const BlitzVec3&                upLimit,
+    const BlitzVec3&                loLimit,
     std::vector<InterfacePoint>& 	interfacePoints,
     const int                       surfaceId,
     const int                       lineId,
@@ -1113,8 +1115,8 @@ int Intersection::addIntersectionPoint(
 
     if(!alreadyInList)
     {
-        vector< BlitzVec >  upperLimits(8, BlitzVec(3));
-        vector< BlitzVec >  lowerLimits(8, BlitzVec(3));
+        vector< BlitzVec3 >  upperLimits(8, BlitzVec3(0.0));
+        vector< BlitzVec3 >  lowerLimits(8, BlitzVec3(0.0));
         createNewLimits(xsi, upLimit, loLimit, upperLimits, lowerLimits);
 
         interfacePoints.push_back(ip);
@@ -1136,11 +1138,11 @@ int Intersection::addIntersectionPoint(
  |          computation of all intersection points                      |
  *----------------------------------------------------------------------*/
 void Intersection::createNewLimits(
-    const BlitzVec&         xsi,
-    const BlitzVec&         upLimit,
-    const BlitzVec&         loLimit,
-    vector< BlitzVec >&     upperLimits,
-    vector< BlitzVec >&     lowerLimits) const
+    const BlitzVec3&        xsi,
+    const BlitzVec3&        upLimit,
+    const BlitzVec3&        loLimit,
+    vector< BlitzVec3 >&    upperLimits,
+    vector< BlitzVec3 >&    lowerLimits) const
 {
 
 
@@ -1232,7 +1234,7 @@ void Intersection::computeConvexHull(
             for(int j = 0; j < 2; j++)
                 eleCoordSurf(j)  = midpoint.coord[j];
             const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
-            const BlitzVec eleCoordVol(currentToElementCoordinatesExact<3>(xfemElement, curCoordVol));
+            const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol));
             for(int j = 0; j < 3; j++)
                 midpoint.coord[j] = eleCoordVol(j);
         }
@@ -1258,7 +1260,7 @@ void Intersection::computeConvexHull(
                 for(int j = 0; j < 2; j++)
                     eleCoordSurf(j)  = ipoint->coord[j];
                 const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
-                const BlitzVec eleCoordVol(currentToElementCoordinatesExact<3>(xfemElement, curCoordVol));
+                const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol));
                 for(int j = 0; j < 3; j++)
                     ipoint->coord[j] = eleCoordVol(j);
             }
@@ -1286,7 +1288,7 @@ void Intersection::computeConvexHull(
                     for(int m = 0; m < 2; m++)
                         eleCoordSurf(m)  = vertex[m];
                     const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
-                    const BlitzVec eleCoordVol(currentToElementCoordinatesExact<3>(xfemElement, curCoordVol));
+                    const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol));
                     for(int m = 0; m < 3; m++)
                         vertex[m] = eleCoordVol(m);
                 }
@@ -1316,7 +1318,7 @@ void Intersection::computeConvexHull(
                 for(int j = 0; j < 2; j++)
                     eleCoordSurf(j)  = ipoint->coord[j];
                 const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
-                const BlitzVec eleCoordVol(currentToElementCoordinatesExact<3>(xfemElement, curCoordVol));
+                const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol));
                 for(int j = 0; j < 3; j++)
                 {
                     ipoint->coord[j] = eleCoordVol(j);
@@ -2188,8 +2190,8 @@ int Intersection::decideSteinerCase(
     for(int k=0; k<3; k++)
         x(k)   = out.pointlist[pointIndex*3 + k];
 
-    BlitzVec    xsi(3);
-    currentToElementCoordinates(xfemElement, x, xsi);
+    BlitzVec3    xsi;
+    currentToVolumeElementCoordinates(xfemElement, x, xsi);
 
     InterfacePoint emptyIp;
     if(setInterfacePointBoundaryStatus(xfemElement-> Shape(), xsi, emptyIp))
@@ -2290,7 +2292,7 @@ void Intersection::liftSteinerPointOnSurface(
 
     const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
 
-    BlitzVec xsi(3);
+    BlitzVec3 xsi;
     vector<BlitzVec> plane;
     plane.push_back(BlitzVec(Steinerpoint + averageNormal));
     plane.push_back(BlitzVec(Steinerpoint - averageNormal));
@@ -2366,7 +2368,8 @@ void Intersection::liftSteinerPointOnEdge(
     plane.push_back(BlitzVec(plane[1] + n2));
     plane.push_back(BlitzVec(plane[0] + n2));
 
-    BlitzVec xsi(3);  xsi = 0.0;
+    BlitzVec3 xsi;
+    xsi = 0.0;
     const bool intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[cutterIndex]);
 
     if(intersected)
@@ -2450,7 +2453,7 @@ void Intersection::liftSteinerPointOnBoundary(
                                xfemElement, out);
 
     // compute intersection normal on boundary
-    BlitzVec xsi(3);
+    BlitzVec3 xsi;
     const bool intersected = computeRecoveryNormal(xsi, plane, intersectingCutterElements_[faceIndex], true);
 
     if(intersected)
@@ -2554,7 +2557,7 @@ void Intersection::computeHigherOrderPoint(
     int                                     lineIndex               = -1;
     int                                     adjacentFaceMarker      = -1;
     int                                     adjacentFaceIndex       = -1;
-    BlitzVec                xsi(3);
+    BlitzVec3 xsi;
     xsi = 0.0;
 
     findAdjacentFace(  tetraCornerIndices[index1], tetraCornerIndices[index2],
@@ -2677,10 +2680,10 @@ vector<int> Intersection::getPointIndices(
 
 /*----------------------------------------------------------------------*
  |  RCI:    computes the intersection between a              u.may 08/07|
- |          line  and a surface                    RCI                  |
+ |          line and a surface                                          |
  *----------------------------------------------------------------------*/
 bool Intersection::computeRecoveryNormal(
-    BlitzVec&                                   xsi,
+    BlitzVec3&                                  xsi,
     const vector<BlitzVec>&                     normal,
     const DRT::Element*                         cutterElement,
     const bool                                  onBoundary
@@ -2691,9 +2694,9 @@ bool Intersection::computeRecoveryNormal(
     int                         countSingular = 0;
     const int                   maxiter = 50;
     double                      residual = 1.0;
-    BlitzMat    A(3,3);
-    BlitzVec    b(3);
-    BlitzVec    dx(3);
+    BlitzMat3x3 A;
+    BlitzVec3   b;
+    BlitzVec3   dx;
     b = 0.0;
     dx = 0.0;
 
@@ -2746,8 +2749,8 @@ bool Intersection::computeRecoveryNormal(
  |          (line-surface intersection)                                 |
  *----------------------------------------------------------------------*/
 void Intersection::updateAForRCINormal(
-    BlitzMat&                                   A,
-    const BlitzVec&                             xsi,
+    BlitzMat3x3&                                A,
+    const BlitzVec3&                            xsi,
     const vector<BlitzVec>&                     normal,
     const DRT::Element*                         surfaceElement,
     const bool                                  onBoundary
@@ -2808,8 +2811,8 @@ void Intersection::updateAForRCINormal(
  |          (line-surface intersection)                                 |
  *----------------------------------------------------------------------*/
 void Intersection::updateRHSForRCINormal(
-    BlitzVec&                   b,
-    const BlitzVec&             xsi,
+    BlitzVec3&                  b,
+    const BlitzVec3&            xsi,
     const vector<BlitzVec>&     normal,
     const DRT::Element*                         surfaceElement,
     const bool                                  onBoundary
@@ -2864,7 +2867,7 @@ void Intersection::updateRHSForRCINormal(
  *----------------------------------------------------------------------*/
 bool Intersection::computeRecoveryPlane(
         int&                                        lineIndex,
-        BlitzVec&                                   xsi,
+        BlitzVec3&                                  xsi,
         const vector<BlitzVec>&                     plane,
         DRT::Element*                               surfaceElement
         ) const
@@ -2891,9 +2894,9 @@ bool Intersection::computeRecoveryPlane(
         const int                   maxiter = 50;
         double                      residual = 1.0;
         DRT::Element*               lineElement = surfaceElement->Lines()[i];
-        BlitzMat    A(3,3);
-        BlitzVec    b(3);
-        BlitzVec    dx(3);  dx = 0.0;
+        BlitzMat3x3 A;
+        BlitzVec3   b;
+        BlitzVec3   dx;  dx = 0.0;
 
         intersection = true;
         xsi = 0.0;
@@ -2947,8 +2950,8 @@ bool Intersection::computeRecoveryPlane(
  |          (curve-plane intersection)                                  |
  *----------------------------------------------------------------------*/
 void Intersection::updateAForRCIPlane(
-        BlitzMat&                   A,
-        const BlitzVec&             xsi,
+        BlitzMat3x3&                A,
+        const BlitzVec3&            xsi,
         const vector<BlitzVec>&     plane,
         const DRT::Element*                         lineElement,
         const DRT::Element*                         surfaceElement
@@ -2988,8 +2991,8 @@ void Intersection::updateAForRCIPlane(
  |          (curve-plane intersection)                                  |
  *----------------------------------------------------------------------*/
 void Intersection::updateRHSForRCIPlane(
-    BlitzVec&                   b,
-    const BlitzVec&             xsi,
+    BlitzVec3&                  b,
+    const BlitzVec3&            xsi,
     const vector<BlitzVec>&     plane,
     const DRT::Element*         lineElement
     ) const
@@ -3477,7 +3480,7 @@ int Intersection::findIntersectingSurfaceEdge(
         const BlitzVec&                           edgeNode1,
         const BlitzVec&                           edgeNode2) const
 {
-
+    dserror("to be improved by Ursula");
     int lineIndex = -1;
     BlitzVec3 x1;
     BlitzVec3 x2;
@@ -3492,23 +3495,23 @@ int Intersection::findIntersectingSurfaceEdge(
     x2(0) = node2(0);
 
     DRT::Element** lines = cutterElement->Lines();
-    for(int i = 0; i < cutterElement->NumLine(); i++)
-    {
-        const DRT::Element*  lineElement = lines[i];
-
-        BlitzVec xsi1(1);
-        BlitzVec xsi2(1);
-        currentToElementCoordinates( lineElement, x1, xsi1);
-        currentToElementCoordinates( lineElement, x2, xsi2);
-
-        const bool check1 = checkPositionWithinElementParameterSpace( xsi1, lineElement->Shape());
-        const bool check2 = checkPositionWithinElementParameterSpace( xsi2, lineElement->Shape());
-        if( check1  &&  check2 )
-        {
-            lineIndex = i;  //countIndex;
-            break;
-        }
-    }
+//    for(int i = 0; i < cutterElement->NumLine(); i++)
+//    {
+//        const DRT::Element*  lineElement = lines[i];
+//
+//        BlitzVec xsi1(1);
+//        BlitzVec xsi2(1);
+//        currentToVolumeElementCoordinates( lineElement, x1, xsi1);  // TODO: will crash
+//        currentToVolumeElementCoordinates( lineElement, x2, xsi2);
+//
+//        const bool check1 = checkPositionWithinElementParameterSpace( xsi1, lineElement->Shape());
+//        const bool check2 = checkPositionWithinElementParameterSpace( xsi2, lineElement->Shape());
+//        if( check1  &&  check2 )
+//        {
+//            lineIndex = i;  //countIndex;
+//            break;
+//        }
+//    }
 
     /*
     for(int i = 0; i < lines[lineIndex]->NumNode(); i++ )
@@ -3530,7 +3533,7 @@ void Intersection::storeHigherOrderNode(
     const bool                                  normal,
     const int                                   globalHigherOrderIndex,
     const int                                   lineIndex,
-    BlitzVec&                                   xsi,
+    BlitzVec3&                                  xsi,
     DRT::Element*                               surfaceElement,
     const DRT::Element*                         xfemElement,
     tetgenio&                                   out
@@ -3552,7 +3555,7 @@ void Intersection::storeHigherOrderNode(
         const DRT::Element* lineele = surfaceElement->Lines()[lineIndex];
         curr = elementToCurrentCoordinates(lineele, xsiLine);
     }
-    xsi = currentToElementCoordinatesExact<3>(xfemElement, curr);
+    xsi = currentToVolumeElementCoordinatesExact(xfemElement, curr);
 
     //printf("xsiold0 = %20.16f\t, xsiold1 = %20.16f\t, xsiold2 = %20.16f\n", out.pointlist[index*3], out.pointlist[index*3+1], out.pointlist[index*3+2]);
 

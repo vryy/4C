@@ -267,7 +267,7 @@ class Intersection
         */
         bool setInterfacePointBoundaryStatus(
                 const DRT::Element::DiscretizationType  xfemDistype, ///< shape of the volume element
-                const BlitzVec&                         xsi,
+                const BlitzVec3&                        xsi,
                 InterfacePoint&                         ip
                 ) const;
 
@@ -313,9 +313,9 @@ class Intersection
             const DRT::Element*             lineElement,
             const int                       surfaceId,
             const int                       lineId,
-            const BlitzVec& xsiOld,
-            const BlitzVec& upLimit,
-            const BlitzVec& loLimit,
+            const BlitzVec3&                xsiOld,
+            const BlitzVec3&                upLimit,
+            const BlitzVec3&                loLimit,
             std::vector<InterfacePoint>&    interfacePoints,
             const bool                      lines
             ) const;
@@ -336,9 +336,9 @@ class Intersection
         bool computeCurveSurfaceIntersection(
             const DRT::Element*               surfaceElement,
             const DRT::Element*               lineElement,
-            BlitzVec&         xsi,
-            const BlitzVec&   upLimit,
-            const BlitzVec&   loLimit
+            BlitzVec3&        xsi,
+            const BlitzVec3&  upLimit,
+            const BlitzVec3&  loLimit
             ) const;
 
 
@@ -359,9 +359,9 @@ class Intersection
   		int addIntersectionPoint(
             const DRT::Element*             surfaceElement,
             const DRT::Element*             lineElement,
-  		    const BlitzVec&	xsi,
-            const BlitzVec& upLimit,
-            const BlitzVec& loLimit,
+  		    const BlitzVec3&                xsi,
+            const BlitzVec3&                upLimit,
+            const BlitzVec3&                loLimit,
             std::vector<InterfacePoint>& 	interfacePoints,
             const int                      	surfaceId,
             const int                       lineId,
@@ -379,11 +379,11 @@ class Intersection
         \param lowerLimits      (out)       : list of lower limits of new ranges
         */
         void createNewLimits(
-            const BlitzVec&         xsi,
-            const BlitzVec&         upLimit,
-            const BlitzVec&         loLimit,
-            vector<BlitzVec>&       upperLimits,
-            vector<BlitzVec>&       lowerLimits
+            const BlitzVec3&        xsi,
+            const BlitzVec3&        upLimit,
+            const BlitzVec3&        loLimit,
+            vector<BlitzVec3>&      upperLimits,
+            vector<BlitzVec3>&      lowerLimits
             ) const;
 
 
@@ -747,7 +747,7 @@ class Intersection
         \return true if normal intersects with cutter element or false otherwise
         */
         bool computeRecoveryNormal(
-                BlitzVec&                                   xsi,
+                BlitzVec3&                                  xsi,
                 const vector<BlitzVec>&                     normal,
                 const DRT::Element*                         cutterElement,
                 const bool                                  onBoundary
@@ -767,8 +767,8 @@ class Intersection
                                                 element boundary
         */
         void updateAForRCINormal(
-            BlitzMat&                   A,
-            const BlitzVec&             xsi,
+            BlitzMat3x3&                A,
+            const BlitzVec3&            xsi,
             const vector<BlitzVec>&     normal,
             const DRT::Element*                         surfaceElement,
             const bool                                  onBoundary
@@ -788,8 +788,8 @@ class Intersection
                                                 element boundary
         */
         void updateRHSForRCINormal(
-                BlitzVec&                   b,
-            const BlitzVec&             xsi,
+                BlitzVec3&                   b,
+            const BlitzVec3&             xsi,
             const vector<BlitzVec>&     normal,
             const DRT::Element*                         surfaceElement,
             const bool                                  onBoundary
@@ -810,7 +810,7 @@ class Intersection
         */
         bool computeRecoveryPlane(
             int&                                        lineIndex,
-            BlitzVec&                   xsi,
+            BlitzVec3&                   xsi,
             const vector<BlitzVec>&     plane,
             DRT::Element*                               surfaceElement
             ) const;
@@ -828,8 +828,8 @@ class Intersection
         \param surfaceElement   (in)        :   surface element
         */
         void updateAForRCIPlane(
-            BlitzMat&                   A,
-            const BlitzVec&             xsi,
+            BlitzMat3x3&                A,
+            const BlitzVec3&            xsi,
             const vector<BlitzVec>&     plane,
             const DRT::Element*                         lineElement,
             const DRT::Element*                         surfaceElement
@@ -848,8 +848,8 @@ class Intersection
         \param lineElement      (in)        :   line element
         */
         void updateRHSForRCIPlane(
-                BlitzVec&                   b,
-                const BlitzVec&             xsi,
+                BlitzVec3&                  b,
+                const BlitzVec3&            xsi,
                 const vector<BlitzVec>&     plane,
                 const DRT::Element*         lineElement
                 ) const;
@@ -1059,7 +1059,7 @@ class Intersection
             const bool                                  normal,
             const int                                   globalHigherOrderIndex,
             const int                                   lineIndex,
-            BlitzVec&                   xsi,
+            BlitzVec3&                                  xsi,
             DRT::Element*                               surfaceElement,
             const DRT::Element*                         xfemElement,
             tetgenio&                                   out

@@ -158,10 +158,10 @@ namespace XFEM
     \param xsi                  (out)       : node in element coordinates
     \return bool, indicates, whether positions was found within element coordinates
     */  
-    bool currentToElementCoordinates(
+    bool currentToVolumeElementCoordinates(
         const DRT::Element*                 element,
         const BlitzVec3&                    x,
-        BlitzVec&                           xsi
+        BlitzVec3&                          xsi
         );
     
     
@@ -174,19 +174,16 @@ namespace XFEM
     \tparam dim                         : dimension of the element parameter space
     \return                               vector of element coordinates
     */
-    template<int dim>
-    BlitzVec currentToElementCoordinatesExact(
+    inline BlitzVec3 currentToVolumeElementCoordinatesExact(
             const DRT::Element*         element,
             const BlitzVec3&            x
             )
     {
-        dsassert(DRT::UTILS::getDimension(element->Shape()) == dim, "element has to be 3-dimensional!");
-        
-        BlitzVec xsi(dim);
-        currentToElementCoordinates(element, x, xsi);
+        BlitzVec3 xsi;
+        currentToVolumeElementCoordinates(element, x, xsi);
        
         // rounding 1 and -1 to be exact for the CDT
-        for(int j = 0; j < dim; j++)
+        for(int j = 0; j < 3; j++)
         {
             if( fabs((fabs(xsi(j))-1.0)) < TOL7 &&  xsi(j) < 0)    xsi(j) = -1.0;
             if( fabs((fabs(xsi(j))-1.0)) < TOL7 &&  xsi(j) > 0)    xsi(j) =  1.0;      
@@ -276,6 +273,26 @@ namespace XFEM
      {   
          dsassert(point1.size() == length, "not of proper length!");
          dsassert(point2.size() == length, "not of proper length!");
+         for(int i = 0; i < length ; i++)
+             if(fabs(point1(i) - point2(i)) > TOL7)
+             {
+                 return false;
+             }
+         return true;
+     }
+     
+     /*!
+     \brief compares two points (overloaded method)
+ 
+     \param point1       (in)    : first point   (BlitzVec)
+     \param point2       (in)    : second point  (BlitzVec)
+     \return true if both points equal each other, false otherwise
+     */
+     template <int length>
+     bool comparePoints(    
+         const blitz::TinyVector<double,length>&     point1,
+         const blitz::TinyVector<double,length>&     point2) 
+     {   
          for(int i = 0; i < length ; i++)
              if(fabs(point1(i) - point2(i)) > TOL7)
              {
@@ -387,11 +404,35 @@ namespace XFEM
     \brief checks if a position in element coordinates lies within a certain Element parameter space
 
     \return  true if point lies on the surface element, false otherwise
-    */  
+    */
+    template <class V>
     bool checkPositionWithinElementParameterSpace(
-            const BlitzVec&                        eleCoord, ///< position in element coordinates
+            const V&                               eleCoord, ///< position in element coordinates
             const DRT::Element::DiscretizationType distype   ///< shape of the surface element
-            );
+            )
+    {
+        if (distype != DRT::Element::line2 and
+                distype != DRT::Element::line3 and
+                distype != DRT::Element::quad4 and 
+                distype != DRT::Element::quad8 and 
+                distype != DRT::Element::quad9 and
+                distype != DRT::Element::hex8 and
+                distype != DRT::Element::hex20 and 
+                distype != DRT::Element::hex27)
+            dserror("function only defined for rectangular element types at the moment");
+        
+        bool nodeWithinElement = true;
+        
+        // loop over r and s (local coordinates)
+        for(int i=0; i<DRT::UTILS::getDimension(distype); i++)
+            if( (fabs(eleCoord(i))-1.0) > TOL7)     
+            {    
+                nodeWithinElement = false;
+                break;
+            }
+        
+        return nodeWithinElement;
+    }
     
     
     /*!

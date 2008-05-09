@@ -604,7 +604,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
 int DRT::UTILS::getSurfaces(
-    const blitz::Array<double,1>&               rst,
+    const blitz::TinyVector<double,3>&          rst,
     int*                                        surfaces,
     const DRT::Element::DiscretizationType      distype)
 {

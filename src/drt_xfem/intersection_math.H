@@ -55,15 +55,15 @@ inline int XIMIN(const int iminarg1, const int iminarg2)
                
 \param A    (in/out)        : system matrix / matrix U
 \param W    (out)           : diagonal matrix stored in a vector
-\param W    (out)           : V matrix (not its transpose)
+\param V    (out)           : V matrix (not its transpose)
 */ 
 template <int n, int m>
 static void svdcmp(
-    BlitzMat&  A, 
-    BlitzVec&  W, 
-    BlitzMat&  V)
+        blitz::TinyMatrix<double,m,n>&  A, 
+        blitz::TinyVector<double,n>&  W, 
+        blitz::TinyMatrix<double,n,n>&  V)
 {
-    static BlitzVec rv1(n);
+    static blitz::TinyVector<double,n> rv1;
 
     //Householder reduction to bidiagonal form.
     double g = 0.0;
@@ -329,14 +329,14 @@ static void svdcmp(
     */
     template<int dim>
     inline bool solveLinearSystemWithSVD(
-        BlitzMat&                   U,  ///< (in/out)        : system matrix / matrix U
-        const BlitzVec&             b,  ///< (in)            : right-hand-side
-        BlitzVec&                   x   ///< (out)           : solution vector
+        blitz::TinyMatrix<double,dim,dim>&    U,  ///< (in/out)        : system matrix / matrix U
+        const blitz::TinyVector<double,dim>&  b,  ///< (in)            : right-hand-side
+        blitz::TinyVector<double,dim>&        x   ///< (out)           : solution vector
         )
     {
-        static BlitzMat V(dim, dim);
-        static BlitzMat A(dim, dim);
-        static BlitzVec W(dim);
+        static blitz::TinyMatrix<double,dim,dim> V;
+        static blitz::TinyMatrix<double,dim,dim> A;
+        static blitz::TinyVector<double,dim>     W;
         
         // initialize vectors and matrices
         W = 0.0;
