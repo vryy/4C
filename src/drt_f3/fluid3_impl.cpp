@@ -195,19 +195,19 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
   // dead load in element nodes
   BodyForce(ele,time);
 
-  
+
   // check here, if we really have a fluid !!
   if( material->mattyp != m_fluid
-	  &&  material->mattyp != m_carreauyasuda 
+	  &&  material->mattyp != m_carreauyasuda
 	  &&  material->mattyp != m_modpowerlaw)
   	  dserror("Material law is not a fluid");
-  
+
   // get viscosity
   double visc = 0.0;
   double viscturb = 0.0;
   if(material->mattyp == m_fluid)
 	  visc = material->m.fluid->viscosity;
-  
+
 
   // We define the variables i,j,k to be indices to blitz arrays.
   // These are used for array expressions, that is matrix-vector
@@ -380,13 +380,13 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     // get bodyforce in gausspoint
     bodyforce_ = blitz::sum(edeadng_(i,j)*funct_(j),j);
 
-    // compute material viscosity at gaussian point 
+    // compute material viscosity at gaussian point
     if(material->mattyp != m_fluid )
     {
-      CalVisc_AtGaussianPoint( material, visc); 
+      CalVisc_AtGaussianPoint( material, visc);
       visceff = visc + viscturb;
     }
-   
+
     // perform integration for entire matrix and rhs
 
     // stabilisation parameter
@@ -482,13 +482,13 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
 
     /*
       This is the operator
-      
+
                   /               \
                  | resM    o nabla |
                   \    (i)        /
 
                   required for (lhs) cross- and (rhs) Reynolds-stress calculation
-                  
+
     */
 
     if (cross    == Fluid3::cross_stress_stab ||
@@ -1669,12 +1669,12 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
   /* stabilisation parameter in the gausspoints but just once in the  */
   /* middle of the element.                                           */
   /*------------------------------------------------------------------*/
-  
+
   // compute nonlinear viscosity according to the Carreau-Yasuda model
   if( material->mattyp != m_fluid )
-	  CalVisc_AtGaussianPoint( material, visc); 
-   
-  
+	  CalVisc_AtGaussianPoint( material, visc);
+
+
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
       ||
       turb_mod_action == Fluid3::smagorinsky)
@@ -1822,11 +1822,11 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     // for evaluation of statistics: remember the 'real' Cs
     Cs=sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0));
   }
-  else 
+  else
   {
     visceff = visc;
   }
-  
+
   // calculate tau
 
   if (whichtau == Fluid3::franca_barrenechea_valentin_wall)
@@ -1853,7 +1853,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
 
     /* convective : viscous forces */
     const double re2 = mk * vel_norm * strle / (2.0 * visceff);
-    
+
     const double xi1 = DMAX(re1,1.0);
     const double xi2 = DMAX(re2,1.0);
 
@@ -1867,7 +1867,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk));
     /* convective : viscous forces */
     const double re_convect = mk * vel_norm * hk / (2.0 * visceff);
-    
+
     const double xi_viscous = DMAX(re_viscous,1.0);
     const double xi_convect = DMAX(re_convect,1.0);
 
@@ -1894,7 +1894,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
      *
      * */
     //tau[2] = sqrt(DSQR(visc)+DSQR(0.5*vel_norm*hk));
-    
+
     // Wall Diss. 99
     /*
                       xi2 ^
@@ -1910,9 +1910,9 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     tau_(2) = vel_norm * hk * 0.5 * xi_tau_c /timefac;
   }
   else if(whichtau == Fluid3::bazilevs)
-  {    
+  {
     /* INSTATIONARY FLOW PROBLEM, ONE-STEP-THETA, BDF2
-       
+
     tau_M: Bazilevs et al.
                                                                1.0
                  +-                                       -+ - ---
@@ -1922,18 +1922,18 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
              M   |   2           -          I        -   - |
                  | dt            -                   -   - |
                  +-                                       -+
-         
+
    tau_C: Bazilevs et al., derived from the fine scale complement Shur
           operator of the pressure equation
-                
-                  
+
+
                                   1.0
                     tau  = -----------------
                        C            /     \
                             tau  * | g * g |
                                M    \-   -/
-    */           
-      
+    */
+
     /*            +-           -+   +-           -+   +-           -+
                   |             |   |             |   |             |
                   |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
@@ -1943,9 +1943,9 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
                   +-           -+   +-           -+   +-           -+
     */
     blitz::Array<double,2> G(3,3,blitz::ColumnMajorArray<2>());
-      
+
     for (int nn=0;nn<3;++nn)
-    {    
+    {
       for (int rr=0;rr<3;++rr)
       {
         G(nn,rr) = xji_(nn,0)*xji_(rr,0);
@@ -1955,9 +1955,9 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
         }
       }
     }
-      
+
     /*            +----
-                   \ 
+                   \
           G : G =   +   G   * G
           -   -    /     ij    ij
           -   -   +----
@@ -1965,29 +1965,29 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     */
     double normG = 0;
     for (int nn=0;nn<3;++nn)
-    {    
+    {
       for (int rr=0;rr<3;++rr)
       {
         normG+=G(nn,rr)*G(nn,rr);
       }
     }
-    
+
     /*                      +----
            n+1       n+1     \     n+1          n+1
           u     * G u     =   +   u    * G   * u
                   -          /     i     -ij    j
                   -         +----        -
-                             i,j 
+                             i,j
     */
     double Gnormu = 0;
     for (int nn=0;nn<3;++nn)
-    {    
+    {
       for (int rr=0;rr<3;++rr)
       {
         Gnormu+=velint_(nn)*G(nn,rr)*velint_(rr);
       }
     }
-    
+
     // definition of constant
     // (Akkerman et al. (2008) used 36.0 for quadratics, but Stefan
     //  brought 144.0 from Austin...)
@@ -2004,7 +2004,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     */
     tau_(0) = 1.0/sqrt(4.0/(dt*dt)+Gnormu+CI*visceff*visceff*normG);
     tau_(1) = tau_(0);
-      
+
     /*           +-     -+   +-     -+   +-     -+
                  |       |   |       |   |       |
                  |  dr   |   |  ds   |   |  dt   |
@@ -2012,11 +2012,11 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
              i   |  dx   |   |  dx   |   |  dx   |
                  |    i  |   |    i  |   |    i  |
                  +-     -+   +-     -+   +-     -+
-    */          
+    */
     blitz::Array<double,1> g(3);
-    
+
     for (int rr=0;rr<3;++rr)
-    {    
+    {
       g(rr) = xji_(rr,0);
       for (int mm=1;mm<3;++mm)
       {
@@ -2025,14 +2025,14 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     }
 
     /*           +----
-                  \   
+                  \
          g * g =   +   g * g
          -   -    /     i   i
                  +----
                    i
     */
     const double normgsq = g(0)*g(0)+g(1)*g(1)+g(2)*g(2);
-    
+
     /*
                                 1.0
                   tau  = -----------------
@@ -2067,7 +2067,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
 
     /* convective : viscous forces */
     const double re2 = mk * vel_norm * strle / (2.0 * visceff);
-    
+
     const double xi1 = DMAX(re1,1.0);
     const double xi2 = DMAX(re2,1.0);
 
@@ -2081,7 +2081,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     const double re_viscous = 4.0 * timefac * visceff / (mk * DSQR(hk));
     /* convective : viscous forces */
     const double re_convect = mk * vel_norm * hk / (2.0 * visceff);
-    
+
     const double xi_viscous = DMAX(re_viscous,1.0);
     const double xi_convect = DMAX(re_convect,1.0);
 
@@ -2108,7 +2108,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
      *
      * */
     tau_(2) = sqrt(DSQR(visceff)+DSQR(0.5*vel_norm*hk));
-    
+
   }
   else
   {
@@ -2193,34 +2193,34 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
 //
 // calculate material viscosity at gaussian point  u.may 05/08
 //
-void DRT::ELEMENTS::Fluid3Impl::CalVisc_AtGaussianPoint(  
+void DRT::ELEMENTS::Fluid3Impl::CalVisc_AtGaussianPoint(
   const struct _MATERIAL*                 material,
   double&                           	  visc)
 {
-	
+
   blitz::firstIndex i;    // Placeholder for the first index
   blitz::secondIndex j;   // Placeholder for the second index
-  
-  // compute shear rate 
+
+  // compute shear rate
   double rateofshear = 0.0;
   blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
   epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
-   
+
   for(int rr=0;rr<3;rr++)
   	for(int mm=0;mm<3;mm++)
-  		rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
-  
+  		rateofshear += epsilon(rr,mm)*epsilon(rr,mm);
+
   rateofshear = sqrt(2.0*rateofshear);
-  
-  
+
+
   if(material->mattyp == m_carreauyasuda)
-  {   
+  {
     double nu_0 	= material->m.carreauyasuda->nu_0;          // parameter for zero-shear viscosity
     double nu_inf   = material->m.carreauyasuda->nu_inf;      	// parameter for infinite-shear viscosity
     double lambda   = material->m.carreauyasuda->lambda;      	// parameter for characteristic time
     double a 		= material->m.carreauyasuda->a_param;  			// constant parameter
     double b 		= material->m.carreauyasuda->b_param;  			// constant parameter
-      
+
 	// compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
 	// see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
 	const double tmp = pow(lambda*rateofshear,b);
@@ -2229,13 +2229,13 @@ void DRT::ELEMENTS::Fluid3Impl::CalVisc_AtGaussianPoint(
   else if(material->mattyp == m_modpowerlaw)
   {
 	  // get material parameters
-	  double m  	  = material->m.modpowerlaw->m_cons;    // consistency constant 
+	  double m  	  = material->m.modpowerlaw->m_cons;    // consistency constant
 	  double delta  = material->m.modpowerlaw->delta;       // safety factor
 	  double a      = material->m.modpowerlaw->a_exp;       // exponent
-    
+
       // compute viscosity according to a modified power law model for shear-thinning fluids
       // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
-      visc = m * pow((delta + rateofshear), (-1)*a);  
+      visc = m * pow((delta + rateofshear), (-1)*a);
   }
   else
 	  dserror("material type is not yet implemented");
@@ -2255,25 +2255,16 @@ void DRT::ELEMENTS::Fluid3Impl::CalVisc_AtGaussianPoint(
 void DRT::ELEMENTS::Fluid3Impl::BodyForce(Fluid3* ele, const double time)
 {
   vector<DRT::Condition*> myneumcond;
-  DRT::Node** nodes = ele->Nodes();
 
   // check whether all nodes have a unique VolumeNeumann condition
-  int nodecount = 0;
-  for (int inode=0;inode<iel_;inode++)
-  {
-    nodes[inode]->GetCondition("VolumeNeumann",myneumcond);
+  DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
 
-    if (myneumcond.size()>1)
-    {
-      dserror("more than one VolumeNeumann cond on one node");
-    }
-    if (myneumcond.size()==1)
-    {
-      nodecount++;
-    }
+  if (myneumcond.size()>1)
+  {
+    dserror("more than one VolumeNeumann cond on one node");
   }
 
-  if (nodecount == iel_)
+  if (myneumcond.size()==1)
   {
     // find out whether we will use a time curve
     const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
@@ -2304,15 +2295,13 @@ void DRT::ELEMENTS::Fluid3Impl::BodyForce(Fluid3* ele, const double time)
       curvefac = 1.0;
     }
 
+    // get values and switches from the condition
+    const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+    const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+
     // set this condition to the edeadng array
     for (int jnode=0; jnode<iel_; jnode++)
     {
-      nodes[jnode]->GetCondition("VolumeNeumann",myneumcond);
-
-      // get values and switches from the condition
-      const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-      const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
-
       for(int isd=0;isd<3;isd++)
       {
         edeadng_(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;

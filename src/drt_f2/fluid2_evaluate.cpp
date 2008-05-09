@@ -1104,22 +1104,14 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Fluid2::f2_getbodyforce(
   vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique surface Neumann condition
-  int nodecount = 0;
-  for(int inode=0;inode<iel;inode++)
-  {
-    Nodes()[inode]->GetCondition("SurfaceNeumann",myneumcond);
+  DRT::UTILS::FindElementConditions(this, "SurfaceNeumann", myneumcond);
 
-    if (myneumcond.size()>1)
-    {
-      dserror("more than one SurfaceNeumann cond on one node");
-    }
-    if (myneumcond.size()==1)
-    {
-      nodecount++;
-    }
+  if (myneumcond.size()>1)
+  {
+    dserror("more than one SurfaceNeumann cond on one node");
   }
 
-  if (nodecount == iel)
+  if (myneumcond.size()==1)
   {
 
     // find out whether we will use a time curve
@@ -1150,15 +1142,13 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Fluid2::f2_getbodyforce(
       curvefac = 1.0;
     }
 
+    // get values and switches from the condition
+    const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+    const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+
     // set this condition to the edeadng array
     for(int jnode=0;jnode<iel;jnode++)
     {
-      Nodes()[jnode]->GetCondition("SurfaceNeumann",myneumcond);
-
-      // get values and switches from the condition
-      const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-      const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
-
       for(int isd=0;isd<nsd;isd++)
       {
         edeadng(isd,jnode)=(*onoff)[isd]*(*val)[isd]*curvefac;

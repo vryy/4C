@@ -136,6 +136,14 @@ namespace UTILS
    */
   Teuchos::RCP<Epetra_Map> GeometryElementMap(const DRT::Discretization& dis, std::string condname, bool colmap);
 
+  /// Find all conditions with given name that all nodes of the element have in common
+  /*!
+    \param ele (in) the element
+    \param condname (in) name of the condition to look for
+    \param condition (out) all conditions that cover all element nodes
+   */
+  void FindElementConditions(const DRT::Element* ele, const std::string& condname, std::vector<DRT::Condition*>& condition);
+
   /*!
    * a common task is to get an array of the positions of all nodes of this element
    *
@@ -177,7 +185,7 @@ namespace UTILS
 
       const Node*const* nodes = ele->Nodes();
       dsassert(nodes != NULL, "element has no nodal pointers, so getting a position array doesn't make sense!");
-      
+
       for (int inode=0; inode<numnode; inode++)
       {
           const double* x = nodes[inode]->X();

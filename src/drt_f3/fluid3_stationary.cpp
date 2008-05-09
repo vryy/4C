@@ -225,7 +225,7 @@ void DRT::ELEMENTS::Fluid3Stationary::Sysmat(
     vderxy_ = blitz::sum(derxy_(j,k)*evelnp(i,k),k);
 
     // get fine-scale velocity (np,i) derivatives at integration point
-    if (fssgv != Fluid3::fssgv_no  && fssgv != Fluid3::fssgv_scale_similarity) 
+    if (fssgv != Fluid3::fssgv_no  && fssgv != Fluid3::fssgv_scale_similarity)
          fsvderxy_ = blitz::sum(derxy_(j,k)*fsevelnp(i,k),k);
     else fsvderxy_ = 0.;
 
@@ -1459,30 +1459,21 @@ void DRT::ELEMENTS::Fluid3Stationary::CalTauStationary(
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3Stationary::BodyForce(Fluid3* ele, const double pseudotime)
+void DRT::ELEMENTS::Fluid3Stationary::BodyForce(Fluid3* ele, const double time)
 {
   vector<DRT::Condition*> myneumcond;
-  DRT::Node** nodes = ele->Nodes();
 
   // check whether all nodes have a unique VolumeNeumann condition
-  int nodecount = 0;
-  for (int inode=0;inode<iel_;inode++)
-  {
-    nodes[inode]->GetCondition("VolumeNeumann",myneumcond);
+  DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
 
-    if (myneumcond.size()>1)
-    {
-      dserror("more than one VolumeNeumann cond on one node");
-    }
-    if (myneumcond.size()==1)
-    {
-      nodecount++;
-    }
+  if (myneumcond.size()>1)
+  {
+    dserror("more than one VolumeNeumann cond on one node");
   }
 
-  if (nodecount == iel_)
+  if (myneumcond.size()==1)
   {
-    // find out whether we will use a (pseudo-)time curve
+    // find out whether we will use a time curve
     const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
     int curvenum = -1;
 
@@ -1491,35 +1482,33 @@ void DRT::ELEMENTS::Fluid3Stationary::BodyForce(Fluid3* ele, const double pseudo
     // initialisation
     double curvefac    = 0.0;
 
-    if (curvenum >= 0) // yes, we have a (pseudo-)timecurve
+    if (curvenum >= 0) // yes, we have a timecurve
     {
-      // factor for the intermediate step
-      if(pseudotime >= 0.0)
+      // time factor for the intermediate step
+      if(time >= 0.0)
       {
-        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(pseudotime);
+        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
       }
       else
       {
-	// do not compute an "alternative" curvefac here since a negative pseudotime value
+	// do not compute an "alternative" curvefac here since a negative time value
 	// indicates an error.
-        dserror("Negative pseudotime value in body force calculation: time = %f",pseudotime);
+        dserror("Negative time value in body force calculation: time = %f",time);
         //curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(0.0);
       }
     }
-    else // we do not have a (pseudo-)timecurve --- timefactors are constant equal 1
+    else // we do not have a timecurve --- timefactors are constant equal 1
     {
       curvefac = 1.0;
     }
 
+    // get values and switches from the condition
+    const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+    const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+
     // set this condition to the edeadng array
     for (int jnode=0; jnode<iel_; jnode++)
     {
-      nodes[jnode]->GetCondition("VolumeNeumann",myneumcond);
-
-      // get values and switches from the condition
-      const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-      const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
-
       for(int isd=0;isd<3;isd++)
       {
         edeadng_(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;

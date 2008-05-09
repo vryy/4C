@@ -768,25 +768,16 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Caltau(
 void DRT::ELEMENTS::Fluid3lin_Impl::BodyForce(Fluid3* ele, const double time)
 {
   vector<DRT::Condition*> myneumcond;
-  DRT::Node** nodes = ele->Nodes();
 
   // check whether all nodes have a unique VolumeNeumann condition
-  int nodecount = 0;
-  for (int inode=0;inode<iel_;inode++)
-  {
-    nodes[inode]->GetCondition("VolumeNeumann",myneumcond);
+  DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
 
-    if (myneumcond.size()>1)
-    {
-      dserror("more than one VolumeNeumann cond on one node");
-    }
-    if (myneumcond.size()==1)
-    {
-      nodecount++;
-    }
+  if (myneumcond.size()>1)
+  {
+    dserror("more than one VolumeNeumann cond on one node");
   }
 
-  if (nodecount == iel_)
+  if (myneumcond.size()==1)
   {
     // find out whether we will use a time curve
     const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
@@ -817,15 +808,13 @@ void DRT::ELEMENTS::Fluid3lin_Impl::BodyForce(Fluid3* ele, const double time)
       curvefac = 1.0;
     }
 
+    // get values and switches from the condition
+    const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
+    const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+
     // set this condition to the edeadng array
     for (int jnode=0; jnode<iel_; jnode++)
     {
-      nodes[jnode]->GetCondition("VolumeNeumann",myneumcond);
-
-      // get values and switches from the condition
-      const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-      const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
-
       for(int isd=0;isd<3;isd++)
       {
         edeadng_(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;

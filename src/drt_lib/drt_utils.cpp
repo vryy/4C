@@ -31,6 +31,7 @@ extern "C"
 #include <algorithm>
 #include <numeric>
 #include <vector>
+#include <set>
 #include <blitz/array.h>
 
 #include "linalg_utils.H"
@@ -1015,6 +1016,60 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::GeometryElementMap(const DRT::Discretizatio
   elements.assign(elementset.begin(),elementset.end());
   elementset.clear();
   return Teuchos::rcp(new Epetra_Map(-1,elements.size(),&elements[0],0,dis.Comm()));
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::FindElementConditions(const DRT::Element* ele, const std::string& condname, std::vector<DRT::Condition*>& condition)
+{
+  const DRT::Node* const* nodes = ele->Nodes();
+
+  // We assume the conditions have unique ids. The framework has to provide
+  // those.
+
+  // we assume to always have at least one node
+  std::vector<DRT::Condition*> neumcond0;
+  nodes[0]->GetCondition(condname,neumcond0);
+
+  // the first set of conditions
+  std::set<DRT::Condition*> cond0;
+  std::copy(neumcond0.begin(),
+            neumcond0.end(),
+            std::inserter(cond0,cond0.begin()));
+
+  // the final set
+  std::set<DRT::Condition*> fcond;
+
+  // loop all remaining nodes
+
+  int iel = ele->NumNode();
+  for (int inode=1; inode<iel; ++inode)
+  {
+    std::vector<DRT::Condition*> neumcondn;
+    nodes[inode]->GetCondition(condname,neumcondn);
+
+    std::set<DRT::Condition*> condn;
+    std::copy(neumcondn.begin(),
+              neumcondn.end(),
+              std::inserter(condn,condn.begin()));
+
+    // intersect the first and the current conditions
+    std::set_intersection(cond0.begin(),cond0.end(),
+                          condn.begin(),condn.end(),
+                          inserter(fcond,fcond.begin()));
+
+    if (fcond.size()==0)
+      // No intersections. Done.
+      break;
+
+    // make intersection to new starting condition
+    cond0.clear();
+    std::swap(cond0,fcond);
+  }
+
+  condition.clear();
+  std::copy(fcond.begin(),fcond.end(),back_inserter(condition));
 }
 
 
