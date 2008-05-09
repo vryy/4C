@@ -102,8 +102,9 @@ int main(
     mymesh.Print(cout);
     //mymesh.CloseExo();
 
-    // declare empty map for holding "boundary" conditions
-    vector<map<int,EXODUS::bc_entity> > conditions(3);
+    // declare empty vectors for holding "boundary" conditions
+    vector<EXODUS::elem_def> eledefs;
+    vector<EXODUS::cond_def> condefs;
     
     // generate solid shell extrusion based on exodus file
     if (soshthickness!=0.0){
@@ -170,8 +171,8 @@ int main(
         <<"sectionname=\"\""<<endl
         <<"description=\"\""<<endl
         <<"elementname=\"\""<<endl
-        <<"elementshape=\""
-        << DRT::DistypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""
+        //<<"elementshape=\""
+        //<< DRT::DistypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<endl
         <<endl;
       }
       
@@ -200,7 +201,7 @@ int main(
       // print validconditions as proposal
       defaultbc << "-----------------------------------------VALIDCONDITIONS"<< endl;
       Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
-      DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc,*condlist);
+      DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc,*condlist,false);
       
       //(*condlist)[0]->Print(cout,NULL,true);
 
@@ -224,15 +225,15 @@ int main(
     else
     {
       // read provided bc-file
-      conditions = EXODUS::ReadBCFile(bcfile);
+      EXODUS::ReadBCFile(bcfile,eledefs,condefs);
       
-      if ((signed) conditions[0].size() != mymesh.GetNumElementBlocks()){
-        cout << "You specified only " << conditions[0].size() << " ElementBlocks of " << mymesh.GetNumElementBlocks() << " in the provided mesh!" << endl;
-      } else if ((signed) conditions[1].size() != mymesh.GetNumNodeSets()){
-        cout << "You specified only " << conditions[1].size() << " NodeSets of " << mymesh.GetNumNodeSets() << " in the provided mesh!" << endl;
-      } else if ((signed) conditions[2].size() != mymesh.GetNumSideSets()){
-        cout << "You specified only " << conditions[2].size() << " SideSets of " << mymesh.GetNumSideSets() << " in the provided mesh!" << endl;
-      }
+//      if ((signed) conditions[0].size() != mymesh.GetNumElementBlocks()){
+//        cout << "You specified only " << conditions[0].size() << " ElementBlocks of " << mymesh.GetNumElementBlocks() << " in the provided mesh!" << endl;
+//      } else if ((signed) conditions[1].size() != mymesh.GetNumNodeSets()){
+//        cout << "You specified only " << conditions[1].size() << " NodeSets of " << mymesh.GetNumNodeSets() << " in the provided mesh!" << endl;
+//      } else if ((signed) conditions[2].size() != mymesh.GetNumSideSets()){
+//        cout << "You specified only " << conditions[2].size() << " SideSets of " << mymesh.GetNumSideSets() << " in the provided mesh!" << endl;
+//      }
     }
 
     if (headfile=="")
@@ -275,16 +276,16 @@ int main(
         RefCountPtr<Epetra_Comm> comm = rcp(com);
 #endif
 
-//      Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
-//      DRT::INPUT::DatFileReader reader(headfile.c_str(), comm, false);
-//
-//      // do reading AND validation!
-//      problem->ReadParameter(reader);
-//
-//      //the header file is valid --> go on
-//
-//      // clean up
-//      problem->Done();
+      Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
+      DRT::INPUT::DatFileReader reader(headfile.c_str(), comm, 0, false);
+
+      // do reading AND validation!
+      problem->ReadParameter(reader);
+
+      //the header file is valid --> go on
+
+      // clean up
+      problem->Done();
     }
 
 #ifdef PARALLEL
@@ -298,7 +299,7 @@ int main(
   else
   {
     cout << "creating datfile " << datfile << endl;
-    EXODUS::WriteDatFile(datfile, mymesh, headfile, conditions);
+    EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
   }
 
   

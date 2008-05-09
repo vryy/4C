@@ -22,8 +22,8 @@ Here is everything related with writing a dat-file
 using namespace std;
 using namespace Teuchos;
 
-int EXODUS::WriteDatFile(const string datfile, const EXODUS::Mesh mymesh,
-    const string headfile, const vector<map<int,EXODUS::bc_entity> >bc_specs)
+int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
+    const string& headfile, const vector<EXODUS::elem_def>& eledefs, const vector<EXODUS::cond_def>& condefs)
 {
   // open datfile
   ofstream dat(datfile.c_str());
@@ -39,27 +39,27 @@ int EXODUS::WriteDatFile(const string datfile, const EXODUS::Mesh mymesh,
   
   // as e.g. also ElementBlocks can hold 'BACI-Conditions'
   // we find everything what will be a 'BACI-Condition", i.e. everything except elements
-  vector<EXODUS::bc_entity> baciconds = EXODUS::FindBACIConditions(bc_specs);
+  //vector<EXODUS::bc_entity> baciconds = EXODUS::FindBACIConditions(bc_specs);
   
   // write "design description"
-  string datdesign = EXODUS::WriteDatDesign(baciconds);
+  string datdesign = EXODUS::WriteDatDesign(condefs);
   dat << datdesign;
   
-  // write conditions
-  string datconditions = EXODUS::WriteDatConditions(baciconds);
-  dat << datconditions;
+//  // write conditions
+//  string datconditions = EXODUS::WriteDatConditions(baciconds);
+//  dat << datconditions;
   
   // write design-topology
-  string datdesigntopo = EXODUS::WriteDatDesignTopology(baciconds,mymesh);
+  string datdesigntopo = EXODUS::WriteDatDesignTopology(condefs,mymesh);
   dat << datdesigntopo;
   
   // write nodal coordinates
   string datnodes = EXODUS::WriteDatNodes(mymesh);
   dat << datnodes;
   
-  // write elements
-  string dateles = EXODUS::WriteDatEles(bc_specs,mymesh);
-  dat << dateles;
+//  // write elements
+//  string dateles = EXODUS::WriteDatEles(bc_specs,mymesh);
+//  dat << dateles;
 
   // write END
   dat << "---------------------------------------------------------------END\n"\
@@ -121,19 +121,20 @@ vector<EXODUS::bc_entity> EXODUS::FindBACIConditions(const vector<map<int,EXODUS
   return bacis;
 }
 
-string EXODUS::WriteDatDesign(const vector<EXODUS::bc_entity>& baciconds)
+string EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs)
 {
   stringstream dat;
-  vector<EXODUS::bc_entity>::const_iterator it;
+  vector<EXODUS::cond_def>::const_iterator it;
   int ndp=0; int ndl=0; int nds=0; int ndv=0;
 
-  for (it=baciconds.begin(); it != baciconds.end(); ++it){
-    EXODUS::bc_entity acte = *it;
-    if (acte.ct == EXODUS::dvol)        ndv++;
-    else if (acte.ct == EXODUS::dsurf)  nds++;
-    else if (acte.ct == EXODUS::dline)  ndl++;
-    else if (acte.ct == EXODUS::dpoint) ndp++;
-    else dserror ("Cannot identify bacicondition");
+  for (it=condefs.begin(); it != condefs.end(); ++it){
+    EXODUS::cond_def acte = *it;
+    if (acte.gtype == DRT::Condition::Volume)        ndv++;
+    else if (acte.gtype == DRT::Condition::Surface)  nds++;
+    else if (acte.gtype == DRT::Condition::Line)     ndl++;
+    else if (acte.gtype == DRT::Condition::Point)    ndp++;
+    else if (acte.gtype == DRT::Condition::NoGeom) break;
+    else dserror ("Cannot identify Condition GeometryType");
   }
   dat << "------------------------------------------------DESIGN DESCRIPTION" << endl;
   dat << "NDPOINT " << ndp << endl;
@@ -160,67 +161,69 @@ string EXODUS::WriteDatConditions(const vector<EXODUS::bc_entity>& baciconds)
   return dat.str();
 }
 
-string EXODUS::WriteDatDesignTopology(const vector<EXODUS::bc_entity>& baciconds, const EXODUS::Mesh& mymesh)
+string EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh)
 {
   stringstream dat;
   
   // sort baciconds w.r.t. underlying topology
-  vector<EXODUS::bc_entity> dpoints;
-  vector<EXODUS::bc_entity> dlines;
-  vector<EXODUS::bc_entity> dsurfs;
-  vector<EXODUS::bc_entity> dvols;
+  vector<EXODUS::cond_def> dpoints;
+  vector<EXODUS::cond_def> dlines;
+  vector<EXODUS::cond_def> dsurfs;
+  vector<EXODUS::cond_def> dvols;
   
-  vector<EXODUS::bc_entity>::const_iterator it;
-  for (it=baciconds.begin();it!=baciconds.end();++it){
-    EXODUS::bc_entity acte = *it;
-    if (acte.ct==EXODUS::dpoint) dpoints.push_back(acte);
-    else if (acte.ct==EXODUS::dline) dlines.push_back(acte);
-    else if (acte.ct==EXODUS::dsurf) dsurfs.push_back(acte);
-    else if (acte.ct==EXODUS::dvol) dvols.push_back(acte);
-    else dserror ("Cannot identify bacicondition");
+  vector<EXODUS::cond_def>::const_iterator it;
+  for (it=condefs.begin();it!=condefs.end();++it){
+    EXODUS::cond_def acte = *it;
+    if (acte.gtype==DRT::Condition::Point) dpoints.push_back(acte);
+    else if (acte.gtype==DRT::Condition::Line) dlines.push_back(acte);
+    else if (acte.gtype==DRT::Condition::Surface) dsurfs.push_back(acte);
+    else if (acte.gtype==DRT::Condition::Volume) dvols.push_back(acte);
+    else if (acte.gtype==DRT::Condition::NoGeom) break;
+    else dserror ("Cannot identify Condition GeometryType");
   }
   
   dat << "-----------------------------------------------DNODE-NODE TOPOLOGY"<<endl;
   for (it=dpoints.begin();it!=dpoints.end();++it){
-    EXODUS::bc_entity acte = *it;
+    EXODUS::cond_def acte = *it;
     const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
     set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
-      dat << "NODE    " << *i << " " << "DNODE " << acte.specs[0] << endl;
+      dat << "NODE    " << *i << " " << "DNODE " << acte.e_id << endl;
+      //dat << EXODUS::CondGeomTypeToString(acte) << " " << acte.e_id << endl;
     }
   }
   dat << "-----------------------------------------------DLINE-NODE TOPOLOGY"<<endl;
   for (it=dlines.begin();it!=dlines.end();++it){
-    EXODUS::bc_entity acte = *it;
+    EXODUS::cond_def acte = *it;
     const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
     set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
-      dat << "NODE    " << *i << " " << "DNODE " << acte.specs[0] << endl;
+      dat << "NODE    " << *i << " " << "DNODE " << acte.e_id << endl;
     }
   }
   dat << "-----------------------------------------------DSURF-NODE TOPOLOGY"<<endl;
   for (it=dsurfs.begin();it!=dsurfs.end();++it){
-    EXODUS::bc_entity acte = *it;
+    EXODUS::cond_def acte = *it;
     const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
     set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
-      dat << "NODE    " << *i << " " << "DSURFACE " << acte.specs[0] << endl;
+      dat << "NODE    " << *i << " " << "DSURFACE " << acte.e_id << endl;
     }
   }
   dat << "------------------------------------------------DVOL-NODE TOPOLOGY"<<endl;
   for (it=dvols.begin();it!=dvols.end();++it){
-    EXODUS::bc_entity acte = *it;
+    EXODUS::cond_def acte = *it;
     const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
     set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
-      dat << "NODE    " << *i << " " << "DNODE " << acte.specs[0] << endl;
+      dat << "NODE    " << *i << " " << "DNODE " << acte.e_id << endl;
     }
   }
 
   return dat.str();
 }
 
-const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::bc_entity& e, const EXODUS::Mesh& m)
+const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m)
 {
   if (e.me==EXODUS::bcns){
     EXODUS::NodeSet ns = m.GetNodeSet(e.id);

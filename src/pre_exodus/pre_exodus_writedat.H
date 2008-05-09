@@ -32,8 +32,8 @@ using namespace Teuchos;
 namespace EXODUS
 {
 //! write datfile
-int WriteDatFile(const string datfile, const EXODUS::Mesh mymesh,
-    const string headfile, const vector<map<int,EXODUS::bc_entity> > bc_specs);
+int WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
+    const string& headfile, const vector<EXODUS::elem_def>& eledefs, const vector<EXODUS::cond_def>& condefs);
 
 //! datfile Intro
 string WriteDatIntro(const EXODUS::Mesh& mymesh);
@@ -42,16 +42,16 @@ string WriteDatIntro(const EXODUS::Mesh& mymesh);
 string WriteDatHead(const string& headfile);
 
 //! design description
-string WriteDatDesign(const vector<EXODUS::bc_entity>& baciconds);
+string WriteDatDesign(const vector<EXODUS::cond_def>& condefs);
 
 //! conditions
 string WriteDatConditions(const vector<EXODUS::bc_entity>& baciconds);
 
 //! DesignNode - Node Topology
-string WriteDatDesignTopology(const vector<EXODUS::bc_entity>& baciconds, const EXODUS::Mesh& mymesh);
+string WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh);
 
 //! return set of nodes in bc_entity
-const set<int> GetNsFromBCEntity(const EXODUS::bc_entity& e, const EXODUS::Mesh& m);
+const set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m);
 
 //! Nodes into datfile
 string WriteDatNodes(const EXODUS::Mesh& mymesh);
@@ -64,6 +64,19 @@ string DatEles(const EXODUS::ElementBlock& eb, const EXODUS::bc_entity& acte, in
 
 //! as e.g. also ElementBlocks can hold 'BACI-Conditions' we find everything what will be a 'BACI-Condition"
 vector<EXODUS::bc_entity> FindBACIConditions(const vector<map<int,EXODUS::bc_entity> >& bc_specs);
+
+inline string CondGeomTypeToString(const EXODUS::cond_def& def)
+{
+  switch (def.gtype){
+  case DRT::Condition::Volume:  return "DVOL  "; break; 
+  case DRT::Condition::Surface: return "DSURF "; break; 
+  case DRT::Condition::Line:    return "DLINE "; break; 
+  case DRT::Condition::Point:   return "DPOINT"; break;
+  case DRT::Condition::NoGeom:  return ""; break;
+  default: dserror("Unknown Condition GeometryType");
+  }
+  return "";
+}
 
 } // of namespace EXODUS
 

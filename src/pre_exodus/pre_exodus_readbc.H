@@ -24,6 +24,7 @@ Here is everything related with reading a bc file
 #include <Teuchos_RefCountPtr.hpp>
 #include "../drt_lib/drt_dserror.H"
 #include "pre_exodus_reader.H"
+#include "../drt_lib/drt_condition.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -33,8 +34,39 @@ namespace EXODUS
 // differentiate between underlying mesh entity
 enum mesh_entity{bceb,bcns,bcss};
 
+//// taken from 'validconditions'
+//enum GeometryType
+//{
+//  NoGeom,
+//  Point,
+//  Line,
+//  Surface,
+//  Volume
+//};
+
+
 // differentiate between corresponding condition_type
 enum cond_type{element,dvol,dsurf,dline,dpoint,empty,invalid};
+
+// this is what fully defines a baci element
+struct elem_def{
+  int id;                     // refering to mesh_entity id of eb,ns,ss
+  mesh_entity me;             // refering to underlying mesh entity
+  string sec;                 // FLUID,STRUCTURE,ALE,etc.
+  string desc;                // like "MAT 1 EAS full"
+  string ename;               // FLUID3,SOLIDSH8,etc
+};
+
+// this is what fully defines a baci condition
+struct cond_def{
+  int id;                     // refering to mesh_entity id of eb,ns,ss
+  mesh_entity me;             // refering to underlying mesh entity
+  string sec;                 // see valid_condition 'sectionname'
+  string desc;                // see valid_condition 'description'
+  int e_id;                   // refers to datfile 'E num -'
+  DRT::Condition::GeometryType gtype;         
+};
+
 
 struct bc_entity{
   int id;
@@ -46,6 +78,12 @@ struct bc_entity{
 //! Read BC-file
 vector<map<int,bc_entity> > ReadBCFile(const string bcfile);
 
+void ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs, vector<EXODUS::cond_def>& condefs);
+
+EXODUS::elem_def ReadEdef(const string& mesh_entity,const int id, const string& actcond);
+
+EXODUS::cond_def ReadCdef(const string& mesh_entity,const int id, const string& actcond);
+
 //! Read bc_entity specifications
 vector<string> ReadBCEntity(const string actcond);
 
@@ -56,7 +94,8 @@ inline EXODUS::cond_type CheckCondType(const string buffer);
 inline string CondTypeToString(const EXODUS::cond_type);
 
 //! Print bc_entity
-void PrintBCEntity(ostream& os, const EXODUS::bc_entity ent);
+void PrintBCDef(ostream& os, const EXODUS::elem_def& def);
+void PrintBCDef(ostream& os, const EXODUS::cond_def& def);
 
 } // of namespace EXODUS
 

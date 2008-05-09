@@ -38,7 +38,8 @@ namespace INPUT {
 
   /// print all known condition sections without contents
   void PrintEmptyConditionDefinitions(std::ostream& stream,
-                                      std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
+                                      std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist,
+                                      bool color=true);
 
 }
 }

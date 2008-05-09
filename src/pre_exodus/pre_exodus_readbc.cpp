@@ -22,12 +22,8 @@ Here is everything related with reading a bc file
 using namespace std;
 using namespace Teuchos;
 
-vector<map<int,EXODUS::bc_entity> > EXODUS::ReadBCFile(const string bcfile)
+void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs, vector<EXODUS::cond_def>& condefs)
 {
-  map<int,EXODUS::bc_entity> eb_bcs; // all bc_entities for ElementBlocks
-  map<int,EXODUS::bc_entity> ns_bcs; // all bc_entities for NodeSets
-  map<int,EXODUS::bc_entity> ss_bcs; // all bc_entities for SideSets
-
   // first we read the whole file into one stream/string
   stringstream bcstream;
   const char *bcfilechar;
@@ -63,20 +59,10 @@ vector<map<int,EXODUS::bc_entity> > EXODUS::ReadBCFile(const string bcfile)
     // get actual condition
     string actcond = allconds.substr(startpos,found-startpos);
     
-    // store current entity
-    EXODUS::bc_entity actentity;
     
     // find out what mesh_entity type we have
     string mesh_entity = actcond.substr(0,3);
-    if (mesh_entity.compare(ebmarker)==0) actentity.me = EXODUS::bceb;
-    else if (mesh_entity.compare(nsmarker)==0) actentity.me = EXODUS::bcns;
-    else if (mesh_entity.compare(ssmarker)==0) actentity.me = EXODUS::bcss;
-    else {
-      cout << "Don't understand mesh_entity specifier: " << mesh_entity;
-      cout << "Has to be " << ebmarker <<", "<<nsmarker<<" or "<<ssmarker<<endl;
-      dserror("Mesh_entity not found");
-    }
-    
+
     // get its id
     size_t found2 = actcond.find_first_of("=");
     string buffer = actcond.substr(markerlength,found2-markerlength);
@@ -84,38 +70,102 @@ vector<map<int,EXODUS::bc_entity> > EXODUS::ReadBCFile(const string bcfile)
     istringstream bufferstream(buffer);
     int id;
     bufferstream >> id;
-    actentity.id = id;
-    
+
     // condition type
     size_t left = actcond.find_first_of("\"",0);
     size_t right = actcond.find_first_of("\"",left+1);
-    buffer = actcond.substr(left+1,right-left-1);
-    actentity.ct = CheckCondType(buffer);
+    string type = actcond.substr(left+1,right-left-1);
     
-    // reduce actcond by mesh_entity, id, and condition_type
-    left = actcond.find_first_of("\"",right+1);
-    right = actcond.find_last_of("\"");
-    buffer = actcond.substr(left+1);//,right-(left+1));
-    
-    // read the rest of actcond into vector of strings
-    actentity.specs = ReadBCEntity(buffer);
-    
-    //cout << "ID: " << id << endl;
-    //EXODUS::PrintBCEntity(cout,actentity);
-    
-    // insert into corresponding map
-    if (actentity.me==EXODUS::bceb) eb_bcs.insert(pair<int,EXODUS::bc_entity>(id,actentity));
-    else if (actentity.me==EXODUS::bcns) ns_bcs.insert(pair<int,EXODUS::bc_entity>(id,actentity));
-    else if (actentity.me==EXODUS::bcss) ss_bcs.insert(pair<int,EXODUS::bc_entity>(id,actentity));
-    else dserror("Problems with bc entity");
+    if (mesh_entity.compare(ebmarker)==0){
+      // in case of eb we differntiate between 'element' or 'condition'
+      if (type.compare("ELEMENT")==0){
+        EXODUS::elem_def edef = EXODUS::ReadEdef(mesh_entity,id,actcond);
+        eledefs.push_back(edef);
+      } else if (type.compare("CONDITION")==0){
+        EXODUS::cond_def cdef = EXODUS::ReadCdef(mesh_entity,id,actcond);
+        condefs.push_back(cdef);
+      } else {
+        cout << "Undefined type for eb"<<id<<": "<<type<<endl;
+        dserror("Undefined type!");
+      }
+    } else if (mesh_entity.compare(nsmarker)==0){
+      EXODUS::cond_def cdef = EXODUS::ReadCdef(mesh_entity,id,actcond);
+      condefs.push_back(cdef);
+    } else if (mesh_entity.compare(ssmarker)==0){
+      EXODUS::cond_def cdef = EXODUS::ReadCdef(mesh_entity,id,actcond);
+      condefs.push_back(cdef);
+    } else dserror("Undefined mesh_type");
+      
   }
   
-  vector<map<int,EXODUS::bc_entity> > allbcs(3);
-  allbcs[0] = eb_bcs;
-  allbcs[1] = ns_bcs;
-  allbcs[2] = ss_bcs;
+  return;
+}
+
+EXODUS::elem_def EXODUS::ReadEdef(const string& mesh_entity,const int id, const string& actcond)
+{
+  EXODUS::elem_def edef;
+  edef.id = id;
+  edef.me = EXODUS::bceb;
+
+  // read sectionname
+  size_t left = actcond.find("sectionname=\"");  // 13 chars
+  size_t right = actcond.find_first_of("\"",left+13);
+  edef.sec = actcond.substr(left+13,right-(left+13));
+
+  // read description
+  left = actcond.find("description=\"");  // 13 chars
+  right = actcond.find_first_of("\"",left+13);
+  edef.desc = actcond.substr(left+13,right-(left+13));
+
+  // read ename
+  left = actcond.find("elementname=\"");  // 13 chars
+  right = actcond.find_first_of("\"",left+13);
+  edef.desc = actcond.substr(left+13,right-(left+13));
   
-  return allbcs;
+  return edef;
+}
+
+EXODUS::cond_def EXODUS::ReadCdef(const string& mesh_entity,const int id, const string& actcond)
+{
+  EXODUS::cond_def cdef;
+  cdef.id = id;
+  if (mesh_entity.compare(1,2,"eb")==0) cdef.me = EXODUS::bceb;
+  else if (mesh_entity.compare(1,2,"ns")==0) cdef.me = EXODUS::bcns;
+  else if (mesh_entity.compare(1,2,"ss")==0) cdef.me = EXODUS::bcss;
+  else dserror("Undefined mesh_type");
+  
+  // read sectionname
+  size_t left = actcond.find("sectionname=\"");  // 13 chars
+  size_t right = actcond.find_first_of("\"",left+13);
+  string secname = actcond.substr(left+13,right-(left+13));
+  cdef.sec = secname;
+
+  // read description
+  left = actcond.find("description=\"");  // 13 chars
+  right = actcond.find_first_of("\"",left+13);
+  string description = actcond.substr(left+13,right-(left+13));
+  cdef.desc = description;
+
+  // figure out geometry type
+  cdef.gtype = DRT::Condition::NoGeom;  // default
+  size_t found = secname.find("POINT");
+  if (found!=string::npos) cdef.gtype = DRT::Condition::Point;
+  found = secname.find("LINE");
+  if (found!=string::npos) cdef.gtype = DRT::Condition::Line;
+  found = secname.find("SURF");
+  if (found!=string::npos) cdef.gtype = DRT::Condition::Surface;
+  found = secname.find("VOL");
+  if (found!=string::npos) cdef.gtype = DRT::Condition::Volume;
+  
+  // figure out number of 'E' topo-entity for datfile
+  left = description.find_first_of("E");
+  right = description.find_first_of("-");
+  string Enum = description.substr(left+1,right-(left+1));
+  // convert string to int
+  istringstream Enumstream(Enum);
+  Enumstream >> cdef.e_id;
+  
+  return cdef;
 }
 
 vector<string> EXODUS::ReadBCEntity(const string actcond)
@@ -201,17 +251,26 @@ inline string EXODUS::CondTypeToString(const EXODUS::cond_type cond)
   return "";
 }
 
-void EXODUS::PrintBCEntity(ostream& os, const EXODUS::bc_entity ent)
+void EXODUS::PrintBCDef(ostream& os, const EXODUS::elem_def& def)
 {
   string mesh_entity;
-  if (ent.me==EXODUS::bceb) mesh_entity = "ElementBlock";
-  else if (ent.me==EXODUS::bcns) mesh_entity = "NodeSet";
-  else if (ent.me==EXODUS::bcss) mesh_entity = "SideSet";
-  os << "The BC-Entity refers to a " << mesh_entity;
-  os << ", is of type " << EXODUS::CondTypeToString(ent.ct) << " and has specs:" << endl;
-  const vector<string> specs = ent.specs;
-  vector<string>::const_iterator it;
-  for (it=specs.begin(); it != specs.end(); ++it) os << *it << endl;
+  if (def.me==EXODUS::bceb) mesh_entity = "ElementBlock";
+  else if (def.me==EXODUS::bcns) mesh_entity = "NodeSet";
+  else if (def.me==EXODUS::bcss) mesh_entity = "SideSet";
+  os << "The ELEMENT definition " << def.id << " refers to a " << mesh_entity << endl;
+  os << "Sectionname: " << def.sec << endl;
+  os << "Description: " << def.desc << endl;
+  os << endl;
+}
+void EXODUS::PrintBCDef(ostream& os, const EXODUS::cond_def& def)
+{
+  string mesh_entity;
+  if (def.me==EXODUS::bceb) mesh_entity = "ElementBlock";
+  else if (def.me==EXODUS::bcns) mesh_entity = "NodeSet";
+  else if (def.me==EXODUS::bcss) mesh_entity = "SideSet";
+  os << "The CONDITION definition " << def.id << " refers to a " << mesh_entity << endl;
+  os << "Sectionname: " << def.sec << endl;
+  os << "Description: " << def.desc << endl;
   os << endl;
 }
 

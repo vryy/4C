@@ -8,11 +8,12 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::PrintEmptyConditionDefinitions(std::ostream& stream,
-                                                std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist)
+                                                std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist,
+                                                bool color)
 {
   for (unsigned i=0; i<condlist.size(); ++i)
   {
-    condlist[i]->Print(stream,NULL,true);
+    condlist[i]->Print(stream,NULL,color);
   }
 }
 
