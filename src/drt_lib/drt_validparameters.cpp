@@ -75,70 +75,79 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterLi
     magentalight = MAGENTA_LIGHT;
     endcolor = END_COLOR;
   }
-  for (Teuchos::ParameterList::ConstIterator i = list.begin();
-       i!=list.end();
-       ++i)
+
+  // prevent invalid ordering of parameters caused by alphabetical output:
+  // in the first run, print out all list elements that are not a sublist
+  // in the second run, do the recursive call for all the sublists in the list
+  for (int j=0; j<2; ++j) 
   {
-    const Teuchos::ParameterEntry& entry = list.entry(i);
-    const std::string &name = list.name(i);
-    Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
-
-    stream << blue2light << "//" << endcolor << '\n';
-
-    std::string doc = entry.docString();
-    if (doc!="")
+    for (Teuchos::ParameterList::ConstIterator i = list.begin();
+    i!=list.end();
+    ++i)
     {
-      Teuchos::StrUtils::printLines(stream,blue2light + "// ",doc);
-      stream << endcolor;
-    }
+      const Teuchos::ParameterEntry& entry = list.entry(i);
+      if (entry.isList() && j==0) continue;
+      if ((!entry.isList()) && j==1) continue;
+      const std::string &name = list.name(i);
+      Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
 
-    if (entry.isList())
-    {
-      std::string secname = parentname;
-      if (secname!="")
-        secname += "/";
-      secname += name;
-      unsigned l = secname.length();
-      stream << redlight << "--";
-      for (int i=0; i<std::max<int>(65-l,0); ++i) stream << '-';
-      stream << greenlight << secname << endcolor << '\n';
-      PrintDatHeader(stream,list.sublist(name),secname,color);
-    }
-    else
-    {
-      if (validator!=Teuchos::null)
+      stream << blue2light << "//" << endcolor << '\n';
+
+      std::string doc = entry.docString();
+      if (doc!="")
       {
-        Teuchos::RCP<const Teuchos::Array<std::string> > values = validator->validStringValues();
-        if (values!=Teuchos::null)
+        Teuchos::StrUtils::printLines(stream,blue2light + "// ",doc);
+        stream << endcolor;
+      }
+
+      if (entry.isList())
+      {
+        std::string secname = parentname;
+        if (secname!="")
+          secname += "/";
+        secname += name;
+        unsigned l = secname.length();
+        stream << redlight << "--";
+        for (int i=0; i<std::max<int>(65-l,0); ++i) stream << '-';
+        stream << greenlight << secname << endcolor << '\n';
+        PrintDatHeader(stream,list.sublist(name),secname,color);
+      }
+      else
+      {
+        if (validator!=Teuchos::null)
         {
-          unsigned len = 0;
-          for (unsigned i=0; i<values->size(); ++i)
+          Teuchos::RCP<const Teuchos::Array<std::string> > values = validator->validStringValues();
+          if (values!=Teuchos::null)
           {
-            len += (*values)[i].length()+1;
-          }
-          if (len<74)
-          {
-            stream << blue2light << "//     ";
-            for (int i=0; i<static_cast<int>(values->size())-1; ++i)
-            {
-              stream << magentalight << (*values)[i] << blue2light << ",";
-            }
-            stream << magentalight << (*values)[values->size()-1] << endcolor << '\n';
-          }
-          else
-          {
+            unsigned len = 0;
             for (unsigned i=0; i<values->size(); ++i)
             {
-              stream << blue2light << "//     " << magentalight << (*values)[i] << endcolor << '\n';
+              len += (*values)[i].length()+1;
+            }
+            if (len<74)
+            {
+              stream << blue2light << "//     ";
+              for (int i=0; i<static_cast<int>(values->size())-1; ++i)
+              {
+                stream << magentalight << (*values)[i] << blue2light << ",";
+              }
+              stream << magentalight << (*values)[values->size()-1] << endcolor << '\n';
+            }
+            else
+            {
+              for (unsigned i=0; i<values->size(); ++i)
+              {
+                stream << blue2light << "//     " << magentalight << (*values)[i] << endcolor << '\n';
+              }
             }
           }
         }
+        const Teuchos::any& v = entry.getAny(false);
+        stream << bluelight << name << endcolor;
+        unsigned l = name.length();
+        for (int i=0; i<std::max<int>(31-l,0); ++i) stream << ' ';
+        stream << ' ' << yellowlight << v << endcolor << '\n';
       }
-      const Teuchos::any& v = entry.getAny(false);
-      stream << bluelight << name << endcolor;
-      unsigned l = name.length();
-      for (int i=0; i<std::max<int>(31-l,0); ++i) stream << ' ';
-      stream << ' ' << yellowlight << v << endcolor << '\n';
     }
   }
 }
