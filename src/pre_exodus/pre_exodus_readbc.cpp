@@ -120,7 +120,7 @@ EXODUS::elem_def EXODUS::ReadEdef(const string& mesh_entity,const int id, const 
   // read ename
   left = actcond.find("elementname=\"");  // 13 chars
   right = actcond.find_first_of("\"",left+13);
-  edef.desc = actcond.substr(left+13,right-(left+13));
+  edef.ename = actcond.substr(left+13,right-(left+13));
   
   return edef;
 }

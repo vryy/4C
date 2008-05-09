@@ -45,7 +45,7 @@ string WriteDatHead(const string& headfile);
 string WriteDatDesign(const vector<EXODUS::cond_def>& condefs);
 
 //! conditions
-string WriteDatConditions(const vector<EXODUS::bc_entity>& baciconds);
+string WriteDatConditions(const vector<EXODUS::cond_def>& condefs);
 
 //! DesignNode - Node Topology
 string WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh);
@@ -57,10 +57,10 @@ const set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& 
 string WriteDatNodes(const EXODUS::Mesh& mymesh);
 
 //! Elements into datfile
-string WriteDatEles(const vector<map<int,EXODUS::bc_entity> >& bc_specs, const EXODUS::Mesh& mymesh);
+string WriteDatEles(const vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& mymesh);
 
 //! Elements from eblock
-string DatEles(const EXODUS::ElementBlock& eb, const EXODUS::bc_entity& acte, int& struele);
+string DatEles(const EXODUS::ElementBlock& eb, const EXODUS::elem_def& acte, int& struele);
 
 //! as e.g. also ElementBlocks can hold 'BACI-Conditions' we find everything what will be a 'BACI-Condition"
 vector<EXODUS::bc_entity> FindBACIConditions(const vector<map<int,EXODUS::bc_entity> >& bc_specs);

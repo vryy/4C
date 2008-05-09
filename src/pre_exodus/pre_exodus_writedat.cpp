@@ -17,6 +17,8 @@ Here is everything related with writing a dat-file
 #ifdef D_EXODUS
 #include "pre_exodus_writedat.H"
 #include "pre_exodus_reader.H"
+#include "../drt_lib/drt_validconditions.H"
+#include "../drt_lib/drt_conditiondefinition.H"
 
 
 using namespace std;
@@ -37,17 +39,13 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
   string dathead = EXODUS::WriteDatHead(headfile);
   dat << dathead;
   
-  // as e.g. also ElementBlocks can hold 'BACI-Conditions'
-  // we find everything what will be a 'BACI-Condition", i.e. everything except elements
-  //vector<EXODUS::bc_entity> baciconds = EXODUS::FindBACIConditions(bc_specs);
-  
   // write "design description"
   string datdesign = EXODUS::WriteDatDesign(condefs);
   dat << datdesign;
   
-//  // write conditions
-//  string datconditions = EXODUS::WriteDatConditions(baciconds);
-//  dat << datconditions;
+  // write conditions
+  string datconditions = EXODUS::WriteDatConditions(condefs);
+  dat << datconditions;
   
   // write design-topology
   string datdesigntopo = EXODUS::WriteDatDesignTopology(condefs,mymesh);
@@ -57,9 +55,9 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
   string datnodes = EXODUS::WriteDatNodes(mymesh);
   dat << datnodes;
   
-//  // write elements
-//  string dateles = EXODUS::WriteDatEles(bc_specs,mymesh);
-//  dat << dateles;
+  // write elements
+  string dateles = EXODUS::WriteDatEles(eledefs,mymesh);
+  dat << dateles;
 
   // write END
   dat << "---------------------------------------------------------------END\n"\
@@ -150,13 +148,23 @@ string EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs)
   return dat.str();
 }
 
-string EXODUS::WriteDatConditions(const vector<EXODUS::bc_entity>& baciconds)
+string EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs)
 {
   stringstream dat;
   
-  dat <<"------------------------------------DESIGN POINT DIRICH CONDITIONS" << endl;
-  dat <<"// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE" << endl;
-
+  Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
+  for (unsigned int i=0; i<(*condlist).size(); ++i)
+  {
+    string sectionname = (*condlist)[i]->SectionName();
+    dat << sectionname << endl;
+    sectionname = (*condlist)[i]->Name();
+    dat << sectionname << endl;
+    sectionname = (*condlist)[i]->Description();
+    dat << sectionname << endl;
+    dat << endl;
+    //(*condlist)[i]->Print(dat,NULL,false);
+  }
+  
   
   return dat.str();
 }
@@ -271,33 +279,27 @@ string EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh)
   return dat.str();
 }
 
-string EXODUS::WriteDatEles(const vector<map<int,EXODUS::bc_entity> >& bc_specs, const EXODUS::Mesh& mymesh)
+string EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& mymesh)
 {
   stringstream dat;
   dat << "----------------------------------------------------------ELEMENTS" << endl;
   
-  // for elements only ElementBlocks are allowed, obviously, which are stored in first entry
-  const map<int,EXODUS::bc_entity> bc_ebs = bc_specs[0];
-  map<int,EXODUS::bc_entity>::const_iterator it;
-      
   // sort elements w.r.t. structure, fluid, ale, etc.
-  vector<EXODUS::bc_entity> strus;
-  vector<EXODUS::bc_entity> fluids;
-  vector<EXODUS::bc_entity> ales;
-  vector<EXODUS::bc_entity> levels;
-  vector<EXODUS::bc_entity>::const_iterator i_et;
+  vector<EXODUS::elem_def> strus;
+  vector<EXODUS::elem_def> fluids;
+  vector<EXODUS::elem_def> ales;
+  vector<EXODUS::elem_def> levels;
+  vector<EXODUS::elem_def>::const_iterator i_et;
   
-  for(it=bc_ebs.begin();it!=bc_ebs.end();++it){
-    EXODUS::bc_entity acte = it->second;
-    if (acte.ct!=EXODUS::element) dserror ("No ELEMENT condition type");
-    const string elementtype = acte.specs[0];
-    if (elementtype.compare("STRUCTURE")==0) strus.push_back(acte);
-    else if (elementtype.compare("FLUID")==0) fluids.push_back(acte);
-    else if (elementtype.compare("ALE")==0) ales.push_back(acte);
-    else if (elementtype.compare("LEVELSET")==0) levels.push_back(acte);
+  for(i_et=eledefs.begin();i_et!=eledefs.end();++i_et){
+    EXODUS::elem_def acte = *i_et;
+    if (acte.sec.compare("STRUCTURE")==0) strus.push_back(acte);
+    else if (acte.sec.compare("FLUID")==0) fluids.push_back(acte);
+    else if (acte.sec.compare("ALE")==0) ales.push_back(acte);
+    else if (acte.sec.compare("LEVELSET")==0) levels.push_back(acte);
     else{
-      cout << "Unknown ELEMENT specification in eb" << acte.id << ": '" << elementtype << "'!" << endl;
-      dserror("Unknown ELEMENT specification");
+      cout << "Unknown ELEMENT sectionname in eb" << acte.id << ": '" << acte.sec << "'!" << endl;
+      dserror("Unknown ELEMENT sectionname");
     }
   }
   
@@ -306,7 +308,7 @@ string EXODUS::WriteDatEles(const vector<map<int,EXODUS::bc_entity> >& bc_specs,
   // print structure elements
   dat << "------------------------------------------------STRUCTURE ELEMENTS" << endl;
   for(i_et=strus.begin();i_et!=strus.end();++i_et){
-    EXODUS::bc_entity acte = *i_et;
+    EXODUS::elem_def acte = *i_et;
     EXODUS::ElementBlock eb = mymesh.GetElementBlock(acte.id);
     string dateles = EXODUS::DatEles(eb,acte,ele);
     dat << dateles;
@@ -315,7 +317,7 @@ string EXODUS::WriteDatEles(const vector<map<int,EXODUS::bc_entity> >& bc_specs,
   // print fluid elements
   dat << "----------------------------------------------------FLUID ELEMENTS" << endl;
   for(i_et=fluids.begin();i_et!=fluids.end();++i_et){
-    EXODUS::bc_entity acte = *i_et;
+    EXODUS::elem_def acte = *i_et;
     EXODUS::ElementBlock eb = mymesh.GetElementBlock(acte.id);
     string dateles = EXODUS::DatEles(eb,acte,ele);
     dat << dateles;
@@ -324,7 +326,7 @@ string EXODUS::WriteDatEles(const vector<map<int,EXODUS::bc_entity> >& bc_specs,
   // print ale elements
   dat << "------------------------------------------------------ALE ELEMENTS" << endl;
   for(i_et=ales.begin();i_et!=ales.end();++i_et){
-    EXODUS::bc_entity acte = *i_et;
+    EXODUS::elem_def acte = *i_et;
     EXODUS::ElementBlock eb = mymesh.GetElementBlock(acte.id);
     string dateles = EXODUS::DatEles(eb,acte,ele);
     dat << dateles;
@@ -333,7 +335,7 @@ string EXODUS::WriteDatEles(const vector<map<int,EXODUS::bc_entity> >& bc_specs,
   // print levelset elements
   dat << "-------------------------------------------------LEVELSET ELEMENTS" << endl;
   for(i_et=levels.begin();i_et!=levels.end();++i_et){
-    EXODUS::bc_entity acte = *i_et;
+    EXODUS::elem_def acte = *i_et;
     EXODUS::ElementBlock eb = mymesh.GetElementBlock(acte.id);
     string dateles = EXODUS::DatEles(eb,acte,ele);
     dat << dateles;
@@ -342,7 +344,7 @@ string EXODUS::WriteDatEles(const vector<map<int,EXODUS::bc_entity> >& bc_specs,
   return dat.str();
 }
 
-string EXODUS::DatEles(const EXODUS::ElementBlock& eb, const EXODUS::bc_entity& acte, int& struele)
+string EXODUS::DatEles(const EXODUS::ElementBlock& eb, const EXODUS::elem_def& acte, int& struele)
 {
   stringstream dat;
   const map<int,vector<int> > eles = eb.GetEleConn();
@@ -351,11 +353,11 @@ string EXODUS::DatEles(const EXODUS::ElementBlock& eb, const EXODUS::bc_entity& 
     const vector<int> nodes = i_ele->second;
     vector<int>::const_iterator i_n;
     dat << "   " << struele;
-    dat << " " << acte.specs[4];                       // e.g. "SOLIDH8"
-    dat << " " << acte.specs[5];                       // e.g. "HEX8"
+    dat << " " << acte.ename;                       // e.g. "SOLIDH8"
+    dat << " " << DistypeToString(PreShapeToDrt(eb.GetShape()));
     dat << "  ";
     for(i_n=nodes.begin();i_n!=nodes.end();++i_n) dat << *i_n << " ";
-    dat << "   " << acte.specs[6] << endl;              // e.g. "MAT 1"
+    dat << "   " << acte.desc << endl;              // e.g. "MAT 1"
     struele ++;
   }
   return dat.str();

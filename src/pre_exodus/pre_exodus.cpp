@@ -206,18 +206,6 @@ int main(
       //(*condlist)[0]->Print(cout,NULL,true);
 
 
-      
-      /*
-      int numEntities =  + mymesh.GetNumNodeSets() + mymesh.GetNumSideSets();
-      for (int i = 0; i < numEntities; ++i) 
-      {    
-          defaultbc<<"*matr"<<i+1<<"=\"\"\"\""<<endl
-          <<"boundr_cond=\"\"\"\""<<endl
-          <<"type=\"\"\"\"\"\""<<endl
-          <<"prop=\"\""<<endl<<endl;
-      }
-      */
-
       // close default bc specification file
       if (defaultbc.is_open()) 
         defaultbc.close();
@@ -227,13 +215,9 @@ int main(
       // read provided bc-file
       EXODUS::ReadBCFile(bcfile,eledefs,condefs);
       
-//      if ((signed) conditions[0].size() != mymesh.GetNumElementBlocks()){
-//        cout << "You specified only " << conditions[0].size() << " ElementBlocks of " << mymesh.GetNumElementBlocks() << " in the provided mesh!" << endl;
-//      } else if ((signed) conditions[1].size() != mymesh.GetNumNodeSets()){
-//        cout << "You specified only " << conditions[1].size() << " NodeSets of " << mymesh.GetNumNodeSets() << " in the provided mesh!" << endl;
-//      } else if ((signed) conditions[2].size() != mymesh.GetNumSideSets()){
-//        cout << "You specified only " << conditions[2].size() << " SideSets of " << mymesh.GetNumSideSets() << " in the provided mesh!" << endl;
-//      }
+      int sum = mymesh.GetNumElementBlocks() + mymesh.GetNumNodeSets() + mymesh.GetNumSideSets();
+      int test = eledefs.size() + condefs.size();
+      if (test != sum) cout << "Your " << test << " definitions do not match the " << sum << " entities in your mesh!" <<endl; 
     }
 
     if (headfile=="")
