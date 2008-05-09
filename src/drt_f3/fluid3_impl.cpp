@@ -381,9 +381,11 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
     bodyforce_ = blitz::sum(edeadng_(i,j)*funct_(j),j);
 
     // compute material viscosity at gaussian point 
-    if(       material->mattyp == m_carreauyasuda 
-    	  &&  material->mattyp == m_modpowerlaw)
-      CalVisc_AtGaussianPoint( material, visc, viscturb, visceff); 
+    if(material->mattyp != m_fluid )
+    {
+      CalVisc_AtGaussianPoint( material, visc); 
+      visceff = visc + viscturb;
+    }
    
     // perform integration for entire matrix and rhs
 
@@ -1669,53 +1671,9 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
   /*------------------------------------------------------------------*/
   
   // compute nonlinear viscosity according to the Carreau-Yasuda model
-  if(material->mattyp == m_carreauyasuda)
-  {   
-	double nu_0 	= material->m.carreauyasuda->nu_0;          // parameter for zero-shear viscosity
-	double nu_inf   = material->m.carreauyasuda->nu_inf;      	// parameter for infinite-shear viscosity
-	double lambda   = material->m.carreauyasuda->lambda;      	// parameter for characteristic time
-	double a 		= material->m.carreauyasuda->a_param;  			// constant parameter
-	double b 		= material->m.carreauyasuda->b_param;  			// constant parameter
-
-	// compute shear rate 
-	double rateofshear = 0.0;
-	blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
-	epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
-	   
-	for(int rr=0;rr<3;rr++)
-	  for(int mm=0;mm<3;mm++)
-   	    rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
-	  
-	rateofshear = sqrt(2.0*rateofshear);
-	   
-	// compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
-	// see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
-	const double tmp = pow(lambda*rateofshear,b);
-	visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
-  }
-  else if(material->mattyp == m_modpowerlaw)
-  {
-	// get material parameters
-    double m  	  = material->m.modpowerlaw->m_cons;      // consistency constant 
-    double delta  = material->m.modpowerlaw->delta;       // safety factor
-    double a      = material->m.modpowerlaw->a_exp;       // exponent
+  if( material->mattyp != m_fluid )
+	  CalVisc_AtGaussianPoint( material, visc); 
    
-
-    // compute shear rate 
-    double rateofshear = 0.0;
-    blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain tensor
-    epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
-    
-    for(int rr=0;rr<3;rr++)
-      for(int mm=0;mm<3;mm++)
-      	rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
-   
-    rateofshear = sqrt(2.0*rateofshear);
-    
-    // compute viscosity according to a modified power law model for shear-thinning fluids
-    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
-    visc = m * pow((delta + rateofshear), (-1)*a);  
-  }
   
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
       ||
@@ -2236,14 +2194,24 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
 // calculate material viscosity at gaussian point  u.may 05/08
 //
 void DRT::ELEMENTS::Fluid3Impl::CalVisc_AtGaussianPoint(  
-  struct _MATERIAL*                       material,
-  double&                           	  visc,
-  double 								  viscturb,
-  double&                                 visceff)
+  const struct _MATERIAL*                 material,
+  double&                           	  visc)
 {
 	
   blitz::firstIndex i;    // Placeholder for the first index
   blitz::secondIndex j;   // Placeholder for the second index
+  
+  // compute shear rate 
+  double rateofshear = 0.0;
+  blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
+  epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
+   
+  for(int rr=0;rr<3;rr++)
+  	for(int mm=0;mm<3;mm++)
+  		rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
+  
+  rateofshear = sqrt(2.0*rateofshear);
+  
   
   if(material->mattyp == m_carreauyasuda)
   {   
@@ -2253,47 +2221,24 @@ void DRT::ELEMENTS::Fluid3Impl::CalVisc_AtGaussianPoint(
     double a 		= material->m.carreauyasuda->a_param;  			// constant parameter
     double b 		= material->m.carreauyasuda->b_param;  			// constant parameter
       
-    // compute shear rate 
-    double rateofshear = 0.0;
-    blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
-    epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
-	   
-    for(int rr=0;rr<3;rr++)
-    	for(int mm=0;mm<3;mm++)
-    		rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
-	  
-	 	rateofshear = sqrt(2.0*rateofshear);
-	   
 	// compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
 	// see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
 	const double tmp = pow(lambda*rateofshear,b);
 	visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
-	visceff = visc + viscturb; 
   }
   else if(material->mattyp == m_modpowerlaw)
   {
 	  // get material parameters
-	  double m  	  = material->m.modpowerlaw->m_cons;      // consistency constant 
+	  double m  	  = material->m.modpowerlaw->m_cons;    // consistency constant 
 	  double delta  = material->m.modpowerlaw->delta;       // safety factor
 	  double a      = material->m.modpowerlaw->a_exp;       // exponent
-   
-
-      // compute shear rate 
-	  double rateofshear = 0.0;
-	  blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain tensor
-      epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
-    
-      for(int rr=0;rr<3;rr++)
-    	for(int mm=0;mm<3;mm++)
-    	  rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
-   
-      rateofshear = sqrt(2.0*rateofshear);
     
       // compute viscosity according to a modified power law model for shear-thinning fluids
       // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
       visc = m * pow((delta + rateofshear), (-1)*a);  
-      visceff = visc + viscturb; 
-  	}
+  }
+  else
+	  dserror("material type is not yet implemented");
 }
 
 

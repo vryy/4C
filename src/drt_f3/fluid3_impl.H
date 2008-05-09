@@ -210,14 +210,10 @@ namespace ELEMENTS
 
   		 \param material		 (i) material
          \param visc             (o) kinematic material viscosity
-         \param viscturb         (o) kinematic viscosity turbulence
-         \param visceff          (o) nu+nu_turbulent   
     */
     void CalVisc_AtGaussianPoint(  
-      struct _MATERIAL*                       material,
-      double&                           	  visc,
-      double								  viscturb,
-      double&                                 visceff);
+      const struct _MATERIAL*                 material,
+      double&                           	  visc);
     
     /*!
      * \brief calculate the body force from the nodes condition

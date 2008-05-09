@@ -311,6 +311,18 @@ namespace DRT
       //  \param time        (i) time when the condition is evaluated
       void GetNodalBodyForce(Fluid3*      ele,
                              const double time);
+      
+      
+      
+      /*!
+        	\brief calculates viscosity at every gaussian point
+
+    		\param material		 	(i) material
+           	\param visc        		(o) kinematic material viscosity
+       */
+      void CalVisc_AtGaussianPoint(	const struct _MATERIAL*                 material,
+    		  						double&                           	  	visc);
+          
       //! number of nodes --- determines array sizes
       int iel_;
 

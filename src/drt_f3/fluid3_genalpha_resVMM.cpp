@@ -248,6 +248,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     
     // get viscosity
     double visc = 0.0;
+    double viscturb = 0.0;
     if(material->mattyp == m_fluid)
   	  visc = material->m.fluid->viscosity;
 
@@ -574,54 +575,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   /*------------------------------------------------------------------*/
 
   // compute nonlinear viscosity according to the Carreau-Yasuda model
-  if(material->mattyp == m_carreauyasuda)
-  {   
-    double nu_0 	= material->m.carreauyasuda->nu_0;          // parameter for zero-shear viscosity
-    double nu_inf   = material->m.carreauyasuda->nu_inf;      	// parameter for infinite-shear viscosity
-    double lambda   = material->m.carreauyasuda->lambda;      	// parameter for characteristic time
-    double a 		= material->m.carreauyasuda->a_param;  	    // constant parameter
-    double b 		= material->m.carreauyasuda->b_param;  	    // constant parameter
-
-    // compute shear rate 
-    double rateofshear = 0.0;
-    blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
-    epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
-   
-    for(int rr=0;rr<3;rr++)
-      for(int mm=0;mm<3;mm++)
-    	rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
-  
-    rateofshear = sqrt(2.0*rateofshear);
-   
-    // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
-    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
-    const double tmp = pow(lambda*rateofshear,b);
-    visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
-  }
-  else if(material->mattyp == m_modpowerlaw)
-  {
-    // get material parameters
-    double m  	  = material->m.modpowerlaw->m_cons;      // consistency constant 
-    double delta  = material->m.modpowerlaw->delta;       // safety factor
-    double a      = material->m.modpowerlaw->a_exp;       // exponent
+  if( material->mattyp != m_fluid )
+	  CalVisc_AtGaussianPoint( material, visc);
  
-    // compute shear rate 
-    double rateofshear = 0.0;
-    blitz::firstIndex i;    // Placeholder for the first index
-    blitz::secondIndex j;   // Placeholder for the second index
-    blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
-    epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
-  
-    for(int rr=0;rr<3;rr++)
-      for(int mm=0;mm<3;mm++)
-    	rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
- 
-    rateofshear = sqrt(2.0*rateofshear);
-  
-    // compute viscosity according to a modified power law model for shear-thinning fluids
-    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
-    visc = m * pow((delta + rateofshear), (-1)*a);  
-  }
   
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
       ||
@@ -740,7 +696,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //          visc    = visc + visc
     //              eff              turbulent
 
-    visceff = visc + Cs_delta_sq * rateofstrain;
+    viscturb = Cs_delta_sq * rateofstrain;
+    visceff = visc + viscturb;
   }
   else if(turb_mod_action == Fluid3::dynamic_smagorinsky)
   {
@@ -784,7 +741,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       rateofstrain = sqrt(rateofstrain);
     }
 
-    visceff = visc + Cs_delta_sq * rateofstrain;
+    viscturb = Cs_delta_sq * rateofstrain;
+    visceff = visc + viscturb;
 
     // for evaluation of statistics: remember the 'real' Cs
     Cs=sqrt(Cs_delta_sq)/pow((vol_),(1.0/3.0));
@@ -2120,6 +2078,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       }
     }
     
+    //TODO
+    // compute material and effective viscosity at every Gaussian point
+    if( material->mattyp != m_fluid )
+    {
+    	CalVisc_AtGaussianPoint(material, visc);
+    	visceff = visc + viscturb;
+    }
     // get fine-scale velocity (n+alpha_F,i) derivatives at integration point
     //
     //       n+af      +-----  dN (x)
@@ -2253,6 +2218,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       
     }
 
+    
+    //TODO
+    
+    
+    
     if (higher_order_ele)
     {
       /*--- viscous term  grad * epsilon(u): ------------------------------*/
@@ -7511,6 +7481,59 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::GetNodalBodyForce(Fluid3* ele, const d
   }
   return;
 }
+
+
+//
+// calculate material viscosity at gaussian point  u.may 05/08
+//
+void DRT::ELEMENTS::Fluid3GenalphaResVMM::CalVisc_AtGaussianPoint(  
+  const struct _MATERIAL*                 material,
+  double&                           	  visc)
+{
+	
+  blitz::firstIndex i;    // Placeholder for the first index
+  blitz::secondIndex j;   // Placeholder for the second index
+  
+  // compute shear rate 
+  double rateofshear = 0.0;
+  blitz::Array<double,2> epsilon(3,3,blitz::ColumnMajorArray<2>());   // strain rate tensor
+  epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
+   
+  for(int rr=0;rr<3;rr++)
+  	for(int mm=0;mm<3;mm++)
+  		rateofshear += epsilon(rr,mm)*epsilon(rr,mm);                 
+  
+  rateofshear = sqrt(2.0*rateofshear);
+  
+  if(material->mattyp == m_carreauyasuda)
+  {   
+	double nu_0 	= material->m.carreauyasuda->nu_0;          // parameter for zero-shear viscosity
+	double nu_inf   = material->m.carreauyasuda->nu_inf;      	// parameter for infinite-shear viscosity
+	double lambda   = material->m.carreauyasuda->lambda;      	// parameter for characteristic time
+	double a 		= material->m.carreauyasuda->a_param;  		// constant parameter
+	double b 		= material->m.carreauyasuda->b_param;  		// constant parameter
+	   
+	// compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
+	// see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+	const double tmp = pow(lambda*rateofshear,b);
+	visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
+  }
+  else if(material->mattyp == m_modpowerlaw)
+  {	
+	// get material parameters
+	double m  	  = material->m.modpowerlaw->m_cons;    // consistency constant 
+	double delta  = material->m.modpowerlaw->delta;       // safety factor
+	double a      = material->m.modpowerlaw->a_exp;       // exponent
+    
+    // compute viscosity according to a modified power law model for shear-thinning fluids
+    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+    visc = m * pow((delta + rateofshear), (-1)*a);  
+  }
+  else
+	dserror("material type not yet implemented");
+}
+
+
 
 #endif
 #endif
