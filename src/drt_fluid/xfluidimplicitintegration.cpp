@@ -97,6 +97,8 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 
   // ensure that degrees of freedom in the discretization have been set
   if (!discret_->Filled()) discret_->FillComplete();
+  
+  dofDistributionMap_.clear();
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -561,19 +563,19 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
 
-  if (not params_.get<int>("Simple Preconditioner",0))
-  {
-    // initialize standard (stabilized) system matrix
-    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,108,false,true));
-  }
-  else
-  {
-    const int numdim = params_.get<int>("number of velocity degrees of freedom");
-    Teuchos::RCP<LINALG::BlockSparseMatrix<VelPressSplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
-    blocksysmat->SetNumdim(numdim);
-    sysmat_ = blocksysmat;
-  }
+//  if (not params_.get<int>("Simple Preconditioner",0))
+//  {
+  // initialize standard (stabilized) system matrix
+  sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,108,false,true));
+//  }
+//  else
+//  {
+//    const int numdim = params_.get<int>("number of velocity degrees of freedom");
+//    Teuchos::RCP<LINALG::BlockSparseMatrix<VelPressSplitStrategy> > blocksysmat =
+//      Teuchos::rcp(new LINALG::BlockSparseMatrix<VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
+//    blocksysmat->SetNumdim(numdim);
+//    sysmat_ = blocksysmat;
+//  }
 
 }
 
