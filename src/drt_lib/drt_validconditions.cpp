@@ -58,7 +58,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
       new StringConditionComponent(
         "surface","Mid",
         Teuchos::tuple<std::string>("Mid","Top","Bot"),
-        Teuchos::tuple<std::string>("mid","top","bot"))));
+        Teuchos::tuple<std::string>("mid","top","bot"),
+        true)));
 
   // optional
   neumanncomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",6,false,false,true)));
@@ -643,7 +644,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
   nodeonplaneconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConstrNode")));
   condlist.push_back(nodeonplaneconst3D);
-  
+
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 2D for a node on a line
   Teuchos::RCP<ConditionDefinition> nodeonlineconst2D =
