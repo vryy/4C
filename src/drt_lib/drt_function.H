@@ -109,7 +109,7 @@ namespace UTILS {
     void ReadInput();
 
     /// return a specified function
-    Function& Funct(unsigned int num);
+    Function& Funct(int num);
 
 
 
