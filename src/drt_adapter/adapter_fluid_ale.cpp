@@ -211,6 +211,15 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceForces()
   return FluidField().ExtractInterfaceForces();
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceForcesRobin()
+{
+  return FluidField().ExtractInterfaceForcesRobin();
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::ExtractInterfaceFluidVelocity()

@@ -201,6 +201,9 @@ namespace ADAPTER {
     /// extract fluid forces at the interface
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
 
+    /// After the fluid solve we need the forces at the FSI interface.
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin() = 0;
+
     //@}
 
 

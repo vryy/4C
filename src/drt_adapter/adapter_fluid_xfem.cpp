@@ -180,6 +180,15 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceForcesRobin()
+{
+  dserror("no Robin around here");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::ExtractInterfaceFluidVelocity()
 {
   dserror("Robin stuff");

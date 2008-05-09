@@ -265,6 +265,30 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceForces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceForcesRobin()
+{
+  // Calculate interface force from (externally applied) Robin force and
+  // velocity. This assumes the fluid solve results in
+  //
+  // f_int - alpha_f*u(n+1) + f_robin = 0
+  //
+  // where f_robin consists of structural interface force and
+  // displacement. The point here is to notice non-matching interface
+  // displacements in the force vector, so that a testing of interface forces
+  // is sufficient as convergence check.
+
+  Teuchos::RCP<Epetra_Vector> robinforce = interface_.ExtractCondVector(fluid_.RobinRHS());
+  double alphaf = params_->get<double>("alpharobinf",-1.);
+  Teuchos::RCP<Epetra_Vector> ivelnp = interface_.ExtractCondVector(fluid_.Velnp());
+
+  robinforce->Update(alphaf,*ivelnp,-1.0);
+
+  return robinforce;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::ExtractInterfaceFluidVelocity()
 {
   return interface_.ExtractCondVector(fluid_.Velnp());

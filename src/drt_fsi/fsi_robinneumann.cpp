@@ -2,6 +2,8 @@
 #ifdef CCADISCRET
 
 #include "fsi_robinneumann.H"
+#include "fsi_debugwriter.H"
+
 #include "../drt_lib/drt_validparameters.H"
 
 
@@ -27,6 +29,12 @@ void FSI::RobinNeumann::FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const Fi
   const Teuchos::RCP<Epetra_Vector> iforcenp = FluidOp(idisp, fillFlag);
 
   F.Update(1.0, *iforcenp, -1.0, *iforcen, 0.0);
+
+  if (MyDebugWriter()!=Teuchos::null)
+  {
+    MyDebugWriter()->WriteVector("idispn",*idisp);
+    MyDebugWriter()->WriteVector("iforcenp",*iforcenp);
+  }
 }
 
 
@@ -54,7 +62,7 @@ FSI::RobinNeumann::FluidOp(Teuchos::RCP<Epetra_Vector> idisp,
                                      StructToFluid(ivel),
                                      StructToFluid(iforce));
 
-  return FluidToStruct(MBFluidField().ExtractInterfaceForces());
+  return FluidToStruct(MBFluidField().ExtractInterfaceForcesRobin());
 }
 
 

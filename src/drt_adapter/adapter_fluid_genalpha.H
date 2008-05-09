@@ -120,6 +120,7 @@ namespace ADAPTER {
     virtual void LiftDrag();
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity();
     virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel);
     virtual void ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce);
