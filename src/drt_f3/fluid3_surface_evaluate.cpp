@@ -453,7 +453,6 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
 		
   double flowrate    = params.get<double>("Outlet flowrate");
   double area        = params.get<double>("Area calculation");
-  double flowratetmp = 0;
   
   // create blitz objects for element arrays
   const int numnode = NumNode();
@@ -464,53 +463,48 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
   // split velocity and pressure, insert into element arrays
   for (int i=0;i<numnode;++i)
   {
-  	evelnp(0,i) = myvelnp[0+(i*4)];
-  	evelnp(1,i) = myvelnp[1+(i*4)];
-	evelnp(2,i) = myvelnp[2+(i*4)];
-	eprenp(i) = myvelnp[3+(i*4)];
+    evelnp(0,i) = myvelnp[0+(i*4)];
+    evelnp(1,i) = myvelnp[1+(i*4)];
+    evelnp(2,i) = myvelnp[2+(i*4)];
+    eprenp(i) = myvelnp[3+(i*4)];
   }	
   
   for(int i=0;i<iel;i++)
   {
-  	xyze(0,i)=this->Nodes()[i]->X()[0];
-  	xyze(1,i)=this->Nodes()[i]->X()[1];
-  	xyze(2,i)=this->Nodes()[i]->X()[2];
+    xyze(0,i)=this->Nodes()[i]->X()[0];
+    xyze(1,i)=this->Nodes()[i]->X()[1];
+    xyze(2,i)=this->Nodes()[i]->X()[2];
   }
 	  
   const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
-  	const double e0 = intpoints.qxg[gpid][0];
-  	const double e1 = intpoints.qxg[gpid][1];
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
   	
-  	// get shape functions and derivatives in the plane of the element
-        shape_function_2D(funct, e0, e1, distype);
-	shape_function_2D_deriv1(deriv, e0, e1, distype);
+    // get shape functions and derivatives in the plane of the element
+    shape_function_2D(funct, e0, e1, distype);
+    shape_function_2D_deriv1(deriv, e0, e1, distype);
 	  
-	//Calculate infinitesimal area of element (drs)
-	f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+    //Calculate infinitesimal area of element (drs)
+    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
 	
-	if (iel==4){
-		drs=drs*4;
-		}
-	else {
-		drs=drs/2;
-		}
-	 
-	//Compute elment flowrate
-  	for (int node=0;node<iel;++node)
-  	{
-  		for(int dim=0;dim<3;dim++)
-  		{
-  			flowratetmp+= funct[node]*evelnp(dim,node)*drs;
-  		}
-  	}
-
-  	
+    if (iel==4)
+      drs=drs*4;
+    else
+      drs=drs/2;
+		 
+    //Compute elment flowrate
+    for (int node=0;node<iel;++node)
+    {
+      for(int dim=0;dim<3;dim++)
+      {
+	flowrate += funct[node]*evelnp(dim,node)*drs;
+      }
+    }
+    area += drs;
   }
   
-  flowrate=flowrate+flowratetmp;
-  area=area+drs;
   params.set<double>("Area calculation", area);
   params.set<double>("Outlet flowrate", flowrate);
 }

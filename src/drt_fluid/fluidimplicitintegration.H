@@ -27,6 +27,8 @@ Maintainer: Peter Gamnitzer
 #include "turbulence_statistics.H"
 #include "turbulence_statistics_ldc.H"
 
+#include "fluidimpedancecondition.H"
+
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
 #else
@@ -266,12 +268,6 @@ public:
   */
   void ApplyFilterForDynamicComputationOfCs();
 
-  //@}
-  void FlowRateCalculation(double);
-  void OutflowBoundary(double);
-  std::complex<double> LungImpedance(int, int, std::complex<double> &,std::complex<double>, std::complex<double> []);
-  std::complex<double> DCLungImpedance(int, int, std::complex<double> &, std::complex<double> []);
-
 protected:
 
   // don't want = operator and cctor
@@ -439,9 +435,6 @@ protected:
   /// connection between master and slave nodes on this proc
   map<int,vector<int> >     pbcmapmastertoslave_;
 
-  /// my elements grouped for faster evaluation
-  RCP<DRT::EGROUP::ElementGroupManager> egm_;
-
   //! @name time measurement
 
   RCP<Teuchos::Time> timetotal_   ;
@@ -456,11 +449,7 @@ protected:
 
   RCP<TimeMonitor> tm0_ref_ ;
 
-  //@}
-
-  // Flowrate array for impedance conditions
-  RCP<vector<double> > 	FlowRateStorage_;
-  RCP<Epetra_Vector> impedancetbc_;
+  RCP<FluidImpedanceBc> impedancebc_;
 
   /// velocity-pressure block matrix split strategy
   class VelPressSplitStrategy
