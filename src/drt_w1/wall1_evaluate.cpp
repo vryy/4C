@@ -514,13 +514,13 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
          }
          else
          {
-           double detf = F[0]*F[1]-F[2]*F[3];
+           double detf = F_tot(0,0)*F_tot(1,1)-F_tot(0,2)*F_tot(1,2);
            Epetra_SerialDenseMatrix defgrad(2,2);
            Epetra_SerialDenseMatrix pkstress(2,2);
-           defgrad(0,0) = F[0];
-           defgrad(0,1) = F[2];
-           defgrad(1,0) = F[3];
-           defgrad(1,1) = F[1];
+           defgrad(0,0) = F_tot(0,0);
+           defgrad(0,1) = F_tot(0,2);
+           defgrad(1,0) = F_tot(1,2);
+           defgrad(1,1) = F_tot(1,1);
            pkstress(0,0)= stress(0,0);
            pkstress(0,1)= stress(0,2);
            pkstress(1,0)= stress(0,2);
@@ -1161,10 +1161,10 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
   Epetra_SerialDenseMatrix xjm_inv0;
   xjm_inv0.Shape(2,2);
 
-  xjm_inv0(0,0) = xjm0(1,1) / det;
-  xjm_inv0(0,1) =-xjm0(0,1) / det;
-  xjm_inv0(1,0) =-xjm0(1,0) / det;
-  xjm_inv0(1,1) = xjm0(0,0) / det;
+  xjm_inv0(0,0) = xjm0(1,1) / detJ0;
+  xjm_inv0(0,1) =-xjm0(0,1) / detJ0;
+  xjm_inv0(1,0) =-xjm0(1,0) / detJ0;
+  xjm_inv0(1,1) = xjm0(0,0) / detJ0;
 
   Epetra_SerialDenseMatrix A;       // A operator
   A.Shape(2,2);
