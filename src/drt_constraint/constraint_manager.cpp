@@ -77,7 +77,7 @@ actdisc_(discr)
   if (!constrcond.size())
   {
     actdisc_->GetCondition("MPC_NodeOnLine_2D",constrcond);
-    dserror("Sorry, no element evaluations implemented, yet!");
+    //dserror("Sorry, no element evaluations implemented, yet!");
   }
   //Initialize Vectors to contain IDs and amplitudes
   vector<double> MPCamplitudes(constrcond.size());
