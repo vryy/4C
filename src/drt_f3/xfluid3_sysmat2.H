@@ -51,11 +51,11 @@ static void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau, 
     {
         const double fac = shp_tau(i);
         tau(0,0) += fac*etau(0,i);
+        tau(1,1) += fac*etau(1,i);
+        tau(2,2) += fac*etau(2,i);
         tau(0,1) += fac*etau(3,i);
         tau(0,2) += fac*etau(4,i);
-        tau(1,1) += fac*etau(1,i);
         tau(1,2) += fac*etau(5,i);
-        tau(2,2) += fac*etau(2,i);
     }
     tau(1,0) = tau(0,1);
     tau(2,0) = tau(0,2);
@@ -229,17 +229,11 @@ void static Sysmat(
             // position of the gausspoint in physical coordinates
             static BlitzVec3 gauss_pos_xyz;
             MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
-//            for (int isd = 0; isd < 3; ++isd)
-//            {
-//                gauss_pos_xyz(isd) = 0.0;
-//                for (int inode = 0; inode < numnode; ++inode)
-//                    gauss_pos_xyz(isd) += funct(inode)*xyze(isd,inode);
-//            }
       
             // get transposed of the jacobian matrix d x / d \xi
             //static BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
-            static blitz::TinyMatrix<double,3,3> xjm;
+            static BlitzMat3x3 xjm;
             MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
             const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
@@ -597,9 +591,8 @@ void static Sysmat(
             static BlitzVec3 res_old;
             //res_old = -rhsint+timefac*(conv_old+gradp-2.0*visc*visc_old);
             for (int isd = 0; isd < nsd; ++isd)
-            {
                 res_old(isd) = -rhsint(isd)+timefac*(conv_old(isd)+gradp(isd)-2.0*visc*visc_old(isd));  
-            }
+            
             if (instationary)
                 res_old += velint;
       
@@ -1461,10 +1454,8 @@ void static Sysmat(
             //const double press(blitz::sum(shp*eprenp));
 
             // get viscous stress unknowns
-            static BlitzMat tau(3,3);
-            tau(0,0) = blitz::sum(shp_tau(_)*etau(0,_)); tau(0,1) = blitz::sum(shp_tau(_)*etau(3,_)); tau(0,2) = blitz::sum(shp_tau(_)*etau(4,_));
-            tau(1,0) = tau(0,1);                         tau(1,1) = blitz::sum(shp_tau(_)*etau(1,_)); tau(1,2) = blitz::sum(shp_tau(_)*etau(5,_));
-            tau(2,0) = tau(0,2);                         tau(2,1) = tau(1,2);                         tau(2,2) = blitz::sum(shp_tau(_)*etau(2,_));
+            static BlitzMat3x3 tau;
+            fill_tau(numparamtauxx, shp_tau, etau, tau);
             
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;
