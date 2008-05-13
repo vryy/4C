@@ -611,6 +611,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
    // EAS technology: ------------------------------------------------------ EAS
    // subtract EAS matrices from disp-based Kdd to "soften" element
 
+  if (force != NULL && stiffmatrix != NULL) 
+  {
     if (iseas_ == true)
     {
       // we need the inverse of Kaa
@@ -642,8 +644,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
         }
 
     }
-
-    // -------------------------------------------------------------------- EAS
+  }
+  // -------------------------------------------------------------------- EAS
 
   return;
 }
@@ -1265,7 +1267,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
 
     // fill Z-operator
 
-    for (int indof; indof<NumNode(); indof=indof+2)
+    for (int indof = 0; indof<NumNode(); indof=indof+2)
     {
       Z(indof,i) = W0wa(0,indof);
       Z(indof+1,i) = W0wa(1,indof+1);
