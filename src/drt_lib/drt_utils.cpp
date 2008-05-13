@@ -1069,7 +1069,7 @@ void DRT::UTILS::FindElementConditions(const DRT::Element* ele, const std::strin
   }
 
   condition.clear();
-  std::copy(fcond.begin(),fcond.end(),back_inserter(condition));
+  std::copy(cond0.begin(),cond0.end(),back_inserter(condition));
 }
 
 
