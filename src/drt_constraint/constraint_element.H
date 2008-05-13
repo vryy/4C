@@ -241,7 +241,9 @@ private:
   enum ActionType
   {
     none,
-    calc_MPC_stiffness
+    calc_MPC3D_stiff,
+    calc_MPC2D_dist_stiff,
+    calc_MPC2D_angle_stiff
   };
 
   //! container containing all kind of fluid2 thisandthat
@@ -256,20 +258,81 @@ private:
   // don't want = operator
   ConstraintElement& operator = (const ConstraintElement& old);
   
+  /*!
+  \brief Create matrix with material configuration
+
+  \param x  (out)  : nodal coords in material frame
+  */
+  inline void MaterialConfiguration(LINALG::SerialDenseMatrix& x, const int& numdim) const
+  {
+    const int numnode = NumNode();
+    for (int i=0; i<numnode; ++i)
+    {
+      for (int j = 0; j < numdim; ++j) 
+      {
+        x(i,j) = Nodes()[i]->X()[j];
+      }
+    }
+    return;
+  }
   
-  void ComputeElementNormal(const LINALG::SerialDenseMatrix& xc,
+  /*!
+  \brief Create matrix with spatial configuration
+
+  \param x     (out)  : nodal coords in spatial frame
+  \param disp  (int)  : displacements
+  */
+  inline void SpatialConfiguration(LINALG::SerialDenseMatrix& x, 
+                                   const vector<double> disp,
+                                   const int& numdim) const
+  {
+    const int numnode = NumNode();
+    for (int i=0; i<numnode; ++i)
+    {
+      for (int j = 0; j < numdim; ++j) 
+      {
+        x(i,j) = Nodes()[i]->X()[j] + disp[i*numdim+j];
+      }
+    }
+    return;
+  }
+  
+  void ComputeElementNormal3D(const LINALG::SerialDenseMatrix& xc,
       LINALG::SerialDenseVector& elenormal);
   
-  double ComputeNormalDist(const LINALG::SerialDenseMatrix& xc,
+  double ComputeNormalDist3D(const LINALG::SerialDenseMatrix& xc,
       const LINALG::SerialDenseVector& elenormal);
   
-  void ComputeFirstDeriv(const LINALG::SerialDenseMatrix& xc,
+  void ComputeFirstDeriv3D(const LINALG::SerialDenseMatrix& xc,
       Epetra_SerialDenseVector& elevector,
       const LINALG::SerialDenseVector& elenormal);
   
-  void ComputeSecondDeriv(const LINALG::SerialDenseMatrix&,
-      Epetra_SerialDenseMatrix& elevector,
+  void ComputeSecondDeriv3D(const LINALG::SerialDenseMatrix&,
+      Epetra_SerialDenseMatrix& elematrix,
       const LINALG::SerialDenseVector& elenormal);
+
+  void ComputeElementNormal2D(const LINALG::SerialDenseMatrix& xc,
+      LINALG::SerialDenseVector& elenormal);
+  
+  double ComputeNormalDist2D(const LINALG::SerialDenseMatrix& xc,
+      const LINALG::SerialDenseVector& elenormal);
+  
+  void ComputeFirstDerivDist2D(const LINALG::SerialDenseMatrix& xc,
+      Epetra_SerialDenseVector& elevector,
+      const LINALG::SerialDenseVector& elenormal);
+  
+  void ComputeSecondDerivDist2D(const LINALG::SerialDenseMatrix&,
+      Epetra_SerialDenseMatrix& elematrix,
+      const LINALG::SerialDenseVector& elenormal);
+
+  double ComputeElementAngle2D(const LINALG::SerialDenseMatrix& xc);
+  
+  void ComputeFirstDerivAngle2D(const LINALG::SerialDenseMatrix& xc,
+      Epetra_SerialDenseVector& elevector);
+  
+  void ComputeSecondDerivAngle2D(const LINALG::SerialDenseMatrix& xs,
+      Epetra_SerialDenseMatrix& elematrix);
+
 
 }; // class ConstraintElement
 

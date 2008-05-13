@@ -73,11 +73,10 @@ actdisc_(discr)
     haveareaconstr2D_=true;
   }
   // Check for Multi Point Constraint Node on planes in 3D
-  actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
+  actdisc_->GetCondition("MPC_NodeOnLine_2D",constrcond);
   if (!constrcond.size())
   {
-    actdisc_->GetCondition("MPC_NodeOnLine_2D",constrcond);
-    //dserror("Sorry, no element evaluations implemented, yet!");
+    actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
   }
   //Initialize Vectors to contain IDs and amplitudes
   vector<double> MPCamplitudes(constrcond.size());
@@ -88,7 +87,6 @@ actdisc_(discr)
     // Construct special constraint discretization consisting of constraint elements
     constraintdis_=CreateDiscretizationFromCondition(constrcond,"ConstrDisc","CONSTRELE");
     ReplaceNumDof(actdisc_,constraintdis_);
-    //exit(0);
     // now reconstruct the extended colmap
     RCP<Epetra_Map> newcolnodemap = ComputeNodeColMap(actdisc_, constraintdis_);
     //Redistribute underlying discretization to have ghosting in the same way as in the
@@ -296,11 +294,14 @@ void ConstrManager::StiffnessAndInternalForces(
     constraintdis_->SetState("displacement",disp);
     //conditions to evaluate
     vector<DRT::Condition*> constrcond(0);
-    actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
+    actdisc_->GetCondition("MPC_NodeOnLine_2D",constrcond);
+    if (!constrcond.size())
+    {
+      actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
+    }    
     Evaluate(constraintdis_,p,stiff,constrMatrix_,fint,null,null,constrcond);
-    SynchronizeSumConstraint(p,actvalues_,"computed normal distance",numConstrID_,minConstrID_);
+    SynchronizeSumConstraint(p,actvalues_,"computed MPC value",numConstrID_,minConstrID_);
   }
-
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
@@ -349,9 +350,13 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
     if(havenodeconstraint_)
     {
       p.set("action","calc_MPC_stiff");
-      actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
+      actdisc_->GetCondition("MPC_NodeOnLine_2D",constrcond);
+      if (!constrcond.size())
+      {
+        actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
+      }
       Evaluate(constraintdis_,p,null,null,null,null,null,constrcond);
-      SynchronizeSumConstraint(p,actvalues_,"computed normal distance",numConstrID_,minConstrID_);
+      SynchronizeSumConstraint(p,actvalues_,"computed MPC value",numConstrID_,minConstrID_);
     }
     constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
     return;
@@ -665,8 +670,7 @@ void ConstrManager::ReorderConstraintNodes(
   // get this condition's nodes
   vector<int> temp=nodeids;
   if (nodeids.size()==4)
-  {
-    
+  {    
     const vector<int>*    constrNode  = cond->Get<vector<int> >("ConstrNode");
     nodeids[(*constrNode)[0]-1]=temp[3];
     nodeids[3]=temp[(*constrNode)[0]-1];
@@ -682,7 +686,7 @@ void ConstrManager::ReorderConstraintNodes(
   }
   else
   {
-    dserror("strange number of nodes for a MPC! Should be 3 (2D) or 4 (3D)");
+    dserror("strange number of nodes for an MPC! Should be 3 (2D) or 4 (3D)");
   }
   return;
 }
@@ -818,7 +822,6 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
     vector<int> lm;
     vector<int> lmowner;
     actele->LocationVector(*disc,lm,lmowner);
-
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
     const int eledim = (int)lm.size();

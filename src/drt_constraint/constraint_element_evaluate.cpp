@@ -43,10 +43,29 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
 {
   ActionType act = none;
   
-  // get the required action
+  // get the required action and distinguish between 2d and 3d MPC's
   string action = params.get<string>("action","none");
   if (action == "none") return 0;
-  else if (action=="calc_MPC_stiff")       act = calc_MPC_stiffness;
+  else if (action=="calc_MPC_stiff")       
+  {
+    RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+    
+    //2D or 3D?
+    if (condition->Type()==DRT::Condition::MPC_NodeOnPlane_3D)
+    {
+      act=calc_MPC3D_stiff;  
+    }
+    else if (condition->Type()==DRT::Condition::MPC_NodeOnLine_2D)
+    {
+
+      RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+      const string* type = condition->Get<string>("control value");
+  
+      if (*type == "dist") act = calc_MPC2D_dist_stiff;
+      else if (*type == "angle") act = calc_MPC2D_angle_stiff;
+      else dserror("No constraint type specified. Value to control should by either be 'dist' or 'angle'!");
+    }
+  }
   else
     dserror("Unknown type of action for ConstraintElement");
 
@@ -54,38 +73,31 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
   {
     case none:
     {
+      return(0);
     }
     break;
-    case calc_MPC_stiffness:
+    case calc_MPC3D_stiff:
     {
+      if (NumDofPerNode(*(Nodes()[0]))!=3) dserror ("MPC only working with 3 dof per node");
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp==null) dserror("Cannot get state vector 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      const int numnod=NumNode();//numnod = 4;
-      const int numdim=3;
-      const int numdofpernode=3;
-      LINALG::SerialDenseMatrix xsrefe(numnod,numdim);  // material coord. of element
+      const int numnod = NumNode();
+      const int numdim = 3;
       LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
-      for (int i=0; i<numnod; ++i)
-      {
-        for (int j = 0; j < numdofpernode; ++j)
-        {
-          xsrefe(i,j) = Nodes()[i]->X()[j];
-          xscurr(i,j) = xsrefe(i,j) + mydisp[i*numdofpernode+j];
-        }
-      }
-
+      SpatialConfiguration(xscurr,mydisp,numdim);
+      
       LINALG::SerialDenseVector elementnormal(numdim);
-      ComputeElementNormal(xscurr,elementnormal);
+      ComputeElementNormal3D(xscurr,elementnormal);
       if(abs(elementnormal.Norm2())<1E-6)
       {
         dserror("Bad plane, points almost on a line!");
       }
-      double normaldistance =ComputeNormalDist(xscurr,elementnormal);
+      double normaldistance =ComputeNormalDist3D(xscurr,elementnormal);
       
-      ComputeFirstDeriv(xscurr,elevec1,elementnormal);
-      ComputeSecondDeriv(xscurr,elemat1,elementnormal);
+      ComputeFirstDeriv3D(xscurr,elevec1,elementnormal);
+      ComputeSecondDeriv3D(xscurr,elemat1,elementnormal);
       //const int ID =params.get("ConditionID",-1);
       
       RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
@@ -95,19 +107,91 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       if (condID<0) dserror("What happend here? What condition are we talking about?");
       //update corresponding column in "constraint" matrix
       elevec2=elevec1;
-      elevec1.Scale(1*(*lambdav)[condID-minID]);
-      elemat1.Scale(1*(*lambdav)[condID-minID]);
+      elevec1.Scale((*lambdav)[condID-minID]);
+      elemat1.Scale((*lambdav)[condID-minID]);
       //call submethod for volume evaluation
       if(discretization.Comm().MyPID()==Owner())
       {
         // write normal distance to parameter list
         char ndistname[30];
-        sprintf(ndistname,"computed normal distance %d",condID);
+        sprintf(ndistname,"computed MPC value %d",condID);
         //update volume in parameter list
         params.set(ndistname, normaldistance);
       }
     }
+    break;
+    case calc_MPC2D_dist_stiff:
+    {
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vector 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      const int numnod = NumNode();
+      const int numdim = 2;
+      LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
+      SpatialConfiguration(xscurr,mydisp,numdim);
+      LINALG::SerialDenseVector elementnormal(numdim);
+      ComputeElementNormal2D(xscurr,elementnormal);
+      double normaldistance =ComputeNormalDist2D(xscurr,elementnormal);
+      ComputeFirstDerivDist2D(xscurr,elevec1,elementnormal);
+      ComputeSecondDerivDist2D(xscurr,elemat1,elementnormal);
+      RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
 
+      const int minID =params.get("MinID",0);
+      const int condID=params.get("ConditionID",-1);
+      if (condID<0) dserror("What happend here? What condition are we talking about?");
+      //update corresponding column in "constraint" matrix
+      elevec2=elevec1;
+      elevec1.Scale(-1.0*(*lambdav)[condID-minID]);
+      elemat1.Scale(-1.0*(*lambdav)[condID-minID]);
+      elevec2.Scale(-1.0);
+      //call submethod for volume evaluation
+      if(discretization.Comm().MyPID()==Owner())
+      {
+        // write normal distance to parameter list
+        char ndistname[30];
+        sprintf(ndistname,"computed MPC value %d",condID);
+        //update volume in parameter list
+        params.set(ndistname, normaldistance);
+      }
+    }    
+    break;
+    case calc_MPC2D_angle_stiff:
+    {
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vector 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      const int numnod = NumNode();
+      const int numdim = 2;
+      LINALG::SerialDenseMatrix xscurr(numnod,numdim);  // material coord. of element
+      SpatialConfiguration(xscurr,mydisp,numdim);
+      
+      double angle=ComputeElementAngle2D(xscurr);
+      
+      ComputeFirstDerivAngle2D(xscurr,elevec1);
+      ComputeSecondDerivAngle2D(xscurr,elemat1);
+      
+      RCP<Epetra_Vector> lambdav=rcp(new Epetra_Vector(*(params.get<RCP<Epetra_Vector> >("LagrMultVector"))));
+
+      const int minID =params.get("MinID",0);
+      const int condID=params.get("ConditionID",-1);
+      if (condID<0) dserror("What happend here? What condition are we talking about?");
+      //update corresponding column in "constraint" matrix
+      elevec2=elevec1;
+      elevec1.Scale(-1*(*lambdav)[condID-minID]);
+      elemat1.Scale(-1*(*lambdav)[condID-minID]);
+      elevec2.Scale(-1.0);
+      //call submethod for volume evaluation
+      if(discretization.Comm().MyPID()==Owner())
+      {
+        // write normal distance to parameter list
+        char ndistname[30];
+        sprintf(ndistname,"computed MPC value %d",condID);
+        //update volume in parameter list
+        params.set(ndistname, angle);
+      }
+    }  
     break;
     default:
       dserror("Unimplemented type of action");
@@ -117,20 +201,17 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
 
 } // end of DRT::ELEMENTS::ConstraintElement::Evaluate
 
-
-
-
 int DRT::ELEMENTS::ConstraintElement::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
-
+  dserror("You called Evaluate Neumann of constraint element.");
   return 0;
 }
 
-void DRT::ELEMENTS::ConstraintElement::ComputeElementNormal(const LINALG::SerialDenseMatrix& xc,
+void DRT::ELEMENTS::ConstraintElement::ComputeElementNormal3D(const LINALG::SerialDenseMatrix& xc,
     LINALG::SerialDenseVector& elenorm)
 {
   elenorm[0]=-(xc(0,2)*xc(1,1)) + xc(0,1)*xc(1,2) + xc(0,2)*xc(2,1) -
@@ -142,17 +223,39 @@ void DRT::ELEMENTS::ConstraintElement::ComputeElementNormal(const LINALG::Serial
   return ;
 }
 
-double DRT::ELEMENTS::ConstraintElement::ComputeNormalDist(const LINALG::SerialDenseMatrix& xc,
+void DRT::ELEMENTS::ConstraintElement::ComputeElementNormal2D(const LINALG::SerialDenseMatrix& xc,
+    LINALG::SerialDenseVector& elenorm)
+{
+  elenorm[0]=xc(0,1) - xc(1,1);
+  elenorm[1]=-xc(0,0) + xc(1,0);
+  return ;
+}
+
+double DRT::ELEMENTS::ConstraintElement::ComputeNormalDist3D(const LINALG::SerialDenseMatrix& xc,
     const LINALG::SerialDenseVector& normal)
 {
    return (-(normal[0]*(xc(0,0) - xc(3,0))) + normal[1]*(-xc(0,1) + xc(3,1)) - normal[2]*
       (xc(0,2) - xc(3,2)))/(-normal.Norm2());
 }
 
-void DRT::ELEMENTS::ConstraintElement::ComputeFirstDeriv(const LINALG::SerialDenseMatrix& xc,
+double DRT::ELEMENTS::ConstraintElement::ComputeNormalDist2D(const LINALG::SerialDenseMatrix& xc,
+    const LINALG::SerialDenseVector& normal)
+{
+   return (normal[0]*(-xc(0,0) + xc(2,0)) - normal[1]*(xc(0,1) - xc(2,1)))/normal.Norm2();
+}
+
+double DRT::ELEMENTS::ConstraintElement::ComputeElementAngle2D(const LINALG::SerialDenseMatrix& xc)
+{
+   return (acos((xc(0,1)*(xc(1,0) - xc(2,0)) + xc(1,1)*xc(2,0) - xc(1,0)*xc(2,1) + xc(0,0)*(-xc(1,1) + xc(2,1)))/
+       sqrt((pow(xc(0,0) - xc(1,0),2) + pow(xc(0,1) - xc(1,1),2))*(pow(xc(1,0) - xc(2,0),2) + pow(xc(1,1) - xc(2,1),2))))+acos(0));
+   
+}
+
+void DRT::ELEMENTS::ConstraintElement::ComputeFirstDeriv3D(const LINALG::SerialDenseMatrix& xc,
     Epetra_SerialDenseVector& elevector,
                                                           const LINALG::SerialDenseVector& normal)
 { 
+  
   double normsquare=pow(normal.Norm2(),2);
   double normcube=pow(normal.Norm2(),3);
   
@@ -229,7 +332,101 @@ void DRT::ELEMENTS::ConstraintElement::ComputeFirstDeriv(const LINALG::SerialDen
   return;
 }
 
-void DRT::ELEMENTS::ConstraintElement::ComputeSecondDeriv(const LINALG::SerialDenseMatrix& xc,
+void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivDist2D(const LINALG::SerialDenseMatrix& xc,
+    Epetra_SerialDenseVector& elevector, const LINALG::SerialDenseVector& normal)
+{ 
+  double normcube=pow(normal.Norm2(),3);
+  
+  elevector[0]=(normal[0]*(-pow(xc(1,0),2) + xc(0,0)*(xc(1,0) - xc(2,0)) +
+      xc(1,0)*xc(2,0) + normal[0]*(xc(1,1) - xc(2,1))))/normcube;
+
+  elevector[1]=
+    (normal[1]*(-pow(xc(1,0),2) + xc(0,0)*(xc(1,0) - xc(2,0)) + xc(1,0)*xc(2,0) +
+    normal[0]*(xc(1,1) - xc(2,1))))/normcube;
+
+  elevector[2]=
+    -((normal[0]*(pow(xc(0,0),2) + pow(xc(0,1),2) + xc(1,0)*xc(2,0) -
+    xc(0,0)*(xc(1,0) + xc(2,0)) + xc(1,1)*xc(2,1) - xc(0,1)*(xc(1,1) +
+    xc(2,1))))/normcube);
+
+  elevector[3]=
+    -((normal[1]*(pow(xc(0,0),2) + pow(xc(0,1),2) + xc(1,0)*xc(2,0) -
+    xc(0,0)*(xc(1,0) + xc(2,0)) + xc(1,1)*xc(2,1) - xc(0,1)*(xc(1,1) +
+    xc(2,1))))/normcube);
+
+  elevector[4]=normal[0]/normal.Norm2();
+
+  elevector[5]=normal[1]/normal.Norm2();
+  return;
+}
+
+void DRT::ELEMENTS::ConstraintElement::ComputeFirstDerivAngle2D(const LINALG::SerialDenseMatrix& xc,
+    Epetra_SerialDenseVector& elevector)
+{
+  LINALG::SerialDenseVector vec1(2);
+  vec1[1]=xc(0,0) - xc(1,0);
+  vec1[0]=-(xc(0,1) - xc(1,1));
+  
+  LINALG::SerialDenseVector vec2(2);
+  vec2[0]=-xc(1,0) + xc(2,0);
+  vec2[1]=-xc(1,1) + xc(2,1);
+  
+  const double vec1normsquare=pow(vec1.Norm2(),2);
+  const double vec2normsquare=pow(vec2.Norm2(),2);  
+
+  elevector[0]
+  =
+  -((vec2[1]/sqrt(vec1normsquare*vec2normsquare) -
+  (vec2normsquare*vec1[1]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1normsquare*vec2normsquare,1.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1normsquare*vec2normsquare)))
+  ;
+  elevector[1]
+  =
+  -((-(vec2[0]/sqrt(vec1normsquare*vec2normsquare)) +
+  (vec2normsquare*vec1[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1normsquare*vec2normsquare,1.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1normsquare*vec2normsquare)))
+  ;
+  elevector[2]
+  =
+  -(((xc(0,1) - xc(2,1))/sqrt(vec1normsquare*vec2normsquare) -
+  ((-2*vec2normsquare*vec1[1] - 2*vec1normsquare*vec2[0])*(vec2[1]*xc(0,0) -
+  vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1normsquare*vec2normsquare,1.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1normsquare*vec2normsquare)))
+  ;
+  elevector[3]
+  =
+  -(((-xc(0,0) + xc(2,0))/sqrt(vec1normsquare*vec2normsquare) -
+  ((2*vec2normsquare*vec1[0] - 2*vec1normsquare*vec2[1])*(vec2[1]*xc(0,0) -
+  vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1normsquare*vec2normsquare,1.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1normsquare*vec2normsquare)))
+  ;
+  elevector[4]
+  =
+  -(((-xc(0,1) + xc(1,1))/sqrt(vec1normsquare*vec2normsquare) -
+  (vec1normsquare*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1normsquare*vec2normsquare,1.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1normsquare*vec2normsquare)))
+  ;
+  elevector[5]
+  =
+  -((vec1[1]/sqrt(vec1normsquare*vec2normsquare) -
+  (vec1normsquare*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1normsquare*vec2normsquare,1.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1normsquare*vec2normsquare)))
+  ;
+}
+
+void DRT::ELEMENTS::ConstraintElement::ComputeSecondDeriv3D(const LINALG::SerialDenseMatrix& xc,
     Epetra_SerialDenseMatrix& elematrix,
     const LINALG::SerialDenseVector& normal)
 {
@@ -1765,6 +1962,1024 @@ void DRT::ELEMENTS::ConstraintElement::ComputeSecondDeriv(const LINALG::SerialDe
   return;
 }
 
+void DRT::ELEMENTS::ConstraintElement::ComputeSecondDerivDist2D(const LINALG::SerialDenseMatrix& xc,
+    Epetra_SerialDenseMatrix& elematrix,
+    const LINALG::SerialDenseVector& normal)
+{
+  
+  double normsquare=pow(normal.Norm2(),2);
+  double normcube=pow(normal.Norm2(),3);
+  double normpowfour=pow(normal.Norm2(),4);
+  double normpowfive=pow(normal.Norm2(),5);
+  
+  elematrix(0,0)=
+  (normal[0]*(-2*pow(xc(1,0),3) - 2*xc(1,0)*pow(xc(1,1),2) -
+  2*pow(xc(0,0),2)*(xc(1,0) - xc(2,0)) + pow(xc(0,1),2)*(xc(1,0) - xc(2,0)) +
+  2*pow(xc(1,0),2)*xc(2,0) - pow(xc(1,1),2)*xc(2,0) +
+  xc(0,1)*(2*xc(1,1)*xc(2,0) + xc(1,0)*(xc(1,1) - 3*xc(2,1))) +
+  3*xc(1,0)*xc(1,1)*xc(2,1) + xc(0,0)*(4*pow(xc(1,0),2) - 4*xc(1,0)*xc(2,0) +
+  3*normal[0]*(-xc(1,1) + xc(2,1)))))/normpowfive;
+
+  elematrix(0,1)=
+  (3*pow(normal[0],2)*normal[1]*(xc(0,0) - xc(2,0)) +
+  normsquare*normal[1]*(-xc(1,0) + xc(2,0)) +
+  normal[0]*(3*pow(normal[1],2)*(xc(0,1) - xc(2,1)) + normsquare*(-xc(1,1) +
+  xc(2,1))))/normpowfive;
+
+  elematrix(0,2)=
+  (normal[0]*(pow(xc(0,0),3) + pow(xc(1,0),3) + xc(1,0)*pow(xc(1,1),2) -
+  2*pow(xc(1,0),2)*xc(2,0) + pow(xc(1,1),2)*xc(2,0) +
+  pow(xc(0,1),2)*(-2*xc(1,0) + xc(2,0)) - pow(xc(0,0),2)*(xc(1,0) + 2*xc(2,0))
+  - 3*xc(1,0)*xc(1,1)*xc(2,1) + xc(0,0)*(pow(xc(0,1),2) - pow(xc(1,0),2) -
+  2*pow(xc(1,1),2) + 4*xc(1,0)*xc(2,0) + xc(0,1)*(xc(1,1) - 3*xc(2,1)) +
+  3*xc(1,1)*xc(2,1)) + xc(0,1)*(-2*xc(1,1)*xc(2,0) + xc(1,0)*(xc(1,1) +
+  3*xc(2,1)))))/normpowfive;
+
+  elematrix(0,3)=
+  (normpowfour + normsquare*(normal[1]*(xc(0,0) - xc(2,0)) +
+  normal[0]*(xc(1,1) - xc(2,1))) + 3*normal[0]*normal[1]*(normal[0]*(-xc(0,0) +
+  xc(2,0)) + normal[1]*(-xc(0,1) + xc(2,1))))/normpowfive;
+
+  elematrix(0,4)=(normal[0]*normal[1])/normcube;
+
+  elematrix(0,5)=-(pow(normal[0],2)/normcube);
+
+  elematrix(1,0)=
+  (3*pow(normal[0],2)*normal[1]*(xc(0,0) - xc(2,0)) +
+  normsquare*normal[1]*(-xc(1,0) + xc(2,0)) +
+  normal[0]*(3*pow(normal[1],2)*(xc(0,1) - xc(2,1)) + normsquare*(-xc(1,1) +
+  xc(2,1))))/normpowfive;
+
+  elematrix(1,1)=
+  (normal[1]*(-2*pow(xc(1,0),2)*xc(1,1) - 2*pow(xc(1,1),3) +
+  3*xc(1,0)*xc(1,1)*xc(2,0) + xc(0,1)*(3*pow(xc(1,0),2) - 3*xc(1,0)*xc(2,0) +
+  4*xc(1,1)*(xc(1,1) - xc(2,1))) + pow(xc(0,0),2)*(xc(1,1) - xc(2,1)) -
+  2*pow(xc(0,1),2)*(xc(1,1) - xc(2,1)) - pow(xc(1,0),2)*xc(2,1) +
+  2*pow(xc(1,1),2)*xc(2,1) + xc(0,0)*(-3*xc(0,1)*(xc(1,0) - xc(2,0)) -
+  3*xc(1,1)*xc(2,0) + xc(1,0)*(xc(1,1) + 2*xc(2,1)))))/normpowfive;
+
+  elematrix(1,2)=
+  (-normpowfour + normsquare*(normal[1]*(xc(1,0) - xc(2,0)) +
+  normal[0]*(xc(0,1) - xc(2,1))) + 3*normal[0]*normal[1]*(normal[0]*(-xc(0,0) +
+  xc(2,0)) + normal[1]*(-xc(0,1) + xc(2,1))))/normpowfive;
+
+  elematrix(1,3)=
+  (normal[1]*(pow(xc(0,1),3) + pow(xc(1,0),2)*xc(1,1) + pow(xc(1,1),3) -
+  3*xc(1,0)*xc(1,1)*xc(2,0) - xc(0,1)*(2*pow(xc(1,0),2) - 3*xc(1,0)*xc(2,0) +
+  xc(1,1)*(xc(1,1) - 4*xc(2,1))) + xc(0,0)*(xc(0,1)*(xc(1,0) - 3*xc(2,0)) +
+  3*xc(1,1)*xc(2,0) + xc(1,0)*(xc(1,1) - 2*xc(2,1))) + pow(xc(1,0),2)*xc(2,1) -
+  2*pow(xc(1,1),2)*xc(2,1) + pow(xc(0,0),2)*(xc(0,1) - 2*xc(1,1) + xc(2,1)) -
+  pow(xc(0,1),2)*(xc(1,1) + 2*xc(2,1))))/normpowfive;
+
+  elematrix(1,4)=pow(normal[1],2)/normcube;
+
+  elematrix(1,5)=-((normal[0]*normal[1])/normcube);
+
+  elematrix(2,0)=
+  (normal[0]*(pow(xc(0,0),3) + pow(xc(1,0),3) + xc(1,0)*pow(xc(1,1),2) -
+  2*pow(xc(1,0),2)*xc(2,0) + pow(xc(1,1),2)*xc(2,0) +
+  pow(xc(0,1),2)*(-2*xc(1,0) + xc(2,0)) - pow(xc(0,0),2)*(xc(1,0) + 2*xc(2,0))
+  - 3*xc(1,0)*xc(1,1)*xc(2,1) + xc(0,0)*(pow(xc(0,1),2) - pow(xc(1,0),2) -
+  2*pow(xc(1,1),2) + 4*xc(1,0)*xc(2,0) + xc(0,1)*(xc(1,1) - 3*xc(2,1)) +
+  3*xc(1,1)*xc(2,1)) + xc(0,1)*(-2*xc(1,1)*xc(2,0) + xc(1,0)*(xc(1,1) +
+  3*xc(2,1)))))/normpowfive;
+
+  elematrix(2,1)=
+  (-normpowfour + normsquare*(normal[1]*(xc(1,0) - xc(2,0)) +
+  normal[0]*(xc(0,1) - xc(2,1))) + 3*normal[0]*normal[1]*(normal[0]*(-xc(0,0) +
+  xc(2,0)) + normal[1]*(-xc(0,1) + xc(2,1))))/normpowfive;
+
+  elematrix(2,2)=
+  -((normal[0]*(2*pow(xc(0,0),3) - 2*pow(xc(1,0),2)*xc(2,0) +
+  pow(xc(1,1),2)*xc(2,0) + pow(xc(0,1),2)*(-3*xc(1,0) + xc(2,0)) -
+  2*pow(xc(0,0),2)*(2*xc(1,0) + xc(2,0)) - 3*xc(1,0)*xc(1,1)*xc(2,1) +
+  xc(0,1)*(-2*xc(1,1)*xc(2,0) + 3*xc(1,0)*(xc(1,1) + xc(2,1))) +
+  xc(0,0)*(2*pow(xc(0,1),2) + 2*pow(xc(1,0),2) - pow(xc(1,1),2) +
+  4*xc(1,0)*xc(2,0) + 3*xc(1,1)*xc(2,1) - xc(0,1)*(xc(1,1) +
+  3*xc(2,1)))))/normpowfive);
+
+  elematrix(2,3)=
+  (3*normal[0]*normal[1]*(normal[0]*(xc(0,0) - xc(2,0)) + normal[1]*(xc(0,1) -
+  xc(2,1))) + normsquare*(normal[1]*(-xc(0,0) + xc(2,0)) + normal[0]*(-xc(0,1) +
+  xc(2,1))))/normpowfive;
+
+  elematrix(2,4)=-((normal[0]*normal[1])/normcube);
+
+  elematrix(2,5)=pow(normal[0],2)/normcube;
+
+  elematrix(3,0)=
+  (normpowfour + normsquare*(normal[1]*(xc(0,0) - xc(2,0)) +
+  normal[0]*(xc(1,1) - xc(2,1))) + 3*normal[0]*normal[1]*(normal[0]*(-xc(0,0) +
+  xc(2,0)) + normal[1]*(-xc(0,1) + xc(2,1))))/normpowfive;
+
+  elematrix(3,1)=
+  (normal[1]*(pow(xc(0,1),3) + pow(xc(1,0),2)*xc(1,1) + pow(xc(1,1),3) -
+  3*xc(1,0)*xc(1,1)*xc(2,0) - xc(0,1)*(2*pow(xc(1,0),2) - 3*xc(1,0)*xc(2,0) +
+  xc(1,1)*(xc(1,1) - 4*xc(2,1))) + xc(0,0)*(xc(0,1)*(xc(1,0) - 3*xc(2,0)) +
+  3*xc(1,1)*xc(2,0) + xc(1,0)*(xc(1,1) - 2*xc(2,1))) + pow(xc(1,0),2)*xc(2,1) -
+  2*pow(xc(1,1),2)*xc(2,1) + pow(xc(0,0),2)*(xc(0,1) - 2*xc(1,1) + xc(2,1)) -
+  pow(xc(0,1),2)*(xc(1,1) + 2*xc(2,1))))/normpowfive;
+
+  elematrix(3,2)=
+  (3*normal[0]*normal[1]*(normal[0]*(xc(0,0) - xc(2,0)) + normal[1]*(xc(0,1) -
+  xc(2,1))) + normsquare*(normal[1]*(-xc(0,0) + xc(2,0)) + normal[0]*(-xc(0,1) +
+  xc(2,1))))/normpowfive;
+
+  elematrix(3,3)=
+  -((normal[1]*(2*pow(xc(0,1),3) - 3*xc(1,0)*xc(1,1)*xc(2,0) +
+  pow(xc(1,0),2)*xc(2,1) - 2*pow(xc(1,1),2)*xc(2,1) +
+  pow(xc(0,0),2)*(2*xc(0,1) - 3*xc(1,1) + xc(2,1)) -
+  2*pow(xc(0,1),2)*(2*xc(1,1) + xc(2,1)) - xc(0,0)*(-3*xc(1,1)*xc(2,0) +
+  xc(0,1)*(xc(1,0) + 3*xc(2,0)) + xc(1,0)*(-3*xc(1,1) + 2*xc(2,1))) +
+  xc(0,1)*(-pow(xc(1,0),2) + 3*xc(1,0)*xc(2,0) + 2*xc(1,1)*(xc(1,1) +
+  2*xc(2,1)))))/normpowfive);
+
+  elematrix(3,4)=-(pow(normal[1],2)/normcube);
+
+  elematrix(3,5)=(normal[0]*(-xc(0,0) + xc(1,0)))/normcube;
+
+  elematrix(4,0)=(normal[0]*normal[1])/normcube;
+
+  elematrix(4,1)=pow(normal[1],2)/normcube;
+
+  elematrix(4,2)=-((normal[0]*normal[1])/normcube);
+
+  elematrix(4,3)=-(pow(normal[1],2)/normcube);
+
+  elematrix(4,4)=0;
+
+  elematrix(4,5)=0;
+
+  elematrix(5,0)=-(pow(normal[0],2)/normcube);
+
+  elematrix(5,1)=-((normal[0]*normal[1])/normcube);
+
+  elematrix(5,2)=pow(normal[0],2)/normcube;
+
+  elematrix(5,3)=(normal[0]*(-xc(0,0) + xc(1,0)))/normcube;
+
+  elematrix(5,4)=0;
+
+  elematrix(5,5)=0;
+  return;
+  
+}
+
+void DRT::ELEMENTS::ConstraintElement::ComputeSecondDerivAngle2D(const LINALG::SerialDenseMatrix& xc,
+    Epetra_SerialDenseMatrix& elematrix)
+{
+  LINALG::SerialDenseVector vec1(2);
+  vec1[1]=xc(0,0) - xc(1,0);
+  vec1[0]=-(xc(0,1) - xc(1,1));
+  
+  LINALG::SerialDenseVector vec2(2);
+  vec2[0]=-xc(1,0) + xc(2,0);
+  vec2[1]=-xc(1,1) + xc(2,1);
+  
+  const double vec1sq=pow(vec1.Norm2(),2);
+  const double vec2sq=pow(vec2.Norm2(),2);  
+  
+  elematrix(0,0)
+  =
+  -(((-2*vec2sq*vec1[1]*vec2[1])/pow(vec1sq*vec2sq,1.5)
+  - (vec2sq*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*pow(vec2sq,2)*pow(vec1[1],2)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((vec2[1]/sqrt(vec1sq*vec2sq) -
+  (vec2sq*vec1[1]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*vec2[1]*(vec2(1
+  )*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec1[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq)))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(0,1)
+  =
+  -(((vec2sq*vec1[1]*vec2[0])/pow(vec1sq*vec2sq,1.5) +
+  (vec2sq*vec1[0]*vec2[1])/pow(vec1sq*vec2sq,1.5) -
+  (3*pow(vec2sq,2)*vec1[0]*vec1[1]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((vec2[1]/sqrt(vec1sq*vec2sq) -
+  (vec2sq*vec1[1]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((2*vec2[0]*(vec2[1]
+  *xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) -
+  (2*vec1[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq)))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(0,2)
+  =
+  -((-((-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*vec2[1])/(2.*pow(vec1sq*vec2sq,1.5))
+  - (vec2sq*vec1[1]*(xc(0,1) -
+  xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (vec2sq*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (2*vec1[1]*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec2sq*vec1[1]*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((vec2[1]/sqrt(vec1sq*vec2sq) -
+  (vec2sq*vec1[1]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*(xc(0,1) -
+  xc(2,1))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) -
+  (2*vec1[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq) -
+  (2*vec2[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(0,3)
+  =
+  -((-(1/sqrt(vec1sq*vec2sq)) - (vec2[1]*(2*vec2sq*vec1[0]
+  - 2*vec1sq*vec2[1]))/(2.*pow(vec1sq*vec2sq,1.5)) -
+  (vec2sq*vec1[1]*(-xc(0,0) +
+  xc(2,0)))/pow(vec1sq*vec2sq,1.5) +
+  (2*vec1[1]*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec2sq*vec1[1]*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((vec2[1]/sqrt(vec1sq*vec2sq) -
+  (vec2sq*vec1[1]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*(-xc(0,0) +
+  xc(2,0))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec1[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq) -
+  (2*vec2[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(0,4)
+  =
+  -((-((vec1sq*vec2[0]*vec2[1])/pow(vec1sq*vec2sq,1.5))
+  - (vec2sq*vec1[1]*(-xc(0,1) +
+  xc(1,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec1sq*vec2sq*vec1[1]*vec2[0]*(vec2[1]*xc(0,0) -
+  vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5) -
+  (2*vec1[1]*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((vec2[1]/sqrt(vec1sq*vec2sq) -
+  (vec2sq*vec1[1]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*(-xc(0,1) +
+  xc(1,1))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec2[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(0,5)
+  =
+  -((1/sqrt(vec1sq*vec2sq) -
+  (vec2sq*pow(vec1[1],2))/pow(vec1sq*vec2sq,1.5) -
+  (vec1sq*pow(vec2[1],2))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec1sq*vec2sq*vec1[1]*vec2(1)*(vec2[1]*xc(0,0) -
+  vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5) -
+  (2*vec1[1]*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((vec2[1]/sqrt(vec1sq*vec2sq) -
+  (vec2sq*vec1[1]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*vec1[1]*(vec2(1
+  )*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec2[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(1,0)
+  =
+  -(((vec2sq*vec1[1]*vec2[0])/pow(vec1sq*vec2sq,1.5) +
+  (vec2sq*vec1[0]*vec2[1])/pow(vec1sq*vec2sq,1.5) -
+  (3*pow(vec2sq,2)*vec1[0]*vec1[1]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((-(vec2[0]/sqrt(vec1sq*vec2sq)) +
+  (vec2sq*vec1[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*vec2[1]*(vec2(1
+  )*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec1[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq)))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(1,1)
+  =
+  -(((-2*vec2sq*vec1[0]*vec2[0])/pow(vec1sq*vec2sq,1.5)
+  - (vec2sq*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*pow(vec2sq,2)*pow(vec1[0],2)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((-(vec2[0]/sqrt(vec1sq*vec2sq)) +
+  (vec2sq*vec1[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((2*vec2[0]*(vec2[1]
+  *xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) -
+  (2*vec1[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq)))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(1,2)
+  =
+  -((1/sqrt(vec1sq*vec2sq) + (vec2[0]*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0]))/(2.*pow(vec1sq*vec2sq,1.5)) +
+  (vec2sq*vec1[0]*(xc(0,1) -
+  xc(2,1)))/pow(vec1sq*vec2sq,1.5) -
+  (2*vec1[0]*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) -
+  (3*vec2sq*vec1[0]*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((-(vec2[0]/sqrt(vec1sq*vec2sq)) +
+  (vec2sq*vec1[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*(xc(0,1) -
+  xc(2,1))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) -
+  (2*vec1[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq) -
+  (2*vec2[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(1,3)
+  =
+  -(((vec2[0]*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1]))/(2.*pow(vec1sq*vec2sq,1.5)) +
+  (vec2sq*vec1[0]*(-xc(0,0) +
+  xc(2,0)))/pow(vec1sq*vec2sq,1.5) +
+  (vec2sq*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) -
+  (2*vec1[0]*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) -
+  (3*vec2sq*vec1[0]*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((-(vec2[0]/sqrt(vec1sq*vec2sq)) +
+  (vec2sq*vec1[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*(-xc(0,0) +
+  xc(2,0))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec1[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq) -
+  (2*vec2[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(1,4)
+  =
+  -((-(1/sqrt(vec1sq*vec2sq)) +
+  (vec1sq*pow(vec2[0],2))/pow(vec1sq*vec2sq,1.5) +
+  (vec2sq*vec1[0]*(-xc(0,1) +
+  xc(1,1)))/pow(vec1sq*vec2sq,1.5) -
+  (3*vec1sq*vec2sq*vec1[0]*vec2[0]*(vec2[1]*xc(0,0) -
+  vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5) +
+  (2*vec1[0]*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((-(vec2[0]/sqrt(vec1sq*vec2sq)) +
+  (vec2sq*vec1[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*(-xc(0,1) +
+  xc(1,1))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec2[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(1,5)
+  =
+  -(((vec2sq*vec1[0]*vec1[1])/pow(vec1sq*vec2sq,1.5) +
+  (vec1sq*vec2[0]*vec2[1])/pow(vec1sq*vec2sq,1.5) -
+  (3*vec1sq*vec2sq*vec1[0]*vec2(1)*(vec2[1]*xc(0,0) -
+  vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5) +
+  (2*vec1[0]*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((-(vec2[0]/sqrt(vec1sq*vec2sq)) +
+  (vec2sq*vec1[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*vec1[1]*(vec2(1
+  )*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec2[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(2,0)
+  =
+  -((-((-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*vec2[1])/(2.*pow(vec1sq*vec2sq,1.5))
+  - (vec2sq*vec1[1]*(xc(0,1) -
+  xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec2sq*vec1[1]*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)) -
+  ((-2*vec2sq - 4*vec1[1]*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((xc(0,1) -
+  xc(2,1))/sqrt(vec1sq*vec2sq) - ((-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))*((-2*vec2[1]*(
+  vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec1[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq)))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(2,1)
+  =
+  -((1/sqrt(vec1sq*vec2sq) + (vec2[0]*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0]))/(2.*pow(vec1sq*vec2sq,1.5)) +
+  (vec2sq*vec1[0]*(xc(0,1) -
+  xc(2,1)))/pow(vec1sq*vec2sq,1.5) -
+  (2*vec1[0]*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) -
+  (3*vec2sq*vec1[0]*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((xc(0,1) -
+  xc(2,1))/sqrt(vec1sq*vec2sq) - ((-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))*((2*vec2[0]*(
+  vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) -
+  (2*vec1[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq)))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(2,2)
+  =
+  -((-(((-2*vec2sq*vec1[1] - 2*vec1sq*vec2[0])*(xc(0,1) -
+  xc(2,1)))/pow(vec1sq*vec2sq,1.5)) +
+  (3*pow(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0],2)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0)
+  - xc(1,0)*xc(2,1)))/(4.*pow(vec1sq*vec2sq,2.5)) -
+  ((2*vec1sq + 2*vec2sq + 8*vec1[1]*vec2[0])*(vec2[1]*xc(0,0) -
+  vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((xc(0,1) -
+  xc(2,1))/sqrt(vec1sq*vec2sq) - ((-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))*((-2*(xc(0,1) -
+  xc(2,1))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) -
+  (2*vec1[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq) -
+  (2*vec2[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(2,3)
+  =
+  -((-((-2*vec2sq*vec1[1] - 2*vec1sq*vec2[0])*(-xc(0,0) +
+  xc(2,0)))/(2.*pow(vec1sq*vec2sq,1.5)) -
+  ((2*vec2sq*vec1[0] - 2*vec1sq*vec2[1])*(xc(0,1) -
+  xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)) +
+  (3*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(4.*pow(vec1sq*vec2sq,2.5)) -
+  ((-4*vec1[0]*vec2[0] + 4*vec1[1]*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((xc(0,1) -
+  xc(2,1))/sqrt(vec1sq*vec2sq) - ((-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))*((-2*(-xc(0,0)
+  + xc(2,0))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec1[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq) -
+  (2*vec2[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(2,4)
+  =
+  -((-((-2*vec2sq*vec1[1] - 2*vec1sq*vec2[0])*(-xc(0,1) +
+  xc(1,1)))/(2.*pow(vec1sq*vec2sq,1.5)) -
+  (vec1sq*vec2[0]*(xc(0,1) -
+  xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec1sq*vec2[0]*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)) -
+  ((-2*vec1sq - 4*vec1[1]*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((xc(0,1) -
+  xc(2,1))/sqrt(vec1sq*vec2sq) - ((-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))*((-2*(-xc(0,1)
+  + xc(1,1))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec2[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(2,5)
+  =
+  -((-(1/sqrt(vec1sq*vec2sq)) -
+  (vec1[1]*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0]))/(2.*pow(vec1sq*vec2sq,1.5)) -
+  (vec1sq*vec2[1]*(xc(0,1) -
+  xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (2*vec1[1]*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec1sq*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((xc(0,1) -
+  xc(2,1))/sqrt(vec1sq*vec2sq) - ((-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))*((-2*vec1[1]*(
+  vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec2[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(3,0)
+  =
+  -((-(1/sqrt(vec1sq*vec2sq)) - (vec2[1]*(2*vec2sq*vec1[0]
+  - 2*vec1sq*vec2[1]))/(2.*pow(vec1sq*vec2sq,1.5)) -
+  (vec2sq*vec1[1]*(-xc(0,0) +
+  xc(2,0)))/pow(vec1sq*vec2sq,1.5) +
+  (2*vec1[1]*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec2sq*vec1[1]*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((-xc(0,0) +
+  xc(2,0))/sqrt(vec1sq*vec2sq) - ((2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))*((-2*vec2[1]*(
+  vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec1[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq)))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(3,1)
+  =
+  -(((vec2[0]*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1]))/(2.*pow(vec1sq*vec2sq,1.5)) +
+  (vec2sq*vec1[0]*(-xc(0,0) +
+  xc(2,0)))/pow(vec1sq*vec2sq,1.5) -
+  (3*vec2sq*vec1[0]*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)) -
+  ((-2*vec2sq + 4*vec1[0]*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((-xc(0,0) +
+  xc(2,0))/sqrt(vec1sq*vec2sq) - ((2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))*((2*vec2[0]*(
+  vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) -
+  (2*vec1[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq)))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(3,2)
+  =
+  -((-((-2*vec2sq*vec1[1] - 2*vec1sq*vec2[0])*(-xc(0,0) +
+  xc(2,0)))/(2.*pow(vec1sq*vec2sq,1.5)) -
+  ((2*vec2sq*vec1[0] - 2*vec1sq*vec2[1])*(xc(0,1) -
+  xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)) +
+  (3*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(4.*pow(vec1sq*vec2sq,2.5)) -
+  ((-4*vec1[0]*vec2[0] + 4*vec1[1]*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((-xc(0,0) +
+  xc(2,0))/sqrt(vec1sq*vec2sq) - ((2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))*((-2*(xc(0,1) -
+  xc(2,1))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) -
+  (2*vec1[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq) -
+  (2*vec2[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(3,3)
+  =
+  -((-(((2*vec2sq*vec1[0] - 2*vec1sq*vec2[1])*(-xc(0,0) +
+  xc(2,0)))/pow(vec1sq*vec2sq,1.5)) +
+  (3*pow(2*vec2sq*vec1[0] - 2*vec1sq*vec2[1],2)*(vec2[1]*xc(0,0)
+  - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(4.*pow(vec1sq*vec2sq,2.5)) -
+  ((2*vec1sq + 2*vec2sq - 8*vec1[0]*vec2[1])*(vec2[1]*xc(0,0) -
+  vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((-xc(0,0) +
+  xc(2,0))/sqrt(vec1sq*vec2sq) - ((2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))*((-2*(-xc(0,0)
+  + xc(2,0))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec1[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq) -
+  (2*vec2[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(3,4)
+  =
+  -((1/sqrt(vec1sq*vec2sq) - ((2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(-xc(0,1) +
+  xc(1,1)))/(2.*pow(vec1sq*vec2sq,1.5)) -
+  (vec1sq*vec2[0]*(-xc(0,0) +
+  xc(2,0)))/pow(vec1sq*vec2sq,1.5) -
+  (2*vec1[0]*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec1sq*vec2[0]*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((-xc(0,0) +
+  xc(2,0))/sqrt(vec1sq*vec2sq) - ((2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))*((-2*(-xc(0,1)
+  + xc(1,1))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec2[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(3,5)
+  =
+  -((-(vec1[1]*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1]))/(2.*pow(vec1sq*vec2sq,1.5)) -
+  (vec1sq*vec2[1]*(-xc(0,0) +
+  xc(2,0)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec1sq*vec2[1]*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)) -
+  ((-2*vec1sq + 4*vec1[0]*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((-xc(0,0) +
+  xc(2,0))/sqrt(vec1sq*vec2sq) - ((2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,1.5)))*((-2*vec1[1]*(
+  vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec2[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(4,0)
+  =
+  -((-((vec1sq*vec2[0]*vec2[1])/pow(vec1sq*vec2sq,1.5))
+  - (vec2sq*vec1[1]*(-xc(0,1) +
+  xc(1,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec1sq*vec2sq*vec1[1]*vec2[0]*(vec2[1]*xc(0,0) -
+  vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5) -
+  (2*vec1[1]*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((-xc(0,1) +
+  xc(1,1))/sqrt(vec1sq*vec2sq) -
+  (vec1sq*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*vec2[1]*(vec2(1
+  )*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec1[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq)))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(4,1)
+  =
+  -((-(1/sqrt(vec1sq*vec2sq)) +
+  (vec1sq*pow(vec2[0],2))/pow(vec1sq*vec2sq,1.5) +
+  (vec2sq*vec1[0]*(-xc(0,1) +
+  xc(1,1)))/pow(vec1sq*vec2sq,1.5) -
+  (3*vec1sq*vec2sq*vec1[0]*vec2[0]*(vec2[1]*xc(0,0) -
+  vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5) +
+  (2*vec1[0]*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((-xc(0,1) +
+  xc(1,1))/sqrt(vec1sq*vec2sq) -
+  (vec1sq*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((2*vec2[0]*(vec2[1]
+  *xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) -
+  (2*vec1[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq)))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(4,2)
+  =
+  -((-((-2*vec2sq*vec1[1] - 2*vec1sq*vec2[0])*(-xc(0,1) +
+  xc(1,1)))/(2.*pow(vec1sq*vec2sq,1.5)) -
+  (vec1sq*vec2[0]*(xc(0,1) -
+  xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (vec1sq*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (2*vec1[1]*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec1sq*vec2[0]*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((-xc(0,1) +
+  xc(1,1))/sqrt(vec1sq*vec2sq) -
+  (vec1sq*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*(xc(0,1) -
+  xc(2,1))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) -
+  (2*vec1[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq) -
+  (2*vec2[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(4,3)
+  =
+  -((1/sqrt(vec1sq*vec2sq) - ((2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(-xc(0,1) +
+  xc(1,1)))/(2.*pow(vec1sq*vec2sq,1.5)) -
+  (vec1sq*vec2[0]*(-xc(0,0) +
+  xc(2,0)))/pow(vec1sq*vec2sq,1.5) -
+  (2*vec1[0]*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec1sq*vec2[0]*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((-xc(0,1) +
+  xc(1,1))/sqrt(vec1sq*vec2sq) -
+  (vec1sq*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*(-xc(0,0) +
+  xc(2,0))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec1[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq) -
+  (2*vec2[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(4,4)
+  =
+  -(((-2*vec1sq*vec2[0]*(-xc(0,1) +
+  xc(1,1)))/pow(vec1sq*vec2sq,1.5) -
+  (vec1sq*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*pow(vec1sq,2)*pow(vec2[0],2)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((-xc(0,1) +
+  xc(1,1))/sqrt(vec1sq*vec2sq) -
+  (vec1sq*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*(-xc(0,1) +
+  xc(1,1))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec2[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(4,5)
+  =
+  -((-((vec1sq*vec1[1]*vec2[0])/pow(vec1sq*vec2sq,1.5))
+  - (vec1sq*vec2[1]*(-xc(0,1) +
+  xc(1,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*pow(vec1sq,2)*vec2[0]*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) + (((-xc(0,1) +
+  xc(1,1))/sqrt(vec1sq*vec2sq) -
+  (vec1sq*vec2[0]*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*vec1[1]*(vec2(1
+  )*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec2[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(5,0)
+  =
+  -((1/sqrt(vec1sq*vec2sq) -
+  (vec2sq*pow(vec1[1],2))/pow(vec1sq*vec2sq,1.5) -
+  (vec1sq*pow(vec2[1],2))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec1sq*vec2sq*vec1[1]*vec2(1)*(vec2[1]*xc(0,0) -
+  vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5) -
+  (2*vec1[1]*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((vec1[1]/sqrt(vec1sq*vec2sq) -
+  (vec1sq*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*vec2[1]*(vec2(1
+  )*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec1[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq)))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(5,1)
+  =
+  -(((vec2sq*vec1[0]*vec1[1])/pow(vec1sq*vec2sq,1.5) +
+  (vec1sq*vec2[0]*vec2[1])/pow(vec1sq*vec2sq,1.5) -
+  (3*vec1sq*vec2sq*vec1[0]*vec2(1)*(vec2[1]*xc(0,0) -
+  vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5) +
+  (2*vec1[0]*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((vec1[1]/sqrt(vec1sq*vec2sq) -
+  (vec1sq*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((2*vec2[0]*(vec2[1]
+  *xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) -
+  (2*vec1[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq)))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(5,2)
+  =
+  -((-(1/sqrt(vec1sq*vec2sq)) -
+  (vec1[1]*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0]))/(2.*pow(vec1sq*vec2sq,1.5)) -
+  (vec1sq*vec2[1]*(xc(0,1) -
+  xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (2*vec1[1]*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec1sq*(-2*vec2sq*vec1[1] -
+  2*vec1sq*vec2[0])*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((vec1[1]/sqrt(vec1sq*vec2sq) -
+  (vec1sq*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*(xc(0,1) -
+  xc(2,1))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) -
+  (2*vec1[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq) -
+  (2*vec2[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(5,3)
+  =
+  -((-(vec1[1]*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1]))/(2.*pow(vec1sq*vec2sq,1.5)) -
+  (vec1sq*vec2[1]*(-xc(0,0) +
+  xc(2,0)))/pow(vec1sq*vec2sq,1.5) +
+  (vec1sq*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) -
+  (2*vec1[0]*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*vec1sq*vec2[1]*(2*vec2sq*vec1[0] -
+  2*vec1sq*vec2[1])*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(2.*pow(vec1sq*vec2sq,2.5)))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((vec1[1]/sqrt(vec1sq*vec2sq) -
+  (vec1sq*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*(-xc(0,0) +
+  xc(2,0))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec1[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(pow(vec1sq,2)*vec2sq) -
+  (2*vec2[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(5,4)
+  =
+  -((-((vec1sq*vec1[1]*vec2[0])/pow(vec1sq*vec2sq,1.5))
+  - (vec1sq*vec2[1]*(-xc(0,1) +
+  xc(1,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*pow(vec1sq,2)*vec2[0]*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((vec1[1]/sqrt(vec1sq*vec2sq) -
+  (vec1sq*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*(-xc(0,1) +
+  xc(1,1))*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec2[0]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+  elematrix(5,5)
+  =
+  -(((-2*vec1sq*vec1[1]*vec2[1])/pow(vec1sq*vec2sq,1.5)
+  - (vec1sq*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5) +
+  (3*pow(vec1sq,2)*pow(vec2[1],2)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) +
+  xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,2.5))/sqrt(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq))) +
+  ((vec1[1]/sqrt(vec1sq*vec2sq) -
+  (vec1sq*vec2(1)*(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/pow(vec1sq*vec2sq,1.5))*((-2*vec1[1]*(vec2(1
+  )*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1)))/(vec1sq*vec2sq) +
+  (2*vec2[1]*pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2))/(vec1sq*pow(vec2sq,2))))/(2.*pow(1 -
+  pow(vec2[1]*xc(0,0) - vec2[0]*xc(0,1) + xc(1,1)*xc(2,0) -
+  xc(1,0)*xc(2,1),2)/(vec1sq*vec2sq),1.5))
+  ;
+
+}
 
 //=======================================================================
 
