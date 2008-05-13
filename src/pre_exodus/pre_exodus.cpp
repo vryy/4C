@@ -31,13 +31,13 @@ or the well-known .dat file is created.
 #include "pre_exodus_soshextrusion.H"
 #include "pre_exodus_writedat.H"
 #include "pre_exodus_readbc.H"
+#include "pre_exodus_validate.H"
 
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
-#endif
+#else
 #include <Epetra_SerialComm.h>
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_inputreader.H"
+#endif
 
 
 using namespace std;
@@ -47,7 +47,7 @@ int main(
         int argc,
         char** argv)
 {
-	
+
 #ifdef PARALLEL
   MPI_Init(&argc,&argv);
 #endif
@@ -90,9 +90,18 @@ int main(
 
     if (exofile=="")
     {
-      cout<<"No Exodus II file was found"<<endl;
-      My_CLP.printHelpMessage(argv[0],cout);
-      exit(1);
+      if (datfile!="")
+      {
+        // just validate a given BACI input file
+        EXODUS::ValidateInputFile(datfile);
+        return 0;
+      }
+      else
+      {
+        cout<<"No Exodus II file was found"<<endl;
+        My_CLP.printHelpMessage(argv[0],cout);
+        exit(1);
+      }
     }
     
     
@@ -158,7 +167,7 @@ int main(
       <<"\\\\boundr_cond=\"DIRICH\"\"E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0\" "<<endl<<endl;
       */
       
-      defaultbc << "MIND that you can specify a condittion also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'"<<endl;
+      defaultbc << "MIND that you can specify a condition also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'"<<endl;
       defaultbc<<"------------------------------------------------BCSPECS"<<endl<<endl;
       
       
@@ -243,38 +252,6 @@ int main(
       if (defaulthead.is_open())
          defaulthead.close();
     }
-    else
-    {
-      // read and check the provided header file
-      cout << "checking given header file "<<headfile<< endl;
-
-#ifdef PARALLEL
-      int myrank = 0;
-      int nproc  = 1;
-      MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-      MPI_Comm_size(MPI_COMM_WORLD, &nproc);
-      Epetra_MpiComm* com = new Epetra_MpiComm(MPI_COMM_WORLD);
-      RefCountPtr<Epetra_Comm> comm = rcp(com);
-#else
-        Epetra_SerialComm* com = new Epetra_SerialComm();
-        RefCountPtr<Epetra_Comm> comm = rcp(com);
-#endif
-
-      Teuchos::RCP<DRT::Problem> problem = DRT::Problem::Instance();
-      DRT::INPUT::DatFileReader reader(headfile.c_str(), comm, 0, false);
-
-      // do reading AND validation!
-      problem->ReadParameter(reader);
-
-      //the header file is valid --> go on
-
-      // clean up
-      problem->Done();
-    }
-
-#ifdef PARALLEL
-  MPI_Finalize();
-#endif
 
   if (datfile=="")
   {
@@ -282,10 +259,16 @@ int main(
   }
   else
   {
-    cout << "creating datfile " << datfile << endl;
+    cout << "creating BACI input file       --> " << datfile << endl;
     EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
   }
 
+  //validate the BACI input file
+  EXODUS::ValidateInputFile(datfile);
+
+#ifdef PARALLEL
+  MPI_Finalize();
+#endif
   
   return 0;
 

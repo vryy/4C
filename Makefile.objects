@@ -1098,7 +1098,8 @@ OBJS_PRE_EXODUS = src/pre_exodus/pre_exodus.o \
                   src/pre_exodus/pre_exodus_reader.o \
                   src/pre_exodus/pre_exodus_soshextrusion.o \
                   src/pre_exodus/pre_exodus_writedat.o \
-                  src/pre_exodus/pre_exodus_readbc.o
+                  src/pre_exodus/pre_exodus_readbc.o \
+                  src/pre_exodus/pre_exodus_validate.o
 
 #                 post_out
 OBJS_POST_OUT = src/post_out/post_out.o
