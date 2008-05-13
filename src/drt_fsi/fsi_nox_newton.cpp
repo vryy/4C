@@ -20,6 +20,9 @@ NOX::FSI::Newton::Newton(const Teuchos::RCP<NOX::GlobalData>& gd,
   // needed because NOX::Direction::Newton::Newton() does not call
   // NOX::FSI::Newton::reset()
   paramsPtr = &params;
+
+  Teuchos::ParameterList& lsParams = paramsPtr->sublist("Newton").sublist("Linear Solver");
+  plaintol_ = lsParams.get<double>("base tolerance",1e-4);
 }
 
 
@@ -29,6 +32,10 @@ bool NOX::FSI::Newton::reset(const Teuchos::RCP<NOX::GlobalData>& gd,
                              Teuchos::ParameterList& params)
 {
   paramsPtr = &params;
+
+  Teuchos::ParameterList& lsParams = paramsPtr->sublist("Newton").sublist("Linear Solver");
+  plaintol_ = lsParams.get<double>("base tolerance",1e-4);
+
   return NOX::Direction::Newton::reset(gd,params);
 }
 
@@ -63,6 +70,9 @@ bool NOX::FSI::Newton::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group&
                 << plaintol_
                 << "\n";
 
+  // Always reset. To be sure.
+  lsParams.set<double>("Tolerance",plaintol_);
+
   // heuristic tolerance calculation
   if (currentnlnres_*plaintol_ < desirednlnres_)
   {
@@ -74,10 +84,6 @@ bool NOX::FSI::Newton::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group&
                     << tol
                     << "\n";
     }
-  }
-  else
-  {
-    lsParams.set<double>("Tolerance",plaintol_);
   }
 
   cresiduals_.clear();

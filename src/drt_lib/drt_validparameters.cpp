@@ -79,7 +79,7 @@ void DRT::INPUT::PrintDatHeader(std::ostream& stream, const Teuchos::ParameterLi
   // prevent invalid ordering of parameters caused by alphabetical output:
   // in the first run, print out all list elements that are not a sublist
   // in the second run, do the recursive call for all the sublists in the list
-  for (int j=0; j<2; ++j) 
+  for (int j=0; j<2; ++j)
   {
     for (Teuchos::ParameterList::ConstIterator i = list.begin();
     i!=list.end();
@@ -644,7 +644,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn);
 
   IntParameter("CD_VELFUNCNO",-1,"function number for con-dif velocity field",&fdyn);
-  
+
   setStringToIntegralParameter("CD_INITIALFIELD","zero_field",
                                "Initial Field for convection-diffusion",
                                tuple<std::string>(
@@ -1079,6 +1079,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("RELAX",1.0,"fixed relaxation parameter",&fsidyn);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&fsidyn);
   DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&fsidyn);
+
+  DoubleParameter("BASETOL",1e-3,
+                  "Basic tolerance for adaptive convergence check in monolithic FSI.\n"
+                  "This tolerance will be used for the linear solve of the FSI block system.\n"
+                  "The linear convergence test will always use the relative residual norm (AZ_r0).\n"
+                  "Not to be confused with the Newton tolerance (CONVTOL) that applies\n"
+                  "to the nonlinear convergance test.",
+                  &fsidyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");

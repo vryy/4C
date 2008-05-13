@@ -163,6 +163,9 @@ void FSI::MonolithicOverlap::SetDefaultParameters(const Teuchos::ParameterList& 
   lsParams.set<int>("Output Frequency",AZ_all);
   lsParams.set<bool>("Output Solver Details",true);
 
+  // adaptive tolerance settings
+  lsParams.set<double>("base tolerance",fsidyn.get<double>("BASETOL"));
+
 #if 0
   // add Aitken relaxation to Newton step
   // there is nothing to be gained...

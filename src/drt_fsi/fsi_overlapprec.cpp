@@ -10,11 +10,11 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
                                                     Teuchos::RCP<LINALG::Solver> structuresolver,
                                                     Teuchos::RCP<LINALG::Solver> fluidsolver,
                                                     Teuchos::RCP<LINALG::Solver> alesolver)
-  : LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(maps,maps,81,false,true),
-    structuresolver_(structuresolver),
-    fluidsolver_(fluidsolver),
-    alesolver_(alesolver)
+  : LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(maps,maps,81,false,true)
 {
+  structuresolver_ = Teuchos::rcp(new LINALG::Preconditioner(structuresolver));
+  fluidsolver_ = Teuchos::rcp(new LINALG::Preconditioner(fluidsolver));
+  alesolver_ = Teuchos::rcp(new LINALG::Preconditioner(alesolver));
 }
 
 

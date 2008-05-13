@@ -121,7 +121,7 @@ public:
   parameter list. This is useful for quick development.
   default solver intentionally is not Umfpack as Umfpack is not a
    Trilinos build-in library.
-  
+
   \param comm (in)   : a reference to a epetra communicator object
   \param outfile (in): ptr to an error file on proc 0 only. If NULL on input,
                        no output will be generated.

@@ -4,6 +4,7 @@
 #define FSI_OVERLAPPREC_H
 
 #include "../drt_lib/linalg_systemmatrix.H"
+#include "../drt_lib/linalg_precond.H"
 #include "../drt_lib/linalg_solver.H"
 
 namespace FSI
@@ -54,9 +55,9 @@ namespace FSI
     /** \name Field solver objects */
     //@{
 
-    Teuchos::RCP<LINALG::Solver> structuresolver_;
-    Teuchos::RCP<LINALG::Solver> fluidsolver_;
-    Teuchos::RCP<LINALG::Solver> alesolver_;
+    Teuchos::RCP<LINALG::Preconditioner> structuresolver_;
+    Teuchos::RCP<LINALG::Preconditioner> fluidsolver_;
+    Teuchos::RCP<LINALG::Preconditioner> alesolver_;
 
     //@}
   };
