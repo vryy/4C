@@ -144,7 +144,8 @@ EXODUS::cond_def EXODUS::ReadCdef(const string& mesh_entity,const int id, const 
   left = actcond.find("description=\"");  // 13 chars
   right = actcond.find_first_of("\"",left+13);
   string description = actcond.substr(left+13,right-(left+13));
-  cdef.desc = description;
+  string description_woE = description.substr(description.find_first_of("-")+1,description.size());
+  cdef.desc = description_woE;
 
   // figure out geometry type
   cdef.gtype = DRT::Condition::NoGeom;  // default

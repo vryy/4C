@@ -371,6 +371,12 @@ namespace INPUT
 
     /// my condition description
     std::string Description() const { return description_; }
+    
+    /// my condition inputline
+    std::vector<Teuchos::RCP<ConditionComponent> > Inputline() const {return inputline_; }
+    
+    /// my GeometryType
+    Condition::GeometryType GeometryType() const {return gtype_;}
 
   private:
 

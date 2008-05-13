@@ -153,16 +153,45 @@ string EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs)
   stringstream dat;
   
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
+  vector<string> allsectionnames;
+  
+  // count how often we have one specific condition
+  map<string,vector<int> > count_cond;
+  map<string,vector<int> >::const_iterator count;
+  vector<int>::const_iterator i_c;
+  vector<EXODUS::cond_def>::const_iterator i_cond;
+  for (i_cond = condefs.begin(); i_cond != condefs.end(); ++i_cond)
+    (count_cond[(*i_cond).sec]).push_back((*i_cond).id);
+  
+  
+  
   for (unsigned int i=0; i<(*condlist).size(); ++i)
   {
+    size_t linelength = 66;
     string sectionname = (*condlist)[i]->SectionName();
-    dat << sectionname << endl;
-    sectionname = (*condlist)[i]->Name();
-    dat << sectionname << endl;
-    sectionname = (*condlist)[i]->Description();
-    dat << sectionname << endl;
-    dat << endl;
-    //(*condlist)[i]->Print(dat,NULL,false);
+    allsectionnames.push_back(sectionname);
+    string dash(linelength-sectionname.size(),'-');
+    dat << dash <<sectionname << endl;
+    DRT::Condition::GeometryType gtype = (*condlist)[i]->GeometryType();
+    string geo;
+    switch (gtype)
+    {
+    case DRT::Condition::Point:   geo = "DPOINT "; break;
+    case DRT::Condition::Line:    geo = "DLINE  ";  break;
+    case DRT::Condition::Surface: geo = "DSURF  ";  break;
+    case DRT::Condition::Volume:  geo = "DVOL   ";   break;
+    default:
+      dserror("geometry type unspecified");
+    }
+    count = count_cond.find(sectionname);
+    if (count == count_cond.end()) dat << geo << "0" << endl;
+    else  {
+      dat << geo << (count->second).size() << endl;
+      for (i_c=(count->second).begin();i_c!=(count->second).end();++i_c){
+        EXODUS::cond_def actcon = condefs[*i_c];
+        dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
+      }
+    }
   }
   
   
