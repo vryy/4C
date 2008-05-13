@@ -806,6 +806,11 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
 
     output_.WriteVector("velnp"   , velnp_);
 
+    // output real pressure
+    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
+    pressure->Scale(density_);
+    output_.WriteVector("pressure", pressure);
+
     if (alefluid_)
     {
       output_.WriteVector("dispnp", dispnp_);

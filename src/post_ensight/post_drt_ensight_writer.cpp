@@ -248,55 +248,55 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
   const int numnpglobal = nodemap->NumGlobalElements();
   RefCountPtr<Epetra_MultiVector> nodecoords = rcp(new Epetra_MultiVector(*nodemap,3));
 
-  const int NSD = 3; ///< number of space dimensions
+  const int NSD = 3; // number of space dimensions
 
-                  // loop over the nodes on this proc and store the coordinate information
-                  for (int inode=0; inode<numnp; inode++)
-                  {
-                    int gid = nodemap->GID(inode);
-                    const DRT::Node* actnode = dis->gNode(gid);
-                    for (int isd=0; isd<NSD; ++isd)
-                    {
-                      double val = ((actnode->X())[isd]);
-                      nodecoords->ReplaceMyValue(inode, isd, val);
-                    }
-                  }
+  // loop over the nodes on this proc and store the coordinate information
+  for (int inode=0; inode<numnp; inode++)
+  {
+    int gid = nodemap->GID(inode);
+    const DRT::Node* actnode = dis->gNode(gid);
+    for (int isd=0; isd<NSD; ++isd)
+    {
+      double val = ((actnode->X())[isd]);
+      nodecoords->ReplaceMyValue(inode, isd, val);
+    }
+  }
 
-                  // put all coordinate information on proc 0
-                  RefCountPtr<Epetra_Map> proc0map;
-                  proc0map = LINALG::AllreduceEMap(*nodemap,0);
+  // put all coordinate information on proc 0
+  RefCountPtr<Epetra_Map> proc0map;
+  proc0map = LINALG::AllreduceEMap(*nodemap,0);
 
-                  // import my new values (proc0 gets everything, other procs empty)
-                  Epetra_Import proc0importer(*proc0map,*nodemap);
-                  RefCountPtr<Epetra_MultiVector> allnodecoords = rcp(new Epetra_MultiVector(*proc0map,3));
-                  int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
-                  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+  // import my new values (proc0 gets everything, other procs empty)
+  Epetra_Import proc0importer(*proc0map,*nodemap);
+  RefCountPtr<Epetra_MultiVector> allnodecoords = rcp(new Epetra_MultiVector(*proc0map,3));
+  int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
+  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
-                  // write the node coordinates (only proc 0)
-                  // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
-                  // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
-                  if (myrank_==0)
-                  {
-                    double* coords = allnodecoords->Values();
-                    int numentries = (3*(allnodecoords->GlobalLength()));
-                    dsassert(numentries == (3*numnpglobal),"proc 0 has not all of the node coordinates");
-                    if (nodeidgiven_)
-                    {
-                      // first write node global ids (default)
-                      for (int inode=0; inode<proc0map->NumGlobalElements(); ++inode)
-                      {
-                        Write(geofile,static_cast<float>(proc0map->GID(inode))+1);
-                        // gid+1 delivers the node numbering of the *.dat file starting with 1
-                      }
-                    }
-                    // now write the coordinate information
-                    for (int i=0; i<numentries; ++i)
-                    {
-                      Write(geofile, static_cast<float>(coords[i]));
-                    }
-                  }
+  // write the node coordinates (only proc 0)
+  // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
+  // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
+  if (myrank_==0)
+  {
+    double* coords = allnodecoords->Values();
+    int numentries = (3*(allnodecoords->GlobalLength()));
+    dsassert(numentries == (3*numnpglobal),"proc 0 has not all of the node coordinates");
+    if (nodeidgiven_)
+    {
+      // first write node global ids (default)
+      for (int inode=0; inode<proc0map->NumGlobalElements(); ++inode)
+      {
+        Write(geofile,static_cast<float>(proc0map->GID(inode))+1);
+        // gid+1 delivers the node numbering of the *.dat file starting with 1
+      }
+    }
+    // now write the coordinate information
+    for (int i=0; i<numentries; ++i)
+    {
+      Write(geofile, static_cast<float>(coords[i]));
+    }
+  }
 
-                  return proc0map;
+  return proc0map;
 }
 
 

@@ -58,7 +58,7 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
 void FluidEnsightWriter::WriteAllResults(PostField* field)
 {
   EnsightWriter::WriteResult("velnp", "velocity", dofbased, field->problem()->num_dim());
-  EnsightWriter::WriteResult("velnp", "pressure", dofbased, 1, field->problem()->num_dim());
+  EnsightWriter::WriteResult("pressure", "pressure", dofbased, 1);
   EnsightWriter::WriteResult("residual", "residual", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("dispnp", "displacement", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("traction", "traction", dofbased, field->problem()->num_dim());

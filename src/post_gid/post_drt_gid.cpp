@@ -79,6 +79,48 @@ void write_vector_result(string result_name, PostField* field, PostResult* resul
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void write_scalar_result(string result_name, PostField* field, PostResult* result)
+{
+  //double time = map_read_real(result->group(), "time");
+  int step = map_read_int(result->group(), "step");
+
+  ostringstream buf;
+  buf << field->name() << "_" << result_name;
+
+  RefCountPtr<Epetra_Vector> data = result->read_result(result_name);
+  const Epetra_BlockMap& datamap = data->Map();
+
+  const char* name = result_name.c_str();
+  GiD_BeginResult(const_cast<char*>(buf.str().c_str()), "ccarat", step, GiD_Scalar,
+                  GiD_OnNodes, NULL, NULL, 1,
+                  const_cast<char**>(&name));
+
+  // determine offset of dofs in case of multiple discretizations in
+  // separate files (e.g. multi-scale problems). during calculation,
+  // dofs are numbered consecutively for all discretizations. in the
+  // post-processing phase, when only one discretization is called,
+  // numbering always starts with 0, so a potential offset needs to be
+  // taken into account
+
+  int offset = datamap.MinAllGID() - field->discretization()->DofRowMap()->MinAllGID();
+
+  for (int k = 0; k < field->num_nodes(); ++k)
+  {
+    DRT::Node* n = field->discretization()->lRowNode(k);
+    std::vector<int> s = field->discretization()->Dof(n);
+
+    // Note: This works for the pressure as well. The pressure dof is the
+    // ndim+1 dof each node, however the additional difference ndim is
+    // automatically included in offset. Odd but true.
+    int dof = s[0];
+
+    GiD_WriteScalar(n->Id()+1,(*data)[datamap.LID(dof+offset)]);
+  }
+  GiD_EndResult();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void write_serialdensematrix_result(string result_name, PostField* field,
                                     PostResult* result)
 {
@@ -420,6 +462,10 @@ int main(int argc, char** argv)
       if (map_has_map(result.group(), "velnp"))
       {
         write_vector_result("velnp", field, &result);
+      }
+      if (map_has_map(result.group(), "pressure"))
+      {
+        write_scalar_result("pressure", field, &result);
       }
       if (map_has_map(result.group(), "acceleration"))
       {
