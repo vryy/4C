@@ -2251,10 +2251,6 @@ Teuchos::RCP<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
     }
   }
 
-  // inform the user
-  if (myrank_==0)
-    cout<<"\ncomputed traction at specified Dirichlet boundaries\n\n";
-
   return integratedshapefunc;
 
 } // FluidImplicitTimeInt::CalcStresses()
