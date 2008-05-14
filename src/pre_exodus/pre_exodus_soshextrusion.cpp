@@ -23,7 +23,7 @@ using namespace Teuchos;
 
 
 /* Method to extrude a surface to become a volumetric body */
-EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness, int layers, int seedid, int gmsh)
+EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid, int gmsh)
 {
   int highestnid = basemesh.GetNumNodes() +1;
   map<int,vector<double> > newnodes;          // here the new nodes ar stored

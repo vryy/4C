@@ -83,7 +83,10 @@ int main(
     {
       dserror("CommandLineProcessor reported an error");
     }
-
+    
+    /*----------------------------------------------------------------------*
+     | Start of preprocessing                                               |
+     *----------------------------------------------------------------------*/
     if (exofile=="")
     {
       if (datfile!="")
@@ -105,115 +108,31 @@ int main(
     EXODUS::Mesh mymesh(exofile.c_str());
     // print infos to cout
     mymesh.Print(cout);
-    //mymesh.CloseExo();
 
-    // declare empty vectors for holding "boundary" conditions
-    vector<EXODUS::elem_def> eledefs;
-    vector<EXODUS::cond_def> condefs;
+    /**************************************************************************
+     * Edit a existing Mesh, e.g. extrusion of surface
+     **************************************************************************/
     
     // generate solid shell extrusion based on exodus file
     if (soshthickness!=0.0){
       if (exofile=="") dserror("no exofile specified for extrusion");
-      //if (soshthickness < 0.0) dserror("thickness specified for solid-shell extrusion is negative");
       EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer, soshseedid, soshgmsh);
-      string extrudefile;
-      extrudefile = "extr_" + exofile;
-      //Mesh mysosh(exofile.c_str());
-      //mysosh.Print(cout,true);
-      mysosh.WriteMesh(extrudefile);
-      exit(1);
+      mysosh.WriteMesh("extr_" + exofile);
+      exit(0);
     }
 
-    mymesh.CloseExo();
+    /**************************************************************************
+     * Read ControlFile for Boundary and Element descriptions
+     **************************************************************************/
+
+    // declare empty vectors for holding "boundary" conditions
+    vector<EXODUS::elem_def> eledefs;
+    vector<EXODUS::cond_def> condefs;
+
     if (bcfile=="")
     {
-      string defaultbcfilename = "default.bc";
-      cout << "found no BC specification file --> creating " <<defaultbcfilename<< endl;
-
-      // open default bc specification file
-      ofstream defaultbc(defaultbcfilename.c_str());
-      if (!defaultbc)
-         dserror("failed to open file: %s", defaultbcfilename.c_str());
-      
-      // write mesh verbosely
-      defaultbc<<"----------- Mesh contents -----------"<<endl<<endl;
-      mymesh.Print(defaultbc, false);
-
-      /*
-      // show all necessary bc and element specifications (suggestion for user)     
-      defaultbc<<"-----------Please specify:-----------"<<endl<<endl;
-	    defaultbc<<"\\\\SYNTAX:"<<endl;
-      defaultbc<<"\\\\"<<"matrID"<<"=\"<DESIGN TYPE or ELEMENT>\"\"<DESIGN-number or ELEMENT-TYPE>\""<<endl
-      <<"\\\\"<<"boundr_cond=\"<BC TYPE>\"\"<the BC itself>\""<<endl
-      <<"\\\\"<<"type=\"<ELEMENT-type>\"\"<ELEMENT-type2>\"\"<ELEMENT-type3>\""<<endl
-      <<"\\\\"<<"prop=\"<element flags>\""<<endl<<endl;
-      
-      defaultbc<<"\\\\ For Example:"<<endl
-      <<"\\\\matr1 =\"ELEMENT\"\"STRUCTURE\""<<endl
-      <<"\\\\boundr_cond=\" \"\" \" "<<endl
-      <<"\\\\type=\"STRUCTURE\"\"SOLIDSH8\"\"HEX8\" "<<endl
-      <<"\\\\prop=\"MAT       1 EAS sosh8 THICKDIR auto\" "<<endl<<endl;
-      defaultbc<<"\\\\matr1 =\"ELEMENT\"\"FLUID\" "<<endl
-      <<"\\\\boundr_cond=\" \"\" \" "<<endl
-      <<"\\\\type=\"FLUID\"\"FLUID3\"\"HEX8\" " <<endl
-      <<"\\\\prop=\"MAT       1 NA ALE GP 2 2 2\" "<<endl<<endl;
-      defaultbc<<"\\\\matr2 =\"DSURF\"\"1\" "<<endl
-      << "\\\\boundr_cond=\"NEUMANN\"\"E 1 - 1  0 0 1 0 0 0 0.0 0.0 1.0 0.0 0.0 0.0 Live Mid\" "<<endl<<endl;
-      defaultbc<<"\\\\matr6 =\"DSURF\"\"4\" "<<endl
-      <<"\\\\boundr_cond=\"DIRICH\"\"E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0\" "<<endl<<endl;
-      */
-      
-      defaultbc << "MIND that you can specify a condition also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'"<<endl;
-      defaultbc<<"------------------------------------------------BCSPECS"<<endl<<endl;
-      
-      
-      // write ElementBlocks with specification proposal
-      const map<int,EXODUS::ElementBlock> myblocks = mymesh.GetElementBlocks();
-      map<int,EXODUS::ElementBlock>::const_iterator it;
-      for (it = myblocks.begin(); it != myblocks.end(); ++it){
-        it->second.Print(defaultbc);
-        defaultbc<<"*eb"<< it->first << "=\"ELEMENT\""<<endl
-        <<"sectionname=\"\""<<endl
-        <<"description=\"\""<<endl
-        <<"elementname=\"\""<<endl
-        //<<"elementshape=\""
-        //<< DRT::DistypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<endl
-        <<endl;
-      }
-      
-      // write NodeSets with specification proposal
-      const map<int,EXODUS::NodeSet> mynodesets = mymesh.GetNodeSets();
-      map<int,EXODUS::NodeSet>::const_iterator ins;
-      for (ins =mynodesets.begin(); ins != mynodesets.end(); ++ins){
-        ins->second.Print(defaultbc);
-        defaultbc<<"*ns"<< ins->first << "=\"CONDITION\""<<endl
-        <<"sectionname=\"\""<<endl
-        <<"description=\"\""<<endl
-        <<endl;
-      }
-      
-      // write SideSets with specification proposal
-      const map<int,EXODUS::SideSet> mysidesets = mymesh.GetSideSets();
-      map<int,EXODUS::SideSet>::const_iterator iss;
-      for (iss = mysidesets.begin(); iss!=mysidesets.end(); ++iss){
-        iss->second.Print(defaultbc);
-        defaultbc<<"*ss"<< iss->first << "=\"CONDITION\""<<endl
-        <<"sectionname=\"\""<<endl
-        <<"description=\"\""<<endl
-        <<endl;
-      }
-
-      // print validconditions as proposal
-      defaultbc << "-----------------------------------------VALIDCONDITIONS"<< endl;
-      Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
-      DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc,*condlist,false);
-      
-      //(*condlist)[0]->Print(cout,NULL,true);
-
-
-      // close default bc specification file
-      if (defaultbc.is_open()) 
-        defaultbc.close();
+      int error = EXODUS::CreateDefaultBCFile(mymesh);
+      if (error!=0) dserror("Creation of default bc-file not successful.");
     }
     else
     {
@@ -225,14 +144,17 @@ int main(
       if (test != sum) cout << "Your " << test << " definitions do not match the " << sum << " entities in your mesh!" <<endl; 
     }
 
+    /**************************************************************************
+     * Read HeaderFile for 'header' parameters, e.g. solver, dynamic, material
+     **************************************************************************/
     if (headfile=="")
     {
       string defaultheadfilename = "default.head";
       cout << "found no header file           --> creating "<<defaultheadfilename<< endl;
+
       // open default header file
       ofstream defaulthead(defaultheadfilename.c_str());
-      if (!defaulthead)
-        dserror("failed to open file: %s", defaultheadfilename.c_str());
+      if (!defaulthead) dserror("failed to open file: %s", defaultheadfilename.c_str());
 
       // get valid input parameters
       Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
@@ -240,27 +162,29 @@ int main(
       // write default .dat header into file 
       DRT::INPUT::PrintDatHeader(defaulthead,*list);
 
-      // add additional line at the end of the default header file
-      // (needed in order to tell the DatFileReader that the last section has finished)
-      //defaulthead<<"----------------------------------------------------EOF HEADERFILE"<<endl;
-
       // close default header file
-      if (defaulthead.is_open())
-         defaulthead.close();
+      if (defaulthead.is_open()) defaulthead.close();
     }
 
-  if (datfile=="")
-  {
-    // default dat file, later
-  }
-  else
-  {
-    cout << "creating BACI input file       --> " << datfile << endl;
-    EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
-  }
+    /**************************************************************************
+     * Finally, create and validate the BACI input file
+     **************************************************************************/
+    if ((headfile!="") && (bcfile!="") && (exofile!=""))
+    {
+      // set default dat-file name if needed
+      if (datfile=="")
+      {
+        string exofilebasename = exofile.substr(0,exofile.find_first_of("."));
+        datfile==exofilebasename+".dat";
+      }
 
-  //validate the generated BACI input file
-  EXODUS::ValidateInputFile(datfile);
+      // write the BACI input file
+      cout << "creating BACI input file       --> " << datfile << endl;
+      EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
+
+      //validate the generated BACI input file
+      EXODUS::ValidateInputFile(datfile);
+    }
 
 #ifdef PARALLEL
   MPI_Finalize();
@@ -269,6 +193,73 @@ int main(
   return 0;
 
 }
+
+// create default bc file
+int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
+{
+  string defaultbcfilename = "default.bc";
+  cout << "found no BC specification file --> creating " <<defaultbcfilename<< endl;
+
+  // open default bc specification file
+  ofstream defaultbc(defaultbcfilename.c_str());
+  if (!defaultbc)
+    dserror("failed to open file: %s", defaultbcfilename.c_str());
+
+  // write mesh verbosely
+  defaultbc<<"----------- Mesh contents -----------"<<endl<<endl;
+  mymesh.Print(defaultbc, false);
+
+  defaultbc << "MIND that you can specify a condition also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'"<<endl;
+  defaultbc<<"------------------------------------------------BCSPECS"<<endl<<endl;
+
+  // write ElementBlocks with specification proposal
+  const map<int,EXODUS::ElementBlock> myblocks = mymesh.GetElementBlocks();
+  map<int,EXODUS::ElementBlock>::const_iterator it;
+  for (it = myblocks.begin(); it != myblocks.end(); ++it){
+    it->second.Print(defaultbc);
+    defaultbc<<"*eb"<< it->first << "=\"ELEMENT\""<<endl
+    <<"sectionname=\"\""<<endl
+    <<"description=\"\""<<endl
+    <<"elementname=\"\""<<endl
+    //<<"elementshape=\""
+    //<< DRT::DistypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<endl
+    <<endl;
+  }
+
+  // write NodeSets with specification proposal
+  const map<int,EXODUS::NodeSet> mynodesets = mymesh.GetNodeSets();
+  map<int,EXODUS::NodeSet>::const_iterator ins;
+  for (ins =mynodesets.begin(); ins != mynodesets.end(); ++ins){
+    ins->second.Print(defaultbc);
+    defaultbc<<"*ns"<< ins->first << "=\"CONDITION\""<<endl
+    <<"sectionname=\"\""<<endl
+    <<"description=\"\""<<endl
+    <<endl;
+  }
+
+  // write SideSets with specification proposal
+  const map<int,EXODUS::SideSet> mysidesets = mymesh.GetSideSets();
+  map<int,EXODUS::SideSet>::const_iterator iss;
+  for (iss = mysidesets.begin(); iss!=mysidesets.end(); ++iss){
+    iss->second.Print(defaultbc);
+    defaultbc<<"*ss"<< iss->first << "=\"CONDITION\""<<endl
+    <<"sectionname=\"\""<<endl
+    <<"description=\"\""<<endl
+    <<endl;
+  }
+
+  // print validconditions as proposal
+  defaultbc << "-----------------------------------------VALIDCONDITIONS"<< endl;
+  Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
+  DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc,*condlist,false);
+
+  // close default bc specification file
+  if (defaultbc.is_open()) 
+    defaultbc.close();
+
+  return 0;
+};
+
 
 #endif
 #endif

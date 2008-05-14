@@ -57,11 +57,11 @@ void EXODUS::ValidateInputFile(string datfile)
   // (compare with ntainp_ccadiscret() )
   char* datfilename = (char*) datfile.c_str();
   allfiles.inputfile_name = datfilename;
-  sprintf(allfiles.outputfile_name, "%s%d.err",
-      allfiles.outputfile_kenner, 0);
+  sprintf(allfiles.outputfile_name, "%s.err",datfile.c_str());
   if ((allfiles.out_err = fopen(allfiles.outputfile_name,"w"))==NULL)
   {
-    printf("Opening of output file .err failed\n");}
+    printf("Opening of output file .err failed\n");
+  }
 
   // communication
 #ifdef PARALLEL

@@ -31,6 +31,7 @@ or the well-known .dat file is created.
 #include <string>
 #include <iostream>
 #include <vector>
+#include "pre_exodus_reader.H"
 //#include <exodusII.h>
 extern "C" /* stuff which is c and is accessed from c++ */
 {
@@ -40,8 +41,8 @@ using namespace std;
 
 namespace EXODUS
 {
-
-
+//! create default bc file
+int CreateDefaultBCFile(EXODUS::Mesh& mesh);
 
 } // of namespace EXODUS
 #endif /* of CCADISCRET */

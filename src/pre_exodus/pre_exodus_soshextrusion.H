@@ -36,7 +36,7 @@ using namespace Teuchos;
 namespace EXODUS
 {
 
-Mesh SolidShellExtrusion(EXODUS::Mesh basemesh, double thickness, int layers, int seedid, int gmsh);
+Mesh SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid, int gmsh);
 
 bool CheckExtrusion(const EXODUS::ElementBlock eblock);
 bool CheckExtrusion(const EXODUS::SideSet sideset);

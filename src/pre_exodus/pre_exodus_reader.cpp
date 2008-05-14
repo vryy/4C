@@ -209,6 +209,10 @@ EXODUS::Mesh::Mesh(string exofilename)
     // Add this SideSet into Mesh map
     sideSets_.insert(std::pair<int,SideSet>(i,actSideSet));
   }
+  
+  // close ExoFile
+  CloseExo();
+
   return;
 }
 
