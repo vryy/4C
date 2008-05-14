@@ -14,8 +14,10 @@ Maintainer: Moritz & Georg
 Pre_exodus contains classes to open and preprocess exodusII files into the
 drt of Baci. It uses the "valid-parameters"-list defined in Baci for preparing
 a up-to-date Baci header and another file specifying element and boundary
-specifications. As result either a preliminary input file set is suggestioned,
-or the well-known .dat file is created.
+specifications based on "valid-conditions". As result either a preliminary
+input file set is suggestioned, or the well-known .dat file is created.
+Addionally, specify an already existing BACI input file in order to validate
+its parameters and conditions.
 
 */
 /*----------------------------------------------------------------------*/
@@ -32,12 +34,6 @@ or the well-known .dat file is created.
 #include "pre_exodus_writedat.H"
 #include "pre_exodus_readbc.H"
 #include "pre_exodus_validate.H"
-
-#ifdef PARALLEL
-#include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
 
 
 using namespace std;
@@ -246,7 +242,7 @@ int main(
 
       // add additional line at the end of the default header file
       // (needed in order to tell the DatFileReader that the last section has finished)
-      defaulthead<<"-----------------------------------------------------EOF HEADERFILE"<<endl;
+      //defaulthead<<"----------------------------------------------------EOF HEADERFILE"<<endl;
 
       // close default header file
       if (defaulthead.is_open())
@@ -263,7 +259,7 @@ int main(
     EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
   }
 
-  //validate the BACI input file
+  //validate the generated BACI input file
   EXODUS::ValidateInputFile(datfile);
 
 #ifdef PARALLEL

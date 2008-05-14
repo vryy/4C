@@ -11,7 +11,7 @@ Maintainer: Georg Bauer
             089 - 289-15252
 </pre>
 
-Validate a given BACI input file after all preprocessing steps
+Validate a given BACI input file (after all preprocessing steps)
 
 */
 
