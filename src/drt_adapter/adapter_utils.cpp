@@ -585,6 +585,7 @@ RCP<DRT::Discretization> ADAPTER::UTILS::CreateDiscretizationFromCondition(
   conds.clear();
 
   cutterdis->GetCondition("XFEMCoupling", conds);
+  cout <<  "\n number of XFEMCoupling conditions (cutterdis)   " << conds.size() << endl;
   for (unsigned i=0; i<conds.size(); ++i)
   {
     // We use the same nodal ids and therefore we can just copy the
@@ -593,6 +594,9 @@ RCP<DRT::Discretization> ADAPTER::UTILS::CreateDiscretizationFromCondition(
   }
   conds.clear();
 
+  boundarydis->GetCondition("XFEMCoupling", conds);
+  cout <<  "\n number of XFEMCoupling conditions (boundarydis) " << conds.size() << endl;
+  
   // now care about the parallel distribution
   //
 

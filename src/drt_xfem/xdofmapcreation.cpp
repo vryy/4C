@@ -16,6 +16,7 @@ Maintainer: Axel Gerstenberger
 
 #include <blitz/array.h>
 #include "xdofmapcreation.H"
+#include "xfem_condition.H"
 
 using namespace std;
 
@@ -28,49 +29,58 @@ void XFEM::createDofMap(
         const RCP<DRT::Discretization>            cutterdis,
         const RCP<DRT::Discretization>            submerseddis,
         const std::map<int, XFEM::DomainIntCells >&    elementDomainIntCellMap,
+        const std::map<int, XFEM::BoundaryIntCells >&  elementBoundaryIntCellMap,
         std::map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,
         std::map<int, const set<XFEM::FieldEnr> >&     elementalDofsFinal
         )
 {
-    // temporary assembly
-    std::map<int, set<XFEM::FieldEnr> >  nodalDofSet;
-    std::map<int, set<XFEM::FieldEnr> >  elementalDofs;
-    
-//    // loop my row nodes and add standard degrees of freedom to nodes
-//    for (int i=0; i<xfemdis->NumMyColNodes(); ++i)
-//    {
-//        // standard enrichment used for all nodes (for now -> we can remove them from holes in the fluid)
-//        const int standard_label = 0;    
-//        const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
-//        const DRT::Node* actnode = xfemdis->lColNode(i);
-//        const int gid = actnode->Id();
-//        nodalDofSet[gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
-//        nodalDofSet[gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
-//        nodalDofSet[gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
-//        nodalDofSet[gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
-//    };
-    
-    // loop xfem conditions and add appropriate enrichments
-    vector< DRT::Condition * >              xfemConditions;
-    cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
-    cout << "numcondition = " << xfemConditions.size() << endl;
-    
-    for (vector< DRT::Condition * >::const_iterator condition_iter = xfemConditions.begin(); condition_iter != xfemConditions.end(); ++condition_iter)
+  // temporary assembly
+  std::map<int, set<XFEM::FieldEnr> >  nodalDofSet;
+  std::map<int, set<XFEM::FieldEnr> >  elementalDofs;
+
+  // get elements for each coupling label
+  std::map<int,set<DRT::Element*> > elementsByLabel;
+  XFEM::CollectElementsByXFEMCouplingLabel(cutterdis, elementsByLabel);
+  
+  // invert collection
+  std::map<int,set<int> > labelsPerElementId;
+  for(std::map<int,set<DRT::Element*> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  {
+    for(std::set<DRT::Element*>::const_iterator ele = conditer->second.begin(); ele!=conditer->second.end(); ++ele)
     {
-        const DRT::Condition * condition = *condition_iter;
-        const int label = condition->Getint("label");
-        cout << "condition with label = " << label << endl;
+      labelsPerElementId[(*ele)->Id()].insert(conditer->first);
+    }
+  }
     
-        // for surface 1, loop my col elements and add void enrichments to each elements member nodes
-        const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
-        for (int i=0; i<xfemdis->NumMyColElements(); ++i)
-        {
-            const DRT::Element* actele = xfemdis->lColElement(i);
-            const int element_gid = actele->Id();
-            if (elementDomainIntCellMap.count(element_gid) >= 1)
-            {
+  for(std::map<int,set<DRT::Element*> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  {
+      const int label = conditer->first;
+    
+      // for surface 1, loop my col elements and add void enrichments to each elements member nodes
+      const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
+      for (int i=0; i<xfemdis->NumMyColElements(); ++i)
+      {
+          const DRT::Element* actele = xfemdis->lColElement(i);
+          const int element_gid = actele->Id();
+          if (elementBoundaryIntCellMap.count(element_gid) >= 1)
+          {
+              
+              const XFEM::BoundaryIntCells& bcells = elementBoundaryIntCellMap.find(element_gid)->second;
                 //TODO: check if element is intersected by the CURRENT condition label
-                
+              bool has_label = false;
+              for (BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
+              {
+                  const int surface_ele_gid = bcell->GetSurfaceEleGid();
+                  set<int> eleidset = labelsPerElementId.find(surface_ele_gid)->second;
+                  if (eleidset.find(label) != eleidset.end())
+                  {
+                      has_label = true;
+                      break;
+                  }
+              }
+              
+              if (has_label)
+              {
                 const int nen = actele->NumNode();
                 const int* nodeidptrs = actele->NodeIds();
                 for (int inen = 0; inen<nen; ++inen)
@@ -98,6 +108,7 @@ void XFEM::createDofMap(
                 elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauxz, voidenr));
                 elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauyz, voidenr));
                 elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::DiscPres, voidenr));
+              };
             }
         };
     };

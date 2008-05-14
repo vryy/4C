@@ -166,7 +166,9 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
             xfemdis_(ih->xfemdis())
 {
     XFEM::createDofMap(
-            ih->xfemdis(), ih->cutterdis(), ih->submerseddis(), ih->elementalDomainIntCells(),
+            ih->xfemdis(), ih->cutterdis(), ih->submerseddis(),
+            ih->elementalDomainIntCells(),
+            ih->elementalBoundaryIntCells(),
             nodalDofSet_, elementalDofs_);
 
     unique_enrichments_.clear();

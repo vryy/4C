@@ -109,6 +109,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
     }
     f_system << IO::GMSH::getConfigString(3);
     f_system.close();
+    cout << " done" << endl;
   }
   
   // debug: write information about which structure we are in
