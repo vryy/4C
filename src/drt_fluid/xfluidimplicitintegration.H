@@ -191,7 +191,7 @@ public:
   \brief calculate stresses
 
   */
-  RCP<Epetra_Vector> CalcStresses();
+  Teuchos::RCP<Epetra_Vector> CalcStresses();
 
   /*!
   \brief read restart data

@@ -32,6 +32,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "fluid_utils.H"
 
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -611,6 +612,8 @@ void XFluidImplicitTimeInt::NonlinearSolve(
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
+  const bool fluidrobin = params_.get<bool>("fluidrobin", false);
+
   int               itnum = 0;
   bool              stopnonliniter = false;
 
@@ -628,8 +631,6 @@ void XFluidImplicitTimeInt::NonlinearSolve(
   while (stopnonliniter==false)
   {
     itnum++;
-
-    double density = 1;
 
     // -------------------------------------------------------------------
     // call elements to calculate system matrix
@@ -687,13 +688,14 @@ void XFluidImplicitTimeInt::NonlinearSolve(
       {
         // call standard loop over elements
         discret_->Evaluate(eleparams,sysmat_,residual_);
+
         discret_->ClearState();
 
-        density = eleparams.get("density", 0.0);
-        if (density <= 0.0) dserror("recieved illegal density value");
+        density_ = eleparams.get("density", 0.0);
+        if (density_ <= 0.0) dserror("recieved illegal density value");
 
         // How to extract the density from the fluid material?
-        trueresidual_->Update(density/dta_/theta_,*residual_,0.0);
+        trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -910,7 +912,6 @@ void XFluidImplicitTimeInt::NonlinearSolve(
       freesurface_->InsertCondVector(fsvelnp,gridv_);
     }
   }
-
 } // FluidImplicitTimeInt::NonlinearSolve
 
 
@@ -946,9 +947,6 @@ void XFluidImplicitTimeInt::LinearSolve(
 
   if (myrank_ == 0)
     cout << "solution of linearised fluid   ";
-
-  // what is this meant for???
-  double density = 1.;
 
   // -------------------------------------------------------------------
   // call elements to calculate system matrix
@@ -987,7 +985,7 @@ void XFluidImplicitTimeInt::LinearSolve(
     discret_->Evaluate(eleparams,sysmat_,rhs_);
     discret_->ClearState();
 
-    density = eleparams.get("density", 0.0);
+    density_ = eleparams.get("density", 0.0);
 
     // finalize the complete matrix
     sysmat_->Complete();
@@ -1168,6 +1166,12 @@ void XFluidImplicitTimeInt::Output()
 
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
+
+    // output real pressure
+    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
+    pressure->Scale(density_);
+    output_.WriteVector("pressure", pressure);
+
     //output_.WriteVector("residual", trueresidual_);
     if (alefluid_)
       output_.WriteVector("dispnp", dispnp_);
@@ -1175,8 +1179,8 @@ void XFluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-     RefCountPtr<Epetra_Vector> traction = CalcStresses();
-     output_.WriteVector("traction",traction);
+      RCP<Epetra_Vector> traction = CalcStresses();
+      output_.WriteVector("traction",traction);
     }
 
     // write domain decomposition for visualization (only once!)
@@ -1217,8 +1221,8 @@ void XFluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-     RefCountPtr<Epetra_Vector> traction = CalcStresses();
-     output_.WriteVector("traction",traction);
+      RCP<Epetra_Vector> traction = CalcStresses();
+      output_.WriteVector("traction",traction);
     }
 
     output_.WriteVector("accn", accn_);
@@ -1226,92 +1230,6 @@ void XFluidImplicitTimeInt::Output()
     output_.WriteVector("velnm", velnm_);
   }
 
-#if 0  // DEBUG IO --- the whole systemmatrix
-      {
-	  int rr;
-	  int mm;
-	  for(rr=0;rr<residual_->MyLength();rr++)
-	  {
-	      int NumEntries;
-
-	      vector<double> Values(maxentriesperrow);
-	      vector<int> Indices(maxentriesperrow);
-
-	      sysmat_->ExtractGlobalRowCopy(rr,
-					    maxentriesperrow,
-					    NumEntries,
-					    &Values[0],&Indices[0]);
-	      printf("Row %4d\n",rr);
-
-	      for(mm=0;mm<NumEntries;mm++)
-	      {
-		  printf("mat [%4d] [%4d] %26.19e\n",rr,Indices[mm],Values[mm]);
-	      }
-	  }
-      }
-#endif
-
-#if 0  // DEBUG IO  --- rhs of linear system
-      {
-	  int rr;
-	  double* data = residual_->Values();
-	  for(rr=0;rr<residual_->MyLength();rr++)
-	  {
-	      printf("global %22.15e\n",data[rr]);
-	  }
-      }
-
-#endif
-
-#if 0  // DEBUG IO --- neumann_loads
-      {
-	  int rr;
-	  double* data = neumann_loads_->Values();
-	  for(rr=0;rr<incvel_->MyLength();rr++)
-	  {
-	      printf("neum[%4d] %26.19e\n",rr,data[rr]);
-	  }
-      }
-
-#endif
-
-
-#if 0  // DEBUG IO --- incremental solution
-      if (myrank_==0)
-      {
-        int rr;
-        double* data = incvel_->Values();
-        for(rr=0;rr<incvel_->MyLength();rr++)
-        {
-          printf("sol[%4d] %26.19e\n",rr,data[rr]);
-        }
-      }
-
-#endif
-
-
-#if 0  // DEBUG IO --- the solution vector after convergence
-      if (myrank_==0)
-      {
-        int rr;
-        double* data = velnp_->Values();
-        for(rr=0;rr<velnp_->MyLength();rr++)
-        {
-          printf("velnp %22.15e\n",data[rr]);
-        }
-      }
-#endif
-
-     #if 0  // DEBUG IO  --- traction
-     {
-	  int rr;
-	  double* data = traction->Values();
-	  for(rr=0;rr<traction->MyLength();rr++)
-	  {
-	      printf("traction %22.15e\n",data[rr]);
-	  }
-     }
-     #endif
 
   return;
 } // FluidImplicitTimeInt::Output
@@ -1702,46 +1620,27 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  calculate (wall) stresses (public)                         gjb 07/07|
+ |  calculate traction vector at (Dirichlet) boundary (public) gjb 07/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-RefCountPtr<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
+Teuchos::RCP<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
 {
-  ParameterList eleparams;
-  // set action for elements
-  eleparams.set("action","integrate_Shapefunction");
-
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // create vector (+ initialization with zeros)
-  RefCountPtr<Epetra_Vector> integratedshapefunc = LINALG::CreateVector(*dofrowmap,true);
-
-  // call loop over elements to evaluate the condition
-  discret_->ClearState();
-  const string condstring("FluidStressCalc");
-  discret_->EvaluateCondition(eleparams,integratedshapefunc,condstring);
-  discret_->ClearState();
+  string condstring("FluidStressCalc");
+  Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
 
   // compute traction values at specified nodes; otherwise do not touch the zero values
   for (int i=0;i<integratedshapefunc->MyLength();i++)
   {
     if ((*integratedshapefunc)[i] != 0.0)
     {
-      // overwerite integratedshapefunc values with the calculated traction coefficients
+      // overwrite integratedshapefunc values with the calculated traction coefficients,
+      // which are reconstructed out of the nodal forces (trueresidual_) using the
+      // same shape functions on the boundary as for velocity and pressure.
       (*integratedshapefunc)[i] = (*trueresidual_)[i]/(*integratedshapefunc)[i];
     }
   }
-
-  // compute traction values at nodes   ---not used any more-----
-  // component-wise calculation:  traction := 0.0*traction + 1.0*(trueresidual_ / integratedshapefunc_)
-  // int err = traction->ReciprocalMultiply(1.0,*integratedshapefunc,*trueresidual_,0.0);
-  // if (err > 0) dserror("error in traction->ReciprocalMultiply");
-
 
   return integratedshapefunc;
 
@@ -1938,7 +1837,10 @@ Teuchos::RCP<Epetra_Vector> XFluidImplicitTimeInt::IntegrateInterfaceShape(std::
 
   // call loop over elements
   discret_->ClearState();
-  discret_->SetState("dispnp", dispnp_);
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+  }
   discret_->EvaluateCondition(eleparams,integratedshapefunc,condname);
   discret_->ClearState();
 
@@ -2040,14 +1942,15 @@ void XFluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> re
   discret_->Evaluate(eleparams,sysmat_,residual_);
   discret_->ClearState();
 
-  double density = eleparams.get("density", 0.0);
+  density_ = eleparams.get("density", 0.0);
 
   // finalize the system matrix
   sysmat_->Complete();
 
   if (sysmat_->Apply(*incvel_, *trueresidual_)!=0)
     dserror("sysmat_->Apply() failed");
-  trueresidual_->Scale(-density/dta_/theta_);
+  trueresidual_->Scale(-density_/dta_/theta_);
 }
+
 
 #endif /* CCADISCRET       */
