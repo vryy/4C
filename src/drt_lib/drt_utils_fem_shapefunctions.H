@@ -43,7 +43,7 @@ namespace UTILS
   \brief Fill a vector of type V with with 3D shape function
   */
   template<class V>
-  inline void shape_function_3D(
+  void shape_function_3D(
     V&                                       funct,   ///< to be filled with shape function values
     const double&                            r,       ///< r coordinate
     const double&                            s,       ///< s coordinate
@@ -266,7 +266,7 @@ namespace UTILS
   \brief Fill a matrix of type M with 3D first shape function derivatives
   */
   template <class M>
-  inline void shape_function_3D_deriv1(
+  void shape_function_3D_deriv1(
     M&                                       deriv1,  ///< to be filled with shape function derivative values
     const double&                            r,       ///< r coordinate
     const double&                            s,       ///< s coordinate
@@ -731,7 +731,7 @@ namespace UTILS
   \brief Fill a matrix of type M with 3D second shape function derivatives
   */
   template <class M>
-  inline void shape_function_3D_deriv2(
+  void shape_function_3D_deriv2(
     M&                                       deriv2,  ///< to be filled with shape function 2-nd derivative values
     const double&                            r,       ///< r coordinate
     const double&                            s,       ///< s coordinate
@@ -1375,7 +1375,7 @@ namespace UTILS
   \brief Fill a vector of type V with 2D shape function
   */
   template<class V>
-  inline void shape_function_2D(
+  void shape_function_2D(
     V&                                       funct,   ///< to be filled with shape function values
     const double&                            r,       ///< r coordinate
     const double&                            s,       ///< s coordinate
@@ -1510,7 +1510,7 @@ namespace UTILS
   \brief Fill a matrix of type M with first 2D shape function derivative
   */
   template <class M>
-  inline void shape_function_2D_deriv1(
+  void shape_function_2D_deriv1(
     M&                                       deriv1,  ///< to be filled with shape function derivative values
     const double&                            r,       ///< r coordinate
     const double&                            s,       ///< s coordinate
@@ -1702,6 +1702,7 @@ namespace UTILS
           break;
       }
       default:
+          cout << DRT::DistypeToString(distype) << endl;
           dserror("distype unknown\n");
       } /* end switch(distype) */
       return;
@@ -1711,7 +1712,7 @@ namespace UTILS
   \brief Fill a matrix of type M with second 2D shape function derivative
   */
   template <class M>
-  inline void shape_function_2D_deriv2(
+  void shape_function_2D_deriv2(
     M&                                       deriv2,  ///< to be filled with shape function 2-nd derivative values
     const double&                            r,       ///< r coordinate
     const double&                            s,       ///< s coordinate
@@ -1955,7 +1956,7 @@ namespace UTILS
   \brief Fill a vector of type V with 1D shape function
   */
   template<class V>
-  inline void shape_function_1D(
+  void shape_function_1D(
     V&                                       funct,   ///< to be filled with shape function values
     const double&                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
@@ -1993,7 +1994,7 @@ namespace UTILS
   \brief Fill a matrix of type M with first 1D shape function derivative
   */
   template <class M>
-  inline void shape_function_1D_deriv1(
+  void shape_function_1D_deriv1(
     M&                                       deriv1,  ///< to be filled with shape function derivative values
     const double&                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
@@ -2032,7 +2033,7 @@ namespace UTILS
   \brief Fill a matrix of type M with second 1D shape function derivative
   */
   template <class M>
-  inline void shape_function_1D_deriv2(
+  void shape_function_1D_deriv2(
     M&                                       deriv2,  ///< to be filled with shape function 2-nd derivative values
     const double&                            r,       ///< r coordinate
     const DRT::Element::DiscretizationType&  distype  ///< distuinguish between DiscretizationType
