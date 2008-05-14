@@ -205,4 +205,18 @@ const char* FSI::OverlappingBlockMatrix::Label() const
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::OverlappingBlockMatrix::SetupBlockPrecond()
+{
+  const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
+  const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
+  const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
+
+  structuresolver_->Setup(structInnerOp.EpetraMatrix());
+  fluidsolver_    ->Setup(fluidInnerOp .EpetraMatrix());
+  alesolver_      ->Setup(aleInnerOp   .EpetraMatrix());
+}
+
+
 #endif

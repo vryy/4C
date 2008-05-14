@@ -6,6 +6,7 @@
 #include <NOX_Direction_UserDefinedFactory.H>
 
 #include "fsi_monolithic.H"
+#include "fsi_overlapprec.H"
 
 namespace FSI
 {
@@ -159,7 +160,7 @@ namespace FSI
     //@}
 
     /// block system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
+    Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
     //! @name time measurement
 

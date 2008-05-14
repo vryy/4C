@@ -43,6 +43,11 @@ namespace LINALG
     /// construction from a solver object
     explicit Preconditioner(Teuchos::RCP<Solver> solver);
 
+    /// create internal preconditioner object
+    /*!
+      Destroy any existing one.
+     */
+    void Setup(Teuchos::RCP<Epetra_Operator> matrix);
 
     /// Solve system of equations
     /*!

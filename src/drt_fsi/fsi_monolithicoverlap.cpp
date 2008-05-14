@@ -2,7 +2,6 @@
 
 #include "fsi_monolithicoverlap.H"
 #include "fsi_statustest.H"
-#include "fsi_overlapprec.H"
 #include "fsi_nox_aitken.H"
 #include "fsi_nox_newton.H"
 
@@ -223,7 +222,9 @@ bool FSI::MonolithicOverlap::computePreconditioner(const Epetra_Vector &x,
                                                    Teuchos::ParameterList *precParams)
 {
   // Create preconditioner operator.
-  // We don't need to do anything special here. The blocks are already there.
+  // The blocks are already there. And this is the perfect place to initialize
+  // the block preconditioners.
+  systemmatrix_->SetupBlockPrecond();
   return true;
 }
 

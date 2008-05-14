@@ -41,6 +41,9 @@ namespace FSI
 
     //@}
 
+    /// setup of block preconditioners
+    void SetupBlockPrecond();
+
   private:
 
     /// lower Gauss-Seidel block preconditioner

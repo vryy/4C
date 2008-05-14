@@ -18,23 +18,12 @@ LINALG::Preconditioner::Preconditioner(Teuchos::RCP<Solver> solver)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator>  matrix,
-                                   Teuchos::RCP<Epetra_Vector>    x,
-                                   Teuchos::RCP<Epetra_Vector>    b,
-                                   bool refactor,
-                                   bool reset)
+void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix)
 {
   std::string solvertype = solver_->Params().get("solver","none");
   if (solvertype=="aztec")
   {
-    // do just the preconditioner from iterative solver
-
     Teuchos::ParameterList& azlist = solver_->Params().sublist("Aztec Parameters");
-
-    // decide whether we recreate preconditioners
-    int  reuse  = azlist.get("reuse",0);
-    bool create = reset or not Ncall() or not reuse or (Ncall()%reuse==0);
-
     // see whether Operator is a Epetra_CrsMatrix
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(&*matrix);
 
@@ -51,7 +40,7 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator>  matrix,
     }
 
     // do ifpack if desired
-    if (create && doifpack)
+    if (doifpack)
     {
       Teuchos::ParameterList& ifpacklist = solver_->Params().sublist("IFPACK Parameters");
       // create a copy of the scaled matrix
@@ -69,7 +58,7 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator>  matrix,
     }
 
     // do ml if desired
-    if (create && doml)
+    if (doml)
     {
       Teuchos::ParameterList& mllist = solver_->Params().sublist("ML Parameters");
       // see whether we use standard ml or our own mlapi operator
@@ -93,7 +82,7 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator>  matrix,
     }
 
 #if 0
-    if (create && dosimpler)
+    if (dosimpler)
     {
       // SIMPLER does not need copy of preconditioning matrix to live
       // SIMPLER does not use the downwinding installed here, it does
@@ -104,11 +93,32 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator>  matrix,
       Pmatrix_ = null;
     }
 #endif
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator>  matrix,
+                                   Teuchos::RCP<Epetra_Vector>    x,
+                                   Teuchos::RCP<Epetra_Vector>    b,
+                                   bool refactor,
+                                   bool reset)
+{
+  std::string solvertype = solver_->Params().get("solver","none");
+  if (solvertype=="aztec")
+  {
+    // do just the preconditioner from iterative solver
+
+    //Teuchos::ParameterList& azlist = solver_->Params().sublist("Aztec Parameters");
+
+    // decide whether we recreate preconditioners
+    //int  reuse  = azlist.get("reuse",0);
+    //bool create = reset or not Ncall() or not reuse or (Ncall()%reuse==0);
 
     // apply the preconditioner
     // This is were the work happens.
     ApplyInverse(*b,*x);
-
   }
   else
   {
