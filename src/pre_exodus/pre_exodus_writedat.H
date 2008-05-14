@@ -64,7 +64,7 @@ string WriteDatNodes(const EXODUS::Mesh& mymesh);
 string WriteDatEles(const vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& mymesh);
 
 //! Elements from eblock
-string DatEles(const EXODUS::ElementBlock& eb, const EXODUS::elem_def& acte, int& struele);
+void DatEles(const EXODUS::ElementBlock& eb, const EXODUS::elem_def& acte, int& struele, stringstream& dat);
 
 //! as e.g. also ElementBlocks can hold 'BACI-Conditions' we find everything what will be a 'BACI-Condition"
 vector<EXODUS::bc_entity> FindBACIConditions(const vector<map<int,EXODUS::bc_entity> >& bc_specs);
