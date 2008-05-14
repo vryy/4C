@@ -36,13 +36,13 @@ template<> struct FieldNum<XFEM::PHYSICS::Pres> {static const int pos = 3;};
 
 //! for the viscous stress, replace shear stress components with symmetric part
 template <XFEM::PHYSICS::Field FIELD>
-struct Mangle {static const XFEM::PHYSICS::Field name = FIELD;};
-template<> struct Mangle<XFEM::PHYSICS::Sigmayx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxy;};
-template<> struct Mangle<XFEM::PHYSICS::Sigmazx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxz;};
-template<> struct Mangle<XFEM::PHYSICS::Sigmazy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmayz;};
-template<> struct Mangle<XFEM::PHYSICS::Tauyx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxy;};
-template<> struct Mangle<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxz;};
-template<> struct Mangle<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauyz;};
+struct MangleField {static const XFEM::PHYSICS::Field name = FIELD;};
+template<> struct MangleField<XFEM::PHYSICS::Sigmayx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxy;};
+template<> struct MangleField<XFEM::PHYSICS::Sigmazx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxz;};
+template<> struct MangleField<XFEM::PHYSICS::Sigmazy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmayz;};
+template<> struct MangleField<XFEM::PHYSICS::Tauyx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxy;};
+template<> struct MangleField<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxz;};
+template<> struct MangleField<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauyz;};
 
 //! class that assembles one after another integral of the weak form into the stiffness matrix
 template <DRT::Element::DiscretizationType DISTYPE, 
@@ -78,8 +78,8 @@ public:
             const BlitzVec&     trialshape
             ) const
     {
-        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField(Mangle<testfield>::name);
-        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField(Mangle<trialfield>::name);
+        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField(MangleField<testfield>::name);
+        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField(MangleField<trialfield>::name);
         
 //        const int numparamtest  = testdof.size();
 //        const int numparamtrial = trialdof.size();
@@ -114,7 +114,7 @@ public:
             const double&       fac
             ) const
     {
-        const std::vector<int>& testdof = dofman_.LocalDofPosPerField(Mangle<testfield>::name);
+        const std::vector<int>& testdof = dofman_.LocalDofPosPerField(MangleField<testfield>::name);
         
 //        const int numparamtest  = testdof.size();
 //        
