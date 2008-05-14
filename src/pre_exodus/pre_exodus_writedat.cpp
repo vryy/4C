@@ -44,7 +44,7 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
   dat << datdesign;
   
   // write conditions
-  string datconditions = EXODUS::WriteDatConditions(condefs);
+  string datconditions = EXODUS::WriteDatConditions(condefs,mymesh);
   dat << datconditions;
   
   // write design-topology
@@ -101,22 +101,6 @@ string EXODUS::WriteDatHead(const string& headfile)
   return headstring;
 }
 
-vector<EXODUS::bc_entity> EXODUS::FindBACIConditions(const vector<map<int,EXODUS::bc_entity> >& bc_specs)
-{
-  vector<EXODUS::bc_entity> bacis;
-  map<int,EXODUS::bc_entity>::const_iterator it;
-  for (unsigned int i = 0; i < bc_specs.size(); ++i) {
-    map<int,EXODUS::bc_entity> actmap = bc_specs.at(i);
-    for(it=actmap.begin();it!=actmap.end();++it){
-      EXODUS::bc_entity actentity = it->second;
-      if(actentity.ct==EXODUS::dvol || actentity.ct==EXODUS::dsurf 
-          || actentity.ct==EXODUS::dline || actentity.ct==EXODUS::dpoint){
-        bacis.push_back(actentity);
-      }
-    }
-  }
-  return bacis;
-}
 
 string EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs)
 {
@@ -147,7 +131,7 @@ string EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs)
   return dat.str();
 }
 
-string EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs)
+string EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EXODUS::Mesh& mymesh)
 {
   stringstream dat;
   
@@ -188,6 +172,9 @@ string EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs)
       dat << geo << (count->second).size() << endl;
       for (i_c=(count->second).begin();i_c!=(count->second).end();++i_c){
         EXODUS::cond_def actcon = condefs[*i_c];
+        string name = (mymesh.GetNodeSet(actcon.id).GetName());
+        string pname = (mymesh.GetNodeSet(actcon.id).GetPropName());
+        if((name!="") && (pname!="none")) dat << "// " << name.c_str() << " " << pname.c_str() << endl;
         dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
       }
     }

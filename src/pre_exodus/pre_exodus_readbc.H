@@ -34,17 +34,6 @@ namespace EXODUS
 // differentiate between underlying mesh entity
 enum mesh_entity{bceb,bcns,bcss};
 
-//// taken from 'validconditions'
-//enum GeometryType
-//{
-//  NoGeom,
-//  Point,
-//  Line,
-//  Surface,
-//  Volume
-//};
-
-
 // differentiate between corresponding condition_type
 enum cond_type{element,dvol,dsurf,dline,dpoint,empty,invalid};
 
@@ -66,17 +55,6 @@ struct cond_def{
   int e_id;                   // refers to datfile 'E num -'
   DRT::Condition::GeometryType gtype;         
 };
-
-
-struct bc_entity{
-  int id;
-  mesh_entity me;
-  cond_type ct;
-  vector<string> specs;
-};
-
-//! Read BC-file
-vector<map<int,bc_entity> > ReadBCFile(const string bcfile);
 
 void ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs, vector<EXODUS::cond_def>& condefs);
 

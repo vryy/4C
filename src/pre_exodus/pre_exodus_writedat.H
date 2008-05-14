@@ -49,7 +49,7 @@ string WriteDatHead(const string& headfile);
 string WriteDatDesign(const vector<EXODUS::cond_def>& condefs);
 
 //! conditions
-string WriteDatConditions(const vector<EXODUS::cond_def>& condefs);
+string WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EXODUS::Mesh& mymesh);
 
 //! DesignNode - Node Topology
 string WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh);
@@ -65,9 +65,6 @@ void WriteDatEles(const vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& m
 
 //! Elements from eblock
 void DatEles(const EXODUS::ElementBlock& eb, const EXODUS::elem_def& acte, int& struele, ofstream& dat);
-
-//! as e.g. also ElementBlocks can hold 'BACI-Conditions' we find everything what will be a 'BACI-Condition"
-vector<EXODUS::bc_entity> FindBACIConditions(const vector<map<int,EXODUS::bc_entity> >& bc_specs);
 
 inline string CondGeomTypeToString(const EXODUS::cond_def& def)
 {

@@ -145,6 +145,7 @@ int main(
 
     /**************************************************************************
      * Read HeaderFile for 'header' parameters, e.g. solver, dynamic, material
+     * or create a default HeaderFile
      **************************************************************************/
     if (headfile=="")
     {
@@ -160,6 +161,16 @@ int main(
 
       // write default .dat header into file 
       DRT::INPUT::PrintDatHeader(defaulthead,*list);
+      
+      defaulthead <<
+      "---------------------------------------------------------MATERIALS"<<endl<<
+      "-------------------------------------------------------LOAD CURVES"<<endl<<
+      "------------------------------------------------------------CURVE1"<<endl<<
+      "------------------------------------------------------------CURVE2"<<endl<<
+      "------------------------------------------------------------CURVE3"<<endl<<
+      "------------------------------------------------------------CURVE4"<<endl<<
+      "------------------------------------------------------------FUNCT1"<<endl;
+
 
       // close default header file
       if (defaulthead.is_open()) defaulthead.close();
@@ -216,8 +227,15 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   "has 9417816 Elements"<<endl<<
   "\"*eb0=\"ELEMENT\""<<endl<<
   "sectionname=\"FLUID\""<<endl<<
-  "description=\"MAT 1 NA Euler GP 2 2 2\""<<endl<<
+  "description=\"MAT 1 NA Euler GP_TET 4 GP_ALT standard\""<<endl<<
   "elementname=\"FLUID3\" \n"<<endl<<
+  "Element Block, named: "<<endl<<
+  "of Shape: HEX8"<<endl<<
+  "has 9417816 Elements"<<endl<<
+  "\"*eb0=\"ELEMENT\""<<endl<<
+  "sectionname=\"STRUCTURE\""<<endl<<
+  "description=\"MAT 1 EAS mild\""<<endl<<
+  "elementname=\"SOLIDH8\" \n"<<endl<<
   "Node Set, named:"<<endl<<
   "Property Name: INFLOW"<<endl<<
   "has 45107 Nodes"<<endl<<
