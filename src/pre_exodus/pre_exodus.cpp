@@ -175,7 +175,7 @@ int main(
       if (datfile=="")
       {
         string exofilebasename = exofile.substr(0,exofile.find_first_of("."));
-        datfile==exofilebasename+".dat";
+        datfile=exofilebasename+".dat";
       }
 
       // write the BACI input file
@@ -258,7 +258,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
     defaultbc.close();
 
   return 0;
-};
+}
 
 
 #endif

@@ -29,6 +29,10 @@ Here is everything related with writing a dat-file
 using namespace std;
 using namespace Teuchos;
 
+/*!
+\brief EXODUS: namespace of the ExodusII-to-BACI preprocessing tool
+
+*/
 namespace EXODUS
 {
 //! write datfile

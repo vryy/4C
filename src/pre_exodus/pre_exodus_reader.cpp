@@ -62,6 +62,7 @@ EXODUS::Mesh::Mesh(string exofilename)
   if (num_dim_ != 3) dserror("only 3 dimensions for mesh, yet");
 
   // get nodal coordinates
+  {
   vector<float> x(num_nodes);
   vector<float> y(num_nodes);
   vector<float> z(num_nodes);
@@ -76,6 +77,7 @@ EXODUS::Mesh::Mesh(string exofilename)
     coords.push_back(z[i]);
     nodes_.insert(std::pair<int,vector<double> >(i,coords));
   }
+  } // free coordinate vectors x, y ,z
 
   // Get all ElementBlocks
   vector<int> epropID(num_elem_blk);
@@ -101,13 +103,15 @@ EXODUS::Mesh::Mesh(string exofilename)
     vector<int> allconn(num_nod_per_elem*num_el_in_blk);
     error = ex_get_elem_conn(exoid_,ebids[i],&allconn[0]);
     if (error != 0) dserror("exo error returned");
-	  map<int,vector<int> > eleconn;
-	  for (int j = 0; j < num_el_in_blk; ++j) {
-	    vector<int> actconn;
-	    for (int k = 0; k < num_nod_per_elem; ++k){
+    RCP<map<int,vector<int> > > eleconn = rcp(new map<int,vector<int> >);
+    for (int j = 0; j < num_el_in_blk; ++j)
+    {
+      vector<int> actconn;
+      actconn.reserve(num_nod_per_elem);
+      for (int k = 0; k < num_nod_per_elem; ++k){
         actconn.push_back(allconn[k + j*num_nod_per_elem]);
-	    }
-	    eleconn.insert(std::pair<int,vector<int> >(j,actconn));
+      }
+      eleconn->insert(std::pair<int,vector<int> >(j,actconn));
     }
 	  ElementBlock actEleBlock(StringToShape(ele_type), eleconn, blockname);
 	  
@@ -175,6 +179,13 @@ EXODUS::Mesh::Mesh(string exofilename)
     // this is the standard case without prop names
     nodeSets_ = prelimNodeSets;
   }
+
+  //clean up node set names
+  for (int i=0; i<num_props; i++)
+  {
+    delete [] prop_names[i];
+  }
+  delete [] prop_names;
   // ***************************************************************************
   
   // get all SideSets
@@ -431,7 +442,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
     rangebreak += i_ebs->second.GetNumEle();
     glob_eb_erange.push_back(rangebreak);
     eblocks.push_back(i_ebs->second);
-    econns.push_back(i_ebs->second.GetEleConn());
+    econns.push_back(*(i_ebs->second.GetEleConn()));
   }
   tm7 = null;
   
@@ -542,7 +553,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool c
     rangebreak += i_ebs->second.GetNumEle();
     glob_eb_erange.push_back(rangebreak);
     eblocks.push_back(i_ebs->second);
-    econns.push_back(i_ebs->second.GetEleConn());
+    econns.push_back(*(i_ebs->second.GetEleConn()));
   }
   
   // fill SideSet Connectivity
@@ -674,18 +685,18 @@ vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(const EXODUS::SideSe
   vector<ElementBlock> eblocks;
   //map<int,vector<int> > sideconn = sideset.GetSideSet();
   map<int,vector<int> >::const_iterator i_ele;
-  map<int,vector<int> > quadconn;
+  RCP<map<int,vector<int> > > quadconn = rcp(new map<int,vector<int> >);
   int quadcounter = 0;
-  map<int,vector<int> > triconn;
+  RCP<map<int,vector<int> > > triconn = rcp(new map<int,vector<int> >);
   int tricounter = 0;
   for (i_ele = sideconn.begin(); i_ele != sideconn.end(); ++i_ele){
     int numnodes = i_ele->second.size();
     if (numnodes == 4){
-      quadconn.insert(pair<int,vector<int> >(quadcounter,i_ele->second));
+      quadconn->insert(pair<int,vector<int> >(quadcounter,i_ele->second));
       quadcounter ++;
     }
     else if (numnodes == 3){
-      triconn.insert(pair<int,vector<int> >(tricounter,i_ele->second));
+      triconn->insert(pair<int,vector<int> >(tricounter,i_ele->second));
       tricounter ++;
     }
     else dserror("Number of basenodes for conversion from SideSet to EBlock not supported");
@@ -895,7 +906,7 @@ void EXODUS::Mesh::AddElementBlock(const EXODUS::ElementBlock eblock) const
 }
 
 
-EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype, map<int,vector<int> > &eleconn, string name)
+EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype, RCP<map<int,vector<int> > >& eleconn, string name)
 {
   distype_ = Distype;
   eleconn_ = eleconn;
@@ -909,14 +920,14 @@ EXODUS::ElementBlock::~ElementBlock()
 
 vector<int> EXODUS::ElementBlock::GetEleNodes(int i) const
 {
-  map<int,vector<int> >::const_iterator  it = eleconn_.find(i);
+  map<int,vector<int> >::const_iterator  it = eleconn_->find(i);
   return it->second;
 }
 
 int EXODUS::ElementBlock::GetEleNode(int ele, int node) const
 {
-  map<int,vector<int> >::const_iterator  it = eleconn_.find(ele);
-  if (it == eleconn_.end()) dserror("Element not found");
+  map<int,vector<int> >::const_iterator  it = eleconn_->find(ele);
+  if (it == eleconn_->end()) dserror("Element not found");
   vector<int> elenodes = GetEleNodes(ele);
   return elenodes[node];
 }
@@ -924,7 +935,7 @@ int EXODUS::ElementBlock::GetEleNode(int ele, int node) const
 void EXODUS::ElementBlock::FillEconnArray(int *connarray) const
 {
   const map<int,vector<int> >::const_iterator iele;
-  int numele = eleconn_.size();
+  int numele = eleconn_->size();
   for (int i = 0; i < numele; ++i) {
     vector<int> ele = GetEleNodes(i);
     int num_nod_per_elem = ele.size();
@@ -942,7 +953,7 @@ void EXODUS::ElementBlock::Print(ostream& os, bool verbose) const
   << "has " << GetNumEle() << " Elements" << endl;
   if (verbose){
     map<int,vector<int> >::const_iterator it;
-    for (it=eleconn_.begin(); it != eleconn_.end(); it++){
+    for (it=eleconn_->begin(); it != eleconn_->end(); it++){
       os << "Ele " << it->first << ": ";
       const vector<int> myconn = it->second; //GetEleNodes(int(it));
       for (int i=0; i < signed(myconn.size()); i++ ){

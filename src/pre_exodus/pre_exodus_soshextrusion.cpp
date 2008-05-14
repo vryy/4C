@@ -54,7 +54,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
     bool toextrude = CheckExtrusion(i_ebs->second);
     if (toextrude){
-      extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,i_ebs->second.GetEleConn()));
+      extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,*(i_ebs->second.GetEleConn())));
       extrusion_types.insert(pair<int,ExtrusionType>(extrusioncounter,eblock));
       extrusioncounter ++;
     }
@@ -98,7 +98,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     const set<int> free_edge_nodes = FreeEdgeNodes(ele_conn,ele_neighbor);
 
     // loop through all its elements to create new connectivity  ***************
-    map<int,vector<int> > newconn;
+    RCP<map<int,vector<int> > > newconn = rcp(new map<int,vector<int> >);
     int newele = 0;
     
     // set of elements already done
@@ -191,7 +191,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       newelenodes.insert(newelenodes.begin(),basenodes.begin(),basenodes.end());
       newelenodes.insert(newelenodes.end(),ceilnodes.begin(),ceilnodes.end());
       // insert new element into new connectivity
-      newconn.insert(pair<int,vector<int> >(newele,newelenodes));
+      newconn->insert(pair<int,vector<int> >(newele,newelenodes));
       ++ newele;
       newelenodes.clear();
     }
@@ -370,7 +370,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             newelenodes.insert(newelenodes.begin(),basenodes.begin(),basenodes.end());
             newelenodes.insert(newelenodes.end(),ceilnodes.begin(),ceilnodes.end());
             // insert new element into new connectivity
-            newconn.insert(pair<int,vector<int> >(newele,newelenodes));
+            newconn->insert(pair<int,vector<int> >(newele,newelenodes));
             ++ newele;
             newelenodes.clear();
           }
@@ -389,11 +389,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       }// end of this "center" - element ///////////////////////////////////////
       todo_counter ++;
       
-      if (gmsh == todo_counter) PlotEleConnGmsh(newconn,newnodes);
+      if (gmsh == todo_counter) PlotEleConnGmsh(*newconn,newnodes);
       
     }// end of extruding all elements in connectivity
     
-    if (gmsh == 0) PlotEleConnGmsh(newconn,newnodes);
+    if (gmsh == 0) PlotEleConnGmsh(*newconn,newnodes);
     
     // create new Element Blocks
     std::ostringstream blockname;
@@ -401,7 +401,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     ElementBlock::Shape newshape;
     switch(extrusion_types.find(i_extr->first)->second){
     case eblock:{ // Eblocks have only one type of eles
-      int numnodes = newconn.find(0)->second.size();
+      int numnodes = newconn->find(0)->second.size();
       if (numnodes == 6) newshape = ElementBlock::wedge6;
       else if (numnodes == 8) newshape = ElementBlock::hex8;
       else dserror("Number of basenodes for extrusion not supported");
@@ -412,18 +412,18 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     }
     case sideset:{ // SideSets can have different types of eles and have to be checked individually
       map<int,vector<int> >::const_iterator i_ele;
-      map<int,vector<int> > hexconn;
+      RCP<map<int,vector<int> > > hexconn = rcp(new map<int,vector<int> >);
       int hexcounter = 0;
-      map<int,vector<int> > wegconn;
+      RCP<map<int,vector<int> > > wegconn = rcp(new map<int,vector<int> >);
       int wegcounter = 0;
-      for (i_ele = newconn.begin(); i_ele != newconn.end(); ++i_ele){
+      for (i_ele = newconn->begin(); i_ele != newconn->end(); ++i_ele){
         int numnodes = i_ele->second.size();
         if (numnodes == 8){
-          hexconn.insert(pair<int,vector<int> >(hexcounter,i_ele->second));
+          hexconn->insert(pair<int,vector<int> >(hexcounter,i_ele->second));
           hexcounter ++;
         }
         else if (numnodes == 6){
-          wegconn.insert(pair<int,vector<int> >(wegcounter,i_ele->second));
+          wegconn->insert(pair<int,vector<int> >(wegcounter,i_ele->second));
           wegcounter ++;
         }
         else dserror("Number of basenodes for extrusion not supported");

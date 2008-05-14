@@ -268,9 +268,9 @@ const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS
   } else if (e.me==EXODUS::bceb){
     set<int> allnodes;
     EXODUS::ElementBlock eb = m.GetElementBlock(e.id);
-    const map<int,vector<int> > eles = eb.GetEleConn();
+    RCP<const map<int,vector<int> > > eles = eb.GetEleConn();
     map<int,vector<int> >::const_iterator i_ele;
-    for(i_ele=eles.begin(); i_ele != eles.end(); ++i_ele){
+    for(i_ele=eles->begin(); i_ele != eles->end(); ++i_ele){
       const vector<int> nodes = i_ele->second;
       vector<int>::const_iterator i;
       for(i=nodes.begin();i!=nodes.end();++i) allnodes.insert(*i);
@@ -341,7 +341,8 @@ string EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh&
     EXODUS::ElementBlock eb = mymesh.GetElementBlock(acte.id);
     string dateles = EXODUS::DatEles(eb,acte,ele);
     dat << dateles;
-  }
+
+  }    cout<<"structs";
 
   // print fluid elements
   dat << "----------------------------------------------------FLUID ELEMENTS" << endl;
@@ -376,9 +377,9 @@ string EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh&
 string EXODUS::DatEles(const EXODUS::ElementBlock& eb, const EXODUS::elem_def& acte, int& struele)
 {
   stringstream dat;
-  const map<int,vector<int> > eles = eb.GetEleConn();
+  RCP<const map<int,vector<int> > > eles = eb.GetEleConn();
   map<int,vector<int> >::const_iterator i_ele;
-  for (i_ele=eles.begin();i_ele!=eles.end();++i_ele){
+  for (i_ele=eles->begin();i_ele!=eles->end();++i_ele){
     const vector<int> nodes = i_ele->second;
     vector<int>::const_iterator i_n;
     dat << "   " << struele;

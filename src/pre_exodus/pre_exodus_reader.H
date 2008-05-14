@@ -214,16 +214,16 @@ public:
   };
 
   ElementBlock(ElementBlock::Shape DisType,
-               map<int,vector<int> > &eleconn,    // Element connectivity
+               RCP<map<int,vector<int> > >& eleconn,    // Element connectivity
                string name);
                
   virtual ~ElementBlock();
   
   ElementBlock::Shape GetShape() const {return distype_;}
   
-  int GetNumEle() const {return eleconn_.size();}
+  int GetNumEle() const {return eleconn_->size();}
   
-  map<int,vector<int> > GetEleConn() const {return eleconn_;}
+  RCP<map<int,vector<int> > > GetEleConn() const {return eleconn_;}
   
   vector<int> GetEleNodes(int i) const;
   
@@ -239,7 +239,7 @@ private:
   Shape distype_;
   
   // Element Connectivity
-  map<int,vector<int> > eleconn_;
+  RCP<map<int,vector<int> > > eleconn_;
   
   string name_;
 };
