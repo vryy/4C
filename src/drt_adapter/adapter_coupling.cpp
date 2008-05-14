@@ -161,7 +161,10 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
 {
   // match master and slave nodes using Peter's octtree
 
-  DRT::UTILS::NodeMatchingOctree tree(masterdis, masternodes);
+  // We need some way to guess the tolerance. It must not be too small,
+  // otherwise we won't find matching nodes. Too large a tolerance will not
+  // hurt that much. It just means we will have to test more nodes.
+  DRT::UTILS::NodeMatchingOctree tree(masterdis, masternodes, 150, 1e-3);
 
   map<int,pair<int,double> > coupling;
   tree.FindMatch(slavedis, slavenodes, coupling);
