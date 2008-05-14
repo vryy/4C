@@ -56,8 +56,7 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
   dat << datnodes;
   
   // write elements
-  string dateles = EXODUS::WriteDatEles(eledefs,mymesh);
-  dat << dateles;
+  EXODUS::WriteDatEles(eledefs,mymesh,dat);
 
   // write END
   dat << "---------------------------------------------------------------END\n"\
@@ -308,9 +307,8 @@ string EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh)
   return dat.str();
 }
 
-string EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& mymesh)
+void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& mymesh, ofstream& dat)
 {
-  stringstream dat;
   dat << "----------------------------------------------------------ELEMENTS" << endl;
   
   // sort elements w.r.t. structure, fluid, ale, etc.
@@ -370,10 +368,10 @@ string EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh&
     EXODUS::DatEles(*eb,acte,ele,dat);
   }
 
-  return dat.str();
+  return;
 }
 
-void EXODUS::DatEles(const EXODUS::ElementBlock& eb, const EXODUS::elem_def& acte, int& struele, stringstream& dat)
+void EXODUS::DatEles(const EXODUS::ElementBlock& eb, const EXODUS::elem_def& acte, int& struele, ofstream& dat)
 {
   RCP<const map<int,vector<int> > > eles = eb.GetEleConn();
   map<int,vector<int> >::const_iterator i_ele;

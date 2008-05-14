@@ -61,10 +61,10 @@ const set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& 
 string WriteDatNodes(const EXODUS::Mesh& mymesh);
 
 //! Elements into datfile
-string WriteDatEles(const vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& mymesh);
+void WriteDatEles(const vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& mymesh, ofstream& dat);
 
 //! Elements from eblock
-void DatEles(const EXODUS::ElementBlock& eb, const EXODUS::elem_def& acte, int& struele, stringstream& dat);
+void DatEles(const EXODUS::ElementBlock& eb, const EXODUS::elem_def& acte, int& struele, ofstream& dat);
 
 //! as e.g. also ElementBlocks can hold 'BACI-Conditions' we find everything what will be a 'BACI-Condition"
 vector<EXODUS::bc_entity> FindBACIConditions(const vector<map<int,EXODUS::bc_entity> >& bc_specs);
