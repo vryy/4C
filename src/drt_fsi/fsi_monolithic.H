@@ -237,6 +237,12 @@ namespace FSI
 
     /// flags passed to NOX
     Teuchos::ParameterList noxparameterlist_;
+
+    //! @name time measurement
+
+    Teuchos::RCP<Teuchos::Time> evaluatetimer_;
+
+    //@}
   };
 }
 

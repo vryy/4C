@@ -200,6 +200,7 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<const E
 FSI::Monolithic::Monolithic(Epetra_Comm& comm)
   : MonolithicBase(comm)
 {
+  evaluatetimer_ = Teuchos::TimeMonitor::getNewTimer("FSI::Monolithic::Evaluate");
 }
 
 
@@ -315,6 +316,8 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 {
+  Teuchos::TimeMonitor monitor(*evaluatetimer_);
+
   if (x!=Teuchos::null)
   {
     double norm;
