@@ -481,6 +481,7 @@ INPUT                  = index.doc \
                          ../src/post_ensight \
                          ../src/post_monitor \
                          ../src/post_gid \
+                         ../src/pre_exodus \
                          ../src/drt_structure \
                          ../src/drt_contact \
                          ../src/drt_elch \

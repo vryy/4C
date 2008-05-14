@@ -26,6 +26,7 @@ Validate a given BACI input file (after all preprocessing steps)
 using namespace std;
 
 namespace EXODUS{
+//! validate a given datfile
 void ValidateInputFile(string datfile);
 }
 
