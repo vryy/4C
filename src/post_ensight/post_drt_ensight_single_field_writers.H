@@ -19,7 +19,7 @@
 #include "post_drt_ensight_writer.H"
 #include "../drt_xfem/physics.H"
 
-/*
+/*!
  \brief Writer for structural problems
  */
 class StructureEnsightWriter : public EnsightWriter
@@ -90,11 +90,9 @@ protected:
   string straintype_;
 };
 
-/*----------------------------------------------------------------------*/
-/*
+/*!
  \brief Writer for fluid problems
  */
-/*----------------------------------------------------------------------*/
 class FluidEnsightWriter : public EnsightWriter
 {
 public:
@@ -111,11 +109,9 @@ protected:
             PostField* field);
 };
 
-/*----------------------------------------------------------------------*/
-/*
+/*!
  \brief Writer for fluid problems using DG-FEM
  */
-/*----------------------------------------------------------------------*/
 class DGFEMFluidEnsightWriter : public EnsightWriter
 {
 public:
@@ -132,11 +128,9 @@ protected:
             PostField* field);
 };
 
-/*----------------------------------------------------------------------*/
-/*
+/*!
  \brief Writer for ale problems
  */
-/*----------------------------------------------------------------------*/
 class AleEnsightWriter : public EnsightWriter
 {
 public:
@@ -154,14 +148,12 @@ protected:
 };
 
 
-/*----------------------------------------------------------------------*/
-/*
+/*!
  \brief Writer for convection-diffusion problems
 
  \author gjb
  \date 12/07
 */
-/*----------------------------------------------------------------------*/
 class ConDifEnsightWriter : public EnsightWriter
 {
 public:
@@ -195,8 +187,7 @@ protected:
 };
 
 
-/*----------------------------------------------------------------------*/
-/*
+/*!
  \brief Writer for fluid problems including xfem interfaces
 
  this might be handled more general in the near future, when integration cells
@@ -210,7 +201,6 @@ protected:
  \date 11/07
 
  */
-/*----------------------------------------------------------------------*/
 class XFluidEnsightWriter : public EnsightWriter
 {
 public:

@@ -1,7 +1,7 @@
 /*!
  \file post_drt_ensight_writer.H
 
- \brief basis class for the Ensight filter
+ \brief contains basis class for the Ensight filter
 
  <pre>
  Maintainer: Ulrich Kuettler
@@ -70,8 +70,7 @@ enum ResultType
   max_restype          		// end marker. must be the last entry
 };
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+//! basis class for the Ensight filter
 class EnsightWriter
 {
 public:
@@ -336,7 +335,7 @@ protected:
     //! maps a distype to the corresponding Ensight cell type
     map<DRT::Element::DiscretizationType, string> distype2ensightstring_;
 
-    // maximum file size
+    //! maximum file size
     static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff; // 2GB
     //static const unsigned FILE_SIZE_LIMIT_ = 1024*10; // 10kB ... useful for debugging ;-)
 
