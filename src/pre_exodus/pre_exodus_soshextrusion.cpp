@@ -27,12 +27,12 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
 {
   int highestnid = basemesh.GetNumNodes() +1;
   map<int,vector<double> > newnodes;          // here the new nodes ar stored
-  map<int,EXODUS::ElementBlock> neweblocks;   // here the new EBlocks are stored
+  map<int,RCP<EXODUS::ElementBlock> > neweblocks;   // here the new EBlocks are stored
   map<int,EXODUS::NodeSet> newnodesets;       // here the new NS are stored
   int highestblock = basemesh.GetNumElementBlocks();
   int highestns = basemesh.GetNumNodeSets();
-  RCP<map<int,EXODUS::ElementBlock> > ebs = basemesh.GetElementBlocks();
-  map<int,EXODUS::ElementBlock>::const_iterator i_ebs;
+  map<int,RCP<EXODUS::ElementBlock> > ebs = basemesh.GetElementBlocks();
+  map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
 
   map<int,EXODUS::NodeSet> nss = basemesh.GetNodeSets();
   map<int,EXODUS::NodeSet>::const_iterator i_nss;
@@ -51,10 +51,10 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   map<int,vector<int> > node_pair; // stores new node id with base node id
 
   // loop through all EBlocks to check for extrusion blocks
-  for (i_ebs = ebs->begin(); i_ebs != ebs->end(); ++i_ebs ){
-    bool toextrude = CheckExtrusion(i_ebs->second);
+  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
+    bool toextrude = CheckExtrusion(*i_ebs->second);
     if (toextrude){
-      extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,*(i_ebs->second.GetEleConn())));
+      extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,*(i_ebs->second->GetEleConn())));
       extrusion_types.insert(pair<int,ExtrusionType>(extrusioncounter,eblock));
       extrusioncounter ++;
     }
@@ -405,8 +405,8 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       if (numnodes == 6) newshape = ElementBlock::wedge6;
       else if (numnodes == 8) newshape = ElementBlock::hex8;
       else dserror("Number of basenodes for extrusion not supported");
-      EXODUS::ElementBlock neweblock(newshape,newconn,blockname.str());
-      neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,neweblock));
+      RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(newshape,newconn,blockname.str()));
+      neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
       highestblock ++;
       break;
     }
@@ -431,15 +431,15 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       if (hexcounter>0){
         std::ostringstream hexblockname;
         //hexblockname << blockname.str() << "h";
-        EXODUS::ElementBlock neweblock(ElementBlock::hex8,hexconn,hexblockname.str());
-        neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,neweblock));
+        RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::hex8,hexconn,hexblockname.str()));
+        neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }
       if (wegcounter>0){
         std::ostringstream wegblockname;
         //wegblockname << blockname.str() << "w";
-        EXODUS::ElementBlock neweblock(ElementBlock::wedge6,wegconn,wegblockname.str());
-        neweblocks.insert(pair<int,EXODUS::ElementBlock>(highestblock,neweblock));
+        RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(ElementBlock::wedge6,wegconn,wegblockname.str()));
+        neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }
       break;

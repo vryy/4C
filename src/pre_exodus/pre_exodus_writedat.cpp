@@ -267,8 +267,8 @@ const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS
     return ns.GetNodeSet();
   } else if (e.me==EXODUS::bceb){
     set<int> allnodes;
-    EXODUS::ElementBlock& eb = m.GetElementBlock(e.id);
-    RCP<const map<int,vector<int> > > eles = eb.GetEleConn();
+    RCP<EXODUS::ElementBlock> eb = m.GetElementBlock(e.id);
+    RCP<const map<int,vector<int> > > eles = eb->GetEleConn();
     map<int,vector<int> >::const_iterator i_ele;
     for(i_ele=eles->begin(); i_ele != eles->end(); ++i_ele){
       const vector<int> nodes = i_ele->second;
@@ -338,8 +338,8 @@ string EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh&
   dat << "------------------------------------------------STRUCTURE ELEMENTS" << endl;
   for(i_et=strus.begin();i_et!=strus.end();++i_et){
     EXODUS::elem_def acte = *i_et;
-    EXODUS::ElementBlock eb = mymesh.GetElementBlock(acte.id);
-    string dateles = EXODUS::DatEles(eb,acte,ele);
+    RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    string dateles = EXODUS::DatEles(*eb,acte,ele);
     dat << dateles;
   }
 
@@ -347,8 +347,8 @@ string EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh&
   dat << "----------------------------------------------------FLUID ELEMENTS" << endl;
   for(i_et=fluids.begin();i_et!=fluids.end();++i_et){
     EXODUS::elem_def acte = *i_et;
-    EXODUS::ElementBlock eb = mymesh.GetElementBlock(acte.id);
-    string dateles = EXODUS::DatEles(eb,acte,ele);
+    RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    string dateles = EXODUS::DatEles(*eb,acte,ele);
     dat << dateles;
   }
 
@@ -356,8 +356,8 @@ string EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh&
   dat << "------------------------------------------------------ALE ELEMENTS" << endl;
   for(i_et=ales.begin();i_et!=ales.end();++i_et){
     EXODUS::elem_def acte = *i_et;
-    EXODUS::ElementBlock eb = mymesh.GetElementBlock(acte.id);
-    string dateles = EXODUS::DatEles(eb,acte,ele);
+    RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    string dateles = EXODUS::DatEles(*eb,acte,ele);
     dat << dateles;
   }
 
@@ -365,8 +365,8 @@ string EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh&
   dat << "-------------------------------------------------LEVELSET ELEMENTS" << endl;
   for(i_et=levels.begin();i_et!=levels.end();++i_et){
     EXODUS::elem_def acte = *i_et;
-    EXODUS::ElementBlock eb = mymesh.GetElementBlock(acte.id);
-    string dateles = EXODUS::DatEles(eb,acte,ele);
+    RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    string dateles = EXODUS::DatEles(*eb,acte,ele);
     dat << dateles;
   }
 

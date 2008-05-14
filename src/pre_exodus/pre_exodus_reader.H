@@ -58,11 +58,11 @@ public:
   Mesh(string exofilename);
   
   //! extension constructor, adds Elementblock and nodes to a basemesh
-  Mesh(const Mesh basemesh,
-       const map<int,vector<double> >extNodes,
-       const map<int,ElementBlock> extBlocks,
-       const map<int,NodeSet> extNodesets,
-       const map<int,SideSet> extSidesets,
+  Mesh(const Mesh& basemesh,
+       const map<int,vector<double> >& extNodes,
+       const map<int,RCP<ElementBlock> >& extBlocks,
+       const map<int,NodeSet>& extNodesets,
+       const map<int,SideSet>& extSidesets,
        const string newtitle);
   
   //! destructor
@@ -90,13 +90,13 @@ public:
   string GetTitle() const {string title(title_,int(MAX_LINE_LENGTH+1)); return title;} 
   
   //! Get ElementBlock map
-  RCP<map<int,ElementBlock> > GetElementBlocks() const {return elementBlocks_;}
+  map<int,RCP<ElementBlock> > GetElementBlocks() const {return elementBlocks_;}
   
   //! Get Number of ElementBlocks
-  int GetNumElementBlocks() const {return elementBlocks_->size();}
+  int GetNumElementBlocks() const {return elementBlocks_.size();}
   
   //! Get one ElementBlock
-  ElementBlock& GetElementBlock(const int id) const;
+  RCP<ElementBlock> GetElementBlock(const int id) const;
   
   //! Get NodeSet map
   map<int,NodeSet> GetNodeSets() const {return nodeSets_;}
@@ -156,12 +156,12 @@ public:
   void WriteMesh(string newexofilename);
   
   //! Add Element Block to mesh
-  void AddElementBlock(const EXODUS::ElementBlock eblock) const;
+  void AddElementBlock(const RCP<EXODUS::ElementBlock> eblock) const;
 
 private:
   map<int,vector<double> > nodes_;
   
-  RCP<map<int,ElementBlock> > elementBlocks_;
+  map<int,RCP<ElementBlock> > elementBlocks_;
   
   map<int,NodeSet> nodeSets_;
   

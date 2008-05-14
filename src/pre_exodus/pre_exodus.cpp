@@ -230,10 +230,10 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   defaultbc<<"------------------------------------------------BCSPECS"<<endl<<endl;
 
   // write ElementBlocks with specification proposal
-  RCP<const map<int,EXODUS::ElementBlock> > myblocks = mymesh.GetElementBlocks();
-  map<int,EXODUS::ElementBlock>::const_iterator it;
-  for (it = myblocks->begin(); it != myblocks->end(); ++it){
-    it->second.Print(defaultbc);
+  const map<int,RCP<EXODUS::ElementBlock> > myblocks = mymesh.GetElementBlocks();
+  map<int,RCP<EXODUS::ElementBlock> >::const_iterator it;
+  for (it = myblocks.begin(); it != myblocks.end(); ++it){
+    it->second->Print(defaultbc);
     defaultbc<<"*eb"<< it->first << "=\"ELEMENT\""<<endl
     <<"sectionname=\"\""<<endl
     <<"description=\"\""<<endl
