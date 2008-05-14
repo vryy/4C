@@ -197,7 +197,7 @@ void fsi_ale_drt()
   }
   }
 
-  Teuchos::TimeMonitor::summarize();
+  Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
 }
 
 /*----------------------------------------------------------------------*/
