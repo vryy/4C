@@ -53,7 +53,6 @@ template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 void fillElementUnknownsArrays(
         const XFEM::ElementDofManager& dofman,
-        const int numnode,
         const vector<double>& locval,
         const vector<double>& locval_hist,
         BlitzMat& evelnp,
@@ -63,6 +62,8 @@ void fillElementUnknownsArrays(
         BlitzVec& ediscprenp
         )
 {
+    
+    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
     
     // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
     const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
@@ -547,47 +548,6 @@ void gder2(
     return;
 }
 
-
-//! calculate element normal in gausspoint (r,s)
-BlitzVec3 computeNormalToBoundaryElement(
-        const BlitzMat& deriv,                  ///< shape functions derivative in (r,s)
-        const BlitzMat& xs                      ///< boundary element nodal coordinates in (x,y,z) space
-        )
-{
-    // init blitz indices
-    blitz::firstIndex i;    // Placeholder for the first index
-    blitz::secondIndex j;   // Placeholder for the second index
-    blitz::thirdIndex k;    // Placeholder for the third index
-      
-    // compute dXYZ / drs (Transposed)
-    static BlitzMat dxyzdrs(3,2);
-    dxyzdrs = blitz::sum(deriv(j,k)*xs(i,k),k);
-
-    /* compute covariant metric tensor G for surface element
-    **                        | g11   g12 |
-    **                    G = |           |
-    **                        | g12   g22 |
-    ** where (o denotes the inner product, xyz a vector)
-    **
-    **       dXYZ   dXYZ          dXYZ   dXYZ          dXYZ   dXYZ
-    ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
-    **        dr     dr            dr     ds            ds     ds
-    */
-    static BlitzMat metrictensor(2,2);
-    metrictensor = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
-    
-    static BlitzVec3 unrm;
-    unrm(0) = dxyzdrs(1,0) * dxyzdrs(2,1) - dxyzdrs(2,0) * dxyzdrs(1,1);
-    unrm(1) = dxyzdrs(2,0) * dxyzdrs(0,1) - dxyzdrs(0,0) * dxyzdrs(2,1);
-    unrm(2) = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(1,0) * dxyzdrs(0,1);
-    
-    // scale
-    const double inv_length = 1.0 / sqrt(unrm(0)*unrm(0) + unrm(1)*unrm(1) + unrm(2)*unrm(2));
-
-    unrm *= inv_length;
-    // return unit vector
-    return unrm;
-}
 
 /*!
  \brief get optimal gaussrule for given discretization type

@@ -130,10 +130,48 @@ namespace XFEM
     \param eleCoord         (in)    	: vector of element coordinates
     \return                               vector of current coordinates
     */
+    template <class V>
     BlitzVec3 elementToCurrentCoordinates(   
         const DRT::Element*  element, 
-        const BlitzVec&      eleCoord
-        );
+        const V&             eleCoord
+        )
+    {
+        const int numNodes = element->NumNode();
+        BlitzVec funct(numNodes);
+        static BlitzVec3 physCoord;
+        
+        switch(DRT::UTILS::getDimension(element->Shape()))
+        {
+            case 1:
+            {
+                shape_function_1D(funct,eleCoord(0), element->Shape());
+                break;
+            }
+            case 2:
+            {
+                shape_function_2D(funct, eleCoord(0), eleCoord(1), element->Shape());
+                break;
+            }
+            case 3:
+            {
+                shape_function_3D(funct, eleCoord(0), eleCoord(1), eleCoord(2), element->Shape());
+                break;
+            }
+            default:
+                dserror("dimension of the element is not correct");
+        }          
+            
+        physCoord = 0.0;
+        
+        for(int i=0; i<numNodes; i++)
+        {
+            const DRT::Node* node = element->Nodes()[i];
+            for(int j=0; j<3; j++)
+              physCoord(j) += node->X()[j] * funct(i);
+        }
+        
+        return physCoord;
+    }
     
     /*!
     \brief transforms a point in element coordinates to a point
@@ -353,15 +391,67 @@ namespace XFEM
     
     
     /*!
-    \brief checks if a position in current coordinates lies within a certain element           
-           The nonlinear system of equation is solved with help of the Newton-method.
+    \brief checks if a position in current coordinates lies within a certain condition region           
     */  
-    bool PositionWithinCondition(
-            const BlitzVec3&                  x,                     ///< node in current coordinates
-            const int                         xfem_condition_label, 
-            const RCP<DRT::Discretization>    cutterdis              ///< mesh
+    void PositionWithinCondition(
+            const BlitzVec3&                  x,              ///< node in physical coordinates
+            const RCP<DRT::Discretization>    cutterdis,       ///< interface
+            std::map<int,bool>&               posInCondition     ///< fill with bool values
         );
     
+    
+    //! calculate element normal in gausspoint (r,s)
+    inline BlitzVec3 computeNormalToBoundaryElement(
+            const BlitzMat& deriv,                  ///< shape functions derivative in (r,s)
+            const BlitzMat& xs                      ///< boundary element nodal coordinates in (x,y,z) space
+            )
+    {
+        // init blitz indices
+        blitz::firstIndex i;    // Placeholder for the first index
+        blitz::secondIndex j;   // Placeholder for the second index
+        blitz::thirdIndex k;    // Placeholder for the third index
+          
+        // compute dXYZ / drs (Transposed)
+        static BlitzMat dxyzdrs(3,2);
+        dxyzdrs = blitz::sum(deriv(j,k)*xs(i,k),k);
+
+        /* compute covariant metric tensor G for surface element
+        **                        | g11   g12 |
+        **                    G = |           |
+        **                        | g12   g22 |
+        ** where (o denotes the inner product, xyz a vector)
+        **
+        **       dXYZ   dXYZ          dXYZ   dXYZ          dXYZ   dXYZ
+        ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
+        **        dr     dr            dr     ds            ds     ds
+        */
+        static BlitzMat metrictensor(2,2);
+        metrictensor = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
+        
+        static BlitzVec3 unrm;
+        unrm(0) = dxyzdrs(1,0) * dxyzdrs(2,1) - dxyzdrs(2,0) * dxyzdrs(1,1);
+        unrm(1) = dxyzdrs(2,0) * dxyzdrs(0,1) - dxyzdrs(0,0) * dxyzdrs(2,1);
+        unrm(2) = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(1,0) * dxyzdrs(0,1);
+        
+        // scale
+        const double inv_length = 1.0 / sqrt(unrm(0)*unrm(0) + unrm(1)*unrm(1) + unrm(2)*unrm(2));
+
+        unrm *= inv_length;
+        // return unit vector
+        return unrm;
+    }
+    
+    //! calculate element normal in gausspoint (r,s)
+    inline BlitzVec3 computeNormalToBoundaryElement(
+        const DRT::Element*      surfaceElement,    ///< surface element
+        const BlitzVec2&         xsi,               ///< coordinates in (r,s) space, where the normal shall be calculated
+        const BlitzMat&          xs                 ///< boundary element nodal coordinates in (x,y,z) space
+            )
+    {
+      const BlitzMat deriv_boundary(DRT::UTILS::shape_function_2D_deriv1(xsi(0),xsi(1),surfaceElement->Shape()));
+      
+      return computeNormalToBoundaryElement(deriv_boundary, xs);
+    }
     
     /*!
     \brief  finds the nearest point for a given point on a surface element
@@ -380,8 +470,8 @@ namespace XFEM
     bool searchForNearestPointOnSurface(
             const DRT::Element*                     surfaceElement,
             const BlitzVec3&                        physCoord,
-            BlitzVec&                               eleCoord,
-            BlitzVec&                               normal,
+            BlitzVec2&                              eleCoord,
+            BlitzVec3&                              normal,
             double&                                 distance
             );
     
@@ -394,7 +484,7 @@ namespace XFEM
        \param physCoord           	(in)        : node in physical coordinates (x, y, z)
        \return									  node in element coordinates (r, s)
     */  
-    BlitzVec CurrentToSurfaceElementCoordinates(
+    BlitzVec2 CurrentToSurfaceElementCoordinates(
         const DRT::Element*      surfaceElement,
         const BlitzVec3&         physCoord
         );
@@ -446,7 +536,7 @@ namespace XFEM
     */         
     void updateJacobianForMap3To2(   
             BlitzMat&              Jacobi,
-            const BlitzVec&	       xsi,
+            const BlitzVec2&	     xsi,
             const DRT::Element*    surfaceElement
             );      
     
@@ -462,7 +552,7 @@ namespace XFEM
     */    
     void updateFForMap3To2(   
             BlitzVec3&                      F,
-            const BlitzVec&                 xsi,
+            const BlitzVec2&                xsi,
             const BlitzVec3&                x,
             const DRT::Element*            	surfaceElement
             );
@@ -482,7 +572,7 @@ namespace XFEM
             BlitzMat&                       A,
             const BlitzMat&                 Jacobi,
             const BlitzVec3&                F,
-            const BlitzVec&                 xsi,
+            const BlitzVec2&                xsi,
             const DRT::Element*             surfaceElement
             );
     

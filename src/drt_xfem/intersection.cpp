@@ -1620,11 +1620,15 @@ void Intersection::computeCDT(
     //printTetViewOutputPLC( element, element->Id(), in);
 
     // store interface triangles (+ recovery of higher order meshes)
-    bool higherorder = false;
-    bool recovery = false;
+    const bool higherorder = false;
+    const bool recovery = false;
 
     if(higherorder)
+    {
+      cout << "lifting of Stinerpoints" << endl;
+      dserror("hu");
     	recoverCurvedInterface(element, boundaryintcells, out, recovery);
+    }
    	else
    		storeIntCells(element, boundaryintcells, out);
     // store boundaryIntCells integration cells
@@ -2015,7 +2019,7 @@ void Intersection::storeIntCells(
 	BoundaryIntCells                     			listBoundaryICPerElement;
 
     // lifts all corner points into the curved interface
-    liftAllSteinerPoints(xfemElement, out);
+    //liftAllSteinerPoints(xfemElement, out);
 
     for(int i=0; i<out.numberoftrifaces; i++)
     {
@@ -2323,7 +2327,7 @@ void Intersection::liftSteinerPointOnSurface(
         if(!intersected)
         {
             countMissedPoints_++;
-            printf("STEINER POINT NOT LIFTED\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            printf("STEINER POINT NOT LIFTED in liftSteinerPointOnSurface()\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         }
     }
 }
@@ -2380,7 +2384,7 @@ void Intersection::liftSteinerPointOnEdge(
     else
     {
         countMissedPoints_++;
-        printf("STEINER POINT NOT LIFTED\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        printf("STEINER POINT NOT LIFTED in liftSteinerPointOnEdge()\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
 }
 
@@ -2464,7 +2468,7 @@ void Intersection::liftSteinerPointOnBoundary(
     else
     {
         countMissedPoints_++;
-        printf("STEINER POINT NOT LIFTED\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        printf("STEINER POINT NOT LIFTED in liftSteinerPointOnBoundary()\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
 
 }
@@ -3583,11 +3587,15 @@ void Intersection::addCellsToDomainIntCellsMap(
     DomainIntCells   						listDomainICPerElement;
     DRT::Element::DiscretizationType		distype = DRT::Element::tet4;
     if(higherorder)							distype = DRT::Element::tet10;
-
+    
+    const int numTetNodes = DRT::UTILS::getNumberOfElementNodes(distype);
+    if (out.numberofcorners < numTetNodes)
+      dserror("you fool, you need to turn on quadratic tets with tetgen -o2 switch!");
+    
     for(int i=0; i<out.numberoftetrahedra; i++ )
     {
         vector< vector<double> > tetrahedronCoord;
-        for(int j = 0; j < out.numberofcorners; j++)
+        for(int j = 0; j < numTetNodes; j++)
         {
             vector<double> tetnodes(3);
             for(int k = 0; k < 3; k++)
@@ -3639,7 +3647,7 @@ void Intersection::addCellsToBoundaryIntCellsMap(
 
     //domainCoord.push_back(trinodes);
 
-    const BlitzVec eleCoordBoundaryCorner(CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordCorner));
+    const BlitzVec2 eleCoordBoundaryCorner(CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordCorner));
 
 //    cout << "physcood = " << physCoord << "    ";
 //    cout << "elecood = " << eleCoord << endl;
@@ -3668,7 +3676,7 @@ void Intersection::addCellsToBoundaryIntCellsMap(
 
 	    //domainCoord.push_back(trinodes);
 
-	    const BlitzVec eleCoordBoundaryHO(CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordHO));
+	    const BlitzVec2 eleCoordBoundaryHO(CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordHO));
 
 	//    cout << "physcood = " << physCoord << "    ";
 	//    cout << "elecood = " << eleCoord << endl;

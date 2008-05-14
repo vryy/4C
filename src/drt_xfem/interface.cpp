@@ -56,54 +56,102 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	cutterNodeMap_ = cutterNodeMap;
 	  
 	  
-	// sanity check, whether, we realy have integration cells in the map
-	for (std::map<int,DomainIntCells>::const_iterator 
-	        tmp = elementalDomainIntCells_.begin();
-	        tmp != elementalDomainIntCells_.end();
-	        ++tmp)
-	{
-        dsassert(tmp->second.empty() == false, "this is a bug!");
-    }
+  // sanity check, whether, we realy have integration cells in the map
+  for (std::map<int,DomainIntCells>::const_iterator 
+      tmp = elementalDomainIntCells_.begin();
+      tmp != elementalDomainIntCells_.end();
+      ++tmp)
+  {
+    dsassert(tmp->second.empty() == false, "this is a bug!");
+  }
 	
-    // sanity check, whether, we realy have integration cells in the map
-    for (std::map<int,BoundaryIntCells>::const_iterator 
-            tmp = elementalBoundaryIntCells_.begin();
-            tmp != elementalBoundaryIntCells_.end();
-            ++tmp)
-    {
-        dsassert(tmp->second.empty() == false, "this is a bug!");
-    }
+  // sanity check, whether, we realy have integration cells in the map
+  for (std::map<int,BoundaryIntCells>::const_iterator 
+      tmp = elementalBoundaryIntCells_.begin();
+      tmp != elementalBoundaryIntCells_.end();
+      ++tmp)
+  {
+    dsassert(tmp->second.empty() == false, "this is a bug!");
+  }
 	  
 #if 1
-	  // debug: write both meshes to file in Gmsh format
-	  std::ofstream f_system("elements_coupled_system.pos");
-	  f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
-	  f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis);
-	  {
-	      stringstream gmshfilecontent;
-	      gmshfilecontent << "View \" " << "CellCenter" << " Elements and Integration Cells \" {" << endl;
-	      for (int i=0; i<xfemdis->NumMyColElements(); ++i)
-	      {
-	          DRT::Element* actele = xfemdis->lColElement(i);
-	          const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
-	          XFEM::DomainIntCells::const_iterator cell;
-	          for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
-	          {
-	              const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
-	              gmshfilecontent << "SP(";
-	              gmshfilecontent << scientific << cellcenterpos(0) << ",";
-	              gmshfilecontent << scientific << cellcenterpos(1) << ",";
-	              gmshfilecontent << scientific << cellcenterpos(2);
-	              gmshfilecontent << "){";
-	              gmshfilecontent << "0.0};" << endl;
-	          };
-	      };
-	      gmshfilecontent << "};" << endl;
-	      f_system << gmshfilecontent.str();
-	  }
-	  
-	  f_system << IO::GMSH::getConfigString(3);
-	  f_system.close();
+  {
+    // debug: write both meshes to file in Gmsh format
+    cout << "writing 'elements_coupled_system.pos'...";
+    std::ofstream f_system("elements_coupled_system.pos");
+    f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
+    f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis);
+    {
+        stringstream gmshfilecontent;
+        gmshfilecontent << "View \" " << "CellCenter" << " Elements and Integration Cells \" {" << endl;
+        for (int i=0; i<xfemdis->NumMyColElements(); ++i)
+        {
+            DRT::Element* actele = xfemdis->lColElement(i);
+            const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
+            XFEM::DomainIntCells::const_iterator cell;
+            for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
+            {
+                const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
+                gmshfilecontent << "SP(";
+                gmshfilecontent << scientific << cellcenterpos(0) << ",";
+                gmshfilecontent << scientific << cellcenterpos(1) << ",";
+                gmshfilecontent << scientific << cellcenterpos(2);
+                gmshfilecontent << "){";
+                gmshfilecontent << "0.0};" << endl;
+            };
+        };
+        gmshfilecontent << "};" << endl;
+        f_system << gmshfilecontent.str();
+    }
+    f_system << IO::GMSH::getConfigString(3);
+    f_system.close();
+  }
+  
+  // debug: write information about which structure we are in
+  {
+    cout << "writing 'domains.pos'..."; 
+    std::ofstream f_system("domains.pos");
+    //f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
+    f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis);
+    {
+        map<int,bool> posInCondition;
+        stringstream gmshfilecontent;
+        gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
+        for (int i=0; i<xfemdis->NumMyColElements(); ++i)
+        {
+            DRT::Element* actele = xfemdis->lColElement(i);
+            const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
+            XFEM::DomainIntCells::const_iterator cell;
+            for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
+            {
+              const BlitzMat cellpos = cell->NodalPosXYZ(*actele);
+              const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
+              //cout << cellcenterpos << endl;
+              PositionWithinCondition(cellcenterpos, cutterdis, posInCondition);
+              int domain_id = 0;
+              // loop conditions
+              for (map<int,bool>::const_iterator entry = posInCondition.begin(); entry != posInCondition.end(); ++entry)
+              {
+                const int actdomain_id = entry->first;
+                const bool inside_condition = entry->second;
+                //cout << "Domain: " << actdomain_id << " -> inside? " << inside_condition << endl;
+                if (inside_condition)
+                {
+                  //cout << "inside" << endl;
+                  domain_id = actdomain_id;
+                  break;
+                }
+              }
+              gmshfilecontent << IO::GMSH::cellToString(cellpos, domain_id, cell->Shape()) << endl;
+            };
+        };
+        gmshfilecontent << "};" << endl;
+        f_system << gmshfilecontent.str();
+    }
+    //f_system << IO::GMSH::getConfigString(3);
+    f_system.close();
+    cout << " done" << endl;
+  }
 #endif
 }
 		

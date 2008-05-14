@@ -563,7 +563,7 @@ static void svdcmp(
     bool gaussEliminationEpetra(
         BlitzMat&           A,
         BlitzVec&           b,
-        BlitzVec&           x
+        BlitzVec2&          x
         );
     
 }

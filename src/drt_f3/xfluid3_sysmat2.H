@@ -163,7 +163,7 @@ void static Sysmat(
     BlitzMat evelnp_hist(3,numparamvelx,blitz::ColumnMajorArray<2>());
     BlitzMat etau(6,numparamtauxx,blitz::ColumnMajorArray<2>());
     
-    XFEM::fillElementUnknownsArrays<DISTYPE,ASSTYPE>(dofman, numnode, locval, locval_hist, evelnp, evelnp_hist, eprenp, etau, ediscprenp);
+    XFEM::fillElementUnknownsArrays<DISTYPE,ASSTYPE>(dofman, locval, locval_hist, evelnp, evelnp_hist, eprenp, etau, ediscprenp);
     
     // stabilization parameter
     const double hk = XFLUID::HK<DISTYPE>(evelnp,visc,xyze);

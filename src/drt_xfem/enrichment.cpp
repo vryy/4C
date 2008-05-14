@@ -99,7 +99,7 @@ double Enrichment::EnrValue(
 {
     // return value
     double enrval = 1.0;
-    
+    map<int,bool> posInCondition;
     switch (Type()){
     case XFEM::Enrichment::typeStandard:
     {
@@ -123,8 +123,9 @@ double Enrichment::EnrValue(
             case approachUnknown:
             {
                 const int xfemcondition_label = this->XFEMConditionLabel();
+                PositionWithinCondition(actpos,cutterdis,posInCondition);
                 double actpos_enr_val = 0.0;
-                if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
+                if (posInCondition.find(xfemcondition_label)->second) {
                     actpos_enr_val = 0.0;
                 } else {
                     actpos_enr_val = 1.0;
@@ -153,9 +154,9 @@ double Enrichment::EnrValue(
             case approachUnknown:
             {
                 const int xfemcondition_label = this->XFEMConditionLabel();
-                
+                PositionWithinCondition(actpos,cutterdis,posInCondition);
                 double actpos_enr_val = 0.0;
-                if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
+                if (posInCondition.find(xfemcondition_label)->second) {
                     actpos_enr_val = -1.0;
                 } else {
                     actpos_enr_val = 1.0;
@@ -188,6 +189,7 @@ double Enrichment::ModifiedEnrValue(
     dserror("needs update for the approach variable");
     // return value
     double enrval = 1.0;
+    map<int,bool> posInCondition;
     
     switch (Type()){
     case XFEM::Enrichment::typeStandard:
@@ -199,15 +201,17 @@ double Enrichment::ModifiedEnrValue(
     {
         const int xfemcondition_label = this->XFEMConditionLabel();
         
+        PositionWithinCondition(actpos,cutterdis,posInCondition);
         double actpos_enr_val = 0.0;
-        if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
+        if (posInCondition.find(xfemcondition_label)->second) {
             actpos_enr_val = 0.0;
         } else {
             actpos_enr_val = 1.0;
         }
         
+        PositionWithinCondition(nodalpos,cutterdis,posInCondition);
         double nodepos_enr_val = 0.0;
-        if (PositionWithinCondition(nodalpos, xfemcondition_label,cutterdis)) {
+        if (posInCondition.find(xfemcondition_label)->second) {
             nodepos_enr_val = 0.0;
         } else {
             nodepos_enr_val = 1.0;
@@ -221,15 +225,17 @@ double Enrichment::ModifiedEnrValue(
     {
         const int xfemcondition_label = this->XFEMConditionLabel();
         
+        PositionWithinCondition(actpos,cutterdis,posInCondition);
         double actpos_enr_val = 0.0;
-        if (PositionWithinCondition(actpos, xfemcondition_label,cutterdis)) {
+        if (posInCondition.find(xfemcondition_label)->second) {
             actpos_enr_val = -1.0;
         } else {
             actpos_enr_val = 1.0;
         }
         
+        PositionWithinCondition(nodalpos,cutterdis,posInCondition);
         double nodepos_enr_val = 0.0;
-        if (PositionWithinCondition(nodalpos, xfemcondition_label,cutterdis)) {
+        if (posInCondition.find(xfemcondition_label)->second) {
             nodepos_enr_val = -1.0;
         } else {
             nodepos_enr_val = 1.0;

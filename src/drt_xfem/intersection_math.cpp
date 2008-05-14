@@ -126,10 +126,10 @@ void XFEM::test_svdcmp(
 bool XFEM::gaussEliminationEpetra(
         BlitzMat&   A,
         BlitzVec&   b,
-        BlitzVec&   x)
+        BlitzVec2&  x)
 {
     bool solution = true;
-    int dim = 2;
+    const int dim = 2;
 
     // view on hopefullx column major blitz arrays
     Epetra_SerialDenseMatrix A_Epetra(Copy, A.data(), A.columns(), A.rows(), A.columns());

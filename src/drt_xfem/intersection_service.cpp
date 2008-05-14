@@ -43,52 +43,6 @@ BlitzVec XFEM::computeCrossProduct(
 
 
 /*----------------------------------------------------------------------*
- | GM:      transforms a node in element coordinates         u.may 07/07|
- |          into current coordinates                                    |
- *----------------------------------------------------------------------*/  
-BlitzVec3 XFEM::elementToCurrentCoordinates(   
-        const DRT::Element* element,
-        const BlitzVec&     eleCoord) 
-{
-    const int numNodes = element->NumNode();
-    BlitzVec funct(numNodes);
-    static BlitzVec3 physCoord;
-    
-    switch(getDimension(element->Shape()))
-    {
-        case 1:
-        {
-            shape_function_1D(funct,eleCoord(0), element->Shape());
-            break;
-        }
-        case 2:
-        {
-            shape_function_2D(funct, eleCoord(0), eleCoord(1), element->Shape());
-            break;
-        }
-        case 3:
-        {
-            shape_function_3D(funct, eleCoord(0), eleCoord(1), eleCoord(2), element->Shape());
-            break;
-        }
-        default:
-            dserror("dimension of the element is not correct");
-    }          
-        
-    physCoord = 0.0;
-    
-    for(int i=0; i<numNodes; i++)
-    {
-        const DRT::Node* node = element->Nodes()[i];
-        for(int j=0; j<3; j++)
-        	physCoord(j) += node->X()[j] * funct(i);
-    }
-    
-    return physCoord;
-}
-
-
-/*----------------------------------------------------------------------*
  | GM:      transforms a node in element coordinates       u.may 07/07|
  |          into current coordinates                                    |
  *----------------------------------------------------------------------*/  
@@ -285,7 +239,7 @@ bool XFEM::currentToVolumeElementCoordinates(
         break;
     default:
         cout << DistypeToString(element->Shape()) << endl;
-        dserror("add your distype to this switch!");
+        dserror("add your 3D distype to this switch!");
         nodeWithinElement = false;
     }   
     //printf("iter = %d\n", iter);
@@ -422,39 +376,112 @@ bool XFEM::PositionWithinDiscretization(
 /*----------------------------------------------------------------------*
  |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
  *----------------------------------------------------------------------*/
-bool XFEM::PositionWithinCondition(
-        const BlitzVec3&                    x_in,
-        const int                           xfem_condition_label, 
-        const RCP<DRT::Discretization>      cutterdis
+void XFEM::PositionWithinCondition(
+        const BlitzVec3&                  x_in,
+        const RCP<DRT::Discretization>    cutterdis,
+        std::map<int,bool>&               posInCondition
     )
 {
-    const int nsd = 3;
-    static BlitzVec3 x;
-    for (int isd = 0; isd < nsd; ++isd) {
-        x(isd) = x_in(isd);
-    }
-//    x = x_in;
+  posInCondition.clear();
 
-    // TODO: use label to identify the surface/xfem condition
-    
-    bool nodeWithinMesh = false;
-    // loop all elements on this processor
-    for (int i=0; i<cutterdis->NumMyRowElements(); ++i)
+  vector< DRT::Condition * >      xfemConditions;
+  cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
+  //cout <<  "\n number of XFEMCoupling conditions " << xfemConditions.size() << endl;
+  
+  // collect elements by xfem coupling label
+  std::map<int,set<DRT::Element*> > elementsByLabel;
+  for(vector<DRT::Condition*>::const_iterator conditer = xfemConditions.begin(); conditer!=xfemConditions.end(); ++conditer)
+  {
+    DRT::Condition* xfemCondition = *conditer;
+    const int label = xfemCondition->Getint("label");
+    const map<int, RCP<DRT::Element > > geometryMap = xfemCondition->Geometry();
+    set< DRT::Element* > cutterElements;
+    // find all elements of this condition
+    map<int, RCP<DRT::Element > >::const_iterator iterGeo;
+    for(iterGeo = geometryMap.begin(); iterGeo != geometryMap.end(); ++iterGeo )
     {
-        const DRT::Element* ele = cutterdis->lRowElement(i);
-        if (isPositionWithinXAABB(x, computeFastXAABB(ele)))
-        {
-            nodeWithinMesh = checkPositionWithinElement(ele, x);
-            if (nodeWithinMesh)
-                break;
-        }
+      DRT::Element*  cutterElement = iterGeo->second.get();
+      elementsByLabel[label].insert(cutterElement);
     }
+  }
+  
+  /////////////////
+  // loop labels
+  /////////////////
+  for(std::map<int,set<DRT::Element*> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  {
+    const int label = conditer->first;
+    posInCondition[label] = false; 
+    //cout << "number of cutter elements for condition " << label << ": " << conditer->second.size() << endl;
+    // find all connected nodes
+    //cout << " find all connected nodes" << endl;
+//    set<DRT::Node*> cutternodes;
+//    for (set<DRT::Element*>::const_iterator ele = conditer->second.begin(); ele != conditer->second.end(); ++ele)
+//    {
+//      DRT::Node** nodes = (*ele)->Nodes();
+//      for (int inode = 0; inode < (*ele)->NumNode(); ++inode)
+//        cutternodes.insert(nodes[inode]);
+//    }
+//    //cout << "number of closest node candidate " << cutternodes.size() << endl;
+//    //cout << " find closest nodes" << endl;
+//    DRT::Node* closest_node = NULL;
+//    double min_nodal_distance = 1.0e12;
+//    for (set<DRT::Node*>::const_iterator node = cutternodes.begin(); node != cutternodes.end(); ++node)
+//    {
+//      const double* pos = (*node)->X();
+//      const double xdiff = x_in(0)-pos[0];
+//      const double ydiff = x_in(1)-pos[1];
+//      const double zdiff = x_in(2)-pos[2];
+//      
+//      const double distance = sqrt(xdiff*xdiff + ydiff*ydiff + zdiff*zdiff);
+//      if (distance < min_nodal_distance)
+//      {
+//        min_nodal_distance = distance;
+//        closest_node = *node;
+//      }
+//    }
+//    cout << "closest Node:  " << *closest_node << endl;
+    
+    //DRT::Element** close_elements = closest_node->Elements();
+
+    
+    //cout << " searchForNearestPointOnSurface" << endl;
+    // first test: point lies opposite to a element (basis point within element parameter space)
+    bool in_element = false;
+    double min_ele_distance = 1.0e12;
+    DRT::Element* closest_element;
+    for (set<DRT::Element*>::const_iterator ele = conditer->second.begin(); ele != conditer->second.end(); ++ele)
+    {
+      double distance = 0.0;
+      BlitzVec2 eleCoord;
+      BlitzVec3 normal;
+      in_element = searchForNearestPointOnSurface(*ele,x_in,eleCoord,normal,distance);
+      if (in_element)
+      {
+        if (abs(distance) < abs(min_ele_distance))
+        {
+          closest_element = *ele;
+          min_ele_distance = distance;
+        }
+      }
+    }
+    
+    if (in_element)
+    {
+      if (min_ele_distance < 0.0)
+      {
+        posInCondition[label] = true;
+      }
+    }
+    
+  } // end loop label
 
     // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
 #ifdef PARALLEL
     dserror("not implemented, yet");
 #endif
-    return nodeWithinMesh;
+    //exit(0);
+    return;
 }
 
 
@@ -465,27 +492,38 @@ bool XFEM::PositionWithinCondition(
 bool XFEM::searchForNearestPointOnSurface(
     const DRT::Element*                   	surfaceElement,
     const BlitzVec3&                        physCoord,
-    BlitzVec&                       		eleCoord,
-    BlitzVec&           	              	normal,
+    BlitzVec2&                       		xsi,
+    BlitzVec3&           	              	normal,
     double&									distance)
 {
 	distance = -1.0;
 	normal = 0;
 	
-	eleCoord = CurrentToSurfaceElementCoordinates(surfaceElement, physCoord);
+	//cout << "CurrentToSurfaceElementCoordinates" << endl;
+	//cout << *surfaceElement << endl;
+	xsi = CurrentToSurfaceElementCoordinates(surfaceElement, physCoord);
+	//cout << "checkPositionWithinElementParameterSpace" << endl;
+	const bool pointWithinElement = checkPositionWithinElementParameterSpace(xsi, surfaceElement->Shape());
 	
-	const bool pointWithinElement = checkPositionWithinElementParameterSpace(eleCoord, surfaceElement->Shape());
+	const BlitzMat xyze_boundary(DRT::UTILS::PositionArrayBlitz(surfaceElement));
+	// normal vector at position xsi
+	const BlitzVec3 eleNormalAtXsi(computeNormalToBoundaryElement(surfaceElement, xsi, xyze_boundary));
 	
-	if(pointWithinElement)
-	{
-		const BlitzVec3 x_surface_phys(elementToCurrentCoordinates(surfaceElement, eleCoord));
-		normal(0) = x_surface_phys(0) - physCoord(0);
-		normal(1) = x_surface_phys(1) - physCoord(1);
-		normal(2) = x_surface_phys(2) - physCoord(2);
-		distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
-	}
-
-	return pointWithinElement;
+  const BlitzVec3 x_surface_phys(elementToCurrentCoordinates(surfaceElement, xsi));
+  // normal pointing away from the surface towards physCoord
+  normal(0) = physCoord(0) - x_surface_phys(0);
+  normal(1) = physCoord(1) - x_surface_phys(1);
+  normal(2) = physCoord(2) - x_surface_phys(2);
+  // absolute distance between point and surface
+  distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
+  // compute distance with sign
+  const double scalarproduct = eleNormalAtXsi(0)*normal(0) + eleNormalAtXsi(1)*normal(1) + eleNormalAtXsi(2)*normal(2);
+  const double teiler = Norm2(eleNormalAtXsi) * Norm2(normal);
+  const double cosphi = scalarproduct / teiler;
+  const double vorzeichen = cosphi/abs(cosphi);
+  distance *= vorzeichen;
+  
+  return pointWithinElement;
 }
 
 
@@ -494,14 +532,14 @@ bool XFEM::searchForNearestPointOnSurface(
  |  RQI:    compute element coordinates from a given point              |
  |          in the 3-dim physical space lies on a given surface element |
  *----------------------------------------------------------------------*/
-BlitzVec XFEM::CurrentToSurfaceElementCoordinates(
+BlitzVec2 XFEM::CurrentToSurfaceElementCoordinates(
         const DRT::Element*        	surfaceElement,
         const BlitzVec3&            physCoord
    	    )
 {
 	bool nodeWithinElement = true;
     	
-    BlitzVec eleCoord(2);
+    BlitzVec2 eleCoord;
     eleCoord = 0.0;
     
 //    blitz::firstIndex i;    // Placeholder for the first blitz array index
@@ -540,7 +578,7 @@ BlitzVec XFEM::CurrentToSurfaceElementCoordinates(
         static BlitzMat A(2,2,blitz::ColumnMajorArray<2>());
   		updateAForMap3To2(A, Jacobi, F, eleCoord, surfaceElement);
   	
-  		static BlitzVec dx(2);
+  		static BlitzVec2 dx;
   		dx = 0.0;
         if(!gaussEliminationEpetra(A, b, dx))
         {
@@ -564,7 +602,7 @@ BlitzVec XFEM::CurrentToSurfaceElementCoordinates(
  *----------------------------------------------------------------------*/
 void XFEM::updateJacobianForMap3To2(   
         BlitzMat&                       Jacobi,
-        const BlitzVec&	                xsi,
+        const BlitzVec2&                xsi,
         const DRT::Element*             surfaceElement
         )                                                  
 {   
@@ -595,7 +633,7 @@ void XFEM::updateJacobianForMap3To2(
  *----------------------------------------------------------------------*/
 void XFEM::updateFForMap3To2(
         BlitzVec3&          F,
-        const BlitzVec&	    xsi,
+        const BlitzVec2&    xsi,
         const BlitzVec3&    x,
         const DRT::Element* surfaceElement
         )                                                  
@@ -624,8 +662,8 @@ void XFEM::updateFForMap3To2(
 void XFEM::updateAForMap3To2(   
         BlitzMat& 		            A,
         const BlitzMat& 	        Jacobi,
-        const BlitzVec3&            F,
-        const BlitzVec&	            xsi,
+        const BlitzVec3&          F,
+        const BlitzVec2&          xsi,
         const DRT::Element*         surfaceElement
         )                                                  
 {   
@@ -634,7 +672,8 @@ void XFEM::updateAForMap3To2(
     blitz::secondIndex j;   // Placeholder for the second blitz array index
     blitz::thirdIndex k;    // Placeholder for the third blitz array index
     
-    const BlitzMat deriv2(shape_function_2D_deriv2(xsi(0), xsi(1), surfaceElement->Shape()));
+    BlitzMat deriv2(3,numNodes);
+    shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), surfaceElement->Shape());
 	blitz::Array<double, 3> tensor3Ord(3,2,2, blitz::ColumnMajorArray<3>());		
     tensor3Ord = 0.0;
    
