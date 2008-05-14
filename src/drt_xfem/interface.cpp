@@ -13,6 +13,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "interface.H"
+#include "xfem_condition.H"
 
 /*----------------------------------------------------------------------*
  |  ctor                                                        ag 11/07|
@@ -73,7 +74,10 @@ XFEM::InterfaceHandle::InterfaceHandle(
   {
     dsassert(tmp->second.empty() == false, "this is a bug!");
   }
-	  
+	
+  elementsByLabel_.clear();
+  CollectElementsByXFEMCouplingLabel(cutterdis, elementsByLabel_);
+  
 #if 1
   {
     // debug: write both meshes to file in Gmsh format

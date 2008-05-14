@@ -15,6 +15,7 @@ Maintainer: Ursula Mayer
 
 #include "intersection_service.H"
 #include "intersection_math.H"
+#include "xfem_condition.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
@@ -384,26 +385,8 @@ void XFEM::PositionWithinCondition(
 {
   posInCondition.clear();
 
-  vector< DRT::Condition * >      xfemConditions;
-  cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
-  //cout <<  "\n number of XFEMCoupling conditions " << xfemConditions.size() << endl;
-  
-  // collect elements by xfem coupling label
   std::map<int,set<DRT::Element*> > elementsByLabel;
-  for(vector<DRT::Condition*>::const_iterator conditer = xfemConditions.begin(); conditer!=xfemConditions.end(); ++conditer)
-  {
-    DRT::Condition* xfemCondition = *conditer;
-    const int label = xfemCondition->Getint("label");
-    const map<int, RCP<DRT::Element > > geometryMap = xfemCondition->Geometry();
-    set< DRT::Element* > cutterElements;
-    // find all elements of this condition
-    map<int, RCP<DRT::Element > >::const_iterator iterGeo;
-    for(iterGeo = geometryMap.begin(); iterGeo != geometryMap.end(); ++iterGeo )
-    {
-      DRT::Element*  cutterElement = iterGeo->second.get();
-      elementsByLabel[label].insert(cutterElement);
-    }
-  }
+  CollectElementsByXFEMCouplingLabel(cutterdis, elementsByLabel);
   
   /////////////////
   // loop labels

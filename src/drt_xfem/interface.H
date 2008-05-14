@@ -129,6 +129,9 @@ private:
 
     //! store all additional nodes for the cutter elements that are not already on this proc (int = gid of node)
     map<int, RCP<DRT::Node> > cutterNodeMap_;
+    
+    //! elements grouped by the xfem condition label
+    map<int,set<DRT::Element*> >  elementsByLabel_;
 
 };
 
