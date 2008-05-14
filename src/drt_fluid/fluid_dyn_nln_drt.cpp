@@ -324,9 +324,6 @@ void dyn_fluid_drt()
     dserror("Unknown solver type for drt_fluid");
   }
 
-  //---------- this is the end. Beautiful friend. My only friend, The end.
-  // thanks to RefCountPtr<> we do not need to delete anything here!
-
   return;
 
 } // end of dyn_fluid_drt()
