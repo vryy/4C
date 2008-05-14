@@ -83,10 +83,10 @@ int main(
     {
       dserror("CommandLineProcessor reported an error");
     }
-    
-    /*----------------------------------------------------------------------*
-     | Start of preprocessing                                               |
-     *----------------------------------------------------------------------*/
+
+    /**************************************************************************
+     * Start with the preprocessing
+     **************************************************************************/
     if (exofile=="")
     {
       if (datfile!="")
@@ -102,8 +102,7 @@ int main(
         exit(1);
       }
     }
-    
-    
+
     // create mesh object based on given exodus II file
     EXODUS::Mesh mymesh(exofile.c_str());
     // print infos to cout
@@ -112,7 +111,7 @@ int main(
     /**************************************************************************
      * Edit a existing Mesh, e.g. extrusion of surface
      **************************************************************************/
-    
+
     // generate solid shell extrusion based on exodus file
     if (soshthickness!=0.0){
       if (exofile=="") dserror("no exofile specified for extrusion");
@@ -192,7 +191,8 @@ int main(
   
   return 0;
 
-}
+} //main.cpp
+
 
 // create default bc file
 int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
@@ -208,14 +208,31 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   // write mesh verbosely
   defaultbc<<"----------- Mesh contents -----------"<<endl<<endl;
   mymesh.Print(defaultbc, false);
+  
+  // give examples for element and boundary condition syntax
+  defaultbc<<"---------- Syntax examples ----------"<<endl<<endl<<
+  "Element Block, named: "<<endl<<
+  "of Shape: TET4"<<endl<<
+  "has 9417816 Elements"<<endl<<
+  "\"*eb0=\"ELEMENT\""<<endl<<
+  "sectionname=\"FLUID\""<<endl<<
+  "description=\"MAT 1 NA Euler GP 2 2 2\""<<endl<<
+  "elementname=\"FLUID3\" \n"<<endl<<
+  "Node Set, named:"<<endl<<
+  "Property Name: INFLOW"<<endl<<
+  "has 45107 Nodes"<<endl<<
+  "\"*ns0=\"CONDITION\""<<endl<<
+  "sectionname=\"DESIGN SURF DIRICH CONDITIONS\""<<endl<<
+  "description=\"E 1 - 1 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  1 0 0 0 0 0\""
+  <<endl<<endl;
 
   defaultbc << "MIND that you can specify a condition also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'"<<endl;
   defaultbc<<"------------------------------------------------BCSPECS"<<endl<<endl;
 
   // write ElementBlocks with specification proposal
-  const map<int,EXODUS::ElementBlock> myblocks = mymesh.GetElementBlocks();
+  RCP<const map<int,EXODUS::ElementBlock> > myblocks = mymesh.GetElementBlocks();
   map<int,EXODUS::ElementBlock>::const_iterator it;
-  for (it = myblocks.begin(); it != myblocks.end(); ++it){
+  for (it = myblocks->begin(); it != myblocks->end(); ++it){
     it->second.Print(defaultbc);
     defaultbc<<"*eb"<< it->first << "=\"ELEMENT\""<<endl
     <<"sectionname=\"\""<<endl

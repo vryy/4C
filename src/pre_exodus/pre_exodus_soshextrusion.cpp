@@ -31,7 +31,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   map<int,EXODUS::NodeSet> newnodesets;       // here the new NS are stored
   int highestblock = basemesh.GetNumElementBlocks();
   int highestns = basemesh.GetNumNodeSets();
-  map<int,EXODUS::ElementBlock> ebs = basemesh.GetElementBlocks();
+  RCP<map<int,EXODUS::ElementBlock> > ebs = basemesh.GetElementBlocks();
   map<int,EXODUS::ElementBlock>::const_iterator i_ebs;
 
   map<int,EXODUS::NodeSet> nss = basemesh.GetNodeSets();
@@ -51,7 +51,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   map<int,vector<int> > node_pair; // stores new node id with base node id
 
   // loop through all EBlocks to check for extrusion blocks
-  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
+  for (i_ebs = ebs->begin(); i_ebs != ebs->end(); ++i_ebs ){
     bool toextrude = CheckExtrusion(i_ebs->second);
     if (toextrude){
       extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,*(i_ebs->second.GetEleConn())));

@@ -267,7 +267,7 @@ const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS
     return ns.GetNodeSet();
   } else if (e.me==EXODUS::bceb){
     set<int> allnodes;
-    EXODUS::ElementBlock eb = m.GetElementBlock(e.id);
+    EXODUS::ElementBlock& eb = m.GetElementBlock(e.id);
     RCP<const map<int,vector<int> > > eles = eb.GetEleConn();
     map<int,vector<int> >::const_iterator i_ele;
     for(i_ele=eles->begin(); i_ele != eles->end(); ++i_ele){
@@ -341,8 +341,7 @@ string EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh&
     EXODUS::ElementBlock eb = mymesh.GetElementBlock(acte.id);
     string dateles = EXODUS::DatEles(eb,acte,ele);
     dat << dateles;
-
-  }    cout<<"structs";
+  }
 
   // print fluid elements
   dat << "----------------------------------------------------FLUID ELEMENTS" << endl;

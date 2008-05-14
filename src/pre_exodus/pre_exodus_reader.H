@@ -90,13 +90,13 @@ public:
   string GetTitle() const {string title(title_,int(MAX_LINE_LENGTH+1)); return title;} 
   
   //! Get ElementBlock map
-  map<int,ElementBlock> GetElementBlocks() const {return elementBlocks_;}
+  RCP<map<int,ElementBlock> > GetElementBlocks() const {return elementBlocks_;}
   
   //! Get Number of ElementBlocks
-  int GetNumElementBlocks() const {return elementBlocks_.size();}
+  int GetNumElementBlocks() const {return elementBlocks_->size();}
   
   //! Get one ElementBlock
-  ElementBlock GetElementBlock(const int id) const;
+  ElementBlock& GetElementBlock(const int id) const;
   
   //! Get NodeSet map
   map<int,NodeSet> GetNodeSets() const {return nodeSets_;}
@@ -161,7 +161,7 @@ public:
 private:
   map<int,vector<double> > nodes_;
   
-  map<int,ElementBlock> elementBlocks_;
+  RCP<map<int,ElementBlock> > elementBlocks_;
   
   map<int,NodeSet> nodeSets_;
   

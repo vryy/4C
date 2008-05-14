@@ -80,6 +80,7 @@ EXODUS::Mesh::Mesh(string exofilename)
   } // free coordinate vectors x, y ,z
 
   // Get all ElementBlocks
+  elementBlocks_ = rcp(new map<int,ElementBlock>);
   vector<int> epropID(num_elem_blk);
   vector<int> ebids(num_elem_blk);
   error = ex_get_elem_blk_ids(exoid_,&(ebids[0]));
@@ -116,7 +117,7 @@ EXODUS::Mesh::Mesh(string exofilename)
 	  ElementBlock actEleBlock(StringToShape(ele_type), eleconn, blockname);
 	  
 	  // Add this ElementBlock into Mesh map
-	  elementBlocks_.insert(std::pair<int,ElementBlock>(i,actEleBlock));
+	  elementBlocks_->insert(std::pair<int,ElementBlock>(i,actEleBlock));
   }
   
   // get all NodeSets
@@ -250,7 +251,7 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh basemesh,
   int basedim     = basemesh.GetNumDim();
   int basenumele  = basemesh.GetNumEle();
   map<int,vector<double> > baseNodes = basemesh.GetNodes();
-  map<int,ElementBlock>    baseEblocks = basemesh.GetElementBlocks();
+  RCP<map<int,ElementBlock> >    baseEblocks = basemesh.GetElementBlocks();
   map<int,NodeSet>         baseNodesets = basemesh.GetNodeSets();
   map<int,SideSet>         baseSidesets = basemesh.GetSideSets();
   
@@ -277,12 +278,12 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh basemesh,
   
   // merge ElementBlocks
   map<int,ElementBlock>::const_iterator i_block;
-  for(i_block = baseEblocks.begin(); i_block != baseEblocks.end(); ++i_block){
-    elementBlocks_.insert(pair<int,ElementBlock>(i_block->first,i_block->second));
+  for(i_block = baseEblocks->begin(); i_block != baseEblocks->end(); ++i_block){
+    elementBlocks_->insert(pair<int,ElementBlock>(i_block->first,i_block->second));
   }
   for(i_block = extBlocks.begin(); i_block != extBlocks.end(); ++i_block){
     pair< map<int,ElementBlock>::iterator, bool > check;
-    check = elementBlocks_.insert(pair<int,ElementBlock>(i_block->first,i_block->second));
+    check = elementBlocks_->insert(pair<int,ElementBlock>(i_block->first,i_block->second));
     if (check.second == false) dserror("Extension ElementBlock already exists!");
     else total_num_elem += i_block->second.GetNumEle();
   }
@@ -340,8 +341,8 @@ void EXODUS::Mesh::Print(ostream & os, bool verbose) const
   if (verbose){
     os << "ElementBlocks" << endl;
     map<int,ElementBlock>::const_iterator it;
-    map<int,ElementBlock> eleBlocks = GetElementBlocks();
-    for (it=eleBlocks.begin(); it != eleBlocks.end(); it++){
+    RCP<map<int,ElementBlock> > eleBlocks = GetElementBlocks();
+    for (it=eleBlocks->begin(); it != eleBlocks->end(); it++){
       os << it->first << ": ";
       it->second.Print(os);
     }
@@ -363,9 +364,9 @@ void EXODUS::Mesh::Print(ostream & os, bool verbose) const
   }
 }
 
-EXODUS::ElementBlock EXODUS::Mesh::GetElementBlock(const int id) const
+EXODUS::ElementBlock& EXODUS::Mesh::GetElementBlock(const int id) const
 {
-  return (elementBlocks_.find(id))->second;
+  return (elementBlocks_->find(id))->second;
 }
 
 EXODUS::NodeSet EXODUS::Mesh::GetNodeSet(const int id) const
@@ -428,7 +429,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
   map <int,vector<int> > mysides = sideset.GetSideSet();
   map<int,vector<int> >::iterator i_side;
   
-  map<int,EXODUS::ElementBlock> ebs = GetElementBlocks();
+  RCP<map<int,EXODUS::ElementBlock> > ebs = GetElementBlocks();
   map<int,EXODUS::ElementBlock>::const_iterator i_ebs;
   
   // Range Vector for global eleID identification in SideSet
@@ -438,7 +439,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
   vector<EXODUS::ElementBlock> eblocks;
   vector<map<int,vector<int> > > econns;
   RCP<TimeMonitor> tm7 = rcp(new TimeMonitor(*time7));
-  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
+  for (i_ebs = ebs->begin(); i_ebs != ebs->end(); ++i_ebs ){
     rangebreak += i_ebs->second.GetNumEle();
     glob_eb_erange.push_back(rangebreak);
     eblocks.push_back(i_ebs->second);
@@ -540,7 +541,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool c
   map <int,vector<int> > mysides = sideset.GetSideSet();
   map<int,vector<int> >::iterator i_side;
   
-  map<int,EXODUS::ElementBlock> ebs = GetElementBlocks();
+  RCP<map<int,EXODUS::ElementBlock> > ebs = GetElementBlocks();
   map<int,EXODUS::ElementBlock>::const_iterator i_ebs;
   
   // Range Vector for global eleID identification in SideSet
@@ -549,7 +550,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool c
   // Also we once get all EBlocks and EConns to enable quick access
   vector<EXODUS::ElementBlock> eblocks;
   vector<map<int,vector<int> > > econns;
-  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
+  for (i_ebs = ebs->begin(); i_ebs != ebs->end(); ++i_ebs ){
     rangebreak += i_ebs->second.GetNumEle();
     glob_eb_erange.push_back(rangebreak);
     eblocks.push_back(i_ebs->second);
@@ -837,8 +838,8 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   
   // Write ElementBlocks  ******************************************************
   map<int,ElementBlock>::const_iterator iebs;
-  const map<int,ElementBlock> ebs = GetElementBlocks();
-  for (iebs=ebs.begin(); iebs != ebs.end(); iebs++){
+  RCP<const map<int,ElementBlock> > ebs = GetElementBlocks();
+  for (iebs=ebs->begin(); iebs != ebs->end(); iebs++){
     const int blockID = iebs->first + 1;  // exodus starts with 1
     const ElementBlock eb = iebs->second;
     const ElementBlock::Shape shape = eb.GetShape();
@@ -901,8 +902,8 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
  *----------------------------------------------------------------------*/
 void EXODUS::Mesh::AddElementBlock(const EXODUS::ElementBlock eblock) const
 {
-  map<int,ElementBlock> eblocks = GetElementBlocks();
-  eblocks.insert(std::pair<int,ElementBlock>(GetNumElementBlocks()+1,eblock));
+  RCP<map<int,ElementBlock> > eblocks = GetElementBlocks();
+  eblocks->insert(std::pair<int,ElementBlock>(GetNumElementBlocks()+1,eblock));
 }
 
 
