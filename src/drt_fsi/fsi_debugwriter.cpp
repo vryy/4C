@@ -34,7 +34,9 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 FSI::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
 {
-  dis_ = DRT::UTILS::CreateDiscretizationFromCondition(dis,"FSICoupling","boundary","BELE3");
+  vector<string> conditions_to_copy;
+  conditions_to_copy.push_back("FSICoupling");
+  dis_ = DRT::UTILS::CreateDiscretizationFromCondition(dis,"FSICoupling","boundary","BELE3",conditions_to_copy);
   dis_->FillComplete();
 
   coup_.SetupCoupling(*dis,

@@ -350,197 +350,153 @@ void DRT::UTILS::CreateAleDiscretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
-        RCP<DRT::Discretization>  cutterdis,
-        const string&             condname,
-        const string&             discret_name,
-        const string&             element_name
+Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
+    Teuchos::RCP<DRT::Discretization>  sourcedis,
+        const string&                  condname,
+        const string&                  discret_name,
+        const string&                  element_name,
+        const vector<string>&          conditions_to_copy
         )
 {
-  RCP<Epetra_Comm> com = rcp(cutterdis->Comm().Clone());
+  RCP<Epetra_Comm> com = rcp(sourcedis->Comm().Clone());
 
-  RCP<DRT::Discretization> boundarydis = rcp(new DRT::Discretization(discret_name,com));
+  RCP<DRT::Discretization> conditiondis = rcp(new DRT::Discretization(discret_name,com));
 
-  if (!cutterdis->Filled()) cutterdis->FillComplete();
+  if (!sourcedis->Filled()) sourcedis->FillComplete();
 
-  const int myrank = boundarydis->Comm().MyPID();
+  const int myrank = conditiondis->Comm().MyPID();
 
   if (myrank == 0)
   {
       cout << "creating discretization <"<< discret_name <<"> from condition <" << condname <<">" << endl;
   }
-//  vector< DRT::Condition* >      xfemConditions;
-//  cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
-//
-//  if(xfemConditions.size()==0)
-//      cout << "number of fsi xfem conditions = 0 --> empty boundary discretization will be created" << endl;
 
-  // vector with boundary ele id's
+  // vector with conditiondis ele id's
   vector<int> egid;
-  //egid.reserve(cutterdis->NumMyRowElements());
+  egid.reserve(sourcedis->NumMyRowElements());
 
-  set<int> rownodeset;
-  set<int> colnodeset;
-  const Epetra_Map* cutternoderowmap = cutterdis->NodeRowMap();
+  const Epetra_Map* sourcenoderowmap = sourcedis->NodeRowMap();
 
   // Loop all cutter elements and find the ones that live on an ale
   // mesh.
   // We need to test for all elements (including ghosted ones) to
   // catch all nodes attached to cutter elements
-  map<int, DRT::Node*>          cutternodes;
-  map<int, RCP<DRT::Element> >  cutterelements;
-  DRT::UTILS::FindInterfaceObjects(*cutterdis, cutternodes, cutterelements, condname);
+  map<int, DRT::Node*>          sourcenodes;
+  map<int, RCP<DRT::Element> >  sourceelements;
+  DRT::UTILS::FindInterfaceObjects(*sourcedis, sourcenodes, sourceelements, condname);
 
-  // Loop all cutter elements
-
+  // Loop all source elements
   // We need to test for all elements (including ghosted ones) to
-  // catch all nodes attached to ale elements
-  //const int numelements = cutterdis->NumMyColElements();
-
-  map<int, RCP<DRT::Element> >::const_iterator cuttereleiter;
-  for ( cuttereleiter = cutterelements.begin(); cuttereleiter != cutterelements.end(); ++cuttereleiter)
+  // catch all nodes attached to new elements
+  set<int> rownodeset;
+  set<int> colnodeset;
+  for (map<int, RCP<DRT::Element> >::const_iterator cuttereleiter = sourceelements.begin();
+       cuttereleiter != sourceelements.end();
+       ++cuttereleiter)
   {
-    const RCP<DRT::Element> cutterele = cuttereleiter->second;
-//    cout << "cutterele" << endl;
-//    cout << (*cutterele) << endl;
+    const RCP<DRT::Element> sourceele = cuttereleiter->second;
 
-    egid.push_back(cutterele->Id());
+    egid.push_back(sourceele->Id());
 
     // copy node ids of cutterele to rownodeset but leave those that do
     // not belong to this processor
-    remove_copy_if(cutterele->NodeIds(), cutterele->NodeIds()+cutterele->NumNode(),
+    remove_copy_if(sourceele->NodeIds(), sourceele->NodeIds()+sourceele->NumNode(),
                    inserter(rownodeset, rownodeset.begin()),
-                   not1(DRT::UTILS::MyGID(cutternoderowmap)));
+                   not1(DRT::UTILS::MyGID(sourcenoderowmap)));
 
-    copy(cutterele->NodeIds(), cutterele->NodeIds()+cutterele->NumNode(),
+    copy(sourceele->NodeIds(), sourceele->NodeIds()+sourceele->NumNode(),
         inserter(colnodeset, colnodeset.begin()));
   }
 
-  // construct boundary nodes, which use the same global id as the cutter nodes
-  for (int i=0; i<cutternoderowmap->NumMyElements(); ++i)
+  // construct new nodes, which use the same global id as the source nodes
+  for (int i=0; i<sourcenoderowmap->NumMyElements(); ++i)
   {
-    const int gid = cutternoderowmap->GID(i);
+    const int gid = sourcenoderowmap->GID(i);
     if (rownodeset.find(gid)!=rownodeset.end())
     {
-      const DRT::Node* cutternode = cutterdis->lRowNode(i);
-      boundarydis->AddNode(rcp(new DRT::Node(gid, cutternode->X(), myrank)));
+      const DRT::Node* sourcenode = sourcedis->lRowNode(i);
+      conditiondis->AddNode(rcp(new DRT::Node(gid, sourcenode->X(), myrank)));
     }
   }
 
   // we get the node maps almost for free
-  vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
+  vector<int> condnoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
-  RCP<Epetra_Map> boundarynoderowmap = rcp(new Epetra_Map(-1,
-                                                             boundarynoderowvec.size(),
-                                                             &boundarynoderowvec[0],
+  RCP<Epetra_Map> condnoderowmap = rcp(new Epetra_Map(-1,
+                                                             condnoderowvec.size(),
+                                                             &condnoderowvec[0],
                                                              0,
-                                                             boundarydis->Comm()));
-  boundarynoderowvec.clear();
+                                                             conditiondis->Comm()));
+  condnoderowvec.clear();
 
-  vector<int> boundarynodecolvec(colnodeset.begin(), colnodeset.end());
+  vector<int> condnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  RCP<Epetra_Map> boundarynodecolmap = rcp(new Epetra_Map(-1,
-                                                             boundarynodecolvec.size(),
-                                                             &boundarynodecolvec[0],
+  RCP<Epetra_Map> condnodecolmap = rcp(new Epetra_Map(-1,
+                                                             condnodecolvec.size(),
+                                                             &condnodecolvec[0],
                                                              0,
-                                                             boundarydis->Comm()));
-  boundarynodecolvec.clear();
+                                                             conditiondis->Comm()));
+  condnodecolvec.clear();
 
-  // now do the elements
-
-  // construct boundary elements
-  // The order of the boundary elements might be different from that of the
-  // cutter elements. We don't care. There are not dofs to these
-  // elements.
+  // construct new elements
+  // The order of the elements might be different from that of the
+  // source elements. We don't care. We assume no dofs to these elements.
   for (unsigned i=0; i<egid.size(); ++i)
   {
-    RCP<DRT::Element> cutterele = cutterelements[i];
+    const RCP<DRT::Element> sourceele = sourceelements[i];
 
     // create an element with the same global element id
-    RCP<DRT::Element> boundaryele = DRT::UTILS::Factory(element_name, egid[i], myrank);
+    RCP<DRT::Element> condele = DRT::UTILS::Factory(element_name, egid[i], myrank);
 
     // get global node ids of fluid element
     vector<int> nids;
-    nids.reserve(cutterele->NumNode());
-    transform(cutterele->Nodes(), cutterele->Nodes()+cutterele->NumNode(),
+    nids.reserve(sourceele->NumNode());
+    transform(sourceele->Nodes(), sourceele->Nodes()+sourceele->NumNode(),
               back_inserter(nids), mem_fun(&DRT::Node::Id));
 
     // set the same global node ids to the ale element
-    boundaryele->SetNodeIds(nids.size(), &nids[0]);
+    condele->SetNodeIds(nids.size(), &nids[0]);
 
     // add boundary element
-    boundarydis->AddElement(boundaryele);
-//    cout << "boundary element:" << endl;
-//    cout << (*boundaryele) << endl;
+    conditiondis->AddElement(condele);
   }
 
-  // conditions
-
-  // copy the conditions to the boundary discretization
-  // note, the condition is still named after the structure,
-  // but that does not seem to matter in the subsequent computations
-  vector<DRT::Condition*> conds;
-  cutterdis->GetCondition(condname, conds);
-  for (unsigned i=0; i<conds.size(); ++i)
+  // copy selected conditions to the new discretization
+  for (vector<string>::const_iterator conditername = conditions_to_copy.begin();
+          conditername != conditions_to_copy.end();
+          ++conditername)
   {
-    // We use the same nodal ids and therefore we can just copy the
-    // conditions.
-    boundarydis->SetCondition(condname, rcp(new DRT::Condition(*conds[i])));
+    vector<DRT::Condition*> conds;
+    sourcedis->GetCondition(*conditername, conds);
+    for (unsigned i=0; i<conds.size(); ++i)
+    {
+      // We use the same nodal ids and therefore we can just copy the conditions.
+      conditiondis->SetCondition(*conditername, rcp(new DRT::Condition(*conds[i])));
+    }
   }
-  conds.clear();
-
-  cutterdis->GetCondition("XFEMCoupling", conds);
-  cout <<  "\n number of XFEMCoupling conditions (cutterdis)   " << conds.size() << endl;
-  for (unsigned i=0; i<conds.size(); ++i)
-  {
-    // We use the same nodal ids and therefore we can just copy the
-    // conditions.
-    boundarydis->SetCondition("XFEMCoupling", rcp(new DRT::Condition(*conds[i])));
-  }
-  conds.clear();
-
-  boundarydis->GetCondition("XFEMCoupling", conds);
-  cout <<  "\n number of XFEMCoupling conditions (boundarydis) " << conds.size() << endl;
-  
-  // now care about the parallel distribution
-  //
-
-  // Right now all fluid elements must be ale enabled, otherwise we
-  // get a very nasty parallel bug!
-
-#if 0
-  // At first make sure we have the same starting point on all
-  // processors! This is cruical as the ALE field might be smaller
-  // than the fluid field and there might be processors that do not
-  // have ALE nodes and elements. These are not reset yet!
-
-  boundarydis->Reset();
-#endif
 
   // redistribute nodes to column (ghost) map
+  conditiondis->ExportColumnNodes(*condnodecolmap);
 
-  boundarydis->ExportColumnNodes(*boundarynodecolmap);
-
-  RefCountPtr< Epetra_Map > boundaryelerowmap;
-  RefCountPtr< Epetra_Map > boundaryelecolmap;
+  Teuchos::RCP< Epetra_Map > condelerowmap;
+  Teuchos::RCP< Epetra_Map > condelecolmap;
 
   // now we have all elements in a linear map roweles
   // build resonable maps for elements from the
   // already valid and final node maps
   // note that nothing is actually redistributed in here
-  boundarydis->BuildElementRowColumn(*boundarynoderowmap, *boundarynodecolmap, boundaryelerowmap, boundaryelecolmap);
+  conditiondis->BuildElementRowColumn(*condnoderowmap, *condnodecolmap, condelerowmap, condelecolmap);
 
   // we can now export elements to resonable row element distribution
-  boundarydis->ExportRowElements(*boundaryelerowmap);
+  conditiondis->ExportRowElements(*condelerowmap);
 
   // export to the column map / create ghosting of elements
-  boundarydis->ExportColumnElements(*boundaryelecolmap);
+  conditiondis->ExportColumnElements(*condelecolmap);
 
   // Now we are done. :)
-  boundarydis->FillComplete();
-  //cout << (*boundarydis) << endl;
+  conditiondis->FillComplete();
 
-  return boundarydis;
+  return conditiondis;
 }
 
 #endif

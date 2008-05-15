@@ -53,10 +53,11 @@ namespace DRT
      * A. Gerstenberger 05/08
      */
     Teuchos::RCP<DRT::Discretization> CreateDiscretizationFromCondition(
-      Teuchos::RCP<DRT::Discretization> cutterdis,    ///< condition with discretization
+      Teuchos::RCP<DRT::Discretization> sourcedis,    ///< discretization with condition
       const std::string&                condname,     ///< name of the condition, by which the derived discretization is identified
       const std::string&                discret_name, ///< name of the new condition
-      const std::string&                element_name  ///< name/type of the elements to be created
+      const std::string&                element_name,  ///< name/type of the elements to be created
+      const std::vector<std::string>&   conditions_to_copy  ///< list of conditions that will be copied to the new discretization
       );
   }
 }

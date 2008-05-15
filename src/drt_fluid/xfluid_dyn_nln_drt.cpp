@@ -284,7 +284,10 @@ void xdyn_fluid_drt()
     fluidtimeparams.set<FILE*>("err file",allfiles.out_err);
 
     // call time-integration (or stationary) scheme
-    Teuchos::RCP<DRT::Discretization> boundarydis = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3");
+    vector<string> conditions_to_copy;
+    conditions_to_copy.push_back("FSICoupling");
+    conditions_to_copy.push_back("XFEMCoupling");
+    Teuchos::RCP<DRT::Discretization> boundarydis = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3", conditions_to_copy);
     dsassert(boundarydis->NumGlobalNodes() > 0, "empty discretization detected. FSICoupling condition applied?");
     fluidimplicit.Integrate(boundarydis,soliddis);
 

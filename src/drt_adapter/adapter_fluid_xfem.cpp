@@ -30,7 +30,10 @@ ADAPTER::FluidXFEM::FluidXFEM(
         RCP<DRT::Discretization> soliddis)
   : fluid_(prbdyn,false)
 {
-  boundarydis_solidparalleldistrib_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3");
+  vector<string> conditions_to_copy;
+  conditions_to_copy.push_back("FSICoupling");
+  conditions_to_copy.push_back("XFEMCoupling");
+  boundarydis_solidparalleldistrib_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3", conditions_to_copy);
   UTILS::SetupNDimExtractor(*boundarydis_solidparalleldistrib_,"FSICoupling",interface_);
   //UTILS::SetupNDimExtractor(*boundarydis_solidparalleldistrib_,"FREESURFCoupling",freesurface_);
 }

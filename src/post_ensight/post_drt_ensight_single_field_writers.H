@@ -211,9 +211,12 @@ public:
             string filename) :
         EnsightWriter(field, filename),
         submersedfield_(submersedfield),
-        cutterdis_(DRT::UTILS::CreateDiscretizationFromCondition(submersedfield->discretization(), "FSICoupling", "Boundary", "BELE3")),
         submerseddis_(submersedfield->discretization())
     {
+      vector<string> conditions_to_copy;
+      conditions_to_copy.push_back("FSICoupling");
+      conditions_to_copy.push_back("XFEMCoupling");
+      cutterdis_ = DRT::UTILS::CreateDiscretizationFromCondition(submersedfield->discretization(), "FSICoupling", "Boundary", "BELE3", conditions_to_copy);              
     }
 
     //! write the whole thing
@@ -291,8 +294,8 @@ protected:
             ) const;
 
     PostField* submersedfield_;
-    const Teuchos::RCP<DRT::Discretization>  cutterdis_;
-    const Teuchos::RCP<DRT::Discretization>  submerseddis_;
+    Teuchos::RCP<DRT::Discretization>  cutterdis_;
+    Teuchos::RCP<DRT::Discretization>  submerseddis_;
 };
 
 

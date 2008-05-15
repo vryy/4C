@@ -36,7 +36,10 @@ ADAPTER::XFluidImpl::XFluidImpl(
     output_(output)
 {
   // needs to be umverteilt
-  boundarydis_fluidparalleldistrib_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3");
+  vector<string> conditions_to_copy;
+  conditions_to_copy.push_back("FSICoupling");
+  conditions_to_copy.push_back("XFEMCoupling");
+  boundarydis_fluidparalleldistrib_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3", conditions_to_copy);
 
   UTILS::SetupNDimExtractor(*boundarydis_fluidparalleldistrib_,"FSICoupling",interface_);
   UTILS::SetupNDimExtractor(*boundarydis_fluidparalleldistrib_,"FREESURFCoupling",freesurface_);
