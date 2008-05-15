@@ -17,7 +17,7 @@ Maintainer: Thomas Kloeppel
 #include "constraint_element.H"
 #include "mpcdofset.H"
 #include "iostream"
-#include "../drt_adapter/adapter_utils.H"
+#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 
@@ -586,7 +586,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
 
     remove_copy_if(&ngid[0], &ngid[0]+numnodes,
                      inserter(rownodeset, rownodeset.begin()),
-                     not1(ADAPTER::UTILS::MyGID(actnoderowmap)));
+                     not1(DRT::UTILS::MyGID(actnoderowmap)));
     // copy node ids specified in condition to colnodeset
     copy(&ngid[0], &ngid[0]+numnodes,
           inserter(colnodeset, colnodeset.begin()));

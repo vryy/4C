@@ -2,6 +2,7 @@
 #ifdef CCADISCRET
 
 #include "adapter_coupling_mortar.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 #include <mrtr_manager.H>
 
@@ -50,8 +51,8 @@ void ADAPTER::CouplingMortar::Setup( const DRT::Discretization& masterdis,
     map< int, RefCountPtr<DRT::Element> > masterelements;
     map< int, RefCountPtr<DRT::Element> > slaveelements;
 
-    FindInterfaceObjects( masterdis, masternodes, masterelements, "FSICoupling" );
-    FindInterfaceObjects( slavedis,  slavenodes,   slaveelements, "FSICoupling" );
+    DRT::UTILS::FindInterfaceObjects( masterdis, masternodes, masterelements, "FSICoupling" );
+    DRT::UTILS::FindInterfaceObjects( slavedis,  slavenodes,   slaveelements, "FSICoupling" );
 
     MOERTEL::Interface interface( 0, genprob.ndim == 2, comm, PRINTLEVEL );
 
@@ -439,43 +440,5 @@ RefCountPtr<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster(
     mv->Scale( -1.0 );
     return mv;
 }
-
-void ADAPTER::FindInterfaceObjects(
-    const DRT::Discretization& dis,
-    map<int, DRT::Node*>& nodes,
-    map<int, RefCountPtr<DRT::Element> >& elements,
-    const string&              condname
-    )
-{
-    int myrank = dis.Comm().MyPID();
-    vector<DRT::Condition*> conds;
-    dis.GetCondition( condname, conds );
-    for ( unsigned i = 0; i < conds.size(); ++i )
-    {
-        // get this condition's nodes
-        const vector<int>* n = conds[i]->Nodes();
-        for ( unsigned j = 0; j < n->size(); ++j )
-        {
-            const int gid = (*n)[j];
-            if ( dis.HaveGlobalNode( gid ) and dis.gNode( gid )->Owner() == myrank )
-            {
-                nodes[gid] = dis.gNode( gid );
-            }
-        }
-
-        // get this condition's elements
-        map< int, RefCountPtr< DRT::Element > > geo = conds[i]->Geometry();
-        map< int, RefCountPtr< DRT::Element > >::iterator iter, pos;
-        pos = elements.begin();
-        for ( iter = geo.begin(); iter != geo.end(); ++iter )
-        {
-            if ( iter->second->Owner() == myrank )
-            {
-                pos = elements.insert( pos, *iter );
-            }
-        }
-    }
-}
-
 
 #endif // CCADISCRET

@@ -40,7 +40,7 @@ Maintainer: Axel Gerstenberger
 #include "xfluidresulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
-#include "../drt_adapter/adapter_utils.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -284,7 +284,7 @@ void xdyn_fluid_drt()
     fluidtimeparams.set<FILE*>("err file",allfiles.out_err);
 
     // call time-integration (or stationary) scheme
-    Teuchos::RCP<DRT::Discretization> boundarydis = ADAPTER::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3");
+    Teuchos::RCP<DRT::Discretization> boundarydis = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3");
     dsassert(boundarydis->NumGlobalNodes() > 0, "empty discretization detected. FSICoupling condition applied?");
     fluidimplicit.Integrate(boundarydis,soliddis);
 

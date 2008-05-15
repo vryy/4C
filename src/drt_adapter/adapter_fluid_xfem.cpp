@@ -16,10 +16,10 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
+#include "../drt_lib/drt_condition_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "adapter_fluid_xfem.H"
-#include "adapter_utils.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -30,7 +30,7 @@ ADAPTER::FluidXFEM::FluidXFEM(
         RCP<DRT::Discretization> soliddis)
   : fluid_(prbdyn,false)
 {
-  boundarydis_solidparalleldistrib_ = ADAPTER::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3");
+  boundarydis_solidparalleldistrib_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3");
   UTILS::SetupNDimExtractor(*boundarydis_solidparalleldistrib_,"FSICoupling",interface_);
   //UTILS::SetupNDimExtractor(*boundarydis_solidparalleldistrib_,"FREESURFCoupling",freesurface_);
 }

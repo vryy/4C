@@ -17,6 +17,7 @@
 #define POST_DRT_ENSIGHT_SINGLE_FIELD_WRITER_H_
 
 #include "post_drt_ensight_writer.H"
+#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_xfem/physics.H"
 
 /*!
@@ -206,10 +207,12 @@ class XFluidEnsightWriter : public EnsightWriter
 public:
     XFluidEnsightWriter(
             PostField* field,           ///< Field to be plotted
-            PostField* cutterfield,     ///< intersecting field (for fsi)
+            PostField* submersedfield,     ///< intersecting field (for fsi)
             string filename) :
         EnsightWriter(field, filename),
-        cutterfield_(cutterfield)
+        submersedfield_(submersedfield),
+        cutterdis_(DRT::UTILS::CreateDiscretizationFromCondition(submersedfield->discretization(), "FSICoupling", "Boundary", "BELE3")),
+        submerseddis_(submersedfield->discretization())
     {
     }
 
@@ -287,7 +290,9 @@ protected:
             const RCP<XFEM::DofManager> dofman
             ) const;
 
-    PostField* cutterfield_;
+    PostField* submersedfield_;
+    const Teuchos::RCP<DRT::Discretization>  cutterdis_;
+    const Teuchos::RCP<DRT::Discretization>  submerseddis_;
 };
 
 

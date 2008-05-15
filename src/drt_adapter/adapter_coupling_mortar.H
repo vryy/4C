@@ -85,14 +85,6 @@ namespace ADAPTER
     RefCountPtr<Epetra_CrsMatrix> Dinv_;
     RefCountPtr<Epetra_CrsMatrix> M_;
   };
-
-  /// collect all local nodes and elements in a condition, e.g. an interface
-  void FindInterfaceObjects(
-    const DRT::Discretization& dis,
-    map<int, DRT::Node*>& nodes,
-    map< int, RefCountPtr<DRT::Element> >& elements,
-    const string&              condname
-    );
 }
 
 #endif // FSI_COUPLING_MORTAR_H

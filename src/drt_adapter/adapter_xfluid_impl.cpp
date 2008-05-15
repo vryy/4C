@@ -15,7 +15,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "adapter_xfluid_impl.H"
-#include "adapter_utils.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 using namespace Teuchos;
 
@@ -36,7 +36,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
     output_(output)
 {
   // needs to be umverteilt
-  boundarydis_fluidparalleldistrib_ = ADAPTER::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3");
+  boundarydis_fluidparalleldistrib_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3");
 
   UTILS::SetupNDimExtractor(*boundarydis_fluidparalleldistrib_,"FSICoupling",interface_);
   UTILS::SetupNDimExtractor(*boundarydis_fluidparalleldistrib_,"FREESURFCoupling",freesurface_);

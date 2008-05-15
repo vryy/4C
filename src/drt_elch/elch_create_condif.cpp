@@ -12,7 +12,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 
-#include "../drt_adapter/adapter_utils.H"
+#include "../drt_lib/drt_condition_utils.H"
 
 // we need to know all necessary element types for the condif mesh creation
 #include "../drt_f2/fluid2.H"
@@ -97,7 +97,7 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
       // not belong to this processor
       remove_copy_if(actele->NodeIds(), actele->NodeIds()+actele->NumNode(),
                      inserter(rownodeset, rownodeset.begin()),
-                     not1(ADAPTER::UTILS::MyGID(noderowmap)));
+                     not1(DRT::UTILS::MyGID(noderowmap)));
 
       copy(actele->NodeIds(), actele->NodeIds()+actele->NumNode(),
            inserter(colnodeset, colnodeset.begin()));
