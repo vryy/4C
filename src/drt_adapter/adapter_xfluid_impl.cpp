@@ -35,11 +35,17 @@ ADAPTER::XFluidImpl::XFluidImpl(
     params_(params),
     output_(output)
 {
-  // needs to be umverteilt
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
   boundarydis_fluidparalleldistrib_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3", conditions_to_copy);
+  
+  // create node and element distribution with elements and nodes ghosted on all processors
+  const Epetra_Map* noderowmap = boundarydis_fluidparalleldistrib_->NodeRowMap();
+  Teuchos::RCP<Epetra_Map> newnodecolmap = LINALG::AllreduceEMap(*noderowmap);
+  DRT::UTILS::RedistributeWithNewNodalDistribution(*boundarydis_fluidparalleldistrib_, *noderowmap, *newnodecolmap);
+  
+  
 
   UTILS::SetupNDimExtractor(*boundarydis_fluidparalleldistrib_,"FSICoupling",interface_);
   UTILS::SetupNDimExtractor(*boundarydis_fluidparalleldistrib_,"FREESURFCoupling",freesurface_);

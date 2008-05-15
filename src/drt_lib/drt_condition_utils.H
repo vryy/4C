@@ -59,6 +59,13 @@ namespace DRT
       const std::string&                element_name,  ///< name/type of the elements to be created
       const std::vector<std::string>&   conditions_to_copy  ///< list of conditions that will be copied to the new discretization
       );
+    
+    //! Given a nodal row and coloumn map, this routines creates the corresponding element maps and call FillComplete()
+    void RedistributeWithNewNodalDistribution(
+        DRT::Discretization&     dis,
+        const Epetra_Map&        noderowmap,
+        const Epetra_Map&        nodecolmap
+        );
   }
 }
 

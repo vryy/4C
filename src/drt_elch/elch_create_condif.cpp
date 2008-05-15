@@ -237,26 +237,7 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
 #endif
 
   // redistribute nodes to column (ghost) map
-
-  condifdis->ExportColumnNodes(*condifnodecolmap);
-
-  RefCountPtr< Epetra_Map > elerowmap;
-  RefCountPtr< Epetra_Map > elecolmap;
-
-  // now we have all elements in a linear map roweles
-  // build resonable maps for elements from the
-  // already valid and final node maps
-  // note that nothing is actually redistributed in here
-  condifdis->BuildElementRowColumn(*condifnoderowmap, *condifnodecolmap, elerowmap, elecolmap);
-
-  // we can now export elements to resonable row element distribution
-  condifdis->ExportRowElements(*elerowmap);
-
-  // export to the column map / create ghosting of elements
-  condifdis->ExportColumnElements(*elecolmap);
-
-  // Now we are done. :)
-  condifdis->FillComplete();
+  DRT::UTILS::RedistributeWithNewNodalDistribution(*condifdis, *condifnoderowmap, *condifnodecolmap);
 }
 } // namespace ELCH
 

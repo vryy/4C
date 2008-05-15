@@ -29,6 +29,7 @@ Maintainer: Ulrich Kuettler
 #if 1
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #endif
 
@@ -704,23 +705,7 @@ void PostProblem::setup_ghosting(RCP<DRT::Discretization> dis)
   tgraph = null;
 
   // distribute ghost nodes resolving the node dependencies given by the final graph
-  dis->ExportColumnNodes(*colnodes);
-
-  // now we do the element stuff
-  RCP<Epetra_Map> elerowmap;
-  RCP<Epetra_Map> elecolmap;
-
-  // now we have all elements in a linear map roweles
-  // build resonable maps for elements from the
-  // already valid and final node maps
-  // note that nothing is actually redistributed in here
-  dis->BuildElementRowColumn(*rownodes,*colnodes,elerowmap,elecolmap);
-
-  // we can now export elements to resonable row element distribution
-  dis->ExportRowElements(*elerowmap);
-
-  // export to the column map / create ghosting of elements
-  dis->ExportColumnElements(*elecolmap);
+  DRT::UTILS::RedistributeWithNewNodalDistribution(*dis, *rownodes, *colnodes);
 
 #if 0
   dis->Print(cout);

@@ -325,26 +325,7 @@ void DRT::UTILS::CreateAleDiscretization()
 #endif
 
   // redistribute nodes to column (ghost) map
-
-  aledis->ExportColumnNodes(*alenodecolmap);
-
-  RefCountPtr< Epetra_Map > elerowmap;
-  RefCountPtr< Epetra_Map > elecolmap;
-
-  // now we have all elements in a linear map roweles
-  // build resonable maps for elements from the
-  // already valid and final node maps
-  // note that nothing is actually redistributed in here
-  aledis->BuildElementRowColumn(*alenoderowmap, *alenodecolmap, elerowmap, elecolmap);
-
-  // we can now export elements to resonable row element distribution
-  aledis->ExportRowElements(*elerowmap);
-
-  // export to the column map / create ghosting of elements
-  aledis->ExportColumnElements(*elecolmap);
-
-  // Now we are done. :)
-  aledis->FillComplete();
+  RedistributeWithNewNodalDistribution(*aledis, *alenoderowmap, *alenodecolmap);
 }
 
 
@@ -474,29 +455,39 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
       conditiondis->SetCondition(*conditername, rcp(new DRT::Condition(*conds[i])));
     }
   }
-
+  
   // redistribute nodes to column (ghost) map
-  conditiondis->ExportColumnNodes(*condnodecolmap);
+  RedistributeWithNewNodalDistribution(*conditiondis, *condnoderowmap, *condnodecolmap);
 
-  Teuchos::RCP< Epetra_Map > condelerowmap;
-  Teuchos::RCP< Epetra_Map > condelecolmap;
+  return conditiondis;
+}
 
+
+void DRT::UTILS::RedistributeWithNewNodalDistribution(
+    DRT::Discretization&     dis,
+    const Epetra_Map&        noderowmap,
+    const Epetra_Map&        nodecolmap
+    )
+{
+  // redistribute nodes to column (ghost) map
+  dis.ExportColumnNodes(nodecolmap);
+  
+  Teuchos::RCP< Epetra_Map > elerowmap;
+  Teuchos::RCP< Epetra_Map > elecolmap;
+  
   // now we have all elements in a linear map roweles
   // build resonable maps for elements from the
   // already valid and final node maps
-  // note that nothing is actually redistributed in here
-  conditiondis->BuildElementRowColumn(*condnoderowmap, *condnodecolmap, condelerowmap, condelecolmap);
-
+  dis.BuildElementRowColumn(noderowmap, nodecolmap, elerowmap, elecolmap);
+  
   // we can now export elements to resonable row element distribution
-  conditiondis->ExportRowElements(*condelerowmap);
-
+  dis.ExportRowElements(*elerowmap);
+  
   // export to the column map / create ghosting of elements
-  conditiondis->ExportColumnElements(*condelecolmap);
-
+  dis.ExportColumnElements(*elecolmap);
+  
   // Now we are done. :)
-  conditiondis->FillComplete();
-
-  return conditiondis;
+  dis.FillComplete();
 }
 
 #endif
