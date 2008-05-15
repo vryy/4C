@@ -2793,6 +2793,16 @@ Teuchos::RCP<Epetra_Vector> FluidImplicitTimeInt::IntegrateInterfaceShape(std::s
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void FluidImplicitTimeInt::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                                          const LINALG::MultiMapExtractor& rangemaps)
+{
+  sysmat_ =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,108,false,true));
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
   //

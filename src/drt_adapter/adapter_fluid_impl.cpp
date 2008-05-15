@@ -119,6 +119,14 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FluidImpl::SystemMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidImpl::BlockSystemMatrix()
+{
+  return fluid_.BlockSystemMatrix();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ADAPTER::FluidImpl::Discretization()
 {
   return fluid_.Discretization();
@@ -401,6 +409,15 @@ void ADAPTER::FluidImpl::SetItemax(int itemax)
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::IntegrateInterfaceShape()
 {
   return interface_.ExtractCondVector(fluid_.IntegrateInterfaceShape("FSICoupling"));
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                                        const LINALG::MultiMapExtractor& rangemaps)
+{
+  fluid_.UseBlockMatrix(domainmaps,rangemaps);
 }
 
 

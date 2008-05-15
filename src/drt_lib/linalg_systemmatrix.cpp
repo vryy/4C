@@ -304,6 +304,7 @@ void LINALG::SparseMatrix::Assemble(double val, int rgid, int cgid)
  *----------------------------------------------------------------------*/
 void LINALG::SparseMatrix::Complete()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::Complete");
   if (sysmat_->Filled()) return;
 
   int err = sysmat_->FillComplete(true);
@@ -324,6 +325,7 @@ void LINALG::SparseMatrix::Complete()
  *----------------------------------------------------------------------*/
 void  LINALG::SparseMatrix::Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::Complete(domain,range)");
   if (sysmat_->Filled()) return;
 
   int err = sysmat_->FillComplete(domainmap,rangemap,true);
@@ -1170,6 +1172,8 @@ void LINALG::DefaultBlockMatrixStrategy::Assemble(double val,
  *----------------------------------------------------------------------*/
 void LINALG::DefaultBlockMatrixStrategy::Complete()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::DefaultBlockMatrixStrategy::Complete");
+
   if (mat_.Filled())
   {
     if (ghost_.size()!=0)

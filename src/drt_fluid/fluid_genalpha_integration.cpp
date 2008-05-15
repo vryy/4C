@@ -1166,7 +1166,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,dirichtoggle_);
 
       // call VM3 constructor with system matrix
-      vm3_solver_ = rcp(new VM3_Solver(sysmat_,dirichtoggle_,mllist,true,true) );
+      vm3_solver_ = rcp(new VM3_Solver(SystemMatrix(),dirichtoggle_,mllist,true,true) );
 
       // zero system matrix again
       sysmat_->Zero();
@@ -1293,7 +1293,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 
   //-------solve for residual displacements to correct incremental displacements
   increment_->PutScalar(0.0);
-  solver_.Solve(sysmat_->EpetraMatrix(),increment_,residual_,true,itenum_==-1);
+  solver_.Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itenum_==-1);
   solver_.ResetTolerance();
 
   return;
@@ -3107,6 +3107,17 @@ Teuchos::RCP<Epetra_Vector> FluidGenAlphaIntegration::IntegrateInterfaceShape(
 
   return integratedshapefunc;
 }
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FluidGenAlphaIntegration::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                                              const LINALG::MultiMapExtractor& rangemaps)
+{
+  sysmat_ =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,108,false,true));
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

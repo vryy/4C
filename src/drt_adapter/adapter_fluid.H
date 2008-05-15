@@ -99,6 +99,9 @@ namespace ADAPTER {
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
 
+    /// direct access to system matrix
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
+
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
@@ -231,6 +234,10 @@ namespace ADAPTER {
 
     /// integrate FSI interface shape functions
     virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() = 0;
+
+    /// switch fluid field to block matrix
+    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                                const LINALG::MultiMapExtractor& rangemaps) = 0;
 
     /// create result test for encapulated fluid algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;

@@ -202,6 +202,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
   Teuchos::RCP<Epetra_Vector> RobinRHS() { return robinrhs_; }
 
@@ -232,16 +233,10 @@ public:
    */
   void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
 
-  /*!
-  \brief determine grid velocity
-
-  */
+  /// determine grid velocity
   void UpdateGridv();
 
-  /*!
-  \brief calculate lift&drag forces and angular momenta
-
-  */
+  /// calculate lift&drag forces and angular momenta
   void LiftDrag() const;
 
   /// integrate shape functions at nodes marked by condition
@@ -249,6 +244,10 @@ public:
     Needed for Mortar coupling at the FSI interface
    */
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
+
+  /// switch fluid field to block matrix
+  void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                      const LINALG::MultiMapExtractor& rangemaps);
 
   /// linear solve with prescribed dirichlet conditions and without history
   /*!
@@ -258,9 +257,8 @@ public:
 
   //@}
 
-  /*!
-  //
   //! @name methods for turbulence models (dynamic Smagorinsky)
+  /*!
 
   \brief filter quantities for dynamic Smagorinsky model.
          Compute averaged values for LijMij and MijMij.

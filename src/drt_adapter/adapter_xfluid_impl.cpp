@@ -128,6 +128,15 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidImpl::SystemMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::XFluidImpl::BlockSystemMatrix()
+{
+  dserror("no block matrix here");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ADAPTER::XFluidImpl::Discretization()
 {
   return boundarydis_fluidparalleldistrib_;
@@ -403,6 +412,15 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::IntegrateInterfaceShape()
 {
     dserror("not implemented!");
   return interface_.ExtractCondVector(fluid_.IntegrateInterfaceShape("FSICoupling"));
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::XFluidImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                                         const LINALG::MultiMapExtractor& rangemaps)
+{
+  dserror("no, probably not");
 }
 
 

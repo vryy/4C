@@ -108,7 +108,15 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidGenAlpha::DofRowMap()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::FluidGenAlpha::SystemMatrix()
 {
-  return fluid_.SysMat();
+  return fluid_.SystemMatrix();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidGenAlpha::BlockSystemMatrix()
+{
+  return fluid_.BlockSystemMatrix();
 }
 
 
@@ -372,6 +380,15 @@ void ADAPTER::FluidGenAlpha::SetItemax(int itemax)
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidGenAlpha::IntegrateInterfaceShape()
 {
   return interface_.ExtractCondVector(fluid_.IntegrateInterfaceShape("FSICoupling"));
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidGenAlpha::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                                            const LINALG::MultiMapExtractor& rangemaps)
+{
+  fluid_.UseBlockMatrix(domainmaps,rangemaps);
 }
 
 

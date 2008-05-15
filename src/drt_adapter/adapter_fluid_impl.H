@@ -84,6 +84,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
     virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix();
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
 
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
@@ -134,6 +135,9 @@ namespace ADAPTER {
     virtual void SetItemax(int itemax);
 
     virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
+
+    virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                                const LINALG::MultiMapExtractor& rangemaps);
 
     /// linear fluid solve with just a interface load
     /*!

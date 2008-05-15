@@ -430,10 +430,16 @@ public:
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
 
   /*!
-  \brief return the system matrix
+  \brief return the system matrix if it is a plain matrix
 
   */
-  Teuchos::RCP<LINALG::SparseMatrix> SysMat() { return sysmat_; }
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
+
+  /*!
+  \brief return the system matrix if it is a block matrix
+
+  */
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
 
   /*!
   \brief return the fluid discretisation
@@ -560,6 +566,10 @@ public:
    */
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
 
+  /// switch fluid field to block matrix
+  void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+                      const LINALG::MultiMapExtractor& rangemaps);
+
   /// linear solve with prescribed dirichlet conditions and without history
   /*!
     This is the linear solve as required for steepest descent FSI.
@@ -682,7 +692,7 @@ private:
   //        ---------------------------------
   //
   //! (standard) system matrix
-  RCP<LINALG::SparseMatrix> sysmat_;
+  RCP<LINALG::SparseOperator> sysmat_;
 
   //! (standard) residual vector (rhs for the incremental form),
   RCP<Epetra_Vector>        residual_;

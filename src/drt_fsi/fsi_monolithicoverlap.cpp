@@ -7,6 +7,7 @@
 
 #include "../drt_lib/drt_globalproblem.H"
 
+#define FLUIDBLOCKMATRIX
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -86,6 +87,13 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   // Complete the empty matrix. The non-empty blocks will be inserted (in
   // Filled() state) later.
   systemmatrix_->Complete();
+
+#ifdef FLUIDBLOCKMATRIX
+  /*----------------------------------------------------------------------*/
+  // Switch fluid to interface split block matrix
+  FluidField().UseBlockMatrix(FluidField().Interface(),
+                              FluidField().Interface());
+#endif
 
   /*----------------------------------------------------------------------*/
   // Assume linear ALE. Prepare ALE system matrix once and for all.
@@ -255,22 +263,32 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
   // split fluid matrix
 
+#ifdef FLUIDBLOCKMATRIX
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
+#else
   Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
+#endif
 
   // map between fluid interface and structure column map
 
   if (not havefluidstructcolmap_)
   {
+#ifdef FLUIDBLOCKMATRIX
+    DRT::Exporter ex(blockf->FullRowMap(),blockf->FullColMap(),blockf->Comm());
+#else
     DRT::Exporter ex(f->RowMap(),f->ColMap(),f->Comm());
+#endif
     coupsf.FillSlaveToMasterMap(fluidstructcolmap_);
     ex.Export(fluidstructcolmap_);
     havefluidstructcolmap_ = true;
   }
 
+#ifndef FLUIDBLOCKMATRIX
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf =
     f->Split<LINALG::DefaultBlockMatrixStrategy>(FluidField().Interface(),
                                                  FluidField().Interface());
   blockf->Complete();
+#endif
 
   LINALG::SparseMatrix& fii = blockf->Matrix(0,0);
   LINALG::SparseMatrix& fig = blockf->Matrix(0,1);
@@ -601,16 +619,17 @@ FSI::MonolithicOverlap::ConvertFigColmap(const LINALG::SparseMatrix& fig,
     if (err!=0)
       dserror("ExtractMyRowView error: %d", err);
 
+    std::vector<int> structindices(NumEntries);
     for (int j=0; j<NumEntries; ++j)
     {
       int gid = colmap.GID(Indices[j]);
       std::map<int,int>::const_iterator iter = convcolmap.find(gid);
       if (iter==convcolmap.end())
-        dserror("gid %d not found in map", gid);
-      Indices[j] = iter->second;
+        dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
+      structindices[j] = iter->second;
     }
 
-    err = convfig->InsertGlobalValues(rowmap.GID(i), NumEntries, Values, Indices);
+    err = convfig->InsertGlobalValues(rowmap.GID(i), NumEntries, Values, &structindices[0]);
     if (err)
       dserror("InsertGlobalValues error: %d", err);
   }
@@ -655,13 +674,14 @@ FSI::MonolithicOverlap::ConvertFgiRowmap(const LINALG::SparseMatrix& fgi,
       dserror("ExtractMyRowView error: %d", err);
 
     // pull indices back to global
+    std::vector<int> structindices(NumEntries);
     for (int j=0; j<NumEntries; ++j)
     {
-      Indices[j] = colmap.GID(Indices[j]);
+      structindices[j] = colmap.GID(Indices[j]);
     }
 
     // put row into matrix with structure row map
-    err = sfgi->InsertGlobalValues(coupsf.MasterDofMap()->GID(i), NumEntries, Values, Indices);
+    err = sfgi->InsertGlobalValues(coupsf.MasterDofMap()->GID(i), NumEntries, Values, &structindices[0]);
     if (err)
       dserror("InsertGlobalValues error: %d", err);
   }
