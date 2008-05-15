@@ -1459,6 +1459,16 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
 }
 
 /*----------------------------------------------------------------------*
+ |  Assemble matrix L / vector R for Tresca friction          mgit 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
+                                        Epetra_Vector& rglobal)
+{
+  dserror("ERROR: Assembly of Tresca friction not yet implemented!");
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  initialize active set (nodes / dofs)                      popp 03/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Interface::InitializeActiveSet(bool initialcontact)

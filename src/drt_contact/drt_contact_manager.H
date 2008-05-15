@@ -185,6 +185,12 @@ public:
   void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
   
   /*!
+  \brief Evaluate Tresca friction (with basis transformation)
+    
+  */
+  void EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
+   
+  /*!
   \brief Evaluate contact (with basis transformation)
   
   This is the main routine of our contact algorithms on a global level.
@@ -285,7 +291,7 @@ protected:
   
   RCP<Epetra_Vector>                 z_;              // vector of Lagrange multipliers (mid-point)
   RCP<Epetra_Vector>                 zold_;           // vector of last time step Lagrange multipliers (mid-point)
-  RCP<Epetra_Vector>                 zn_;             // vector of agrange multipliers (end-point)
+  RCP<Epetra_Vector>                 zn_;             // vector of Lagrange multipliers (end-point)
   RCP<Epetra_Vector>                 incrjump_;       // incremental displacement jump (slave dofs)
   RCP<Epetra_Vector>                 fc_;             // vector of current contact forces
   bool                               isincontact_;    // flag indicatoing global contact status
@@ -299,6 +305,8 @@ protected:
   RCP<Epetra_Map>                    zigzagtwo_;      // active node set of second-last active set try
   RCP<Epetra_Map>                    zigzagthree_;    // active node set of third-last active set try
 
+  RCP<LINALG::SparseMatrix>          lmatrix_;        // global matrix L for Tresca friction slip nodes
+  RCP<Epetra_Vector>                 r_;              // r.h.s vector for Tresca friction slip nodes
 
 }; // class Manager
 } // namespace CONTACT

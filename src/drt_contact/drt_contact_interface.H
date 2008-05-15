@@ -418,6 +418,13 @@ public:
                           LINALG::SparseMatrix& tglobal);
   
   /*!
+  \brief Assemble matrix L and vector R for Tresca friction (slip)
+    
+  */
+  virtual void AssembleTresca(LINALG::SparseMatrix& lglobal,
+                              Epetra_Vector& rglobal);
+    
+  /*!
   \brief Initialize active set of this interface (t=0)
   
   \param initialcontact (in): true, if contact at t=0 assumed
