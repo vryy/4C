@@ -40,31 +40,31 @@ int WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
     const string& headfile, const vector<EXODUS::elem_def>& eledefs, const vector<EXODUS::cond_def>& condefs);
 
 //! datfile Intro
-string WriteDatIntro(const EXODUS::Mesh& mymesh);
+void WriteDatIntro(const EXODUS::Mesh& mymesh, ostream& dat);
 
 //! headfile content into datfile
-string WriteDatHead(const string& headfile);
+void WriteDatHead(const string& headfile, ostream& dat);
 
 //! design description
-string WriteDatDesign(const vector<EXODUS::cond_def>& condefs);
+void WriteDatDesign(const vector<EXODUS::cond_def>& condefs, ostream& dat);
 
 //! conditions
-string WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EXODUS::Mesh& mymesh);
+void WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EXODUS::Mesh& mymesh, ostream& dat);
 
 //! DesignNode - Node Topology
-string WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh);
+void WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, ostream& dat);
 
 //! return set of nodes in bc_entity
 const set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m);
 
 //! Nodes into datfile
-string WriteDatNodes(const EXODUS::Mesh& mymesh);
+void WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat);
 
 //! Elements into datfile
-void WriteDatEles(const vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& mymesh, ofstream& dat);
+void WriteDatEles(const vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& mymesh, ostream& dat);
 
 //! Elements from eblock
-void DatEles(const EXODUS::ElementBlock& eb, const EXODUS::elem_def& acte, int& struele, ofstream& dat);
+void DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& struele, ostream& dat);
 
 inline string CondGeomTypeToString(const EXODUS::cond_def& def)
 {

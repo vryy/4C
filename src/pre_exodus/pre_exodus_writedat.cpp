@@ -32,28 +32,22 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
   if (!dat) dserror("failed to open file: %s", datfile.c_str());
 
   // write dat-file intro
-  string datintro = EXODUS::WriteDatIntro(mymesh);
-  dat << datintro;
+  EXODUS::WriteDatIntro(mymesh,dat);
   
   // write "header"
-  string dathead = EXODUS::WriteDatHead(headfile);
-  dat << dathead;
+  EXODUS::WriteDatHead(headfile,dat);
   
   // write "design description"
-  string datdesign = EXODUS::WriteDatDesign(condefs);
-  dat << datdesign;
+  EXODUS::WriteDatDesign(condefs,dat);
   
   // write conditions
-  string datconditions = EXODUS::WriteDatConditions(condefs,mymesh);
-  dat << datconditions;
+  EXODUS::WriteDatConditions(condefs,mymesh,dat);
   
   // write design-topology
-  string datdesigntopo = EXODUS::WriteDatDesignTopology(condefs,mymesh);
-  dat << datdesigntopo;
+  EXODUS::WriteDatDesignTopology(condefs,mymesh,dat);
   
   // write nodal coordinates
-  string datnodes = EXODUS::WriteDatNodes(mymesh);
-  dat << datnodes;
+  EXODUS::WriteDatNodes(mymesh,dat);
   
   // write elements
   EXODUS::WriteDatEles(eledefs,mymesh,dat);
@@ -69,9 +63,8 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
 }
 
 
-string EXODUS::WriteDatIntro(const EXODUS::Mesh& mymesh)
+void EXODUS::WriteDatIntro(const EXODUS::Mesh& mymesh, ostream& dat)
 {
-  stringstream dat;
   dat <<"==================================================================\n" \
         "        General Data File CCARAT\n" \
   "==================================================================\n" \
@@ -84,10 +77,10 @@ string EXODUS::WriteDatIntro(const EXODUS::Mesh& mymesh)
   dat << "MATERIALS" << '\t' << "1" << endl;
   dat << "NUMDF    " << '\t' << "6" << endl;
 
-  return dat.str();
+  return;
 }
 
-string EXODUS::WriteDatHead(const string& headfile)
+void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
 {
   stringstream head;
   const char *headfilechar;
@@ -98,13 +91,14 @@ string EXODUS::WriteDatHead(const string& headfile)
   header.close();
   string headstring = head.str();
   headstring.erase(headstring.end()-1);
-  return headstring;
+
+  dat<<headstring;
+  return;
 }
 
 
-string EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs)
+void EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs, ostream& dat)
 {
-  stringstream dat;
   vector<EXODUS::cond_def>::const_iterator it;
   int ndp=0; int ndl=0; int nds=0; int ndv=0;
 
@@ -128,13 +122,11 @@ string EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs)
   dat << "---------------------------------------------------DESIGN SURFACES" << endl;
   dat << "----------------------------------------------------DESIGN VOLUMES" << endl;
   
-  return dat.str();
+  return;
 }
 
-string EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EXODUS::Mesh& mymesh)
+void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EXODUS::Mesh& mymesh, ostream& dat)
 {
-  stringstream dat;
-  
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
   vector<string> allsectionnames;
   
@@ -145,8 +137,6 @@ string EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const 
   vector<EXODUS::cond_def>::const_iterator i_cond;
   for (i_cond = condefs.begin(); i_cond != condefs.end(); ++i_cond)
     (count_cond[(*i_cond).sec]).push_back((*i_cond).id);
-  
-  
   
   for (unsigned int i=0; i<(*condlist).size(); ++i)
   {
@@ -179,15 +169,12 @@ string EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const 
       }
     }
   }
-  
-  
-  return dat.str();
+
+  return;
 }
 
-string EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh)
+void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, ostream& dat)
 {
-  stringstream dat;
-  
   // sort baciconds w.r.t. underlying topology
   vector<EXODUS::cond_def> dpoints;
   vector<EXODUS::cond_def> dlines;
@@ -243,7 +230,7 @@ string EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, c
     }
   }
 
-  return dat.str();
+  return;
 }
 
 const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m)
@@ -278,23 +265,23 @@ const set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS
   return n;
 }
 
-string EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh)
+void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat)
 {
-  stringstream dat;
   dat << "-------------------------------------------------------NODE COORDS" << endl;
   dat.precision(8);
   map<int,vector<double> > nodes = mymesh.GetNodes();
   map<int,vector<double> >::const_iterator i_node;
-  for (i_node = nodes.begin(); i_node != nodes.end(); ++i_node) {
+  for (i_node = nodes.begin(); i_node != nodes.end(); ++i_node)
+  {
     vector<double> coords = i_node->second;
     dat << "NODE " << i_node->first+1 << "  " << '\t' << "COORD" << '\t';
     for(unsigned int i=0; i<coords.size(); ++i) dat << scientific << coords[i] << '\t';
     dat << endl;
   }
-  return dat.str();
+  return;
 }
 
-void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& mymesh, ofstream& dat)
+void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& mymesh, ostream& dat)
 {
   dat << "----------------------------------------------------------ELEMENTS" << endl;
   
@@ -303,6 +290,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   vector<EXODUS::elem_def> fluids;
   vector<EXODUS::elem_def> ales;
   vector<EXODUS::elem_def> levels;
+  vector<EXODUS::elem_def> transport;
   vector<EXODUS::elem_def>::const_iterator i_et;
   
   for(i_et=eledefs.begin();i_et!=eledefs.end();++i_et){
@@ -311,6 +299,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
     else if (acte.sec.compare("FLUID")==0) fluids.push_back(acte);
     else if (acte.sec.compare("ALE")==0) ales.push_back(acte);
     else if (acte.sec.compare("LEVELSET")==0) levels.push_back(acte);
+    else if (acte.sec.compare("TRANSPORT")==0) transport.push_back(acte);
     else{
       cout << "Unknown ELEMENT sectionname in eb" << acte.id << ": '" << acte.sec << "'!" << endl;
       dserror("Unknown ELEMENT sectionname");
@@ -325,7 +314,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(*eb,acte,ele,dat);
+    EXODUS::DatEles(eb,acte,ele,dat);
   }
 
   // print fluid elements
@@ -334,7 +323,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(*eb,acte,ele,dat);
+    EXODUS::DatEles(eb,acte,ele,dat);
   }
 
   // print ale elements
@@ -343,7 +332,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(*eb,acte,ele,dat);
+    EXODUS::DatEles(eb,acte,ele,dat);
   }
 
   // print levelset elements
@@ -352,22 +341,31 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(*eb,acte,ele,dat);
+    EXODUS::DatEles(eb,acte,ele,dat);
+  }
+
+  // print transport elements
+  dat << "------------------------------------------------TRANSPORT ELEMENTS" << endl;
+  for(i_et=levels.begin();i_et!=levels.end();++i_et)
+  {
+    EXODUS::elem_def acte = *i_et;
+    RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    EXODUS::DatEles(eb,acte,ele,dat);
   }
 
   return;
 }
 
-void EXODUS::DatEles(const EXODUS::ElementBlock& eb, const EXODUS::elem_def& acte, int& struele, ofstream& dat)
+void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& struele, ostream& dat)
 {
-  RCP<const map<int,vector<int> > > eles = eb.GetEleConn();
+  RCP<const map<int,vector<int> > > eles = eb->GetEleConn();
   map<int,vector<int> >::const_iterator i_ele;
   for (i_ele=eles->begin();i_ele!=eles->end();++i_ele){
     const vector<int> nodes = i_ele->second;
     vector<int>::const_iterator i_n;
     dat << "   " << struele;
     dat << " " << acte.ename;                       // e.g. "SOLIDH8"
-    dat << " " << DistypeToString(PreShapeToDrt(eb.GetShape()));
+    dat << " " << DistypeToString(PreShapeToDrt(eb->GetShape()));
     dat << "  ";
     for(i_n=nodes.begin();i_n!=nodes.end();++i_n) dat << *i_n << " ";
     dat << "   " << acte.desc << endl;              // e.g. "MAT 1"

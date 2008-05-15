@@ -161,7 +161,7 @@ int main(
 
       // write default .dat header into file 
       DRT::INPUT::PrintDatHeader(defaulthead,*list);
-      
+
       defaulthead <<
       "---------------------------------------------------------MATERIALS"<<endl<<
       "-------------------------------------------------------LOAD CURVES"<<endl<<
@@ -170,7 +170,6 @@ int main(
       "------------------------------------------------------------CURVE3"<<endl<<
       "------------------------------------------------------------CURVE4"<<endl<<
       "------------------------------------------------------------FUNCT1"<<endl;
-
 
       // close default header file
       if (defaulthead.is_open()) defaulthead.close();
@@ -184,7 +183,7 @@ int main(
       // set default dat-file name if needed
       if (datfile=="")
       {
-        string exofilebasename = exofile.substr(0,exofile.find_first_of("."));
+        string exofilebasename = exofile.substr(0,exofile.find_last_of("."));
         datfile=exofilebasename+".dat";
       }
 
@@ -193,7 +192,7 @@ int main(
       EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
 
       //validate the generated BACI input file
-      EXODUS::ValidateInputFile(datfile);
+      //EXODUS::ValidateInputFile(datfile);
     }
 
 #ifdef PARALLEL
