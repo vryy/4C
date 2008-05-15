@@ -51,8 +51,8 @@ public:
     explicit ElementDofManager(
             const DRT::Element& ele,
             const map<int, const set<XFEM::FieldEnr> >&  nodalDofSet,
-            const set<XFEM::FieldEnr>& elementDofs,
-            const int numeleparam
+            const map<int, const set<XFEM::FieldEnr> >&  elementnodalDofSet,
+            const int numvirtualnodes
             );
     //! copy constructor
     ElementDofManager(const ElementDofManager& old);
@@ -90,9 +90,18 @@ public:
      * \return set with enriched fields
      * 
      */
-    const std::set<FieldEnr>& FieldEnrSetPerElement() const
+    const std::set<FieldEnr>& FieldEnrSetPerVirtualElementNode(
+        const int  lid    ///< local node id
+        ) const
     {
-        return elementDofs_;
+      map<int, const set<FieldEnr> >::const_iterator tmp = elementnodalDofSet_.find(lid);
+      if (tmp == elementnodalDofSet_.end()){
+          cout << lid << endl;
+          // let this always be here so we can recognize errors early
+          dserror("FieldEnrSetPerVirtualElementNode: local node id not found!");
+          //return std::set<FieldEnr>();
+      }
+      return tmp->second;
     };
     
     //! function that returns node specific number of dofs or the given default number
@@ -112,13 +121,19 @@ public:
     //! function that returns element specific number of dofs or the given default number
     int NumDofPerElement() const
     {
-        return elementDofs_.size()*numVirtualNodes_;
+        int numdofele = 0;
+        const int numvirtualnodes = elementnodalDofSet_.size();
+        if (numvirtualnodes > 0)
+        {
+          numdofele = numvirtualnodes * elementnodalDofSet_.find(0)->second.size();
+        }
+        return numdofele;
     };
     
     //! function that returns element specific number of dofs or the given default number
     int NumVirtualNodes() const
     {
-        return numVirtualNodes_;
+        return elementnodalDofSet_.size();
     };
     
     /*! return number of dofs on this element for a given field. E.g., if we have 4 nodes with
@@ -170,13 +185,8 @@ private:
     //! unknowns for each global node id (gid)
     std::map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
 
-    //! unknown fields for the element
-    std::set<XFEM::FieldEnr> elementDofs_;
-    
-    /*! multiply the size of elementDofs_ with this number and you get the number of overall
-     * element unknowns.
-     */
-    int numVirtualNodes_;
+    //! unknowns for each virtual node id (lid)
+    std::map<int, const set<XFEM::FieldEnr> > elementnodalDofSet_;
     
     //! number of unknowns for each global node id (gid)
     std::map<int, int> nodalNumDof_;
@@ -221,7 +231,7 @@ public:
         return entry->second;
     };
     
-    const std::set<XFEM::FieldEnr> getElementDofs(const int gid) const
+    const std::set<XFEM::FieldEnr> getElementDofSet(const int gid) const
     {
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = elementalDofs_.find(gid);
         if (entry == elementalDofs_.end())
@@ -256,7 +266,7 @@ private:
     map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
     
     /*! unknowns for each global element id (gid) on this processor
-     * same as above, see getElementDofs()
+     * same as above, see getElementDofSet()
      */
     map<int, const set<XFEM::FieldEnr> > elementalDofs_;
     

@@ -40,7 +40,7 @@ std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(
     for (std::set<XFEM::Enrichment>::const_iterator enriter =
         enrset.begin(); enriter != enrset.end(); ++enriter)
     {
-        const double enrval = enriter->EnrValue(actpos, ih->submerseddis(), approachdirection);
+        const double enrval = enriter->EnrValue(actpos, ih->cutterdis(), approachdirection);
         enrvals.insert(make_pair((*enriter), enrval));
     }
     return enrvals;
@@ -85,9 +85,6 @@ void XFEM::ComputeEnrichedNodalShapefunction(
         {
             if (enrfield->getField() == field)
             {
-                //const XFEM::Enrichment enr = enrfield->getEnrichment();
-                //const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->submerseddis());
-                //const double enrval = enr.EnrValue(actpos, ih->submerseddis(), approachdirection);
                 const double enrval = enrvals.find(enrfield->getEnrichment())->second;
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 dofcounter += 1;
@@ -138,9 +135,6 @@ void XFEM::ComputeEnrichedNodalShapefunction(
         {
             if (enrfield->getField() == field)
             {
-//                const XFEM::Enrichment enr = enrfield->getEnrichment();
-//                //const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->submerseddis());
-//                const double enrval = enr.EnrValue(actpos, ih->submerseddis(), approachdirection);
                 const double enrval = enrvals.find(enrfield->getEnrichment())->second;
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
@@ -148,6 +142,7 @@ void XFEM::ComputeEnrichedNodalShapefunction(
             }
         }
     }
+    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
 
 //
@@ -193,9 +188,6 @@ void XFEM::ComputeEnrichedNodalShapefunction(
         {
             if (enrfield->getField() == field)
             {
-//                const XFEM::Enrichment enr = enrfield->getEnrichment();
-//                //const double enrval = enr.ModifiedEnrValue(actpos, nodalpos, ih->submerseddis());
-//                const double enrval = enr.EnrValue(actpos, ih->submerseddis(), approachdirection);
                 const double enrval = enrvals.find(enrfield->getEnrichment())->second;
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
@@ -204,6 +196,7 @@ void XFEM::ComputeEnrichedNodalShapefunction(
             }
         }
     }
+    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
 
 
@@ -232,20 +225,20 @@ void XFEM::ComputeEnrichedElementShapefunction(
     int dofcounter = 0;
     for (int inode = 0; inode < dofman.NumVirtualNodes(); ++inode)
     {
-        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerElement();
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerVirtualElementNode(inode);
+        dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {
             if (enrfield->getField() == field)
             {
-//                const XFEM::Enrichment enr = enrfield->getEnrichment();
-//                const double enrval = enr.EnrValue(actpos, ih->submerseddis(), approachdirection);
                 const double enrval = enrvals.find(enrfield->getEnrichment())->second;
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 dofcounter += 1;                
             }
         }
     }
+    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
 
 //
@@ -277,21 +270,21 @@ void XFEM::ComputeEnrichedElementShapefunction(
     int dofcounter = 0;
     for (int inode = 0; inode < dofman.NumVirtualNodes(); ++inode)
     {
-        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerElement();
+        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerVirtualElementNode(inode);
+        dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {
             if (enrfield->getField() == field)
             {
-                //const XFEM::Enrichment enr = enrfield->getEnrichment();
-                //const double enrval = enr.EnrValue(actpos, ih->submerseddis(), approachdirection);
                 const double enrval = enrvals.find(enrfield->getEnrichment())->second;
                 enr_funct(dofcounter) = funct(inode) * enrval;
                 enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
-                dofcounter += 1;                
+                dofcounter += 1;
             }
         }
     }
+    dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
 
 #endif  // #ifdef CCADISCRET

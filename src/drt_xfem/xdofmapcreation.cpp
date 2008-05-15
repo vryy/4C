@@ -56,7 +56,7 @@ void XFEM::createDofMap(
   {
       const int label = conditer->first;
     
-      // for surface 1, loop my col elements and add void enrichments to each elements member nodes
+      // for surface with label, loop my col elements and add void enrichments to each elements member nodes
       const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
       for (int i=0; i<xfemdis->NumMyColElements(); ++i)
       {

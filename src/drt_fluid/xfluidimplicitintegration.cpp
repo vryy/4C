@@ -30,6 +30,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/interface.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
+#include "../drt_xfem/field_enriched.H"
 #include "fluid_utils.H"
 
 
@@ -69,23 +70,8 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // -------------------------------------------------------------------
   myrank_  = discret_->Comm().MyPID();
 
-  // -------------------------------------------------------------------
-  // create timers and time monitor
-  // -------------------------------------------------------------------
-  timetotal_    = TimeMonitor::getNewTimer("dynamic routine total"            );
-  timeinit_     = TimeMonitor::getNewTimer(" + initialization"                );
-  timetimeloop_ = TimeMonitor::getNewTimer(" + time loop"                     );
-  timenlnitlin_ = TimeMonitor::getNewTimer("   + nonlin. iteration/lin. solve");
-  timeelement_  = TimeMonitor::getNewTimer("      + element calls"            );
-  timeapplydbc_ = TimeMonitor::getNewTimer("      + apply DBC"                );
-  timesolver_   = TimeMonitor::getNewTimer("      + solver calls"             );
-  timeout_      = TimeMonitor::getNewTimer("      + output and statistics"    );
-
-  // time measurement: total --- start TimeMonitor tm0
-  tm0_ref_        = rcp(new TimeMonitor(*timetotal_ ));
-
   // time measurement: initialization
-  TimeMonitor monitor(*timeinit_);
+  TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
 
   // -------------------------------------------------------------------
   // get the basic parameters first
@@ -172,9 +158,6 @@ void XFluidImplicitTimeInt::Integrate(
     TimeLoop(cutterdiscret,submerseddiscret);
   }
 
-  // end total time measurement
-  tm0_ref_ = null;
-
   // print the results of time measurements
   //cout<<endl<<endl;
   TimeMonitor::summarize();
@@ -199,7 +182,7 @@ void XFluidImplicitTimeInt::TimeLoop(
         )
 {
   // time measurement: time loop
-  TimeMonitor monitor(*timetimeloop_);
+  TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
 
   // how do we want to solve or fluid equations?
   const int dyntype    =params_.get<int>   ("type of nonlinear solve");
@@ -291,7 +274,7 @@ void XFluidImplicitTimeInt::TimeLoop(
     TimeUpdate();
 
     // time measurement: output and statistics
-    TimeMonitor monitor(*timeout_);
+    TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
 
     // -------------------------------------------------------------------
     // evaluate error for test flows with analytical solutions
@@ -486,6 +469,213 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
       discret_->Evaluate(eleparams,null,null,null,null,null);
   }
 
+  // debug info: print ele dofmanager information
+  cout << "writing 'eledofman_check.pos' ...";
+  {
+      std::ofstream f_system("eledofman_check.pos");
+      //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
+//      f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis());
+//      {
+//          // draw elements with associated gid
+//          stringstream gmshfilecontent;
+//          gmshfilecontent << "View \" " << "Element->Id() \" {" << endl;
+//          for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+//          {
+//              DRT::Element* actele = ih->xfemdis()->lColElement(i);
+//              gmshfilecontent << IO::GMSH::elementToString(double(actele->Id()), actele);
+//          };
+//          gmshfilecontent << "};" << endl;
+//          f_system << gmshfilecontent.str();
+//      }
+      {
+          stringstream gmshfilecontent;
+          gmshfilecontent << "View \" " << " NumDofPerElement() in element \" {" << endl;
+          for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+          {
+              DRT::Element* actele = ih->xfemdis()->lColElement(i);
+              //const int ele_gid = actele->Id();
+              //double val = 0.0;
+              //std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);
+              double val = actele->NumDofPerElement();
+              gmshfilecontent << IO::GMSH::elementToString(val, actele);
+
+          };
+          gmshfilecontent << "};" << endl;
+          f_system << gmshfilecontent.str();
+      }
+      {
+          stringstream gmshfilecontent;
+          gmshfilecontent << "View \" " << " eleDofManager->label in element \" {" << endl;
+          for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+          {
+              DRT::Element* actele = ih->xfemdis()->lColElement(i);
+              const int numvirtualnodes = DRT::UTILS::getNumberOfElementNodes(actele->Shape());
+              
+              // create local copy of information about dofs
+              const XFEM::ElementDofManager eleDofManager = dofmanager->constructElementDofManager(*actele, numvirtualnodes);
+              
+              //const int ele_gid = actele->Id();
+              double val = 0.0;
+              
+              if (actele->NumDofPerElement() > 0)
+              {
+                const std::set<XFEM::FieldEnr> enrfieldset = eleDofManager.FieldEnrSetPerVirtualElementNode(0);
+                XFEM::FieldEnr firstenrfield = *(enrfieldset.begin());
+                const int label = firstenrfield.getEnrichment().XFEMConditionLabel();
+                val = label;
+              }
+              gmshfilecontent << IO::GMSH::elementToString(val, actele);
+
+          };
+          gmshfilecontent << "};" << endl;
+          f_system << gmshfilecontent.str();
+      }
+//      {
+//          stringstream gmshfilecontent;
+//          gmshfilecontent << "View \" " << "NumDof per node \" {" << endl;
+//          for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+//          {
+//              //DRT::Element* actele = ih->xfemdis()->lColElement(i);
+//              const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
+//              const BlitzVec3 pos(toBlitzArray(actnode->X()));
+//              const int node_gid = actnode->Id();
+//
+//              double val = 0.0;
+//              std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+//
+//              if (blub != nodalDofSet_.end())
+//              {
+//                  const set<XFEM::FieldEnr> schnapp = blub->second;
+//                  val = schnapp.size();
+//
+//
+//              gmshfilecontent << "SP(";
+//              gmshfilecontent << scientific << pos(0) << ",";
+//              gmshfilecontent << scientific << pos(1) << ",";
+//              gmshfilecontent << scientific << pos(2);
+//              gmshfilecontent << "){";
+//              gmshfilecontent << val << "};" << endl;
+//              }
+//          };
+//          gmshfilecontent << "};" << endl;
+//          f_system << gmshfilecontent.str();
+//      }
+//
+//      {
+//          stringstream gmshfilecontent;
+//          gmshfilecontent << "View \" " << "NumDof Jump enriched nodes \" {" << endl;
+//          for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+//          {
+//              const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
+//              const BlitzVec3 pos(toBlitzArray(actnode->X()));
+//              const int node_gid = actnode->Id();
+//
+//              double val = 0.0;
+//              std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+//              if (blub != nodalDofSet_.end())
+//              {
+//                  const std::set<XFEM::FieldEnr> fields = blub->second;
+//                  for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
+//                  {
+//                      if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeJump)
+//                      {
+//                          val = val+1.0;
+//                      }
+//                  }
+//                  if (val > 0.5)
+//                  {
+//                      gmshfilecontent << "SP(";
+//                      gmshfilecontent << scientific << pos(0) << ",";
+//                      gmshfilecontent << scientific << pos(1) << ",";
+//                      gmshfilecontent << scientific << pos(2);
+//                      gmshfilecontent << "){";
+//                      gmshfilecontent << val << "};" << endl;
+//                  }
+//              }
+//          };
+//          gmshfilecontent << "};" << endl;
+//          f_system << gmshfilecontent.str();
+//      }
+//
+//      {
+//          stringstream gmshfilecontent;
+//          gmshfilecontent << "View \" " << "NumDof" << " standard enriched nodes \" {" << endl;
+//          for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+//          {
+//              const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
+//              const BlitzVec3 pos(toBlitzArray(actnode->X()));
+//              const int node_gid = actnode->Id();
+//
+//              double val = 0.0;
+//              std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+//              if (blub != nodalDofSet_.end())
+//              {
+//                  const std::set<XFEM::FieldEnr> fields = blub->second;
+//                  for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
+//                  {
+//                      if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeStandard)
+//                      {
+//                          val = val+1.0;
+//                      }
+//                  }
+//                  if (val > 0.5)
+//                  {
+//                      gmshfilecontent << "SP(";
+//                      gmshfilecontent << scientific << pos(0) << ",";
+//                      gmshfilecontent << scientific << pos(1) << ",";
+//                      gmshfilecontent << scientific << pos(2);
+//                      gmshfilecontent << "){";
+//                      gmshfilecontent << val << "};" << endl;
+//                  }
+//              }
+//          };
+//          gmshfilecontent << "};" << endl;
+//          f_system << gmshfilecontent.str();
+//      }
+//
+//      {
+//          stringstream gmshfilecontent;
+//          gmshfilecontent << "View \" " << "NumDof" << " Void enriched nodes \" {" << endl;
+//          for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+//          {
+//              const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
+//              const BlitzVec3 pos(toBlitzArray(actnode->X()));
+//              const int node_gid = actnode->Id();
+//
+//              double val = 0.0;
+//              std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+//              if (blub != nodalDofSet_.end())
+//              {
+//                  const std::set<XFEM::FieldEnr> fields = blub->second;
+//                  for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
+//                  {
+//                      if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeVoid)
+//                      {
+//                          val = val+1.0;
+//                      }
+//                  }
+//                  if (val > 0.5)
+//                  {
+//                      gmshfilecontent << "SP(";
+//                      gmshfilecontent << scientific << pos(0) << ",";
+//                      gmshfilecontent << scientific << pos(1) << ",";
+//                      gmshfilecontent << scientific << pos(2);
+//                      gmshfilecontent << "){";
+//                      gmshfilecontent << val << "};" << endl;
+//                  }
+//              }
+//          };
+//          gmshfilecontent << "};" << endl;
+//          f_system << gmshfilecontent.str();
+//      }
+
+
+      //f_system << IO::GMSH::getConfigString(2);
+      f_system.close();
+  }
+  cout << "done" << endl;
+  
+  
   // store old (proc-overlapping) dofmap, compute new one and return it
   Epetra_Map olddofrowmap = *discret_->DofRowMap();
   discret_->FillComplete();
@@ -601,7 +791,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
   PrepareNonlinearSolve();
 
   // time measurement: nonlinear iteration
-  TimeMonitor monitor(*timenlnitlin_);
+  TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
@@ -637,7 +827,8 @@ void XFluidImplicitTimeInt::NonlinearSolve(
     // -------------------------------------------------------------------
     {
       // time measurement: element
-      TimeMonitor monitor(*timeelement_);
+      TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
+
       // get cpu time
       const double tcpu=ds_cputime();
 
@@ -866,14 +1057,15 @@ void XFluidImplicitTimeInt::NonlinearSolve(
     incvel_->PutScalar(0.0);
     {
       // time measurement: application of dbc
-      TimeMonitor monitor(*timeapplydbc_);
+      TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
     }
 
     //-------solve for residual displacements to correct incremental displacements
     {
       // time measurement: solver
-      TimeMonitor monitor(*timesolver_);
+      TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
+
       // get cpu time
       const double tcpusolve=ds_cputime();
 
@@ -943,7 +1135,7 @@ void XFluidImplicitTimeInt::LinearSolve(
   PrepareNonlinearSolve();
 
   // time measurement: linearised fluid
-  TimeMonitor monitor(*timenlnitlin_);
+  TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
   if (myrank_ == 0)
     cout << "solution of linearised fluid   ";
@@ -956,7 +1148,7 @@ void XFluidImplicitTimeInt::LinearSolve(
   const double tcpuele = ds_cputime();
   {
     // time measurement: element
-    TimeMonitor monitor(*timeelement_);
+    TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
 
     sysmat_->Zero();
 
@@ -1000,7 +1192,7 @@ void XFluidImplicitTimeInt::LinearSolve(
 
   {
     // time measurement: application of dbc
-    TimeMonitor monitor(*timeapplydbc_);
+    TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
 
     LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,dirichtoggle_);
   }
@@ -1010,7 +1202,7 @@ void XFluidImplicitTimeInt::LinearSolve(
   const double tcpusolve = ds_cputime();
   {
     // time measurement: solver
-    TimeMonitor solvemonitor(*timesolver_);
+    TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
 
     /* possibly we could accelerate it if the reset variable
        is true only every fifth step, i.e. set the last argument to false
@@ -1519,7 +1711,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
   PrepareNonlinearSolve();
 
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
-  TimeMonitor monitor(*timetimeloop_);
+  TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
 
   // override time integration parameters in order to avoid misuse in
   // NonLinearSolve method below

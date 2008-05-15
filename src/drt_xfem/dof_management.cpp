@@ -34,8 +34,7 @@ using namespace std;
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::ElementDofManager() :
     nodalDofSet_(),
-    elementDofs_(),
-    numVirtualNodes_(0)
+    elementnodalDofSet_()
 {
     return;
 }
@@ -46,12 +45,11 @@ XFEM::ElementDofManager::ElementDofManager() :
 XFEM::ElementDofManager::ElementDofManager(
         const DRT::Element& ele,
         const map<int, const set<XFEM::FieldEnr> >& nodalDofSet,
-        const set<XFEM::FieldEnr>& elementDofs,
-        const int numeleparam
+        const map<int, const set<XFEM::FieldEnr> >& elementnodalDofSet,
+        const int numvirtualnodes
         ) :
             nodalDofSet_(nodalDofSet),
-            elementDofs_(elementDofs),
-            numVirtualNodes_(numeleparam)
+            elementnodalDofSet_(elementnodalDofSet)
 {
     // count number of dofs for each node
     map<int, const set<XFEM::FieldEnr> >::const_iterator tmp;
@@ -72,10 +70,13 @@ XFEM::ElementDofManager::ElementDofManager(
             paramsLocalEntries_[field] = vector<int>();
         }
     }
-    for (set<XFEM::FieldEnr>::const_iterator enrfield = elementDofs.begin(); enrfield != elementDofs.end(); ++enrfield) {
-        const XFEM::PHYSICS::Field field = enrfield->getField();
-        numParamsPerField_[field] = 0;
-        paramsLocalEntries_[field] = vector<int>();
+    for (tmp = elementnodalDofSet.begin(); tmp != elementnodalDofSet.end(); ++tmp) {
+        const set<XFEM::FieldEnr> enrfieldset = tmp->second;
+        for (set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield) {
+            const XFEM::PHYSICS::Field field = enrfield->getField();
+            numParamsPerField_[field] = 0;
+            paramsLocalEntries_[field] = vector<int>();
+        }
     }
 
 
@@ -103,9 +104,14 @@ XFEM::ElementDofManager::ElementDofManager(
     }
     // loop now over element dofs
     // for that we have to loop over the "virtual element nodes" ansatz function
-    for (int i = 0; i < numeleparam; ++i)
+    for (int inode=0; inode<numvirtualnodes; ++inode)
     {
-        for (std::set<XFEM::FieldEnr>::const_iterator enrfield = elementDofs.begin(); enrfield != elementDofs.end(); ++enrfield)
+        map<int, const set <XFEM::FieldEnr> >::const_iterator entry = elementnodalDofSet_.find(inode);
+        if (entry == elementnodalDofSet_.end())
+            dserror("impossible ;-)");
+        const set<XFEM::FieldEnr> enrfieldset = entry->second;
+
+        for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {
             const XFEM::PHYSICS::Field field = enrfield->getField();
             numParamsPerField_[field] += 1;
@@ -437,10 +443,13 @@ const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
     }
 
     // element dofs for ele
-    const std::set<XFEM::FieldEnr> elementdofs = this->getElementDofs(ele.Id());
+    std::map<int, const set <XFEM::FieldEnr> > elementnodaldofset;
+    for (int inode = 0; inode < numeleparam; ++inode) {
+        elementnodaldofset.insert(make_pair(inode,this->getElementDofSet(ele.Id())));
+    }
 
     // create a local dofmanager
-    XFEM::ElementDofManager eleDofManager(ele, nodaldofset, elementdofs, numeleparam);
+    XFEM::ElementDofManager eleDofManager(ele, nodaldofset, elementnodaldofset, numeleparam);
 
     return eleDofManager;
 }

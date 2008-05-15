@@ -117,7 +117,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
                 const BlitzVec3 actpos(toBlitzArray(ih_->xfemdis()->gNode(gnodeid)->X()));
                 const XFEM::FieldEnr oldfieldenr = olddofkey.getFieldEnr();
                 const XFEM::Enrichment oldenr = oldfieldenr.getEnrichment();
-                const double enrval = oldenr.EnrValue(actpos, ih_->submerseddis(), Enrichment::approachUnknown);
+                const double enrval = oldenr.EnrValue(actpos, ih_->cutterdis(), Enrichment::approachUnknown);
                 
                 // create alternative dofkey
                 const XFEM::Enrichment altenr(genAlternativeEnrichment(gnodeid, oldphysvar, dofman_));

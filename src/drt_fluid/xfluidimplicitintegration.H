@@ -384,21 +384,6 @@ protected:
   /// (robin) fsi coupling row dof map extractor
   const LINALG::MapExtractor* fsisurface_;
 
-  //! @name time measurement
-
-  RCP<Teuchos::Time> timetotal_   ;
-  RCP<Teuchos::Time> timeinit_    ;
-  RCP<Teuchos::Time> timetimeloop_;
-  RCP<Teuchos::Time> timenlnitlin_;
-  RCP<Teuchos::Time> timeelement_ ;
-  RCP<Teuchos::Time> timeapplydbc_;
-  RCP<Teuchos::Time> timesolver_  ;
-  RCP<Teuchos::Time> timeout_     ;
-
-  RCP<TimeMonitor> tm0_ref_ ;
-
-  //@}
-
   /// velocity-pressure block matrix split strategy
   class VelPressSplitStrategy
   {
