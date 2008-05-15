@@ -88,15 +88,6 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   systemmatrix_->Complete();
 
   /*----------------------------------------------------------------------*/
-  sysmattimer_         = Teuchos::TimeMonitor::getNewTimer("FSI::MonolithicOverlap::SetupSysMat");
-  igtimer_             = Teuchos::TimeMonitor::getNewTimer("FSI::MonolithicOverlap::InitialGuess");
-  rhstimer_            = Teuchos::TimeMonitor::getNewTimer("FSI::MonolithicOverlap::SetupRHS");
-  exctracttimer_       = Teuchos::TimeMonitor::getNewTimer("FSI::MonolithicOverlap::ExtractFieldVectors");
-  fluidinterfacetimer_ = Teuchos::TimeMonitor::getNewTimer("FSI::MonolithicOverlap::AddFluidInterface");
-  figcolmaptimer_      = Teuchos::TimeMonitor::getNewTimer("FSI::MonolithicOverlap::ConvertFigColmap");
-  fgirowmaptimer_      = Teuchos::TimeMonitor::getNewTimer("FSI::MonolithicOverlap::ConvertFgiRowmap");
-
-  /*----------------------------------------------------------------------*/
   // Assume linear ALE. Prepare ALE system matrix once and for all.
 
   // build ale system matrix in splitted system
@@ -233,7 +224,7 @@ bool FSI::MonolithicOverlap::computePreconditioner(const Epetra_Vector &x,
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f)
 {
-  Teuchos::TimeMonitor monitor(*rhstimer_);
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::SetupRHS");
 
   SetupVector(f,
               StructureField().RHS(),
@@ -250,7 +241,7 @@ void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f)
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
-  Teuchos::TimeMonitor monitor(*sysmattimer_);
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::SetupSystemMatrix");
 
   // extract Jacobian matrices and put them into composite system
   // matrix W
@@ -310,7 +301,7 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicOverlap::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 {
-  Teuchos::TimeMonitor monitor(*igtimer_);
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::InitialGuess");
 
   SetupVector(*ig,
               StructureField().InitialGuess(),
@@ -490,7 +481,7 @@ void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
                                                  Teuchos::RCP<const Epetra_Vector>& fx,
                                                  Teuchos::RCP<const Epetra_Vector>& ax)
 {
-  Teuchos::TimeMonitor monitor(*exctracttimer_);
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::ExtractFieldVectors");
 
   // We have overlap at the interface. Thus we need the interface part of the
   // structure vector and append it to the fluid and ale vector. (With the
@@ -527,7 +518,7 @@ void FSI::MonolithicOverlap::AddFluidInterface(double scale,
                                                const LINALG::SparseMatrix& fgg,
                                                LINALG::SparseMatrix& s) const
 {
-  Teuchos::TimeMonitor monitor(*fluidinterfacetimer_);
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::AddFluidInterface");
 
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
 
@@ -590,7 +581,7 @@ FSI::MonolithicOverlap::ConvertFigColmap(const LINALG::SparseMatrix& fig,
                                          const Epetra_Map& domainmap,
                                          double scale) const
 {
-  Teuchos::TimeMonitor monitor(*figcolmaptimer_);
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::ConvertFigColmap");
 
   const Epetra_Map& rowmap = fig.RowMap();
   const Epetra_Map& colmap = fig.ColMap();
@@ -638,7 +629,7 @@ FSI::MonolithicOverlap::ConvertFgiRowmap(const LINALG::SparseMatrix& fgi,
                                          double scale,
                                          const Epetra_Map& structrowmap) const
 {
-  Teuchos::TimeMonitor monitor(*fgirowmaptimer_);
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::ConvertFgiRowmap");
 
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
 

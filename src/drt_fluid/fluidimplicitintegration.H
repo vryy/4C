@@ -435,20 +435,7 @@ protected:
   /// connection between master and slave nodes on this proc
   map<int,vector<int> >     pbcmapmastertoslave_;
 
-  //! @name time measurement
-
-  RCP<Teuchos::Time> timetotal_   ;
-  RCP<Teuchos::Time> timeinit_    ;
-  RCP<Teuchos::Time> timetimeloop_;
-  RCP<Teuchos::Time> timenlnitlin_;
-  RCP<Teuchos::Time> timeelement_ ;
-  RCP<Teuchos::Time> timeavm3_    ;
-  RCP<Teuchos::Time> timeapplydbc_;
-  RCP<Teuchos::Time> timesolver_  ;
-  RCP<Teuchos::Time> timeout_     ;
-
-  RCP<TimeMonitor> tm0_ref_ ;
-
+  /// bio related special (outflow) boudaries
   RCP<FluidImpedanceBc> impedancebc_;
 
   /// velocity-pressure block matrix split strategy

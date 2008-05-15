@@ -72,24 +72,8 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   // -------------------------------------------------------------------
   myrank_  = discret_->Comm().MyPID();
 
-  // -------------------------------------------------------------------
-  // create timers and time monitor
-  // -------------------------------------------------------------------
-  timetotal_    = TimeMonitor::getNewTimer("dynamic routine total"            );
-  timeinit_     = TimeMonitor::getNewTimer(" + initialization"                );
-  timetimeloop_ = TimeMonitor::getNewTimer(" + time loop"                     );
-  timenlnitlin_ = TimeMonitor::getNewTimer("   + nonlin. iteration/lin. solve");
-  timeelement_  = TimeMonitor::getNewTimer("      + element calls"            );
-  timeavm3_     = TimeMonitor::getNewTimer("           + avm3"                );
-  timeapplydbc_ = TimeMonitor::getNewTimer("      + apply DBC"                );
-  timesolver_   = TimeMonitor::getNewTimer("      + solver calls"             );
-  timeout_      = TimeMonitor::getNewTimer("      + output and statistics"    );
-
-  // time measurement: total --- start TimeMonitor tm0
-  tm0_ref_        = rcp(new TimeMonitor(*timetotal_ ));
-
   // time measurement: initialization
-  TimeMonitor monitor(*timeinit_);
+  TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
 
   // -------------------------------------------------------------------
   // get the basic parameters first
@@ -454,9 +438,6 @@ void FluidImplicitTimeInt::Integrate()
     TimeLoop();
   }
 
-  // end total time measurement
-  tm0_ref_ = null;
-
   // print the results of time measurements
   //cout<<endl<<endl;
   TimeMonitor::summarize();
@@ -478,7 +459,7 @@ void FluidImplicitTimeInt::Integrate()
 void FluidImplicitTimeInt::TimeLoop()
 {
   // time measurement: time loop
-  TimeMonitor monitor(*timetimeloop_);
+  TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
 
   // how do we want to solve or fluid equations?
   const int dyntype    =params_.get<int>   ("type of nonlinear solve");
@@ -553,7 +534,7 @@ void FluidImplicitTimeInt::TimeLoop()
     TimeUpdate();
 
     // time measurement: output and statistics
-    TimeMonitor monitor(*timeout_);
+    TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
 
     // -------------------------------------------------------------------
     // treat impedance BC
@@ -810,7 +791,7 @@ void FluidImplicitTimeInt::PrepareTimeStep()
 void FluidImplicitTimeInt::NonlinearSolve()
 {
   // time measurement: nonlinear iteration
-  TimeMonitor monitor(*timenlnitlin_);
+  TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
@@ -851,7 +832,8 @@ void FluidImplicitTimeInt::NonlinearSolve()
     // -------------------------------------------------------------------
     {
       // time measurement: element
-      TimeMonitor monitor(*timeelement_);
+      TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
+
       // get cpu time
       const double tcpu=ds_cputime();
 
@@ -938,8 +920,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       if (fssgv_ != "No")
       {
         // time measurement: avm3
-        TimeMonitor monitor(*timeavm3_);
-
+        TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
 
         // call the VM3 constructor (only in the first time step)
         if (step_ == 1)
@@ -1212,14 +1193,15 @@ void FluidImplicitTimeInt::NonlinearSolve()
     incvel_->PutScalar(0.0);
     {
       // time measurement: application of dbc
-      TimeMonitor monitor(*timeapplydbc_);
+      TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,dirichtoggle_);
     }
 
     //-------solve for residual displacements to correct incremental displacements
     {
       // time measurement: solver
-      TimeMonitor monitor(*timesolver_);
+      TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
+
       // get cpu time
       const double tcpusolve=ds_cputime();
 
@@ -1281,7 +1263,7 @@ drawbacks:
 void FluidImplicitTimeInt::LinearSolve()
 {
   // time measurement: linearised fluid
-  TimeMonitor monitor(*timenlnitlin_);
+  TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
   if (myrank_ == 0)
     cout << "solution of linearised fluid   ";
@@ -1294,7 +1276,7 @@ void FluidImplicitTimeInt::LinearSolve()
   const double tcpuele = ds_cputime();
   {
     // time measurement: element
-    TimeMonitor monitor(*timeelement_);
+    TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
 
     sysmat_->Zero();
 
@@ -1338,7 +1320,7 @@ void FluidImplicitTimeInt::LinearSolve()
 
   {
     // time measurement: application of dbc
-    TimeMonitor monitor(*timeapplydbc_);
+    TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
 
     LINALG::ApplyDirichlettoSystem(sysmat_,velnp_,rhs_,velnp_,dirichtoggle_);
   }
@@ -1348,7 +1330,7 @@ void FluidImplicitTimeInt::LinearSolve()
   const double tcpusolve = ds_cputime();
   {
     // time measurement: solver
-    TimeMonitor solvemonitor(*timesolver_);
+    TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
 
     /* possibly we could accelerate it if the reset variable
        is true only every fifth step, i.e. set the last argument to false
@@ -2039,7 +2021,7 @@ void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 void FluidImplicitTimeInt::SolveStationaryProblem()
 {
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
-  TimeMonitor monitor(*timetimeloop_);
+  TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
 
   // override time integration parameters in order to avoid misuse in
   // NonLinearSolve method below
