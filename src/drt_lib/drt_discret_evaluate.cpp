@@ -21,7 +21,7 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 
-
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  |  evaluate (public)                                        mwgee 12/06|
@@ -71,16 +71,22 @@ void DRT::Discretization::Evaluate(
     elevector2.Size(eledim);
     elevector3.Size(eledim);
 
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
     // call the element evaluate method
     int err = actele->Evaluate(params,*this,lm,elematrix1,elematrix2,
                                elevector1,elevector2,elevector3);
     if (err) dserror("Proc %d: Element %d returned err=%d",Comm().MyPID(),actele->Id(),err);
+    }
 
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
     if (assemblemat1) systemmatrix1->Assemble(elematrix1,lm,lmowner);
     if (assemblemat2) systemmatrix2->Assemble(elematrix2,lm,lmowner);
     if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
     if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
     if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
+    }
 
   } // for (int i=0; i<numcolele; ++i)
   return;
