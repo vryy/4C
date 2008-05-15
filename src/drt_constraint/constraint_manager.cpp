@@ -616,48 +616,30 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
     }
     // now care about the parallel distribution and ghosting.
     // So far every processor only knows about his nodes
-
-
-    //build unique node row map
-    vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
-    rownodeset.clear();
-    RCP<Epetra_Map> constraintnoderowmap = rcp(new Epetra_Map(-1,
-                                                               boundarynoderowvec.size(),
-                                                               &boundarynoderowvec[0],
-                                                               0,
-                                                               newdis->Comm()));
-    boundarynoderowvec.clear();
-
-    //build overlapping node column map
-    vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
-    colnodeset.clear();
-    RCP<Epetra_Map> constraintnodecolmap = rcp(new Epetra_Map(-1,
-                                                               constraintnodecolvec.size(),
-                                                               &constraintnodecolvec[0],
-                                                               0,
-                                                               newdis->Comm()));
-    
-    constraintnodecolvec.clear();
-
-    newdis->ExportColumnNodes(*constraintnodecolmap);
-
-    RefCountPtr< Epetra_Map > constraintelerowmap;
-    RefCountPtr< Epetra_Map > constraintelecolmap;
-
-    // now we have all elements in a linear map roweles
-    // build resonable maps for elements from the
-    // already valid and final node maps
-    // note that nothing is actually redistributed in here
-    newdis->BuildElementRowColumn(*constraintnoderowmap, *constraintnodecolmap, constraintelerowmap, constraintelecolmap);
-
-    // we can now export elements to resonable row element distribution
-    newdis->ExportRowElements(*constraintelerowmap);
-
-    // export to the column map / create ghosting of elements
-    newdis->ExportColumnElements(*constraintelecolmap);
-
   }
-  newdis->FillComplete();
+
+  //build unique node row map
+  vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
+  rownodeset.clear();
+  RCP<Epetra_Map> constraintnoderowmap = rcp(new Epetra_Map(-1,
+                                                             boundarynoderowvec.size(),
+                                                             &boundarynoderowvec[0],
+                                                             0,
+                                                             newdis->Comm()));
+  boundarynoderowvec.clear();
+
+  //build overlapping node column map
+  vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
+  colnodeset.clear();
+  RCP<Epetra_Map> constraintnodecolmap = rcp(new Epetra_Map(-1,
+                                                             constraintnodecolvec.size(),
+                                                             &constraintnodecolvec[0],
+                                                             0,
+                                                             newdis->Comm()));
+  
+  constraintnodecolvec.clear();
+
+  DRT::UTILS::RedistributeWithNewNodalDistribution(*newdis,*constraintnoderowmap,*constraintnodecolmap);
   return newdis;
 }
 
