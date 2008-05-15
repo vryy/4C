@@ -247,7 +247,7 @@ EXODUS::Mesh::~Mesh()
  |  Extension constructor (public)                             maf 01/08|
  *----------------------------------------------------------------------*/
 EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
-                   const map<int,vector<double> >& extNodes,
+                   const RCP<map<int,vector<double> > > extNodes,
                    const map<int,RCP<ElementBlock> >& extBlocks,
                    const map<int,NodeSet>& extNodesets,
                    const map<int,SideSet>& extSidesets,
@@ -256,7 +256,9 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   // get all data from basemesh
   int basedim     = basemesh.GetNumDim();
   int basenumele  = basemesh.GetNumEle();
-  RCP<map<int,vector<double> > > baseNodes = basemesh.GetNodes();
+  RCP<map<int,vector<double> > >baseNodes = rcp(new map<int,vector<double> >);
+  baseNodes = basemesh.GetNodes();
+  //RCP<map<int,vector<double> > > baseNodes = basemesh.GetNodes();
   map<int,RCP<ElementBlock> >  baseEblocks = basemesh.GetElementBlocks();
   map<int,NodeSet>         baseNodesets = basemesh.GetNodeSets();
   map<int,SideSet>         baseSidesets = basemesh.GetSideSets();
@@ -273,14 +275,12 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   
   // merge nodes
   map<int,vector<double> >::const_iterator i_node;
-  for(i_node = baseNodes->begin(); i_node != baseNodes->end(); ++i_node){
-    nodes_->insert(pair<int,vector<double> >(i_node->first,i_node->second));
-  }
-  for(i_node = extNodes.begin(); i_node != extNodes.end(); ++i_node){
+  for(i_node = extNodes->begin(); i_node != extNodes->end(); ++i_node){
     pair< map<int,vector<double> >::iterator, bool > check;
-    check = nodes_->insert(pair<int,vector<double> >(i_node->first,i_node->second));
+    check = baseNodes->insert(pair<int,vector<double> >(i_node->first,i_node->second));
     if (check.second == false) dserror("Extension node already exists!");
   }
+  nodes_ = baseNodes;
   
   // merge ElementBlocks
   map<int,RCP<ElementBlock> >::const_iterator i_block;

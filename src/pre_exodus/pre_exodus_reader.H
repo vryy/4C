@@ -59,7 +59,7 @@ public:
   
   //! extension constructor, adds Elementblock and nodes to a basemesh
   Mesh(const Mesh& basemesh,
-       const map<int,vector<double> >& extNodes,
+       const RCP<map<int,vector<double> > > extNodes,
        const map<int,RCP<ElementBlock> >& extBlocks,
        const map<int,NodeSet>& extNodesets,
        const map<int,SideSet>& extSidesets,

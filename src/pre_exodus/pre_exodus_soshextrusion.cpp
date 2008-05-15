@@ -26,7 +26,8 @@ using namespace Teuchos;
 EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid, int gmsh)
 {
   int highestnid = basemesh.GetNumNodes() +1;
-  map<int,vector<double> > newnodes;          // here the new nodes ar stored
+  //map<int,vector<double> > newnodes;
+  RCP<map<int,vector<double> > > newnodes = rcp(new map<int,vector<double> >);          // here the new nodes ar stored
   map<int,RCP<EXODUS::ElementBlock> > neweblocks;   // here the new EBlocks are stored
   map<int,EXODUS::NodeSet> newnodesets;       // here the new NS are stored
   int highestblock = basemesh.GetNumElementBlocks();
@@ -155,7 +156,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       const vector<double> newcoords = actcoords;
       int newExoNid = ExoToStore(newid);
       // put new coords into newnode map
-      newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+      newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
       
       // put new node into map of OldNodeToNewNode
       vector<int> newids(1,newid);
@@ -175,7 +176,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         newid = highestnid; ++ highestnid; 
         int newExoNid = ExoToStore(newid);
         // put new coords into newnode map
-        newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+        newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
         // put new node into map of OldNodeToNewNode
         node_pair[*i_node].push_back(newid);
         // finally store this node where it will be connected to an ele
@@ -272,7 +273,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             const vector<double> newcoords = actcoords;
             int newExoNid = ExoToStore(newid);
             // put new coords into newnode map
-            newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+            newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
             
             // put new node into map of OldNodeToNewNode
             vector<int> newids(1,newid);
@@ -293,7 +294,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
               newid = highestnid; ++ highestnid;
               int newExoNid = ExoToStore(newid);
               // put new coords into newnode map
-              newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+              newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
               
               // put new node into map of OldNodeToNewNode
               node_pair[thirdnode].push_back(newid);
@@ -326,7 +327,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
               const vector<double> newcoords = actcoords;
               int newExoNid = ExoToStore(newid);
               // put new coords into newnode map
-              newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+              newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
               
               // put new node into map of OldNodeToNewNode
               vector<int> newids(1,newid);
@@ -347,7 +348,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
                 newid = highestnid; ++ highestnid;
                 int newExoNid = ExoToStore(newid);
                 // put new coords into newnode map
-                newnodes.insert(pair<int,vector<double> >(newExoNid,newcoords));
+                newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
                 
                 // put new node into map of OldNodeToNewNode
                 node_pair[fourthnode].push_back(newid);
@@ -389,11 +390,11 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       }// end of this "center" - element ///////////////////////////////////////
       todo_counter ++;
       
-      if (gmsh == todo_counter) PlotEleConnGmsh(*newconn,newnodes);
+      if (gmsh == todo_counter) PlotEleConnGmsh(*newconn,*newnodes);
       
     }// end of extruding all elements in connectivity
     
-    if (gmsh == 0) PlotEleConnGmsh(*newconn,newnodes);
+    if (gmsh == 0) PlotEleConnGmsh(*newconn,*newnodes);
     
     // create new Element Blocks
     std::ostringstream blockname;
