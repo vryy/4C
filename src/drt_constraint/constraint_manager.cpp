@@ -601,6 +601,23 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
         newdis->AddNode(rcp(new DRT::Node(gid, standardnode->X(), myrank)));
       }
     }
+
+    int myrank = actdisc_->Comm().MyPID();
+
+    if (myrank == 0)
+    {
+      RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name, j, myrank);
+      // set the same global node ids to the ale element
+      constraintele->SetNodeIds(ngid.size(), &(ngid[0]));
+
+      // add constraint element
+      newdis->AddElement(constraintele);
+
+    }
+    // now care about the parallel distribution and ghosting.
+    // So far every processor only knows about his nodes
+
+
     //build unique node row map
     vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
     rownodeset.clear();
@@ -619,23 +636,8 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
                                                                &constraintnodecolvec[0],
                                                                0,
                                                                newdis->Comm()));
+    
     constraintnodecolvec.clear();
-
-
-    int myrank = actdisc_->Comm().MyPID();
-
-    if (myrank == 0)
-    {
-      RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name, j, myrank);
-      // set the same global node ids to the ale element
-      constraintele->SetNodeIds(ngid.size(), &(ngid[0]));
-
-      // add constraint element
-      newdis->AddElement(constraintele);
-
-    }
-    // now care about the parallel distribution and ghosting.
-    // So far every processor only knows about his nodes
 
     newdis->ExportColumnNodes(*constraintnodecolmap);
 
