@@ -75,7 +75,7 @@ public:
   void PrintNodes(ostream& os, bool storeid=false) const;
   
   //! Get numer of nodes in mesh
-  int GetNumNodes() const {return nodes_.size();}
+  int GetNumNodes() const {return nodes_->size();}
   
   //! Get number of elements in mesh
   int GetNumEle() const {return num_elem_;}
@@ -141,7 +141,7 @@ public:
   set<int> GetSideSetNodes(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const;
 
   //! Get Node map
-  map<int,vector<double> > GetNodes() const {return nodes_;}
+  RCP<map<int,vector<double> > > GetNodes() const {return nodes_;}
   
   //! Get one nodal coords, accessed by ExoID
   vector<double> GetNodeExo(const int ExoNodeID) const;
@@ -159,7 +159,7 @@ public:
   void AddElementBlock(const RCP<EXODUS::ElementBlock> eblock) const;
 
 private:
-  map<int,vector<double> > nodes_;
+  RCP<map<int,vector<double> > > nodes_;
   
   map<int,RCP<ElementBlock> > elementBlocks_;
   

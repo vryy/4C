@@ -48,7 +48,7 @@ EXODUS::Mesh::Mesh(string exofilename)
   // open EXODUS II file
   exoid_ = ex_open(exofilenamechar,EX_READ,&CPU_word_size,&IO_word_size,&exoversion);
   if (exoid_<=0)
-	  dserror("Error while opening EXODUS II file %s",exofilenamechar);
+    dserror("Error while opening EXODUS II file %s",exofilenamechar);
 
   // print version
   cout<<exofilename<<" was created with EXODUS II library version "<<exoversion<<endl;
@@ -63,164 +63,171 @@ EXODUS::Mesh::Mesh(string exofilename)
 
   // get nodal coordinates
   {
-  vector<float> x(num_nodes);
-  vector<float> y(num_nodes);
-  vector<float> z(num_nodes);
-  error = ex_get_coord(exoid_,&x[0],&y[0],&z[0]);
-  if (error != 0) dserror("exo error returned");
-  
-  // store nodes in map
-  for (int i = 0; i < num_nodes; ++i) {
-    vector<double> coords;
-    coords.push_back(x[i]);
-    coords.push_back(y[i]);
-    coords.push_back(z[i]);
-    nodes_.insert(std::pair<int,vector<double> >(i,coords));
-  }
+    vector<float> x(num_nodes);
+    vector<float> y(num_nodes);
+    vector<float> z(num_nodes);
+    error = ex_get_coord(exoid_,&x[0],&y[0],&z[0]);
+    if (error != 0) dserror("exo error returned");
+
+    // store nodes in map
+    nodes_ = rcp(new map<int,vector<double> >);
+    for (int i = 0; i < num_nodes; ++i) {
+      vector<double> coords;
+      coords.push_back(x[i]);
+      coords.push_back(y[i]);
+      coords.push_back(z[i]);
+      nodes_->insert(std::pair<int,vector<double> >(i,coords));
+    }
   } // free coordinate vectors x, y ,z
 
   // Get all ElementBlocks
-  vector<int> epropID(num_elem_blk);
-  vector<int> ebids(num_elem_blk);
-  error = ex_get_elem_blk_ids(exoid_,&(ebids[0]));
-  error = ex_get_prop_array(exoid_, EX_ELEM_BLOCK, "ID", &(epropID[0]));
-  for (int i = 0; i < num_elem_blk; ++i) 
   {
-	  // Read Element Blocks into Map
-    char mychar[MAX_STR_LENGTH+1];
-    int num_el_in_blk,num_nod_per_elem,num_attr;
-    //error = ex_get_elem_block (exoid_, epropID[i], mychar, &num_el_in_blk, &num_nod_per_elem, &num_attr);
-    error = ex_get_elem_block (exoid_, ebids[i], mychar, &num_el_in_blk, &num_nod_per_elem, &num_attr);
-    // prefer string to store element type
-    string ele_type(mychar,int (MAX_STR_LENGTH));
-    
-    // get ElementBlock name
-    error = ex_get_name (exoid_, EX_ELEM_BLOCK, ebids[i], mychar);
-    // prefer string to store name
-    string blockname(mychar,int (MAX_STR_LENGTH));
-    
-    // get element connectivity
-    vector<int> allconn(num_nod_per_elem*num_el_in_blk);
-    error = ex_get_elem_conn(exoid_,ebids[i],&allconn[0]);
-    if (error != 0) dserror("exo error returned");
-    RCP<map<int,vector<int> > > eleconn = rcp(new map<int,vector<int> >);
-    for (int j = 0; j < num_el_in_blk; ++j)
+    vector<int> epropID(num_elem_blk);
+    vector<int> ebids(num_elem_blk);
+    error = ex_get_elem_blk_ids(exoid_,&(ebids[0]));
+    error = ex_get_prop_array(exoid_, EX_ELEM_BLOCK, "ID", &(epropID[0]));
+    for (int i = 0; i < num_elem_blk; ++i) 
     {
-      vector<int> actconn;
-      actconn.reserve(num_nod_per_elem);
-      for (int k = 0; k < num_nod_per_elem; ++k){
-        actconn.push_back(allconn[k + j*num_nod_per_elem]);
+      // Read Element Blocks into Map
+      char mychar[MAX_STR_LENGTH+1];
+      int num_el_in_blk,num_nod_per_elem,num_attr;
+      //error = ex_get_elem_block (exoid_, epropID[i], mychar, &num_el_in_blk, &num_nod_per_elem, &num_attr);
+      error = ex_get_elem_block (exoid_, ebids[i], mychar, &num_el_in_blk, &num_nod_per_elem, &num_attr);
+      // prefer string to store element type
+      string ele_type(mychar,int (MAX_STR_LENGTH));
+
+      // get ElementBlock name
+      error = ex_get_name (exoid_, EX_ELEM_BLOCK, ebids[i], mychar);
+      // prefer string to store name
+      string blockname(mychar,int (MAX_STR_LENGTH));
+
+      // get element connectivity
+      vector<int> allconn(num_nod_per_elem*num_el_in_blk);
+      error = ex_get_elem_conn(exoid_,ebids[i],&allconn[0]);
+      if (error != 0) dserror("exo error returned");
+      RCP<map<int,vector<int> > > eleconn = rcp(new map<int,vector<int> >);
+      for (int j = 0; j < num_el_in_blk; ++j)
+      {
+        vector<int> actconn;
+        actconn.reserve(num_nod_per_elem);
+        for (int k = 0; k < num_nod_per_elem; ++k){
+          actconn.push_back(allconn[k + j*num_nod_per_elem]);
+        }
+        eleconn->insert(std::pair<int,vector<int> >(j,actconn));
       }
-      eleconn->insert(std::pair<int,vector<int> >(j,actconn));
+      RCP<ElementBlock> actEleBlock = rcp(new ElementBlock(StringToShape(ele_type), eleconn, blockname));
+
+      // Add this ElementBlock into Mesh map
+      elementBlocks_.insert(std::pair<int,RCP<ElementBlock> >(i,actEleBlock));
     }
-	  RCP<ElementBlock> actEleBlock = rcp(new ElementBlock(StringToShape(ele_type), eleconn, blockname));
-	  
-	  // Add this ElementBlock into Mesh map
-	  elementBlocks_.insert(std::pair<int,RCP<ElementBlock> >(i,actEleBlock));
-  }
-  
+  } // end of element section
+
   // get all NodeSets
-  map<int,NodeSet> prelimNodeSets;   // prelim due to possible prop names
-  vector<int> npropID(num_node_sets);
-  error = ex_get_prop_array(exoid_, EX_NODE_SET, "ID", &(npropID[0]));
-  for (int i = 0; i < num_node_sets; ++i) {
-    // Read NodeSet params
-    int num_nodes_in_set,num_df_in_set;
-    error = ex_get_node_set_param (exoid_, npropID[i], &num_nodes_in_set,&num_df_in_set);
-    
-    // get NodeSet name
-    char mychar[MAX_STR_LENGTH+1];
-    error = ex_get_name (exoid_, EX_NODE_SET, npropID[i], mychar);
-    // prefer string to store name
-    string nodesetname(mychar, int(MAX_STR_LENGTH));
-
-    // get nodes in node set
-    vector<int> node_set_node_list(num_nodes_in_set);
-    error = ex_get_node_set (exoid_, npropID[i], &(node_set_node_list[0]));
-    if (error != 0) dserror("error reading node set");
-    set<int> nodes_in_set;
-    for (int j = 0; j < num_nodes_in_set; ++j) nodes_in_set.insert(node_set_node_list[j]);
-    NodeSet actNodeSet(nodes_in_set,nodesetname,"none");
-    
-    // Add this NodeSet into Mesh map (here prelim due to pro names)
-    prelimNodeSets.insert(std::pair<int,NodeSet>(i,actNodeSet));
-  }
-  
-  /* Read NodeSet property names ***********************************************
-   * They are assigned by ICEM and provide recognition */
-  int num_props;
-  float fdum;
-  char *cdum;
-  error = ex_inquire (exoid_, EX_INQ_NS_PROP, &num_props, &fdum, cdum);
-  // allocate memory for NodeSet property names
-  char** prop_names = new char*[num_props];
-  for (int i=0; i<num_props; ++i)
   {
-     prop_names[i] = new char[MAX_STR_LENGTH+1];
-  }
-  // get prop names of node sets  
-  error = ex_get_prop_names(exoid_,EX_NODE_SET,prop_names);
-  
-  // Add prop names to final Mesh NodeSet if available
-  if ((num_props-1) == num_node_sets){
-    for (int i = 1; i < num_props; ++i) {
-      string propname(prop_names[i], int(MAX_STR_LENGTH));
-      
-      map<int,NodeSet>::const_iterator blub = prelimNodeSets.find(i-1);
-      if (blub == prelimNodeSets.end())
-        dserror("impossible");
-      const NodeSet actNodeSet = blub->second;
-      //NodeSet actNodeSet = nodeSets_[i-1];
-      const NodeSet newNodeSet(actNodeSet.GetNodeSet(),actNodeSet.GetName(),propname);
-      //nodeSets_[i-1] = newNodeSet;
-      nodeSets_.insert(std::pair<int,NodeSet>(blub->first,newNodeSet));
+    map<int,NodeSet> prelimNodeSets;   // prelim due to possible prop names
+    vector<int> npropID(num_node_sets);
+    error = ex_get_prop_array(exoid_, EX_NODE_SET, "ID", &(npropID[0]));
+    for (int i = 0; i < num_node_sets; ++i) {
+      // Read NodeSet params
+      int num_nodes_in_set,num_df_in_set;
+      error = ex_get_node_set_param (exoid_, npropID[i], &num_nodes_in_set,&num_df_in_set);
+
+      // get NodeSet name
+      char mychar[MAX_STR_LENGTH+1];
+      error = ex_get_name (exoid_, EX_NODE_SET, npropID[i], mychar);
+      // prefer string to store name
+      string nodesetname(mychar, int(MAX_STR_LENGTH));
+
+      // get nodes in node set
+      vector<int> node_set_node_list(num_nodes_in_set);
+      error = ex_get_node_set (exoid_, npropID[i], &(node_set_node_list[0]));
+      if (error != 0) dserror("error reading node set");
+      set<int> nodes_in_set;
+      for (int j = 0; j < num_nodes_in_set; ++j) nodes_in_set.insert(node_set_node_list[j]);
+      NodeSet actNodeSet(nodes_in_set,nodesetname,"none");
+
+      // Add this NodeSet into Mesh map (here prelim due to pro names)
+      prelimNodeSets.insert(std::pair<int,NodeSet>(i,actNodeSet));
     }
-  } else {
-    // this is the standard case without prop names
-    nodeSets_ = prelimNodeSets;
-  }
 
-  //clean up node set names
-  for (int i=0; i<num_props; i++)
-  {
-    delete [] prop_names[i];
-  }
-  delete [] prop_names;
+    /* Read NodeSet property names ***********************************************
+     * They are assigned by ICEM and provide recognition */
+    int num_props;
+    float fdum;
+    char *cdum;
+    error = ex_inquire (exoid_, EX_INQ_NS_PROP, &num_props, &fdum, cdum);
+    // allocate memory for NodeSet property names
+    char** prop_names = new char*[num_props];
+    for (int i=0; i<num_props; ++i)
+    {
+      prop_names[i] = new char[MAX_STR_LENGTH+1];
+    }
+    // get prop names of node sets  
+    error = ex_get_prop_names(exoid_,EX_NODE_SET,prop_names);
+
+    // Add prop names to final Mesh NodeSet if available
+    if ((num_props-1) == num_node_sets){
+      for (int i = 1; i < num_props; ++i) {
+        string propname(prop_names[i], int(MAX_STR_LENGTH));
+
+        map<int,NodeSet>::const_iterator blub = prelimNodeSets.find(i-1);
+        if (blub == prelimNodeSets.end())
+          dserror("impossible");
+        const NodeSet actNodeSet = blub->second;
+        //NodeSet actNodeSet = nodeSets_[i-1];
+        const NodeSet newNodeSet(actNodeSet.GetNodeSet(),actNodeSet.GetName(),propname);
+        //nodeSets_[i-1] = newNodeSet;
+        nodeSets_.insert(std::pair<int,NodeSet>(blub->first,newNodeSet));
+      }
+    } else {
+      // this is the standard case without prop names
+      nodeSets_ = prelimNodeSets;
+    }
+
+    //clean up node set names
+    for (int i=0; i<num_props; i++)
+    {
+      delete [] prop_names[i];
+    }
+    delete [] prop_names;
+  } // end of nodeset section
   // ***************************************************************************
-  
-  // get all SideSets
-  vector<int> spropID(num_side_sets);
-  error = ex_get_prop_array(exoid_, EX_SIDE_SET, "ID", &(spropID[0]));
-  for (int i = 0; i < num_side_sets; ++i) {
-    // get SideSet name
-    char mychar[MAX_STR_LENGTH+1];
-    error = ex_get_name (exoid_, EX_SIDE_SET, spropID[i], mychar);
-    // prefer string to store name
-    string sidesetname(mychar, int(MAX_STR_LENGTH));
 
-    // Read SideSet params
-    int num_side_in_set,num_dist_fact_in_set;
-    error = ex_get_side_set_param (exoid_, spropID[i], &num_side_in_set,&num_dist_fact_in_set);
-    
-    // get SideSet
-    vector<int> side_set_elem_list(num_side_in_set);
-    vector<int> side_set_side_list(num_side_in_set);
-    error = ex_get_side_set (exoid_, spropID[i], &(side_set_elem_list[0]),&(side_set_side_list[0]));
-    if (error != 0) dserror("error reading side set");
-    map<int,vector<int> > sides_in_set;
-    for (int j = 0; j < num_side_in_set; ++j){
-      vector<int> side(2); // first entry is element, second side
-      side[0] = side_set_elem_list[j];
-      side[1] = side_set_side_list[j];
-      sides_in_set.insert(pair<int,vector<int> >(j,side));
+  // get all SideSets
+  {
+    vector<int> spropID(num_side_sets);
+    error = ex_get_prop_array(exoid_, EX_SIDE_SET, "ID", &(spropID[0]));
+    for (int i = 0; i < num_side_sets; ++i) {
+      // get SideSet name
+      char mychar[MAX_STR_LENGTH+1];
+      error = ex_get_name (exoid_, EX_SIDE_SET, spropID[i], mychar);
+      // prefer string to store name
+      string sidesetname(mychar, int(MAX_STR_LENGTH));
+
+      // Read SideSet params
+      int num_side_in_set,num_dist_fact_in_set;
+      error = ex_get_side_set_param (exoid_, spropID[i], &num_side_in_set,&num_dist_fact_in_set);
+
+      // get SideSet
+      vector<int> side_set_elem_list(num_side_in_set);
+      vector<int> side_set_side_list(num_side_in_set);
+      error = ex_get_side_set (exoid_, spropID[i], &(side_set_elem_list[0]),&(side_set_side_list[0]));
+      if (error != 0) dserror("error reading side set");
+      map<int,vector<int> > sides_in_set;
+      for (int j = 0; j < num_side_in_set; ++j){
+        vector<int> side(2); // first entry is element, second side
+        side[0] = side_set_elem_list[j];
+        side[1] = side_set_side_list[j];
+        sides_in_set.insert(pair<int,vector<int> >(j,side));
+      }
+
+      SideSet actSideSet(sides_in_set,sidesetname);
+
+      // Add this SideSet into Mesh map
+      sideSets_.insert(std::pair<int,SideSet>(i,actSideSet));
     }
-    
-    SideSet actSideSet(sides_in_set,sidesetname);
-    
-    // Add this SideSet into Mesh map
-    sideSets_.insert(std::pair<int,SideSet>(i,actSideSet));
-  }
-  
+  } //end of sideset section
+
   // close ExoFile
   CloseExo();
 
@@ -249,7 +256,7 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   // get all data from basemesh
   int basedim     = basemesh.GetNumDim();
   int basenumele  = basemesh.GetNumEle();
-  map<int,vector<double> > baseNodes = basemesh.GetNodes();
+  RCP<map<int,vector<double> > > baseNodes = basemesh.GetNodes();
   map<int,RCP<ElementBlock> >  baseEblocks = basemesh.GetElementBlocks();
   map<int,NodeSet>         baseNodesets = basemesh.GetNodeSets();
   map<int,SideSet>         baseSidesets = basemesh.GetSideSets();
@@ -266,12 +273,12 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   
   // merge nodes
   map<int,vector<double> >::const_iterator i_node;
-  for(i_node = baseNodes.begin(); i_node != baseNodes.end(); ++i_node){
-    nodes_.insert(pair<int,vector<double> >(i_node->first,i_node->second));
+  for(i_node = baseNodes->begin(); i_node != baseNodes->end(); ++i_node){
+    nodes_->insert(pair<int,vector<double> >(i_node->first,i_node->second));
   }
   for(i_node = extNodes.begin(); i_node != extNodes.end(); ++i_node){
     pair< map<int,vector<double> >::iterator, bool > check;
-    check = nodes_.insert(pair<int,vector<double> >(i_node->first,i_node->second));
+    check = nodes_->insert(pair<int,vector<double> >(i_node->first,i_node->second));
     if (check.second == false) dserror("Extension node already exists!");
   }
   
@@ -381,7 +388,7 @@ EXODUS::SideSet EXODUS::Mesh::GetSideSet(const int id) const
 void EXODUS::Mesh::PrintNodes(ostream& os, bool storeid) const
 {
   map<int,vector<double> >::const_iterator it;
-  for (it=nodes_.begin(); it != nodes_.end(); it++){
+  for (it=nodes_->begin(); it != nodes_->end(); it++){
     if (storeid) os << "MapID: " << it->first;
     int exoid = it->first + 1;
     os << " ExoID: " << exoid << " : ";
@@ -396,13 +403,13 @@ void EXODUS::Mesh::PrintNodes(ostream& os, bool storeid) const
 vector<double> EXODUS::Mesh::GetNodeExo(const int ExoNodeID) const
 {
   int mapID = ExoNodeID - 1;
-  map<int,vector<double> >::const_iterator  it = nodes_.find(mapID);
+  map<int,vector<double> >::const_iterator  it = nodes_->find(mapID);
   return it->second;
 }
 
 vector<double> EXODUS::Mesh::GetNodeMap(const int MapNodeID) const
 {
-  map<int,vector<double> >::const_iterator  it = nodes_.find(MapNodeID);
+  map<int,vector<double> >::const_iterator  it = nodes_->find(MapNodeID);
   return it->second;
 }
 
@@ -454,13 +461,14 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
     int actele = i_side->second.at(0) -1;   //ExoIds start from 1, but we from 0
     int actface = i_side->second.at(1) -1;  //ExoIds start from 1, but we from 0
     // find actual EBlock where actele lies in
-    int actebid;
+    int actebid=-1;
     for(unsigned int i=0; i<glob_eb_erange.size(); ++i) 
       if (actele < glob_eb_erange[i]){ actebid = i-1; break;}
     RCP<TimeMonitor> tm2 = rcp(new TimeMonitor(*time2));
     //EXODUS::ElementBlock acteb = ebs.find(actebid)->second;
     tm2 = null;
     //EXODUS::ElementBlock::Shape actshape = acteb.GetShape();
+    if (actebid<0) dserror("invalid element block id");
     EXODUS::ElementBlock::Shape actshape = eblocks[actebid].GetShape();
     RCP<TimeMonitor> tm3 = rcp(new TimeMonitor(*time3));
     //map<int,vector<int> > acteconn = acteb.GetEleConn();
@@ -563,9 +571,10 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool c
     int actele = i_side->second.at(0) -1;   //ExoIds start from 1, but we from 0
     int actface = i_side->second.at(1) -1;  //ExoIds start from 1, but we from 0
     // find actual EBlock where actele lies in
-    int actebid;
+    int actebid=-1;
     for(unsigned int i=0; i<glob_eb_erange.size(); ++i) 
       if (actele < glob_eb_erange[i]){ actebid = i-1; break;}
+    if (actebid<0) dserror("invalid element block id");
     EXODUS::ElementBlock::Shape actshape = eblocks[actebid].GetShape();
     
     // get act parent ele from actual Side
@@ -625,7 +634,7 @@ vector<int> EXODUS::Mesh::OutsideOrientedSide(const vector<int> parentele, const
     parentset.insert(parentele.at(i));
   
   // find parentele node not within side
-  int insidenode;
+  int insidenode=-1;
   set<int>::iterator it;
   for(it = parentset.begin(); it != parentset.end(); ++it){
     if ( childset.find(*it) == childset.end() ){ insidenode = *it; break;}
@@ -803,8 +812,8 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   vector<float> yc(num_nodes);
   vector<float> zc(num_nodes);
   map<int,vector<double> >::const_iterator it;
-  map<int,vector<double> > nodes = GetNodes();
-  for(it=nodes.begin(); it != nodes.end(); ++it){
+  RCP<map<int,vector<double> > > nodes = GetNodes();
+  for(it=nodes->begin(); it != nodes->end(); ++it){
     xc[it->first] = it->second[0];
     yc[it->first] = it->second[1];
     zc[it->first] = it->second[2];

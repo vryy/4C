@@ -192,7 +192,7 @@ int main(
       EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
 
       //validate the generated BACI input file
-      //EXODUS::ValidateInputFile(datfile);
+      EXODUS::ValidateInputFile(datfile);
     }
 
 #ifdef PARALLEL

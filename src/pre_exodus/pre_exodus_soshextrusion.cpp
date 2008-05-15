@@ -398,10 +398,10 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     // create new Element Blocks
     std::ostringstream blockname;
     blockname << "extrude" << i_extr->first;
-    ElementBlock::Shape newshape;
     switch(extrusion_types.find(i_extr->first)->second){
     case eblock:{ // Eblocks have only one type of eles
       int numnodes = newconn->find(0)->second.size();
+      ElementBlock::Shape newshape;
       if (numnodes == 6) newshape = ElementBlock::wedge6;
       else if (numnodes == 8) newshape = ElementBlock::hex8;
       else dserror("Number of basenodes for extrusion not supported");

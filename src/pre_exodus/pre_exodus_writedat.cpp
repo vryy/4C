@@ -39,16 +39,16 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
   
   // write "design description"
   EXODUS::WriteDatDesign(condefs,dat);
-  
+
   // write conditions
   EXODUS::WriteDatConditions(condefs,mymesh,dat);
-  
+
   // write design-topology
   EXODUS::WriteDatDesignTopology(condefs,mymesh,dat);
-  
+
   // write nodal coordinates
   EXODUS::WriteDatNodes(mymesh,dat);
-  
+
   // write elements
   EXODUS::WriteDatEles(eledefs,mymesh,dat);
 
@@ -269,9 +269,9 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat)
 {
   dat << "-------------------------------------------------------NODE COORDS" << endl;
   dat.precision(8);
-  map<int,vector<double> > nodes = mymesh.GetNodes();
+  RCP<map<int,vector<double> > > nodes = mymesh.GetNodes();
   map<int,vector<double> >::const_iterator i_node;
-  for (i_node = nodes.begin(); i_node != nodes.end(); ++i_node)
+  for (i_node = nodes->begin(); i_node != nodes->end(); ++i_node)
   {
     vector<double> coords = i_node->second;
     dat << "NODE " << i_node->first+1 << "  " << '\t' << "COORD" << '\t';
@@ -356,11 +356,13 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   return;
 }
 
-void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& struele, ostream& dat)
+void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& struele, ostream& datfile)
 {
   RCP<const map<int,vector<int> > > eles = eb->GetEleConn();
   map<int,vector<int> >::const_iterator i_ele;
-  for (i_ele=eles->begin();i_ele!=eles->end();++i_ele){
+  for (i_ele=eles->begin();i_ele!=eles->end();++i_ele)
+  {
+    stringstream dat; // first build up the string for actual element line
     const vector<int> nodes = i_ele->second;
     vector<int>::const_iterator i_n;
     dat << "   " << struele;
@@ -370,6 +372,7 @@ void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def
     for(i_n=nodes.begin();i_n!=nodes.end();++i_n) dat << *i_n << " ";
     dat << "   " << acte.desc << endl;              // e.g. "MAT 1"
     struele ++;
+    datfile<<dat.str(); // only one access to the outfile (saves system time)
   }
   return;
 }
