@@ -5,6 +5,7 @@
 #include <NOX_GlobalData.H>
 #include <NOX_Utils.H>
 
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -45,7 +46,7 @@ bool NOX::FSI::Newton::reset(const Teuchos::RCP<NOX::GlobalData>& gd,
 bool NOX::FSI::Newton::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
                                const NOX::Solver::Generic& solver)
 {
-  //utils_->out() << "NOX::FSI::Newton::compute()\n";
+  TEUCHOS_FUNC_TIME_MONITOR("NOX::FSI::Newton::compute");
 
   Teuchos::ParameterList& lsParams = paramsPtr->sublist("Newton").sublist("Linear Solver");
   lsParams.set<std::string>("Convergence Test","r0");

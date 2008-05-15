@@ -16,6 +16,7 @@ Maintainer: Michael Gee
 
 #include <EpetraExt_Transpose_RowMatrix.h>
 #include <EpetraExt_MatrixMatrix.h>
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*
@@ -677,6 +678,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase)
 {
   // for timing of this method
   //Epetra_Time time(Abase.Comm());
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::Split2x2");
 
   if (Abase.Rows() != 2 || Abase.Cols() != 2) dserror("Can only split in 2x2 system");
   if (!Filled()) dserror("SparsMatrix must be filled");
