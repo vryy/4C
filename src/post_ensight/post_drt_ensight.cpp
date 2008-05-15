@@ -103,7 +103,7 @@ int main(
         writer.WriteFiles();
         break;
     }
-    case prb_fluid_xfem:
+    case prb_fluid_xfem: case prb_fsi_xfem:
     {
         cout << "Output XFEM Problem" << endl;
 
