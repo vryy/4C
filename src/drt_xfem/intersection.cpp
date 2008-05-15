@@ -36,7 +36,6 @@ Maintainer: Ursula Mayer
 #include "../drt_io/io_gmsh.H"
 
 #ifdef PARALLEL
-#include "../drt_lib/drt_exporter.H"
 #include <mpi.h>
 #endif
 
@@ -72,25 +71,12 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
 
     const double t_start = ds_cputime();
 
-#ifdef PARALLEL
-	map< int, set<int> > xfemCutterIdMap;
-	vector< int > conditionEleCount;
-
-	if(cutterdis->Comm().NumProc() != xfemdis->Comm().NumProc())
-		dserror("the number of processors for xfem and cutter discretizations have to equal each other");
-#endif
-
 	//debugXFEMConditions(cutterdis);
     // obtain vector of pointers to all xfem conditions of all cutter discretizations
     cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
 
     if(xfemConditions.size()==0)
         cout << "number of fsi xfem conditions = 0" << endl;
-
-
-#ifdef PARALLEL
-		adjustCutterElementNumbering(cutterdis, xfemConditions, conditionEleCount);
-#endif
 
     //  k < xfemdis->NumMyColElements()
     for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
@@ -126,30 +112,9 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
                 if(intersected)
                 {
                     cutterElementMap[xfemElement->LID()].insert(cutterElement);
-#ifdef PARALLEL
-					int addToCutterId = 0;
-					if(condCounter > 0) addToCutterId = conditionEleCount[condCounter];
-
-					xfemCutterIdMap[xfemElement->LID()].insert(cutterElement->Id() + addToCutterId);
-#endif
                 }
             }// for-loop over all geometryMap
-		}// for-loop over all xfemConditions
-
-#ifdef PARALLEL
-	} // for loop over all xfem elements}
-
-	getCutterElementsInParallel(xfemConditions,  conditionEleCount, cutterElementMap,
-	 							cutterNodeMap,  xfemCutterIdMap,  xfemdis, cutterdis);
-
-    for(int k = 0; k < xfemdis->NumMyColElements(); k++)
-    {
-        xfemIntersection = false;
-        DRT::Element* xfemElement = xfemdis->lColElement(k);
-        initializeXFEM(k, xfemElement);
-        startPointList();
-
-#endif
+		    }// for-loop over all xfemConditions
 
         const DRT::Element*const* xfemElementSurfaces = xfemElement->Surfaces();
         const DRT::Element*const* xfemElementLines = xfemElement->Lines();
@@ -221,25 +186,8 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
     	cout << "Number of missed points during the recovery copy = " << countMissedPoints_ << endl;
 
     cout << "Intersection computed sucessfully in " << t_end  <<  " secs";
-#ifdef PARALLEL
-    flush(cout);
-	cout << " rank = " << cutterdis->Comm().MyPID();
-    flush(cout);
-#endif
-    cout << endl;
-    cout << endl;
-    //dserror("halt, nur bis hier");
+    cout << endl << endl;
 }
-
-#if 0
-void getCutterElementPlusNodes(
-        map< int, set< DRT::Element* > >& cutterElementMap,
-        map< int, RCP<DRT::Node> >&  cutterNodeMap
-        )
-{
-
-}
-#endif
 
 
 /*----------------------------------------------------------------------*
@@ -272,340 +220,6 @@ void Intersection::initializeXFEM(
     intersectingCutterElements_.clear();
     faceMarker_.clear();
 }
-
-
-#ifdef PARALLEL
-/*----------------------------------------------------------------------*
- |  PARALLEL:   collects all cutter elements on              u.may 10/07|
- |              each processor   										|
- *----------------------------------------------------------------------*/
-void Intersection::adjustCutterElementNumbering(
-	const RCP<DRT::Discretization>&  	cutterdis,
-	const vector< DRT::Condition* >&    xfemConditions,
-	vector<int>& 						conditionEleCount
-	) const
-{
-	vector<int> countSend((int) xfemConditions.size());
-	DRT::Exporter exporter(cutterdis->Comm());
-
-	for(unsigned int i=0; i<xfemConditions.size(); i++)
-   	    countSend[i] = (int) xfemConditions[i]->Geometry().size();
-
-	exporter.Allreduce(countSend, conditionEleCount, MPI_SUM );
-
-	for(unsigned int i=1; i<xfemConditions.size(); i++)
-	   conditionEleCount[i] += conditionEleCount[i-1];
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  PARALLEL:   pack cutter elements and their nodes         u.may 10/07|
- |              on each processor                                       |
- *----------------------------------------------------------------------*/
-void Intersection::packData(
-    const RCP<DRT::Discretization>      cutterdis,
-    vector<int>&                                conditionSend,
-    vector<int>&                                lengthSend,
-    int&                                        nodeSetSizeSend,
-    vector<int>&                                nodeVectorSend,
-    vector<char>&                               cutterDataSend ) const
-{
-
-    set<int> nodeSet;
-    vector< DRT::Condition * > xfemConditions;
-    // obtain vector of pointers to all xfem conditions of all cutter discretizations
-    cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
-
-    lengthSend[0] = 0;
-    // pack data on all processors
-    for(unsigned int i=0; i<xfemConditions.size(); i++)
-    {
-        map< int, RCP<DRT::Element > >  geometryMap = xfemConditions[i]->Geometry();
-        map< int, RCP<DRT::Element > >::iterator iterGeo;
-        //if(geometryMap.size()==0)   printf("geometry does not obtain elements\n");
-        //cout << "size of  " << i << " geometry map = " << geometryMap.size() << " rank = " << cmyrank << endl;
-
-        conditionSend.push_back((int) geometryMap.size());
-        if(i>0) conditionSend[i] += conditionSend[i-1];
-        // pack all cutter elements and create nodeSet
-        for(iterGeo = geometryMap.begin(); iterGeo != geometryMap.end(); iterGeo++ )
-        {
-            for(int inode = 0; inode < iterGeo->second.get()->NumNode(); inode++)
-            {
-                const int nodeId = iterGeo->second.get()->Nodes()[inode]->Id();
-                nodeSet.insert(nodeId);
-            }
-            vector<char> data;
-            iterGeo->second.get()->Pack(data);
-            DRT::ParObject::AddtoPack(cutterDataSend,data);
-        } // for loop over geometry
-    }// for loop over xfemConditions
-    lengthSend[0] = cutterDataSend.size();
-    nodeSetSizeSend = (int) nodeSet.size();
-
-
-    // pack nodes
-    if(lengthSend[0]>0)
-    {
-        set<int>::iterator nodeIter;
-        for(nodeIter = nodeSet.begin(); nodeIter != nodeSet.end(); nodeIter++)
-        {
-            vector<char> data;
-            cutterdis->gNode(*nodeIter)->Pack(data);
-            DRT::ParObject::AddtoPack(cutterDataSend,data);
-            nodeVectorSend.push_back(*nodeIter);
-        }
-        lengthSend[1] = cutterDataSend.size()-lengthSend[0];
-    }
-    else
-        lengthSend[1] = 0;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  PARALLEL:   unpacks the nodal data                       u.may 10/07|
- *----------------------------------------------------------------------*/
-void Intersection::unpackNodes(
-    int                             index,
-    const vector<char>&             cutterDataRecv,
-    const vector<int>&              nodeVectorRecv,
-    map< int, RCP<DRT::Node> >&     nodeMap ) const
-{
-    int count = 0;
-
-    while (index < (int) cutterDataRecv.size())
-    {
-        vector<char> data;
-        DRT::ParObject::ExtractfromPack(index, cutterDataRecv, data);
-
-        // allocate a node. Fill it with info from extracted element data
-        DRT::ParObject* o = DRT::UTILS::Factory(data);
-
-        // cast ParObject to node
-        DRT::Node* actNode = dynamic_cast< DRT::Node* >(o);
-        RCP<DRT::Node> nodeRCP = rcp(actNode);
-
-        // store nodes
-        nodeMap.insert(make_pair(nodeVectorRecv[count++], nodeRCP));
-    }
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  PARALLEL:   collects all cutter elements on              u.may 10/07|
- |              each processor   										|
- *----------------------------------------------------------------------*/
-void Intersection::getCutterElementsInParallel(
-	const vector< DRT::Condition * >&       xfemConditions,
-	const vector<int>&	    				conditionEleCount,
-	map< int, set< DRT::Element* > >&       cutterElementMap,
-	map< int, RCP<DRT::Node> >&  	        cutterNodeMap,
-	map<int, set<int> >& 					xfemCutterIdMap,
-	const RCP<DRT::Discretization>&         xfemdis,
-   	const RCP<DRT::Discretization>&         cutterdis
-   	)
-{
-	const int cmyrank = cutterdis->Comm().MyPID();
-	const int cnumproc = cutterdis->Comm().NumProc();
-
-	set<int> cutterNodeIdSet;
-	set<int> cutterIdSet;
-
-	vector<int> conditionSend;
-	vector<int> conditionRecv;
-
-	int length;
-	vector<char> cutterDataSend;
-
-	vector<int> lengthSend(2,0);
-	vector<int> lengthRecv(2,0);
-
-	int nodeSetSizeSend;
-	vector<int> nodeSetSizeRecv(1,0);
-
-	vector<int> nodeVectorSend;
-	vector<int> nodeVectorRecv;
-
-	MPI_Request req, req1, req2, req3, req4;
-	DRT::Exporter exporter(cutterdis->Comm());
-
-	int dest = cmyrank+1;
-	if(cmyrank == (cnumproc-1)) dest = 0;
-
-	int source = cmyrank-1;
-	if(cmyrank == 0) 	source = cnumproc-1;
-
-
-    packData(cutterdis, conditionSend, lengthSend, nodeSetSizeSend, nodeVectorSend, cutterDataSend);
-
-
-	// cnumproc - 1
-	for(int num = 0; num < cnumproc - 1; num++)
-	{
-		// send length of the datablock to be recieved
-		exporter.ISend(cmyrank, dest, &(lengthSend[0]) , 2, 0, req);
-
-		if(lengthSend[0]>0)
-		{
-			// send size of node Id set to be recieved
-			exporter.ISend(cmyrank, dest, &nodeSetSizeSend , 1, 1, req1);
-
-			// send consitions size
-			exporter.ISend(cmyrank, dest, &(conditionSend[0]) , (int) xfemConditions.size(), 2, req2);
-
-			// send node Id set
-			exporter.ISend(cmyrank, dest, &(nodeVectorSend[0]) , nodeSetSizeSend, 3, req3);
-		}
-
-		// recieve length of incoming data
-		length = (int) lengthRecv.size();
-		exporter.Receive(source, 0, lengthRecv, length);
-        exporter.Wait(req);
-
-        if(lengthRecv[0]>0)
-		{
-        	length = 1;
-        	exporter.Receive(source, 1, nodeSetSizeRecv, length);
-        	exporter.Wait(req1);
-
-        	length = (int) xfemConditions.size();
-        	exporter.Receive(source, 2, conditionRecv, length);
-        	exporter.Wait(req2);
-
-        	exporter.Receive(source, 3, nodeVectorRecv, nodeSetSizeRecv[0]);
-        	exporter.Wait(req3);
-		}
-		else
-		{
-			nodeSetSizeRecv[0] = 0;
-			if(!nodeVectorRecv.empty())
-				nodeVectorRecv.clear();
-
-			if(!conditionRecv.empty())
-				conditionRecv.clear();
-		}
-
-
-		if(lengthSend[0] > 0)
-		{
-			length = lengthSend[0] + lengthSend[1];
-			exporter.ISend(cmyrank, dest, &(cutterDataSend[0]), length, 4, req4);
-		}
-
-        length = lengthRecv[0] + lengthRecv[1];
-        vector<char> cutterDataRecv(length);
-
-
-       	if(lengthRecv[0] > 0)
-       	{
-			int tag = 4;
-        	exporter.ReceiveAny(source, tag, cutterDataRecv, length);
-        	exporter.Wait(req4);
-
-            cutterDataSend = cutterDataRecv;
-
-            const int startindex = lengthRecv[0];
-			map< int, RCP<DRT::Node> > nodeMap;
-            unpackNodes(startindex, cutterDataRecv, nodeVectorRecv, nodeMap);
-
-			int index = 0;
-			int count = 0;
-
-			while (index < lengthRecv[0])
-			{
-  				// extract cutter element data form recieved data
-  				vector<char> data;
-  				DRT::ParObject::ExtractfromPack(index,cutterDataRecv,data);
-
-  				// allocate an "empty cutter element". Fill it with info from
-  				// extracted element data
-  				DRT::ParObject* o = DRT::UTILS::Factory(data);
-
-  				// cast ParObject to cutter element
-  				DRT::Element* actCutter = dynamic_cast<DRT::Element*>(o);
-
-  				// create nodal data for a particular element
-				actCutter->BuildNodalPointers(nodeMap);
-
-  				int cutterIdAdd = 0;
-  				for(unsigned int xf = 1; xf < xfemConditions.size(); xf++)
-					if((count >= conditionRecv[xf-1]) && (count < conditionRecv[xf]) )
-					{
-						cutterIdAdd =  conditionEleCount[xf];
-						break;
-					}
-
-                const int actCutterId = actCutter->Id() + cutterIdAdd;
-  				count++;
-
-  				const BlitzMat3x2 cutterXAABB(computeFastXAABB(actCutter));
-
-  				for(int k = 0; k < xfemdis->NumMyColElements(); k++)
-    			{
-        			const DRT::Element* xfemElement = xfemdis->lColElement(k);
-       				initializeXFEM(k, xfemElement);
-  					const BlitzMat3x2    xfemXAABB(computeFastXAABB(xfemElement));
-            		const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
-            		//debugXAABBIntersection( cutterXAABB, xfemXAABB, actCutter, xfemElement, i, k);
-
-            		if(intersected)
-        			{
-            		    cutterElementMap[xfemElement->LID()].insert(actCutter);
-            		    xfemCutterIdMap[xfemElement->LID()].insert(actCutterId);
-//        				if(cutterElementMap.find(xfemElement->LID()) != cutterElementMap.end())
-//        				{
-//                            const set<int> currentSet =  xfemCutterIdMap.find(xfemElement->LID())->second;
-//        					if(currentSet.find(actCutterId) == currentSet.end())
-//        					{
-//            					cutterElementMap[xfemElement->LID()].insert(actCutter);
-//            					xfemCutterIdMap[xfemElement->LID()].insert(actCutterId);
-//        					}
-//        				}
-//           				else
-//           				{
-//           				    cutterElementMap[xfemElement->LID()].insert(actCutter);
-////           					set<DRT::Element*> cutterVector;
-////           					cutterVector.insert(actCutter);
-////           					cutterElementMap.insert(make_pair(xfemElement->LID(), cutterVector));
-//
-//           				    xfemCutterIdMap[xfemElement->LID()].insert(actCutterId);
-////           					set<int> cutterIds;
-////                   			cutterIds.insert(actCutterId);
-////                   			xfemCutterIdMap.insert(make_pair(xfemElement->LID(), cutterIds));
-//           				}
-
-           				if(cutterIdSet.find(actCutterId) == cutterIdSet.end())
-           				{
-           					cutterIdSet.insert(actCutterId);
-
-           					for(int inode = 0; inode < actCutter->NumNode(); ++inode )
-           					{
-           						const int nodeId =  actCutter->Nodes()[inode]->Id();
-           						cutterNodeIdSet.insert(nodeId);
-           						cutterNodeMap[nodeId] = nodeMap.find(nodeId)->second;
-           					} // for loop over nodes
-                            actCutter->BuildNodalPointers(cutterNodeMap);
-           				}
-       	 			} // if intersected
-       	 		} // for - loop over all xfem elements
-			}
-       	} // if recieve[0] > 0
-       	else
-            cutterDataSend.clear();
-
-       	lengthSend = lengthRecv;
-       	nodeSetSizeSend = nodeSetSizeRecv[0];
-       	nodeVectorSend = nodeVectorRecv;
-       	conditionSend = conditionRecv;
-	}   // loop over all procs
-}
-
-#endif
-
-
 
 
 /*----------------------------------------------------------------------*
