@@ -1,7 +1,7 @@
 //
 // Maintainer: Axel Gerstenberger
 //
-// necessary defines: D_FLUID3 D_SOLID3 RESULTTEST DEBUG CCADISCRET BINIO QHULL
+// necessary defines: D_FLUID3 D_SOLID3 RESULTTEST CCADISCRET BINIO QHULL
 //
 ==================================================================
                         General Data File CCARAT
@@ -79,7 +79,7 @@ STARTINGALGO     One_Step_Theta
 NONLINITER       Newton
 ITEMAX           20
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-9
+CONVTOL          1.0E-12
 STEADYCHECK      L_2_norm
 STEADYSTEP       -1
 STEADYTOL        1.0E-8
@@ -123,38 +123,7 @@ COUPFORCE    nodeforce
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 -----------------------------------------------------STRUCT SOLVER
-SOLVER         Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT       0            // output every so often, 0 no output
-AZSOLVE        CG           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC         ML           // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE        0            // how often to recompute some preconditioners
-AZDROP         0.0          // drop tolerance for ILUT
-AZFILL         1.0          // fill-in for ILUT
-AZGFILL        0            // graph fill for ILU
-AZTOL          1.0E-8       // tolerance in unscaled residual
-AZCONV         AZ_noscaled  // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER         1000         // max iterations
-AZSUB          25           // size of krylov space for gmres
-AZOMEGA        1.0          // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH        1            // unused
-AZPOLY         5            // polynomial order for Neumann
-AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL         infnorm      // none sym infnorm scaling of the system
-AZCONV         AZ_r0        // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-ML_PRINT          0         // ML print-out level (0-10)
-ML_MAXCOARSESIZE  5000      // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL       5         // ML max number of levels
-ML_COARSEN        UC        // UC MIS METIS VBMETIS
-ML_AGG_SIZE       27        // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
-ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE   Chebychev // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    Chebychev // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE KLU       // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES       3 3 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE       1.0       // damping fine grid
-ML_DAMPMED        1.0       // damping med grids
-ML_DAMPCOARSE     1.0       // damping coarse grid
+SOLVER         UMFPACK    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 PARTITION         Cut_Elements
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 26
@@ -3699,7 +3668,11 @@ DVOL 0
 DLINE 0
 -------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH
-DSURF 0
+DSURF 4
+E 22 - 1 structure conforming fsi_real
+E 23 - 1 structure conforming fsi_real
+E 24 - 1 structure conforming fsi_real
+E 25 - 1 structure conforming fsi_real
 ------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DLINE 0
@@ -11109,9 +11082,9 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 10000.0 NUE 0.0 DENS 0.0 THEXPAN
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 773 POSITION velx     NAME velx     VALUE 1.939328997e+00 TOLERANCE 2e-4
-FLUID DIS 1 NODE 773 POSITION vely     NAME vely     VALUE 1.735523006e-01 TOLERANCE 2e-4
-FLUID DIS 1 NODE 773 POSITION velz     NAME velz     VALUE 0.000000000e+00 TOLERANCE 2e-4
-FLUID DIS 1 NODE 773 POSITION pressure NAME pressure VALUE 5.747628884e-01 TOLERANCE 2e-4
+FLUID DIS 1 NODE 773 POSITION velx     NAME velx     VALUE 1.939255169e+00 TOLERANCE 1e-6
+FLUID DIS 1 NODE 773 POSITION vely     NAME vely     VALUE 1.733352770e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 773 POSITION velz     NAME velz     VALUE 0.000000000e+00 TOLERANCE 1e-6
+FLUID DIS 1 NODE 773 POSITION pressure NAME pressure VALUE 5.739389137e-01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
