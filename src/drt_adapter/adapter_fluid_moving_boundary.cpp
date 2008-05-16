@@ -50,8 +50,7 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(cons
     case prb_fsi_xfem:
     {
       cout << "using FluidXFEM as FluidMovingBoundary" << endl;
-      Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
-      fluid_ = Teuchos::rcp(new FluidXFEM(prbdyn,condname,soliddis));
+      fluid_ = Teuchos::rcp(new FluidXFEM(prbdyn,condname));
       break;
     }
     default:

@@ -170,16 +170,22 @@ namespace ADAPTER {
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization>      dis_;
     Teuchos::RCP<DRT::Discretization>      soliddis_; ///< the solid discretization will go away,once we can determine inside and outside of the structure without volume elements
-    Teuchos::RCP<DRT::Discretization>      boundarydis_fluidparalleldistrib_;
+    Teuchos::RCP<DRT::Discretization>      boundarydis_;
     Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
     //@}
 
-    //! @name state vectors using the fluid boundary parallel distribution
-    Teuchos::RCP<Epetra_Vector>            ivel_fluidparalleldistrib_;      ///< interface velocity
-    Teuchos::RCP<Epetra_Vector>            idisp_fluidparalleldistrib_;     ///< interface displacement
-    Teuchos::RCP<Epetra_Vector>            itrueres_fluidparalleldistrib_;  ///< interface residual
+    //! @name state vectors using the solid boundary parallel distribution (row vectors)
+    Teuchos::RCP<Epetra_Vector>            ivel_;      ///< interface velocity
+    Teuchos::RCP<Epetra_Vector>            idisp_;     ///< interface displacement
+    Teuchos::RCP<Epetra_Vector>            itrueres_;  ///< interface residual
+    //@}
+    
+    //! @name state vectors using the overlapping (col vectors) parallel distribution
+    Teuchos::RCP<Epetra_Vector>            ivelcol_;      ///< interface velocity
+    Teuchos::RCP<Epetra_Vector>            idispcol_;     ///< interface displacement
+    Teuchos::RCP<Epetra_Vector>            itruerescol_;  ///< interface residual
     //@}
 
     /// all velocity dofs not at the interface

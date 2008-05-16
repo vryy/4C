@@ -127,7 +127,10 @@ public:
   */
   void NonlinearSolve(
           RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-          RCP<DRT::Discretization> submerseddiscret   ///< domain discretization used to calculate enrichment values (to be removed)
+          RCP<DRT::Discretization> submerseddiscret,  ///< domain discretization used to calculate enrichment values (to be removed)
+          RCP<Epetra_Vector>       idispcol,          ///< interface displacement with coloumn distribution 
+          RCP<Epetra_Vector>       ivelcol,           ///< interface velocity with coloumn distribution
+          RCP<Epetra_Vector>       itruerescol        ///< interface residual with coloumn distribution
           );
 
   /*!

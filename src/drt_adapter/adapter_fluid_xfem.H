@@ -35,8 +35,7 @@ namespace ADAPTER
   public:
 
     FluidXFEM(const Teuchos::ParameterList& prbdyn,
-                    std::string condname,
-                    RCP<DRT::Discretization>);
+                    std::string condname);
 
     /// fluid field
     Fluid& FluidField() { return fluid_.FluidField(); }
@@ -71,22 +70,6 @@ namespace ADAPTER
 
   protected:
 
-    //! @name Transfer helpers
-
-    /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> SolidToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
-
-    /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> SolidToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
-
-    /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> FluidToSolid(Teuchos::RCP<Epetra_Vector> iv) const;
-
-    /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> FluidToSolid(Teuchos::RCP<const Epetra_Vector> iv) const;
-
-    //@}
-
     //Coupling& FluidAleFieldCoupling()             { return coupfa_; }
     //const Coupling& FluidAleFieldCoupling() const { return coupfa_; }
 
@@ -94,14 +77,9 @@ namespace ADAPTER
 
     FluidBaseAlgorithm fluid_;
 
-    /// the interface map setup for interface <-> full translation
-    LINALG::MapExtractor                   interface_;
-
     /// coupling of interface in to parallel distributions
     Coupling               icoupsf_;
 
-    Teuchos::RCP<DRT::Discretization>      boundarydis_solidparalleldistrib_;
-    //Teuchos::RCP<DRT::Discretization>      boundarydis_fluidparalleldistrib_;
 
   };
 

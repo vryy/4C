@@ -38,23 +38,35 @@ ADAPTER::XFluidImpl::XFluidImpl(
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
-  boundarydis_fluidparalleldistrib_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3", conditions_to_copy);
+  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3", conditions_to_copy);
+  dsassert(boundarydis_->NumGlobalNodes() > 0, "empty discretization detected. FSICoupling condition applied?");
   
   // create node and element distribution with elements and nodes ghosted on all processors
-  const Epetra_Map* noderowmap = boundarydis_fluidparalleldistrib_->NodeRowMap();
-  Teuchos::RCP<Epetra_Map> newnodecolmap = LINALG::AllreduceEMap(*noderowmap);
-  DRT::UTILS::RedistributeWithNewNodalDistribution(*boundarydis_fluidparalleldistrib_, *noderowmap, *newnodecolmap);
+  const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
+  cout << "noderowmap->UniqueGIDs(): " << noderowmap.UniqueGIDs() << endl;
+  cout << noderowmap << endl;
+  
+  Teuchos::RCP<Epetra_Map> newnodecolmap = LINALG::AllreduceEMap(noderowmap);
+  cout << *newnodecolmap << endl;
+  
+  DRT::UTILS::RedistributeWithNewNodalDistribution(*boundarydis_, noderowmap, *newnodecolmap);
   
   
 
-  UTILS::SetupNDimExtractor(*boundarydis_fluidparalleldistrib_,"FSICoupling",interface_);
-  UTILS::SetupNDimExtractor(*boundarydis_fluidparalleldistrib_,"FREESURFCoupling",freesurface_);
+  UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
+  UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
 
+  // create interface DOF vectors using the solid parallel distribution
+  const Epetra_Map* fluidsurface_dofrowmap = boundarydis_->DofRowMap();
+  ivel_     = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
+  idisp_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
+  itrueres_ = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
+  
   // create interface DOF vectors using the fluid parallel distribution
-  const Epetra_Map* fluidsurface_dofrowmap = boundarydis_fluidparalleldistrib_->DofRowMap();
-  ivel_fluidparalleldistrib_ = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-  idisp_fluidparalleldistrib_ = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-  itrueres_fluidparalleldistrib_ = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
+  const Epetra_Map* fluidsurface_dofcolmap = boundarydis_->DofColMap();
+  ivelcol_     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  idispcol_    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  itruerescol_ = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
   fluid_.SetFreeSurface(&freesurface_);
   cout << "XFluidImpl constructor done" << endl;
@@ -139,7 +151,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::XFluidImpl::BlockSystemMatr
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ADAPTER::XFluidImpl::Discretization()
 {
-  return boundarydis_fluidparalleldistrib_;
+  return boundarydis_;
 }
 
 
@@ -199,7 +211,7 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
 {
 
   cout << "XFluidImpl::NonlinearSolve()" << endl;
-  fluid_.NonlinearSolve(boundarydis_fluidparalleldistrib_,soliddis_);
+  fluid_.NonlinearSolve(boundarydis_,soliddis_,idispcol_,ivelcol_,itruerescol_);
 }
 
 
@@ -303,7 +315,7 @@ void ADAPTER::XFluidImpl::LiftDrag()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceForces()
 {
-  return interface_.ExtractCondVector(itrueres_fluidparalleldistrib_);
+  return interface_.ExtractCondVector(itrueres_);
 }
 
 
@@ -331,18 +343,8 @@ void ADAPTER::XFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> i
 {
   cout << "applying interface velocity" << endl;
 
-  interface_.InsertCondVector(ivel,ivel_fluidparalleldistrib_);
-
-  // mark all interface velocities as dirichlet values
-  // this is very easy, but there are two dangers:
-  // - We change ivel here. It must not be used afterwards.
-  // - The algorithm must support the sudden change of dirichtoggle_
-//  ivel->PutScalar(1.0);
-//  interface_.InsertCondVector(ivel,fluid_.Dirichlet());
-//
-//  //----------------------- compute an inverse of the dirichtoggle vector
-//  fluid_.InvDirichlet()->PutScalar(1.0);
-//  fluid_.InvDirichlet()->Update(-1.0,*fluid_.Dirichlet(),1.0);
+  interface_.InsertCondVector(ivel,ivel_);
+  LINALG::Export(*ivel_,*ivelcol_);
 }
 
 
@@ -358,10 +360,8 @@ void ADAPTER::XFluidImpl::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> i
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> idisp)
 {
-  interface_.InsertCondVector(idisp,idisp_fluidparalleldistrib_);
-
-  // new grid velocity
-//  fluid_.UpdateGridv();
+  interface_.InsertCondVector(idisp,idisp_);
+  LINALG::Export(*idisp_,*idispcol_);
 }
 
 
@@ -370,7 +370,6 @@ void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> idis
 void ADAPTER::XFluidImpl::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
 {
   dserror("makes no sense here!");
-  //meshmap_.InsertCondVector(gridvel,fluid_.GridVel());
 }
 
 

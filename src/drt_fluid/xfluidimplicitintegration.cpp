@@ -195,6 +195,11 @@ void XFluidImplicitTimeInt::TimeLoop(
        fluid the stbilisation is hard coded to be SUPG/PSPG */
   }
 
+  const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
+  Teuchos::RCP<Epetra_Vector> ivelcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  
   while (step_<stepmax_ and time_<maxtime_)
   {
     PrepareTimeStep();
@@ -224,7 +229,7 @@ void XFluidImplicitTimeInt::TimeLoop(
       // -----------------------------------------------------------------
       //                     solve nonlinear equation
       // -----------------------------------------------------------------
-      NonlinearSolve(cutterdiscret,submerseddiscret);
+      NonlinearSolve(cutterdiscret,submerseddiscret,ivelcol,idispcol,itruerescol);
       break;
     case 1:
       // -----------------------------------------------------------------
@@ -782,7 +787,10 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::NonlinearSolve(
         RCP<DRT::Discretization> cutterdiscret,
-        RCP<DRT::Discretization> submerseddiscret
+        RCP<DRT::Discretization> submerseddiscret,
+        RCP<Epetra_Vector>       idispcol,
+        RCP<Epetra_Vector>       ivelcol,
+        RCP<Epetra_Vector>       itruerescol
         )
 {
 
@@ -1719,6 +1727,10 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
   dta_= 1.0;
   theta_ = 1.0;
 
+  const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
+  Teuchos::RCP<Epetra_Vector> ivelcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
   // -------------------------------------------------------------------
   // pseudo time loop (continuation loop)
@@ -1784,7 +1796,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
     // -------------------------------------------------------------------
     //                     solve nonlinear equation system
     // -------------------------------------------------------------------
-    NonlinearSolve(cutterdiscret,submerseddiscret);
+    NonlinearSolve(cutterdiscret,submerseddiscret,ivelcol,idispcol,itruerescol);
 
 
     // -------------------------------------------------------------------
