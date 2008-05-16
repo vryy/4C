@@ -567,7 +567,8 @@ public:
   Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape(std::string condname);
 
   /// switch fluid field to block matrix
-  void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+  void UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
+                      const LINALG::MultiMapExtractor& domainmaps,
                       const LINALG::MultiMapExtractor& rangemaps);
 
   /// linear solve with prescribed dirichlet conditions and without history

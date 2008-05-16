@@ -141,8 +141,8 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   }
   else
   {
-    Teuchos::RCP<LINALG::BlockSparseMatrix<VelPressSplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
+    Teuchos::RCP<LINALG::BlockSparseMatrix<FLUID_UTILS::VelPressSplitStrategy> > blocksysmat =
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUID_UTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
     blocksysmat->SetNumdim(numdim);
     sysmat_ = blocksysmat;
   }
@@ -2803,8 +2803,8 @@ void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condeleme
 #else
   //const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
-  Teuchos::RCP<LINALG::BlockSparseMatrix<InterfaceSplitStrategy> > mat =
-    Teuchos::rcp(new LINALG::BlockSparseMatrix<InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy> > mat =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
   mat->SetCondElements(condelements);
   sysmat_ = mat;
 #endif

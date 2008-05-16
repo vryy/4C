@@ -3111,11 +3111,14 @@ Teuchos::RCP<Epetra_Vector> FluidGenAlphaIntegration::IntegrateInterfaceShape(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FluidGenAlphaIntegration::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+void FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
+                                              const LINALG::MultiMapExtractor& domainmaps,
                                               const LINALG::MultiMapExtractor& rangemaps)
 {
-  sysmat_ =
-    Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,108,false,true));
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy> > mat =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+  mat->SetCondElements(condelements);
+  sysmat_ = mat;
 }
 
 
