@@ -1065,7 +1065,8 @@ PREDEFINED             = __cplusplus \
                          D_FLUID \
                          D_FSI \
                          D_SOLID3 \
-                         D_SOTET
+                         D_SOTET \
+                         D_EXODUS
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then 
 # this tag can be used to specify a list of macro names that should be expanded. 

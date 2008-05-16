@@ -2,7 +2,7 @@
 /*!
 \file pre_exodus_validate.H
 
-\brief preprocessor for exodusII format 
+\brief validate a given .dat-file
 
 <pre>
 Maintainer: Georg Bauer
