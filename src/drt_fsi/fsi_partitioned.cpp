@@ -13,8 +13,6 @@
 #include "fsi_debugwriter.H"
 
 #include "fsi_nox_aitken.H"
-#include "fsi_nox_extrapolate.H"
-#include "fsi_nox_michler.H"
 #include "fsi_nox_fixpoint.H"
 #include "fsi_nox_jacobian.H"
 #include "fsi_nox_sd.H"
