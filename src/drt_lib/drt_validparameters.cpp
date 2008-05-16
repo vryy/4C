@@ -889,12 +889,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "no",
                                  "channel_flow_of_height_2",
-                                 "lid_driven_cavity"),
+                                 "lid_driven_cavity",
+                                 "square_cylinder"),
                                tuple<std::string>(
                                  "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
                                  "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.",
-                                 "For this flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time."),
-                               tuple<int>(0,1,2),
+                                 "For this flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.",
+                                 "For this flow, statistical data are evaluated on various lines of the xy-midplane, averaged only over time."),
+                               tuple<int>(0,1,2,3),
                                &fdyn_turbu);
 
   setStringToIntegralParameter("CHANNEL_HOMPLANE",

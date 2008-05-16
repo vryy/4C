@@ -181,6 +181,7 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/fluidimpedancecondition.o \
                 src/drt_fluid/turbulence_statistics.o \
                 src/drt_fluid/turbulence_statistics_ldc.o \
+                src/drt_fluid/turbulence_statistics_sqc.o \
                 src/drt_fluid/fluidresulttest.o \
                 src/drt_fluid/xfluidresulttest.o \
                 src/drt_fluid/vm3_solver.o \

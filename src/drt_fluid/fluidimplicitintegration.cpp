@@ -336,6 +336,8 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
       turbulencestatistics_ldc_=rcp(new TurbulenceStatisticsLdc(discret_,params_));
     else if (special_flow_ == "channel_flow_of_height_2")
       turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
+    else if (special_flow_ == "square_cylinder")
+      turbulencestatistics_sqc_=rcp(new TurbulenceStatisticsSqc(discret_,params_));
   }
 
   // -------------------------------------------------------------------
@@ -549,6 +551,17 @@ void FluidImplicitTimeInt::TimeLoop()
     impedancebc_->OutflowBoundary(time_,dta_,theta_);
 
     // -------------------------------------------------------------------
+    //                    calculate lift'n'drag forces
+    // -------------------------------------------------------------------
+    const int liftdrag = params_.get<int>("liftdrag");
+
+    if (liftdrag == 0); // do nothing, we don't want lift & drag
+    if (liftdrag == 1)
+      dserror("how did you manage to get here???");
+    if (liftdrag == 2)
+      LiftDrag();
+
+    // -------------------------------------------------------------------
     // add calculated velocity to mean value calculation (statistics)
     // -------------------------------------------------------------------
     if(special_flow_ != "no" && step_>=samstart_ && step_<=samstop_)
@@ -558,6 +571,8 @@ void FluidImplicitTimeInt::TimeLoop()
         turbulencestatistics_ldc_->DoTimeSample(velnp_);
       else if(special_flow_ == "channel_flow_of_height_2")
         turbulencestatistics_->DoTimeSample(velnp_,*trueresidual_);
+      else if(special_flow_ == "square_cylinder")
+        turbulencestatistics_sqc_->DoTimeSample(velnp_);
     }
 
     // -------------------------------------------------------------------
@@ -569,17 +584,6 @@ void FluidImplicitTimeInt::TimeLoop()
     //                         output of solution
     // -------------------------------------------------------------------
     Output();
-
-    // -------------------------------------------------------------------
-    //                    calculate lift'n'drag forces
-    // -------------------------------------------------------------------
-    const int liftdrag = params_.get<int>("liftdrag");
-
-    if (liftdrag == 0); // do nothing, we don't want lift & drag
-    if (liftdrag == 1)
-      dserror("how did you manage to get here???");
-    if (liftdrag == 2)
-      LiftDrag();
 
     // -------------------------------------------------------------------
     //                       update time step sizes
@@ -1635,6 +1639,8 @@ void FluidImplicitTimeInt::Output()
         turbulencestatistics_ldc_->DumpStatistics(step_);
       else if (special_flow_ == "channel_flow_of_height_2")
         turbulencestatistics_->DumpStatistics(step_);
+      else if (special_flow_ == "square_cylinder")
+        turbulencestatistics_sqc_->DumpStatistics(step_);
     }
   }
 }
@@ -2097,12 +2103,6 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
     // -------------------------------------------------------------------
     NonlinearSolve();
 
-
-    // -------------------------------------------------------------------
-    //                         output of solution
-    // -------------------------------------------------------------------
-    Output();
-
     // -------------------------------------------------------------------
     //                    calculate lift'n'drag forces
     // -------------------------------------------------------------------
@@ -2113,6 +2113,11 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
       dserror("how did you manage to get here???");
     if(liftdrag == 2)
       LiftDrag();
+
+    // -------------------------------------------------------------------
+    //                         output of solution
+    // -------------------------------------------------------------------
+    Output();
 
   } // end of time loop
 
@@ -2312,6 +2317,17 @@ void FluidImplicitTimeInt::LiftDrag() const
 	  cout << "\n";
 	}
       }
+
+      // -------------------------------------------------------------------
+      // add calculated lift and drag to mean value calculation (statistics)
+      // -------------------------------------------------------------------
+      if(special_flow_ == "square_cylinder" && step_>=samstart_ && step_<=samstop_)
+      {
+        double dragforce = resultvec[0];
+        double liftforce = resultvec[1];
+        turbulencestatistics_sqc_->DoLiftDragTimeSample(dragforce,liftforce);
+      }
+
     } // end: loop over L&D labels
     if (myrank_== 0)
     {

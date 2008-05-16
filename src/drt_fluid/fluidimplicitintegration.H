@@ -26,6 +26,7 @@ Maintainer: Peter Gamnitzer
 
 #include "turbulence_statistics.H"
 #include "turbulence_statistics_ldc.H"
+#include "turbulence_statistics_sqc.H"
 
 #include "fluidimpedancecondition.H"
 
@@ -398,11 +399,14 @@ protected:
   RCP<Epetra_Vector>    fsconvnp_;
   //@}
 
+  /// turbulence statistics, channel flow
+  RCP<TurbulenceStatistics>    turbulencestatistics_;
+
   /// turbulence statistics, lid driven cavity
   RCP<TurbulenceStatisticsLdc> turbulencestatistics_ldc_;
 
-  /// turbulence statistics, channel flow
-  RCP<TurbulenceStatistics>    turbulencestatistics_;
+  /// turbulence statistics, square cylinder
+  RCP<TurbulenceStatisticsSqc> turbulencestatistics_sqc_;
 
   //! @name Vectors used for filtering (for dynamic Smagorinsky model)
 

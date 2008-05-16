@@ -54,6 +54,7 @@ Maintainer: Peter Gamnitzer
 #include "drt_periodicbc.H"
 #include "turbulence_statistics.H"
 #include "turbulence_statistics_ldc.H"
+#include "turbulence_statistics_sqc.H"
 
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
@@ -685,6 +686,9 @@ private:
 
   //! turbulence statistics for lid-driven cavity example
   RCP<TurbulenceStatisticsLdc> turbulencestatistics_ldc_;
+
+  //! turbulence statistics for square cylinder example
+  RCP<TurbulenceStatisticsSqc> turbulencestatistics_sqc_;
 
   //@}
 

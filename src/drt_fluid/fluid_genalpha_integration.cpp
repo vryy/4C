@@ -242,6 +242,8 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
       turbulencestatistics_ldc_=rcp(new TurbulenceStatisticsLdc(discret_,params_));
     else if (special_flow_ == "channel_flow_of_height_2")
       turbulencestatistics_=rcp(new TurbulenceStatistics(discret_,params_));
+    else if (special_flow_ == "square_cylinder")
+      turbulencestatistics_sqc_=rcp(new TurbulenceStatisticsSqc(discret_,params_));
   }
 
   // (fine-scale) subgrid viscosity?
@@ -391,6 +393,8 @@ void FluidGenAlphaIntegration::GenAlphaTimeloop()
         turbulencestatistics_ldc_->DoTimeSample(velnp_);
       else if(special_flow_ == "channel_flow_of_height_2")
         this->GenAlphaTakeSample();
+      else if(special_flow_ == "square_cylinder")
+        turbulencestatistics_sqc_->DoTimeSample(velnp_);
     }
 
     // -------------------------------------------------------------------
@@ -902,6 +906,8 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
         turbulencestatistics_ldc_->DumpStatistics(step_);
       else if (special_flow_ == "channel_flow_of_height_2")
         turbulencestatistics_->DumpStatistics(step_);
+      else if (special_flow_ == "square_cylinder")
+        turbulencestatistics_sqc_->DumpStatistics(step_);
     }
   }
 
