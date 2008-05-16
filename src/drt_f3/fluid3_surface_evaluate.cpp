@@ -46,6 +46,8 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
     	act = Fluid3Surface::flowratecalc;
     else if (action == "Outlet impedance")
     	act = Fluid3Surface::Outletimpedance;
+    else if (action == "calc_node_normal")
+    	act = Fluid3Surface::calc_node_normal;
     else dserror("Unknown type of action for Fluid3_Surface");
 
     switch(act)
@@ -77,6 +79,24 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
     {
     	ImpedanceIntegration(params,discretization,lm,elevec1);
      	break;
+    }
+    case calc_node_normal:
+    {
+      RefCountPtr<const Epetra_Vector> dispnp;
+      vector<double> mydispnp;
+
+      if (parent_->IsAle())
+      {
+        dispnp = discretization.GetState("dispnp");
+        if (dispnp!=null)
+        {
+          mydispnp.resize(lm.size());
+          DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+        }
+        ElementNodeNormal(params,discretization,lm,elevec1,mydispnp);
+      }
+      else dserror("height function for ale only");
+      break;
     }
     default:
         dserror("Unknown type of action for Fluid3_Surface");
@@ -386,7 +406,7 @@ void DRT::ELEMENTS::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
     f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
 
     // values are multiplied by the product from inf. area element,
-    // the gauss weight 
+    // the gauss weight
 
     const double fac = intpoints.qwgt[gpid] * drs;
 
@@ -404,6 +424,127 @@ void DRT::ELEMENTS::Fluid3Surface::IntegrateShapeFunction(ParameterList& params,
 return;
 } // DRT::ELEMENTS::Fluid3Surface::IntegrateShapeFunction
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal(ParameterList& params,
+                                                     DRT::Discretization&       discretization,
+                                                     vector<int>&               lm,
+                                                     Epetra_SerialDenseVector&  elevec1,
+                                                     const std::vector<double>& edispnp)
+{
+  // there are 3 velocities and 1 pressure
+  const int numdf = 4;
+
+  const DiscretizationType distype = this->Shape();
+
+  // set number of nodes
+  const int iel   = this->NumNode();
+
+  GaussRule2D  gaussrule = intrule2D_undefined;
+  switch(distype)
+  {
+  case quad4:
+      gaussrule = intrule_quad_4point;
+      break;
+  case quad8: case quad9:
+      gaussrule = intrule_quad_9point;
+      break;
+  case tri3 :
+      gaussrule = intrule_tri_3point;
+      break;
+  case tri6:
+      gaussrule = intrule_tri_6point;
+      break;
+  default:
+      dserror("shape type unknown!\n");
+  }
+
+    // allocate vector for shape functions and matrix for derivatives
+  Epetra_SerialDenseVector      funct       (iel);
+  Epetra_SerialDenseMatrix 	deriv       (2,iel);
+
+  // node coordinates
+  Epetra_SerialDenseMatrix      xyze        (3,iel);
+
+  // the metric tensor and the area of an infintesimal surface element
+  Epetra_SerialDenseMatrix 	metrictensor(2,2);
+  double                        drs;
+
+  // get node coordinates
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i)=this->Nodes()[i]->X()[0];
+    xyze(1,i)=this->Nodes()[i]->X()[1];
+    xyze(2,i)=this->Nodes()[i]->X()[2];
+  }
+
+  if (parent_->IsAle())
+  {
+    dsassert(edispnp.size()!=0,"paranoid");
+
+    for (int i=0;i<iel;i++)
+    {
+      xyze(0,i) += edispnp[4*i];
+      xyze(1,i) += edispnp[4*i+1];
+      xyze(2,i) += edispnp[4*i+2];
+    }
+  }
+
+  /*----------------------------------------------------------------------*
+  |               start loop over integration points                     |
+  *----------------------------------------------------------------------*/
+  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
+
+    // get shape functions and derivatives in the plane of the element
+    shape_function_2D(funct, e0, e1, distype);
+    shape_function_2D_deriv1(deriv, e0, e1, distype);
+
+    // compute measure tensor for surface element and the infinitesimal
+    // area element drs for the integration
+
+    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+
+    // values are multiplied by the product from inf. area element,
+    // the gauss weight and the constant
+    // belonging to the time integration algorithm (theta*dt for
+    // one step theta, 2/3 for bdf with dt const.)
+
+    //const double fac = intpoints.qwgt[gpid] * drs * thsl;
+    const double fac = intpoints.qwgt[gpid] * drs;
+
+    //this element's normal vector
+    Epetra_SerialDenseVector   norm(numdf);
+    double length = 0.0;
+    norm[0] = (xyze(1,1)-xyze(1,0))*(xyze(2,2)-xyze(2,0))+(xyze(2,1)-xyze(2,0))*(xyze(1,2)-xyze(1,0));
+    norm[1] = (xyze(2,1)-xyze(2,0))*(xyze(0,2)-xyze(0,0))+(xyze(0,1)-xyze(0,0))*(xyze(2,2)-xyze(2,0));
+    norm[2] = (xyze(0,1)-xyze(0,0))*(xyze(1,2)-xyze(1,0))+(xyze(1,1)-xyze(1,0))*(xyze(0,2)-xyze(0,0));
+
+    length = sqrt(norm[0]*norm[0]+norm[1]*norm[1]+norm[2]*norm[2]);
+
+    norm[0] = (1.0/length)*norm[0];
+    norm[1] = (1.0/length)*norm[1];
+    norm[2] = (1.0/length)*norm[2];
+
+    for (int node=0;node<iel;++node)
+    {
+      for(int dim=0;dim<3;dim++)
+      {
+        elevec1[node*numdf+dim]+=
+          funct[node] * fac * norm[dim];
+      }
+    }
+  } /* end of loop over integration points gpid */
+} // DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& params,
                   DRT::Discretization&       discretization,
                   vector<int>&               lm,
@@ -440,20 +581,20 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
 	default:
 	dserror("shape type unknown!\n");
   }
-	  
+
   RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-  
+
   if (velnp==null){
   	dserror("Cannot get state vector 'velnp'");
   }
-  
+
   // extract local values from the global vectors
   vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-		
+
   double flowrate    = params.get<double>("Outlet flowrate");
   double area        = params.get<double>("Area calculation");
-  
+
   // create blitz objects for element arrays
   const int numnode = NumNode();
   blitz::Array<double, 1> eprenp(numnode);
@@ -467,33 +608,33 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
     evelnp(1,i) = myvelnp[1+(i*4)];
     evelnp(2,i) = myvelnp[2+(i*4)];
     eprenp(i) = myvelnp[3+(i*4)];
-  }	
-  
+  }
+
   for(int i=0;i<iel;i++)
   {
     xyze(0,i)=this->Nodes()[i]->X()[0];
     xyze(1,i)=this->Nodes()[i]->X()[1];
     xyze(2,i)=this->Nodes()[i]->X()[2];
   }
-	  
+
   const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
     const double e0 = intpoints.qxg[gpid][0];
     const double e1 = intpoints.qxg[gpid][1];
-  	
+
     // get shape functions and derivatives in the plane of the element
     shape_function_2D(funct, e0, e1, distype);
     shape_function_2D_deriv1(deriv, e0, e1, distype);
-	  
+
     //Calculate infinitesimal area of element (drs)
     f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
-	
+
     if (iel==4)
       drs=drs*4;
     else
       drs=drs/2;
-		 
+
     //Compute elment flowrate
     for (int node=0;node<iel;++node)
     {
@@ -504,7 +645,7 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
     }
     area += drs;
   }
-  
+
   params.set<double>("Area calculation", area);
   params.set<double>("Outlet flowrate", flowrate);
 }
@@ -522,7 +663,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   const DiscretizationType distype = this->Shape();
   const int numdf = 4;
   const double thsl = params.get("thsl",0.0);
-  
+
   // allocate vector for shape functions and matrix for derivatives
   Epetra_SerialDenseVector  	funct       (iel);
   Epetra_SerialDenseMatrix  	deriv       (2,iel);
@@ -533,7 +674,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   // the metric tensor and the area of an infintesimal surface element
   Epetra_SerialDenseMatrix 	metrictensor  (2,2);
   double                      drs;
-	
+
   // pressure from time integration
   double pressure = params.get<double>("ConvolutedPressure");
 
@@ -555,14 +696,14 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
     default:
     dserror("shape type unknown!\n");
   }
- 
+
   for(int i=0;i<iel;i++)
   {
   	xyze(0,i)=this->Nodes()[i]->X()[0];
     xyze(1,i)=this->Nodes()[i]->X()[1];
     xyze(2,i)=this->Nodes()[i]->X()[2];
   }
-  
+
   const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
@@ -572,25 +713,25 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
     // get shape functions and derivatives in the plane of the element
     shape_function_2D(funct, e0, e1, distype);
     shape_function_2D_deriv1(deriv, e0, e1, distype);
-  
+
   	//Calculate infinitesimal area of element (drs)
   	f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
   	//Calculate streamwise velocity gradient
-    
+
     Epetra_SerialDenseMatrix  	DistanceVector       (3,2);
     double 	Magnitude;
     //Get two inplane vectors
     DistanceVector(0,0)=xyze(0,1)-xyze(0,0);
     DistanceVector(1,0)=xyze(1,1)-xyze(1,0);
     DistanceVector(2,0)=xyze(2,1)-xyze(2,0);
-		 
+
     DistanceVector(0,1)=xyze(0,2)-xyze(0,0);
     DistanceVector(1,1)=xyze(1,2)-xyze(1,0);
     DistanceVector(2,1)=xyze(2,2)-xyze(2,0);
-   
+
    //Calculate normal coordinate
     Epetra_SerialDenseMatrix	SurfaceNormal		(3,1);
-    
+
     SurfaceNormal(0,0)=DistanceVector(1,0)*DistanceVector(2,1)-DistanceVector(2,0)*DistanceVector(1,1);
     SurfaceNormal(1,0)=DistanceVector(2,0)*DistanceVector(0,1)-DistanceVector(0,0)*DistanceVector(2,1);
 	SurfaceNormal(2,0)=DistanceVector(0,0)*DistanceVector(1,1)-DistanceVector(1,0)*DistanceVector(0,1);
@@ -598,9 +739,9 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
     SurfaceNormal(0,0)=SurfaceNormal(0,0)/Magnitude;
     SurfaceNormal(1,0)=SurfaceNormal(1,0)/Magnitude;
     SurfaceNormal(2,0)=SurfaceNormal(2,0)/Magnitude;
-        
+
     const double fac = intpoints.qwgt[gpid] * drs * thsl;
-    
+
     for (int node=0;node<iel;++node)
     {
     	for(int dim=0;dim<3;dim++)

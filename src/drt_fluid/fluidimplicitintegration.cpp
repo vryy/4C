@@ -1230,14 +1230,95 @@ void FluidImplicitTimeInt::NonlinearSolve()
     // free surface update
     if (alefluid_ and freesurface_->Relevant())
     {
-      //using namespace LINALG::ANA;
-
       Teuchos::RefCountPtr<Epetra_Vector> fsvelnp = freesurface_->ExtractCondVector(velnp_);
       Teuchos::RefCountPtr<Epetra_Vector> fsdisp = freesurface_->ExtractCondVector(dispn_);
       Teuchos::RefCountPtr<Epetra_Vector> fsdispnp = Teuchos::rcp(new Epetra_Vector(*freesurface_->CondMap()));
 
-      // this is first order
-      //*fsdispnp = *fsdisp + dta_*(*fsvelnp);
+      int heightfunct = 1;
+
+      if (heightfunct)
+      {
+        //select free surface elements
+        std::string condname = "FREESURFCoupling";
+
+        ParameterList eleparams;
+        // set action for elements
+        eleparams.set("action","calc_node_normal");
+
+        // get a vector layout from the discretization to construct matching
+        // vectors and matrices
+        //                 local <-> global dof numbering
+        const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+        //vector ndnorm0 with pressure-entries is needed for EvaluateCondition
+        Teuchos::RCP<Epetra_Vector> ndnorm0 = LINALG::CreateVector(*dofrowmap,true);
+
+        //call loop over elements, note: normal vectors do not yet have length = 1.0
+        discret_->ClearState();
+        discret_->SetState("dispnp", dispnp_);
+        discret_->EvaluateCondition(eleparams,ndnorm0,condname);
+        discret_->ClearState();
+
+        //ndnorm contains fsnodes' normal vectors (with arbitrary length). no pressure-entries
+        Teuchos::RefCountPtr<Epetra_Vector> ndnorm = freesurface_->ExtractCondVector(ndnorm0);
+
+        std::vector< int > GIDfsnodes;  //GIDs of free surface nodes
+        std::vector< int > GIDdof;      //GIDs of current fsnode's dofs
+        std::vector< int > rfs;         //local indices for ndnorm and fsvelnp for current node
+
+        //get GIDs of free surface nodes for this processor
+        DRT::UTILS::FindConditionedNodes(*discret_,condname,GIDfsnodes);
+
+        for (unsigned int node=0; node<(GIDfsnodes.size()); node++)
+        {
+          //get LID for this node
+          int ndLID = (discret_->NodeRowMap())->LID(GIDfsnodes[node]);
+          if (ndLID == -1) dserror("No LID for free surface node");
+
+          //get vector of this node's dof GIDs
+          GIDdof.clear();
+          discret_->Dof(discret_->lRowNode(ndLID), GIDdof);
+          GIDdof.pop_back();  //free surface nodes: pop pressure dof
+
+          //numdof = dim, no pressure
+          int numdof = GIDdof.size();
+          rfs.clear();
+          rfs.resize(numdof);
+
+          //get local indices for dofs in ndnorm and fsvelnp
+          for (int i=0; i<numdof; i++)
+          {
+            int rgid = GIDdof[i];
+            if (!ndnorm->Map().MyGID(rgid) or !fsvelnp->Map().MyGID(rgid))
+              dserror("Sparse vector does not have global row %d",rgid);
+            rfs[i] = ndnorm->Map().LID(rgid);
+          }
+
+          double length = 0.0;
+          for (int i=0; i<numdof; i++)
+            length += (*ndnorm)[rfs[i]] * (*ndnorm)[rfs[i]];
+          length = sqrt(length);
+
+          double pointproduct = 0.0;
+          for (int i=0; i<numdof; i++)
+          {
+            (*ndnorm)[rfs[i]] = (1.0/length) * (*ndnorm)[rfs[i]];
+            //height function approach: left hand side of eq. 15
+            pointproduct += (*ndnorm)[rfs[i]] * (*fsvelnp)[rfs[i]];
+          }
+
+          for (int i=0; i<numdof; i++)
+          {
+            //height function approach: last entry of u_G is delta_phi/delta_t,
+            //the other entries are zero
+            if (i == numdof-1)
+              (*fsvelnp)[rfs[i]]  = pointproduct / (*ndnorm)[rfs[i]];
+            else
+              (*fsvelnp)[rfs[i]] = 0.0;
+          }
+        }
+      }
+
       fsdispnp->Update(1.0,*fsdisp,dta_,*fsvelnp,0.0);
 
       freesurface_->InsertCondVector(fsdispnp,dispnp_);

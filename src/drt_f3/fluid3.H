@@ -1041,7 +1041,8 @@ private:
     none,
     integrate_Shapefunction,
     flowratecalc,
-    Outletimpedance
+    Outletimpedance,
+    calc_node_normal
   };
 
   // don't want = operator
@@ -1086,6 +1087,12 @@ private:
                           	      vector<int>&               lm,
                           	      Epetra_SerialDenseVector&  elevec1,
                                       const std::vector<double>& edispnp);
+
+  void ElementNodeNormal(ParameterList& 		 params,
+                       DRT::Discretization&       discretization,
+                       vector<int>&               lm,
+                       Epetra_SerialDenseVector&  elevec1,
+                       const std::vector<double>& edispnp);
 
   void FlowRateParameterCaculation(ParameterList& params,
                   DRT::Discretization&       discretization,

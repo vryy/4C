@@ -38,10 +38,13 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
 {
     DRT::ELEMENTS::Fluid2Line::ActionType act = Fluid2Line::none;
     string action = params.get<string>("action","none");
+
     if (action == "none") dserror("No action supplied");
     else if (action == "integrate_Shapefunction")
         act = Fluid2Line::integrate_Shapefunction;
-    else dserror("Unknown type of action for Fluid3_Surface");
+    else if (action == "calc_node_normal")
+        act = Fluid2Line::calc_node_normal;
+    else dserror("Unknown type of action for Fluid2_Line");
 
     switch(act)
     {
@@ -61,6 +64,24 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
       }
 
       IntegrateShapeFunction(params,discretization,lm,elevec1,mydispnp);
+      break;
+    }
+    case calc_node_normal:
+    {
+      RefCountPtr<const Epetra_Vector> dispnp;
+      vector<double> mydispnp;
+
+      if (parent_->IsAle())
+      {
+        dispnp = discretization.GetState("dispnp");
+        if (dispnp!=null)
+        {
+          mydispnp.resize(lm.size());
+          DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+        }
+        ElementNodeNormal(params,discretization,lm,elevec1,mydispnp);
+      }
+      else dserror("height function for ale only");
       break;
     }
     default:
@@ -191,6 +212,9 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
   return 0;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 GaussRule1D DRT::ELEMENTS::Fluid2Line::getOptimalGaussrule(const DiscretizationType& distype)
 {
   GaussRule1D rule = intrule1D_undefined;
@@ -209,6 +233,8 @@ GaussRule1D DRT::ELEMENTS::Fluid2Line::getOptimalGaussrule(const DiscretizationT
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 double  DRT::ELEMENTS::Fluid2Line::f2_substitution(
   const Epetra_SerialDenseMatrix  xye,
   const Epetra_SerialDenseMatrix  deriv,
@@ -226,10 +252,10 @@ double  DRT::ELEMENTS::Fluid2Line::f2_substitution(
  |  Integrate shapefunctions over line (public)              g.bau 07/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
-                  DRT::Discretization&       discretization,
-                  vector<int>&               lm,
-                  Epetra_SerialDenseVector&  elevec1,
-                  const std::vector<double>& edispnp)
+                                                       DRT::Discretization&       discretization,
+                                                       vector<int>&               lm,
+                                                       Epetra_SerialDenseVector&  elevec1,
+                                                       const std::vector<double>& edispnp)
 {
   // there are 2 velocities and 1 pressure
   const int numdf = 3;
@@ -306,6 +332,92 @@ void DRT::ELEMENTS::Fluid2Line::IntegrateShapeFunction(ParameterList& params,
 
 return;
 } // DRT::ELEMENTS::Fluid2Line::IntegrateShapeFunction
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid2Line::ElementNodeNormal(ParameterList& params,
+                                                  DRT::Discretization&       discretization,
+                                                  vector<int>&               lm,
+                                                  Epetra_SerialDenseVector&  elevec1,
+                                                  const std::vector<double>& edispnp)
+{
+  // there are 2 velocities and 1 pressure
+  const int numdf = 3;
+
+  // set number of nodes
+  const int iel   = this->NumNode();
+
+  // gaussian points
+  const DiscretizationType distype = this->Shape();
+  const GaussRule1D gaussrule = getOptimalGaussrule(distype);
+  const IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
+
+  // allocate vector for shape functions and for derivatives
+  Epetra_SerialDenseVector   funct(iel);
+  Epetra_SerialDenseMatrix   deriv(1,iel);
+
+  // node coordinates
+  Epetra_SerialDenseMatrix 	xye(2,iel);
+
+  // get node coordinates
+  for(int i=0;i<iel;++i)
+  {
+    xye(0,i)=this->Nodes()[i]->X()[0];
+    xye(1,i)=this->Nodes()[i]->X()[1];
+  }
+
+  if (parent_->IsAle())
+  {
+    dsassert(edispnp.size()!=0,"paranoid");
+
+    for (int i=0;i<iel;i++)
+    {
+      xye(0,i) += edispnp[3*i];
+      xye(1,i) += edispnp[3*i+1];
+    }
+  }
+
+  // loop over integration points
+  for (int gpid=0;gpid<intpoints.nquad;gpid++)
+  {
+    const double e1 = intpoints.qxg[gpid];
+    // get shape functions and derivatives in the line
+    shape_function_1D(funct,e1,distype);
+    shape_function_1D_deriv1(deriv,e1,distype);
+
+    // compute infinitesimal line element dr for integration along the line
+    const double dr = f2_substitution(xye,deriv,iel);
+
+    // values are multiplied by the product from inf. area element,
+    // the gauss weight, the timecurve factor and the constant
+    // belonging to the time integration algorithm (theta*dt for
+    // one step theta, 2/3 for bdf with dt const.)
+
+    //double fac = intpoints.qwgt[gpid] *dr * thsl;
+    const double fac = intpoints.qwgt[gpid] *dr;
+
+
+    //this element's normal vector
+    Epetra_SerialDenseVector   norm(numdf);
+    double length = 0.0;
+    norm[0] = xye(1,1) - xye(1,0);
+    norm[1] = (-1.0)*(xye(0,1) - xye(0,0));
+
+    length = sqrt(norm[0]*norm[0]+norm[1]*norm[1]);
+
+    norm[0] = (1.0/length)*norm[0];
+    norm[1] = (1.0/length)*norm[1];
+
+    for (int node=0;node<iel;++node)
+    {
+      for(int dim=0;dim<3;dim++)
+      {
+        elevec1[node*numdf+dim]+=funct[node] * fac * norm[dim];
+      }
+    }
+  } //end of loop over integration points
+} // DRT::ELEMENTS::Fluid2Line::ElementNodeNormal
 
 
 #endif  // #ifdef CCADISCRET

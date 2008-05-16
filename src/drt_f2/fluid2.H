@@ -305,14 +305,14 @@ private:
     reynolds_stress_stab_none,
     reynolds_stress_stab_only_rhs
   };
-  
+
   //! map that converts strings to actions (stabilisation)
   static map<string,StabilisationAction>          stabstrtoact_;
 
   //! convert string to stabilisation action
   StabilisationAction ConvertStringToStabAction (const string& action) const;
 
-  
+
   /*!
    * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
    * \return boolean indicating higher order status
@@ -327,7 +327,7 @@ private:
           case quad4: case quad8: case quad9: case tri6:
             hoel = true;
             break;
-          case tri3: 
+          case tri3:
             hoel = false;
             break;
           default:
@@ -335,12 +335,12 @@ private:
       }
       return hoel;
     };
-  
+
   bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
 
   //! Gaussrule
   DRT::UTILS::GaussRule2D                         gaussrule_;
-  
+
   //! flag for euler/ale net algorithm
   bool                                            is_ale_;
 
@@ -474,8 +474,8 @@ private:
 
   /// Residual based genalpha implementation class for fluid element
   Fluid2GenalphaResVMM* GenalphaResVMM();
-  
-  
+
+
   // set number of gauss points to element shape default
   DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
@@ -787,7 +787,8 @@ private:
   enum ActionType
   {
      none,
-     integrate_Shapefunction
+     integrate_Shapefunction,
+     calc_node_normal
   };
 
   // don't want = operator
@@ -811,10 +812,16 @@ private:
 
   // integrate shape functions over a line
   void IntegrateShapeFunction(ParameterList& params,
-                  DRT::Discretization&       discretization,
-                  vector<int>&               lm,
-                  Epetra_SerialDenseVector&  elevec1,
-                  const std::vector<double>& edispnp);
+                              DRT::Discretization&       discretization,
+                              vector<int>&               lm,
+                              Epetra_SerialDenseVector&  elevec1,
+                              const std::vector<double>& edispnp);
+  void ElementNodeNormal(ParameterList& params,
+                         DRT::Discretization&       discretization,
+                         vector<int>&               lm,
+                         Epetra_SerialDenseVector&  elevec1,
+                         const std::vector<double>& edispnp);
+
 
 
 }; // class Fluid2Line
