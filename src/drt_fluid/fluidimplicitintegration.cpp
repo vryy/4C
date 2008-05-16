@@ -1234,7 +1234,8 @@ void FluidImplicitTimeInt::NonlinearSolve()
       Teuchos::RefCountPtr<Epetra_Vector> fsdisp = freesurface_->ExtractCondVector(dispn_);
       Teuchos::RefCountPtr<Epetra_Vector> fsdispnp = Teuchos::rcp(new Epetra_Vector(*freesurface_->CondMap()));
 
-      int heightfunct = 1;
+#if 0
+      int heightfunct = 0;
 
       if (heightfunct)
       {
@@ -1318,6 +1319,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
           }
         }
       }
+#endif
 
       fsdispnp->Update(1.0,*fsdisp,dta_,*fsvelnp,0.0);
 
