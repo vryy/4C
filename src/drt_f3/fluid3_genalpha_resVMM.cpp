@@ -4593,12 +4593,16 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
           if (newton)
           {
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
             {
-              const double fac_afgdt_tauMp_funct_ui = fac_afgdt_tauMp*funct_(ui);
-
-              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+              int vidx = vi*4 + 3;
+              double v1 = derxy_(0,vi)*vderxyaf_(0,0) + derxy_(1,vi)*vderxyaf_(1,0) + derxy_(2,vi)*vderxyaf_(2,0);
+              double v2 = derxy_(0,vi)*vderxyaf_(0,1) + derxy_(1,vi)*vderxyaf_(1,1) + derxy_(2,vi)*vderxyaf_(2,1);
+              double v3 = derxy_(0,vi)*vderxyaf_(0,2) + derxy_(1,vi)*vderxyaf_(1,2) + derxy_(2,vi)*vderxyaf_(2,2);
+              for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
               {
+                const double fac_afgdt_tauMp_funct_ui = fac_afgdt_tauMp*funct_(ui);
+                int uidx = ui*4;
 
                 /* pressure stabilisation --- convection */
 
@@ -4611,24 +4615,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                        \                                  /
                 */
 
-                elemat(vi*4 + 3, ui*4    ) += fac_afgdt_tauMp_funct_ui*
-                                              (derxy_(0,vi)*vderxyaf_(0,0)
-                                               +
-                                               derxy_(1,vi)*vderxyaf_(1,0)
-                                               +
-                                               derxy_(2,vi)*vderxyaf_(2,0)) ;
-                elemat(vi*4 + 3, ui*4 + 1) += fac_afgdt_tauMp_funct_ui*
-                                              (derxy_(0,vi)*vderxyaf_(0,1)
-                                               +
-                                               derxy_(1,vi)*vderxyaf_(1,1)
-                                               +
-                                               derxy_(2,vi)*vderxyaf_(2,1)) ;
-                elemat(vi*4 + 3, ui*4 + 2) += fac_afgdt_tauMp_funct_ui*
-                                              (derxy_(0,vi)*vderxyaf_(0,2)
-                                               +
-                                               derxy_(1,vi)*vderxyaf_(1,2)
-                                               +
-                                               derxy_(2,vi)*vderxyaf_(2,2)) ;
+                elemat(vidx, uidx    ) += fac_afgdt_tauMp_funct_ui*v1;
+                elemat(vidx, uidx + 1) += fac_afgdt_tauMp_funct_ui*v2;
+                elemat(vidx, uidx + 2) += fac_afgdt_tauMp_funct_ui*v3;
               } // end loop rows (test functions for matrix)
             } // end loop rows (solution for matrix, test function for vector)
           }
