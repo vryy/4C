@@ -352,6 +352,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("fluid","ale"),
         Teuchos::tuple<std::string>("fluid","ale"))));
 
+  freesurfcomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "coupling","lagrange",
+        Teuchos::tuple<std::string>("lagrange","heightfunction"),
+        Teuchos::tuple<std::string>("lagrange","heightfunction"),
+        true)));
+
   Teuchos::RCP<ConditionDefinition> linefreesurf =
     Teuchos::rcp(new ConditionDefinition("DESIGN FLUID FREE SURFACE LINE CONDITIONS",
                                          "FREESURFCoupling",
@@ -627,7 +635,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   impedancebc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   AddNamedReal(impedancebc,"timeperiod");
-  impedancebc->AddComponent(Teuchos::rcp(new StringConditionComponent("tree", "lung", 
+  impedancebc->AddComponent(Teuchos::rcp(new StringConditionComponent("tree", "lung",
     Teuchos::tuple<std::string>("lung","artery"),
     Teuchos::tuple<std::string>("lung","artery"),
     true)));

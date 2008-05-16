@@ -1234,14 +1234,24 @@ void FluidImplicitTimeInt::NonlinearSolve()
       Teuchos::RefCountPtr<Epetra_Vector> fsdisp = freesurface_->ExtractCondVector(dispn_);
       Teuchos::RefCountPtr<Epetra_Vector> fsdispnp = Teuchos::rcp(new Epetra_Vector(*freesurface_->CondMap()));
 
-#if 0
-      int heightfunct = 0;
+      // select free surface elements
+      std::string condname = "FREESURFCoupling";
 
-      if (heightfunct)
+      std::vector<DRT::Condition*> conds;
+      discret_->GetCondition(condname, conds);
+
+      // select only heightfunction conditions here
+      std::vector<DRT::Condition*> hfconds;
+      for (unsigned i=0; i<conds.size(); ++i)
       {
-        //select free surface elements
-        std::string condname = "FREESURFCoupling";
+        if (*conds[i]->Get<std::string>("coupling")=="heightfunction")
+          hfconds.push_back(conds[i]);
+      }
 
+      conds.clear();
+
+      if (hfconds.size()>0)
+      {
         ParameterList eleparams;
         // set action for elements
         eleparams.set("action","calc_node_normal");
@@ -1268,7 +1278,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
         std::vector< int > rfs;         //local indices for ndnorm and fsvelnp for current node
 
         //get GIDs of free surface nodes for this processor
-        DRT::UTILS::FindConditionedNodes(*discret_,condname,GIDfsnodes);
+        DRT::UTILS::FindConditionedNodes(*discret_,hfconds,GIDfsnodes);
 
         for (unsigned int node=0; node<(GIDfsnodes.size()); node++)
         {
@@ -1319,7 +1329,6 @@ void FluidImplicitTimeInt::NonlinearSolve()
           }
         }
       }
-#endif
 
       fsdispnp->Update(1.0,*fsdisp,dta_,*fsvelnp,0.0);
 

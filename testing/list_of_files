@@ -37,6 +37,7 @@ Input/f2_eq4x4_keps.dat                                 x        -        x     
 Input/f2_eq4x4_kome.dat                                 x        -        x        -        -        -
 Input/f2_freeosz20x20.dat                               x        x        x        x        -        -
 Input/f2_freeosz20x20_drt.dat                           x        x        -        -        -        -
+Input/f2_fs_channel.dat                                 x        x        -        -        -        -
 Input/f2_kim-moin.dat                                   x        x        x        x        -        -
 Input/f2_locsystest.dat                                 x        x        x        x        -        -
 Input/f2is_channel.dat                                  x        x        x        x        x        x

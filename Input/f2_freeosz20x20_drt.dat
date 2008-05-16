@@ -306,14 +306,10 @@ DLINE                           0
 ---------------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
 DSURF                           1
 E 1 - GLS yes yes GLS- yes 35 L_2 -1 533 at_center at_center 1.0
-----------------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-DPOINT                          2
-E 7 - ale 1 0 0 0 0 0
-E 8 - ale 1 0 0 0 0 0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           2
-E 3 - fluid 0 0 0 0 0 0
-E 7 - ale 0 0 0 0 0 0
+E 3 - fluid lagrange
+E 7 - ale lagrange
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 2 DNODE 1
 NODE 663 DNODE 2

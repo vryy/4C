@@ -126,6 +126,24 @@ namespace UTILS
                             std::string condname,
                             std::vector<int>& nodes);
 
+  /// find all local nodes from discretization marked with condition
+  /*!
+
+    Loop all conditions of the given discretization, find the ones with the
+    specified name and collect the locally owned node ids in the suppied
+    set. The nodes vector is unique and ordered on output.
+
+    \param dis : (in) Discretization
+    \param conds : (in) conditions in question
+    \param nodes : (out) empty set on input, filled with nodal gids of local nodes
+
+    \author u.kue
+    \date 06/07
+   */
+  void FindConditionedNodes(const DRT::Discretization& dis,
+                            const std::vector<DRT::Condition*>& conds,
+                            std::vector<int>& nodes);
+
   /// Create element map to given condition
   /*!
     \pre Geometry must be available in condition

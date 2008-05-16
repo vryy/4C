@@ -950,10 +950,20 @@ void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
  *----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis, std::string condname, std::vector<int>& nodes)
 {
-  std::set<int> nodeset;
-  const int myrank = dis.Comm().MyPID();
   std::vector<DRT::Condition*> conds;
   dis.GetCondition(condname, conds);
+  FindConditionedNodes(dis,conds,nodes);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
+                                      const std::vector<DRT::Condition*>& conds,
+                                      std::vector<int>& nodes)
+{
+  std::set<int> nodeset;
+  const int myrank = dis.Comm().MyPID();
   for (unsigned i=0; i<conds.size(); ++i)
   {
     const std::vector<int>* n = conds[i]->Nodes();
