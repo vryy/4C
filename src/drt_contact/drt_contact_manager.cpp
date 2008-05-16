@@ -1935,7 +1935,7 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
 /*----------------------------------------------------------------------*
  |  Recover disp function (public)                            popp 04/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
+void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector> disi)
 { 
   // check if basis transformation should be applied
   bool btrafo = scontact_.get<bool>("basis transformation",false);
@@ -1951,7 +1951,7 @@ void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector>& disi)
 /*----------------------------------------------------------------------*
  |  Transform displacement increment vector (public)          popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::RecoverDispBasisTrafo(RCP<Epetra_Vector>& disi)
+void CONTACT::Manager::RecoverDispBasisTrafo(RCP<Epetra_Vector> disi)
 { 
 #ifdef CONTACTCHECKHUEEBER
   // debugging (check S. Hüeber)
@@ -2042,7 +2042,7 @@ void CONTACT::Manager::RecoverDispBasisTrafo(RCP<Epetra_Vector>& disi)
 /*----------------------------------------------------------------------*
  |  RecoverDisp without basis transformation (public)         popp 04/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::RecoverDispNoBasisTrafo(RCP<Epetra_Vector>& disi)
+void CONTACT::Manager::RecoverDispNoBasisTrafo(RCP<Epetra_Vector> disi)
 {
 #ifdef CONTACTCHECKHUEEBER
   // debugging (check S. Hüeber)
@@ -2348,7 +2348,7 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
 /*----------------------------------------------------------------------*
  |  Compute contact forces (public)                           popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::ContactForces(RCP<Epetra_Vector>& fresm)
+void CONTACT::Manager::ContactForces(RCP<Epetra_Vector> fresm)
 {
   // FIXME: fresm is only here for debugging purposes!
   // compute two subvectors of fc via Lagrange multipliers z

@@ -107,25 +107,25 @@ public:
   \brief Return contact force vector
   
   */
-  inline RCP<Epetra_Vector>& GetContactForces() { return fc_; }
+  inline RCP<Epetra_Vector> GetContactForces() { return fc_; }
   
   /*!
   \brief Return Lagrange multiplier vector (mid-point)
     
   */
-  inline RCP<Epetra_Vector>& LagrMult() { return z_; }
+  inline RCP<Epetra_Vector> LagrMult() { return z_; }
   
   /*!
   \brief Return old Lagrange multiplier vector (mid-point)
       
   */
-  inline RCP<Epetra_Vector>& LagrMultOld() { return zold_; }
+  inline RCP<Epetra_Vector> LagrMultOld() { return zold_; }
   
   /*!
   \brief Return Lagrange multiplier vector (end-point)
         
   */
-  inline RCP<Epetra_Vector>& LagrMultEnd() { return zn_; }
+  inline RCP<Epetra_Vector> LagrMultEnd() { return zn_; }
   
   /*!
   \brief Return current global contact status
@@ -214,7 +214,7 @@ public:
   \brief Transform displacement increment vector
   
   */
-  void RecoverDisp(RCP<Epetra_Vector>& disi);
+  void RecoverDisp(RCP<Epetra_Vector> disi);
     
   /*!
   \brief Transform displacement increment vector (with basis transformation)
@@ -230,13 +230,13 @@ public:
   statically condensated during the setup of the global problem!
   
   */
-  void RecoverDispBasisTrafo(RCP<Epetra_Vector>& disi);
+  void RecoverDispBasisTrafo(RCP<Epetra_Vector> disi);
   
   /*!
   \brief RecoverDisp (without basis transformation)
   
   */
-  void RecoverDispNoBasisTrafo(RCP<Epetra_Vector>& disi);
+  void RecoverDispNoBasisTrafo(RCP<Epetra_Vector> disi);
   
   /*!
   \brief Update active set and check for convergence
@@ -254,7 +254,7 @@ public:
   \brief Compute contact force vector
     
   */
-  void ContactForces(RCP<Epetra_Vector>& fresm);
+  void ContactForces(RCP<Epetra_Vector> fresm);
   
   //@}
   
