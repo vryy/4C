@@ -2793,11 +2793,21 @@ Teuchos::RCP<Epetra_Vector> FluidImplicitTimeInt::IntegrateInterfaceShape(std::s
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FluidImplicitTimeInt::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
+void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
+                                          const LINALG::MultiMapExtractor& domainmaps,
                                           const LINALG::MultiMapExtractor& rangemaps)
 {
+#if 0
   sysmat_ =
     Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,108,false,true));
+#else
+  //const int numdim = params_.get<int>("number of velocity degrees of freedom");
+
+  Teuchos::RCP<LINALG::BlockSparseMatrix<InterfaceSplitStrategy> > mat =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+  mat->SetCondElements(condelements);
+  sysmat_ = mat;
+#endif
 }
 
 

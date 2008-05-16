@@ -81,11 +81,12 @@ void DRT::Discretization::Evaluate(
 
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
-    if (assemblemat1) systemmatrix1->Assemble(elematrix1,lm,lmowner);
-    if (assemblemat2) systemmatrix2->Assemble(elematrix2,lm,lmowner);
-    if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-    if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
-    if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
+      int eid = actele->Id();
+      if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+      if (assemblemat2) systemmatrix2->Assemble(eid,elematrix2,lm,lmowner);
+      if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
+      if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
+      if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
     }
 
   } // for (int i=0; i<numcolele; ++i)
@@ -566,8 +567,9 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
         if (err) dserror("error while evaluating elements");
 
         // assembly
-        if (assemblemat1) systemmatrix1->Assemble(elematrix1,lm,lmowner);
-        if (assemblemat2) systemmatrix2->Assemble(elematrix2,lm,lmowner);
+        int eid = curr->second->Id();
+        if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
+        if (assemblemat2) systemmatrix2->Assemble(eid,elematrix2,lm,lmowner);
         if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
         if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
         if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);

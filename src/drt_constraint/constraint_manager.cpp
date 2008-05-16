@@ -298,7 +298,7 @@ void ConstrManager::StiffnessAndInternalForces(
     if (!constrcond.size())
     {
       actdisc_->GetCondition("MPC_NodeOnPlane_3D",constrcond);
-    }    
+    }
     Evaluate(constraintdis_,p,stiff,constrMatrix_,fint,null,null,constrcond);
     SynchronizeSumConstraint(p,actvalues_,"computed MPC value",numConstrID_,minConstrID_);
   }
@@ -555,7 +555,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
             const string&             element_name)
 {
   RCP<Epetra_Comm> com = rcp(actdisc_->Comm().Clone());
-  
+
   RCP<DRT::Discretization> newdis = rcp(new DRT::Discretization(discret_name,com));
 
   if (!actdisc_->Filled())
@@ -636,7 +636,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
                                                              &constraintnodecolvec[0],
                                                              0,
                                                              newdis->Comm()));
-  
+
   constraintnodecolvec.clear();
 
   DRT::UTILS::RedistributeWithNewNodalDistribution(*newdis,*constraintnoderowmap,*constraintnodecolmap);
@@ -654,7 +654,7 @@ void ConstrManager::ReorderConstraintNodes(
   // get this condition's nodes
   vector<int> temp=nodeids;
   if (nodeids.size()==4)
-  {    
+  {
     const vector<int>*    constrNode  = cond->Get<vector<int> >("ConstrNode");
     nodeids[(*constrNode)[0]-1]=temp[3];
     nodeids[3]=temp[(*constrNode)[0]-1];
@@ -688,7 +688,7 @@ void ConstrManager::ReplaceNumDof(
   const DRT::Element* actele = sourcedis->lColElement(0);
   const DRT::Node*const* nodes = actele->Nodes();
   const int mpc_numdof = sourcedis->NumDof(nodes[0]);
-  
+
   // change numdof for all constraint elements
   const int numcolele = constraintdis->NumMyColElements();
   for (int i=0; i<numcolele; ++i)
@@ -699,8 +699,8 @@ void ConstrManager::ReplaceNumDof(
   constraintdis->FillComplete();
   return;
  }
- 
- 
+
+
 /*----------------------------------------------------------------------*
  |(private)                                                   tk 04/08  |
  |recompute nodecolmap of standard discretization to include constrained|
@@ -824,18 +824,19 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
                                elevector1,elevector2,elevector3);
     if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),actele->Id(),err);
 
-    if (assemblemat1) systemmatrix1->Assemble(elematrix1,lm,lmowner);
+    int eid = actele->Id();
+    if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
     if (assemblemat2)
     {
       int minID=params.get("MinID",0);
       vector<int> colvec(1);
       colvec[0]=condID-minID;
-      systemmatrix2->Assemble(elevector2,lm,lmowner,colvec);
+      systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
     }
     if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
     if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
     if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
-    
+
     const vector<int>*    curve  = cond.Get<vector<int> >("curve");
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
@@ -885,7 +886,7 @@ void ConstrManager::EvaluateCondition(RCP<DRT::Discretization> disc,
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < constrcond.size(); ++i) 
+  for (unsigned int i = 0; i < constrcond.size(); ++i)
   {
       DRT::Condition& cond = *(constrcond[i]);
 
@@ -898,14 +899,14 @@ void ConstrManager::EvaluateCondition(RCP<DRT::Discretization> disc,
         curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
 
       // Get ConditionID of current condition if defined and write value in parameterlist
-      
+
       const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
       int condID=(*CondIDVec)[0];
       params.set("ConditionID",condID);
       char factorname[30];
       sprintf(factorname,"LoadCurveFactor %d",condID);
       params.set(factorname,curvefac);
-      
+
       params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
 
       // define element matrices and vectors
@@ -943,19 +944,20 @@ void ConstrManager::EvaluateCondition(RCP<DRT::Discretization> disc,
         if (err) dserror("error while evaluating elements");
 
         // assembly
-        if (assemblemat1) systemmatrix1->Assemble(elematrix1,lm,lmowner);
+        int eid = curr->second->Id();
+        if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
         if (assemblemat2)
         {
           int minID=params.get("MinID",0);
           vector<int> colvec(1);
           colvec[0]=condID-minID;
-          systemmatrix2->Assemble(elevector2,lm,lmowner,colvec);
+          systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
         }
         if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
         if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
         if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
-      }    
-  } 
+      }
+  }
   return;
 } // end of EvaluateCondition
 

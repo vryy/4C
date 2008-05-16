@@ -417,7 +417,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::IntegrateInterfaceShape()
 void ADAPTER::FluidImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
                                         const LINALG::MultiMapExtractor& rangemaps)
 {
-  fluid_.UseBlockMatrix(domainmaps,rangemaps);
+  Teuchos::RCP<std::set<int> > condelements = UTILS::ConditionElementMap(*Discretization(),
+                                                                         "FSICoupling");
+  fluid_.UseBlockMatrix(condelements,domainmaps,rangemaps);
 }
 
 

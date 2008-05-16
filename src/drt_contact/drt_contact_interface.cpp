@@ -1276,7 +1276,7 @@ void CONTACT::Interface::AssembleDMG(LINALG::SparseMatrix& dglobal,
           dserror("ERROR: AssembleDMG: k = %i but colsize = %i",k,colsize);
       }
 
-      mglobal.Assemble(Mnode,lmrow,lmrowowner,lmcol);
+      mglobal.Assemble(-1,Mnode,lmrow,lmrowowner,lmcol);
     }
 
     /**************************************************** g-vector ******/
@@ -1443,7 +1443,7 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
     }
 
     // assemble into matrix of normal vectors N
-    nglobal.Assemble(Nnode,lmrowN,lmrowownerN,lmcol);
+    nglobal.Assemble(-1,Nnode,lmrowN,lmrowownerN,lmcol);
 
     /**************************************************** T-matrix ******/
     Epetra_SerialDenseMatrix Tnode(1,colsize);
@@ -1461,7 +1461,7 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
     }
 
     // assemble into matrix of normal vectors T
-    tglobal.Assemble(Tnode,lmrowT,lmrowownerT,lmcol);
+    tglobal.Assemble(-1,Tnode,lmrowT,lmrowownerT,lmcol);
   }
 
   return;

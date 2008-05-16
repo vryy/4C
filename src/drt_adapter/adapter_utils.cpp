@@ -186,4 +186,46 @@ Teuchos::RCP<Epetra_Map> ADAPTER::UTILS::ConditionNodeMap(const DRT::Discretizat
   return condnodemap;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<std::set<int> > ADAPTER::UTILS::ConditionElementMap(const DRT::Discretization& dis,
+                                                                 std::string condname)
+{
+  std::vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+
+  std::set<int> condelementset;
+  int nummyelements = dis.NumMyColElements();
+  for (int i=0; i<nummyelements; ++i)
+  {
+    DRT::Element* actele = dis.lColElement(i);
+    int numnodes = actele->NumNode();
+    DRT::Node** nodes = actele->Nodes();
+    for (int n=0; n<numnodes; ++n)
+    {
+      DRT::Node* actnode = nodes[n];
+
+      // test if node is covered by condition
+      for (unsigned j=0; j<conds.size(); ++j)
+      {
+        const vector<int>* n = conds[j]->Nodes();
+
+        // DRT::Condition nodes are ordered by design! So we can perform a
+        // binary search here.
+        if (std::binary_search(n->begin(), n->end(), actnode->Id()))
+        {
+          condelementset.insert(actele->Id());
+          break;
+        }
+      }
+    }
+  }
+
+  Teuchos::RCP<std::set<int> > condelementmap = Teuchos::rcp(new set<int>());
+  swap(*condelementmap,condelementset);
+  return condelementmap;
+}
+
+
 #endif

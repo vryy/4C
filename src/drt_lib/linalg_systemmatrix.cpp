@@ -198,7 +198,8 @@ void LINALG::SparseMatrix::Reset()
 /*----------------------------------------------------------------------*
  |  assemble a matrix  (public)                               popp 01/08|
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Assemble(const Epetra_SerialDenseMatrix& Aele,
+void LINALG::SparseMatrix::Assemble(int eid,
+                                    const Epetra_SerialDenseMatrix& Aele,
                                     const std::vector<int>& lmrow,
                                     const std::vector<int>& lmrowowner,
                                     const std::vector<int>& lmcol)
@@ -1094,77 +1095,6 @@ ostream& LINALG::operator << (ostream& os, const LINALG::BlockSparseMatrixBase& 
 LINALG::DefaultBlockMatrixStrategy::DefaultBlockMatrixStrategy(BlockSparseMatrixBase& mat)
   : mat_(mat)
 {
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::DefaultBlockMatrixStrategy::RowBlock(int lrow, int rgid)
-{
-  int rows = mat_.Rows();
-  for (int rblock=0; rblock<rows; ++rblock)
-  {
-    if (mat_.RangeMap(rblock).MyGID(rgid))
-    {
-      return rblock;
-    }
-  }
-  return -1;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-int LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int lcol, int cgid)
-{
-  int cols = mat_.Cols();
-  for (int cblock = 0; cblock<cols; ++cblock)
-  {
-    SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
-
-    // If we have a filled matrix we know the column map already.
-    if (matrix.Filled())
-    {
-      if (matrix.ColMap().MyGID(cgid))
-      {
-        return cblock;
-      }
-    }
-
-    // otherwise we can get just the non-ghost entries right now
-    else if (mat_.DomainMap(cblock).MyGID(cgid))
-    {
-      return cblock;
-    }
-  }
-
-  // ghost entries in a non-filled matrix will have to be done later
-
-  return -1;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void LINALG::DefaultBlockMatrixStrategy::Assemble(double val,
-                                                  int lrow, int rgid, int rblock,
-                                                  int lcol, int cgid, int cblock)
-{
-#ifdef DEBUG
-  if (rblock==-1)
-    dserror("no block entry found for row gid=%d",rgid);
-#endif
-
-  if (cblock>-1)
-  {
-    SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
-    matrix.Assemble(val,rgid,cgid);
-  }
-  else
-  {
-    // ghost entry in non-filled matrix. Save for later insertion.
-    ghost_[rgid][cgid] += val;
-  }
 }
 
 

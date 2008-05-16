@@ -42,6 +42,11 @@ namespace ADAPTER
     /// row map with nodes from condition
     Teuchos::RCP<Epetra_Map> ConditionNodeMap(const DRT::Discretization& dis,
                                               std::string condname);
+
+    /// map with elements that contain nodes with condition
+    Teuchos::RCP<std::set<int> > ConditionElementMap(const DRT::Discretization& dis,
+                                                     std::string condname);
+
   }
 }
 

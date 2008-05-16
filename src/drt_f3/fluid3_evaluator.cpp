@@ -229,7 +229,7 @@ DRT::ELEMENTS::Fluid3SystemEvaluator::Fluid3SystemEvaluator(Teuchos::RCP<DRT::Di
   // get the material
   double density = 0.0;
   RCP<MAT::Material> mat = ele->Material();
-  
+
   if(mat->MaterialType()== m_fluid)
   {
 	actmat_ = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
@@ -273,7 +273,7 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::ElementEvaluation(DRT::Element* ele,
 
   // the number of nodes
   const int numnode = ele->NumNode();
-  
+
   // initialise the Smagorinsky constant Cs and the viscous length scale l_tau to zero
   Cs_delta_sq_   = 0.0;
   l_tau_         = 0.0;
@@ -536,7 +536,7 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::PlainEvaluate(DRT::EGROUP::Group& ele
                       fsevelnp,
                       cseconvnp);
 
-    systemmatrix_->Assemble(elematrix1,lm,lmowner);
+    systemmatrix_->Assemble(ele->Id(),elematrix1,lm,lmowner);
     LINALG::Assemble(*systemvector_,elevector1,lm,lmowner);
   }
 }
@@ -726,7 +726,9 @@ void DRT::ELEMENTS::Fluid3SystemEvaluator::BlockHex8Evaluate(DRT::EGROUP::Group&
 
     for (int i=0; i<blocklength; ++i)
     {
-      systemmatrix_->Assemble(data[i].elematrix,
+      DRT::Element* ele = elements[offset+i];
+      systemmatrix_->Assemble(ele->Id(),
+                              data[i].elematrix,
                               data[i].lm,
                               data[i].lmowner);
     }

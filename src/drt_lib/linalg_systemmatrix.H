@@ -82,15 +82,24 @@ namespace LINALG
     a Filled() matrix. If the sparse mask does not change it pays to keep
     the matrix around and assemble into the Filled() matrix.
 
+    The first parameter \p eid is purely for performance enhancements. Plain
+    sparse matrices do not know about finite elements and do not use the
+    element id at all. However, BlockSparseMatrix might be created with
+    specialized, problem specific assembling strategies. And these strategies
+    might gain considerable performance advantages from knowing the element
+    id.
+
+    \param eid (in) : element gid
     \param Aele (in) : dense matrix to be assembled
     \param lm (in) : vector with gids
     \param lmowner (in) : vector with owner procs of gids
     */
-    virtual void Assemble(const Epetra_SerialDenseMatrix& Aele,
+    virtual void Assemble(int eid,
+                          const Epetra_SerialDenseMatrix& Aele,
                           const std::vector<int>& lm,
                           const std::vector<int>& lmowner)
     {
-      Assemble(Aele,lm,lmowner,lm);
+      Assemble(eid,Aele,lm,lmowner,lm);
     }
 
     /// Assemble a Epetra_SerialDenseMatrix into a matrix
@@ -115,12 +124,21 @@ namespace LINALG
       \note The user must provide an \b additional input vector 'lmcol'
       containing the column gids for assembly seperately!
 
+      The first parameter \p eid is purely for performance enhancements. Plain
+      sparse matrices do not know about finite elements and do not use the
+      element id at all. However, BlockSparseMatrix might be created with
+      specialized, problem specific assembling strategies. And these
+      strategies might gain considerable performance advantages from knowing
+      the element id.
+
+      \param eid (in) : element gid
       \param Aele (in)       : dense matrix to be assembled
       \param lmrow (in)      : vector with row gids
       \param lmrowowner (in) : vector with owner procs of row gids
       \param lmcol (in)      : vector with column gids
     */
-    virtual void Assemble(const Epetra_SerialDenseMatrix& Aele,
+    virtual void Assemble(int eid,
+                          const Epetra_SerialDenseMatrix& Aele,
                           const std::vector<int>& lmrow,
                           const std::vector<int>& lmrowowner,
                           const std::vector<int>& lmcol) = 0;
@@ -275,14 +293,16 @@ namespace LINALG
     /// throw away the matrix and its graph and start anew
     void Reset();
 
-    virtual void Assemble(const Epetra_SerialDenseMatrix& Aele,
+    virtual void Assemble(int eid,
+                          const Epetra_SerialDenseMatrix& Aele,
                           const std::vector<int>& lm,
                           const std::vector<int>& lmowner)
     {
-      Assemble(Aele,lm,lmowner,lm);
+      Assemble(eid,Aele,lm,lmowner,lm);
     }
 
-    void Assemble(const Epetra_SerialDenseMatrix& Aele,
+    void Assemble(int eid,
+                  const Epetra_SerialDenseMatrix& Aele,
                   const std::vector<int>& lmrow,
                   const std::vector<int>& lmrowowner,
                   const std::vector<int>& lmcol);
@@ -741,10 +761,15 @@ namespace LINALG
 
     Teuchos::RCP<BlockSparseMatrixBase> Clone(Epetra_DataAccess access);
 
-    void Assemble(const Epetra_SerialDenseMatrix& Aele,
+    void Assemble(int eid,
+                  const Epetra_SerialDenseMatrix& Aele,
                   const std::vector<int>& lmrow,
                   const std::vector<int>& lmrowowner,
-                  const std::vector<int>& lmcol);
+                  const std::vector<int>& lmcol)
+    {
+      const int myrank = Comm().MyPID();
+      Strategy::Assemble(eid,myrank,Aele,lmrow,lmrowowner,lmcol);
+    }
 
     /// single value assemble
     /*!
@@ -755,7 +780,10 @@ namespace LINALG
      the element matrix.
 
     */
-    void Assemble(double val, int rgid, int cgid);
+    void Assemble(double val, int rgid, int cgid)
+    {
+      Strategy::Assemble(val,rgid,cgid);
+    }
 
     void Complete();
   };
@@ -785,19 +813,35 @@ namespace LINALG
     /// construct with a block matrix base
     explicit DefaultBlockMatrixStrategy(BlockSparseMatrixBase& mat);
 
-    /// find row block to a given row gid
-    int RowBlock(int lrow, int rgid);
+    /// assemble into the given block
+    void Assemble(int eid,
+                  int myrank,
+                  const Epetra_SerialDenseMatrix& Aele,
+                  const std::vector<int>& lmrow,
+                  const std::vector<int>& lmrowowner,
+                  const std::vector<int>& lmcol);
 
-    /// find column block to a given column gid
-    int ColBlock(int rblock, int lcol, int cgid);
+    /// assemble into the given block
+    void Assemble(double val, int rgid, int cgid);
+
+    /// assemble the remaining ghost entries
+    void Complete();
+
+  protected:
 
     /// assemble into the given block
     void Assemble(double val,
                   int lrow, int rgid, int rblock,
                   int lcol, int cgid, int cblock);
 
-    /// assemble the remaining ghost entries
-    void Complete();
+    /// find row block to a given row gid
+    int RowBlock(int lrow, int rgid);
+
+    /// find column block to a given column gid
+    int ColBlock(int rblock, int lcol, int cgid);
+
+    /// access to the block sparse matrix for subclasses
+    BlockSparseMatrixBase& Mat() { return mat_; }
 
   private:
 
@@ -892,17 +936,74 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::BlockSparseMatrix<Strategy>:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class Strategy>
-void LINALG::BlockSparseMatrix<Strategy>::Assemble(const Epetra_SerialDenseMatrix& Aele,
-                                                   const std::vector<int>& lmrow,
-                                                   const std::vector<int>& lmrowowner,
-                                                   const std::vector<int>& lmcol)
+void LINALG::BlockSparseMatrix<Strategy>::Complete()
+{
+  Strategy::Complete();
+  BlockSparseMatrixBase::Complete();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline
+int LINALG::DefaultBlockMatrixStrategy::RowBlock(int lrow, int rgid)
+{
+  int rows = mat_.Rows();
+  for (int rblock=0; rblock<rows; ++rblock)
+  {
+    if (mat_.RangeMap(rblock).MyGID(rgid))
+    {
+      return rblock;
+    }
+  }
+  return -1;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline
+int LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int lcol, int cgid)
+{
+  int cols = mat_.Cols();
+  for (int cblock = 0; cblock<cols; ++cblock)
+  {
+    SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
+
+    // If we have a filled matrix we know the column map already.
+    if (matrix.Filled())
+    {
+      if (matrix.ColMap().MyGID(cgid))
+      {
+        return cblock;
+      }
+    }
+
+    // otherwise we can get just the non-ghost entries right now
+    else if (mat_.DomainMap(cblock).MyGID(cgid))
+    {
+      return cblock;
+    }
+  }
+
+  // ghost entries in a non-filled matrix will have to be done later
+
+  return -1;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+inline
+void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid,
+                                                  int myrank,
+                                                  const Epetra_SerialDenseMatrix& Aele,
+                                                  const std::vector<int>& lmrow,
+                                                  const std::vector<int>& lmrowowner,
+                                                  const std::vector<int>& lmcol)
 {
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
-
-  const int myrank = Comm().MyPID();
-  // neccessary for compilation with suse gcc  4.1.0
-  Strategy* strategy = (Strategy*)this;
 
   // loop rows of local matrix
   for (int lrow=0; lrow<lrowdim; ++lrow)
@@ -913,15 +1014,15 @@ void LINALG::BlockSparseMatrix<Strategy>::Assemble(const Epetra_SerialDenseMatri
       continue;
 
     int rgid = lmrow[lrow];
-    int rblock = strategy->RowBlock(lrow,rgid);
+    int rblock = RowBlock(lrow,rgid);
 
     for (int lcol=0; lcol<lcoldim; ++lcol)
     {
       double val = Aele(lrow,lcol);
       int cgid = lmcol[lcol];
-      int cblock = strategy->ColBlock(rblock,lcol,cgid);
+      int cblock = ColBlock(rblock,lcol,cgid);
 
-      strategy->Assemble(val,lrow,rgid,rblock,lcol,cgid,cblock);
+      Assemble(val,lrow,rgid,rblock,lcol,cgid,cblock);
     }
   }
 }
@@ -929,28 +1030,39 @@ void LINALG::BlockSparseMatrix<Strategy>::Assemble(const Epetra_SerialDenseMatri
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <class Strategy>
-void LINALG::BlockSparseMatrix<Strategy>::Assemble(double val, int rgid, int cgid)
+inline
+void LINALG::DefaultBlockMatrixStrategy::Assemble(double val, int rgid, int cgid)
 {
-  // neccessary for compilation with suse gcc  4.1.0
-  Strategy* strategy = (Strategy*)this;
+  int rblock = RowBlock(0,rgid);
+  int cblock = ColBlock(rblock,0,cgid);
 
-  int rblock = strategy->RowBlock(0,rgid);
-  int cblock = strategy->ColBlock(rblock,0,cgid);
-
-  strategy->Assemble(val,0,rgid,rblock,0,cgid,cblock);
+  Assemble(val,0,rgid,rblock,0,cgid,cblock);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <class Strategy>
-void LINALG::BlockSparseMatrix<Strategy>::Complete()
+inline
+void LINALG::DefaultBlockMatrixStrategy::Assemble(double val,
+                                                  int lrow, int rgid, int rblock,
+                                                  int lcol, int cgid, int cblock)
 {
-  Strategy::Complete();
-  BlockSparseMatrixBase::Complete();
-}
+#ifdef DEBUG
+  if (rblock==-1)
+    dserror("no block entry found for row gid=%d",rgid);
+#endif
 
+  if (cblock>-1)
+  {
+    SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
+    matrix.Assemble(val,rgid,cgid);
+  }
+  else
+  {
+    // ghost entry in non-filled matrix. Save for later insertion.
+    ghost_[rgid][cgid] += val;
+  }
+}
 
 #endif
 #endif
