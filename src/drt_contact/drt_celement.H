@@ -287,13 +287,25 @@ public:
   /*!
   \brief Build element normal at node passed in
   */
-  virtual void BuildNormalAtNode(int nid, vector<double>& n);
+  virtual void BuildNormalAtNode(int nid, vector<double>& n, double& length);
   
+  /*!
+  \brief Build element normal derivative at node passed in
+  */
+  virtual void DerivNormalAtNode(int nid, Epetra_SerialDenseMatrix& elens,
+                                 vector<map<int,double> >& derivn);
+    
   /*!
   \brief Compute element normal at local coordinate xi
   */
-  virtual void ComputeNormalAtXi(double* xi, vector<double>& n);
+  virtual void ComputeNormalAtXi(double* xi, vector<double>& n, double& length);
   
+  /*!
+  \brief Compute element normal derivative at local coordinate xi
+  */
+  virtual void DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& elens,
+                               vector<map<int,double> >& derivn);
+    
   /*!
   \brief Compute element normal at local coordinate xi
   */

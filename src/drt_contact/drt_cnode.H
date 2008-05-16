@@ -248,6 +248,11 @@ public:
   */
   virtual inline double& Getg() { return grow_; }
   
+  /*!
+  \brief Return the 'DerivN' map (vector) of this node
+  */
+  virtual inline vector<map<int,double> >& GetDerivN() { return derivn_; }
+    
   //@}
 
   //! @name Construction methods
@@ -257,6 +262,20 @@ public:
   */
   virtual void BuildAveragedNormal();
   
+  /*!
+  \brief Build directional derivative of nodal normal
+  
+  This method will be called after having finished the method
+  BuildAveragedNormal() for the computation of nodal normals. The result
+  (directional derivatives) will be stored in the nodal maps derivn_ and
+  will later be assembled to the global system of equations.
+  
+  \param elens (in):  Matrix containing normals of adjacent elements
+  \param length (in): Modified length of the nodal averaged normal
+                      (the modification depends on the flag CONTACTWNORMAL)
+  */
+  virtual void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens, double length);
+    
   /*!
   \brief Find closest node from given node set and return global ID
     
@@ -290,6 +309,8 @@ protected:
   vector<map<int,double> >      mrows_;         // nodal rows of M matrix
   vector<map<int,double> >      mmodrows_;      // nodal rows of Mmod matrix
   double                        grow_;          // nodal entry of g vector
+  
+  vector<map<int,double> >      derivn_;        // directional derivative of nodal normal
   
 
 }; // class CNode

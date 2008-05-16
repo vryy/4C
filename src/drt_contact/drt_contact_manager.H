@@ -286,8 +286,9 @@ protected:
   RCP<LINALG::SparseMatrix>          mhatmatrix_;     // product of global Mortar matrices inv(D)*M
   RCP<Epetra_Vector>                 g_;              // global weighted gap vector g
   
-  RCP<LINALG::SparseMatrix>          nmatrix_;        // global Matrix N of active node normals
-  RCP<LINALG::SparseMatrix>          tmatrix_;        // global Matrix T of active node tangents
+  RCP<LINALG::SparseMatrix>          nmatrix_;        // global Matrix N containing active node normals
+  RCP<LINALG::SparseMatrix>          tmatrix_;        // global Matrix T containing active node tangents
+  RCP<LINALG::SparseMatrix>          smatrix_;        // global Matrix S containing active node normal derivatives
   
   RCP<Epetra_Vector>                 z_;              // vector of Lagrange multipliers (mid-point)
   RCP<Epetra_Vector>                 zold_;           // vector of last time step Lagrange multipliers (mid-point)

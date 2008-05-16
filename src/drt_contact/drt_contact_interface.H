@@ -425,6 +425,12 @@ public:
                               Epetra_Vector& rglobal);
     
   /*!
+  \brief Assemble matrix S containing linearization of nodal normals
+    
+  */
+  virtual void AssembleS(LINALG::SparseMatrix& sglobal);
+    
+  /*!
   \brief Initialize active set of this interface (t=0)
   
   \param initialcontact (in): true, if contact at t=0 assumed
@@ -446,7 +452,7 @@ public:
   
   //@}
   
-  //! @name Visualization methods
+  //! @name Visualization and Debugging methods
   
   /*!
   \brief Visualize node normals and projections with gmsh
@@ -460,6 +466,12 @@ public:
   */
   virtual Epetra_SerialDenseMatrix& CSegs() {return contactsegs_;};
   
+  /*!
+  \brief Check normal derivatives with finite differences
+    
+  */
+  virtual void FDCheckDeriv();
+    
   //@}
 
 protected:

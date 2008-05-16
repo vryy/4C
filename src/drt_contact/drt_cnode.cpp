@@ -291,36 +291,45 @@ void CONTACT::CNode::AddgValue(double val)
 }
 
 /*----------------------------------------------------------------------*
- |  Build nodal normal                                        popp 12/07|
+ |  Build averaged nodal normal                               popp 12/07|
  *----------------------------------------------------------------------*/
 void CONTACT::CNode::BuildAveragedNormal()
 {
+  // reset normal when this method is called
+  for (int j=0;j<3;++j) n()[j]=0.0;
+    
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
   
+  // we need to store adjacent element ids, normals and their length
+  Epetra_SerialDenseMatrix elens(5,nseg);
+  
+  // loop over all adjacent elements
   for (int i=0;i<nseg;++i)
   {
     CElement* adjcele = static_cast<CElement*> (adjeles[i]);
-/*    
-#ifdef DEBUG
-    adjcele->Print(cout);
-    cout << endl;
-#endif // #ifdef DEBUG   
-*/  
+
     // build element normal at current node
     vector<double> elen(3);
-    adjcele->BuildNormalAtNode(Id(),elen);
+    double elenlength;
+    adjcele->BuildNormalAtNode(Id(),elen,elenlength);
     double wgt = adjcele->Area();
-        
-    // add (weighted) element normal to nodal normal n_
+    
+    // add (weighted) element normal to nodal normal n
     for (int j=0;j<3;++j)
     {
+      elens(j,i) = elen[j];
+      
 #ifdef CONTACTWNORMAL
-      n()[j]+=wgt*elen[j];
+      n()[j]+=wgt*elen[j]/elenlength;
 #else
-      n()[j]+=elen[j];
-#endif // #ifndef CONTACTWNORMAL
+      n()[j]+=elen[j]/elenlength;
+#endif // #ifdef CONTACTWNORMAL
     }
+    
+    // store some element info for normal derivation
+    elens(3,i) = adjcele->Id();
+    elens(4,i) = elenlength;
   }
   
   // create unit normal vector
@@ -329,9 +338,96 @@ void CONTACT::CNode::BuildAveragedNormal()
   if (length==0.0)
     dserror("ERROR: Nodal normal of length zero, node ID %i",Id());
   else
-    for (int j=0;j<3;++j)
-      n()[j]/=length;
+    for (int j=0;j<3;++j) n()[j]/=length;
   
+  // computation of nodal normal is finished here...!!!
+  
+  //**********************************************************************
+  // Redefine length for directional derivative
+  // (this stpe is necessary due to the fact that the unnormalized
+  // nodal normal is sclaed for making its linearization easier.
+  // In the weighted case, this includes the assumption that the
+  // element Jacobian is CONSTANT, which is exact for linear elements
+  // but an approximation for quadratic elements! Results suggest that
+  // the approximation error is neglectable.
+  // In the unweighted case there is no assumption involved!
+  //**********************************************************************
+  
+#ifdef CONTACTWNORMAL
+  length /= 2;
+#else
+  for (int i=0;i<nseg;++i)
+    length *= elens(4,i);
+#endif // #ifdef CONTACTWNORMAL
+  
+  // build directional derivative of averaged nodal normal
+  DerivAveragedNormal(elens,length);
+ 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Build directional derivative of nodal normal              popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
+                                         double length)
+{
+  // prepare nodal storage map for derivative
+  if ((int)GetDerivN().size()==0) GetDerivN().resize(NumDof());
+  
+  int nseg = NumElement();
+  DRT::Element** adjeles = Elements();
+  
+  // loop over all adjacent elements
+  for (int i=0;i<nseg;++i)
+  {
+    CElement* adjcele = static_cast<CElement*> (adjeles[i]);
+    
+    // build element normal derivative at current node
+    adjcele->DerivNormalAtNode(Id(),elens,GetDerivN());
+  }
+  
+  // normalize directional derivative
+  // (be careful with refernce / copy of derivative maps!)
+  typedef map<int,double>::const_iterator CI;
+  map<int, double>& derivnx = GetDerivN()[0];
+  map<int, double>& derivny = GetDerivN()[1];
+  map<int, double> copyderivnx = GetDerivN()[0];
+  map<int, double> copyderivny = GetDerivN()[1];
+  double nxnx = n()[0] * n()[0];
+  double nxny = n()[0] * n()[1];
+  double nyny = n()[1] * n()[1];
+  
+  // normalize x-components
+  for (CI p=derivnx.begin();p!=derivnx.end();++p)
+  {
+    int col = p->first;
+    double val = p->second;
+    derivnx[col] = (val-nxnx*val-nxny*copyderivny[col])/length;
+  }
+  
+  // normalize y-components
+  for (CI p=derivny.begin();p!=derivny.end();++p)
+  {
+    int col = p->first;
+    double val = p->second;
+    derivny[col] = (val-nxny*copyderivnx[col]-nyny*val)/length;
+  }
+  
+  /*
+#ifdef DEBUG
+  cout << endl << "Node: " << Id() << "  Owner: " << Owner() << endl;
+  cout << "Normal: " << n()[0] << " " << n()[1] << endl;
+  cout << "Deriv: " << endl;
+  cout << "Row dof id: " << Dofs()[0] << endl;;
+  for (CI p=derivnx.begin();p!=derivnx.end();++p)
+    cout << p->first << '\t' << p->second << endl;
+        
+  cout << "Row dof id: " << Dofs()[1] << endl;
+  for (CI p=derivny.begin();p!=derivny.end();++p)
+    cout << p->first << '\t' << p->second << endl;
+#endif // #ifdef DEBUG
+  */
   return;
 }
 

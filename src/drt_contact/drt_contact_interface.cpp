@@ -325,6 +325,11 @@ void CONTACT::Interface::Initialize()
     for (int j=0;j<3;++j)
       node->n()[j]=0.0;
 
+    // reset derivative maps of normal vector
+    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
+      (node->GetDerivN())[j].clear();
+    (node->GetDerivN()).resize(0);
+    
     // reset closest node
     // (FIXME: at the moment we do not need this info. in the next
     // iteration, but it might be helpful for accelerated search!!!)
@@ -374,12 +379,12 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
     idiscret_->SetState(statename, vec);
 
     // Get vec to full overlap
-    RCP<const Epetra_Vector> global = idiscret_->GetState(statename);
+    // RCP<const Epetra_Vector> global = idiscret_->GetState(statename);
 
     // alternative method to get vec to full overlap
-    // Epetra_Vector global(*idiscret_->DofColMap(),false);
-    // LINALG::Export(*vec,global);
-
+    Epetra_Vector global(*idiscret_->DofColMap(),false);
+    LINALG::Export(*vec,global);
+    
     // loop over all nodes to set current displacement
     // (use fully overlapping column map)
     for (int i=0;i<idiscret_->NumMyColNodes();++i)
@@ -392,7 +397,7 @@ void CONTACT::Interface::SetState(const string& statename, const RCP<Epetra_Vect
       for (int j=0;j<numdof;++j)
         lm[j]=node->Dofs()[j];
 
-      DRT::UTILS::ExtractMyValues(*global,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(global,mydisp,lm);
 
       // add mydisp[2]=0 for 2D problems
       if (mydisp.size()<3)
@@ -427,6 +432,11 @@ void CONTACT::Interface::Evaluate()
   if (!Filled() && comm_.MyPID()==0)
       dserror("ERROR: FillComplete() not called on interface %", id_);
 
+#ifdef CONTACTFDNORMAL
+  // FD check of normal derivatives
+  FDCheckDeriv();
+#endif // #ifdef CONTACTFDNORMAL
+      
   // loop over proc's slave nodes of the interface
   // use standard column map to include processor's ghosted nodes
   // use boundary map to include slave side boundary nodes
@@ -436,12 +446,7 @@ void CONTACT::Interface::Evaluate()
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
-/*
-#ifdef DEBUG
-    cnode->Print(cout);
-    cout << endl;
-#endif // #ifdef DEBUG
-*/
+    
     // build averaged normal at each slave node
     cnode->BuildAveragedNormal();
   }
@@ -461,6 +466,10 @@ void CONTACT::Interface::Evaluate()
 #ifndef CONTACTONEMORTARLOOP
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave2D(*selement);
+#else
+#ifdef CONTACTFULLLIN
+    dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
+#endif // #ifdef CONTACTFULLLIN
 #endif // #ifndef CONTACTONEMORTARLOOP
 
     // loop over the contact candidate master elements
@@ -1469,6 +1478,127 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
 }
 
 /*----------------------------------------------------------------------*
+ |  Assemble matrix S containing normal derivatives           popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
+{
+  // nothing to do if no active nodes
+  if (activenodes_==null)
+    return;
+
+  // loop over all active slave nodes of the interface
+  for (int i=0;i<activenodes_->NumMyElements();++i)
+  {
+    int gid = activenodes_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+    
+    if (cnode->Owner() != comm_.MyPID())
+      dserror("ERROR: AssembleS: Node ownership inconsistency!");
+    
+    // prepare assembly
+    vector<map<int,double> > dnmap = cnode->GetDerivN();
+    map<int,double>::iterator colcurr;
+    int colsize = (int)dnmap[0].size();
+    int mapsize = (int)dnmap.size();
+    int row = activen_->GID(i);
+    double* xi = cnode->xspatial();
+        
+    if (mapsize==3) dserror("ERROR: AssembleNT: 3D case not yet implemented!");
+    
+    for (int j=0;j<mapsize-1;++j)
+      if ((int)dnmap[j].size() != (int)dnmap[j+1].size())
+        dserror("ERROR: AssembleS: Column dim. of nodal DerivN-map is inconsistent!");
+         
+    /*********************************************** N_normal_slave *****/
+    //cout << endl << "->AssembleNs for Node ID: " << cnode->Id() << endl;
+    
+    // we need the D-matrix entry of this node
+    double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+    
+    // loop over all derivative maps (=dimensions)
+    for (int j=0;j<mapsize;++j)
+    {
+      int k=0;
+    
+      // loop over all entries of the current derivative map
+      for (colcurr=dnmap[j].begin();colcurr!=dnmap[j].end();++colcurr)
+      {
+        int col = colcurr->first;
+        double val = wii*xi[j]*colcurr->second;
+        //cout << "wii=" << wii << " xi=" << xi[0] << " yi=" << xi[1] << " deriv=" << colcurr->second << endl;
+        //cout << "AssembleNs: " << row << " " << col << " " << val << endl;
+        // do not assemble zeros into s matrix
+        if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+        ++k;
+      }
+
+      if (k!=colsize)
+        dserror("ERROR: AssembleS: k = %i but colsize = %i",k,colsize);
+    }
+    
+    /********************************************** N_normal_master *****/
+    //cout << endl << "->AssembleNm for Node ID: " << cnode->Id() << endl;
+    
+    // we need the M-matrix entries of this node
+    vector<map<int,double> > mmap = cnode->GetM();
+    map<int,double>::iterator mcurr;
+    int mcolsize = (int)mmap[0].size();
+    if (mcolsize%2!=0) dserror("ERROR: AssembleNT: 3D case not yet implemented!");
+    
+    // loop over all master nodes (find adjacent ones to this active node)
+    for (int m=0;m<mnodefullmap_->NumMyElements();++m)
+    {
+      int gid = mnodefullmap_->GID(m);
+      DRT::Node* mnode = idiscret_->gNode(gid);
+      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cmnode = static_cast<CNode*>(mnode);
+      const int* mdofs = cmnode->Dofs();
+      bool hasentry = false;
+      
+      // look for this master node in M-map of the active slave node
+      for (mcurr=mmap[0].begin();mcurr!=mmap[0].end();++mcurr)
+        if ((mcurr->first)==mdofs[0])
+        {
+          hasentry=true;
+          break;
+        }
+      
+      double mik = (mmap[0])[mdofs[0]];
+      double* mxi = cmnode->xspatial();
+      
+      // get out of here, if master node not adjacent or coupling very weak
+      if (!hasentry || abs(mik)<1.0e-12) continue;
+      
+      // compute S-matrix entry of the current active node / master node pair
+      // loop over all derivative maps (=dimensions)
+      for (int j=0;j<mapsize;++j)
+      {
+        int k=0;
+      
+        // loop over all entries of the current derivative map
+        for (colcurr=dnmap[j].begin();colcurr!=dnmap[j].end();++colcurr)
+        {
+          int col = colcurr->first;
+          double val = mik*mxi[j]*colcurr->second;
+          //cout << "mik=" << mik << " mxi=" << mxi[0] << " myi=" << mxi[1] << " deriv=" << colcurr->second << endl;
+          //cout << "AssembleNm: " << row << " " << col << " " << val << endl;
+          // do not assemble zeros into s matrix
+          if (abs(val)>1.0e-12) sglobal.Assemble(-val,row,col);
+          ++k;
+        }
+
+        if (k!=colsize)
+          dserror("ERROR: AssembleS: k = %i but colsize = %i",k,colsize);
+      }  
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  initialize active set (nodes / dofs)                      popp 03/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Interface::InitializeActiveSet(bool initialcontact)
@@ -1799,6 +1929,164 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs)
     comm_.Barrier();
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Finite difference check for normal derivatives             popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::FDCheckDeriv()
+{
+  // global loop to apply FD scheme to all slave dofs (=2*nodes)
+  for (int i=0; i<2*snodefullmap_->NumMyElements();++i)
+  {
+    // reset normal etc.
+    Initialize();
+    
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0;j<idiscret_->NumMyColElements();++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+      //cout << "Element: " << element->Id() << " Nodes: " << (element->Nodes()[0])->Id() << " "
+      //     << (element->Nodes()[1])->Id() << " Area: " << element->Area() << endl;
+    }  
+    
+    // create storage for normals
+    vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
+    vector<double> refny(int(snodecolmapbound_->NumMyElements()));
+    vector<double> newnx(int(snodecolmapbound_->NumMyElements()));
+    vector<double> newny(int(snodecolmapbound_->NumMyElements()));
+    
+    // compute and print all nodal normals / derivatives (reference)
+    for(int j=0; j<snodecolmapbound_->NumMyElements();++j)
+    {
+      int jgid = snodecolmapbound_->GID(j);
+      DRT::Node* jnode = idiscret_->gNode(jgid);
+      if (!jnode) dserror("ERROR: Cannot find node with gid %",jgid);
+      CNode* jcnode = static_cast<CNode*>(jnode);
+
+      // build averaged normal at each slave node
+      jcnode->BuildAveragedNormal();
+      
+      typedef map<int,double>::const_iterator CI;
+      
+      // print reference data only once
+      if (i==0)
+      {
+        cout << endl << "Node: " << jcnode->Id() << "  Owner: " << jcnode->Owner() << endl;
+        cout << "XSpatial: " << jcnode->xspatial()[0] << " YSpatial: " << jcnode->xspatial()[1] << endl;
+        cout << "Normal: " << jcnode->n()[0] << " " << jcnode->n()[1] << endl;
+        cout << "Deriv: " << endl;
+        cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
+        for (CI p=(jcnode->GetDerivN()[0]).begin();p!=(jcnode->GetDerivN()[0]).end();++p)
+          cout << p->first << '\t' << p->second << endl;
+              
+        cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
+        for (CI p=(jcnode->GetDerivN()[1]).begin();p!=(jcnode->GetDerivN()[1]).end();++p)
+          cout << p->first << '\t' << p->second << endl;
+      }
+      
+      // store reference normals
+      refnx[j]=jcnode->n()[0];
+      refny[j]=jcnode->n()[1];
+    }
+    
+    // now fincally get the node we want to apply the FD scheme to
+    int gid = snodefullmap_->GID(i/2);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    CNode* snode = static_cast<CNode*>(node);
+    
+    // apply finite difference scheme
+    cout << "Building FD for Slave Node: " << snode->Id() << " Dof(l): " << i%2
+         << " Dof(g): " << snode->Dofs()[i%2] << endl;
+    
+    // do step forward (modify nodal displacement)
+    double delta = 1e-9;
+    if (i%2==0)
+    {
+      snode->xspatial()[0] += delta;
+      snode->u()[0] += delta;
+    }
+    else
+    {
+      snode->xspatial()[1] += delta;
+      snode->u()[1] += delta;
+    }
+  
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0;j<idiscret_->NumMyColElements();++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+      //cout << "Element: " << element->Id() << " Nodes: " << (element->Nodes()[0])->Id() << " "
+      //     << (element->Nodes()[1])->Id() << " Area: " << element->Area() << endl;
+    }           
+        
+    // compute finite difference derivative
+    for(int k=0; k<snodecolmapbound_->NumMyElements();++k)
+    {
+      int kgid = snodecolmapbound_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      CNode* kcnode = static_cast<CNode*>(knode);
+      
+      // build NEW averaged normal at each slave node
+      kcnode->BuildAveragedNormal();
+            
+      newnx[k]=kcnode->n()[0];
+      newny[k]=kcnode->n()[1];
+            
+      // get reference normal
+      double refn[2] = {0.0, 0.0};
+      refn[0] = refnx[k];
+      refn[1] = refny[k];
+      
+      // get modified normal
+      double newn[2] = {0.0, 0.0};
+      newn[0] = newnx[k];
+      newn[1] = newny[k];
+      
+      // print results (derivatives) to screen
+      if (abs(newn[0]-refn[0])>1e-12 || abs(newn[1]-refn[1])>1e-12)
+      {
+        cout << endl << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
+        cout << "Ref Normal: " << refn[0] << " " << refn[1] << endl;
+        cout << "New Normal: " << newn[0] << " " << newn[1] << endl;
+        cout << "Deriv: " << endl;
+                  
+        if (abs(newn[0]-refn[0])>1e-12)
+        { 
+          double val = (newn[0]-refn[0])/delta;
+          cout << "Row dof id: " << kcnode->Dofs()[0] << endl;
+          cout << snode->Dofs()[i%2] << '\t' << val << endl;
+        }
+      
+        if (abs(newn[1]-refn[1])>1e-12)
+        {
+          double val = (newn[1]-refn[1])/delta;
+          cout << "Row dof id: " << kcnode->Dofs()[1] << endl;
+          cout << snode->Dofs()[i%2] << '\t' << val << endl;
+        }
+      }
+    }
+    
+    // undo finite difference modification
+    if (i%2==0)
+    {
+      snode->xspatial()[0] -= delta;
+      snode->u()[0] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[1] -= delta;
+      snode->u()[1] -= delta;
+    }
+  }
+ 
   return;
 }
 

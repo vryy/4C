@@ -460,6 +460,9 @@ void CONTACT::Manager::Initialize(int numiter)
 	r_       = LINALG::CreateVector(*gactivet_,true);
   }
   
+  // (re)setup globalmatrix containing normal derivatives
+  smatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
+  
 #ifdef CONTACTCHECKHUEEBER
   }
 #endif // #ifdef CONTACTCHECKHUEEBER
@@ -1004,6 +1007,11 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // because there are still problems with the transposed version of
   // MLMultiply if a row has no entries! One day we should use ML...
   
+  // FIXME: Not yet implemented for CONTACTFULLLIN
+#ifdef CONTACTFULLLIN
+  dserror("ERROR: Full linearization not yet implemented for basis trafo case!");
+#endif // #ifdef CONTACTFULLLIN
+  
   // input parameters
   string ctype   = scontact_.get<string>("contact type","none");
   string ftype   = scontact_.get<string>("friction type","none");
@@ -1520,17 +1528,22 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   /**********************************************************************/
   /* build global matrix n with normal vectors of active nodes          */
   /* and global matrix t with tangent vectors of active nodes           */
+  /* and global matrix s with normal derivatives of active nodes        */
   /**********************************************************************/
 #ifdef CONTACTCHECKHUEEBER
   if (numiter==0)
   {
 #endif // #ifdef CONTACTCHECKHUEEBER
   for (int i=0; i<(int)interface_.size(); ++i)
+  {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
+    interface_[i]->AssembleS(*smatrix_);
+  }
     
-  // FillComplete() global matrices N and T
+  // FillComplete() global matrices N, T and S
   nmatrix_->Complete(*gactivedofs_,*gactiven_);
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
+  smatrix_->Complete(*gsdofrowmap_,*gactiven_);
 #ifdef CONTACTCHECKHUEEBER
   }
 #endif // #ifdef CONTACTCHECKHUEEBER
@@ -1843,7 +1856,10 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
 
   // add matrix n to kteffnew
   if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmatrix_,false,1.0,1.0);
-    
+#ifdef CONTACTFULLLIN
+  if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,1.0,1.0);
+#endif // #ifdef CONTACTFULLLIN
+  
   if (ftype=="none")
   {
     // add a submatrices to kteffnew
@@ -2076,8 +2092,11 @@ void CONTACT::Manager::RecoverDispNoBasisTrafo(RCP<Epetra_Vector>& disi)
   { 
     RCP<Epetra_Vector> activejump = rcp(new Epetra_Vector(*gactivedofs_));
     RCP<Epetra_Vector> gtest = rcp(new Epetra_Vector(*gactiven_));
+    RCP<Epetra_Vector> gtest2 = rcp(new Epetra_Vector(*gactiven_));
     LINALG::Export(*incrjump_,*activejump);
     nmatrix_->Multiply(false,*activejump,*gtest);
+    //smatrix_->Multiply(false,*disis,*gtest2);
+    //gtest->Update(1.0,*gtest2,1.0);
     cout << *gtest << endl << *g_ << endl;
     
     RCP<Epetra_Vector> zactive = rcp(new Epetra_Vector(*gactivedofs_));
@@ -2085,7 +2104,6 @@ void CONTACT::Manager::RecoverDispNoBasisTrafo(RCP<Epetra_Vector>& disi)
     LINALG::Export(*z_,*zactive);
     tmatrix_->Multiply(false,*zactive,*zerotest);
     cout << *zerotest << endl;
-    cout << *zactive << endl;
   }
 #endif // #ifdef DEBUG
   // CHECK OF CONTACT BOUNDARY CONDITIONS---------------------------------

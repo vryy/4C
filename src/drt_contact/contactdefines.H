@@ -22,13 +22,15 @@ Maintainer: Alexander Popp
 #define CONTACTWNORMAL           /* flag for weighted nodal normal calc. */
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
 //#define CONTACTONEMORTARLOOP   /* flag for computation of D,M matrices */
+//#define CONTACTFULLLIN         /* flag for full linearization of contact */
 
 /************************************************************************/
 /* Debugging options                                                    */
 /************************************************************************/
 
 //#define CONTACTDIMOUTPUT       /* flag for output of global matrix dim. */
-//#define CONTACTCHECKHUEEBER    /* flag for S.Hüeber's quad. conv. check */ 
+//#define CONTACTCHECKHUEEBER    /* flag for S.Hüeber's quad. conv. check */
+//#define CONTACTFDNORMAL        /* flag for FD check of normal derivative */
 
 /************************************************************************/
 /* Contact algorithm parameters                                         */

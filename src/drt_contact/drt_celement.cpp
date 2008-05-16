@@ -218,7 +218,7 @@ int CONTACT::CElement::GetLocalNodeId(int nid)
 /*----------------------------------------------------------------------*
  |  Build element normal at node                              popp 12/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CElement::BuildNormalAtNode(int nid, vector<double>& n)
+void CONTACT::CElement::BuildNormalAtNode(int nid, vector<double>& n, double& length)
 {
   if (n.size()!=3) n.resize(3);
   
@@ -230,7 +230,26 @@ void CONTACT::CElement::BuildNormalAtNode(int nid, vector<double>& n)
   LocalCoordinatesOfNode(lid,xi);
   
   // build an outward unit normal at xi and return it
-  ComputeNormalAtXi(xi,n);
+  ComputeNormalAtXi(xi,n,length);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Build element normal derivative at node                   popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CElement::DerivNormalAtNode(int nid, Epetra_SerialDenseMatrix& elens,
+                                          vector<map<int,double> >& derivn)
+{
+  // find this node in my list of nodes and get local numbering
+  int lid = GetLocalNodeId(nid);
+  
+  // get local coordinates for this node
+  double xi[2];
+  LocalCoordinatesOfNode(lid,xi);
+  
+  // build normal derivative at xi and return it
+  DerivNormalAtXi(xi,elens,derivn);
 
   return;
 }
@@ -238,7 +257,7 @@ void CONTACT::CElement::BuildNormalAtNode(int nid, vector<double>& n)
 /*----------------------------------------------------------------------*
  |  Compute element normal at loc. coord. xi                  popp 12/07|
  *----------------------------------------------------------------------*/
-void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n)
+void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n, double& length)
 {
   int nnodes = NumNode();
   vector<double> val(nnodes);
@@ -265,16 +284,103 @@ void CONTACT::CElement::ComputeNormalAtXi(double* xi, vector<double>& n)
   n[1] =-g[0];
   n[2] = 0.0;
   
-  double length = sqrt(n[0]*n[0]+n[1]*n[1]);
+  length = sqrt(n[0]*n[0]+n[1]*n[1]);
   if (length==0.0)
     dserror("ERROR: ComputeNormalAtXi computes normal of length zero!");
   
-  // create unit normal (division by length)
-  for (int i=0;i<3;++i)
-    n[i]/=length;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute element normal derivative at loc. coord. xi       popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CElement::DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& elens,
+                                        vector<map<int,double> >& derivn)
+{
+  int nnodes = NumNode();
+  DRT::Node** mynodes = Nodes();
+  if (!mynodes) dserror("ERROR: ComputeNormalAtXi: Null pointer!");
+  
+  vector<double> val(nnodes);
+  vector<double> deriv(nnodes);
+  vector<double> g(3);
+  
+  // get shape function values and derivatives at xi
+  EvaluateShape1D(xi, val, deriv, nnodes);
+
+  // get coordinates of element nodes
+  LINALG::SerialDenseMatrix coord(3,nnodes);
+  
+  // which column of elens contains this element's normal?
+  int col = 2;
+  for (int i=0;i<elens.N();++i)
+  {
+    if (elens(3,i)==Id())
+    {
+      col=i;
+      break;
+    }
+  }
+  if (col>1) dserror("ERROR: Something wrong with columns of elens");
+  
+  // ... and which does not?
+  int ncol = 0;
+  if (col==0) ncol=1;
+  else ncol=0;
+        
+  // create directional derivative
+  for (int i=0;i<nnodes;++i)
+  {
+    CNode* mycnode = static_cast<CNode*> (mynodes[i]);
+    if (!mycnode) dserror("ERROR: ComputeNormalAtXi: Null pointer!");
+    
+    map<int,double>& derivnx = derivn[0];
+    map<int,double>& derivny = derivn[1];
+    
+    // case1: weighted nodal normal
+#ifdef CONTACTWNORMAL
+    derivnx[mycnode->Dofs()[0]] +=  0;
+    derivnx[mycnode->Dofs()[1]] +=  deriv[i];
+    derivny[mycnode->Dofs()[0]] += -deriv[i];
+    derivny[mycnode->Dofs()[1]] +=  0;
+#else
+    // case2: unweighted nodal normal (1 adjacent element)
+    if (elens.N()==1)
+    {
+      derivnx[mycnode->Dofs()[0]] +=  0;
+      derivnx[mycnode->Dofs()[1]] +=  deriv[i];
+      derivny[mycnode->Dofs()[0]] += -deriv[i];
+      derivny[mycnode->Dofs()[1]] +=  0;
+    }
+    // case3: unweighted nodal normal (2 adjacent elements)
+    else if (elens.N()==2)
+    {
+      double lcol = 0.0;
+      double lncol = 0.0;
+     
+      for (int dim=0;dim<3;++dim)
+      {
+        lcol  += elens(dim,col)*elens(dim,col);
+        lncol += elens(dim,ncol)*elens(dim,ncol);
+      }
+      
+      lcol  = sqrt(lcol);
+      lncol = sqrt(lncol);
+      
+      derivnx[mycnode->Dofs()[0]] += -(elens(0,ncol)*elens(1,col)/lcol)*deriv[i];
+      derivnx[mycnode->Dofs()[1]] +=  (elens(0,col)*elens(0,ncol)/lcol+lncol)*deriv[i];
+      derivny[mycnode->Dofs()[0]] += -(elens(1,col)*elens(1,ncol)/lcol+lncol)*deriv[i];
+      derivny[mycnode->Dofs()[1]] +=  (elens(0,col)*elens(1,ncol)/lcol)*deriv[i];
+    }
+    else
+      dserror("ERROR: ComputeNormalAtXi: A 2D CNode can only have 1 or 2 adjacent CElements");
+    
+#endif // #ifdef CONTACTWNORMAL
+  }
   
   return;
 }
+
 /*----------------------------------------------------------------------*
  |  Get nodal coordinates of the element                      popp 01/08|
  *----------------------------------------------------------------------*/
