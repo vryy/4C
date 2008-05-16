@@ -254,10 +254,11 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   "has 45107 Nodes"<<endl<<
   "\"*ns0=\"CONDITION\""<<endl<<
   "sectionname=\"DESIGN SURF DIRICH CONDITIONS\""<<endl<<
-  "description=\"E 1 - 1 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  1 0 0 0 0 0\""
+  "description=\"1 1 1 0 0 0 2.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  1 0 0 0 0 0\""
   <<endl<<endl;
 
   defaultbc << "MIND that you can specify a condition also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'"<<endl;
+  defaultbc << "The 'E num' in the dat-file depends on the order of the specification below" << endl;
   defaultbc<<"------------------------------------------------BCSPECS"<<endl<<endl;
 
   // write ElementBlocks with specification proposal

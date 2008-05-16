@@ -52,6 +52,10 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
   const int markerlength=3;
   const string marker("*");
   
+  // necessary counters
+  int E_id = 0; //the 'E num -' in the datfile
+  int ndp = 0; int ndl = 0; int nds = 0; int ndv = 0;
+  
   found = allconds.find_first_of(marker);  
   while (found != string::npos){
     int startpos=found;
@@ -83,6 +87,17 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
         eledefs.push_back(edef);
       } else if (type.compare("CONDITION")==0){
         EXODUS::cond_def cdef = EXODUS::ReadCdef(mesh_entity,id,actcond);
+        switch (cdef.gtype)
+        {
+        case DRT::Condition::Point:  ++ndp; E_id = ndp;break;
+        case DRT::Condition::Line:   ++ndl; E_id = ndl;break;
+        case DRT::Condition::Surface:++nds; E_id = nds;break;
+        case DRT::Condition::Volume: ++ndv; E_id = ndv;break;
+        case DRT::Condition::NoGeom:        E_id = 0;  break; 
+        default:
+          dserror("geometry type unspecified");
+        }
+        cdef.e_id = E_id;
         condefs.push_back(cdef);
       } else {
         cout << "Undefined type for eb"<<id<<": "<<type<<endl;
@@ -90,6 +105,17 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
       }
     } else if (mesh_entity.compare(nsmarker)==0){
       EXODUS::cond_def cdef = EXODUS::ReadCdef(mesh_entity,id,actcond);
+      switch (cdef.gtype)
+      {
+      case DRT::Condition::Point:  ++ndp; E_id = ndp;break;
+      case DRT::Condition::Line:   ++ndl; E_id = ndl;break;
+      case DRT::Condition::Surface:++nds; E_id = nds;break;
+      case DRT::Condition::Volume: ++ndv; E_id = ndv;break;
+      case DRT::Condition::NoGeom:        E_id = 0;  break; 
+      default:
+        dserror("geometry type unspecified");
+      }
+      cdef.e_id = E_id;
       condefs.push_back(cdef);
     } else if (mesh_entity.compare(ssmarker)==0){
       EXODUS::cond_def cdef = EXODUS::ReadCdef(mesh_entity,id,actcond);
@@ -144,27 +170,27 @@ EXODUS::cond_def EXODUS::ReadCdef(const string& mesh_entity,const int id, const 
   left = actcond.find("description=\"");  // 13 chars
   right = actcond.find_first_of("\"",left+13);
   string description = actcond.substr(left+13,right-(left+13));
-  string description_woE = description.substr(description.find_first_of("-")+1,description.size());
-  cdef.desc = description_woE;
+  cdef.desc = description;
 
   // figure out geometry type
   cdef.gtype = DRT::Condition::NoGeom;  // default
   size_t found = secname.find("POINT");
-  if (found!=string::npos) cdef.gtype = DRT::Condition::Point;
+  if (found!=string::npos){
+    cdef.gtype = DRT::Condition::Point;
+    return cdef;
+  }
   found = secname.find("LINE");
-  if (found!=string::npos) cdef.gtype = DRT::Condition::Line;
+  if (found!=string::npos){
+    cdef.gtype = DRT::Condition::Line;
+    return cdef;
+  }
   found = secname.find("SURF");
-  if (found!=string::npos) cdef.gtype = DRT::Condition::Surface;
+  if (found!=string::npos){
+    cdef.gtype = DRT::Condition::Surface;
+    return cdef;
+  }
   found = secname.find("VOL");
   if (found!=string::npos) cdef.gtype = DRT::Condition::Volume;
-  
-  // figure out number of 'E' topo-entity for datfile
-  left = description.find_first_of("E");
-  right = description.find_first_of("-");
-  string Enum = description.substr(left+1,right-(left+1));
-  // convert string to int
-  istringstream Enumstream(Enum);
-  Enumstream >> cdef.e_id;
   
   return cdef;
 }

@@ -121,7 +121,7 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
     comment = headstring.find("//",comment);
   }
   
-  dat<<headstring;
+  dat<<headstring<<endl;
   return;
 }
 
@@ -167,23 +167,21 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
   for (i_cond = condefs.begin(); i_cond != condefs.end(); ++i_cond)
     (count_cond[(*i_cond).sec]).push_back((*i_cond).id);
   
-  int ndp = 0; int ndl = 0; int nds = 0; int ndv = 0;
-  
   for (unsigned int i=0; i<(*condlist).size(); ++i)
   {
     size_t linelength = 66;
     string sectionname = (*condlist)[i]->SectionName();
     allsectionnames.push_back(sectionname);
     string dash(linelength-sectionname.size(),'-');
-    dat << dash <<sectionname << endl;
+    dat << dash << sectionname << endl;
     DRT::Condition::GeometryType gtype = (*condlist)[i]->GeometryType();
     string geo;
     switch (gtype)
     {
     case DRT::Condition::Point:   geo = "DPOINT "; break;
-    case DRT::Condition::Line:    geo = "DLINE  ";  break;
-    case DRT::Condition::Surface: geo = "DSURF  ";  break;
-    case DRT::Condition::Volume:  geo = "DVOL   ";   break;
+    case DRT::Condition::Line:    geo = "DLINE  "; break;
+    case DRT::Condition::Surface: geo = "DSURF  "; break;
+    case DRT::Condition::Volume:  geo = "DVOL   "; break;
     default:
       dserror("geometry type unspecified");
     }
@@ -340,18 +338,18 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   
   int ele = 1; // BACI-Dat eles start with 1
 
-  // print structure elements
-  dat << "------------------------------------------------STRUCTURE ELEMENTS" << endl;
-  for(i_et=strus.begin();i_et!=strus.end();++i_et)
+  // print fluid elements
+  dat << "----------------------------------------------------FLUID ELEMENTS" << endl;
+  for(i_et=fluids.begin();i_et!=fluids.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
     EXODUS::DatEles(eb,acte,ele,dat);
   }
 
-  // print fluid elements
-  dat << "----------------------------------------------------FLUID ELEMENTS" << endl;
-  for(i_et=fluids.begin();i_et!=fluids.end();++i_et)
+  // print structure elements
+  dat << "------------------------------------------------STRUCTURE ELEMENTS" << endl;
+  for(i_et=strus.begin();i_et!=strus.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
