@@ -32,7 +32,7 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
   if (!dat) dserror("failed to open file: %s", datfile.c_str());
 
   // write dat-file intro
-  EXODUS::WriteDatIntro(mymesh,dat);
+  EXODUS::WriteDatIntro(headfile,mymesh,dat);
   
   // write "header"
   EXODUS::WriteDatHead(headfile,dat);
@@ -63,7 +63,7 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
 }
 
 
-void EXODUS::WriteDatIntro(const EXODUS::Mesh& mymesh, ostream& dat)
+void EXODUS::WriteDatIntro(const string& headfile, const EXODUS::Mesh& mymesh, ostream& dat)
 {
   dat <<"==================================================================\n" \
         "        General Data File CCARAT\n" \
@@ -74,11 +74,31 @@ void EXODUS::WriteDatIntro(const EXODUS::Mesh& mymesh, ostream& dat)
   dat << "ELEMENTS " << '\t' << mymesh.GetNumEle() << endl;
   dat << "NODES    " << '\t' << mymesh.GetNumNodes() << endl;
   dat << "DIM      " << '\t' << mymesh.GetNumDim() << endl;
-  dat << "MATERIALS" << '\t' << "1" << endl;
+  int nummat = EXODUS::CountMat(headfile);
+  dat << "MATERIALS" << '\t' << nummat << endl;
   dat << "NUMDF    " << '\t' << "6" << endl;
 
   return;
 }
+
+int EXODUS::CountMat(const string& headfile){
+  stringstream head;
+  const char *headfilechar;
+  headfilechar = headfile.c_str();
+  ifstream header(headfilechar, ifstream::in);
+  while (header.good()) head << (char) header.get();
+  //while (!header.eof()) head << (char) header.get();
+  header.close();
+  string headstring = head.str();
+  size_t mat_section = headstring.find("MATERIALS");
+  int counter = 0;
+  while (mat_section != string::npos){
+    mat_section = headstring.find("MAT ",mat_section+4);
+    counter++;
+  }
+  return counter-1;
+}
+
 
 void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
 {
@@ -90,8 +110,17 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
   //while (!header.eof()) head << (char) header.get();
   header.close();
   string headstring = head.str();
+  size_t size_section = headstring.find("-------------------------------------------------------PROBLEM SIZE");
+  size_t typ_section = headstring.find("--------------------------------------------------------PROBLEM TYP");
+  headstring.erase(size_section,typ_section-size_section);
   headstring.erase(headstring.end()-1);
-
+  
+  size_t comment = headstring.find("//");
+  while (comment != string::npos){
+    headstring.erase(comment,headstring.find("\n",comment)-comment+1);
+    comment = headstring.find("//",comment);
+  }
+  
   dat<<headstring;
   return;
 }
@@ -108,7 +137,7 @@ void EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs, ostream& da
     else if (acte.gtype == DRT::Condition::Surface)  nds++;
     else if (acte.gtype == DRT::Condition::Line)     ndl++;
     else if (acte.gtype == DRT::Condition::Point)    ndp++;
-    else if (acte.gtype == DRT::Condition::NoGeom) break;
+    else if (acte.gtype == DRT::Condition::NoGeom);
     else dserror ("Cannot identify Condition GeometryType");
   }
   dat << "------------------------------------------------DESIGN DESCRIPTION" << endl;
@@ -138,6 +167,8 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
   for (i_cond = condefs.begin(); i_cond != condefs.end(); ++i_cond)
     (count_cond[(*i_cond).sec]).push_back((*i_cond).id);
   
+  int ndp = 0; int ndl = 0; int nds = 0; int ndv = 0;
+  
   for (unsigned int i=0; i<(*condlist).size(); ++i)
   {
     size_t linelength = 66;
@@ -164,7 +195,7 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
         EXODUS::cond_def actcon = condefs[*i_c];
         string name = (mymesh.GetNodeSet(actcon.id).GetName());
         string pname = (mymesh.GetNodeSet(actcon.id).GetPropName());
-        if((name!="") && (pname!="none")) dat << "// " << name.c_str() << " " << pname.c_str() << endl;
+        if((name!="") && (pname.c_str()!="none")) dat << "// " << name.c_str() << " " << pname.c_str() << endl;
         dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
       }
     }
@@ -188,7 +219,7 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
     else if (acte.gtype==DRT::Condition::Line) dlines.push_back(acte);
     else if (acte.gtype==DRT::Condition::Surface) dsurfs.push_back(acte);
     else if (acte.gtype==DRT::Condition::Volume) dvols.push_back(acte);
-    else if (acte.gtype==DRT::Condition::NoGeom) break;
+    else if (acte.gtype==DRT::Condition::NoGeom);
     else dserror ("Cannot identify Condition GeometryType");
   }
   
@@ -208,7 +239,7 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
     const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
     set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
-      dat << "NODE    " << *i << " " << "DNODE " << acte.e_id << endl;
+      dat << "NODE    " << *i << " " << "DLINE " << acte.e_id << endl;
     }
   }
   dat << "-----------------------------------------------DSURF-NODE TOPOLOGY"<<endl;
@@ -300,6 +331,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
     else if (acte.sec.compare("ALE")==0) ales.push_back(acte);
     else if (acte.sec.compare("LEVELSET")==0) levels.push_back(acte);
     else if (acte.sec.compare("TRANSPORT")==0) transport.push_back(acte);
+    else if (acte.sec.compare("")==0);
     else{
       cout << "Unknown ELEMENT sectionname in eb" << acte.id << ": '" << acte.sec << "'!" << endl;
       dserror("Unknown ELEMENT sectionname");

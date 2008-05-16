@@ -159,8 +159,19 @@ int main(
       // get valid input parameters
       Teuchos::RCP<const Teuchos::ParameterList> list = DRT::INPUT::ValidParameters();
 
-      // write default .dat header into file 
-      DRT::INPUT::PrintDatHeader(defaulthead,*list);
+      // write default .dat header into file
+//      Teuchos::ParameterList empty;
+//      Teuchos::ParameterList size = list->sublist("PROBLEM SIZE");
+//      cout << size << " hello " << endl;
+//      DRT::INPUT::PrintDatHeader(defaulthead,*list);
+      stringstream prelimhead;
+      DRT::INPUT::PrintDatHeader(prelimhead,*list);
+      string headstring = prelimhead.str();
+      size_t size_section = headstring.find("-------------------------------------------------------PROBLEM SIZE");
+      size_t typ_section = headstring.find("--------------------------------------------------------PROBLEM TYP");
+      headstring.erase(size_section,typ_section-size_section);
+      defaulthead << headstring;
+
 
       defaulthead <<
       "---------------------------------------------------------MATERIALS"<<endl<<
@@ -169,7 +180,10 @@ int main(
       "------------------------------------------------------------CURVE2"<<endl<<
       "------------------------------------------------------------CURVE3"<<endl<<
       "------------------------------------------------------------CURVE4"<<endl<<
-      "------------------------------------------------------------FUNCT1"<<endl;
+      "------------------------------------------------------------FUNCT1"<<endl<<
+      "------------------------------------------------------------FUNCT2"<<endl<<
+      "------------------------------------------------------------FUNCT3"<<endl<<
+      "------------------------------------------------------------FUNCT4"<<endl;
 
       // close default header file
       if (defaulthead.is_open()) defaulthead.close();
