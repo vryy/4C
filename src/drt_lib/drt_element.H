@@ -801,23 +801,23 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
     string s = "";
     switch (distype)
     {
-    case DRT::Element::quad4:      s = "quad4";  break;
-    case DRT::Element::quad8:      s = "quad8";  break;
-    case DRT::Element::quad9:      s = "quad9";  break;
-    case DRT::Element::tri3:       s = "tri3";  break;
-    case DRT::Element::tri6:       s = "tri6";  break;
-    case DRT::Element::hex8:       s = "hex8";  break;
-    case DRT::Element::hex20:      s = "hex20";  break;
-    case DRT::Element::hex27:      s = "hex27";  break;
-    case DRT::Element::tet4:       s = "tet4";  break;
-    case DRT::Element::tet10:      s = "tet10";  break;
-    case DRT::Element::ctet10:     s = "ctet10";  break;
-    case DRT::Element::wedge6:     s = "wedge6";  break;
-    case DRT::Element::wedge15:    s = "wedge15";  break;
-    case DRT::Element::pyramid5:   s = "pyramid5";  break;
-    case DRT::Element::line2:      s = "line2";  break;
-    case DRT::Element::line3:      s = "line3";  break;
-    case DRT::Element::point1:     s = "point1";  break;
+    case DRT::Element::quad4:      s = "QUAD4";  break;
+    case DRT::Element::quad8:      s = "QUAD8";  break;
+    case DRT::Element::quad9:      s = "QUAD9";  break;
+    case DRT::Element::tri3:       s = "TRI3";  break;
+    case DRT::Element::tri6:       s = "TRI6";  break;
+    case DRT::Element::hex8:       s = "HEX8";  break;
+    case DRT::Element::hex20:      s = "HEX20";  break;
+    case DRT::Element::hex27:      s = "HEX27";  break;
+    case DRT::Element::tet4:       s = "TET4";  break;
+    case DRT::Element::tet10:      s = "TET10";  break;
+    case DRT::Element::ctet10:     s = "CTET10";  break;
+    case DRT::Element::wedge6:     s = "WEDGE6";  break;
+    case DRT::Element::wedge15:    s = "WEDGE15";  break;
+    case DRT::Element::pyramid5:   s = "PYRAMID5";  break;
+    case DRT::Element::line2:      s = "LINE2";  break;
+    case DRT::Element::line3:      s = "LINE3";  break;
+    case DRT::Element::point1:     s = "POINT1";  break;
     default:
         dserror("no string for this distype defined!");
     };
