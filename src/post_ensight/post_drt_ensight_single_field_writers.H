@@ -209,14 +209,12 @@ public:
             PostField* field,           ///< Field to be plotted
             PostField* submersedfield,     ///< intersecting field (for fsi)
             string filename) :
-        EnsightWriter(field, filename),
-        submersedfield_(submersedfield),
-        submerseddis_(submersedfield->discretization())
+        EnsightWriter(field, filename)
     {
       vector<string> conditions_to_copy;
       conditions_to_copy.push_back("FSICoupling");
       conditions_to_copy.push_back("XFEMCoupling");
-      cutterdis_ = DRT::UTILS::CreateDiscretizationFromCondition(submersedfield->discretization(), "FSICoupling", "Boundary", "BELE3", conditions_to_copy);              
+      cutterdis_ = DRT::UTILS::CreateDiscretizationFromCondition(submersedfield->discretization(), "XFEMCoupling", "Boundary", "BELE3", conditions_to_copy);              
     }
 
     //! write the whole thing
@@ -293,9 +291,7 @@ protected:
             const RCP<XFEM::DofManager> dofman
             ) const;
 
-    PostField* submersedfield_;
     Teuchos::RCP<DRT::Discretization>  cutterdis_;
-    Teuchos::RCP<DRT::Discretization>  submerseddis_;
 };
 
 

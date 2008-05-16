@@ -172,7 +172,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
             xfemdis_(ih->xfemdis())
 {
     XFEM::createDofMap(
-            ih->xfemdis(), ih->cutterdis(), ih->submerseddis(),
+            ih->xfemdis(), ih->cutterdis(),
             ih->elementalDomainIntCells(),
             ih->elementalBoundaryIntCells(),
             nodalDofSet_, elementalDofs_);

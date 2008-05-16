@@ -235,6 +235,13 @@ void xdyn_fluid_drt()
      iop == timeint_bdf2
     )
   {
+    
+    vector<string> conditions_to_copy;
+    conditions_to_copy.push_back("XFEMCoupling");
+    Teuchos::RCP<DRT::Discretization> boundarydis = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "XFEMCoupling", "Boundary", "BELE3", conditions_to_copy);
+    dsassert(boundarydis->NumGlobalNodes() > 0, "empty discretization detected. XFEMCoupling condition applied?");
+    
+    
     // -----------------------------------------------------------------
     // set additional parameters in list for OST/BDF2/stationary scheme
     // -----------------------------------------------------------------
@@ -277,18 +284,14 @@ void xdyn_fluid_drt()
         {
           startfuncno=-1;
         }
-        fluidimplicit.SetInitialFlowField(soliddis,soliddis,init,startfuncno);
+        fluidimplicit.SetInitialFlowField(boundarydis,init,startfuncno);
       }
     }
 
     fluidtimeparams.set<FILE*>("err file",allfiles.out_err);
 
     // call time-integration (or stationary) scheme
-    vector<string> conditions_to_copy;
-    conditions_to_copy.push_back("XFEMCoupling");
-    Teuchos::RCP<DRT::Discretization> boundarydis = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "XFEMCoupling", "Boundary", "BELE3", conditions_to_copy);
-    dsassert(boundarydis->NumGlobalNodes() > 0, "empty discretization detected. XFEMCoupling condition applied?");
-    fluidimplicit.Integrate(boundarydis,soliddis);
+    fluidimplicit.Integrate(boundarydis);
 
     // do result test if required
     DRT::ResultTestManager testmanager(fluiddis->Comm());

@@ -27,7 +27,6 @@ using namespace std;
 void XFEM::createDofMap(
         const RCP<DRT::Discretization>            xfemdis,
         const RCP<DRT::Discretization>            cutterdis,
-        const RCP<DRT::Discretization>            submerseddis,
         const std::map<int, XFEM::DomainIntCells >&    elementDomainIntCellMap,
         const std::map<int, XFEM::BoundaryIntCells >&  elementBoundaryIntCellMap,
         std::map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,
@@ -124,7 +123,17 @@ void XFEM::createDofMap(
             const int* nodeidptrs = actele->NodeIds();
             const BlitzVec3 nodalpos(toBlitzArray(actele->Nodes()[0]->X()));
             
-            const bool in_solid = XFEM::PositionWithinDiscretization(submerseddis, nodalpos);
+            map<int,bool> posInCondition;
+            PositionWithinCondition(nodalpos,cutterdis,posInCondition);
+            bool in_solid = false;
+            for (map<int,bool>::const_iterator p = posInCondition.begin(); p != posInCondition.end(); ++p)
+            {
+              if (p->second == true)
+              {
+                in_solid = true;
+                break;
+              }
+            }
             
             if (not in_solid)
             {

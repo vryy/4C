@@ -20,11 +20,9 @@ Maintainer: Axel Gerstenberger
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::InterfaceHandle(
 		const RCP<DRT::Discretization>        xfemdis, 
-		const RCP<DRT::Discretization>        cutterdis,
-		const RCP<DRT::Discretization>        submerseddis) :
+		const RCP<DRT::Discretization>        cutterdis) :
 			xfemdis_(xfemdis),
-			cutterdis_(cutterdis),
-			submerseddis_(submerseddis)
+			cutterdis_(cutterdis)
 {
 	elementalDomainIntCells_.clear();
 	elementalBoundaryIntCells_.clear();

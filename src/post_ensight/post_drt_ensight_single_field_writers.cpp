@@ -274,8 +274,7 @@ void XFluidEnsightWriter::WriteGeoFileOneTimeStep(
 {
   // initial Intersection
   RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(field_->discretization(),
-                                                                submersedfield_->discretization(),
-                                                                submersedfield_->discretization()));
+                                                                cutterdis_));
   // apply enrichments
   RCP<XFEM::DofManager> initialdofmanager = rcp(new XFEM::DofManager(ih));
 
@@ -499,8 +498,7 @@ void XFluidEnsightWriter::WriteResult(
 {
   // Intersection
   RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(field_->discretization(),
-                                                                submersedfield_->discretization(),
-                                                                submersedfield_->discretization()));
+                                                                cutterdis_));
   // apply enrichments
   RCP<XFEM::DofManager> dofman = rcp(new XFEM::DofManager(ih));
 

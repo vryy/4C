@@ -211,7 +211,7 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
 {
 
   cout << "XFluidImpl::NonlinearSolve()" << endl;
-  fluid_.NonlinearSolve(boundarydis_,soliddis_,idispcol_,ivelcol_,itruerescol_);
+  fluid_.NonlinearSolve(boundarydis_,idispcol_,ivelcol_,itruerescol_);
 }
 
 

@@ -92,8 +92,7 @@ public:
 
   */
   void Integrate(
-          RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-          RCP<DRT::Discretization> submerseddiscret   ///< domain discretization used to calculate enrichment values (to be removed)
+          RCP<DRT::Discretization> cutterdiscret
           );
 
   /*!
@@ -101,8 +100,7 @@ public:
 
   */
   void TimeLoop(
-          RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-          RCP<DRT::Discretization> submerseddiscret   ///< domain discretization used to calculate enrichment values (to be removed)
+          RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
           );
 
   /*!
@@ -110,8 +108,7 @@ public:
 
   */
   void SolveStationaryProblem(
-          RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-          RCP<DRT::Discretization> submerseddiscret   ///< domain discretization used to calculate enrichment values (to be removed)
+          RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
           );
 
   /// setup the variables to do a new time step
@@ -127,7 +124,6 @@ public:
   */
   void NonlinearSolve(
           RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-          RCP<DRT::Discretization> submerseddiscret,  ///< domain discretization used to calculate enrichment values (to be removed)
           RCP<Epetra_Vector>       idispcol,          ///< interface displacement with coloumn distribution 
           RCP<Epetra_Vector>       ivelcol,           ///< interface velocity with coloumn distribution
           RCP<Epetra_Vector>       itruerescol        ///< interface residual with coloumn distribution
@@ -137,8 +133,7 @@ public:
   \brief compute Interface
   */
   void ComputeInterfaceAndSetDOFs(
-          RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-          RCP<DRT::Discretization> submerseddiscret   ///< domain discretization used to calculate enrichment values (to be removed)
+          RCP<DRT::Discretization> cutterdiscret
           );
 
   /*!
@@ -146,8 +141,7 @@ public:
 
   */
   void LinearSolve(
-          RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-          RCP<DRT::Discretization> submerseddiscret   ///< domain discretization used to calculate enrichment values (to be removed)
+          RCP<DRT::Discretization> cutterdiscret     ///< surface discretization used to intersect fluid elements
           );
 
   /*!
@@ -178,7 +172,6 @@ public:
   */
   void SetInitialFlowField(
           RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-          RCP<DRT::Discretization> submerseddiscret,  ///< domain discretization used to calculate enrichment values (to be removed)
     int whichinitialfield,
     int startfuncno
     );

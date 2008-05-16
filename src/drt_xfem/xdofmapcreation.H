@@ -35,7 +35,6 @@ namespace XFEM
 void createDofMap(
         const RCP<DRT::Discretization>                    xfemdis,
         const RCP<DRT::Discretization>                    cutterdis,
-        const RCP<DRT::Discretization>                    submerseddis,
         const std::map<int, DomainIntCells >&             elementDomainIntCellMap,
         const std::map<int, BoundaryIntCells >&           elementBoundaryIntCellMap,
         std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,        ///< the map for nodal dofs

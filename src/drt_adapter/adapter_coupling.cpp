@@ -124,35 +124,6 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupCouplingCheap(const DRT::Discretization& masterdis,
-                                  const DRT::Discretization& slavedis,
-                                  const Epetra_Map& masternodes,
-                                  const Epetra_Map& slavenodes)
-{
-  vector<int> mastervect(masternodes.MyGlobalElements(),
-                         masternodes.MyGlobalElements() + masternodes.NumMyElements());
-  vector<int> slavevect(slavenodes.MyGlobalElements(),
-                        slavenodes.MyGlobalElements() + slavenodes.NumMyElements());
-  vector<int> permslavenodes(mastervect.size());
-
-  MatchNodesCheap(masterdis, slavedis, mastervect, permslavenodes, slavevect);
-
-  // Epetra maps in original distribution
-
-  Teuchos::RCP<Epetra_Map> masternodemap =
-    rcp(new Epetra_Map(-1, mastervect.size(), &mastervect[0], 0, masterdis.Comm()));
-
-  Teuchos::RCP<Epetra_Map> slavenodemap =
-    rcp(new Epetra_Map(slavenodes));
-
-  Teuchos::RCP<Epetra_Map> permslavenodemap =
-    rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
-
-  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
                                const DRT::Discretization& slavedis,
                                std::vector<int>& masternodes,
@@ -202,17 +173,6 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
   swap(masternodes,patchedmasternodes);
 }
 
-void ADAPTER::Coupling::MatchNodesCheap(const DRT::Discretization& masterdis,
-                               const DRT::Discretization& slavedis,
-                               const std::vector<int>& masternodes,
-                               std::vector<int>& permslavenodes,
-                               const std::vector<int>& slavenodes)
-{
-  for (unsigned i=0; i<masternodes.size(); ++i)
-  {
-      permslavenodes[i] = masternodes[i];
-  }
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
