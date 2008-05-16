@@ -48,10 +48,11 @@ using namespace DRT::UTILS;
  |          It returns a list of intersected xfem elements              |
  |          and their integrations cells.                               |
  *----------------------------------------------------------------------*/
-void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
-                                        const RCP<DRT::Discretization>  cutterdis,
+void Intersection::computeIntersection( const RCP<DRT::Discretization>      xfemdis,
+                                        const RCP<DRT::Discretization>      cutterdis,
+                                        const std::map<int,BlitzVec3>&      currentcutterpositions,
                                         map< int, DomainIntCells >&   			domainintcells,
-                                        map< int, BoundaryIntCells >&   		boundaryintcells  ///< int is the xfem element global id
+                                        map< int, BoundaryIntCells >&   		boundaryintcells
                                         )
 {
 
@@ -59,21 +60,19 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
     timestepcounter_++;
 
     bool xfemIntersection;
-    vector< DRT::Condition * >      xfemConditions;
-    set< DRT::Element* > 		    cutterElements;
-
-    map< int, set< DRT::Element* > >       cutterElementMap;
+    
 
     countMissedPoints_ = 0;
 
     const double t_start = ds_cputime();
 
-	//debugXFEMConditions(cutterdis);
-    // obtain vector of pointers to all xfem conditions of all cutter discretizations
+    //debugXFEMConditions(cutterdis);
+    // obtain vector of pointers to all xfem conditions of the cutter discretization
+    vector< DRT::Condition * >      xfemConditions;
     cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
 
     if(xfemConditions.size()==0)
-        cout << "number of fsi xfem conditions = 0" << endl;
+        cout << "number of XFEMCoupling conditions = 0" << endl;
 
     //  k < xfemdis->NumMyColElements()
     for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
@@ -82,15 +81,17 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
         DRT::Element* xfemElement = xfemdis->lColElement(k);
         initializeXFEM(k, xfemElement);
 
-        const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement);
+        std::set< DRT::Element* >        cutterElements;
+
+        // initial positions, since the xfem element does not move
+        const BlitzMat xyze_xfem(DRT::UTILS::PositionArrayBlitz(xfemElement));
+        
+        const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfem);
 
         startPointList();
 
-        //printf("size of xfem condition = %d\n", c);
-        int condCounter = -1;
         for(vector<DRT::Condition*>::const_iterator conditer = xfemConditions.begin(); conditer!=xfemConditions.end(); ++conditer)
         {
-            condCounter++;
             DRT::Condition* xfemCondition = *conditer;
             const map<int, RCP<DRT::Element > > geometryMap = xfemCondition->Geometry();
             map<int, RCP<DRT::Element > >::const_iterator iterGeo;
@@ -101,28 +102,23 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
             {
                 DRT::Element*  cutterElement = iterGeo->second.get();
                 if(cutterElement == NULL) dserror("geometry does not obtain elements");
-
-                const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement));
+                
+                // fill current positions into an array
+                const BlitzMat xyze_cutter(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+                
+                const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement,xyze_cutter));
 
                 const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
 
                 if(intersected)
                 {
-                    cutterElementMap[xfemElement->LID()].insert(cutterElement);
+                  cutterElements.insert(cutterElement);
                 }
             }// for-loop over all geometryMap
 		    }// for-loop over all xfemConditions
 
         const DRT::Element*const* xfemElementSurfaces = xfemElement->Surfaces();
         const DRT::Element*const* xfemElementLines = xfemElement->Lines();
-
-        if(cutterElementMap.find(xfemElement->LID()) != cutterElementMap.end())
-        {
-            cutterElements = cutterElementMap.find(k)->second;
-            //debugIntersection(xfemElement, cutterElements);
-        }
-        else
-            cutterElements.clear();
 
         for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
         {
@@ -170,7 +166,6 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
         if(xfemIntersection)
         {
             //debugTetgenDataStructure(xfemElement);
-            //computeCDT(xfemElement, cutterElements[0], domainintcells, boundaryintcells);
             computeCDT(xfemElement, domainintcells, boundaryintcells, timestepcounter_);
         }
 
@@ -1058,8 +1053,7 @@ void Intersection::findNextSegment(
  |  For further information please consult the TetGen manual            |
  *----------------------------------------------------------------------*/
 void Intersection::computeCDT(
-        const DRT::Element*           			element,
-//        const DRT::Element*            			cutterElement,
+        const DRT::Element*                     element,
         map< int, DomainIntCells >&	            domainintcells,
         map< int, BoundaryIntCells >&           boundaryintcells,
         int                                     timestepcounter_)
@@ -1175,44 +1169,6 @@ void Intersection::computeCDT(
     for(int i = 0; i < in.numberoffacets; i ++)
         in.facetmarkerlist[i] = faceMarker_[i] + facetMarkerOffset_;
 
-
-	// specify regions
-/*	bool regions = true;
-	if(regions)
-	{
-        //double regionCoordinates[6];
-		//computeRegionCoordinates(element,cutterElement,regionCoordinates);
-	    fill = 0;
-	    //int read = 0;
-	    in.numberofregions = 2;
-	    in.regionlist = new REAL[in.numberofregions*5];
-	  	//for(int i = 0; i < in.numberofregions; i++)
-	    //{
-	    	// store coordinates
-	    	//for(int j = 0; j < 3; j++)
-	    	//	in.regionlist[fill++] = regionCoordinates[read++];
-            in.regionlist[fill++] = -0.9;
-            in.regionlist[fill++] = -0.9;
-            in.regionlist[fill++] = 0.9;
-
-	    	// store regional attribute (switch A)   i=0 cutter i=1 fluid
-	    	in.regionlist[fill++] = 1;
-
-	    	// store volume constraint (switch a)
-	    	in.regionlist[fill++] = 0.0;
-
-            in.regionlist[fill++] = -1.0;
-            in.regionlist[fill++] = -1.0;
-            in.regionlist[fill++] = -1.0;
-
-            // store regional attribute (switch A)   i=0 cutter i=1 fluid
-            in.regionlist[fill++] = 0;
-
-            // store volume constraint (switch a)
-            in.regionlist[fill++] = 0.0;
-		//}
-	}
-	*/
 
     //in.save_nodes("tetin");
     //in.save_poly("tetin");

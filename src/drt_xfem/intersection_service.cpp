@@ -347,34 +347,6 @@ bool XFEM::checkPositionWithinElement(
 
 
 /*----------------------------------------------------------------------*
- |  CLI:    checks if a position is within a given mesh      a.ger 12/07|   
- *----------------------------------------------------------------------*/
-bool XFEM::PositionWithinDiscretization(  
-    const RCP<DRT::Discretization>      dis,
-    const BlitzVec3&                    x)
-{
-    bool nodeWithinMesh = false;
-    
-    // loop all elements on this processor
-    for (int i=0; i<dis->NumMyRowElements(); ++i)
-    {
-        const DRT::Element* ele = dis->lRowElement(i);
-        if (isPositionWithinXAABB(x, computeFastXAABB(ele)))
-        {
-            nodeWithinMesh = checkPositionWithinElement(ele, x);
-            if (nodeWithinMesh)
-                break;
-        }
-    }
-
-    // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
-#ifdef PARALLEL
-    dserror("not implemented, yet");
-#endif
-    return nodeWithinMesh;
-}
-
-/*----------------------------------------------------------------------*
  |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
  *----------------------------------------------------------------------*/
 void XFEM::PositionWithinCondition(
@@ -664,26 +636,25 @@ void XFEM::updateAForMap3To2(
  |          XAABB for a given element                                   |
  *----------------------------------------------------------------------*/
 BlitzMat3x2 XFEM::computeFastXAABB( 
-    const DRT::Element* element)
+    const DRT::Element* element,
+    const BlitzMat      xyze)
 {
     const int nsd = 3;
     BlitzMat3x2 XAABB;
     
     // first node
-    const double* pos = element->Nodes()[0]->X();
     for(int dim=0; dim<nsd; ++dim)
     {
-        XAABB(dim, 0) = pos[dim] - TOL7;
-        XAABB(dim, 1) = pos[dim] + TOL7;
+        XAABB(dim, 0) = xyze(dim, 0) - TOL7;
+        XAABB(dim, 1) = xyze(dim, 0) + TOL7;
     }
     // remaining node
     for(int i=1; i<element->NumNode(); ++i)
     {
-        const double* posEle = element->Nodes()[i]->X();
         for(int dim=0; dim<nsd; dim++)
         {
-            XAABB(dim, 0) = std::min( XAABB(dim, 0), posEle[dim] - TOL7);
-            XAABB(dim, 1) = std::max( XAABB(dim, 1), posEle[dim] + TOL7);
+            XAABB(dim, 0) = std::min( XAABB(dim, 0), xyze(dim,i) - TOL7);
+            XAABB(dim, 1) = std::max( XAABB(dim, 1), xyze(dim,i) + TOL7);
         }
     }
     

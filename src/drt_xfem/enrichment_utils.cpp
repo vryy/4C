@@ -76,10 +76,7 @@ void XFEM::ComputeEnrichedNodalShapefunction(
     for (int inode=0; inode<ele.NumNode(); ++inode)
     {
         const int gid = nodes[inode]->Id();
-        //const BlitzVec nodalpos(toBlitzArray(nodes[inode]->X()));
-
         const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
-
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {
@@ -126,10 +123,7 @@ void XFEM::ComputeEnrichedNodalShapefunction(
     for (int inode=0; inode<ele.NumNode(); ++inode)
     {
         const int gid = nodes[inode]->Id();
-//        const BlitzVec nodalpos(toBlitzArray(nodes[inode]->X()));
-
         const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
-
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {
@@ -179,10 +173,7 @@ void XFEM::ComputeEnrichedNodalShapefunction(
     for (int inode=0; inode<ele.NumNode(); ++inode)
     {
         const int gid = nodes[inode]->Id();
-//        const BlitzVec nodalpos(toBlitzArray(nodes[inode]->X()));
-
         const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
-
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
         {

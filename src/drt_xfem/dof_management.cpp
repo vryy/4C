@@ -311,9 +311,9 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         gmshfilecontent << "View \" " << "NumDof" << " standard enriched nodes \" {" << endl;
         for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
         {
-            const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
-            const BlitzVec3 pos(toBlitzArray(actnode->X()));
-            const int node_gid = actnode->Id();
+            const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
+            const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
+            const int node_gid = xfemnode->Id();
 
             double val = 0.0;
             std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
@@ -347,9 +347,9 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
         gmshfilecontent << "View \" " << "NumDof" << " Void enriched nodes \" {" << endl;
         for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
         {
-            const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
-            const BlitzVec3 pos(toBlitzArray(actnode->X()));
-            const int node_gid = actnode->Id();
+            const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
+            const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
+            const int node_gid = xfemnode->Id();
 
             double val = 0.0;
             std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);

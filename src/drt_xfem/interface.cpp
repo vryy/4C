@@ -23,15 +23,36 @@ XFEM::InterfaceHandle::InterfaceHandle(
 		const RCP<DRT::Discretization>        cutterdis,
 		const RCP<Epetra_Vector>              idispcol) :
 			xfemdis_(xfemdis),
-			cutterdis_(cutterdis),
-			idispcol_(idispcol)
+			cutterdis_(cutterdis)
 {
+  currentcutterpositions_.clear();
+  {
+    for (int lid = 0; lid < cutterdis->NumMyColNodes(); ++lid)
+    {
+      const DRT::Node* node = cutterdis->lColNode(lid);
+      vector<int> lm;
+      lm.reserve(3);
+      cutterdis->Dof(node, lm);
+      vector<double> mydisp(3);
+      DRT::UTILS::ExtractMyValues(*idispcol,mydisp,lm);
+      BlitzVec3 currpos;
+      currpos(0) = node->X()[0] + mydisp[0];
+      currpos(1) = node->X()[1] + mydisp[1];
+      currpos(2) = node->X()[2] + mydisp[2];
+      currentcutterpositions_[node->Id()] = currpos;
+    }
+  }
+		  
+		  
+		  
+		  
 	elementalDomainIntCells_.clear();
 	elementalBoundaryIntCells_.clear();
 	XFEM::Intersection is;
 	is.computeIntersection(
 	        xfemdis,
 	        cutterdis,
+	        currentcutterpositions_,
 	        elementalDomainIntCells_,
 	        elementalBoundaryIntCells_);
 	

@@ -85,8 +85,9 @@ class Intersection
         void computeIntersection(
             const RCP<DRT::Discretization>         xfemdis,
             const RCP<DRT::Discretization>         cutterdis,
-            map< int, DomainIntCells >&			   domainintcells,
-            map< int, BoundaryIntCells >& 		   boundaryintcells
+            const std::map<int,BlitzVec3>&         currentcutterpositions,
+            map< int, DomainIntCells >&			       domainintcells,
+            map< int, BoundaryIntCells >& 		     boundaryintcells
             );
 
 

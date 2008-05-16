@@ -114,11 +114,11 @@ void XFEM::createDofMap(
     const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
     for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
     {
-        const DRT::Element* actele = ih->xfemdis()->lColElement(i);
-        if ( not (ih->elementalDomainIntCells()->count(actele->Id()) >= 1))
+        const DRT::Element* xfemele = ih->xfemdis()->lColElement(i);
+        if ( not (ih->elementalDomainIntCells()->count(xfemele->Id()) >= 1))
         {
-            const int* nodeidptrs = actele->NodeIds();
-            const BlitzVec3 nodalpos(toBlitzArray(actele->Nodes()[0]->X()));
+            const int* nodeidptrs = xfemele->NodeIds();
+            const BlitzVec3 nodalpos(toBlitzArray(xfemele->Nodes()[0]->X()));
             
             map<int,bool> posInCondition;
             PositionWithinCondition(nodalpos,ih->cutterdis(),posInCondition);
@@ -134,7 +134,7 @@ void XFEM::createDofMap(
             
             if (not in_solid)
             {
-                for (int inen = 0; inen<actele->NumNode(); ++inen)
+                for (int inen = 0; inen<xfemele->NumNode(); ++inen)
                 {
                     const int node_gid = nodeidptrs[inen];
                     bool voidenrichment_in_set = false;

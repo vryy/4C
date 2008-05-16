@@ -107,8 +107,8 @@ private:
     //! discretization that intersects the xfemdis_ -> should be a boundary discretization (surface of structure)
     const RCP<DRT::Discretization> cutterdis_;
     
-    //! displacements of interface nodes to compute current position of interface
-    const RCP<Epetra_Vector>       idispcol_;
+    //! current positions of interface nodes
+    std::map<int,BlitzVec3>        currentcutterpositions_;
 
     //! integration cells for domain (global id for element -> list of volume integration cells)
     map<int, DomainIntCells > elementalDomainIntCells_;

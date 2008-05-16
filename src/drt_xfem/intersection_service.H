@@ -123,6 +123,32 @@ namespace XFEM
     
     
     /*!
+    \brief  fill array with current nodal positions
+                   
+    \param a    (in)        : a
+    \param b    (in)        : b
+    \return result of the Theorem of Pythagoras
+    */    
+    inline BlitzMat getCurrentNodalPositions(
+        const DRT::Element*            ele,
+        const map<int,BlitzVec3>&      currentcutterpositions
+        )
+    {
+        const int numnode = ele->NumNode();
+        BlitzMat xyze(3,numnode);
+        const DRT::Node*const* nodes = ele->Nodes();
+        for (int inode = 0; inode < numnode; ++inode)
+        {
+          const BlitzVec3 x = currentcutterpositions.find(nodes[inode]->Id())->second;
+          xyze(0,inode) = x(0);
+          xyze(1,inode) = x(1);
+          xyze(2,inode) = x(2);
+        }
+        return xyze;
+    }
+    
+    
+    /*!
     \brief transforms a point in element coordinates to a point
            in current coordinates with respect to a given element
 
@@ -133,7 +159,7 @@ namespace XFEM
     template <class V>
     BlitzVec3 elementToCurrentCoordinates(   
         const DRT::Element*  element, 
-        const V&             eleCoord
+        const V&             xsi
         )
     {
         const int numNodes = element->NumNode();
@@ -144,17 +170,17 @@ namespace XFEM
         {
             case 1:
             {
-                shape_function_1D(funct,eleCoord(0), element->Shape());
+                shape_function_1D(funct, xsi(0), element->Shape());
                 break;
             }
             case 2:
             {
-                shape_function_2D(funct, eleCoord(0), eleCoord(1), element->Shape());
+                shape_function_2D(funct, xsi(0), xsi(1), element->Shape());
                 break;
             }
             case 3:
             {
-                shape_function_3D(funct, eleCoord(0), eleCoord(1), eleCoord(2), element->Shape());
+                shape_function_3D(funct, xsi(0), xsi(1), xsi(2), element->Shape());
                 break;
             }
             default:
@@ -379,18 +405,6 @@ namespace XFEM
     
     
     /*!
-    \brief checks if a position in current coordinates lies within a certain element           
-           The nonlinear system of equation is solved with help of the Newton-method.
-
-    \param discretization       (in)        : goal: discretization with boundary elements in proper parallel distribution (currently it contains volume elements!) 
-    \param x                    (in)        : node in current coordinates
-    */  
-    bool PositionWithinDiscretization(  
-        const RCP<DRT::Discretization>      dis,
-        const BlitzVec3&                    x);
-    
-    
-    /*!
     \brief checks if a position in current coordinates lies within a certain condition region           
     */  
     void PositionWithinCondition(
@@ -585,7 +599,8 @@ namespace XFEM
     \return extended axis-aligned bounding box  (XAABB) for an element
     */
     BlitzMat3x2 computeFastXAABB( 
-            const DRT::Element*   element
+            const DRT::Element*   element,
+            const BlitzMat        xyze
             );
     
     
