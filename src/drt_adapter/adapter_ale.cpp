@@ -196,7 +196,7 @@ void ADAPTER::AleLinear::Solve()
   ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
-  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,dirichtoggle_);
+  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,Teuchos::null);
 
   LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
 
@@ -453,7 +453,7 @@ void ADAPTER::AleSprings::Solve()
   ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
-  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,dirichtoggle_);
+  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,Teuchos::null);
 
   incr_->Update(1.0,*dispnp_,-1.0,*dispn_,0.0);
 

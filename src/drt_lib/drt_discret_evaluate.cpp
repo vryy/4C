@@ -397,7 +397,8 @@ void DoDirichletCondition(DRT::Condition&             cond,
       {
         const int lid = (*systemvectoraux).Map().LID(dofs[j]);
         if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
-        (*toggle)[lid] = 0.0;
+        if (toggle!=Teuchos::null)
+          (*toggle)[lid] = 0.0;
         continue;
       }
       const int gid = dofs[j];
@@ -439,7 +440,8 @@ void DoDirichletCondition(DRT::Condition&             cond,
       if (systemvectordd != Teuchos::null)
         (*systemvectordd)[lid] = value[2];
       // set toggle vector
-      (*toggle)[lid] = 1.0;
+      if (toggle!=Teuchos::null)
+        (*toggle)[lid] = 1.0;
     }
   }
   return;
