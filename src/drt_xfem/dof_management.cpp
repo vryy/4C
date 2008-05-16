@@ -171,11 +171,7 @@ std::string XFEM::ElementDofManager::toString() const
 XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
             xfemdis_(ih->xfemdis())
 {
-    XFEM::createDofMap(
-            ih->xfemdis(), ih->cutterdis(),
-            ih->elementalDomainIntCells(),
-            ih->elementalBoundaryIntCells(),
-            nodalDofSet_, elementalDofs_);
+    XFEM::createDofMap(ih, nodalDofSet_, elementalDofs_);
 
     unique_enrichments_.clear();
     for (map<int, const set<XFEM::FieldEnr> >::const_iterator fieldenriter=nodalDofSet_.begin();

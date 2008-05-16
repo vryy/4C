@@ -17,7 +17,7 @@ Maintainer: Axel Gerstenberger
 
 void XFEM::CollectElementsByXFEMCouplingLabel(
     const RCP<DRT::Discretization>       cutterdis,
-    std::map<int,set<DRT::Element*> >&   elementsByLabel
+    std::map<int,set<int> >&             elementsByLabel
     )
 {
   // Reset
@@ -39,7 +39,7 @@ void XFEM::CollectElementsByXFEMCouplingLabel(
     for(iterGeo = geometryMap.begin(); iterGeo != geometryMap.end(); ++iterGeo )
     {
       DRT::Element*  cutterElement = iterGeo->second.get();
-      elementsByLabel[label].insert(cutterElement);
+      elementsByLabel[label].insert(cutterElement->Id());
     }
   }
 }

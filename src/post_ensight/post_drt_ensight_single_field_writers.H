@@ -214,7 +214,9 @@ public:
       vector<string> conditions_to_copy;
       conditions_to_copy.push_back("FSICoupling");
       conditions_to_copy.push_back("XFEMCoupling");
-      cutterdis_ = DRT::UTILS::CreateDiscretizationFromCondition(submersedfield->discretization(), "XFEMCoupling", "Boundary", "BELE3", conditions_to_copy);              
+      cutterdis_ = DRT::UTILS::CreateDiscretizationFromCondition(submersedfield->discretization(), "XFEMCoupling", "Boundary", "BELE3", conditions_to_copy);
+      const Epetra_Map* dofcolmap = cutterdis_->DofColMap();
+      idispcol_ = LINALG::CreateVector(*dofcolmap,true);
     }
 
     //! write the whole thing
@@ -292,6 +294,8 @@ protected:
             ) const;
 
     Teuchos::RCP<DRT::Discretization>  cutterdis_;
+    
+    Teuchos::RCP<Epetra_Vector>        idispcol_;
 };
 
 

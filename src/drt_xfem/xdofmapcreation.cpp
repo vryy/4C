@@ -25,10 +25,7 @@ using namespace std;
  |  construct dofmap                                            ag 11/07|
  *----------------------------------------------------------------------*/
 void XFEM::createDofMap(
-        const RCP<DRT::Discretization>            xfemdis,
-        const RCP<DRT::Discretization>            cutterdis,
-        const std::map<int, XFEM::DomainIntCells >&    elementDomainIntCellMap,
-        const std::map<int, XFEM::BoundaryIntCells >&  elementBoundaryIntCellMap,
+        const RCP<XFEM::InterfaceHandle>               ih,
         std::map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,
         std::map<int, const set<XFEM::FieldEnr> >&     elementalDofsFinal
         )
@@ -38,33 +35,33 @@ void XFEM::createDofMap(
   std::map<int, set<XFEM::FieldEnr> >  elementalDofs;
 
   // get elements for each coupling label
-  std::map<int,set<DRT::Element*> > elementsByLabel;
-  XFEM::CollectElementsByXFEMCouplingLabel(cutterdis, elementsByLabel);
+  std::map<int,set<int> > elementsByLabel;
+  XFEM::CollectElementsByXFEMCouplingLabel(ih->cutterdis(), elementsByLabel);
   
   // invert collection
   std::map<int,set<int> > labelsPerElementId;
-  for(std::map<int,set<DRT::Element*> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
-    for(std::set<DRT::Element*>::const_iterator ele = conditer->second.begin(); ele!=conditer->second.end(); ++ele)
+    for(std::set<int>::const_iterator eleid = conditer->second.begin(); eleid!=conditer->second.end(); ++eleid)
     {
-      labelsPerElementId[(*ele)->Id()].insert(conditer->first);
+      labelsPerElementId[*eleid].insert(conditer->first);
     }
   }
     
-  for(std::map<int,set<DRT::Element*> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
       const int label = conditer->first;
     
       // for surface with label, loop my col elements and add void enrichments to each elements member nodes
       const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
-      for (int i=0; i<xfemdis->NumMyColElements(); ++i)
+      for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
       {
-          const DRT::Element* actele = xfemdis->lColElement(i);
+          const DRT::Element* actele = ih->xfemdis()->lColElement(i);
           const int element_gid = actele->Id();
-          if (elementBoundaryIntCellMap.count(element_gid) >= 1)
+          if (ih->elementalDomainIntCells()->count(element_gid) >= 1)
           {
               
-              const XFEM::BoundaryIntCells& bcells = elementBoundaryIntCellMap.find(element_gid)->second;
+              const XFEM::BoundaryIntCells& bcells = ih->elementalBoundaryIntCells()->find(element_gid)->second;
                 //TODO: check if element is intersected by the CURRENT condition label
               bool has_label = false;
               for (BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
@@ -115,16 +112,16 @@ void XFEM::createDofMap(
     
     const int standard_label = 0;
     const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
-    for (int i=0; i<xfemdis->NumMyColElements(); ++i)
+    for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
     {
-        const DRT::Element* actele = xfemdis->lColElement(i);
-        if ( not (elementDomainIntCellMap.count(actele->Id()) >= 1))
+        const DRT::Element* actele = ih->xfemdis()->lColElement(i);
+        if ( not (ih->elementalDomainIntCells()->count(actele->Id()) >= 1))
         {
             const int* nodeidptrs = actele->NodeIds();
             const BlitzVec3 nodalpos(toBlitzArray(actele->Nodes()[0]->X()));
             
             map<int,bool> posInCondition;
-            PositionWithinCondition(nodalpos,cutterdis,posInCondition);
+            PositionWithinCondition(nodalpos,ih->cutterdis(),posInCondition);
             bool in_solid = false;
             for (map<int,bool>::const_iterator p = posInCondition.begin(); p != posInCondition.end(); ++p)
             {

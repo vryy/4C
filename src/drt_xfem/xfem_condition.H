@@ -33,7 +33,7 @@ namespace XFEM
  */
 void CollectElementsByXFEMCouplingLabel(
     const RCP<DRT::Discretization>       cutterdis,
-    std::map<int,set<DRT::Element*> >&   elementsByLabel
+    std::map<int,set<int> >&             elementsByLabel
     );
 
 }

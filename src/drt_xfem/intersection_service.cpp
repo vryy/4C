@@ -385,65 +385,35 @@ void XFEM::PositionWithinCondition(
 {
   posInCondition.clear();
 
-  std::map<int,set<DRT::Element*> > elementsByLabel;
+  std::map<int,set<int> > elementsByLabel;
   CollectElementsByXFEMCouplingLabel(cutterdis, elementsByLabel);
   
   /////////////////
   // loop labels
   /////////////////
-  for(std::map<int,set<DRT::Element*> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
     const int label = conditer->first;
     posInCondition[label] = false; 
-    //cout << "number of cutter elements for condition " << label << ": " << conditer->second.size() << endl;
-    // find all connected nodes
-    //cout << " find all connected nodes" << endl;
-//    set<DRT::Node*> cutternodes;
-//    for (set<DRT::Element*>::const_iterator ele = conditer->second.begin(); ele != conditer->second.end(); ++ele)
-//    {
-//      DRT::Node** nodes = (*ele)->Nodes();
-//      for (int inode = 0; inode < (*ele)->NumNode(); ++inode)
-//        cutternodes.insert(nodes[inode]);
-//    }
-//    //cout << "number of closest node candidate " << cutternodes.size() << endl;
-//    //cout << " find closest nodes" << endl;
-//    DRT::Node* closest_node = NULL;
-//    double min_nodal_distance = 1.0e12;
-//    for (set<DRT::Node*>::const_iterator node = cutternodes.begin(); node != cutternodes.end(); ++node)
-//    {
-//      const double* pos = (*node)->X();
-//      const double xdiff = x_in(0)-pos[0];
-//      const double ydiff = x_in(1)-pos[1];
-//      const double zdiff = x_in(2)-pos[2];
-//      
-//      const double distance = sqrt(xdiff*xdiff + ydiff*ydiff + zdiff*zdiff);
-//      if (distance < min_nodal_distance)
-//      {
-//        min_nodal_distance = distance;
-//        closest_node = *node;
-//      }
-//    }
-//    cout << "closest Node:  " << *closest_node << endl;
-    
-    //DRT::Element** close_elements = closest_node->Elements();
 
-    
-    //cout << " searchForNearestPointOnSurface" << endl;
-    // first test: point lies opposite to a element (basis point within element parameter space)
+    // point lies opposite to a element (basis point within element parameter space)
+    // works only, if I can loop over ALL surface elements
+    // MUST be modified, if only a subset of the surface is used
     bool in_element = false;
     double min_ele_distance = 1.0e12;
-    DRT::Element* closest_element;
-    for (set<DRT::Element*>::const_iterator ele = conditer->second.begin(); ele != conditer->second.end(); ++ele)
+    const DRT::Element* closest_element;
+    for (set<int>::const_iterator elegid = conditer->second.begin(); elegid != conditer->second.end(); ++elegid)
     {
+      const DRT::Element* ele = cutterdis->gElement(*elegid);
       double distance = 0.0;
       BlitzVec2 eleCoord;
       BlitzVec3 normal;
-      in_element = searchForNearestPointOnSurface(*ele,x_in,eleCoord,normal,distance);
+      in_element = searchForNearestPointOnSurface(ele,x_in,eleCoord,normal,distance);
       if (in_element)
       {
         if (abs(distance) < abs(min_ele_distance))
         {
-          closest_element = *ele;
+          closest_element = ele;
           min_ele_distance = distance;
         }
       }

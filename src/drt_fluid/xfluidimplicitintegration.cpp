@@ -233,7 +233,7 @@ void XFluidImplicitTimeInt::TimeLoop(
       // -----------------------------------------------------------------
       //                     solve linearised equation
       // -----------------------------------------------------------------
-      LinearSolve(cutterdiscret);
+      LinearSolve(cutterdiscret,idispcol);
       break;
     default:
       dserror("Type of dynamics unknown!!");
@@ -443,7 +443,8 @@ void XFluidImplicitTimeInt::PrepareNonlinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
-        RCP<DRT::Discretization> cutterdiscret
+        RCP<DRT::Discretization> cutterdiscret,
+        RCP<Epetra_Vector>       idispcol
         )
 {
   // within this routine, no parallel re-distribution is allowed to take place
@@ -452,7 +453,7 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // calling this function multiple times always results in the same solution vectors
 
   // compute Intersection
-  RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret));
+  RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret,idispcol));
 
   // apply enrichments
   RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
@@ -790,7 +791,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
         )
 {
 
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  ComputeInterfaceAndSetDOFs(cutterdiscret,idispcol);
 
   PrepareNonlinearSolve();
 
@@ -956,7 +957,6 @@ void XFluidImplicitTimeInt::NonlinearSolve(
       err = full.Import(*velnp_,importer,Insert);
       if (err) dserror("Import using importer returned err=%d",err);
       full.Norm2(&fullnorm_L2);
-
 
     // care for the case that nothing really happens in the velocity
     // or pressure field
@@ -1129,11 +1129,12 @@ drawbacks:
   implementation does a total solve rather than an incremental one.
 */
 void XFluidImplicitTimeInt::LinearSolve(
-        RCP<DRT::Discretization> cutterdiscret
+        RCP<DRT::Discretization> cutterdiscret,
+        RCP<Epetra_Vector>       idispcol
         )
 {
 
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  ComputeInterfaceAndSetDOFs(cutterdiscret,idispcol);
 
   PrepareNonlinearSolve();
 
@@ -1498,7 +1499,11 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
   int startfuncno
   )
 {
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  // create zero displacement vector to use initial position of interface
+  const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
+  Teuchos::RCP<Epetra_Vector> idispcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+    
+  ComputeInterfaceAndSetDOFs(cutterdiscret,idispcol);
 
   //------------------------------------------------------- beltrami flow
   if(whichinitialfield == 8)
@@ -1707,7 +1712,12 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
         )
 {
 
-  ComputeInterfaceAndSetDOFs(cutterdiscret);
+  const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
+  Teuchos::RCP<Epetra_Vector> ivelcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  
+  ComputeInterfaceAndSetDOFs(cutterdiscret,idispcol);
 
   PrepareNonlinearSolve();
 
@@ -1720,10 +1730,6 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
   dta_= 1.0;
   theta_ = 1.0;
 
-  const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
-  Teuchos::RCP<Epetra_Vector> ivelcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
 
   // -------------------------------------------------------------------
   // pseudo time loop (continuation loop)
@@ -2042,6 +2048,26 @@ Teuchos::RCP<Epetra_Vector> XFluidImplicitTimeInt::IntegrateInterfaceShape(std::
   discret_->ClearState();
 
   return integratedshapefunc;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void XFluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
+                                          const LINALG::MultiMapExtractor& domainmaps,
+                                          const LINALG::MultiMapExtractor& rangemaps)
+{
+#if 0
+  sysmat_ =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,108,false,true));
+#else
+  //const int numdim = params_.get<int>("number of velocity degrees of freedom");
+
+  Teuchos::RCP<LINALG::BlockSparseMatrix<InterfaceSplitStrategy> > mat =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+  mat->SetCondElements(condelements);
+  sysmat_ = mat;
+#endif
 }
 
 

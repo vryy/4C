@@ -51,9 +51,7 @@ using namespace DRT::UTILS;
 void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
                                         const RCP<DRT::Discretization>  cutterdis,
                                         map< int, DomainIntCells >&   			domainintcells,
-                                        map< int, BoundaryIntCells >&   		boundaryintcells,
-                                        map< int, set< DRT::Element* > >&    cutterElementMap,  ///< int is the xfem element global id
-                                        map< int, RCP<DRT::Node> >&     cutterNodeMap      ///< int is the node global id
+                                        map< int, BoundaryIntCells >&   		boundaryintcells  ///< int is the xfem element global id
                                         )
 {
 
@@ -64,8 +62,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>  xfemdis,
     vector< DRT::Condition * >      xfemConditions;
     set< DRT::Element* > 		    cutterElements;
 
-    cutterElementMap.clear();
-    cutterNodeMap.clear();
+    map< int, set< DRT::Element* > >       cutterElementMap;
 
     countMissedPoints_ = 0;
 

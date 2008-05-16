@@ -33,10 +33,7 @@ namespace XFEM
  * \note this is 3d fluid specific and should somehow be generalized
  */
 void createDofMap(
-        const RCP<DRT::Discretization>                    xfemdis,
-        const RCP<DRT::Discretization>                    cutterdis,
-        const std::map<int, DomainIntCells >&             elementDomainIntCellMap,
-        const std::map<int, BoundaryIntCells >&           elementBoundaryIntCellMap,
+        const RCP<XFEM::InterfaceHandle>                  ih,
         std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,        ///< the map for nodal dofs
         std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal       ///< the map for elemental dofs        
 );

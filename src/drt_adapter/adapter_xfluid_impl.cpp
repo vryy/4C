@@ -15,9 +15,9 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "adapter_xfluid_impl.H"
+
 #include "../drt_lib/drt_condition_utils.H"
 
-using namespace Teuchos;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

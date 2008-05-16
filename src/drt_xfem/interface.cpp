@@ -20,40 +20,24 @@ Maintainer: Axel Gerstenberger
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::InterfaceHandle(
 		const RCP<DRT::Discretization>        xfemdis, 
-		const RCP<DRT::Discretization>        cutterdis) :
+		const RCP<DRT::Discretization>        cutterdis,
+		const RCP<Epetra_Vector>              idispcol) :
 			xfemdis_(xfemdis),
-			cutterdis_(cutterdis)
+			cutterdis_(cutterdis),
+			idispcol_(idispcol)
 {
 	elementalDomainIntCells_.clear();
 	elementalBoundaryIntCells_.clear();
-	map< int, set< DRT::Element* > >       cutterElementMap;
-	map< int, RCP<DRT::Node> >             cutterNodeMap;
 	XFEM::Intersection is;
 	is.computeIntersection(
 	        xfemdis,
 	        cutterdis,
 	        elementalDomainIntCells_,
-	        elementalBoundaryIntCells_,
-	        cutterElementMap,
-	        cutterNodeMap);
+	        elementalBoundaryIntCells_);
+	
 	std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
 	std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
 	dsassert(elementalDomainIntCells_.size() == elementalBoundaryIntCells_.size(), "mismatch in cutted elements maps!");
-  
-	boundaryElements_.clear();
-	map< int, set< DRT::Element* > >::iterator paar;
-	for (paar = cutterElementMap.begin(); paar != cutterElementMap.end(); ++paar)
-    {
-	    const std::set< DRT::Element* > elements = paar->second;
-	    for (std::set< DRT::Element* >::const_iterator eleptr = elements.begin(); eleptr != elements.end(); ++eleptr)
-        {
-	        DRT::Element* ele = (*eleptr);
-            boundaryElements_.insert(make_pair(ele->Id(), ele));
-        }
-    }
-	cutterNodeMap_.clear();
-	cutterNodeMap_ = cutterNodeMap;
-	  
 	  
   // sanity check, whether, we realy have integration cells in the map
   for (std::map<int,DomainIntCells>::const_iterator 

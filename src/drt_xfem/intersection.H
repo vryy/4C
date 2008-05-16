@@ -86,9 +86,7 @@ class Intersection
             const RCP<DRT::Discretization>         xfemdis,
             const RCP<DRT::Discretization>         cutterdis,
             map< int, DomainIntCells >&			   domainintcells,
-            map< int, BoundaryIntCells >& 		   boundaryintcells,
-            map< int, set< DRT::Element* > >&      cutterElementMap,  ///< int is the xfem element global id
-            map< int, RCP<DRT::Node> >&            cutterNodeMap      ///< int is the xfem element global id
+            map< int, BoundaryIntCells >& 		   boundaryintcells
             );
 
 

@@ -38,23 +38,27 @@ public:
     //! constructor
     explicit InterfaceHandle(
             const RCP<DRT::Discretization>        xfemdis,      ///< discretization that will be intersected
-            const RCP<DRT::Discretization>        cutterdis    ///< discretization with boundary elements
+            const RCP<DRT::Discretization>        cutterdis,    ///< discretization with boundary elements
+            const RCP<Epetra_Vector>              idispcol      ///< interface displacements for current position of interface
             );
     //! destructor
     ~InterfaceHandle();
 
     //! return string representation of the interface handle
-    string toString() const;
+    std::string toString() const;
 
     //! return pointer to the intersected discretization
     RCP<DRT::Discretization> xfemdis() const {return xfemdis_;};
     //! return pointer to the intersecting discretization
     RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
 
-    //! get copy of map with all domain integration cells on this proc
-    std::map<int,DomainIntCells> elementalDomainIntCells() const {return elementalDomainIntCells_;};
-    //! get copy if map with all boundary integration cells on this proc
-    std::map<int,BoundaryIntCells> elementalBoundaryIntCells() const {return elementalBoundaryIntCells_;};
+    //! get pointer to map with all domain integration cells on this proc
+    const std::map<int,DomainIntCells>* elementalDomainIntCells() const {return &elementalDomainIntCells_;};
+    //! get pointer to map with all boundary integration cells on this proc
+    const std::map<int,BoundaryIntCells>* elementalBoundaryIntCells() const {return &elementalBoundaryIntCells_;};
+    
+    //! get pointer to map with all elements gids sorted by their interface labels
+    const std::map<int,std::set<int> >* elementsByLabel() const {return &elementsByLabel_;};
 
     //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
     DomainIntCells GetDomainIntCells(
@@ -89,42 +93,31 @@ public:
      * get pointer to boundary element
      * \return pointer to boundary element
      */
-    DRT::Element* GetBoundaryEle(
+    const DRT::Element* GetBoundaryEle(
             const int element_gid   ///< unique global element id of a boundary element
             ) const
     {
-        map<int, DRT::Element* >::const_iterator tmp = boundaryElements_.find(element_gid);
-        if (tmp == boundaryElements_.end()){
-            cout << element_gid << endl;
-            dserror("GetBoundaryEle: no copy of boundary element with id = %d found on this proc!", element_gid);
-            return NULL;
-        }
-        return tmp->second;
+        return cutterdis_->gElement(element_gid);
     }
 
 private:
     //! intersected domain
     const RCP<DRT::Discretization> xfemdis_;
 
-    //! domain that intersects the xfemdis_, should be a boundary discretization (surface of structure)
-    RCP<DRT::Discretization> cutterdis_;
+    //! discretization that intersects the xfemdis_ -> should be a boundary discretization (surface of structure)
+    const RCP<DRT::Discretization> cutterdis_;
+    
+    //! displacements of interface nodes to compute current position of interface
+    const RCP<Epetra_Vector>       idispcol_;
 
     //! integration cells for domain (global id for element -> list of volume integration cells)
     map<int, DomainIntCells > elementalDomainIntCells_;
 
     //! integration cells for boundary
     map<int, BoundaryIntCells > elementalBoundaryIntCells_;
-
-    /*! list of boundary elements that intersect volume elements on this processor
-     *  first integer is the global surface ele id to allow easy access
-     */
-    map<int, DRT::Element* > boundaryElements_;
-
-    //! store all additional nodes for the cutter elements that are not already on this proc (int = gid of node)
-    map<int, RCP<DRT::Node> > cutterNodeMap_;
     
     //! elements grouped by the xfem condition label
-    map<int,set<DRT::Element*> >  elementsByLabel_;
+    map<int,set<int> >        elementsByLabel_;
 
 };
 
