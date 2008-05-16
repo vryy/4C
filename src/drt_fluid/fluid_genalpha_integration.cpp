@@ -656,12 +656,14 @@ void FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   discret_->EvaluateDirichlet(eleparams,velnp_,null,null,dirichtoggle_);
   discret_->ClearState();
 
-
-
   // --------------------------------------------------
   // evaluate Neumann conditions
+  eleparams.set("total time",time_-(1-alphaF_)*dt_);
+  eleparams.set("thsl",1.);
 
-  // not implemented yet
+  neumann_loads_->PutScalar(0.0);
+  discret_->EvaluateNeumann(eleparams,*neumann_loads_);
+  discret_->ClearState();
 
   return;
 } // FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann
@@ -966,12 +968,8 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     timesparsitypattern_ref_=null;
   }
 
-  // zero out residual
-  residual_->PutScalar(0.0);
-
-  // add Neumann loads to residual
+  // Neumann loads to residual
   residual_->Update(1.0,*neumann_loads_,0.0);
-
 
   // start time measurement for element call
   tm3_ref_ = rcp(new TimeMonitor(*timeeleloop_));
