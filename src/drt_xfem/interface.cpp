@@ -35,7 +35,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
       cutterdis->Dof(node, lm);
       vector<double> mydisp(3);
       DRT::UTILS::ExtractMyValues(*idispcol,mydisp,lm);
-      BlitzVec3 currpos;
+      static BlitzVec3 currpos;
       currpos(0) = node->X()[0] + mydisp[0];
       currpos(1) = node->X()[1] + mydisp[1];
       currpos(2) = node->X()[2] + mydisp[2];

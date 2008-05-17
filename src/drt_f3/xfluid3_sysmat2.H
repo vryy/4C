@@ -1441,7 +1441,8 @@ void static Sysmat(
             const BlitzVec shp_discpres(enr_funct_discpres);
             
             // get normal vector (in x coordinates) to surface element at integration point
-            BlitzVec3 normalvec(computeNormalToBoundaryElement(deriv_boundary, xyze_boundary));
+            static BlitzVec3 normalvec;
+            computeNormalToBoundaryElement(boundaryele, xyze_boundary, posXiBoundary, normalvec);
       
             // get velocities (n+g,i) at integration point
             BlitzVec velint(3);

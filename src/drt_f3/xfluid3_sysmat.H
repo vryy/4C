@@ -217,15 +217,15 @@ void Sysmat(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            static XFEM::PosEtaDomain pos_eta(3);
-            pos_eta(0) = intpoints.qxg[iquad][0];
-            pos_eta(1) = intpoints.qxg[iquad][1];
-            pos_eta(2) = intpoints.qxg[iquad][2];
+            static XFEM::PosEtaDomain pos_eta_domain;
+            pos_eta_domain(0) = intpoints.qxg[iquad][0];
+            pos_eta_domain(1) = intpoints.qxg[iquad][1];
+            pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
             // coordinates of the current integration point in element coordinates \xi
-            static XFEM::PosXiDomain posXiDomain(3);
-            posXiDomain = XFEM::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta);
-            const double detcell = XFEM::detEtaToXi3D<ASSTYPE>(*cell, pos_eta);
+            static XFEM::PosXiDomain posXiDomain;
+            XFEM::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
+            const double detcell = XFEM::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
             
             // shape functions and their first derivatives
             static BlitzVec funct(numnode);
@@ -1342,7 +1342,8 @@ void Sysmat(
             const BlitzVec shp_sigma(enr_funct_stress);
             
             // get normal vector (in x coordinates) to surface element at integration point
-            const BlitzVec normalvec(computeNormalToBoundaryElement(deriv_boundary, xyze_boundary));
+            static BlitzVec3 normalvec;
+            computeNormalToBoundaryElement(boundaryele, deriv_boundary, xyze_boundary, normalvec);
       
             // get velocities (n+g,i) at integration point
             const BlitzVec velint(blitz::sum(shp(j)*evelnp(i,j),j));

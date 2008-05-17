@@ -429,14 +429,16 @@ bool XFEM::searchForNearestPointOnSurface(
 	
 	//cout << "CurrentToSurfaceElementCoordinates" << endl;
 	//cout << *surfaceElement << endl;
-	xsi = CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, physCoord);
+	CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, physCoord, xsi);
 	//cout << "checkPositionWithinElementParameterSpace" << endl;
 	const bool pointWithinElement = checkPositionWithinElementParameterSpace(xsi, surfaceElement->Shape());
 	
 	// normal vector at position xsi
-	const BlitzVec3 eleNormalAtXsi(computeNormalToBoundaryElement(surfaceElement, xyze_surfaceElement, xsi));
+	BlitzVec3 eleNormalAtXsi;
+	computeNormalToBoundaryElement(surfaceElement, xyze_surfaceElement, xsi, eleNormalAtXsi);
 	
-  const BlitzVec3 x_surface_phys(elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsi));
+	BlitzVec3 x_surface_phys;
+	elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsi, x_surface_phys);
   // normal pointing away from the surface towards physCoord
   normal(0) = physCoord(0) - x_surface_phys(0);
   normal(1) = physCoord(1) - x_surface_phys(1);
@@ -459,15 +461,15 @@ bool XFEM::searchForNearestPointOnSurface(
  |  RQI:    compute element coordinates from a given point              |
  |          in the 3-dim physical space lies on a given surface element |
  *----------------------------------------------------------------------*/
-BlitzVec2 XFEM::CurrentToSurfaceElementCoordinates(
+void XFEM::CurrentToSurfaceElementCoordinates(
         const DRT::Element*        	surfaceElement,
         const BlitzMat&             xyze_surfaceElement,
-        const BlitzVec3&            physCoord
+        const BlitzVec3&            physCoord,
+        BlitzVec2&                  eleCoord
    	    )
 {
 	bool nodeWithinElement = true;
     	
-    BlitzVec2 eleCoord;
     eleCoord = 0.0;
     
 //    blitz::firstIndex i;    // Placeholder for the first blitz array index
@@ -480,7 +482,7 @@ BlitzVec2 XFEM::CurrentToSurfaceElementCoordinates(
   	    iter++;
   	    
         // compute Jacobian, f and b
-  	    static BlitzMat Jacobi(3,2,blitz::ColumnMajorArray<2>());
+  	    static BlitzMat3x2 Jacobi;
   	    static BlitzVec3 F;
   	    updateJacobianForMap3To2(Jacobi, eleCoord, surfaceElement, xyze_surfaceElement);
         updateFForMap3To2(F, eleCoord, physCoord, surfaceElement, xyze_surfaceElement);
@@ -519,22 +521,22 @@ BlitzVec2 XFEM::CurrentToSurfaceElementCoordinates(
   
     //printf("iter = %d\n", iter);
     //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
-	return eleCoord;
+	return;
 }
 
 
 /*----------------------------------------------------------------------*
  |  RQI:    updates the Jacobian for the computation         u.may 01/08|
  |          whether a point in the 3-dim physical space lies            |
- | 			on a surface element 										|                 
+ |          on a surface element                                        |
  *----------------------------------------------------------------------*/
-void XFEM::updateJacobianForMap3To2(   
-        BlitzMat&                       Jacobi,
+void XFEM::updateJacobianForMap3To2(
+        BlitzMat3x2&                    Jacobi,
         const BlitzVec2&                xsi,
         const DRT::Element*             surfaceElement,
         const BlitzMat&                 xyze_surfaceElement
-        )                                                  
-{   
+        )
+{
     Jacobi = 0.0;
     
     const int numNodes = surfaceElement->NumNode();
@@ -590,8 +592,8 @@ void XFEM::updateFForMap3To2(
  |			space lies on a surface element 							|                 
  *----------------------------------------------------------------------*/
 void XFEM::updateAForMap3To2(   
-        BlitzMat& 		            A,
-        const BlitzMat& 	        Jacobi,
+        BlitzMat&                 A,
+        const BlitzMat3x2&        Jacobi,
         const BlitzVec3&          F,
         const BlitzVec2&          xsi,
         const DRT::Element*       surfaceElement,

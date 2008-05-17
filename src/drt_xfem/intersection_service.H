@@ -21,6 +21,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_element.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "xfem.H"
+#include "blitz_tiny_operation.H"
 
 
 namespace XFEM
@@ -155,15 +156,15 @@ namespace XFEM
     \return                               vector of current coordinates
     */
     template <class V>
-    BlitzVec3 elementToCurrentCoordinates(   
+    void elementToCurrentCoordinates(   
         const DRT::Element*  element, 
         const BlitzMat&      xyze,
-        const V&             xsi
+        const V&             xsi,
+        BlitzVec3&           x
         )
     {
         const int numNodes = element->NumNode();
         BlitzVec funct(numNodes);
-        static BlitzVec3 physCoord;
         
         switch(DRT::UTILS::getDimension(element->Shape()))
         {
@@ -186,14 +187,14 @@ namespace XFEM
                 dserror("dimension of the element is not correct");
         }          
             
-        physCoord = 0.0;
+        x = 0.0;
         for(int i=0; i<numNodes; i++)
         {
             for(int j=0; j<3; j++)
-              physCoord(j) += xyze(j,i) * funct(i);
+              x(j) += xyze(j,i) * funct(i);
         }
         
-        return physCoord;
+        return;
     }
     
     /*!
@@ -413,20 +414,30 @@ namespace XFEM
         );
     
     
-    //! calculate element normal in gausspoint (r,s)
-    inline BlitzVec3 computeNormalToBoundaryElement(
-            const BlitzMat& deriv,                  ///< shape functions derivative in (r,s)
-            const BlitzMat& xs                      ///< boundary element nodal coordinates in (x,y,z) space
+    //! calculate element normal vector in gausspoint (r,s)
+    template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
+    inline void computeNormalToBoundaryElement(
+            const M1&       deriv,                  ///< shape functions derivative in (r,s)
+            const M2&       xs,                     ///< boundary element nodal coordinates in (x,y,z) space
+            BlitzVec3&      unrm                    ///< unit normal vector at (r,s)
             )
     {
-        // init blitz indices
-        blitz::firstIndex i;    // Placeholder for the first index
-        blitz::secondIndex j;   // Placeholder for the second index
-        blitz::thirdIndex k;    // Placeholder for the third index
+        const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
           
-        // compute dXYZ / drs (Transposed)
-        static BlitzMat dxyzdrs(3,2);
-        dxyzdrs = blitz::sum(deriv(j,k)*xs(i,k),k);
+        // compute dXYZ / drs
+        static BlitzMat3x2 dxyzdrs;
+        //dxyzdrs = blitz::sum(xs(i,k)*deriv(j,k),k);
+        for (int i = 0; i < 3; ++i)
+        {
+            for (int j = 0; j < 2; ++j)
+            {
+                dxyzdrs(i,j) = 0.0;
+                for (int k = 0; k < numnode; ++k)
+                {
+                    dxyzdrs(i,j) += xs(i,k)*deriv(j,k);
+                }
+            }
+        }
 
         /* compute covariant metric tensor G for surface element
         **                        | g11   g12 |
@@ -438,10 +449,10 @@ namespace XFEM
         ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
         **        dr     dr            dr     ds            ds     ds
         */
-        static BlitzMat metrictensor(2,2);
-        metrictensor = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
+        static BlitzMat2x2 metrictensor;
+        //metrictensor = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
+        LINALG::DENSE::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metrictensor);
         
-        static BlitzVec3 unrm;
         unrm(0) = dxyzdrs(1,0) * dxyzdrs(2,1) - dxyzdrs(2,0) * dxyzdrs(1,1);
         unrm(1) = dxyzdrs(2,0) * dxyzdrs(0,1) - dxyzdrs(0,0) * dxyzdrs(2,1);
         unrm(2) = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(1,0) * dxyzdrs(0,1);
@@ -450,20 +461,46 @@ namespace XFEM
         const double inv_length = 1.0 / sqrt(unrm(0)*unrm(0) + unrm(1)*unrm(1) + unrm(2)*unrm(2));
 
         unrm *= inv_length;
-        // return unit vector
-        return unrm;
+        
+        return;
     }
     
     //! calculate element normal in gausspoint (r,s)
-    inline BlitzVec3 computeNormalToBoundaryElement(
-        const DRT::Element*      surfaceElement,    ///< surface element
+    template<DRT::Element::DiscretizationType DISTYPE>
+    inline void computeNormalToBoundaryElement(
         const BlitzMat&          xs,                ///< boundary element nodal coordinates in (x,y,z) space
-        const BlitzVec2&         xsi                ///< coordinates in (r,s) space, where the normal shall be calculated
+        const BlitzVec2&         xsi,               ///< coordinates in (r,s) space, where the normal shall be calculated,
+        BlitzVec3&               unitnormalvec
             )
     {
-      const BlitzMat deriv_boundary(DRT::UTILS::shape_function_2D_deriv1(xsi(0),xsi(1),surfaceElement->Shape()));
+      const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+      static blitz::TinyMatrix<double,2,numnode> deriv_boundary;
+      DRT::UTILS::shape_function_2D_deriv1(deriv_boundary,xsi(0),xsi(1),DISTYPE);
       
-      return computeNormalToBoundaryElement(deriv_boundary, xs);
+      computeNormalToBoundaryElement<DISTYPE>(deriv_boundary, xs, unitnormalvec);
+      return;
+    }
+    
+    //! calculate element normal in gausspoint (r,s)
+    inline void computeNormalToBoundaryElement(
+        const DRT::Element*      surfaceElement,    ///< surface element
+        const BlitzMat&          xs,                ///< boundary element nodal coordinates in (x,y,z) space
+        const BlitzVec2&         xsi,               ///< coordinates in (r,s) space, where the normal shall be calculated,
+        BlitzVec3&               unitnormalvec
+            )
+    {
+      switch (surfaceElement->Shape())
+      {
+          case DRT::Element::quad4:
+              computeNormalToBoundaryElement<DRT::Element::quad4>(xs, xsi, unitnormalvec);
+              break;
+          case DRT::Element::tri3:
+              computeNormalToBoundaryElement<DRT::Element::tri3>(xs, xsi, unitnormalvec);
+              break;
+          default:
+              dserror("please add your distype!");
+      }
+      return;
     }
     
     /*!
@@ -498,10 +535,11 @@ namespace XFEM
        \param physCoord           	(in)        : node in physical coordinates (x, y, z)
        \return									  node in element coordinates (r, s)
     */  
-    BlitzVec2 CurrentToSurfaceElementCoordinates(
+    void CurrentToSurfaceElementCoordinates(
         const DRT::Element*      surfaceElement,
         const BlitzMat&          xyze_surfaceElement,
-        const BlitzVec3&         physCoord
+        const BlitzVec3&         physCoord,
+        BlitzVec2&               xsi
         );
     
     
@@ -549,9 +587,9 @@ namespace XFEM
     
     \return Jacobian matrix
     */         
-    void updateJacobianForMap3To2(   
-            BlitzMat&              Jacobi,
-            const BlitzVec2&	     xsi,
+    void updateJacobianForMap3To2(
+            BlitzMat3x2&           Jacobi,
+            const BlitzVec2&       xsi,
             const DRT::Element*    surfaceElement,
             const BlitzMat&        xyze_surfaceElement
             );      
@@ -587,7 +625,7 @@ namespace XFEM
     */    
     void updateAForMap3To2(   
             BlitzMat&                       A,
-            const BlitzMat&                 Jacobi,
+            const BlitzMat3x2&              Jacobi,
             const BlitzVec3&                F,
             const BlitzVec2&                xsi,
             const DRT::Element*             surfaceElement,

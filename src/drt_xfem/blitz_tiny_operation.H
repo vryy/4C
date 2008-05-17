@@ -1,7 +1,20 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file blitz_tiny_operation.H
+
+\brief routines for the tiny blitz arrays
+
+<pre>
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifndef BLITZ_TINY_OPERATION_H
 #define BLITZ_TINY_OPERATION_H
 
-// to be moved to linalg in the future
 namespace LINALG {
     /*!
      * \brief routines to work with epetra dense objects and variable + fixed sized blitz arrays
@@ -20,6 +33,22 @@ namespace LINALG {
                     for (int k = 0; k < nk; ++k)
                     {
                         xjm(i,j) += deriv(i,k)*xyze(j,k);
+                    }
+                }
+            }
+        }
+        //! matrix^T matrix product
+        template<int ni, int nj, int nk, class M1, class M2, class M3>
+        inline void MtM_product(const M1& deriv,const M2& xyze,M3& xjm)
+        {
+            for (int i = 0; i < ni; ++i)
+            {
+                for (int j = 0; j < nj; ++j)
+                {
+                    xjm(i,j) = 0.0;
+                    for (int k = 0; k < nk; ++k)
+                    {
+                        xjm(i,j) += deriv(k,i)*xyze(k,j);
                     }
                 }
             }
