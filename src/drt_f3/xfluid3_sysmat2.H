@@ -1308,6 +1308,24 @@ void static Sysmat(
         
         // get node coordinates
         const BlitzMat xyze_boundary(DRT::UTILS::PositionArrayBlitz(boundaryele));
+        
+        // quick hack to get interface velocities at the boundary element nodes
+        BlitzMat vel_boundary(3,numnode_boundary);
+        const DRT::Node*const* nodes = boundaryele->Nodes();
+        {
+          for (int inode = 0; inode < numnode_boundary; ++inode)
+          {
+            const DRT::Node* node = nodes[inode];
+            vector<int> lm;
+            lm.reserve(3);
+            ih->cutterdis()->Dof(node, lm);
+            vector<double> myvel(3);
+            DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
+            vel_boundary(0,inode) = myvel[0];
+            vel_boundary(1,inode) = myvel[1];
+            vel_boundary(2,inode) = myvel[2];
+          }
+        }
 
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
@@ -1446,8 +1464,19 @@ void static Sysmat(
             computeNormalToBoundaryElement(boundaryele, xyze_boundary, posXiBoundary, normalvec);
       
             // get velocities (n+g,i) at integration point
-            BlitzVec velint(3);
-            velint = blitz::sum(shp(j)*evelnp(i,j),j);
+            static BlitzVec velint(3);
+            velint = blitz::sum(evelnp(i,j)*shp(j),j);
+            
+            // get interface velocity
+            static BlitzVec3 interface_velint;
+            for (int isd = 0; isd < 3; ++isd)
+            {
+                interface_velint(isd) = 0.0;
+                for (int inode = 0; inode < numnode_boundary; ++inode)
+                {
+                    interface_velint(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
+                }
+            }
             
             // get discontinous pressure
             const double discpres(blitz::sum(shp_discpres*ediscprenp));
@@ -1494,6 +1523,16 @@ void static Sysmat(
             assembler.template Vector<Tauzz>(shp_tau, taue_u_factor*timefacfac*normalvec(2)*velint(2));
             
             
+            assembler.template Vector<Tauxx>(shp_tau, -taue_u_factor*timefacfac*normalvec(0)*interface_velint(0));
+            assembler.template Vector<Tauxy>(shp_tau, -taue_u_factor*timefacfac*normalvec(1)*interface_velint(0));
+            assembler.template Vector<Tauxz>(shp_tau, -taue_u_factor*timefacfac*normalvec(2)*interface_velint(0));
+            assembler.template Vector<Tauyx>(shp_tau, -taue_u_factor*timefacfac*normalvec(0)*interface_velint(1));
+            assembler.template Vector<Tauyy>(shp_tau, -taue_u_factor*timefacfac*normalvec(1)*interface_velint(1));
+            assembler.template Vector<Tauyz>(shp_tau, -taue_u_factor*timefacfac*normalvec(2)*interface_velint(1));
+            assembler.template Vector<Tauzx>(shp_tau, -taue_u_factor*timefacfac*normalvec(0)*interface_velint(2));
+            assembler.template Vector<Tauzy>(shp_tau, -taue_u_factor*timefacfac*normalvec(1)*interface_velint(2));
+            assembler.template Vector<Tauzz>(shp_tau, -taue_u_factor*timefacfac*normalvec(2)*interface_velint(2));
+            
             /*
                            /                   \
                           |                     |
@@ -1510,6 +1549,10 @@ void static Sysmat(
             assembler.template Vector<DiscPres>(shp_discpres, -pe_u_factor*timefacfac*normalvec(1)*velint(1));
             assembler.template Vector<DiscPres>(shp_discpres, -pe_u_factor*timefacfac*normalvec(2)*velint(2)); 
             
+            
+            assembler.template Vector<DiscPres>(shp_discpres, pe_u_factor*timefacfac*normalvec(0)*interface_velint(0));
+            assembler.template Vector<DiscPres>(shp_discpres, pe_u_factor*timefacfac*normalvec(1)*interface_velint(1));
+            assembler.template Vector<DiscPres>(shp_discpres, pe_u_factor*timefacfac*normalvec(2)*interface_velint(2));
             
             // symmetric part from partial integration of stress term
             /*

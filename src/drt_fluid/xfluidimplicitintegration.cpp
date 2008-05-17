@@ -671,7 +671,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
-  const bool fluidrobin = params_.get<bool>("fluidrobin", false);
+  //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
 
   int               itnum = 0;
   bool              stopnonliniter = false;
@@ -739,6 +739,8 @@ void XFluidImplicitTimeInt::NonlinearSolve(
       }
       // give interface velocity to elements
       eleparams.set("interface velocity",ivelcol);
+      //cout << "interface velocity" << endl;
+      //cout << *ivelcol << endl;
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
@@ -1580,7 +1582,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
 
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   Teuchos::RCP<Epetra_Vector> ivelcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
-  Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true); // one could give a velocity here to have stationary flow over the interface
   Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   
   ComputeInterfaceAndSetDOFs(cutterdiscret,idispcol);
