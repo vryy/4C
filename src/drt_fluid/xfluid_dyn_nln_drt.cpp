@@ -239,7 +239,8 @@ void xdyn_fluid_drt()
     vector<string> conditions_to_copy;
     conditions_to_copy.push_back("XFEMCoupling");
     Teuchos::RCP<DRT::Discretization> boundarydis = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "XFEMCoupling", "Boundary", "BELE3", conditions_to_copy);
-    dsassert(boundarydis->NumGlobalNodes() > 0, "empty discretization detected. XFEMCoupling condition applied?");
+    if (boundarydis->NumGlobalNodes() == 0)
+      cout << "empty discretization detected. XFEMCoupling condition applied?" << endl;
     
     
     // -----------------------------------------------------------------
