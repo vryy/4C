@@ -25,7 +25,7 @@ using namespace std;
  |  construct dofmap                                            ag 11/07|
  *----------------------------------------------------------------------*/
 void XFEM::createDofMap(
-        const RCP<XFEM::InterfaceHandle>               ih,
+        const XFEM::InterfaceHandle&                   ih,
         std::map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,
         std::map<int, const set<XFEM::FieldEnr> >&     elementalDofsFinal
         )
@@ -35,8 +35,7 @@ void XFEM::createDofMap(
   std::map<int, set<XFEM::FieldEnr> >  elementalDofs;
 
   // get elements for each coupling label
-  std::map<int,set<int> > elementsByLabel;
-  XFEM::CollectElementsByXFEMCouplingLabel(ih->cutterdis(), elementsByLabel);
+  const std::map<int,set<int> >& elementsByLabel = *ih.elementsByLabel(); 
   
   // invert collection
   std::map<int,set<int> > labelsPerElementId;
@@ -54,14 +53,14 @@ void XFEM::createDofMap(
     
       // for surface with label, loop my col elements and add void enrichments to each elements member nodes
       const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
-      for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+      for (int i=0; i<ih.xfemdis()->NumMyColElements(); ++i)
       {
-          const DRT::Element* actele = ih->xfemdis()->lColElement(i);
+          const DRT::Element* actele = ih.xfemdis()->lColElement(i);
           const int element_gid = actele->Id();
-          if (ih->elementalDomainIntCells()->count(element_gid) >= 1)
+          if (ih.elementalDomainIntCells()->count(element_gid) >= 1)
           {
               
-              const XFEM::BoundaryIntCells& bcells = ih->elementalBoundaryIntCells()->find(element_gid)->second;
+              const XFEM::BoundaryIntCells& bcells = ih.elementalBoundaryIntCells()->find(element_gid)->second;
                 //TODO: check if element is intersected by the CURRENT condition label
               bool has_label = false;
               for (BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
@@ -112,16 +111,16 @@ void XFEM::createDofMap(
     
     const int standard_label = 0;
     const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
-    for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+    for (int i=0; i<ih.xfemdis()->NumMyColElements(); ++i)
     {
-        const DRT::Element* xfemele = ih->xfemdis()->lColElement(i);
-        if ( not (ih->elementalDomainIntCells()->count(xfemele->Id()) >= 1))
+        const DRT::Element* xfemele = ih.xfemdis()->lColElement(i);
+        if ( not (ih.elementalDomainIntCells()->count(xfemele->Id()) >= 1))
         {
             const int* nodeidptrs = xfemele->NodeIds();
             const BlitzVec3 nodalpos(toBlitzArray(xfemele->Nodes()[0]->X()));
             
             map<int,bool> posInCondition;
-            PositionWithinCondition(nodalpos,ih->cutterdis(),*ih->currentcutterpositions(), posInCondition);
+            PositionWithinCondition(nodalpos, ih, posInCondition);
             bool in_solid = false;
             for (map<int,bool>::const_iterator p = posInCondition.begin(); p != posInCondition.end(); ++p)
             {

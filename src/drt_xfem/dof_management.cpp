@@ -171,7 +171,7 @@ std::string XFEM::ElementDofManager::toString() const
 XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
             xfemdis_(ih->xfemdis())
 {
-    XFEM::createDofMap(ih, nodalDofSet_, elementalDofs_);
+    XFEM::createDofMap(*ih, nodalDofSet_, elementalDofs_);
 
     unique_enrichments_.clear();
     for (map<int, const set<XFEM::FieldEnr> >::const_iterator fieldenriter=nodalDofSet_.begin();
@@ -426,7 +426,7 @@ void XFEM::DofManager::toGmsh(
 /*----------------------------------------------------------------------*
  |  construct element dof manager                               ag 11/07|
  *----------------------------------------------------------------------*/
-const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
+XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
         const DRT::Element&  ele,
         const int      numeleparam
         ) const
@@ -448,10 +448,8 @@ const XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
         elementnodaldofset.insert(make_pair(inode,this->getElementDofSet(ele.Id())));
     }
 
-    // create a local dofmanager
-    XFEM::ElementDofManager eleDofManager(ele, nodaldofset, elementnodaldofset, numeleparam);
-
-    return eleDofManager;
+    // return a local dofmanager
+    return XFEM::ElementDofManager(ele, nodaldofset, elementnodaldofset, numeleparam);
 }
 
 /*----------------------------------------------------------------------*

@@ -17,12 +17,9 @@ Maintainer: Axel Gerstenberger
 
 #include <vector>
 #include <set>
-#include <string>
+#include <map>
 
-#include "integrationcell.H"
 #include "../drt_lib/drt_discret.H"
-#include "intersection.H"
-#include "../drt_io/io_gmsh.H"
 
 namespace XFEM
 {
@@ -32,7 +29,7 @@ namespace XFEM
 
  */
 void CollectElementsByXFEMCouplingLabel(
-    const RCP<DRT::Discretization>       cutterdis,
+    const DRT::Discretization&           cutterdis,
     std::map<int,set<int> >&             elementsByLabel
     );
 

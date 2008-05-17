@@ -18,6 +18,7 @@ Maintainer: Axel Gerstenberger
 #include "Teuchos_RefCountPtr.hpp"
 #include "../drt_lib/drt_discret.H"
 #include "xfem.H"
+#include "interface.H"
 
 using namespace Teuchos;
 
@@ -127,16 +128,14 @@ public:
     double ModifiedEnrValue(
             const BlitzVec3&                      actpos,            ///< \f$x\f$
             const BlitzVec3&                      nodalpos,          ///< \f$x_{\mathrm{Node}}\f$
-            const RCP<DRT::Discretization>&       cutterdis,         ///< intersecting discretization
-            const map<int,BlitzVec3>&             currentcutterpositions,  ///< current positions of all cutter nodes
+            const XFEM::InterfaceHandle&          ih,                ///< the ubiquitious interface handle with all geometry information
             const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
             ) const;
 
     //! calculate enrichment value based on input \f$\psi(x)\f$
     double EnrValue(
             const BlitzVec3&                      actpos,            ///< \f$x\f$
-            const RCP<DRT::Discretization>&       cutterdis,         ///< intersecting discretization
-            const map<int,BlitzVec3>&             currentcutterpositions,  ///< current positions of all cutter nodes
+            const XFEM::InterfaceHandle&          ih,                ///< the ubiquitious interface handle with all geometry information
             const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
             ) const;
     

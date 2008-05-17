@@ -76,18 +76,7 @@ public:
             const int                              gid      ///< unique global element id
             ) const;
 
-//    set<int> getSetOfIntersectedElementIds() const
-//    {
-//        set<int> eleidset;
-//        map<int,DomainIntCells>::const_iterator tmp;
-//        for (tmp = elementalDomainIntCells_.begin(); tmp != elementalDomainIntCells_.end(); ++tmp) {
-//            const int eleid = tmp->first;
-//            eleidset.insert(eleid);
-//        }
-//        return eleidset;
-//    }
-
-    /*! return
+    /*! tell me, whether the element is intersected or not
      * \return true, if element is intersected
      */
     bool ElementIntersected(
@@ -116,15 +105,24 @@ private:
     std::map<int,BlitzVec3>        currentcutterpositions_;
 
     //! integration cells for domain (global id for element -> list of volume integration cells)
-    map<int, DomainIntCells > elementalDomainIntCells_;
+    std::map<int, DomainIntCells > elementalDomainIntCells_;
 
     //! integration cells for boundary
-    map<int, BoundaryIntCells > elementalBoundaryIntCells_;
+    std::map<int, BoundaryIntCells > elementalBoundaryIntCells_;
     
     //! elements grouped by the xfem condition label
-    map<int,set<int> >        elementsByLabel_;
+    std::map<int,set<int> >        elementsByLabel_;
 
 };
+
+/*!
+\brief checks if a position in current coordinates lies within a certain condition region           
+*/  
+void PositionWithinCondition(
+        const BlitzVec3&                  x,              ///< node in physical coordinates
+        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
+        std::map<int,bool>&               posInCondition  ///< fill with bool values
+    );
 
 }
 

@@ -63,7 +63,7 @@ struct InterfacePoint
 class Intersection
 {
 
-       public:
+    public:
 
 
         /*!
@@ -86,7 +86,7 @@ class Intersection
 
 
 
-        private:
+    private:
 
         //! offset in facet marker list
         static const int                    facetMarkerOffset_ = 11;

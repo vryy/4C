@@ -243,7 +243,7 @@ public:
         return entry->second;
     };
     
-    const XFEM::ElementDofManager constructElementDofManager(
+    XFEM::ElementDofManager constructElementDofManager(
             const DRT::Element& ele,
             const int numeleparam) const;
     
@@ -258,19 +258,19 @@ public:
     
 private:
     //! pointer to the xfem discretization of which we hold the unknowns
-    RCP<DRT::Discretization> xfemdis_;
+    Teuchos::RCP<DRT::Discretization> xfemdis_;
     
     /*! unknowns for each global node id (gid) on this processor
      * if it does not contain the key, the number of unknowns is supposed to be zero
      * meaning, the the dofmanager will not crash but give back an empty set of unknowns
      * see also getNodeDofSet()
      */
-    map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
+    std::map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
     
     /*! unknowns for each global element id (gid) on this processor
      * same as above, see getElementDofSet()
      */
-    map<int, const set<XFEM::FieldEnr> > elementalDofs_;
+    std::map<int, const set<XFEM::FieldEnr> > elementalDofs_;
     
     //! set of all enrichments that are available on this proc.
     std::set<XFEM::Enrichment> unique_enrichments_;

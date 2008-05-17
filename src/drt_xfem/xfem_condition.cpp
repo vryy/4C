@@ -16,7 +16,7 @@ Maintainer: Axel Gerstenberger
 
 
 void XFEM::CollectElementsByXFEMCouplingLabel(
-    const RCP<DRT::Discretization>       cutterdis,
+    const DRT::Discretization&           cutterdis,
     std::map<int,set<int> >&             elementsByLabel
     )
 {
@@ -25,7 +25,7 @@ void XFEM::CollectElementsByXFEMCouplingLabel(
   
   // get condition
   vector< DRT::Condition * >      xfemConditions;
-  cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
+  cutterdis.GetCondition ("XFEMCoupling", xfemConditions);
   
   // collect elements by xfem coupling label
   for(vector<DRT::Condition*>::const_iterator conditer = xfemConditions.begin(); conditer!=xfemConditions.end(); ++conditer)

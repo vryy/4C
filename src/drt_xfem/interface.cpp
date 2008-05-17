@@ -79,7 +79,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
   }
 	
   elementsByLabel_.clear();
-  CollectElementsByXFEMCouplingLabel(cutterdis, elementsByLabel_);
+  CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
 
 }
 		
@@ -162,7 +162,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
               const BlitzMat cellpos = cell->NodalPosXYZ(*actele);
               const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
               //cout << cellcenterpos << endl;
-              PositionWithinCondition(cellcenterpos, cutterdis_, currentcutterpositions_, posInCondition);
+              PositionWithinCondition(cellcenterpos, *this, posInCondition);
               int domain_id = 0;
               // loop conditions
               for (map<int,bool>::const_iterator entry = posInCondition.begin(); entry != posInCondition.end(); ++entry)
@@ -232,6 +232,70 @@ bool XFEM::InterfaceHandle::ElementIntersected(
     {
         return true;
     }
+}
+
+
+/*----------------------------------------------------------------------*
+ |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
+ *----------------------------------------------------------------------*/
+void XFEM::PositionWithinCondition(
+        const BlitzVec3&                  x_in,
+        const XFEM::InterfaceHandle&      ih,
+        std::map<int,bool>&               posInCondition
+    )
+{
+  posInCondition.clear();
+
+  const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
+  
+  /////////////////
+  // loop labels
+  /////////////////
+  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  {
+    const int label = conditer->first;
+    posInCondition[label] = false; 
+
+    // point lies opposite to a element (basis point within element parameter space)
+    // works only, if I can loop over ALL surface elements
+    // MUST be modified, if only a subset of the surface is used
+    bool in_element = false;
+    double min_ele_distance = 1.0e12;
+    const DRT::Element* closest_element;
+    for (set<int>::const_iterator elegid = conditer->second.begin(); elegid != conditer->second.end(); ++elegid)
+    {
+      const DRT::Element* cutterele = ih.cutterdis()->gElement(*elegid);
+      const BlitzMat xyze_cutter(getCurrentNodalPositions(cutterele, *ih.currentcutterpositions()));
+      double distance = 0.0;
+      static BlitzVec2 eleCoord;
+      static BlitzVec3 normal;
+      in_element = searchForNearestPointOnSurface(cutterele,xyze_cutter,x_in,eleCoord,normal,distance);
+      if (in_element)
+      {
+        if (abs(distance) < abs(min_ele_distance))
+        {
+          closest_element = cutterele;
+          min_ele_distance = distance;
+        }
+      }
+    }
+    
+    if (in_element)
+    {
+      if (min_ele_distance < 0.0)
+      {
+        posInCondition[label] = true;
+      }
+    }
+    
+  } // end loop label
+
+    // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
+#ifdef PARALLEL
+    dserror("not implemented, yet");
+#endif
+    //exit(0);
+    return;
 }
 
 //const XFEM::InterfaceHandle::emptyBoundaryIntCells_ = XFEM::BoundaryIntCells(0);

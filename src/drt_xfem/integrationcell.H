@@ -213,7 +213,7 @@ private:
     explicit DomainIntCell();
     
     //! this function returns the coordinate array for all nodes of an element in parameter coordinates \f$ \xi \f$
-    std::vector<std::vector<double> > GetDefaultCoordinates(
+    BlitzMat GetDefaultCoordinates(
             const DRT::Element::DiscretizationType distype  ///< shape of element
             ) const;
 };

@@ -135,7 +135,7 @@ DomainIntCell::DomainIntCell(
 DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype) :
             IntCell(distype),
-            nodalpos_xi_domain_blitz_(ConvertPosArrayToBlitz(GetDefaultCoordinates(distype), distype, 3))
+            nodalpos_xi_domain_blitz_(GetDefaultCoordinates(distype))
 {
     return;
 }
@@ -169,34 +169,39 @@ string DomainIntCell::toString() const
 }
 
 // set element nodal coordinates according to given distype
-vector<vector<double> > DomainIntCell::GetDefaultCoordinates(
+BlitzMat DomainIntCell::GetDefaultCoordinates(
         const DRT::Element::DiscretizationType distype) const
 {
-    vector<vector<double> > coords;
     const int nsd = 3;
     const int numnode = DRT::UTILS::getNumberOfElementNodes(distype);
+    BlitzMat coords(3,numnode);
     
-    for(int j = 0; j < numnode; ++j){
-        vector<double> coord(nsd);
-        switch (distype){
+    switch (distype)
+    {
         case DRT::Element::hex8: case DRT::Element::hex20: case DRT::Element::hex27:
         {
-            for(int k = 0; k < nsd; ++k){
-                coord[k] = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[j][k];
-                };
+            for(int inode = 0; inode < numnode; ++inode)
+            {
+                for(int k = 0; k < nsd; ++k)
+                {
+                    coords(k,inode) = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[inode][k];
+                }
+            }
             break;
         }
         case DRT::Element::tet4: case DRT::Element::tet10:
         {
-            for(int k = 0; k < nsd; ++k){
-                coord[k] = DRT::UTILS::eleNodeNumbering_tet10_nodes_reference[j][k];
+            for(int inode = 0; inode < numnode; ++inode)
+            {
+                for(int k = 0; k < nsd; ++k)
+                {
+                    coords(k,inode) = DRT::UTILS::eleNodeNumbering_tet10_nodes_reference[inode][k];
                 }
+            }
             break;
         }
         default:
             dserror("not supported in integrationcells. can be coded easily... ;-)");
-        }
-        coords.push_back(coord);  
     }
     return coords;
 }

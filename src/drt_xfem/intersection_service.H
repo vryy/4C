@@ -403,17 +403,6 @@ namespace XFEM
         );   
     
     
-    /*!
-    \brief checks if a position in current coordinates lies within a certain condition region           
-    */  
-    void PositionWithinCondition(
-            const BlitzVec3&                  x,              ///< node in physical coordinates
-            const RCP<DRT::Discretization>    cutterdis,       ///< interface
-            const map<int,BlitzVec3>&         currentcutterpositions,  ///< current positions of all cutter nodes
-            std::map<int,bool>&               posInCondition     ///< fill with bool values
-        );
-    
-    
     //! calculate element normal vector in gausspoint (r,s)
     template<DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
     inline void computeNormalToBoundaryElement(
@@ -576,61 +565,6 @@ namespace XFEM
         
         return nodeWithinElement;
     }
-    
-    
-    /*!
-    \brief 	updates the 3x2 Jacobian matrix for the computation of the
-    		surface element coordinates for a point in physical coordinates
-
-    \param xsi          		(in)          : element coordinates      
-    \param surface element		(in)        : surface element
-    
-    \return Jacobian matrix
-    */         
-    void updateJacobianForMap3To2(
-            BlitzMat3x2&           Jacobi,
-            const BlitzVec2&       xsi,
-            const DRT::Element*    surfaceElement,
-            const BlitzMat&        xyze_surfaceElement
-            );      
-    
-   
-    /*!
-    \brief 	updates the nonlinear equations for the computation of the
-    		surface element coordinates for a surface point in physical coordinates
-
-    \param F   				(out)       : nonlinear equations
-    \param xsi          	(in)      	: element coordinates    
-    \param x         		(in)      	: physical coordinates      
-    \param surface element	(in)       	: surface element
-    */    
-    void updateFForMap3To2(   
-            BlitzVec3&                      F,
-            const BlitzVec2&                xsi,
-            const BlitzVec3&                x,
-            const DRT::Element*            	surfaceElement,
-            const BlitzMat&           xyze_surfaceElement
-            );
-    
-    
-    /*!
-    \brief 	updates the nonlinear equations for the computation of the
-    		surface element coordinates for a surface point in physical coordinates
-
-    \param A  				(out)       : system matrix
-    \param Jacobi          	(in)      	: Jacobian matrix
-    \param F         		(in)      	: nonlinear equations  
-    \param xsi         		(in)      	: element coordinates      
-    \param surface element	(in)       	: surface element
-    */    
-    void updateAForMap3To2(   
-            BlitzMat&                       A,
-            const BlitzMat3x2&              Jacobi,
-            const BlitzVec3&                F,
-            const BlitzVec2&                xsi,
-            const DRT::Element*             surfaceElement,
-            const BlitzMat&           xyze_surfaceElement
-            );
     
     
     /*!

@@ -18,11 +18,8 @@ Maintainer: Axel Gerstenberger
 #ifndef XDOFMAPCREATION_H
 #define XDOFMAPCREATION_H
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "xfem.H"
-#include "integrationcell.H"
 #include "dof_management.H"
-#include "../drt_lib/drt_discret.H"
+#include "interface.H"
 
 
 namespace XFEM
@@ -33,7 +30,7 @@ namespace XFEM
  * \note this is 3d fluid specific and should somehow be generalized
  */
 void createDofMap(
-        const RCP<XFEM::InterfaceHandle>                  ih,
+        const XFEM::InterfaceHandle&                      ih,
         std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,        ///< the map for nodal dofs
         std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal       ///< the map for elemental dofs        
 );

@@ -347,72 +347,6 @@ bool XFEM::checkPositionWithinElement(
 
 
 /*----------------------------------------------------------------------*
- |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
- *----------------------------------------------------------------------*/
-void XFEM::PositionWithinCondition(
-        const BlitzVec3&                  x_in,
-        const RCP<DRT::Discretization>    cutterdis,
-        const map<int,BlitzVec3>&         currentcutterpositions,    
-        std::map<int,bool>&               posInCondition
-    )
-{
-  posInCondition.clear();
-
-  std::map<int,set<int> > elementsByLabel;
-  CollectElementsByXFEMCouplingLabel(cutterdis, elementsByLabel);
-  
-  /////////////////
-  // loop labels
-  /////////////////
-  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
-  {
-    const int label = conditer->first;
-    posInCondition[label] = false; 
-
-    // point lies opposite to a element (basis point within element parameter space)
-    // works only, if I can loop over ALL surface elements
-    // MUST be modified, if only a subset of the surface is used
-    bool in_element = false;
-    double min_ele_distance = 1.0e12;
-    const DRT::Element* closest_element;
-    for (set<int>::const_iterator elegid = conditer->second.begin(); elegid != conditer->second.end(); ++elegid)
-    {
-      const DRT::Element* ele = cutterdis->gElement(*elegid);
-      const BlitzMat xyze_cutter(getCurrentNodalPositions(ele, currentcutterpositions));
-      double distance = 0.0;
-      BlitzVec2 eleCoord;
-      BlitzVec3 normal;
-      in_element = searchForNearestPointOnSurface(ele,xyze_cutter,x_in,eleCoord,normal,distance);
-      if (in_element)
-      {
-        if (abs(distance) < abs(min_ele_distance))
-        {
-          closest_element = ele;
-          min_ele_distance = distance;
-        }
-      }
-    }
-    
-    if (in_element)
-    {
-      if (min_ele_distance < 0.0)
-      {
-        posInCondition[label] = true;
-      }
-    }
-    
-  } // end loop label
-
-    // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
-#ifdef PARALLEL
-    dserror("not implemented, yet");
-#endif
-    //exit(0);
-    return;
-}
-
-
-/*----------------------------------------------------------------------*
  |  RQI:    searches the nearest point on a surface          u.may 02/08|
  |          element for a given point in physical coordinates           |
  *----------------------------------------------------------------------*/
@@ -427,42 +361,164 @@ bool XFEM::searchForNearestPointOnSurface(
 	distance = -1.0;
 	normal = 0;
 	
-	//cout << "CurrentToSurfaceElementCoordinates" << endl;
-	//cout << *surfaceElement << endl;
 	CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, physCoord, xsi);
-	//cout << "checkPositionWithinElementParameterSpace" << endl;
+	
 	const bool pointWithinElement = checkPositionWithinElementParameterSpace(xsi, surfaceElement->Shape());
 	
 	// normal vector at position xsi
-	BlitzVec3 eleNormalAtXsi;
+	static BlitzVec3 eleNormalAtXsi;
 	computeNormalToBoundaryElement(surfaceElement, xyze_surfaceElement, xsi, eleNormalAtXsi);
 	
 	BlitzVec3 x_surface_phys;
 	elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsi, x_surface_phys);
-  // normal pointing away from the surface towards physCoord
-  normal(0) = physCoord(0) - x_surface_phys(0);
-  normal(1) = physCoord(1) - x_surface_phys(1);
-  normal(2) = physCoord(2) - x_surface_phys(2);
-  // absolute distance between point and surface
-  distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
-  // compute distance with sign
-  const double scalarproduct = eleNormalAtXsi(0)*normal(0) + eleNormalAtXsi(1)*normal(1) + eleNormalAtXsi(2)*normal(2);
-  const double teiler = Norm2(eleNormalAtXsi) * Norm2(normal);
-  const double cosphi = scalarproduct / teiler;
-  const double vorzeichen = cosphi/abs(cosphi);
-  distance *= vorzeichen;
+	// normal pointing away from the surface towards physCoord
+	normal(0) = physCoord(0) - x_surface_phys(0);
+	normal(1) = physCoord(1) - x_surface_phys(1);
+	normal(2) = physCoord(2) - x_surface_phys(2);
+	// absolute distance between point and surface
+	distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
+	// compute distance with sign
+	const double scalarproduct = eleNormalAtXsi(0)*normal(0) + eleNormalAtXsi(1)*normal(1) + eleNormalAtXsi(2)*normal(2);
+	const double teiler = Norm2(eleNormalAtXsi) * Norm2(normal);
+	const double cosphi = scalarproduct / teiler;
+	const double vorzeichen = cosphi/abs(cosphi);
+	distance *= vorzeichen;
   
-  return pointWithinElement;
+	return pointWithinElement;
+}
+
+/*!
+\brief  updates the 3x2 Jacobian matrix for the computation of the
+        surface element coordinates for a point in physical coordinates
+*/    
+template<DRT::Element::DiscretizationType DISTYPE>
+static void updateJacobianForMap3To2(
+        BlitzMat3x2&                    Jacobi,              ///< Jacobian matrix
+        const BlitzVec2&                xsi,                 ///< ???
+        const BlitzMat&                 xyze_surfaceElement  ///< element nodal coordinates
+        )
+{
+    const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    
+    static blitz::TinyMatrix<double,2,numNodes> deriv1;
+    shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
+
+    for(int isd=0; isd<3; isd++)
+    {
+        for(int jsd=0; jsd<2; jsd++)
+        {
+            Jacobi(isd, jsd) = 0.0;
+            for(int inode=0; inode<numNodes; inode++) 
+            {
+                Jacobi(isd, jsd) += xyze_surfaceElement(isd,inode) * deriv1(jsd,inode);
+            }
+        }
+    } 
+    return;
 }
 
 
+
+/*!
+\brief  updates the nonlinear equations for the computation of the
+        surface element coordinates for a surface point in physical coordinates
+
+\param F                (out)       : nonlinear equations
+\param xsi              (in)        : element coordinates    
+\param x                (in)        : physical coordinates      
+\param surface element  (in)        : surface element
+*/   
+template<DRT::Element::DiscretizationType DISTYPE>
+static void updateFForMap3To2(
+        BlitzVec3&          F,
+        const BlitzVec2&    xsi,
+        const BlitzVec3&    x,
+        const BlitzMat&     xyze_surfaceElement
+        )                                                  
+{   
+    const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+
+    static blitz::TinyVector<double,numNodes> funct;
+    shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
+    
+    for(int isd=0; isd<3; ++isd)
+    {
+        F(isd) = 0.0;
+        for(int inode=0; inode<numNodes; inode++) 
+        {
+            F(isd) += xyze_surfaceElement(isd,inode) * funct(inode);
+        }
+    }   
+    
+    F -= x;
+    return;
+}
+
+
+
+/*!
+\brief  updates the nonlinear equations for the computation of the
+        surface element coordinates for a surface point in physical coordinates
+
+\param A                (out)       : system matrix
+\param Jacobi           (in)        : Jacobian matrix
+\param F                (in)        : nonlinear equations  
+\param xsi              (in)        : element coordinates      
+\param surface element  (in)        : surface element
+*/
+template<DRT::Element::DiscretizationType DISTYPE>
+static void updateAForMap3To2(   
+        BlitzMat&                 A,
+        const BlitzMat3x2&        Jacobi,
+        const BlitzVec3&          F,
+        const BlitzVec2&          xsi,
+        const BlitzMat&           xyze_surfaceElement
+        )                                                  
+{   
+    const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    static blitz::TinyMatrix<double,3,numNodes> deriv2;
+    shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), DISTYPE);
+
+    static blitz::Array<double, 3> tensor3Ord(3,2,2, blitz::ColumnMajorArray<3>());        
+    tensor3Ord = 0.0;
+   
+        
+    for(int isd=0; isd<3; ++isd)
+    {
+        for(int jsd=0; jsd<2; ++jsd)
+        {
+            for(int ksd=0; ksd<2; ++ksd)
+            {
+                tensor3Ord(isd, jsd, ksd) = 0.0;
+                for(int inode=0; inode<numNodes; inode++)
+                {
+                    tensor3Ord(isd, jsd, ksd) += xyze_surfaceElement(isd,inode) * deriv2(jsd,inode);
+                }
+            }
+        }
+    }
+    
+    //A = blitz::sum(Jacobi(k,i) * Jacobi(k,j), k) + blitz::sum(F(k)*tensor3Ord(k,i,j),k);
+    for (int i = 0; i < 2; ++i)
+    {
+        for (int j = 0; j < 2; ++j)
+        {
+            A(i,j) = 0.0;
+            for (int k = 0; k < 3; ++k)
+            {
+                A(i,j) += Jacobi(k,i) * Jacobi(k,j) + F(k)*tensor3Ord(k,i,j);
+            }
+        }
+    }
+    
+}
 
 /*----------------------------------------------------------------------*
  |  RQI:    compute element coordinates from a given point              |
  |          in the 3-dim physical space lies on a given surface element |
  *----------------------------------------------------------------------*/
-void XFEM::CurrentToSurfaceElementCoordinates(
-        const DRT::Element*        	surfaceElement,
+template<DRT::Element::DiscretizationType DISTYPE>
+static void currentToSurfaceElementCoordinatesT(
         const BlitzMat&             xyze_surfaceElement,
         const BlitzVec3&            physCoord,
         BlitzVec2&                  eleCoord
@@ -484,8 +540,8 @@ void XFEM::CurrentToSurfaceElementCoordinates(
         // compute Jacobian, f and b
   	    static BlitzMat3x2 Jacobi;
   	    static BlitzVec3 F;
-  	    updateJacobianForMap3To2(Jacobi, eleCoord, surfaceElement, xyze_surfaceElement);
-        updateFForMap3To2(F, eleCoord, physCoord, surfaceElement, xyze_surfaceElement);
+  	    updateJacobianForMap3To2<DISTYPE>(Jacobi, eleCoord, xyze_surfaceElement);
+        updateFForMap3To2<DISTYPE>(F, eleCoord, physCoord, xyze_surfaceElement);
         static BlitzVec b(2);
         //b = blitz::sum(-Jacobi(j,i)*F(j),j);
         for (int i = 0; i < 2; ++i)
@@ -506,7 +562,7 @@ void XFEM::CurrentToSurfaceElementCoordinates(
   	    
         // compute system matrix A
         static BlitzMat A(2,2,blitz::ColumnMajorArray<2>());
-  		updateAForMap3To2(A, Jacobi, F, eleCoord, surfaceElement, xyze_surfaceElement);
+  		updateAForMap3To2<DISTYPE>(A, Jacobi, F, eleCoord, xyze_surfaceElement);
   	
   		static BlitzVec2 dx;
   		dx = 0.0;
@@ -526,113 +582,24 @@ void XFEM::CurrentToSurfaceElementCoordinates(
 
 
 /*----------------------------------------------------------------------*
- |  RQI:    updates the Jacobian for the computation         u.may 01/08|
- |          whether a point in the 3-dim physical space lies            |
- |          on a surface element                                        |
+ |  RQI:    compute element coordinates from a given point              |
+ |          in the 3-dim physical space lies on a given surface element |
  *----------------------------------------------------------------------*/
-void XFEM::updateJacobianForMap3To2(
-        BlitzMat3x2&                    Jacobi,
-        const BlitzVec2&                xsi,
-        const DRT::Element*             surfaceElement,
-        const BlitzMat&                 xyze_surfaceElement
+void XFEM::CurrentToSurfaceElementCoordinates(
+        const DRT::Element*         surfaceElement,
+        const BlitzMat&             xyze_surfaceElement,
+        const BlitzVec3&            physCoord,
+        BlitzVec2&                  eleCoord
         )
 {
-    Jacobi = 0.0;
-    
-    const int numNodes = surfaceElement->NumNode();
-    const BlitzMat deriv1(shape_function_2D_deriv1(xsi(0), xsi(1), surfaceElement->Shape()));
-    for(int inode=0; inode<numNodes; inode++) 
+    switch (surfaceElement->Shape())
     {
-        for(int isd=0; isd<3; isd++)
-        {
-            for(int jsd=0; jsd<2; jsd++)
-            {
-            	  Jacobi(isd, jsd) += xyze_surfaceElement(isd,inode) * deriv1(jsd,inode);
-            }
-        }
-    } 
-    return;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  RQI:    updates the system of nonlinear equations        u.may 01/08|
- |          for the computation, whether a point in the 3-dim physical 	|
- |			space lies on a surface element 							|                 
- *----------------------------------------------------------------------*/
-void XFEM::updateFForMap3To2(
-        BlitzVec3&          F,
-        const BlitzVec2&    xsi,
-        const BlitzVec3&    x,
-        const DRT::Element* surfaceElement,
-        const BlitzMat&     xyze_surfaceElement
-        )                                                  
-{   
-    F = 0.0;
-    const int numNodes = surfaceElement->NumNode();
-    const BlitzVec funct(shape_function_2D(xsi(0), xsi(1), surfaceElement->Shape()));
-    for(int inode=0; inode<numNodes; inode++) 
-    {
-        for(int isd=0; isd<3; ++isd)
-        {
-            F(isd) += xyze_surfaceElement(isd,inode) * funct(inode);
-        }
-    }   
-    
-    F -= x;
-    return;
-}
-
-
-
-/*----------------------------------------------------------------------*
- |  RQI:    updates the system matrix			             u.may 01/08|
- |          for the computation, whether a point in the 3-dim physical 	|
- |			space lies on a surface element 							|                 
- *----------------------------------------------------------------------*/
-void XFEM::updateAForMap3To2(   
-        BlitzMat&                 A,
-        const BlitzMat3x2&        Jacobi,
-        const BlitzVec3&          F,
-        const BlitzVec2&          xsi,
-        const DRT::Element*       surfaceElement,
-        const BlitzMat&           xyze_surfaceElement
-        )                                                  
-{   
-    const int numNodes = surfaceElement->NumNode();
-    blitz::firstIndex i;    // Placeholder for the first blitz array index
-    blitz::secondIndex j;   // Placeholder for the second blitz array index
-    blitz::thirdIndex k;    // Placeholder for the third blitz array index
-    
-    BlitzMat deriv2(3,numNodes);
-    shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), surfaceElement->Shape());
-	blitz::Array<double, 3> tensor3Ord(3,2,2, blitz::ColumnMajorArray<3>());		
-    tensor3Ord = 0.0;
-   
-	for(int inode=0; inode<numNodes; inode++) 	
-	{
-		for(int isd=0; isd<3; ++isd)
-		{
-			for(int jsd=0; jsd<2; ++jsd)
-				for(int ksd=0; ksd<2; ++ksd)
-					tensor3Ord(isd, jsd, ksd) += xyze_surfaceElement(isd,inode) * deriv2(jsd,inode);
-		}
-	}
-	
-	//A = blitz::sum(Jacobi(k,i) * Jacobi(k,j), k) + blitz::sum(F(k)*tensor3Ord(k,i,j),k);
-	for (int i = 0; i < 2; ++i)
-    {
-        for (int j = 0; j < 2; ++j)
-        {
-            A(i,j) = 0.0;
-            for (int k = 0; k < 3; ++k)
-            {
-                A(i,j) += Jacobi(k,i) * Jacobi(k,j) + F(k)*tensor3Ord(k,i,j);
-            }
-        }
+        case DRT::Element::quad4:
+            currentToSurfaceElementCoordinatesT<DRT::Element::quad4>(xyze_surfaceElement,physCoord,eleCoord);
+            break;
+        default:
+            dserror("please add your surface element type here");
     }
-	
 }
 
 

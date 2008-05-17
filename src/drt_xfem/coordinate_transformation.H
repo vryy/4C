@@ -32,42 +32,6 @@ namespace XFEM
   
   using namespace LINALG::DENSE;
 
-//  //! map position from eta to xi space
-//  template<XFEM::AssemblyType ASSTYPE>
-//  XFEM::PosXiDomain mapEtaToXi3D(
-//          const XFEM::DomainIntCell& cell,
-//          const XFEM::PosEtaDomain&  pos_eta)
-//  {   
-//      // get cell node coordinates
-//      const BlitzMat xyze_cell(cell.NodalPosXiDomainBlitz());
-//
-//      // create shape function vectors
-//      const int numnodecell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-//      
-//      BlitzVec funct(numnodecell);
-//      DRT::UTILS::shape_function_3D(funct, pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape());
-//
-//      // init blitz indices
-//      blitz::firstIndex i;    // Placeholder for the first index
-//      blitz::secondIndex j;   // Placeholder for the second index
-//      
-//      // translate position into from cell coordinates to element coordinates
-//      //const BlitzVec pos_xsi_domain(blitz::sum(funct(j)*xyze_cell(i,j),j));
-//      if (numnodecell != 4) dserror("numnode of integrationcell is not 4");
-//      XFEM::PosXiDomain pos_xsi_domain;
-//      MV_product<3,4>(xyze_cell, funct, pos_xsi_domain);
-//      
-//      return pos_xsi_domain;
-//  }
-//  //! map position from eta to xi space
-//  template<> 
-//  XFEM::PosXiDomain mapEtaToXi3D<XFEM::standard_assembly>(
-//          const XFEM::DomainIntCell& cell,
-//          const XFEM::PosEtaDomain&  pos_eta)
-//  {   
-//      return pos_eta;
-//  }
-  
   //! map position from eta to xi space
   template<XFEM::AssemblyType ASSTYPE>
   void mapEtaToXi3D(
