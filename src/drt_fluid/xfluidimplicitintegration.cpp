@@ -737,6 +737,8 @@ void XFluidImplicitTimeInt::NonlinearSolve(
         discret_->SetState("dispnp", dispnp_);
         discret_->SetState("gridv", gridv_);
       }
+      // give interface velocity to elements
+      eleparams.set("interface velocity",ivelcol);
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax

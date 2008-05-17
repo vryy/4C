@@ -73,6 +73,7 @@ void static Sysmat(
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
         const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
+        const RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
         BlitzMat&                         estif,         ///< element matrix to calculate
         BlitzVec&                         eforce,        ///< element rhs to calculate
         const struct _MATERIAL*           material,      ///< fluid material
@@ -1568,6 +1569,7 @@ void callSysmat(
         const XFEM::ElementDofManager&    eleDofManager,
         const std::vector<double>&        locval,
         const std::vector<double>&        locval_hist,
+        const RCP<Epetra_Vector>          ivelcol,
         BlitzMat&                         estif,
         BlitzVec&                         eforce,
         const struct _MATERIAL*           material,
@@ -1586,22 +1588,22 @@ void callSysmat(
         {
             case DRT::Element::hex8:
                 Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex20:
                 Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex27:
                 Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::tet4:
                 Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             default:
@@ -1614,17 +1616,17 @@ void callSysmat(
         {
             case DRT::Element::hex8:
                 Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex20:
                 Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex27:
                 Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             default:

@@ -169,6 +169,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const double timefac = params.get<double>("thsl",-1.0);
         if (timefac < 0.0)
             dserror("No thsl supplied");
+        
+        const Teuchos::RCP<Epetra_Vector> ivelcol = params.get<Teuchos::RCP<Epetra_Vector> >("interface velocity",null);
 
         //--------------------------------------------------
         // wrap epetra serial dense objects in blitz objects
@@ -188,7 +190,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         //--------------------------------------------------
         XFLUID::callSysmat(assembly_type,
-                this, ih_, eleDofManager_, myvelnp, myhist, estif, eforce,
+                this, ih_, eleDofManager_, myvelnp, myhist, ivelcol, estif, eforce,
                 actmat, time, timefac, newton, pstab, supg, cstab, true);
 
         // This is a very poor way to transport the density to the
@@ -246,6 +248,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           vector<double> locval(lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,locval,lm);
           vector<double> locval_hist(lm.size(),0.0); // zero history vector
+          
+          const Teuchos::RCP<Epetra_Vector> ivelcol = null;
           
           if (is_ale_)
           {
@@ -340,7 +344,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           {
           // calculate element coefficient matrix and rhs
           XFLUID::callSysmat(assembly_type,
-                  this, ih_, eleDofManager_, locval, locval_hist, estif, eforce,
+                  this, ih_, eleDofManager_, locval, locval_hist, null, estif, eforce,
                   actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
           }
           // This is a very poor way to transport the density to the
