@@ -80,36 +80,61 @@ XFEM::InterfaceHandle::InterfaceHandle(
 	
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(cutterdis, elementsByLabel_);
-  
-#if 1
+
+}
+		
+/*----------------------------------------------------------------------*
+ |  dtor                                                        ag 11/07|
+ *----------------------------------------------------------------------*/
+XFEM::InterfaceHandle::~InterfaceHandle()
+{
+    return;
+}
+
+/*----------------------------------------------------------------------*
+ |  transform  to a string                                      ag 11/07|
+ *----------------------------------------------------------------------*/
+std::string XFEM::InterfaceHandle::toString() const
+{
+	std::stringstream s(" ");
+	return s.str();
+}
+
+/*----------------------------------------------------------------------*
+ |  transform  to a string                                      ag 11/07|
+ *----------------------------------------------------------------------*/
+void XFEM::InterfaceHandle::toGmsh(const int step) const
+{
   {
     // debug: write both meshes to file in Gmsh format
-    cout << "writing 'elements_coupled_system.pos'...";
-    std::ofstream f_system("elements_coupled_system.pos");
-    f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
-    f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis);
-    {
-        stringstream gmshfilecontent;
-        gmshfilecontent << "View \" " << "CellCenter" << " Elements and Integration Cells \" {" << endl;
-        for (int i=0; i<xfemdis->NumMyColElements(); ++i)
-        {
-            DRT::Element* actele = xfemdis->lColElement(i);
-            const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
-            XFEM::DomainIntCells::const_iterator cell;
-            for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
-            {
-                const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
-                gmshfilecontent << "SP(";
-                gmshfilecontent << scientific << cellcenterpos(0) << ",";
-                gmshfilecontent << scientific << cellcenterpos(1) << ",";
-                gmshfilecontent << scientific << cellcenterpos(2);
-                gmshfilecontent << "){";
-                gmshfilecontent << "0.0};" << endl;
-            };
-        };
-        gmshfilecontent << "};" << endl;
-        f_system << gmshfilecontent.str();
-    }
+    std::stringstream filename;
+    filename << "elements_coupled_system_" << std::setw(5) << setfill('0') << step << ".pos";
+    cout << "writing '"<<filename.str()<<".pos'...";
+    std::ofstream f_system(filename.str().c_str());
+    f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
+    f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
+//    {
+//        stringstream gmshfilecontent;
+//        gmshfilecontent << "View \" " << "CellCenter" << " Elements and Integration Cells \" {" << endl;
+//        for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
+//        {
+//            const DRT::Element* xfemele = xfemdis_->lColElement(i);
+//            const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(xfemele->Id(), xfemele->Shape());
+//            XFEM::DomainIntCells::const_iterator cell;
+//            for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
+//            {
+//                const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*xfemele));
+//                gmshfilecontent << "SP(";
+//                gmshfilecontent << scientific << cellcenterpos(0) << ",";
+//                gmshfilecontent << scientific << cellcenterpos(1) << ",";
+//                gmshfilecontent << scientific << cellcenterpos(2);
+//                gmshfilecontent << "){";
+//                gmshfilecontent << "0.0};" << endl;
+//            };
+//        };
+//        gmshfilecontent << "};" << endl;
+//        f_system << gmshfilecontent.str();
+//    }
     f_system << IO::GMSH::getConfigString(3);
     f_system.close();
     cout << " done" << endl;
@@ -117,17 +142,19 @@ XFEM::InterfaceHandle::InterfaceHandle(
   
   // debug: write information about which structure we are in
   {
-    cout << "writing 'domains.pos'..."; 
-    std::ofstream f_system("domains.pos");
+    std::stringstream filename;
+    filename << "domains_" << std::setw(5) << setfill('0') << step << ".pos";
+    cout << "writing '"<<filename.str()<<".pos'...";
+    std::ofstream f_system(filename.str().c_str());
     //f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
-    f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis);
+    //f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
     {
         map<int,bool> posInCondition;
         stringstream gmshfilecontent;
         gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
-        for (int i=0; i<xfemdis->NumMyColElements(); ++i)
+        for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
         {
-            DRT::Element* actele = xfemdis->lColElement(i);
+            DRT::Element* actele = xfemdis_->lColElement(i);
             const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
             XFEM::DomainIntCells::const_iterator cell;
             for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
@@ -135,7 +162,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
               const BlitzMat cellpos = cell->NodalPosXYZ(*actele);
               const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
               //cout << cellcenterpos << endl;
-              PositionWithinCondition(cellcenterpos, cutterdis, posInCondition);
+              PositionWithinCondition(cellcenterpos, cutterdis_, currentcutterpositions_, posInCondition);
               int domain_id = 0;
               // loop conditions
               for (map<int,bool>::const_iterator entry = posInCondition.begin(); entry != posInCondition.end(); ++entry)
@@ -160,24 +187,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
     f_system.close();
     cout << " done" << endl;
   }
-#endif
-}
-		
-/*----------------------------------------------------------------------*
- |  dtor                                                        ag 11/07|
- *----------------------------------------------------------------------*/
-XFEM::InterfaceHandle::~InterfaceHandle()
-{
-    return;
-}
-
-/*----------------------------------------------------------------------*
- |  transform  to a string                                      ag 11/07|
- *----------------------------------------------------------------------*/
-std::string XFEM::InterfaceHandle::toString() const
-{
-	std::stringstream s(" ");
-	return s.str();
+  return;
 }
 
 XFEM::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(

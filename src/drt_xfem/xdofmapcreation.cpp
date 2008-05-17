@@ -121,7 +121,7 @@ void XFEM::createDofMap(
             const BlitzVec3 nodalpos(toBlitzArray(xfemele->Nodes()[0]->X()));
             
             map<int,bool> posInCondition;
-            PositionWithinCondition(nodalpos,ih->cutterdis(),posInCondition);
+            PositionWithinCondition(nodalpos,ih->cutterdis(),*ih->currentcutterpositions(), posInCondition);
             bool in_solid = false;
             for (map<int,bool>::const_iterator p = posInCondition.begin(); p != posInCondition.end(); ++p)
             {

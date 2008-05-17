@@ -219,7 +219,9 @@ public:
     //! destructor
     ~DofManager();
     //! return string representation of the dofmanager
-    string toString() const;
+    std::string toString() const;
+    //! print a Gmsh representation of this class
+    void toGmsh(const Teuchos::RCP<XFEM::InterfaceHandle> ih, const int step) const;
 
     const std::set<FieldEnr> getNodeDofSet(const int gid) const
     {

@@ -200,189 +200,6 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
     {
         cout << "  - " << enr->toString() << endl;
     }
-
-
-
-    std::ofstream f_system("numdof_coupled_system.pos");
-    //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
-    f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis());
-    {
-        // draw elements with associated gid
-        stringstream gmshfilecontent;
-        gmshfilecontent << "View \" " << "Element->Id() \" {" << endl;
-        for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
-        {
-            DRT::Element* actele = ih->xfemdis()->lColElement(i);
-            gmshfilecontent << IO::GMSH::elementToString(double(actele->Id()), actele);
-        };
-        gmshfilecontent << "};" << endl;
-        f_system << gmshfilecontent.str();
-    }
-    {
-        stringstream gmshfilecontent;
-        gmshfilecontent << "View \" " << " Stress unknowns in element \" {" << endl;
-        for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
-        {
-            DRT::Element* actele = ih->xfemdis()->lColElement(i);
-            const int ele_gid = actele->Id();
-            double val = 0.0;
-            std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);
-
-            if (blub != elementalDofs_.end())
-            {
-                const set<XFEM::FieldEnr> schnapp = blub->second;
-                val = schnapp.size();
-                gmshfilecontent << IO::GMSH::elementToString(val, actele);
-            }
-
-        };
-        gmshfilecontent << "};" << endl;
-        f_system << gmshfilecontent.str();
-    }
-    {
-        stringstream gmshfilecontent;
-        gmshfilecontent << "View \" " << "NumDof per node \" {" << endl;
-        for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
-        {
-            //DRT::Element* actele = ih->xfemdis()->lColElement(i);
-            const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
-            const BlitzVec3 pos(toBlitzArray(actnode->X()));
-            const int node_gid = actnode->Id();
-
-            double val = 0.0;
-            std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
-
-            if (blub != nodalDofSet_.end())
-            {
-                const set<XFEM::FieldEnr> schnapp = blub->second;
-                val = schnapp.size();
-
-
-            gmshfilecontent << "SP(";
-            gmshfilecontent << scientific << pos(0) << ",";
-            gmshfilecontent << scientific << pos(1) << ",";
-            gmshfilecontent << scientific << pos(2);
-            gmshfilecontent << "){";
-            gmshfilecontent << val << "};" << endl;
-            }
-        };
-        gmshfilecontent << "};" << endl;
-        f_system << gmshfilecontent.str();
-    }
-
-    {
-        stringstream gmshfilecontent;
-        gmshfilecontent << "View \" " << "NumDof Jump enriched nodes \" {" << endl;
-        for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
-        {
-            const DRT::Node* actnode = ih->xfemdis()->lColNode(i);
-            const BlitzVec3 pos(toBlitzArray(actnode->X()));
-            const int node_gid = actnode->Id();
-
-            double val = 0.0;
-            std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
-            if (blub != nodalDofSet_.end())
-            {
-                const std::set<XFEM::FieldEnr> fields = blub->second;
-                for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
-                {
-                    if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeJump)
-                    {
-                        val = val+1.0;
-                    }
-                }
-                if (val > 0.5)
-                {
-                    gmshfilecontent << "SP(";
-                    gmshfilecontent << scientific << pos(0) << ",";
-                    gmshfilecontent << scientific << pos(1) << ",";
-                    gmshfilecontent << scientific << pos(2);
-                    gmshfilecontent << "){";
-                    gmshfilecontent << val << "};" << endl;
-                }
-            }
-        };
-        gmshfilecontent << "};" << endl;
-        f_system << gmshfilecontent.str();
-    }
-
-    {
-        stringstream gmshfilecontent;
-        gmshfilecontent << "View \" " << "NumDof" << " standard enriched nodes \" {" << endl;
-        for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
-        {
-            const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
-            const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
-            const int node_gid = xfemnode->Id();
-
-            double val = 0.0;
-            std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
-            if (blub != nodalDofSet_.end())
-            {
-                const std::set<XFEM::FieldEnr> fields = blub->second;
-                for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
-                {
-                    if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeStandard)
-                    {
-                        val = val+1.0;
-                    }
-                }
-                if (val > 0.5)
-                {
-                    gmshfilecontent << "SP(";
-                    gmshfilecontent << scientific << pos(0) << ",";
-                    gmshfilecontent << scientific << pos(1) << ",";
-                    gmshfilecontent << scientific << pos(2);
-                    gmshfilecontent << "){";
-                    gmshfilecontent << val << "};" << endl;
-                }
-            }
-        };
-        gmshfilecontent << "};" << endl;
-        f_system << gmshfilecontent.str();
-    }
-
-    {
-        stringstream gmshfilecontent;
-        gmshfilecontent << "View \" " << "NumDof" << " Void enriched nodes \" {" << endl;
-        for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
-        {
-            const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
-            const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
-            const int node_gid = xfemnode->Id();
-
-            double val = 0.0;
-            std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
-            if (blub != nodalDofSet_.end())
-            {
-                const std::set<XFEM::FieldEnr> fields = blub->second;
-                for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
-                {
-                    if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeVoid)
-                    {
-                        val = val+1.0;
-                    }
-                }
-                if (val > 0.5)
-                {
-                    gmshfilecontent << "SP(";
-                    gmshfilecontent << scientific << pos(0) << ",";
-                    gmshfilecontent << scientific << pos(1) << ",";
-                    gmshfilecontent << scientific << pos(2);
-                    gmshfilecontent << "){";
-                    gmshfilecontent << val << "};" << endl;
-                }
-            }
-        };
-        gmshfilecontent << "};" << endl;
-        f_system << gmshfilecontent.str();
-    }
-
-
-    //f_system << IO::GMSH::getConfigString(2);
-    f_system.close();
-
-
 }
 
 /*----------------------------------------------------------------------*
@@ -417,6 +234,193 @@ string XFEM::DofManager::toString() const
         };
     };
     return s.str();
+}
+
+void XFEM::DofManager::toGmsh(
+    const Teuchos::RCP<XFEM::InterfaceHandle> ih,
+    const int step
+    ) const
+{
+  std::stringstream filename;
+  filename << "numdof_coupled_system_" << std::setw(5) << setfill('0') << step << ".pos";
+  std::ofstream f_system(filename.str().c_str());
+  //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
+  f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis(), *ih->currentcutterpositions());
+  {
+      // draw elements with associated gid
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << "Element->Id() \" {" << endl;
+      for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+      {
+          DRT::Element* actele = ih->xfemdis()->lColElement(i);
+          gmshfilecontent << IO::GMSH::elementToString(double(actele->Id()), actele);
+      };
+      gmshfilecontent << "};" << endl;
+      f_system << gmshfilecontent.str();
+  }
+  {
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << " Stress unknowns in element \" {" << endl;
+      for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+      {
+          DRT::Element* actele = ih->xfemdis()->lColElement(i);
+          const int ele_gid = actele->Id();
+          double val = 0.0;
+          std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);
+
+          if (blub != elementalDofs_.end())
+          {
+              const set<XFEM::FieldEnr> schnapp = blub->second;
+              val = schnapp.size();
+              gmshfilecontent << IO::GMSH::elementToString(val, actele);
+          }
+
+      };
+      gmshfilecontent << "};" << endl;
+      f_system << gmshfilecontent.str();
+  }
+  {
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << "NumDof per node \" {" << endl;
+      for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+      {
+          //DRT::Element* actele = ih->xfemdis()->lColElement(i);
+          const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
+          const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
+          const int node_gid = xfemnode->Id();
+
+          double val = 0.0;
+          std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+
+          if (blub != nodalDofSet_.end())
+          {
+              const set<XFEM::FieldEnr> schnapp = blub->second;
+              val = schnapp.size();
+
+
+          gmshfilecontent << "SP(";
+          gmshfilecontent << scientific << pos(0) << ",";
+          gmshfilecontent << scientific << pos(1) << ",";
+          gmshfilecontent << scientific << pos(2);
+          gmshfilecontent << "){";
+          gmshfilecontent << val << "};" << endl;
+          }
+      };
+      gmshfilecontent << "};" << endl;
+      f_system << gmshfilecontent.str();
+  }
+
+  {
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << "NumDof Jump enriched nodes \" {" << endl;
+      for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+      {
+          const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
+          const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
+          const int node_gid = xfemnode->Id();
+
+          double val = 0.0;
+          std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+          if (blub != nodalDofSet_.end())
+          {
+              const std::set<XFEM::FieldEnr> fields = blub->second;
+              for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
+              {
+                  if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeJump)
+                  {
+                      val = val+1.0;
+                  }
+              }
+              if (val > 0.5)
+              {
+                  gmshfilecontent << "SP(";
+                  gmshfilecontent << scientific << pos(0) << ",";
+                  gmshfilecontent << scientific << pos(1) << ",";
+                  gmshfilecontent << scientific << pos(2);
+                  gmshfilecontent << "){";
+                  gmshfilecontent << val << "};" << endl;
+              }
+          }
+      };
+      gmshfilecontent << "};" << endl;
+      f_system << gmshfilecontent.str();
+  }
+
+  {
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << "NumDof" << " standard enriched nodes \" {" << endl;
+      for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+      {
+          const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
+          const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
+          const int node_gid = xfemnode->Id();
+
+          double val = 0.0;
+          std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+          if (blub != nodalDofSet_.end())
+          {
+              const std::set<XFEM::FieldEnr> fields = blub->second;
+              for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
+              {
+                  if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeStandard)
+                  {
+                      val = val+1.0;
+                  }
+              }
+              if (val > 0.5)
+              {
+                  gmshfilecontent << "SP(";
+                  gmshfilecontent << scientific << pos(0) << ",";
+                  gmshfilecontent << scientific << pos(1) << ",";
+                  gmshfilecontent << scientific << pos(2);
+                  gmshfilecontent << "){";
+                  gmshfilecontent << val << "};" << endl;
+              }
+          }
+      };
+      gmshfilecontent << "};" << endl;
+      f_system << gmshfilecontent.str();
+  }
+
+  {
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << "NumDof" << " Void enriched nodes \" {" << endl;
+      for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
+      {
+          const DRT::Node* xfemnode = ih->xfemdis()->lColNode(i);
+          const BlitzVec3 pos(toBlitzArray(xfemnode->X()));
+          const int node_gid = xfemnode->Id();
+
+          double val = 0.0;
+          std::map<int, const set<XFEM::FieldEnr> >::const_iterator blub = nodalDofSet_.find(node_gid);
+          if (blub != nodalDofSet_.end())
+          {
+              const std::set<XFEM::FieldEnr> fields = blub->second;
+              for (std::set<XFEM::FieldEnr>::const_iterator f = fields.begin(); f != fields.end(); ++f)
+              {
+                  if ((f->getEnrichment().Type()) == XFEM::Enrichment::typeVoid)
+                  {
+                      val = val+1.0;
+                  }
+              }
+              if (val > 0.5)
+              {
+                  gmshfilecontent << "SP(";
+                  gmshfilecontent << scientific << pos(0) << ",";
+                  gmshfilecontent << scientific << pos(1) << ",";
+                  gmshfilecontent << scientific << pos(2);
+                  gmshfilecontent << "){";
+                  gmshfilecontent << val << "};" << endl;
+              }
+          }
+      };
+      gmshfilecontent << "};" << endl;
+      f_system << gmshfilecontent.str();
+  }
+
+
+  //f_system << IO::GMSH::getConfigString(2);
+  f_system.close();
 }
 
 /*----------------------------------------------------------------------*

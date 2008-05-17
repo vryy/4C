@@ -27,6 +27,30 @@ namespace IO
 namespace GMSH
 {
 
+/*!
+\brief  fill array with current nodal positions
+
+\return array with element nodal positions
+*/    
+inline blitz::Array<double,2> getCurrentNodalPositions(
+    const DRT::Element*                                 ele,                      ///< element with nodal pointers
+    const std::map<int,blitz::TinyVector<double,3> >&   currentcutterpositions    ///< current positions of all cutter nodes
+    )
+{
+    const int numnode = ele->NumNode();
+    blitz::Array<double,2> xyze(3,numnode);
+    const DRT::Node*const* nodes = ele->Nodes();
+    for (int inode = 0; inode < numnode; ++inode)
+    {
+      const blitz::TinyVector<double,3> x = currentcutterpositions.find(nodes[inode]->Id())->second;
+      xyze(0,inode) = x(0);
+      xyze(1,inode) = x(1);
+      xyze(2,inode) = x(2);
+    }
+    return xyze;
+}
+  
+  
 std::string CoordinatesToString(
         const vector<vector<double> >&         coord,
         const DRT::Element::DiscretizationType distype);
@@ -48,6 +72,10 @@ std::string elementToString(
         const double                    scalar,
         const DRT::Element*             ele);
 std::string elementToString(
+        const double                            scalar,
+        const DRT::Element::DiscretizationType  distype,
+        const blitz::Array<double,2>&           xyze);
+std::string elementToString(
         const vector<double>&           scalarfield,
         const DRT::Element*             ele);
 std::string elementToString(
@@ -59,10 +87,18 @@ std::string cellToString(
         const double                            scalar,
         const DRT::Element::DiscretizationType  distype);
 
+//! print discretization in initial configuration (t = 0)
 std::string disToString(
         const std::string&                     s,
         const double                           scalar,
         const RCP<DRT::Discretization>         dis);
+
+//! print discretization in current configuration (t > 0)
+std::string disToString(
+        const std::string&                          s,
+        const double                                scalar,
+        const RCP<DRT::Discretization>              dis,
+        std::map<int,blitz::TinyVector<double,3> >  currentpositions);
 
 std::string disToString(
         const std::string&                     s,

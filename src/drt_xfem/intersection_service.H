@@ -124,14 +124,12 @@ namespace XFEM
     
     /*!
     \brief  fill array with current nodal positions
-                   
-    \param a    (in)        : a
-    \param b    (in)        : b
-    \return result of the Theorem of Pythagoras
+
+    \return array with element nodal positions
     */    
     inline BlitzMat getCurrentNodalPositions(
-        const DRT::Element*            ele,
-        const map<int,BlitzVec3>&      currentcutterpositions
+        const DRT::Element*            ele,                      ///< element with nodal pointers
+        const map<int,BlitzVec3>&      currentcutterpositions    ///< current positions of all cutter nodes
         )
     {
         const int numnode = ele->NumNode();
@@ -159,6 +157,7 @@ namespace XFEM
     template <class V>
     BlitzVec3 elementToCurrentCoordinates(   
         const DRT::Element*  element, 
+        const BlitzMat&      xyze,
         const V&             xsi
         )
     {
@@ -188,12 +187,10 @@ namespace XFEM
         }          
             
         physCoord = 0.0;
-        
         for(int i=0; i<numNodes; i++)
         {
-            const DRT::Node* node = element->Nodes()[i];
             for(int j=0; j<3; j++)
-              physCoord(j) += node->X()[j] * funct(i);
+              physCoord(j) += xyze(j,i) * funct(i);
         }
         
         return physCoord;
@@ -207,8 +204,9 @@ namespace XFEM
     \param eleCoord         (in/out)    : vector of element/current coordinates
     */
     void elementToCurrentCoordinatesInPlace(   
-        const DRT::Element*  element, 
-        BlitzVec&      eleCoord
+        const DRT::Element*  element,
+        const BlitzMat&      xyze,
+        BlitzVec&            eleCoord
         );
 
     
@@ -410,6 +408,7 @@ namespace XFEM
     void PositionWithinCondition(
             const BlitzVec3&                  x,              ///< node in physical coordinates
             const RCP<DRT::Discretization>    cutterdis,       ///< interface
+            const map<int,BlitzVec3>&         currentcutterpositions,  ///< current positions of all cutter nodes
             std::map<int,bool>&               posInCondition     ///< fill with bool values
         );
     
@@ -458,8 +457,8 @@ namespace XFEM
     //! calculate element normal in gausspoint (r,s)
     inline BlitzVec3 computeNormalToBoundaryElement(
         const DRT::Element*      surfaceElement,    ///< surface element
-        const BlitzVec2&         xsi,               ///< coordinates in (r,s) space, where the normal shall be calculated
-        const BlitzMat&          xs                 ///< boundary element nodal coordinates in (x,y,z) space
+        const BlitzMat&          xs,                ///< boundary element nodal coordinates in (x,y,z) space
+        const BlitzVec2&         xsi                ///< coordinates in (r,s) space, where the normal shall be calculated
             )
     {
       const BlitzMat deriv_boundary(DRT::UTILS::shape_function_2D_deriv1(xsi(0),xsi(1),surfaceElement->Shape()));
@@ -483,6 +482,7 @@ namespace XFEM
     */         
     bool searchForNearestPointOnSurface(
             const DRT::Element*                     surfaceElement,
+            const BlitzMat&                         xyze_cutter,
             const BlitzVec3&                        physCoord,
             BlitzVec2&                              eleCoord,
             BlitzVec3&                              normal,
@@ -500,6 +500,7 @@ namespace XFEM
     */  
     BlitzVec2 CurrentToSurfaceElementCoordinates(
         const DRT::Element*      surfaceElement,
+        const BlitzMat&          xyze_surfaceElement,
         const BlitzVec3&         physCoord
         );
     
@@ -551,7 +552,8 @@ namespace XFEM
     void updateJacobianForMap3To2(   
             BlitzMat&              Jacobi,
             const BlitzVec2&	     xsi,
-            const DRT::Element*    surfaceElement
+            const DRT::Element*    surfaceElement,
+            const BlitzMat&        xyze_surfaceElement
             );      
     
    
@@ -568,7 +570,8 @@ namespace XFEM
             BlitzVec3&                      F,
             const BlitzVec2&                xsi,
             const BlitzVec3&                x,
-            const DRT::Element*            	surfaceElement
+            const DRT::Element*            	surfaceElement,
+            const BlitzMat&           xyze_surfaceElement
             );
     
     
@@ -587,7 +590,8 @@ namespace XFEM
             const BlitzMat&                 Jacobi,
             const BlitzVec3&                F,
             const BlitzVec2&                xsi,
-            const DRT::Element*             surfaceElement
+            const DRT::Element*             surfaceElement,
+            const BlitzMat&           xyze_surfaceElement
             );
     
     

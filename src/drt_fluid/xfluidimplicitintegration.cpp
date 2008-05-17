@@ -454,9 +454,11 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 
   // compute Intersection
   RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret,idispcol));
+  ih->toGmsh(step_);
 
   // apply enrichments
   RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
+  dofmanager->toGmsh(ih, step_);
 
   // tell elements about the dofs and the integration
   {
@@ -473,9 +475,11 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   }
 
   // debug info: print ele dofmanager information
-  cout << "writing 'eledofman_check.pos' ...";
+  std::stringstream filename;
+  filename << "eledofman_check_" << std::setw(5) << setfill('0') << step_ << ".pos";
+  cout << "writing '"<<filename.str()<<".pos'...";
   {
-      std::ofstream f_system("eledofman_check.pos");
+    std::ofstream f_system(filename.str().c_str());
       //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
 //      f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis());
 //      {
@@ -499,7 +503,7 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
               //const int ele_gid = actele->Id();
               //double val = 0.0;
               //std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);
-              double val = actele->NumDofPerElement();
+              const double val = actele->NumDofPerElement();
               gmshfilecontent << IO::GMSH::elementToString(val, actele);
 
           };

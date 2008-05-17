@@ -40,7 +40,7 @@ std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(
     for (std::set<XFEM::Enrichment>::const_iterator enriter =
         enrset.begin(); enriter != enrset.end(); ++enriter)
     {
-        const double enrval = enriter->EnrValue(actpos, ih->cutterdis(), approachdirection);
+        const double enrval = enriter->EnrValue(actpos, ih->cutterdis(), *ih->currentcutterpositions(), approachdirection);
         enrvals.insert(make_pair((*enriter), enrval));
     }
     return enrvals;

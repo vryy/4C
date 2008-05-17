@@ -46,11 +46,16 @@ public:
 
     //! return string representation of the interface handle
     std::string toString() const;
+    
+    //! return string representation of the interface handle
+    void toGmsh(const int step) const;
 
     //! return pointer to the intersected discretization
     RCP<DRT::Discretization> xfemdis() const {return xfemdis_;};
     //! return pointer to the intersecting discretization
     RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
+    
+    const std::map<int,BlitzVec3>* currentcutterpositions() const {return &currentcutterpositions_;};
 
     //! get pointer to map with all domain integration cells on this proc
     const std::map<int,DomainIntCells>* elementalDomainIntCells() const {return &elementalDomainIntCells_;};
@@ -107,7 +112,7 @@ private:
     //! discretization that intersects the xfemdis_ -> should be a boundary discretization (surface of structure)
     const RCP<DRT::Discretization> cutterdis_;
     
-    //! current positions of interface nodes
+    //! ///< current positions of all cutter nodes
     std::map<int,BlitzVec3>        currentcutterpositions_;
 
     //! integration cells for domain (global id for element -> list of volume integration cells)

@@ -75,19 +75,13 @@ class Intersection
         The output consists of a list of qadratic tetrahedral volume integration cells and
         a list of quadratic triangular boundary integration cells
         representing the curved interface.
-
-
-        \param xfemdis              (in)    : xfem discretization
-        \param cutterdis            (in)    : cutter discretization
-        \param domainintcells       (out)   : list of domainintegrationcells for each intersected element
-        \param boundaryintcells     (out)   : list of boundaryintegrationcells for each intersected element
         */
         void computeIntersection(
-            const RCP<DRT::Discretization>         xfemdis,
-            const RCP<DRT::Discretization>         cutterdis,
-            const std::map<int,BlitzVec3>&         currentcutterpositions,
-            map< int, DomainIntCells >&			       domainintcells,
-            map< int, BoundaryIntCells >& 		     boundaryintcells
+            const RCP<DRT::Discretization>         xfemdis,                 ///< xfem discretization
+            const RCP<DRT::Discretization>         cutterdis,               ///< cutter discretization
+            const std::map<int,BlitzVec3>&         currentcutterpositions,  ///< current positions of all cutter nodes
+            map< int, DomainIntCells >&			   domainintcells,          ///< domainintegrationcells for each intersected element
+            map< int, BoundaryIntCells >& 		   boundaryintcells         ///< boundaryintegrationcells for each intersected element
             );
 
 
@@ -115,6 +109,9 @@ class Intersection
         //! number of corner nodes of the xfem element
         int                                 numXFEMCornerNodes_;
 
+        //! current nodal coordinates of the XFEM element
+        BlitzMat                            xyze_xfemElement_;
+        
         //! counts missed points during the recovery
         int                                 countMissedPoints_;
 
@@ -170,12 +167,14 @@ class Intersection
         \param interfacePoints      (in/out)    : vector of interface points
         \param elemId               (in)        : xfem element id  (Debug)
         \param nodeId               (in)        : node id
-        \return true if the node lies within the element, false otherwise
+        \return true if the node lies within the xfemElement, false otherwise
         */
         bool collectInternalPoints(
-            const DRT::Element*             xfemElement,
-            DRT::Element*                   cutterElement,
-            const DRT::Node*                node,
+            const DRT::Element*             xfemElement,             ///< xfem element
+            DRT::Element*                   cutterElement,           ///< cutter element
+            const BlitzMat&                 xyze_cutterElement,      ///< nodal positions of cutter element
+            const DRT::Node*                cutterNode,              ///< cutter node
+            const map<int,BlitzVec3>&       currentcutterpositions,  ///< current positions of all cutter nodes
             std::vector<InterfacePoint>&    interfacePoints,
             int&                            numInternalPoints,
             int&                            numBoundaryPoints,
@@ -211,7 +210,9 @@ class Intersection
         */
         bool collectIntersectionPoints(
             const DRT::Element*             surfaceElement,
+            const BlitzMat&                 xyze_surfaceElement,
             const DRT::Element*             lineElement,
+            const BlitzMat&                 xyze_lineElement,
             std::vector<InterfacePoint>&    interfacePoints,
             const int                       numBoundaryPoints,
             const int                       surfaceId,
@@ -237,7 +238,9 @@ class Intersection
         */
         int computeNewStartingPoint(
             const DRT::Element*             surfaceElement,
+            const BlitzMat&                 xyze_surfaceElement,
             const DRT::Element*             lineElement,
+            const BlitzMat&                 xyze_lineElement,
             const int                       surfaceId,
             const int                       lineId,
             const BlitzVec3&                xsiOld,
@@ -262,7 +265,9 @@ class Intersection
         */
         bool computeCurveSurfaceIntersection(
             const DRT::Element*               surfaceElement,
+            const BlitzMat&                   xyze_surfaceElement,
             const DRT::Element*               lineElement,
+            const BlitzMat&                   xyze_lineElement,
             BlitzVec3&        xsi,
             const BlitzVec3&  upLimit,
             const BlitzVec3&  loLimit
@@ -284,8 +289,10 @@ class Intersection
 	  	\return number of interface points
 	  	*/
   		int addIntersectionPoint(
-            const DRT::Element*             surfaceElement,
-            const DRT::Element*             lineElement,
+          const DRT::Element*               surfaceElement,
+          const BlitzMat&                   xyze_surfaceElement,
+          const DRT::Element*               lineElement,
+          const BlitzMat&                   xyze_lineElement,
   		    const BlitzVec3&                xsi,
             const BlitzVec3&                upLimit,
             const BlitzVec3&                loLimit,
@@ -322,7 +329,9 @@ class Intersection
         */
         void computeConvexHull(
             const DRT::Element*         xfemElement,
-            const DRT::Element*         surfaceElement,
+            const BlitzMat&             xyze_xfemElement,
+            const DRT::Element*         cutterElement,
+            const BlitzMat&             xyze_cutterElement,
             vector<InterfacePoint>&     interfacePoints,
             const int                   numInternalPoints,
             const int                   numBoundaryPoints
@@ -352,8 +361,9 @@ class Intersection
         \param boundaryintcells     (out)   : list of boundaryintegrationcells for each intersected element
         */
         void computeCDT(
-            const DRT::Element*                     element,
-//            const DRT::Element*                     cutterElement,
+            const DRT::Element*                     xfemElement,
+            const BlitzMat&                         xyze_xfemElement,
+            const map<int,BlitzVec3>&               currentcutterpositions,  ///< current positions of all cutter nodes
             map< int, DomainIntCells >&             domainintcells,
             map< int, BoundaryIntCells >&           boundaryintcells,
             int                                     timestepcounter_
@@ -435,7 +445,7 @@ class Intersection
         \param surfaceElement   (in)    :   surface element
         */
         void storeIntersectedCutterElement(
-                DRT::Element* surfaceElement
+                DRT::Element* cutterElement
                 );
 
 
@@ -449,6 +459,8 @@ class Intersection
         */
         void recoverCurvedInterface(
                 const DRT::Element*             xfemElement,
+                const BlitzMat&                 xyze_xfemElement,
+                const map<int,BlitzVec3>&       currentcutterpositions,  ///< current positions of all cutter nodes
                 map< int, BoundaryIntCells >&   boundaryintcells,
                 tetgenio&                       out,
                 bool 							recovery
@@ -461,7 +473,9 @@ class Intersection
         \param out                  (in/out)    :   output data structure of TetGen
         */
     	void storeIntCells(
-    			const DRT::Element*             xfemElement,
+    			      const DRT::Element*             xfemElement,
+    			      const BlitzMat&                 xyze_xfemElement,
+    			      const map<int,BlitzVec3>&       currentcutterpositions,  ///< current positions of all cutter nodes
                 map< int, BoundaryIntCells >&   boundaryintcells,
                 tetgenio&                       out
                 );
@@ -475,6 +489,8 @@ class Intersection
         */
         void liftAllSteinerPoints(
                 const DRT::Element*                             xfemElement,
+                const BlitzMat&                           xyze_xfemElement,
+                const map<int,BlitzVec3>&                       currentcutterpositions,  ///< current positions of all cutter nodes
                 tetgenio&                                       out
             );
 
@@ -514,9 +530,11 @@ class Intersection
             int&                              cutterIndex,
             const vector< vector<int> >&      adjacentFacesList,
             const vector< vector<int> >&      adjacentFacemarkerList,
+            const map<int,BlitzVec3>&         currentcutterpositions,  ///< current positions of all cutter nodes
             BlitzVec&         edgePoint,
             BlitzVec&         oppositePoint,
             const DRT::Element*               xfemElement,
+            const BlitzMat&                           xyze_xfemElement,
             const tetgenio&                   out
             ) const;
 
@@ -534,7 +552,9 @@ class Intersection
                 const int                     steinerIndex,
                 const vector<vector<int> >&   adjacentFacesList,
                 const vector<vector<int> >&   adjacentFacemarkerList,
+                const map<int,BlitzVec3>&     currentcutterpositions,  ///< current positions of all cutter nodes
                 const DRT::Element*           xfemElement,
+                const BlitzMat&               xyze_xfemElement,
                 tetgenio&                     out
                 );
 
@@ -559,7 +579,9 @@ class Intersection
             BlitzVec&                         edgePoint,
             BlitzVec&                         oppositePoint,
             const vector<vector<int> >&       adjacentFacesList,
+            const map<int,BlitzVec3>&         currentcutterpositions,  ///< current positions of all cutter nodes
             const DRT::Element*               xfemElement,
+            const BlitzMat&                           xyze_xfemElement,
             tetgenio&                         out
             );
 
@@ -577,7 +599,9 @@ class Intersection
                 const int                         steinerIndex,
                 const vector<vector<int> >&       adjacentFacesList,
                 const vector<vector<int> >&       adjacentFacemarkerList,
+                const map<int,BlitzVec3>&         currentcutterpositions,  ///< current positions of all cutter nodes
                 const DRT::Element*               xfemElement,
+                const BlitzMat&                           xyze_xfemElement,
                 tetgenio&                         out
                 );
 
@@ -616,6 +640,7 @@ class Intersection
             vector<BlitzVec>&       tetraCornerNodes,
             const vector<int>&                      tetraCornerIndices,
             const DRT::Element*                     xfemElement,
+            const BlitzMat&                           xyze_xfemElement,
             const tetgenio&                         out
             ) const;
 
@@ -639,8 +664,10 @@ class Intersection
                 const int                                 faceMarker,
                 const int                                 globalHigherOrderIndex,
                 const vector<int>&                        tetraCornerIndices,
-                const vector<BlitzVec>&   tetraCornerNodes,
+                const vector<BlitzVec>&                   tetraCornerNodes,
                 const DRT::Element*                       xfemElement,
+                const BlitzMat&                           xyze_xfemElement,
+                const map<int,BlitzVec3>&                 currentcutterpositions,  ///< current positions of all cutter nodes
                 tetgenio&                                 out
             );
 
@@ -677,6 +704,7 @@ class Intersection
                 BlitzVec3&                                  xsi,
                 const vector<BlitzVec>&                     normal,
                 const DRT::Element*                         cutterElement,
+                const BlitzMat&                             xyze_cutterElement,
                 const bool                                  onBoundary
                 ) const;
 
@@ -698,6 +726,7 @@ class Intersection
             const BlitzVec3&            xsi,
             const vector<BlitzVec>&     normal,
             const DRT::Element*                         surfaceElement,
+            const BlitzMat&                             xyze_surfaceElement,
             const bool                                  onBoundary
             ) const;
 
@@ -719,6 +748,7 @@ class Intersection
             const BlitzVec3&             xsi,
             const vector<BlitzVec>&     normal,
             const DRT::Element*                         surfaceElement,
+            const BlitzMat&                             xyze_surfaceElement,
             const bool                                  onBoundary
             ) const;
 
@@ -737,9 +767,11 @@ class Intersection
         */
         bool computeRecoveryPlane(
             int&                                        lineIndex,
-            BlitzVec3&                   xsi,
-            const vector<BlitzVec>&     plane,
-            DRT::Element*                               surfaceElement
+            const map<int,BlitzVec3>&                   currentcutterpositions,  ///< current positions of all cutter nodes
+            BlitzVec3&                                  xsi,
+            const vector<BlitzVec>&                     plane,
+            DRT::Element*                               cutterElement,
+            const BlitzMat&                             xyze_cutterElement
             ) const;
 
 
@@ -759,7 +791,9 @@ class Intersection
             const BlitzVec3&            xsi,
             const vector<BlitzVec>&     plane,
             const DRT::Element*                         lineElement,
-            const DRT::Element*                         surfaceElement
+            const BlitzMat&                             xyze_lineElement,
+            const DRT::Element*                         surfaceElement,
+            const BlitzMat&                             xyze_surfaceElement
             ) const;
 
 
@@ -778,7 +812,8 @@ class Intersection
                 BlitzVec3&                  b,
                 const BlitzVec3&            xsi,
                 const vector<BlitzVec>&     plane,
-                const DRT::Element*         lineElement
+                const DRT::Element*         lineElement,
+                const BlitzMat&             xyze_lineElement
                 ) const;
 
 
@@ -925,6 +960,7 @@ class Intersection
         \return true if common line element was found, false otherwise
         */
         bool findCommonCutterLine(
+            const map<int,BlitzVec3>&                       currentcutterpositions,  ///< current positions of all cutter nodes
             const int                                       faceIndex1,
             const int                                       faceIndex2,
             int&                                            lineIndex,
@@ -963,7 +999,9 @@ class Intersection
         */
         int findIntersectingSurfaceEdge(
             const DRT::Element*                       xfemElement,
+            const BlitzMat&                           xyze_xfemElement,
             DRT::Element*                             cutterElement,
+            const map<int,BlitzVec3>&                   currentcutterpositions,  ///< current positions of all cutter nodes
             const BlitzVec&           edgeNode1,
             const BlitzVec&           edgeNode2
             ) const;
@@ -987,7 +1025,8 @@ class Intersection
             const int                                   globalHigherOrderIndex,
             const int                                   lineIndex,
             BlitzVec3&                                  xsi,
-            DRT::Element*                               surfaceElement,
+            DRT::Element*                               cutterElement,
+            const map<int,BlitzVec3>&                   currentcutterpositions,  ///< current positions of all cutter nodes
             const DRT::Element*                         xfemElement,
             tetgenio&                                   out
             ) const;
@@ -1025,9 +1064,11 @@ class Intersection
         	const int                         		cornerIndex,
         	const int                         		globalHigherOrderIndex,
         	const int                         		faceMarker,
+        	const map<int,BlitzVec3>&             currentcutterpositions,  ///< current positions of all cutter nodes
 		    vector<vector<double> >&                domainCoord,
 		    vector<vector<double> >&                boundaryCoord,
 		    const DRT::Element*				        xfemElement,
+		    const BlitzMat&                       xyze_xfemElement,
 		    const tetgenio&                			out
             ) const;
 
@@ -1063,7 +1104,7 @@ class Intersection
         \param within           (in)    : true if within, false otherwise
         */
         void debugNodeWithinElement(
-            const DRT::Element*               element,
+            const DRT::Element*               xfemElement,
             const DRT::Node*                  node,
             const BlitzVec&   xsi,
             const int                         noE,
@@ -1095,11 +1136,11 @@ class Intersection
         /*!
         \brief Debugging tetgen data structure (DEBUG ONLY)
 
-        \param element                  (in)        : element
+        \param element                  (in)        : xfemElement
 
         */
         void debugTetgenDataStructure(
-            const DRT::Element*               element
+            const DRT::Element*               xfemElement
             ) const;
 
 
@@ -1118,7 +1159,7 @@ class Intersection
        	void debugTetgenOutput(
             tetgenio& in,
 			tetgenio& out,
-		    const DRT::Element* element,
+		    const DRT::Element* xfemElement,
             vector<int>& elementIds,
             int timestepcounter
             ) const;

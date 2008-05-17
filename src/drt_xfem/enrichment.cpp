@@ -29,7 +29,7 @@ Enrichment::Enrichment() :
             xfemconditionlabel_(-1),
             type_(typeUndefined)
 {
-    dserror("Enrichment() -> please don't call me!");
+    //dserror("Enrichment() -> please don't call me!");
     return;
 }
 
@@ -94,6 +94,7 @@ std::string Enrichment::enrTypeToString(const EnrType type) const
 double Enrichment::EnrValue(
         const BlitzVec3&                actpos,
         const RCP<DRT::Discretization>& cutterdis,
+        const map<int,BlitzVec3>&       currentcutterpositions,
         const XFEM::Enrichment::ApproachFrom approachdirection
         ) const
 {
@@ -123,7 +124,7 @@ double Enrichment::EnrValue(
             case approachUnknown:
             {
                 const int xfemcondition_label = this->XFEMConditionLabel();
-                PositionWithinCondition(actpos,cutterdis,posInCondition);
+                PositionWithinCondition(actpos,cutterdis,currentcutterpositions,posInCondition);
                 double actpos_enr_val = 0.0;
                 if (posInCondition.find(xfemcondition_label)->second) {
                     actpos_enr_val = 0.0;
@@ -154,7 +155,7 @@ double Enrichment::EnrValue(
             case approachUnknown:
             {
                 const int xfemcondition_label = this->XFEMConditionLabel();
-                PositionWithinCondition(actpos,cutterdis,posInCondition);
+                PositionWithinCondition(actpos,cutterdis,currentcutterpositions,posInCondition);
                 double actpos_enr_val = 0.0;
                 if (posInCondition.find(xfemcondition_label)->second) {
                     actpos_enr_val = -1.0;
@@ -183,6 +184,7 @@ double Enrichment::ModifiedEnrValue(
         const BlitzVec3&                actpos,
         const BlitzVec3&                nodalpos,
         const RCP<DRT::Discretization>& cutterdis,
+        const map<int,BlitzVec3>&       currentcutterpositions,
         const XFEM::Enrichment::ApproachFrom approachdirection
         ) const
 {
@@ -201,7 +203,7 @@ double Enrichment::ModifiedEnrValue(
     {
         const int xfemcondition_label = this->XFEMConditionLabel();
         
-        PositionWithinCondition(actpos,cutterdis,posInCondition);
+        PositionWithinCondition(actpos,cutterdis,currentcutterpositions,posInCondition);
         double actpos_enr_val = 0.0;
         if (posInCondition.find(xfemcondition_label)->second) {
             actpos_enr_val = 0.0;
@@ -209,7 +211,7 @@ double Enrichment::ModifiedEnrValue(
             actpos_enr_val = 1.0;
         }
         
-        PositionWithinCondition(nodalpos,cutterdis,posInCondition);
+        PositionWithinCondition(nodalpos,cutterdis,currentcutterpositions,posInCondition);
         double nodepos_enr_val = 0.0;
         if (posInCondition.find(xfemcondition_label)->second) {
             nodepos_enr_val = 0.0;
@@ -225,7 +227,7 @@ double Enrichment::ModifiedEnrValue(
     {
         const int xfemcondition_label = this->XFEMConditionLabel();
         
-        PositionWithinCondition(actpos,cutterdis,posInCondition);
+        PositionWithinCondition(actpos,cutterdis,currentcutterpositions,posInCondition);
         double actpos_enr_val = 0.0;
         if (posInCondition.find(xfemcondition_label)->second) {
             actpos_enr_val = -1.0;
@@ -233,7 +235,7 @@ double Enrichment::ModifiedEnrValue(
             actpos_enr_val = 1.0;
         }
         
-        PositionWithinCondition(nodalpos,cutterdis,posInCondition);
+        PositionWithinCondition(nodalpos,cutterdis,currentcutterpositions,posInCondition);
         double nodepos_enr_val = 0.0;
         if (posInCondition.find(xfemcondition_label)->second) {
             nodepos_enr_val = -1.0;

@@ -12,19 +12,13 @@ Maintainer: Axel Gerstenberger
 */
 #ifdef CCADISCRET
 
-//#include <blitz/array.h>
 #include "xfem.H"
 #include "dof_management.H"
 #include "dof_distribution_switcher.H"
-//#include "xdofmapcreation.H"
-//#include "enrichment_utils.H"
 #include "dofkey.H"
-//#include "../io/gmsh.H"
 #include "../drt_lib/drt_discret.H"
-//#include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_mapextractor.H"
-//#include "../drt_lib/linalg_systemmatrix.H"
 
 
 using namespace std;
@@ -44,15 +38,8 @@ static XFEM::Enrichment genAlternativeEnrichment(
             return fieldenriter->getEnrichment();
             break;
         }
-        else
-        {
-            dserror("bug!");
-            exit(1);
-        }
     }
-    dserror("bug!");
-    exit(1);
-    //return XFEM::Enrichment();
+    return XFEM::Enrichment();
 }
 
 void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
@@ -77,6 +64,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
         
         if (not oldmap.SameAs(olddofrowmap_)) dserror("bug!");
         
+        std::set<DofKey<onNode> > usedOldDofKeys;
         
         for (DofPosMap::const_iterator newdof = newNodalDofDistrib_.begin();
                                        newdof != newNodalDofDistrib_.end();
@@ -88,7 +76,9 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
             DofPosMap::const_iterator olddof = oldNodalDofDistrib_.find(newdofkey);
             if (olddof != oldNodalDofDistrib_.end())  // if dofkey has existed before, use old value
             {
-                //const XFEM::DofKey<XFEM::onNode> olddofkey = olddof->first;
+                const XFEM::DofKey<XFEM::onNode> olddofkey = olddof->first;
+                // store old key as used
+                usedOldDofKeys.insert(olddofkey);
                 const int olddofpos = olddof->second;
                 //cout << "init to old value" << endl;
                 (*newVector)[newdofrowmap_.LID(newdofpos)] = (*oldVector)[olddofrowmap_.LID(olddofpos)];
@@ -112,25 +102,37 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
             DofPosMap::const_iterator newdof = newNodalDofDistrib_.find(olddofkey);
             if (newdof == newNodalDofDistrib_.end())  // no successor
             {
-                dserror("bug: the interface is not moving at the moment");
+                //dserror("bug: the interface is not moving at the moment");
                 const int gnodeid = olddofkey.getGid();
                 const BlitzVec3 actpos(toBlitzArray(ih_->xfemdis()->gNode(gnodeid)->X()));
                 const XFEM::FieldEnr oldfieldenr = olddofkey.getFieldEnr();
                 const XFEM::Enrichment oldenr = oldfieldenr.getEnrichment();
-                const double enrval = oldenr.EnrValue(actpos, ih_->cutterdis(), Enrichment::approachUnknown);
+                const double enrval = oldenr.EnrValue(actpos, ih_->cutterdis(), *ih_->currentcutterpositions() ,Enrichment::approachUnknown);
                 
                 // create alternative dofkey
-                const XFEM::Enrichment altenr(genAlternativeEnrichment(gnodeid, oldphysvar, dofman_));
+                XFEM::Enrichment altenr(genAlternativeEnrichment(gnodeid, oldphysvar, dofman_));
                 
-                // find dof position of alternative key
-                const XFEM::FieldEnr altfieldenr(oldfieldenr.getField(), altenr);
-                const XFEM::DofKey<XFEM::onNode> altdofkey(gnodeid, altfieldenr);
-                const int newdofpos = newNodalDofDistrib_.find(altdofkey)->second;
-                if (newdofpos < 0)
-                    dserror("bug!");
-                
-                // add old value to already existing values
-                (*newVector)[newdofrowmap_.LID(newdofpos)] += enrval*(*oldVector)[olddofpos];
+                if (altenr.Type() != XFEM::Enrichment::typeUndefined)
+                {
+                    // find dof position of alternative key
+                    const XFEM::FieldEnr altfieldenr(oldfieldenr.getField(), altenr);
+                    const XFEM::DofKey<XFEM::onNode> altdofkey(gnodeid, altfieldenr);
+                    const int newdofpos = newNodalDofDistrib_.find(altdofkey)->second;
+                    //cout << "newdofpos" << newdofpos << endl;
+                    if (newdofpos < 0)
+                    {
+                        cout << "old Dofkey" << endl << olddofkey.toString() << endl;
+                        cout << "alt Dofkey" << endl << altdofkey.toString() << endl;
+                        dserror("bug!");
+                    }
+                    
+                    // add old value to already existing values
+                    (*newVector)[newdofrowmap_.LID(newdofpos)] += enrval*(*oldVector)[olddofpos];
+                }
+                else
+                {
+                    // the value just disappears, since we have no place, where we could store it
+                }
             }
         }
     }

@@ -84,9 +84,9 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>      xfem
         std::set< DRT::Element* >        cutterElements;
 
         // initial positions, since the xfem element does not move
-        const BlitzMat xyze_xfem(DRT::UTILS::PositionArrayBlitz(xfemElement));
+        const BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(xfemElement));
         
-        const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfem);
+        const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement);
 
         startPointList();
 
@@ -104,9 +104,9 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>      xfem
                 if(cutterElement == NULL) dserror("geometry does not obtain elements");
                 
                 // fill current positions into an array
-                const BlitzMat xyze_cutter(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+                const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
                 
-                const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement,xyze_cutter));
+                const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement));
 
                 const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
 
@@ -124,6 +124,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>      xfem
         {
             DRT::Element* cutterElement = (*i);
             if(cutterElement == NULL) dserror("cutter element is null\n");
+            const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
             const DRT::Element*const* cutterElementLines = cutterElement->Lines();
             const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
 
@@ -135,28 +136,47 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>      xfem
 
             // collect internal points
             for(int m=0; m<cutterElement->NumLine() ; m++)
-                collectInternalPoints( xfemElement, cutterElement, cutterElementNodes[m],
+            {
+                collectInternalPoints( xfemElement, cutterElement, xyze_cutterElement, cutterElementNodes[m], currentcutterpositions,
                                         interfacePoints, numInternalPoints, numBoundaryPoints, k, m);
+            }
 
             // collect intersection points
             for(int m=0; m<xfemElement->NumLine() ; m++)
-                if(collectIntersectionPoints(   cutterElement, xfemElementLines[m],
+            {
+                const DRT::Element* xfemElementLine = xfemElementLines[m];
+                const BlitzMat xyze_xfemElementLine(DRT::UTILS::PositionArrayBlitz(xfemElementLine));
+                if(collectIntersectionPoints(   cutterElement, xyze_cutterElement,
+                                                xfemElementLine, xyze_xfemElementLine,
                                                 interfacePoints, numBoundaryPoints, 0, m, false, xfemIntersection))
+                {
                     storeIntersectedCutterElement(cutterElement);
+                }
+            }
 
             for(int m=0; m<cutterElement->NumLine() ; m++)
+            {
                 for(int p=0; p<xfemElement->NumSurface() ; p++)
-                    if(collectIntersectionPoints(   xfemElementSurfaces[p],
-                                                    cutterElementLines[m], interfacePoints, numBoundaryPoints,
+                {
+                    const DRT::Element* xfemElementSurface = xfemElementSurfaces[p];
+                    const BlitzMat xyze_xfemElementSurface(DRT::UTILS::PositionArrayBlitz(xfemElementSurface));
+                    const DRT::Element* cutterElementLine = cutterElementLines[m];
+                    const BlitzMat xyze_cutterElementLine(getCurrentNodalPositions(cutterElementLine, currentcutterpositions));
+                    if(collectIntersectionPoints(   xfemElementSurface, xyze_xfemElementSurface,
+                                                    cutterElementLine, xyze_cutterElementLine,
+                                                    interfacePoints, numBoundaryPoints,
                                                     p, m, true, xfemIntersection))
+                    {
                         storeIntersectedCutterElement(cutterElement);
-
+                    }
+                }
+            }
 
             // order interface points
             if( interfacePoints.size() > 0)
             {
 #ifdef QHULL
-                computeConvexHull( xfemElement, cutterElement, interfacePoints, numInternalPoints, numBoundaryPoints);
+                computeConvexHull( xfemElement, xyze_xfemElement, cutterElement, xyze_cutterElement, interfacePoints, numInternalPoints, numBoundaryPoints);
 #else
                 dserror("Set QHULL flag to use XFEM intersections!!!");
 #endif
@@ -166,7 +186,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>      xfem
         if(xfemIntersection)
         {
             //debugTetgenDataStructure(xfemElement);
-            computeCDT(xfemElement, domainintcells, boundaryintcells, timestepcounter_);
+            computeCDT(xfemElement, xyze_xfemElement, currentcutterpositions, domainintcells, boundaryintcells, timestepcounter_);
         }
 
     }// for-loop over all  actdis->NumMyColElements()
@@ -195,6 +215,8 @@ void Intersection::initializeXFEM(
     numXFEMSurfaces_ = xfemElement->NumSurface();
 
     numXFEMCornerNodes_  = getNumberOfElementCornerNodes(xfemDistype);
+    
+    xyze_xfemElement_    = DRT::UTILS::PositionArrayBlitz(xfemElement);
 
     eleLinesSurfaces_     = getEleNodeNumbering_lines_surfaces(xfemDistype);
     eleNodesSurfaces_     = getEleNodeNumbering_nodes_surfaces(xfemDistype);
@@ -221,7 +243,9 @@ void Intersection::initializeXFEM(
 bool Intersection::collectInternalPoints(
     const DRT::Element*             xfemElement,
     DRT::Element*                   cutterElement,
-    const DRT::Node*                node,
+    const BlitzMat&                 xyze_cutterElement,
+    const DRT::Node*                cutterNode,
+    const map<int,BlitzVec3>&       currentcutterpositions,
     std::vector< InterfacePoint >&  interfacePoints,
     int&                            numInternalPoints,
     int&                            numBoundaryPoints,
@@ -229,20 +253,17 @@ bool Intersection::collectInternalPoints(
     const int                       nodeId)
 {
     // current nodal position
-    BlitzVec3 x;
-    x(0) = node->X()[0];
-    x(1) = node->X()[1];
-    x(2) = node->X()[2];
+    const BlitzVec3 x = currentcutterpositions.find(cutterNode->Id())->second;
 
     BlitzVec3 xsi;
     currentToVolumeElementCoordinates(xfemElement, x, xsi);
     const bool nodeWithinElement = checkPositionWithinElementParameterSpace(xsi, xfemElement->Shape());
-    // debugNodeWithinElement(xfemElement,node, xsi, elemId ,nodeId, nodeWithinElement);
+    // debugNodeWithinElement(xfemElement,cutterNode, xsi, elemId ,nodeId, nodeWithinElement);
 
     if(nodeWithinElement)
     {
         InterfacePoint ip;
-        //debugNodeWithinElement(xfemElement,node,xsi,elemId ,nodeId, nodeWithinElement);
+        //debugNodeWithinElement(xfemElement,cutterNode,xsi,elemId ,nodeId, nodeWithinElement);
 
         numInternalPoints++;
 
@@ -316,7 +337,9 @@ bool Intersection::setInterfacePointBoundaryStatus(
  *----------------------------------------------------------------------*/
 bool Intersection::collectIntersectionPoints(
     const DRT::Element*             surfaceElement,
+    const BlitzMat&                 xyze_surfaceElement,
     const DRT::Element*             lineElement,
+    const BlitzMat&                 xyze_lineElement,
     std::vector<InterfacePoint>&    interfacePoints,
     const int                       numBoundaryPoints,
     const int                       surfaceId,
@@ -335,10 +358,10 @@ bool Intersection::collectIntersectionPoints(
     upLimit  =  1.0;
     loLimit  = -1.0;
 
-    const bool intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
+    const bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
 
     if(intersected)
-        addIntersectionPoint( surfaceElement, lineElement, xsi, upLimit, loLimit,
+        addIntersectionPoint( surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit,
                               interfacePoints, surfaceId, lineId, lines);
 
 
@@ -366,7 +389,9 @@ void updateAForCSI(
         BlitzMat3x3&                      A,
         const BlitzVec3&                  xsi,
         const DRT::Element*               surfaceElement,
-        const DRT::Element*               lineElement
+        const BlitzMat&                   xyze_surfaceElement,
+        const DRT::Element*               lineElement,
+        const BlitzMat&                   xyze_lineElement
         )
 {
     const int numNodesSurface = DRT::UTILS::getNumberOfElementNodes<surftype>();
@@ -376,26 +401,22 @@ void updateAForCSI(
 
     static BlitzMat surfaceDeriv1(2, numNodesSurface);
     shape_function_2D_deriv1(surfaceDeriv1, xsi(0), xsi(1), surftype);
-    const DRT::Node*const* surfaceElementNodes = surfaceElement->Nodes();
     for(int inode=0; inode<numNodesSurface; inode++)
     {
-        const double* x = surfaceElementNodes[inode]->X();
         for(int isd=0; isd<3; isd++)
         {
-            A(isd,0) += x[isd] * surfaceDeriv1(0,inode);
-            A(isd,1) += x[isd] * surfaceDeriv1(1,inode);
+            A(isd,0) += xyze_surfaceElement(isd,inode) * surfaceDeriv1(0,inode);
+            A(isd,1) += xyze_surfaceElement(isd,inode) * surfaceDeriv1(1,inode);
         }
     }
 
     static BlitzMat lineDeriv1(2, numNodesLine);
     shape_function_1D_deriv1(lineDeriv1, xsi(2), linetype);
-    const DRT::Node*const* lineElementNodes = lineElement->Nodes();
     for(int inode=0; inode<numNodesLine; inode++)
     {
-        const double* x = lineElementNodes[inode]->X();
         for(int isd=0; isd<3; isd++)
         {
-            A(isd,2) -= x[isd] * lineDeriv1(0,inode);
+            A(isd,2) -= xyze_lineElement(isd,inode) * lineDeriv1(0,inode);
         }
     }
 }
@@ -417,7 +438,9 @@ void updateRHSForCSI(
         BlitzVec3&         b,
         const BlitzVec3&   xsi,
         const DRT::Element*               surfaceElement,
-        const DRT::Element*               lineElement
+        const BlitzMat&                   xyze_surfaceElement,
+        const DRT::Element*               lineElement,
+        const BlitzMat&                   xyze_lineElement
         )
 {
     const int numNodesSurface = DRT::UTILS::getNumberOfElementNodes<surftype>();
@@ -427,24 +450,18 @@ void updateRHSForCSI(
 
     static BlitzVec surfaceFunct(numNodesSurface);
     shape_function_2D(surfaceFunct, xsi(0), xsi(1), surftype);
-
-    const DRT::Node*const* surfaceElementNodes = surfaceElement->Nodes();
     for(int i=0; i<numNodesSurface; i++)
     {
-        const double* x = surfaceElementNodes[i]->X();
         for(int dim=0; dim<3; dim++)
-            b(dim) -= x[dim] * surfaceFunct(i);
+            b(dim) -= xyze_surfaceElement(dim,i) * surfaceFunct(i);
     }
 
     static BlitzVec lineFunct(numNodesLine);
     shape_function_1D(lineFunct, xsi(2), linetype);
-
-    const DRT::Node*const* lineElementNodes = lineElement->Nodes();
     for(int i=0; i<numNodesLine; i++)
     {
-       const double* x = lineElementNodes[i]->X();
        for(int dim=0; dim<3; dim++)
-            b(dim) += x[dim] * lineFunct(i);
+            b(dim) += xyze_lineElement(dim,i) * lineFunct(i);
     }
 }
 
@@ -462,7 +479,9 @@ template<DRT::Element::DiscretizationType surftype,
 bool computeSingularCSI(
         BlitzVec3&                  xsi,
         const DRT::Element*         surfaceElement,
-        const DRT::Element*         lineElement
+        const BlitzMat&             xyze_surfaceElement,
+        const DRT::Element*         lineElement,
+        const BlitzMat&             xyze_lineElement
         )
 {
     bool singular = false;
@@ -473,11 +492,11 @@ bool computeSingularCSI(
     static BlitzVec3   b;
     static BlitzVec3   dx;
 
-    updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, lineElement);
+    updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
 
     while(residual > TOL14)
     {
-        updateAForCSI<surftype,linetype>( A, xsi, surfaceElement, lineElement);
+        updateAForCSI<surftype,linetype>( A, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
 
         if(solveLinearSystemWithSVD<3>(A, b, dx))
         {
@@ -487,7 +506,7 @@ bool computeSingularCSI(
         }
 
         xsi += dx;
-        updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, lineElement);
+        updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
         residual = Norm2(b);
         iter++;
 
@@ -505,7 +524,9 @@ template<DRT::Element::DiscretizationType surftype,
          DRT::Element::DiscretizationType linetype>
 bool computeCurveSurfaceIntersectionT(
     const DRT::Element*               surfaceElement,
+    const BlitzMat&                   xyze_surfaceElement,
     const DRT::Element*               lineElement,
+    const BlitzMat&                   xyze_lineElement,
     BlitzVec3&                        xsi,
     const BlitzVec3&                  upLimit,
     const BlitzVec3&                  loLimit
@@ -519,15 +540,15 @@ bool computeCurveSurfaceIntersectionT(
     static BlitzVec3   b;
     static BlitzVec3   dx;
 
-    updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, lineElement);
+    updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
 
     while(residual > TOL14)
     {
-        updateAForCSI<surftype,linetype>( A, xsi, surfaceElement, lineElement);
+        updateAForCSI<surftype,linetype>( A, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
 
         if(!gaussElimination<true, 3, 1>(A, b, dx))
         {
-            if(computeSingularCSI<surftype,linetype>(xsi, surfaceElement, lineElement))
+            if(computeSingularCSI<surftype,linetype>(xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement))
             {
                 intersection = false;
                 break;
@@ -538,7 +559,7 @@ bool computeCurveSurfaceIntersectionT(
         }
 
         xsi += dx;
-        updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, lineElement);
+        updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
         residual = Norm2(b);
         iter++;
 
@@ -566,25 +587,28 @@ bool computeCurveSurfaceIntersectionT(
  *----------------------------------------------------------------------*/
 bool Intersection::computeCurveSurfaceIntersection(
     const DRT::Element*               surfaceElement,
+    const BlitzMat&                   xyze_surfaceElement,
     const DRT::Element*               lineElement,
+    const BlitzMat&                   xyze_lineElement,
     BlitzVec3&                        xsi,
     const BlitzVec3&                  upLimit,
-    const BlitzVec3&                  loLimit) const
+    const BlitzVec3&                  loLimit
+    ) const
 {
     if (lineElement->Shape() == DRT::Element::line2)
     {
         switch (surfaceElement->Shape())
         {
         case DRT::Element::quad4:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line2>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
         case DRT::Element::quad8:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line2>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
         case DRT::Element::quad9:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line2>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
         case DRT::Element::tri3:
-            return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line2>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
         case DRT::Element::tri6:
-            return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line2>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
         default:
             dserror("template not instatiated yet");
             return false;
@@ -595,15 +619,15 @@ bool Intersection::computeCurveSurfaceIntersection(
         switch (surfaceElement->Shape())
         {
         case DRT::Element::quad4:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line3>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
         case DRT::Element::quad8:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line3>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
         case DRT::Element::quad9:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line3>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
         case DRT::Element::tri3:
-            return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line3>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
         case DRT::Element::tri6:
-            return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line3>(surfaceElement, lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
         default:
             dserror("template not instatiated yet");
             return false;
@@ -629,7 +653,9 @@ bool Intersection::computeCurveSurfaceIntersection(
  *----------------------------------------------------------------------*/
 int Intersection::computeNewStartingPoint(
     const DRT::Element*                surfaceElement,
+    const BlitzMat&                    xyze_surfaceElement,
     const DRT::Element*                lineElement,
+    const BlitzMat&                    xyze_lineElement,
     const int                          surfaceId,
     const int                          lineId,
     const BlitzVec3&                   xsiOld,
@@ -654,13 +680,13 @@ int Intersection::computeNewStartingPoint(
     xsi += loLimit;
     xsi *= 0.5;
 
-	bool intersected = computeCurveSurfaceIntersection(surfaceElement, lineElement, xsi, upLimit, loLimit);
+	bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
 
     if( comparePoints<3>(xsi, xsiOld))
         intersected = false;
 
 	if(intersected && interval)
-   		numInterfacePoints = addIntersectionPoint(	surfaceElement, lineElement,xsi, upLimit, loLimit,
+   		numInterfacePoints = addIntersectionPoint(	surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit,
    													interfacePoints, surfaceId, lineId, lines);
 
    	//printf("number of intersection points = %d\n", numInterfacePoints );
@@ -675,7 +701,9 @@ int Intersection::computeNewStartingPoint(
  *----------------------------------------------------------------------*/
 int Intersection::addIntersectionPoint(
     const DRT::Element*             surfaceElement,
+    const BlitzMat&                 xyze_surfaceElement,
     const DRT::Element*             lineElement,
+    const BlitzMat&                 xyze_lineElement,
     const BlitzVec3&                xsi,
     const BlitzVec3&                upLimit,
     const BlitzVec3&                loLimit,
@@ -731,7 +759,7 @@ int Intersection::addIntersectionPoint(
         // recursive call
         for(int i = 0; i < 8; i++)
             numInterfacePoints += computeNewStartingPoint(
-                                        surfaceElement, lineElement, surfaceId, lineId, xsi,
+                                        surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, surfaceId, lineId, xsi,
                                         upperLimits[i], lowerLimits[i], interfacePoints, lines);
 
     }
@@ -818,7 +846,9 @@ void Intersection::createNewLimits(
 #ifdef QHULL
 void Intersection::computeConvexHull(
         const DRT::Element*     xfemElement,
-        const DRT::Element*     surfaceElement,
+        const BlitzMat&         xyze_xfemElement,
+        const DRT::Element*     cutterElement,
+        const BlitzMat&         xyze_cutterElement,
         vector<InterfacePoint>& interfacePoints,
         const int               numInternalPoints,
         const int               numBoundaryPoints)
@@ -839,7 +869,7 @@ void Intersection::computeConvexHull(
             BlitzVec    eleCoordSurf(2);
             for(int j = 0; j < 2; j++)
                 eleCoordSurf(j)  = midpoint.coord[j];
-            const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
+            const BlitzVec3 curCoordVol(elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf));
             const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol));
             for(int j = 0; j < 3; j++)
                 midpoint.coord[j] = eleCoordVol(j);
@@ -865,7 +895,7 @@ void Intersection::computeConvexHull(
                 BlitzVec  eleCoordSurf(2);
                 for(int j = 0; j < 2; j++)
                     eleCoordSurf(j)  = ipoint->coord[j];
-                const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
+                const BlitzVec3 curCoordVol(elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf));
                 const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol));
                 for(int j = 0; j < 3; j++)
                     ipoint->coord[j] = eleCoordVol(j);
@@ -893,7 +923,7 @@ void Intersection::computeConvexHull(
                     BlitzVec  eleCoordSurf(2);
                     for(int m = 0; m < 2; m++)
                         eleCoordSurf(m)  = vertex[m];
-                    const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
+                    const BlitzVec3 curCoordVol(elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf));
                     const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol));
                     for(int m = 0; m < 3; m++)
                         vertex[m] = eleCoordVol(m);
@@ -923,7 +953,7 @@ void Intersection::computeConvexHull(
                 BlitzVec  eleCoordSurf(2);
                 for(int j = 0; j < 2; j++)
                     eleCoordSurf(j)  = ipoint->coord[j];
-                const BlitzVec3 curCoordVol(elementToCurrentCoordinates(surfaceElement, eleCoordSurf));
+                const BlitzVec3 curCoordVol(elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf));
                 const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol));
                 for(int j = 0; j < 3; j++)
                 {
@@ -1053,7 +1083,9 @@ void Intersection::findNextSegment(
  |  For further information please consult the TetGen manual            |
  *----------------------------------------------------------------------*/
 void Intersection::computeCDT(
-        const DRT::Element*                     element,
+        const DRT::Element*                     xfemElement,
+        const BlitzMat&                         xyze_xfemElement,
+        const map<int,BlitzVec3>&               currentcutterpositions,
         map< int, DomainIntCells >&	            domainintcells,
         map< int, BoundaryIntCells >&           boundaryintcells,
         int                                     timestepcounter_)
@@ -1161,7 +1193,7 @@ void Intersection::computeCDT(
         p->numberofvertices = 3;
         p->vertexlist = new int[p->numberofvertices];
         for(int j = 0; j < p->numberofvertices; j ++)
-            p->vertexlist[j] = triangleList_[i - element->NumSurface()][j];
+            p->vertexlist[j] = triangleList_[i - xfemElement->NumSurface()][j];
     }
 
 
@@ -1183,7 +1215,7 @@ void Intersection::computeCDT(
     //for(int i = 388; i<389; i++)
     //    elementIds.push_back(element->Id());
 
-    //debugTetgenOutput(in, out, element, elementIds, timestepcounter_);
+    //debugTetgenOutput(in, out, xfemElement, elementIds, timestepcounter_);
     //printTetViewOutputPLC( element, element->Id(), in);
 
     // store interface triangles (+ recovery of higher order meshes)
@@ -1194,10 +1226,12 @@ void Intersection::computeCDT(
     {
       cout << "lifting of Stinerpoints" << endl;
       dserror("hu");
-    	recoverCurvedInterface(element, boundaryintcells, out, recovery);
+    	recoverCurvedInterface(xfemElement, xyze_xfemElement, currentcutterpositions, boundaryintcells, out, recovery);
     }
    	else
-   		storeIntCells(element, boundaryintcells, out);
+   	{
+   		storeIntCells(xfemElement, xyze_xfemElement, currentcutterpositions, boundaryintcells, out);
+   	}
     // store boundaryIntCells integration cells
 
     //if(element->Id()==388)
@@ -1205,7 +1239,7 @@ void Intersection::computeCDT(
 
     //printTetViewOutput(element->Id(), out);
     // store domain integration cells
-    addCellsToDomainIntCellsMap(element, domainintcells, out, higherorder);
+    addCellsToDomainIntCellsMap(xfemElement, domainintcells, out, higherorder);
 }
 
 
@@ -1472,20 +1506,20 @@ void Intersection::storeTriangles(
  |          cutter element  used for the recovery of curved interface   |
  *----------------------------------------------------------------------*/
 void Intersection::storeIntersectedCutterElement(
-        DRT::Element* surfaceElement)
+        DRT::Element*  cutterElement)
 {
     bool alreadyInList = false;
 
     vector<DRT::Element*>::const_iterator eleiter;
     for(eleiter = intersectingCutterElements_.begin(); eleiter != intersectingCutterElements_.end(); ++eleiter)
-        if(*eleiter == surfaceElement)
+        if(*eleiter == cutterElement)
         {
             alreadyInList = true;
             break;
         }
 
     if(!alreadyInList)
-        intersectingCutterElements_.push_back(surfaceElement);
+        intersectingCutterElements_.push_back(cutterElement);
 }
 
 
@@ -1496,6 +1530,8 @@ void Intersection::storeIntersectedCutterElement(
  *----------------------------------------------------------------------*/
 void Intersection::recoverCurvedInterface(
         const DRT::Element*             xfemElement,
+        const BlitzMat&                 xyze_xfemElement,
+        const map<int,BlitzVec3>&       currentcutterpositions,
         map< int, BoundaryIntCells >&   boundaryintcells,
         tetgenio&                       out,
         bool							recovery
@@ -1510,7 +1546,7 @@ void Intersection::recoverCurvedInterface(
 
     // lifts all corner points into the curved interface
     if(recovery)
-    	liftAllSteinerPoints(xfemElement, out);
+    	liftAllSteinerPoints(xfemElement, xyze_xfemElement, currentcutterpositions, out);
 
     for(int i=0; i<out.numberoftrifaces; i++)
     {
@@ -1527,7 +1563,7 @@ void Intersection::recoverCurvedInterface(
             vector<int>             tetraCornerIndices(4,0);
             vector<BlitzVec>        tetraCornerNodes(4, BlitzVec(3));
             getTetrahedronInformation(tetIndex, i, tetraCornerIndices, order, out );
-            getTetrahedronNodes(tetraCornerNodes, tetraCornerIndices, xfemElement, out);
+            getTetrahedronNodes(tetraCornerNodes, tetraCornerIndices, xfemElement, xyze_xfemElement, out);
 
             // run over each triface
             for(int index1 = 0; index1 < 3 ;index1++)
@@ -1547,12 +1583,12 @@ void Intersection::recoverCurvedInterface(
                     visitedPointIndexList[globalHigherOrderIndex] = 1;
 
                     computeHigherOrderPoint(    index1, index2, i, faceMarker, globalHigherOrderIndex,
-                                                tetraCornerIndices, tetraCornerNodes, xfemElement, out);
+                                                tetraCornerIndices, tetraCornerNodes, xfemElement, xyze_xfemElement, currentcutterpositions, out);
                 }
 
                 // store boundary integration cells
-                addCellsToBoundaryIntCellsMap(	i, index1, globalHigherOrderIndex, faceMarker,
-                						domainCoord, boundaryCoord, xfemElement, out);
+                addCellsToBoundaryIntCellsMap(	i, index1, globalHigherOrderIndex, faceMarker, currentcutterpositions,
+                						domainCoord, boundaryCoord, xfemElement, xyze_xfemElement, out);
             }
 
             /*for(int ii=0; ii < 6; ii++)
@@ -1579,6 +1615,8 @@ void Intersection::recoverCurvedInterface(
  *----------------------------------------------------------------------*/
 void Intersection::storeIntCells(
 		const DRT::Element*             xfemElement,
+		const BlitzMat&                 xyze_xfemElement,
+		const map<int,BlitzVec3>&       currentcutterpositions,
 		map< int, BoundaryIntCells >&   boundaryintcells,
 		tetgenio&                       out)
 {
@@ -1613,8 +1651,8 @@ void Intersection::storeIntCells(
 
                 // store boundary integration cells
                 const int globalHigherOrderIndex = -1; // means no quadratic points (tri3 instead of tri6)
-                addCellsToBoundaryIntCellsMap(	i, index1, globalHigherOrderIndex, faceMarker,
-                								domainCoord, boundaryCoord, xfemElement, out);
+                addCellsToBoundaryIntCellsMap(	i, index1, globalHigherOrderIndex, faceMarker, currentcutterpositions,
+                								domainCoord, boundaryCoord, xfemElement, xyze_xfemElement, out);
             }
 
             const int ele_gid = intersectingCutterElements_[faceMarker]->Id();
@@ -1637,6 +1675,8 @@ void Intersection::storeIntCells(
  *----------------------------------------------------------------------*/
 void Intersection::liftAllSteinerPoints(
         const DRT::Element*                             xfemElement,
+        const BlitzMat&                                 xyze_xfemElement,
+        const map<int,BlitzVec3>&                       currentcutterpositions,
         tetgenio&                                       out)
 {
     BlitzVec edgePoint(3);      edgePoint = 0.0;
@@ -1652,24 +1692,24 @@ void Intersection::liftAllSteinerPoints(
         for(unsigned int i=0; i<adjacentFacesList.size(); i++)
         {
             int lineIndex = -1, cutterIndex = -1;
-            const int  caseSteiner = decideSteinerCase(  i, lineIndex, cutterIndex, adjacentFacesList, adjacentFacemarkerList,
-                                                   edgePoint, oppositePoint, xfemElement, out);
+            const int  caseSteiner = decideSteinerCase(  i, lineIndex, cutterIndex, adjacentFacesList, adjacentFacemarkerList, currentcutterpositions,
+                                                   edgePoint, oppositePoint, xfemElement, xyze_xfemElement, out);
             switch(caseSteiner)
             {
                 case 1:
                 {
-                    liftSteinerPointOnSurface(i, adjacentFacesList, adjacentFacemarkerList, xfemElement, out);
+                    liftSteinerPointOnSurface(i, adjacentFacesList, adjacentFacemarkerList, currentcutterpositions, xfemElement, xyze_xfemElement, out);
                     break;
                 }
                 case 2:
                 {
                     liftSteinerPointOnEdge( i, lineIndex, cutterIndex, edgePoint, oppositePoint,
-                                        adjacentFacesList, xfemElement, out);
+                                        adjacentFacesList, currentcutterpositions, xfemElement, xyze_xfemElement, out);
                     break;
                 }
                 case 3:
                 {
-                    liftSteinerPointOnBoundary( i, adjacentFacesList, adjacentFacemarkerList, xfemElement, out);
+                    liftSteinerPointOnBoundary( i, adjacentFacesList, adjacentFacemarkerList, currentcutterpositions, xfemElement, xyze_xfemElement, out);
                     break;
                 }
 
@@ -1750,10 +1790,13 @@ int Intersection::decideSteinerCase(
         int&                            cutterIndex,
         const vector< vector<int> >&   adjacentFacesList,
         const vector< vector<int> >&   adjacentFacemarkerList,
+        const map<int,BlitzVec3>&       currentcutterpositions,
         BlitzVec&                       edgePoint,
         BlitzVec&                       oppositePoint,
         const DRT::Element*             xfemElement,
-        const tetgenio&                 out) const
+        const BlitzMat&                 xyze_xfemElement,
+        const tetgenio&                 out
+        ) const
 {
     const int pointIndex = adjacentFacesList[steinerIndex][0];
 
@@ -1780,7 +1823,7 @@ int Intersection::decideSteinerCase(
                 //printf("a = %d and b = %d\n", adjacentFacemarkerList[steinerIndex][j], adjacentFacemarkerList[steinerIndex][k]);
                 if(findCommonFaceEdge(  j, k, adjacentFacesList[steinerIndex], edgePoint, oppositePoint, out))
                 {
-                    if(!findCommonCutterLine(  adjacentFacemarkerList[steinerIndex][j], adjacentFacemarkerList[steinerIndex][k],
+                    if(!findCommonCutterLine(  currentcutterpositions, adjacentFacemarkerList[steinerIndex][j], adjacentFacemarkerList[steinerIndex][k],
                                                lineIndex, cutterIndex))
                                                dserror("no common line element found\n");
 
@@ -1813,7 +1856,9 @@ void Intersection::liftSteinerPointOnSurface(
         const int                       steinerIndex,
         const vector< vector<int> >&    adjacentFacesList,
         const vector< vector<int> >&    adjacentFacemarkerList,
+        const map<int,BlitzVec3>&       currentcutterpositions,
         const DRT::Element*             xfemElement,
+        const BlitzMat&                 xyze_xfemElement,
         tetgenio&                       out
         )
 {
@@ -1823,7 +1868,7 @@ void Intersection::liftSteinerPointOnSurface(
     {
         Steinerpoint(j) = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
     }
-    elementToCurrentCoordinatesInPlace(xfemElement, Steinerpoint);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, Steinerpoint);
 
     BlitzVec    averageNormal(3);
     averageNormal = 0.0;
@@ -1844,8 +1889,8 @@ void Intersection::liftSteinerPointOnSurface(
             p1(k) =  out.pointlist[pointIndex1*3 + k];
             p2(k) =  out.pointlist[pointIndex2*3 + k];
         }
-        elementToCurrentCoordinatesInPlace(xfemElement, p1);
-        elementToCurrentCoordinatesInPlace(xfemElement, p2);
+        elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, p1);
+        elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, p2);
 
         const BlitzVec n1(p1 - Steinerpoint);
         const BlitzVec n2(p2 - Steinerpoint);
@@ -1862,16 +1907,18 @@ void Intersection::liftSteinerPointOnSurface(
     averageNormal /= ((double)length);
 
     const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
+    DRT::Element* cutterElement =  intersectingCutterElements_[faceMarker];
+    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
 
     BlitzVec3 xsi;
     vector<BlitzVec> plane;
     plane.push_back(BlitzVec(Steinerpoint + averageNormal));
     plane.push_back(BlitzVec(Steinerpoint - averageNormal));
-    const bool intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker],false);
+    const bool intersected = computeRecoveryNormal( xsi, plane, cutterElement, xyze_cutterElement, false);
     if(intersected)
     {
         storeHigherOrderNode(   true, adjacentFacesList[steinerIndex][0], -1, xsi,
-                                intersectingCutterElements_[faceMarker], xfemElement, out);
+            cutterElement, currentcutterpositions, xfemElement, out);
     }
     else
     {
@@ -1883,11 +1930,11 @@ void Intersection::liftSteinerPointOnSurface(
             vector<BlitzVec> plane;
             plane.push_back(BlitzVec(Steinerpoint + (*normalptr)));
             plane.push_back(BlitzVec(Steinerpoint - (*normalptr)));
-            intersected = computeRecoveryNormal( xsi, plane, intersectingCutterElements_[faceMarker], false);
+            intersected = computeRecoveryNormal( xsi, plane, cutterElement, xyze_cutterElement, false);
             if(intersected)
             {
                 storeHigherOrderNode( true, adjacentFacesList[steinerIndex][0], -1, xsi,
-                                      intersectingCutterElements_[faceMarker], xfemElement, out);
+                    cutterElement, currentcutterpositions, xfemElement, out);
                 break;
             }
         }
@@ -1912,7 +1959,9 @@ void Intersection::liftSteinerPointOnEdge(
     BlitzVec&                         edgePoint,
     BlitzVec&                         oppositePoint,
     const vector< vector<int> >&     adjacentFacesList,
+    const map<int,BlitzVec3>&         currentcutterpositions,
     const DRT::Element*               xfemElement,
+    const BlitzMat&                   xyze_xfemElement,
     tetgenio&                         out)
 {
     // get Steiner point coordinates
@@ -1920,9 +1969,9 @@ void Intersection::liftSteinerPointOnEdge(
     for(int j=0; j<3; j++)
         Steinerpoint(j) = out.pointlist[adjacentFacesList[steinerIndex][0]*3 + j];
 
-    elementToCurrentCoordinatesInPlace(xfemElement, Steinerpoint);
-    elementToCurrentCoordinatesInPlace(xfemElement, edgePoint);
-    elementToCurrentCoordinatesInPlace(xfemElement, oppositePoint);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, Steinerpoint);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, edgePoint);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, oppositePoint);
 
     const BlitzVec r1(edgePoint - Steinerpoint);
     const BlitzVec r2(oppositePoint - Steinerpoint);
@@ -1941,12 +1990,14 @@ void Intersection::liftSteinerPointOnEdge(
 
     BlitzVec3 xsi;
     xsi = 0.0;
-    const bool intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[cutterIndex]);
+    DRT::Element* cutterElement = intersectingCutterElements_[cutterIndex];
+    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    const bool intersected = computeRecoveryPlane( lineIndex, currentcutterpositions, xsi, plane, cutterElement, xyze_cutterElement);
 
     if(intersected)
     {
         storeHigherOrderNode(   false, adjacentFacesList[steinerIndex][0], lineIndex, xsi,
-                                intersectingCutterElements_[cutterIndex], xfemElement, out);
+            cutterElement, currentcutterpositions, xfemElement, out);
     }
     else
     {
@@ -1964,7 +2015,9 @@ void Intersection::liftSteinerPointOnBoundary(
         const int                         steinerIndex,
         const vector< vector<int> >&      adjacentFacesList,
         const vector< vector<int> >&      adjacentFacemarkerList,
+        const map<int,BlitzVec3>&         currentcutterpositions,
         const DRT::Element*               xfemElement,
+        const BlitzMat&                   xyze_xfemElement,
         tetgenio&                         out
         )
 {
@@ -2025,12 +2078,14 @@ void Intersection::liftSteinerPointOnBoundary(
 
     // compute intersection normal on boundary
     BlitzVec3 xsi;
-    const bool intersected = computeRecoveryNormal(xsi, plane, intersectingCutterElements_[faceIndex], true);
+    DRT::Element* cutterElement = intersectingCutterElements_[faceIndex];
+    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    const bool intersected = computeRecoveryNormal(xsi, plane, cutterElement, xyze_cutterElement, true);
 
     if(intersected)
     {
         storeHigherOrderNode(   true, adjacentFacesList[steinerIndex][0], -1, xsi,
-                                intersectingCutterElements_[faceIndex], xfemElement, out);
+                                intersectingCutterElements_[faceIndex], currentcutterpositions, xfemElement, out);
     }
     else
     {
@@ -2091,6 +2146,7 @@ void Intersection::getTetrahedronNodes(
         vector<BlitzVec>&                       tetraCornerNodes,
         const vector<int>&                      tetraCornerIndices,
         const DRT::Element*                     xfemElement,
+        const BlitzMat&                         xyze_xfemElement,
         const tetgenio&                         out
         ) const
 {
@@ -2100,7 +2156,7 @@ void Intersection::getTetrahedronNodes(
         for(int j = 0; j < 3; j++)
             tetraCornerNodes[i](j) = out.pointlist[tetraCornerIndices[i]*3+j];
 
-        elementToCurrentCoordinatesInPlace(xfemElement, tetraCornerNodes[i]);
+        elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, tetraCornerNodes[i]);
     }
 }
 
@@ -2119,6 +2175,8 @@ void Intersection::computeHigherOrderPoint(
         const vector<int>&                        tetraCornerIndices,
         const vector<BlitzVec>&                   tetraCornerNodes,
         const DRT::Element*                       xfemElement,
+        const BlitzMat&                           xyze_xfemElement,
+        const map<int,BlitzVec3>&                 currentcutterpositions,
         tetgenio&                           out
         )
 {
@@ -2147,18 +2205,22 @@ void Intersection::computeHigherOrderPoint(
         // higher order node lies within the cutter element
         if(adjacentFaceMarker == faceMarker)
         {
-            intersected = computeRecoveryNormal(xsi, plane,intersectingCutterElements_[faceMarker], false);
+            DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
+            const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+            intersected = computeRecoveryNormal(xsi, plane, cutterElement, xyze_cutterElement, false);
             intersectionNormal = true;
         }
         // higher-order point lies on one of the boundary lines of the cutter element
         else if(adjacentFaceMarker != faceMarker)
         {
             int cutterIndex        = -1;
-            findCommonCutterLine(faceMarker, adjacentFaceMarker, lineIndex, cutterIndex);
+            findCommonCutterLine(currentcutterpositions, faceMarker, adjacentFaceMarker, lineIndex, cutterIndex);
 
             if(lineIndex != -1)
             {
-                intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[cutterIndex]);
+                DRT::Element* cutterElement = intersectingCutterElements_[cutterIndex];
+                const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+                intersected = computeRecoveryPlane( lineIndex, currentcutterpositions, xsi, plane, cutterElement, xyze_cutterElement);
                 intersectionNormal = false;
             }
             else
@@ -2179,23 +2241,25 @@ void Intersection::computeHigherOrderPoint(
 
         //printf("oppo = %d\n", oppositeIndex);
 
+        DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
+        const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+        
         vector<BlitzVec>     plane;
 
         computeIntersectionNormalA(  true,  index1, index2, oppositeIndex, globalHigherOrderIndex,
                                     tetraCornerIndices, tetraCornerNodes, plane, xfemElement, out);
 
-        intersected = computeRecoveryNormal(    xsi, plane, intersectingCutterElements_[faceMarker],
-                                                true);
+        intersected = computeRecoveryNormal(xsi, plane, cutterElement, xyze_cutterElement, true);
         intersectionNormal = true;
 
         if(!intersected)
         {
             printf("REFERNCE DOMAIN");
-            lineIndex = findIntersectingSurfaceEdge(    xfemElement, intersectingCutterElements_[faceMarker],
+            lineIndex = findIntersectingSurfaceEdge(    xfemElement, xyze_xfemElement, cutterElement, currentcutterpositions,
                                                         tetraCornerNodes[index1], tetraCornerNodes[index2]);
             if(lineIndex != -1)
             {
-                intersected = computeRecoveryPlane( lineIndex, xsi, plane, intersectingCutterElements_[faceMarker]);
+                intersected = computeRecoveryPlane( lineIndex, currentcutterpositions, xsi, plane, cutterElement, xyze_cutterElement);
                 intersectionNormal = false;
             }
             else
@@ -2213,7 +2277,7 @@ void Intersection::computeHigherOrderPoint(
     if(intersected)
     {
         storeHigherOrderNode(   intersectionNormal, globalHigherOrderIndex, lineIndex,
-                                xsi, intersectingCutterElements_[faceMarker], xfemElement, out);
+                                xsi, intersectingCutterElements_[faceMarker], currentcutterpositions, xfemElement, out);
     }
     else
     {
@@ -2257,6 +2321,7 @@ bool Intersection::computeRecoveryNormal(
     BlitzVec3&                                  xsi,
     const vector<BlitzVec>&                     normal,
     const DRT::Element*                         cutterElement,
+    const BlitzMat&                             xyze_cutterElement,
     const bool                                  onBoundary
     ) const
 {
@@ -2272,11 +2337,11 @@ bool Intersection::computeRecoveryNormal(
     dx = 0.0;
 
     xsi = 0.0;
-    updateRHSForRCINormal( b, xsi, normal, cutterElement, onBoundary);
+    updateRHSForRCINormal( b, xsi, normal, cutterElement, xyze_cutterElement, onBoundary);
 
     while(residual > TOL14)
     {
-        updateAForRCINormal( A, xsi, normal, cutterElement, onBoundary);
+        updateAForRCINormal( A, xsi, normal, cutterElement, xyze_cutterElement, onBoundary);
 
         if(!solveLinearSystemWithSVD<3>(A, b, dx))
             countSingular++;
@@ -2295,7 +2360,7 @@ bool Intersection::computeRecoveryNormal(
             break;
         }
 
-        updateRHSForRCINormal( b, xsi, normal, cutterElement, onBoundary);
+        updateRHSForRCINormal( b, xsi, normal, cutterElement, xyze_cutterElement, onBoundary);
         residual = Norm2(b);
         iter++;
 
@@ -2324,6 +2389,7 @@ void Intersection::updateAForRCINormal(
     const BlitzVec3&                            xsi,
     const vector<BlitzVec>&                     normal,
     const DRT::Element*                         surfaceElement,
+    const BlitzMat&                             xyze_surfaceElement,
     const bool                                  onBoundary
     ) const
 {
@@ -2337,11 +2403,10 @@ void Intersection::updateAForRCINormal(
         dsassert(normal.size() >= 2, "mismatch in length");
         for(int i=0; i<numNodesSurface; i++)
         {
-            const double* pos = surfaceElement->Nodes()[i]->X();
             for(int dim=0; dim<3; dim++)
             {
-                A(dim,0) += pos[dim] * surfaceDeriv1(0, i);
-                A(dim,1) += pos[dim] * surfaceDeriv1(1, i);
+                A(dim,0) += xyze_surfaceElement(dim,i) * surfaceDeriv1(0, i);
+                A(dim,1) += xyze_surfaceElement(dim,i) * surfaceDeriv1(1, i);
             }
         }
 
@@ -2355,11 +2420,10 @@ void Intersection::updateAForRCINormal(
 
         for(int i=0; i<numNodesSurface; i++)
         {
-            const double* pos = surfaceElement->Nodes()[i]->X();
             for(int dim=0; dim<3; dim++)
             {
-                A(dim,0) += pos[dim] * surfaceDeriv1(0,i);
-                A(dim,1) += pos[dim] * surfaceDeriv1(1,i);
+                A(dim,0) += xyze_surfaceElement(dim,i) * surfaceDeriv1(0,i);
+                A(dim,1) += xyze_surfaceElement(dim,i) * surfaceDeriv1(1,i);
             }
         }
 
@@ -2386,6 +2450,7 @@ void Intersection::updateRHSForRCINormal(
     const BlitzVec3&            xsi,
     const vector<BlitzVec>&     normal,
     const DRT::Element*                         surfaceElement,
+    const BlitzMat&                             xyze_surfaceElement,
     const bool                                  onBoundary
     ) const
 {
@@ -2398,9 +2463,8 @@ void Intersection::updateRHSForRCINormal(
         dsassert(normal.size() >= 2, "mismatch in length");
         for(int i=0; i<numNodesSurface; i++)
         {
-            const DRT::Node* node = surfaceElement->Nodes()[i];
             for(int dim=0; dim<3; dim++)
-                b(dim) -= node->X()[dim] * surfaceFunct(i);
+                b(dim) -= xyze_surfaceElement(dim,i) * surfaceFunct(i);
         }
 
         for(int dim=0; dim<3; dim++)
@@ -2413,9 +2477,8 @@ void Intersection::updateRHSForRCINormal(
 
         for(int i=0; i<numNodesSurface; i++)
         {
-            const DRT::Node* node = surfaceElement->Nodes()[i];
             for(int dim=0; dim<3; dim++)
-                b(dim) -= node->X()[dim] * surfaceFunct(i);
+                b(dim) -= xyze_surfaceElement(dim,i) * surfaceFunct(i);
         }
 
 
@@ -2438,12 +2501,14 @@ void Intersection::updateRHSForRCINormal(
  *----------------------------------------------------------------------*/
 bool Intersection::computeRecoveryPlane(
         int&                                        lineIndex,
+        const map<int,BlitzVec3>&                   currentcutterpositions,
         BlitzVec3&                                  xsi,
         const vector<BlitzVec>&                     plane,
-        DRT::Element*                               surfaceElement
+        DRT::Element*                               cutterElement,
+        const BlitzMat&                             xyze_cutterElement
         ) const
 {
-    const int     numLines = surfaceElement->NumLine();
+    const int     numLines = cutterElement->NumLine();
 
     // run over all lines (curves)
     int     begin, end;
@@ -2464,7 +2529,9 @@ bool Intersection::computeRecoveryPlane(
         int                         iter = 0;
         const int                   maxiter = 50;
         double                      residual = 1.0;
-        DRT::Element*               lineElement = surfaceElement->Lines()[i];
+        DRT::Element*               lineElement = cutterElement->Lines()[i];
+        const BlitzMat xyze_lineElement(getCurrentNodalPositions(lineElement, currentcutterpositions));
+        
         BlitzMat3x3 A;
         BlitzVec3   b;
         BlitzVec3   dx;  dx = 0.0;
@@ -2472,11 +2539,11 @@ bool Intersection::computeRecoveryPlane(
         intersection = true;
         xsi = 0.0;
 
-        updateRHSForRCIPlane( b, xsi, plane, lineElement);
+        updateRHSForRCIPlane( b, xsi, plane, lineElement, xyze_lineElement);
 
         while( residual > TOL14 )
         {
-            updateAForRCIPlane( A, xsi, plane, lineElement, surfaceElement);
+            updateAForRCIPlane( A, xsi, plane, lineElement, xyze_lineElement, cutterElement, xyze_cutterElement);
 
             if(!gaussElimination<true, 3, 1>(A, b, dx))
             {
@@ -2492,7 +2559,7 @@ bool Intersection::computeRecoveryPlane(
 
             xsi += dx;
 
-            updateRHSForRCIPlane( b, xsi, plane, lineElement);
+            updateRHSForRCIPlane( b, xsi, plane, lineElement, xyze_lineElement);
             residual = Norm2(b);
             iter++;
         }
@@ -2524,8 +2591,10 @@ void Intersection::updateAForRCIPlane(
         BlitzMat3x3&                A,
         const BlitzVec3&            xsi,
         const vector<BlitzVec>&     plane,
-        const DRT::Element*                         lineElement,
-        const DRT::Element*                         surfaceElement
+        const DRT::Element*         lineElement,
+        const BlitzMat&             xyze_lineElement,
+        const DRT::Element*         surfaceElement,
+        const BlitzMat&             xyze_surfaceElement
         ) const
 {
     const int numNodesLine = lineElement->NumNode();
@@ -2546,10 +2615,8 @@ void Intersection::updateAForRCIPlane(
 
     for(int i=0; i<numNodesLine; i++)
     {
-        const DRT::Node* node = lineElement->Nodes()[i];
         for(int dim=0; dim<3; dim++)
-//            A[dim][2] += (-1.0) * node->X()[dim] * lineDeriv[i][0];
-            A(dim,2) -= node->X()[dim] * lineDeriv(0,i);
+            A(dim,2) -= xyze_lineElement(dim,i) * lineDeriv(0,i);
     }
 }
 
@@ -2565,7 +2632,8 @@ void Intersection::updateRHSForRCIPlane(
     BlitzVec3&                  b,
     const BlitzVec3&            xsi,
     const vector<BlitzVec>&     plane,
-    const DRT::Element*         lineElement
+    const DRT::Element*         lineElement,
+    const BlitzMat&             xyze_lineElement
     ) const
 {
     const int numNodesLine    = lineElement->NumNode();
@@ -2579,19 +2647,11 @@ void Intersection::updateRHSForRCIPlane(
     b = 0.0;
     for(int dim=0; dim<3; dim++)
         for(int i=0; i<numNodesSurface; i++)
-        {
             b(dim) -= plane[i](dim) * surfaceFunct(i);
-        }
 
-    const DRT::Node*const* lineNodes = lineElement->Nodes();
     for(int i=0; i<numNodesLine; i++)
-    {
-        const double* pos = lineNodes[i]->X();
         for(int dim=0; dim<3; dim++)
-        {
-            b(dim) +=  pos[dim]  * lineFunct(i);
-        }
-    }
+            b(dim) +=  xyze_lineElement(dim,i)  * lineFunct(i);
 }
 
 
@@ -2672,9 +2732,9 @@ void Intersection::computeIntersectionNormalA(
     if(onBoundary)
     {
         for(int i = 0; i < 4; i++)
-            elementToCurrentCoordinatesInPlace(xfemElement, plane[i]);
+            elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, plane[i]);
 
-        elementToCurrentCoordinatesInPlace(xfemElement, m);
+        elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, m);
         plane.push_back(BlitzVec(m));
     }
 }
@@ -2728,10 +2788,10 @@ void Intersection::computeIntersectionNormalB(
         p4(i) = out.pointlist[adjacentOppositePointIndex*3 + i];
     }
 
-    elementToCurrentCoordinatesInPlace(xfemElement, p1);
-    elementToCurrentCoordinatesInPlace(xfemElement, p2);
-    elementToCurrentCoordinatesInPlace(xfemElement, p3);
-    elementToCurrentCoordinatesInPlace(xfemElement, p4);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, p1);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, p2);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, p3);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, p4);
 
     const BlitzVec r1(p1 - p2);
     const BlitzVec r2(p3 - p2);
@@ -2754,7 +2814,7 @@ void Intersection::computeIntersectionNormalB(
     for(int i = 0; i < 3; i++)
         m(i) = out.pointlist[globalHigherOrderIndex*3+i];
 
-    elementToCurrentCoordinatesInPlace(xfemElement, m);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, m);
 
     // compute nodes of the normal to the interface edge of the tetrahedron
     plane.clear();
@@ -2822,9 +2882,9 @@ void Intersection::computeIntersectionNormalC(
     plane.push_back(BlitzVec(plane[0] + n));
 
     for(int i = 0; i < 4; i++)
-        elementToCurrentCoordinatesInPlace(xfemElement, plane[i]);
+        elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, plane[i]);
 
-    elementToCurrentCoordinatesInPlace(xfemElement, p2);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, p2);
     plane.push_back(BlitzVec(p2));
 }
 
@@ -2970,10 +3030,12 @@ bool Intersection::findCommonFaceEdge(
  |          of face 1 and facet 2                                       |
  *----------------------------------------------------------------------*/
 bool Intersection::findCommonCutterLine(
+    const map<int,BlitzVec3>&                       currentcutterpositions,
     const int                                       faceIndex1,
     const int                                       faceIndex2,
     int&                                            lineIndex,
-    int&                                            cutterIndex) const
+    int&                                            cutterIndex
+    ) const
 {
     bool comparison = false;
     // get line arrays, which are computed onthe fly within the cutter elements
@@ -2993,7 +3055,9 @@ bool Intersection::findCommonCutterLine(
             {
                 const DRT::Node* node1 = lines1[i]->Nodes()[k];
                 const DRT::Node* node2 = lines2[j]->Nodes()[k];
-                if(!comparePoints<3>(node1->X(), node2->X()))
+                BlitzVec3 pos1 = currentcutterpositions.find(node1->Id())->second;
+                BlitzVec3 pos2 = currentcutterpositions.find(node2->Id())->second;
+                if(!comparePoints<3>(pos1, pos2))
                 {
                     comparison = false;
                     break;
@@ -3009,14 +3073,18 @@ bool Intersection::findCommonCutterLine(
                     {
                         const DRT::Node* node1 = lines1[i]->Nodes()[k];
                         const DRT::Node* node2 = lines2[j]->Nodes()[k];
-                        if(!comparePoints<3>(node1->X(), node2->X()))
+                        BlitzVec3 pos1 = currentcutterpositions.find(node1->Id())->second;
+                        BlitzVec3 pos2 = currentcutterpositions.find(node2->Id())->second;
+                        if(!comparePoints<3>(pos1, pos2))
                             comparison = false;
                     }
                     else
                     {
                         const DRT::Node* node1 = lines1[i]->Nodes()[k];
                         const DRT::Node* node2 = lines2[j]->Nodes()[1-k];
-                        if(!comparePoints<3>(node1->X(), node2->X()))
+                        BlitzVec3 pos1 = currentcutterpositions.find(node1->Id())->second;
+                        BlitzVec3 pos2 = currentcutterpositions.find(node2->Id())->second;
+                        if(!comparePoints<3>(pos1, pos2))
                             comparison = false;
                     }
                 }
@@ -3047,9 +3115,12 @@ bool Intersection::findCommonCutterLine(
  *----------------------------------------------------------------------*/
 int Intersection::findIntersectingSurfaceEdge(
         const DRT::Element*                       xfemElement,
+        const BlitzMat&                           xyze_xfemElement,
         DRT::Element*                             cutterElement,
+        const map<int,BlitzVec3>&                 currentcutterpositions,
         const BlitzVec&                           edgeNode1,
-        const BlitzVec&                           edgeNode2) const
+        const BlitzVec&                           edgeNode2
+        ) const
 {
     dserror("to be improved by Ursula");
     int lineIndex = -1;
@@ -3059,8 +3130,8 @@ int Intersection::findIntersectingSurfaceEdge(
     BlitzVec node1 = edgeNode1;
     BlitzVec node2 = edgeNode2;
 
-    elementToCurrentCoordinatesInPlace(xfemElement, node1);
-    elementToCurrentCoordinatesInPlace(xfemElement, node2);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, node1);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement, node2);
 
     x1(0) = node1(0);
     x2(0) = node2(0);
@@ -3072,8 +3143,8 @@ int Intersection::findIntersectingSurfaceEdge(
 //
 //        BlitzVec xsi1(1);
 //        BlitzVec xsi2(1);
-//        currentToVolumeElementCoordinates( lineElement, x1, xsi1);  // TODO: will crash
-//        currentToVolumeElementCoordinates( lineElement, x2, xsi2);
+//        currentToVolumeElementCoordinates( lineElement, xyze_lineElement, x1, xsi1);  // TODO: will crash
+//        currentToVolumeElementCoordinates( lineElement, xyze_lineElement, x2, xsi2);
 //
 //        const bool check1 = checkPositionWithinElementParameterSpace( xsi1, lineElement->Shape());
 //        const bool check2 = checkPositionWithinElementParameterSpace( xsi2, lineElement->Shape());
@@ -3105,7 +3176,8 @@ void Intersection::storeHigherOrderNode(
     const int                                   globalHigherOrderIndex,
     const int                                   lineIndex,
     BlitzVec3&                                  xsi,
-    DRT::Element*                               surfaceElement,
+    DRT::Element*                               cutterElement,
+    const map<int,BlitzVec3>&                   currentcutterpositions,
     const DRT::Element*                         xfemElement,
     tetgenio&                                   out
     ) const
@@ -3117,14 +3189,16 @@ void Intersection::storeHigherOrderNode(
         BlitzVec xsiSurf(2);
         xsiSurf(0) = xsi(0);
         xsiSurf(1) = xsi(1);
-        curr = elementToCurrentCoordinates(surfaceElement, xsiSurf);
+        const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+        curr = elementToCurrentCoordinates(cutterElement, xyze_cutterElement, xsiSurf);
     }
     else
     {
         BlitzVec xsiLine(1);
         xsiLine(0) = xsi(2);
-        const DRT::Element* lineele = surfaceElement->Lines()[lineIndex];
-        curr = elementToCurrentCoordinates(lineele, xsiLine);
+        const DRT::Element* lineele = cutterElement->Lines()[lineIndex];
+        const BlitzMat xyze_lineElement(getCurrentNodalPositions(lineele, currentcutterpositions));
+        curr = elementToCurrentCoordinates(lineele, xyze_lineElement, xsiLine);
     }
     xsi = currentToVolumeElementCoordinatesExact(xfemElement, curr);
 
@@ -3185,10 +3259,13 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     const int                         		cornerIndex,
     const int                         		globalHigherOrderIndex,
     const int                         		faceMarker,
-    vector<vector<double> >&                domainCoord,
-    vector<vector<double> >&                boundaryCoord,
-    const DRT::Element*						xfemElement,
-    const tetgenio&               			out) const
+    const map<int,BlitzVec3>&             currentcutterpositions,
+    vector<vector<double> >&              domainCoord,
+    vector<vector<double> >&              boundaryCoord,
+    const DRT::Element*						        xfemElement,
+    const BlitzMat&                       xyze_xfemElement,
+    const tetgenio&               			  out
+    ) const
 {
 
     //vector<double> trinodes(3);
@@ -3210,11 +3287,14 @@ void Intersection::addCellsToBoundaryIntCellsMap(
     domainCoord[cornerIndex][1] = eleCoordDomainCorner(1);
     domainCoord[cornerIndex][2] = eleCoordDomainCorner(2);
 
-    const BlitzVec3 physCoordCorner(elementToCurrentCoordinates(xfemElement, eleCoordDomainCorner));
+    const BlitzVec3 physCoordCorner(elementToCurrentCoordinates(xfemElement, xyze_xfemElement, eleCoordDomainCorner));
 
     //domainCoord.push_back(trinodes);
 
-    const BlitzVec2 eleCoordBoundaryCorner(CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordCorner));
+    const DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
+    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    
+    const BlitzVec2 eleCoordBoundaryCorner(CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordCorner));
 
 //    cout << "physcood = " << physCoord << "    ";
 //    cout << "elecood = " << eleCoord << endl;
@@ -3239,11 +3319,13 @@ void Intersection::addCellsToBoundaryIntCellsMap(
 	    domainCoord[cornerIndex+3][1] = eleCoordDomaninHO(1);
 	    domainCoord[cornerIndex+3][2] = eleCoordDomaninHO(2);
 
-	    const BlitzVec3 physCoordHO(elementToCurrentCoordinates(xfemElement, eleCoordDomaninHO));
+	    const BlitzVec3 physCoordHO(elementToCurrentCoordinates(xfemElement, xyze_xfemElement, eleCoordDomaninHO));
 
 	    //domainCoord.push_back(trinodes);
 
-	    const BlitzVec2 eleCoordBoundaryHO(CurrentToSurfaceElementCoordinates(intersectingCutterElements_[faceMarker], physCoordHO));
+	    const DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
+	    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+	    const BlitzVec2 eleCoordBoundaryHO(CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordHO));
 
 	//    cout << "physcood = " << physCoord << "    ";
 	//    cout << "elecood = " << eleCoord << endl;
@@ -3327,7 +3409,7 @@ void Intersection::debugXAABBIntersection(
  |  DB:     Debug only                                       u.may 06/07|
  *----------------------------------------------------------------------*/
 void Intersection::debugNodeWithinElement(
-        const DRT::Element* element,
+        const DRT::Element* xfemElement,
         const DRT::Node* node,
         const BlitzVec& xsi,
         const int noE,
@@ -3335,7 +3417,7 @@ void Intersection::debugNodeWithinElement(
         const bool within
         ) const
 {
-    const int numnodes = element->NumNode();
+    const int numnodes = xfemElement->NumNode();
     vector<int> actParams(1,0);
     BlitzVec funct(numnodes);
     BlitzMat emptyM;
@@ -3356,7 +3438,7 @@ void Intersection::debugNodeWithinElement(
     for(int dim=0; dim<3; dim++)
         for(int i=0; i<numnodes; i++)
         {
-            x(dim) += element->Nodes()[i]->X()[dim] * funct(i);
+            x(dim) += xfemElement->Nodes()[i]->X()[dim] * funct(i);
         }
 
     cout << endl;
@@ -3403,7 +3485,7 @@ void Intersection::debugNodeWithinElement(
  |  DB:     Debug only                                       u.may 06/07|
  *----------------------------------------------------------------------*/
 void Intersection::debugTetgenDataStructure(
-        const DRT::Element*               element) const
+        const DRT::Element*               xfemElement) const
 {
     cout << endl;
     cout << "===============================================================" << endl;
@@ -3419,7 +3501,7 @@ void Intersection::debugTetgenDataStructure(
         {
             xsi[j] = pointList_[i].coord[j];
         }
-        elementToCurrentCoordinatesInPlace(element, xsi);
+        elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, xsi);
 
         cout << i << ".th point:   ";
         for(int j = 0; j< 3; j++)
@@ -3489,7 +3571,7 @@ void Intersection::debugTetgenDataStructure(
  *----------------------------------------------------------------------*/
 void Intersection::debugTetgenOutput( 	tetgenio& in,
 										tetgenio& out,
-										const DRT::Element*   element,
+										const DRT::Element*   xfemElement,
     									vector<int>& elementIds,
     									int timestepcounter) const
 {
@@ -3500,7 +3582,7 @@ void Intersection::debugTetgenOutput( 	tetgenio& in,
 
 	for(unsigned int i = 0; i < elementIds.size(); i++)
 	{
-		if(element->Id()== elementIds[i])
+		if(xfemElement->Id()== elementIds[i])
 		{
 			// change filename
 			sprintf(tetgenInId,"%s%d%d", tetgenIn.c_str(), elementIds[i], timestepcounter);
@@ -3583,7 +3665,7 @@ void Intersection::printTetViewOutputPLC(
         for(int j = 0; j < 3; j++)
             xsi[j] = in.pointlist[i*3 + j];
 
-        elementToCurrentCoordinatesInPlace(xfemElement, xsi);
+        elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, xsi);
 
         fprintf(outFile, "%d  %.16g  %.16g  %.16g", i, xsi(0), xsi(1), xsi(2));
 

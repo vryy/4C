@@ -128,6 +128,7 @@ public:
             const BlitzVec3&                      actpos,            ///< \f$x\f$
             const BlitzVec3&                      nodalpos,          ///< \f$x_{\mathrm{Node}}\f$
             const RCP<DRT::Discretization>&       cutterdis,         ///< intersecting discretization
+            const map<int,BlitzVec3>&             currentcutterpositions,  ///< current positions of all cutter nodes
             const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
             ) const;
 
@@ -135,6 +136,7 @@ public:
     double EnrValue(
             const BlitzVec3&                      actpos,            ///< \f$x\f$
             const RCP<DRT::Discretization>&       cutterdis,         ///< intersecting discretization
+            const map<int,BlitzVec3>&             currentcutterpositions,  ///< current positions of all cutter nodes
             const XFEM::Enrichment::ApproachFrom  approachdirection  ///< approach direction
             ) const;
     

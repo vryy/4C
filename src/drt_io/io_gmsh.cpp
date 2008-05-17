@@ -173,6 +173,31 @@ string IO::GMSH::elementToString(
     return pos_array_string.str();
 }
 
+string IO::GMSH::elementToString(
+        const double                            scalar,
+        const DRT::Element::DiscretizationType  distype,
+        const blitz::Array<double,2>&           xyze)
+{
+    const int numnode = distypeToGmshNumNode(distype);
+
+    stringstream gmsh_ele_line;
+    gmsh_ele_line << "S" << distypeToGmshElementHeader(distype) << "(";
+    for (int i = 0; i<numnode;++i)
+    {
+        gmsh_ele_line << scientific << xyze(0,i) << ",";
+        gmsh_ele_line << scientific << xyze(1,i) << ",";
+        gmsh_ele_line << scientific << xyze(2,i);
+        if (i < numnode-1){
+            gmsh_ele_line << ",";
+        }
+    };
+    gmsh_ele_line << ")";
+    // values
+    gmsh_ele_line << ScalarToString(scalar, distype);
+
+    return gmsh_ele_line.str();
+}
+
 
 string IO::GMSH::elementToString(
         const vector<double>& scalarfield,
@@ -264,6 +289,25 @@ string IO::GMSH::disToString(
     {
         DRT::Element* actele = dis->lColElement(i);
         gmshfilecontent << IO::GMSH::elementToString(scalar, actele) << endl;
+    };
+    gmshfilecontent << "};" << endl;
+    return gmshfilecontent.str();
+}
+
+string IO::GMSH::disToString(
+        const std::string&             s,
+        const double                   scalar,
+        const RCP<DRT::Discretization> dis,
+        std::map<int,blitz::TinyVector<double,3> >  currentpositions
+        )
+{
+    stringstream gmshfilecontent;
+    gmshfilecontent << "View \" " << s << " Elements \" {" << endl;
+    for (int i=0; i<dis->NumMyColElements(); ++i)
+    {
+        DRT::Element* actele = dis->lColElement(i);
+        blitz::Array<double,2> xyze(getCurrentNodalPositions(actele, currentpositions));
+        gmshfilecontent << IO::GMSH::elementToString(scalar, actele->Shape(), xyze) << endl;
     };
     gmshfilecontent << "};" << endl;
     return gmshfilecontent.str();
