@@ -1,10 +1,7 @@
 //
-// Maintainer: Georg Bauer
-//             bauer@lnm.mw.tum.de
-//             http://www.lnm.mw.tum.de
-//             089 - 289-15252
+// Maintainer: Axel Gerstenberger
 //
-// necessary defines: D_FLUID3 RESULTTEST DEBUG CCADISCRET BINIO QHULL
+// necessary defines: D_FLUID3 RESULTTEST CCADISCRET BINIO QHULL
 //
 // helpful reference for validation of driven cavity flows:
 // U. Ghia, K.N. Ghia, C.T.Shin, Journal of Computational Physics 48, 387-411 (1982)
