@@ -236,6 +236,9 @@ public:
   //! write element data to file
   virtual void WriteElementData();
 
+  //! reset resultfile_changed_ to -1 in case of inverse analysis
+  void RevertResultfileChanged() { resultfile_changed_ = -1;}
+
   //@}
 
 private:
