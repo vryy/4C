@@ -88,7 +88,7 @@ STARTINGALGO     One_Step_Theta
 NONLINITER       Newton
 ITEMAX           10
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-8
+CONVTOL          1.0E-12
 STEADYCHECK      L_2_norm
 STEADYSTEP       -1
 STEADYTOL        1.0E-6
