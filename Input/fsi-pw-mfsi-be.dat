@@ -19,6 +19,7 @@ PROBLEMTYP                      Fluid_Structure_Interaction
 NUMFIELD                        3
 TIMETYP                         Dynamic
 RESTART                         0
+//!RESTART                         3
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
@@ -32,7 +33,7 @@ LINEAR
 DYNAMICTYP                      Gen_Alfa
 RESEVRYDISP                     1
 RESEVRYSTRS                     1
-RESTARTEVRY                     20
+RESTARTEVRY                     1
 TIMESTEP                        0.05
 NUMSTEP                         200
 MAXTIME                         5.0
@@ -83,7 +84,7 @@ TIMESTEP                        0.0001
 NUMSTEP                         5
 UPPSS                           1
 UPRES                           1
-RESTARTEVRY                     20
+RESTARTEVRY                     1
 COUPALGO                        iter_monolithic
 PREDICTOR                       d(n)
 CONVCRIT                        ||g(i)||:sqrt(neq)

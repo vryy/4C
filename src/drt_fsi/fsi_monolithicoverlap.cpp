@@ -197,6 +197,7 @@ FSI::MonolithicOverlap::buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
 /*----------------------------------------------------------------------*/
 bool FSI::MonolithicOverlap::computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::computeF");
   Evaluate(Teuchos::rcp(&x,false));
   SetupRHS(F);
   return true;
@@ -207,6 +208,7 @@ bool FSI::MonolithicOverlap::computeF(const Epetra_Vector &x, Epetra_Vector &F, 
 /*----------------------------------------------------------------------*/
 bool FSI::MonolithicOverlap::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::computeJacobian");
   Evaluate(Teuchos::rcp(&x,false));
   LINALG::BlockSparseMatrixBase& mat = Teuchos::dyn_cast<LINALG::BlockSparseMatrixBase>(Jac);
   SetupSystemMatrix(mat);

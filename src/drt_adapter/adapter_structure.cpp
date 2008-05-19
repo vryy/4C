@@ -123,7 +123,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::StructureGenAlpha::Dispnm()
 Teuchos::RCP<const Epetra_Map> ADAPTER::StructureGenAlpha::DofRowMap()
 {
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
-  return Teuchos::rcp(dofrowmap, false);
+  return Teuchos::rcp(new Epetra_Map(*dofrowmap));
 }
 
 

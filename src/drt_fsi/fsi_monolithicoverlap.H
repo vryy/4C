@@ -26,7 +26,7 @@ namespace FSI
     are no ale equations at the interface.
 
     Based on Newton's method within NOX. NOX computes the sum of all Newton
-    increments. The evaluation method evalModelImpl() is always called with
+    increments. The evaluation method computeF() is always called with
     the sum x. However the meaning of this sum depends on the field blocks
     used.
 
