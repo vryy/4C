@@ -168,8 +168,10 @@ int main(
       DRT::INPUT::PrintDatHeader(prelimhead,*list);
       string headstring = prelimhead.str();
       size_t size_section = headstring.find("-------------------------------------------------------PROBLEM SIZE");
-      size_t typ_section = headstring.find("--------------------------------------------------------PROBLEM TYP");
-      headstring.erase(size_section,typ_section-size_section);
+      if (size_section!=string::npos){
+        size_t typ_section = headstring.find("--------------------------------------------------------PROBLEM TYP");
+        headstring.erase(size_section,typ_section-size_section);
+      }
       defaulthead << headstring;
 
 

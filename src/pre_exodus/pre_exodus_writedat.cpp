@@ -111,8 +111,10 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
   header.close();
   string headstring = head.str();
   size_t size_section = headstring.find("-------------------------------------------------------PROBLEM SIZE");
-  size_t typ_section = headstring.find("--------------------------------------------------------PROBLEM TYP");
-  headstring.erase(size_section,typ_section-size_section);
+  if (size_section!=string::npos){
+    size_t typ_section = headstring.find("--------------------------------------------------------PROBLEM TYP");
+    headstring.erase(size_section,typ_section-size_section);
+  }
   headstring.erase(headstring.end()-1);
   
   size_t comment = headstring.find("//");
@@ -163,9 +165,10 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
   map<string,vector<int> > count_cond;
   map<string,vector<int> >::const_iterator count;
   vector<int>::const_iterator i_c;
-  vector<EXODUS::cond_def>::const_iterator i_cond;
-  for (i_cond = condefs.begin(); i_cond != condefs.end(); ++i_cond)
-    (count_cond[(*i_cond).sec]).push_back((*i_cond).id);
+  //vector<EXODUS::cond_def>::const_iterator i_cond;
+  for (unsigned int i_cond = 0; i_cond < condefs.size(); ++i_cond)
+  //for (i_cond = condefs.begin(); i_cond != condefs.end(); ++i_cond)
+    (count_cond[condefs.at(i_cond).sec]).push_back(i_cond);
   
   for (unsigned int i=0; i<(*condlist).size(); ++i)
   {
@@ -193,7 +196,11 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
         EXODUS::cond_def actcon = condefs[*i_c];
         string name = (mymesh.GetNodeSet(actcon.id).GetName());
         string pname = (mymesh.GetNodeSet(actcon.id).GetPropName());
-        if((name!="") && (pname.c_str()!="none")) dat << "// " << name.c_str() << " " << pname.c_str() << endl;
+        if((name!="")){
+          dat << "// " << name.c_str();
+          if (pname!="none"){ dat << " " << pname.c_str();}
+          dat << endl;
+        } else if (pname!="none") dat << "// " << pname.c_str() << endl;
         dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
       }
     }
@@ -205,25 +212,26 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
 void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, ostream& dat)
 {
   // sort baciconds w.r.t. underlying topology
-  vector<EXODUS::cond_def> dpoints;
-  vector<EXODUS::cond_def> dlines;
-  vector<EXODUS::cond_def> dsurfs;
-  vector<EXODUS::cond_def> dvols;
+  map<int,EXODUS::cond_def> dpoints;
+  map<int,EXODUS::cond_def> dlines;
+  map<int,EXODUS::cond_def> dsurfs;
+  map<int,EXODUS::cond_def> dvols;
   
-  vector<EXODUS::cond_def>::const_iterator it;
-  for (it=condefs.begin();it!=condefs.end();++it){
-    EXODUS::cond_def acte = *it;
-    if (acte.gtype==DRT::Condition::Point) dpoints.push_back(acte);
-    else if (acte.gtype==DRT::Condition::Line) dlines.push_back(acte);
-    else if (acte.gtype==DRT::Condition::Surface) dsurfs.push_back(acte);
-    else if (acte.gtype==DRT::Condition::Volume) dvols.push_back(acte);
+  map<int,EXODUS::cond_def>::const_iterator it;
+  vector<EXODUS::cond_def>::const_iterator i;
+  for (i=condefs.begin();i!=condefs.end();++i){
+    EXODUS::cond_def acte = *i;
+    if (acte.gtype==DRT::Condition::Point) dpoints.insert(pair<int,EXODUS::cond_def>(acte.e_id,acte));
+    else if (acte.gtype==DRT::Condition::Line) dlines.insert(pair<int,EXODUS::cond_def>(acte.e_id,acte));
+    else if (acte.gtype==DRT::Condition::Surface) dsurfs.insert(pair<int,EXODUS::cond_def>(acte.e_id,acte));
+    else if (acte.gtype==DRT::Condition::Volume) dvols.insert(pair<int,EXODUS::cond_def>(acte.e_id,acte));
     else if (acte.gtype==DRT::Condition::NoGeom);
     else dserror ("Cannot identify Condition GeometryType");
   }
   
   dat << "-----------------------------------------------DNODE-NODE TOPOLOGY"<<endl;
   for (it=dpoints.begin();it!=dpoints.end();++it){
-    EXODUS::cond_def acte = *it;
+    EXODUS::cond_def acte = it->second;
     const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
     set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
@@ -233,7 +241,7 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
   }
   dat << "-----------------------------------------------DLINE-NODE TOPOLOGY"<<endl;
   for (it=dlines.begin();it!=dlines.end();++it){
-    EXODUS::cond_def acte = *it;
+    EXODUS::cond_def acte = it->second;
     const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
     set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
@@ -242,7 +250,7 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
   }
   dat << "-----------------------------------------------DSURF-NODE TOPOLOGY"<<endl;
   for (it=dsurfs.begin();it!=dsurfs.end();++it){
-    EXODUS::cond_def acte = *it;
+    EXODUS::cond_def acte = it->second;
     const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
     set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
@@ -251,7 +259,7 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
   }
   dat << "------------------------------------------------DVOL-NODE TOPOLOGY"<<endl;
   for (it=dvols.begin();it!=dvols.end();++it){
-    EXODUS::cond_def acte = *it;
+    EXODUS::cond_def acte = it->second;
     const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
     set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){

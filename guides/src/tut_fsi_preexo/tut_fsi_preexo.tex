@@ -199,9 +199,10 @@ using all available \baci{} validation and is therefore likely to run.
 
 Sure, you usually don not have already a proper \head and matching \bc. By
 typing
-
-\verb|pre_exodus --exo=mesh.exo| you get two preliminary files
-
+\begin{center}
+  \verb|pre_exodus --exo=yourmesh.exo|
+\end{center}
+you get two preliminary files
 'default.head' and 'default.bc'. The first contains the currently valid header
 parameters with default values and commented options which you can edit to
 adapt it to your means. Similarly, 'default.bc' consists of all your mesh
@@ -506,7 +507,20 @@ description="1 structure conforming fsi_real"
 sectionname="DESIGN FSI COUPLING SURF CONDITIONS"
 description="1 fluid conforming fsi_real"
  \end{verbatim} \end{small}
+\item \verb|*ns20="CONDITION"| \qquad release the 'coupling-line' for inplane directions
+\begin{small} \begin{verbatim}
+sectionname="DESIGN LINE DIRICH CONDITIONS"
+description="0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+ \end{verbatim} \end{small}
+\item \verb|*ns21="CONDITION"| \qquad release the 'coupling-line' for inplane directions
+\begin{small} \begin{verbatim}
+sectionname="DESIGN LINE DIRICH CONDITIONS"
+description="0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0"
+ \end{verbatim} \end{small}
 \end{itemize}
+
+Further, you need to apply Dirichlet conditions to the automatically created ALE field. This is done via the corresponding fluid field. Therefore, copy all fluid Dirirchlet conditions, change the \verb|sectionname| to the corresponding \verb|ALE DIRICH|. Also do not forget to erase the FLAG, FUNCTION, and CURVE assignments which represent the moving lid and inflow. As any of them matches an already defined NodeSet it will also match the corresponding 'E-id' in the later \baci{} input file.
+
 Safe the file under a different name, e.g. 'dc\_fsi.bc'.
 
 \subsection{Creating \baci{} Input File and Running the Simulation}
