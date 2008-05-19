@@ -15,8 +15,6 @@
 // to the new discretization.)
 #include "../drt_fsi/fsi_nox_aitken.H"
 #include "../drt_fsi/fsi_nox_sd.H"
-#include "../drt_fsi/fsi_nox_extrapolate.H"
-#include "../drt_fsi/fsi_nox_michler.H"
 #include "../drt_fsi/fsi_nox_fixpoint.H"
 #include "../drt_fsi/fsi_nox_jacobian.H"
 #include "../drt_fsi/fsi_nox_mpe.H"
@@ -1417,6 +1415,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     linesearch.set("User Defined Line Search Factory", sdfactory);
   }
 
+#if 0
   // the very special experimental extrapolation
   else if (nlParams.sublist("Line Search").get("Method","Full Step")=="Extrapolate")
   {
@@ -1428,6 +1427,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
     linesearch.set("Method","User Defined");
     linesearch.set("User Defined Line Search",extrapolate);
   }
+#endif
 
   // ==================================================================
 
@@ -1637,6 +1637,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
       preconditioner="None";
     }
 
+#if 0
     // the strange coupling proposed by Michler
     else if (jacobian=="Michler")
     {
@@ -1646,6 +1647,7 @@ void FSI_InterfaceProblem::timeloop(const Teuchos::RefCountPtr<NOX::Epetra::Inte
       lsParams.set("Preconditioner","None");
       preconditioner="None";
     }
+#endif
 
     else if (jacobian=="Dumb Finite Difference")
     {
