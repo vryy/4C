@@ -208,8 +208,6 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
   // get the material
   RefCountPtr<MAT::Material> mat = Material();
-  //if (mat->MaterialType()!=m_fluid && mat->MaterialType() != m_carreauyasuda)
-  //  dserror("fluid material expected but got type %d", mat->MaterialType());
 
   if( mat->MaterialType()    != m_carreauyasuda
       && mat->MaterialType() != m_modpowerlaw
