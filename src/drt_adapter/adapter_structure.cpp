@@ -370,14 +370,17 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
-  Teuchos::RCP<Epetra_Vector> idis  = interface_.ExtractCondVector(structure_.Disp());
+  Teuchos::RCP<Epetra_Vector> idis;
 
   switch (Teuchos::getIntegralValue<int>(fsidyn,"PREDICTOR"))
   {
   case 1:
+  {
     // d(n)
-    // nothing to do
+    // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
+    idis  = interface_.ExtractCondVector(structure_.Dispn());
     break;
+  }
   case 2:
     // d(n)+dt*(1.5*v(n)-0.5*v(n-1))
     dserror("interface velocity v(n-1) not available");
@@ -387,6 +390,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
     // d(n)+dt*v(n)
     double dt            = params_->get<double>("delta time"             ,0.01);
 
+    idis  = interface_.ExtractCondVector(structure_.Disp());
     Teuchos::RCP<Epetra_Vector> ivel  = interface_.ExtractCondVector(structure_.Vel());
 
     idis->Update(dt,*ivel,1.0);
@@ -397,6 +401,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::PredictInterfaceDispnp()
     // d(n)+dt*v(n)+0.5*dt^2*a(n)
     double dt            = params_->get<double>("delta time"             ,0.01);
 
+    idis  = interface_.ExtractCondVector(structure_.Disp());
     Teuchos::RCP<Epetra_Vector> ivel  = interface_.ExtractCondVector(structure_.Vel());
     Teuchos::RCP<Epetra_Vector> iacc  = interface_.ExtractCondVector(structure_.Acc());
 
