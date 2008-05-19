@@ -180,11 +180,19 @@ void Inv_analysis::calculate_new_parameters(){
   	//calculating residual displa
 	  residual_disp_ = final_disp_ - measured_disp_;
 
+	  cout << "Beginning of the loop: measured_disp_: \t" << measured_disp_ << endl;
 	  cout << "Beginning of the loop: residual_disp_: \t" << residual_disp_ << endl;
 	  cout << "Beginning of the loop: final_disp_: \t" << final_disp_ << endl;
 	  cout << "Beginning of the loop: final_disp_o_: \t" << final_disp_o_ << endl;
 
-
+	  storage_final_disp_.push_back(final_disp_);  
+	  
+	  for (unsigned int i=0; i < storage_final_disp_.size(); i++)
+	  {
+		  cout << storage_final_disp_[i] << endl;  
+	  }
+	  
+	  
 	  //calculating J(p)
 		  for (unsigned int i=0; i<3; i++) {
 		      J[i] = (final_disp_ - final_disp_o_)/(p_[i]-p_o_[i]);
@@ -240,9 +248,9 @@ void Inv_analysis::calculate_new_parameters(){
   cout << abs((measured_disp_ - final_disp_o_)) << endl;
 
   if (abs(residual_disp_) < abs(measured_disp_ - final_disp_o_))
-  	mu_ = 10;
+  	mu_ = 20;
   else
-	mu_ =0.1;
+	mu_ =0.05;
 
 
   final_disp_o_ = final_disp_;
