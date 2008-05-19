@@ -50,7 +50,7 @@ static std::string dofTypeToString(DofType doftype)
  \brief A unique identifier for a degree of freedom (DOF)
 
  Haskell-esque:
- type FieldEnr = (DofType, Gid, FieldEnr)
+ type DofKey = (DofType, Gid, FieldEnr)
  
  \tparam DofType to distinguish between element and nodal dofs, now the compiler complains
          when we mix them, since DofKey<onNode> is different from DofKey<onElement>
@@ -60,15 +60,6 @@ template <DofType doftype>
 class DofKey
 {
 public:
-    //! empty constructor
-    explicit DofKey() :
-        gid_(-1),
-        fieldenr_(FieldEnr())
-    {
-        dserror("DofKey() -> please don't call me!");
-        return;
-    }
-
     //! standard constructor
     explicit DofKey(
             const int             gid,      ///< global id
@@ -129,10 +120,10 @@ public:
                 return false;
         }
     }
-    //!
+    
     bool operator ==(const DofKey& rhs) const
     {
-        if (gid_ == rhs.gid_ and fieldenr_ == fieldenr_)
+        if (gid_ == rhs.gid_ and fieldenr_ == rhs.fieldenr_)
             return true;
         else
             return false;
@@ -141,7 +132,7 @@ public:
     bool operator !=(const DofKey& rhs) const
     {
 //        return (!(*this == rhs));
-        if (gid_ != rhs.gid_ or fieldenr_ != fieldenr_)
+        if (gid_ != rhs.gid_ or fieldenr_ != rhs.fieldenr_)
             return true;
         else
             return false;
@@ -149,6 +140,17 @@ public:
     
 
 private:
+  
+    //! empty constructor
+    explicit DofKey();
+//    :
+//        gid_(-1),
+//        fieldenr_(FieldEnr())
+//    {
+//        dserror("DofKey() -> please don't call me!");
+//        return;
+//    }
+  
     //! unique id among the choosen type of dof
     const int       gid_;
     //! specific enrichment field
