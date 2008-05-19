@@ -26,6 +26,34 @@ using namespace std;
 using namespace XFEM;
 
 
+enum PhysDerivDir
+{
+  D0 = 0,
+  Dx = 0,
+  Dy = 1,
+  Dz = 2,
+  DxDx = 0,
+  DyDy = 1,
+  DzDz = 2,
+  DxDy = 3,
+  DxDz = 4,
+  DyDz = 5
+};
+//! indicates direction
+enum LocalDerivDir
+{
+  Dr = 0,
+  Ds = 1,
+  Dt = 2,
+  DrDr = 0,
+  DsDs = 1,
+  DtDt = 2,
+  DrDs = 3,
+  DrDt = 4,
+  DsDt = 5
+};
+
+
 //! for non-xfem elements, figure out the order of unknowns per node in the array
 template<XFEM::PHYSICS::Field field>
 struct FieldNum {static const int pos = -1;};

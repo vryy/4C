@@ -215,7 +215,8 @@ BlitzVec3 DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) cons
     //const int nsd = 3;
     
     // physical positions of cell nodes
-    const BlitzMat physcoord = this->NodalPosXYZ(ele);
+    BlitzMat physcoord(3,27);
+    this->NodalPosXYZ(ele, physcoord);
     
     // center in local coordinates
     static BlitzVec3 localcenterpos;
@@ -230,11 +231,6 @@ BlitzVec3 DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) cons
             this->Shape());
     
     //interpolate position to x-space
-    //blitz::firstIndex isd;
-    //blitz::secondIndex inode;
-    //static BlitzVec x_interpol(3);
-    //x_interpol = blitz::sum(physcoord(isd,inode)*funct(inode),inode);
-    
     static BlitzVec3 x_interpol;
     for (int isd = 0; isd < 3; ++isd)
     {

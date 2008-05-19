@@ -2400,7 +2400,8 @@ void Intersection::updateAForRCINormal(
     const int numNodesSurface = surfaceElement->NumNode();
 
     A = 0.0;
-    const BlitzMat surfaceDeriv1(shape_function_2D_deriv1( xsi(0), xsi(1), surfaceElement->Shape()));
+    BlitzMat surfaceDeriv1(2,numNodesSurface);
+    shape_function_2D_deriv1(surfaceDeriv1, xsi(0), xsi(1), surfaceElement->Shape());
 
     if(!onBoundary)
     {
@@ -2420,7 +2421,8 @@ void Intersection::updateAForRCINormal(
     else
     {
         const int numNodesLine = 3;
-        const BlitzMat lineDeriv1(shape_function_1D_deriv1( xsi(2), DRT::Element::line3));
+        BlitzMat lineDeriv1(1,numNodesLine);
+        shape_function_1D_deriv1(lineDeriv1, xsi(2), DRT::Element::line3);
 
         for(int i=0; i<numNodesSurface; i++)
         {
@@ -2459,7 +2461,8 @@ void Intersection::updateRHSForRCINormal(
     ) const
 {
     const int numNodesSurface = surfaceElement->NumNode();
-    const BlitzVec surfaceFunct(shape_function_2D( xsi(0), xsi(1), surfaceElement->Shape()));
+    BlitzVec surfaceFunct(numNodesSurface);
+    shape_function_2D(surfaceFunct, xsi(0), xsi(1), surfaceElement->Shape());
 
     b = 0.0;
     if(!onBoundary)
@@ -2477,7 +2480,8 @@ void Intersection::updateRHSForRCINormal(
     else
     {
         const int numNodesLine = 3;
-        const BlitzVec lineFunct(shape_function_1D( xsi(2), DRT::Element::line3));
+        BlitzVec lineFunct(numNodesLine);
+        shape_function_1D(lineFunct, xsi(2), DRT::Element::line3);
 
         for(int i=0; i<numNodesSurface; i++)
         {
@@ -2604,8 +2608,10 @@ void Intersection::updateAForRCIPlane(
     const int numNodesLine = lineElement->NumNode();
     const int numNodesSurface = 4;
 
-    const BlitzMat surfaceDeriv(shape_function_2D_deriv1(xsi(0),  xsi(1), DRT::Element::quad4));
-    const BlitzMat lineDeriv(shape_function_1D_deriv1(xsi(2), lineElement->Shape()));
+    BlitzMat surfaceDeriv(2,numNodesSurface);
+    shape_function_2D_deriv1(surfaceDeriv, xsi(0),  xsi(1), DRT::Element::quad4);
+    BlitzMat lineDeriv(1,numNodesLine);
+    shape_function_1D_deriv1(lineDeriv, xsi(2), lineElement->Shape());
 
     dsassert((int)plane.size() >= numNodesSurface, "plane array has to have size numNodesSurface ( = 4)!");
 
@@ -2643,8 +2649,10 @@ void Intersection::updateRHSForRCIPlane(
     const int numNodesLine    = lineElement->NumNode();
     const int numNodesSurface = 4;
 
-    const BlitzVec surfaceFunct(shape_function_2D( xsi(0), xsi(1), DRT::Element::quad4 ));
-    const BlitzVec lineFunct(shape_function_1D( xsi(2), lineElement->Shape()));
+    BlitzVec surfaceFunct(numNodesSurface);
+    shape_function_2D(surfaceFunct, xsi(0), xsi(1), DRT::Element::quad4 );
+    BlitzVec lineFunct(numNodesLine);
+    shape_function_1D(lineFunct, xsi(2), lineElement->Shape());
 
     dsassert((int)plane.size() >= numNodesSurface, "plane array has to have size numNodesSurface ( = 4)!");
 

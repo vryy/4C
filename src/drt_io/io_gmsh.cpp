@@ -287,7 +287,7 @@ string IO::GMSH::disToString(
     gmshfilecontent << "View \" " << s << " Elements \" {" << endl;
     for (int i=0; i<dis->NumMyColElements(); ++i)
     {
-        DRT::Element* actele = dis->lColElement(i);
+        const DRT::Element* actele = dis->lColElement(i);
         gmshfilecontent << IO::GMSH::elementToString(scalar, actele) << endl;
     };
     gmshfilecontent << "};" << endl;
@@ -305,7 +305,7 @@ string IO::GMSH::disToString(
     gmshfilecontent << "View \" " << s << " Elements \" {" << endl;
     for (int i=0; i<dis->NumMyColElements(); ++i)
     {
-        DRT::Element* actele = dis->lColElement(i);
+        const DRT::Element* actele = dis->lColElement(i);
         blitz::Array<double,2> xyze(getCurrentNodalPositions(actele, currentpositions));
         gmshfilecontent << IO::GMSH::elementToString(scalar, actele->Shape(), xyze) << endl;
     };
@@ -322,21 +322,25 @@ string IO::GMSH::disToString(
 {
     stringstream gmshfilecontent;
     gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {" << endl;
+    BlitzMat dxyz_ele(3,27);
+    BlitzMat bxyz_ele(3,9);
     for (int i=0; i<dis->NumMyColElements(); ++i)
     {
-        DRT::Element* actele = dis->lColElement(i);
+        const DRT::Element* actele = dis->lColElement(i);
         const int id = actele->Id();
         if (elementDomainIntCellsMap.count(id))
         {
             const DomainIntCells cells = elementDomainIntCellsMap.find(id)->second;
             for(XFEM::DomainIntCells::const_iterator cell = cells.begin(); cell != cells.end(); ++cell )
             {
-                gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXYZ(*actele), scalar, cell->Shape()) << endl;
+                cell->NodalPosXYZ(*actele, dxyz_ele);
+                gmshfilecontent << IO::GMSH::cellToString(dxyz_ele, scalar, cell->Shape()) << endl;
             }
             const BoundaryIntCells bcells = elementBoundaryIntCellsMap.find(id)->second;
             for(XFEM::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell )
             {
-                gmshfilecontent << IO::GMSH::cellToString(bcell->NodalPosXYZ(*actele), scalar, bcell->Shape()) << endl;
+                bcell->NodalPosXYZ(*actele, dxyz_ele);
+                gmshfilecontent << IO::GMSH::cellToString(bxyz_ele, scalar, bcell->Shape()) << endl;
             }
         }
         else

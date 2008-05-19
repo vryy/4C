@@ -31,7 +31,7 @@ namespace XFEM
  */
 class Enrichment
 {
-public:
+  public:
 
     /*! Various kinds of enrichments, which differ in the way,
      *  the enrichment function is evaluated
@@ -57,17 +57,39 @@ public:
     };
     
     //! default constructor
-    explicit Enrichment();
+    explicit Enrichment(
+        ) :
+          xfemconditionlabel_(-1),
+          type_(typeUndefined)
+    {
+      //dserror("Enrichment() -> please don't call me!");
+      return;
+    }
+        
     //! constructor
     explicit Enrichment(
-            const int      xfemconditionlabel,   ///< unique label identifying the xfem interface
-            const EnrType  type                  ///< enrichment type
-            );
+        const int      xfemconditionlabel,   ///< unique label identifying the xfem interface
+        const EnrType  type                  ///< enrichment type
+        ) :
+          xfemconditionlabel_(xfemconditionlabel),
+          type_(type)
+    {
+      return;
+    }
+        
     //! copy constructor
     Enrichment(
-            const Enrichment& other);
+        const Enrichment& other
+        ) :
+          xfemconditionlabel_(other.xfemconditionlabel_),
+          type_(other.type_)
+    {
+      assert(&other != this);
+      return;
+    }
+            
     //! destructor
-    ~Enrichment();
+    ~Enrichment() {return;}
     
     //! return string representation of the Enrichment
     std::string toString() const;

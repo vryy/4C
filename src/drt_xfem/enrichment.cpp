@@ -23,48 +23,6 @@ Maintainer: Axel Gerstenberger
 
 using namespace XFEM;
 
-/*----------------------------------------------------------------------*
- |  default ctor (public)                                    mwgee 11/06|
- *----------------------------------------------------------------------*/
-Enrichment::Enrichment() :
-            xfemconditionlabel_(-1),
-            type_(typeUndefined)
-{
-    //dserror("Enrichment() -> please don't call me!");
-    return;
-}
-
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
-Enrichment::Enrichment(
-        const int xfemconditionlabel,
-        const EnrType type) :
-            xfemconditionlabel_(xfemconditionlabel),
-            type_(type)
-{
-    return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 11/06|
- *----------------------------------------------------------------------*/
-Enrichment::Enrichment(
-        const Enrichment& other) :
-            xfemconditionlabel_(other.xfemconditionlabel_),
-            type_(other.type_)
-{
-    assert(&other != this);
-    return;
-}
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
-Enrichment::~Enrichment()
-{
-    return;
-}
 
 /*----------------------------------------------------------------------*
  |  create string                                                       |

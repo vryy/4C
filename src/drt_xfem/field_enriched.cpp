@@ -14,58 +14,12 @@ Maintainer: Axel Gerstenberger
 
 #include "field_enriched.H"
 
-
-
-using namespace std;
-
 /*----------------------------------------------------------------------*
- |  default ctor                                                ag 11/07|
+ |  transform to a string                                       ag 11/07|
  *----------------------------------------------------------------------*/
-XFEM::FieldEnr::FieldEnr() :
-            field_(XFEM::PHYSICS::undefinedField),
-            enr_(Enrichment())
+std::string XFEM::FieldEnr::toString() const
 {
-    dserror("FieldEnr() -> please don't call me!");
-    return;
-}
-
-/*----------------------------------------------------------------------*
- |  ctor                                                        ag 11/07|
- *----------------------------------------------------------------------*/
-XFEM::FieldEnr::FieldEnr(
-        const XFEM::PHYSICS::Field field,
-        const Enrichment enr) :
-            field_(field), enr_(enr)
-{
-    return;
-}
-
-/*----------------------------------------------------------------------*
- |  copy-ctor                                                   ag 11/07|
- *----------------------------------------------------------------------*/
-XFEM::FieldEnr::FieldEnr(
-        const FieldEnr& other) :
-            field_(other.field_), 
-            enr_(other.enr_)
-{
-    assert(&other != this);
-    return;
-}
-
-/*----------------------------------------------------------------------*
- |  dtor                                                        ag 11/07|
- *----------------------------------------------------------------------*/
-XFEM::FieldEnr::~FieldEnr()
-{
-    return;
-}
-
-/*----------------------------------------------------------------------*
- |  transform  to a string                                      ag 11/07|
- *----------------------------------------------------------------------*/
-string XFEM::FieldEnr::toString() const
-{
-    stringstream s;
+    std::stringstream s;
     s << "Enriched Field: " << PHYSICS::physVarToString(field_) << ", Enrichment: " << enr_.toString();
     return s.str();
 }

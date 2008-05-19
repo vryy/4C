@@ -209,7 +209,8 @@ public:
             PostField* field,           ///< Field to be plotted
             PostField* submersedfield,     ///< intersecting field (for fsi)
             string filename) :
-        EnsightWriter(field, filename)
+        EnsightWriter(field, filename),
+        submersedfield_(submersedfield)
     {
       vector<string> conditions_to_copy;
       conditions_to_copy.push_back("FSICoupling");
@@ -296,6 +297,9 @@ protected:
     Teuchos::RCP<DRT::Discretization>  cutterdis_;
     
     Teuchos::RCP<Epetra_Vector>        idispcol_;
+    
+    //! we need to stay in touch with the structure field, since we need its displacement
+    PostField*                         submersedfield_;
 };
 
 

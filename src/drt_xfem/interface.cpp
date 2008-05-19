@@ -149,6 +149,8 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     //f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
     //f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
     {
+        BlitzMat cellpos(3,27);
+      
         map<int,bool> posInCondition;
         stringstream gmshfilecontent;
         gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
@@ -159,7 +161,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
             XFEM::DomainIntCells::const_iterator cell;
             for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
             {
-              const BlitzMat cellpos = cell->NodalPosXYZ(*actele);
+              cell->NodalPosXYZ(*actele, cellpos);
               const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
               //cout << cellcenterpos << endl;
               PositionWithinCondition(cellcenterpos, *this, posInCondition);

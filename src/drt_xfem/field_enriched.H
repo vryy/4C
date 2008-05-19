@@ -31,33 +31,38 @@ namespace XFEM
  */
 class FieldEnr
 {
-public:
+  public:
 
-    //! default constructor
-    explicit FieldEnr();
     //! constructor
     explicit FieldEnr(
-            const PHYSICS::Field  physvar,  ///< physical variable
-            const Enrichment      enr       ///< enrichment
-            );
+        const PHYSICS::Field  physvar,  ///< physical variable
+        const Enrichment&     enr       ///< enrichment
+    ) :
+      field_(physvar),
+      enr_(enr)
+    {
+      return;
+    }
+        
     //! copy constructor
     FieldEnr(
             const FieldEnr& other           ///< source
-            );
+            ) :
+              field_(other.field_), 
+              enr_(other.enr_)
+    {
+      assert(&other != this);
+      return;
+    }
+    
     //! destructor
-    ~FieldEnr();
+    ~FieldEnr() {return;}
 
     std::string toString() const;
 
-    PHYSICS::Field getField() const
-    {
-        return field_;
-    };
+    PHYSICS::Field getField() const {return field_;};
 
-    const Enrichment& getEnrichment() const
-    {
-        return enr_;
-    };
+    const Enrichment& getEnrichment() const {return enr_;};
     
     bool operator <(const FieldEnr& rhs) const
     {
@@ -92,7 +97,17 @@ public:
     }
     
 
-private:
+  private:
+    
+    //! hidden default constructor
+    explicit FieldEnr() :
+      field_(XFEM::PHYSICS::undefinedField),
+      enr_(Enrichment())
+    {
+      dserror("FieldEnr() -> please don't call me!");
+      return;
+    }
+  
     //! physical field variable to be enriched
     const PHYSICS::Field field_;
     //! specific enrichment for this physical field

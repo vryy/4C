@@ -404,7 +404,7 @@ void static Sysmat(
             const double discpres(blitz::sum(shp_discpres*ediscprenp));
     
             // get viscous stress unknowns
-            static blitz::TinyMatrix<double,3,3> tau;
+            static BlitzMat3x3 tau;
             if (tauele_unknowns_present)
             {
                 fill_tau(numparamtauxx, shp_tau, etau, tau);
@@ -1250,7 +1250,7 @@ void static Sysmat(
     const XFEM::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
     
     
-    
+#if 0
     bool printcell = true;
     
     if (printcell)
@@ -1288,7 +1288,7 @@ void static Sysmat(
         f_system.close();
 
     }
-    
+#endif
     
     
     
@@ -1343,18 +1343,21 @@ void static Sysmat(
             const double detcell = abs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
 
             // shape functions and their first derivatives
-            const BlitzVec funct_boundary(DRT::UTILS::shape_function_2D(posXiBoundary(0),posXiBoundary(1),boundaryele->Shape()));
-            const BlitzMat deriv_boundary(DRT::UTILS::shape_function_2D_deriv1(posXiBoundary(0),posXiBoundary(1),boundaryele->Shape()));
+            BlitzVec funct_boundary(DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
+            DRT::UTILS::shape_function_2D(funct_boundary, posXiBoundary(0),posXiBoundary(1),boundaryele->Shape());
+            BlitzMat deriv_boundary(3, DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
+            DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, posXiBoundary(0),posXiBoundary(1),boundaryele->Shape());
             
             // shape functions and their first derivatives
             static BlitzVec funct(DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement);
             DRT::UTILS::shape_function<DISTYPE>(posXiDomain,funct);
       
-            BlitzVec funct_stress(DRT::UTILS::getNumberOfElementNodes(stressdistype));
+            // stress shape function
+            static BlitzVec funct_stress(DRT::UTILS::_switchDisType<stressdistype>::numNodePerElement);
             DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
 
             // discontinouos pressure shape functions
-            static BlitzVec funct_discpres(DRT::UTILS::getNumberOfElementNodes(discpresdistype));
+            static BlitzVec funct_discpres(DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement);
             //const BlitzMat deriv_discpres(3, DRT::UTILS::getNumberOfElementNodes(discpresdistype),blitz::ColumnMajorArray<2>());
             DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
             //DRT::UTILS::shape_function_3D_deriv1(deriv_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
@@ -1374,11 +1377,23 @@ void static Sysmat(
       
             // get jacobian matrix d x / d \xi  (3x2)
             static BlitzMat dxyzdrs(3,2);
-            dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
+            //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
+            for (int i = 0; i < 3; ++i)
+            {
+                for (int j = 0; j < 2; ++j)
+                {
+                    dxyzdrs(i,j) = 0.0;
+                    for (int k = 0; k < numnode_boundary; ++k)
+                    {
+                        dxyzdrs(i,j) += xyze_boundary(i,k)*deriv_boundary(j,k);
+                    }
+                }
+            }
             
             // compute covariant metric tensor G for surface element (2x2)
-            static BlitzMat metric(2,2);
-            metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
+            static BlitzMat2x2 metric;
+            //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
+            MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
             //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
             
             // compute global derivates
@@ -1394,14 +1409,14 @@ void static Sysmat(
             }
 
             // compute second global derivative
-            static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
-            derxy2 = 0.;
+//            static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
+//            derxy2 = 0.;
 
             // after this call, one should only use the enriched shape functions and derivatives!
-            BlitzVec enr_funct(numparamvelx);
-            BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
-            BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
-            BlitzVec enr_funct_stress(numparamtauxx);
+//            BlitzVec enr_funct(numparamvelx);
+//            BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
+//            BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
+//            BlitzVec enr_funct_stress(numparamtauxx);
             
             // shape function for nodal dofs
             XFEM::ComputeEnrichedNodalShapefunction(
@@ -1464,8 +1479,16 @@ void static Sysmat(
             computeNormalToBoundaryElement(boundaryele, xyze_boundary, posXiBoundary, normalvec);
       
             // get velocities (n+g,i) at integration point
-            static BlitzVec velint(3);
-            velint = blitz::sum(evelnp(i,j)*shp(j),j);
+//            static BlitzVec velint(3);
+//            velint = blitz::sum(evelnp(i,j)*shp(j),j);
+            static BlitzVec3 velint;
+            //velint = blitz::sum(enr_funct(j)*evelnp(i,j),j);
+            for (int isd = 0; isd < nsd; ++isd)
+            {
+                velint(isd) = 0.0;
+                for (int iparam = 0; iparam < numparampres; ++iparam)
+                    velint(isd) += evelnp(isd,iparam)*shp(iparam);
+            }
             
             // get interface velocity
             static BlitzVec3 interface_velint;

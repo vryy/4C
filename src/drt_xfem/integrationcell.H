@@ -34,36 +34,42 @@ namespace XFEM
  * \brief create array with physical coordinates based an local coordinates of a parent element
  */
 template<class Cell>
-static BlitzMat ComputePhysicalCoordinates(
+static void ComputePhysicalCoordinates(
         const DRT::Element&  ele,  ///< parent element
-        const Cell&          cell  ///< integration cell whose coordinates we'd like to transform
+        const Cell&          cell, ///< integration cell whose coordinates we'd like to transform
+        BlitzMat&            physicalCoordinates
         )
 {
     const BlitzMat eleCoord(DRT::UTILS::PositionArrayBlitz(&ele));
-    const BlitzMat nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+    //DRT::UTILS::fillPositionArray(&ele, eleCoord);
+    const BlitzMat* nodalPosXiDomain = cell.NodalPosXiDomainBlitz();
     
     const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
     
     // return value
-    BlitzMat physicalCoordinates(3, nen_cell);
+    //BlitzMat physicalCoordinates(3, nen_cell);
     physicalCoordinates = 0.0;
     // for each cell node, compute physical position
-    BlitzVec funct(ele.NumNode());
+    const int nen_ele = ele.NumNode();
+    BlitzVec funct(nen_ele);
     for (int inen = 0; inen < nen_cell; ++inen)
     {
         // shape functions
         DRT::UTILS::shape_function_3D(funct,
-                nodalPosXiDomain(0, inen),
-                nodalPosXiDomain(1, inen),
-                nodalPosXiDomain(2, inen),
+                (*nodalPosXiDomain)(0, inen),
+                (*nodalPosXiDomain)(1, inen),
+                (*nodalPosXiDomain)(2, inen),
                 ele.Shape());
 
-        blitz::firstIndex i;    // Placeholder for the first index
-        blitz::secondIndex j;   // Placeholder for the second index
-        const blitz::Range _  = blitz::Range::all();
-        physicalCoordinates(_,inen) = blitz::sum(eleCoord(i, j) * funct(j),j);
+        for (int i = 0; i < 3; ++i)
+        {
+            for (int j = 0; j < nen_ele; ++j)
+            {
+              physicalCoordinates(i,inen) += eleCoord(i, j) * funct(j);
+            }
+        }
     };
-    return physicalCoordinates;
+    return;
 }
 
 
@@ -186,16 +192,17 @@ public:
 
      \return cells nodal coordinates  
      */
-    BlitzMat NodalPosXiDomainBlitz() const {return nodalpos_xi_domain_blitz_;};
+    const BlitzMat* NodalPosXiDomainBlitz() const {return &nodalpos_xi_domain_blitz_;};
     
     /*!
      \brief returns the coordinates of the integration cell in physical coordinates
 
      \return cells nodal coordinates  
      */
-    BlitzMat NodalPosXYZ(const DRT::Element& ele) const
+    void NodalPosXYZ(const DRT::Element& ele, BlitzMat& xyz_cell) const
     {
-        return ComputePhysicalCoordinates<DomainIntCell>(ele, (*this));
+        ComputePhysicalCoordinates<DomainIntCell>(ele, (*this), xyz_cell);
+        return;
     };
     
     //! return string representation of the DomainIntCell
@@ -285,11 +292,13 @@ public:
 
      \return cells nodal coordinates  
      */
-    BlitzMat NodalPosXYZ(
-            const DRT::Element& ele  ///< parent element, where the integration cell is located in
+    void NodalPosXYZ(
+            const DRT::Element& ele,  ///< parent element, where the integration cell is located in
+            BlitzMat&           xyz_cell
             ) const
     {
-        return ComputePhysicalCoordinates<BoundaryIntCell>(ele, (*this));
+        ComputePhysicalCoordinates<BoundaryIntCell>(ele, (*this), xyz_cell);
+        return;
     };
     
     /*!
@@ -297,14 +306,14 @@ public:
 
      \return cells nodal coordinates  
      */
-    BlitzMat NodalPosXiDomainBlitz() const {return nodalpos_xi_domain_blitz_;};
+    const BlitzMat* NodalPosXiDomainBlitz() const {return &nodalpos_xi_domain_blitz_;};
     
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
 
      \return cells nodal coordinates  
      */
-    BlitzMat NodalPosXiBoundaryBlitz() const {return nodalpos_xi_boundary_blitz_;};
+    const BlitzMat* NodalPosXiBoundaryBlitz() const {return &nodalpos_xi_boundary_blitz_;};
     
     //! return "parent" cutter element id (global id)
     int GetSurfaceEleGid() const {return surface_ele_gid_;}
