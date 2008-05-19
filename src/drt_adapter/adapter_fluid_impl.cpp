@@ -227,7 +227,10 @@ double ADAPTER::FluidImpl::ResidualScaling() const
 /*----------------------------------------------------------------------*/
 double ADAPTER::FluidImpl::TimeScaling() const
 {
-  return 1./fluid_.Dt();
+  if (params_->get<bool>("interface second order"))
+    return 2./fluid_.Dt();
+  else
+    return 1./fluid_.Dt();
 }
 
 

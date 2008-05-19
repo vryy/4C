@@ -1043,7 +1043,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fsidyn);
 
   setStringToIntegralParameter("COUPMETHOD","conforming",
-                               "Coupling Method Mortar (mtr) or conforming nodes at interface (unused)",
+                               "Coupling Method Mortar (mtr) or conforming nodes at interface",
                                tuple<std::string>(
                                  "MTR",
                                  "Mtr",
@@ -1065,6 +1065,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  FSI_DYNAMIC::cf_stress,
                                  FSI_DYNAMIC::cf_nodeforce),
                                &fsidyn);
+
+  setStringToIntegralParameter("SECONDORDER","No",
+                               "Second order coupling at the interface.",
+                               yesnotuple,yesnovalue,&fsidyn);
 
   IntParameter("ITECHAPP",1,"",&fsidyn);
   IntParameter("ICHMAX",1,"",&fsidyn);

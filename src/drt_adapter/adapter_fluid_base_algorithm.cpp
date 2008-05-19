@@ -217,6 +217,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
+    fluidtimeparams->set<bool>("interface second order", Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER"));
+
     if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") == fsi_iter_monolithic)
     {
       // there are a couple of restrictions in monolithic FSI

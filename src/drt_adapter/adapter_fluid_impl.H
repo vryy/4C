@@ -62,7 +62,7 @@ namespace ADAPTER {
     - \f$ \frac{\rho}{\theta\Delta t} \mathbf{F}_{\Gamma I} \f$
 
     \note As we couple a generalized-\f$\alpha\f$ structure to a
-    one-step-\f$\theta\f$ fluid here all we can to is backward Euler time
+    one-step-\f$\theta\f$ fluid here all we can do is backward Euler time
     discretization on both fields.
 
     \author u.kue
