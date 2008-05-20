@@ -89,7 +89,7 @@ double ADAPTER::FluidXFEM::ReadRestart(int step)
 void ADAPTER::FluidXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                         Teuchos::RCP<Epetra_Vector> ivel)
 {
-  cout << "ADAPTER::FluidXFEM::NonlinearSolve" << endl;
+  std::cout << "ADAPTER::FluidXFEM::NonlinearSolve" << endl;
 
   if (idisp!=Teuchos::null)
   {
@@ -97,7 +97,7 @@ void ADAPTER::FluidXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
     FluidField().ApplyMeshDisplacement(idisp);
     FluidField().ApplyInterfaceVelocities(ivel);
   }
-  cout << "applied interface displacement and velocity" << endl;
+  std::cout << "applied interface displacement and velocity" << endl;
 
   //if (FluidField().FreeSurface().Relevant())
   //{
@@ -192,7 +192,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::IntegrateInterfaceShape()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidXFEM::CreateFieldTest()
 {
-  dserror("not implemented yet!");
+  //dserror("not implemented yet!");
   return FluidField().CreateFieldTest();
 }
 

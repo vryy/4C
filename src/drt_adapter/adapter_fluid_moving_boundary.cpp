@@ -43,13 +43,13 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(cons
     case prb_fluid_ale:
     case prb_freesurf:
     {
-      cout << "using FluidAle as FluidMovingBoundary" << endl;
+      std::cout << "using FluidAle as FluidMovingBoundary" << endl;
       fluid_ = Teuchos::rcp(new FluidAle(prbdyn,condname));
       break;
     }
     case prb_fsi_xfem:
     {
-      cout << "using FluidXFEM as FluidMovingBoundary" << endl;
+      std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;
       fluid_ = Teuchos::rcp(new FluidXFEM(prbdyn,condname));
       break;
     }
