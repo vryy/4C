@@ -55,6 +55,8 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       double* density,
       const Epetra_SerialDenseVector* glstrain,
       const Epetra_SerialDenseMatrix* defgrd,
+      const RCP<vector<Epetra_SerialDenseVector> > histstress,
+      const RCP<vector<Epetra_SerialDenseVector> > artstress,
       const int gp,
       const int ele_ID,
       const double time,

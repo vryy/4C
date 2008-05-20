@@ -604,7 +604,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
                                      // but in solid for time-dependent
                                      // complex material behavior
 
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp, ele_ID, time);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, histstress_, artstress_, gp, ele_ID, time);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -633,6 +633,11 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
                       defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
                       defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
                       defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
+        
+        /* to get the consistent (locking-free) F^mod, we need two spectral
+         * compositions. First, find R (rotation tensor) from F=RU,
+         * then from E^mod = 1/2((U^mod)^2 - 1) find U^mod,
+         * and finally F^mod = RU^mod */
 
         LINALG::SerialDenseMatrix pkstress(NUMDIM_SOH8,NUMDIM_SOH8);
         pkstress(0,0) = stress(0);

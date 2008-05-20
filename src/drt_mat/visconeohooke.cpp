@@ -100,9 +100,67 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double E_s  = matdata_->m.visconeohooke->youngs_slow;
   double nue  = matdata_->m.visconeohooke->poisson;
   double E_f  = matdata_->m.visconeohooke->youngs_fast;  
-  double tau  = matdata_->m.visconeohooke->relax;  
-
+  double tau  = matdata_->m.visconeohooke->relax;
+  double theta= 0.0;//matdata_->m.visconeohooke->theta;
   
+  // evaluate "alpha" factors which distribute stress or stiffnes between parallel springs
+  // sum_0^i alpha_j = 1
+  if (E_f < E_s) dserror("Wrong ratio between fast and slow Young's modulus");
+  const double alpha0 = E_s / E_f;
+  const double alpha1 = 1.0 - alpha0;
+  
+  // evaluate Lame constants, bulk modulus
+  const double lambda = nue*E_f / ((1.0+nue)*(1.0-2*nue));
+  const double mue = E_f / (2*(1.0+nue));
+  const double kappa = lambda + 2.0/3.0 * mue;
+  
+  // remark: in the following we use Voigt-notation
+  // and keep the strain-factor-2 at the strains
+  
+  // right Cauchy-Green Tensor  C = 2 * E + I
+  // build identity tensor I
+  Epetra_SerialDenseVector Id(6);
+  for (int i = 0; i < 3; i++) Id(i) = 1.0;
+  Epetra_SerialDenseVector C(*glstrain);
+  C.Scale(2.0);
+  C += Id;
+
+  // invariants
+  const double I1 = C(0) + C(1) + C(2);  // 1st invariant, trace
+  const double I3 = C(0)*C(1)*C(2)
+        + 0.25 * C(3)*C(4)*C(5)
+        - 0.25 * C(1)*C(5)*C(5)
+        - 0.25 * C(2)*C(3)*C(3)
+        - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
+  const double J = sqrt(I3);
+  const double I3invcubroot = pow(I3,-1.0/3.0);
+  
+  // invert C
+  Epetra_SerialDenseVector Cinv(6);
+
+  Cinv(0) = C(1)*C(2) - 0.25*C(4)*C(4);
+  Cinv(1) = C(0)*C(2) - 0.25*C(5)*C(5);
+  Cinv(2) = C(0)*C(1) - 0.25*C(3)*C(3);
+  Cinv(3) = 0.25*C(5)*C(4) - 0.5*C(3)*C(2);
+  Cinv(4) = 0.25*C(3)*C(5) - 0.5*C(0)*C(4);
+  Cinv(5) = 0.25*C(3)*C(4) - 0.5*C(5)*C(1);
+
+  Cinv.Scale(1.0/I3);
+  
+  // Split into volumetric and deviatoric parts. Viscosity affects only deviatoric part
+  
+  //Volumetric part of PK2 stress
+  Epetra_SerialDenseVector SVol(Cinv);
+  SVol.Scale(kappa*(J-1.0)*J);
+  *stress+=SVol;
+  
+  //Deviatoric elastic part (2 d W^dev/d C)
+  Epetra_SerialDenseVector SDevEla(Cinv);
+  SDevEla.Scale(-1.0/3.0*I1);
+  SDevEla+=Id;
+  SDevEla.Scale(mue*I3invcubroot);  //mue*I3^(-1/3) (Id-1/3*I1*Cinv)
+    
+  //visco
   return;
 }
 
