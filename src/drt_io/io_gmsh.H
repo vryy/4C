@@ -279,20 +279,20 @@ namespace IO
     std::string disToString(
         const std::string& s,
         const double scalar,
-        const RCP<DRT::Discretization> dis);
+        const Teuchos::RCP<DRT::Discretization> dis);
 
     //! print discretization in current configuration (t > 0)
     std::string disToString(
         const std::string& s,
         const double scalar,
-        const RCP<DRT::Discretization> dis,
+        const Teuchos::RCP<DRT::Discretization> dis,
         std::map<int,blitz::TinyVector<double,3> > currentpositions);
 
     std::string disToString(const std::string& s,
         const double scalar,
-        const RCP<DRT::Discretization> dis,
-        const map<int,XFEM::DomainIntCells >& elementDomainIntCellsMap,
-        const map<int,XFEM::BoundaryIntCells >& elementBoundaryIntCellsMap);
+        const Teuchos::RCP<DRT::Discretization> dis,
+        const std::map<int,XFEM::DomainIntCells >& elementDomainIntCellsMap,
+        const std::map<int,XFEM::BoundaryIntCells >& elementBoundaryIntCellsMap);
 
     std::string getConfigString(const int numview);
 

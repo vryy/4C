@@ -49,7 +49,7 @@ std::string IO::GMSH::elementToString(const double scalar, const DRT::Element* e
   const DRT::Element::DiscretizationType distype = ele->Shape();
   const int numnode = distypeToGmshNumNode(distype);
 
-  stringstream pos_array_string;
+  std::stringstream pos_array_string;
   pos_array_string << "S" << distypeToGmshElementHeader(distype) << "(";
   for (int i = 0; i<numnode; ++i)
   {
@@ -71,7 +71,7 @@ std::string IO::GMSH::elementToString(const double scalar, const DRT::Element* e
 }
 
 std::string IO::GMSH::disToString(const std::string& s, const double scalar,
-    const RCP<DRT::Discretization> dis)
+    const Teuchos::RCP<DRT::Discretization> dis)
 {
   stringstream gmshfilecontent;
   gmshfilecontent << "View \" " << s << " Elements \" {" << endl;
@@ -85,7 +85,7 @@ std::string IO::GMSH::disToString(const std::string& s, const double scalar,
 }
 
 std::string IO::GMSH::disToString(const std::string& s, const double scalar,
-    const RCP<DRT::Discretization> dis,
+    const Teuchos::RCP<DRT::Discretization> dis,
     std::map<int,blitz::TinyVector<double,3> > currentpositions)
 {
   stringstream gmshfilecontent;
@@ -103,15 +103,14 @@ std::string IO::GMSH::disToString(const std::string& s, const double scalar,
 }
 
 std::string IO::GMSH::disToString(const std::string& s, const double scalar,
-    const RefCountPtr<DRT::Discretization> dis,
+    const Teuchos::RCP<DRT::Discretization> dis,
     const std::map<int, XFEM::DomainIntCells >& elementDomainIntCellsMap,
     const std::map<int, XFEM::BoundaryIntCells >& elementBoundaryIntCellsMap)
 {
   stringstream gmshfilecontent;
   gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {"
       << endl;
-  BlitzMat dxyz_ele(3, 27);
-  BlitzMat bxyz_ele(3, 9);
+  
   for (int i=0; i<dis->NumMyColElements(); ++i)
   {
     const DRT::Element* actele = dis->lColElement(i);
@@ -122,6 +121,7 @@ std::string IO::GMSH::disToString(const std::string& s, const double scalar,
       for (XFEM::DomainIntCells::const_iterator cell = cells.begin(); cell
           != cells.end(); ++cell)
       {
+        static BlitzMat dxyz_ele(3, 27);
         cell->NodalPosXYZ(*actele, dxyz_ele);
         gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(),
             scalar, dxyz_ele) << endl;
@@ -130,7 +130,8 @@ std::string IO::GMSH::disToString(const std::string& s, const double scalar,
       for (XFEM::BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell
           != bcells.end(); ++bcell)
       {
-        bcell->NodalPosXYZ(*actele, dxyz_ele);
+        static BlitzMat bxyz_ele(3, 9);
+        bcell->NodalPosXYZ(*actele, bxyz_ele);
         gmshfilecontent << IO::GMSH::cellWithScalarToString(bcell->Shape(),
             scalar, bxyz_ele) << endl;
       }
