@@ -102,6 +102,7 @@ Input/fsi_tank3D_par.dat                                -        -        -     
 Input/fsi-pw-mfsi-be.dat                                x        x        -        -        x        x
 Input/fsi-pw-mfsi-gena.dat                              x        x        -        -        x        x
 Input/krag_2ele_expl.dat                                -        -        -        -        -        -
+Input/inv_analysis.dat                                  x        -        -        -        -        -
 Input/shell8_amg.dat                                    -        -        -        -        -        -
 Input/shell8_lineload.dat                               x        x        x        x        -        -
 Input/shell8_lineload_sd.dat                            x        x        x        x        -        -
