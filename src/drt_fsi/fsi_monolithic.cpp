@@ -6,6 +6,7 @@
 
 #include "fsi_monolithic.H"
 #include "fsi_nox_group.H"
+#include "fsi_debugwriter.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
@@ -200,6 +201,14 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluid(Teuchos::RCP<const E
 FSI::Monolithic::Monolithic(Epetra_Comm& comm)
   : MonolithicBase(comm)
 {
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+
+  // enable debugging
+  if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT"))
+  {
+    sdbg_ = Teuchos::rcp(new DebugWriter(StructureField().Discretization()));
+    fdbg_ = Teuchos::rcp(new DebugWriter(FluidField().Discretization()));
+  }
 }
 
 
@@ -244,6 +253,11 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   while (NotFinished())
   {
     PrepareTimeStep();
+
+    if (sdbg_!=Teuchos::null)
+      sdbg_->NewTimeStep(Step(),"struct");
+    if (fdbg_!=Teuchos::null)
+      fdbg_->NewTimeStep(Step(),"fluid");
 
     // start time measurement
     Teuchos::RefCountPtr<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
@@ -333,6 +347,12 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
       Teuchos::RCP<const Epetra_Vector> ax;
 
       ExtractFieldVectors(x,sx,fx,ax);
+
+      if (sdbg_!=Teuchos::null)
+      {
+        sdbg_->NewIteration();
+        sdbg_->WriteVector("x",*StructureField().Interface().ExtractCondVector(sx));
+      }
 
       // debug
       //debug_.DumpVector("sx",*StructureField()->Discretization(),*sx);

@@ -18,6 +18,7 @@
 
 namespace FSI
 {
+  class DebugWriter;
 
   /// monolithic FSI algorithm base
   /*!
@@ -237,6 +238,11 @@ namespace FSI
 
     /// flags passed to NOX
     Teuchos::ParameterList noxparameterlist_;
+
+    /// @name special debugging output
+
+    Teuchos::RCP<DebugWriter> sdbg_;
+    Teuchos::RCP<DebugWriter> fdbg_;
   };
 }
 
