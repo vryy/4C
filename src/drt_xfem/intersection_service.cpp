@@ -237,7 +237,7 @@ bool XFEM::currentToVolumeElementCoordinates(
         nodeWithinElement = currentToVolumeElementCoordinatesT<DRT::Element::hex27>(element, x, xsi);
         break;
     default:
-        cout << DistypeToString(element->Shape()) << endl;
+        std::cout << DistypeToString(element->Shape()) << endl;
         dserror("add your 3D distype to this switch!");
         nodeWithinElement = false;
     }   
