@@ -1544,7 +1544,13 @@ void static Sysmat(
             assembler.template Vector<Tauzy>(shp_tau, taue_u_factor*timefacfac*normalvec(1)*velint(2));
             assembler.template Vector<Tauzz>(shp_tau, taue_u_factor*timefacfac*normalvec(2)*velint(2));
             
-            
+            /*
+                           /                         \
+                          |                           |
+                          | (virt tau) * n , u^\iface |
+                          |                           |
+                           \                         /
+            */
             assembler.template Vector<Tauxx>(shp_tau, -taue_u_factor*timefacfac*normalvec(0)*interface_velint(0));
             assembler.template Vector<Tauxy>(shp_tau, -taue_u_factor*timefacfac*normalvec(1)*interface_velint(0));
             assembler.template Vector<Tauxz>(shp_tau, -taue_u_factor*timefacfac*normalvec(2)*interface_velint(0));
@@ -1571,7 +1577,13 @@ void static Sysmat(
             assembler.template Vector<DiscPres>(shp_discpres, -pe_u_factor*timefacfac*normalvec(1)*velint(1));
             assembler.template Vector<DiscPres>(shp_discpres, -pe_u_factor*timefacfac*normalvec(2)*velint(2)); 
             
-            
+            /*
+                           /                         \
+                          |                           |
+                        - | (virt p^e) * n , u^\iface |
+                          |                           |
+                           \                         /
+            */
             assembler.template Vector<DiscPres>(shp_discpres, pe_u_factor*timefacfac*normalvec(0)*interface_velint(0));
             assembler.template Vector<DiscPres>(shp_discpres, pe_u_factor*timefacfac*normalvec(1)*interface_velint(1));
             assembler.template Vector<DiscPres>(shp_discpres, pe_u_factor*timefacfac*normalvec(2)*interface_velint(2));
