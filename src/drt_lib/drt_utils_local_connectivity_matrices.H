@@ -32,8 +32,6 @@
 
 #include "drt_element.H"
 
-using namespace std;
-
 namespace DRT
 {
 namespace UTILS

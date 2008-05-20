@@ -16,8 +16,6 @@ Maintainer: Axel Gerstenberger
 
 #include "drt_element.H"
 
-using namespace std;
-
 namespace DRT
 {
 namespace UTILS
