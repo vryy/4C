@@ -41,14 +41,18 @@ public:
             const Epetra_Map&                    olddofrowmap,
             const Epetra_Map&                    newdofrowmap,
             const map<DofKey<onNode>, DofPos>&   oldNodalDofDistrib,
-            const map<DofKey<onNode>, DofPos>&   newNodalDofDistrib
+            const map<DofKey<onNode>, DofPos>&   newNodalDofDistrib,
+            const map<DofKey<onElem>, DofPos>&   oldElementalDofDistrib,
+            const map<DofKey<onElem>, DofPos>&   newElementalDofDistrib
             ) :
                 ih_(ih),
                 dofman_(dofman),
                 olddofrowmap_(olddofrowmap),
                 newdofrowmap_(newdofrowmap),
                 oldNodalDofDistrib_(oldNodalDofDistrib),
-                newNodalDofDistrib_(newNodalDofDistrib)
+                newNodalDofDistrib_(newNodalDofDistrib),
+                oldElementalDofDistrib_(oldElementalDofDistrib),
+                newElementalDofDistrib_(newElementalDofDistrib)
     {
         return;
     }
@@ -77,6 +81,8 @@ private:
     const Epetra_Map                     newdofrowmap_;
     const map<DofKey<onNode>, DofPos>&   oldNodalDofDistrib_;
     const map<DofKey<onNode>, DofPos>&   newNodalDofDistrib_;
+    const map<DofKey<onElem>, DofPos>&   oldElementalDofDistrib_;
+    const map<DofKey<onElem>, DofPos>&   newElementalDofDistrib_;
 };
 
 } // namespace XFEM

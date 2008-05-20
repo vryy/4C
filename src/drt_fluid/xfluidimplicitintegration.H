@@ -313,10 +313,14 @@ protected:
   double theta_;
   //@}
 
-  /*! contains connection between DofKey and a position in the global state arrays
+  /*! contains connection between elemental DofKey and a position in the global state arrays
    *  should always fit to the current Epetra_Maps in this class
    */
-  XFEM::DofPosMap    dofDistributionMap_;
+  XFEM::NodalDofPosMap       nodalDofDistributionMap_;
+  /*! contains connection between nodal DofKey and a position in the global state arrays
+   *  should always fit to the current Epetra_Maps in this class
+   */
+  XFEM::ElementalDofPosMap   elementalDofDistributionMap_;
   
   RCP<XFEM::InterfaceHandle> ihForOutput_;
   RCP<XFEM::DofManager> dofmanagerForOutput_;

@@ -75,8 +75,9 @@ public:
             ) const
     {
         map<int, const set<FieldEnr> >::const_iterator tmp = nodalDofSet_.find(gid);
-        if (tmp == nodalDofSet_.end()){
-            cout << gid << endl;
+        if (tmp == nodalDofSet_.end())
+        {
+            std::cout << gid << endl;
             // let this always be here so we can recognize errors early
             dserror("FieldEnrSetPerNode: global node id not found!");
             //return std::set<FieldEnr>();
@@ -95,8 +96,9 @@ public:
         ) const
     {
       map<int, const set<FieldEnr> >::const_iterator tmp = elementnodalDofSet_.find(lid);
-      if (tmp == elementnodalDofSet_.end()){
-          cout << lid << endl;
+      if (tmp == elementnodalDofSet_.end())
+      {
+          std::cout << lid << endl;
           // let this always be here so we can recognize errors early
           dserror("FieldEnrSetPerVirtualElementNode: local node id not found!");
           //return std::set<FieldEnr>();
@@ -252,8 +254,9 @@ public:
             const XFEM::ElementDofManager& eledofman
             ) const;
     
-    void fillDofDistributionMap(
-            DofPosMap&   NodalDofDistributionMap
+    void fillDofDistributionMaps(
+            NodalDofPosMap&      NodalDofDistributionMap,
+            ElementalDofPosMap&  ElementalDofDistributionMap
             ) const;
     
 private:

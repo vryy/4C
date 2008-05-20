@@ -30,7 +30,7 @@ typedef int DofPos;
 enum DofType
 {
     onNode,
-    onElement
+    onElem
 };
 
 //! create a string from the DofType enum
@@ -38,8 +38,8 @@ static std::string dofTypeToString(DofType doftype)
 {
     switch (doftype)
     {
-        case onNode:    return "onNode";
-        case onElement: return "onElement";
+        case onNode: return "onNode";
+        case onElem: return "onElem";
         default:
             dserror("unknown doftype");
             exit(1);
@@ -159,7 +159,8 @@ private:
 }; // class DofKey
 
 //! connects each dofkey with a specific position in an solution vector
-typedef map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos > DofPosMap;
+typedef map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos > NodalDofPosMap;
+typedef map<XFEM::DofKey<XFEM::onElem>, XFEM::DofPos > ElementalDofPosMap;
 
 } // namespace XFEM
 

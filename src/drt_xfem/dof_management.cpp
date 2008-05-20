@@ -192,11 +192,11 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
             unique_enrichments_.insert(enrfield->getEnrichment());
         }
     }
-    cout << " Enrichments available:" << endl;
+    std::cout << " Enrichments available:" << endl;
     for (std::set<XFEM::Enrichment>::const_iterator enr =
         unique_enrichments_.begin(); enr != unique_enrichments_.end(); ++enr)
     {
-        cout << "  - " << enr->toString() << endl;
+      std::cout << "  - " << enr->toString() << endl;
     }
 }
 
@@ -470,15 +470,16 @@ void XFEM::DofManager::checkForConsistency(
 }
 
 
-void XFEM::DofManager::fillDofDistributionMap(
-        DofPosMap&   NodalDofDistributionMap
+void XFEM::DofManager::fillDofDistributionMaps(
+    NodalDofPosMap&      NodalDofDistributionMap,
+    ElementalDofPosMap&  ElementalDofDistributionMap
         ) const
 {
     NodalDofDistributionMap.clear();
     // loop all (non-overlapping = Row)-Nodes and store the DOF information w.t.h. of DofKeys
     for (int i=0; i<xfemdis_->NumMyRowNodes(); ++i)
     {
-        const DRT::Node* actnode = xfemdis_->lColNode(i);
+        const DRT::Node* actnode = xfemdis_->lRowNode(i);
         const int gid = actnode->Id();
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
         if (entry == nodalDofSet_.end())
@@ -494,6 +495,30 @@ void XFEM::DofManager::fillDofDistributionMap(
         for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
         {
             NodalDofDistributionMap.insert(make_pair(DofKey<onNode>(gid, *fieldenr), gdofs[dofcount]));
+            dofcount++;
+        }
+    };
+    
+    ElementalDofDistributionMap.clear();
+    // loop all (non-overlapping = Row)-Elements and store the DOF information w.t.h. of DofKeys
+    for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
+    {
+        const DRT::Element* actele = xfemdis_->lRowElement(i);
+        const int gid = actele->Id();
+        std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = elementalDofs_.find(gid);
+        if (entry == elementalDofs_.end())
+        {
+            // no dofs for this node... must be a hole or somethin'
+            continue;
+        }
+        const std::vector<int> gdofs(xfemdis_->Dof(actele));
+        const std::set<FieldEnr> dofset = entry->second;
+
+        int dofcount = 0;
+        std::set<FieldEnr>::const_iterator fieldenr;
+        for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
+        {
+          ElementalDofDistributionMap.insert(make_pair(DofKey<onElem>(gid, *fieldenr), gdofs[dofcount]));
             dofcount++;
         }
     };

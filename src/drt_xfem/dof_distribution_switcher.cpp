@@ -49,29 +49,29 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
     
     if (vector == null)
     {
-        cout << "created new vector with all zeros" << endl;
+      std::cout << "created new vector with all zeros" << endl;
     }
     else
     {
         const RCP<Epetra_Vector> oldVector = vector;
         const Epetra_BlockMap& oldmap = oldVector->Map();
-//        cout << "olddofrowmap_" << endl;
-//        cout << (olddofrowmap_) << endl;
-//        cout << "newdofrowmap_" << endl;
-//        cout << (newdofrowmap_) << endl;
+//        std::cout << "olddofrowmap_" << endl;
+//        std::cout << (olddofrowmap_) << endl;
+//        std::cout << "newdofrowmap_" << endl;
+//        std::cout << (newdofrowmap_) << endl;
         
         if (not oldmap.SameAs(olddofrowmap_)) dserror("bug!");
         
         std::set<DofKey<onNode> > usedOldDofKeys;
         
-        for (DofPosMap::const_iterator newdof = newNodalDofDistrib_.begin();
+        for (NodalDofPosMap::const_iterator newdof = newNodalDofDistrib_.begin();
                                        newdof != newNodalDofDistrib_.end();
                                        ++newdof)
         {
             const XFEM::DofKey<XFEM::onNode> newdofkey = newdof->first;
             const int newdofpos = newdof->second;
             
-            DofPosMap::const_iterator olddof = oldNodalDofDistrib_.find(newdofkey);
+            NodalDofPosMap::const_iterator olddof = oldNodalDofDistrib_.find(newdofkey);
             if (olddof != oldNodalDofDistrib_.end())  // if dofkey has existed before, use old value
             {
                 const XFEM::DofKey<XFEM::onNode> olddofkey = olddof->first;
@@ -88,7 +88,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
             }
         }
 
-        for (DofPosMap::const_iterator olddof = oldNodalDofDistrib_.begin();
+        for (NodalDofPosMap::const_iterator olddof = oldNodalDofDistrib_.begin();
                                        olddof != oldNodalDofDistrib_.end();
                                        ++olddof)
         {
@@ -97,7 +97,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
             const XFEM::PHYSICS::Field oldphysvar = olddofkey.getFieldEnr().getField();
             
             // try to find successor
-            DofPosMap::const_iterator newdof = newNodalDofDistrib_.find(olddofkey);
+            NodalDofPosMap::const_iterator newdof = newNodalDofDistrib_.find(olddofkey);
             if (newdof == newNodalDofDistrib_.end())  // no successor
             {
                 //dserror("bug: the interface is not moving at the moment");
@@ -119,9 +119,9 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
                     //cout << "newdofpos" << newdofpos << endl;
                     if (newdofpos < 0)
                     {
-                        cout << "old Dofkey" << endl << olddofkey.toString() << endl;
-                        cout << "alt Dofkey" << endl << altdofkey.toString() << endl;
-                        dserror("bug!");
+                      std::cout << "old Dofkey" << endl << olddofkey.toString() << endl;
+                      std::cout << "alt Dofkey" << endl << altdofkey.toString() << endl;
+                      dserror("bug!");
                     }
                     
                     // add old value to already existing values

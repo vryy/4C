@@ -109,7 +109,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     // debug: write both meshes to file in Gmsh format
     std::stringstream filename;
     filename << "elements_coupled_system_" << std::setw(5) << setfill('0') << step << ".pos";
-    cout << "writing '"<<filename.str()<<"'...";
+    std::cout << "writing '"<<filename.str()<<"'...";
     std::ofstream f_system(filename.str().c_str());
     f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
     f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
@@ -137,14 +137,14 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
 //    }
     f_system << IO::GMSH::getConfigString(3);
     f_system.close();
-    cout << " done" << endl;
+    std::cout << " done" << endl;
   }
   
   // debug: write information about which structure we are in
   {
     std::stringstream filename;
     filename << "domains_" << std::setw(5) << setfill('0') << step << ".pos";
-    cout << "writing '"<<filename.str()<<"'...";
+    std::cout << "writing '"<<filename.str()<<"'...";
     std::ofstream f_system(filename.str().c_str());
     //f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
     //f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
@@ -187,7 +187,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     }
     //f_system << IO::GMSH::getConfigString(3);
     f_system.close();
-    cout << " done" << endl;
+    std::cout << " done" << endl;
   }
   return;
 }
