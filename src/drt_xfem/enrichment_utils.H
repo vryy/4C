@@ -134,6 +134,16 @@ void computeVectorCellNodeValues(
   blitz::Array<double,2>&     cellvalues
   );
 
+void computeVectorCellNodeValues(
+  const DRT::Element&  ele,
+  const RCP<XFEM::InterfaceHandle>&  ih,
+  const XFEM::ElementDofManager& dofman,
+  const XFEM::BoundaryIntCell& cell,
+  const XFEM::PHYSICS::Field field,
+  const blitz::Array<double,2>& elementvalues,
+  blitz::Array<double,2>&     cellvalues
+  );
+
 }
 
 

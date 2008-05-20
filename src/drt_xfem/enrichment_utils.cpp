@@ -372,4 +372,53 @@ void XFEM::computeVectorCellNodeValues(
   return;
 }
 
+void XFEM::computeVectorCellNodeValues(
+  const DRT::Element&  ele,
+  const RCP<XFEM::InterfaceHandle>&  ih,
+  const XFEM::ElementDofManager& dofman,
+  const XFEM::BoundaryIntCell& cell,
+  const XFEM::PHYSICS::Field field,
+  const blitz::Array<double,2>& elementvalues,
+  blitz::Array<double,2>&      cellvalues
+  )
+{
+  const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
+  const int numparam  = dofman.NumDofPerField(field);
+  const int nsd = 3;
+
+  const blitz::Array<double,2>* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+
+  // if cell node is on the interface, the value is not defined for a jump.
+  // however, we approach the interface from one particular side and therefore,
+  // -> we use the center of the cell to determine, where we come from
+  const blitz::TinyVector<double,3> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+
+  // cell corner nodes
+  //const blitz::Array<double,2> cellnodeposvectors = cell.NodalPosXYZ(ele);
+  blitz::Array<double,1> enr_funct(numparam);
+  //blitz::Array<double,1> funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
+  static blitz::Array<double,1> funct(27);
+  cellvalues = 0.0;
+  for (int inen = 0; inen < nen_cell; ++inen)
+  {
+    // fill shape functions
+    DRT::UTILS::shape_function_3D(funct,
+      (*nodalPosXiDomain)(0,inen),
+      (*nodalPosXiDomain)(1,inen),
+      (*nodalPosXiDomain)(2,inen),
+      ele.Shape());
+
+    XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachFromPlus, funct, enr_funct);
+    // interpolate value
+    for (int iparam = 0; iparam < numparam; ++iparam)
+    {
+      for (int isd = 0; isd < nsd; ++isd)
+      {
+        cellvalues(isd,inen) += elementvalues(isd,iparam) * enr_funct(iparam);        
+      }
+    }
+  }
+  return;
+}
+
 #endif  // #ifdef CCADISCRET

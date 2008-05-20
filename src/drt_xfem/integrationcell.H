@@ -320,6 +320,9 @@ public:
     
     //! return string representation of the BoundaryIntCell
     std::string toString() const;
+    
+    //! get geometric center of the cell in physical coordinates
+    BlitzVec3 GetPhysicalCenterPosition(const DRT::Element& ele) const;
 
 private:
     

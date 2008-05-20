@@ -285,4 +285,41 @@ std::string XFEM::BoundaryIntCell::toString() const
     return s.str();
 }
 
+//
+// return the center of the cell in physical coordinates
+//
+BlitzVec3 XFEM::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
+{
+    // number of space dimensions
+    //const int nsd = 3;
+    
+    // physical positions of cell nodes
+    BlitzMat physcoord(3,27);
+    this->NodalPosXYZ(ele, physcoord);
+    
+    // center in local coordinates
+    static BlitzVec2 localcenterpos;
+    localcenterpos = DRT::UTILS::getLocalCenterPosition<2>(this->Shape());
+
+    // shape functions
+    BlitzVec funct(DRT::UTILS::getNumberOfElementNodes(this->Shape()));
+    DRT::UTILS::shape_function_2D(funct,
+            localcenterpos(0),
+            localcenterpos(1),
+            this->Shape());
+    
+    //interpolate position to x-space
+    static BlitzVec3 x_interpol;
+    for (int isd = 0; isd < 3; ++isd)
+    {
+        x_interpol(isd) = 0.0;
+        for (int inode = 0; inode < DRT::UTILS::getNumberOfElementNodes(this->Shape()); ++inode)
+        {
+            x_interpol(isd) += funct(inode)*physcoord(isd,inode);
+        }
+    }
+    
+    return x_interpol;
+}
+
 #endif  // #ifdef CCADISCRET
