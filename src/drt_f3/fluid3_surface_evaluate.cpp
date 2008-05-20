@@ -47,11 +47,11 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
     else if (action == "integrate_Shapefunction")
         act = Fluid3Surface::integrate_Shapefunction;
     else if (action == "flowrate calculation")
-    	act = Fluid3Surface::flowratecalc;
+        act = Fluid3Surface::flowratecalc;
     else if (action == "Outlet impedance")
-    	act = Fluid3Surface::Outletimpedance;
+        act = Fluid3Surface::Outletimpedance;
     else if (action == "calc_node_normal")
-    	act = Fluid3Surface::calc_node_normal;
+        act = Fluid3Surface::calc_node_normal;
     else dserror("Unknown type of action for Fluid3_Surface");
 
     switch(act)
@@ -76,13 +76,13 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
     }
     case flowratecalc:
     {
-    	FlowRateParameterCaculation(params,discretization,lm,elevec1);
+        FlowRateParameterCaculation(params,discretization,lm,elevec1);
         break;
     }
     case Outletimpedance:
     {
-    	ImpedanceIntegration(params,discretization,lm,elevec1);
-     	break;
+        ImpedanceIntegration(params,discretization,lm,elevec1);
+        break;
     }
     case calc_node_normal:
     {
@@ -97,9 +97,8 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
           mydispnp.resize(lm.size());
           DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
         }
-        ElementNodeNormal(params,discretization,lm,elevec1,mydispnp);
       }
-      else dserror("height function for ale only");
+      ElementNodeNormal(params,discretization,lm,elevec1,mydispnp);
       break;
     }
     default:
