@@ -211,16 +211,18 @@ private:
   bool nodes_rearranged_;
 
   //! Compute stiffness and mass matrix
-  void sosh8_nlnstiffmass(vector<int>&              lm,
-                         vector<double>&           disp,
-                         vector<double>&           residual,
-                         Epetra_SerialDenseMatrix* stiffmatrix,
-                         Epetra_SerialDenseMatrix* massmatrix,
-                         Epetra_SerialDenseVector* force,
-                         Epetra_SerialDenseMatrix* elestress,
-                         Epetra_SerialDenseMatrix* elestrain,
-                         const double              time,
-                         const bool                cauchy=false);
+  void sosh8_nlnstiffmass(
+      vector<int>&              lm,             ///< location matrix
+      vector<double>&           disp,           ///< current displacements
+      vector<double>&           residual,       ///< current residuum
+      Epetra_SerialDenseMatrix* stiffmatrix,    ///< element stiffness matrix
+      Epetra_SerialDenseMatrix* massmatrix,     ///< element mass matrix
+      Epetra_SerialDenseVector* force,          ///< element internal force vector
+      Epetra_SerialDenseMatrix* elestress,      ///< element stresses
+      Epetra_SerialDenseMatrix* elestrain,      ///< strains at GP
+      const double    time,                     ///< current absolute time
+      const double    dt,                       ///< current timestepsize
+      const bool      cauchy=false);            ///< stress output option
 
   //! Evaluate Hex8 Shapefcts to keep them static
   const vector<Epetra_SerialDenseVector> sosh8_shapefcts();

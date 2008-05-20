@@ -544,6 +544,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("DENS"        ,&(localmat.m.visconeohooke->density)    ,&ierr);
       frdouble("YOUNGS_FAST" ,&(localmat.m.visconeohooke->youngs_fast),&ierr);
       frdouble("RELAX"       ,&(localmat.m.visconeohooke->relax)      ,&ierr);
+      frdouble("THETA"       ,&(localmat.m.visconeohooke->theta)      ,&ierr);
    }
    /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */
    frchk("MAT_Therm_Fourier_iso",&ierr);

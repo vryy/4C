@@ -454,17 +454,19 @@ protected:
   virtual void InitJacobianMapping();
 
   //! Calculate nonlinear stiffness and mass matrix
-  virtual void soh8_nlnstiffmass(vector<int>&              lm,
-                                 vector<double>&           disp,
-                                 vector<double>&           residual,
-                                 Epetra_SerialDenseMatrix* stiffmatrix,
-                                 Epetra_SerialDenseMatrix* massmatrix,
-                                 Epetra_SerialDenseVector* force,
-                                 Epetra_SerialDenseMatrix* stresses,
-                                 Epetra_SerialDenseMatrix* elestrain,
-                                 const double              time,
-                                 bool                      cauchy = false,
-                                 bool                      euler_almansi = false);
+  virtual void soh8_nlnstiffmass(
+      vector<int>&              lm,             ///< location matrix
+      vector<double>&           disp,           ///< current displacements
+      vector<double>&           residual,       ///< current residuum
+      Epetra_SerialDenseMatrix* stiffmatrix,    ///< element stiffness matrix
+      Epetra_SerialDenseMatrix* massmatrix,     ///< element mass matrix
+      Epetra_SerialDenseVector* force,          ///< element internal force vector
+      Epetra_SerialDenseMatrix* elestress,      ///< stresses at GP
+      Epetra_SerialDenseMatrix* elestrain,      ///< strains at GP
+      const double              time,           ///< current absolute time
+      const double              dt,             ///< current timestep size
+      const bool                cauchy=false,   ///< stress output option
+      const bool                euler_almansi=false);  ///< strain output option
 
   //! Extrapolate Gauss-point values (e.g. stresses) to nodes
   void soh8_expol(Epetra_SerialDenseMatrix& stresses,
@@ -505,6 +507,7 @@ protected:
    * \param gp (in): current gp
    * \param ele_ID (in): current element Id
    * \param time (in): current algorithmic time
+   * \param dt (in): current algorithmic timestepsize
    * \param action (in): action for material law (default empty)
    * */
   void soh8_mat_sel(Epetra_SerialDenseVector* stress,
@@ -517,6 +520,7 @@ protected:
                     const int gp,
                     const int ele_ID,
                     const double time,
+                    const double dt,
                     const string action = string());
 
   //! EAS technology, init
@@ -536,6 +540,7 @@ protected:
   void soh8_homog(ParameterList&  params,
                   vector<double>& disp,
                   const double    time,
+                  const double    dt,
                   vector<double>& residual);
 
   void soh8_set_eas_multi(ParameterList&  params);

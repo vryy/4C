@@ -66,6 +66,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
   else dserror("Unknown type of action for So_hex8");
 
   const double time = params.get("total time",-1.0);
+  const double dt = params.get("delta time",-1.0);
 
   // what should the element do
   switch(act) {
@@ -76,7 +77,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,time);
+      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,time,dt);
     }
     break;
 
@@ -90,7 +91,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,time);
+      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,time,dt);
     }
     break;
 
@@ -114,7 +115,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,time);
+      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,time,dt);
     }
     break;
 
@@ -135,7 +136,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix strain(NUMGPT_SOH8,NUMSTR_SOH8);
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
-      if (iostrain != "euler_almansi") sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy);
+      if (iostrain != "euler_almansi") sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,dt,cauchy);
       else    dserror("requested option not yet implemented for solidsh8");
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
@@ -286,7 +287,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soh8_homog(params, mydisp, time, myres);
+      soh8_homog(params, mydisp, time, dt, myres);
     }
     break;
 
@@ -311,7 +312,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       Epetra_SerialDenseVector* force,          // element internal force vector
       Epetra_SerialDenseMatrix* elestress,      // element stresses
       Epetra_SerialDenseMatrix* elestrain,      // strains at GP
-      const double		time, 	        // current absolute time
+      const double		time, 	                  // current absolute time
+      const double    dt,                       // current timestepsize
       const bool                cauchy)         // stress output option
 {
 /* ============================================================================*
@@ -604,7 +606,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
                                      // but in solid for time-dependent
                                      // complex material behavior
 
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, histstress_, artstress_, gp, ele_ID, time);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,histstress_,artstress_,gp,ele_ID,time,dt);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses

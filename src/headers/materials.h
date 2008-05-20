@@ -677,6 +677,7 @@ typedef struct _VISCONEOHOOKE
      DOUBLE                    density;
      DOUBLE                    youngs_fast;
      DOUBLE                    relax;
+     DOUBLE                    theta;
 } VISCONEOHOOKE;
 /*----------------------------------------------------------------------*
  | Isotropic heat conduction coefficient                    bborn 03/06 |

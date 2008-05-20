@@ -91,9 +91,12 @@ double MAT::ViscoNeoHooke::Density()
 */
 
 void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
-                                       Epetra_SerialDenseMatrix* cmat,
-                                       Epetra_SerialDenseVector* stress,
-                                       const double time)
+                                  const Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstress,
+                                  const Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstress,
+                                  const int gp,
+                                  const double dt,
+                                  Epetra_SerialDenseMatrix* cmat,
+                                  Epetra_SerialDenseVector* stress)
 
 {
   // get material parameters
@@ -101,7 +104,7 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double nue  = matdata_->m.visconeohooke->poisson;
   double E_f  = matdata_->m.visconeohooke->youngs_fast;  
   double tau  = matdata_->m.visconeohooke->relax;
-  double theta= 0.0;//matdata_->m.visconeohooke->theta;
+  double theta= matdata_->m.visconeohooke->theta;
   
   // evaluate "alpha" factors which distribute stress or stiffnes between parallel springs
   // sum_0^i alpha_j = 1
@@ -149,18 +152,41 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   
   // Split into volumetric and deviatoric parts. Viscosity affects only deviatoric part
   
-  //Volumetric part of PK2 stress
+  // Volumetric part of PK2 stress
   Epetra_SerialDenseVector SVol(Cinv);
   SVol.Scale(kappa*(J-1.0)*J);
   *stress+=SVol;
   
-  //Deviatoric elastic part (2 d W^dev/d C)
+  // Deviatoric elastic part (2 d W^dev/d C)
   Epetra_SerialDenseVector SDevEla(Cinv);
   SDevEla.Scale(-1.0/3.0*I1);
   SDevEla+=Id;
   SDevEla.Scale(mue*I3invcubroot);  //mue*I3^(-1/3) (Id-1/3*I1*Cinv)
     
-  //visco
+  // visco part
+  
+  // read history
+  Epetra_SerialDenseVector S_n ( (histstress->at(gp)).Scale(-1.0) );
+  Epetra_SerialDenseVector Q_n (artstress->at(gp));
+  
+  // artificial visco stresses
+  Epetra_SerialDenseVector Q(Q_n);
+  Q.Scale((tau - dt + theta*dt)/tau);
+  Q += SDevEla;
+  Q += S_n;
+  Q.Scale(tau/(tau + theta*dt));  // Q^(n+1) = tau/(tau+theta*dt) [(tau-dt+theta*dt)/tau Q + S^(n+1) - S^n]
+  
+  // update history
+  histstress->at(gp) = SDevEla;
+  artstress->at(gp) = Q;
+  
+  // add visco PK2 stress, weighted with alphas
+  SDevEla.Scale(alpha0);
+  *stress += SDevEla;
+  Q.Scale(alpha1);
+  *stress += Q;
+  
+  
   return;
 }
 

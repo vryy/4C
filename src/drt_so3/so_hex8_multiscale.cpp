@@ -36,6 +36,7 @@ using namespace std; // cout etc.
 void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params,
                                         vector<double>& disp,
                                         const double    time,
+                                        const double    dt,
                                         vector<double>& residual)
 {
   // check whether we only have to calculate the initial density
@@ -151,7 +152,7 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params,
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
     const int ele_ID = Id();
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, histstress_, artstress_, gp, ele_ID, time);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, histstress_, artstress_,gp,ele_ID,time,dt);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double integrationfactor = detJ * (*weights)(gp);
