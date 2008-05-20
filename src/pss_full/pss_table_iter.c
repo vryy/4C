@@ -111,6 +111,10 @@ INT next_map_node(MAP_ITERATOR* iterator)
   dstrc_enter("next_map_node");
 #endif
 
+  /* if the map is empty there is nothing to iterate */
+  if (iterator->map!=NULL)
+  {
+    
   /*first call of this iterator*/
   if (iterator->stack.head.map_node==NULL)
   {
@@ -148,7 +152,8 @@ INT next_map_node(MAP_ITERATOR* iterator)
       result = iterator->stack.head.snext!=NULL;
     }
   }
-
+  }
+  
 #ifdef DEBUG
   dstrc_exit();
 #endif

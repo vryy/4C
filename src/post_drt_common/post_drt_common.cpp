@@ -784,10 +784,12 @@ vector<double> PostResult::get_result_times(const string& fieldname)
 {
     vector<double> times; // timesteps when the solution is written
 
+#if 0
     if (this->next_result())
         times.push_back(this->time());
     else
         dserror("no solution found in field '%s'", fieldname.c_str());
+#endif
 
     while (this->next_result())
         times.push_back(this->time());

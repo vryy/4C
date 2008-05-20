@@ -90,7 +90,10 @@ void EnsightWriter::WriteFiles()
   filesteps.push_back(1);
   filesetmap_["geo"] = filesteps;
   vector<double> timesteps;
-  timesteps.push_back(soltime[0]);
+  if (soltime.size()>0)
+    timesteps.push_back(soltime[0]);
+  else
+    timesteps.push_back(0.0);
   timesetmap_["geo"] = timesteps;
   // at the moment, we can only print out the first step -> to be changed
 
