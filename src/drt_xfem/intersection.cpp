@@ -3704,26 +3704,26 @@ void Intersection::debugFaceMarker(
 		tetgenio&						out) const
 {
 
-	ofstream f_system("element_faceMarker.pos");
-	f_system << "View \" Face Markers" << " \" {" << endl;
+  ofstream f_system("element_faceMarker.pos");
+  f_system << "View \" Face Markers" << " \" {" << endl;
 
-	for(int i=0; i<out.numberoftrifaces; i++)
+  for(int iface=0; iface<out.numberoftrifaces; iface++)
+  {
+    int trifaceMarker = out.trifacemarkerlist[iface] - facetMarkerOffset_;
+
+    if(trifaceMarker > -2)
     {
-        int trifaceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
+      BlitzMat triface(3,3);
+      for(int inode = 0; inode < 3; inode++)
+        for(int isd = 0; isd < 3; isd++)
+          triface(isd,inode) = out.pointlist[out.trifacelist[iface*3+inode]*3 + isd];
 
-        if(trifaceMarker > -2)
-        {
-        	vector< vector<double> > triface(3, vector<double>(3));
-        	for(int j = 0; j < 3; j++)
-        		for(int k = 0; k < 3; k++)
-        			triface[j][k] = out.pointlist[out.trifacelist[i*3+j]*3 + k];
-
-        	f_system << IO::GMSH::trifaceToString(trifaceMarker, triface) << endl;
-        }
-	}
-	f_system << "};" << endl;
-	//f_system << IO::GMSH::getConfigString(2);
-	f_system.close();
+      f_system << IO::GMSH::cellWithScalarToString(DRT::Element::tri3, trifaceMarker, triface) << endl;
+    }
+  }
+  f_system << "};" << endl;
+  //f_system << IO::GMSH::getConfigString(2);
+  f_system.close();
 }
 
 
@@ -3775,6 +3775,36 @@ void Intersection::debugIntersection(
 	f_system.close();
 }
 
+static string XAABBToString(const double scalar, const vector<vector<double> >& XAABB)
+{
+    const DRT::Element::DiscretizationType distype = DRT::Element::hex8;
+    const int numnode = IO::GMSH::distypeToGmshNumNode(distype);
+
+    stringstream pos_array_string;
+    pos_array_string << "S" << IO::GMSH::distypeToGmshElementHeader(distype) << "(";
+    for (int i = 0; i<numnode;++i)
+    {
+        pos_array_string << scientific << XAABB[i][0] << ",";
+        pos_array_string << scientific << XAABB[i][1] << ",";
+        pos_array_string << scientific << XAABB[i][2];
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << ")";
+    // values
+    pos_array_string << "{";
+    for (int i = 0; i<numnode;++i)
+    {
+        pos_array_string << scientific << scalar;
+        if (i < numnode-1){
+            pos_array_string << ",";
+        }
+    };
+    pos_array_string << "};";
+    return pos_array_string.str();
+}
+
 
 void Intersection::debugXAABBs(
 	const int							id,
@@ -3798,7 +3828,7 @@ void Intersection::debugXAABBs(
 	nodes[6][0] = cutterXAABB(0,1);	nodes[6][1] = cutterXAABB(1,1);	nodes[6][2] = cutterXAABB(2,1);	// node 6
 	nodes[7][0] = cutterXAABB(0,0);	nodes[7][1] = cutterXAABB(1,1);	nodes[7][2] = cutterXAABB(2,1);	// node 7
 
-	f_system << IO::GMSH::XAABBToString(id+1, nodes) << endl;
+	f_system << XAABBToString(id+1, nodes) << endl;
 
 	//xfemXAABB
 	nodes[0][0] = xfemXAABB(0,0);	nodes[0][1] = xfemXAABB(1,0);	nodes[0][2] = xfemXAABB(2,0);	// node 0
@@ -3810,7 +3840,7 @@ void Intersection::debugXAABBs(
 	nodes[6][0] = xfemXAABB(0,1);	nodes[6][1] = xfemXAABB(1,1);	nodes[6][2] = xfemXAABB(2,1);	// node 6
 	nodes[7][0] = xfemXAABB(0,0);	nodes[7][1] = xfemXAABB(1,1);	nodes[7][2] = xfemXAABB(2,1);	// node 7
 
-	f_system << IO::GMSH::XAABBToString(0, nodes) << endl;
+	f_system << XAABBToString(0, nodes) << endl;
 
 	f_system << "};" << endl;
 	f_system.close();

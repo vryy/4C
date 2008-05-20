@@ -37,7 +37,6 @@ Maintainer: Axel Gerstenberger
 
 #include <Epetra_SerialDenseSolver.h>
 
-using namespace std;
 using namespace XFEM::PHYSICS;
 
 namespace XFLUID
@@ -268,7 +267,7 @@ void static Sysmat(
             {
                 static BlitzMat deriv2(6,numnode,blitz::ColumnMajorArray<2>());
                 DRT::UTILS::shape_function_3D_deriv2(deriv2,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
-                gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
+                XFEM::gder2<DISTYPE>(xjm, derxy, deriv2, xyze, derxy2);
             }
             else
             {

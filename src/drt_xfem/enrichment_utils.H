@@ -115,6 +115,27 @@ void ComputeEnrichedElementShapefunction(
         BlitzMat& enr_derxy
         );
 
+
+void computeScalarCellNodeValues(
+  const DRT::Element&  ele,
+  const RCP<XFEM::InterfaceHandle>&  ih,
+  const XFEM::ElementDofManager& dofman,
+  const XFEM::DomainIntCell& cell,
+  const XFEM::PHYSICS::Field field,
+  const blitz::Array<double,1>& elementvalues,
+  blitz::Array<double,1>&     cellvalues
+  );
+
+void computeVectorCellNodeValues(
+  const DRT::Element&  ele,
+  const RCP<XFEM::InterfaceHandle>&  ih,
+  const XFEM::ElementDofManager& dofman,
+  const XFEM::DomainIntCell& cell,
+  const XFEM::PHYSICS::Field field,
+  const blitz::Array<double,2>& elementvalues,
+  blitz::Array<double,2>&     cellvalues
+  );
+
 }
 
 

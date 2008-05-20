@@ -26,7 +26,6 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
 
-using namespace LINALG::DENSE;
 
 /*! get number of unknowns for this field
  * use the dofmanager in the general case,
@@ -440,7 +439,7 @@ void gder2(
     //const BlitzMat xder2(blitz::sum(deriv2(i,k)*xyze(j,k),k));
     static BlitzMat xder2(6,3);
     //static blitz::TinyMatrix<double,6,3> xder2;
-    MMt_product<6,3,numnode>(deriv2,xyze,xder2);
+    LINALG::DENSE::MMt_product<6,3,numnode>(deriv2,xyze,xder2);
 
     /*
     |        0...iel-1             0 1 2

@@ -26,8 +26,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_systemmatrix.H"
 
 
-using namespace std;
-
 
 /*----------------------------------------------------------------------*
  |  default ctor                                                ag 11/07|

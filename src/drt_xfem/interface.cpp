@@ -179,7 +179,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
                   break;
                 }
               }
-              gmshfilecontent << IO::GMSH::cellToString(cellpos, domain_id, cell->Shape()) << endl;
+              gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), domain_id, cellpos) << endl;
             };
         };
         gmshfilecontent << "};" << endl;

@@ -36,7 +36,6 @@ Maintainer: Axel Gerstenberger
 
 #include <Epetra_SerialDenseSolver.h>
 
-using namespace std;
 using namespace XFEM::PHYSICS;
 
 namespace XFLUID

@@ -18,8 +18,6 @@ Maintainer: Axel Gerstenberger
 #include "xdofmapcreation.H"
 #include "xfem_condition.H"
 
-using namespace std;
-
 
 /*----------------------------------------------------------------------*
  |  construct dofmap                                            ag 11/07|

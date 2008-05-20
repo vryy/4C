@@ -24,7 +24,6 @@
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_f3/xfluid3_interpolation.H" // obviosly, this is fluid element specific and needs more generalization
 
-using namespace std;
 
 
 /*----------------------------------------------------------------------*/
@@ -588,63 +587,6 @@ void XFluidEnsightWriter::WriteResult(
 }
 
 
-void computeScalarCellNodeValues(
-  const DRT::Element&  ele,
-  const RCP<XFEM::InterfaceHandle>&  ih,
-  const XFEM::ElementDofManager& dofman,
-  const XFEM::DomainIntCell& cell,
-  const XFEM::PHYSICS::Field field,
-  const blitz::Array<double,1>& elementvalues,
-  vector<double>&     cellvalues
-  )
-{
-  const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-  const int numparam  = dofman.NumDofPerField(field);
-
-  const blitz::Array<double,2>* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
-
-  // return value
-  //vector<double> cellvalues(nen_cell);
-  //static vector<double> cellvalues(27);
-
-  //const blitz::Range _  = blitz::Range::all();
-
-  // if cell node is on the interface, the value is not defined for a jump.
-  // however, we approach the interface from one particular side and therefore,
-  // -> we use the center of the cell to determine, where we come from
-  const blitz::TinyVector<double,3> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
-
-  // cell corner nodes
-  //const blitz::Array<double,2> cellnodeposvectors = cell.NodalPosXYZ(ele);
-  blitz::Array<double,1> enr_funct(numparam);
-  //blitz::Array<double,1> funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
-  static blitz::Array<double,1> funct(27);
-  for (int inen = 0; inen < nen_cell; ++inen)
-  {
-    //const blitz::Array<double,1> cellnodepos = cellnodeposvectors(_,inen);
-
-    // fill shape functions
-    DRT::UTILS::shape_function_3D(funct,
-      (*nodalPosXiDomain)(0,inen),
-      (*nodalPosXiDomain)(1,inen),
-      (*nodalPosXiDomain)(2,inen),
-      ele.Shape());
-
-    XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
-    // interpolate value
-    //cellvalues[inen] = blitz::sum(elementvalues * enr_funct);
-    cellvalues[inen] = 0.0;
-    for (int iparam = 0; iparam < numparam; ++iparam)
-    {
-      cellvalues[inen] += elementvalues(iparam) * enr_funct(iparam);
-    }
-  }
-  return;
-}
-
-
-
-
 /*!
   \brief Write nodal values for one timestep
 
@@ -711,7 +653,7 @@ void XFluidEnsightWriter::WriteNodalResultStep(
     for (NumElePerDisType::const_iterator iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
     {
       const DRT::Element::DiscretizationType distypeiter = iter->first;
-      vector<double> cellvalues(DRT::UTILS::getNumberOfElementNodes(distypeiter));
+      blitz::Array<double,1> cellvalues(DRT::UTILS::getNumberOfElementNodes(distypeiter));
       for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
       {
         const int elegid = elementmap->GID(iele);
@@ -744,7 +686,7 @@ void XFluidEnsightWriter::WriteNodalResultStep(
         {
           if (cell->Shape() == distypeiter)
           {
-            computeScalarCellNodeValues(*actele, ih, eledofman, *cell, field, elementvalues, cellvalues);
+            XFEM::computeScalarCellNodeValues(*actele, ih, eledofman, *cell, field, elementvalues, cellvalues);
             int numnode = cell->NumNode();
             if (distypeiter == DRT::Element::hex27)
             {
@@ -752,7 +694,7 @@ void XFluidEnsightWriter::WriteNodalResultStep(
             }
             for (int inode = 0; inode < numnode; ++inode)
             {
-              Write(file, static_cast<float>(cellvalues[inode]));
+              Write(file, static_cast<float>(cellvalues(inode)));
               counter++;
             }
           }

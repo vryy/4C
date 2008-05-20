@@ -49,10 +49,6 @@ extern "C" /* stuff which is c and is accessed from c++ */
 #include "../fluid_full/fluid_prototypes.h"
 }
 
-using namespace std;
-using namespace Teuchos;
-
-
 #endif /* end of #ifdef __cplusplus */
 /* END     C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++C++*/
 

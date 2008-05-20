@@ -54,7 +54,6 @@ Maintainer: Axel Gerstenberger
 #include <Teuchos_TimeMonitor.hpp>
 
 
-using namespace std;
 using namespace Teuchos;
 
 /*!
@@ -318,6 +317,9 @@ protected:
    *  should always fit to the current Epetra_Maps in this class
    */
   XFEM::DofPosMap    dofDistributionMap_;
+  
+  RCP<XFEM::InterfaceHandle> ihForOutput_;
+  RCP<XFEM::DofManager> dofmanagerForOutput_;
 
   /// (standard) system matrix
   RCP<LINALG::SparseOperator> sysmat_;

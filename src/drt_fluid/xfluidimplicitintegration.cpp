@@ -31,7 +31,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/field_enriched.H"
+#include "../drt_xfem/enrichment_utils.H"
 #include "fluid_utils.H"
+#include "../drt_f3/xfluid3_interpolation.H"
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -455,10 +457,12 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // compute Intersection
   RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,cutterdiscret,idispcol));
   ih->toGmsh(step_);
+  ihForOutput_ = ih;
 
   // apply enrichments
   RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
   dofmanager->toGmsh(ih, step_);
+  dofmanagerForOutput_ = dofmanager; // save to be able to plot Gmsh stuff in Output()
 
   // tell elements about the dofs and the integration
   {
@@ -515,7 +519,7 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
           gmshfilecontent << "View \" " << " eleDofManager->label in element \" {" << endl;
           for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
           {
-              DRT::Element* actele = ih->xfemdis()->lColElement(i);
+              const DRT::Element* actele = ihForOutput_->xfemdis()->lColElement(i);
               const int numvirtualnodes = DRT::UTILS::getNumberOfElementNodes(actele->Shape());
               
               // create local copy of information about dofs
@@ -1263,6 +1267,53 @@ void XFluidImplicitTimeInt::Output()
       {
         output_.WriteVector("dispn", dispn_);
         output_.WriteVector("dispnm",dispnm_);
+      }
+    }
+    
+    std::stringstream filename;
+    filename << "solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    cout << "writing '"<<filename.str()<<".pos'...";
+    std::ofstream f_system(filename.str().c_str());
+    
+    XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
+    
+    for (int i=0; i<discret_->NumMyColElements(); ++i)
+    {
+
+      DRT::Element* actele = discret_->lColElement(i);
+      const int elegid = actele->Id();
+      const int numnodeele = actele->Shape();
+
+      const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(actele->Shape());
+      const int numeleparam = DRT::UTILS::getNumberOfElementNodes(stressdistype);
+      BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+
+      // create local copy of information about dofs
+      const XFEM::ElementDofManager eledofman = dofmanagerForOutput_->constructElementDofManager(*actele, numeleparam);
+
+      vector<int> lm;
+      vector<int> lmowner;
+      actele->LocationVector(*(discret_),lm,lmowner);
+
+      // extract local values from the global vector
+      vector<double> myvelnp(lm.size());
+
+      DRT::UTILS::ExtractMyValues(*veln_,myvelnp,lm);
+
+      const int numparam = eledofman.NumDofPerField(field);
+      const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
+      //cout << XFEM::PHYSICS::physVarToString(field) << ": numparam = " << numparam << ": lm.size() = " << lm.size() << endl;
+
+      blitz::Array<double,1> elementvalues(numparam);
+      for (int iparam=0; iparam<numparam; ++iparam)   elementvalues(iparam) = myvelnp[dofpos[iparam]];
+
+      const XFEM::DomainIntCells& domainintcells = ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
+      for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
+      {
+        blitz::Array<double,1> cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+        XFEM::computeScalarCellNodeValues(*actele, ihForOutput_, eledofman, *cell, field, elementvalues, cellvalues);
+        const BlitzMat* xyze_cell(cell->NodalPosXiDomainBlitz());
+        IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalues, *xyze_cell);
       }
     }
   }

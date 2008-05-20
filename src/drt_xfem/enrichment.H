@@ -20,8 +20,6 @@ Maintainer: Axel Gerstenberger
 #include "xfem.H"
 #include "interface.H"
 
-using namespace Teuchos;
-
 
 namespace XFEM
 {

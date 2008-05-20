@@ -22,9 +22,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 
-using namespace std;
-using namespace XFEM;
-
 
 //! little helper function
 static BlitzMat ConvertPosArrayToBlitz(
@@ -49,7 +46,7 @@ static BlitzMat ConvertPosArrayToBlitz(
 //
 //  ctor
 //
-IntCell::IntCell(
+XFEM::IntCell::IntCell(
         const DRT::Element::DiscretizationType distype) :
             distype_(distype)
 {
@@ -59,7 +56,7 @@ IntCell::IntCell(
 /*----------------------------------------------------------------------*
  |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-IntCell::IntCell(
+XFEM::IntCell::IntCell(
         const IntCell& old) : 
             distype_(old.distype_)
 {
@@ -69,35 +66,15 @@ IntCell::IntCell(
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-IntCell::~IntCell()
+XFEM::IntCell::~IntCell()
 {
   return;
 }
 
-////
-////  get coordinates
-////
-//vector< vector<double> > IntCell::NodalPosXiDomain() const
-//{
-//    dserror("no default implementation is given");
-//    vector<vector<double> > dummy;
-//    return dummy;
-//}
-
-////
-////  get coordinates in physical space
-////
-//vector< vector<double> > IntCell::NodalPosXYZ(const DRT::Element& ele) const
-//{
-//    dserror("no default implementation is given");
-//    vector<vector<double> > dummy;
-//    return dummy;
-//}
-
 //
 // Print method
 //
-std::string IntCell::toString() const
+std::string XFEM::IntCell::toString() const
 {
   return "";
 }
@@ -106,7 +83,7 @@ std::string IntCell::toString() const
 //
 //  ctor
 //
-DomainIntCell::DomainIntCell(
+XFEM::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
         const vector< vector<double> >& domainCoordinates) :
             IntCell(distype),
@@ -119,7 +96,7 @@ DomainIntCell::DomainIntCell(
 //
 //  ctor
 //
-DomainIntCell::DomainIntCell(
+XFEM::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype,
         const BlitzMat&                        domainCoordinates) :
             IntCell(distype),
@@ -132,7 +109,7 @@ DomainIntCell::DomainIntCell(
 //
 //  ctor for dummy cells
 //
-DomainIntCell::DomainIntCell(
+XFEM::DomainIntCell::DomainIntCell(
         const DRT::Element::DiscretizationType distype) :
             IntCell(distype),
             nodalpos_xi_domain_blitz_(GetDefaultCoordinates(distype))
@@ -143,7 +120,7 @@ DomainIntCell::DomainIntCell(
 /*----------------------------------------------------------------------*
  |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-DomainIntCell::DomainIntCell(
+XFEM::DomainIntCell::DomainIntCell(
         const DomainIntCell& old) :
             IntCell(old),
             nodalpos_xi_domain_blitz_(old.nodalpos_xi_domain_blitz_)
@@ -151,9 +128,9 @@ DomainIntCell::DomainIntCell(
     return;   
 }
      
-string DomainIntCell::toString() const
+std::string XFEM::DomainIntCell::toString() const
 {
-    stringstream s;
+    std::stringstream s;
     s << "DomainIntCell" << endl;
     s << nodalpos_xi_domain_blitz_ << endl;
 //    MCONST_FOREACH(vector< vector<double> >, coordinate, nodalpos_xi_domain_)
@@ -169,7 +146,7 @@ string DomainIntCell::toString() const
 }
 
 // set element nodal coordinates according to given distype
-BlitzMat DomainIntCell::GetDefaultCoordinates(
+BlitzMat XFEM::DomainIntCell::GetDefaultCoordinates(
         const DRT::Element::DiscretizationType distype) const
 {
     const int nsd = 3;
@@ -209,7 +186,7 @@ BlitzMat DomainIntCell::GetDefaultCoordinates(
 //
 // return the center of the cell in physical coordinates
 //
-BlitzVec3 DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
+BlitzVec3 XFEM::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) const
 {
     // number of space dimensions
     //const int nsd = 3;
@@ -248,7 +225,7 @@ BlitzVec3 DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele) cons
 //
 //  ctor
 //
-BoundaryIntCell::BoundaryIntCell(
+XFEM::BoundaryIntCell::BoundaryIntCell(
         const DRT::Element::DiscretizationType    distype,
         const int                                 surface_ele_gid,
         const vector< vector<double> >&           domainCoordinates,
@@ -264,7 +241,7 @@ BoundaryIntCell::BoundaryIntCell(
 //
 //  ctor
 //
-BoundaryIntCell::BoundaryIntCell(
+XFEM::BoundaryIntCell::BoundaryIntCell(
         const DRT::Element::DiscretizationType    distype,
         const int                                 surface_ele_gid,
         const BlitzMat&                           domainCoordinates,
@@ -281,7 +258,7 @@ BoundaryIntCell::BoundaryIntCell(
 /*----------------------------------------------------------------------*
  |  copy-ctor                                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-BoundaryIntCell::BoundaryIntCell(
+XFEM::BoundaryIntCell::BoundaryIntCell(
         const BoundaryIntCell& old) :
             IntCell(old),
             surface_ele_gid_(old.surface_ele_gid_),
@@ -291,9 +268,9 @@ BoundaryIntCell::BoundaryIntCell(
     return;   
 }
      
-string BoundaryIntCell::toString() const
+std::string XFEM::BoundaryIntCell::toString() const
 {
-    stringstream s;
+    std::stringstream s;
     s << "BoundaryIntCell" << endl;
     s << nodalpos_xi_domain_blitz_ << endl;
 //    MCONST_FOREACH(vector< vector<double> >, coordinate, nodalpos_xi_domain_)

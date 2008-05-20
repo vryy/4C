@@ -21,8 +21,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_mapextractor.H"
 
 
-using namespace std;
-
 static XFEM::Enrichment genAlternativeEnrichment(
         const int                    gnodeid,
         const XFEM::PHYSICS::Field   oldphysvar,

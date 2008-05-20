@@ -30,8 +30,6 @@ Maintainer: Axel Gerstenberger
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
-using namespace std;
-using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
