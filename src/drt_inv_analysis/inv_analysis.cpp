@@ -27,8 +27,10 @@ Inv_analysis::Inv_analysis(ParameterList& params,
   {
 	// test
     mu_ = 1;
-    measured_disp_ = 0.8;
-    tol_=0.1;
+    mu_minus_ = 0.05;
+    mu_plus_ = 20;
+    measured_disp_ = 0.4;
+    tol_=0.001;
     for (unsigned int i=0; i<3; i++) {
     	delta_p_.push_back(0.0);
     	p_o_.push_back(0.0);
@@ -248,9 +250,9 @@ void Inv_analysis::calculate_new_parameters(){
   cout << abs((measured_disp_ - final_disp_o_)) << endl;
 
   if (abs(residual_disp_) < abs(measured_disp_ - final_disp_o_))
-  	mu_ = 20;
+  	mu_ = mu_plus_;
   else
-	mu_ =0.05;
+	mu_ = mu_minus_;
 
 
   final_disp_o_ = final_disp_;

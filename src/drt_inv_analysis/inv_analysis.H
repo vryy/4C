@@ -22,6 +22,8 @@ class Inv_analysis : public StruGenAlpha {
 		double measured_disp_;		// measured displacment of the experiments (target value)
 		double residual_disp_;		// final_disp_ - measured_disp
 		double mu_;
+		double mu_plus_;
+		double mu_minus_;								
 		float tol_;
 		vector<double> p_ ;					// parameter vector
 		vector<double> p_o_;				// old parameter vector
