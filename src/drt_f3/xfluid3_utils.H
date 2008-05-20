@@ -593,7 +593,8 @@ inline DRT::UTILS::GaussRule3D getXFEMGaussrule(const bool intersected)
             // attention: don't use gausspoint rules that have gausspoints on the element boundary 
             // (so called closed rules)
             // -> enrichment values might be undefined 
-            rule = DRT::UTILS::intrule_tet_11point;
+            //rule = DRT::UTILS::intrule_tet_11point;
+            rule = DRT::UTILS::intrule_tet_24point;
         }
     }
     return rule;
