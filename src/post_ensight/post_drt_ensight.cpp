@@ -53,7 +53,7 @@ int main(
     {
         string basename = problem.outname();
         PostField* structfield = problem.get_discretization(0);
-        StructureEnsightWriter structwriter(structfield, basename);
+        StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
         structwriter.WriteFiles();
 
         PostField* fluidfield = problem.get_discretization(1);
@@ -109,7 +109,7 @@ int main(
 
         cout << "  Structural Field" << endl;
         PostField* structfield = problem.get_discretization(0);
-        StructureEnsightWriter structwriter(structfield, problem.outname());
+        StructureEnsightWriter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
         structwriter.WriteFiles();
 
         cout << "  Fluid Field" << endl;
