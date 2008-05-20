@@ -212,8 +212,8 @@ void DRT::ELEMENTS::XFluid3::Print(ostream& os) const
 {
   os << "XFluid3 ";
   Element::Print(os);
-  cout << endl;
-  cout << data_;
+  std::cout << endl;
+  std::cout << data_;
   return;
 }
 
