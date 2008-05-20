@@ -38,7 +38,7 @@ data_()
   fiberdirection_.resize(0);
   histstress_ = rcp(new vector<Epetra_SerialDenseVector>);
   artstress_ = rcp(new vector<Epetra_SerialDenseVector>);
-#if defined(PRESTRESS) || defined(POSTSTRESS)  
+#if defined(PRESTRESS) || defined(POSTSTRESS)
   glprestrain_ = rcp(new Epetra_SerialDenseMatrix(NUMGPT_SOH8,NUMSTR_SOH8));
 #endif
   invJ_.resize(NUMGPT_SOH8);
@@ -67,7 +67,7 @@ thickvec_(old.thickvec_),
 fiberdirection_(old.fiberdirection_),
 detJ_(old.detJ_)
 {
-#if defined(PRESTRESS) || defined(POSTSTRESS)  
+#if defined(PRESTRESS) || defined(POSTSTRESS)
   glprestrain_ = rcp(new Epetra_SerialDenseMatrix(*(old.glprestrain_)));
 #endif
   invJ_.resize(old.invJ_.size());
@@ -77,20 +77,14 @@ detJ_(old.detJ_)
     invJ_[i] = old.invJ_[i];
   }
   // "copy" visco-related pointers
-  vector<Epetra_SerialDenseVector> myhiststress(old.histstress_->size());
-  vector<Epetra_SerialDenseVector> myartstress(old.artstress_->size());
-  vector<Epetra_SerialDenseVector>::const_iterator it;
-  for (it=old.histstress_->begin(); it!=old.histstress_->end(); ++it){
-    Epetra_SerialDenseVector actvec(*it);
-    myhiststress.push_back(actvec);
-  }
-  histstress_ = rcp(&myhiststress);
-  for (it=old.artstress_->begin(); it!=old.artstress_->end(); ++it){
-    Epetra_SerialDenseVector actvec(*it);
-    myartstress.push_back(actvec);
-  }
-  artstress_ = rcp(&myartstress);
-  
+  histstress_ = rcp(new vector<Epetra_SerialDenseVector>);
+  histstress_->reserve(old.histstress_->size());
+  histstress_->assign(old.histstress_->begin(),old.histstress_->end());
+
+  artstress_ = rcp(new vector<Epetra_SerialDenseVector>);
+  artstress_->reserve(old.artstress_->size());
+  artstress_->assign(old.artstress_->begin(),old.artstress_->end());
+
   return;
 }
 
@@ -138,27 +132,27 @@ void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
   AddtoPack(data,thickvec_);
   AddtoPack(data,fiberdirection_);
   // visco related
-  AddtoPack(data,histstress_);
-  AddtoPack(data,artstress_);
+  AddtoPack(data,*histstress_);
+  AddtoPack(data,*artstress_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
 
-#if defined(PRESTRESS) || defined(POSTSTRESS)  
+#if defined(PRESTRESS) || defined(POSTSTRESS)
   // glprestrain_
   AddtoPack(data,*glprestrain_);
-#endif  
+#endif
 
   // detJ_
   AddtoPack(data,detJ_);
-  
+
   // invJ_
   const int size = (int)invJ_.size();
   AddtoPack(data,size);
   for (int i=0; i<size; ++i)
     AddtoPack(data,invJ_[i]);
-    
+
 
   return;
 }
@@ -189,13 +183,13 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,thickvec_);
   ExtractfromPack(position,data,fiberdirection_);
   // visco related
-  ExtractfromPack(position,data,histstress_);
-  ExtractfromPack(position,data,artstress_);
+  ExtractfromPack(position,data,*histstress_);
+  ExtractfromPack(position,data,*artstress_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-#if defined(PRESTRESS) || defined(POSTSTRESS)  
+#if defined(PRESTRESS) || defined(POSTSTRESS)
   // glprestrain_
   ExtractfromPack(position,data,*glprestrain_);
 #endif
