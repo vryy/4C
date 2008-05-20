@@ -242,7 +242,7 @@ namespace XFEM
             const BlitzVec3&            x
             )
     {
-        BlitzVec3 xsi;
+        static BlitzVec3 xsi;
         currentToVolumeElementCoordinates(element, x, xsi);
        
         // rounding 1 and -1 to be exact for the CDT
