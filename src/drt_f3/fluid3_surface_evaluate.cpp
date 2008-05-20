@@ -23,6 +23,10 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/carreauyasuda.H"
+#include "../drt_mat/modpowerlaw.H"
+
 using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
@@ -122,6 +126,38 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
 
   const DiscretizationType distype = this->Shape();
 
+  double density; // density of my parent element
+
+  // get material of volume element this surface belongs to
+  RefCountPtr<MAT::Material> mat = parent_->Material();
+
+  if( mat->MaterialType()    != m_carreauyasuda
+      && mat->MaterialType() != m_modpowerlaw
+      && mat->MaterialType() != m_fluid)
+          dserror("Material law is not a fluid");
+
+  MATERIAL* actmat = NULL;
+
+  if(mat->MaterialType()== m_fluid)
+  {
+    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+    density = actmat->m.fluid->density;
+  }
+  else if(mat->MaterialType()== m_carreauyasuda)
+  {
+    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
+    density = actmat->m.carreauyasuda->density;
+  }
+  else if(mat->MaterialType()== m_modpowerlaw)
+  {
+    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
+    density = actmat->m.modpowerlaw->density;
+  }
+  else
+    dserror("fluid material expected but got type %d", mat->MaterialType());
+
+  double invdensity = 1.0/density; // we shall need the inverse of rho
+
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
@@ -201,7 +237,9 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     // the gauss weight, the timecurve factor and the constant
     // belonging to the time integration algorithm (theta*dt for
     // one step theta, 2/3 for bdf with dt const.)
-    const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl;
+    // further our equation is normalised by the density, hence we need to 
+    // normalise also our rhs contribution
+    const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl * invdensity;
 
     for (int node=0;node<iel;++node)
     {
@@ -664,6 +702,39 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   const int numdf = 4;
   const double thsl = params.get("thsl",0.0);
 
+  double density; // density of my parent element
+
+  // get material of volume element this surface belongs to
+  RefCountPtr<MAT::Material> mat = parent_->Material();
+
+  if( mat->MaterialType()    != m_carreauyasuda
+      && mat->MaterialType() != m_modpowerlaw
+      && mat->MaterialType() != m_fluid)
+          dserror("Material law is not a fluid");
+
+  MATERIAL* actmat = NULL;
+
+  if(mat->MaterialType()== m_fluid)
+  {
+    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+    density = actmat->m.fluid->density;
+  }
+  else if(mat->MaterialType()== m_carreauyasuda)
+  {
+    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
+    density = actmat->m.carreauyasuda->density;
+  }
+  else if(mat->MaterialType()== m_modpowerlaw)
+  {
+    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
+    density = actmat->m.modpowerlaw->density;
+  }
+  else
+    dserror("fluid material expected but got type %d", mat->MaterialType());
+
+  double invdensity = 1.0/density; // we shall need the inverse of rho
+
+
   // allocate vector for shape functions and matrix for derivatives
   Epetra_SerialDenseVector  	funct       (iel);
   Epetra_SerialDenseMatrix  	deriv       (2,iel);
@@ -740,14 +811,14 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
     SurfaceNormal(1,0)=SurfaceNormal(1,0)/Magnitude;
     SurfaceNormal(2,0)=SurfaceNormal(2,0)/Magnitude;
 
-    const double fac = intpoints.qwgt[gpid] * drs * thsl;
+    const double fac = intpoints.qwgt[gpid] * drs * thsl * pressure * invdensity;
 
     for (int node=0;node<iel;++node)
     {
     	for(int dim=0;dim<3;dim++)
     	{
     		elevec1[node*numdf+dim]+=
-    		funct[node] * pressure * fac * SurfaceNormal(dim,0);
+    		funct[node] * fac * SurfaceNormal(dim,0);
         }
     }
 

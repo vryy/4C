@@ -578,7 +578,7 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
   }
 
   // dead load in element nodes
-  const Epetra_SerialDenseMatrix bodyforce = f2_getbodyforce(time);
+  const Epetra_SerialDenseMatrix bodyforce = f2_getbodyforce(time,material);
 
   /*---------------------------------------------- get viscosity ---*/
   // check here, if we really have a fluid !!
@@ -1094,7 +1094,8 @@ void DRT::ELEMENTS::Fluid2::f2_jaco(const Epetra_SerialDenseMatrix& xyze,
  |  array edeadng only if all nodes have a surface Neumann condition   |
  *----------------------------------------------------------------------*/
 Epetra_SerialDenseMatrix DRT::ELEMENTS::Fluid2::f2_getbodyforce(
-        const double          time
+								const double time,
+								struct _MATERIAL* material
 )
 {
   const int iel = NumNode();
@@ -1113,6 +1114,26 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Fluid2::f2_getbodyforce(
 
   if (myneumcond.size()==1)
   {
+    // we need the material here to denormalise the body force making sure that 
+    // we can cope with physical parameters (force per volume) in the input file
+    // check here, if we really have a fluid !!
+    if( material->mattyp != m_fluid
+	&&  material->mattyp != m_carreauyasuda
+	&&  material->mattyp != m_modpowerlaw)
+  	  dserror("Material law is not a fluid");
+
+    // get density
+    double invdensity=0.0;
+    if(material->mattyp == m_fluid)
+      invdensity = 1./ material->m.fluid->density;
+    else if(material->mattyp == m_carreauyasuda)
+      invdensity = 1./ material->m.carreauyasuda->density;
+    else if(material->mattyp == m_modpowerlaw)
+      invdensity = 1./ material->m.modpowerlaw->density;
+    else
+    {
+      dserror("Material law is not a fluid");
+    }
 
     // find out whether we will use a time curve
     const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
@@ -1151,7 +1172,7 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Fluid2::f2_getbodyforce(
     {
       for(int isd=0;isd<nsd;isd++)
       {
-        edeadng(isd,jnode)=(*onoff)[isd]*(*val)[isd]*curvefac;
+        edeadng(isd,jnode)=(*onoff)[isd]*(*val)[isd]*curvefac*invdensity;
       }
     }
   }

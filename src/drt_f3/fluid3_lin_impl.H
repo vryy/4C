@@ -132,7 +132,7 @@ namespace ELEMENTS
     /*!
      * \brief calculate the body force from the nodes condition
      */
-    void BodyForce(Fluid3* ele, const double time);
+    void BodyForce(Fluid3* ele, const double time, struct _MATERIAL* material);
 
     /*!
      * \brief calculate second global derivatives w.r.t x/y/z at point r,s,t

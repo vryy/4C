@@ -102,13 +102,35 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
     vector<int>&              lm,
-    Epetra_SerialDenseVector& elevec1)
+    Epetra_SerialDenseVector& elevec1,
+    struct _MATERIAL* material)
 {
 
   // there are 2 velocities and 1 pressure
   const int numdf = 3;
 
   const double thsl = params.get("thsl",0.0);
+
+  // we need the material here to denormalise the body force making sure that 
+  // we can cope with physical parameters (force per volume) in the input file
+  // check here, if we really have a fluid !!
+  if( material->mattyp != m_fluid
+      &&  material->mattyp != m_carreauyasuda
+      &&  material->mattyp != m_modpowerlaw)
+        dserror("Material law is not a fluid");
+
+  // get density
+  double invdensity=0.0;
+  if(material->mattyp == m_fluid)
+    invdensity = 1./ material->m.fluid->density;
+  else if(material->mattyp == m_carreauyasuda)
+    invdensity = 1./ material->m.carreauyasuda->density;
+  else if(material->mattyp == m_modpowerlaw)
+    invdensity = 1./ material->m.modpowerlaw->density;
+  else
+  {
+    dserror("Material law is not a fluid");
+  }
 
   // find out whether we will use a time curve
   bool usetime = true;
@@ -202,7 +224,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
        	   }
 
           elevec1[node*numdf+dim]+=
-          funct[node] * (*onoff)[dim] * (*val)[dim] * fac * functionfac;
+          funct[node] * (*onoff)[dim] * (*val)[dim] * fac * functionfac * invdensity;
         }
       }
   } //end of loop over integrationen points

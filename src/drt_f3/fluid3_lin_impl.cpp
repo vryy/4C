@@ -18,6 +18,8 @@ Maintainer: Christiane Foerster
 
 #include "fluid3_lin_impl.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/carreauyasuda.H"
+#include "../drt_mat/modpowerlaw.H"
 #include "../drt_lib/drt_timecurve.H"
 
 #include <Epetra_SerialDenseSolver.h>
@@ -128,7 +130,7 @@ DRT::ELEMENTS::Fluid3lin_Impl::Fluid3lin_Impl(int iel)
  |  calculate system matrix and rhs (private)                chfoe 02/08|
  *----------------------------------------------------------------------*/
 /*
- Note: This routine is made for total rather than incremental soltution.
+ Note: This routine is made for total rather than incremental solution.
 
        THE PRESENT FLUID ELEMENT IS ENTIRELY LINEAR!!!!!!!!!!!!!!!
 */
@@ -161,7 +163,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Sysmat(Fluid3* ele,
 
 
   // dead load in element nodes
-  BodyForce(ele,time);
+  BodyForce(ele,time,material);
 
   // get viscosity
   // check here, if we really have a fluid !!
@@ -765,7 +767,9 @@ void DRT::ELEMENTS::Fluid3lin_Impl::Caltau(
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3lin_Impl::BodyForce(Fluid3* ele, const double time)
+void DRT::ELEMENTS::Fluid3lin_Impl::BodyForce( Fluid3* ele, 
+					       const double time,
+					       struct _MATERIAL* material)
 {
   vector<DRT::Condition*> myneumcond;
 
@@ -778,7 +782,25 @@ void DRT::ELEMENTS::Fluid3lin_Impl::BodyForce(Fluid3* ele, const double time)
   }
 
   if (myneumcond.size()==1)
-  {
+  {    
+    // check here, if we really have a fluid !!
+    if( material->mattyp != m_fluid
+	&&  material->mattyp != m_carreauyasuda
+	&&  material->mattyp != m_modpowerlaw)
+  	  dserror("Material law is not a fluid");
+
+    // get density
+    double invdensity=0.0;
+    if(material->mattyp == m_fluid)
+      invdensity = 1./ material->m.fluid->density;
+    else if(material->mattyp == m_carreauyasuda)
+      invdensity = 1./ material->m.carreauyasuda->density;
+    else if(material->mattyp == m_modpowerlaw)
+      invdensity = 1./ material->m.modpowerlaw->density;
+    else
+      dserror("Material law is not a fluid");
+
+
     // find out whether we will use a time curve
     const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
     int curvenum = -1;
@@ -817,7 +839,7 @@ void DRT::ELEMENTS::Fluid3lin_Impl::BodyForce(Fluid3* ele, const double time)
     {
       for(int isd=0;isd<3;isd++)
       {
-        edeadng_(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
+        edeadng_(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac*invdensity;
       }
     }
   }

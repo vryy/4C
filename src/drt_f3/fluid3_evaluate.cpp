@@ -38,13 +38,6 @@ Maintainer: Georg Bauer
 #include <Epetra_SerialDenseSolver.h>
 
 using namespace DRT::UTILS;
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
-
 
 /*
   Depending on the type of the algorithm (the implementation) and the
@@ -2103,8 +2096,8 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
  |  do nothing (public)                                      gammi 04/07|
  |                                                                      |
  |  The function is just a dummy. For the fluid elements, the           |
- |  integration of the volume neumann loads takes place in the element. |
- |  We need it there for the stabilisation terms!                       |
+ |  integration of the volume neumann (body forces) loads takes place   |
+ |  in the element. We need it there for the stabilisation terms!       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Fluid3::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
