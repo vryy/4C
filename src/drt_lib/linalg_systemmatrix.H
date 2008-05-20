@@ -152,6 +152,9 @@ namespace LINALG
     /// Call FillComplete on a matrix (for rectangular and square matrices)
     virtual void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap) = 0;
 
+    /// Undo a previous Complete() call
+    virtual void UnComplete() = 0;
+
     /// Apply dirichlet boundary condition to a matrix
     virtual void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true) = 0;
 
@@ -312,6 +315,8 @@ namespace LINALG
 
     void Complete();
     void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap);
+
+    void UnComplete();
 
     void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true);
 
@@ -607,6 +612,8 @@ namespace LINALG
     void Zero();
     void Complete();
     void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap);
+
+    void UnComplete();
 
     void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true);
 

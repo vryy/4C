@@ -343,6 +343,51 @@ void  LINALG::SparseMatrix::Complete(const Epetra_Map& domainmap, const Epetra_M
 
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::SparseMatrix::UnComplete()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::UnComplete");
+
+  if (not Filled())
+    return;
+
+  const Epetra_CrsGraph& graph = sysmat_->Graph();
+  std::vector<int> nonzeros(graph.NumMyRows());
+  for (unsigned i=0; i<nonzeros.size(); ++i)
+  {
+    nonzeros[i] = graph.NumMyIndices(i);
+  }
+
+  const Epetra_Map& rowmap = sysmat_->RowMap();
+  const Epetra_Map& colmap = sysmat_->ColMap();
+  int elements = rowmap.NumMyElements();
+  Teuchos::RCP<Epetra_CrsMatrix> mat = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,&nonzeros[0],false));
+  nonzeros.clear();
+  for (int i=0; i<elements; ++i)
+  {
+    int NumEntries;
+    double *Values;
+    int *Indices;
+    int err = sysmat_->ExtractMyRowView(i, NumEntries, Values, Indices);
+    if (err)
+      dserror("ExtractMyRowView err=%d",err);
+    std::vector<int> idx(NumEntries);
+    for (int c=0; c<NumEntries; ++c)
+    {
+      idx[c] = colmap.GID(Indices[c]);
+      dsassert(idx[c]!=-1, "illegal gid");
+    }
+    int rowgid = rowmap.GID(i);
+    err = mat->InsertGlobalValues(rowgid,NumEntries,Values,&idx[0]);
+    if (err)
+      dserror("InsertGlobalValues err=%d",err);
+  }
+  sysmat_ = mat;
+  graph_  = Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*
  |  Apply dirichlet conditions  (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
 void LINALG::SparseMatrix::ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock)
@@ -944,6 +989,15 @@ bool LINALG::BlockSparseMatrixBase::Filled() const
     if (not blocks_[i].Filled())
       return false;
   return true;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::BlockSparseMatrixBase::UnComplete()
+{
+  for (unsigned i=0; i<blocks_.size(); ++i)
+    blocks_[i].UnComplete();
 }
 
 

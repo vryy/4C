@@ -569,6 +569,11 @@ void FSI::MonolithicOverlap::AddFluidInterface(double scale,
     havepermfluidstructcolmap_ = true;
   }
 
+  // uncomplete because the fluid interface can have more connections than the
+  // structural one. (Tet elements in fluid can cause this.) We should do
+  // this just once...
+  s.UnComplete();
+
   int rows = perm_fgg->NumMyRows();
   for (int i=0; i<rows; ++i)
   {
@@ -602,6 +607,8 @@ void FSI::MonolithicOverlap::AddFluidInterface(double scale,
       }
     }
   }
+
+  s.Complete();
 }
 
 
