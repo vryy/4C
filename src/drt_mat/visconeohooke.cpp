@@ -186,6 +186,27 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Q.Scale(alpha1);
   *stress += Q;
   
+  // elasticity matrix
+  double scalar1 = 2.0*kappa*J*J - kappa*J;
+  double scalar2 = -2.0*kappa*J*J + 2.0*kappa*J;
+  
+
+  // add volumetric elastic part
+  // add scalar1 Cinv x Cinv
+  Epetra_SerialDenseMatrix CinvxCinv(6,6);
+  for (int i=0; i<6; ++i)
+    for (int j=0; j<6; ++j)
+      (*cmat)(i,j) += scalar1 * Cinv(i) * Cinv(j);
+   
+  // add scalar2 Cinv o Cinv (see Holzapfel p. 254)
+  AddtoCmatHolzapfelProduct((*cmat),Cinv,scalar2);
+  
+  // add elastic deviatoric part
+  Epetra_SerialDenseMatrix cmat_dev(6,6);
+  //AddtoCmatHolzapfelProduct(cmat_dev,Cinv,scalar3)
+
+  
+  
   
   return;
 }
