@@ -48,11 +48,13 @@ FSI::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DebugWriter::NewTimeStep(int step)
+void FSI::DebugWriter::NewTimeStep(int step, std::string name)
 {
   std::stringstream s;
-  s << DRT::Problem::Instance()->OutputControlFile()->FileName()
-    << "-step"
+  s << DRT::Problem::Instance()->OutputControlFile()->FileName();
+  if (name!="")
+    s << "-" << name;
+  s << "-step"
     << step;
 
   control_ = Teuchos::rcp(

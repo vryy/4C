@@ -4,8 +4,10 @@
 #include "fsi_statustest.H"
 #include "fsi_nox_aitken.H"
 #include "fsi_nox_newton.H"
+#include "fsi_debugwriter.H"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_validparameters.H"
 
 #define FLUIDBLOCKMATRIX
 
@@ -87,6 +89,16 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   // Complete the empty matrix. The non-empty blocks will be inserted (in
   // Filled() state) later.
   systemmatrix_->Complete();
+
+  // enable debugging
+  if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT"))
+  {
+    Teuchos::RCP<DebugWriter> sdbg = Teuchos::rcp(new DebugWriter(StructureField().Discretization()));
+    Teuchos::RCP<DebugWriter> fdbg = Teuchos::rcp(new DebugWriter(FluidField().Discretization()));
+
+    sdbg->NewTimeStep(0,"struct");
+    fdbg->NewTimeStep(0,"fluid");
+  }
 
 #ifdef FLUIDBLOCKMATRIX
   /*----------------------------------------------------------------------*/

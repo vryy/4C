@@ -28,7 +28,7 @@ namespace FSI
     /*!
       Results in a new control file
      */
-    void NewTimeStep(int step);
+    void NewTimeStep(int step, std::string name="");
 
     /// announce new interface iteration step
     void NewIteration();
