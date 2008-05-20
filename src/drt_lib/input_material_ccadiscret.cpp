@@ -533,6 +533,18 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("PENALTY" ,&(localmat.m.mooneyrivlin->penalty)  ,&ierr);
       frdouble("DENS"    ,&(localmat.m.mooneyrivlin->density)  ,&ierr);
    }
+   // Viscoelastic NeoHookean material law
+   frchk("MAT_VISCONEOHOOKE",&ierr);
+   if (ierr==1)
+   {
+      localmat.mattyp      = m_visconeohooke;
+      localmat.m.visconeohooke = new VISCONEOHOOKE();
+      frdouble("YOUNGS_SLOW" ,&(localmat.m.visconeohooke->youngs_slow),&ierr);
+      frdouble("POISSON"     ,&(localmat.m.visconeohooke->poisson)    ,&ierr);
+      frdouble("DENS"        ,&(localmat.m.visconeohooke->density)    ,&ierr);
+      frdouble("YOUNGS_FAST" ,&(localmat.m.visconeohooke->youngs_fast),&ierr);
+      frdouble("RELAX"       ,&(localmat.m.visconeohooke->relax)      ,&ierr);
+   }
    /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */
    frchk("MAT_Therm_Fourier_iso",&ierr);
    if (ierr==1)

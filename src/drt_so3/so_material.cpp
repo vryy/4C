@@ -41,6 +41,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/hyperpolyconvex_ogden.H"
+#include "../drt_mat/visconeohooke.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -105,6 +106,14 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::MooneyRivlin* moon = static_cast <MAT::MooneyRivlin*>(mat.get());
       moon->Evaluate(glstrain,cmat,stress);
       *density = moon->Density();
+
+      break;
+    }
+    case m_visconeohooke: /*----------------- Viscous NeoHookean Material */
+    {
+      MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
+      visco->Evaluate(glstrain,cmat,stress,time);
+      *density = visco->Density();
 
       break;
     }

@@ -70,6 +70,7 @@ extern "C"
 #include "../drt_mat/hyperpolyconvex_ogden.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/mooneyrivlin.H"
+#include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
@@ -463,6 +464,12 @@ break;
       MAT::MooneyRivlin* moon = new MAT::MooneyRivlin();
       moon->Unpack(data);
       return moon;
+    }
+    case ParObject_ViscoNeoHooke:
+    {
+      MAT::ViscoNeoHooke* visco = new MAT::ViscoNeoHooke();
+      visco->Unpack(data);
+      return visco;
     }
     case ParObject_MicroMaterial:
     {

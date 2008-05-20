@@ -303,6 +303,7 @@ typedef enum _MATERIAL_TYP
                        m_quadratic_aniso, /* hyperelastic polyconvex energy strain function following Itskov */
                        m_anisotropic_balzani,  /* anisotropic polyconvex material*/
                        m_mooneyrivlin,  /* Mooney-Rivlin material*/
+                       m_visconeohooke, /* Viscous NeoHookean Material */
                        m_th_fourier_iso,  /* isotropic (linear) Fourier's law of heat conduction */
                        m_th_fourier_gen,  /* general (linear) Fourier's law of heat conduction */
                        m_vp_robinson,  /* Robinson's visco-plastic material */

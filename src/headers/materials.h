@@ -56,6 +56,7 @@ typedef struct _MATERIAL
      struct _QUADRATIC_ANISO  *quadratic_aniso;       /* Anisotropic quadratic material */
      struct _ANISOTROPIC_BALZANI *anisotropic_balzani; /* anisotropic hyperelastic polyconvex material */
      struct _MOONEYRIVLIN     *mooneyrivlin; /* Mooney-Rivlin material */
+     struct _VISCONEOHOOKE    *visconeohooke; /* Viscous NeoHookean material */
      struct _TH_FOURIER_ISO   *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
      struct _TH_FOURIER_GEN   *th_fourier_gen;   /* general heat conduction matrix of Fourier's (linear) law of heat conduction */
      struct _VP_ROBINSON      *vp_robinson;  /* viscoplastic Robinson material */
@@ -666,6 +667,17 @@ typedef struct _MOONEYRIVLIN
      DOUBLE                    penalty;
      DOUBLE                    density;
 } MOONEYRIVLIN;
+/*----------------------------------------------------------------------*
+ | Viscous NeoHookean material                                maf 05/08 |
+ *----------------------------------------------------------------------*/
+typedef struct _VISCONEOHOOKE
+{
+     DOUBLE                    youngs_slow;
+     DOUBLE                    poisson;
+     DOUBLE                    density;
+     DOUBLE                    youngs_fast;
+     DOUBLE                    relax;
+} VISCONEOHOOKE;
 /*----------------------------------------------------------------------*
  | Isotropic heat conduction coefficient                    bborn 03/06 |
  | of Fourier's law of heat conduction                                  |

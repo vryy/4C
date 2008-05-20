@@ -857,18 +857,19 @@ OBJS_MAT      = src/materials/mat_el_iso.o \
 		src/materials/mat_el_ogden.o
 #               materials for new discretization
 OBJS_DRT_MAT_LIB = src/drt_mat/micromaterial.o \
-		src/drt_mat/newtonianfluid.o \
-		src/drt_mat/stvenantkirchhoff.o \
-		src/drt_mat/hyperpolyconvex.o \
-		src/drt_mat/hyperpolyconvex_ogden.o \
+		            src/drt_mat/newtonianfluid.o \
+		            src/drt_mat/stvenantkirchhoff.o \
+		            src/drt_mat/hyperpolyconvex.o \
+		            src/drt_mat/hyperpolyconvex_ogden.o \
                 src/drt_mat/neohooke.o \
+                src/drt_mat/visconeohooke.o \
                 src/drt_mat/aaaneohooke.o \
-		src/drt_mat/anisotropic_balzani.o \
-		src/drt_mat/mooneyrivlin.o \
-		src/drt_mat/convecdiffus.o \
-		src/drt_mat/carreauyasuda.o \
-		src/drt_mat/modpowerlaw.o \
-		src/drt_mat/material.o
+		            src/drt_mat/anisotropic_balzani.o \
+		            src/drt_mat/mooneyrivlin.o \
+		            src/drt_mat/convecdiffus.o \
+		            src/drt_mat/carreauyasuda.o \
+		            src/drt_mat/modpowerlaw.o \
+		            src/drt_mat/material.o
 #
 OBJS_DRT_MAT  = src/drt_mat/micromaterialgp_static.o \
                 src/drt_mat/micromaterial_evaluate.o

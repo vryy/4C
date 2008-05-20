@@ -1,16 +1,16 @@
 /*!----------------------------------------------------------------------
-\file mooneyrivlin.H
+\file visconeohooke.H
 \brief
 
 <pre>
-Maintainer: Moritz Frenzel
+Maintainer: Moritz Frenzel & Thomas Kloeppel
             frenzel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15240
 </pre>
 *----------------------------------------------------------------------*/
-#ifndef MOONEYRIVLIN_H_
-#define MOONEYRIVLIN_H_
+#ifndef VISCONEOHOOKE_H_
+#define VISCONEOHOOKE_H_
 #ifdef CCADISCRET
 
 #include "material.H"
@@ -22,15 +22,15 @@ namespace MAT
 {
 
   /// Wrapper for Mooney-Rivlin material
-  class MooneyRivlin : public Material
+  class ViscoNeoHooke : public Material
   {
   public:
 
     /// construct empty material object
-    MooneyRivlin();
+    ViscoNeoHooke();
 
     /// construct the material object given material parameters
-    explicit MooneyRivlin(MATERIAL* matdata);
+    explicit ViscoNeoHooke(MATERIAL* matdata);
 
     //! @name Packing and Unpacking
 
@@ -40,7 +40,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return ParObject_MooneyRivlin; }
+    virtual int UniqueParObjectId() const { return ParObject_ViscoNeoHooke; }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -71,31 +71,12 @@ namespace MAT
     //@}
 
     /// material type
-    virtual MATERIAL_TYP MaterialType() const { return m_mooneyrivlin; }
+    virtual MATERIAL_TYP MaterialType() const { return m_visconeohooke; }
     
-    /*!
-    \brief Mooney-Rivlin type nearly incompressible, hyperelastic 3D material law.
-
-    The underlying strain-energy function is ('a' is 'alpha' and J = I3^(1/2)):
-
-    W = sum_(p=1)^2 ( mu_p / a_p (l1^a_p + l2^a_p + l3^a_p) - mu_p ln(J) )
-      + Lambda/4 * (J^2 - 1 - 2 ln(J) )
-
-    which can be expressed in terms of invariants I1 and I2 as:
-
-    W = mu_1/a_1 (I1 - 3)  +  mu_2/a_2 (I2 - 3)  -  mu_1 ln(J)  -  mu_2 ln(J)
-      + Lambda/4 * (J^2 - 1 - 2 ln(J) )
-      
-    For references see Holzapfel p. 245, Simo&Miehe 1992, Klinkel et al 2007.
-
-    Parameters are mu_1, mu_2, a_1, a_2 and Lambda = kappa - 2/3 mu as penalty factor 
-    to effectuate incompressibility (shear modulus mu = (mu_1 a_1 + mu_2 a_2)/2 )
-
-    Mind that it is not stress-free in reference configuration!
-    */
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress);
+                  Epetra_SerialDenseVector* stress,
+                  const double time);
 
     double Density();
     
