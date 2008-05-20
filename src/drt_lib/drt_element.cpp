@@ -288,10 +288,10 @@ DRT::Condition* DRT::Element::GetCondition(const string& name) const
  *----------------------------------------------------------------------*/
 void DRT::Element::LocationVector(const Discretization& dis,
                                   vector<int>& lm, vector<int>& lmdirich,
-                                  vector<int>& lmowner)
+                                  vector<int>& lmowner) const
 {
   const int numnode = NumNode();
-  DRT::Node** nodes = Nodes();
+  const DRT::Node*const* nodes = Nodes();
 
   lm.clear();
   lmdirich.clear();
@@ -359,10 +359,10 @@ void DRT::Element::LocationVector(const Discretization& dis,
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmowner)
+void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmowner) const
 {
   const int numnode = NumNode();
-  DRT::Node** nodes = Nodes();
+  const DRT::Node*const* nodes = Nodes();
 
   lm.clear();
   lmowner.clear();

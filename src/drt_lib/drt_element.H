@@ -625,7 +625,7 @@ public:
                          matches dofs in lm.
 
   */
-  virtual void LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmdirich, vector<int>& lmowner);
+  virtual void LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmdirich, vector<int>& lmowner) const;
 
   /*!
   \brief Return the location vector of this element
@@ -653,7 +653,7 @@ public:
                          matches dofs in lm.
 
   */
-  virtual void LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmowner);
+  virtual void LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmowner) const;
 
   /*!
   \brief Evaluate an element
