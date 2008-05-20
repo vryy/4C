@@ -25,7 +25,6 @@ Maintainer: Axel Gerstenberger
 #include "interface.H"
 
 
-using namespace XFEM;
 
 
 std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(

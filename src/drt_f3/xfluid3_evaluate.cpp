@@ -34,7 +34,7 @@ Maintainer: Axel Gerstenberger
 #include <blitz/array.h>
 #include <Epetra_SerialDenseSolver.h>
 
-using namespace DRT::UTILS;
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | vector of material laws                                              |
@@ -389,29 +389,29 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 int DRT::ELEMENTS::XFluid3::EvaluateNeumann(ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
-                                           vector<int>&              lm,
+                                           std::vector<int>&         lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
   return 0;
 }
 
 // get optimal gaussrule for discretization type
-GaussRule3D DRT::ELEMENTS::XFluid3::getOptimalGaussrule(const DiscretizationType& distype)
+DRT::UTILS::GaussRule3D DRT::ELEMENTS::XFluid3::getOptimalGaussrule(const DiscretizationType& distype)
 {
-    GaussRule3D rule = intrule3D_undefined;
+  DRT::UTILS::GaussRule3D rule = DRT::UTILS::intrule3D_undefined;
     switch (distype)
     {
     case hex8:
-        rule = intrule_hex_8point;
+        rule = DRT::UTILS::intrule_hex_8point;
         break;
     case hex20: case hex27:
-        rule = intrule_hex_27point;
+        rule = DRT::UTILS::intrule_hex_27point;
         break;
     case tet4:
-        rule = intrule_tet_4point;
+        rule = DRT::UTILS::intrule_tet_4point;
         break;
     case tet10:
-        rule = intrule_tet_5point;
+        rule = DRT::UTILS::intrule_tet_5point;
         break;
     default:
         dserror("unknown number of nodes for gaussrule initialization");
@@ -473,8 +473,8 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
   vector<double> deltavel(3);
 
   // gaussian points
-  const GaussRule3D gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
+  const DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule(distype);
+  const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(gaussrule);
 
   // start loop over integration points
   for (int iquad=0;iquad<intpoints.nquad;iquad++)
@@ -483,8 +483,8 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
     const double e1 = intpoints.qxg[iquad][0];
     const double e2 = intpoints.qxg[iquad][1];
     const double e3 = intpoints.qxg[iquad][2];
-    shape_function_3D(funct,e1,e2,e3,distype);
-    shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_3D(funct,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
 
     /*----------------------------------------------------------------------*
       | calculate Jacobian matrix and it's determinant (private) gammi  07/07|
@@ -860,7 +860,7 @@ void DRT::ELEMENTS::XFluid3::f3_calc_means(
   Epetra_SerialDenseVector  funct(iel);
 
   // get the quad9 gaussrule for the in plane integration
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(intrule_quad_9point);
+  const DRT::UTILS::IntegrationPoints2D  intpoints = DRT::UTILS::getIntegrationPoints2D(DRT::UTILS::intrule_quad_9point);
 
   // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
   // (now we allow even more)
@@ -902,7 +902,7 @@ void DRT::ELEMENTS::XFluid3::f3_calc_means(
       }
 
       // compute the shape function values
-      shape_function_3D(funct,e[0],e[1],e[2],distype);
+      DRT::UTILS::shape_function_3D(funct,e[0],e[1],e[2],distype);
 
       // check whether this gausspoint is really inside the desired plane
       {

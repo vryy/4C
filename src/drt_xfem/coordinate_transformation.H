@@ -30,8 +30,6 @@ Maintainer: Axel Gerstenberger
 namespace XFEM
 {
   
-  using namespace LINALG::DENSE;
-
   //! map position from eta to xi space
   template<XFEM::AssemblyType ASSTYPE>
   void mapEtaToXi3D(
@@ -142,7 +140,7 @@ namespace XFEM
       //const BlitzVec pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
       if (numnodecell != 3) dserror("numnode of integrationcell is not 3");
       //XFEM::PosXiBoundary pos_xsi_boundary;
-      MV_product<2,3>(*xyze_cell, funct, pos_xsi_boundary);
+      LINALG::DENSE::MV_product<2,3>(*xyze_cell, funct, pos_xsi_boundary);
       return;
   }
   
@@ -165,7 +163,7 @@ namespace XFEM
       // translate position into from cell coordinates to element coordinates
       //const BlitzVec pos_xsi_boundary(blitz::sum(funct(j)*xyze_cell(i,j),j));
       if (numnodecell != 3) dserror("numnode of integrationcell is not 3");
-      MV_product<3,3>(*xyze_cell, funct, pos_xsi_domain);
+      LINALG::DENSE::MV_product<3,3>(*xyze_cell, funct, pos_xsi_domain);
       
       return;
   }

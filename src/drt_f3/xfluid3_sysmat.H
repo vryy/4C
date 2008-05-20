@@ -1194,7 +1194,7 @@ void Sysmat(
         
         {
             // draw elements with associated gid
-            stringstream gmshfilecontent;
+            std::stringstream gmshfilecontent;
             gmshfilecontent << "View \" " << "DomainIntegrationCells \" {" << endl;
             XFEM::DomainIntCells::const_iterator cell;
             for (cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
@@ -1207,7 +1207,7 @@ void Sysmat(
         }
         {
             // draw elements with associated gid
-            stringstream gmshfilecontent;
+            std::stringstream gmshfilecontent;
             gmshfilecontent << "View \" " << "BoundaryIntegrationCells \" {" << endl;
             XFEM::BoundaryIntCells::const_iterator cell;
             for (cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)

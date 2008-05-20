@@ -144,7 +144,7 @@ XFEM::ElementDofManager::~ElementDofManager()
  *----------------------------------------------------------------------*/
 std::string XFEM::ElementDofManager::toString() const
 {
-    stringstream s;
+    std::stringstream s;
     map<int, const set<XFEM::FieldEnr> >::const_iterator tmp;
     for (tmp = nodalDofSet_.begin(); tmp != nodalDofSet_.end(); ++tmp)
     {
@@ -219,9 +219,9 @@ XFEM::DofManager::~DofManager()
 /*----------------------------------------------------------------------*
  |  transform  to a string                                      ag 11/07|
  *----------------------------------------------------------------------*/
-string XFEM::DofManager::toString() const
+std::string XFEM::DofManager::toString() const
 {
-    stringstream s;
+    std::stringstream s;
     for (int i=0; i<xfemdis_->NumMyRowNodes(); ++i)
     {
         const int gid = xfemdis_->lRowNode(i)->Id();
@@ -246,7 +246,7 @@ void XFEM::DofManager::toGmsh(
   f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis(), *ih->currentcutterpositions());
   {
       // draw elements with associated gid
-      stringstream gmshfilecontent;
+      std::stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Element->Id() \" {" << endl;
       for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
       {
@@ -257,7 +257,7 @@ void XFEM::DofManager::toGmsh(
       f_system << gmshfilecontent.str();
   }
   {
-      stringstream gmshfilecontent;
+      std::stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << " Stress unknowns in element \" {" << endl;
       for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
       {
@@ -278,7 +278,7 @@ void XFEM::DofManager::toGmsh(
       f_system << gmshfilecontent.str();
   }
   {
-      stringstream gmshfilecontent;
+      std::stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "NumDof per node \" {" << endl;
       for (int i=0; i<ih->xfemdis()->NumMyColNodes(); ++i)
       {

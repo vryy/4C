@@ -170,17 +170,17 @@ namespace XFEM
         {
             case 1:
             {
-                shape_function_1D(funct, xsi(0), element->Shape());
+                DRT::UTILS::shape_function_1D(funct, xsi(0), element->Shape());
                 break;
             }
             case 2:
             {
-                shape_function_2D(funct, xsi(0), xsi(1), element->Shape());
+                DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), element->Shape());
                 break;
             }
             case 3:
             {
-                shape_function_3D(funct, xsi(0), xsi(1), xsi(2), element->Shape());
+                DRT::UTILS::shape_function_3D(funct, xsi(0), xsi(1), xsi(2), element->Shape());
                 break;
             }
             default:

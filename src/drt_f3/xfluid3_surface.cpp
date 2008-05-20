@@ -19,27 +19,25 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::XFluid3Surface::XFluid3Surface(
-        int id, 
-        int owner,
-        const int nnode,
-        const int* nodeids,
-        DRT::Node** nodes,
-        DRT::ELEMENTS::XFluid3* parent,
-        const int lsurface) :
-DRT::Element(id,element_xfluid3surface,owner),
-parent_(parent),
-lsurface_(lsurface)
+    int id,
+    int owner,
+    const int nnode,
+    const int* nodeids,
+    DRT::Node** nodes,
+    DRT::ELEMENTS::XFluid3* parent,
+    const int lsurface) :
+  DRT::Element(id, element_xfluid3surface, owner), parent_(parent),
+      lsurface_(lsurface)
 {
   lines_.resize(0);
   lineptrs_.resize(0);
-  SetNodeIds(nnode,nodeids);
+  SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
   return;
 }
@@ -164,40 +162,41 @@ DRT::Element** DRT::ELEMENTS::XFluid3Surface::Lines()
 
 
 void DRT::ELEMENTS::XFluid3Surface::CreateLinesTri(const int& nline,
-                                                  const int& nnode)
+    const int& nnode)
 {
-    for(int iline=0;iline<nline;iline++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-        
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_tri6_lines[iline][inode]];
-        }
-        lines_[iline] = rcp(new DRT::ELEMENTS::XFluid3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,NULL,iline));
-        lineptrs_[iline] = lines_[iline].get();
-    }
-}        
+  for (int iline=0; iline<nline; iline++)
+  {
+    vector<int> nodeids(nnode);
+    vector<DRT::Node*> nodes(nnode);
 
-void DRT::ELEMENTS::XFluid3Surface::CreateLinesQuad(const int& nline,
-                                                   const int& nnode)
-{
-    for(int iline=0;iline<nline;iline++)
+    for (int inode=0; inode<nnode; inode++)
     {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-        
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_quad9_lines[iline][inode]];
-        }
-        lines_[iline] = rcp(new DRT::ELEMENTS::XFluid3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,NULL,iline));
-        lineptrs_[iline] = lines_[iline].get();
+      nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
+      nodes[inode] = Nodes()[ DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
     }
-}    
+    lines_[iline] = rcp(new DRT::ELEMENTS::XFluid3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,NULL,iline));
+    lineptrs_[iline] = lines_[iline].get();
+  }
+}
+
+void DRT::ELEMENTS::XFluid3Surface::CreateLinesQuad(
+    const int& nline,
+    const int& nnode)
+{
+  for (int iline=0; iline<nline; iline++)
+  {
+    vector<int> nodeids(nnode);
+    vector<DRT::Node*> nodes(nnode);
+    
+    for (int inode=0; inode<nnode; inode++)
+    {
+      nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
+      nodes[inode] = Nodes()[ DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
+    }
+    lines_[iline] = rcp(new DRT::ELEMENTS::XFluid3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,NULL,iline));
+    lineptrs_[iline] = lines_[iline].get();
+  }
+}
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID3

@@ -24,8 +24,6 @@ Maintainer: Axel Gerstenberger
 #include "dof_management.H"
 #include "interface.H"
 
-using namespace Teuchos;
-
 
 namespace XFEM
 {

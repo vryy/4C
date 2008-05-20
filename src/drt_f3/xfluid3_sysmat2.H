@@ -228,13 +228,13 @@ void static Sysmat(
 
             // position of the gausspoint in physical coordinates
             static BlitzVec3 gauss_pos_xyz;
-            MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
+            LINALG::DENSE::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
             //static BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
             static BlitzMat3x3 xjm;
-            MMt_product<3,3,numnode>(deriv,xyze,xjm);
+            LINALG::DENSE::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
             const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                                xjm(0,1)*xjm(1,2)*xjm(2,0)+
@@ -579,7 +579,7 @@ void static Sysmat(
             /* Convective term  u_old * grad u_old: */
             static BlitzVec3 conv_old;
             //conv_old = blitz::sum(vderxy(i, j)*velint(j), j);
-            MV_product<3,3>(vderxy,velint,conv_old);
+            LINALG::DENSE::MV_product<3,3>(vderxy,velint,conv_old);
             
             /* Viscous term  div epsilon(u_old) */
             static BlitzVec3 visc_old;
@@ -1260,7 +1260,7 @@ void static Sysmat(
         
         {
             // draw elements with associated gid
-            stringstream gmshfilecontent;
+            std::stringstream gmshfilecontent;
             gmshfilecontent << "View \" " << "DomainIntegrationCells \" {" << endl;
             XFEM::DomainIntCells::const_iterator cell;
             for (cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
@@ -1273,7 +1273,7 @@ void static Sysmat(
         }
         {
             // draw elements with associated gid
-            stringstream gmshfilecontent;
+            std::stringstream gmshfilecontent;
             gmshfilecontent << "View \" " << "BoundaryIntegrationCells \" {" << endl;
             XFEM::BoundaryIntCells::const_iterator cell;
             for (cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
@@ -1392,7 +1392,7 @@ void static Sysmat(
             // compute covariant metric tensor G for surface element (2x2)
             static BlitzMat2x2 metric;
             //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
-            MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
+            LINALG::DENSE::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
             //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
             
             // compute global derivates
@@ -1596,7 +1596,7 @@ void static Sysmat(
             
             static BlitzVec3 tau_times_n;
             //tau_times_n = blitz::sum(tau(i,j)*normalvec(j),j);
-            MV_product<3,3>(tau,normalvec,tau_times_n);
+            LINALG::DENSE::MV_product<3,3>(tau,normalvec,tau_times_n);
             assembler.template Vector<Velx>(shp, timefacfac*tau_times_n(0));
             assembler.template Vector<Vely>(shp, timefacfac*tau_times_n(1));
             assembler.template Vector<Velz>(shp, timefacfac*tau_times_n(2));

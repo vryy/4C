@@ -25,8 +25,6 @@ Maintainer: Ursula Mayer
 #include <stdlib.h>
 #include <math.h>
 
-using namespace XFEM;
-using namespace DRT::UTILS;
 
 
 void XFEM::test_svdcmp(

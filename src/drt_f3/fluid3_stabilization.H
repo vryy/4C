@@ -112,7 +112,7 @@ double HK(
   // get Jacobian matrix and determinant
   //const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze(j,k),k));
   static BlitzMat3x3 xjm_;
-  MMt_product<3,3,numnode>(deriv_,xyze,xjm_);
+  LINALG::DENSE::MMt_product<3,3,numnode>(deriv_,xyze,xjm_);
   const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
                      xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
                      xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-

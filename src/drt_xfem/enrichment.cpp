@@ -21,20 +21,19 @@ Maintainer: Axel Gerstenberger
 #include <string>
 #include <sstream>
 
-using namespace XFEM;
 
 
 /*----------------------------------------------------------------------*
  |  create string                                                       |
  *----------------------------------------------------------------------*/
-std::string Enrichment::toString() const
+std::string XFEM::Enrichment::toString() const
 {
     std::stringstream s;
     s << "Enrichment XFEMConditionLabel: " << this->xfemconditionlabel_ << ", type: " << enrTypeToString(this->type_);
     return s.str();
 }
 
-std::string Enrichment::enrTypeToString(const EnrType type) const
+std::string XFEM::Enrichment::enrTypeToString(const EnrType type) const
 {
     std::string typetext;
     switch (type){
@@ -50,7 +49,7 @@ std::string Enrichment::enrTypeToString(const EnrType type) const
 /*----------------------------------------------------------------------*
  |  get enrichment value                                        ag 11/07|
  *----------------------------------------------------------------------*/
-double Enrichment::EnrValue(
+double XFEM::Enrichment::EnrValue(
         const BlitzVec3&                actpos,
         const XFEM::InterfaceHandle&    ih,
         const XFEM::Enrichment::ApproachFrom approachdirection
@@ -138,7 +137,7 @@ double Enrichment::EnrValue(
  *  get modified enrichment value (satisfied interpolation property
  *                                                              ag 11/07
  */
-double Enrichment::ModifiedEnrValue(
+double XFEM::Enrichment::ModifiedEnrValue(
         const BlitzVec3&                actpos,
         const BlitzVec3&                nodalpos,
         const XFEM::InterfaceHandle&    ih,

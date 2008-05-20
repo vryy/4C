@@ -22,7 +22,6 @@ Maintainer: Axel Gerstenberger
 #include "xfluid3.H"
 #include "../drt_lib/drt_utils.H"
 
-using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |  read element input (public)                              g.bau 03/07|

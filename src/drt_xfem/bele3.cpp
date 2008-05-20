@@ -18,7 +18,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
 
-using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -26,7 +25,7 @@ DRT::ELEMENTS::Bele3::Bele3(int id, int owner) :
 DRT::Element(id,element_fluid2,owner),
 data_()
 {
-  gaussrule_ = intrule2D_undefined;
+  gaussrule_ = DRT::UTILS::intrule2D_undefined;
   lines_.resize(0);
   lineptrs_.resize(0);
   return;
@@ -121,7 +120,7 @@ void DRT::ELEMENTS::Bele3::Unpack(const vector<char>& data)
   // Gaussrule
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
-  gaussrule_ = GaussRule2D(gausrule_integer); //explicit conversion from integer to enum
+  gaussrule_ = DRT::UTILS::GaussRule2D(gausrule_integer); //explicit conversion from integer to enum
 
   // data_
   vector<char> tmp(0);
@@ -207,8 +206,8 @@ void DRT::ELEMENTS::Bele3::CreateLinesTri(const int& nline,
 
         for (int inode=0;inode<nnode;inode++)
         {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_tri6_lines[iline][inode]];
+             nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
+             nodes[inode]   = Nodes()[  DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
         }
         lines_[iline] = rcp(new DRT::ELEMENTS::Bele3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,iline));
         lineptrs_[iline] = lines_[iline].get();
@@ -225,8 +224,8 @@ void DRT::ELEMENTS::Bele3::CreateLinesQuad(const int& nline,
 
         for (int inode=0;inode<nnode;inode++)
         {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_quad9_lines[iline][inode]];
+             nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
+             nodes[inode]   = Nodes()[  DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
         }
         lines_[iline] = rcp(new DRT::ELEMENTS::Bele3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,iline));
         lineptrs_[iline] = lines_[iline].get();
@@ -245,22 +244,22 @@ DRT::Element** DRT::ELEMENTS::Bele3::Surfaces()
 }
 
 
-GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule(const DiscretizationType& distype)
+DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule(const DRT::Element::DiscretizationType& distype)
 {
-    GaussRule2D rule = intrule2D_undefined;
+  DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule2D_undefined;
     switch (distype)
     {
-    case quad4:
-        rule = intrule_quad_4point;
+    case DRT::Element::quad4:
+        rule = DRT::UTILS::intrule_quad_4point;
         break;
-    case quad8: case quad9:
-        rule = intrule_quad_9point;
+    case DRT::Element::quad8: case DRT::Element::quad9:
+        rule = DRT::UTILS::intrule_quad_9point;
         break;
-    case tri3:
-        rule = intrule_tri_3point;
+    case DRT::Element::tri3:
+        rule = DRT::UTILS::intrule_tri_3point;
         break;
-    case tri6:
-        rule = intrule_tri_6point;
+    case DRT::Element::tri6:
+        rule = DRT::UTILS::intrule_tri_6point;
         break;
     default:
         dserror("unknown number of nodes for gaussrule initialization");

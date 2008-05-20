@@ -27,8 +27,6 @@ Maintainer: Axel Gerstenberger
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/newtonianfluid.H"
 
-using namespace DRT::UTILS;
-
 
 
 /*----------------------------------------------------------------------*

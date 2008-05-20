@@ -19,7 +19,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 
-using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|

@@ -21,8 +21,6 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
 
-using namespace XFEM;
-using namespace DRT::UTILS;
 
 
 /*----------------------------------------------------------------------*
@@ -56,21 +54,21 @@ void XFEM::elementToCurrentCoordinatesInPlace(
     BlitzVec funct(numNodes);
     dsassert(eleCoord.size() == 3, "inplace coordinate transfer only in 3d!");
     
-    switch(getDimension(element->Shape()))
+    switch(DRT::UTILS::getDimension(element->Shape()))
     {
         case 1:
         {
-            shape_function_1D(funct,eleCoord(0), element->Shape());
+            DRT::UTILS::shape_function_1D(funct,eleCoord(0), element->Shape());
             break;
         }
         case 2:
         {
-            shape_function_2D(funct, eleCoord(0), eleCoord(1), element->Shape());
+            DRT::UTILS::shape_function_2D(funct, eleCoord(0), eleCoord(1), element->Shape());
             break;
         }
         case 3:
         {
-            shape_function_3D(funct, eleCoord(0), eleCoord(1), eleCoord(2), element->Shape());
+            DRT::UTILS::shape_function_3D(funct, eleCoord(0), eleCoord(1), eleCoord(2), element->Shape());
             break;
         }
         default:
@@ -103,7 +101,7 @@ static inline void updateAForNWE(
 {   
     const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
     static blitz::TinyMatrix<double,dim,numNodes> deriv1;
-    shape_function_deriv1<DISTYPE>(xsi, deriv1);
+    DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
     
     //A = blitz::sum(xyze(isd,inode) * deriv1(jsd,inode), inode);
     for (int isd = 0; isd < 3; ++isd)
@@ -141,7 +139,7 @@ static inline void updateRHSForNWE(
     
     const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
     blitz::TinyVector<double,numNodes> funct;
-    shape_function<DISTYPE>(xsi, funct);
+    DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
     
     //b = x(isd) - blitz::sum(xyze(isd,inode) * funct(inode), inode);
     for (int isd = 0; isd < 3; ++isd)
@@ -183,7 +181,7 @@ static inline bool currentToVolumeElementCoordinatesT(
     static blitz::TinyVector<double,dim> dx;
     
     static blitz::TinyMatrix<double,3,DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement> xyze;
-    fillPositionArray<DISTYPE>(element, xyze);
+    DRT::UTILS::fillPositionArray<DISTYPE>(element, xyze);
     
     // initial guess
     xsi = 0.0;
@@ -191,11 +189,11 @@ static inline bool currentToVolumeElementCoordinatesT(
     updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
     
     int iter = 0;
-    while(residual > TOL14)
+    while(residual > XFEM::TOL14)
     {   
         updateAForNWE<DISTYPE,dim>( A, xsi, xyze);
    
-        if(!gaussElimination<true, dim, 1>(A, b, dx))
+        if(!XFEM::gaussElimination<true, dim, 1>(A, b, dx))
         {
             nodeWithinElement = false;
             break;
@@ -204,7 +202,7 @@ static inline bool currentToVolumeElementCoordinatesT(
         xsi += dx;
         updateRHSForNWE<DISTYPE,dim>(b, xsi, x, xyze);
         
-        residual = Norm2(b);
+        residual = XFEM::Norm2(b);
         iter++; 
         
         if(iter >= maxiter)
@@ -328,7 +326,7 @@ bool XFEM::checkPositionWithinElement(
     const DRT::Element*                 element,
     const BlitzVec3&                    x)
 {
-    dsassert(getDimension(element->Shape()) == 3, "only valid for 3 dimensional elements");
+    dsassert(DRT::UTILS::getDimension(element->Shape()) == 3, "only valid for 3 dimensional elements");
     BlitzVec3 xsi;
     bool nodeWithinElement = currentToVolumeElementCoordinates(element, x, xsi);
     //printf("iter = %d\n", iter);
@@ -401,7 +399,7 @@ static void updateJacobianForMap3To2(
     const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
     
     static blitz::TinyMatrix<double,2,numNodes> deriv1;
-    shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
+    DRT::UTILS::shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
 
     for(int isd=0; isd<3; isd++)
     {
@@ -439,7 +437,7 @@ static void updateFForMap3To2(
     const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
 
     static blitz::TinyVector<double,numNodes> funct;
-    shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
+    DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
     
     for(int isd=0; isd<3; ++isd)
     {
@@ -477,7 +475,7 @@ static void updateAForMap3To2(
 {   
     const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
     static blitz::TinyMatrix<double,3,numNodes> deriv2;
-    shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), DISTYPE);
+    DRT::UTILS::shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), DISTYPE);
 
     static blitz::Array<double, 3> tensor3Ord(3,2,2, blitz::ColumnMajorArray<3>());        
     tensor3Ord = 0.0;
@@ -538,9 +536,9 @@ static void currentToSurfaceElementCoordinatesT(
   	    iter++;
   	    
         // compute Jacobian, f and b
-  	    static BlitzMat3x2 Jacobi;
-  	    static BlitzVec3 F;
-  	    updateJacobianForMap3To2<DISTYPE>(Jacobi, eleCoord, xyze_surfaceElement);
+        static BlitzMat3x2 Jacobi;
+        static BlitzVec3 F;
+        updateJacobianForMap3To2<DISTYPE>(Jacobi, eleCoord, xyze_surfaceElement);
         updateFForMap3To2<DISTYPE>(F, eleCoord, physCoord, xyze_surfaceElement);
         static BlitzVec b(2);
         //b = blitz::sum(-Jacobi(j,i)*F(j),j);
@@ -554,7 +552,7 @@ static void currentToSurfaceElementCoordinatesT(
         }
      
         const double residual = sqrt(b(0)*b(0)+b(1)*b(1));
-        if (residual < TOL14)
+        if (residual < XFEM::TOL14)
         {   
             nodeWithinElement = true;
             break;
@@ -566,7 +564,7 @@ static void currentToSurfaceElementCoordinatesT(
   	
   		static BlitzVec2 dx;
   		dx = 0.0;
-        if(!gaussEliminationEpetra(A, b, dx))
+        if(!XFEM::gaussEliminationEpetra(A, b, dx))
         {
             nodeWithinElement = false;
             break;
@@ -726,8 +724,8 @@ bool XFEM::intersectionOfXAABB(
     {
         for (int i = 0; i < 12; i++)
         {
-            const int index1 = eleNodeNumbering_hex27_lines[i][0];
-            const int index2 = eleNodeNumbering_hex27_lines[i][1];
+            const int index1 = DRT::UTILS::eleNodeNumbering_hex27_lines[i][0];
+            const int index2 = DRT::UTILS::eleNodeNumbering_hex27_lines[i][1];
             if(isLineWithinXAABB(nodes[index1], nodes[index2], xfemXAABB))
             {
                 intersection = true;
@@ -759,8 +757,8 @@ bool XFEM::intersectionOfXAABB(
     {
         for (int i = 0; i < 12; i++)
         {
-            const int index1 = eleNodeNumbering_hex27_lines[i][0];
-            const int index2 = eleNodeNumbering_hex27_lines[i][1];
+            const int index1 = DRT::UTILS::eleNodeNumbering_hex27_lines[i][0];
+            const int index2 = DRT::UTILS::eleNodeNumbering_hex27_lines[i][1];
             if(isLineWithinXAABB(nodes[index1], nodes[index2], cutterXAABB))
             {
                 intersection = true;

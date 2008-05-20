@@ -39,8 +39,6 @@ Maintainer: Ursula Mayer
 #include <mpi.h>
 #endif
 
-using namespace XFEM;
-using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |  MAIN:   computes the interface between the xfem          u.may 06/07|
@@ -48,11 +46,11 @@ using namespace DRT::UTILS;
  |          It returns a list of intersected xfem elements              |
  |          and their integrations cells.                               |
  *----------------------------------------------------------------------*/
-void Intersection::computeIntersection( const RCP<DRT::Discretization>      xfemdis,
-                                        const RCP<DRT::Discretization>      cutterdis,
-                                        const std::map<int,BlitzVec3>&      currentcutterpositions,
-                                        map< int, DomainIntCells >&   			domainintcells,
-                                        map< int, BoundaryIntCells >&   		boundaryintcells
+void XFEM::Intersection::computeIntersection( const Teuchos::RCP<DRT::Discretization>  xfemdis,
+                                        const Teuchos::RCP<DRT::Discretization>        cutterdis,
+                                        const std::map<int,BlitzVec3>&                 currentcutterpositions,
+                                        std::map< int, DomainIntCells >&               domainintcells,
+                                        std::map< int, BoundaryIntCells >&             boundaryintcells
                                         )
 {
 
@@ -206,7 +204,7 @@ void Intersection::computeIntersection( const RCP<DRT::Discretization>      xfem
  |  INIT:   initializes the private members of the           u.may 08/07|
  |          current xfem element                                        |
  *----------------------------------------------------------------------*/
-void Intersection::initializeXFEM(
+void XFEM::Intersection::initializeXFEM(
     const int             xfemId,
     const DRT::Element*   xfemElement)
 {
@@ -214,14 +212,14 @@ void Intersection::initializeXFEM(
 
     numXFEMSurfaces_ = xfemElement->NumSurface();
 
-    numXFEMCornerNodes_  = getNumberOfElementCornerNodes(xfemDistype);
+    numXFEMCornerNodes_  = DRT::UTILS::getNumberOfElementCornerNodes(xfemDistype);
     
     xyze_xfemElement_    = DRT::UTILS::PositionArrayBlitz(xfemElement);
 
-    eleLinesSurfaces_     = getEleNodeNumbering_lines_surfaces(xfemDistype);
-    eleNodesSurfaces_     = getEleNodeNumbering_nodes_surfaces(xfemDistype);
-    eleNumberingSurfaces_ = getEleNodeNumberingSurfaces(xfemDistype);
-    eleRefCoordinates_    = getEleNodeNumbering_nodes_reference(xfemDistype);
+    eleLinesSurfaces_     = DRT::UTILS::getEleNodeNumbering_lines_surfaces(xfemDistype);
+    eleNodesSurfaces_     = DRT::UTILS::getEleNodeNumbering_nodes_surfaces(xfemDistype);
+    eleNumberingSurfaces_ = DRT::UTILS::getEleNodeNumberingSurfaces(xfemDistype);
+    eleRefCoordinates_    = DRT::UTILS::getEleNodeNumbering_nodes_reference(xfemDistype);
 
     pointList_.clear();
     triangleList_.clear();
@@ -240,7 +238,7 @@ void Intersection::initializeXFEM(
  |  CLI:    collects points that belong to the interface     u.may 06/07|
  |          and lie within an xfem element                              |
  *----------------------------------------------------------------------*/
-bool Intersection::collectInternalPoints(
+bool XFEM::Intersection::collectInternalPoints(
     const DRT::Element*             xfemElement,
     DRT::Element*                   cutterElement,
     const BlitzMat&                 xyze_cutterElement,
@@ -273,7 +271,7 @@ bool Intersection::collectInternalPoints(
 
         // intersection coordinates in the surface
         // element element coordinate system
-        getNodeCoordinates(nodeId, ip.coord, cutterElement->Shape());
+        DRT::UTILS::getNodeCoordinates(nodeId, ip.coord, cutterElement->Shape());
 
         interfacePoints.push_back(ip);
 
@@ -289,14 +287,14 @@ bool Intersection::collectInternalPoints(
  |  CLI:    checks if a node that lies within an element     u.may 06/07|
  |          lies on one of its surfaces or nodes                        |
  *----------------------------------------------------------------------*/
-bool Intersection::setInterfacePointBoundaryStatus(
+bool XFEM::Intersection::setInterfacePointBoundaryStatus(
         const DRT::Element::DiscretizationType  xfemDistype,
         const BlitzVec3&                        xsi,
         InterfacePoint&                         ip
         ) const
 {
     bool onSurface = false;
-    const int count = getSurfaces(xsi, ip.surfaces, xfemDistype);
+    const int count = DRT::UTILS::getSurfaces(xsi, ip.surfaces, xfemDistype);
 
     // point lies on one surface
     if(count == 1)
@@ -335,7 +333,7 @@ bool Intersection::setInterfacePointBoundaryStatus(
  |  CLI:    collects all intersection points of a line and   u.may 06/07|
  |          and a surface                                               |
  *----------------------------------------------------------------------*/
-bool Intersection::collectIntersectionPoints(
+bool XFEM::Intersection::collectIntersectionPoints(
     const DRT::Element*             surfaceElement,
     const BlitzMat&                 xyze_surfaceElement,
     const DRT::Element*             lineElement,
@@ -400,7 +398,7 @@ void updateAForCSI(
     A = 0.0;
 
     static BlitzMat surfaceDeriv1(2, numNodesSurface);
-    shape_function_2D_deriv1(surfaceDeriv1, xsi(0), xsi(1), surftype);
+    DRT::UTILS::shape_function_2D_deriv1(surfaceDeriv1, xsi(0), xsi(1), surftype);
     for(int inode=0; inode<numNodesSurface; inode++)
     {
         for(int isd=0; isd<3; isd++)
@@ -411,7 +409,7 @@ void updateAForCSI(
     }
 
     static BlitzMat lineDeriv1(2, numNodesLine);
-    shape_function_1D_deriv1(lineDeriv1, xsi(2), linetype);
+    DRT::UTILS::shape_function_1D_deriv1(lineDeriv1, xsi(2), linetype);
     for(int inode=0; inode<numNodesLine; inode++)
     {
         for(int isd=0; isd<3; isd++)
@@ -449,7 +447,7 @@ void updateRHSForCSI(
     b = 0.0;
 
     static BlitzVec surfaceFunct(numNodesSurface);
-    shape_function_2D(surfaceFunct, xsi(0), xsi(1), surftype);
+    DRT::UTILS::shape_function_2D(surfaceFunct, xsi(0), xsi(1), surftype);
     for(int i=0; i<numNodesSurface; i++)
     {
         for(int dim=0; dim<3; dim++)
@@ -457,7 +455,7 @@ void updateRHSForCSI(
     }
 
     static BlitzVec lineFunct(numNodesLine);
-    shape_function_1D(lineFunct, xsi(2), linetype);
+    DRT::UTILS::shape_function_1D(lineFunct, xsi(2), linetype);
     for(int i=0; i<numNodesLine; i++)
     {
        for(int dim=0; dim<3; dim++)
@@ -494,11 +492,11 @@ bool computeSingularCSI(
 
     updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
 
-    while(residual > TOL14)
+    while(residual > XFEM::TOL14)
     {
         updateAForCSI<surftype,linetype>( A, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
 
-        if(solveLinearSystemWithSVD<3>(A, b, dx))
+        if(XFEM::solveLinearSystemWithSVD<3>(A, b, dx))
         {
             singular = false;
             xsi += dx;
@@ -507,7 +505,7 @@ bool computeSingularCSI(
 
         xsi += dx;
         updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
-        residual = Norm2(b);
+        residual = XFEM::Norm2(b);
         iter++;
 
         if(iter >= maxiter )
@@ -542,11 +540,11 @@ bool computeCurveSurfaceIntersectionT(
 
     updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
 
-    while(residual > TOL14)
+    while(residual > XFEM::TOL14)
     {
         updateAForCSI<surftype,linetype>( A, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
 
-        if(!gaussElimination<true, 3, 1>(A, b, dx))
+        if(!XFEM::gaussElimination<true, 3, 1>(A, b, dx))
         {
             if(computeSingularCSI<surftype,linetype>(xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement))
             {
@@ -560,7 +558,7 @@ bool computeCurveSurfaceIntersectionT(
 
         xsi += dx;
         updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
-        residual = Norm2(b);
+        residual = XFEM::Norm2(b);
         iter++;
 
         if(iter >= maxiter )
@@ -572,8 +570,8 @@ bool computeCurveSurfaceIntersectionT(
 
     if(intersection)
     {
-        if( (xsi(0) > (upLimit(0)+TOL7)) || (xsi(1) > (upLimit(1)+TOL7)) || (xsi(2) > (upLimit(2)+TOL7))  ||
-            (xsi(0) < (loLimit(0)-TOL7)) || (xsi(1) < (loLimit(1)-TOL7)) || (xsi(2) < (loLimit(2)-TOL7)))
+        if( (xsi(0) > (upLimit(0)+XFEM::TOL7)) || (xsi(1) > (upLimit(1)+XFEM::TOL7)) || (xsi(2) > (upLimit(2)+XFEM::TOL7))  ||
+            (xsi(0) < (loLimit(0)-XFEM::TOL7)) || (xsi(1) < (loLimit(1)-XFEM::TOL7)) || (xsi(2) < (loLimit(2)-XFEM::TOL7)))
                 intersection = false;
     }
 
@@ -585,7 +583,7 @@ bool computeCurveSurfaceIntersectionT(
  |  CLI:    computes the intersection between a              u.may 06/07|
  |          curve and a surface                    (CSI)                |
  *----------------------------------------------------------------------*/
-bool Intersection::computeCurveSurfaceIntersection(
+bool XFEM::Intersection::computeCurveSurfaceIntersection(
     const DRT::Element*               surfaceElement,
     const BlitzMat&                   xyze_surfaceElement,
     const DRT::Element*               lineElement,
@@ -651,7 +649,7 @@ bool Intersection::computeCurveSurfaceIntersection(
  |          Newton-method in order to find all intersection points      |
  |          of a curve-surface intersection                             |
  *----------------------------------------------------------------------*/
-int Intersection::computeNewStartingPoint(
+int XFEM::Intersection::computeNewStartingPoint(
     const DRT::Element*                surfaceElement,
     const BlitzMat&                    xyze_surfaceElement,
     const DRT::Element*                lineElement,
@@ -699,7 +697,7 @@ int Intersection::computeNewStartingPoint(
  |  CLI:    adds an intersection point to the 			     u.may 07/07|
  |          list of interface points                       			    |
  *----------------------------------------------------------------------*/
-int Intersection::addIntersectionPoint(
+int XFEM::Intersection::addIntersectionPoint(
     const DRT::Element*             surfaceElement,
     const BlitzMat&                 xyze_surfaceElement,
     const DRT::Element*             lineElement,
@@ -722,7 +720,7 @@ int Intersection::addIntersectionPoint(
         ip.nsurf = 1;
         ip.surfaces[0] = surfaceId;
 
-        getLineCoordinates(lineId, xsi(2), ip.coord, surfaceElement->Shape());
+        DRT::UTILS::getLineCoordinates(lineId, xsi(2), ip.coord, surfaceElement->Shape());
     }
     else
     {
@@ -771,7 +769,7 @@ int Intersection::addIntersectionPoint(
  |  CLI:    create new ranges for the recursive              u.may 07/07|
  |          computation of all intersection points                      |
  *----------------------------------------------------------------------*/
-void Intersection::createNewLimits(
+void XFEM::Intersection::createNewLimits(
     const BlitzVec3&        xsi,
     const BlitzVec3&        upLimit,
     const BlitzVec3&        loLimit,
@@ -844,7 +842,7 @@ void Intersection::createNewLimits(
  |          segments and triangles for the use with Tetgen (CDT)        |
  *----------------------------------------------------------------------*/
 #ifdef QHULL
-void Intersection::computeConvexHull(
+void XFEM::Intersection::computeConvexHull(
         const DRT::Element*     xfemElement,
         const BlitzMat&         xyze_xfemElement,
         const DRT::Element*     cutterElement,
@@ -1022,7 +1020,7 @@ void Intersection::computeConvexHull(
  |  ICS:    finds the next facet of a convex hull            u.may 06/07|
  |          and returns the point different form the searchpoint        |
  *----------------------------------------------------------------------*/
-void Intersection::findNextSegment(
+void XFEM::Intersection::findNextSegment(
     vector< vector<double> >&   vertices,
     vector<double>&             searchPoint) const
 {
@@ -1086,7 +1084,7 @@ void Intersection::findNextSegment(
  |  These two pointers must NOT be null at any time.                    |
  |  For further information please consult the TetGen manual            |
  *----------------------------------------------------------------------*/
-void Intersection::computeCDT(
+void XFEM::Intersection::computeCDT(
         const DRT::Element*                     xfemElement,
         const BlitzMat&                         xyze_xfemElement,
         const map<int,BlitzVec3>&               currentcutterpositions,
@@ -1252,7 +1250,7 @@ void Intersection::computeCDT(
  |  CDT:    fills the point list with the corner points      u.may 06/07|
  |          in element coordinates of the xfem element                  |
  *----------------------------------------------------------------------*/
-void Intersection::startPointList(
+void XFEM::Intersection::startPointList(
     )
 {
     InterfacePoint ip;
@@ -1286,7 +1284,7 @@ void Intersection::startPointList(
  |          for the computation of the                                  |
  |          Constrained Delauney Triangulation                          |
  *----------------------------------------------------------------------*/
-void Intersection::storePoint(
+void XFEM::Intersection::storePoint(
     const vector<double>&             point,
     const vector<InterfacePoint>&     interfacePoints,
     vector<int>&                      positions)
@@ -1329,7 +1327,7 @@ void Intersection::storePoint(
  |  CDT:    computes the midpoint of a collection of         u.may 06/07|
  |          InterfacePoints                                             |
  *----------------------------------------------------------------------*/
-InterfacePoint Intersection::computeMidpoint(
+XFEM::InterfacePoint XFEM::Intersection::computeMidpoint(
     const vector<InterfacePoint>& interfacePoints
     ) const
 {
@@ -1359,7 +1357,7 @@ InterfacePoint Intersection::computeMidpoint(
  |          xfem element, if no segments are lying in                   |
  |          that surface                                                |
  *----------------------------------------------------------------------*/
-void Intersection::storeSurfacePoints(
+void XFEM::Intersection::storeSurfacePoints(
     const vector<InterfacePoint>&     interfacePoints)
 {
 
@@ -1430,7 +1428,7 @@ void Intersection::storeSurfacePoints(
  |          for the computation of the                                  |
  |          Constrained Delauney Triangulation                          |
  *----------------------------------------------------------------------*/
-void Intersection::storeSegments(
+void XFEM::Intersection::storeSegments(
     const vector<int>&              positions)
 {
 
@@ -1481,7 +1479,7 @@ void Intersection::storeSegments(
  |          for the computation of the                                  |
  |          Constrained Delauney Triangulation                          |
  *----------------------------------------------------------------------*/
-void Intersection::storeTriangles(
+void XFEM::Intersection::storeTriangles(
     const vector<int>               positions)
 {
     vector<int> triangle(3,0);
@@ -1509,7 +1507,7 @@ void Intersection::storeTriangles(
  |  RCI:    stores a pointer to each intersecting            u.may 08/07|
  |          cutter element  used for the recovery of curved interface   |
  *----------------------------------------------------------------------*/
-void Intersection::storeIntersectedCutterElement(
+void XFEM::Intersection::storeIntersectedCutterElement(
         DRT::Element*  cutterElement)
 {
     bool alreadyInList = false;
@@ -1532,7 +1530,7 @@ void Intersection::storeIntersectedCutterElement(
  |  RCI:    recovers the curved interface after the          u.may 08/07|
  |          Constrained Delaunay Tetrahedralization                     |
  *----------------------------------------------------------------------*/
-void Intersection::recoverCurvedInterface(
+void XFEM::Intersection::recoverCurvedInterface(
         const DRT::Element*             xfemElement,
         const BlitzMat&                 xyze_xfemElement,
         const map<int,BlitzVec3>&       currentcutterpositions,
@@ -1578,7 +1576,7 @@ void Intersection::recoverCurvedInterface(
                 //printf("edgeIndex1 = %d\n", out.tetrahedronlist[tetIndex*out.numberofcorners+order[index1]]);
                 //printf("edgeIndex2 = %d\n", out.tetrahedronlist[tetIndex*out.numberofcorners+order[index2]]);
 
-                const int localHigherOrderIndex = getHigherOrderIndex(order[index1], order[index2], DRT::Element::tet10);
+                const int localHigherOrderIndex = DRT::UTILS::getHigherOrderIndex(order[index1], order[index2], DRT::Element::tet10);
                 //printf("localHOindex = %d\n", localHigherOrderIndex);
                 const int globalHigherOrderIndex = out.tetrahedronlist[tetIndex*out.numberofcorners+localHigherOrderIndex];
                 //printf("globalHOindex = %d\n", globalHigherOrderIndex);
@@ -1617,7 +1615,7 @@ void Intersection::recoverCurvedInterface(
  |  RCI:    store linear boundary and integration cells      u.may 03/08|
  |                               										|
  *----------------------------------------------------------------------*/
-void Intersection::storeIntCells(
+void XFEM::Intersection::storeIntCells(
 		const DRT::Element*             xfemElement,
 		const BlitzMat&                 xyze_xfemElement,
 		const map<int,BlitzVec3>&       currentcutterpositions,
@@ -1677,7 +1675,7 @@ void Intersection::storeIntCells(
  |          in a surface element                                        |
  |          if not corner points is recovered on the surface element    |
  *----------------------------------------------------------------------*/
-void Intersection::liftAllSteinerPoints(
+void XFEM::Intersection::liftAllSteinerPoints(
         const DRT::Element*                             xfemElement,
         const BlitzMat&                                 xyze_xfemElement,
         const map<int,BlitzVec3>&                       currentcutterpositions,
@@ -1730,7 +1728,7 @@ void Intersection::liftAllSteinerPoints(
  |  RCI:    stores for each Steiner point its adjacent       u.may 11/07|
  |          faces and face markers                                      |
  *----------------------------------------------------------------------*/
-void Intersection::locateSteinerPoints(
+void XFEM::Intersection::locateSteinerPoints(
     vector< vector<int> >&     adjacentFacesList,
     vector< vector<int> >&     adjacentFacemarkerList,
     const tetgenio&             out
@@ -1788,7 +1786,7 @@ void Intersection::locateSteinerPoints(
  |  RCI:    checks if the Steiner points lies within         u.may 11/07|
  |          the cutter element or on one of its edges                   |
  *----------------------------------------------------------------------*/
-int Intersection::decideSteinerCase(
+int XFEM::Intersection::decideSteinerCase(
         const int                       steinerIndex,
         int&                            lineIndex,
         int&                            cutterIndex,
@@ -1856,7 +1854,7 @@ int Intersection::decideSteinerCase(
  |  RCI:    lifts Steiner points lying                       u.may 11/07|
  |          within a cutter element                                     |
  *----------------------------------------------------------------------*/
-void Intersection::liftSteinerPointOnSurface(
+void XFEM::Intersection::liftSteinerPointOnSurface(
         const int                       steinerIndex,
         const vector< vector<int> >&    adjacentFacesList,
         const vector< vector<int> >&    adjacentFacemarkerList,
@@ -1956,7 +1954,7 @@ void Intersection::liftSteinerPointOnSurface(
  |  RCI:    lifts Steiner points lying                       u.may 11/07|
  |          on the edge of a  cutter element                            |
  *----------------------------------------------------------------------*/
-void Intersection::liftSteinerPointOnEdge(
+void XFEM::Intersection::liftSteinerPointOnEdge(
     const int                         steinerIndex,
     int                               lineIndex,     // TODO:??????????????? why is this an argument to this function?
     const int                         cutterIndex,
@@ -2015,7 +2013,7 @@ void Intersection::liftSteinerPointOnEdge(
  |  RCI:    lifts Steiner points lying                       u.may 11/07|
  |          on the boundary of the xfem element                         |
  *----------------------------------------------------------------------*/
-void Intersection::liftSteinerPointOnBoundary(
+void XFEM::Intersection::liftSteinerPointOnBoundary(
         const int                         steinerIndex,
         const vector< vector<int> >&      adjacentFacesList,
         const vector< vector<int> >&      adjacentFacemarkerList,
@@ -2104,7 +2102,7 @@ void Intersection::liftSteinerPointOnBoundary(
 /*----------------------------------------------------------------------*
  |  RCI:    returns information of the tetrahedra            u.may 08/07|
  *----------------------------------------------------------------------*/
-void Intersection::getTetrahedronInformation(
+void XFEM::Intersection::getTetrahedronInformation(
     const int           tetIndex,
     const int           faceIndex,
     vector<int>&        tetraCornerIndices,
@@ -2146,7 +2144,7 @@ void Intersection::getTetrahedronInformation(
  |          transforms them into current coordinates                    |
  |          of the xfem-element                                         |
  *----------------------------------------------------------------------*/
-void Intersection::getTetrahedronNodes(
+void XFEM::Intersection::getTetrahedronNodes(
         vector<BlitzVec>&                       tetraCornerNodes,
         const vector<int>&                      tetraCornerIndices,
         const DRT::Element*                     xfemElement,
@@ -2170,7 +2168,7 @@ void Intersection::getTetrahedronNodes(
  |  RCI:    lifts the higher-order point of an edge of the   u.may 09/07|
  |          linearized interface onto the curved interface              |
  *----------------------------------------------------------------------*/
-void Intersection::computeHigherOrderPoint(
+void XFEM::Intersection::computeHigherOrderPoint(
         const int                                 index1,
         const int                                 index2,
         const int                                 faceIndex,
@@ -2298,7 +2296,7 @@ void Intersection::computeHigherOrderPoint(
  |  RCI:    returns the other two point indices belonging    u.may 09/07|
  |          to a triface that obtains a Steiner point                   |
  *----------------------------------------------------------------------*/
-vector<int> Intersection::getPointIndices(
+vector<int> XFEM::Intersection::getPointIndices(
         const tetgenio&   out,
         const int         trifaceIndex,
         const int         steinerPointIndex
@@ -2321,7 +2319,7 @@ vector<int> Intersection::getPointIndices(
  |  RCI:    computes the intersection between a              u.may 08/07|
  |          line and a surface                                          |
  *----------------------------------------------------------------------*/
-bool Intersection::computeRecoveryNormal(
+bool XFEM::Intersection::computeRecoveryNormal(
     BlitzVec3&                                  xsi,
     const vector<BlitzVec>&                     normal,
     const DRT::Element*                         cutterElement,
@@ -2388,7 +2386,7 @@ bool Intersection::computeRecoveryNormal(
  |          for the recovery of the curved interface                    |
  |          (line-surface intersection)                                 |
  *----------------------------------------------------------------------*/
-void Intersection::updateAForRCINormal(
+void XFEM::Intersection::updateAForRCINormal(
     BlitzMat3x3&                                A,
     const BlitzVec3&                            xsi,
     const vector<BlitzVec>&                     normal,
@@ -2401,7 +2399,7 @@ void Intersection::updateAForRCINormal(
 
     A = 0.0;
     BlitzMat surfaceDeriv1(2,numNodesSurface);
-    shape_function_2D_deriv1(surfaceDeriv1, xsi(0), xsi(1), surfaceElement->Shape());
+    DRT::UTILS::shape_function_2D_deriv1(surfaceDeriv1, xsi(0), xsi(1), surfaceElement->Shape());
 
     if(!onBoundary)
     {
@@ -2422,7 +2420,7 @@ void Intersection::updateAForRCINormal(
     {
         const int numNodesLine = 3;
         BlitzMat lineDeriv1(1,numNodesLine);
-        shape_function_1D_deriv1(lineDeriv1, xsi(2), DRT::Element::line3);
+        DRT::UTILS::shape_function_1D_deriv1(lineDeriv1, xsi(2), DRT::Element::line3);
 
         for(int i=0; i<numNodesSurface; i++)
         {
@@ -2451,7 +2449,7 @@ void Intersection::updateAForRCINormal(
  |          for the recovery of the curved surface (RCI)                |
  |          (line-surface intersection)                                 |
  *----------------------------------------------------------------------*/
-void Intersection::updateRHSForRCINormal(
+void XFEM::Intersection::updateRHSForRCINormal(
     BlitzVec3&                  b,
     const BlitzVec3&            xsi,
     const vector<BlitzVec>&     normal,
@@ -2462,7 +2460,7 @@ void Intersection::updateRHSForRCINormal(
 {
     const int numNodesSurface = surfaceElement->NumNode();
     BlitzVec surfaceFunct(numNodesSurface);
-    shape_function_2D(surfaceFunct, xsi(0), xsi(1), surfaceElement->Shape());
+    DRT::UTILS::shape_function_2D(surfaceFunct, xsi(0), xsi(1), surfaceElement->Shape());
 
     b = 0.0;
     if(!onBoundary)
@@ -2481,7 +2479,7 @@ void Intersection::updateRHSForRCINormal(
     {
         const int numNodesLine = 3;
         BlitzVec lineFunct(numNodesLine);
-        shape_function_1D(lineFunct, xsi(2), DRT::Element::line3);
+        DRT::UTILS::shape_function_1D(lineFunct, xsi(2), DRT::Element::line3);
 
         for(int i=0; i<numNodesSurface; i++)
         {
@@ -2507,7 +2505,7 @@ void Intersection::updateRHSForRCINormal(
  |  RCI:    computes the intersection between a              u.may 08/07|
  |          curve and a plane                      RCI                  |
  *----------------------------------------------------------------------*/
-bool Intersection::computeRecoveryPlane(
+bool XFEM::Intersection::computeRecoveryPlane(
         int&                                        lineIndex,
         const map<int,BlitzVec3>&                   currentcutterpositions,
         BlitzVec3&                                  xsi,
@@ -2595,7 +2593,7 @@ bool Intersection::computeRecoveryPlane(
  |          for the recovery of the curved interface                    |
  |          (curve-plane intersection)                                  |
  *----------------------------------------------------------------------*/
-void Intersection::updateAForRCIPlane(
+void XFEM::Intersection::updateAForRCIPlane(
         BlitzMat3x3&                A,
         const BlitzVec3&            xsi,
         const vector<BlitzVec>&     plane,
@@ -2609,9 +2607,9 @@ void Intersection::updateAForRCIPlane(
     const int numNodesSurface = 4;
 
     BlitzMat surfaceDeriv(2,numNodesSurface);
-    shape_function_2D_deriv1(surfaceDeriv, xsi(0),  xsi(1), DRT::Element::quad4);
+    DRT::UTILS::shape_function_2D_deriv1(surfaceDeriv, xsi(0),  xsi(1), DRT::Element::quad4);
     BlitzMat lineDeriv(1,numNodesLine);
-    shape_function_1D_deriv1(lineDeriv, xsi(2), lineElement->Shape());
+    DRT::UTILS::shape_function_1D_deriv1(lineDeriv, xsi(2), lineElement->Shape());
 
     dsassert((int)plane.size() >= numNodesSurface, "plane array has to have size numNodesSurface ( = 4)!");
 
@@ -2638,7 +2636,7 @@ void Intersection::updateAForRCIPlane(
  |          for the recovery of the curved surface (RCI)                |
  |          (curve-plane intersection)                                  |
  *----------------------------------------------------------------------*/
-void Intersection::updateRHSForRCIPlane(
+void XFEM::Intersection::updateRHSForRCIPlane(
     BlitzVec3&                  b,
     const BlitzVec3&            xsi,
     const vector<BlitzVec>&     plane,
@@ -2650,9 +2648,9 @@ void Intersection::updateRHSForRCIPlane(
     const int numNodesSurface = 4;
 
     BlitzVec surfaceFunct(numNodesSurface);
-    shape_function_2D(surfaceFunct, xsi(0), xsi(1), DRT::Element::quad4 );
+    DRT::UTILS::shape_function_2D(surfaceFunct, xsi(0), xsi(1), DRT::Element::quad4 );
     BlitzVec lineFunct(numNodesLine);
-    shape_function_1D(lineFunct, xsi(2), lineElement->Shape());
+    DRT::UTILS::shape_function_1D(lineFunct, xsi(2), lineElement->Shape());
 
     dsassert((int)plane.size() >= numNodesSurface, "plane array has to have size numNodesSurface ( = 4)!");
 
@@ -2672,7 +2670,7 @@ void Intersection::updateRHSForRCIPlane(
  |  RCI:    computes the normal to the interface edge of     u.may 08/07|
  |          the tetrahedron facet lying within this facet               |
  *----------------------------------------------------------------------*/
-void Intersection::computeIntersectionNormalA(
+void XFEM::Intersection::computeIntersectionNormalA(
     const bool                              onBoundary,
     const int                               index1,
     const int                               index2,
@@ -2757,7 +2755,7 @@ void Intersection::computeIntersectionNormalA(
  |  RCI:    computes the normal to the interface edge of     u.may 11/07|
  |          two adjacent triangular faces                               |
  *----------------------------------------------------------------------*/
-void Intersection::computeIntersectionNormalB(
+void XFEM::Intersection::computeIntersectionNormalB(
         const int                                 index1,
         const int                                 index2,
         const int                                 faceIndex,
@@ -2852,7 +2850,7 @@ void Intersection::computeIntersectionNormalB(
  |  RCI:    computes the normal to the interface edge of     u.may 08/07|
  |          the tetrahedron facet lying within this facet               |
  *----------------------------------------------------------------------*/
-void Intersection::computeIntersectionNormalC(
+void XFEM::Intersection::computeIntersectionNormalC(
     const int                               steinerIndex,
     const int                               edgeIndex,
     const int                               oppositeIndex,
@@ -2905,7 +2903,7 @@ void Intersection::computeIntersectionNormalC(
 /*----------------------------------------------------------------------*
  |  RCI:    computes the midpoint of a line                  u.may 08/07|
  *----------------------------------------------------------------------*/
-BlitzVec Intersection::computeLineMidpoint(
+BlitzVec XFEM::Intersection::computeLineMidpoint(
     const BlitzVec& p1,
     const BlitzVec& p2) const
 {
@@ -2925,7 +2923,7 @@ BlitzVec Intersection::computeLineMidpoint(
  |          of a facet adjacent to a given edge of                      |
  |          of a given facet                                            |
  *----------------------------------------------------------------------*/
-void Intersection::findAdjacentFace(
+void XFEM::Intersection::findAdjacentFace(
     const int         edgeIndex1,
     const int         edgeIndex2,
     const int         faceMarker,
@@ -2972,7 +2970,7 @@ void Intersection::findAdjacentFace(
  |  RCI:    finds the global index of the point opposite     u.may 08/07|
  |          to an edge in the adjacent triangular face                  |
  *----------------------------------------------------------------------*/
-int Intersection::findEdgeOppositeIndex(
+int XFEM::Intersection::findEdgeOppositeIndex(
         const int                                 edgeIndex1,
         const int                                 edgeIndex2,
         const int                                 adjacentFaceIndex,
@@ -2997,7 +2995,7 @@ int Intersection::findEdgeOppositeIndex(
  |  RCI:    searchs for the common edge of two               u.may 10/07|
  |          adjacent facets                                             |
  *----------------------------------------------------------------------*/
-bool Intersection::findCommonFaceEdge(
+bool XFEM::Intersection::findCommonFaceEdge(
         const int                           faceIndex1,
         const int                           faceIndex2,
         const vector<int>&                  adjacentFacesList,
@@ -3041,7 +3039,7 @@ bool Intersection::findCommonFaceEdge(
  |          corresponding to the common face edge                       |
  |          of face 1 and facet 2                                       |
  *----------------------------------------------------------------------*/
-bool Intersection::findCommonCutterLine(
+bool XFEM::Intersection::findCommonCutterLine(
     const map<int,BlitzVec3>&                       currentcutterpositions,
     const int                                       faceIndex1,
     const int                                       faceIndex2,
@@ -3125,7 +3123,7 @@ bool Intersection::findCommonCutterLine(
  |          checking if the edge nodes of the correspondning            |
  |          facet edge are lying on this line element                   |
  *----------------------------------------------------------------------*/
-int Intersection::findIntersectingSurfaceEdge(
+int XFEM::Intersection::findIntersectingSurfaceEdge(
         const DRT::Element*                       xfemElement,
         const BlitzMat&                           xyze_xfemElement,
         DRT::Element*                             cutterElement,
@@ -3183,7 +3181,7 @@ int Intersection::findIntersectingSurfaceEdge(
  |  RCI:    stores the higher-order node in the pointlist    u.may 08/07|
  |          at the place of the linear node                             |
  *----------------------------------------------------------------------*/
-void Intersection::storeHigherOrderNode(
+void XFEM::Intersection::storeHigherOrderNode(
     const bool                                  normal,
     const int                                   globalHigherOrderIndex,
     const int                                   lineIndex,
@@ -3228,7 +3226,7 @@ void Intersection::storeHigherOrderNode(
 /*----------------------------------------------------------------------*
  |  RCI:    stores domain integration cells                  u.may 11/07|
  *----------------------------------------------------------------------*/
-void Intersection::addCellsToDomainIntCellsMap(
+void XFEM::Intersection::addCellsToDomainIntCellsMap(
         const DRT::Element*             xfemElement,
         map< int, DomainIntCells >&     domainintcells,
         const tetgenio&                 out,
@@ -3266,7 +3264,7 @@ void Intersection::addCellsToDomainIntCellsMap(
  |  RCI:    stores boundary integration cells                u.may 11/07|
  |																		|
  *----------------------------------------------------------------------*/
-void Intersection::addCellsToBoundaryIntCellsMap(
+void XFEM::Intersection::addCellsToBoundaryIntCellsMap(
     const int                         		trifaceIndex,
     const int                         		cornerIndex,
     const int                         		globalHigherOrderIndex,
@@ -3359,7 +3357,7 @@ void Intersection::addCellsToBoundaryIntCellsMap(
 /*----------------------------------------------------------------------*
  |  DB:     Debug only                                       u.may 06/07|
  *----------------------------------------------------------------------*/
-void Intersection::debugXAABBIntersection(
+void XFEM::Intersection::debugXAABBIntersection(
         const BlitzMat3x2 cutterXAABB,
         const BlitzMat3x2 xfemXAABB,
         const DRT::Element* cutterElement,
@@ -3424,7 +3422,7 @@ void Intersection::debugXAABBIntersection(
 /*----------------------------------------------------------------------*
  |  DB:     Debug only                                       u.may 06/07|
  *----------------------------------------------------------------------*/
-void Intersection::debugNodeWithinElement(
+void XFEM::Intersection::debugNodeWithinElement(
         const DRT::Element* xfemElement,
         const DRT::Node* node,
         const BlitzVec& xsi,
@@ -3500,7 +3498,7 @@ void Intersection::debugNodeWithinElement(
 /*----------------------------------------------------------------------*
  |  DB:     Debug only                                       u.may 06/07|
  *----------------------------------------------------------------------*/
-void Intersection::debugTetgenDataStructure(
+void XFEM::Intersection::debugTetgenDataStructure(
         const DRT::Element*               xfemElement) const
 {
     cout << endl;
@@ -3585,7 +3583,7 @@ void Intersection::debugTetgenDataStructure(
 /*----------------------------------------------------------------------*
  |  Debug only                                               u.may 06/07|
  *----------------------------------------------------------------------*/
-void Intersection::debugTetgenOutput( 	tetgenio& in,
+void XFEM::Intersection::debugTetgenOutput( 	tetgenio& in,
 										tetgenio& out,
 										const DRT::Element*   xfemElement,
     									vector<int>& elementIds,
@@ -3624,7 +3622,7 @@ void Intersection::debugTetgenOutput( 	tetgenio& in,
 /*----------------------------------------------------------------------*
  |  DB:     Debug only                                       u.may 09/07|
  *----------------------------------------------------------------------*/
-void Intersection::printTetViewOutput(
+void XFEM::Intersection::printTetViewOutput(
     int             index,
     tetgenio&       out) const
 {
@@ -3660,7 +3658,7 @@ void Intersection::printTetViewOutput(
 /*----------------------------------------------------------------------*
  |  DB:     Debug only                                       u.may 09/07|
  *----------------------------------------------------------------------*/
-void Intersection::printTetViewOutputPLC(
+void XFEM::Intersection::printTetViewOutputPLC(
         const DRT::Element*   xfemElement,
         int                   index,
         tetgenio&             in) const
@@ -3699,7 +3697,7 @@ void Intersection::printTetViewOutputPLC(
 }
 
 
-void Intersection::debugFaceMarker(
+void XFEM::Intersection::debugFaceMarker(
 		const int 						eleId,
 		tetgenio&						out) const
 {
@@ -3727,7 +3725,7 @@ void Intersection::debugFaceMarker(
 }
 
 
-void Intersection::debugXFEMConditions(
+void XFEM::Intersection::debugXFEMConditions(
 	const RCP<DRT::Discretization>  cutterdis) const
 {
 
@@ -3756,7 +3754,7 @@ void Intersection::debugXFEMConditions(
 }
 
 
-void Intersection::debugIntersection(
+void XFEM::Intersection::debugIntersection(
 		const DRT::Element*			xfemElement,
 		vector<DRT::Element*>       cutterElements
 		) const
@@ -3806,7 +3804,7 @@ static string XAABBToString(const double scalar, const vector<vector<double> >& 
 }
 
 
-void Intersection::debugXAABBs(
+void XFEM::Intersection::debugXAABBs(
 	const int							id,
 	const BlitzMat&     cutterXAABB,
 	const BlitzMat&     xfemXAABB) const

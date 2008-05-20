@@ -22,8 +22,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/xfem.H"
 #include "../drt_lib/drt_utils.H"
 
-using namespace XFEM;
-
 
 enum PhysDerivDir
 {

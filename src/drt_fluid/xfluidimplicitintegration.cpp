@@ -481,7 +481,7 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // debug info: print ele dofmanager information
   std::stringstream filename;
   filename << "eledofman_check_" << std::setw(5) << setfill('0') << step_ << ".pos";
-  cout << "writing '"<<filename.str()<<".pos'...";
+  cout << "writing '"<<filename.str()<<"'...";
   {
     std::ofstream f_system(filename.str().c_str());
       //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
@@ -514,33 +514,33 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
           gmshfilecontent << "};" << endl;
           f_system << gmshfilecontent.str();
       }
-      {
-          stringstream gmshfilecontent;
-          gmshfilecontent << "View \" " << " eleDofManager->label in element \" {" << endl;
-          for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
-          {
-              const DRT::Element* actele = ihForOutput_->xfemdis()->lColElement(i);
-              const int numvirtualnodes = DRT::UTILS::getNumberOfElementNodes(actele->Shape());
-              
-              // create local copy of information about dofs
-              const XFEM::ElementDofManager eleDofManager = dofmanager->constructElementDofManager(*actele, numvirtualnodes);
-              
-              //const int ele_gid = actele->Id();
-              double val = 0.0;
-              
-              if (actele->NumDofPerElement() > 0)
-              {
-                const std::set<XFEM::FieldEnr> enrfieldset = eleDofManager.FieldEnrSetPerVirtualElementNode(0);
-                XFEM::FieldEnr firstenrfield = *(enrfieldset.begin());
-                const int label = firstenrfield.getEnrichment().XFEMConditionLabel();
-                val = label;
-              }
-              gmshfilecontent << IO::GMSH::elementToString(val, actele);
-
-          };
-          gmshfilecontent << "};" << endl;
-          f_system << gmshfilecontent.str();
-      }
+//      {
+//          stringstream gmshfilecontent;
+//          gmshfilecontent << "View \" " << " eleDofManager->label in element \" {" << endl;
+//          for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
+//          {
+//              const DRT::Element* actele = ihForOutput_->xfemdis()->lColElement(i);
+//              const int numvirtualnodes = DRT::UTILS::getNumberOfElementNodes(actele->Shape());
+//              
+//              // create local copy of information about dofs
+//              const XFEM::ElementDofManager eleDofManager = dofmanager->constructElementDofManager(*actele, numvirtualnodes);
+//              
+//              //const int ele_gid = actele->Id();
+//              double val = 0.0;
+//              
+//              if (actele->NumDofPerElement() > 0)
+//              {
+//                const std::set<XFEM::FieldEnr> enrfieldset = eleDofManager.FieldEnrSetPerVirtualElementNode(0);
+//                XFEM::FieldEnr firstenrfield = *(enrfieldset.begin());
+//                const int label = firstenrfield.getEnrichment().XFEMConditionLabel();
+//                val = label;
+//              }
+//              gmshfilecontent << IO::GMSH::elementToString(val, actele);
+//
+//          };
+//          gmshfilecontent << "};" << endl;
+//          f_system << gmshfilecontent.str();
+//      }
       //f_system << IO::GMSH::getConfigString(2);
       f_system.close();
   }
@@ -1272,50 +1272,57 @@ void XFluidImplicitTimeInt::Output()
     
     std::stringstream filename;
     filename << "solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    cout << "writing '"<<filename.str()<<".pos'...";
+    cout << "writing '"<<filename.str()<<"'...";
     std::ofstream f_system(filename.str().c_str());
     
     XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
     
-    for (int i=0; i<discret_->NumMyColElements(); ++i)
     {
-
-      DRT::Element* actele = discret_->lColElement(i);
-      const int elegid = actele->Id();
-      const int numnodeele = actele->Shape();
-
-      const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(actele->Shape());
-      const int numeleparam = DRT::UTILS::getNumberOfElementNodes(stressdistype);
-      BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
-
-      // create local copy of information about dofs
-      const XFEM::ElementDofManager eledofman = dofmanagerForOutput_->constructElementDofManager(*actele, numeleparam);
-
-      vector<int> lm;
-      vector<int> lmowner;
-      actele->LocationVector(*(discret_),lm,lmowner);
-
-      // extract local values from the global vector
-      vector<double> myvelnp(lm.size());
-
-      DRT::UTILS::ExtractMyValues(*veln_,myvelnp,lm);
-
-      const int numparam = eledofman.NumDofPerField(field);
-      const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
-      //cout << XFEM::PHYSICS::physVarToString(field) << ": numparam = " << numparam << ": lm.size() = " << lm.size() << endl;
-
-      blitz::Array<double,1> elementvalues(numparam);
-      for (int iparam=0; iparam<numparam; ++iparam)   elementvalues(iparam) = myvelnp[dofpos[iparam]];
-
-      const XFEM::DomainIntCells& domainintcells = ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
-      for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << "Pressure Solution (Physical) \" {" << endl;
+      for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
-        blitz::Array<double,1> cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-        XFEM::computeScalarCellNodeValues(*actele, ihForOutput_, eledofman, *cell, field, elementvalues, cellvalues);
-        const BlitzMat* xyze_cell(cell->NodalPosXiDomainBlitz());
-        IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalues, *xyze_cell);
+
+        const DRT::Element* actele = discret_->lColElement(i);
+        const int elegid = actele->Id();
+        //const int numnodeele = actele->Shape();
+
+        const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(actele->Shape());
+        const int numeleparam = DRT::UTILS::getNumberOfElementNodes(stressdistype);
+        BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+
+        // create local copy of information about dofs
+        const XFEM::ElementDofManager eledofman = dofmanagerForOutput_->constructElementDofManager(*actele, numeleparam);
+
+        vector<int> lm;
+        vector<int> lmowner;
+        actele->LocationVector(*(discret_),lm,lmowner);
+
+        // extract local values from the global vector
+        vector<double> myvelnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*velnp_,myvelnp,lm);
+
+        const int numparam = eledofman.NumDofPerField(field);
+        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
+
+        blitz::Array<double,1> elementvalues(numparam);
+        for (int iparam=0; iparam<numparam; ++iparam)   elementvalues(iparam) = myvelnp[dofpos[iparam]];
+
+        const XFEM::DomainIntCells& domainintcells = ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
+        for (XFEM::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
+        {
+          blitz::Array<double,1> cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeScalarCellNodeValues(*actele, ihForOutput_, eledofman, *cell, field, elementvalues, cellvalues);
+          BlitzMat xyze_cell(3, cell->NumNode());
+          cell->NodalPosXYZ(*actele, xyze_cell);
+          gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalues, xyze_cell);
+        }
       }
+      gmshfilecontent << "};" << endl;
+      f_system << gmshfilecontent.str();
     }
+    f_system.close();
+    cout << " done" << endl;
   }
 
   // write restart also when uprestart_ is not a integer multiple of upres_

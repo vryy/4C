@@ -23,7 +23,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 
-using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
@@ -294,7 +293,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(ParameterList& params
                   const std::vector<double>& edispnp)
 {
   // there are 3 velocities and 1 pressure
-    return;
+  return;
   const int numdf = 4;
 
 //  const double thsl = params.get("thsl",1.0);
@@ -310,20 +309,20 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(ParameterList& params
   // set number of nodes
   const int iel   = this->NumNode();
 
-  GaussRule2D  gaussrule = intrule2D_undefined;
+  DRT::UTILS::GaussRule2D  gaussrule = DRT::UTILS::intrule2D_undefined;
   switch(distype)
   {
   case quad4:
-      gaussrule = intrule_quad_4point;
+      gaussrule = DRT::UTILS::intrule_quad_4point;
       break;
   case quad8: case quad9:
-      gaussrule = intrule_quad_9point;
+      gaussrule = DRT::UTILS::intrule_quad_9point;
       break;
   case tri3 :
-      gaussrule = intrule_tri_3point;
+      gaussrule = DRT::UTILS::intrule_tri_3point;
       break;
   case tri6:
-      gaussrule = intrule_tri_6point;
+      gaussrule = DRT::UTILS::intrule_tri_6point;
       break;
   default:
       dserror("shape type unknown!\n");
@@ -361,7 +360,7 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(ParameterList& params
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  const DRT::UTILS::IntegrationPoints2D  intpoints = DRT::UTILS::getIntegrationPoints2D(gaussrule);
 
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
   {
@@ -369,8 +368,8 @@ void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(ParameterList& params
     const double e1 = intpoints.qxg[gpid][1];
 
     // get shape functions and derivatives in the plane of the element
-    shape_function_2D(funct, e0, e1, distype);
-    shape_function_2D_deriv1(deriv, e0, e1, distype);
+    DRT::UTILS::shape_function_2D(funct, e0, e1, distype);
+    DRT::UTILS::shape_function_2D_deriv1(deriv, e0, e1, distype);
 
     // compute measure tensor for surface element and the infinitesimal
     // area element drs for the integration

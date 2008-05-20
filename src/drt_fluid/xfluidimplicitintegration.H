@@ -339,7 +339,7 @@ protected:
   RCP<Epetra_Vector>    residual_;
 
   /// rhs: right hand side vector for linearised flow solution
-  RefCountPtr<Epetra_Vector>    rhs_;
+  RCP<Epetra_Vector>    rhs_;
 
   /// robinrhs_: additional rhs when using robin-BC
   RCP<Epetra_Vector>    robinrhs_;
