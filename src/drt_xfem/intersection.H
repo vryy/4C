@@ -268,9 +268,9 @@ class Intersection
             const BlitzMat&                   xyze_surfaceElement,
             const DRT::Element*               lineElement,
             const BlitzMat&                   xyze_lineElement,
-            BlitzVec3&        xsi,
             const BlitzVec3&  upLimit,
-            const BlitzVec3&  loLimit
+            const BlitzVec3&  loLimit,
+            BlitzVec3&        xsi
             ) const;
 
 
@@ -288,12 +288,12 @@ class Intersection
 		\param lines                    (in)  	: if lines = true
 	  	\return number of interface points
 	  	*/
-  		int addIntersectionPoint(
-          const DRT::Element*               surfaceElement,
-          const BlitzMat&                   xyze_surfaceElement,
-          const DRT::Element*               lineElement,
-          const BlitzMat&                   xyze_lineElement,
-  		    const BlitzVec3&                xsi,
+        int addIntersectionPoint(
+            const DRT::Element*               surfaceElement,
+            const BlitzMat&                   xyze_surfaceElement,
+            const DRT::Element*               lineElement,
+            const BlitzMat&                   xyze_lineElement,
+            const BlitzVec3&                xsi,
             const BlitzVec3&                upLimit,
             const BlitzVec3&                loLimit,
             std::vector<InterfacePoint>& 	interfacePoints,

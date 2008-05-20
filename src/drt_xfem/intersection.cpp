@@ -70,7 +70,7 @@ void XFEM::Intersection::computeIntersection( const Teuchos::RCP<DRT::Discretiza
     cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
 
     if(xfemConditions.size()==0)
-        cout << "number of XFEMCoupling conditions = 0" << endl;
+      std::cout << "number of XFEMCoupling conditions = 0" << endl;
 
     //  k < xfemdis->NumMyColElements()
     for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
@@ -191,12 +191,12 @@ void XFEM::Intersection::computeIntersection( const Teuchos::RCP<DRT::Discretiza
 
     //debugDomainIntCells(domainintcells,2);
     const double t_end = ds_cputime()-t_start;
-    cout << endl;
+    std::cout << endl;
     if(countMissedPoints_ > 0)
     	cout << "Number of missed points during the recovery copy = " << countMissedPoints_ << endl;
 
-    cout << "Intersection computed sucessfully in " << t_end  <<  " secs";
-    cout << endl << endl;
+    std::cout << "Intersection computed sucessfully in " << t_end  <<  " secs";
+    std::cout << endl << endl;
 }
 
 
@@ -356,7 +356,7 @@ bool XFEM::Intersection::collectIntersectionPoints(
     upLimit  =  1.0;
     loLimit  = -1.0;
 
-    const bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
+    const bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, upLimit, loLimit, xsi);
 
     if(intersected)
         addIntersectionPoint( surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit,
@@ -553,7 +553,7 @@ bool computeCurveSurfaceIntersectionT(
             }
             dx = 0.0;
             iter++;
-            printf("SINGULAR\n");
+            //cout << "SINGULAR << endl;;
         }
 
         xsi += dx;
@@ -588,9 +588,9 @@ bool XFEM::Intersection::computeCurveSurfaceIntersection(
     const BlitzMat&                   xyze_surfaceElement,
     const DRT::Element*               lineElement,
     const BlitzMat&                   xyze_lineElement,
-    BlitzVec3&                        xsi,
     const BlitzVec3&                  upLimit,
-    const BlitzVec3&                  loLimit
+    const BlitzVec3&                  loLimit,
+    BlitzVec3&                        xsi
     ) const
 {
     if (lineElement->Shape() == DRT::Element::line2)
@@ -678,7 +678,7 @@ int XFEM::Intersection::computeNewStartingPoint(
     xsi += loLimit;
     xsi *= 0.5;
 
-	bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
+	bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, upLimit, loLimit, xsi);
 
     if( comparePoints<3>(xsi, xsiOld))
         intersected = false;
@@ -1226,7 +1226,7 @@ void XFEM::Intersection::computeCDT(
 
     if(higherorder)
     {
-      cout << "lifting of Stinerpoints" << endl;
+      std::cout << "lifting of Stinerpoints" << endl;
       dserror("hu");
     	recoverCurvedInterface(xfemElement, xyze_xfemElement, currentcutterpositions, boundaryintcells, out, recovery);
     }
@@ -2284,7 +2284,7 @@ void XFEM::Intersection::computeHigherOrderPoint(
     else
     {
         countMissedPoints_++;
-        cout << "faceMarker = " << faceMarker << endl;
+        std::cout << "faceMarker = " << faceMarker << endl;
         dserror("NO INTERSECTION POINT FOUND!!!!! adjacentFaceMarker = %d\n", adjacentFaceMarker);
     }
 
@@ -3308,9 +3308,9 @@ void XFEM::Intersection::addCellsToBoundaryIntCellsMap(
     BlitzVec2 eleCoordBoundaryCorner;
     CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordCorner, eleCoordBoundaryCorner);
 
-//    cout << "physcood = " << physCoord << "    ";
-//    cout << "elecood = " << eleCoord << endl;
-//    cout << "cornerIndex = " << cornerIndex << endl;
+//    std::cout << "physcood = " << physCoord << "    ";
+//    std::cout << "elecood = " << eleCoord << endl;
+//    std::cout << "cornerIndex = " << cornerIndex << endl;
     boundaryCoord[cornerIndex][0] = eleCoordBoundaryCorner(0);
     boundaryCoord[cornerIndex][1] = eleCoordBoundaryCorner(1);
     boundaryCoord[cornerIndex][2] = 0.0;
@@ -3341,8 +3341,8 @@ void XFEM::Intersection::addCellsToBoundaryIntCellsMap(
 	    BlitzVec2 eleCoordBoundaryHO;
 	    CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordHO, eleCoordBoundaryHO);
 
-	//    cout << "physcood = " << physCoord << "    ";
-	//    cout << "elecood = " << eleCoord << endl;
+	//    std::cout << "physcood = " << physCoord << "    ";
+	//    std::cout << "elecood = " << eleCoord << endl;
 
 	    boundaryCoord[cornerIndex+3][0] = eleCoordBoundaryHO(0);
 	    boundaryCoord[cornerIndex+3][1] = eleCoordBoundaryHO(1);
@@ -3367,7 +3367,7 @@ void XFEM::Intersection::debugXAABBIntersection(
         ) const
 {
 	cout << endl;
-    cout << "===============================================================" << endl;
+    std::cout << "===============================================================" << endl;
 	cout << "Debug Intersection of XAABB's" << endl;
 	cout << "===============================================================" << endl;
 	cout << endl;
@@ -3379,17 +3379,17 @@ void XFEM::Intersection::debugXAABBIntersection(
 		cout << endl;
 	}
 	cout << endl;
-    cout << endl;
-    cout << "CUTTER XAABB: "<< "                     " << "XFEM XAABB: " << endl;
-    cout << endl;
-    cout <<  "minX = " << cutterXAABB(0,0) << "      " << "maxX = " << cutterXAABB(0,1) << "      " ;
-    cout <<  "minX = " << xfemXAABB(0,0)   << "      " << "maxX = " << xfemXAABB(0,1)   << endl;
-    cout <<  "minY = " << cutterXAABB(1,0) << "      " << "maxY = " << cutterXAABB(1,1) << "      " ;
-    cout <<  "minY = " << xfemXAABB(1,0)   << "      " << "maxY = " << xfemXAABB(1,1)   << endl;
-    cout <<  "minZ = " << cutterXAABB(2,0) << "      " << "maxZ = " << cutterXAABB(2,1) << "      " ;
-    cout <<  "minZ = " << xfemXAABB(2,0)   << "      " << "maxZ = " << xfemXAABB(2,1) << endl;
-    cout << endl;
-    cout << endl;
+    std::cout << endl;
+    std::cout << "CUTTER XAABB: "<< "                     " << "XFEM XAABB: " << endl;
+    std::cout << endl;
+    std::cout <<  "minX = " << cutterXAABB(0,0) << "      " << "maxX = " << cutterXAABB(0,1) << "      " ;
+    std::cout <<  "minX = " << xfemXAABB(0,0)   << "      " << "maxX = " << xfemXAABB(0,1)   << endl;
+    std::cout <<  "minY = " << cutterXAABB(1,0) << "      " << "maxY = " << cutterXAABB(1,1) << "      " ;
+    std::cout <<  "minY = " << xfemXAABB(1,0)   << "      " << "maxY = " << xfemXAABB(1,1)   << endl;
+    std::cout <<  "minZ = " << cutterXAABB(2,0) << "      " << "maxZ = " << cutterXAABB(2,1) << "      " ;
+    std::cout <<  "minZ = " << xfemXAABB(2,0)   << "      " << "maxZ = " << xfemXAABB(2,1) << endl;
+    std::cout << endl;
+    std::cout << endl;
 	cout << "XFEM ELEMENT " << noX << " :" << endl;
 	cout << endl;
 	for(int jE = 0; jE < xfemElement->NumNode(); jE++)
@@ -3397,22 +3397,22 @@ void XFEM::Intersection::debugXAABBIntersection(
 		xfemElement->Nodes()[jE]->Print(cout);
 		cout << endl;
 	}
-    cout << endl;
-    cout << endl;
-    cout << "CUTTER XAABB: "<< "                     " << "XFEM XAABB: " << endl;
-    cout << endl;
-    cout <<  "minX = " << cutterXAABB(0,0) << "      " << "maxX = " << cutterXAABB(0,1) << "      " ;
-    cout <<  "minX = " << xfemXAABB(0,0)   << "      " << "maxX = " << xfemXAABB(0,1)   << endl;
-    cout <<  "minY = " << cutterXAABB(1,0) << "      " << "maxY = " << cutterXAABB(1,1) << "      " ;
-    cout <<  "minY = " << xfemXAABB(1,0)   << "      " << "maxY = " << xfemXAABB(1,1)   << endl;
-    cout <<  "minZ = " << cutterXAABB(2,0) << "      " << "maxZ = " << cutterXAABB(2,1) << "      " ;
-    cout <<  "minZ = " << xfemXAABB(2,0)   << "      " << "maxZ = " << xfemXAABB(2,1) << endl;
+    std::cout << endl;
+    std::cout << endl;
+    std::cout << "CUTTER XAABB: "<< "                     " << "XFEM XAABB: " << endl;
+    std::cout << endl;
+    std::cout <<  "minX = " << cutterXAABB(0,0) << "      " << "maxX = " << cutterXAABB(0,1) << "      " ;
+    std::cout <<  "minX = " << xfemXAABB(0,0)   << "      " << "maxX = " << xfemXAABB(0,1)   << endl;
+    std::cout <<  "minY = " << cutterXAABB(1,0) << "      " << "maxY = " << cutterXAABB(1,1) << "      " ;
+    std::cout <<  "minY = " << xfemXAABB(1,0)   << "      " << "maxY = " << xfemXAABB(1,1)   << endl;
+    std::cout <<  "minZ = " << cutterXAABB(2,0) << "      " << "maxZ = " << cutterXAABB(2,1) << "      " ;
+    std::cout <<  "minZ = " << xfemXAABB(2,0)   << "      " << "maxZ = " << xfemXAABB(2,1) << endl;
 	cout << endl;
 	cout << endl;
-    cout << "===============================================================" << endl;
-    cout << "End Debug Intersection of XAABB's" << endl;
+    std::cout << "===============================================================" << endl;
+    std::cout << "End Debug Intersection of XAABB's" << endl;
 	cout << "===============================================================" << endl;
-	cout << endl; cout << endl; cout << endl;
+	cout << endl; std::cout << endl; std::cout << endl;
 
 
 }
@@ -3455,42 +3455,42 @@ void XFEM::Intersection::debugNodeWithinElement(
             x(dim) += xfemElement->Nodes()[i]->X()[dim] * funct(i);
         }
 
-    cout << endl;
-    cout << "===============================================================" << endl;
-    cout << "Debug Node within element" << endl;
-    cout << "===============================================================" << endl;
-    cout << endl;
-    cout << "ELEMENT " << noE << " :" << endl;
-    cout << endl;
+    std::cout << endl;
+    std::cout << "===============================================================" << endl;
+    std::cout << "Debug Node within element" << endl;
+    std::cout << "===============================================================" << endl;
+    std::cout << endl;
+    std::cout << "ELEMENT " << noE << " :" << endl;
+    std::cout << endl;
 /*    for(int jE = 0; jE < element->NumNode(); jE++)
     {
         element->Nodes()[jE]->Print(cout);
-        cout << endl;
+        std::cout << endl;
     }
 */
-    cout << endl;
-    cout << endl;
-    cout << "NODE " << noN << " :" << endl;
-    cout << endl;
+    std::cout << endl;
+    std::cout << endl;
+    std::cout << "NODE " << noN << " :" << endl;
+    std::cout << endl;
         node->Print(cout);
-    cout << endl;
-    cout << endl;
-    cout << "XSI :";
-    cout << "   r = " << xsi(0) << "     s = " <<  xsi(1) << "     t = "  << xsi(2) << endl;
-    cout << endl;
-    cout << endl;
-    cout << "CURRENT COORDINATES :";
-    cout << "   x = " << x[0] << "     y = " <<  x[1] << "     z = "  << x[2] << endl;
-    cout << endl;
-    cout << endl;
-    if(within) cout << "NODE LIES WITHIN ELEMENT" << endl;
-    else            cout << "NODE DOES NOT LIE WITHIN ELEMENT" << endl;
-    cout << endl;
-    cout << endl;
-    cout << "===============================================================" << endl;
-    cout << "End Debug Node within element" << endl;
-    cout << "===============================================================" << endl;
-    cout << endl; cout << endl; cout << endl;
+    std::cout << endl;
+    std::cout << endl;
+    std::cout << "XSI :";
+    std::cout << "   r = " << xsi(0) << "     s = " <<  xsi(1) << "     t = "  << xsi(2) << endl;
+    std::cout << endl;
+    std::cout << endl;
+    std::cout << "CURRENT COORDINATES :";
+    std::cout << "   x = " << x[0] << "     y = " <<  x[1] << "     z = "  << x[2] << endl;
+    std::cout << endl;
+    std::cout << endl;
+    if(within) std::cout << "NODE LIES WITHIN ELEMENT" << endl;
+    else            std::cout << "NODE DOES NOT LIE WITHIN ELEMENT" << endl;
+    std::cout << endl;
+    std::cout << endl;
+    std::cout << "===============================================================" << endl;
+    std::cout << "End Debug Node within element" << endl;
+    std::cout << "===============================================================" << endl;
+    std::cout << endl; std::cout << endl; std::cout << endl;
 }
 
 
@@ -3501,13 +3501,13 @@ void XFEM::Intersection::debugNodeWithinElement(
 void XFEM::Intersection::debugTetgenDataStructure(
         const DRT::Element*               xfemElement) const
 {
-    cout << endl;
-    cout << "===============================================================" << endl;
-    cout << "Debug Tetgen Data Structure " << endl;
-    cout << "===============================================================" << endl;
-    cout << endl;
-    cout << "POINT LIST " << " :" << endl;
-    cout << endl;
+    std::cout << endl;
+    std::cout << "===============================================================" << endl;
+    std::cout << "Debug Tetgen Data Structure " << endl;
+    std::cout << "===============================================================" << endl;
+    std::cout << endl;
+    std::cout << "POINT LIST " << " :" << endl;
+    std::cout << endl;
     BlitzVec xsi(3);
     for(unsigned int i = 0; i < pointList_.size(); i++)
     {
@@ -3517,65 +3517,65 @@ void XFEM::Intersection::debugTetgenDataStructure(
         }
         elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, xsi);
 
-        cout << i << ".th point:   ";
+        std::cout << i << ".th point:   ";
         for(int j = 0; j< 3; j++)
         {
             //cout << setprecision(10) << pointList_[i].coord[j] << "\t";
              printf("%20.16f\t", pointList_[i].coord[j] );
         }
-        cout << endl;
-        cout << endl;
+        std::cout << endl;
+        std::cout << endl;
 
       /*  for(int j = 0; j< 3; j++)
         {
-            cout << xsi[j] << "\t";
+            std::cout << xsi[j] << "\t";
         }
-        cout << endl;
-        cout << endl;*/
+        std::cout << endl;
+        std::cout << endl;*/
     }
-    cout << endl;
-    cout << endl;
+    std::cout << endl;
+    std::cout << endl;
 
-    cout << endl;
-    cout << "SEGMENT LIST " << " :" << endl;
-    cout << endl;
+    std::cout << endl;
+    std::cout << "SEGMENT LIST " << " :" << endl;
+    std::cout << endl;
     for(unsigned int i = 0; i < segmentList_.size(); i++)
     {
-        cout << i << ".th segment:   ";
+        std::cout << i << ".th segment:   ";
         int count = 0;
         for(unsigned int j = 0; j < segmentList_[i].size(); j++)
-                cout << segmentList_[i][count++] << "\t";
+                std::cout << segmentList_[i][count++] << "\t";
 
         count = 0;
         for(unsigned int j = 0; j < surfacePointList_[i].size(); j++)
-                cout << surfacePointList_[i][count++] << "\t";
+                std::cout << surfacePointList_[i][count++] << "\t";
 
-        cout << endl;
-        cout << endl;
+        std::cout << endl;
+        std::cout << endl;
     }
-    cout << endl;
-    cout << endl;
+    std::cout << endl;
+    std::cout << endl;
 
-    cout << endl;
-    cout << "TRIANGLE LIST " << " :" << endl;
-    cout << endl;
+    std::cout << endl;
+    std::cout << "TRIANGLE LIST " << " :" << endl;
+    std::cout << endl;
     for(unsigned int i = 0; i < triangleList_.size(); i++)
     {
-        cout << i << ".th triangle:   ";
+        std::cout << i << ".th triangle:   ";
         for(int j = 0; j< 3; j++)
         {
-            cout << triangleList_[i][j] << "\t";
+            std::cout << triangleList_[i][j] << "\t";
         }
-        cout << endl;
-        cout << endl;
+        std::cout << endl;
+        std::cout << endl;
     }
-    cout << endl;
-    cout << endl;
+    std::cout << endl;
+    std::cout << endl;
 
-    cout << "===============================================================" << endl;
-    cout << "Debug Tetgen Data Structure" << endl;
-    cout << "===============================================================" << endl;
-    cout << endl; cout << endl; cout << endl;
+    std::cout << "===============================================================" << endl;
+    std::cout << "Debug Tetgen Data Structure" << endl;
+    std::cout << "===============================================================" << endl;
+    std::cout << endl; std::cout << endl; std::cout << endl;
 }
 
 
