@@ -337,6 +337,205 @@ void CONTACT::CElement::ShapeFunctions(CElement::ShapeType shape,
 }
 
 /*----------------------------------------------------------------------*
+ |  1D/2D shape function linearizations repository            popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
+                                 vector<vector<map<int,double> > >& derivdual)
+{
+  switch(shape)
+  {
+  // *********************************************************************
+  // 1D dual quadratic shape functions
+  // (used for interpolation of displacement field)
+  // (linearization necessary due to adaption for distorted elements !!!)
+  // *********************************************************************
+  case CElement::quaddual1D:
+  {
+    // establish fundamental data  
+    double detg = 0.0;
+    int nnodes = NumNode();
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    coord = GetNodalCoords();
+    
+    // prepare computation with Gauss quadrature
+    CONTACT::Integrator integrator(CONTACTNGP,true);
+    vector<double> val(nnodes);
+    vector<double> deriv(nnodes);
+    Epetra_SerialDenseMatrix me(nnodes,nnodes);
+    Epetra_SerialDenseMatrix de(nnodes,nnodes);
+    
+    // two-dim arrays of maps for linearization of me/de 
+    vector<vector<map<int,double> > > derivme(nnodes,vector<map<int,double> >(nnodes));
+    vector<vector<map<int,double> > > derivde(nnodes,vector<map<int,double> >(nnodes));
+    
+    // build me, de, derivme, derivde
+    for (int i=0;i<integrator.nGP();++i)
+    {
+      double gpc[2] = {integrator.Coordinate(i), 0.0};
+      EvaluateShape1D(gpc, val, deriv, nnodes);
+      detg = Jacobian1D(val,deriv,coord);
+      
+      // directional derivative of Jacobian
+      map<int,double> testmap;
+      typedef map<int,double>::const_iterator CI;
+      DerivJacobian1D(val,deriv,coord,testmap);
+      
+      // loop over all entries of me/de
+      for (int j=0;j<nnodes;++j)
+        for (int k=0;k<nnodes;++k)
+        {
+          double facme = integrator.Weight(i)*val[j]*val[k];
+          double facde = (j==k)*integrator.Weight(i)*val[j];
+                    
+          me(j,k)+=facme*detg;
+          de(j,k)+=facde*detg;
+          
+          // loop over all directional derivatives
+          for (CI p=testmap.begin();p!=testmap.end();++p)
+          {
+            derivme[j][k][p->first] += facme*(p->second);
+            derivde[j][k][p->first] += facde*(p->second);
+          }
+        }  
+    }
+    
+    // invert bi-ortho matrix me
+    LINALG::SymmetricInverse(me,nnodes);
+    
+    // get solution matrix ae with dual parameters
+    Epetra_SerialDenseMatrix ae(nnodes,nnodes);
+    ae.Multiply('N','N',1.0,de,me,0.0);
+    
+    // build linearization of ae and store in derivdual
+    // (this is done according to a quite complex formula, which
+    // we get from the linearization of the biorthogonality condition:
+    // Lin (Me * Ae = De) -> Lin(Ae)=Lin(De)*Inv(Me)-Ae*Lin(Me)*Inv(Me) )
+    typedef map<int,double>::const_iterator CI;
+    
+    // loop over all entries of ae (index i,j)
+    for (int i=0;i<nnodes;++i)
+    {
+      for (int j=0;j<nnodes;++j)
+      {
+        // compute Lin(Ae) according to formula above
+        for (int l=0;l<nnodes;++l) // loop over sum l 
+        {
+          // part1: Lin(De)*Inv(Me)
+          for (CI p=derivde[i][l].begin();p!=derivde[i][l].end();++p)
+            derivdual[i][j][p->first] += me(l,j)*(p->second);
+          
+          // part2: Ae*Lin(Me)*Inv(Me)
+          for (int k=0;k<nnodes;++k) // loop over sum k
+          {
+            for (CI p=derivme[k][l].begin();p!=derivme[k][l].end();++p)
+              derivdual[i][j][p->first] -= ae(i,k)*me(l,j)*(p->second);
+          }
+        }
+      }
+    }
+    
+    /*
+#ifdef DEBUG
+    // *******************************************************************
+    // FINITE DIFFERENCE check of Lin(Ae)
+    // *******************************************************************
+    
+    cout << "FD Check for A-derivative of Element: " << Id() << endl;
+    Epetra_SerialDenseMatrix aeref(ae);
+    double delta = 1e-8;
+    
+    for (int dim=0;dim<2;++dim)
+    {
+      for (int node=0;node<nnodes;++node)
+      {
+        // apply FD
+        coord(dim,node)+=delta;
+        
+        vector<double> val1(nnodes);
+        vector<double> deriv1(nnodes);
+        Epetra_SerialDenseMatrix me1(nnodes,nnodes);
+        Epetra_SerialDenseMatrix de1(nnodes,nnodes);
+        
+        // build me, de
+        for (int i=0;i<integrator.nGP();++i)
+        {
+          double gpc1[2] = {integrator.Coordinate(i), 0.0};
+          EvaluateShape1D(gpc1, val1, deriv1, nnodes);
+          detg = Jacobian1D(val1,deriv1,coord);
+          
+          for (int j=0;j<nnodes;++j)
+            for (int k=0;k<nnodes;++k)
+            {
+              double facme1 = integrator.Weight(i)*val1[j]*val1[k];
+              double facde1 = (j==k)*integrator.Weight(i)*val1[j];
+                        
+              me1(j,k)+=facme1*detg;
+              de1(j,k)+=facde1*detg;
+            }  
+        }
+        
+        // invert bi-ortho matrix me
+        LINALG::SymmetricInverse(me1,nnodes);
+        
+        // get solution matrix ae with dual parameters
+        Epetra_SerialDenseMatrix ae1(nnodes,nnodes);
+        ae1.Multiply('N','N',1.0,de1,me1,0.0);
+        
+        DRT::Node** mynodes = Nodes();
+        CNode* mycnode = static_cast<CNode*> (mynodes[node]);
+        int col= mycnode->Dofs()[dim];
+        
+        cout << "A-Derivative: " << col << endl;
+        
+        // FD solution
+        for (int i=0;i<nnodes;++i)
+          for (int j=0;j<nnodes;++j)
+          {
+            double val = (ae1(i,j)-aeref(i,j))/delta;
+            cout << "A" << i << j << " " << val << endl;
+          }
+        
+        // undo FD
+        coord(dim,node)-=delta;
+      }
+    }
+    // *******************************************************************
+#endif // #ifdef DEBUG
+    */
+    
+    break;
+  }
+  // *********************************************************************
+  // 1D modified dual shape functions (linear)
+  // (used for interpolation of Lagrange mult. field near boundaries)
+  // (linearization necessary due to adaption for distorted elements !!!)
+  // *********************************************************************
+  case CElement::quaddual1D_edge0:
+  {
+    dserror("ERROR: ShapeFunctionLin: Not yet impl. for boundary modification");
+    break;
+  }
+  // *********************************************************************
+  // 1D modified dual shape functions (linear)
+  // (used for interpolation of Lagrange mult. field near boundaries)
+  // (linearization necessary due to adaption for distorted elements !!!)
+  // *********************************************************************
+  case CElement::quaddual1D_edge1:
+  {
+    dserror("ERROR: ShapeFunctionLin: Not yet impl. for boundary modification");
+    break;
+  }
+  // *********************************************************************
+  // Unknown shape function type
+  // *********************************************************************
+  default:
+    dserror("ERROR: Unknown shape function type identifier");
+  }
+    
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Evaluate shape functions - LINEAR / QUAD 1D               popp 01/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::EvaluateShape1D(const double* xi, vector<double>& val,
@@ -442,6 +641,66 @@ bool CONTACT::CElement::EvaluateShapeDual1D(const double* xi, vector<double>& va
   else
     dserror("ERROR: EvaluateShapeDual1D called for unknown element type");
   
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute directional derivative of dual shape functions    popp 05/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CElement::DerivShapeDual1D(vector<vector<map<int,double> > >& derivdual)
+{
+  if (!IsSlave())
+      dserror("ERROR: DerivShapeDual1D called for master element");
+  
+  // get node number and node pointers
+  DRT::Node** mynodes = Nodes();
+  if (!mynodes) dserror("ERROR: DerivShapeDual1D: Null pointer!");
+   
+  // 2D linear case (2noded line element)
+  if (Shape()==line2)
+  {
+    dserror("ERROR: DerivShapeDual1D called for 2D linear shape functions");
+  }
+  
+  // 2D quadratic case (3noded line element)
+  else if (Shape()==line3)
+  {
+    // check for boundary nodes
+    CNode* mycnode0 = static_cast<CNode*> (mynodes[0]);
+    CNode* mycnode1 = static_cast<CNode*> (mynodes[1]);
+    CNode* mycnode2 = static_cast<CNode*> (mynodes[2]);
+    if (!mycnode0) dserror("ERROR: DerivShapeDual1D: Null pointer!");
+    if (!mycnode1) dserror("ERROR: DerivShapeDual1D: Null pointer!");
+    if (!mycnode2) dserror("ERROR: DerivShapeDual1D: Null pointer!");
+    bool isonbound0 = mycnode0->IsOnBound();
+    bool isonbound1 = mycnode1->IsOnBound();
+    bool isonbound2 = mycnode2->IsOnBound();
+    
+    // all 3 nodes are interior: use unmodified dual shape functions
+    if (!isonbound0 && !isonbound1 && !isonbound2)
+      ShapeFunctionLinearizations(CElement::quaddual1D,derivdual);
+    
+    // node 0 is on boundary: modify dual shape functions
+    else if (isonbound0 && !isonbound1 && !isonbound2)
+      ShapeFunctionLinearizations(CElement::quaddual1D_edge0,derivdual);
+     
+    // node 1 is on boundary: modify dual shape functions
+    else if (!isonbound0 && isonbound1 && !isonbound2)
+      ShapeFunctionLinearizations(CElement::quaddual1D_edge1,derivdual);
+    
+    // node 2 is on boundary: infeasible case
+    else if (isonbound2)
+      dserror("ERROR: DerivShapeDual1D: Middle boundary node");
+    
+    // nodes 0 and 1 are on boundary: infeasible case
+    else 
+      dserror("ERROR: DerivShapeDual1D: Element with 2 boundary nodes");
+  }
+  
+  // unknown case
+  else
+    dserror("ERROR: DerivShapeDual1D called for unknown element type");
+    
   return true;
 }
 

@@ -97,7 +97,7 @@ ngp_(ngp)
 /*----------------------------------------------------------------------*
  |  Integrate a 1D slave element overlap                      popp 01/08|
  |  This method integrates 2 functions on the same (slave) CEelement    |
- |  from given local coordinates sxia to sxib                            |
+ |  from given local coordinates sxia to sxib                           |
  |  Output is an Epetra_SerialDenseMatrix holding the int. values       |
  *----------------------------------------------------------------------*/
 RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement& sele,
@@ -176,8 +176,99 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateD(CONTACT::CElement&
         (*dseg)(j,k) = (*dtemp)(jindex,kindex);
     }
   }
-
+  
   return dseg;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute directional derivative of D                       popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
+                                 double sxia, double sxib)
+{
+  //check input data
+  if (!sele.IsSlave())
+    dserror("ERROR: DerivD called on a non-slave CElement!");
+  if ((sxia<-1.0) || (sxib>1.0))
+    dserror("ERROR: DerivD called with infeasible slave limits!");
+  
+  int nrow = sele.NumNode();
+  
+  // create empty vectors for shape fct. evaluation
+  vector<double> val(nrow);
+  vector<double> deriv(nrow);
+  vector<double> dualval(nrow);
+  vector<double> dualderiv(nrow);
+  
+  // get nodal coords for Jacobian evaluation
+  LINALG::SerialDenseMatrix coord(3,nrow);
+  coord = sele.GetNodalCoords();
+  
+  // prepare directional derivative of dual shape functions
+  // this is only necessary for qudratic shape functions in 2D
+  vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
+  if (sele.Shape()==CElement::line3)
+    sele.DerivShapeDual1D(dualmap);
+  
+  // loop over all Gauss points for integration
+  for (int gp=0;gp<nGP();++gp)
+  {
+    double eta[2] = {0.0, 0.0};
+    eta[0] = Coordinate(gp);
+    double wgt = Weight(gp);
+    typedef map<int,double>::const_iterator CI;
+    
+    // coordinate transformation sxi->eta (CElement->Overlap)
+    double sxi[2] = {0.0, 0.0};
+    sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
+    
+    // evaluate trace space and dual space shape functions
+    sele.EvaluateShape1D(sxi,val,deriv,nrow);
+    sele.EvaluateShapeDual1D(sxi,dualval,dualderiv,nrow);
+    
+    // evaluate the two Jacobians
+    double dxdsxi = sele.Jacobian1D(val,deriv,coord);
+    double dsxideta = -0.5*sxia + 0.5*sxib;
+    
+    // evaluate the Jacobian derivative
+    map<int,double> testmap;
+    sele.DerivJacobian1D(val,deriv,coord,testmap);
+    
+    // compute contribution oj J to nodal D-derivative-maps
+    DRT::Node** mynodes = sele.Nodes();
+    if (!mynodes) dserror("ERROR: IntegrateD: Null pointer!");
+    
+    for (int i=0;i<nrow;++i)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[i]);
+      if (!mycnode) dserror("ERROR: Integrate1D: Null pointer!");
+      map<int,double>& nodemap = mycnode->GetDerivD();
+      
+      // contribution of current element / current GP
+      double fac = wgt*val[i]*dualval[i]*dsxideta;
+      for (CI p=testmap.begin();p!=testmap.end();++p)
+        nodemap[p->first] += fac*(p->second);
+    }
+    
+    // compute contribution of dual shape fct. to nodal D-derivative-maps
+    for (int i=0;i<nrow;++i)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[i]);
+      if (!mycnode) dserror("ERROR: Integrate1D: Null pointer!");
+      map<int,double>& nodemap = mycnode->GetDerivD();
+      
+      // contribution of current element / current GP
+      for (int j=0;j<nrow;++j)
+      {
+        double fac = wgt*val[i]*val[j]*dsxideta*dxdsxi;
+        for (CI p=dualmap[i][j].begin();p!=dualmap[i][j].end();++p)
+          nodemap[p->first] += fac*(p->second);
+      }
+    }
+    
+  } // for (int gp=0;gp<nGP();++gp)
+  
+  return;
 }
 
 /*----------------------------------------------------------------------*

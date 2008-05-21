@@ -389,14 +389,12 @@ LINALG::SerialDenseMatrix CONTACT::CElement::GetNodalCoords()
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
   LINALG::SerialDenseMatrix coord(3,nnodes);
-  if (!mynodes)
-    dserror("ERROR: GetNodalCoords: Null pointer!");
+  if (!mynodes) dserror("ERROR: GetNodalCoords: Null pointer!");
   
   for (int i=0;i<nnodes;++i)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
-    if (!mycnode)
-      dserror("ERROR: GetNodalCoords: Null pointer!");
+    if (!mycnode) dserror("ERROR: GetNodalCoords: Null pointer!");
     coord(0,i) = mycnode->xspatial()[0];
     coord(1,i) = mycnode->xspatial()[1];
     coord(2,i) = mycnode->xspatial()[2];
@@ -436,6 +434,56 @@ double CONTACT::CElement::Jacobian1D(const vector<double>& val,
     dserror("ERROR: Jacobian1D called for unknown element type!");
     
   return jac;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate derivative of Jacobian determinant               popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CElement::DerivJacobian1D(const vector<double>& val,
+                                        const vector<double>& deriv,
+                                        const LINALG::SerialDenseMatrix& coord,
+                                        map<int,double>& derivjac)
+{
+  // get element nodes
+  int nnodes = NumNode();
+  DRT::Node** mynodes = Nodes();
+  if (!mynodes) dserror("ERROR: DerivJacobian1D: Null pointer!");
+  
+  // loop over all nodes
+  double g[3] = {0.0, 0.0, 0.0};
+  for (int i=0;i<nnodes;++i)
+  {
+    g[0] += deriv[i]*coord(0,i);
+    g[1] += deriv[i]*coord(1,i);
+    g[2] += deriv[i]*coord(2,i);
+  }
+  
+  // the Jacobian itself
+  double jac = sqrt(g[0]*g[0]+g[1]*g[1]+g[2]*g[2]);
+  
+  // *********************************************************************
+  // compute Jacobian derivative
+  // *********************************************************************
+  // (loop over all nodes and over all nodal dofs to capture all
+  // potential dependencies of the Jacobian. Note that here we only
+  // need to compute a SIMPLIFIED version of Lin(J), as the current
+  // GP coordinate does not change! Later when linearizing M this
+  // will not be true anymore and Lin(J) will become more complex!)
+  // *********************************************************************
+  for (int i=0;i<nnodes;++i)
+  {
+    CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[i]);
+    if (!mycnode) dserror("ERROR: DerivJacobian1D: Null pointer!");
+    
+    for (int j=0;j<mycnode->NumDof();++j)
+    {
+      int col = mycnode->Dofs()[j];
+      double val = (1/jac)*deriv[i]*g[j];
+      derivjac[col] += val;
+    } 
+  }
+  
+  return;
 }
 
 /*----------------------------------------------------------------------*

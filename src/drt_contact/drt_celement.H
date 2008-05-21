@@ -246,7 +246,7 @@ public:
   and parameters from some control routine in params and evaluates element matrices and
   vectors accoring to the command in params.
 
-  \note This class implements a dummy of this method that prints a warning and
+  \note This class implements a dummy of this method that prints a dserror and
         returns false.
 
   \param params (in/out)    : ParameterList for communication between control routine
@@ -319,6 +319,14 @@ public:
                             const LINALG::SerialDenseMatrix& coord);
   
   /*!
+  \brief Compute Jacobian det derivative - LINEAR / QUAD 1D
+  */
+  virtual void DerivJacobian1D(const vector<double>& val,
+                               const vector<double>& deriv,
+                               const LINALG::SerialDenseMatrix& coord,
+                               map<int,double>& derivjac);
+  
+  /*!
   \brief Compute length (in 3D area) of the element
   */
   virtual double ComputeArea();
@@ -332,6 +340,19 @@ public:
                               vector<double>& deriv);
   
   /*!
+  \brief A repository for 1D/2D shape function linearizations
+  
+  Currently this only contains the dual 1D quadratic shape functions.
+  Linearization with respect to the displacements slave displacements
+  is necessary here due to the adaption for distorted elements. The
+  shape functions are thus dependent of the element geometry !!!
+  
+  \param derivdual (in): derivative maps to be filled
+                         (= derivatives of the dual coefficient matrix Ae) 
+  */
+  void ShapeFunctionLinearizations(CElement::ShapeType shape,
+                                   vector<vector<map<int,double> > >& derivdual);
+  /*!
   \brief Evaluate shape functions and derivatives - LINEAR / QUAD 1D 
   */
   virtual bool EvaluateShape1D(const double* xi, vector<double>& val,
@@ -342,6 +363,14 @@ public:
   */
   virtual bool EvaluateShapeDual1D(const double* xi, vector<double>& val,
                                    vector<double>& deriv, const int valdim);
+  
+  /*!
+  \brief Compute directional derivative of dual shape functions - LINEAR / QUAD 1D 
+  
+  \param derivdual (in): derivative maps to be filled
+                         (= derivatives of the dual coefficient matrix Ae) 
+  */
+  virtual bool DerivShapeDual1D(vector<vector<map<int,double> > >& derivdual);
   
   /*!
   \brief Interpolate global coordinates for given local element coordinates

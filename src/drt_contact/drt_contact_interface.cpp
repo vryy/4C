@@ -21,17 +21,6 @@ Maintainer: Michael Gee
 #include "contactdefines.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-/*!----------------------------------------------------------------------
-\brief file pointers
-
-<pre>                                                         m.gee 8/00
-This structure struct _FILES allfiles is defined in input_control_global.c
-and the type is in standardtypes.h
-It holds all file pointers and some variables needed for the FRSYSTEM
-</pre>
-*----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
-
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
@@ -347,6 +336,9 @@ void CONTACT::Interface::Initialize()
     (node->GetM()).resize(0);
     (node->GetMmod()).resize(0);
 
+    // reset derivative map of Mortar matrix D
+    (node->GetDerivD()).clear();
+    
     // reset nodal weighted gap
     node->Getg() = 1.0e12;
 
@@ -434,7 +426,7 @@ void CONTACT::Interface::Evaluate()
 
 #ifdef CONTACTFDNORMAL
   // FD check of normal derivatives
-  FDCheckDeriv();
+  FDCheckNormalDeriv();
 #endif // #ifdef CONTACTFDNORMAL
       
   // loop over proc's slave nodes of the interface
@@ -497,6 +489,11 @@ void CONTACT::Interface::Evaluate()
     }
   }
 
+#ifdef CONTACTFDMORTAR
+  // FD check of Mortar matrix derivatives
+  FDCheckMortarDeriv();
+#endif // #ifdef CONTACTFDNORMAL
+  
 #ifdef DEBUG
   // Visualize every iteration with gmsh
   // VisualizeGmsh(CSegs());
@@ -611,7 +608,10 @@ bool CONTACT::Interface::IntegrateSlave2D(CONTACT::CElement& sele)
 
   // do the integration
   RCP<Epetra_SerialDenseMatrix> dseg = integrator.IntegrateD(sele,sxia,sxib);
-
+  
+  // compute directional derivative and store into nodes
+  integrator.DerivD(sele,sxia,sxib);
+  
   // do the assembly into the slave nodes
   integrator.AssembleD(*this,sele,*dseg);
 
@@ -1478,7 +1478,7 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble matrix S containing normal derivatives           popp 05/08|
+ |  Assemble matrix S containing normal+D derivatives         popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
 {
@@ -1504,6 +1504,7 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
     int mapsize = (int)dnmap.size();
     int row = activen_->GID(i);
     double* xi = cnode->xspatial();
+    double* n = cnode->n();
         
     if (mapsize==3) dserror("ERROR: AssembleNT: 3D case not yet implemented!");
     
@@ -1593,6 +1594,33 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
           dserror("ERROR: AssembleS: k = %i but colsize = %i",k,colsize);
       }  
     }
+    
+    /********************************************** N_Dmortar_slave *****/
+    //cout << endl << "->AssembleNd for Node ID: " << cnode->Id() << endl;
+    
+    // we need the dot product n*x of this node
+    double ndotx = 0.0;
+    for (int dim=0;dim<cnode->NumDof();++dim)
+      ndotx += n[dim]*xi[dim];
+    
+    // prepare assembly
+    map<int,double>& ddmap = cnode->GetDerivD();
+    int k=0;
+        
+    // loop over all entries of the current derivative map
+    for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
+    {
+      int col = colcurr->first;
+      double val = ndotx*colcurr->second;
+      //cout << "ndotx=" << ndotx <<  " deriv=" << colcurr->second << endl;
+      //cout << "AssembleNd: " << row << " " << col << " " << val << endl;
+      // do not assemble zeros into s matrix
+      if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+      ++k;
+    }
+
+    if (k!=colsize)
+      dserror("ERROR: AssembleS: k = %i but colsize = %i",k,colsize);
   }
 
   return;
@@ -1803,291 +1831,6 @@ bool CONTACT::Interface::SplitActiveDofs()
   activet_ = rcp(new Epetra_Map(gcountT,countT,&myTgids[0],0,Comm()));
 
   return true;
-}
-
-/*----------------------------------------------------------------------*
- |  Visualize node projections with gmsh                      popp 01/08|
- *----------------------------------------------------------------------*/
-void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs)
-{
-  // increase counter variable by one
-  counter_+=1;
-
-  // construct unique filename for gmsh output
-  std::ostringstream filename;
-  filename << allfiles.outputfile_kenner << "_";
-  if (counter_<10)
-    filename << 0 << 0 << 0 << 0;
-  else if (counter_<100)
-    filename << 0 << 0 << 0;
-  else if (counter_<1000)
-    filename << 0 << 0;
-  else if (counter_<10000)
-    filename << 0;
-
-  filename << counter_ << ".pos";
-
-  // do output to file in c-style
-  FILE* fp = NULL;
-
-  for (int proc=0;proc<comm_.NumProc();++proc)
-  {
-    if (proc==comm_.MyPID())
-    {
-      // open file (overwrite if proc==0, else append)
-      if (proc==0) fp = fopen(filename.str().c_str(), "w");
-      else fp = fopen(filename.str().c_str(), "a");
-
-      // write output to temporary stringstream
-      std::stringstream gmshfilecontent;
-      if (proc==0) gmshfilecontent << "View \" Slave and master side CElements \" {" << endl;
-
-      // plot elements
-      for (int i=0; i<idiscret_->NumMyRowElements(); ++i)
-      {
-        CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lRowElement(i));
-        int nnodes = element->NumNode();
-        LINALG::SerialDenseMatrix coord(3,nnodes);
-        double area = element->Area();
-
-        // 2D linear case (2noded line elements)
-        if (element->Shape()==DRT::Element::line2)
-        {
-          coord = element->GetNodalCoords();
-
-          gmshfilecontent << "SL(" << scientific << coord(0,0) << "," << coord(1,0) << ","
-                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
-                              << coord(2,1) << ")";
-          gmshfilecontent << "{" << scientific << area << "," << area << "};" << endl;
-        }
-
-        // 2D quadratic case (3noded line elements)
-        if (element->Shape()==DRT::Element::line3)
-        {
-          coord = element->GetNodalCoords();
-
-          gmshfilecontent << "SL2(" << scientific << coord(0,0) << "," << coord(1,0) << ","
-                              << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
-                              << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
-                              << coord(2,2) << ")";
-          gmshfilecontent << "{" << scientific << area << "," << area << "," << area << "};" << endl;
-        }
-      }
-
-      // plot normal vectors
-      for (int i=0; i<snodecolmap_->NumMyElements(); ++i)
-      {
-        int gid = snodecolmap_->GID(i);
-        DRT::Node* node = idiscret_->gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        CNode* cnode = static_cast<CNode*>(node);
-        if (!cnode) dserror("ERROR: Static Cast to CNode* failed");
-
-         double nc[3];
-         double nn[3];
-
-         for (int j=0;j<3;++j)
-         {
-           nc[j]=cnode->xspatial()[j];
-           nn[j]=3*cnode->n()[j]; // 2.9 because of gmsh color bar (3 procs(
-         }
-
-         gmshfilecontent << "VP(" << scientific << nc[0] << "," << nc[1] << "," << nc[2] << ")";
-         gmshfilecontent << "{" << scientific << nn[0] << "," << nn[1] << "," << nn[2] << "};" << endl;
-      }
-
-      // plot contact segments (slave and master projections)
-      if (csegs.M()!=0)
-      {
-        for (int i=0; i<csegs.M(); ++i)
-        {
-          gmshfilecontent << "SQ(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
-                                   << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
-                                   << csegs(i,5) << "," << csegs(i,6) << "," << csegs(i,7) << ","
-                                   << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
-                                   << csegs(i,11) << ")";
-          gmshfilecontent << "{" << scientific << proc << "," << proc << "," << proc << "," << proc << "};" << endl;
-
-          gmshfilecontent << "SL(" << scientific << csegs(i,0) << "," << csegs(i,1) << ","
-                          << csegs(i,2) << "," << csegs(i,3) << "," << csegs(i,4) << ","
-                          << csegs(i,5) << ")";
-          gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
-
-          gmshfilecontent << "SL(" << scientific << csegs(i,6) << "," << csegs(i,7) << ","
-                          << csegs(i,8) << "," << csegs(i,9) << "," << csegs(i,10) << ","
-                          << csegs(i,11) << ")";
-          gmshfilecontent << "{" << scientific << 0.0 << "," << 0.0 << "};" << endl;
-        }
-      }
-
-      if (proc==comm_.NumProc()-1) gmshfilecontent << "};" << endl;
-
-      // move everything to gmsh post-processing file and close it
-      fprintf(fp,gmshfilecontent.str().c_str());
-      fclose(fp);
-    }
-    comm_.Barrier();
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Finite difference check for normal derivatives             popp 05/08|
- *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckDeriv()
-{
-  // global loop to apply FD scheme to all slave dofs (=2*nodes)
-  for (int i=0; i<2*snodefullmap_->NumMyElements();++i)
-  {
-    // reset normal etc.
-    Initialize();
-    
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-      //cout << "Element: " << element->Id() << " Nodes: " << (element->Nodes()[0])->Id() << " "
-      //     << (element->Nodes()[1])->Id() << " Area: " << element->Area() << endl;
-    }  
-    
-    // create storage for normals
-    vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
-    vector<double> refny(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newnx(int(snodecolmapbound_->NumMyElements()));
-    vector<double> newny(int(snodecolmapbound_->NumMyElements()));
-    
-    // compute and print all nodal normals / derivatives (reference)
-    for(int j=0; j<snodecolmapbound_->NumMyElements();++j)
-    {
-      int jgid = snodecolmapbound_->GID(j);
-      DRT::Node* jnode = idiscret_->gNode(jgid);
-      if (!jnode) dserror("ERROR: Cannot find node with gid %",jgid);
-      CNode* jcnode = static_cast<CNode*>(jnode);
-
-      // build averaged normal at each slave node
-      jcnode->BuildAveragedNormal();
-      
-      typedef map<int,double>::const_iterator CI;
-      
-      // print reference data only once
-      if (i==0)
-      {
-        cout << endl << "Node: " << jcnode->Id() << "  Owner: " << jcnode->Owner() << endl;
-        cout << "XSpatial: " << jcnode->xspatial()[0] << " YSpatial: " << jcnode->xspatial()[1] << endl;
-        cout << "Normal: " << jcnode->n()[0] << " " << jcnode->n()[1] << endl;
-        cout << "Deriv: " << endl;
-        cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
-        for (CI p=(jcnode->GetDerivN()[0]).begin();p!=(jcnode->GetDerivN()[0]).end();++p)
-          cout << p->first << '\t' << p->second << endl;
-              
-        cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
-        for (CI p=(jcnode->GetDerivN()[1]).begin();p!=(jcnode->GetDerivN()[1]).end();++p)
-          cout << p->first << '\t' << p->second << endl;
-      }
-      
-      // store reference normals
-      refnx[j]=jcnode->n()[0];
-      refny[j]=jcnode->n()[1];
-    }
-    
-    // now fincally get the node we want to apply the FD scheme to
-    int gid = snodefullmap_->GID(i/2);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
-    CNode* snode = static_cast<CNode*>(node);
-    
-    // apply finite difference scheme
-    cout << "Building FD for Slave Node: " << snode->Id() << " Dof(l): " << i%2
-         << " Dof(g): " << snode->Dofs()[i%2] << endl;
-    
-    // do step forward (modify nodal displacement)
-    double delta = 1e-9;
-    if (i%2==0)
-    {
-      snode->xspatial()[0] += delta;
-      snode->u()[0] += delta;
-    }
-    else
-    {
-      snode->xspatial()[1] += delta;
-      snode->u()[1] += delta;
-    }
-  
-    // loop over all elements to set current element length / area
-    // (use fully overlapping column map)
-    for (int j=0;j<idiscret_->NumMyColElements();++j)
-    {
-      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
-      element->Area()=element->ComputeArea();
-      //cout << "Element: " << element->Id() << " Nodes: " << (element->Nodes()[0])->Id() << " "
-      //     << (element->Nodes()[1])->Id() << " Area: " << element->Area() << endl;
-    }           
-        
-    // compute finite difference derivative
-    for(int k=0; k<snodecolmapbound_->NumMyElements();++k)
-    {
-      int kgid = snodecolmapbound_->GID(k);
-      DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
-      CNode* kcnode = static_cast<CNode*>(knode);
-      
-      // build NEW averaged normal at each slave node
-      kcnode->BuildAveragedNormal();
-            
-      newnx[k]=kcnode->n()[0];
-      newny[k]=kcnode->n()[1];
-            
-      // get reference normal
-      double refn[2] = {0.0, 0.0};
-      refn[0] = refnx[k];
-      refn[1] = refny[k];
-      
-      // get modified normal
-      double newn[2] = {0.0, 0.0};
-      newn[0] = newnx[k];
-      newn[1] = newny[k];
-      
-      // print results (derivatives) to screen
-      if (abs(newn[0]-refn[0])>1e-12 || abs(newn[1]-refn[1])>1e-12)
-      {
-        cout << endl << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
-        cout << "Ref Normal: " << refn[0] << " " << refn[1] << endl;
-        cout << "New Normal: " << newn[0] << " " << newn[1] << endl;
-        cout << "Deriv: " << endl;
-                  
-        if (abs(newn[0]-refn[0])>1e-12)
-        { 
-          double val = (newn[0]-refn[0])/delta;
-          cout << "Row dof id: " << kcnode->Dofs()[0] << endl;
-          cout << snode->Dofs()[i%2] << '\t' << val << endl;
-        }
-      
-        if (abs(newn[1]-refn[1])>1e-12)
-        {
-          double val = (newn[1]-refn[1])/delta;
-          cout << "Row dof id: " << kcnode->Dofs()[1] << endl;
-          cout << snode->Dofs()[i%2] << '\t' << val << endl;
-        }
-      }
-    }
-    
-    // undo finite difference modification
-    if (i%2==0)
-    {
-      snode->xspatial()[0] -= delta;
-      snode->u()[0] -= delta;
-    }
-    else
-    {
-      snode->xspatial()[1] -= delta;
-      snode->u()[1] -= delta;
-    }
-  }
- 
-  return;
 }
 
 #endif  // #ifdef CCADISCRET

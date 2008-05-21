@@ -425,8 +425,13 @@ public:
                               Epetra_Vector& rglobal);
     
   /*!
-  \brief Assemble matrix S containing linearization of nodal normals
-    
+  \brief Assemble matrix S containing linearizations
+  
+  This method builds an algebraic form of the FULL linearization
+  of the normal contact condition g~ = 0. Concretely, this
+  includes assembling the linearizations of the slave side
+  nodal normals and of the Mortar matrix D. Note, that the
+  Mortar matrix M linearization is still MISSING.  
   */
   virtual void AssembleS(LINALG::SparseMatrix& sglobal);
     
@@ -470,7 +475,13 @@ public:
   \brief Check normal derivatives with finite differences
     
   */
-  virtual void FDCheckDeriv();
+  virtual void FDCheckNormalDeriv();
+  
+  /*!
+  \brief Check Mortar matrix derivatives with finite differences
+     
+  */
+  virtual void FDCheckMortarDeriv();
     
   //@}
 

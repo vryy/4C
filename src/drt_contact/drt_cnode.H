@@ -250,8 +250,20 @@ public:
   
   /*!
   \brief Return the 'DerivN' map (vector) of this node
+  
+  These maps contain the directional derivatives of the node's
+  averaged normal vector with respect to the slave displacements.
+  A vector is used because the normal itself is a vector (2 or 3 components).
   */
   virtual inline vector<map<int,double> >& GetDerivN() { return derivn_; }
+  
+  /*!
+  \brief Return the 'DerivD' map of this node
+  
+  This map contains the directional derivatives of the node's
+  D-matrix diagonal entry with respect to the slave displacements.
+  */
+  virtual inline map<int,double>& GetDerivD() { return derivd_; }
     
   //@}
 
@@ -311,6 +323,7 @@ protected:
   double                        grow_;          // nodal entry of g vector
   
   vector<map<int,double> >      derivn_;        // directional derivative of nodal normal
+  map<int,double>               derivd_;        // directional derivative of nodal D-matrix value
   
 
 }; // class CNode
