@@ -194,8 +194,16 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
       dat << geo << (count->second).size() << endl;
       for (i_c=(count->second).begin();i_c!=(count->second).end();++i_c){
         EXODUS::cond_def actcon = condefs[*i_c];
-        string name = (mymesh.GetNodeSet(actcon.id).GetName());
-        string pname = (mymesh.GetNodeSet(actcon.id).GetPropName());
+        string name;
+        string pname;
+        if (actcon.me==EXODUS::bcns){
+          name = (mymesh.GetNodeSet(actcon.id).GetName());
+          pname = (mymesh.GetNodeSet(actcon.id).GetPropName());
+        } else if (actcon.me==EXODUS::bceb){
+          name = (mymesh.GetElementBlock(actcon.id)->GetName());
+        } else if (actcon.me==EXODUS::bcss){
+          name = (mymesh.GetSideSet(actcon.id).GetName());
+        } else dserror ("Unidentified Actcon");
         if((name!="")){
           dat << "// " << name.c_str();
           if (pname!="none"){ dat << " " << pname.c_str();}
