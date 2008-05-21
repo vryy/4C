@@ -32,6 +32,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
+#include "../drt_mat/visconeohooke.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -284,6 +285,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
         Epetra_BLAS::Epetra_BLAS blas;
         blas.COPY((*alphao).M()*(*alphao).N(), (*alpha).A(), (*alphao).A());  // alphao := alpha
       }
+      // Update of history for visco material
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == m_visconeohooke){
+        MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
+        visco->Update();
+      }
     }
     break;
 
@@ -299,6 +306,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
         blas.SCAL((*alphao).M()*(*alphao).N(), -alphaf/(1.0-alphaf), (*alphao).A());  // alphao *= -alphaf/(1.0-alphaf)
         blas.AXPY((*alphao).M()*(*alphao).N(), 1.0/(1.0-alphaf), (*alpha).A(), (*alphao).A());  // alphao += 1.0/(1.0-alphaf) * alpha
         blas.COPY((*alpha).M()*(*alpha).N(), (*alphao).A(), (*alpha).A());  // alpha := alphao
+      }
+      // Update of history for visco material
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == m_visconeohooke){
+        MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
+        visco->Update();
       }
     }
     break;
@@ -736,7 +749,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
     const int ele_ID = Id();
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,histstress_,artstress_,gp,ele_ID,time,dt);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,ele_ID,time,dt);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses

@@ -98,13 +98,6 @@ bool DRT::ELEMENTS::So_hex8::ReadElement()
     else dserror("Reading of SO_HEX8 EAS technology failed");
   }
   
-  // Initialize pointer of visco history
-  histstress_ = rcp(new vector<Epetra_SerialDenseVector>);
-  artstress_ = rcp(new vector<Epetra_SerialDenseVector>);
-
-  //Initialize fiber vector
-  //fiberdirection_.resize(3);
-
   return true;
 } // So_hex8::ReadElement()
 

@@ -18,6 +18,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include <Epetra_SerialDenseMatrix.h>
 #include <Teuchos_RefCountPtr.hpp>
 
+using namespace Teuchos;
 
 namespace MAT
 {
@@ -74,9 +75,11 @@ namespace MAT
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_visconeohooke; }
     
+    void Initialize(const int numgp) ;
+    
+    void Update();
+    
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
-                  const Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstress,
-                  const Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstress,
                   const int gp,
                   const double dt,
                   Epetra_SerialDenseMatrix* cmat,
@@ -84,11 +87,21 @@ namespace MAT
 
     double Density();
     
+    bool Initialized() { return (histstresscurr_!=Teuchos::null);}
+    
   private:
 
     /// my material parameters
     MATERIAL* matdata_;
-  
+    
+    /// visco history stresses
+    Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstresscurr_;
+    Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstresslast_;
+    Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstresscurr_;
+    Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstresslast_;
+    
+    bool isinit_;
+    
   };
 }
 

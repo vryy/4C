@@ -438,10 +438,6 @@ protected:
   //! vector for fiber direction, needs better place in future
   vector<double>                                   fiberdirection_;
   
-  //! vector for history stresses in case of visco material
-  RCP<vector<Epetra_SerialDenseVector> >           histstress_;
-  //! vector for history artificial stresses in case of visco material
-  RCP<vector<Epetra_SerialDenseVector> >           artstress_;
 
   // internal calculation methods
 
@@ -515,8 +511,6 @@ protected:
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
                     const Epetra_SerialDenseMatrix* defgrd,
-                    const RCP<vector<Epetra_SerialDenseVector> > histstress,
-                    const RCP<vector<Epetra_SerialDenseVector> > artstress,
                     const int gp,
                     const int ele_ID,
                     const double time,

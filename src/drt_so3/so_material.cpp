@@ -55,8 +55,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       double* density,
       const Epetra_SerialDenseVector* glstrain,
       const Epetra_SerialDenseMatrix* defgrd,
-      const RCP<vector<Epetra_SerialDenseVector> > histstress,
-      const RCP<vector<Epetra_SerialDenseVector> > artstress,
       const int gp,
       const int ele_ID,
       const double time,
@@ -114,19 +112,10 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     }
     case m_visconeohooke: /*----------------- Viscous NeoHookean Material */
     {
-      // resize and initialize history
-      if (histstress->size() == 0){
-        histstress->resize(NUMGPT_SOH8);
-        artstress->resize(NUMGPT_SOH8);
-        for (int i = 0; i<NUMGPT_SOH8; ++i){
-          Epetra_SerialDenseVector emptyvec(NUMSTR_SOH8);
-          histstress->push_back(emptyvec);
-          artstress->push_back(emptyvec);
-        }
-      }
-      
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
-      visco->Evaluate(glstrain,histstress,artstress,gp,dt,cmat,stress);
+      if (!visco->Initialized())
+        visco->Initialize(NUMGPT_SOH8);
+      visco->Evaluate(glstrain,gp,dt,cmat,stress);
       *density = visco->Density();
 
       break;

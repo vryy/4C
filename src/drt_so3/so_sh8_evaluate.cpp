@@ -606,7 +606,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
                                      // but in solid for time-dependent
                                      // complex material behavior
 
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,histstress_,artstress_,gp,ele_ID,time,dt);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,ele_ID,time,dt);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses

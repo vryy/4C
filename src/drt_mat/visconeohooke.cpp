@@ -17,6 +17,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include "Epetra_SerialDenseSolver.h"
 #include "visconeohooke.H"
 
+
 extern struct _MATERIAL *mat;
 
 
@@ -26,6 +27,11 @@ extern struct _MATERIAL *mat;
 MAT::ViscoNeoHooke::ViscoNeoHooke()
   : matdata_(NULL)
 {
+//  isinit_=false;
+//  histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
+//  artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
+//  histstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
+//  artstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
 }
 
 
@@ -83,6 +89,47 @@ double MAT::ViscoNeoHooke::Density()
   return matdata_->m.visconeohooke->density;  // density, returned to evaluate mass matrix
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::ViscoNeoHooke::Initialize(const int numgp) 
+{
+  histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
+  artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
+  histstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
+  artstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
+  const Epetra_SerialDenseVector emptyvec(6);//6 stresses for 3D
+  histstresscurr_->resize(numgp);
+  histstresslast_->resize(numgp);
+  artstresscurr_->resize(numgp);
+  artstresslast_->resize(numgp);
+  for (int j=0; j<numgp; ++j) 
+  {
+    histstresscurr_->at(j) = emptyvec;
+    histstresslast_->at(j) = emptyvec;
+    artstresscurr_->at(j) = emptyvec;
+    artstresslast_->at(j) = emptyvec;
+  }
+  isinit_=true;
+    
+  return ;
+}
+
+void MAT::ViscoNeoHooke::Update()
+{
+  histstresslast_=histstresscurr_;
+  artstresslast_=artstresscurr_;
+  const Epetra_SerialDenseVector emptyvec(6);//6 stresses for 3D
+  histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
+  artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
+  const int numgp=histstresslast_->size();
+  histstresscurr_->resize(numgp);
+  artstresscurr_->resize(numgp);
+  for (int j=0; j<numgp; ++j) 
+  {
+    histstresscurr_->at(j) = emptyvec;
+    artstresscurr_->at(j) = emptyvec;
+  }
+}  
 
 /*----------------------------------------------------------------------*
  |  Evaluate Material                             (public)         05/08|
@@ -91,8 +138,6 @@ double MAT::ViscoNeoHooke::Density()
 */
 
 void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
-                                  const Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstress,
-                                  const Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstress,
                                   const int gp,
                                   const double dt,
                                   Epetra_SerialDenseMatrix* cmat,
@@ -166,8 +211,9 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // visco part
   
   // read history
-  Epetra_SerialDenseVector S_n ( (histstress->at(gp)).Scale(-1.0) );
-  Epetra_SerialDenseVector Q_n (artstress->at(gp));
+  Epetra_SerialDenseVector S_n (histstresslast_->at(gp));
+  S_n.Scale(-1.0);
+  Epetra_SerialDenseVector Q_n (artstresslast_->at(gp));
   
   // artificial visco stresses
   Epetra_SerialDenseVector Q(Q_n);
@@ -177,8 +223,8 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   Q.Scale(tau/(tau + theta*dt));  // Q^(n+1) = tau/(tau+theta*dt) [(tau-dt+theta*dt)/tau Q + S^(n+1) - S^n]
   
   // update history
-  histstress->at(gp) = SDevEla;
-  artstress->at(gp) = Q;
+  histstresscurr_->at(gp) = SDevEla;
+  artstresscurr_->at(gp) = Q;
   
   // add visco PK2 stress, weighted with alphas
   SDevEla.Scale(alpha0);
@@ -189,25 +235,29 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // elasticity matrix
   double scalar1 = 2.0*kappa*J*J - kappa*J;
   double scalar2 = -2.0*kappa*J*J + 2.0*kappa*J;
-  
+  double scalar3 = 2.0/3.0*mue*I3invcubroot*I1;
+  double scalar4 = 2.0/3.0*mue*I3invcubroot;
+  double scalarvisco = alpha0+alpha1*tau/(tau+theta*dt);
 
-  // add volumetric elastic part
-  // add scalar1 Cinv x Cinv
-  Epetra_SerialDenseMatrix CinvxCinv(6,6);
-  for (int i=0; i<6; ++i)
-    for (int j=0; j<6; ++j)
-      (*cmat)(i,j) += scalar1 * Cinv(i) * Cinv(j);
-   
+  // add volumetric elastic part 1
   // add scalar2 Cinv o Cinv (see Holzapfel p. 254)
   AddtoCmatHolzapfelProduct((*cmat),Cinv,scalar2);
   
-  // add elastic deviatoric part
-  Epetra_SerialDenseMatrix cmat_dev(6,6);
-  //AddtoCmatHolzapfelProduct(cmat_dev,Cinv,scalar3)
-
+  // add visco-elastic deviatoric part 1
+  AddtoCmatHolzapfelProduct(*cmat,Cinv,scalarvisco*scalar3);
   
-  
-  
+  for (int i=0; i<6; ++i)
+  {
+     for (int j=0; j<6; ++j)
+     {
+       // add volumetric elastic part 2
+       (*cmat)(i,j) += scalar1 * Cinv(i) * Cinv(j) // add scalar Cinv x Cinv
+       // add visco-elastic deviatoric part 2
+           + scalarvisco*(-scalar4)*Id(i)*Cinv(j)// add scalar Id x Cinv
+           + scalarvisco*(-scalar4)*Id(j)*Cinv(i)// add scalar Cinv x Id
+           + scalarvisco*(scalar3)*Cinv(i)*Cinv(j)/3.0;// add scalar Cinv x Cinv
+     }
+  }
   return;
 }
 
