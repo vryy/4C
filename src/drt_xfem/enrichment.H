@@ -57,7 +57,7 @@ class Enrichment
     //! default constructor
     explicit Enrichment(
         ) :
-          xfemconditionlabel_(-1),
+          xfemconditionlabel_(-1), // means undefined
           type_(typeUndefined)
     {
       //dserror("Enrichment() -> please don't call me!");
