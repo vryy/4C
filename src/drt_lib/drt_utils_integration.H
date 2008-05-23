@@ -53,7 +53,8 @@ enum GaussRule2D
     intrule_tri_1point,
     intrule_tri_3point,
     intrule_tri_3point_on_corners,
-    intrule_tri_6point
+    intrule_tri_6point,
+    intrule_tri_12point
 };
 
 //! supported 1d gauss rules
@@ -130,8 +131,8 @@ struct IntegrationPoints3D
 {
   IntegrationPoints3D(const GaussRule3D gaussrule);
   int           nquad;         ///< number of gausspoints
-  double        qxg[84][3];    ///< coordinates
-  double        qwgt[84];      ///< weights
+  double        qxg[27][3];    ///< coordinates
+  double        qwgt[27];      ///< weights
 };
 
 /*!
@@ -144,8 +145,8 @@ struct IntegrationPoints2D
 {
   IntegrationPoints2D(const GaussRule2D gaussrule);
   int           nquad;        ///< number of gausspoints
-  double        qxg[9][2];    ///< coordinates
-  double        qwgt[9];      ///< weights
+  double        qxg[12][2];    ///< coordinates
+  double        qwgt[12];      ///< weights
 };
 
 /*!
