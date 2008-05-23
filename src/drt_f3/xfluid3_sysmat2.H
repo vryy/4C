@@ -1297,7 +1297,7 @@ void static Sysmat(
     {
 
         // gaussian points
-        const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_6point);
+        const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_12point);
         
         //TODO: get the right element
         const DRT::Element* boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
@@ -1349,7 +1349,7 @@ void static Sysmat(
             
             // shape functions and their first derivatives
             static BlitzVec funct(DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement);
-            DRT::UTILS::shape_function<DISTYPE>(posXiDomain,funct);
+            DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
             // stress shape function
             static BlitzVec funct_stress(DRT::UTILS::_switchDisType<stressdistype>::numNodePerElement);
