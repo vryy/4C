@@ -145,8 +145,8 @@ Input/contact1_lin.dat                                  x        x        -     
 Input/xf3_drivencavity_stat_drt.dat                     x        -        -        -        -        -
 Input/xf3_beltrami_tet4_drt.dat                         -        -        -        -        -        -
 Input/xf3_ew_Q1_27x_drt.dat                             -        -        -        -        -        -
-Input/xf3_hit_the_corner.dat                            x        -        -        -        -        -
-Input/xf3_multibody_with_multilabel.dat                 x        -        -        -        -        -
+Input/xf3_hit_the_corner.dat                            -        -        -        -        -        -
+Input/xf3_multibody_with_multilabel.dat                 -        -        -        -        -        -
 Input/sohex8_disp_patchtest.dat                         x        x        -        -        -        -
 Input/sohex8_easfull_patchtest.dat                      x        x        -        -        -        -
 Input/sohex8_incompr_block.dat                          x        x        -        -        -        -
