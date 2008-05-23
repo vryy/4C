@@ -299,7 +299,8 @@ protected:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
-    calc_struct_update_genalpha_imrlike
+    calc_struct_update_genalpha_imrlike,
+    postprocess_stress
   };
 
   //! kinematic types of so_ctet10
@@ -354,8 +355,26 @@ protected:
                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
-                                 struct _MATERIAL*         material);
+                                 Epetra_SerialDenseMatrix* stresses,
+                                 Epetra_SerialDenseMatrix* elestrain,
+                                 struct _MATERIAL*         material,
+                                 bool                      cauchy = false);
+                   
+                
+  virtual void so_ctet10_nlnstiffstress (vector<int>&              lm,
+                                 vector<double>&           disp,
+                                 vector<double>&           residual,
+                                 Epetra_SerialDenseMatrix* stiffmatrix,
+                                 Epetra_SerialDenseMatrix* massmatrix,
+                                 Epetra_SerialDenseVector* force,
+                                 Epetra_SerialDenseMatrix* elestress,
+                                 Epetra_SerialDenseMatrix* elestrain,
+                                 struct _MATERIAL*         material,
+                                 bool                      cauchy = false);
 
+  void so_ctet10_expol(Epetra_SerialDenseMatrix& stresses,
+                  Epetra_SerialDenseMatrix& nodalstresses);
+  //obsolete
   void so_ctet10_stress(struct _MATERIAL* material,
                    vector<double>& mydisp,
                    Epetra_SerialDenseMatrix* stresses);
@@ -407,8 +426,8 @@ protected:
   
 
 /*!
-\brief A spezialisation of the DRT::ELEMENTS::Discrete_integrator class for the quadratic
-10-node tetrahedra using a  14 point quadrature, it is exaxt for 0-4th order polynomials.
+\brief A spezialisation of the DRT::ELEMENTS::Discrete_integrator class for the composite 
+10-node tetrahedron, using a 5-node rule. 
 \author a.vlf
 */
 
@@ -424,9 +443,16 @@ protected:
   {
   	public:
   		L_AJ_integrator(SUB_STRUCTURE&);
+  		Epetra_SerialDenseMatrix Mbc_inv;
   		//~L_AJ_integrator();
   };
   
+  class L_AJ_stress_integrator : public DRT::ELEMENTS::So_integrator
+  {
+  	public:
+  		L_AJ_stress_integrator(SUB_STRUCTURE&);
+  		//~L_AJ_integrator();
+  };
   
   double ctet10_midpoint(int coord);
 

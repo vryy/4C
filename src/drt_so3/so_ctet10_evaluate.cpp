@@ -74,6 +74,7 @@ int DRT::ELEMENTS::So_ctet10::Evaluate(ParameterList& params,
   else if (action=="calc_struct_fsiload")       act = So_ctet10::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = So_ctet10::calc_struct_update_istep;
   else if (action=="calc_struct_update_genalpha_imrlike")  act = So_ctet10::calc_struct_update_genalpha_imrlike;
+  else if (action=="postprocess_stress")        act = So_ctet10::postprocess_stress;
   else dserror("Unknown type of action for So_ctet10");
 
   // get the material law
@@ -88,7 +89,7 @@ int DRT::ELEMENTS::So_ctet10::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      so_ctet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);//*
+      so_ctet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
 
     }
     break;
@@ -104,7 +105,7 @@ int DRT::ELEMENTS::So_ctet10::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
-      so_ctet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
+      so_ctet10_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
     }
     break;
 
@@ -129,23 +130,127 @@ int DRT::ELEMENTS::So_ctet10::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
-      so_ctet10_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
+      so_ctet10_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
     }
     break;
 
-    // evaluate stresses
+     // evaluate stresses
     case calc_struct_stress: {
-      dserror("Case calc_struct_stress not yet implemented");
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
+      RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
       if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      if (stressdata==null) dserror("Cannot get stress 'data'");
+      if (straindata==null) dserror("Cannot get strain 'data'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-
-      Epetra_SerialDenseMatrix stresses(NUMGPT_SOCTET10,NUMSTR_SOCTET10);//*
-      so_ctet10_stress(actmat,mydisp,&stresses); //*
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      Epetra_SerialDenseMatrix stress(NUMNOD_SOCTET10,NUMSTR_SOCTET10);
+      Epetra_SerialDenseMatrix strain(NUMNOD_SOCTET10,NUMSTR_SOCTET10);
+      bool cauchy = params.get<bool>("cauchy", false);
+      so_ctet10_nlnstiffstress(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy);
+      AddtoPack(*stressdata, stress);
+      AddtoPack(*straindata, strain);
     }
     break;
 
+
+	// postprocess stresses at gauss points
+    case postprocess_stress:{
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+      if (gpstressmap==null)
+        dserror("no gp stress map available for postprocessing");
+      string stresstype = params.get<string>("stresstype","ndxyz");
+      int gid = Id();
+      RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
+
+      if (stresstype=="ndxyz") {
+        // extrapolate stresses at Gauss points to nodes
+        Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOCTET10,NUMSTR_SOCTET10);
+        so_ctet10_expol(*gpstress,nodalstresses);
+
+        // average nodal stresses between elements
+        // -> divide by number of adjacent elements
+        vector<int> numadjele(NUMNOD_SOCTET10);
+
+        for (int i=0;i<NUMNOD_SOCTET10;++i){
+          DRT::Node* node=Nodes()[i];
+          numadjele[i]=node->NumElement();
+        }
+
+        for (int i=0;i<NUMNOD_SOCTET10;++i){
+          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
+          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
+          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+        }
+        for (int i=0;i<NUMNOD_SOCTET10;++i){
+          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
+          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
+          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+        }
+      }
+      else if (stresstype=="cxyz") {
+        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
+        if (elestress==null)
+          dserror("No element stress vector available");
+        const Epetra_BlockMap elemap = elestress->Map();
+        int lid = elemap.LID(Id());
+        if (lid!=-1) {
+          for (int i = 0; i < NUMSTR_SOCTET10; ++i) {
+            (*((*elestress)(i)))[lid] = 0.;
+            for (int j = 0; j < NUMGPT_SOCTET10; ++j) {
+              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOCTET10 * (*gpstress)(j,i);
+            }
+          }
+        }
+      }
+      else if (stresstype=="cxyz_ndxyz") {
+        // extrapolate stresses at Gauss points to nodes
+        Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOCTET10,NUMSTR_SOCTET10);
+        so_ctet10_expol(*gpstress,nodalstresses);
+
+        // average nodal stresses between elements
+        // -> divide by number of adjacent elements
+        vector<int> numadjele(NUMNOD_SOCTET10);
+
+        for (int i=0;i<NUMNOD_SOCTET10;++i){
+          DRT::Node* node=Nodes()[i];
+          numadjele[i]=node->NumElement();
+        }
+
+        for (int i=0;i<NUMNOD_SOCTET10;++i){
+          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
+          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
+          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+        }
+        for (int i=0;i<NUMNOD_SOCTET10;++i){
+          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
+          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
+          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+        }
+        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
+        if (elestress==null)
+          dserror("No element stress vector available");
+        const Epetra_BlockMap elemap = elestress->Map();
+        int lid = elemap.LID(Id());
+        if (lid!=-1) {
+          for (int i = 0; i < NUMSTR_SOCTET10; ++i) {
+            (*((*elestress)(i)))[lid] = 0.;
+            for (int j = 0; j < NUMGPT_SOCTET10; ++j) {
+              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOCTET10 * (*gpstress)(j,i);
+            }
+          }
+        }
+      }
+      else{
+        dserror("unknown type of stress output on element level");
+      }
+    }
+    break;
+    
     case calc_struct_eleload:
       dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
     break;
@@ -206,7 +311,6 @@ int DRT::ELEMENTS::So_ctet10::EvaluateNeumann(ParameterList& params,
  * SUB STRUCTURE for CTET_10 
  * =========================*/
   // update element geometry
-  // actually we only need the first 4 nodes but for consistency all are included
   Epetra_SerialDenseMatrix xrefe(NUMNOD_SOCTET10,NUMDIM_SOCTET10);  // material coord. of element
   /* structure of xrefe:
     **             [  X_1   Y_1   Z_1  ]
@@ -214,7 +318,8 @@ int DRT::ELEMENTS::So_ctet10::EvaluateNeumann(ParameterList& params,
     **             [   |     |     |   ]
     **             [  X_10  Y_10  Z_10 ]
     */
-  // the ussual translation of the whole element to the zeo is made in order to improve numerical accuracy  
+  // the ussual translation of the whole element to the zero is done
+  // in order to improve numerical accuracy  
   for (int i=0; i<NUMNOD_SOCTET10; ++i){
     xrefe(i,0) = Nodes()[i]->X()[0] - Nodes()[0]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1] - Nodes()[0]->X()[1];
@@ -232,7 +337,7 @@ int DRT::ELEMENTS::So_ctet10::EvaluateNeumann(ParameterList& params,
   double volume=det_volf(jac_coord)/(double) 6;    //volume of a tetrahedra
 
   // integration factor 
-  // - is quit straight forward here as all sub elems are linear 
+  // - is quite straight forward here as all sub elems are linear 
   // their shape function values on all nodes are 1
   // a sumation makes 
   double intfactor = curvefac * volume / 32.0 * curvefac;
@@ -240,7 +345,7 @@ int DRT::ELEMENTS::So_ctet10::EvaluateNeumann(ParameterList& params,
   {
   		for (int dim = 0; dim < NUMDIM_SOCTET10; dim ++)
   		{
-  			elevec1(NUMDIM_SOTET10*i+dim)= intfactor * (*onoff)[dim] * (*val)[dim];
+  			elevec1(NUMDIM_SOCTET10*i+dim)= intfactor * (*onoff)[dim] * (*val)[dim];
   		}
   }
   
@@ -249,7 +354,7 @@ int DRT::ELEMENTS::So_ctet10::EvaluateNeumann(ParameterList& params,
   {
    		for (int dim = 0; dim < NUMDIM_SOCTET10; dim ++)
   		{
-  			elevec1(NUMDIM_SOTET10*i+dim)= intfactor * (*onoff)[dim] * (*val)[dim];
+  			elevec1(NUMDIM_SOCTET10*i+dim)= intfactor * (*onoff)[dim] * (*val)[dim];
   		}
   }
 
@@ -269,7 +374,10 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
       Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
       Epetra_SerialDenseVector* force,          // element internal force vector
-      struct _MATERIAL*         material)       // element material data
+      Epetra_SerialDenseMatrix* elestress,      // stresses at GP
+      Epetra_SerialDenseMatrix* elestrain,      // strains at GP
+      struct _MATERIAL*         material,       // element material data
+      const bool                cauchy)         // stress output options
 {
 /* =========================*
  * SUB STRUCTURE for CTET_10 
@@ -291,6 +399,8 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
     */   
     
   Epetra_SerialDenseMatrix xdisp(NUMNOD_SOCTET10,NUMDIM_SOCTET10);  // current  coord. of element
+  // translation of the whole element to the zero is done
+  // in order to improve numerical accuracy  
   for (int i=0; i<NUMNOD_SOCTET10; ++i){
     xrefe(i,0) = Nodes()[i]->X()[0] - Nodes()[0]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1] - Nodes()[0]->X()[1];
@@ -403,21 +513,21 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
     ** of B-operator is not so sharp in the non-linear realm) *
     ** B = F . Bl *
     **
-    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
-    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
-    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
-    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
-    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
-    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
-    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
-    **      [                                                         ]
-    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
-    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
-    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
-    **      [                                                         ]
-    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
-    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
-    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+    **      [ ... | F_11*L_aj_{,1}^k  F_21*L_aj_{,1}^k  F_31*L_aj_{,1}^k | ... ]
+    **      [ ... | F_12*L_aj_{,2}^k  F_22*L_aj_{,2}^k  F_32*L_aj_{,2}^k | ... ]
+    **      [ ... | F_13*L_aj_{,3}^k  F_23*L_aj_{,3}^k  F_33*L_aj_{,3}^k | ... ]
+    ** B =  [ ~~~    ~~~~~~~~~~~~~     ~~~~~~~~~~~~~     ~~~~~~~~~~~~~     ~~~ ]
+    **      [       F_11*L_aj_{,2}^k+F_12*L_aj_{,1}^k                          ]
+    **      [ ... |           F_21*L_aj_{,2}^k+F_22*L_aj_{,1}^k          | ... ]
+    **      [                          F_31*L_aj_{,2}^k+F_32*L_aj_{,1}^k       ]
+    **      [                                                                  ]
+    **      [       F_12*L_aj_{,3}^k+F_13*L_aj_{,2}^k                          ]
+    **      [ ... |           F_22*L_aj_{,3}^k+F_23*L_aj_{,2}^k          | ... ]
+    **      [                          F_32*L_aj_{,3}^k+F_33*L_aj_{,2}^k       ]
+    **      [                                                                  ]
+    **      [       F_13*L_aj_{,1}^k+F_11*L_aj_{,3}^k                          ]
+    **      [ ... |           F_23*L_aj_{,1}^k+F_21*L_aj_{,3}^k          | ... ]
+    **      [                          F_33*L_aj_{,1}^k+F_31*L_aj_{,3}^k       ]
     */
     
     Epetra_SerialDenseMatrix bop(NUMSTR_SOCTET10,NUMDOF_SOCTET10);
@@ -436,7 +546,7 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
       			    						   defgrd(numdof,1)*L_aj_int.deriv_gp[gp](numnode,0);
       	bop(4,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,1)*L_aj_int.deriv_gp[gp](numnode,2) + \
       										   defgrd(numdof,2)*L_aj_int.deriv_gp[gp](numnode,1);
-      	bop(5,NODDOF_SOTET10*numnode+numdof) = defgrd(numdof,2)*L_aj_int.deriv_gp[gp](numnode,0) + \
+      	bop(5,NODDOF_SOCTET10*numnode+numdof) = defgrd(numdof,2)*L_aj_int.deriv_gp[gp](numnode,0) + \
       										   defgrd(numdof,0)*L_aj_int.deriv_gp[gp](numnode,2);
     	}
     }
@@ -455,12 +565,24 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
     Epetra_SerialDenseVector stress(NUMSTR_SOCTET10);
     double density;
     so_ctet10_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp);
+    
+    if (elestress != NULL){
+      for (int i = 0; i < NUMSTR_SOCTET10; ++i) {
+        (*elestress)(gp,i) = stress(i);
+      }
+    }
+    
+ 	#ifdef VERBOSE_OUTPUT    
+    cout << "material input\n";
+   	#endif //VERBOSE_OUTPUT
+    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+    
+	if (force != NULL && stiffmatrix != NULL){	
 	#ifdef VERBOSE_OUTPUT    
     cout << "material input\n";
    	#endif //VERBOSE_OUTPUT
  
-    // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-	/**UNCOMMENT NEXT LINE FOR NONLINEAR KINEMATICS	**/   
+    // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)   
     (*force).Multiply('T','N', L_aj_int.weights(gp) ,bop,stress,1.0);
     
     // integrate `elastic' and `initial-displacement' stiffness matrix
@@ -491,20 +613,12 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
         (*stiffmatrix)(NUMDIM_SOCTET10*inod+2,NUMDIM_SOCTET10*jnod+2) += bopstrbop;
       }
     } // end of intergrate `geometric' stiffness ******************************
-	
+	}
  
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
    
-   /*Epetra_SerialDenseVector L((*stiffmatrix).N());
-   cout << (*stiffmatrix).N() << endl;
-   LINALG::SymmetricEigen((*stiffmatrix),L, (*stiffmatrix).N());
-   
-   cout << L;
-   getchar();
-  */
-
   /*
    * Lumped Mass Matrix, due to Composite formulation
    */
@@ -523,17 +637,17 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
   for (i=0 ; i< 4; i ++)
   {
   		double massfactor= density * volume / 32.0;
-  		(*massmatrix)(NODDOF_SOCTET10*i+0,NUMDIM_SOTET10*i+0)= massfactor;
-  		(*massmatrix)(NODDOF_SOCTET10*i+1,NUMDIM_SOTET10*i+1)= massfactor;
-  		(*massmatrix)(NODDOF_SOCTET10*i+2,NUMDIM_SOTET10*i+2)= massfactor;
+  		(*massmatrix)(NODDOF_SOCTET10*i+0,NUMDIM_SOCTET10*i+0)= massfactor;
+  		(*massmatrix)(NODDOF_SOCTET10*i+1,NUMDIM_SOCTET10*i+1)= massfactor;
+  		(*massmatrix)(NODDOF_SOCTET10*i+2,NUMDIM_SOCTET10*i+2)= massfactor;
   }
   
   for (i=4 ; i< NUMNOD_SOCTET10; i ++)
   {
   		double massfactor= density * volume * 7.0 /48.0;
-  		(*massmatrix)(NODDOF_SOCTET10*i+0,NUMDIM_SOTET10*i+0)= massfactor;
-  		(*massmatrix)(NODDOF_SOCTET10*i+1,NUMDIM_SOTET10*i+1)= massfactor;
-  		(*massmatrix)(NODDOF_SOCTET10*i+2,NUMDIM_SOTET10*i+2)= massfactor;
+  		(*massmatrix)(NODDOF_SOCTET10*i+0,NUMDIM_SOCTET10*i+0)= massfactor;
+  		(*massmatrix)(NODDOF_SOCTET10*i+1,NUMDIM_SOCTET10*i+1)= massfactor;
+  		(*massmatrix)(NODDOF_SOCTET10*i+2,NUMDIM_SOCTET10*i+2)= massfactor;
   }
 #endif
  
@@ -543,15 +657,7 @@ void DRT::ELEMENTS::So_ctet10::so_ctet10_nlnstiffmass(
   return;
 } // DRT::ELEMENTS::So_ctet10::so_tet10_nlnstiffmass
 
-/*
-double DRT::ELEMENTS::So_ctet10::ctet10_midpoint(int coord)
-{
-	double midpoint=0;
-	for (int nd_num=4;nd_num<NUMNOD_SOCTET10;nd_num++)
-		midpoint+=Nodes()[nd_num]->X()[coord];
-	return midpoint/double(6.0);		
-}*/
-
+//should be changed if distorted refernce configurations are used
 double DRT::ELEMENTS::So_ctet10::ctet10_midpoint(int coord)
 {
 	long double midpoint=0;
@@ -727,7 +833,7 @@ DRT::ELEMENTS::So_ctet10::TET4_SUB::~TET4_SUB()
 
 DRT::ELEMENTS::So_ctet10::SUB_STRUCTURE::SUB_STRUCTURE(const Epetra_SerialDenseMatrix& xrefe)
 {
-	//cout << xrefe;
+	// sub elements conectivity
 	my_elements[ 0].init( 0, 4, 6, 7,xrefe, double(5)/8.0,  double(1)/8.0,  double(1)/8.0,  double(1)/8.0);
 	my_elements[ 1].init( 1, 5, 4, 8,xrefe, double(1)/8.0,  double(5)/8.0,  double(1)/8.0,  double(1)/8.0);
 	my_elements[ 2].init( 2, 6, 5, 9,xrefe, double(1)/8.0,  double(1)/8.0,  double(5)/8.0,  double(1)/8.0);
@@ -755,7 +861,7 @@ DRT::ELEMENTS::So_ctet10::Tet10c_integrator_5point::Tet10c_integrator_5point(SUB
   num_nodes = 10;
   num_coords = NUMCOORD_SOCTET10;
   shapefct_gp.resize(NUMGPT_SOCTET10);
-  //deriv_gp    = new Epetra_SerialDenseMatrix[NUMGPT_SOTET4];
+  //deriv_gp    = NULL;
   deriv_gp.resize(NUMGPT_SOCTET10);
   weights.Size(num_gp);
   
@@ -795,15 +901,98 @@ DRT::ELEMENTS::So_ctet10::Tet10c_integrator_5point::Tet10c_integrator_5point(SUB
 }
 
 
+/*----------------------------------------------------------------------*
+ | constructor for a integrator class              			   vlf 05/08|
+ | Evaluates the L_aj matrix that replaces the N_,X matrices known from |
+ | other formualtions. Additionally agregates the information for       | 
+ | integrating the stiffness matrix.                                    |
+ *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_ctet10::L_AJ_integrator::L_AJ_integrator(SUB_STRUCTURE& sub_struct)
 {
-	num_gp      = 5;
+	num_gp      = NUMGPT_SOCTET10;
     num_nodes   = 10;
-    num_coords  =  3; //here dervatives N_,X instead of N_,xi are used
-    shapefct_gp.resize(NUMGPT_SOCTET10);
+    num_coords  =  3; 
+    shapefct_gp.resize(NUMGPT_SOCTET10);//here derivatives N_,X instead of N_,xi are used
     deriv_gp.resize(NUMGPT_SOCTET10);
     weights.Size(NUMGPT_SOCTET10);
 	
+	Tet10c_integrator_5point Mbc_integrator(sub_struct);
+	Epetra_SerialDenseMatrix Mbc(4,4);
+	
+	// compute M_bc^-1
+	for(int b = 0; b < 4; b ++)
+	  for(int c = 0; c < 4; c ++)
+	    for(int gp = 0; gp < Mbc_integrator.num_gp ; gp ++)
+	    {
+	    	Mbc(b,c)+= (Mbc_integrator.shapefct_gp[gp])[b] * (Mbc_integrator.shapefct_gp[gp])[c]\
+	    	           * (Mbc_integrator.weights)[gp];
+	    }	 
+
+	Mbc_inv.Reshape(4,4);
+	Epetra_SerialDenseMatrix I_matrix(4,4);
+	for (int i = 0;i < 4; i++) I_matrix(i,i)=1;
+
+	Epetra_SerialDenseSolver solve_for_Mbc_inv;  // solve A.X=B
+    solve_for_Mbc_inv.SetMatrix(Mbc);            // set A=Mbc
+    solve_for_Mbc_inv.SetVectors(Mbc_inv,I_matrix);// set X=Mbc_inv, B=I_matrix
+    solve_for_Mbc_inv.FactorWithEquilibration(true);
+    int err2 = solve_for_Mbc_inv.Factor();        
+    int err = solve_for_Mbc_inv.Solve();         // Mbc_inv = Mbc^-1.I_matrix
+    if ((err != 0) && (err2!=0)){
+    	dserror("Inversion of Mbc");
+    }
+
+	
+	//compute L_aj on each GP
+	for (int gp = 0;gp < NUMGPT_SOCTET10; gp++)
+	{
+		deriv_gp[gp].Shape(num_nodes,num_coords);
+		
+		// integrate over sub elements
+		for (int sub_num = 0 ;sub_num < 12 ; sub_num++)
+		{
+			Epetra_SerialDenseVector my_xi_b(4);
+            Epetra_SerialDenseMatrix my_N_aJ(num_nodes+1,num_coords);
+            
+            // call  integration routine for the linear sub element
+            // & map the integrated functions back to the global element
+            (sub_struct.my_elements[sub_num]).integrate(my_xi_b,my_N_aJ);
+		    my_N_aJ.Reshape(num_nodes,num_coords);
+		    Epetra_SerialDenseVector temp_vector(4);
+			temp_vector.Multiply('N','N', 1, Mbc_inv, my_xi_b, 0);
+
+			double temp_scale = temp_vector.Dot(Mbc_integrator.shapefct_gp[gp]);
+			my_N_aJ.Scale(temp_scale);
+			deriv_gp[gp]+= my_N_aJ;
+		}		
+	}  
+//------------
+	for (int gp= 0; gp< num_gp ; gp++)
+	{
+		weights(gp)= (Mbc_integrator.weights)[gp];
+	}
+}
+
+
+/*----------------------------------------------------------------------*
+ | constructor for a integrator class              			   vlf 05/08|
+ | Evaluates the L_aj matrix that replaces the N_,X matrices known from |
+ | other formualtions. These are evaluated at nodes in order to obtain  | 
+ | the stresses at the nodes of the element. This is a consistent       |
+ | evaluation of these stresses                                         |
+ *----------------------------------------------------------------------*/
+
+DRT::ELEMENTS::So_ctet10::\
+L_AJ_stress_integrator::L_AJ_stress_integrator(SUB_STRUCTURE& sub_struct)
+{
+	num_gp      = 10;
+    num_nodes   = 10;
+    num_coords  =  3; //here dervatives N_,X instead of N_,xi are used
+    shapefct_gp.resize(NUMNOD_SOCTET10);
+    deriv_gp.resize(NUMNOD_SOCTET10);
+    weights.Size(NUMNOD_SOCTET10);
+	
+	// compute M_bc^-1
 	Tet10c_integrator_5point Mbc_integrator(sub_struct);
 	Epetra_SerialDenseMatrix Mbc(4,4);
 	
@@ -814,7 +1003,7 @@ DRT::ELEMENTS::So_ctet10::L_AJ_integrator::L_AJ_integrator(SUB_STRUCTURE& sub_st
 	    	Mbc(b,c)+= (Mbc_integrator.shapefct_gp[gp])[b] * (Mbc_integrator.shapefct_gp[gp])[c]\
 	    	           * (Mbc_integrator.weights)[gp];
 	    }	 
-	//cout << Mbc;
+
 	Epetra_SerialDenseMatrix Mbc_inv(4,4);
 	Epetra_SerialDenseMatrix I_matrix(4,4);
 	for (int i = 0;i < 4; i++)I_matrix(i,i)=1;
@@ -828,24 +1017,29 @@ DRT::ELEMENTS::So_ctet10::L_AJ_integrator::L_AJ_integrator(SUB_STRUCTURE& sub_st
     if ((err != 0) && (err2!=0)){
     	dserror("Inversion of Mbc");
     }
-	
-	//cout << Mbc << Mbc_inv;
-	
-	for (int gp = 0;gp < NUMGPT_SOCTET10; gp++)
+
+	//use the tet10 node-based integrator, it contains
+	//nodal coordinates at nodes for a 10-node tetrahedral
+	Integrator_tet10_10node _10node_integrator;
+	// integrate for each node
+	for (int gp = 0;gp < _10node_integrator.num_gp; gp++)
 	{
 		deriv_gp[gp].Shape(num_nodes,num_coords);
 		
+		// integrate over sub elements
 		for (int sub_num = 0 ;sub_num < 12 ; sub_num++)
 		{
 			Epetra_SerialDenseVector my_xi_b(4);
             Epetra_SerialDenseMatrix my_N_aJ(num_nodes+1,num_coords);
             
+            // call  integration routine for the linear sub element
+            // & map the integrated functions back to the global element
             (sub_struct.my_elements[sub_num]).integrate(my_xi_b,my_N_aJ);
 		    my_N_aJ.Reshape(num_nodes,num_coords);
 		    Epetra_SerialDenseVector temp_vector(4);
 			temp_vector.Multiply('N','N', 1 , Mbc_inv, my_xi_b,0);
 			
-			double temp_scale = temp_vector.Dot(Mbc_integrator.shapefct_gp[gp]);
+			double temp_scale = temp_vector.Dot(_10node_integrator.shapefct_gp_lin[gp]);
 			my_N_aJ.Scale(temp_scale);
 			deriv_gp[gp]+= my_N_aJ;
 		}		
@@ -853,9 +1047,8 @@ DRT::ELEMENTS::So_ctet10::L_AJ_integrator::L_AJ_integrator(SUB_STRUCTURE& sub_st
 //------------
 	for (int gp= 0; gp< num_gp ; gp++)
 	{
-		weights(gp)= (Mbc_integrator.weights)[gp];
+		weights(gp)= (_10node_integrator.weights)[gp];
 	}
-
 }
 
 DRT::ELEMENTS::So_ctet10::SUB_STRUCTURE::~SUB_STRUCTURE()

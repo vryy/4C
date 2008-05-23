@@ -496,6 +496,111 @@ DRT::ELEMENTS::Integrator_tet10_4point::Integrator_tet10_4point(void)
   }
  }
  
+ /*----------------------------------------------------------------------*
+ | constructor for a integrator class              			  volf 09/07|
+ | this integrator wraps the shape function values at nodes             |
+ *----------------------------------------------------------------------*/
+ 
+DRT::ELEMENTS::Integrator_tet10_10node::Integrator_tet10_10node(void)
+{
+  // forward initialization of necessary attributes
+  num_gp = NUMNOD_SOTET10;
+  num_nodes = NUMNOD_SOTET10 ;
+  num_coords = NUMCOORD_SOTET10;
+  shapefct_gp.resize(NUMNOD_SOTET10);
+  shapefct_gp_lin.resize(NUMNOD_SOTET10);
+  deriv_gp.resize(NUMNOD_SOTET10);
+  weights.Size(num_gp);
+
+  //Quadrature rule from Carlos A. Felippa: Adv. FEM  §16.4 
+ 
+  // (xsi1, xsi2, xsi3 ,xsi4) gp-locations of fully integrated linear 10-node Tet
+  const double xsi1[NUMNOD_SOTET10] = {1, 0, 0, 0, 0.5,   0, 0.5, 0.5,   0,   0};
+  const double xsi2[NUMNOD_SOTET10] = {0, 1, 0, 0, 0.5, 0.5,   0,   0, 0.5,   0};
+  const double xsi3[NUMNOD_SOTET10] = {0, 0, 1, 0,   0, 0.5, 0.5,   0,   0, 0.5};
+  const double xsi4[NUMNOD_SOTET10] = {0, 0, 0, 1,   0,   0,   0, 0.5, 0.5, 0.5};
+  const double w[NUMNOD_SOTET10]    = {0, 0, 0, 0,   0,   0,   0,   0,   0,   0};
+	
+	
+  for (int gp=0; gp<num_gp; gp++) {
+      (shapefct_gp_lin[gp]).Size(num_nodes);
+      (shapefct_gp_lin[gp])[0] = xsi1[gp];
+      (shapefct_gp_lin[gp])[1] = xsi2[gp];
+      (shapefct_gp_lin[gp])[2] = xsi3[gp];
+      (shapefct_gp_lin[gp])[3] = xsi4[gp];
+  }
+   // fill up nodal f at each gp 
+  for (int gp=0; gp<num_gp; gp++) {
+      (shapefct_gp[gp]).Size(num_nodes);
+      (shapefct_gp[gp])[0] = xsi1[gp] * (2*xsi1[gp] -1);
+      (shapefct_gp[gp])[1] = xsi2[gp] * (2*xsi2[gp] -1);
+      (shapefct_gp[gp])[2] = xsi3[gp] * (2*xsi3[gp] -1);
+      (shapefct_gp[gp])[3] = xsi4[gp] * (2*xsi4[gp] -1);
+      (shapefct_gp[gp])[4] = 4 * xsi1[gp] * xsi2[gp];
+      (shapefct_gp[gp])[5] = 4 * xsi2[gp] * xsi3[gp];
+      (shapefct_gp[gp])[6] = 4 * xsi3[gp] * xsi1[gp];
+      (shapefct_gp[gp])[7] = 4 * xsi1[gp] * xsi4[gp];  
+      (shapefct_gp[gp])[8] = 4 * xsi2[gp] * xsi4[gp];
+      (shapefct_gp[gp])[9] = 4 * xsi3[gp] * xsi4[gp];
+      weights[gp] = w[gp]; 	// just for clarity how to get weight factors    
+  }
+ 
+ // fill up df xsi1, xsi2, xsi3, xsi4 directions (NUMDIM) at each gp
+  for (int gp=0; gp<num_gp; gp++) {
+  	(deriv_gp[gp]).Shape(num_nodes,num_coords);
+  	// deriv_gp wrt to xsi1 "(0,..)" for each node(0..9) at each gp [i]
+  	(deriv_gp[gp])(0,0) = 4 * xsi1[gp]-1;
+  	(deriv_gp[gp])(1,0) = 0;
+    (deriv_gp[gp])(2,0) = 0;
+    (deriv_gp[gp])(3,0) = 0;
+    
+    (deriv_gp[gp])(4,0) = 4 * xsi2[gp];
+    (deriv_gp[gp])(5,0) = 0;
+    (deriv_gp[gp])(6,0) = 4 * xsi3[gp];
+    (deriv_gp[gp])(7,0) = 4 * xsi4[gp];  
+    (deriv_gp[gp])(8,0) = 0;
+    (deriv_gp[gp])(9,0) = 0;
+
+    // deriv_gp wrt to xsi2 "(1,..)" for each node(0..9) at each gp [gp]
+    (deriv_gp[gp])(0,1) = 0;
+    (deriv_gp[gp])(1,1) = 4 * xsi2[gp] - 1;
+    (deriv_gp[gp])(2,1) = 0;
+    (deriv_gp[gp])(3,1) = 0;
+     	
+    (deriv_gp[gp])(4,1) = 4 * xsi1[gp];
+    (deriv_gp[gp])(5,1) = 4 * xsi3[gp];
+    (deriv_gp[gp])(6,1) = 0;
+    (deriv_gp[gp])(7,1) = 0;  
+    (deriv_gp[gp])(8,1) = 4 * xsi4[gp];
+    (deriv_gp[gp])(9,1) = 0;
+
+    // deriv_gp wrt to xsi3 "(2,..)" for each node(0..9) at each gp [gp]
+    (deriv_gp[gp])(0,2) = 0;
+    (deriv_gp[gp])(1,2) = 0;
+    (deriv_gp[gp])(2,2) = 4 * xsi3[gp] - 1;
+    (deriv_gp[gp])(3,2) = 0;
+      
+    (deriv_gp[gp])(4,2) = 0;
+    (deriv_gp[gp])(5,2) = 4 * xsi2[gp];
+    (deriv_gp[gp])(6,2) = 4 * xsi1[gp];
+    (deriv_gp[gp])(7,2) = 0;  
+    (deriv_gp[gp])(8,2) = 0;
+    (deriv_gp[gp])(9,2) = 4 * xsi4[gp];
+        
+    // deriv_gp wrt to xsi4 "(2,..)" for each node(0..9) at each gp [gp]
+    (deriv_gp[gp])(0,3) = 0;
+    (deriv_gp[gp])(1,3) = 0;
+    (deriv_gp[gp])(2,3) = 0;
+    (deriv_gp[gp])(3,3) = 4 * xsi4[gp] - 1;
+      
+    (deriv_gp[gp])(4,3) = 0;
+    (deriv_gp[gp])(5,3) = 0;
+    (deriv_gp[gp])(6,3) = 0;
+    (deriv_gp[gp])(7,3) = 4 * xsi1[gp];  
+    (deriv_gp[gp])(8,3) = 4 * xsi2[gp];
+    (deriv_gp[gp])(9,3) = 4 * xsi3[gp];
+  }
+}
 /*----------------------------------------------------------------------*
  | constructor for a integrator class              			  volf 09/07|
  | uses shape functions of a quadratic tetrahedra using so-called       |

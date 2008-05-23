@@ -155,36 +155,50 @@ NOTE: X stands for the number of NODES (and shape functions) in a element
   	public:
   		Integrator_tet10_14point(void);
   };
+ 
+  class Integrator_tet10_10node : public So_integrator
+  {
+  	public:
+  		vector<Epetra_SerialDenseVector> shapefct_gp_lin; 
+  		Integrator_tet10_10node(void);
+  };
   
-  /*---------------------------------------------------------------------------------*
-  | class Tet_integrator_1point											vlf 09/07   |
-  |																					|
-  | a special class for quadratic 4-node tetrahedra using a 4 point quadrature   	|
-  |	it is exaxt for linear and quadratic polynomials								|
-  |																					|
+ /*---------------------------------------------------------------------------------*
+  | class Integrator_tet4_1point                                        vlf 09/07   |
+  |                                                                                 |
+  | a special class for quadratic 4-node tetrahedra using a 4 point quadrature      |
+  |	it is exaxt for linear and quadratic polynomials                                |
+  |                                                                                 |
   *---------------------------------------------------------------------------------*/
   class Integrator_tet4_1point : public So_integrator
   {
   	public:
   		Integrator_tet4_1point(void);
   };
-
+ /*---------------------------------------------------------------------------------*
+  | class Integrator_tet4_4point                                        vlf 09/07   |
+  |                                                                                 |
+  | a special class for quadratic 4-node tetrahedra using a 4 point quadrature      |
+  |	it is exaxt for linear and quadratic polynomials                                |
+  |                                                                                 |
+  *---------------------------------------------------------------------------------*/
+  class Integrator_tet4_4point : public So_integrator
+  {
+  	public:
+  		Integrator_tet4_4point(void);
+  };
+  
   class Integrator_tri3_1point : public So_integrator
   {
   	public:
   		Integrator_tri3_1point(void);
   };
   
-  class Integrator_tet4_4point : public So_integrator
-  {
-  	public:
-  		Integrator_tet4_4point(void);
-  };
+
 } // namespace ELEMENTS
 } // namespace DRT
 
 long double det_volf(Epetra_SerialDenseMatrix& in_matrix);
-
 
 #endif  // #ifndef SO_INTEGRATOR
 #endif  // #ifdef  CCADISCRET

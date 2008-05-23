@@ -92,7 +92,7 @@ int DRT::ELEMENTS::Soctet10Surface::EvaluateNeumann(ParameterList&           par
   for (int num_ele = 0; num_ele < 4; num_ele++)
   {  
     /*
-    ** Here, we integrate a 6-node surface with 3 Gauss Points
+    ** Here, we integrate a 6-node surface with 1 Gauss Points on each of 4 sub-surfaces
     */
     double fac = (*weights)(0) * (sub.my_surface[num_ele]).my_area() * curvefac;   // integration factor
  
@@ -110,7 +110,7 @@ int DRT::ELEMENTS::Soctet10Surface::EvaluateNeumann(ParameterList&           par
     } 
   }  
   return 0;
-} //Sotet10Surface::EvaluateNeumann(..)
+} //Soctet10Surface::EvaluateNeumann(..)
 
 
 DRT::ELEMENTS::Soctet10Surface::SUB_NODE::SUB_NODE()
@@ -206,6 +206,7 @@ DRT::ELEMENTS::Soctet10Surface::SUB_STRUCTURE_SURF::~SUB_STRUCTURE_SURF()
 {
 	//nothing to do
 }
+
 /*----------------------------------------------------------------------*
  * Get shape functions for a tet4 face					       vlf 08/07*
  * ---------------------------------------------------------------------*/
@@ -236,7 +237,6 @@ void DRT::ELEMENTS::Soctet10Surface::sotet4_surface_shapefunc(
    *shapefct = &f;
 
    return;
-
 }
 
 

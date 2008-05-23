@@ -163,9 +163,20 @@ void DRT::ELEMENTS::So_ctet10::Print(ostream& os) const
   return;
 }
 
-/*------------------------------------------------------------------------***
+/*----------------------------------------------------------------------***
+ |  extrapolate stresses to the nodes   (public)               vlf 04/08|
+ *----------------------------------------------------------------------*/
+
+void DRT::ELEMENTS::So_ctet10::so_ctet10_expol(Epetra_SerialDenseMatrix& stresses,
+                                        Epetra_SerialDenseMatrix& nodalstresses)
+{
+   //since stresses are evaluated at nodes, they dont need to be extrapolated
+   nodalstresses = stresses;
+}
+
+/*-------------------------------------------------------------------------*
  |  allocate and return So_ctet10Register (public)               volf 06/07|
- *------------------------------------------------------------------------*/
+ *-------------------------------------------------------------------------*/
 RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_ctet10::ElementRegister() const
 {
   return rcp(new DRT::ELEMENTS::Soctet10Register(Type()));
