@@ -283,8 +283,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                   eleDofManager_, NumNode(), NodeIds());
           
 #if 0
-          const XFEM::DomainIntCells&  domainIntCells(ih_->GetDomainIntCells(this->Id(),this->Shape()));
-          if ((assembly_type == XFEM::xfem_assembly) and (domainIntCells.size() > 1))
+          const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
+          if ((assembly_type == XFEM::xfem_assembly) and (boundaryIntCells.size() > 0))
           {
               const int entry = 4; // line in stiffness matrix to compare
               const double disturbance = 1.0e-4;
@@ -298,7 +298,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               // R_0
               // calculate element coefficient matrix and rhs
               XFLUID::callSysmat(assembly_type,
-                      this, ih_, eleDofManager_, locval, locval_hist, estif, eforce,
+                      this, ih_, eleDofManager_, locval, locval_hist, ivelcol, estif, eforce,
                       actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
               blitz::Array<double, 1> eforce_0(locval.size());
@@ -326,7 +326,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               // R_0+dx
               // calculate element coefficient matrix and rhs
               XFLUID::callSysmat(assembly_type,
-                      this, ih_, eleDofManager_, locval_disturbed, locval_hist, estif, eforce,
+                      this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, estif, eforce,
                       actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
               
