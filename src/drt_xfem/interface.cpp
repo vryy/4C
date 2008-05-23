@@ -19,11 +19,11 @@ Maintainer: Axel Gerstenberger
  |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::InterfaceHandle(
-		const RCP<DRT::Discretization>        xfemdis, 
-		const RCP<DRT::Discretization>        cutterdis,
-		const RCP<Epetra_Vector>              idispcol) :
-			xfemdis_(xfemdis),
-			cutterdis_(cutterdis)
+    const RCP<DRT::Discretization>        xfemdis, 
+    const RCP<DRT::Discretization>        cutterdis,
+    const RCP<Epetra_Vector>              idispcol) :
+      xfemdis_(xfemdis),
+      cutterdis_(cutterdis)
 {
   currentcutterpositions_.clear();
   {
@@ -42,24 +42,16 @@ XFEM::InterfaceHandle::InterfaceHandle(
       currentcutterpositions_[node->Id()] = currpos;
     }
   }
-		  
-		  
-		  
-		  
-	elementalDomainIntCells_.clear();
-	elementalBoundaryIntCells_.clear();
-	XFEM::Intersection is;
-	is.computeIntersection(
-	        xfemdis,
-	        cutterdis,
-	        currentcutterpositions_,
-	        elementalDomainIntCells_,
-	        elementalBoundaryIntCells_);
-	
-	std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
-	std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
-	dsassert(elementalDomainIntCells_.size() == elementalBoundaryIntCells_.size(), "mismatch in cutted elements maps!");
-	  
+  
+  elementalDomainIntCells_.clear();
+  elementalBoundaryIntCells_.clear();
+  XFEM::Intersection is;
+  is.computeIntersection(xfemdis, cutterdis, currentcutterpositions_,elementalDomainIntCells_, elementalBoundaryIntCells_);
+  
+  std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
+  std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
+  dsassert(elementalDomainIntCells_.size() == elementalBoundaryIntCells_.size(), "mismatch in cutted elements maps!");
+  
   // sanity check, whether, we realy have integration cells in the map
   for (std::map<int,DomainIntCells>::const_iterator 
       tmp = elementalDomainIntCells_.begin();
@@ -68,7 +60,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
   {
     dsassert(tmp->second.empty() == false, "this is a bug!");
   }
-	
+  
   // sanity check, whether, we realy have integration cells in the map
   for (std::map<int,BoundaryIntCells>::const_iterator 
       tmp = elementalBoundaryIntCells_.begin();
@@ -77,7 +69,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
   {
     dsassert(tmp->second.empty() == false, "this is a bug!");
   }
-	
+  
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
 

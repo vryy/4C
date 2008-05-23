@@ -259,6 +259,14 @@ public:
             ElementalDofPosMap&  ElementalDofDistributionMap
             ) const;
     
+    Teuchos::RCP<Epetra_Vector> fillPhysicalOutputVector(
+            const XFEM::InterfaceHandle&     ih,
+            const Epetra_Vector&             original_vector,
+            const DRT::DofSet&               dofset_out,
+            const XFEM::NodalDofPosMap&      nodalDofDistributionMap,
+            const std::set<XFEM::PHYSICS::Field>&   fields_out
+            ) const;
+    
 private:
     //! pointer to the xfem discretization of which we hold the unknowns
     Teuchos::RCP<DRT::Discretization> xfemdis_;

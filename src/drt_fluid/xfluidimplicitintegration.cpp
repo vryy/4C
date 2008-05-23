@@ -27,6 +27,7 @@ Maintainer: Axel Gerstenberger
 #include "time_integration_scheme.H"
 
 #include "../drt_lib/linalg_ana.H"
+#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_xfem/interface.H"
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
@@ -83,9 +84,36 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   stepmax_  = params_.get<int>   ("max number timesteps");
   maxtime_  = params_.get<double>("total time");
   theta_    = params_.get<double>("theta");
+  
+  // create empty cutter discretization
+  Teuchos::RCP<DRT::Discretization> emptyboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(
+      actdis, "schnackelzappel", "DummyBoundary", "BELE3", vector<string>(0));
+  // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
+  RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,emptyboundarydis_,null));
+  // apply enrichments
+  RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
+  // tell elements about the dofs and the integration
+  {
+    ParameterList eleparams;
+    eleparams.set("action","store_xfem_info");
+    eleparams.set("dofmanager",dofmanager);
+    eleparams.set("interfacehandle",ih);
+    eleparams.set("assemble matrix 1",false);
+    eleparams.set("assemble matrix 2",false);
+    eleparams.set("assemble vector 1",false);
+    eleparams.set("assemble vector 2",false);
+    eleparams.set("assemble vector 3",false);
+    discret_->Evaluate(eleparams,null,null,null,null,null);
+  }
+  discret_->FillComplete();
 
-  // ensure that degrees of freedom in the discretization have been set
-  if (!discret_->Filled()) discret_->FillComplete();
+  //output_.WriteMesh(0,0.0);
+  
+  // store a dofset with the complete fluid unknowns
+  dofset_out_.Reset();
+  dofset_out_.AssignDegreesOfFreedom(*discret_,0);
+  // split based on complete fluid field
+  FLUID_UTILS::SetupFluidSplit(*discret_,dofset_out_,3,velpressplitterForOutput_);
   
   nodalDofDistributionMap_.clear();
   elementalDofDistributionMap_.clear();
@@ -593,30 +621,23 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // --------------------------------------------------
   // create remaining vectors with new dof distribution
   // --------------------------------------------------
-  //hist_         = LINALG::CreateVector(newdofrowmap,true);
-  dofswitch.mapVectorToNewDofDistribution(hist_);
+  hist_         = LINALG::CreateVector(newdofrowmap,true);
 
 //  gridv_        = LINALG::CreateVector(newdofrowmap,true);
   
   dirichtoggle_ = LINALG::CreateVector(newdofrowmap,true);
-  //dofswitch.mapVectorToNewDofDistribution(dirichtoggle_);
   invtoggle_    = LINALG::CreateVector(newdofrowmap,true);
-  //dofswitch.mapVectorToNewDofDistribution(invtoggle_);
 
   zeros_        = LINALG::CreateVector(newdofrowmap,true);
 
-  //neumann_loads_= LINALG::CreateVector(newdofrowmap,true);
-  dofswitch.mapVectorToNewDofDistribution(neumann_loads_);
+  neumann_loads_= LINALG::CreateVector(newdofrowmap,true);
 
   // ---------------------------------
   // Vectors used for solution process
   // ---------------------------------
-  //residual_     = LINALG::CreateVector(newdofrowmap,true);
-  dofswitch.mapVectorToNewDofDistribution(residual_);
-  //trueresidual_ = LINALG::CreateVector(newdofrowmap,true);
-  dofswitch.mapVectorToNewDofDistribution(trueresidual_);
-  //incvel_       = LINALG::CreateVector(newdofrowmap,true);
-  dofswitch.mapVectorToNewDofDistribution(incvel_);
+  residual_     = LINALG::CreateVector(newdofrowmap,true);
+  trueresidual_ = LINALG::CreateVector(newdofrowmap,true);
+  incvel_       = LINALG::CreateVector(newdofrowmap,true);
 
 
   // -------------------------------------------------------------------
@@ -1149,10 +1170,19 @@ void XFluidImplicitTimeInt::Output()
     writestep_= 0;
 
     output_.NewStep    (step_,time_);
-    output_.WriteVector("velnp", state_.velnp_);
-
+    //output_.WriteVector("velnp", state_.velnp_);
+    std::set<XFEM::PHYSICS::Field> fields_out;
+    fields_out.insert(XFEM::PHYSICS::Velx);
+    fields_out.insert(XFEM::PHYSICS::Vely);
+    fields_out.insert(XFEM::PHYSICS::Velz);
+    fields_out.insert(XFEM::PHYSICS::Pres);
+    Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->fillPhysicalOutputVector(
+        *ihForOutput_,*state_.velnp_, dofset_out_, nodalDofDistributionMap_, fields_out);
+    //cout << *velnp_out << endl;
+    output_.WriteVector("velnp", velnp_out);
+    
     // output real pressure
-    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(state_.velnp_);
+    Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
     pressure->Scale(density_);
     output_.WriteVector("pressure", pressure);
 
@@ -1163,6 +1193,7 @@ void XFluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
+      dserror("not supported, yet");
       RCP<Epetra_Vector> traction = CalcStresses();
       output_.WriteVector("traction",traction);
     }
@@ -1780,12 +1811,6 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
     // -------------------------------------------------------------------
     NonlinearSolve(cutterdiscret,ivelcol,idispcol,itruerescol);
 
-
-    // -------------------------------------------------------------------
-    //                         output of solution
-    // -------------------------------------------------------------------
-    Output();
-
     // -------------------------------------------------------------------
     //                    calculate lift'n'drag forces
     // -------------------------------------------------------------------
@@ -1796,6 +1821,11 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
       dserror("how did you manage to get here???");
     if(liftdrag == 2)
       LiftDrag();
+
+    // -------------------------------------------------------------------
+    //                         output of solution
+    // -------------------------------------------------------------------
+    Output();
 
   } // end of time loop
 
@@ -2046,8 +2076,8 @@ void XFluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelem
 #else
   //const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
-  Teuchos::RCP<LINALG::BlockSparseMatrix<InterfaceSplitStrategy> > mat =
-    Teuchos::rcp(new LINALG::BlockSparseMatrix<InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy> > mat =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
   mat->SetCondElements(condelements);
   sysmat_ = mat;
 #endif

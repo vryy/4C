@@ -525,6 +525,78 @@ void XFEM::DofManager::fillDofDistributionMaps(
 }
 
 
+Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
+    const XFEM::InterfaceHandle&     ih,
+    const Epetra_Vector&             original_vector,
+    const DRT::DofSet&               dofset_out,
+    const XFEM::NodalDofPosMap&      nodalDofDistributionMap,
+    const std::set<XFEM::PHYSICS::Field>&   fields_out
+    ) const
+{
+  Teuchos::RCP<Epetra_Vector> outvec = LINALG::CreateVector(*dofset_out.DofRowMap(),true);
+  
+  const int numdof = fields_out.size();
+  
+  const Epetra_Map* dofrowmap = dofset_out.DofRowMap();
+  const Epetra_Map* xdofrowmap = xfemdis_->DofRowMap();
+  
+  for (int i=0; i<xfemdis_->NumMyRowNodes(); ++i)
+  {
+      const DRT::Node* actnode = xfemdis_->lRowNode(i);
+      const int gid = actnode->Id();
+      const std::vector<int> gdofs(dofset_out.Dof(actnode));
+      
+      
+      std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
+      if (entry == nodalDofSet_.end())
+      {
+          // no dofs for this node... must be a hole or somethin'
+          //cout << "hole" << endl;
+          for (int idof = 0; idof < numdof; ++idof)
+          {
+            //cout << dofrowmap->LID(gdofs[idof]) << endl;
+            (*outvec)[dofrowmap->LID(gdofs[idof])] = 0.0;
+          }
+      }
+      else
+      {
+        
+        //cout << "some values available" << endl;
+        
+        //const std::vector<int> gdofs(xfemdis_->Dof(actnode));
+        const std::set<FieldEnr> dofset = entry->second;
+  
+        const BlitzVec3 actpos(toBlitzArray(actnode->X()));
+        int idof = 0;
+        for(std::set<XFEM::PHYSICS::Field>::const_iterator field_out = fields_out.begin(); field_out != fields_out.end(); ++field_out)
+        {
+          for(std::set<FieldEnr>::const_iterator fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
+          {
+            const XFEM::PHYSICS::Field fielditer = fieldenr->getField(); 
+            if (fielditer == *field_out)
+            {
+              const XFEM::Enrichment enr = fieldenr->getEnrichment();
+              const double enrval = enr.EnrValue(actpos, ih, XFEM::Enrichment::approachUnknown);
+              const XFEM::DofKey<XFEM::onNode> dofkey(gid,*fieldenr);
+              const int origpos = nodalDofDistributionMap.find(dofkey)->second;
+              //cout << origpos << endl;
+              if (origpos < 0)
+                dserror("bug!");
+              if (gdofs[idof] < 0)
+                dserror("bug!");
+              (*outvec)[dofrowmap->LID(gdofs[idof])] += enrval * original_vector[xdofrowmap->LID(origpos)];
+              
+            }
+          }
+          //cout << "LID " << dofrowmap->LID(gdofs[idof]) << " -> GID " << gdofs[idof] << endl;
+          idof++;
+        }
+      }
+  };
+  return outvec;
+}
+
+
 XFEM::AssemblyType XFEM::CheckForStandardEnrichmentsOnly(
         const ElementDofManager&   eleDofManager_,
         const int                  numnode,

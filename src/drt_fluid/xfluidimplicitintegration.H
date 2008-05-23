@@ -314,7 +314,8 @@ protected:
   XFEM::ElementalDofPosMap   elementalDofDistributionMap_;
   
   RCP<XFEM::InterfaceHandle> ihForOutput_;
-  RCP<XFEM::DofManager> dofmanagerForOutput_;
+  RCP<XFEM::DofManager>      dofmanagerForOutput_;
+  DRT::DofSet                dofset_out_;
 
   /// (standard) system matrix
   RCP<LINALG::SparseOperator> sysmat_;
@@ -371,6 +372,9 @@ protected:
 
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
+  
+  //! Extractor used for convergence check
+  LINALG::MapExtractor      velpressplitterForOutput_;
 
   /// free surface row dof map extractor
   const LINALG::MapExtractor* freesurface_;

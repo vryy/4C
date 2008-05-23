@@ -108,13 +108,14 @@ int main(
         cout << "Output XFEM Problem" << endl;
 
         cout << "  Structural Field" << endl;
+        string basename = problem.outname();
         PostField* structfield = problem.get_discretization(0);
         StructureEnsightWriter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
         structwriter.WriteFiles();
 
         cout << "  Fluid Field" << endl;
         PostField* fluidfield = problem.get_discretization(1);
-        XFluidEnsightWriter fluidwriter(fluidfield, structfield, problem.outname());
+        FluidEnsightWriter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
         break;
     }
