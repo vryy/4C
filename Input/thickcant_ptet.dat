@@ -1,0 +1,1979 @@
+==================================================================
+                        General Data File CCARAT
+==================================================================
+-------------------------------------------------------------TITLE
+Default_title
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS         528
+NODES            177
+DIM                3
+MATERIALS          1
+NUMDF        6
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   Structure
+NUMFIELD     1
+TIMETYP      Dynamic
+ALGEBRA      Trilinos
+RESTART      0
+----------------------------------------------------DISCRETISATION
+NUMFLUIDDIS  1
+NUMSTRUCDIS  1
+NUMALEDIS    1
+NUMTHERMDIS  1
+----------------------------------------------------------------IO
+OUTPUT_OUT             No
+OUTPUT_GID             No
+OUTPUT_BIN             Yes
+STRUCT_DISP            Yes
+STRUCT_STRESS          Cauchy
+STRUCT_STRAIN          yes
+STRUCT_SM_DISP         No
+FLUID_SOL              Yes
+FLUID_STRESS           No
+FLUID_VIS              No
+ALE_DISP               Yes
+THERM_TEMPERATURE      No
+THERM_HEATFLUX         No
+FILESTEPS              1000
+------------------------------------------------------------STATIC
+LINEAR
+-----------------------------------------------EIGENVALUE ANALYSIS
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP   Gen_Alfa
+EIGEN        0
+RESEVRYDISP  1
+RESEVRYSTRS  1
+RESTARTEVRY  5
+NLNSOL       fullnewton // fullnewton modnewton nlncg ptc
+TIMESTEP     0.0005
+NUMSTEP      100000
+MAXTIME      0.1
+BETA         0.291
+GAMMA        0.581
+ALPHA_M      0.378
+ALPHA_F      0.459
+DAMPING      No
+M_DAMP       0.5
+K_DAMP       0.5
+PREDICT      ConstDisVelAcc // ConstDisVelAcc ConstDis
+CONV_CHECK   AbsRes_And_AbsDis
+TOLDISP      1.0E-04
+TOLRES       1.0E-04
+TOLCONSTR    1.0E-04
+ADAPTCONV        yes
+ADAPTCONV_BETTER 0.1
+MAXITER      100
+UZAWAPARAM   1.0
+UZAWAMAXITER 20
+UZAWAALGO    newtonlinuzawa
+------------------------------------------------STRUCTURAL CONTACT
+CONTACT          None
+INIT_CONTACT     No
+BASISTRAFO       No
+FRICTION         None
+FRBOUND          0.0
+FRCOEFF          0.0
+-----------------------------------------------------FLUID DYNAMIC
+---------------------------------------FLUID DYNAMIC/STABILIZATION
+STABTYPE              residual_based
+DEFINITION_TAU        Barrenechea_Franca_Valentin_Wall
+TDS                   quasistatic
+TRANSIENT             no_transient
+PSPG                  yes_pspg
+SUPG                  yes_supg
+VSTAB                 no_vstab
+CSTAB                 cstab_qs
+CROSS-STRESS          no_cross
+REYNOLDS-STRESS       no_reynolds
+------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
+TURBULENCE_APPROACH   DNS_OR_RESVMM_LES
+PHYSICAL_MODEL        no_model
+C_SMAGORINSKY         0.17
+CHANNEL_L_TAU         0.0
+CANONICAL_FLOW        no
+CHAN_AMPL_INIT_DIST   0.1
+CHANNEL_HOMPLANE      xz
+SAMPLING_START        0
+SAMPLING_STOP         0
+DUMPING_PERIOD        0
+-------------------------------------------------------FSI DYNAMIC
+MAXTIME      1000.0
+TIMESTEP     0.05
+NUMSTEP      200
+UPPSS        1
+UPRES        1
+RESTARTEVRY  20
+IALE         Pseudo_Structure
+COUPALGO     iter_stagg_AITKEN_rel_param
+PREDICTOR    d(n)
+CONVCRIT     ||g(i)||:sqrt(neq)
+ENERGYCHECK  no
+TOLENCHECK   1.0E-6
+RELAX        1.0
+ITEMAX       100
+CONVTOL      1.0E-6
+ISDMAX       0
+COUPMETHOD   conforming
+COUPFORCE    nodeforce
+-------------------------------------------------------SSI DYNAMIC
+MAXTIME      1000.0
+TIMESTEP     0.05
+NUMSTEP      200
+UPPSS        1
+IALE         Pseudo_Structure
+COUPALGO     basic_sequ_stagg
+CONVCRIT     ||g(i)||:sqrt(neq)
+ENERGYCHECK  yes
+TOLENCHECK   1.0E-6
+RELAX        1.0
+ITEMAX       1
+CONVTOL      1.0E-6
+ISDMAX       0
+COUPMETHOD   conforming
+-------------------------------------------------------ALE DYNAMIC
+TIMESTEP     0.1
+NUMSTEP      200
+MAXTIME      5.0
+NUM_INITSTEP 0
+ALE_TYPE     classic_lin
+RESEVRYDISP  1
+QUALITY      none
+-------------------------------------------------------TSI DYNAMIC
+KIND         thermal_static_structure_genalpha
+NUMSTEP      200
+MAXTIME      5.0
+TIMESTEP     0.1
+RESEVRY      1
+STDEVRY      1
+TH_GAMMA     0.5
+ST_BETA      0.25
+ST_GAMMA     0.5
+ST_ALPHA_M   0.5
+ST_ALPHA_F   0.5
+TH_INITMPR   0.0
+------------------------------------------------------FLUID SOLVER
+SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT       0                  // output every so often, 0 no output
+AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC         MLFLUID2           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE        0                  // how often to recompute some preconditioners
+AZDROP         0.0                // drop tolerance for ILUT
+AZFILL         1.0                // fill-in for ILUT
+AZGFILL        0                  // graph fill for ILU
+AZTOL          1.0E-4             // tolerance in (un)scaled residual
+AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER         1000               // max iterations
+AZSUB          25                 // size of krylov space for gmres
+AZOMEGA        1.0                // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH        1                  // unused
+AZPOLY         1                  // polynomial order for Neumann
+AZOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL         none               // none sym infnorm scaling of the system
+AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+DWINDTAU       2.5                // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
+ML_PRINT          0               // ML print-out level (0-10)
+ML_MAXCOARSESIZE  5000            // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL       5               // ML max number of levels
+ML_COARSEN        UC              // UC MIS METIS VBMETIS
+ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO    0.0             // damping factor for prolongator smoother (usually 1.33 or 0.0)
+ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE   SGS             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED    ILU             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE KLU             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES       2 0 0 0 1       // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE       0.67            // damping fine grid
+ML_DAMPMED        1.0             // damping med grids
+ML_DAMPCOARSE     1.0             // damping coarse grid
+PARTITION         Cut_Elements
+---------------------------------------------FLUID PRESSURE SOLVER
+SOLVER         Aztec_MSR          // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT       0                  // output every so often, 0 no output
+AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC         ML                 // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE        0                  // how often to recompute some preconditioners
+AZDROP         0.0                // drop tolerance for ILUT
+AZFILL         1.0                // fill-in for ILUT
+AZGFILL        0                  // graph fill for ILU
+AZTOL          1.0E-8             // tolerance in unscaled residual
+AZITER         2500               // max iterations
+AZSUB          50                 // size of krylov space for gmres
+AZOMEGA        1.0                // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH        1                  // unused
+AZPOLY         5                  // polynomial order for Neumann
+AZOVERLAP      0                  // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL         none               // none sym infnorm scaling of the system
+AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+ML_PRINT          0               // ML print-out level (0-10)
+ML_MAXCOARSESIZE  5000            // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL       5               // ML max number of levels
+ML_COARSEN        UC              // UC MIS METIS VBMETIS
+ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO    1.33            // damping factor for prolongator smoother (usually 1.33 or 0.0)
+ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE   SGS             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED    SGS             // SGS GS DGS Jacobi Chebychev MLS ILU KLU 
+ML_SMOOTHERCOARSE KLU             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES       1 2 2 2 1       // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE       0.89            // damping fine grid
+ML_DAMPMED        0.67            // damping med grids
+ML_DAMPCOARSE     1.0             // damping coarse grid
+PARTITION         Cut_Elements
+-----------------------------------------------------STRUCT SOLVER
+SOLVER         UMFPACK    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT       10            // output every so often, 0 no output
+AZSOLVE        GMRES           // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC         ML           // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE        0            // how often to recompute some preconditioners
+AZDROP         0.0          // drop tolerance for ILUT
+AZFILL         1.0          // fill-in for ILUT
+AZGFILL        0            // graph fill for ILU
+AZTOL          1.0E-4       // tolerance in unscaled residual
+AZITER         1000         // max iterations
+AZSUB          25           // size of krylov space for gmres
+AZOMEGA        1.0          // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH        1            // unused
+AZPOLY         5            // polynomial order for Neumann
+AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL         infnorm      // none sym infnorm scaling of the system
+AZCONV         AZ_r0        // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+ML_PRINT          0         // ML print-out level (0-10)
+ML_MAXCOARSESIZE  1      // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL       2         // ML max number of levels
+ML_COARSEN        UC        // UC MIS METIS VBMETIS
+ML_AGG_SIZE       27        // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO    0.0      // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE   SGS // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED    SGS // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE KLU       // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES       3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE       0.8       // damping fine grid
+ML_DAMPMED        1.0       // damping med grids
+ML_DAMPCOARSE     1.0       // damping coarse grid
+PARTITION         Cut_Elements
+--------------------------------------------------------ALE SOLVER
+SOLVER         Aztec_MSR    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT       0            // output every so often, 0 no output
+AZSOLVE        CG           // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC         ML           // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE        0            // how often to recompute some preconditioners
+AZDROP         0.0          // drop tolerance for ILUT
+AZFILL         1.0          // fill-in for ILUT
+AZGFILL        0            // graph fill for ILU
+AZTOL          1.0E-8       // tolerance in unscaled residual
+AZCONV         AZ_noscaled  // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER         1000         // max iterations
+AZSUB          40           // size of krylov space for gmres
+AZOMEGA        1.0          // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH        1            // unused
+AZPOLY         5            // polynomial order for Neumann
+AZOVERLAP      0            // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL         infnorm      // none sym infnorm scaling of the system
+ML_PRINT          0         // ML print-out level (0-10)
+ML_MAXCOARSESIZE  5000      // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL       5         // ML max number of levels
+ML_COARSEN        UC        // UC MIS METIS VBMETIS
+ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO    1.33      // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES  0.0       // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE   Chebychev // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED    Chebychev // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE KLU       // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES       3 3 3 3 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE       1.0       // damping fine grid
+ML_DAMPMED        1.0       // damping med grids
+ML_DAMPCOARSE     1.0       // damping coarse grid
+PARTITION         Cut_Elements
+----------------------------------------------------THERMAL SOLVER
+SOLVER         UMFPACK
+PARTITION      Cut_Elements
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 8
+NDLINE  12
+NDSURF  6
+NDVOL   1
+-----------------------------------------------------DESIGN POINTS
+POINT
+Num: 1 HigherEntity: 3 conditions: 2 material: 0
+LAYER: Layer0
+Coord: 0.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 2 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 16.000000 0.000000 0.000000
+END POINT
+POINT
+Num: 3 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 2.000000 0.000000
+END POINT
+POINT
+Num: 4 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 16.000000 2.000000 0.000000
+END POINT
+POINT
+Num: 5 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 0.000000 2.000000
+END POINT
+POINT
+Num: 6 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 16.000000 0.000000 2.000000
+END POINT
+POINT
+Num: 7 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 0.000000 2.000000 2.000000
+END POINT
+POINT
+Num: 8 HigherEntity: 3 conditions: 1 material: 0
+LAYER: Layer0
+Coord: 16.000000 2.000000 2.000000
+END POINT
+------------------------------------------------------DESIGN LINES
+STLINE
+Num: 1 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Points: 1 2
+END STLINE
+STLINE
+Num: 2 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Points: 3 4
+END STLINE
+STLINE
+Num: 3 HigherEntity: 2 conditions: 2 material: 0
+LAYER: Layer0
+Points: 1 3
+END STLINE
+STLINE
+Num: 4 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Points: 2 4
+END STLINE
+STLINE
+Num: 5 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Points: 5 6
+END STLINE
+STLINE
+Num: 6 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Points: 7 8
+END STLINE
+STLINE
+Num: 7 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Points: 5 7
+END STLINE
+STLINE
+Num: 8 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Points: 6 8
+END STLINE
+STLINE
+Num: 9 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Points: 1 5
+END STLINE
+STLINE
+Num: 10 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Points: 2 6
+END STLINE
+STLINE
+Num: 11 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Points: 3 7
+END STLINE
+STLINE
+Num: 12 HigherEntity: 2 conditions: 1 material: 0
+LAYER: Layer0
+Points: 4 8
+END STLINE
+---------------------------------------------------DESIGN SURFACES
+NURBSURFACE
+Num: 1 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+NumLines: 4
+Line: 1 Orientation: SAME1ST
+Line: 4 Orientation: SAME1ST
+Line: 2 Orientation: DIFF1ST
+Line: 3 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:0.000000,0.000000,0.000000
+Point 1,2 coords:16.000000,0.000000,0.000000
+Point 2,1 coords:0.000000,2.000000,0.000000
+Point 2,2 coords:16.000000,2.000000,0.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 0
+Center: 8.000000 1.000000 0.000000
+Normal: 0.000000 0.000000 1.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 2 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+NumLines: 4
+Line: 1 Orientation: DIFF1ST
+Line: 9 Orientation: SAME1ST
+Line: 5 Orientation: SAME1ST
+Line: 10 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:16.000000,0.000000,0.000000
+Point 1,2 coords:0.000000,0.000000,0.000000
+Point 2,1 coords:16.000000,0.000000,2.000000
+Point 2,2 coords:0.000000,0.000000,2.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 0
+Center: 8.000000 0.000000 1.000000
+Normal: 0.000000 1.000000 -0.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 3 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+NumLines: 4
+Line: 2 Orientation: SAME1ST
+Line: 12 Orientation: SAME1ST
+Line: 6 Orientation: DIFF1ST
+Line: 11 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:0.000000,2.000000,0.000000
+Point 1,2 coords:16.000000,2.000000,0.000000
+Point 2,1 coords:0.000000,2.000000,2.000000
+Point 2,2 coords:16.000000,2.000000,2.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 0
+Center: 8.000000 2.000000 1.000000
+Normal: 0.000000 -1.000000 0.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 4 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+NumLines: 4
+Line: 3 Orientation: SAME1ST
+Line: 11 Orientation: SAME1ST
+Line: 7 Orientation: DIFF1ST
+Line: 9 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:0.000000,0.000000,0.000000
+Point 1,2 coords:0.000000,2.000000,0.000000
+Point 2,1 coords:0.000000,0.000000,2.000000
+Point 2,2 coords:0.000000,2.000000,2.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 0
+Center: 0.000000 1.000000 1.000000
+Normal: 1.000000 0.000000 0.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 5 HigherEntity: 1 conditions: 2 material: 0
+LAYER: Layer0
+NumLines: 4
+Line: 4 Orientation: DIFF1ST
+Line: 10 Orientation: SAME1ST
+Line: 8 Orientation: SAME1ST
+Line: 12 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:16.000000,2.000000,0.000000
+Point 1,2 coords:16.000000,0.000000,0.000000
+Point 2,1 coords:16.000000,2.000000,2.000000
+Point 2,2 coords:16.000000,0.000000,2.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 0
+Center: 16.000000 1.000000 1.000000
+Normal: -1.000000 0.000000 0.000000
+END NURBSURFACE
+NURBSURFACE
+Num: 6 HigherEntity: 1 conditions: 1 material: 0
+LAYER: Layer0
+NumLines: 4
+Line: 5 Orientation: DIFF1ST
+Line: 7 Orientation: SAME1ST
+Line: 6 Orientation: SAME1ST
+Line: 8 Orientation: DIFF1ST
+Number of Control Points= 2 2 Degree= 1 1
+Point 1,1 coords:16.000000,0.000000,2.000000
+Point 1,2 coords:0.000000,0.000000,2.000000
+Point 2,1 coords:16.000000,2.000000,2.000000
+Point 2,2 coords:0.000000,2.000000,2.000000
+Number of knots in U= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Number of knots in V= 4
+knot 1 value=0.000000
+knot 2 value=0.000000
+knot 3 value=1.000000
+knot 4 value=1.000000
+Non rational
+IsTrimmed: 0
+Center: 8.000000 1.000000 2.000000
+Normal: 0.000000 0.000000 -1.000000
+END NURBSURFACE
+----------------------------------------------------DESIGN VOLUMES
+VOLUME
+Num: 1 HigherEntity: 0 conditions: 2 material: 4
+LAYER: Layer0
+NumSurfaces: 6
+Surface: 1 Orientation: SAME1ST
+Surface: 2 Orientation: SAME1ST
+Surface: 5 Orientation: SAME1ST
+Surface: 3 Orientation: SAME1ST
+Surface: 4 Orientation: SAME1ST
+Surface: 6 Orientation: SAME1ST
+Center: 8.000000 1.000000 1.000000
+END VOLUME
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT 1
+E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 1
+E 3 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF 1
+//E 1 - 1 0 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+E 4 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DVOL 0
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC NSURF
+DPOINT 0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
+DLINE 0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
+DSURF 1
+E 5 - 1 0 0 1 0 0 0 0.0 0.0 -1.0 0.0 0.0 0.0 Live Mid 0 0 0 0 0 0
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
+DVOL 0
+--------------------------------DESIGN POINT ALE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT 0
+---------------------------------DESIGN LINE ALE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 0
+---------------------------------DESIGN SURF ALE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF 0
+--------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT 0
+---------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 0
+---------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF 0
+----------------------------------DESIGN COUPLING POINT CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DPOINT 0
+-----------------------------------DESIGN COUPLING LINE CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DLINE 0
+-----------------------------------DESIGN COUPLING SURF CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DSURF 0
+------------------------------------DESIGN COUPLING VOL CONDITIONS
+// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
+DVOL 0
+-------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH FLAG
+DLINE 0
+-------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
+DSURF 0
+------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
+// DOBJECT COUPLING BCFLUID
+DLINE 0
+------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
+// DOBJECT COUPLING BCFLUID
+DSURF 0
+------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
+// DOBJECT
+DPOINT 0
+-------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+// DOBJECT
+DLINE 0
+-------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+// DOBJECT
+DSURF 0
+---------------------------------------------CONTACT CONDITIONS 2D
+DLINE 0
+---------------------------------------------CONTACT CONDITIONS 3D
+DSURF 0
+-------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
+DSURF 0
+---------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
+DSURF 0
+---------------------------------- DESIGN MULTIPOINT CONSTRAINT 3D
+DVOL 0
+------------------------------------DESIGN LINE AREA CONSTRAINT 2D
+DLINE 0
+---------------------------------- DESIGN MULTIPOINT CONSTRAINT 2D
+DLINE 0
+----------------------------------DESIGN SURFACE VOLUME MONITOR 3D
+DSURF 0
+------------------------------------DESIGN SURFACE AREA MONITOR 3D
+DSURF 0
+---------------------------------------DESIGN LINE AREA MONITOR 2D
+DLINE 0
+-------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
+DLINE 0
+------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
+DLINE 0
+------------------------------DESIGN AXISHELL COS POINT CONDITIONS
+DPOINT 0
+--------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
+// DOBJECT
+DLINE 0
+--------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
+// DOBJECT
+DSURF 0
+---------------------------------------DESIGN FLUID LINE LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
+DLINE 0
+---------------------------------------DESIGN FLUID SURF LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
+DSURF 0
+-----------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
+// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
+DSURF 0
+------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
+// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
+DVOL 0
+------------------------------------DESIGN POINT LOCSYS CONDITIONS
+// DOBJECT Id - LocsysId
+DPOINT 0
+-------------------------------------DESIGN LINE LOCSYS CONDITIONS
+// DOBJECT Id - LocsysId
+DLINE 0
+-------------------------------------DESIGN SURF LOCSYS CONDITIONS
+// DOBJECT Id - LocsysId
+DSURF 0
+--------------------------------------DESIGN VOL LOCSYS CONDITIONS
+// DOBJECT Id - LocsysId
+DVOL 0
+--------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
+// DOBJECT PBC_ID ORIENTATION
+DLINE 0
+--------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
+// DOBJECT PBC_ID ORIENTATION
+DSURF 0
+-----------------------------------DESIGN LINE SYMMETRY CONDITIONS
+// DOBJECT NORMAL
+DLINE 0
+--------------------------------DESIGN SURFACE SYMMETRY CONDITIONS
+// DOBJECT NORMAL
+DSURF 0
+-------------------------------DESIGN LINE DIRICH DGFEM CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 0
+------------------------------DESIGN LINE NEUMANN DGFEM CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE 0
+----------------------------------------DESIGN SURF INTERFACE MASK
+// DOBJECT ELEMENT_TYPE
+DSURF 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE      26 DNODE 1
+NODE     177 DNODE 2
+NODE      12 DNODE 3
+NODE     173 DNODE 4
+NODE      13 DNODE 5
+NODE     174 DNODE 6
+NODE       1 DNODE 7
+NODE     169 DNODE 8
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE      26 DLINE 1
+NODE      29 DLINE 1
+NODE      35 DLINE 1
+NODE      42 DLINE 1
+NODE      51 DLINE 1
+NODE      61 DLINE 1
+NODE      71 DLINE 1
+NODE      80 DLINE 1
+NODE      90 DLINE 1
+NODE     101 DLINE 1
+NODE     110 DLINE 1
+NODE     121 DLINE 1
+NODE     132 DLINE 1
+NODE     143 DLINE 1
+NODE     153 DLINE 1
+NODE     164 DLINE 1
+NODE     177 DLINE 1
+NODE      12 DLINE 2
+NODE      16 DLINE 2
+NODE      27 DLINE 2
+NODE      36 DLINE 2
+NODE      47 DLINE 2
+NODE      57 DLINE 2
+NODE      67 DLINE 2
+NODE      78 DLINE 2
+NODE      87 DLINE 2
+NODE      99 DLINE 2
+NODE     108 DLINE 2
+NODE     119 DLINE 2
+NODE     128 DLINE 2
+NODE     141 DLINE 2
+NODE     151 DLINE 2
+NODE     162 DLINE 2
+NODE     173 DLINE 2
+NODE      26 DLINE 3
+NODE      17 DLINE 3
+NODE      12 DLINE 3
+NODE     177 DLINE 4
+NODE     175 DLINE 4
+NODE     173 DLINE 4
+NODE      13 DLINE 5
+NODE      18 DLINE 5
+NODE      28 DLINE 5
+NODE      37 DLINE 5
+NODE      48 DLINE 5
+NODE      58 DLINE 5
+NODE      68 DLINE 5
+NODE      79 DLINE 5
+NODE      88 DLINE 5
+NODE     100 DLINE 5
+NODE     109 DLINE 5
+NODE     120 DLINE 5
+NODE     129 DLINE 5
+NODE     142 DLINE 5
+NODE     152 DLINE 5
+NODE     163 DLINE 5
+NODE     174 DLINE 5
+NODE       1 DLINE 6
+NODE       2 DLINE 6
+NODE      14 DLINE 6
+NODE      30 DLINE 6
+NODE      40 DLINE 6
+NODE      52 DLINE 6
+NODE      64 DLINE 6
+NODE      74 DLINE 6
+NODE      85 DLINE 6
+NODE      95 DLINE 6
+NODE     107 DLINE 6
+NODE     115 DLINE 6
+NODE     126 DLINE 6
+NODE     138 DLINE 6
+NODE     149 DLINE 6
+NODE     161 DLINE 6
+NODE     169 DLINE 6
+NODE      13 DLINE 7
+NODE       3 DLINE 7
+NODE       1 DLINE 7
+NODE     174 DLINE 8
+NODE     170 DLINE 8
+NODE     169 DLINE 8
+NODE      26 DLINE 9
+NODE      19 DLINE 9
+NODE      13 DLINE 9
+NODE     177 DLINE 10
+NODE     176 DLINE 10
+NODE     174 DLINE 10
+NODE      12 DLINE 11
+NODE       4 DLINE 11
+NODE       1 DLINE 11
+NODE     173 DLINE 12
+NODE     171 DLINE 12
+NODE     169 DLINE 12
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE      26 DSURFACE 1
+NODE     177 DSURFACE 1
+NODE      12 DSURFACE 1
+NODE     173 DSURFACE 1
+NODE      29 DSURFACE 1
+NODE      35 DSURFACE 1
+NODE      42 DSURFACE 1
+NODE      51 DSURFACE 1
+NODE      61 DSURFACE 1
+NODE      71 DSURFACE 1
+NODE      80 DSURFACE 1
+NODE      90 DSURFACE 1
+NODE     101 DSURFACE 1
+NODE     110 DSURFACE 1
+NODE     121 DSURFACE 1
+NODE     132 DSURFACE 1
+NODE     143 DSURFACE 1
+NODE     153 DSURFACE 1
+NODE     164 DSURFACE 1
+NODE      16 DSURFACE 1
+NODE      27 DSURFACE 1
+NODE      36 DSURFACE 1
+NODE      47 DSURFACE 1
+NODE      57 DSURFACE 1
+NODE      67 DSURFACE 1
+NODE      78 DSURFACE 1
+NODE      87 DSURFACE 1
+NODE      99 DSURFACE 1
+NODE     108 DSURFACE 1
+NODE     119 DSURFACE 1
+NODE     128 DSURFACE 1
+NODE     141 DSURFACE 1
+NODE     151 DSURFACE 1
+NODE     162 DSURFACE 1
+NODE      17 DSURFACE 1
+NODE     175 DSURFACE 1
+NODE      25 DSURFACE 1
+NODE      32 DSURFACE 1
+NODE      44 DSURFACE 1
+NODE      54 DSURFACE 1
+NODE      62 DSURFACE 1
+NODE      72 DSURFACE 1
+NODE      83 DSURFACE 1
+NODE      94 DSURFACE 1
+NODE     105 DSURFACE 1
+NODE     114 DSURFACE 1
+NODE     124 DSURFACE 1
+NODE     135 DSURFACE 1
+NODE     146 DSURFACE 1
+NODE     158 DSURFACE 1
+NODE      26 DSURFACE 2
+NODE     177 DSURFACE 2
+NODE      13 DSURFACE 2
+NODE     174 DSURFACE 2
+NODE      29 DSURFACE 2
+NODE      35 DSURFACE 2
+NODE      42 DSURFACE 2
+NODE      51 DSURFACE 2
+NODE      61 DSURFACE 2
+NODE      71 DSURFACE 2
+NODE      80 DSURFACE 2
+NODE      90 DSURFACE 2
+NODE     101 DSURFACE 2
+NODE     110 DSURFACE 2
+NODE     121 DSURFACE 2
+NODE     132 DSURFACE 2
+NODE     143 DSURFACE 2
+NODE     153 DSURFACE 2
+NODE     164 DSURFACE 2
+NODE      18 DSURFACE 2
+NODE      28 DSURFACE 2
+NODE      37 DSURFACE 2
+NODE      48 DSURFACE 2
+NODE      58 DSURFACE 2
+NODE      68 DSURFACE 2
+NODE      79 DSURFACE 2
+NODE      88 DSURFACE 2
+NODE     100 DSURFACE 2
+NODE     109 DSURFACE 2
+NODE     120 DSURFACE 2
+NODE     129 DSURFACE 2
+NODE     142 DSURFACE 2
+NODE     152 DSURFACE 2
+NODE     163 DSURFACE 2
+NODE      19 DSURFACE 2
+NODE     176 DSURFACE 2
+NODE     159 DSURFACE 2
+NODE     147 DSURFACE 2
+NODE     136 DSURFACE 2
+NODE     125 DSURFACE 2
+NODE     113 DSURFACE 2
+NODE     104 DSURFACE 2
+NODE      93 DSURFACE 2
+NODE      84 DSURFACE 2
+NODE      73 DSURFACE 2
+NODE      63 DSURFACE 2
+NODE      53 DSURFACE 2
+NODE      43 DSURFACE 2
+NODE      33 DSURFACE 2
+NODE      24 DSURFACE 2
+NODE      12 DSURFACE 3
+NODE     173 DSURFACE 3
+NODE       1 DSURFACE 3
+NODE     169 DSURFACE 3
+NODE      16 DSURFACE 3
+NODE      27 DSURFACE 3
+NODE      36 DSURFACE 3
+NODE      47 DSURFACE 3
+NODE      57 DSURFACE 3
+NODE      67 DSURFACE 3
+NODE      78 DSURFACE 3
+NODE      87 DSURFACE 3
+NODE      99 DSURFACE 3
+NODE     108 DSURFACE 3
+NODE     119 DSURFACE 3
+NODE     128 DSURFACE 3
+NODE     141 DSURFACE 3
+NODE     151 DSURFACE 3
+NODE     162 DSURFACE 3
+NODE       2 DSURFACE 3
+NODE      14 DSURFACE 3
+NODE      30 DSURFACE 3
+NODE      40 DSURFACE 3
+NODE      52 DSURFACE 3
+NODE      64 DSURFACE 3
+NODE      74 DSURFACE 3
+NODE      85 DSURFACE 3
+NODE      95 DSURFACE 3
+NODE     107 DSURFACE 3
+NODE     115 DSURFACE 3
+NODE     126 DSURFACE 3
+NODE     138 DSURFACE 3
+NODE     149 DSURFACE 3
+NODE     161 DSURFACE 3
+NODE       4 DSURFACE 3
+NODE     171 DSURFACE 3
+NODE      10 DSURFACE 3
+NODE      23 DSURFACE 3
+NODE      38 DSURFACE 3
+NODE      50 DSURFACE 3
+NODE      60 DSURFACE 3
+NODE      69 DSURFACE 3
+NODE      81 DSURFACE 3
+NODE      92 DSURFACE 3
+NODE     103 DSURFACE 3
+NODE     112 DSURFACE 3
+NODE     122 DSURFACE 3
+NODE     133 DSURFACE 3
+NODE     144 DSURFACE 3
+NODE     156 DSURFACE 3
+NODE      26 DSURFACE 4
+NODE      12 DSURFACE 4
+NODE      13 DSURFACE 4
+NODE       1 DSURFACE 4
+NODE      17 DSURFACE 4
+NODE       3 DSURFACE 4
+NODE      19 DSURFACE 4
+NODE       4 DSURFACE 4
+NODE       6 DSURFACE 4
+NODE     177 DSURFACE 5
+NODE     173 DSURFACE 5
+NODE     174 DSURFACE 5
+NODE     169 DSURFACE 5
+NODE     175 DSURFACE 5
+NODE     170 DSURFACE 5
+NODE     176 DSURFACE 5
+NODE     171 DSURFACE 5
+NODE     172 DSURFACE 5
+NODE      13 DSURFACE 6
+NODE     174 DSURFACE 6
+NODE       1 DSURFACE 6
+NODE     169 DSURFACE 6
+NODE      18 DSURFACE 6
+NODE      28 DSURFACE 6
+NODE      37 DSURFACE 6
+NODE      48 DSURFACE 6
+NODE      58 DSURFACE 6
+NODE      68 DSURFACE 6
+NODE      79 DSURFACE 6
+NODE      88 DSURFACE 6
+NODE     100 DSURFACE 6
+NODE     109 DSURFACE 6
+NODE     120 DSURFACE 6
+NODE     129 DSURFACE 6
+NODE     142 DSURFACE 6
+NODE     152 DSURFACE 6
+NODE     163 DSURFACE 6
+NODE       2 DSURFACE 6
+NODE      14 DSURFACE 6
+NODE      30 DSURFACE 6
+NODE      40 DSURFACE 6
+NODE      52 DSURFACE 6
+NODE      64 DSURFACE 6
+NODE      74 DSURFACE 6
+NODE      85 DSURFACE 6
+NODE      95 DSURFACE 6
+NODE     107 DSURFACE 6
+NODE     115 DSURFACE 6
+NODE     126 DSURFACE 6
+NODE     138 DSURFACE 6
+NODE     149 DSURFACE 6
+NODE     161 DSURFACE 6
+NODE       3 DSURFACE 6
+NODE     170 DSURFACE 6
+NODE     157 DSURFACE 6
+NODE     145 DSURFACE 6
+NODE     134 DSURFACE 6
+NODE     123 DSURFACE 6
+NODE     111 DSURFACE 6
+NODE     102 DSURFACE 6
+NODE      91 DSURFACE 6
+NODE      82 DSURFACE 6
+NODE      70 DSURFACE 6
+NODE      59 DSURFACE 6
+NODE      49 DSURFACE 6
+NODE      39 DSURFACE 6
+NODE      22 DSURFACE 6
+NODE       9 DSURFACE 6
+-----------------------------------------------DVOL-NODE TOPOLOGY
+NODE      26 DVOLUME 1
+NODE     177 DVOLUME 1
+NODE      12 DVOLUME 1
+NODE     173 DVOLUME 1
+NODE      13 DVOLUME 1
+NODE     174 DVOLUME 1
+NODE       1 DVOLUME 1
+NODE     169 DVOLUME 1
+NODE      29 DVOLUME 1
+NODE      35 DVOLUME 1
+NODE      42 DVOLUME 1
+NODE      51 DVOLUME 1
+NODE      61 DVOLUME 1
+NODE      71 DVOLUME 1
+NODE      80 DVOLUME 1
+NODE      90 DVOLUME 1
+NODE     101 DVOLUME 1
+NODE     110 DVOLUME 1
+NODE     121 DVOLUME 1
+NODE     132 DVOLUME 1
+NODE     143 DVOLUME 1
+NODE     153 DVOLUME 1
+NODE     164 DVOLUME 1
+NODE      16 DVOLUME 1
+NODE      27 DVOLUME 1
+NODE      36 DVOLUME 1
+NODE      47 DVOLUME 1
+NODE      57 DVOLUME 1
+NODE      67 DVOLUME 1
+NODE      78 DVOLUME 1
+NODE      87 DVOLUME 1
+NODE      99 DVOLUME 1
+NODE     108 DVOLUME 1
+NODE     119 DVOLUME 1
+NODE     128 DVOLUME 1
+NODE     141 DVOLUME 1
+NODE     151 DVOLUME 1
+NODE     162 DVOLUME 1
+NODE      17 DVOLUME 1
+NODE     175 DVOLUME 1
+NODE      18 DVOLUME 1
+NODE      28 DVOLUME 1
+NODE      37 DVOLUME 1
+NODE      48 DVOLUME 1
+NODE      58 DVOLUME 1
+NODE      68 DVOLUME 1
+NODE      79 DVOLUME 1
+NODE      88 DVOLUME 1
+NODE     100 DVOLUME 1
+NODE     109 DVOLUME 1
+NODE     120 DVOLUME 1
+NODE     129 DVOLUME 1
+NODE     142 DVOLUME 1
+NODE     152 DVOLUME 1
+NODE     163 DVOLUME 1
+NODE       2 DVOLUME 1
+NODE      14 DVOLUME 1
+NODE      30 DVOLUME 1
+NODE      40 DVOLUME 1
+NODE      52 DVOLUME 1
+NODE      64 DVOLUME 1
+NODE      74 DVOLUME 1
+NODE      85 DVOLUME 1
+NODE      95 DVOLUME 1
+NODE     107 DVOLUME 1
+NODE     115 DVOLUME 1
+NODE     126 DVOLUME 1
+NODE     138 DVOLUME 1
+NODE     149 DVOLUME 1
+NODE     161 DVOLUME 1
+NODE       3 DVOLUME 1
+NODE     170 DVOLUME 1
+NODE      19 DVOLUME 1
+NODE     176 DVOLUME 1
+NODE       4 DVOLUME 1
+NODE     171 DVOLUME 1
+NODE      25 DVOLUME 1
+NODE      32 DVOLUME 1
+NODE      44 DVOLUME 1
+NODE      54 DVOLUME 1
+NODE      62 DVOLUME 1
+NODE      72 DVOLUME 1
+NODE      83 DVOLUME 1
+NODE      94 DVOLUME 1
+NODE     105 DVOLUME 1
+NODE     114 DVOLUME 1
+NODE     124 DVOLUME 1
+NODE     135 DVOLUME 1
+NODE     146 DVOLUME 1
+NODE     158 DVOLUME 1
+NODE     159 DVOLUME 1
+NODE     147 DVOLUME 1
+NODE     136 DVOLUME 1
+NODE     125 DVOLUME 1
+NODE     113 DVOLUME 1
+NODE     104 DVOLUME 1
+NODE      93 DVOLUME 1
+NODE      84 DVOLUME 1
+NODE      73 DVOLUME 1
+NODE      63 DVOLUME 1
+NODE      53 DVOLUME 1
+NODE      43 DVOLUME 1
+NODE      33 DVOLUME 1
+NODE      24 DVOLUME 1
+NODE      10 DVOLUME 1
+NODE      23 DVOLUME 1
+NODE      38 DVOLUME 1
+NODE      50 DVOLUME 1
+NODE      60 DVOLUME 1
+NODE      69 DVOLUME 1
+NODE      81 DVOLUME 1
+NODE      92 DVOLUME 1
+NODE     103 DVOLUME 1
+NODE     112 DVOLUME 1
+NODE     122 DVOLUME 1
+NODE     133 DVOLUME 1
+NODE     144 DVOLUME 1
+NODE     156 DVOLUME 1
+NODE       6 DVOLUME 1
+NODE     172 DVOLUME 1
+NODE     157 DVOLUME 1
+NODE     145 DVOLUME 1
+NODE     134 DVOLUME 1
+NODE     123 DVOLUME 1
+NODE     111 DVOLUME 1
+NODE     102 DVOLUME 1
+NODE      91 DVOLUME 1
+NODE      82 DVOLUME 1
+NODE      70 DVOLUME 1
+NODE      59 DVOLUME 1
+NODE      49 DVOLUME 1
+NODE      39 DVOLUME 1
+NODE      22 DVOLUME 1
+NODE       9 DVOLUME 1
+NODE     137 DVOLUME 1
+NODE     139 DVOLUME 1
+NODE     148 DVOLUME 1
+NODE     140 DVOLUME 1
+NODE     127 DVOLUME 1
+NODE     131 DVOLUME 1
+NODE      46 DVOLUME 1
+NODE      45 DVOLUME 1
+NODE      31 DVOLUME 1
+NODE      41 DVOLUME 1
+NODE      55 DVOLUME 1
+NODE      77 DVOLUME 1
+NODE      76 DVOLUME 1
+NODE      86 DVOLUME 1
+NODE      75 DVOLUME 1
+NODE      66 DVOLUME 1
+NODE      65 DVOLUME 1
+NODE      56 DVOLUME 1
+NODE     130 DVOLUME 1
+NODE      21 DVOLUME 1
+NODE      15 DVOLUME 1
+NODE       8 DVOLUME 1
+NODE      20 DVOLUME 1
+NODE      98 DVOLUME 1
+NODE      96 DVOLUME 1
+NODE     106 DVOLUME 1
+NODE      97 DVOLUME 1
+NODE     118 DVOLUME 1
+NODE     117 DVOLUME 1
+NODE     116 DVOLUME 1
+NODE      89 DVOLUME 1
+NODE      34 DVOLUME 1
+NODE     150 DVOLUME 1
+NODE     160 DVOLUME 1
+NODE     154 DVOLUME 1
+NODE     165 DVOLUME 1
+NODE     167 DVOLUME 1
+NODE     168 DVOLUME 1
+NODE     166 DVOLUME 1
+NODE       5 DVOLUME 1
+NODE       7 DVOLUME 1
+NODE      11 DVOLUME 1
+NODE     155 DVOLUME 1
+-------------------------------------------------------NODE COORDS
+NODE            1     COORD 0.000000000000000e+00     2.000000000000000e+00     2.000000000000000e+00   
+NODE            2     COORD 1.000000000000000e+00     2.000000000000000e+00     2.000000000000000e+00   
+NODE            3     COORD 0.000000000000000e+00     1.000000000000000e+00     2.000000000000000e+00   
+NODE            4     COORD 0.000000000000000e+00     2.000000000000000e+00     1.000000000000000e+00   
+NODE            5     COORD 7.499999999999999e-01     1.370790811898598e+00     1.370790811898598e+00   
+NODE            6     COORD 0.000000000000000e+00     1.112372435695794e+00     1.112372435695794e+00   
+NODE            7     COORD 5.195325460136067e-01     1.406483700519716e+00     4.667021386557677e-01   
+NODE            8     COORD 1.237537241401204e+00     1.135799553723567e+00     1.085009459314379e+00   
+NODE            9     COORD 1.500000000000000e+00     8.660254037844386e-01     2.000000000000000e+00   
+NODE           10     COORD 1.500000000000000e+00     2.000000000000000e+00     8.660254037844386e-01   
+NODE           11     COORD 6.950062205409671e-01     6.042537141481868e-01     8.866633299392674e-01   
+NODE           12     COORD 0.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
+NODE           13     COORD 0.000000000000000e+00     0.000000000000000e+00     2.000000000000000e+00   
+NODE           14     COORD 2.000000000000000e+00     2.000000000000000e+00     2.000000000000000e+00   
+NODE           15     COORD 2.000000000000000e+00     1.480592046959838e+00     1.469742752862538e+00   
+NODE           16     COORD 1.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
+NODE           17     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00   
+NODE           18     COORD 1.000000000000000e+00     0.000000000000000e+00     2.000000000000000e+00   
+NODE           19     COORD 0.000000000000000e+00     0.000000000000000e+00     1.000000000000000e+00   
+NODE           20     COORD 1.996984359328358e+00     6.510885024676216e-01     1.273727894390905e+00   
+NODE           21     COORD 2.000000000000000e+00     1.250000000000000e+00     5.773502691896257e-01   
+NODE           22     COORD 2.500000000000000e+00     8.660254037844386e-01     2.000000000000000e+00   
+NODE           23     COORD 2.500000000000000e+00     2.000000000000000e+00     8.660254037844386e-01   
+NODE           24     COORD 1.500000000000000e+00     0.000000000000000e+00     8.660254037844386e-01   
+NODE           25     COORD 1.500000000000000e+00     8.660254037844386e-01     0.000000000000000e+00   
+NODE           26     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE           27     COORD 2.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
+NODE           28     COORD 2.000000000000000e+00     0.000000000000000e+00     2.000000000000000e+00   
+NODE           29     COORD 1.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE           30     COORD 3.000000000000000e+00     2.000000000000000e+00     2.000000000000000e+00   
+NODE           31     COORD 3.024311322431473e+00     1.097571408585582e+00     8.801142737277414e-01   
+NODE           32     COORD 2.500000000000000e+00     8.660254037844386e-01     0.000000000000000e+00   
+NODE           33     COORD 2.500000000000000e+00     0.000000000000000e+00     8.660254037844386e-01   
+NODE           34     COORD 3.000000000000000e+00     4.907477288111818e-01     1.362500000000000e+00   
+NODE           35     COORD 2.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE           36     COORD 3.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
+NODE           37     COORD 3.000000000000000e+00     0.000000000000000e+00     2.000000000000000e+00   
+NODE           38     COORD 3.500000000000000e+00     2.000000000000000e+00     8.660254037844386e-01   
+NODE           39     COORD 3.500000000000000e+00     8.660254037844386e-01     2.000000000000000e+00   
+NODE           40     COORD 4.000000000000000e+00     2.000000000000000e+00     2.000000000000000e+00   
+NODE           41     COORD 3.968957738867987e+00     1.223174641141201e+00     1.404477440390241e+00   
+NODE           42     COORD 3.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE           43     COORD 3.500000000000000e+00     0.000000000000000e+00     8.660254037844386e-01   
+NODE           44     COORD 3.500000000000000e+00     8.660254037844386e-01     0.000000000000000e+00   
+NODE           45     COORD 4.000000000000000e+00     1.469742752862538e+00     5.194079530401623e-01   
+NODE           46     COORD 4.000000000000000e+00     5.773502691896257e-01     7.499999999999999e-01   
+NODE           47     COORD 4.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
+NODE           48     COORD 4.000000000000000e+00     0.000000000000000e+00     2.000000000000000e+00   
+NODE           49     COORD 4.500000000000000e+00     8.660254037844386e-01     2.000000000000000e+00   
+NODE           50     COORD 4.500000000000000e+00     2.000000000000000e+00     8.660254037844386e-01   
+NODE           51     COORD 4.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE           52     COORD 5.000000000000000e+00     2.000000000000000e+00     2.000000000000000e+00   
+NODE           53     COORD 4.500000000000000e+00     0.000000000000000e+00     8.660254037844386e-01   
+NODE           54     COORD 4.500000000000000e+00     8.660254037844386e-01     0.000000000000000e+00   
+NODE           55     COORD 4.917037288302435e+00     1.232940957861409e+00     8.011350204284807e-01   
+NODE           56     COORD 5.023750000000000e+00     5.621948246233980e-01     1.323125000000000e+00   
+NODE           57     COORD 5.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
+NODE           58     COORD 5.000000000000000e+00     0.000000000000000e+00     2.000000000000000e+00   
+NODE           59     COORD 5.500000000000000e+00     8.660254037844386e-01     2.000000000000000e+00   
+NODE           60     COORD 5.500000000000000e+00     2.000000000000000e+00     8.660254037844386e-01   
+NODE           61     COORD 5.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE           62     COORD 5.500000000000000e+00     8.660254037844386e-01     0.000000000000000e+00   
+NODE           63     COORD 5.500000000000000e+00     0.000000000000000e+00     8.660254037844386e-01   
+NODE           64     COORD 6.000000000000000e+00     2.000000000000000e+00     2.000000000000000e+00   
+NODE           65     COORD 5.832500000000000e+00     1.394375000000000e+00     5.095116125598447e-01   
+NODE           66     COORD 5.957525101041041e+00     9.556550585807942e-01     1.055729794370916e+00   
+NODE           67     COORD 6.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
+NODE           68     COORD 6.000000000000000e+00     0.000000000000000e+00     2.000000000000000e+00   
+NODE           69     COORD 6.500000000000000e+00     2.000000000000000e+00     8.660254037844386e-01   
+NODE           70     COORD 6.500000000000000e+00     8.660254037844386e-01     2.000000000000000e+00   
+NODE           71     COORD 6.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE           72     COORD 6.500000000000000e+00     8.660254037844386e-01     0.000000000000000e+00   
+NODE           73     COORD 6.500000000000000e+00     0.000000000000000e+00     8.660254037844386e-01   
+NODE           74     COORD 7.000000000000000e+00     2.000000000000000e+00     2.000000000000000e+00   
+NODE           75     COORD 7.031042261132013e+00     1.404477440390241e+00     1.223174641141202e+00   
+NODE           76     COORD 7.000000000000000e+00     5.194079530401623e-01     1.469742752862538e+00   
+NODE           77     COORD 7.000000000000000e+00     7.499999999999999e-01     5.773502691896257e-01   
+NODE           78     COORD 7.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
+NODE           79     COORD 7.000000000000000e+00     0.000000000000000e+00     2.000000000000000e+00   
+NODE           80     COORD 7.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE           81     COORD 7.500000000000000e+00     2.000000000000000e+00     8.660254037844386e-01   
+NODE           82     COORD 7.500000000000000e+00     8.660254037844386e-01     2.000000000000000e+00   
+NODE           83     COORD 7.500000000000000e+00     8.660254037844386e-01     0.000000000000000e+00   
+NODE           84     COORD 7.500000000000000e+00     0.000000000000000e+00     8.660254037844386e-01   
+NODE           85     COORD 8.000000000000000e+00     2.000000000000000e+00     2.000000000000000e+00   
+NODE           86     COORD 7.902240790625127e+00     8.503381457472535e-01     1.115428870453421e+00   
+NODE           87     COORD 8.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
+NODE           88     COORD 8.000000000000000e+00     0.000000000000000e+00     2.000000000000000e+00   
+NODE           89     COORD 8.074999999999999e+00     1.288028810567666e+00     4.171355694895045e-01   
+NODE           90     COORD 8.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE           91     COORD 8.500000000000000e+00     8.660254037844386e-01     2.000000000000000e+00   
+NODE           92     COORD 8.500000000000000e+00     2.000000000000000e+00     8.660254037844386e-01   
+NODE           93     COORD 8.500000000000000e+00     0.000000000000000e+00     8.660254037844386e-01   
+NODE           94     COORD 8.500000000000000e+00     8.660254037844386e-01     0.000000000000000e+00   
+NODE           95     COORD 9.000000000000000e+00     2.000000000000000e+00     2.000000000000000e+00   
+NODE           96     COORD 9.000000000000000e+00     1.469742752862538e+00     1.480592046959838e+00   
+NODE           97     COORD 9.003015640671640e+00     1.273727894390905e+00     6.510885024676218e-01   
+NODE           98     COORD 9.000000000000000e+00     5.773502691896257e-01     1.250000000000000e+00   
+NODE           99     COORD 9.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00   
+NODE          100     COORD 9.000000000000000e+00     0.000000000000000e+00     2.000000000000000e+00   
+NODE          101     COORD 9.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00   
+NODE          102     COORD 9.500000000000000e+00     8.660254037844386e-01     2.000000000000000e+00   
+NODE          103     COORD 9.500000000000000e+00     2.000000000000000e+00     8.660254037844386e-01   
+NODE          104     COORD 9.500000000000000e+00     0.000000000000000e+00     8.660254037844386e-01   
+NODE          105     COORD 9.500000000000000e+00     8.660254037844386e-01     0.000000000000000e+00   
+NODE          106     COORD 9.762462758598796e+00     1.085009459314379e+00     1.135799553723567e+00   
+NODE          107     COORD 1.000000000000000e+01     2.000000000000000e+00     2.000000000000000e+00   
+NODE          108     COORD 1.000000000000000e+01     2.000000000000000e+00     0.000000000000000e+00   
+NODE          109     COORD 1.000000000000000e+01     0.000000000000000e+00     2.000000000000000e+00   
+NODE          110     COORD 1.000000000000000e+01     0.000000000000000e+00     0.000000000000000e+00   
+NODE          111     COORD 1.050000000000000e+01     8.660254037844386e-01     2.000000000000000e+00   
+NODE          112     COORD 1.050000000000000e+01     2.000000000000000e+00     8.660254037844386e-01   
+NODE          113     COORD 1.050000000000000e+01     0.000000000000000e+00     8.660254037844386e-01   
+NODE          114     COORD 1.050000000000000e+01     8.660254037844386e-01     0.000000000000000e+00   
+NODE          115     COORD 1.100000000000000e+01     2.000000000000000e+00     2.000000000000000e+00   
+NODE          116     COORD 1.100000000000000e+01     1.378261835707854e+00     1.412884551803805e+00   
+NODE          117     COORD 1.100000000000000e+01     5.194079530401623e-01     1.469742752862538e+00   
+NODE          118     COORD 1.100000000000000e+01     7.499999999999999e-01     5.773502691896257e-01   
+NODE          119     COORD 1.100000000000000e+01     2.000000000000000e+00     0.000000000000000e+00   
+NODE          120     COORD 1.100000000000000e+01     0.000000000000000e+00     2.000000000000000e+00   
+NODE          121     COORD 1.100000000000000e+01     0.000000000000000e+00     0.000000000000000e+00   
+NODE          122     COORD 1.150000000000000e+01     2.000000000000000e+00     8.660254037844386e-01   
+NODE          123     COORD 1.150000000000000e+01     8.660254037844386e-01     2.000000000000000e+00   
+NODE          124     COORD 1.150000000000000e+01     8.660254037844386e-01     0.000000000000000e+00   
+NODE          125     COORD 1.150000000000000e+01     0.000000000000000e+00     8.660254037844386e-01   
+NODE          126     COORD 1.200000000000000e+01     2.000000000000000e+00     2.000000000000000e+00   
+NODE          127     COORD 1.207178044792268e+01     1.139536102194800e+00     1.130256560079688e+00   
+NODE          128     COORD 1.200000000000000e+01     2.000000000000000e+00     0.000000000000000e+00   
+NODE          129     COORD 1.200000000000000e+01     0.000000000000000e+00     2.000000000000000e+00   
+NODE          130     COORD 1.200000000000000e+01     4.907477288111818e-01     6.374999999999998e-01   
+NODE          131     COORD 1.219024189223322e+01     3.963768799080377e-01     1.429113818879319e+00   
+NODE          132     COORD 1.200000000000000e+01     0.000000000000000e+00     0.000000000000000e+00   
+NODE          133     COORD 1.250000000000000e+01     2.000000000000000e+00     8.660254037844386e-01   
+NODE          134     COORD 1.250000000000000e+01     8.660254037844386e-01     2.000000000000000e+00   
+NODE          135     COORD 1.250000000000000e+01     8.660254037844386e-01     0.000000000000000e+00   
+NODE          136     COORD 1.250000000000000e+01     0.000000000000000e+00     8.660254037844386e-01   
+NODE          137     COORD 1.286937812500000e+01     7.153351793063549e-01     1.608495312500000e+00   
+NODE          138     COORD 1.300000000000000e+01     2.000000000000000e+00     2.000000000000000e+00   
+NODE          139     COORD 1.300000000000000e+01     1.469742752862538e+00     1.480592046959838e+00   
+NODE          140     COORD 1.303104226113201e+01     1.223174641141202e+00     5.955225596097592e-01   
+NODE          141     COORD 1.300000000000000e+01     2.000000000000000e+00     0.000000000000000e+00   
+NODE          142     COORD 1.300000000000000e+01     0.000000000000000e+00     2.000000000000000e+00   
+NODE          143     COORD 1.300000000000000e+01     0.000000000000000e+00     0.000000000000000e+00   
+NODE          144     COORD 1.350000000000000e+01     2.000000000000000e+00     8.660254037844386e-01   
+NODE          145     COORD 1.350000000000000e+01     8.660254037844386e-01     2.000000000000000e+00   
+NODE          146     COORD 1.350000000000000e+01     8.660254037844386e-01     0.000000000000000e+00   
+NODE          147     COORD 1.350000000000000e+01     0.000000000000000e+00     8.660254037844386e-01   
+NODE          148     COORD 1.378318867756853e+01     8.761451383963607e-01     1.245459409821002e+00   
+NODE          149     COORD 1.400000000000000e+01     2.000000000000000e+00     2.000000000000000e+00   
+NODE          150     COORD 1.392500000000000e+01     4.171355694895045e-01     6.717788105676656e-01   
+NODE          151     COORD 1.400000000000000e+01     2.000000000000000e+00     0.000000000000000e+00   
+NODE          152     COORD 1.400000000000000e+01     0.000000000000000e+00     2.000000000000000e+00   
+NODE          153     COORD 1.400000000000000e+01     0.000000000000000e+00     0.000000000000000e+00   
+NODE          154     COORD 1.422660357913924e+01     5.425824976144901e-01     1.627808488639481e+00   
+NODE          155     COORD 1.446642952316778e+01     1.693469340319778e+00     1.447051828699810e+00   
+NODE          156     COORD 1.450000000000000e+01     2.000000000000000e+00     8.660254037844386e-01   
+NODE          157     COORD 1.450000000000000e+01     8.660254037844386e-01     2.000000000000000e+00   
+NODE          158     COORD 1.450000000000000e+01     8.660254037844386e-01     0.000000000000000e+00   
+NODE          159     COORD 1.450000000000000e+01     0.000000000000000e+00     8.660254037844386e-01   
+NODE          160     COORD 1.474313903502708e+01     9.252869554876155e-01     9.828368657577402e-01   
+NODE          161     COORD 1.500000000000000e+01     2.000000000000000e+00     2.000000000000000e+00   
+NODE          162     COORD 1.500000000000000e+01     2.000000000000000e+00     0.000000000000000e+00   
+NODE          163     COORD 1.500000000000000e+01     0.000000000000000e+00     2.000000000000000e+00   
+NODE          164     COORD 1.500000000000000e+01     0.000000000000000e+00     0.000000000000000e+00   
+NODE          165     COORD 1.525000000000000e+01     6.292091881014018e-01     1.370790811898598e+00   
+NODE          166     COORD 1.540165218830729e+01     1.411543029891521e+00     5.582375093913181e-01   
+NODE          167     COORD 1.548046745398639e+01     1.533297861344233e+00     1.406483700519716e+00   
+NODE          168     COORD 1.548046745398639e+01     5.935162994802845e-01     4.667021386557677e-01   
+NODE          169     COORD 1.600000000000000e+01     2.000000000000000e+00     2.000000000000000e+00   
+NODE          170     COORD 1.600000000000000e+01     1.000000000000000e+00     2.000000000000000e+00   
+NODE          171     COORD 1.600000000000000e+01     2.000000000000000e+00     1.000000000000000e+00   
+NODE          172     COORD 1.600000000000000e+01     8.876275643042055e-01     1.112372435695794e+00   
+NODE          173     COORD 1.600000000000000e+01     2.000000000000000e+00     0.000000000000000e+00   
+NODE          174     COORD 1.600000000000000e+01     0.000000000000000e+00     2.000000000000000e+00   
+NODE          175     COORD 1.600000000000000e+01     1.000000000000000e+00     0.000000000000000e+00   
+NODE          176     COORD 1.600000000000000e+01     0.000000000000000e+00     1.000000000000000e+00   
+NODE          177     COORD 1.600000000000000e+01     0.000000000000000e+00     0.000000000000000e+00   
+----------------------------------------------------------ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
+      1 PTET4 TET4      29     35     25     24 MAT       1
+      2 PTET4 TET4     110    101    104    105 MAT       1
+      3 PTET4 TET4     119    128    122    124 MAT       1
+      4 PTET4 TET4     145    142    134    137 MAT       1
+      5 PTET4 TET4     145    142    137    152 MAT       1
+      6 PTET4 TET4     142    134    137    129 MAT       1
+      7 PTET4 TET4     134    145    137    139 MAT       1
+      8 PTET4 TET4     145    137    139    148 MAT       1
+      9 PTET4 TET4     137    139    148    140 MAT       1
+     10 PTET4 TET4     139    148    140    144 MAT       1
+     11 PTET4 TET4     137    139    140    127 MAT       1
+     12 PTET4 TET4     139    140    127    133 MAT       1
+     13 PTET4 TET4     140    137    127    136 MAT       1
+     14 PTET4 TET4     137    139    127    134 MAT       1
+     15 PTET4 TET4     148    137    140    147 MAT       1
+     16 PTET4 TET4     139    145    148    149 MAT       1
+     17 PTET4 TET4     145    137    148    152 MAT       1
+     18 PTET4 TET4     140    139    144    133 MAT       1
+     19 PTET4 TET4     127    139    133    126 MAT       1
+     20 PTET4 TET4     139    127    134    126 MAT       1
+     21 PTET4 TET4     127    137    134    131 MAT       1
+     22 PTET4 TET4     127    137    131    136 MAT       1
+     23 PTET4 TET4     137    131    136    142 MAT       1
+     24 PTET4 TET4     131    127    136    125 MAT       1
+     25 PTET4 TET4     136    131    125    129 MAT       1
+     26 PTET4 TET4     136    131    129    142 MAT       1
+     27 PTET4 TET4     131    129    142    137 MAT       1
+     28 PTET4 TET4     131    125    129    123 MAT       1
+     29 PTET4 TET4     129    131    123    134 MAT       1
+     30 PTET4 TET4     129    131    134    137 MAT       1
+     31 PTET4 TET4     134    127    131    123 MAT       1
+     32 PTET4 TET4     140    127    133    135 MAT       1
+     33 PTET4 TET4     148    140    144    146 MAT       1
+     34 PTET4 TET4     139    148    144    149 MAT       1
+     35 PTET4 TET4     134    145    139    138 MAT       1
+     36 PTET4 TET4     139    144    133    138 MAT       1
+     37 PTET4 TET4     145    139    138    149 MAT       1
+     38 PTET4 TET4     139    134    138    126 MAT       1
+     39 PTET4 TET4     140    127    135    136 MAT       1
+     40 PTET4 TET4     144    140    133    141 MAT       1
+     41 PTET4 TET4     144    140    141    146 MAT       1
+     42 PTET4 TET4     148    137    147    152 MAT       1
+     43 PTET4 TET4     139    144    138    149 MAT       1
+     44 PTET4 TET4     133    139    138    126 MAT       1
+     45 PTET4 TET4     148    140    146    147 MAT       1
+     46 PTET4 TET4     140    133    141    135 MAT       1
+     47 PTET4 TET4      44     51     54     46 MAT       1
+     48 PTET4 TET4      44     51     46     43 MAT       1
+     49 PTET4 TET4      51     46     43     53 MAT       1
+     50 PTET4 TET4      46     43     53     48 MAT       1
+     51 PTET4 TET4      51     46     53     54 MAT       1
+     52 PTET4 TET4      54     44     46     45 MAT       1
+     53 PTET4 TET4      44     46     45     31 MAT       1
+     54 PTET4 TET4      46     45     31     41 MAT       1
+     55 PTET4 TET4      45     31     41     38 MAT       1
+     56 PTET4 TET4      45     31     38     36 MAT       1
+     57 PTET4 TET4      46     45     41     55 MAT       1
+     58 PTET4 TET4      45     41     55     50 MAT       1
+     59 PTET4 TET4      55     45     50     57 MAT       1
+     60 PTET4 TET4      41     46     55     49 MAT       1
+     61 PTET4 TET4      46     45     55     54 MAT       1
+     62 PTET4 TET4      31     46     41     39 MAT       1
+     63 PTET4 TET4      41     45     38     50 MAT       1
+     64 PTET4 TET4      45     38     50     47 MAT       1
+     65 PTET4 TET4      45     38     47     36 MAT       1
+     66 PTET4 TET4      50     45     47     57 MAT       1
+     67 PTET4 TET4      45     44     31     36 MAT       1
+     68 PTET4 TET4      44     46     31     43 MAT       1
+     69 PTET4 TET4      46     31     43     39 MAT       1
+     70 PTET4 TET4      45     55     54     57 MAT       1
+     71 PTET4 TET4      55     46     54     53 MAT       1
+     72 PTET4 TET4      55     46     53     49 MAT       1
+     73 PTET4 TET4      54     44     45     47 MAT       1
+     74 PTET4 TET4      44     45     47     36 MAT       1
+     75 PTET4 TET4      45     54     47     57 MAT       1
+     76 PTET4 TET4      55     41     49     52 MAT       1
+     77 PTET4 TET4      31     41     38     30 MAT       1
+     78 PTET4 TET4      41     55     50     52 MAT       1
+     79 PTET4 TET4      41     31     39     30 MAT       1
+     80 PTET4 TET4      84     80     73     77 MAT       1
+     81 PTET4 TET4      84     80     77     83 MAT       1
+     82 PTET4 TET4      80     77     83     72 MAT       1
+     83 PTET4 TET4      77     83     72     78 MAT       1
+     84 PTET4 TET4      80     77     72     73 MAT       1
+     85 PTET4 TET4      73     84     77     76 MAT       1
+     86 PTET4 TET4      84     77     76     86 MAT       1
+     87 PTET4 TET4      77     76     86     75 MAT       1
+     88 PTET4 TET4      76     86     75     82 MAT       1
+     89 PTET4 TET4      76     86     82     88 MAT       1
+     90 PTET4 TET4      77     76     75     66 MAT       1
+     91 PTET4 TET4      76     75     66     70 MAT       1
+     92 PTET4 TET4      66     76     70     68 MAT       1
+     93 PTET4 TET4      75     77     66     69 MAT       1
+     94 PTET4 TET4      77     76     66     73 MAT       1
+     95 PTET4 TET4      86     77     75     81 MAT       1
+     96 PTET4 TET4      75     76     82     70 MAT       1
+     97 PTET4 TET4      76     82     70     79 MAT       1
+     98 PTET4 TET4      76     82     79     88 MAT       1
+     99 PTET4 TET4      70     76     79     68 MAT       1
+    100 PTET4 TET4      76     84     86     88 MAT       1
+    101 PTET4 TET4      84     77     86     83 MAT       1
+    102 PTET4 TET4      77     86     83     81 MAT       1
+    103 PTET4 TET4      76     66     73     68 MAT       1
+    104 PTET4 TET4      66     77     73     72 MAT       1
+    105 PTET4 TET4      66     77     72     69 MAT       1
+    106 PTET4 TET4      73     84     76     79 MAT       1
+    107 PTET4 TET4      84     76     79     88 MAT       1
+    108 PTET4 TET4      76     73     79     68 MAT       1
+    109 PTET4 TET4      66     75     69     64 MAT       1
+    110 PTET4 TET4      86     75     82     85 MAT       1
+    111 PTET4 TET4      75     66     70     64 MAT       1
+    112 PTET4 TET4      75     86     81     85 MAT       1
+    113 PTET4 TET4     144    151    156    148 MAT       1
+    114 PTET4 TET4      60     67     69     65 MAT       1
+    115 PTET4 TET4      60     67     65     57 MAT       1
+    116 PTET4 TET4      67     69     65     72 MAT       1
+    117 PTET4 TET4      69     60     65     66 MAT       1
+    118 PTET4 TET4      65     69     66     72 MAT       1
+    119 PTET4 TET4      66     65     72     62 MAT       1
+    120 PTET4 TET4      65     72     62     67 MAT       1
+    121 PTET4 TET4      66     65     62     55 MAT       1
+    122 PTET4 TET4      60     65     66     55 MAT       1
+    123 PTET4 TET4      59     58     49     56 MAT       1
+    124 PTET4 TET4      59     58     56     68 MAT       1
+    125 PTET4 TET4      58     49     56     53 MAT       1
+    126 PTET4 TET4      49     59     56     55 MAT       1
+    127 PTET4 TET4      56     49     55     53 MAT       1
+    128 PTET4 TET4      55     56     53     63 MAT       1
+    129 PTET4 TET4      56     53     63     58 MAT       1
+    130 PTET4 TET4      55     56     63     66 MAT       1
+    131 PTET4 TET4      59     56     55     66 MAT       1
+    132 PTET4 TET4     124    132    135    130 MAT       1
+    133 PTET4 TET4     124    132    130    125 MAT       1
+    134 PTET4 TET4     132    130    125    136 MAT       1
+    135 PTET4 TET4     130    125    136    127 MAT       1
+    136 PTET4 TET4     136    130    127    135 MAT       1
+    137 PTET4 TET4     132    130    136    135 MAT       1
+    138 PTET4 TET4     130    127    135    124 MAT       1
+    139 PTET4 TET4     130    125    127    124 MAT       1
+    140 PTET4 TET4      61     71     62     63 MAT       1
+    141 PTET4 TET4      10     27     23     21 MAT       1
+    142 PTET4 TET4      10     27     21     16 MAT       1
+    143 PTET4 TET4      27     23     21     36 MAT       1
+    144 PTET4 TET4      23     10     21     15 MAT       1
+    145 PTET4 TET4      10     21     15      8 MAT       1
+    146 PTET4 TET4      21     15      8     20 MAT       1
+    147 PTET4 TET4      15      8     20      9 MAT       1
+    148 PTET4 TET4      21     15     20     31 MAT       1
+    149 PTET4 TET4       8     21     20     25 MAT       1
+    150 PTET4 TET4      15     10      8      2 MAT       1
+    151 PTET4 TET4      10     21      8     16 MAT       1
+    152 PTET4 TET4      21     23     15     31 MAT       1
+    153 PTET4 TET4      20     15      9     22 MAT       1
+    154 PTET4 TET4      20     15     22     31 MAT       1
+    155 PTET4 TET4       8     20      9     24 MAT       1
+    156 PTET4 TET4      15      8      9      2 MAT       1
+    157 PTET4 TET4      23     10     15     14 MAT       1
+    158 PTET4 TET4      15      9     22     14 MAT       1
+    159 PTET4 TET4      10     15     14      2 MAT       1
+    160 PTET4 TET4      15     23     14     30 MAT       1
+    161 PTET4 TET4       9     20     22     28 MAT       1
+    162 PTET4 TET4       9     20     28     24 MAT       1
+    163 PTET4 TET4       8     21     25     16 MAT       1
+    164 PTET4 TET4      15      9     14      2 MAT       1
+    165 PTET4 TET4      22     15     14     30 MAT       1
+    166 PTET4 TET4       8     20     24     25 MAT       1
+    167 PTET4 TET4      20     22     28     37 MAT       1
+    168 PTET4 TET4     102    100     91     98 MAT       1
+    169 PTET4 TET4     102    100     98    109 MAT       1
+    170 PTET4 TET4     100     91     98     88 MAT       1
+    171 PTET4 TET4      91    102     98     96 MAT       1
+    172 PTET4 TET4     102     98     96    106 MAT       1
+    173 PTET4 TET4      98     96    106     97 MAT       1
+    174 PTET4 TET4      96    106     97    103 MAT       1
+    175 PTET4 TET4      98     96     97     86 MAT       1
+    176 PTET4 TET4     106     98     97    104 MAT       1
+    177 PTET4 TET4      96    102    106    107 MAT       1
+    178 PTET4 TET4     102     98    106    109 MAT       1
+    179 PTET4 TET4      98     91     96     86 MAT       1
+    180 PTET4 TET4      97     96    103     92 MAT       1
+    181 PTET4 TET4      97     96     92     86 MAT       1
+    182 PTET4 TET4     106     97    103    105 MAT       1
+    183 PTET4 TET4      96    106    103    107 MAT       1
+    184 PTET4 TET4      91    102     96     95 MAT       1
+    185 PTET4 TET4      96    103     92     95 MAT       1
+    186 PTET4 TET4     102     96     95    107 MAT       1
+    187 PTET4 TET4      96     91     95     85 MAT       1
+    188 PTET4 TET4     103     97     92     99 MAT       1
+    189 PTET4 TET4     103     97     99    105 MAT       1
+    190 PTET4 TET4     106     98    104    109 MAT       1
+    191 PTET4 TET4      96    103     95    107 MAT       1
+    192 PTET4 TET4      92     96     95     85 MAT       1
+    193 PTET4 TET4     106     97    105    104 MAT       1
+    194 PTET4 TET4      97     92     99     87 MAT       1
+    195 PTET4 TET4      83     90     94     86 MAT       1
+    196 PTET4 TET4      43     42     33     31 MAT       1
+    197 PTET4 TET4     129    120    123    125 MAT       1
+    198 PTET4 TET4     143    153    146    147 MAT       1
+    199 PTET4 TET4     125    121    113    118 MAT       1
+    200 PTET4 TET4     125    121    118    124 MAT       1
+    201 PTET4 TET4     121    118    124    114 MAT       1
+    202 PTET4 TET4     118    124    114    119 MAT       1
+    203 PTET4 TET4     121    118    114    113 MAT       1
+    204 PTET4 TET4     113    125    118    117 MAT       1
+    205 PTET4 TET4     125    118    117    127 MAT       1
+    206 PTET4 TET4     118    113    117    106 MAT       1
+    207 PTET4 TET4     113    125    117    120 MAT       1
+    208 PTET4 TET4     125    117    120    123 MAT       1
+    209 PTET4 TET4     117    120    123    111 MAT       1
+    210 PTET4 TET4     117    120    111    109 MAT       1
+    211 PTET4 TET4     123    117    111    116 MAT       1
+    212 PTET4 TET4     123    117    116    127 MAT       1
+    213 PTET4 TET4     117    111    116    106 MAT       1
+    214 PTET4 TET4     111    123    116    115 MAT       1
+    215 PTET4 TET4     117    113    120    109 MAT       1
+    216 PTET4 TET4     118    114    113    106 MAT       1
+    217 PTET4 TET4     118    125    124    127 MAT       1
+    218 PTET4 TET4     103    108    112    106 MAT       1
+    219 PTET4 TET4      78     87     81     83 MAT       1
+    220 PTET4 TET4      48     37     39     43 MAT       1
+    221 PTET4 TET4      42     51     44     43 MAT       1
+    222 PTET4 TET4      90     80     84     83 MAT       1
+    223 PTET4 TET4     141    151    144    146 MAT       1
+    224 PTET4 TET4      62     71     72     66 MAT       1
+    225 PTET4 TET4      63     61     53     55 MAT       1
+    226 PTET4 TET4     121    132    124    125 MAT       1
+    227 PTET4 TET4     147    143    136    140 MAT       1
+    228 PTET4 TET4      81     87     92     89 MAT       1
+    229 PTET4 TET4      81     87     89     83 MAT       1
+    230 PTET4 TET4      87     92     89     97 MAT       1
+    231 PTET4 TET4      92     81     89     86 MAT       1
+    232 PTET4 TET4      81     89     86     83 MAT       1
+    233 PTET4 TET4      89     86     83     94 MAT       1
+    234 PTET4 TET4      83     89     94     87 MAT       1
+    235 PTET4 TET4      89     86     94     97 MAT       1
+    236 PTET4 TET4      94     89     97     87 MAT       1
+    237 PTET4 TET4      92     89     97     86 MAT       1
+    238 PTET4 TET4      39     37     22     34 MAT       1
+    239 PTET4 TET4      39     37     34     43 MAT       1
+    240 PTET4 TET4      37     22     34     20 MAT       1
+    241 PTET4 TET4      22     39     34     31 MAT       1
+    242 PTET4 TET4      39     34     31     43 MAT       1
+    243 PTET4 TET4      34     31     43     33 MAT       1
+    244 PTET4 TET4      43     34     33     37 MAT       1
+    245 PTET4 TET4      34     31     33     20 MAT       1
+    246 PTET4 TET4      33     34     20     37 MAT       1
+    247 PTET4 TET4      22     34     20     31 MAT       1
+    248 PTET4 TET4     146    153    158    150 MAT       1
+    249 PTET4 TET4     146    153    150    147 MAT       1
+    250 PTET4 TET4     153    150    147    159 MAT       1
+    251 PTET4 TET4     150    147    159    152 MAT       1
+    252 PTET4 TET4     153    150    159    158 MAT       1
+    253 PTET4 TET4     158    146    150    148 MAT       1
+    254 PTET4 TET4     146    150    148    147 MAT       1
+    255 PTET4 TET4     150    148    147    152 MAT       1
+    256 PTET4 TET4     150    159    158    160 MAT       1
+    257 PTET4 TET4     150    159    160    154 MAT       1
+    258 PTET4 TET4     150    159    154    152 MAT       1
+    259 PTET4 TET4     160    150    154    148 MAT       1
+    260 PTET4 TET4     150    154    148    152 MAT       1
+    261 PTET4 TET4     160    150    148    158 MAT       1
+    262 PTET4 TET4     159    160    154    163 MAT       1
+    263 PTET4 TET4     159    154    152    163 MAT       1
+    264 PTET4 TET4     154    152    163    157 MAT       1
+    265 PTET4 TET4     154    152    157    145 MAT       1
+    266 PTET4 TET4     157    154    145    148 MAT       1
+    267 PTET4 TET4     154    152    145    148 MAT       1
+    268 PTET4 TET4     163    154    157    160 MAT       1
+    269 PTET4 TET4     154    157    160    148 MAT       1
+    270 PTET4 TET4     105    110    114    106 MAT       1
+    271 PTET4 TET4      25     35     32     20 MAT       1
+    272 PTET4 TET4     104    101     93     97 MAT       1
+    273 PTET4 TET4     122    128    133    127 MAT       1
+    274 PTET4 TET4      99    108    103    105 MAT       1
+    275 PTET4 TET4      28     18      9     24 MAT       1
+    276 PTET4 TET4      35     42     32     33 MAT       1
+    277 PTET4 TET4     101     90     93     94 MAT       1
+    278 PTET4 TET4     128    141    133    135 MAT       1
+    279 PTET4 TET4      54     61     62     55 MAT       1
+    280 PTET4 TET4      73     71     63     66 MAT       1
+    281 PTET4 TET4     110    121    114    113 MAT       1
+    282 PTET4 TET4      69     78     81     75 MAT       1
+    283 PTET4 TET4      81     69     75     74 MAT       1
+    284 PTET4 TET4      49     48     39     41 MAT       1
+    285 PTET4 TET4      39     49     41     40 MAT       1
+    286 PTET4 TET4     135    143    146    140 MAT       1
+    287 PTET4 TET4     146    135    140    141 MAT       1
+    288 PTET4 TET4      71     80     72     73 MAT       1
+    289 PTET4 TET4      61     51     53     54 MAT       1
+    290 PTET4 TET4      23     36     38     31 MAT       1
+    291 PTET4 TET4      91     88     82     86 MAT       1
+    292 PTET4 TET4      94    101    105     97 MAT       1
+    293 PTET4 TET4     105     94     97     99 MAT       1
+    294 PTET4 TET4      33     35     24     20 MAT       1
+    295 PTET4 TET4      24     33     20     28 MAT       1
+    296 PTET4 TET4     153    164    158    159 MAT       1
+    297 PTET4 TET4     113    110    104    106 MAT       1
+    298 PTET4 TET4     112    119    122    118 MAT       1
+    299 PTET4 TET4     143    132    136    135 MAT       1
+    300 PTET4 TET4     151    162    156    158 MAT       1
+    301 PTET4 TET4     111    109    102    106 MAT       1
+    302 PTET4 TET4      67     78     69     72 MAT       1
+    303 PTET4 TET4      58     48     49     53 MAT       1
+    304 PTET4 TET4      50     57     60     55 MAT       1
+    305 PTET4 TET4      70     68     59     66 MAT       1
+    306 PTET4 TET4      32     42     44     31 MAT       1
+    307 PTET4 TET4      93     90     84     86 MAT       1
+    308 PTET4 TET4     108    119    112    114 MAT       1
+    309 PTET4 TET4     123    116    115    126 MAT       1
+    310 PTET4 TET4     116    111    115    107 MAT       1
+    311 PTET4 TET4     136    137    142    147 MAT       1
+    312 PTET4 TET4     136    137    147    140 MAT       1
+    313 PTET4 TET4     137    142    147    152 MAT       1
+    314 PTET4 TET4      62     65     67     57 MAT       1
+    315 PTET4 TET4      63     56     58     68 MAT       1
+    316 PTET4 TET4     111    117    109    106 MAT       1
+    317 PTET4 TET4      41     39     40     30 MAT       1
+    318 PTET4 TET4      75     81     74     85 MAT       1
+    319 PTET4 TET4      44     32     31     36 MAT       1
+    320 PTET4 TET4      84     93     86     88 MAT       1
+    321 PTET4 TET4     145    157    148    149 MAT       1
+    322 PTET4 TET4     102    111    106    107 MAT       1
+    323 PTET4 TET4      49     41     40     52 MAT       1
+    324 PTET4 TET4      94     97     99     87 MAT       1
+    325 PTET4 TET4      33     20     28     37 MAT       1
+    326 PTET4 TET4      69     75     74     64 MAT       1
+    327 PTET4 TET4      21     20     25     32 MAT       1
+    328 PTET4 TET4      25     21     32     27 MAT       1
+    329 PTET4 TET4      25     21     27     16 MAT       1
+    330 PTET4 TET4      21     32     27     36 MAT       1
+    331 PTET4 TET4      98     97    104     93 MAT       1
+    332 PTET4 TET4     104     98     93    100 MAT       1
+    333 PTET4 TET4     104     98    100    109 MAT       1
+    334 PTET4 TET4      98     93    100     88 MAT       1
+    335 PTET4 TET4      60     50     55     52 MAT       1
+    336 PTET4 TET4      59     70     66     64 MAT       1
+    337 PTET4 TET4      82     91     86     85 MAT       1
+    338 PTET4 TET4      38     23     31     30 MAT       1
+    339 PTET4 TET4      46     41     39     48 MAT       1
+    340 PTET4 TET4      77     75     81     78 MAT       1
+    341 PTET4 TET4      21     20     32     31 MAT       1
+    342 PTET4 TET4      98     97     93     86 MAT       1
+    343 PTET4 TET4      38     41     50     40 MAT       1
+    344 PTET4 TET4      82     75     70     74 MAT       1
+    345 PTET4 TET4     133    122    127    126 MAT       1
+    346 PTET4 TET4     131    127    125    123 MAT       1
+    347 PTET4 TET4     116    115    126    122 MAT       1
+    348 PTET4 TET4     116    115    122    112 MAT       1
+    349 PTET4 TET4     122    116    112    118 MAT       1
+    350 PTET4 TET4     116    115    112    107 MAT       1
+    351 PTET4 TET4      41     46     49     48 MAT       1
+    352 PTET4 TET4      75     77     69     78 MAT       1
+    353 PTET4 TET4     125    117    123    127 MAT       1
+    354 PTET4 TET4      62     54     55     57 MAT       1
+    355 PTET4 TET4     134    127    123    126 MAT       1
+    356 PTET4 TET4      63     73     66     68 MAT       1
+    357 PTET4 TET4     156    144    148    149 MAT       1
+    358 PTET4 TET4     112    103    106    107 MAT       1
+    359 PTET4 TET4     143    146    140    147 MAT       1
+    360 PTET4 TET4      35     24     20     25 MAT       1
+    361 PTET4 TET4     101    105     97    104 MAT       1
+    362 PTET4 TET4     159    158    160    164 MAT       1
+    363 PTET4 TET4     172    176    170    165 MAT       1
+    364 PTET4 TET4     170    172    165    167 MAT       1
+    365 PTET4 TET4     172    165    167    160 MAT       1
+    366 PTET4 TET4     165    167    160    157 MAT       1
+    367 PTET4 TET4     170    172    167    171 MAT       1
+    368 PTET4 TET4     160    165    157    163 MAT       1
+    369 PTET4 TET4     172    176    165    168 MAT       1
+    370 PTET4 TET4     165    172    168    160 MAT       1
+    371 PTET4 TET4     168    165    160    159 MAT       1
+    372 PTET4 TET4     172    176    168    175 MAT       1
+    373 PTET4 TET4     165    160    159    163 MAT       1
+    374 PTET4 TET4     172    167    171    166 MAT       1
+    375 PTET4 TET4     167    171    166    156 MAT       1
+    376 PTET4 TET4     172    167    166    160 MAT       1
+    377 PTET4 TET4     168    172    175    166 MAT       1
+    378 PTET4 TET4     175    168    166    158 MAT       1
+    379 PTET4 TET4     168    172    166    160 MAT       1
+    380 PTET4 TET4     166    168    160    158 MAT       1
+    381 PTET4 TET4     167    166    160    156 MAT       1
+    382 PTET4 TET4     165    157    163    170 MAT       1
+    383 PTET4 TET4     165    170    167    157 MAT       1
+    384 PTET4 TET4     176    165    168    159 MAT       1
+    385 PTET4 TET4     172    175    166    171 MAT       1
+    386 PTET4 TET4     168    160    158    164 MAT       1
+    387 PTET4 TET4     158    168    164    175 MAT       1
+    388 PTET4 TET4     168    164    175    177 MAT       1
+    389 PTET4 TET4     175    168    177    176 MAT       1
+    390 PTET4 TET4     168    164    177    176 MAT       1
+    391 PTET4 TET4     160    166    158    156 MAT       1
+    392 PTET4 TET4     160    168    159    164 MAT       1
+    393 PTET4 TET4     168    159    164    176 MAT       1
+    394 PTET4 TET4     167    170    171    169 MAT       1
+    395 PTET4 TET4     171    167    169    161 MAT       1
+    396 PTET4 TET4     167    169    161    170 MAT       1
+    397 PTET4 TET4     171    167    161    156 MAT       1
+    398 PTET4 TET4       6      4      3      5 MAT       1
+    399 PTET4 TET4       6      4      5      7 MAT       1
+    400 PTET4 TET4       5      6      7     11 MAT       1
+    401 PTET4 TET4       5      6     11      3 MAT       1
+    402 PTET4 TET4       6      7     11     17 MAT       1
+    403 PTET4 TET4       6      4      7     17 MAT       1
+    404 PTET4 TET4       7      5     11      8 MAT       1
+    405 PTET4 TET4       5     11      8      9 MAT       1
+    406 PTET4 TET4       7      5      8     16 MAT       1
+    407 PTET4 TET4      11      7      8     25 MAT       1
+    408 PTET4 TET4       8      5      9      2 MAT       1
+    409 PTET4 TET4       8      5      2     10 MAT       1
+    410 PTET4 TET4       8      5     10     16 MAT       1
+    411 PTET4 TET4       7     11     17     25 MAT       1
+    412 PTET4 TET4       4      5      7     16 MAT       1
+    413 PTET4 TET4       6     11      3     19 MAT       1
+    414 PTET4 TET4       6     11     19     17 MAT       1
+    415 PTET4 TET4       8     11     25     24 MAT       1
+    416 PTET4 TET4       8     11     24      9 MAT       1
+    417 PTET4 TET4       4      7     17     12 MAT       1
+    418 PTET4 TET4       7     17     12     16 MAT       1
+    419 PTET4 TET4      12      7     16      4 MAT       1
+    420 PTET4 TET4       7     17     16     25 MAT       1
+    421 PTET4 TET4     157    160    148    155 MAT       1
+    422 PTET4 TET4     160    148    155    156 MAT       1
+    423 PTET4 TET4     155    160    156    167 MAT       1
+    424 PTET4 TET4     148    155    156    149 MAT       1
+    425 PTET4 TET4     155    156    149    161 MAT       1
+    426 PTET4 TET4     149    155    161    157 MAT       1
+    427 PTET4 TET4     155    156    161    167 MAT       1
+    428 PTET4 TET4     161    155    167    157 MAT       1
+    429 PTET4 TET4     157    160    155    167 MAT       1
+    430 PTET4 TET4     149    155    157    148 MAT       1
+    431 PTET4 TET4      90     93     94     86 MAT       1
+    432 PTET4 TET4      44     42     43     31 MAT       1
+    433 PTET4 TET4      42     32     33     31 MAT       1
+    434 PTET4 TET4      84     90     83     86 MAT       1
+    435 PTET4 TET4      71     62     63     66 MAT       1
+    436 PTET4 TET4      32     35     33     20 MAT       1
+    437 PTET4 TET4      25     29     24     11 MAT       1
+    438 PTET4 TET4      29     24     11     19 MAT       1
+    439 PTET4 TET4      93    101     94     97 MAT       1
+    440 PTET4 TET4     136    143    135    140 MAT       1
+    441 PTET4 TET4      53     61     54     55 MAT       1
+    442 PTET4 TET4     104    110    105    106 MAT       1
+    443 PTET4 TET4      62     61     63     55 MAT       1
+    444 PTET4 TET4     114    110    113    106 MAT       1
+    445 PTET4 TET4      72     71     73     66 MAT       1
+    446 PTET4 TET4     161    167    170    157 MAT       1
+    447 PTET4 TET4     159    165    163    176 MAT       1
+    448 PTET4 TET4       5      9      2      3 MAT       1
+    449 PTET4 TET4       5      2     10      4 MAT       1
+    450 PTET4 TET4      82     75     74     85 MAT       1
+    451 PTET4 TET4      38     41     40     30 MAT       1
+    452 PTET4 TET4     175    166    171    173 MAT       1
+    453 PTET4 TET4     175    166    173    162 MAT       1
+    454 PTET4 TET4     166    173    162    171 MAT       1
+    455 PTET4 TET4     175    166    162    158 MAT       1
+    456 PTET4 TET4     162    166    171    156 MAT       1
+    457 PTET4 TET4     162    166    156    158 MAT       1
+    458 PTET4 TET4       8      7     16     25 MAT       1
+    459 PTET4 TET4      93     98     86     88 MAT       1
+    460 PTET4 TET4      32     21     31     36 MAT       1
+    461 PTET4 TET4      75     70     74     64 MAT       1
+    462 PTET4 TET4      41     50     40     52 MAT       1
+    463 PTET4 TET4     160    148    156    158 MAT       1
+    464 PTET4 TET4      56     59     68     66 MAT       1
+    465 PTET4 TET4      65     60     57     55 MAT       1
+    466 PTET4 TET4      91     98     88     86 MAT       1
+    467 PTET4 TET4      23     21     36     31 MAT       1
+    468 PTET4 TET4      11      5      3      9 MAT       1
+    469 PTET4 TET4      25     29     11     17 MAT       1
+    470 PTET4 TET4     111    116    106    107 MAT       1
+    471 PTET4 TET4     163    165    170    174 MAT       1
+    472 PTET4 TET4     163    165    174    176 MAT       1
+    473 PTET4 TET4     165    170    174    176 MAT       1
+    474 PTET4 TET4       2      5      3      1 MAT       1
+    475 PTET4 TET4       2      5      1      4 MAT       1
+    476 PTET4 TET4       5      1      4      3 MAT       1
+    477 PTET4 TET4      65     62     55     57 MAT       1
+    478 PTET4 TET4      56     63     66     68 MAT       1
+    479 PTET4 TET4      46     43     48     39 MAT       1
+    480 PTET4 TET4      77     83     78     81 MAT       1
+    481 PTET4 TET4     118    124    119    122 MAT       1
+    482 PTET4 TET4      53     46     48     49 MAT       1
+    483 PTET4 TET4      72     77     78     69 MAT       1
+    484 PTET4 TET4     114    118    119    112 MAT       1
+    485 PTET4 TET4     122    116    118    127 MAT       1
+    486 PTET4 TET4     116    112    118    106 MAT       1
+    487 PTET4 TET4     128    133    127    135 MAT       1
+    488 PTET4 TET4      26     29     17     11 MAT       1
+    489 PTET4 TET4      26     29     11     19 MAT       1
+    490 PTET4 TET4      11     26     19     17 MAT       1
+    491 PTET4 TET4      19     13     18      3 MAT       1
+    492 PTET4 TET4      15     23     30     31 MAT       1
+    493 PTET4 TET4      96     91     85     86 MAT       1
+    494 PTET4 TET4     117    113    109    106 MAT       1
+    495 PTET4 TET4      22     15     30     31 MAT       1
+    496 PTET4 TET4      92     96     85     86 MAT       1
+    497 PTET4 TET4      24     11     19     18 MAT       1
+    498 PTET4 TET4      33     32     20     31 MAT       1
+    499 PTET4 TET4      94     93     97     86 MAT       1
+    500 PTET4 TET4     144    151    148    146 MAT       1
+    501 PTET4 TET4     103    108    106    105 MAT       1
+    502 PTET4 TET4     127    135    124    128 MAT       1
+    503 PTET4 TET4      69     60     66     64 MAT       1
+    504 PTET4 TET4      49     59     55     52 MAT       1
+    505 PTET4 TET4     116    112    106    107 MAT       1
+    506 PTET4 TET4     116    123    127    126 MAT       1
+    507 PTET4 TET4      81     92     85     86 MAT       1
+    508 PTET4 TET4      39     22     30     31 MAT       1
+    509 PTET4 TET4     146    158    151    148 MAT       1
+    510 PTET4 TET4     105    114    108    106 MAT       1
+    511 PTET4 TET4      52     64     59     60 MAT       1
+    512 PTET4 TET4     113    104    109    106 MAT       1
+    513 PTET4 TET4     122    116    127    126 MAT       1
+    514 PTET4 TET4     124    118    127    122 MAT       1
+    515 PTET4 TET4     118    114    106    112 MAT       1
+    516 PTET4 TET4      24     11     18      9 MAT       1
+    517 PTET4 TET4     116    117    106    118 MAT       1
+    518 PTET4 TET4     116    117    118    127 MAT       1
+    519 PTET4 TET4       5     10     16      4 MAT       1
+    520 PTET4 TET4     122    128    127    124 MAT       1
+    521 PTET4 TET4      11     19     18      3 MAT       1
+    522 PTET4 TET4     112    108    114    106 MAT       1
+    523 PTET4 TET4     156    151    158    148 MAT       1
+    524 PTET4 TET4      11     18      9      3 MAT       1
+    525 PTET4 TET4      63     62     55     66 MAT       1
+    526 PTET4 TET4      55     60     52     59 MAT       1
+    527 PTET4 TET4      66     59     64     60 MAT       1
+    528 PTET4 TET4      66     60     55     59 MAT       1
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+--------------------------------------------------THERMAL ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+---------------------------------------------------------MATERIALS
+MAT       1 MAT_Struct_NeoHooke  YOUNG 1000000.0 NUE 0.499 DENS 0.00000001
+//MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 1000000.0 NUE 0.3 DENS 0.00000001
+----------------------------------------------MULTILAYER MATERIALS
+------------------------------------------------------CONTROL NODE
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS 1 NODE 176 POSITION dispz NAME uz VALUE  -1.183019786639614601e+01 TOLERANCE 1e-8
+-------------------------------------------------------LOAD CURVES
+------------------------------------------------------------CURVE1
+CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 5000.0
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------CURVE5
+------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT3
+------------------------------------------------------------FUNCT4
+------------------------------------------------------------FUNCT5
+------------------------------------------------------------FUNCT6
+-----------------------------------------------------------LOCSYS1
+-----------------------------------------------------------LOCSYS2
+-----------------------------------------------------------LOCSYS3
+-----------------------------------------------------------LOCSYS4
+-----------------------------------------------------------LOCSYS5
+--------------------------------------------------------MONITORING
+// FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
+// FLUID 1 - 0 0 0 0 0 0
+// STRUCTURE 2 - 0 0 0 0 0 0
+// ALE 3 - 0 0 0 0 0 0
+---------------------------------------------------------------END
+// END
