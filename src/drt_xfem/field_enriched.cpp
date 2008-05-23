@@ -20,7 +20,7 @@ Maintainer: Axel Gerstenberger
 std::string XFEM::FieldEnr::toString() const
 {
     std::stringstream s;
-    s << "Enriched Field: " << PHYSICS::physVarToString(field_) << ", Enrichment: " << enr_.toString();
+    s << "( " << PHYSICS::physVarToString(field_) << ", " << enr_.toString() << " )";
     return s.str();
 }
 

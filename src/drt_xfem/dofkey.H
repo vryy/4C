@@ -38,8 +38,8 @@ static std::string dofTypeToString(DofType doftype)
 {
     switch (doftype)
     {
-        case onNode: return "onNode";
-        case onElem: return "onElem";
+        case onNode: return "Node";
+        case onElem: return "Elem";
         default:
             dserror("unknown doftype");
             exit(1);
@@ -92,7 +92,7 @@ public:
     std::string toString() const
     {
         stringstream s;
-        s << "Dofkey: " << XFEM::dofTypeToString(doftype) << " with Gid = " << gid_ << ", FieldEnr: " << fieldenr_.toString();
+        s << "Dofkey: <" << XFEM::dofTypeToString(doftype) << " Id: " << gid_ << ", " << fieldenr_.toString();
         return s.str();
     };
 

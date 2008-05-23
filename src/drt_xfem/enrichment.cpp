@@ -29,7 +29,7 @@ Maintainer: Axel Gerstenberger
 std::string XFEM::Enrichment::toString() const
 {
     std::stringstream s;
-    s << "Enrichment XFEMConditionLabel: " << this->xfemconditionlabel_ << ", type: " << enrTypeToString(this->type_);
+    s << "( Iface " << xfemconditionlabel_ << ", EnrType " << enrTypeToString(type_) << " )";
     return s.str();
 }
 
