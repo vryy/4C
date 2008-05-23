@@ -1,21 +1,19 @@
 /*!----------------------------------------------------------------------
-\file so_tet10.H
+\file so_tet4.H
 
 <pre>
 Maintainer: Moritz Frenzel
             frenzel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15240
-written by: Alexander Volf
-			alexander.volf@mytum.de
 </pre>
 
 *----------------------------------------------------------------------*/
 
 #ifdef D_SOLID3
 #ifdef CCADISCRET
-#ifndef SO_TET4_H_
-#define SO_TET4_H_
+#ifndef SO_TET4_H
+#define SO_TET4_H
 
 
 #include "Teuchos_RefCountPtr.hpp"
@@ -61,7 +59,6 @@ class Sotet4Register;
 /*!
 \brief A C++ version of the 4-node tet solid element
 
-\author Alexander Volf (alexander.volf@mytum.de)
 */
 
 class So_tet4 : public DRT::Element
