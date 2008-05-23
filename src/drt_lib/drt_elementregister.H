@@ -19,6 +19,7 @@ using namespace std;
 using namespace Teuchos;
 #include "drt_parobject.H"
 #include "drt_element.H"
+#include "linalg_systemmatrix.H"
 
 
 
@@ -146,11 +147,28 @@ public:
   \note This class implements a dummy version of this method so finite 
   elements that do not need an initialization can use this base class
   as their register class.  
-  
-  
   */
   virtual int Initialize(DRT::Discretization& dis);
 
+
+  /*!
+  \brief Call pre-evaluation of elements
+  
+  \param dis (in/out): Discretization with finite elements that have to 
+                       be initialized.
+  \param p   (in)    : parameter list of the evaluation call
+
+  \note This class implements a dummy version of this method so finite 
+  elements that do not need pre-evaluation can use this base class dummy
+  */
+  virtual inline void PreEvaluate(DRT::Discretization& dis,
+                                  Teuchos::ParameterList& p,
+                                  RCP<LINALG::SparseOperator> systemmatrix1,
+                                  RCP<LINALG::SparseOperator> systemmatrix2,
+                                  RCP<Epetra_Vector>          systemvector1,
+                                  RCP<Epetra_Vector>          systemvector2,
+                                  RCP<Epetra_Vector>          systemvector3)
+  { return; }
   //@}
 
 

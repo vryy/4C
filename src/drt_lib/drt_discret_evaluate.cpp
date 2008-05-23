@@ -27,12 +27,12 @@ Maintainer: Michael Gee
  |  evaluate (public)                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::Evaluate(
-                              Teuchos::ParameterList&        params,
-                              Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-                              Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
-                              Teuchos::RCP<Epetra_Vector>    systemvector1,
-                              Teuchos::RCP<Epetra_Vector>    systemvector2,
-                              Teuchos::RCP<Epetra_Vector>    systemvector3)
+                        Teuchos::ParameterList&              params,
+                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+                        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+                        Teuchos::RCP<Epetra_Vector>          systemvector1,
+                        Teuchos::RCP<Epetra_Vector>          systemvector2,
+                        Teuchos::RCP<Epetra_Vector>          systemvector3)
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -51,6 +51,17 @@ void DRT::Discretization::Evaluate(
   Epetra_SerialDenseVector elevector2;
   Epetra_SerialDenseVector elevector3;
 
+  // call the element's register class preevaluation method
+  // for each type of element
+  // for most element types, just the base class dummy is called
+  // that does nothing
+  {
+    map<int,RefCountPtr<ElementRegister> >::iterator curr;
+    for (curr=elementregister_.begin(); curr != elementregister_.end(); ++curr)
+      curr->second->PreEvaluate(*this,params,systemmatrix1,systemmatrix2,
+                                systemvector1,systemvector2,systemvector3);
+  }
+  
   // loop over column elements
   const int numcolele = NumMyColElements();
   for (int i=0; i<numcolele; ++i)
@@ -65,11 +76,11 @@ void DRT::Discretization::Evaluate(
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
     const int eledim = (int)lm.size();
-    elematrix1.Shape(eledim,eledim);
-    elematrix2.Shape(eledim,eledim);
-    elevector1.Size(eledim);
-    elevector2.Size(eledim);
-    elevector3.Size(eledim);
+    if (assemblemat1) elematrix1.Shape(eledim,eledim);
+    if (assemblemat2) elematrix2.Shape(eledim,eledim);
+    if (assemblevec1) elevector1.Size(eledim);
+    if (assemblevec2) elevector2.Size(eledim);
+    if (assemblevec3) elevector3.Size(eledim);
 
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate elements");
@@ -97,9 +108,9 @@ void DRT::Discretization::Evaluate(
 /*----------------------------------------------------------------------*
  |  evaluate (public)                                        u.kue 01/08|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::Evaluate(Teuchos::ParameterList&        params,
+void DRT::Discretization::Evaluate(Teuchos::ParameterList&              params,
                                    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-                                   Teuchos::RCP<Epetra_Vector>    systemvector)
+                                   Teuchos::RCP<Epetra_Vector>          systemvector)
 {
   Evaluate(params, systemmatrix, Teuchos::null, systemvector);
 }
@@ -212,12 +223,13 @@ static void DoDirichletCondition(DRT::Condition&             cond,
                                  Teuchos::RCP<Epetra_Vector> toggle);
 
 
-/*----------------------------------------------------------------------*/
+//--------------------------------------------------------------------
 /*!
 \brief evaluate spatial function (public)
 \author g.bau
 \date 03/07
 */
+//--------------------------------------------------------------------
 static double EvaluateFunction(DRT::Node*        node,
 		               int               index,
 			       int		 funct_num);
