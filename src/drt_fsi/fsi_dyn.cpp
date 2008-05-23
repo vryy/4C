@@ -211,7 +211,7 @@ void xfsi_drt()
   Epetra_SerialComm comm;
 #endif
 
-  Teuchos::RefCountPtr<FSI::DirichletNeumann> fsi = rcp(new FSI::DirichletNeumann(comm));
+  Teuchos::RCP<FSI::DirichletNeumann> fsi = rcp(new FSI::DirichletNeumann(comm));
 
   if (genprob.restart)
   {
@@ -223,6 +223,7 @@ void xfsi_drt()
 
   DRT::ResultTestManager testmanager(comm);
   testmanager.AddFieldTest(fsi->MBFluidField().CreateFieldTest());
+  testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
   testmanager.TestAll();
 
   Teuchos::TimeMonitor::summarize();
