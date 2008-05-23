@@ -73,6 +73,63 @@ void FLUID_UTILS::SetupFluidSplit(const DRT::Discretization& dis,
   extractor.Setup(*dis.DofRowMap(),conddofmap,otherdofmap);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLUID_UTILS::SetupFluidSplit(const DRT::Discretization& dis,
+                                 const DRT::DofSet& dofset,
+                                 int ndim,
+                                 LINALG::MapExtractor& extractor)
+{
+  std::set<int> conddofset;
+  std::set<int> otherdofset;
+
+  int numrownodes = dis.NumMyRowNodes();
+  for (int i=0; i<numrownodes; ++i)
+  {
+    DRT::Node* node = dis.lRowNode(i);
+
+    std::vector<int> dof = dofset.Dof(node);
+    for (unsigned j=0; j<dof.size(); ++j)
+    {
+      // test for dof position
+      if (j<static_cast<unsigned>(ndim))
+      {
+        otherdofset.insert(dof[j]);
+      }
+      else
+      {
+        conddofset.insert(dof[j]);
+      }
+    }
+  }
+
+  std::vector<int> conddofmapvec;
+  conddofmapvec.reserve(conddofset.size());
+  conddofmapvec.assign(conddofset.begin(), conddofset.end());
+  conddofset.clear();
+  Teuchos::RCP<Epetra_Map> conddofmap =
+    Teuchos::rcp(new Epetra_Map(-1,
+                                conddofmapvec.size(),
+                                &conddofmapvec[0],
+                                0,
+                                dis.Comm()));
+  conddofmapvec.clear();
+
+  std::vector<int> otherdofmapvec;
+  otherdofmapvec.reserve(otherdofset.size());
+  otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
+  otherdofset.clear();
+  Teuchos::RCP<Epetra_Map> otherdofmap =
+    Teuchos::rcp(new Epetra_Map(-1,
+                                otherdofmapvec.size(),
+                                &otherdofmapvec[0],
+                                0,
+                                dis.Comm()));
+  otherdofmapvec.clear();
+
+  extractor.Setup(*dofset.DofRowMap(),conddofmap,otherdofmap);
+}
+
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 void FLUID_UTILS::SetupXFluidSplit(

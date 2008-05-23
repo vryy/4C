@@ -189,6 +189,27 @@ void SetupFluidSplit(const DRT::Discretization& dis,
   The velocity dofs are assigned to map 0 (the other map) and the pressure
   dofs are assigned to map 1 (the condition map).
 
+  \param dis : (in) Discretization
+  \param ndim : (in) dimensions of problem (2 or 3)
+  \param extractor : (out) ready made map splitter
+
+  \author u.kue
+  \date 02/08
+ */
+void SetupFluidSplit(const DRT::Discretization& dis,
+                     const DRT::DofSet& dofset,
+                     int ndim,
+                     LINALG::MapExtractor& extractor);
+
+/// Split dof row map of discretization into velocity and pressure maps
+/*!
+
+  We assume that each node possesses ndim velocity dofs and (optionally)
+  one pressure dof. The dof row map is thus split in two.
+
+  The velocity dofs are assigned to map 0 (the other map) and the pressure
+  dofs are assigned to map 1 (the condition map).
+
   \author a.ger
   \date 03/08
  */
