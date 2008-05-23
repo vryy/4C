@@ -206,8 +206,10 @@ void LINALG::SparseMatrix::Assemble(int eid,
 {
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
+#ifdef DEBUG
   if (lrowdim!=(int)lmrowowner.size() || lrowdim!=Aele.M() || lcoldim!=Aele.N())
     dserror("Mismatch in dimensions");
+#endif
 
   const int myrank = sysmat_->Comm().MyPID();
   const Epetra_Map& rowmap = sysmat_->RowMap();
@@ -259,7 +261,7 @@ void LINALG::SparseMatrix::Assemble(int eid,
       // check whether I have that global row
       int rgid = lmrow[lrow];
 #ifdef DEBUG
-      if (!(rowmap.MyGID(rgid))) dserror("Sparse matrix A does not have global row %d",rgid);
+      if (!rowmap.MyGID(rgid)) dserror("Proc %d does not have global row %d",myrank,rgid);
 #endif
 
       for (int lcol=0; lcol<lcoldim; ++lcol)
