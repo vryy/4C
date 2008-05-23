@@ -35,7 +35,7 @@ std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(
         )
 {
     std::map<XFEM::Enrichment, double> enrvals;
-    
+    //TODO: achtung: bei mehreren enrichments ist approach from plus nicht mehr so einfach
     for (std::set<XFEM::Enrichment>::const_iterator enriter =
         enrset.begin(); enriter != enrset.end(); ++enriter)
     {
