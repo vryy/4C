@@ -86,14 +86,9 @@ public:
     element_ale2,
     element_ale2line,
     element_so_tet4,
-// these go away at some point
-//    element_sotet4surface,
-//    element_sotet4line,
+    element_ptet,
     element_sotet4volume,
     element_so_tet10,
-// these go away at some point
-//    element_sotet10surface,
-//    element_sotet10line,
     element_sotet10volume,
     element_so_ctet10,
     element_soctet10surface,
@@ -101,9 +96,6 @@ public:
     element_soctet10volume,
     element_so_weg6,
     element_sow6volume,
-// these go away at some point
-//    element_sow6surface,
-//    element_sow6line,
     element_sodisp,
     element_sodispvolume,
     element_sodispsurface,
