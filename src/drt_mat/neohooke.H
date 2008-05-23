@@ -84,17 +84,20 @@ namespace MAT
                   Epetra_SerialDenseMatrix* cmat,
                   Epetra_SerialDenseVector* stress);
     
-    Epetra_SerialDenseMatrix inverseTensor(
-                  const Epetra_SerialDenseMatrix M,
-		  const double I3);
 
-    double Density();                  
+    inline double Density() { return matdata_->m.neohooke->density; }
 
 
   private:
 
     /// my material parameters
     MATERIAL* matdata_;
+
+    void InverseTensor(
+                  const Epetra_SerialDenseMatrix& M,
+                  Epetra_SerialDenseMatrix& Minv,
+		  const double I3);
+
   
   };
 }

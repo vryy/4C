@@ -82,12 +82,8 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double ym = matdata_->m.neohooke->youngs;    // Young's modulus
   double nu = matdata_->m.neohooke->possionratio; // Poisson's ratio
 
-  // Identity Matrix
-  Epetra_SerialDenseMatrix I(3,3);
-  for (int i = 0; i < 3; ++i) I(i,i) = 1.0;
-  
   // Green-Lagrange Strain Tensor
-  Epetra_SerialDenseMatrix E(3,3);
+  LINALG::SerialDenseMatrix E(3,3);
   E(0,0) = (*glstrain)(0);
   E(1,1) = (*glstrain)(1);
   E(2,2) = (*glstrain)(2);
@@ -96,34 +92,41 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   E(0,2) = 0.5 * (*glstrain)(5);  E(2,0) = 0.5 * (*glstrain)(5);
   
   // Right Cauchy-Green Tensor  C = 2 * E + I
-  Epetra_SerialDenseMatrix C(E);
+  LINALG::SerialDenseMatrix C(E);
   C.Scale(2.0);
-  C += I;
+  C(0,0) += 1.0;
+  C(1,1) += 1.0;
+  C(2,2) += 1.0;
    
   // Principal Invariants I1 = tr(C) and I3 = det(C)
   //double I1 = C(0,0)+C(1,1)+C(2,2); // Needed only for energy
-  double I3 = C(0,0)*C(1,1)*C(2,2) + C(0,1)*C(1,2)*C(2,0)
-            + C(0,2)*C(1,0)*C(2,1) - (C(0,2)*C(1,1)*C(2,0)
-            + C(0,1)*C(1,0)*C(2,2) + C(0,0)*C(1,2)*C(2,1));
+  const double I3 = C(0,0)*C(1,1)*C(2,2) + C(0,1)*C(1,2)*C(2,0)
+                  + C(0,2)*C(1,0)*C(2,1) - (C(0,2)*C(1,1)*C(2,0)
+                  + C(0,1)*C(1,0)*C(2,2) + C(0,0)*C(1,2)*C(2,1));
   
   // Calculation of C^-1 (Cinv)
-  Epetra_SerialDenseMatrix Cinv = inverseTensor(C,I3);
+  LINALG::SerialDenseMatrix Cinv(3,3); 
+  InverseTensor(C,Cinv,I3);
 
   // Material Constants c1 and beta
-  double c1 = 0.5 * ym/(2*(1+nu));
-  double beta = nu/(1-2*nu);
+  const double c1 = 0.5 * ym/(2*(1+nu));
+  const double beta = nu/(1-2*nu);
 
   // Energy
   // double W = c1/beta * (pow(J,-beta) - 1) + c1 (I1-3);
   
   // PK2 Stresses
-  Epetra_SerialDenseMatrix PK2(3,3);
+  LINALG::SerialDenseMatrix PK2(3,3);
   int i,j;  
   for (i=0; i<3; i++)
-  for (j=0; j<3; j++)
-  {
-      PK2(i,j)= 2 * c1 * ( I(i,j) - pow(I3,-beta) * Cinv(i,j) );
-  }
+    for (j=0; j<3; j++)
+    {
+      PK2(i,j)= 2.0 * c1 * ( - pow(I3,-beta) * Cinv(i,j) );
+    }
+  PK2(0,0) += (2.0 * c1);
+  PK2(1,1) += (2.0 * c1);
+  PK2(2,2) += (2.0 * c1);
+  
   
   // Transfer PK2 tensor to stress vector
   (*stress)(0) = PK2(0,0);
@@ -134,28 +137,22 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   (*stress)(5) = PK2(0,2);
 
   // Elasticity Tensor
-  double delta6 = 4. * c1 * beta * pow(I3,-beta);
-  double delta7 = 4. * c1 * pow(I3,-beta);
+  const double delta6 = 4. * c1 * beta * pow(I3,-beta);
+  const double delta7 = 4. * c1 * pow(I3,-beta);
   
   int k,l;
-  Epetra_SerialDenseMatrix ET(9,9);
+  LINALG::SerialDenseMatrix ET(9,9);
 
   
   for (k=0; k<3; k++)
   for (l=0; l<3; l++)
   {
-		ET(k,l)	= delta6 * (Cinv(0,0) * Cinv(k,l)) + 
-					  delta7 * 0.5 *(Cinv(0,k) * Cinv(0,l) + Cinv(0,l) * Cinv(0,k));
-		ET(k+3,l)	= delta6 * (Cinv(1,0) * Cinv(k,l)) + 
-					  delta7 * 0.5 *(Cinv(1,k) * Cinv(0,l) + Cinv(1,l) * Cinv(0,k));
-		ET(k+3,l+3)= delta6 * (Cinv(1,1) * Cinv(k,l)) +
-				      delta7 * 0.5 *(Cinv(1,k) * Cinv(1,l) + Cinv(1,l) * Cinv(1,k));
-		ET(k+6,l)	= delta6 * (Cinv(2,0) * Cinv(k,l)) +
-					  delta7 * 0.5 *(Cinv(2,k) * Cinv(0,l) + Cinv(2,l) * Cinv(0,k));
-		ET(k+6,l+3)= delta6 * (Cinv(2,1) * Cinv(k,l)) +
-					  delta7 * 0.5 *(Cinv(2,k) * Cinv(1,l) + Cinv(2,l) * Cinv(1,k));
-		ET(k+6,l+6)= delta6 * (Cinv(2,2) * Cinv(k,l)) +
-					  delta7 * 0.5 *(Cinv(2,k) * Cinv(2,l) + Cinv(2,l) * Cinv(2,k));
+    ET(k,l)    = delta6 * (Cinv(0,0) * Cinv(k,l)) + delta7 * 0.5 *(Cinv(0,k) * Cinv(0,l) + Cinv(0,l) * Cinv(0,k));
+    ET(k+3,l)  = delta6 * (Cinv(1,0) * Cinv(k,l)) + delta7 * 0.5 *(Cinv(1,k) * Cinv(0,l) + Cinv(1,l) * Cinv(0,k));
+    ET(k+3,l+3)= delta6 * (Cinv(1,1) * Cinv(k,l)) + delta7 * 0.5 *(Cinv(1,k) * Cinv(1,l) + Cinv(1,l) * Cinv(1,k));
+    ET(k+6,l)  = delta6 * (Cinv(2,0) * Cinv(k,l)) + delta7 * 0.5 *(Cinv(2,k) * Cinv(0,l) + Cinv(2,l) * Cinv(0,k));
+    ET(k+6,l+3)= delta6 * (Cinv(2,1) * Cinv(k,l)) + delta7 * 0.5 *(Cinv(2,k) * Cinv(1,l) + Cinv(2,l) * Cinv(1,k));
+    ET(k+6,l+6)= delta6 * (Cinv(2,2) * Cinv(k,l)) + delta7 * 0.5 *(Cinv(2,k) * Cinv(2,l) + Cinv(2,l) * Cinv(2,k));
   }
 
   (*cmat)(0,0)=ET(0,0);
@@ -207,13 +204,13 @@ void MAT::NeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
 /*----------------------------------------------------------------------*
  |  Calculate the inverse of a 2nd order tensor                 rm 08/07|
  *----------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix MAT::NeoHooke::inverseTensor(
-						const Epetra_SerialDenseMatrix M,
-						const double I3)
+void MAT::NeoHooke::InverseTensor(
+	  			  const Epetra_SerialDenseMatrix& M,
+                                  Epetra_SerialDenseMatrix& Minv,
+				  const double I3)
 {
-  Epetra_SerialDenseMatrix Minv(3,3);
-  if (I3==0) {
-  	printf("Matrix nicht invertierbar!\n");
+  if (I3==0.0) {
+  	dserror("Right Cauchy Green not invertable in Neo Hooke material law");
   } else {
   	Minv(0,0)= 1/I3 * (M(1,1)*M(2,2) - M(2,1)*M(1,2));
 	Minv(1,0)=-1/I3 * (M(0,1)*M(2,2) - M(2,1)*M(0,2));
@@ -225,16 +222,9 @@ Epetra_SerialDenseMatrix MAT::NeoHooke::inverseTensor(
 	Minv(1,2)=-1/I3 * (M(0,0)*M(2,1) - M(2,0)*M(0,1));
 	Minv(2,2)= 1/I3 * (M(0,0)*M(1,1) - M(1,0)*M(0,1));
    }
-return Minv;
+return;
 }
 
 
-/*----------------------------------------------------------------------*
- |  Returns the density of the material                         rm 08/07|
- *----------------------------------------------------------------------*/
-double MAT::NeoHooke::Density()
-{
-  return matdata_->m.neohooke->density;  // density, returned to evaluate mass matrix
-}
 
 #endif
