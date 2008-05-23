@@ -91,7 +91,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      s8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
+      s8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
     }
     break;
     case calc_struct_internalforce:
