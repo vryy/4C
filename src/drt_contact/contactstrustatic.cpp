@@ -423,9 +423,9 @@ void contact_stru_static_drt()
           solver.Solve(stiff_mat->EpetraMatrix(),disi,fresm,true,false);
         }
 
-        //------------------------------------ transform disi due to contact
+        //------------------------------------- recover disi and Lagr. Mult.
         {
-          contactmanager->RecoverDisp(disi);
+          contactmanager->Recover(disi);
         }
 
         // update displacements

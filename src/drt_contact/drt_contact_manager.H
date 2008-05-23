@@ -211,32 +211,34 @@ public:
   void EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
     
   /*!
-  \brief Transform displacement increment vector
+  \brief Recovery method (for displacements and Lagrange multipliers)
   
   */
-  void RecoverDisp(RCP<Epetra_Vector> disi);
+  void Recover(RCP<Epetra_Vector> disi);
     
   /*!
-  \brief Transform displacement increment vector (with basis transformation)
+  \brief Recovery method (with basis transformation)
   
   During the setup of the global tangent stiffness the so-called basis
   transformation introduced the incremental jump of displacements
   [d] = d_slave - inv(D) * M * d_master into the vector of unknowns
   instead of the incremental slave displacments. This step is reversed
-  here by recovering the incremental slave displacements. But as we
-  still need the incremental jump for the active set strategy, it is
-  extracted at the beginning and stored in incrjump_.
+  here by recovering the incremental slave displacements.
   Moreover we recover the Lagrange multipliers here, which had been
   statically condensated during the setup of the global problem!
   
   */
-  void RecoverDispBasisTrafo(RCP<Epetra_Vector> disi);
+  void RecoverBasisTrafo(RCP<Epetra_Vector> disi);
   
   /*!
-  \brief RecoverDisp (without basis transformation)
+  \brief Recovery method (without basis transformation)
+  
+  Since  no basis transformation has been applied, we only recover
+  the Lagrange multipliers here, which had been statically condensated
+  during the setup of the global problem!
   
   */
-  void RecoverDispNoBasisTrafo(RCP<Epetra_Vector> disi);
+  void RecoverNoBasisTrafo(RCP<Epetra_Vector> disi);
   
   /*!
   \brief Update active set and check for convergence
@@ -297,6 +299,7 @@ protected:
   RCP<Epetra_Vector>                 fc_;             // vector of current contact forces
   bool                               isincontact_;    // flag indicatoing global contact status
   
+  RCP<Epetra_Vector>                 fs_;             // slave side effective forces (needed for LM)
   RCP<LINALG::SparseMatrix>          invd_;           // inverse of Mortar matrix D (needed for LM)
   RCP<LINALG::SparseMatrix>          ksn_;            // stiffness block K_sn (needed for LM)
   RCP<LINALG::SparseMatrix>          ksm_;            // stiffness block K_sm (needed for LM)

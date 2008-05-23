@@ -510,9 +510,9 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     else
       solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,false);
 
-    //------------------------------------ transform disi due to contact
+    //------------------------------------ -- recover disi and Lag. Mult.
     {
-      contactmanager_->RecoverDisp(disi_);
+      contactmanager_->Recover(disi_);
     }
 
     //---------------------------------- update mid configuration values
@@ -743,9 +743,9 @@ void CONTACT::ContactStruGenAlpha::PTC()
     else
       solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,false);
 
-    //------------------------------------ transform disi due to contact
+    //--------------------------------------- recover disi and Lag. Mult.
     {
-      contactmanager_->RecoverDisp(disi_);
+      contactmanager_->Recover(disi_);
     }
 
     //---------------------------------- update mid configuration values

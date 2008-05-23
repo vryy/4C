@@ -648,12 +648,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
   LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
   
-  // store some stuff for static condensation of LM
-  ksn_  = ksn;
-  ksm_  = ksm;
-  kss_  = kss;
-  invd_ = invd;
-  
   // output for checking everything
 #ifdef CONTACTDIMOUTPUT
   if(Comm().MyPID()==0)
@@ -707,6 +701,13 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
     cout << "**********" << endl;
   }
 #endif // #ifdef CONTACTDIMOUTPUT
+  
+  // store some stuff for static condensation of LM
+  fs_   = fs;
+  invd_ = invd;
+  ksn_  = ksn;
+  ksm_  = ksm;
+  kss_  = kss;
   
   /**********************************************************************/
   /* Apply basis transformation to k                                    */
@@ -988,12 +989,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   *feff = *feffnew;
   //LINALG::PrintSparsityToPostscript(*(kteff->EpetraMatrix()));
   
-  /**********************************************************************/
-  /* Update Lagrange multipliers                                        */
-  /**********************************************************************/
-  //invd->Multiply(false,*fsmod,*z_); // approximate update
-  z_->Update(1.0,*fsmod,0.0);         // full update (see below) 
-
   return;
 }
 
@@ -1114,12 +1109,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
   LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
   
-  // store some stuff for static condensation of LM
-  ksn_  = ksn;
-  ksm_  = ksm;
-  kss_  = kss;
-  invd_ = invd;
-  
   // output for checking everything
 #ifdef CONTACTDIMOUTPUT
   if(Comm().MyPID()==0)
@@ -1174,6 +1163,13 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   }
 #endif // #ifdef CONTACTDIMOUTPUT
   
+  // store some stuff for static condensation of LM
+  fs_   = fs;
+  invd_ = invd;
+  ksn_  = ksn;
+  ksm_  = ksm;
+  kss_  = kss;
+    
   /**********************************************************************/
   /* Apply basis transformation to k                                    */
   /**********************************************************************/
@@ -1472,12 +1468,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   *feff = *feffnew;
   //LINALG::PrintSparsityToPostscript(*(kteff->EpetraMatrix()));
   
-  /**********************************************************************/
-  /* Update Lagrange multipliers                                        */
-  /**********************************************************************/
-  //invd->Multiply(false,*fsmod,*z_); // approximate update
-  z_->Update(1.0,*fsmod,0.0);         // full update (see below) 
-
   return;
 }
 
@@ -1601,12 +1591,6 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
   LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
   
-  // store some stuff for static condensation of LM
-  ksn_  = ksn;
-  ksm_  = ksm;
-  kss_  = kss;
-  invd_ = invd;
-  
   // output for checking everything
 #ifdef CONTACTDIMOUTPUT
   if(Comm().MyPID()==0)
@@ -1661,6 +1645,13 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   }
 #endif // #ifdef CONTACTDIMOUTPUT
   
+  // store some stuff for static condensation of LM
+  fs_   = fs;
+  invd_ = invd;
+  ksn_  = ksn;
+  ksm_  = ksm;
+  kss_  = kss;
+    
   /**********************************************************************/
   /* Split slave quantities into active / inactive                      */
   /**********************************************************************/
@@ -1923,35 +1914,29 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   *kteff = *kteffnew;
   *feff = *feffnew;
   
-  /**********************************************************************/
-  /* Update Lagrange multipliers                                        */
-  /**********************************************************************/
-  //invd->Multiply(false,*fs,*z_); // approximate update
-  z_->Update(1.0,*fs,0.0);         // full update (see below) 
-  
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  Recover disp function (public)                            popp 04/08|
+ |  Recovery method for displacements and LM (public)         popp 04/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::RecoverDisp(RCP<Epetra_Vector> disi)
+void CONTACT::Manager::Recover(RCP<Epetra_Vector> disi)
 { 
   // check if basis transformation should be applied
   bool btrafo = scontact_.get<bool>("basis transformation",false);
   
   if (btrafo)
-    RecoverDispBasisTrafo(disi);
+    RecoverBasisTrafo(disi);
   else
-    RecoverDispNoBasisTrafo(disi);
+    RecoverNoBasisTrafo(disi);
     
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  Transform displacement increment vector (public)          popp 02/08|
+ |  Recovery method (basis trafo case)                        popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::RecoverDispBasisTrafo(RCP<Epetra_Vector> disi)
+void CONTACT::Manager::RecoverBasisTrafo(RCP<Epetra_Vector> disi)
 { 
 #ifdef CONTACTCHECKHUEEBER
   // debugging (check S. Hüeber)
@@ -1987,7 +1972,14 @@ void CONTACT::Manager::RecoverDispBasisTrafo(RCP<Epetra_Vector> disi)
   LINALG::Export(*mod,*modexp);
   disi->Update(1.0,*modexp,1.0);
   
-  // update Lagrange multipliers
+  /**********************************************************************/
+  /* Update Lagrange multipliers                                        */
+  /**********************************************************************/
+  // approximate update
+  //invd_->Multiply(false,*fs_,*z_);
+  
+  // full update
+  z_->Update(1.0,*fs_,0.0);
   RCP<Epetra_Vector> mod2 = rcp(new Epetra_Vector(*gsdofrowmap_));
   RCP<Epetra_Vector> slavedisp = rcp(new Epetra_Vector(*gsdofrowmap_));
   LINALG::Export(*disi,*slavedisp);
@@ -2040,13 +2032,13 @@ void CONTACT::Manager::RecoverDispBasisTrafo(RCP<Epetra_Vector> disi)
 }
 
 /*----------------------------------------------------------------------*
- |  RecoverDisp without basis transformation (public)         popp 04/08|
+ | Recovery method (no basis trafo case) (public)             popp 04/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::RecoverDispNoBasisTrafo(RCP<Epetra_Vector> disi)
+void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
 {
 #ifdef CONTACTCHECKHUEEBER
   // debugging (check S. Hüeber)
-  dserror("ERROR: RecoverDispNoBasisTrafo: Quadr. convergence check not implemented");
+  dserror("ERROR: RecoverNoBasisTrafo: Quadr. convergence check not implemented");
 #endif // #ifdef CONTACTCHECKHUEEBER
   
   // extract slave displacements from disi
@@ -2062,7 +2054,14 @@ void CONTACT::Manager::RecoverDispNoBasisTrafo(RCP<Epetra_Vector> disi)
   mhatmatrix_->Multiply(false,*disim,*incrjump_);
   incrjump_->Update(1.0,*disis,-1.0);
   
-  // update Lagrange multipliers
+  /**********************************************************************/
+  /* Update Lagrange multipliers                                        */
+  /**********************************************************************/
+  // approximate update
+  //invd_->Multiply(false,*fs_,*z_);
+    
+  // full update
+  z_->Update(1.0,*fs_,0.0);
   RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gsdofrowmap_));
   kss_->Multiply(false,*disis,*mod);
   z_->Update(-1.0,*mod,1.0);
