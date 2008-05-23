@@ -39,7 +39,7 @@ extern struct _GENPROB     genprob;
 XFluidResultTest::XFluidResultTest(XFluidImplicitTimeInt& fluid)
 {
   fluiddis_=fluid.discret_;
-  mysol_   =fluid.velnp_ ;
+  mysol_   =fluid.state_.velnp_ ;
 }
 
 

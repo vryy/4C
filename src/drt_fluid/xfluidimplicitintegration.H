@@ -136,15 +136,6 @@ public:
           );
 
   /*!
-  \brief solve linearised fluid
-
-  */
-  void LinearSolve(
-          RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-          RCP<Epetra_Vector>       idispcol
-          );
-
-  /*!
     \brief build linear system matrix and rhs
 
     Monolithic FSI needs to access the linear fluid problem.
@@ -201,13 +192,13 @@ public:
   Teuchos::RCP<Epetra_Vector> InitialGuess() { return incvel_; }
   Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
-  Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
-  Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
-  Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
+  Teuchos::RCP<Epetra_Vector> Velnp() { return state_.velnp_; }
+  Teuchos::RCP<Epetra_Vector> Veln() { return state_.veln_; }
+  //Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
   Teuchos::RCP<Epetra_Vector> InvDirichlet() { return invtoggle_; }
-  Teuchos::RCP<Epetra_Vector> Dispnp() { return dispnp_; }
-  Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
+  //Teuchos::RCP<Epetra_Vector> Dispnp() { return state_.dispnp_; }
+  //Teuchos::RCP<Epetra_Vector> Dispn() { return state_.dispn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
@@ -241,7 +232,7 @@ public:
   void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
 
   /// determine grid velocity
-  void UpdateGridv();
+//  void UpdateGridv();
 
   /// calculate lift&drag forces and angular momenta
   void LiftDrag() const;
@@ -342,9 +333,6 @@ protected:
   /// (standard) residual vector (rhs for the incremental form),
   RCP<Epetra_Vector>    residual_;
 
-  /// rhs: right hand side vector for linearised flow solution
-  RCP<Epetra_Vector>    rhs_;
-
   /// robinrhs_: additional rhs when using robin-BC
   RCP<Epetra_Vector>    robinrhs_;
 
@@ -354,6 +342,8 @@ protected:
   /// Nonlinear iteration increment vector
   RCP<Epetra_Vector>    incvel_;
 
+  struct State
+  {
   //! @name accelerations at time n and n-1
   RCP<Epetra_Vector>    accn_;
   RCP<Epetra_Vector>    accnm_;
@@ -366,13 +356,14 @@ protected:
   //@}
 
   //! @name displacemets at time n+1, n and n-1
-  RCP<Epetra_Vector>    dispnp_;
-  RCP<Epetra_Vector>    dispn_;
-  RCP<Epetra_Vector>    dispnm_;
+//  RCP<Epetra_Vector>    dispnp_;
+//  RCP<Epetra_Vector>    dispn_;
+//  RCP<Epetra_Vector>    dispnm_;
   //@}
+  } state_;
 
   /// grid velocity (set from the adapter!)
-  RCP<Epetra_Vector>    gridv_;
+//  RCP<Epetra_Vector>    gridv_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)
