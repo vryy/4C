@@ -149,6 +149,9 @@ private:
 
   /// interface displacement from time step begin
   Teuchos::RCP<Epetra_Vector> idispn_;
+  
+  /// interface velocity from time step begin
+  Teuchos::RCP<Epetra_Vector> iveln_;
 
   //! connection of interface dofs for finite differences
   Teuchos::RCP<Epetra_CrsGraph> rawGraph_;

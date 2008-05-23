@@ -1014,6 +1014,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ),
                                tuple<int>(1,2,3,4),
                                &fsidyn);
+  
+  setStringToIntegralParameter("INTERFACE_VELOCITY","(1/dt)*(d(n+1)-d(n))",
+                               "Method for interface velocity calculation",
+                               tuple<std::string>(
+                                 "(1/dt)*(d(n+1)-d(n))",
+                                 "(1/(0.5*dt))*(d(n+1)-d(n))-u(n)"
+                                 ),
+                               tuple<int>(1,2),
+                               &fsidyn);
 
   setStringToIntegralParameter("CONVCRIT","||g(i)||:sqrt(neq)",
                                "Convergence criterium for iteration over fields (unused)",

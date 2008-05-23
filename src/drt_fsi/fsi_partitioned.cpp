@@ -351,6 +351,10 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
   // get an idea of interface displacement
   idispn_ = StructureField().ExtractInterfaceDispn();
+  // initial velocity of the interface is assumed to be zero.
+  // how about restart?
+  iveln_ = Teuchos::rcp(new Epetra_Vector(*idispn_));
+  iveln_->Scale(0.0);
 
   Teuchos::Time timer("time step timer");
 
@@ -507,6 +511,8 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     // really extract final displacement
     // since we did update, this is very easy to extract
     idispn_ = StructureField().ExtractInterfaceDispn();
+    // store latest velocity to the velocity of the old timestep
+    iveln_ = InterfaceVelocity(idispn_);
 
     /* write current solution */
     Output();
@@ -812,7 +818,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::FluidOp(Teuchos::RCP<Epetra_Vector
                                                       const FillType fillFlag)
 {
   if (Comm().MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
-    utils_->out() << "\nFluid operator\n";
+    utils_->out() << endl << BLUE2_LIGHT << "Fluid operator" << END_COLOR << endl;
   return Teuchos::null;
 }
 
@@ -823,7 +829,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructOp(Teuchos::RCP<Epetra_Vecto
                                                        const FillType fillFlag)
 {
   if (Comm().MyPID()==0 and utils_->isPrintType(NOX::Utils::OuterIteration))
-    utils_->out() << "\nStructural operator\n";
+    utils_->out() << endl << BLUE2_LIGHT << "Structural operator" << END_COLOR << endl;
   return Teuchos::null;
 }
 
@@ -833,10 +839,35 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructOp(Teuchos::RCP<Epetra_Vecto
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceVelocity(
         const Teuchos::RCP<Epetra_Vector> idispnp) const
 {
-  Teuchos::RCP<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idispn_));
-  ivel->Update(1.0, *idispnp, -1.0);
-  ivel->Scale(1./Dt());
-  return ivel;
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  
+  switch (Teuchos::getIntegralValue<int>(fsidyn,"INTERFACE_VELOCITY"))
+  {
+    case 1: // backward euler
+    {
+      Teuchos::RCP<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idispn_));
+      ivel->Update(1.0, *idispnp, -1.0);
+      ivel->Scale(1./Dt());
+      return ivel;
+      break;
+    }
+    case 2: // Crank Nicholson/central difference
+    {
+      cout << "central difference" << endl;
+      const double theta = 1.0;
+      Teuchos::RCP<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idispnp));
+      ivel->Update(-1.0, *idispn_, 1.0);
+      ivel->Scale(1./(theta*Dt()));
+      ivel->Update(((1.0-theta)/theta), *iveln_, 1.0);
+      return ivel;
+      break;
+    }
+    default:
+    {
+      dserror("unknown method to calculate interface velocity");
+      exit(1);
+    }
+  } 
 }
 
 
