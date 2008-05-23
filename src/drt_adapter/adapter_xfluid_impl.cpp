@@ -113,8 +113,9 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Veln()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Dispnp()
 {
-    dserror("not implemented");
-  return fluid_.Dispnp();
+  dserror("not implemented");
+//  return fluid_.Dispnp();
+  return null;
 }
 
 
@@ -345,6 +346,21 @@ void ADAPTER::XFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> i
 
   interface_.InsertCondVector(ivel,ivel_);
   LINALG::Export(*ivel_,*ivelcol_);
+//  
+//  for (int entry = 0; entry < ivelcol_->MyLength(); ++entry)
+//  {
+//    if (entry%3 == 0)
+//    {
+//      //(*ivelcol)[entry] = (-1.5*std::sin(2.0*time_* PI) * PI);
+//      (*ivelcol_)[entry] = -5.0;
+//    }
+//    else
+//    {
+//      (*ivelcol_)[entry] = 0.0;
+//    }
+//        
+//  }
+  
 }
 
 
@@ -362,6 +378,13 @@ void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> idis
 {
   interface_.InsertCondVector(idisp,idisp_);
   LINALG::Export(*idisp_,*idispcol_);
+  
+//
+//  idispcol_->Scale(0.0);
+//  //idispcol_->PutScalar(-0.14); // ganz schlecht
+//  //idispcol_->PutScalar( 0.04); // naja
+//  idispcol_->PutScalar(-0.05); // naja
+  
 }
 
 
