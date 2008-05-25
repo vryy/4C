@@ -73,6 +73,7 @@ void static Sysmat(
         const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
         const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
         const RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
+        const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
         BlitzMat&                         estif,         ///< element matrix to calculate
         BlitzVec&                         eforce,        ///< element rhs to calculate
         const struct _MATERIAL*           material,      ///< fluid material
@@ -1308,16 +1309,14 @@ void static Sysmat(
         // get node coordinates
         const BlitzMat xyze_boundary(DRT::UTILS::PositionArrayBlitz(boundaryele));
         
-        // quick hack to get interface velocities at the boundary element nodes
+        // get interface velocities at the boundary element nodes
         BlitzMat vel_boundary(3,numnode_boundary);
         const DRT::Node*const* nodes = boundaryele->Nodes();
         {
           for (int inode = 0; inode < numnode_boundary; ++inode)
           {
             const DRT::Node* node = nodes[inode];
-            vector<int> lm;
-            lm.reserve(3);
-            ih->cutterdis()->Dof(node, lm);
+            vector<int> lm = ih->cutterdis()->Dof(node);
             vector<double> myvel(3);
             DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
             vel_boundary(0,inode) = myvel[0];
@@ -1325,6 +1324,9 @@ void static Sysmat(
             vel_boundary(2,inode) = myvel[2];
           }
         }
+        
+        BlitzMat force_boundary(3,numnode_boundary);
+        force_boundary = 0.0;
 
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
@@ -1606,12 +1608,12 @@ void static Sysmat(
             assembler.template Matrix<Velz,Tauzy>(shp, -timefacfac*normalvec(1), shp_tau);
             assembler.template Matrix<Velz,Tauzz>(shp, -timefacfac*normalvec(2), shp_tau);
             
-            static BlitzVec3 tau_times_n;
+            static BlitzVec3 disctau_times_n;
             //tau_times_n = blitz::sum(tau(i,j)*normalvec(j),j);
-            LINALG::DENSE::MV_product<3,3>(tau,normalvec,tau_times_n);
-            assembler.template Vector<Velx>(shp, timefacfac*tau_times_n(0));
-            assembler.template Vector<Vely>(shp, timefacfac*tau_times_n(1));
-            assembler.template Vector<Velz>(shp, timefacfac*tau_times_n(2));
+            LINALG::DENSE::MV_product<3,3>(tau,normalvec,disctau_times_n);
+            assembler.template Vector<Velx>(shp, timefacfac*disctau_times_n(0));
+            assembler.template Vector<Vely>(shp, timefacfac*disctau_times_n(1));
+            assembler.template Vector<Velz>(shp, timefacfac*disctau_times_n(2));
             
             /*
                            /         \
@@ -1627,7 +1629,37 @@ void static Sysmat(
             assembler.template Vector<Velx>(shp, -timefacfac*normalvec(0)*discpres);
             assembler.template Vector<Vely>(shp, -timefacfac*normalvec(1)*discpres);
             assembler.template Vector<Velz>(shp, -timefacfac*normalvec(2)*discpres);
+            
+            
+            // here the interface force is integrated
+            // this is done using test shape functions of the boundary mesh
+            // hence, we can't use the local assembler here
+            for (int inode = 0; inode < numnode_boundary; ++inode)
+            {
+              force_boundary(0,inode) += funct_boundary(inode) * (- discpres*normalvec(0) + disctau_times_n(0));
+              force_boundary(1,inode) += funct_boundary(inode) * (- discpres*normalvec(1) + disctau_times_n(1));
+              force_boundary(2,inode) += funct_boundary(inode) * (- discpres*normalvec(2) + disctau_times_n(2));
+            }
+            
+            
         } // end loop over gauss points
+        
+        // here we need to assemble into the global force vector of the boundary discretization
+        // note that we assemble into a overlapping vector, hence we later have to figure out,
+        // how the values get into the right places of the force vector in unique distribution 
+        {
+          const Epetra_Map* dofcolmap = ih->cutterdis()->DofColMap();
+          for (int inode = 0; inode < numnode_boundary; ++inode)
+          {
+            const DRT::Node* node = nodes[inode];
+            const vector<int> gdofs(ih->cutterdis()->Dof(node));
+            (*iforcecol)[dofcolmap->LID(gdofs[0])] += force_boundary(0,inode);
+            (*iforcecol)[dofcolmap->LID(gdofs[1])] += force_boundary(1,inode);
+            (*iforcecol)[dofcolmap->LID(gdofs[2])] += force_boundary(2,inode);
+          }
+        }
+        
+        
     } // end loop over boundary integration cells
     }
     } // if (ASSTYPE == XFEM::xfem_assembly)
@@ -1647,6 +1679,7 @@ void callSysmat(
         const std::vector<double>&        locval,
         const std::vector<double>&        locval_hist,
         const RCP<Epetra_Vector>          ivelcol,
+        const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
         BlitzMat&                         estif,
         BlitzVec&                         eforce,
         const struct _MATERIAL*           material,
@@ -1665,22 +1698,22 @@ void callSysmat(
         {
             case DRT::Element::hex8:
                 Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex20:
                 Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex27:
                 Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::tet4:
                 Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             default:
@@ -1693,17 +1726,17 @@ void callSysmat(
         {
             case DRT::Element::hex8:
                 Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex20:
                 Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex27:
                 Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, estif, eforce,
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             default:

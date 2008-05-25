@@ -174,6 +174,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         if (ivelcol==null)
             dserror("Cannot get interface velocity from parameters");
         
+        const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force",null);
+        if (iforcecol==null)
+            dserror("Cannot get interface force from parameters");
+        
         //--------------------------------------------------
         // wrap epetra serial dense objects in blitz objects
         //--------------------------------------------------
@@ -192,7 +196,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         //--------------------------------------------------
         XFLUID::callSysmat(assembly_type,
-                this, ih_, eleDofManager_, myvelnp, myhist, ivelcol, estif, eforce,
+                this, ih_, eleDofManager_, myvelnp, myhist, ivelcol, iforcecol, estif, eforce,
                 actmat, time, timefac, newton, pstab, supg, cstab, true);
 
         // This is a very poor way to transport the density to the
@@ -255,9 +259,13 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           if (ivelcol==null)
               dserror("Cannot get interface velocity from parameters");
           
+          const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force",null);
+          if (iforcecol==null)
+              dserror("Cannot get interface force from parameters");
+          
           if (is_ale_)
           {
-        	  dserror("No ALE support within stationary fluid solver.");
+              dserror("No ALE support within stationary fluid solver.");
           }
           
           // get control parameter
@@ -298,7 +306,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               // R_0
               // calculate element coefficient matrix and rhs
               XFLUID::callSysmat(assembly_type,
-                      this, ih_, eleDofManager_, locval, locval_hist, ivelcol, estif, eforce,
+                      this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                       actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
               blitz::Array<double, 1> eforce_0(locval.size());
@@ -319,20 +327,20 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                   {
                       locval_disturbed[i] = locval[i];
                   }
-                  cout << locval[i] <<  " " << locval_disturbed[i] << endl;
+                  std::cout << locval[i] <<  " " << locval_disturbed[i] << endl;
               }
               
 
               // R_0+dx
               // calculate element coefficient matrix and rhs
               XFLUID::callSysmat(assembly_type,
-                      this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, estif, eforce,
+                      this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, iforcecol, estif, eforce,
                       actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
               
               
               // compare
-              cout << "sekante" << endl;
+              std::cout << "sekante" << endl;
               for (int i = 0;i < locval.size(); ++i)
               {
                   //cout << i << endl;
@@ -348,7 +356,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           {
           // calculate element coefficient matrix and rhs
           XFLUID::callSysmat(assembly_type,
-                  this, ih_, eleDofManager_, locval, locval_hist, ivelcol, estif, eforce,
+                  this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                   actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
           }
           // This is a very poor way to transport the density to the
@@ -805,7 +813,7 @@ void DRT::ELEMENTS::XFluid3::f3_calc_means(
   {
     // t aligned
     elenormdirect =2;
-    cout << "upsidedown false" <<&endl;
+    std::cout << "upsidedown false" <<&endl;
   }
   else if (xyze(normdirect,3)-xyze(normdirect,0)>2e-9)
   {
@@ -819,11 +827,11 @@ void DRT::ELEMENTS::XFluid3::f3_calc_means(
   }
   else if(xyze(normdirect,4)-xyze(normdirect,0)<-2e-9)
   {
-    cout << xyze(normdirect,4)-xyze(normdirect,0) << &endl;
+    std::cout << xyze(normdirect,4)-xyze(normdirect,0) << &endl;
     // -t aligned
     elenormdirect =2;
     upsidedown =true;
-    cout << "upsidedown true" <<&endl;
+    std::cout << "upsidedown true" <<&endl;
   }
   else if (xyze(normdirect,3)-xyze(normdirect,0)<-2e-9)
   {
