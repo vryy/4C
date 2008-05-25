@@ -39,7 +39,7 @@ public:
     explicit InterfaceHandle(
             const RCP<DRT::Discretization>        xfemdis,      ///< discretization that will be intersected
             const RCP<DRT::Discretization>        cutterdis,    ///< discretization with boundary elements
-            const RCP<Epetra_Vector>              idispcol      ///< interface displacements for current position of interface
+            const Epetra_Vector&                  idispcol      ///< interface displacements for current position of interface
             );
     //! destructor
     ~InterfaceHandle();

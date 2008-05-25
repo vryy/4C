@@ -82,7 +82,7 @@ extern struct _SOLVAR  *solv;
  *----------------------------------------------------------------------*/
 void xdyn_fluid_drt()
 {
-  cout << "Hallo, ich bin ein Fluid-XFEM Problem" << endl;
+  std::cout << "Hallo, ich bin ein Fluid-XFEM Problem" << endl;
 
   // -------------------------------------------------------------------
   // access the discretization
@@ -93,10 +93,10 @@ void xdyn_fluid_drt()
   soliddis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
 
   const int fmyrank = fluiddis->Comm().MyPID();
-  cout << "FluidProc: " << fmyrank << endl;
+  std::cout << "FluidProc: " << fmyrank << endl;
   flush(cout);
   const int smyrank = soliddis->Comm().MyPID();
-  cout << "SolidProc: " << smyrank << endl;
+  std::cout << "SolidProc: " << smyrank << endl;
   flush(cout);
   //cout << *soliddis;
 
@@ -240,7 +240,7 @@ void xdyn_fluid_drt()
     conditions_to_copy.push_back("XFEMCoupling");
     Teuchos::RCP<DRT::Discretization> boundarydis = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "XFEMCoupling", "Boundary", "BELE3", conditions_to_copy);
     if (boundarydis->NumGlobalNodes() == 0)
-      cout << "empty discretization detected. XFEMCoupling condition applied?" << endl;
+      std::cout << "empty discretization detected. XFEMCoupling condition applied?" << endl;
     
     
     // -----------------------------------------------------------------

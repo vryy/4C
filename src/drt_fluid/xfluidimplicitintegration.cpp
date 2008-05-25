@@ -88,10 +88,11 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   // create empty cutter discretization
   Teuchos::RCP<DRT::Discretization> emptyboundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(
       actdis, "schnackelzappel", "DummyBoundary", "BELE3", vector<string>(0));
+  Teuchos::RCP<Epetra_Vector> tmpdisp = LINALG::CreateVector(*emptyboundarydis_->DofRowMap(),true);
   // intersection with empty cutter will result in a complete fluid domain with no holes or intersections
-  RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,emptyboundarydis_,null));
+  Teuchos::RCP<XFEM::InterfaceHandle> ih = rcp(new XFEM::InterfaceHandle(discret_,emptyboundarydis_,*tmpdisp));
   // apply enrichments
-  RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
+  Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih));
   // tell elements about the dofs and the integration
   {
     ParameterList eleparams;
@@ -146,9 +147,9 @@ void XFluidImplicitTimeInt::Integrate(
   {
     ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
 
-    cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
-    cout << "                             " << stabparams->get<string>("TDS")<< "\n";
-    cout << "\n";
+    std::cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
+    std::cout << "                             " << stabparams->get<string>("TDS")<< "\n";
+    std::cout << "\n";
 
     if(stabparams->get<string>("TDS") == "quasistatic")
     {
@@ -157,14 +158,14 @@ void XFluidImplicitTimeInt::Integrate(
         dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
       }
     }
-    cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
-    cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
-    cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
-    cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-    cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
-    cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
-    cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
-    cout << "\n";
+    std::cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
+    std::cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
+    std::cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
+    std::cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
+    std::cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
+    std::cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
+    std::cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
+    std::cout << "\n";
   }
 
   if (timealgo_==timeint_stationary)
@@ -474,8 +475,8 @@ void XFluidImplicitTimeInt::PrepareNonlinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
-        RCP<DRT::Discretization> cutterdiscret,
-        RCP<Epetra_Vector>       idispcol
+        RCP<DRT::Discretization>  cutterdiscret,
+        const Epetra_Vector&      idispcol
         )
 {
   // within this routine, no parallel re-distribution is allowed to take place
@@ -510,7 +511,7 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // debug info: print ele dofmanager information
   std::stringstream filename;
   filename << "eledofman_check_" << std::setw(5) << setfill('0') << step_ << ".pos";
-  cout << "writing '"<<filename.str()<<"'...";
+  std::cout << "writing '"<<filename.str()<<"'...";
   {
     std::ofstream f_system(filename.str().c_str());
       //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
@@ -573,7 +574,7 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
       //f_system << IO::GMSH::getConfigString(2);
       f_system.close();
   }
-  cout << "done" << endl;
+  std::cout << "done" << endl;
   
   
   // store old (proc-overlapping) dofmap, compute new one and return it
@@ -587,7 +588,7 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   XFEM::ElementalDofPosMap oldElementalDofDistributionMap(elementalDofDistributionMap_);
   dofmanager->fillDofDistributionMaps(nodalDofDistributionMap_,elementalDofDistributionMap_);
 
-  cout << "switching " << endl;
+  std::cout << "switching " << endl;
 
   // create switcher
   const XFEM::DofDistributionSwitcher dofswitch(
@@ -688,14 +689,14 @@ void XFluidImplicitTimeInt::NonlinearSolve(
         RCP<DRT::Discretization> cutterdiscret,
         RCP<Epetra_Vector>       idispcol,
         RCP<Epetra_Vector>       ivelcol,
-        RCP<Epetra_Vector>       itruerescol
+        RCP<Epetra_Vector>       iforcecol
         )
 {
 
   //idispcol->PutScalar(-0.3);
   //ivelcol->PutScalar(-0.5);
   
-  ComputeInterfaceAndSetDOFs(cutterdiscret,idispcol);
+  ComputeInterfaceAndSetDOFs(cutterdiscret,*idispcol);
 
   PrepareNonlinearSolve();
 
@@ -724,6 +725,8 @@ void XFluidImplicitTimeInt::NonlinearSolve(
   if (myrank_ == 0)
   {
     std::cout << "applying interface velocity ivelcol[0] = " << (*ivelcol)[0] << std::endl;
+    std::cout << "applying interface velocity ivelcol[1] = " << (*ivelcol)[1] << std::endl;
+    std::cout << "applying interface velocity ivelcol[2] = " << (*ivelcol)[2] << std::endl;
     std::ofstream f;
     if (step_ <= 1)
       f.open("outifacevel.txt",std::fstream::trunc);
@@ -792,6 +795,9 @@ void XFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("interface velocity",ivelcol);
       //cout << "interface velocity" << endl;
       //cout << *ivelcol << endl;
+      // give interface force to elements
+      iforcecol->PutScalar(0.0);
+      eleparams.set("interface force",iforcecol);
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
@@ -811,6 +817,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
 
         // How to extract the density from the fluid material?
         trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
+        iforcecol->Scale(density_/dta_/theta_);
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -1026,6 +1033,8 @@ void XFluidImplicitTimeInt::NonlinearSolve(
 //      freesurface_->InsertCondVector(fsdispnp,state_.dispnp_);
 //      freesurface_->InsertCondVector(fsvelnp,gridv_);
     }
+    //cout << "*iforcecol" << endl;
+    //cout << *iforcecol << endl;
   }
 } // FluidImplicitTimeInt::NonlinearSolve
 
@@ -1216,13 +1225,59 @@ void XFluidImplicitTimeInt::Output()
 //        output_.WriteVector("dispnm",state_.dispnm_);
 //      }
     }
+  }
     
-    
+   
+  // write restart also when uprestart_ is not a integer multiple of upres_
+  if ((restartstep_ == uprestart_) && (writestep_ > 0))
+  {
+    restartstep_ = 0;
+
+    output_.NewStep    (step_,time_);
+    output_.WriteVector("velnp", state_.velnp_);
+    //output_.WriteVector("residual", trueresidual_);
+//    if (alefluid_)
+//    {
+//      output_.WriteVector("dispnp", state_.dispnp_);
+//      output_.WriteVector("dispn", state_.dispn_);
+//      output_.WriteVector("dispnm",state_.dispnm_);
+//    }
+
+    //only perform stress calculation when output is needed
+    if (writestresses_)
+    {
+      RCP<Epetra_Vector> traction = CalcStresses();
+      output_.WriteVector("traction",traction);
+    }
+
+    output_.WriteVector("accn", state_.accn_);
+    output_.WriteVector("veln", state_.veln_);
+    output_.WriteVector("velnm", state_.velnm_);
+  }
+
+
+  OutputToGmsh();
+  
+  return;
+} // FluidImplicitTimeInt::Output
+
+  
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | output of solution vector to gmsh                          acki 04/07|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void XFluidImplicitTimeInt::OutputToGmsh()
+{
     {
       std::stringstream filename;
       filename << "solution_pressure_" << std::setw(5) << setfill('0') << step_
           << ".pos";
-      cout << "writing '"<<filename.str()<<"'...";
+      std::cout << "writing '"<<filename.str()<<"'...";
       std::ofstream f_system(filename.str().c_str());
       
       const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
@@ -1282,14 +1337,14 @@ void XFluidImplicitTimeInt::Output()
         f_system << gmshfilecontent.str();
       }
       f_system.close();
-      cout << " done" << endl;
+      std::cout << " done" << endl;
     }
     
     {
       std::stringstream filename;
       filename << "solution_velocity_" << std::setw(5) << setfill('0') << step_
           << ".pos";
-      cout << "writing '"<<filename.str()<<"'...";
+      std::cout << "writing '"<<filename.str()<<"'...";
       std::ofstream f_system(filename.str().c_str());
       
       {
@@ -1390,14 +1445,15 @@ void XFluidImplicitTimeInt::Output()
           
           if (elegid == 1)
           {
-            std::cout << elementvalues << std::endl;
+            //std::cout << elementvalues << std::endl;
             std::ofstream f;
             if (step_ <= 1)
               f.open("outflowvel.txt",std::fstream::trunc);
             else
               f.open("outflowvel.txt",std::fstream::ate | std::fstream::app);
             
-            f << step_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
+            //f << step_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
+            f << step_ << "  " << elementvalues(0,0) << endl;
             
             f.close();
           }
@@ -1407,43 +1463,14 @@ void XFluidImplicitTimeInt::Output()
         f_system << gmshfilecontent.str();
       }
       f_system.close();
-      cout << " done" << endl;
+      std::cout << " done" << endl;
       //exit(1);
     }
     
-  }
 
-  // write restart also when uprestart_ is not a integer multiple of upres_
-  if ((restartstep_ == uprestart_) && (writestep_ > 0))
-  {
-    restartstep_ = 0;
-
-    output_.NewStep    (step_,time_);
-    output_.WriteVector("velnp", state_.velnp_);
-    //output_.WriteVector("residual", trueresidual_);
-//    if (alefluid_)
-//    {
-//      output_.WriteVector("dispnp", state_.dispnp_);
-//      output_.WriteVector("dispn", state_.dispn_);
-//      output_.WriteVector("dispnm",state_.dispnm_);
-//    }
-
-    //only perform stress calculation when output is needed
-    if (writestresses_)
-    {
-      RCP<Epetra_Vector> traction = CalcStresses();
-      output_.WriteVector("traction",traction);
-    }
-
-    output_.WriteVector("accn", state_.accn_);
-    output_.WriteVector("veln", state_.veln_);
-    output_.WriteVector("velnm", state_.velnm_);
-  }
-
-
-  return;
-} // FluidImplicitTimeInt::Output
-
+}
+  
+  
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1456,6 +1483,10 @@ void XFluidImplicitTimeInt::Output()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::ReadRestart(int step)
 {
+  dserror("check wich data was written. one might need 2 discretization writers: \n \
+           one for the output and one for the restart with changing vectors.\n \
+           Problem is, the numdofs are written during WriteMesh(). is that used for restart ore not?");
+  
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
@@ -1517,7 +1548,7 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
   const Epetra_Map* fluidsurface_dofcolmap = cutterdiscret->DofColMap();
   Teuchos::RCP<Epetra_Vector> idispcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
     
-  ComputeInterfaceAndSetDOFs(cutterdiscret,idispcol);
+  ComputeInterfaceAndSetDOFs(cutterdiscret,*idispcol);
 
   //------------------------------------------------------- beltrami flow
   if(whichinitialfield == 8)
@@ -1731,7 +1762,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
   Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true); // one could give a velocity here to have stationary flow over the interface
   Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   
-  ComputeInterfaceAndSetDOFs(cutterdiscret,idispcol);
+  ComputeInterfaceAndSetDOFs(cutterdiscret,*idispcol);
 
   PrepareNonlinearSolve();
 
@@ -1921,15 +1952,15 @@ void XFluidImplicitTimeInt::LiftDrag() const
     // prepare output
     if (myrank_==0)
     {
-      cout << "Lift and drag calculation:" << "\n";
+      std::cout << "Lift and drag calculation:" << "\n";
       if (ndim == 2)
       {
-        cout << "lift'n'drag Id      F_x             F_y             M_z :" << "\n";
+        std::cout << "lift'n'drag Id      F_x             F_y             M_z :" << "\n";
       }
       if (ndim == 3)
       {
-        cout << "lift'n'drag Id      F_x             F_y             F_z           ";
-        cout << "M_x             M_y             M_z :" << "\n";
+        std::cout << "lift'n'drag Id      F_x             F_y             F_z           ";
+        std::cout << "M_x             M_y             M_z :" << "\n";
       }
     }
 
@@ -2007,28 +2038,28 @@ void XFluidImplicitTimeInt::LiftDrag() const
       {
         if (ndim == 2)
 	{
-	  cout << "     " << label << "         ";
-          cout << std::scientific << resultvec[0] << "    ";
-	  cout << std::scientific << resultvec[1] << "    ";
-	  cout << std::scientific << resultvec[5];
-	  cout << "\n";
+          std::cout << "     " << label << "         ";
+          std::cout << std::scientific << resultvec[0] << "    ";
+          std::cout << std::scientific << resultvec[1] << "    ";
+          std::cout << std::scientific << resultvec[5];
+          std::cout << "\n";
         }
         if (ndim == 3)
 	{
-	  cout << "     " << label << "         ";
-          cout << std::scientific << resultvec[0] << "    ";
-	  cout << std::scientific << resultvec[1] << "    ";
-	  cout << std::scientific << resultvec[2] << "    ";
-	  cout << std::scientific << resultvec[3] << "    ";
-	  cout << std::scientific << resultvec[4] << "    ";
-	  cout << std::scientific << resultvec[5];
-	  cout << "\n";
+          std::cout << "     " << label << "         ";
+          std::cout << std::scientific << resultvec[0] << "    ";
+          std::cout << std::scientific << resultvec[1] << "    ";
+          std::cout << std::scientific << resultvec[2] << "    ";
+          std::cout << std::scientific << resultvec[3] << "    ";
+          std::cout << std::scientific << resultvec[4] << "    ";
+          std::cout << std::scientific << resultvec[5];
+          std::cout << "\n";
 	}
       }
     } // end: loop over L&D labels
     if (myrank_== 0)
     {
-      cout << "\n";
+      std::cout << "\n";
     }
   }
 }//FluidImplicitTimeInt::LiftDrag

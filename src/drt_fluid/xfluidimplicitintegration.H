@@ -131,8 +131,8 @@ public:
   \brief compute Interface
   */
   void ComputeInterfaceAndSetDOFs(
-          RCP<DRT::Discretization> cutterdiscret,
-          RCP<Epetra_Vector>       idispcol
+          RCP<DRT::Discretization>  cutterdiscret,
+          const Epetra_Vector&      idispcol
           );
 
   /*!
@@ -156,6 +156,12 @@ public:
 
   */
   void Output();
+  
+  /*!
+  \brief output solution fields to Gmsh for debugging
+
+  */
+  void OutputToGmsh();
 
   /*!
   \brief set initial flow field for analytical test problems

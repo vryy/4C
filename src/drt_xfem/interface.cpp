@@ -21,7 +21,7 @@ Maintainer: Axel Gerstenberger
 XFEM::InterfaceHandle::InterfaceHandle(
     const RCP<DRT::Discretization>        xfemdis, 
     const RCP<DRT::Discretization>        cutterdis,
-    const RCP<Epetra_Vector>              idispcol) :
+    const Epetra_Vector&                  idispcol) :
       xfemdis_(xfemdis),
       cutterdis_(cutterdis)
 {
@@ -34,7 +34,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
       lm.reserve(3);
       cutterdis->Dof(node, lm);
       vector<double> mydisp(3);
-      DRT::UTILS::ExtractMyValues(*idispcol,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
       static BlitzVec3 currpos;
       currpos(0) = node->X()[0] + mydisp[0];
       currpos(1) = node->X()[1] + mydisp[1];
