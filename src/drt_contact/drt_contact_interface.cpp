@@ -336,8 +336,9 @@ void CONTACT::Interface::Initialize()
     (node->GetM()).resize(0);
     (node->GetMmod()).resize(0);
 
-    // reset derivative map of Mortar matrix D
+    // reset derivative map of Mortar matrices
     (node->GetDerivD()).clear();
+    (node->GetDerivM()).clear();
     
     // reset nodal weighted gap
     node->Getg() = 1.0e12;
@@ -609,7 +610,7 @@ bool CONTACT::Interface::IntegrateSlave2D(CONTACT::CElement& sele)
   // do the integration
   RCP<Epetra_SerialDenseMatrix> dseg = integrator.IntegrateD(sele,sxia,sxib);
   
-  // compute directional derivative and store into nodes
+  // compute directional derivative of D and store into nodes
   integrator.DerivD(sele,sxia,sxib);
   
   // do the assembly into the slave nodes
@@ -1109,6 +1110,9 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   RCP<Epetra_SerialDenseMatrix> mseg = integrator.IntegrateM(sele,sxia,sxib,mele,mxia,mxib);
   RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG(sele,sxia,sxib,mele,mxia,mxib);
 
+  // compute directional derivative of M and store into nodes
+  integrator.DerivM(sele,sxia,sxib,mele,mxia,mxib);
+    
   // do the two assemblies into the slave nodes
   // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
   integrator.AssembleM(*this,sele,mele,*mseg);
@@ -1506,14 +1510,14 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
     double* xi = cnode->xspatial();
     double* n = cnode->n();
         
-    if (mapsize==3) dserror("ERROR: AssembleNT: 3D case not yet implemented!");
+    if (mapsize==3) dserror("ERROR: AssembleS: 3D case not yet implemented!");
     
     for (int j=0;j<mapsize-1;++j)
       if ((int)dnmap[j].size() != (int)dnmap[j+1].size())
         dserror("ERROR: AssembleS: Column dim. of nodal DerivN-map is inconsistent!");
          
     /*********************************************** N_normal_slave *****/
-    //cout << endl << "->AssembleNs for Node ID: " << cnode->Id() << endl;
+    //cout << endl << "->Assemble N_Normal_s for Node ID: " << cnode->Id() << endl;
     
     // we need the D-matrix entry of this node
     double wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
@@ -1529,7 +1533,7 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
         int col = colcurr->first;
         double val = wii*xi[j]*colcurr->second;
         //cout << "wii=" << wii << " xi=" << xi[0] << " yi=" << xi[1] << " deriv=" << colcurr->second << endl;
-        //cout << "AssembleNs: " << row << " " << col << " " << val << endl;
+        //cout << "Assemble N_Normal_s: " << row << " " << col << " " << val << endl;
         // do not assemble zeros into s matrix
         if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
         ++k;
@@ -1540,7 +1544,7 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
     }
     
     /********************************************** N_normal_master *****/
-    //cout << endl << "->AssembleNm for Node ID: " << cnode->Id() << endl;
+    //cout << endl << "->Assemble N_Normal_m for Node ID: " << cnode->Id() << endl;
     
     // we need the M-matrix entries of this node
     vector<map<int,double> > mmap = cnode->GetM();
@@ -1584,7 +1588,7 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
           int col = colcurr->first;
           double val = mik*mxi[j]*colcurr->second;
           //cout << "mik=" << mik << " mxi=" << mxi[0] << " myi=" << mxi[1] << " deriv=" << colcurr->second << endl;
-          //cout << "AssembleNm: " << row << " " << col << " " << val << endl;
+          //cout << "Assemble N_Normal_m: " << row << " " << col << " " << val << endl;
           // do not assemble zeros into s matrix
           if (abs(val)>1.0e-12) sglobal.Assemble(-val,row,col);
           ++k;
@@ -1596,7 +1600,7 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
     }
     
     /********************************************** N_Dmortar_slave *****/
-    //cout << endl << "->AssembleNd for Node ID: " << cnode->Id() << endl;
+    //cout << endl << "->Assemble N_Dmortar_s for Node ID: " << cnode->Id() << endl;
     
     // we need the dot product n*x of this node
     double ndotx = 0.0;
@@ -1605,7 +1609,6 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
     
     // prepare assembly
     map<int,double>& ddmap = cnode->GetDerivD();
-    int k=0;
         
     // loop over all entries of the current derivative map
     for (colcurr=ddmap.begin();colcurr!=ddmap.end();++colcurr)
@@ -1613,15 +1616,48 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
       int col = colcurr->first;
       double val = ndotx*colcurr->second;
       //cout << "ndotx=" << ndotx <<  " deriv=" << colcurr->second << endl;
-      //cout << "AssembleNd: " << row << " " << col << " " << val << endl;
+      //cout << "Assemble N_DMortar_s: " << row << " " << col << " " << val << endl;
       // do not assemble zeros into s matrix
       if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
-      ++k;
     }
-
-    if (k!=colsize)
-      dserror("ERROR: AssembleS: k = %i but colsize = %i",k,colsize);
-  }
+    
+    /*************************************** N_Mmortar_slave+master *****/
+    //cout << endl << "->Assemble N_Mmortar for Node ID: " << cnode->Id() << endl;
+    
+    // we need the Lin(M-matrix) entries of this node
+    map<int,map<int,double> >& dmmap = cnode->GetDerivM();
+    map<int,map<int,double> >::iterator dmcurr;
+    
+    // loop over all master nodes in the DerivM-map of the active slave node
+    for (dmcurr=dmmap.begin();dmcurr!=dmmap.end();++dmcurr)
+    {
+      int gid = dmcurr->first;
+      DRT::Node* mnode = idiscret_->gNode(gid);
+      if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cmnode = static_cast<CNode*>(mnode);
+      double* mxi = cmnode->xspatial();
+      
+      // we need the dot product ns*xm of this node pair
+      double ndotx = 0.0;
+      for (int dim=0;dim<cnode->NumDof();++dim)
+        ndotx += n[dim]*mxi[dim];
+          
+      // compute S-matrix entry of the current active node / master node pair
+      map<int,double>& thisdmmap = cnode->GetDerivM(gid);
+      
+      // loop over all entries of the current derivative map
+      for (colcurr=thisdmmap.begin();colcurr!=thisdmmap.end();++colcurr)
+      {
+        int col = colcurr->first;
+        double val = ndotx*colcurr->second;
+        //cout << "ndotx=" << ndotx <<  " deriv=" << colcurr->second << endl;
+        //cout << "Assemble N_Mmortar: " << row << " " << col << " " << val << endl;
+        // do not assemble zeros into s matrix
+        if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+      }
+    }
+    
+  } //for (int i=0;i<activenodes_->NumMyElements();++i)
 
   return;
 }

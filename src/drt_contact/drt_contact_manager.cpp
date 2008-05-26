@@ -1530,10 +1530,16 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
     interface_[i]->AssembleS(*smatrix_);
   }
     
-  // FillComplete() global matrices N, T and S
+  // FillComplete() global matrices N and T
   nmatrix_->Complete(*gactivedofs_,*gactiven_);
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
-  smatrix_->Complete(*gsdofrowmap_,*gactiven_);
+  
+  // FillComplete() global matrix S
+  // (here and for the spliiting later, we need the combined sm rowmap)
+  // (this map is NOT allowed to have an overlap !!!)
+  RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
+  smatrix_->Complete(*gsmdofs,*gactiven_);
+  
 #ifdef CONTACTCHECKHUEEBER
   }
 #endif // #ifdef CONTACTCHECKHUEEBER
@@ -1572,10 +1578,6 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // temporarily we need the blocks ksmsm, ksmn, knsm
   // (FIXME: because a direct SplitMatrix3x3 is still missing!) 
   RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
-  
-  // we also need the combined sm rowmap
-  // (this map is NOT allowed to have an overlap !!!)
-  RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
   
   // some temporary RCPs
   RCP<Epetra_Map> tempmap;
@@ -2333,14 +2335,14 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
     IsInContact()=true;
-  
+  /*
 #ifdef DEBUG
   // visualization with gmsh
   if (activesetconv_)
     for (int i=0;i<(int)interface_.size();++i)
       interface_[i]->VisualizeGmsh(interface_[i]->CSegs());
 #endif // #ifdef DEBUG
-  
+  */
   return;
 }
 

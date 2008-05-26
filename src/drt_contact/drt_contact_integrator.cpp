@@ -391,6 +391,38 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
 }
 
 /*----------------------------------------------------------------------*
+ |  Compute directional derivative of M                       popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
+                                 double sxia, double sxib,
+                                 CONTACT::CElement& mele,
+                                 double mxia, double mxib)
+{
+  /*
+  cout << "\nChecking overlap of CElement pair S" << sele.Id() << " M" << mele.Id() << endl;
+  cout << "Slave Nodes: " << sele.Nodes()[0]->Id() << " " << sele.Nodes()[1]->Id() << endl;
+  cout << "Master Nodes: " << mele.Nodes()[0]->Id() << " " << mele.Nodes()[1]->Id() << endl;
+  
+  if (sxia!=-1.0 && mxib!=1.0)
+    dserror("ERROR: Outer node A is neither slave nor master node");
+  if (sxib!=1.0 && mxia!=-1.0)
+      dserror("ERROR: Outer node A is neither slave nor master node");
+  
+  cout << "sxia " << sxia << " sxib " << sxib << " mxia " << mxia << " mxib " << mxib << endl;
+  if (sxia==-1.0)
+    cout << "-> Overlap starts at Slave Node " << sele.Nodes()[0]->Id() << endl;
+  else
+    cout << "-> Overlap starts at Master Node " << mele.Nodes()[1]->Id() << endl;
+  
+  if (sxib==1.0)
+     cout << "-> Overlap ends at Slave Node " << sele.Nodes()[1]->Id() << endl;
+   else
+     cout << "-> Overlap ends at Master Node " << mele.Nodes()[0]->Id() << endl;
+  */
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Integrate a 1D slave / master overlap                     popp 01/08|
  |  This method integrates the modification to the Mortar matrix M      |
  |  for curved interface (Paper by Puso/Wohlmuth) from given local       |

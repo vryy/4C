@@ -264,6 +264,32 @@ public:
   D-matrix diagonal entry with respect to the slave displacements.
   */
   virtual inline map<int,double>& GetDerivD() { return derivd_; }
+  
+  /*!
+  \brief Return the 'DerivM' map of maps of this node
+   
+  This map contains the directional derivatives of the node's
+  M-matrix diagonal entries with respect to the slave displacements.
+  It is a "map of maps", with the outer map containing all master
+  node indices k adjacent to this node i and the inner map containing
+  all directional derivatives l existing for M_ik.
+  */
+  virtual inline map<int,map<int,double> >& GetDerivM() { return derivm_; }
+  
+  /*!
+  \brief Return one specific 'DerivM' map of this node
+     
+  This method returns the map of directional derivatives of one
+  specific M-matrix M_ik entry of this node i.
+  */
+  virtual inline map<int,double>& GetDerivM(int k)
+  {
+    typedef map<int,map<int,double> >::const_iterator CI;
+    CI p =derivm_.find(k);
+    if (p==derivm_.end())
+     dserror("ERROR: GetDerivM: No map entry existing for given index");
+    return derivm_[k];
+  }
     
   //@}
 
@@ -324,6 +350,7 @@ protected:
   
   vector<map<int,double> >      derivn_;        // directional derivative of nodal normal
   map<int,double>               derivd_;        // directional derivative of nodal D-matrix value
+  map<int,map<int,double> >     derivm_;        // directional derivative of nodal M-matrix values
   
 
 }; // class CNode

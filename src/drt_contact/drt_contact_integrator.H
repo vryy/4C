@@ -121,6 +121,13 @@ public:
                                            double mxia, double mxib);
   
   /*!
+  \brief Compute directional derivative of M on a 1D slave / master overlap
+        
+  */
+  void DerivM(CONTACT::CElement& sele, double sxia, double sxib,
+              CONTACT::CElement& mele, double mxia, double mxib);
+    
+  /*!
   \brief Integrate modification Mmod on a 1D slave / master overlap
    
   This modification is based on a paper by Puso/Wohlmuth, 2005.<br>
