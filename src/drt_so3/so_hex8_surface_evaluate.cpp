@@ -42,7 +42,7 @@ int DRT::ELEMENTS::Soh8Surface::EvaluateNeumann(ParameterList&           params,
     neum_live_FSI,
     neum_opres_FSI
   };
-  LoadType ltype;
+  LoadType ltype = neum_none;
   const string* type = condition.Get<string>("type");
   if      (*type == "neum_live")          ltype = neum_live;
   //else if (*type == "neum_live_FSI")      ltype = neum_live_FSI;
@@ -151,7 +151,6 @@ int DRT::ELEMENTS::Soh8Surface::EvaluateNeumann(ParameterList&           params,
 
   }
 
-//    cout << elevec1 << endl;
   return 0;
 }
 
