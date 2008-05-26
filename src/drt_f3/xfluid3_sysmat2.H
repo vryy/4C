@@ -67,7 +67,7 @@ static void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau, 
   */
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
-void static Sysmat(
+void static Sysmat2(
         const DRT::ELEMENTS::XFluid3*     ele,           ///< the element those matrix is calculated
         const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
@@ -1740,7 +1740,7 @@ void static Sysmat(
  * at one point, one has to call specific template intantiations of Sysmat using the current Shape() of the element.
  * This is the point.
  */
-void callSysmat(
+void callSysmat2(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
         const RCP<XFEM::InterfaceHandle>  ih,
@@ -1766,22 +1766,22 @@ void callSysmat(
         switch (ele->Shape())
         {
             case DRT::Element::hex8:
-                Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
+                Sysmat2<DRT::Element::hex8,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex20:
-                Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
+                Sysmat2<DRT::Element::hex20,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex27:
-                Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
+                Sysmat2<DRT::Element::hex27,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::tet4:
-                Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
+                Sysmat2<DRT::Element::tet4,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
@@ -1794,17 +1794,17 @@ void callSysmat(
         switch (ele->Shape())
         {
             case DRT::Element::hex8:
-                Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
+                Sysmat2<DRT::Element::hex8,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex20:
-                Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
+                Sysmat2<DRT::Element::hex20,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex27:
-                Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
+                Sysmat2<DRT::Element::hex27,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;

@@ -196,7 +196,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         //--------------------------------------------------
         // calculate element coefficient matrix and rhs
         //--------------------------------------------------
-        XFLUID::callSysmat3(assembly_type,
+        XFLUID::callSysmat2(assembly_type,
                 this, ih_, eleDofManager_, myvelnp, myhist, ivelcol, iforcecol, estif, eforce,
                 actmat, time, timefac, newton, pstab, supg, cstab, true);
 
@@ -356,7 +356,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 #endif
           {
           // calculate element coefficient matrix and rhs
-          XFLUID::callSysmat3(assembly_type,
+          XFLUID::callSysmat2(assembly_type,
                   this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                   actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
           }
