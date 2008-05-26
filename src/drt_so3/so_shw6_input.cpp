@@ -50,8 +50,11 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
   // read number of material model
   int material = 0;
   frint("MAT",&material,&ierr);
-  if (ierr!=1) dserror("Reading of SO_WEG6 element material failed");
+  if (ierr!=1) dserror("Reading of SOLIDSHW6 element material failed");
   SetMaterial(material);
+
+  // we expect kintype to be total lagrangian
+  kintype_ = sow6_totlag;
 
   // read kinematic type
   char buffer[50];
@@ -70,6 +73,30 @@ bool DRT::ELEMENTS::So_shw6::ReadElement()
    }
    else dserror("Reading of SOLIDSHW6 element failed");
   }
+  
+  // read EAS technology flag
+  frchar("EAS",buffer,&ierr);
+  if (ierr){
+    // full sohw6 EAS technology
+    if      (strncmp(buffer,"soshw6",6)==0){
+      eastype_ = soshw6_easpoisthick; // EAS to allow linear thickness strain
+      neas_ = 1;                      // number of eas parameters
+      soshw6_easinit();
+    }
+    // no EAS technology
+    else if (strncmp(buffer,"none",4)==0){
+      eastype_ = soshw6_easnone;
+      cout << "Warning: Solid-Shell Wegde6 without EAS" << endl;
+    }
+    else dserror("Reading of SO_SH8 EAS technology failed");
+  }
+  else
+  {
+    eastype_ = soshw6_easpoisthick;     // default: EAS to allow linear thickness strain
+    neas_ = 1;                          // number of eas parameters
+    soshw6_easinit();
+  }
+  
 
   return true;
 } // So_weg6::ReadElement()

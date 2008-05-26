@@ -311,8 +311,72 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_WEG6+2];
   }
 
-//  for (int i=0; i<NUMDOF_WEG6; ++i) cout << disp[i] << ",";
-//  cout << endl;
+  /*
+  ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
+  */
+  // in any case declare variables, sizes etc. only in eascase
+  Epetra_SerialDenseMatrix* alpha;  // EAS alphas
+  Epetra_SerialDenseMatrix* M_GP;   // EAS matrix M at all GPs
+  Epetra_SerialDenseMatrix M;       // EAS matrix M at current GP
+  Epetra_SerialDenseVector feas;    // EAS portion of internal forces
+  Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
+  Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
+  double detJ0;                     // detJ(origin)
+  Epetra_SerialDenseMatrix T0invT;  // trafo matrix
+  Epetra_SerialDenseMatrix* oldfeas;   // EAS history
+  Epetra_SerialDenseMatrix* oldKaainv; // EAS history
+  Epetra_SerialDenseMatrix* oldKda;    // EAS history
+  if (eastype_ == soshw6_easpoisthick) {
+    /*
+    ** EAS Update of alphas:
+    ** the current alphas are (re-)evaluated out of
+    ** Kaa and Kda of previous step to avoid additional element call.
+    ** This corresponds to the (innermost) element update loop
+    ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
+    */
+    //(*alpha).Shape(neas_,1);
+    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get old alpha
+    // evaluate current (updated) EAS alphas (from history variables)
+    // get stored EAS history
+    oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+    oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+    oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
+    if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
+
+    // we need the (residual) displacement at the previous step
+    Epetra_SerialDenseVector res_d(NUMDOF_WEG6);
+    for (int i = 0; i < NUMDOF_WEG6; ++i) {
+      res_d(i) = residual[i];
+    }
+    // add Kda . res_d to feas
+    (*oldfeas).Multiply('N','N',1.0,(*oldKda),res_d,1.0);
+    // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+    (*alpha).Multiply('N','N',-1.0,(*oldKaainv),(*oldfeas),1.0);
+    /* end of EAS Update ******************/
+
+    // EAS portion of internal forces, also called enhacement vector s or Rtilde
+    feas.Size(neas_);
+
+    // EAS matrix K_{alpha alpha}, also called Dtilde
+    Kaa.Shape(neas_,neas_);
+
+    // EAS matrix K_{d alpha}
+    Kda.Shape(neas_,NUMDOF_WEG6);
+
+    // transformation matrix T0, maps M-matrix evaluated at origin
+    // between local element coords and global coords
+    // here we already get the inverse transposed T0
+    T0invT.Shape(NUMSTR_WEG6,NUMSTR_WEG6);
+
+    /* evaluation of EAS variables (which are constant for the following):
+    ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
+    ** -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
+    ** -> T0^{-T}
+    */
+    soshw6_eassetup(&M_GP,detJ0,T0invT,xrefe);
+  } else if (eastype_ == soshw6_easnone){
+  //cout << "Warning: Solid-Shell Wegde6 without EAS" << endl;
+  } else dserror("Unknown EAS-type for solid wedge6");// ------------------- EAS
 
   /*
   ** ANS Element technology to remedy
@@ -498,6 +562,23 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       }
     }
 
+    // EAS technology: "enhance the strains"  ----------------------------- EAS
+    if (eastype_ != soshw6_easnone) {
+      // get EAS matrix M at current gausspoint gp
+      M.Shape(NUMSTR_WEG6,neas_);
+      for (int m=0; m<NUMSTR_WEG6; ++m) {
+        for (int n=0; n<neas_; ++n) {
+          M(m,n)=(*M_GP)(NUMSTR_WEG6*gp+m,n);
+        }
+      }
+      // map local M to global, also enhancement is refered to element origin
+      // M = detJ0/detJ T0^{-T} . M
+      Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
+      M.Multiply('N','N',detJ0/detJ,T0invT,Mtemp,0.0);
+      // add enhanced strains = M . alpha to GL strains to "unlock" element
+      glstrain.Multiply('N','N',1.0,M,(*alpha),1.0);
+    } // ------------------------------------------------------------------ EAS
+
     /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     ** Here all possible material laws need to be incorporated,
     ** the stress vector, a C-matrix, and a density must be retrieved,
@@ -578,8 +659,22 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
           (*stiffmatrix)(NUMDIM_WEG6*inod+2, NUMDIM_WEG6*jnod+2) += Gij(0);
         }
       } // end of intergrate `geometric' stiffness ******************************
-    }
+      
+      // EAS technology: integrate matrices --------------------------------- EAS
+      if (eastype_ != soshw6_easnone) {
+        double integrationfactor = detJ * (*weights)(gp);
+        // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
+        LINALG::SerialDenseMatrix cM(NUMSTR_WEG6, neas_); // temporary c . M
+        cM.Multiply('N', 'N', 1.0, cmat, M, 0.0);
+        Kaa.Multiply('T', 'N', integrationfactor, M, cM, 1.0);
 
+        // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
+        Kda.Multiply('T', 'N', integrationfactor, M, cb, 1.0);
+
+        // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
+        feas.Multiply('T', 'N', integrationfactor, M, stress, 1.0);
+      } // ------------------------------------------------------------------ EAS
+    }
 
     if (massmatrix != NULL){ // evaluate mass matrix +++++++++++++++++++++++++
       // integrate concistent mass matrix
@@ -596,6 +691,33 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
    /* =========================================================================*/
   }/* ==================================================== end of Loop over GP */
    /* =========================================================================*/
+
+  if (force != NULL && stiffmatrix != NULL) {
+    // EAS technology: ------------------------------------------------------ EAS
+    // subtract EAS matrices from disp-based Kdd to "soften" element
+    if (eastype_ != soshw6_easnone) {
+      // we need the inverse of Kaa
+      Epetra_SerialDenseSolver solve_for_inverseKaa;
+      solve_for_inverseKaa.SetMatrix(Kaa);
+      solve_for_inverseKaa.Invert();
+
+      LINALG::SerialDenseMatrix KdaTKaa(NUMDOF_WEG6, neas_); // temporary Kda^T.Kaa^{-1}
+      KdaTKaa.Multiply('T', 'N', 1.0, Kda, Kaa, 0.0);
+
+      // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
+      (*stiffmatrix).Multiply('N', 'N', -1.0, KdaTKaa, Kda, 1.0);
+
+      // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
+      (*force).Multiply('N', 'N', -1.0, KdaTKaa, feas, 1.0);
+
+      // store current EAS data in history
+      for (int i=0; i<neas_; ++i) {
+        for (int j=0; j<neas_; ++j) (*oldKaainv)(i,j) = Kaa(i,j);
+        for (int j=0; j<NUMDOF_WEG6; ++j) (*oldKda)(i, j) = Kda(i,j);
+        (*oldfeas)(i, 0) = feas(i);
+      }
+    } // -------------------------------------------------------------------- EAS
+  }
 
   return;
 } 
@@ -718,7 +840,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_shw6::soshw6_evaluateT(const Epetra_SerialDenseMatrix jac,
+void DRT::ELEMENTS::So_shw6::soshw6_evaluateT(const Epetra_SerialDenseMatrix& jac,
                                             Epetra_SerialDenseMatrix& TinvT)
 {
   // build T^T transformation matrix which maps
@@ -778,6 +900,97 @@ void DRT::ELEMENTS::So_shw6::soshw6_evaluateT(const Epetra_SerialDenseMatrix jac
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  initialize EAS data (private)                              maf 05/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_shw6::soshw6_easinit()
+{
+  // all parameters are stored in Epetra_SerialDenseMatrix as only
+  // those can be added to DRT::Container
+
+  // EAS enhanced strain parameters at currently investigated load/time step
+  Epetra_SerialDenseMatrix alpha(neas_,1);
+  // EAS enhanced strain parameters of last converged load/time step
+  Epetra_SerialDenseMatrix alphao(neas_,1);
+  // EAS portion of internal forces, also called enhacement vector s or Rtilde
+  Epetra_SerialDenseMatrix feas(neas_, 1);
+  // EAS matrix K_{alpha alpha}, also called Dtilde
+  Epetra_SerialDenseMatrix invKaa(neas_,neas_);
+  // EAS matrix K_{d alpha}
+  Epetra_SerialDenseMatrix Kda(neas_,NUMDOF_WEG6);
+
+  // save EAS data into element container
+  data_.Add("alpha",alpha);
+  data_.Add("alphao",alphao);
+  data_.Add("feas",feas);
+  data_.Add("invKaa",invKaa);
+  data_.Add("Kda",Kda);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  setup of constant EAS data (private)                       maf 05/07|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
+          Epetra_SerialDenseMatrix** M_GP,    // M-matrix evaluated at GPs
+          double& detJ0,                      // det of Jacobian at origin
+          Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
+          const Epetra_SerialDenseMatrix& xrefe)    // material element coords
+{
+  // shape function derivatives, evaluated at origin (r=s=t=0.0)
+  const DRT::UTILS::IntegrationPoints3D  intpoints = getIntegrationPoints3D(DRT::UTILS::intrule_wedge_1point);
+  LINALG::SerialDenseMatrix df0(NUMDIM_WEG6,NUMNOD_WEG6);
+  DRT::UTILS::shape_function_3D_deriv1(df0,intpoints.qxg[0][0],intpoints.qxg[0][1],intpoints.qxg[0][2],DRT::Element::wedge6);
+  
+  // compute Jacobian, evaluated at element origin (r=s=t=0.0)
+  LINALG::SerialDenseMatrix jac0(NUMDIM_WEG6,NUMDIM_WEG6);
+  jac0.Multiply('N','N',1.0,df0,xrefe,0.0);
+
+  // compute determinant of Jacobian at origin by Sarrus' rule
+  detJ0 =       jac0(0,0) * jac0(1,1) * jac0(2,2)
+              + jac0(0,1) * jac0(1,2) * jac0(2,0)
+              + jac0(0,2) * jac0(1,0) * jac0(2,1)
+              - jac0(0,0) * jac0(1,2) * jac0(2,1)
+              - jac0(0,1) * jac0(1,0) * jac0(2,2)
+              - jac0(0,2) * jac0(1,1) * jac0(2,0);
+
+  // get T-matrix at element origin
+  soshw6_evaluateT(jac0,T0invT);
+  
+  // build EAS interpolation matrix M, evaluated at the GPs of soshw6
+  static Epetra_SerialDenseMatrix M(NUMSTR_WEG6*NUMGPT_WEG6,neas_);
+  static bool M_eval;
+
+  if (M_eval==true){          // if true M already evaluated
+      *M_GP = &M;             // return adress of static object to target of pointer
+    return;
+  } else {
+    // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
+    const DRT::UTILS::IntegrationPoints3D intpoints = getIntegrationPoints3D(DRT::UTILS::intrule_wedge_6point);
+
+    // fill up M at each gp
+    if (eastype_ == soshw6_easpoisthick) {
+      /* EAS interpolation of 1 mode corr. to linear thickness strain
+      **            0
+      **            0
+      **    M =     t
+      **            0
+      **            0
+      **            0
+      */
+      for (int i=0; i<intpoints.nquad; ++i) {
+        M(i*NUMSTR_WEG6+2,0) = intpoints.qxg[i][2];  // t at gp
+      }
+
+      // return adress of just evaluated matrix
+      *M_GP = &M;            // return adress of static object to target of pointer
+      M_eval = true;         // now the array is filled statically
+    } else {
+    dserror("eastype not implemented");
+    }
+  }
+} 
 
 
 #endif  // #ifdef CCADISCRET

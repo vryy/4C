@@ -129,8 +129,26 @@ public:
 
 
 private:
+  
+  /*! \brief EAS technology enhanecement types of so_shw6
+   * Solid-Shell Wedge6 has EAS enhancement of GL-strains to avoid locking
+   * \param soshw6_poissonthick: 1 parameter for correct kinematic of solid-shell,
+   *                             allows linear strain in thick-dir
+   * \param soshw6_none:         no EAS
+   */
+  enum EASType
+  {
+    soshw6_easpoisthick,
+    soshw6_easnone
+  };
+  
+  //! type of EAS technology
+  EASType                                             eastype_;
+  
+  //! number of EAS parameters (alphas), defined by 'EASType"
+  int                                                 neas_;
 
-  // don't want = operator
+  //! don't want = operator
   So_shw6& operator = (const So_shw6& old);
 
   /*!
@@ -190,8 +208,19 @@ private:
             Epetra_SerialDenseMatrix& B_ans_loc); // modified B
   
   //! Transformation matrix parameter->material space
-  void soshw6_evaluateT(const Epetra_SerialDenseMatrix jac,
+  void soshw6_evaluateT(const Epetra_SerialDenseMatrix& jac,
                         Epetra_SerialDenseMatrix& TinvT);
+
+  //! EAS technology, init
+  void soshw6_easinit();
+
+  //! EAS technology, setup necessary data
+  void soshw6_eassetup(
+          Epetra_SerialDenseMatrix** M_GP,    // M-matrix evaluated at GPs
+          double& detJ0,                      // det of Jacobian at origin
+          Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
+          const Epetra_SerialDenseMatrix& xrefe);     // material element coords
+
 
 }; // class So_shw6
 
