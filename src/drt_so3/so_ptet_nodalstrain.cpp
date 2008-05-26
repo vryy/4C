@@ -310,7 +310,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
   const int nnodeinpatch = (int)nodepatch.size();
   const int ndofinpatch  = nnodeinpatch*3;
   const int neleinpatch  = (int)adjele.size();
-  // see whether materials in patch are equal
+  //------------------------------ see whether materials in patch are equal
   bool matequal = true;
   {
     int mat = adjele[0]->material_;
@@ -322,7 +322,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
       }
   }
 
-  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------
   // build averaged deformation gradient and volume of node
   // this can make get rid of FnodeL and VnodeL
   Epetra_SerialDenseMatrix FnodeL(3,3);
@@ -337,7 +337,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
   }
   FnodeL.Scale(1.0/VnodeL);
 
-  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------
   // do positioning map global nodes -> position in B-Operator
   map<int,int>  node_pos;
   std::map<int,DRT::Node*>::iterator pnode;
@@ -420,62 +420,23 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
   glstrain(5) = cauchygreen(2,0);
 
   // material law and stresses
-  if (matequal)
+  if (matequal) // element patch has single material
   {
-    double density;
+    double density; // just a dummy density
     RCP<MAT::Material> mat = adjele[0]->Material();
     SelectMaterial(mat,stress,cmat,density,glstrain,FnodeL,0);
-#if 1
-    {
-      const double third = 1./3.;
-      Epetra_SerialDenseMatrix Idev(NUMSTR_PTET,NUMSTR_PTET);
-      Idev(0,0) =  2.0;  Idev(0,1) = -1.0;  Idev(0,2) = -1.0;
-      Idev(1,0) = -1.0;  Idev(1,1) =  2.0;  Idev(1,2) = -1.0;
-      Idev(2,0) = -1.0;  Idev(2,1) = -1.0;  Idev(2,2) =  2.0;
-      Idev(3,3) = 1.0;
-      Idev(4,4) = 1.0;
-      Idev(5,5) = 1.0;
-      Idev.Scale(third);
-
-      // do not weight the pressure part of the stress
-      Epetra_SerialDenseVector stressdev(NUMSTR_PTET);
-      Idev.Multiply(false,stress,stressdev);
-      stressdev.Scale(-1.0);
-      stress += stressdev;
-      stressdev.Scale(-1.0);
-      stressdev.Scale(1.0-ALPHA_PTET);
-      stress += stressdev;
-      
-      // do not weight the volumetric part of the tangent
-      Epetra_SerialDenseMatrix tmp(NUMSTR_PTET,NUMSTR_PTET);
-      Epetra_SerialDenseMatrix cmatdev(NUMSTR_PTET,NUMSTR_PTET);
-      tmp.Multiply('N','N',1.0,cmat,Idev,0.0);
-      cmatdev.Multiply('N','N',1.0,Idev,tmp,0.0);
-      // cmatvol = cmat - cmatdev;
-      cmatdev.Scale(-1.0);
-      cmat += cmatdev;
-      cmatdev.Scale(-1.0);
-      // scale down deviatoric part
-      cmatdev.Scale(1.0-ALPHA_PTET);
-      // add back to volumetric part
-      cmat += cmatdev;
-    }
-#else
-    stress.Scale(1.0-ALPHA_PTET);
-    cmat.Scale(1.0-ALPHA_PTET);
-#endif    
   }
   else
   {
+    double density; // just a dummy density
     Epetra_SerialDenseMatrix cmatele(NUMSTR_PTET,NUMSTR_PTET);
     Epetra_SerialDenseVector stressele(NUMSTR_PTET);
-    double density;
     for (int ele=0; ele<neleinpatch; ++ele)
     {
       // current element
       DRT::ELEMENTS::Ptet* actele = adjele[ele];
       // volume of that element assigned to node L
-      double V = actele->Volume()/NUMNOD_PTET;
+      const double V = actele->Volume()/NUMNOD_PTET;
       // def-gradient of the element
       RCP<MAT::Material> mat = actele->Material();
       SelectMaterial(mat,stressele,cmatele,density,glstrain,FnodeL,0);
@@ -485,9 +446,45 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
       cmat += cmatele;
       stress += stressele;
     } // for (int ele=0; ele<neleinpatch; ++ele)
-    stress.Scale((1.0-ALPHA_PTET)/VnodeL);
-    cmat.Scale((1.0-ALPHA_PTET)/VnodeL);
+    stress.Scale(1.0/VnodeL);
+    cmat.Scale(1.0/VnodeL);
   }
+
+#if 1 // stabilization on deviatoric stresses only
+  {
+    const double third = 1./3.;
+    Epetra_SerialDenseMatrix Idev(NUMSTR_PTET,NUMSTR_PTET);
+    Idev(0,0) =  2.0;  Idev(0,1) = -1.0;  Idev(0,2) = -1.0;
+    Idev(1,0) = -1.0;  Idev(1,1) =  2.0;  Idev(1,2) = -1.0;
+    Idev(2,0) = -1.0;  Idev(2,1) = -1.0;  Idev(2,2) =  2.0;
+    Idev(3,3) = 1.0;
+    Idev(4,4) = 1.0;
+    Idev(5,5) = 1.0;
+    Idev.Scale(third);
+
+    // do not weight the pressure part of the stress
+    Epetra_SerialDenseVector stressdev(NUMSTR_PTET);
+    Idev.Multiply(false,stress,stressdev);
+    const double* sdev = stressdev.Values();
+    double*       s    = stress.Values();
+    for (int i=0; i<NUMSTR_PTET; ++i) 
+      s[i] -= (ALPHA_PTET * sdev[i]);
+    
+    // do weighting on deviatoric part of the tangent only
+    LINALG::SerialDenseMatrix tmp(NUMSTR_PTET,NUMSTR_PTET);
+    LINALG::SerialDenseMatrix cmatdev(NUMSTR_PTET,NUMSTR_PTET);
+    tmp.Multiply('N','N',1.0,cmat,Idev,0.0);
+    cmatdev.Multiply('N','N',1.0,Idev,tmp,0.0);
+    // cmatvol = cmat - cmatdev;
+    const double* cdev = cmatdev.A();
+    double*       c    = cmat.A();
+    for (int i=0; i<NUMSTR_PTET*NUMSTR_PTET; ++i) 
+      c[i] -= (ALPHA_PTET*cdev[i]);
+  }
+#else // stab. on all stresses (Puso-style)
+    stress.Scale(1.0-ALPHA_PTET);
+    cmat.Scale(1.0-ALPHA_PTET);
+#endif    
   
   //----------------------------------------------------- internal forces
   force.Multiply('T','N',VnodeL,bop,stress,0.0);

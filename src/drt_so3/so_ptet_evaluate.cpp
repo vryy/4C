@@ -449,7 +449,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
   Idev.Scale(third);
   
   // keep only deviatoric part of strains
-  Epetra_SerialDenseVector gltmp(glstrain);
+  LINALG::SerialDenseVector gltmp(glstrain);
   Idev.Multiply(false,gltmp,glstrain);
   
 
@@ -464,10 +464,9 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
   Epetra_SerialDenseVector stresstmp(stress);
   Idev.Multiply(false,stresstmp,stress);
 
-  Epetra_SerialDenseMatrix tmp(NUMSTR_PTET,NUMSTR_PTET);
+  LINALG::SerialDenseMatrix tmp(NUMSTR_PTET,NUMSTR_PTET);
   tmp.Multiply('N','N',1.0,cmat,Idev,0.0);
   cmat.Multiply('N','N',1.0,Idev,tmp,0.0);
-  //cmat = tmp;
 
 #else
   Epetra_SerialDenseMatrix cmat(NUMSTR_PTET,NUMSTR_PTET);
@@ -478,7 +477,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
   cmat.Scale(ALPHA_PTET);
 #endif
    
-  //---------------------- return stresses of desired for visualization
+  //------------------------- return stresses desired for visualization
   if (elestress)
   {
     // return 2nd Piola-Kirchhoff stresses
