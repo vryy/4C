@@ -283,6 +283,10 @@ void static Sysmat2(
                 derxy2 = 0.;
             }
 
+//            ShapeFunction3D<DISTYPE,ASSTYPE,2> enr_shp;
+//            ShapeFunction3D<DISTYPE,ASSTYPE,0> enr_shp_stress;
+//            ShapeFunction3D<DISTYPE,ASSTYPE,0> enr_shp_discpres;
+            
             // temporary arrays
             BlitzVec enr_funct(numparamvelx);
             BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
@@ -632,7 +636,7 @@ void static Sysmat2(
             static BlitzVec3 bodyforce;
             bodyforce = 0.0;
             for (int isd = 0; isd < nsd; ++isd)
-                rhsint(isd) = histvec(isd) + bodyforce(isd)*timefac;
+                rhsint(isd) = histvec(isd); //+ bodyforce(isd)*timefac;
 
             /*----------------- get numerical representation of single operators ---*/
 
@@ -848,7 +852,7 @@ void static Sysmat2(
                               |                   |
                                \                 /
                 */
-                const double factor = 1.0*visc;
+                const double factor = 1.0/visc;
                 assembler.template Matrix<DiscPres,Tauxx>(shp_discpres, factor*timefacfac, shp_tau);
                 assembler.template Matrix<DiscPres,Tauyy>(shp_discpres, factor*timefacfac, shp_tau);
                 assembler.template Matrix<DiscPres,Tauzz>(shp_discpres, factor*timefacfac, shp_tau);
@@ -867,7 +871,7 @@ void static Sysmat2(
             // Hellinger-Reissner terms
             if (tauele_unknowns_present)
             {
-                //const double reciproke_visc = 1.0 / visc;
+                const double reciproke_visc = 1.0 / visc;
                 /* viscous stress-viscous stress coupling, quadratic part */
                 /*
                                /                    \
@@ -876,7 +880,7 @@ void static Sysmat2(
                               |                      |
                                \                    /
                 */
-                const double factor = 1.0;//reciproke_visc;
+                const double factor = 1.0*reciproke_visc;
                 assembler.template Matrix<Tauxx,Tauxx>(shp_tau, -factor*timefacfac, shp_tau);
                 assembler.template Matrix<Tauxy,Tauxy>(shp_tau, -factor*timefacfac, shp_tau);
                 assembler.template Matrix<Tauxz,Tauxz>(shp_tau, -factor*timefacfac, shp_tau);
@@ -905,7 +909,7 @@ void static Sysmat2(
                               |                    |
                                \                  /
                 */
-                const double rect_factor = visc;
+                const double rect_factor = 1.0;
                 assembler.template Matrix<Tauxx,Velx>(shp_tau, 2.0*timefacfac*0.5*rect_factor, shp_dx);
                 assembler.template Matrix<Tauxy,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dy);
                 assembler.template Matrix<Tauxy,Vely>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
@@ -946,7 +950,7 @@ void static Sysmat2(
                               |                    |
                                \                  /
                 */
-                const double taue_pe_fac = 1.0;//reciproke_visc;
+                const double taue_pe_fac = 1.0*reciproke_visc;
                 assembler.template Matrix<Tauxx,DiscPres>(shp_tau, -taue_pe_fac*timefacfac, shp_discpres);
                 assembler.template Matrix<Tauyy,DiscPres>(shp_tau, -taue_pe_fac*timefacfac, shp_discpres);
                 assembler.template Matrix<Tauzz,DiscPres>(shp_tau, -taue_pe_fac*timefacfac, shp_discpres);
@@ -963,7 +967,7 @@ void static Sysmat2(
                               |                  |
                                \                /
                 */
-                const double taue_p_fac = 1.0;//reciproke_visc;
+                const double taue_p_fac = 1.0*reciproke_visc;
                 assembler.template Matrix<Tauxx,Pres>(shp_tau, taue_p_fac*timefacfac, shp);
                 assembler.template Matrix<Tauyy,Pres>(shp_tau, taue_p_fac*timefacfac, shp);
                 assembler.template Matrix<Tauzz,Pres>(shp_tau, taue_p_fac*timefacfac, shp);
