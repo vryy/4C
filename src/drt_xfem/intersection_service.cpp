@@ -515,67 +515,63 @@ static void updateAForMap3To2(
  |  RQI:    compute element coordinates from a given point              |
  |          in the 3-dim physical space lies on a given surface element |
  *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType DISTYPE>
+template<DRT::Element::DiscretizationType DISTYPE> 
 static void currentToSurfaceElementCoordinatesT(
-        const BlitzMat&             xyze_surfaceElement,
-        const BlitzVec3&            physCoord,
-        BlitzVec2&                  eleCoord
-   	    )
+    const BlitzMat& xyze_surfaceElement,
+    const BlitzVec3& physCoord,
+    BlitzVec2& eleCoord)
 {
-	bool nodeWithinElement = true;
-    	
-    eleCoord = 0.0;
-    
-//    blitz::firstIndex i;    // Placeholder for the first blitz array index
-//    blitz::secondIndex j;   // Placeholder for the second blitz array index
-   								
-  	const int maxiter = 20;
-  	int iter = 0;
-  	while(iter < maxiter)
-    {   
-  	    iter++;
-  	    
-        // compute Jacobian, f and b
-        static BlitzMat3x2 Jacobi;
-        static BlitzVec3 F;
-        updateJacobianForMap3To2<DISTYPE>(Jacobi, eleCoord, xyze_surfaceElement);
-        updateFForMap3To2<DISTYPE>(F, eleCoord, physCoord, xyze_surfaceElement);
-        static BlitzVec b(2);
-        //b = blitz::sum(-Jacobi(j,i)*F(j),j);
-        for (int i = 0; i < 2; ++i)
-        {
-            b(i) = 0.0;
-            for (int j = 0; j < 3; ++j)
-            {
-                b(i) -= Jacobi(j,i)*F(j);
-            }
-        }
-     
-        const double residual = sqrt(b(0)*b(0)+b(1)*b(1));
-        if (residual < XFEM::TOL14)
-        {   
-            nodeWithinElement = true;
-            break;
-        }  
-  	    
-        // compute system matrix A
-        static BlitzMat A(2,2,blitz::ColumnMajorArray<2>());
-  		updateAForMap3To2<DISTYPE>(A, Jacobi, F, eleCoord, xyze_surfaceElement);
-  	
-  		static BlitzVec2 dx;
-  		dx = 0.0;
-        if(!XFEM::gaussEliminationEpetra(A, b, dx))
-        {
-            nodeWithinElement = false;
-            break;
-        }   
-           
-        eleCoord += dx;
-    }
+  bool nodeWithinElement = true;
   
-    //printf("iter = %d\n", iter);
-    //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
-	return;
+  eleCoord = 0.0;
+  
+  const int maxiter = 20;
+  int iter = 0;
+  while (iter < maxiter)
+  {
+    iter++;
+    
+    // compute Jacobian, f and b
+    static BlitzMat3x2 Jacobi;
+    static BlitzVec3 F;
+    updateJacobianForMap3To2<DISTYPE>(Jacobi, eleCoord, xyze_surfaceElement);
+    updateFForMap3To2<DISTYPE>(F, eleCoord, physCoord, xyze_surfaceElement);
+    static BlitzVec b(2);
+    //b = blitz::sum(-Jacobi(j,i)*F(j),j);
+    for (int i = 0; i < 2; ++i)
+    {
+      b(i) = 0.0;
+      for (int j = 0; j < 3; ++j)
+      {
+        b(i) -= Jacobi(j, i)*F(j);
+      }
+    }
+    
+    const double residual = sqrt(b(0)*b(0)+b(1)*b(1));
+    if (residual < XFEM::TOL14)
+    {
+      nodeWithinElement = true;
+      break;
+    }
+    
+    // compute system matrix A
+    static BlitzMat A(2, 2, blitz::ColumnMajorArray<2>());
+    updateAForMap3To2<DISTYPE>(A, Jacobi, F, eleCoord, xyze_surfaceElement);
+
+    static BlitzVec2 dx;
+    dx = 0.0;
+    if(!XFEM::gaussEliminationEpetra(A, b, dx))
+    {
+      nodeWithinElement = false;
+      break;
+    }
+
+    eleCoord += dx;
+  }
+
+  //printf("iter = %d\n", iter);
+  //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
+  return;
 }
 
 
