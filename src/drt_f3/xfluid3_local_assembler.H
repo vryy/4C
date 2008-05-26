@@ -21,34 +21,7 @@ Maintainer: Axel Gerstenberger
 #include <blitz/array.h>
 #include "../drt_xfem/xfem.H"
 #include "../drt_lib/drt_utils.H"
-
-
-enum PhysDerivDir
-{
-  D0 = 0,
-  Dx = 0,
-  Dy = 1,
-  Dz = 2,
-  DxDx = 0,
-  DyDy = 1,
-  DzDz = 2,
-  DxDy = 3,
-  DxDz = 4,
-  DyDz = 5
-};
-//! indicates direction
-enum LocalDerivDir
-{
-  Dr = 0,
-  Ds = 1,
-  Dt = 2,
-  DrDr = 0,
-  DsDs = 1,
-  DtDt = 2,
-  DrDs = 3,
-  DrDt = 4,
-  DsDt = 5
-};
+//#include "xfluid3_shapefunction_handle.H"
 
 
 //! for non-xfem elements, figure out the order of unknowns per node in the array

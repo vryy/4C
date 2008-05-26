@@ -1332,6 +1332,20 @@ void XFluidImplicitTimeInt::OutputToGmsh()
             gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
                 cell->Shape(), cellvalues, xyze_cell) << endl;
           }
+          if (elegid == 1)
+          {
+            //std::cout << elementvalues << std::endl;
+            std::ofstream f;
+            if (step_ <= 1)
+              f.open("outflowpres.txt",std::fstream::trunc);
+            else
+              f.open("outflowpres.txt",std::fstream::ate | std::fstream::app);
+            
+            //f << step_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
+            f << step_ << "  " << elementvalues(0) << endl;
+            
+            f.close();
+          }
         }
         gmshfilecontent << "};" << endl;
         f_system << gmshfilecontent.str();

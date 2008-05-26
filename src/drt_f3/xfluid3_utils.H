@@ -333,10 +333,6 @@ void gder2(
         BlitzMat& derxy2_)
 {
     const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
-    
-    blitz::firstIndex i;    // Placeholder for the first index
-    blitz::secondIndex j;   // Placeholder for the second index
-    blitz::thirdIndex k;    // Placeholder for the third index
 
     // initialize and zero out everything
     static Epetra_SerialDenseMatrix bm(6,6);
@@ -437,8 +433,7 @@ void gder2(
     */
 
     //const BlitzMat xder2(blitz::sum(deriv2(i,k)*xyze(j,k),k));
-    static BlitzMat xder2(6,3);
-    //static blitz::TinyMatrix<double,6,3> xder2;
+    static blitz::TinyMatrix<double,6,3> xder2;
     LINALG::DENSE::MMt_product<6,3,numnode>(deriv2,xyze,xder2);
 
     /*
@@ -593,8 +588,8 @@ inline DRT::UTILS::GaussRule3D getXFEMGaussrule(const bool intersected)
             // attention: don't use gausspoint rules that have gausspoints on the element boundary 
             // (so called closed rules)
             // -> enrichment values might be undefined 
-            //rule = DRT::UTILS::intrule_tet_11point;
-            rule = DRT::UTILS::intrule_tet_24point;
+            rule = DRT::UTILS::intrule_tet_11point;
+            //rule = DRT::UTILS::intrule_tet_24point;
         }
     }
     return rule;
