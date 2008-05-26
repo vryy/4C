@@ -470,7 +470,7 @@ static void svdcmp(
                     /* copy pivot row to current row */
                     if (pivot != k)
                     {
-                        static BlitzVec tmp(4);    // check changed
+                        blitz::TinyVector<double,4> tmp;    // check changed
                         for (int j=0;j<dim;j++)
                             tmp(j) = A(pivot,j);
                         tmp(dim) = b(pivot);
