@@ -1000,7 +1000,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_anssetup(
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,
+void DRT::ELEMENTS::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix& jac,
                                             Epetra_SerialDenseMatrix& TinvT)
 {
   // build T^T transformation matrix which maps

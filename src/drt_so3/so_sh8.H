@@ -242,7 +242,7 @@ private:
           Epetra_SerialDenseMatrix&  B_ans_loc); // modified B
 
   //! Evaluate transformation matrix T (parameter->material) at gp
-  void sosh8_evaluateT(const Epetra_SerialDenseMatrix jac,  // actual jacobian
+  void sosh8_evaluateT(const Epetra_SerialDenseMatrix& jac,  // actual jacobian
                        Epetra_SerialDenseMatrix& TinvT);    // T^{-T}
 
   //! Find "thin"=thickness direction
