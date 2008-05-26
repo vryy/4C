@@ -98,10 +98,11 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
     break;
 
     // nonlinear stiffness and internal force vector
-    case calc_struct_nlnstiff: {
+    case calc_struct_nlnstiff: 
+    {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -112,21 +113,12 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
     }
     break;
 
-    // internal force vector only
-    case calc_struct_internalforce:
-      dserror("Case 'calc_struct_internalforce' not yet implemented");
-    break;
-
-    // linear stiffness and consistent mass matrix
-    case calc_struct_linstiffmass:
-      dserror("Case 'calc_struct_linstiffmass' not yet implemented");
-    break;
-
     // nonlinear stiffness, internal force vector, and consistent mass matrix
-    case calc_struct_nlnstiffmass: {
+    case calc_struct_nlnstiffmass: 
+    {
       // need current displacement and residual forces
-      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -278,6 +270,16 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
     }
     break;
 
+    // internal force vector only
+    case calc_struct_internalforce:
+      dserror("Case 'calc_struct_internalforce' not yet implemented");
+    break;
+
+    // linear stiffness and consistent mass matrix
+    case calc_struct_linstiffmass:
+      dserror("Case 'calc_struct_linstiffmass' not yet implemented");
+    break;
+
     default:
       dserror("Unknown type of action for Solid3");
   }
@@ -425,7 +427,6 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
     // size is 4x3
     nxyz_[gp].Shape(NUMNOD_SOTET4,NUMDIM_SOTET4);
     nxyz_[gp].Multiply('N','N',1.0,tet4_dis.deriv_gp[gp],partials,0.0); 
-
     /* structure of N_XYZ:
     **             [   dN_1     dN_1     dN_1   ]
     **             [  ------   ------   ------  ]
@@ -477,7 +478,8 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     **             [   |     |     |   ]
     **             [  x_4   y_4   z_4  ]
     */
-  LINALG::SerialDenseMatrix xdisp(NUMNOD_SOTET4,NUMDIM_SOTET4); // current  displacements of element
+  // current  displacements of element
+  LINALG::SerialDenseMatrix xdisp(NUMNOD_SOTET4,NUMDIM_SOTET4);
   for (int i=0; i<NUMNOD_SOTET4; ++i)
   {
     xrefe(i,0) = Nodes()[i]->X()[0];
@@ -528,7 +530,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
     defgrd(0,0)+=1;
     defgrd(1,1)+=1;
     defgrd(2,2)+=1;
-
+    
     // Right Cauchy-Green tensor = F^T * F
     // size is 3x3
     LINALG::SerialDenseMatrix cauchygreen(NUMDIM_SOTET4,NUMDIM_SOTET4);
