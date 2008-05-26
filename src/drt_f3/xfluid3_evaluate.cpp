@@ -20,6 +20,7 @@ Maintainer: Axel Gerstenberger
 
 #include "xfluid3.H"
 #include "xfluid3_sysmat2.H"
+#include "xfluid3_sysmat3.H"
 #include "xfluid3_interpolation.H"
 
 #include "../drt_lib/drt_discret.H"
@@ -195,7 +196,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         //--------------------------------------------------
         // calculate element coefficient matrix and rhs
         //--------------------------------------------------
-        XFLUID::callSysmat(assembly_type,
+        XFLUID::callSysmat3(assembly_type,
                 this, ih_, eleDofManager_, myvelnp, myhist, ivelcol, iforcecol, estif, eforce,
                 actmat, time, timefac, newton, pstab, supg, cstab, true);
 
@@ -305,7 +306,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               }
               // R_0
               // calculate element coefficient matrix and rhs
-              XFLUID::callSysmat(assembly_type,
+              XFLUID::callSysmat3(assembly_type,
                       this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                       actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
@@ -333,7 +334,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
               // R_0+dx
               // calculate element coefficient matrix and rhs
-              XFLUID::callSysmat(assembly_type,
+              XFLUID::callSysmat3(assembly_type,
                       this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, iforcecol, estif, eforce,
                       actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
@@ -355,7 +356,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 #endif
           {
           // calculate element coefficient matrix and rhs
-          XFLUID::callSysmat(assembly_type,
+          XFLUID::callSysmat3(assembly_type,
                   this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                   actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
           }
