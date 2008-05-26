@@ -30,6 +30,9 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_element.H"
 #include "Epetra_SerialDenseSolver.h"
 
+#include "../drt_mat/stvenantkirchhoff.H"
+
+
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
@@ -84,7 +87,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
     }
     break;
     case Wall1::calc_struct_nlnstiffmass:
-    case Wall1::calc_struct_nlnstiff:
     {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -97,6 +99,20 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
       w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
     }
     break;
+    // NULL-pointer for mass matrix in case of calculating only stiff matrix 
+    case Wall1::calc_struct_nlnstiff:
+    {
+      // need current displacement and residual forces
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      w1_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
+    }
+   	break;
     case calc_struct_update_istep:
     {
       // do something with internal EAS, etc parameters
@@ -283,6 +299,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(vector<int>&               lm,
                                            Epetra_SerialDenseMatrix* elestrain,
                                            struct _MATERIAL*         material,
                                            const bool                cauchy)
+                                           
 {
   const int numnode = NumNode();
   const int numdf   = 2;
@@ -944,6 +961,30 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(Epetra_SerialDenseVector& strain,
 
 /* DRT::ELEMENTS::Wall1::w1_call_matgeononl */
 
+//{
+//  RefCountPtr<MAT::Material> mat = Material();
+//  Epetra_SerialDenseMatrix cmat;
+//  
+//  switch(material->mattyp)
+//  {
+//    case m_stvenant: /*------------------ st.venant-kirchhoff-material */
+//    {
+//      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
+//
+//      stvk->Evaluate(glstrain,cmat,stress);
+//
+//      *density = stvk->Density();
+//
+//      break;
+//    }
+//    default:
+//      dserror("Illegal type %d of material for wall1 element ", mat->MaterialType());
+//      break;
+//  }
+//
+//  /*--------------------------------------------------------------------*/
+//  return;
+//}  // of w1_mat_sel
 
 /*----------------------------------------------------------------------*
 | geometric stiffness part (total lagrange)                   mgit 05/07|
