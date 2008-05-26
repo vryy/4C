@@ -722,7 +722,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
   double dtsolve = 0.0;
   double dtele   = 0.0;
 
-  if (myrank_ == 0)
+  if (myrank_ == 0 && ivelcol->MyLength() >= 3)
   {
     std::cout << "applying interface velocity ivelcol[0] = " << (*ivelcol)[0] << std::endl;
     std::cout << "applying interface velocity ivelcol[1] = " << (*ivelcol)[1] << std::endl;
