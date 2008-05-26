@@ -236,7 +236,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     // the gauss weight, the timecurve factor and the constant
     // belonging to the time integration algorithm (theta*dt for
     // one step theta, 2/3 for bdf with dt const.)
-    // further our equation is normalised by the density, hence we need to 
+    // further our equation is normalised by the density, hence we need to
     // normalise also our rhs contribution
     const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl * invdensity;
 
@@ -558,9 +558,9 @@ void DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal(ParameterList& params,
     //this element's normal vector
     Epetra_SerialDenseVector   norm(numdf);
     double length = 0.0;
-    norm[0] = (xyze(1,1)-xyze(1,0))*(xyze(2,2)-xyze(2,0))+(xyze(2,1)-xyze(2,0))*(xyze(1,2)-xyze(1,0));
-    norm[1] = (xyze(2,1)-xyze(2,0))*(xyze(0,2)-xyze(0,0))+(xyze(0,1)-xyze(0,0))*(xyze(2,2)-xyze(2,0));
-    norm[2] = (xyze(0,1)-xyze(0,0))*(xyze(1,2)-xyze(1,0))+(xyze(1,1)-xyze(1,0))*(xyze(0,2)-xyze(0,0));
+    norm[0] = (xyze(1,1)-xyze(1,0))*(xyze(2,2)-xyze(2,0))-(xyze(2,1)-xyze(2,0))*(xyze(1,2)-xyze(1,0));
+    norm[1] = (xyze(2,1)-xyze(2,0))*(xyze(0,2)-xyze(0,0))-(xyze(0,1)-xyze(0,0))*(xyze(2,2)-xyze(2,0));
+    norm[2] = (xyze(0,1)-xyze(0,0))*(xyze(1,2)-xyze(1,0))-(xyze(1,1)-xyze(1,0))*(xyze(0,2)-xyze(0,0));
 
     length = sqrt(norm[0]*norm[0]+norm[1]*norm[1]+norm[2]*norm[2]);
 
