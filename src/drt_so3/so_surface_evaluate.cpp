@@ -407,6 +407,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
 
       case calc_surfstress_stiff:
       {
+        if (distype!=quad4)
+          cout << "Surface Stresses were only tested for quad4 surfaces! Use with caution!" << endl;
+
         // element geometry update
         RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vector 'displacement'");
