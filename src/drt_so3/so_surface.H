@@ -265,6 +265,15 @@ protected:
   void ComputeVolConstrDeriv(const LINALG::SerialDenseMatrix& xscurr,
                              Epetra_SerialDenseVector& elevector1);
 
+  //! Submethod to compute interfacial area and its first and second
+  //derivatives w.r.t. the displacements (this is needed for surface energy problems)
+  void ComputeAreaDeriv(const LINALG::SerialDenseMatrix& x,
+                        const int numnode,
+                        const int ndof,
+                        double& A,
+                        Epetra_SerialDenseVector& Adiff,
+                        Epetra_SerialDenseMatrix& Adiff2);
+
 }; // class StructuralSurface : public DRT::Element
 
 

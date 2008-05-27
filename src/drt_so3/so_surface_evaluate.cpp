@@ -444,117 +444,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
         Epetra_SerialDenseVector Adiff(ndof);                     // first partial derivatives
         Epetra_SerialDenseMatrix Adiff2(ndof,ndof);               // second partial derivatives
 
-        // allocate vector for shape functions and matrix for derivatives
-        LINALG::SerialDenseMatrix  deriv(2,numnode);
-        LINALG::SerialDenseMatrix  dxyzdrs(2,3);
-
-        /*----------------------------------------------------------------------*
-         |               start loop over integration points                     |
-         *----------------------------------------------------------------------*/
-
-        for (int gpid = 0; gpid < ngp; ++gpid)
-        {
-          blitz::Array<double,2> ddet(3,ndof);
-          blitz::Array<double,3> ddet2(3,ndof,ndof);
-          ddet2 = 0.;
-          blitz::Array<double,1> jacobi_deriv(ndof);
-
-          const double e0 = intpoints.qxg[gpid][0];
-          const double e1 = intpoints.qxg[gpid][1];
-
-          // get derivatives of shape functions in the plane of the element
-          DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
-
-          dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
-
-          vector<double> normal(3);
-          double detA;
-          double Jac;
-          SurfaceIntegration(detA,normal,x,deriv);
-          Jac = sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
-          A += Jac*intpoints.qwgt[gpid];
-
-          /*--------------- derivation of minor determiants of the Jacobian
-           *----------------------------- with respect to the displacements */
-          for (int i=0;i<numnode;++i)
-          {
-            ddet(0,3*i)   = 0.;
-            ddet(0,3*i+1) = deriv(0,i)*dxyzdrs(1,2)-deriv(1,i)*dxyzdrs(0,2);
-            ddet(0,3*i+2) = deriv(1,i)*dxyzdrs(0,1)-deriv(0,i)*dxyzdrs(1,1);
-
-            ddet(1,3*i)   = deriv(1,i)*dxyzdrs(0,2)-deriv(0,i)*dxyzdrs(1,2);
-            ddet(1,3*i+1) = 0.;
-            ddet(1,3*i+2) = deriv(0,i)*dxyzdrs(1,0)-deriv(1,i)*dxyzdrs(0,0);
-
-            ddet(2,3*i)   = deriv(0,i)*dxyzdrs(1,1)-deriv(1,i)*dxyzdrs(0,1);
-            ddet(2,3*i+1) = deriv(1,i)*dxyzdrs(0,0)-deriv(0,i)*dxyzdrs(1,0);
-            ddet(2,3*i+2) = 0.;
-
-            jacobi_deriv(i*3)   = 1/Jac*(normal[2]*ddet(2,3*i  )+normal[1]*ddet(1,3*i  ));
-            jacobi_deriv(i*3+1) = 1/Jac*(normal[2]*ddet(2,3*i+1)+normal[0]*ddet(0,3*i+1));
-            jacobi_deriv(i*3+2) = 1/Jac*(normal[0]*ddet(0,3*i+2)+normal[1]*ddet(1,3*i+2));
-          }
-
-          /*--- calculation of first derivatives of current interfacial area
-           *----------------------------- with respect to the displacements */
-          for (int i=0;i<ndof;++i)
-          {
-            Adiff[i] += jacobi_deriv(i)*intpoints.qwgt[gpid];
-          }
-          //cout << "Adiff:" << Adiff << endl;
-
-          /*--------- second derivates of minor determiants of the Jacobian
-           *----------------------------- with respect to the displacements */
-          for (int n=0;n<numnode;++n)
-          {
-            for (int o=0;o<numnode;++o)
-            {
-              ddet2(0,n*3+1,o*3+2) = deriv(0,n)*deriv(1,o)-deriv(1,n)*deriv(0,o);
-              ddet2(0,n*3+2,o*3+1) = - ddet2(0,n*3+1,o*3+2);
-
-              ddet2(1,n*3  ,o*3+2) = deriv(1,n)*deriv(0,o)-deriv(0,n)*deriv(1,o);
-              ddet2(1,n*3+2,o*3  ) = - ddet2(1,n*3,o*3+2);
-
-              ddet2(2,n*3  ,o*3+1) = ddet2(0,n*3+1,o*3+2);
-              ddet2(2,n*3+1,o*3  ) = - ddet2(2,n*3,o*3+1);
-            }
-          }
-
-          /*- calculation of second derivatives of current interfacial areas
-           *----------------------------- with respect to the displacements */
-          for (int i=0;i<ndof;++i)
-          {
-            int var1, var2;
-
-            if (i%3==0)           // displacement in x-direction
-            {
-              var1 = 1;
-              var2 = 2;
-            }
-            else if ((i-1)%3==0)  // displacement in y-direction
-            {
-              var1 = 0;
-              var2 = 2;
-            }
-            else if ((i-2)%3==0)  // displacement in z-direction
-            {
-              var1 = 0;
-              var2 = 1;
-            }
-            else
-            {
-              dserror("calculation of second derivatives of interfacial area failed");
-              exit(1);
-            }
-
-            for (int j=0;j<ndof;++j)
-            {
-              Adiff2(i,j) += (-1/Jac*jacobi_deriv(j)*jacobi_deriv(i)+1/Jac*
-                              (ddet(var1,i)*ddet(var1,j)+normal[var1]*ddet2(var1,i,j)+
-                               ddet(var2,i)*ddet(var2,j)+normal[var2]*ddet2(var2,i,j)))*intpoints.qwgt[gpid];
-            }
-          }
-        }
+        ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
 
         if (cond->Type()==DRT::Condition::Surfactant)     // dynamic surfactant model
         {
@@ -989,6 +879,135 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolConstrDeriv(const LINALG::Seria
   return;
 }
 
+/*----------------------------------------------------------------------*
+ * Compute surface area and its first and second derivatives    lw 05/08*
+ * with respect to the displacements                                    *
+ * ---------------------------------------------------------------------*/
+void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDenseMatrix& x,
+                                                        const int numnode,
+                                                        const int ndof,
+                                                        double& A,
+                                                        Epetra_SerialDenseVector& Adiff,
+                                                        Epetra_SerialDenseMatrix& Adiff2)
+{
+  const DRT::UTILS::IntegrationPoints2D  intpoints =
+    getIntegrationPoints2D(gaussrule_);
+
+  int ngp = intpoints.nquad;
+
+  // allocate vector for shape functions and matrix for derivatives
+  LINALG::SerialDenseMatrix  deriv(2,numnode);
+  LINALG::SerialDenseMatrix  dxyzdrs(2,3);
+
+  /*----------------------------------------------------------------------*
+   |               start loop over integration points                     |
+   *----------------------------------------------------------------------*/
+
+  for (int gpid = 0; gpid < ngp; ++gpid)
+  {
+    blitz::Array<double,2> ddet(3,ndof);
+    blitz::Array<double,3> ddet2(3,ndof,ndof);
+    ddet2 = 0.;
+    blitz::Array<double,1> jacobi_deriv(ndof);
+
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
+
+    // get derivatives of shape functions in the plane of the element
+    DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
+
+    dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
+
+    vector<double> normal(3);
+    double detA;
+    double Jac;
+    SurfaceIntegration(detA,normal,x,deriv);
+    Jac = sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
+    A += Jac*intpoints.qwgt[gpid];
+
+    /*--------------- derivation of minor determiants of the Jacobian
+     *----------------------------- with respect to the displacements */
+    for (int i=0;i<numnode;++i)
+    {
+      ddet(0,3*i)   = 0.;
+      ddet(0,3*i+1) = deriv(0,i)*dxyzdrs(1,2)-deriv(1,i)*dxyzdrs(0,2);
+      ddet(0,3*i+2) = deriv(1,i)*dxyzdrs(0,1)-deriv(0,i)*dxyzdrs(1,1);
+
+      ddet(1,3*i)   = deriv(1,i)*dxyzdrs(0,2)-deriv(0,i)*dxyzdrs(1,2);
+      ddet(1,3*i+1) = 0.;
+      ddet(1,3*i+2) = deriv(0,i)*dxyzdrs(1,0)-deriv(1,i)*dxyzdrs(0,0);
+
+      ddet(2,3*i)   = deriv(0,i)*dxyzdrs(1,1)-deriv(1,i)*dxyzdrs(0,1);
+      ddet(2,3*i+1) = deriv(1,i)*dxyzdrs(0,0)-deriv(0,i)*dxyzdrs(1,0);
+      ddet(2,3*i+2) = 0.;
+
+      jacobi_deriv(i*3)   = 1/Jac*(normal[2]*ddet(2,3*i  )+normal[1]*ddet(1,3*i  ));
+      jacobi_deriv(i*3+1) = 1/Jac*(normal[2]*ddet(2,3*i+1)+normal[0]*ddet(0,3*i+1));
+      jacobi_deriv(i*3+2) = 1/Jac*(normal[0]*ddet(0,3*i+2)+normal[1]*ddet(1,3*i+2));
+    }
+
+    /*--- calculation of first derivatives of current interfacial area
+     *----------------------------- with respect to the displacements */
+    for (int i=0;i<ndof;++i)
+    {
+      Adiff[i] += jacobi_deriv(i)*intpoints.qwgt[gpid];
+    }
+
+    /*--------- second derivates of minor determiants of the Jacobian
+     *----------------------------- with respect to the displacements */
+    for (int n=0;n<numnode;++n)
+    {
+      for (int o=0;o<numnode;++o)
+      {
+        ddet2(0,n*3+1,o*3+2) = deriv(0,n)*deriv(1,o)-deriv(1,n)*deriv(0,o);
+        ddet2(0,n*3+2,o*3+1) = - ddet2(0,n*3+1,o*3+2);
+
+        ddet2(1,n*3  ,o*3+2) = deriv(1,n)*deriv(0,o)-deriv(0,n)*deriv(1,o);
+        ddet2(1,n*3+2,o*3  ) = - ddet2(1,n*3,o*3+2);
+
+        ddet2(2,n*3  ,o*3+1) = ddet2(0,n*3+1,o*3+2);
+        ddet2(2,n*3+1,o*3  ) = - ddet2(2,n*3,o*3+1);
+      }
+    }
+
+    /*- calculation of second derivatives of current interfacial areas
+     *----------------------------- with respect to the displacements */
+    for (int i=0;i<ndof;++i)
+    {
+      int var1, var2;
+
+      if (i%3==0)           // displacement in x-direction
+      {
+        var1 = 1;
+        var2 = 2;
+      }
+      else if ((i-1)%3==0)  // displacement in y-direction
+      {
+        var1 = 0;
+        var2 = 2;
+      }
+      else if ((i-2)%3==0)  // displacement in z-direction
+      {
+        var1 = 0;
+        var2 = 1;
+      }
+      else
+      {
+        dserror("calculation of second derivatives of interfacial area failed");
+        exit(1);
+      }
+
+      for (int j=0;j<ndof;++j)
+      {
+        Adiff2(i,j) += (-1/Jac*jacobi_deriv(j)*jacobi_deriv(i)+1/Jac*
+                        (ddet(var1,i)*ddet(var1,j)+normal[var1]*ddet2(var1,i,j)+
+                         ddet(var2,i)*ddet(var2,j)+normal[var2]*ddet2(var2,i,j)))*intpoints.qwgt[gpid];
+      }
+    }
+  }
+
+  return;
+}
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_SOLID3
