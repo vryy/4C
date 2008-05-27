@@ -223,7 +223,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   //Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
   //Teuchos::ParameterList& searchParams = nlParams.sublist("Line Search");

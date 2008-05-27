@@ -16,7 +16,8 @@
 FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   : Monolithic(comm),
     havefluidstructcolmap_(false),
-    havepermfluidstructcolmap_(false)
+    havepermfluidstructcolmap_(false),
+    havealestructcolmap_(false)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -99,25 +100,6 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
 
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
-
-#if 0
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
-  const LINALG::SparseMatrix* aii = AleField().InteriorMatrixBlock();
-  const LINALG::SparseMatrix* aig = AleField().InterfaceMatrixBlock();
-
-  if (a==Teuchos::null or aii==NULL or aig==NULL)
-    dserror("expect ale block matrix");
-
-  // map between ale interface and structure column map
-
-  DRT::Exporter ex(a->FullRowMap(),a->FullColMap(),a->Comm());
-  std::map<int,int> alestructcolmap;
-  coupsa.FillSlaveToMasterMap(alestructcolmap);
-  ex.Export(alestructcolmap);
-
-  aig_ = ConvertFigColmap(*aig,alestructcolmap,StructureField().DomainMap(),1.);
-  aii_ = Teuchos::rcp(new LINALG::SparseMatrix(*aii,View));
-#endif
 }
 
 
