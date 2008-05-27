@@ -1,3 +1,4 @@
+#ifdef CCADISCRET
 #include "drt_utils_bspline.H"
 
 //--------------------------------------------------
@@ -1201,3 +1202,5 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   
   return;
 }
+
+#endif

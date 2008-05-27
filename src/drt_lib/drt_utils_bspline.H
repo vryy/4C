@@ -1,3 +1,5 @@
+#ifdef CCADISCRET
+
 #ifndef BSPLINE_H
 #define BSPLINE_H
 
@@ -539,4 +541,5 @@ private:
 } // namespace NURBS 
 } // namespace DRT
 
+#endif
 #endif
