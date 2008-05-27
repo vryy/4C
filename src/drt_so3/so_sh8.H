@@ -220,8 +220,7 @@ private:
       Epetra_SerialDenseVector* force,          ///< element internal force vector
       Epetra_SerialDenseMatrix* elestress,      ///< element stresses
       Epetra_SerialDenseMatrix* elestrain,      ///< strains at GP
-      const double    time,                     ///< current absolute time
-      const double    dt,                       ///< current timestepsize
+      ParameterList&            params,         ///< algorithmic parameters e.g. time
       const bool      cauchy=false);            ///< stress output option
 
   //! Evaluate Hex8 Shapefcts to keep them static

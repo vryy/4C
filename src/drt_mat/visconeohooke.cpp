@@ -139,7 +139,7 @@ void MAT::ViscoNeoHooke::Update()
 
 void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
                                   const int gp,
-                                  const double dt,
+                                  Teuchos::ParameterList& params,
                                   Epetra_SerialDenseMatrix* cmat,
                                   Epetra_SerialDenseVector* stress)
 
@@ -150,6 +150,9 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double E_f  = matdata_->m.visconeohooke->youngs_fast;  
   double tau  = matdata_->m.visconeohooke->relax;
   double theta= matdata_->m.visconeohooke->theta;
+  
+  // get time algorithmic parameters
+  const double dt = params.get("delta time",-1.0);
   
   // evaluate "alpha" factors which distribute stress or stiffnes between parallel springs
   // sum_0^i alpha_j = 1

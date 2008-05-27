@@ -17,6 +17,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
 #include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 using namespace Teuchos;
 
@@ -81,7 +82,7 @@ namespace MAT
     
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   const int gp,
-                  const double dt,
+                  Teuchos::ParameterList& params,
                   Epetra_SerialDenseMatrix* cmat,
                   Epetra_SerialDenseVector* stress);
 

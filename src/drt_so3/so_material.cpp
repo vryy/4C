@@ -57,8 +57,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       const Epetra_SerialDenseMatrix* defgrd,
       const int gp,
       const int ele_ID,
-      const double time,
-      const double dt,
+      ParameterList&  params,
       const string action)
 {
   RefCountPtr<MAT::Material> mat = Material();
@@ -78,6 +77,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     {
       MAT::HyperPolyconvex* hypo = static_cast <MAT::HyperPolyconvex*>(mat.get());
 
+      const double time = params.get("total time",-1.0);
       hypo->Evaluate(glstrain,defgrd,gp,ele_ID,time,cmat,stress);
 
       *density = hypo->Density();
@@ -96,6 +96,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
         avec[2] = sqrt(avec[0]*avec[0] + avec[1]*avec[1]);
       }
 
+      const double time = params.get("total time",-1.0);
       anba->Evaluate(glstrain,defgrd,gp,ele_ID,time,cmat,stress,avec);
 
       *density = anba->Density();
@@ -115,7 +116,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
       if (!visco->Initialized())
         visco->Initialize(NUMGPT_SOH8);
-      visco->Evaluate(glstrain,gp,dt,cmat,stress);
+      visco->Evaluate(glstrain,gp,params,cmat,stress);
       *density = visco->Density();
 
       break;
@@ -126,6 +127,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
 
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
 
+      const double time = params.get("total time",-1.0);
       micro->Evaluate(defgrd, cmat, stress, density, gp, ele_ID, time, action);
 
       // test case

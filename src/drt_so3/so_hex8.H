@@ -456,8 +456,7 @@ protected:
       Epetra_SerialDenseVector* force,          ///< element internal force vector
       Epetra_SerialDenseMatrix* elestress,      ///< stresses at GP
       Epetra_SerialDenseMatrix* elestrain,      ///< strains at GP
-      const double              time,           ///< current absolute time
-      const double              dt,             ///< current timestep size
+      ParameterList&            params,         ///< algorithmic parameters e.g. time
       const bool                cauchy=false,   ///< stress output option
       const bool                euler_almansi=false);  ///< strain output option
 
@@ -510,8 +509,7 @@ protected:
                     const Epetra_SerialDenseMatrix* defgrd,
                     const int gp,
                     const int ele_ID,
-                    const double time,
-                    const double dt,
+                    ParameterList&  params,
                     const string action = string());
 
   //! EAS technology, init
@@ -530,8 +528,6 @@ protected:
 
   void soh8_homog(ParameterList&  params,
                   vector<double>& disp,
-                  const double    time,
-                  const double    dt,
                   vector<double>& residual);
 
   void soh8_set_eas_multi(ParameterList&  params);
