@@ -181,7 +181,11 @@ void DRT::INPUT::PrintDefaultParameters(std::ostream& stream, const Teuchos::Par
         hasDefault = true;
         stream << "default parameters in list '" << list.name() << "':\n";
       }
-      stream << "    " << list.name(i) << "\n";
+      const Teuchos::any& v = entry.getAny(false);
+      int l = list.name(i).length();
+      stream << "    " << list.name(i);
+      for (int i=0; i<std::max<int>(31-l,0); ++i) stream << ' ';
+      stream << ' ' << v << '\n';
     }
   }
   if (hasDefault)
