@@ -331,61 +331,68 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
 
+  Teuchos::RCP<const Epetra_Vector> sx;
+  Teuchos::RCP<const Epetra_Vector> fx;
+  Teuchos::RCP<const Epetra_Vector> ax;
+
   if (x!=Teuchos::null)
   {
+    // This does not seem very reasonable.
+    // It is a premature optimization.
+#if 0
     double norm;
     int err = x->Norm2(&norm);
     if (err)
       dserror("failed to calculate norm");
 
-    if (norm!=0)
+    if (norm==0.)
+      return;
+#endif
+
+    ExtractFieldVectors(x,sx,fx,ax);
+
+    if (sdbg_!=Teuchos::null)
     {
-      Utils()->out() << YELLOW_LIGHT "element call with new x" END_COLOR << endl;
-
-      Teuchos::RCP<const Epetra_Vector> sx;
-      Teuchos::RCP<const Epetra_Vector> fx;
-      Teuchos::RCP<const Epetra_Vector> ax;
-
-      ExtractFieldVectors(x,sx,fx,ax);
-
-      if (sdbg_!=Teuchos::null)
-      {
-        sdbg_->NewIteration();
-        sdbg_->WriteVector("x",*StructureField().Interface().ExtractCondVector(sx));
-      }
-
-      // debug
-      //debug_.DumpVector("sx",*StructureField()->Discretization(),*sx);
-      //debug_.DumpVector("fx",*FluidField()->Discretization(),*fx);
-      //debug_.DumpVector("ax",*AleField()->Discretization(),*ax);
-
-      // Call all elements and assemble rhs and matrices
-      // We only need the rhs here because NOX will ask for the rhs
-      // only. But the Jacobian is stored internally and will be returnd
-      // later on without looking at x again!
-      StructureField().Evaluate(sx);
-      AleField()      .Evaluate(ax);
-
-      // transfer the current ale mesh positions to the fluid field
-      Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
-      FluidField().ApplyMeshDisplacement(fluiddisp);
-
-      FluidField().Evaluate(fx);
+      sdbg_->NewIteration();
+      sdbg_->WriteVector("x",*StructureField().Interface().ExtractCondVector(sx));
     }
+
+    // debug
+    //debug_.DumpVector("sx",*StructureField()->Discretization(),*sx);
+    //debug_.DumpVector("fx",*FluidField()->Discretization(),*fx);
+    //debug_.DumpVector("ax",*AleField()->Discretization(),*ax);
   }
-  else
+
+  // Call all elements and assemble rhs and matrices
+  // We only need the rhs here because NOX will ask for the rhs
+  // only. But the Jacobian is stored internally and will be returnd
+  // later on without looking at x again!
+
+  Utils()->out() << "\nEvaluate elements\n";
+
   {
-    Utils()->out() << YELLOW_LIGHT "element call at current x" END_COLOR << endl;
-
-    StructureField().Evaluate(Teuchos::null);
-    AleField()      .Evaluate(Teuchos::null);
-
-    // transfer the current ale mesh positions to the fluid field
-    Teuchos::RefCountPtr<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
-    FluidField().ApplyMeshDisplacement(fluiddisp);
-
-    FluidField().Evaluate(Teuchos::null);
+    Epetra_Time ts(Comm());
+    StructureField().Evaluate(sx);
+    Utils()->out() << "structure: " << ts.ElapsedTime() << "\n";
   }
+
+  {
+    Epetra_Time ta(Comm());
+    AleField()      .Evaluate(ax);
+    Utils()->out() << "ale      : " << ta.ElapsedTime() << "\n";
+  }
+
+  // transfer the current ale mesh positions to the fluid field
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
+  FluidField().ApplyMeshDisplacement(fluiddisp);
+
+  {
+    Epetra_Time tf(Comm());
+    FluidField().Evaluate(fx);
+    Utils()->out() << "fluid    : " << tf.ElapsedTime() << "\n";
+  }
+
+  Utils()->out() << "\n";
 }
 
 
