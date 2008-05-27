@@ -193,7 +193,7 @@ private:
                                  Epetra_SerialDenseVector* force,
                                  Epetra_SerialDenseMatrix* elestress,
                                  Epetra_SerialDenseMatrix* elestrain,
-                                 const double              time,
+                                 ParameterList&            params,         // algorithmic parameters e.g. time
                                  const bool                cauchy = false);
 
   //! Setup ANS interpolation (shear and trapezoidal)

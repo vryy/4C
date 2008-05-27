@@ -344,13 +344,13 @@ protected:
                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
-                                 const double              time);
+                                 ParameterList&            params);         // algorithmic parameters e.g. time
 
   void sodisp_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
-                    const double time);
+                    ParameterList&            params);         // algorithmic parameters e.g. time
 
   /*!
   \brief Create a integrator for the SoDisp element

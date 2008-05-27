@@ -178,7 +178,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       Epetra_SerialDenseMatrix* cmat,
       double* density,
       const Epetra_SerialDenseVector* glstrain,
-      const double time)
+      ParameterList&            params)         // algorithmic parameters e.g. time
 {
   RefCountPtr<MAT::Material> mat = Material();
   switch (mat->MaterialType())
@@ -235,7 +235,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       Epetra_SerialDenseMatrix* cmat,
       double* density,
       const Epetra_SerialDenseVector* glstrain,
-      const double time)
+      ParameterList&            params)         // algorithmic parameters e.g. time
 {
   RefCountPtr<MAT::Material> mat = Material();
   switch (mat->MaterialType())

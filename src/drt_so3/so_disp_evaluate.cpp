@@ -65,8 +65,6 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
   else if (action=="calc_init_vol")             act = SoDisp::calc_init_vol;
   else dserror("Unknown type of action for SoDisp");
 
-  const double time = params.get("total time",-1.0);
-
   // what should the element do
   switch(act) {
     // linear stiffness
@@ -76,7 +74,7 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      sodisp_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1, time);
+      sodisp_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1, params);
     }
     break;
 
@@ -90,7 +88,7 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sodisp_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1, time);
+      sodisp_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,params);
     }
     break;
 
@@ -114,7 +112,7 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sodisp_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1, time);
+      sodisp_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1, params);
     }
     break;
 
@@ -173,7 +171,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
       Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
       Epetra_SerialDenseVector* force,          // element internal force vector
-      const double              time)           // current absolute time
+      ParameterList&            params)         // algorithmic parameters e.g. time
 {
 
 /* ============================================================================*
@@ -302,7 +300,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_DISP,NUMSTR_DISP);
     Epetra_SerialDenseVector stress(NUMSTR_DISP);
     double density;
-    sodisp_mat_sel(&stress,&cmat,&density,&glstrain, time);
+    sodisp_mat_sel(&stress,&cmat,&density,&glstrain, params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)

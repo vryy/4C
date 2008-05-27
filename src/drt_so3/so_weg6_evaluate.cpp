@@ -72,8 +72,6 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
 #endif
   else dserror("Unknown type of action for So_weg6");
 
-  const double time = params.get("total time",-1.0);
-
   // what should the element do
   switch(act) {
     // linear stiffness
@@ -83,7 +81,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,time);
+      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
     }
     break;
 
@@ -97,7 +95,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,time);
+      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
     }
     break;
 
@@ -121,7 +119,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,time);
+      sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
     }
     break;
     // evaluate stresses and strains at gauss points
@@ -141,8 +139,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
-      if (iostrain == "euler_almansi") sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy,true);
-      else sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy,false);
+      if (iostrain == "euler_almansi") sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,true);
+      else sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,false);
       AddtoPack(*stressdata, stress);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
       {
@@ -295,7 +293,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       Epetra_SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
-      sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&strain,time,false);
+      sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&strain,params,false);
       // the element outputs 0.5* strains[3-5], but we want the computational quantity here
       for (int i=0; i<NUMGPT_WEG6; ++i)
         for (int j=3; j<6; ++j) strain(i,j) *= 2.0;
@@ -381,7 +379,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
       Epetra_SerialDenseVector* force,          // element internal force vector
       Epetra_SerialDenseMatrix* elestress,      // element stresses
       Epetra_SerialDenseMatrix* elestrain,      // strains at GP
-      const double              time,           // current absolute time
+      ParameterList&            params,         // algorithmic parameters e.g. time
       const bool                cauchy,         // stress output option
       const bool                euler_almansi)  // strain output option
 {
@@ -559,7 +557,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_WEG6,NUMSTR_WEG6);
     Epetra_SerialDenseVector stress(NUMSTR_WEG6);
     double density;
-    sow6_mat_sel(&stress,&cmat,&density,&glstrain, time);
+    sow6_mat_sel(&stress,&cmat,&density,&glstrain, params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses

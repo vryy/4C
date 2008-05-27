@@ -333,7 +333,7 @@ protected:
                                  Epetra_SerialDenseVector* force,
                                  Epetra_SerialDenseMatrix* elestress,
                                  Epetra_SerialDenseMatrix* elestrain,
-                                 const double              time,
+                                 ParameterList&            params,         // algorithmic parameters e.g. time
                                  const bool                cauchy = false,
                                  const bool                euler_almansi = false);
 
@@ -341,7 +341,7 @@ protected:
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
-                    const double time);
+                    ParameterList&            params);         // algorithmic parameters e.g. time
 
   void sow6_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,

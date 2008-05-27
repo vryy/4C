@@ -74,10 +74,17 @@ namespace MAT
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_hyper_polyconvex; }
     
+    // wrapper for less intensive error output information
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress) {return;}
+                  Epetra_SerialDenseVector* stress)
+    {
+      Epetra_SerialDenseMatrix defgrd(3,3);
+      Evaluate(glstrain,&defgrd,-1,-1,-1.0,cmat,stress);
+      return;
+    }
 
+    // there are a lot of parameters just for error output, 
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   const Epetra_SerialDenseMatrix* defgrd,
                   const int gp,  const int ele_ID, const double time,

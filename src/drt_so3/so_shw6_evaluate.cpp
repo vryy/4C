@@ -65,8 +65,6 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
   else if (action=="postprocess_stress")        act = So_weg6::postprocess_stress;
   else dserror("Unknown type of action for So_weg6");
 
-  const double time = params.get("total time",-1.0);
-
   // what should the element do
   switch(act) {
     // linear stiffness
@@ -76,7 +74,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,time);
+      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
     }
     break;
 
@@ -90,7 +88,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,time);
+      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
     }
     break;
 
@@ -114,7 +112,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,time);
+      soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
     }
     break;
 
@@ -135,7 +133,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
-      if (iostrain!="euler_almansi") soshw6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,time,cauchy);
+      if (iostrain!="euler_almansi") soshw6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy);
       else dserror("requested option not yet implemented for solidshw6");
       //cout << "gpstress: " << stress << endl;
       AddtoPack(*stressdata, stress);
@@ -280,7 +278,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
       Epetra_SerialDenseVector* force,          // element internal force vector
       Epetra_SerialDenseMatrix* elestress,      // element stresses
       Epetra_SerialDenseMatrix* elestrain,      // element stresses
-      const double              time,           // current absolute time
+      ParameterList&            params,         // algorithmic parameters e.g. time
       const bool                cauchy)         // stress output option
 {
 
@@ -587,7 +585,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
     Epetra_SerialDenseMatrix cmat(NUMSTR_WEG6,NUMSTR_WEG6);
     Epetra_SerialDenseVector stress(NUMSTR_WEG6);
     double density;
-    sow6_mat_sel(&stress,&cmat,&density,&glstrain, time);
+    sow6_mat_sel(&stress,&cmat,&density,&glstrain, params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
