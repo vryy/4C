@@ -17,7 +17,8 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   : Monolithic(comm),
     havefluidstructcolmap_(false),
     havepermfluidstructcolmap_(false),
-    havealestructcolmap_(false)
+    havealestructcolmap_(false),
+    havefluidalecolmap_(false)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -241,6 +242,7 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   const ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
 
@@ -300,6 +302,8 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
     havealestructcolmap_ = true;
   }
 
+  /*----------------------------------------------------------------------*/
+
   double scale     = FluidField().ResidualScaling();
   double timescale = FluidField().TimeScaling();
 
@@ -317,6 +321,35 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
   mat.Assign(2,0,View,*ConvertFigColmap(aig,alestructcolmap_,StructureField().DomainMap(),1.));
   mat.Assign(2,2,View,aii);
+
+  /*----------------------------------------------------------------------*/
+
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
+  if (mmm!=Teuchos::null)
+  {
+    LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
+
+    if (not havefluidalecolmap_)
+    {
+      DRT::Exporter ex(mmm->FullRowMap(),mmm->FullColMap(),mmm->Comm());
+      coupfa.FillMasterToSlaveMap(fluidalecolmap_);
+      ex.Export(fluidalecolmap_);
+      havefluidalecolmap_ = true;
+
+#if 0
+      for (map<int,int>::iterator i=fluidalecolmap_.begin();
+           i!=fluidalecolmap_.end();
+           ++i)
+      {
+        std::cout << i->first << " - " << i->second << "\n";
+      }
+#endif
+    }
+
+    // We cannot copy the pressure value. It is not used anyway. So no exact
+    // match here.
+    mat.Assign(1,2,View,*ConvertFigColmap(fmii,fluidalecolmap_,aii.DomainMap(),1.,false));
+  }
 }
 
 
@@ -615,7 +648,8 @@ Teuchos::RCP<LINALG::SparseMatrix>
 FSI::MonolithicOverlap::ConvertFigColmap(const LINALG::SparseMatrix& fig,
                                          const std::map<int,int>& convcolmap,
                                          const Epetra_Map& domainmap,
-                                         double scale)
+                                         double scale,
+                                         bool exactmatch)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::ConvertFigColmap");
 
@@ -637,14 +671,37 @@ FSI::MonolithicOverlap::ConvertFigColmap(const LINALG::SparseMatrix& fig,
     if (err!=0)
       dserror("ExtractMyRowView error: %d", err);
 
-    std::vector<int> structindices(NumEntries);
+    std::vector<int> structindices;
+    std::vector<double> structvalues;
+    structindices.reserve(NumEntries);
+    if (not exactmatch)
+      structvalues.reserve(NumEntries);
+
     for (int j=0; j<NumEntries; ++j)
     {
       int gid = colmap.GID(Indices[j]);
       std::map<int,int>::const_iterator iter = convcolmap.find(gid);
-      if (iter==convcolmap.end())
-        dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
-      structindices[j] = iter->second;
+      if (iter!=convcolmap.end())
+      {
+        structindices.push_back(iter->second);
+        if (not exactmatch)
+          structvalues.push_back(Values[j]);
+      }
+      else
+      {
+        // only complain if an exact match is demanded
+        if (exactmatch)
+          dserror("gid %d not found in map for lid %d at %d", gid, Indices[j], j);
+      }
+    }
+
+    // If we do not demand an exact match, some values of this row might have
+    // been skipped. Thus we redirect the value pointer and reset the number
+    // of entries on this row.
+    if (not exactmatch)
+    {
+      Values = &structvalues[0];
+      NumEntries = structvalues.size();
     }
 
     err = convfig->InsertGlobalValues(rowmap.GID(i), NumEntries, Values, &structindices[0]);
@@ -653,7 +710,8 @@ FSI::MonolithicOverlap::ConvertFigColmap(const LINALG::SparseMatrix& fig,
   }
 
   convfig->FillComplete(domainmap,rowmap);
-  convfig->Scale(scale);
+  if (scale!=1.)
+    convfig->Scale(scale);
 
   return Teuchos::rcp(new LINALG::SparseMatrix(convfig,fig.ExplicitDirichlet(),fig.SaveGraph()));
 }

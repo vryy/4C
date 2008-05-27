@@ -40,18 +40,18 @@ ADAPTER::XFluidImpl::XFluidImpl(
   conditions_to_copy.push_back("XFEMCoupling");
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "Boundary", "BELE3", conditions_to_copy);
   dsassert(boundarydis_->NumGlobalNodes() > 0, "empty discretization detected. FSICoupling condition applied?");
-  
+
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
   std::cout << "noderowmap->UniqueGIDs(): " << noderowmap.UniqueGIDs() << endl;
   std::cout << noderowmap << endl;
-  
+
   Teuchos::RCP<Epetra_Map> newnodecolmap = LINALG::AllreduceEMap(noderowmap);
   std::cout << *newnodecolmap << endl;
-  
+
   DRT::UTILS::RedistributeWithNewNodalDistribution(*boundarydis_, noderowmap, *newnodecolmap);
-  
-  
+
+
 
   UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
   UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
@@ -61,7 +61,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
   ivel_     = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   idisp_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   itrueres_ = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
-  
+
   // create interface DOF vectors using the fluid parallel distribution
   const Epetra_Map* fluidsurface_dofcolmap = boundarydis_->DofColMap();
   ivelcol_     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
@@ -144,6 +144,14 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::XFluidImpl::SystemMatrix()
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::XFluidImpl::BlockSystemMatrix()
 {
   dserror("no block matrix here");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::XFluidImpl::MeshMoveMatrix()
+{
   return Teuchos::null;
 }
 
@@ -346,7 +354,7 @@ void ADAPTER::XFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> i
 
   interface_.InsertCondVector(ivel,ivel_);
   LINALG::Export(*ivel_,*ivelcol_);
-//  
+//
 //  for (int entry = 0; entry < ivelcol_->MyLength(); ++entry)
 //  {
 //    if (entry%3 == 0)
@@ -358,9 +366,9 @@ void ADAPTER::XFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> i
 //    {
 //      (*ivelcol_)[entry] = 0.0;
 //    }
-//        
+//
 //  }
-  
+
 }
 
 
@@ -378,13 +386,13 @@ void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> idis
 {
   interface_.InsertCondVector(idisp,idisp_);
   LINALG::Export(*idisp_,*idispcol_);
-  
+
 //
 //  idispcol_->Scale(0.0);
 //  //idispcol_->PutScalar(-0.14); // ganz schlecht
 //  //idispcol_->PutScalar( 0.04); // naja
 //  idispcol_->PutScalar(-0.05); // naja
-  
+
 }
 
 

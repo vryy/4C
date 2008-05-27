@@ -367,6 +367,17 @@ void ADAPTER::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::Coupling::FillMasterToSlaveMap(std::map<int,int>& rowmap) const
+{
+  for (int i=0; i<masterdofmap_->NumMyElements(); ++i)
+  {
+    rowmap[masterdofmap_->GID(i)] = permslavedofmap_->GID(i);
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::FillSlaveToMasterMap(std::map<int,int>& rowmap) const
 {
   for (int i=0; i<slavedofmap_->NumMyElements(); ++i)

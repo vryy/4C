@@ -87,6 +87,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
     virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix();
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> MeshMoveMatrix();
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
 
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
@@ -181,7 +182,7 @@ namespace ADAPTER {
     Teuchos::RCP<Epetra_Vector>            idisp_;     ///< interface displacement
     Teuchos::RCP<Epetra_Vector>            itrueres_;  ///< interface residual
     //@}
-    
+
     //! @name state vectors using the overlapping (col vectors) parallel distribution
     Teuchos::RCP<Epetra_Vector>            ivelcol_;      ///< interface velocity
     Teuchos::RCP<Epetra_Vector>            idispcol_;     ///< interface displacement

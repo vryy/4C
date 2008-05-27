@@ -102,6 +102,9 @@ namespace ADAPTER {
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
 
+    /// linearization of Navier-Stokes with respect to mesh movement
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> MeshMoveMatrix() = 0;
+
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 

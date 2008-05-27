@@ -186,6 +186,9 @@ namespace ADAPTER
     /** \name Matrix transform */
     //@{
 
+    /// fill rowmap with master -> slave pairs
+    void FillMasterToSlaveMap(std::map<int,int>& rowmap) const;
+
     /// fill rowmap with slave -> master pairs
     void FillSlaveToMasterMap(std::map<int,int>& rowmap) const;
 

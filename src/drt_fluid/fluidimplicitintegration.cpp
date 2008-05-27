@@ -1515,13 +1515,17 @@ void FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   }
 
   // call loop over elements
-  discret_->Evaluate(eleparams,sysmat_,residual_);
+  discret_->Evaluate(eleparams,sysmat_,meshmovematrix_,residual_,Teuchos::null,Teuchos::null);
   discret_->ClearState();
 
   density_ = eleparams.get("density", 0.0);
 
   // finalize the system matrix
   sysmat_->Complete();
+  meshmovematrix_->Complete();
+  // apply Dirichlet conditions to a non-diagonal matrix
+  // (The Dirichlet rows will become all zero, no diagonal one.)
+  meshmovematrix_->ApplyDirichlet(dirichtoggle_,false);
 
   trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
 
@@ -2905,17 +2909,17 @@ void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condeleme
                                           const LINALG::MultiMapExtractor& domainmaps,
                                           const LINALG::MultiMapExtractor& rangemaps)
 {
-#if 0
-  sysmat_ =
-    Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,108,false,true));
-#else
-  //const int numdim = params_.get<int>("number of velocity degrees of freedom");
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy> > mat;
 
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy> > mat =
-    Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+  // (re)allocate system matrix
+  mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
   mat->SetCondElements(condelements);
   sysmat_ = mat;
-#endif
+
+  // allocate special mesh moving matrix
+  mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+  mat->SetCondElements(condelements);
+  meshmovematrix_ = mat;
 }
 
 

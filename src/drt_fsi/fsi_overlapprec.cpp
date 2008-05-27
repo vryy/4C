@@ -35,6 +35,7 @@ void FSI::OverlappingBlockMatrix::LowerGS(const Epetra_MultiVector &X, Epetra_Mu
 {
   const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
+  const LINALG::SparseMatrix& fluidMeshOp   = Matrix(1,2);
   const LINALG::SparseMatrix& fluidBoundOp  = Matrix(1,0);
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
   const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,0);
@@ -74,24 +75,6 @@ void FSI::OverlappingBlockMatrix::LowerGS(const Epetra_MultiVector &X, Epetra_Mu
   }
 
   {
-    // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy
-
-    //fluidInnerOp.EpetraMatrix()->Print(cout);
-
-    if (Comm().MyPID()==0)
-      std::cout << "    fluid solve: " << std::flush;
-
-    Epetra_Time tf(Comm());
-
-    fluidBoundOp.Multiply(false,*sy,*tmpfx);
-    fx->Update(-1.0,*tmpfx,1.0);
-    fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fy,fx,true);
-
-    if (Comm().MyPID()==0)
-      std::cout << tf.ElapsedTime() << std::flush;
-  }
-
-  {
     // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
 
     if (Comm().MyPID()==0)
@@ -104,7 +87,27 @@ void FSI::OverlappingBlockMatrix::LowerGS(const Epetra_MultiVector &X, Epetra_Mu
     alesolver_->Solve(aleInnerOp.EpetraMatrix(),ay,ax,true);
 
     if (Comm().MyPID()==0)
-      std::cout << ta.ElapsedTime() << "\n";
+      std::cout << ta.ElapsedTime() << std::flush;
+  }
+
+  {
+    // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy - F(Mesh) ay
+
+    //fluidInnerOp.EpetraMatrix()->Print(cout);
+
+    if (Comm().MyPID()==0)
+      std::cout << "    fluid solve: " << std::flush;
+
+    Epetra_Time tf(Comm());
+
+    fluidBoundOp.Multiply(false,*sy,*tmpfx);
+    fx->Update(-1.0,*tmpfx,1.0);
+    fluidMeshOp.Multiply(false,*ay,*tmpfx);
+    fx->Update(-1.0,*tmpfx,1.0);
+    fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fy,fx,true);
+
+    if (Comm().MyPID()==0)
+      std::cout << tf.ElapsedTime() << "\n";
   }
 
   // build solution vector

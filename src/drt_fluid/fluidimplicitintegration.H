@@ -204,6 +204,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Dispn() { return dispn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> MeshMoveMatrix() { return meshmovematrix_; }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
   Teuchos::RCP<Epetra_Vector> RobinRHS() { return robinrhs_; }
 
@@ -334,6 +335,9 @@ protected:
 
   /// (standard) system matrix
   RCP<LINALG::SparseOperator> sysmat_;
+
+  /// linearization with respect to mesh motion
+  RCP<LINALG::BlockSparseMatrixBase> meshmovematrix_;
 
   /// toggle vector indicating which dofs have Dirichlet BCs
   RCP<Epetra_Vector>    dirichtoggle_;

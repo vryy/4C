@@ -144,7 +144,8 @@ namespace FSI
     ConvertFigColmap(const LINALG::SparseMatrix& fig,
                      const std::map<int,int>& convcolmap,
                      const Epetra_Map& domainmap,
-                     double scale);
+                     double scale,
+                     bool exactmatch=true);
 
     ///
     Teuchos::RCP<LINALG::SparseMatrix>
@@ -162,9 +163,12 @@ namespace FSI
 
     std::map<int,int> alestructcolmap_;
 
+    std::map<int,int> fluidalecolmap_;
+
     bool havefluidstructcolmap_;
     bool havepermfluidstructcolmap_;
     bool havealestructcolmap_;
+    bool havefluidalecolmap_;
 
     /// keep the status tests available so we can connect them with our
     /// adaptive Newton direction

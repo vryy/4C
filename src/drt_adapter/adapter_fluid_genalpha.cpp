@@ -122,6 +122,14 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidGenAlpha::BlockSystemM
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> ADAPTER::FluidGenAlpha::MeshMoveMatrix()
+{
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ADAPTER::FluidGenAlpha::Discretization()
 {
   return fluid_.Discretization();
