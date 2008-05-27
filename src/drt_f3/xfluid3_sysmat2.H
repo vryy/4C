@@ -1483,8 +1483,8 @@ void static Sysmat2(
             
             // temporary arrays
             BlitzVec enr_funct(numparamvelx);
-            BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
-            BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
+            //BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
+            //BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
 
             BlitzVec enr_funct_stress(numparamtauxx);
             //BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
