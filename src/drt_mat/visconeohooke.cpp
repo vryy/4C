@@ -152,8 +152,15 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double theta= matdata_->m.visconeohooke->theta;
   
   // get time algorithmic parameters
-  const double dt = params.get("delta time",-1.0);
+  double dt = params.get("delta time",-1.0);
+  const double time = params.get("total time",-1.0);
+  const double gen_alphaf = params.get("alpha f",-1.0);
+  if (gen_alphaf < 0) dserror("Visco only for dynamics! Negative Alpha_f detected!");
+  //cout << "Here we are at time: " << time << " with dt= " << dt << " and alpha f= " << gen_alphaf << endl;
   
+  // this is supposed to be consistent with strugenalpha
+  if (time == dt) dt = (1.0-gen_alphaf)*dt;
+    
   // evaluate "alpha" factors which distribute stress or stiffnes between parallel springs
   // sum_0^i alpha_j = 1
   if (E_f < E_s) dserror("Wrong ratio between fast and slow Young's modulus");
