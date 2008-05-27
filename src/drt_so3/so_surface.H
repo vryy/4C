@@ -52,7 +52,7 @@ public:
   */
   explicit StructuralSurface(int id, int owner, int nnode, const int* nodeids,
                              DRT::Node** nodes, DRT::Element* parent, const int lsurface);
-             
+
   /*!
   \brief Copy Constructor
 
@@ -60,7 +60,7 @@ public:
 
   */
   explicit StructuralSurface(const StructuralSurface& old);
-             
+
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
 
@@ -81,7 +81,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual inline int UniqueParObjectId() const 
+  virtual inline int UniqueParObjectId() const
   { return ParObject_StructuralSurface;}
 
   /*!
@@ -143,7 +143,7 @@ public:
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
   */
-  virtual RCP<DRT::ElementRegister> ElementRegister() const 
+  virtual RCP<DRT::ElementRegister> ElementRegister() const
   { return rcp(new DRT::ElementRegister(Type())); }
 
 
@@ -176,6 +176,7 @@ public:
                        Epetra_SerialDenseVector& elevector2,
                        Epetra_SerialDenseVector& elevector3);
 
+
 protected:
 
   enum ActionType
@@ -189,12 +190,12 @@ protected:
     calc_struct_areaconstrstiff,
     calc_struct_monitarea
   };
-    
+
   // don't want = operator
   StructuralSurface& operator = (const StructuralSurface& old);
 
   // variables
-  
+
   //! The parent element of this surface
   DRT::Element*           parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
@@ -212,9 +213,9 @@ protected:
   \param x      (in)  : nodal coords in either material or spatial frame
   \param deriv  (in)  : derivatives of shape functions
   */
-  void SurfaceIntegration(double& detA,                      
-                          vector<double>& normal,                  
-                          const Epetra_SerialDenseMatrix& x,    
+  void SurfaceIntegration(double& detA,
+                          vector<double>& normal,
+                          const Epetra_SerialDenseMatrix& x,
                           const Epetra_SerialDenseMatrix& deriv);
 
   /*!
@@ -233,14 +234,14 @@ protected:
     }
     return;
   }
-  
+
   /*!
   \brief Create matrix with spatial configuration
 
   \param x     (out)  : nodal coords in spatial frame
   \param disp  (int)  : displacements
   */
-  inline void SpatialConfiguration(LINALG::SerialDenseMatrix& x, 
+  inline void SpatialConfiguration(LINALG::SerialDenseMatrix& x,
                                    const vector<double> disp) const
   {
     const int numnode = NumNode();
@@ -252,18 +253,18 @@ protected:
     }
     return;
   }
-  
+
   //! Submethod to compute the enclosed volume for vlume constraint boundary condition
-   double ComputeConstrVols(const LINALG::SerialDenseMatrix& xscurr);
+  double ComputeConstrVols(const LINALG::SerialDenseMatrix& xscurr);
 
-   //! Submethod to compute necessary change to stiffness matrix due to the constraints
-   void ComputeVolConstrStiff(const LINALG::SerialDenseMatrix& xscurr,
-       Epetra_SerialDenseMatrix& elematrix);
+  //! Submethod to compute necessary change to stiffness matrix due to the constraints
+  void ComputeVolConstrStiff(const LINALG::SerialDenseMatrix& xscurr,
+                             Epetra_SerialDenseMatrix& elematrix);
 
-   //! Submethod to compute first derivatives of constraint volumes w.r.t. the displacements
-   void ComputeVolConstrDeriv(const LINALG::SerialDenseMatrix& xscurr,
-       Epetra_SerialDenseVector& elevector1);
-  
+  //! Submethod to compute first derivatives of constraint volumes w.r.t. the displacements
+  void ComputeVolConstrDeriv(const LINALG::SerialDenseMatrix& xscurr,
+                             Epetra_SerialDenseVector& elevector1);
+
 }; // class StructuralSurface : public DRT::Element
 
 

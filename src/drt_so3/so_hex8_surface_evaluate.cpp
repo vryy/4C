@@ -134,7 +134,7 @@ int DRT::ELEMENTS::Soh8Surface::EvaluateNeumann(ParameterList&           params,
         //double fac = (-1.0) * gpweight * drs * curvefac;   // integration factor
         // turned around the direction of the pressure to be consistent with wedge6 and shell8
         // the area drs already is contained in unrm
-        double fac = gpweight * curvefac;   
+        double fac = gpweight * curvefac;
         // distribute over element load vector
         for (int nodid=0; nodid < 4; ++nodid) {
           for(int dim=0; dim < NUMDIM_SOH8; ++dim) {
@@ -887,7 +887,7 @@ void DRT::ELEMENTS::Soh8Surface::ComputeVolConstrStiff(const Epetra_SerialDenseM
 void DRT::ELEMENTS::Soh8Surface::ComputeVolConstrDeriv(const Epetra_SerialDenseMatrix& xc,
     Epetra_SerialDenseVector& elevector)
 {
-      
+
   //implementation based on symbolic calculation with mupad
   elevector[0] = (1.0/6.0)*xc(1,1)*xc(0,2) + (1.0/6.0)*xc(1,1)*xc(1,2) + (1.0/12.0)*xc(1,1)*xc(2,2) -
     (1.0/6.0)*xc(0,2)*xc(3,1) - (1.0/12.0)*xc(2,1)*xc(1,2) + (1.0/12.0)*xc(1,1)*xc(3,2) -

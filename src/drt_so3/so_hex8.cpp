@@ -357,7 +357,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Surfaces()
   nodes[2] = Nodes()[2];
   nodes[3] = Nodes()[1];
   surfaces_[0] =
-    rcp(new DRT::ELEMENTS::Soh8Surface(0,Owner(),4,nodeids,nodes,this,0));
+    rcp(new DRT::ELEMENTS::StructuralSurface(0,Owner(),4,nodeids,nodes,this,0));
   surfaceptrs_[0] = surfaces_[0].get();
 
   nodeids[0] = NodeIds()[0];
@@ -369,7 +369,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Surfaces()
   nodes[2] = Nodes()[5];
   nodes[3] = Nodes()[4];
   surfaces_[1] =
-    rcp(new DRT::ELEMENTS::Soh8Surface(1,Owner(),4,nodeids,nodes,this,1));
+    rcp(new DRT::ELEMENTS::StructuralSurface(1,Owner(),4,nodeids,nodes,this,1));
   surfaceptrs_[1] = surfaces_[1].get();
 
   nodeids[0] = NodeIds()[0];
@@ -381,7 +381,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Surfaces()
   nodes[2] = Nodes()[7];
   nodes[3] = Nodes()[3];
   surfaces_[2] =
-    rcp(new DRT::ELEMENTS::Soh8Surface(2,Owner(),4,nodeids,nodes,this,2));
+    rcp(new DRT::ELEMENTS::StructuralSurface(2,Owner(),4,nodeids,nodes,this,2));
   surfaceptrs_[2] = surfaces_[2].get();
 
   nodeids[0] = NodeIds()[2];
@@ -393,7 +393,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Surfaces()
   nodes[2] = Nodes()[7];
   nodes[3] = Nodes()[6];
   surfaces_[3] =
-    rcp(new DRT::ELEMENTS::Soh8Surface(3,Owner(),4,nodeids,nodes,this,3));
+    rcp(new DRT::ELEMENTS::StructuralSurface(3,Owner(),4,nodeids,nodes,this,3));
   surfaceptrs_[3] = surfaces_[3].get();
 
   nodeids[0] = NodeIds()[1];
@@ -405,7 +405,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Surfaces()
   nodes[2] = Nodes()[6];
   nodes[3] = Nodes()[5];
   surfaces_[4] =
-    rcp(new DRT::ELEMENTS::Soh8Surface(4,Owner(),4,nodeids,nodes,this,4));
+    rcp(new DRT::ELEMENTS::StructuralSurface(4,Owner(),4,nodeids,nodes,this,4));
   surfaceptrs_[4] = surfaces_[4].get();
 
   nodeids[0] = NodeIds()[4];
@@ -417,7 +417,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Surfaces()
   nodes[2] = Nodes()[6];
   nodes[3] = Nodes()[7];
   surfaces_[5] =
-    rcp(new DRT::ELEMENTS::Soh8Surface(5,Owner(),4,nodeids,nodes,this,5));
+    rcp(new DRT::ELEMENTS::StructuralSurface(5,Owner(),4,nodeids,nodes,this,5));
   surfaceptrs_[5] = surfaces_[5].get();
 
   return (DRT::Element**)(&(surfaceptrs_[0]));

@@ -27,6 +27,8 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 
+#include "so_surface.H"
+
 #include "../drt_mat/material.H"
 
 // Several parameters which are fixed for Solid Hex8
@@ -412,9 +414,9 @@ protected:
   //! vector of volumes of this element (length 1)
   vector<DRT::Element*>                            volume_;
   //! vector of surfaces of this element
-  vector<RefCountPtr<DRT::ELEMENTS::Soh8Surface> > surfaces_;
+  vector<RefCountPtr<DRT::ELEMENTS::StructuralSurface> > surfaces_;
   //! vector of surfaces of this element
-  vector<DRT::ELEMENTS::Soh8Surface*>              surfaceptrs_;
+  vector<DRT::ELEMENTS::StructuralSurface*>              surfaceptrs_;
   //! vector of lines adjacent to this element
   vector<RefCountPtr<DRT::ELEMENTS::Soh8Line> >    lines_;
   //! vector of lines adjacent to this element
@@ -438,6 +440,7 @@ protected:
   //! vector for fiber direction, needs better place in future
   vector<double>                                   fiberdirection_;
   
+
 
   // internal calculation methods
 
