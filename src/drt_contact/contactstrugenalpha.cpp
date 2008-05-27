@@ -93,6 +93,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -157,6 +158,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     // set vector values needed by elements
     discret_.ClearState();
     disi_->PutScalar(0.0);
@@ -297,6 +299,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -345,6 +348,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     // set vector values needed by elements
     discret_.ClearState();
     disi_->PutScalar(0.0);
@@ -563,6 +567,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
+      p.set("alpha f",alphaf);
       // set vector values needed by elements
       discret_.ClearState();
       // scale IncD_{n+1} to obtain mid residual displacements IncD_{n+1-alphaf}
@@ -796,6 +801,7 @@ void CONTACT::ContactStruGenAlpha::PTC()
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
+      p.set("alpha f",alphaf);
       // set vector values needed by elements
       discret_.ClearState();
       // scale IncD_{n+1} to obtain mid residual displacements IncD_{n+1-alphaf}
@@ -1052,6 +1058,7 @@ void CONTACT::ContactStruGenAlpha::UpdateandOutput()
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);

@@ -55,6 +55,7 @@ fsisurface_(NULL)
   bool damping   = params_.get<bool>  ("damping"         ,false);
   double kdamp   = params_.get<double>("damping factor K",0.0);
   double mdamp   = params_.get<double>("damping factor M",0.0);
+  double alphaf  = params_.get<double>("alpha f"         ,0.459);
   int step       = params_.get<int>   ("step"            ,0);
   bool outerr    = params_.get<bool>  ("print to err"    ,false);
   FILE* errfile  = params_.get<FILE*> ("err file"        ,NULL);
@@ -149,6 +150,7 @@ fsisurface_(NULL)
     // other parameters needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     p.set("damping factor M",mdamp);
 
     // set vector values needed by elements
@@ -179,6 +181,7 @@ fsisurface_(NULL)
     // other parameters that might be needed by the elements
     p.set("total time",time);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);
@@ -275,6 +278,7 @@ void StruGenAlpha::ConstantPredictor()
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     p.set("damping factor M",mdamp);
     // set vector values needed by elements
     discret_.ClearState();
@@ -318,6 +322,7 @@ void StruGenAlpha::ConstantPredictor()
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     // set vector values needed by elements
     discret_.ClearState();
     disi_->PutScalar(0.0);
@@ -448,6 +453,7 @@ void StruGenAlpha::ConsistentPredictor()
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     p.set("damping factor M",mdamp);
     // set vector values needed by elements
     discret_.ClearState();
@@ -488,6 +494,7 @@ void StruGenAlpha::ConsistentPredictor()
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     //p.set("time derivative degree",1);  // we want velocities
     // set vector values needed by elements
     discret_.ClearState();
@@ -523,6 +530,7 @@ void StruGenAlpha::ConsistentPredictor()
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     //p.set("time derivative degree",2);  // we want accelerations
     // set vector values needed by elements
     discret_.ClearState();
@@ -566,6 +574,7 @@ void StruGenAlpha::ConsistentPredictor()
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     // set vector values needed by elements
     discret_.ClearState();
     disi_->PutScalar(0.0);
@@ -682,6 +691,7 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     p.set("damping factor M",mdamp);
     // set vector values needed by elements
     discret_.ClearState();
@@ -718,6 +728,7 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",disi_);
@@ -906,6 +917,7 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
+      p.set("alpha f",alphaf);
 
       // set vector values needed by elements
       discret_.ClearState();
@@ -1128,6 +1140,7 @@ void StruGenAlpha::FullNewton()
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
+      p.set("alpha f",alphaf);
       // set vector values needed by elements
       discret_.ClearState();
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -1557,6 +1570,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
+      p.set("alpha f",alphaf);
       // set vector values needed by elements
       discret_.ClearState();
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -1783,6 +1797,7 @@ void StruGenAlpha::ModifiedNewton()
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
+      p.set("alpha f",alphaf);
       // set vector values needed by elements
       discret_.ClearState();
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -2320,6 +2335,7 @@ void StruGenAlpha::PTC()
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
+      p.set("alpha f",alphaf);
       // set vector values needed by elements
       discret_.ClearState();
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -2501,6 +2517,7 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
+      p.set("alpha f",alphaf);
       // set vector values needed by elements
       discret_.ClearState();
       // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
@@ -2591,6 +2608,7 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
+      p.set("alpha f",alphaf);
       // set vector values needed by elements
       discret_.ClearState();
       discret_.SetState("residual displacement",disi);
@@ -2686,6 +2704,7 @@ void StruGenAlpha::Update()
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     discret_.SetState("displacement",dis_);
     discret_.SetState("residual displacement",zeros_);
     discret_.Evaluate(p,null,null,null,null,null);
@@ -2713,6 +2732,7 @@ void StruGenAlpha::Update()
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     discret_.Evaluate(p,null,null,null,null,null);
   }
 #else
@@ -2747,6 +2767,7 @@ void StruGenAlpha::Output()
   // -------------------------------------------------------------------
   double timen         = params_.get<double>("total time"             ,0.0);
   double dt            = params_.get<double>("delta time"             ,0.01);
+  double alphaf        = params_.get<double>("alpha f"                ,0.459);
   int    istep         = params_.get<int>   ("step"                   ,0);
   int    nstep         = params_.get<int>   ("nstep"                  ,5);
   int    numiter       = params_.get<int>   ("num iterations"         ,-1);
@@ -2826,6 +2847,7 @@ void StruGenAlpha::Output()
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
@@ -3621,6 +3643,7 @@ Teuchos::RCP<Epetra_Vector> StruGenAlpha::LinearRelaxationSolve(Teuchos::RCP<Epe
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
+    p.set("alpha f",alphaf);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",disi_);
