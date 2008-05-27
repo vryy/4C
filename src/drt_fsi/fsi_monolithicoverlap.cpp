@@ -97,12 +97,10 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
                               FluidField().Interface());
 #endif
 
-  /*----------------------------------------------------------------------*/
-  // Assume linear ALE. Prepare ALE system matrix once and for all.
-
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 
+#if 0
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
   const LINALG::SparseMatrix* aii = AleField().InteriorMatrixBlock();
   const LINALG::SparseMatrix* aig = AleField().InterfaceMatrixBlock();
@@ -119,6 +117,7 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
 
   aig_ = ConvertFigColmap(*aig,alestructcolmap,StructureField().DomainMap(),1.);
   aii_ = Teuchos::rcp(new LINALG::SparseMatrix(*aii,View));
+#endif
 }
 
 
@@ -259,7 +258,7 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   // matrix W
 
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  //const FSI::Coupling& coupsa = StructureAleCoupling();
+  const ADAPTER::Coupling& coupsa = StructureAleCoupling();
 
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
 
@@ -299,6 +298,26 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   LINALG::SparseMatrix& fgi = blockf->Matrix(1,0);
   LINALG::SparseMatrix& fgg = blockf->Matrix(1,1);
 
+  /*----------------------------------------------------------------------*/
+
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+
+  if (a==Teuchos::null)
+    dserror("expect ale block matrix");
+
+  LINALG::SparseMatrix& aii = a->Matrix(0,0);
+  LINALG::SparseMatrix& aig = a->Matrix(0,1);
+
+  // map between ale interface and structure column map
+
+  if (not havealestructcolmap_)
+  {
+    DRT::Exporter ex(a->FullRowMap(),a->FullColMap(),a->Comm());
+    coupsa.FillSlaveToMasterMap(alestructcolmap_);
+    ex.Export(alestructcolmap_);
+    havealestructcolmap_ = true;
+  }
+
   double scale     = FluidField().ResidualScaling();
   double timescale = FluidField().TimeScaling();
 
@@ -314,8 +333,8 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   mat.Assign(1,0,View,*ConvertFigColmap(fig,fluidstructcolmap_,s->DomainMap(),timescale));
   mat.Assign(1,1,View,fii);
 
-  mat.Assign(2,0,View,*aig_);
-  mat.Assign(2,2,View,*aii_);
+  mat.Assign(2,0,View,*ConvertFigColmap(aig,alestructcolmap_,StructureField().DomainMap(),1.));
+  mat.Assign(2,2,View,aii);
 }
 
 
@@ -538,7 +557,7 @@ void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicOverlap::AddFluidInterface(double scale,
                                                const LINALG::SparseMatrix& fgg,
-                                               LINALG::SparseMatrix& s) const
+                                               LINALG::SparseMatrix& s)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::AddFluidInterface");
 
@@ -559,10 +578,14 @@ void FSI::MonolithicOverlap::AddFluidInterface(double scale,
     havepermfluidstructcolmap_ = true;
   }
 
+#define INTERFACE_MATRIX_UNCOMPLETE
+
+#ifdef INTERFACE_MATRIX_UNCOMPLETE
   // uncomplete because the fluid interface can have more connections than the
   // structural one. (Tet elements in fluid can cause this.) We should do
   // this just once...
   s.UnComplete();
+#endif
 
   int rows = perm_fgg->NumMyRows();
   for (int i=0; i<rows; ++i)
@@ -598,7 +621,9 @@ void FSI::MonolithicOverlap::AddFluidInterface(double scale,
     }
   }
 
+#ifdef INTERFACE_MATRIX_UNCOMPLETE
   s.Complete();
+#endif
 }
 
 
@@ -608,7 +633,7 @@ Teuchos::RCP<LINALG::SparseMatrix>
 FSI::MonolithicOverlap::ConvertFigColmap(const LINALG::SparseMatrix& fig,
                                          const std::map<int,int>& convcolmap,
                                          const Epetra_Map& domainmap,
-                                         double scale) const
+                                         double scale)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::ConvertFigColmap");
 
@@ -657,7 +682,7 @@ FSI::MonolithicOverlap::ConvertFigColmap(const LINALG::SparseMatrix& fig,
 Teuchos::RCP<LINALG::SparseMatrix>
 FSI::MonolithicOverlap::ConvertFgiRowmap(const LINALG::SparseMatrix& fgi,
                                          double scale,
-                                         const Epetra_Map& structrowmap) const
+                                         const Epetra_Map& structrowmap)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::ConvertFgiRowmap");
 

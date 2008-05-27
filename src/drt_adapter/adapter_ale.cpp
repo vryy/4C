@@ -133,34 +133,6 @@ void ADAPTER::AleLinear::BuildSystemMatrix(bool full)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const LINALG::SparseMatrix* ADAPTER::AleLinear::InteriorMatrixBlock() const
-{
-  LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* bm =
-    dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&*sysmat_);
-  if (bm!=NULL)
-  {
-    return &bm->Matrix(0,0);
-  }
-  return NULL;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-const LINALG::SparseMatrix* ADAPTER::AleLinear::InterfaceMatrixBlock() const
-{
-  LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* bm =
-    dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&*sysmat_);
-  if (bm!=NULL)
-  {
-    return &bm->Matrix(0,1);
-  }
-  return NULL;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void ADAPTER::AleLinear::PrepareTimeStep()
 {
   step_ += 1;
@@ -388,34 +360,6 @@ void ADAPTER::AleSprings::BuildSystemMatrix(bool full)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const LINALG::SparseMatrix* ADAPTER::AleSprings::InteriorMatrixBlock() const
-{
-  LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* bm =
-    dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&*sysmat_);
-  if (bm!=NULL)
-  {
-    return &bm->Matrix(0,0);
-  }
-  return NULL;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-const LINALG::SparseMatrix* ADAPTER::AleSprings::InterfaceMatrixBlock() const
-{
-  LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* bm =
-    dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>*>(&*sysmat_);
-  if (bm!=NULL)
-  {
-    return &bm->Matrix(0,1);
-  }
-  return NULL;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void ADAPTER::AleSprings::PrepareTimeStep()
 {
   step_ += 1;
@@ -438,8 +382,11 @@ void ADAPTER::AleSprings::Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp)
   {
     // Dirichlet boundaries != 0 are not supported.
 
-    dispnp_->Update(1.0,*ddisp,1.0,*dispn_,0.0);
+    incr_->Update(1.0,*ddisp,1.0,*dispn_,0.0);
   }
+
+  EvaluateElements();
+  LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,dirichtoggle_);
 }
 
 
@@ -460,6 +407,8 @@ void ADAPTER::AleSprings::Solve()
   LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,incr_,dirichtoggle_);
 
   solver_->Solve(sysmat_->EpetraOperator(),incr_,residual_,true);
+
+  incr_->Update(1.0,*dispn_,1.0);
 }
 
 
@@ -467,8 +416,8 @@ void ADAPTER::AleSprings::Solve()
  *----------------------------------------------------------------------*/
 void ADAPTER::AleSprings::Update()
 {
-  dispn_->Update(1.0,*incr_,1.0);
-  dispnp_->Update(1.0,*dispn_,0.0);
+  dispn_-> Update(1.0,*incr_,0.0);
+  dispnp_->Update(1.0,*incr_,0.0);
 }
 
 
@@ -554,10 +503,7 @@ void ADAPTER::AleSprings::ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vect
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::AleSprings::ExtractDisplacement() const
 {
-  // abuse residual vector to sum dispn_ and incr_ (that contains the solution
-  // increment.) residual_ will be reset on the next element call.
-  residual_->Update(1.0,*dispn_,1.0,*incr_,0.0);
-  return residual_;
+  return incr_;
 }
 
 

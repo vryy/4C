@@ -137,38 +137,34 @@ namespace FSI
     ///
     void AddFluidInterface(double scale,
                            const LINALG::SparseMatrix& fgg,
-                           LINALG::SparseMatrix& s) const;
+                           LINALG::SparseMatrix& s);
 
     ///
     Teuchos::RCP<LINALG::SparseMatrix>
     ConvertFigColmap(const LINALG::SparseMatrix& fig,
                      const std::map<int,int>& convcolmap,
                      const Epetra_Map& domainmap,
-                     double scale) const;
+                     double scale);
 
     ///
     Teuchos::RCP<LINALG::SparseMatrix>
     ConvertFgiRowmap(const LINALG::SparseMatrix& fgi,
                      double scale,
-                     const Epetra_Map& structrowmap) const;
-
-    //! @name linear ALE matrix
-
-    Teuchos::RCP<LINALG::SparseMatrix> aii_;
-    Teuchos::RCP<LINALG::SparseMatrix> aig_;
-
-    //@}
+                     const Epetra_Map& structrowmap);
 
     /// block system matrix
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
     /// column fluid to structure dof map
-    mutable std::map<int,int> permfluidstructcolmap_;
+    std::map<int,int> permfluidstructcolmap_;
 
-    mutable std::map<int,int> fluidstructcolmap_;
+    std::map<int,int> fluidstructcolmap_;
 
-    mutable bool havefluidstructcolmap_;
-    mutable bool havepermfluidstructcolmap_;
+    std::map<int,int> alestructcolmap_;
+
+    bool havefluidstructcolmap_;
+    bool havepermfluidstructcolmap_;
+    bool havealestructcolmap_;
 
     /// keep the status tests available so we can connect them with our
     /// adaptive Newton direction

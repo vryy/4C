@@ -129,12 +129,6 @@ public:
   /// direct access to system matrix
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const = 0;
 
-  /// Aii matrix block
-  virtual const LINALG::SparseMatrix* InteriorMatrixBlock() const = 0;
-
-  /// Aig matrix block
-  virtual const LINALG::SparseMatrix* InterfaceMatrixBlock() const = 0;
-
   /// direct access to discretization
   virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 
@@ -205,12 +199,6 @@ public:
     { return Teuchos::rcp(discret_->DofRowMap(),false); }
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
   { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
-
-  /// Aii matrix block
-  virtual const LINALG::SparseMatrix* InteriorMatrixBlock() const;
-
-  /// Aig matrix block
-  virtual const LINALG::SparseMatrix* InterfaceMatrixBlock() const;
 
   virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return discret_; }
@@ -323,12 +311,6 @@ public:
     { return Teuchos::rcp(discret_->DofRowMap(),false); }
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
   { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
-
-  /// Aii matrix block
-  virtual const LINALG::SparseMatrix* InteriorMatrixBlock() const;
-
-  /// Aig matrix block
-  virtual const LINALG::SparseMatrix* InterfaceMatrixBlock() const;
 
   virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return discret_; }
