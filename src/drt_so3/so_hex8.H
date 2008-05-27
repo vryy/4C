@@ -26,8 +26,8 @@ using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
-
 #include "so_surface.H"
+#include "so_line.H"
 
 #include "../drt_mat/material.H"
 
@@ -51,9 +51,6 @@ class Discretization;
 namespace ELEMENTS
 {
 // forward declarations
-class Soh8Volume;
-class Soh8Surface;
-class Soh8Line;
 class Soh8Register;
 
 /*!
@@ -76,8 +73,6 @@ public:
 
   //! @name Friends
   friend class Soh8Register;
-  friend class Soh8Surface;
-  friend class Soh83Line;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -418,9 +413,9 @@ protected:
   //! vector of surfaces of this element
   vector<DRT::ELEMENTS::StructuralSurface*>              surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::Soh8Line> >    lines_;
+  vector<RefCountPtr<DRT::ELEMENTS::StructuralLine> >    lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::Soh8Line*>                 lineptrs_;
+  vector<DRT::ELEMENTS::StructuralLine*>                 lineptrs_;
   //! vector of inverses of the jacobian in material frame
   vector<Epetra_SerialDenseMatrix>                 invJ_;
   //! determinant of Jacobian in material frame
@@ -439,7 +434,6 @@ protected:
   vector<double>                                   thickvec_;
   //! vector for fiber direction, needs better place in future
   vector<double>                                   fiberdirection_;
-  
 
 
   // internal calculation methods
@@ -657,6 +651,8 @@ private:
 //=======================================================================
 //=======================================================================
 
+
+#if 0
 
 /*!
 \brief An element representing a surface of a So_hex8 element
@@ -879,6 +875,7 @@ private:
       const double s);                       // (i) coord in s-direction
 }; // class Soh8Surface
 
+
 /*!
 \brief An element representing a line edge of a So_hex8 element
 
@@ -1049,6 +1046,7 @@ private:
 
 }; // class Soh8Line
 
+#endif
 
 } // namespace ELEMENTS
 } // namespace DRT

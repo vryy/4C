@@ -94,29 +94,6 @@ public:
   }
 
   /*!
-    \brief calculate interfacial area and its derivatives with respect
-    to the displacements
-    \param dxyzdrs (in): dXYZ / drs
-    \param derivatives (in): derivatives of shape functions
-    \params gpccord (in): coordinates of Gauss points
-    \params gpweight (in): Gaussian weights
-    \params ngp (in): number of Gauss points
-    \params nnode (in): number of nodes
-    \param A (out): current interfacial area
-    \param Adiff (out): first partial derivatives of interfacial area
-    \param Adiff2 (out): second partial derivatives of interfacial area
-  */
-  void SurfaceCalc(const vector<Epetra_SerialDenseMatrix>& dxyzdrs,
-                   const vector<Epetra_SerialDenseMatrix>& derivatives,
-                   const Epetra_SerialDenseMatrix& gpccord,
-                   const Epetra_SerialDenseVector& gpweight,
-                   const int ngp,
-                   const int nnode,
-                   double& A,
-                   Epetra_SerialDenseVector& Adiff,
-                   Epetra_SerialDenseMatrix& Adiff2);
-
-  /*!
     \brief Routine to calculate additional internal forces and
     stiffnesses due to interfacial phenomena
 

@@ -439,7 +439,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
   nodes[0] = Nodes()[0];
   nodes[1] = Nodes()[1];
   lines_[0] =
-    rcp(new DRT::ELEMENTS::Soh8Line(0,Owner(),2,nodeids,nodes,this,0));
+    rcp(new DRT::ELEMENTS::StructuralLine(0,Owner(),2,nodeids,nodes,this,0));
   lineptrs_[0] = lines_[0].get();
 
   nodeids[0] = NodeIds()[1];
@@ -447,7 +447,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
   nodes[0] = Nodes()[1];
   nodes[1] = Nodes()[2];
   lines_[1] =
-    rcp(new DRT::ELEMENTS::Soh8Line(1,Owner(),2,nodeids,nodes,this,1));
+    rcp(new DRT::ELEMENTS::StructuralLine(1,Owner(),2,nodeids,nodes,this,1));
   lineptrs_[1] = lines_[1].get();
 
   nodeids[0] = NodeIds()[2];
@@ -455,7 +455,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
   nodes[0] = Nodes()[2];
   nodes[1] = Nodes()[3];
   lines_[2] =
-    rcp(new DRT::ELEMENTS::Soh8Line(2,Owner(),2,nodeids,nodes,this,2));
+    rcp(new DRT::ELEMENTS::StructuralLine(2,Owner(),2,nodeids,nodes,this,2));
   lineptrs_[2] = lines_[2].get();
 
   nodeids[0] = NodeIds()[3];
@@ -463,7 +463,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
   nodes[0] = Nodes()[3];
   nodes[1] = Nodes()[0];
   lines_[3] =
-    rcp(new DRT::ELEMENTS::Soh8Line(3,Owner(),2,nodeids,nodes,this,3));
+    rcp(new DRT::ELEMENTS::StructuralLine(3,Owner(),2,nodeids,nodes,this,3));
   lineptrs_[3] = lines_[3].get();
 
   nodeids[0] = NodeIds()[0];
@@ -471,7 +471,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
   nodes[0] = Nodes()[0];
   nodes[1] = Nodes()[4];
   lines_[4] =
-    rcp(new DRT::ELEMENTS::Soh8Line(4,Owner(),2,nodeids,nodes,this,4));
+    rcp(new DRT::ELEMENTS::StructuralLine(4,Owner(),2,nodeids,nodes,this,4));
   lineptrs_[4] = lines_[4].get();
 
   nodeids[0] = NodeIds()[1];
@@ -479,7 +479,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
   nodes[0] = Nodes()[1];
   nodes[1] = Nodes()[5];
   lines_[5] =
-    rcp(new DRT::ELEMENTS::Soh8Line(5,Owner(),2,nodeids,nodes,this,5));
+    rcp(new DRT::ELEMENTS::StructuralLine(5,Owner(),2,nodeids,nodes,this,5));
   lineptrs_[5] = lines_[5].get();
 
   nodeids[0] = NodeIds()[2];
@@ -487,7 +487,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
   nodes[0] = Nodes()[2];
   nodes[1] = Nodes()[6];
   lines_[6] =
-    rcp(new DRT::ELEMENTS::Soh8Line(6,Owner(),2,nodeids,nodes,this,6));
+    rcp(new DRT::ELEMENTS::StructuralLine(6,Owner(),2,nodeids,nodes,this,6));
   lineptrs_[6] = lines_[6].get();
 
   nodeids[0] = NodeIds()[3];
@@ -495,7 +495,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
   nodes[0] = Nodes()[3];
   nodes[1] = Nodes()[7];
   lines_[7] =
-    rcp(new DRT::ELEMENTS::Soh8Line(7,Owner(),2,nodeids,nodes,this,7));
+    rcp(new DRT::ELEMENTS::StructuralLine(7,Owner(),2,nodeids,nodes,this,7));
   lineptrs_[7] = lines_[7].get();
 
   nodeids[0] = NodeIds()[4];
@@ -503,7 +503,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
   nodes[0] = Nodes()[4];
   nodes[1] = Nodes()[5];
   lines_[8] =
-    rcp(new DRT::ELEMENTS::Soh8Line(8,Owner(),2,nodeids,nodes,this,8));
+    rcp(new DRT::ELEMENTS::StructuralLine(8,Owner(),2,nodeids,nodes,this,8));
   lineptrs_[8] = lines_[8].get();
 
   nodeids[0] = NodeIds()[5];
@@ -511,7 +511,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
   nodes[0] = Nodes()[5];
   nodes[1] = Nodes()[6];
   lines_[9] =
-    rcp(new DRT::ELEMENTS::Soh8Line(9,Owner(),2,nodeids,nodes,this,9));
+    rcp(new DRT::ELEMENTS::StructuralLine(9,Owner(),2,nodeids,nodes,this,9));
   lineptrs_[9] = lines_[9].get();
 
   nodeids[0] = NodeIds()[6];
@@ -519,7 +519,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
   nodes[0] = Nodes()[6];
   nodes[1] = Nodes()[7];
   lines_[10] =
-    rcp(new DRT::ELEMENTS::Soh8Line(10,Owner(),2,nodeids,nodes,this,10));
+    rcp(new DRT::ELEMENTS::StructuralLine(10,Owner(),2,nodeids,nodes,this,10));
   lineptrs_[10] = lines_[10].get();
 
   nodeids[0] = NodeIds()[7];
@@ -527,7 +527,7 @@ DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
   nodes[0] = Nodes()[7];
   nodes[1] = Nodes()[4];
   lines_[11] =
-    rcp(new DRT::ELEMENTS::Soh8Line(11,Owner(),2,nodeids,nodes,this,11));
+    rcp(new DRT::ELEMENTS::StructuralLine(11,Owner(),2,nodeids,nodes,this,11));
   lineptrs_[11] = lines_[11].get();
   return (DRT::Element**)(&(lineptrs_[0]));
 }
