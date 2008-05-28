@@ -60,8 +60,8 @@ void TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
   switch (timealgo)
   {
   case timeint_stationary: /* One step Theta time integration */
-        hist->Scale(0.0);
-        break;
+    hist->Scale(0.0);
+    break;
       
   case timeint_one_step_theta: /* One step Theta time integration */
     hist->Update(1.0, *veln, dta*(1.0-theta), *accn, 0.0);
