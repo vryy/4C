@@ -484,7 +484,6 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::RelaxationSolve(Teuchos::RCP<Ep
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::XFluidImpl::CreateFieldTest()
 {
-    dserror("not implemented!");
   return Teuchos::rcp(new XFluidResultTest(fluid_));
 }
 
