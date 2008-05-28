@@ -65,7 +65,7 @@ namespace UTILS
   DRT::ParObject* Factory(const vector<char>& data);
 
   /*!
-  \brief Create an instance of a finie element depending on the type of element
+  \brief Create an instance of a finite element depending on the type of element
 
   A DRT::Element derived class is allocated and returned. The type of element
   allocated depends on the input parameter eletype.
@@ -214,6 +214,79 @@ namespace UTILS
       return;
   }
 
+  /*!
+   * create new instances of surface / line elements
+   *
+   * template version
+   *
+   * this templated function creates all surface / line elements for a given element
+   * and fills handed over vectors with RCPs and raw pointers of these boundary elements
+   * This method is a very powerful helper function for implementing the necessary 
+   * Surfaces() and Lines() methods for every element class (especially in 3D) using
+   * the BACI conventions for element connectivity
+   * 
+   * \param buildsurfs      (in) flag, whether surfaces or lines have to be created
+   * \param boundaryeles    (in) vector to be filled with RCPs of allocated boundary elements
+   * \param boundaryeleptrs (in) vector to be filled with raw pointers of the boundary elements
+   * \param ele             (in) pointer on the parent element
+   *
+   * \author gjb
+   * \date 05/08
+   */
+  template <class BoundaryEle, class ParentEle>
+  void ElementBoundaryFactory(
+      bool buildsurfs,
+      vector<RefCountPtr<BoundaryEle> >& boundaryeles,
+      vector<BoundaryEle*>& boundaryelesptrs,
+      ParentEle* ele
+      )
+  {
+    // do we have to build surface or line elements?
+    // get node connectivity for specific distype of parent element
+    unsigned int nele=0;
+    const DRT::Element::DiscretizationType distype = ele->Shape();
+    vector< vector<int> > connectivity;
+    if (buildsurfs)
+    {
+      nele = ele->NumSurface();
+      connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+    }
+    else
+    {
+      nele = ele->NumLine();
+      connectivity = DRT::UTILS::getEleNodeNumberingLines(distype);
+    }
+    // resize vectors that will contain surface or line element information
+    boundaryeles.resize(nele);
+    boundaryelesptrs.resize(nele);
+
+    // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
+    if (nele != connectivity.size()) dserror("number of surfaces or lines does not match!");
+
+    // now, build the new surface/line elements
+    for (unsigned int iele = 0; iele < nele; iele++)
+    {
+      // allocate node vectors
+      unsigned int nnode = connectivity[iele].size(); // this number changes for pyramids or wedges
+      vector<int> nodeids(nnode);
+      vector<DRT::Node*> nodes(nnode);
+
+      // get connectivity infos
+      for (unsigned int inode=0;inode<nnode;inode++)
+      {
+        nodeids[inode] = ele->NodeIds()[connectivity[iele][inode]];
+        nodes[inode]   = ele->Nodes()[connectivity[iele][inode]];
+      }
+
+      // allocate a new boundary element
+      boundaryeles[iele] = rcp(new BoundaryEle(iele,ele->Owner(),nodeids.size(),&nodeids[0],&nodes[0],ele,iele));
+
+      // store also a raw pointer of the new boundary element
+      boundaryelesptrs[iele] = boundaryeles[iele].get();
+    }
+
+    return;
+  }
 
 } // namespace UTILS
 } // namespace DRT
