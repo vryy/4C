@@ -433,4 +433,86 @@ double FSI::PartialNormUpdate::computeNorm(const Epetra_Vector& v)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::MinIters::MinIters(int minIterations, const NOX::Utils* u)
+  : miniters(minIterations),
+    niters(0),
+    status(NOX::StatusTest::Unevaluated)
+{
+  if (u != NULL)
+    utils = *u;
+
+  if (miniters < 1)
+  {
+    utils.err() << "NOX::StatusTest::MinIters - must choose a number greater than zero" << endl;
+    throw "NOX Error";
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::MinIters::~MinIters()
+{
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+NOX::StatusTest::StatusType FSI::MinIters::
+checkStatus(const NOX::Solver::Generic& problem,
+	    NOX::StatusTest::CheckType checkType)
+{
+  switch (checkType)
+  {
+  case NOX::StatusTest::Complete:
+  case NOX::StatusTest::Minimal:
+    niters = problem.getNumIterations();
+    status = (niters < miniters) ? NOX::StatusTest::Unconverged : NOX::StatusTest::Converged;
+    break;
+
+  case NOX::StatusTest::None:
+  default:
+    niters = -1;
+    status = NOX::StatusTest::Unevaluated;
+    break;
+  }
+
+  return status;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+NOX::StatusTest::StatusType FSI::MinIters::getStatus() const
+{
+  return status;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+ostream& FSI::MinIters::print(ostream& stream, int indent) const
+{
+ return stream;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int FSI::MinIters::getMinIters() const
+{
+  return miniters;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int FSI::MinIters::getNumIters() const
+{
+  return niters;
+}
+
+
 #endif

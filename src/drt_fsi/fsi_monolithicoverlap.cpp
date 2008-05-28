@@ -323,6 +323,7 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   mat.Assign(2,2,View,aii);
 
   /*----------------------------------------------------------------------*/
+  // add optional fluid linearization with respect to mesh motion block
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
   if (mmm!=Teuchos::null)
@@ -335,15 +336,6 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
       coupfa.FillMasterToSlaveMap(fluidalecolmap_);
       ex.Export(fluidalecolmap_);
       havefluidalecolmap_ = true;
-
-#if 0
-      for (map<int,int>::iterator i=fluidalecolmap_.begin();
-           i!=fluidalecolmap_.end();
-           ++i)
-      {
-        std::cout << i->first << " - " << i->second << "\n";
-      }
-#endif
     }
 
     // We cannot copy the pressure value. It is not used anyway. So no exact
@@ -447,6 +439,9 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
   combo->addStatusTest(maxiters);
+
+  // require one solve
+  converged->addStatusTest(Teuchos::rcp(new MinIters(1)));
 
   // setup tests for structural displacements
 

@@ -21,6 +21,7 @@ Maintainer: Ulrich Kuettler
 #include <NOX_StatusTest_Generic.H>
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Abstract_Group.H>
+#include <NOX_Utils.H>
 
 #include <Epetra_Map.h>
 #include <Epetra_Import.h>
@@ -281,6 +282,50 @@ namespace FSI
   private:
     const LINALG::MultiMapExtractor extractor_;
     int blocknum_;
+  };
+
+
+  /// require some iterations at least
+  class MinIters : public NOX::StatusTest::Generic {
+  public:
+
+    //! Constructor. Specify the minimum number of nonlinear solver iterations, \f$k_{\min}\f$ ands optinally an error stream for printing errors.
+    MinIters(int minIterations, const NOX::Utils* u = NULL);
+
+    //! Destructor.
+    virtual ~MinIters();
+
+    virtual NOX::StatusTest::StatusType
+    checkStatus(const NOX::Solver::Generic& problem,
+                NOX::StatusTest::CheckType checkType);
+
+    virtual NOX::StatusTest::StatusType getStatus() const;
+
+    virtual ostream& print(ostream& stream, int indent = 0) const;
+
+    //! Returns the Minimum number of iterations set in the constructor.
+    virtual int getMinIters() const;
+
+    /*!
+      \brief Returns the current number of iterations taken by the solver.
+
+      Returns -1 if the status of this test is NOX::StatusTest::Unevaluated.
+    */
+    virtual int getNumIters() const;
+
+  private:
+
+    //! Minimum number of iterations
+    int miniters;
+
+    //! Current number of iterations (if known)
+    int niters;
+
+    //! %Status
+    NOX::StatusTest::StatusType status;
+
+    //! Ostream used to print errors
+    NOX::Utils utils;
   };
 
 }
