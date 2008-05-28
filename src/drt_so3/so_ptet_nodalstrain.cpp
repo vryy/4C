@@ -419,6 +419,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
   glstrain(4) = cauchygreen(1,2);
   glstrain(5) = cauchygreen(2,0);
 
+#if 1
   // material law and stresses
   if (matequal) // element patch has single material
   {
@@ -449,6 +450,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
     stress.Scale(1.0/VnodeL);
     cmat.Scale(1.0/VnodeL);
   }
+#endif  
 
 #if 1 // stabilization on deviatoric stresses only
   {
@@ -457,14 +459,15 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
     Idev(0,0) =  2.0;  Idev(0,1) = -1.0;  Idev(0,2) = -1.0;
     Idev(1,0) = -1.0;  Idev(1,1) =  2.0;  Idev(1,2) = -1.0;
     Idev(2,0) = -1.0;  Idev(2,1) = -1.0;  Idev(2,2) =  2.0;
-    Idev(3,3) = 1.0;
-    Idev(4,4) = 1.0;
-    Idev(5,5) = 1.0;
+    Idev(3,3) = 3.0;
+    Idev(4,4) = 3.0;
+    Idev(5,5) = 3.0;
     Idev.Scale(third);
 
     // do not weight the pressure part of the stress
     Epetra_SerialDenseVector stressdev(NUMSTR_PTET);
     Idev.Multiply(false,stress,stressdev);
+
     const double* sdev = stressdev.Values();
     double*       s    = stress.Values();
     for (int i=0; i<NUMSTR_PTET; ++i) 
@@ -484,7 +487,8 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
 #else // stab. on all stresses (Puso-style)
     stress.Scale(1.0-ALPHA_PTET);
     cmat.Scale(1.0-ALPHA_PTET);
-#endif    
+#endif
+
   
   //----------------------------------------------------- internal forces
   force.Multiply('T','N',VnodeL,bop,stress,0.0);

@@ -437,15 +437,15 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
   }
 
   //------------------------------------------------- call material law
-#if 1
+#if 1 // stabilization on deviatoric stresses only
   const double third = 1./3.;
   Epetra_SerialDenseMatrix Idev(NUMSTR_PTET,NUMSTR_PTET);
   Idev(0,0) =  2.0;  Idev(0,1) = -1.0;  Idev(0,2) = -1.0;
   Idev(1,0) = -1.0;  Idev(1,1) =  2.0;  Idev(1,2) = -1.0;
   Idev(2,0) = -1.0;  Idev(2,1) = -1.0;  Idev(2,2) =  2.0;
-  Idev(3,3) = 1.0;
-  Idev(4,4) = 1.0;
-  Idev(5,5) = 1.0;
+  Idev(3,3) = 3.0;
+  Idev(4,4) = 3.0;
+  Idev(5,5) = 3.0;
   Idev.Scale(third);
   
   // keep only deviatoric part of strains
@@ -468,7 +468,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
   tmp.Multiply('N','N',1.0,cmat,Idev,0.0);
   cmat.Multiply('N','N',1.0,Idev,tmp,0.0);
 
-#else
+#else // stab. on all stresses (Puso-style)
   Epetra_SerialDenseMatrix cmat(NUMSTR_PTET,NUMSTR_PTET);
   Epetra_SerialDenseVector stress(NUMSTR_PTET);
   double density = -999.99;
