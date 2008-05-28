@@ -315,24 +315,6 @@ public:
 
   bool IsAle() const { return is_ale_; }
 
-  template <DRT::Element::DiscretizationType  DISTYPE>
-  bool isHigherOrderElement() const
-  {
-    bool hoel = true;
-    switch (DISTYPE)
-    {
-    case hex8: case hex20: case hex27: case tet10: case wedge15:
-      hoel = true;
-      break;
-    case tet4: case wedge6: case pyramid5:
-      hoel = false;
-      break;
-    default:
-      dserror("DISTYPE unknown!");
-    }
-    return hoel;
-  }
-  
   //@}
 
 

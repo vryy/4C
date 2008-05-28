@@ -277,34 +277,27 @@ void XFEM::ComputeEnrichedElementShapefunction(
     dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
 
-void XFEM::computeScalarCellNodeValues(
+void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
   const XFEM::ElementDofManager& dofman,
   const XFEM::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const blitz::Array<double,1>& elementvalues,
-  blitz::Array<double,1>&      cellvalues
+  const BlitzVec& elementvalues,
+  BlitzVec&      cellvalues
   )
 {
-  const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
-  const int numparam  = dofman.NumDofPerField(field);
-
-  const blitz::Array<double,2>* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+  const BlitzMat* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
-  const blitz::TinyVector<double,3> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
-  // cell corner nodes
-  //const blitz::Array<double,2> cellnodeposvectors = cell.NodalPosXYZ(ele);
-  blitz::Array<double,1> enr_funct(numparam);
-  //blitz::Array<double,1> funct(DRT::UTILS::getNumberOfElementNodes(ele.Shape()));
-  static blitz::Array<double,1> funct(27);
   cellvalues = 0.0;
-  for (int inen = 0; inen < nen_cell; ++inen)
+  for (int inen = 0; inen < cell.NumNode(); ++inen)
   {
+    BlitzVec funct(ele.NumNode());
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
       (*nodalPosXiDomain)(0,inen),
@@ -312,11 +305,56 @@ void XFEM::computeScalarCellNodeValues(
       (*nodalPosXiDomain)(2,inen),
       ele.Shape());
 
+    const int numparam  = dofman.NumDofPerField(field);
+    BlitzVec enr_funct(numparam);
     XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
     {
       cellvalues(inen) += elementvalues(iparam) * enr_funct(iparam);
+    }
+  }
+  return;
+}
+
+
+void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
+  const DRT::Element&  ele,
+  const RCP<XFEM::InterfaceHandle>&  ih,
+  const XFEM::ElementDofManager& dofman,
+  const XFEM::DomainIntCell& cell,
+  const XFEM::PHYSICS::Field field,
+  const BlitzVec& elementvalues,
+  BlitzVec&      cellvalues
+  )
+{
+  const BlitzMat* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+
+  // if cell node is on the interface, the value is not defined for a jump.
+  // however, we approach the interface from one particular side and therefore,
+  // -> we use the center of the cell to determine, where we come from
+  const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+
+  for (int incn = 0; incn < cell.NumNode(); ++incn)
+  {
+    BlitzVec funct(ele.NumNode());
+    // fill shape functions
+    DRT::UTILS::shape_function_3D(funct,
+      (*nodalPosXiDomain)(0,incn),
+      (*nodalPosXiDomain)(1,incn),
+      (*nodalPosXiDomain)(2,incn),
+      ele.Shape());
+
+    const int numparam  = dofman.NumDofPerField(field);
+    if (numparam == 0)
+      continue;
+    BlitzVec enr_funct(numparam);
+    XFEM::ComputeEnrichedElementShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
+    // interpolate value
+    cellvalues(incn) = 0.0;
+    for (int iparam = 0; iparam < numparam; ++iparam)
+    {
+      cellvalues(incn) += elementvalues(iparam) * enr_funct(iparam);
     }
   }
   return;

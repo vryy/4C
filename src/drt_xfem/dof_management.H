@@ -190,6 +190,9 @@ private:
     //! unknowns for each virtual node id (lid)
     std::map<int, const set<XFEM::FieldEnr> > elementnodalDofSet_;
     
+    //! number of parameter/virtual nodes per enriched field
+    std::map<XFEM::PHYSICS::Field, int > numVirtualNodesPerEnrichedField_; //TODO: this is needed if different interpolation for stress and pressure is used
+    
     //! number of unknowns for each global node id (gid)
     std::map<int, int> nodalNumDof_;
     

@@ -21,12 +21,14 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_timecurve.H"
 #include <Epetra_SerialDenseSolver.h>
+#include "../drt_xfem/coordinate_transformation.H"
 
 
 namespace XFEM
 {
 
-
+using namespace XFEM::PHYSICS;
+  
 /*! get number of unknowns for this field
  * use the dofmanager in the general case,
  * otherwise use a given number numnode
@@ -50,7 +52,7 @@ int getNumParam<XFEM::standard_assembly>(
 
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
-void fillElementUnknownsArrays(
+void fillElementUnknownsArrays2(
         const XFEM::ElementDofManager& dofman,
         const vector<double>& locval,
         const vector<double>& locval_hist,
@@ -124,6 +126,76 @@ void fillElementUnknownsArrays(
         for (int iparam=0; iparam<numparamdiscpres; ++iparam)   ediscprenp(iparam) = locval[discpresdof[iparam]];
     }
 }
+
+template <DRT::Element::DiscretizationType DISTYPE,
+          XFEM::AssemblyType ASSTYPE>
+void fillElementUnknownsArrays3(
+        const XFEM::ElementDofManager& dofman,
+        const vector<double>& locval,
+        const vector<double>& locval_hist,
+        BlitzMat& evelnp,
+        BlitzMat& evelnp_hist,
+        BlitzVec& eprenp,
+        BlitzMat& etau
+        )
+{
+    
+    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    
+    // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
+    const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
+    const int numparamvely = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Vely, numnode);
+    const int numparamvelz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velz, numnode);
+    const int numparampres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Pres, numnode);
+    // put one here to create arrays of size 1, since they are not needed anyway
+    // in the xfem assembly, the numparam is determined by the dofmanager
+    const int numparamtauxx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 1);
+    
+    const vector<int>& velxdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Velx));
+    const vector<int>& velydof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Vely));
+    const vector<int>& velzdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Velz));
+    const vector<int>& presdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Pres));
+    
+    for (int iparam=0; iparam<numparamvelx; ++iparam)
+    {
+        evelnp(     0,iparam) = locval[     velxdof[iparam]];
+        evelnp_hist(0,iparam) = locval_hist[velxdof[iparam]];
+    }
+    for (int iparam=0; iparam<numparamvely; ++iparam)
+    {
+        evelnp(     1,iparam) = locval[     velydof[iparam]];
+        evelnp_hist(1,iparam) = locval_hist[velydof[iparam]];
+    }
+    for (int iparam=0; iparam<numparamvelz; ++iparam)
+    {
+        evelnp(     2,iparam) = locval[     velzdof[iparam]];
+        evelnp_hist(2,iparam) = locval_hist[velzdof[iparam]];
+    }
+    for (int iparam=0; iparam<numparampres; ++iparam)
+        eprenp(iparam) = locval[presdof[iparam]];
+    const bool tauele_unknowns_present = (getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 0) > 0);
+    if (tauele_unknowns_present)
+    {
+        const int numparamtauyy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 1);
+        const int numparamtauzz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 1);
+        const int numparamtauxy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 1);
+        const int numparamtauxz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 1);
+        const int numparamtauyz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 1);
+        const vector<int>& tauxxdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxx));
+        const vector<int>& tauyydof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauyy));
+        const vector<int>& tauzzdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauzz));
+        const vector<int>& tauxydof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxy));
+        const vector<int>& tauxzdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxz));
+        const vector<int>& tauyzdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauyz));
+        for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = locval[tauxxdof[iparam]];
+        for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = locval[tauyydof[iparam]];
+        for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = locval[tauzzdof[iparam]];
+        for (int iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = locval[tauxydof[iparam]];
+        for (int iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = locval[tauxzdof[iparam]];
+        for (int iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = locval[tauyzdof[iparam]];
+    }
+}
+
 
 /*!
  * \brief calculate the body force from the nodes condition
@@ -588,8 +660,8 @@ inline DRT::UTILS::GaussRule3D getXFEMGaussrule(const bool intersected)
             // attention: don't use gausspoint rules that have gausspoints on the element boundary 
             // (so called closed rules)
             // -> enrichment values might be undefined 
-            rule = DRT::UTILS::intrule_tet_11point;
-            //rule = DRT::UTILS::intrule_tet_24point;
+            //rule = DRT::UTILS::intrule_tet_11point;
+            rule = DRT::UTILS::intrule_tet_24point;
         }
     }
     return rule;
@@ -639,6 +711,160 @@ void Inverse3x3(const M1& xjm_, const double det, M2& inverse)
     inverse(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
     inverse(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
     return;
+}
+
+
+template <DRT::Element::DiscretizationType  DISTYPE>
+bool isHigherOrderElement()
+{
+  bool hoel = true;
+  switch (DISTYPE)
+  {
+  case DRT::Element::hex8:
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+  case DRT::Element::tet10:
+  case DRT::Element::wedge15:
+    hoel = true;
+    break;
+  case DRT::Element::tet4:
+  case DRT::Element::wedge6:
+  case DRT::Element::pyramid5:
+    hoel = false;
+    break;
+  default:
+    dserror("DISTYPE unknown!");
+  }
+  return hoel;
+}
+
+
+/*!
+  Calculate matrix and rhs for stationary problem formulation
+  */
+template <DRT::Element::DiscretizationType DISTYPE,
+          XFEM::AssemblyType ASSTYPE>
+double AreaRatio(
+        const DRT::Element*               ele,           ///< the element those matrix is calculated
+        const RCP<XFEM::InterfaceHandle>  ih             ///< connection to the interface handler
+        )
+{
+    
+    // number of nodes for element
+    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    
+    // dimension for 3d fluid element
+    const int nsd = 3;
+    
+    // get node coordinates of the current element
+    static blitz::TinyMatrix<double,nsd,numnode> xyze;
+    DRT::UTILS::fillPositionArray<DISTYPE>(ele, xyze);
+    
+    const DRT::UTILS::GaussRule3D gaussrule = getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
+    
+  
+    //double 
+    double area_ele  = 0.0;
+    double area_fict = 0.0;
+    
+    // information about domain integration cells
+    const XFEM::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele->Id(),DISTYPE));
+    // loop over integration cells
+    for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+    {
+
+        // gaussian points
+        const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+        // integration loop
+        for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+        {
+            // coordinates of the current integration point in cell coordinates \eta
+            static XFEM::PosEtaDomain pos_eta_domain;
+            pos_eta_domain(0) = intpoints.qxg[iquad][0];
+            pos_eta_domain(1) = intpoints.qxg[iquad][1];
+            pos_eta_domain(2) = intpoints.qxg[iquad][2];
+
+            // coordinates of the current integration point in element coordinates \xi
+            static XFEM::PosXiDomain posXiDomain;
+            XFEM::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
+            const double detcell = XFEM::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
+            
+            // shape functions and their first derivatives
+            static BlitzVec funct(numnode);
+            static BlitzMat deriv(3, numnode, blitz::ColumnMajorArray<2>());
+            DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+            DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+      
+            // position of the gausspoint in physical coordinates
+            static BlitzVec3 gauss_pos_xyz;
+            LINALG::DENSE::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
+      
+            // get transposed of the jacobian matrix d x / d \xi
+            //BlitzMat xjm(3,3);
+            //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
+            static BlitzMat3x3 xjm;
+            LINALG::DENSE::MMt_product<3,3,numnode>(deriv,xyze,xjm);
+
+            const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                               xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                               xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                               xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                               xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                               xjm(0,1)*xjm(1,0)*xjm(2,2);
+            const double fac = intpoints.qwgt[iquad]*det*detcell;
+
+            if (det < 0.0)
+            {
+                dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+            }
+
+            // inverse of jacobian
+            static BlitzMat xji(3,3);
+            Inverse3x3(xjm, det, xji);
+
+            // compute global derivates
+            BlitzMat derxy(3, numnode);
+            //BlitzMat derxy_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype),blitz::ColumnMajorArray<2>());
+            //BlitzMat derxy_discpres(3, DRT::UTILS::getNumberOfElementNodes(discpresdistype),blitz::ColumnMajorArray<2>());
+            //derxy          = blitz::sum(xji(i,k)*deriv(k,j),k);
+            for (int isd = 0; isd < nsd; ++isd)
+            {
+              for (int inode = 0; inode < numnode; ++inode)
+              {
+                derxy(isd,inode) = 0.0;
+                for (int jsd = 0; jsd < nsd; ++jsd)
+                {
+                   derxy(isd,inode) += xji(isd,jsd)*deriv(jsd,inode);
+                }
+              }
+            }
+            
+            area_ele += fac;
+            
+            const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
+                        
+            map<int,bool> posInCondition;
+            PositionWithinCondition(cellcenter, *ih, posInCondition);
+            bool in_solid = false;
+            for (map<int,bool>::const_iterator p = posInCondition.begin(); p != posInCondition.end(); ++p)
+            {
+              if (p->second == true)
+              {
+                in_solid = true;
+                break;
+              }
+            }
+            
+            if (in_solid)
+            {
+              area_fict += fac;
+            }
+            
+        } // end loop over gauss points
+    } // end loop over integration cells
+
+    return pow(area_fict,3) / (area_ele);
 }
 
 } // namespace XFEM

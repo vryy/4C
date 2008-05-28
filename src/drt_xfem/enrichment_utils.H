@@ -114,14 +114,24 @@ void ComputeEnrichedElementShapefunction(
         );
 
 
-void computeScalarCellNodeValues(
+void computeScalarCellNodeValuesFromNodalUnknowns(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
   const XFEM::ElementDofManager& dofman,
   const XFEM::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const blitz::Array<double,1>& elementvalues,
-  blitz::Array<double,1>&     cellvalues
+  const BlitzVec& elementvalues,
+  BlitzVec&     cellvalues
+  );
+
+void computeScalarCellNodeValuesFromElementUnknowns(
+  const DRT::Element&  ele,
+  const RCP<XFEM::InterfaceHandle>&  ih,
+  const XFEM::ElementDofManager& dofman,
+  const XFEM::DomainIntCell& cell,
+  const XFEM::PHYSICS::Field field,
+  const BlitzVec& elementvalues,
+  BlitzVec&     cellvalues
   );
 
 void computeVectorCellNodeValues(
@@ -130,8 +140,8 @@ void computeVectorCellNodeValues(
   const XFEM::ElementDofManager& dofman,
   const XFEM::DomainIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const blitz::Array<double,2>& elementvalues,
-  blitz::Array<double,2>&     cellvalues
+  const BlitzMat& elementvalues,
+  BlitzMat&     cellvalues
   );
 
 void computeVectorCellNodeValues(
@@ -140,8 +150,8 @@ void computeVectorCellNodeValues(
   const XFEM::ElementDofManager& dofman,
   const XFEM::BoundaryIntCell& cell,
   const XFEM::PHYSICS::Field field,
-  const blitz::Array<double,2>& elementvalues,
-  blitz::Array<double,2>&     cellvalues
+  const BlitzMat& elementvalues,
+  BlitzMat&     cellvalues
   );
 
 }
