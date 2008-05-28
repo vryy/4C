@@ -176,7 +176,7 @@ double detEtaBToXiB(
         const XFEM::PosEtaBoundary&  pos_eta)
 {   
     // get node coordinates
-    const BlitzMat* xyze_cell(cell.NodalPosXiBoundaryBlitz());
+    const BlitzMat* xiBe_cell(cell.NodalPosXiBoundaryBlitz());
 
     const int numnode = DRT::UTILS::getNumberOfElementNodes(cell.Shape());
 
@@ -193,7 +193,7 @@ double detEtaBToXiB(
             xjm(i,j) = 0.0;
             for (int k = 0; k < numnode; ++k)
             {
-                xjm(i,j) += deriv(i, k)*(*xyze_cell)(j, k);
+                xjm(i,j) += deriv(i, k)*(*xiBe_cell)(j, k);
             }
         }
     }
