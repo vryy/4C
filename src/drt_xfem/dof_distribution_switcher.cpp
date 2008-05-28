@@ -53,6 +53,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
     }
     else
     {
+        bool completely_unchanged = true;
         const RCP<Epetra_Vector> oldVector = vector;
         const Epetra_BlockMap& oldmap = oldVector->Map();
 //        std::cout << "olddofrowmap_" << endl;
@@ -82,6 +83,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
             {
                 //cout << newdofkey.toString() << " -> init to zero" << endl;
                 (*newVector)[newdofrowmap_.LID(newdofpos)] = 0.0;
+                completely_unchanged = false;
             }
         }
 
@@ -124,6 +126,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
                     
                     // add old value to already existing values
                     (*newVector)[newdofrowmap_.LID(newdofpos)] += enrval*(*oldVector)[olddofpos];
+                    completely_unchanged = false;
                 }
                 else // if not alternative is found
                 {
@@ -158,9 +161,14 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
             {
                 //cout << "init to zero" << endl;
                 (*newVector)[newdofrowmap_.LID(newdofpos)] = 0.0;
+                completely_unchanged = false;
             }
         }
         //exit(1);
+        if (completely_unchanged)
+          cout << "completely unchanged vector" << endl;
+        else
+          cout << "modified vector" << endl;
     }
     
     
