@@ -68,7 +68,7 @@ static void fill_tau3(const int numparamtau, const M1&  shp_tau, const M2& etau,
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 void static Sysmat3(
-        const DRT::ELEMENTS::XFluid3*     ele,           ///< the element those matrix is calculated
+        const DRT::Element*               ele,           ///< the element those matrix is calculated
         const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
         const std::vector<double>&        locval,        ///< nodal unknowns at n+1, i
@@ -120,9 +120,12 @@ void static Sysmat3(
     const blitz::Range _  = blitz::Range::all();
     
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
+    const DRT::Element::DiscretizationType discpresdistype = XFLUID::DiscPressureInterpolation3D<DISTYPE>::distype;
     
     // figure out whether we have stress unknowns at all
     const bool tauele_unknowns_present = (getNumParam<ASSTYPE>(dofman, Tauxx, 0) > 0);
+    const bool discpres_unknowns_present = (getNumParam<ASSTYPE>(dofman, DiscPres, 0) > 0);
+    if (tauele_unknowns_present != discpres_unknowns_present) dserror("you need disc. pressure unknowns, if you use stress unknowns");
     //cout << "discpres_unknowns_present: " << discpres_unknowns_present << endl;
 //    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
 //    const bool pressure_unknowns_present = (getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
@@ -145,15 +148,24 @@ void static Sysmat3(
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
     const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Tauxx, 1);
+    const int numparamdiscpres = getNumParam<ASSTYPE>(dofman, DiscPres, 1);
 
+    
+    double area_ratio = 1.0;
+    //const double area_ratio = XFEM::AreaRatio<DISTYPE, ASSTYPE>(ele,ih);
+    if (instationary)
+      area_ratio = 0.00000001;
+    //const double area_ratio = 0.00000001;
+    //cout << "area_ratio = " << area_ratio << endl;
     
     // split velocity and pressure (and stress)
     BlitzVec eprenp(numparampres);
+    BlitzVec ediscprenp(numparamdiscpres);
     BlitzMat evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
     BlitzMat evelnp_hist(3,numparamvelx,blitz::ColumnMajorArray<2>());
     BlitzMat etau(6,numparamtauxx,blitz::ColumnMajorArray<2>());
     
-    XFEM::fillElementUnknownsArrays3<DISTYPE,ASSTYPE>(dofman, locval, locval_hist, evelnp, evelnp_hist, eprenp, etau);
+    XFEM::fillElementUnknownsArrays2<DISTYPE,ASSTYPE>(dofman, locval, locval_hist, evelnp, evelnp_hist, eprenp, etau, ediscprenp);
     
     // stabilization parameter
     const double hk = XFLUID::HK<DISTYPE>(evelnp,visc,xyze);
@@ -204,6 +216,22 @@ void static Sysmat3(
                 deriv_stress = 0.0;
               }
             }
+            // discontinouos pressure shape functions
+            static BlitzVec funct_discpres(DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement);
+            static BlitzMat deriv_discpres(3, DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
+            if (ASSTYPE == XFEM::xfem_assembly)
+            {
+              if (discpres_unknowns_present)
+              {
+                DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
+                DRT::UTILS::shape_function_3D_deriv1(deriv_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
+              }
+              else
+              {
+                funct_discpres = 0.0;
+                deriv_discpres = 0.0;
+              }
+            }
 
             // position of the gausspoint in physical coordinates
             static BlitzVec3 gauss_pos_xyz;
@@ -235,7 +263,7 @@ void static Sysmat3(
             // compute global derivates
             BlitzMat derxy(3, numnode);
             //BlitzMat derxy_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype),blitz::ColumnMajorArray<2>());
-            //BlitzMat derxy_discpres(3, DRT::UTILS::getNumberOfElementNodes(discpresdistype),blitz::ColumnMajorArray<2>());
+            BlitzMat derxy_discpres(3, DRT::UTILS::getNumberOfElementNodes(discpresdistype),blitz::ColumnMajorArray<2>());
             //derxy          = blitz::sum(xji(i,k)*deriv(k,j),k);
             for (int isd = 0; isd < nsd; ++isd)
             {
@@ -245,6 +273,17 @@ void static Sysmat3(
                 for (int jsd = 0; jsd < nsd; ++jsd)
                 {
                    derxy(isd,inode) += xji(isd,jsd)*deriv(jsd,inode);
+                }
+              }
+            }
+            for (int isd = 0; isd < nsd; ++isd)
+            {
+              for (int inode = 0; inode < DRT::UTILS::getNumberOfElementNodes(discpresdistype); ++inode)
+              {
+                derxy_discpres(isd,inode) = 0.0;
+                for (int jsd = 0; jsd < nsd; ++jsd)
+                {
+                  derxy_discpres(isd,inode) += xji(isd,jsd)*deriv_discpres(jsd,inode);
                 }
               }
             }
@@ -262,6 +301,10 @@ void static Sysmat3(
                 derxy2 = 0.;
             }
 
+//            ShapeFunction3D<DISTYPE,ASSTYPE,2> enr_shp;
+//            ShapeFunction3D<DISTYPE,ASSTYPE,0> enr_shp_stress;
+//            ShapeFunction3D<DISTYPE,ASSTYPE,0> enr_shp_discpres;
+            
             // temporary arrays
             BlitzVec enr_funct(numparamvelx);
             BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
@@ -269,6 +312,9 @@ void static Sysmat3(
 
             BlitzVec enr_funct_stress(numparamtauxx);
             //BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
+            
+            BlitzVec enr_funct_discpres(numparamdiscpres);
+            BlitzMat enr_derxy_discpres(3,numparamdiscpres,blitz::ColumnMajorArray<2>());
             
             if (ASSTYPE == XFEM::xfem_assembly)
             {
@@ -304,6 +350,26 @@ void static Sysmat3(
                 {
                   enr_funct_stress = 0.0;
                 }
+                
+                if (discpres_unknowns_present)
+                {
+                    // shape functions for element dofs
+                    XFEM::ComputeEnrichedElementShapefunction(
+                            *ele,
+                            ih,
+                            dofman,
+                            DiscPres,
+                            gauss_pos_xyz,
+                            XFEM::Enrichment::approachUnknown,
+                            funct_discpres,
+                            derxy_discpres,
+                            enr_funct_discpres,
+                            enr_derxy_discpres);
+                }
+                else
+                {
+                  enr_funct_discpres = 0.0;
+                }
             }
             else
             {
@@ -313,6 +379,9 @@ void static Sysmat3(
           
                 enr_funct_stress.reference(funct_stress);
                 //enr_derxy_stress.reference(derxy_stress);
+                
+                enr_funct_discpres.reference(funct_discpres);
+                enr_derxy_discpres.reference(derxy_discpres);
             }
       
             // create views on the shape function arrays for easy handling in the assembly process
@@ -328,6 +397,11 @@ void static Sysmat3(
             //const BlitzVec shp_tau_dx(enr_derxy_stress(0,_));
             //const BlitzVec shp_tau_dy(enr_derxy_stress(1,_));
             //const BlitzVec shp_tau_dz(enr_derxy_stress(2,_));
+            
+            const BlitzVec shp_discpres(enr_funct_discpres);
+            const BlitzVec shp_discpres_dx(enr_derxy_discpres(0,_));
+            const BlitzVec shp_discpres_dy(enr_derxy_discpres(1,_));
+            const BlitzVec shp_discpres_dz(enr_derxy_discpres(2,_));
       
             // get velocities (n+g,i) at integration point
             static BlitzVec3 velint;
@@ -396,17 +470,33 @@ void static Sysmat3(
                     gradp(isd) += enr_derxy(isd,iparam)*eprenp(iparam);
             }
     
+            // get discont. pressure gradients
+            static BlitzVec3 graddiscp;
+            //gradp = blitz::sum(enr_derxy(i,j)*eprenp(j),j);
+            for (int isd = 0; isd < nsd; ++isd)
+            {
+                graddiscp(isd) = 0.0;
+                for (int iparam = 0; iparam < numparamdiscpres; ++iparam)
+                    graddiscp(isd) += enr_derxy_discpres(isd,iparam)*ediscprenp(iparam);
+            }
+            
             // get pressure
             //const double pres(blitz::sum(enr_funct*eprenp));
             double pres = 0.0;
             for (int iparam = 0; iparam < numparampres; ++iparam)
               pres += shp(iparam)*eprenp(iparam);
+            
+            // get discontinous pressure
+            //const double discpres(blitz::sum(shp_discpres*ediscprenp));
+            double discpres = 0.0;
+            for (int iparam = 0; iparam < numparamdiscpres; ++iparam)
+              discpres += shp_discpres(iparam)*ediscprenp(iparam);
     
             // get viscous stress unknowns
             static BlitzMat3x3 tau;
             if (tauele_unknowns_present)
             {
-                fill_tau3(numparamtauxx, shp_tau, etau, tau);
+                fill_tau(numparamtauxx, shp_tau, etau, tau);
             }
             else
             {
@@ -576,7 +666,7 @@ void static Sysmat3(
             static BlitzVec3 bodyforce;
             bodyforce = 0.0;
             for (int isd = 0; isd < nsd; ++isd)
-                rhsint(isd) = histvec(isd) + bodyforce(isd)*timefac;
+                rhsint(isd) = histvec(isd); //+ bodyforce(isd)*timefac;
 
             /*----------------- get numerical representation of single operators ---*/
 
@@ -780,26 +870,26 @@ void static Sysmat3(
             const double trace_gamma = (vderxy(0, 0) + vderxy(1, 1) + vderxy(2, 2));
             assembler.template Vector<Pres>(shp, -timefacfac*trace_gamma);
             
-//            // Hellinger-Reissner terms
-//            if (tauele_unknowns_present)
-//            {
-//                dsassert(tauele_unknowns_present, "there should be disc pressure");
-//                /* Divergenzfreiheit*/
-//                /*
-//                               /                 \
-//                              |                   |
-//                              | q^e , tr(gamma^e) |
-//                              |                   |
-//                               \                 /
-//                */
-//                const double factor = 1.0*visc;
-//                assembler.template Matrix<DiscPres,Tauxx>(shp_discpres, factor*timefacfac, shp_tau);
-//                assembler.template Matrix<DiscPres,Tauyy>(shp_discpres, factor*timefacfac, shp_tau);
-//                assembler.template Matrix<DiscPres,Tauzz>(shp_discpres, factor*timefacfac, shp_tau);
-//                
-//                const double trace_tau = (tau(0, 0) + tau(1, 1) + tau(2, 2));
-//                assembler.template Vector<DiscPres>(shp_discpres, -factor*timefacfac*trace_tau);
-//            }
+            // Hellinger-Reissner terms
+            if (tauele_unknowns_present)
+            {
+                dsassert(tauele_unknowns_present, "there should be disc pressure");
+                /* Divergenzfreiheit*/
+                /*
+                               /                 \
+                              |                   |
+                              | q^e , tr(gamma^e) |
+                              |                   |
+                               \                 /
+                */
+                const double factor = 1.0/visc*area_ratio;
+                assembler.template Matrix<DiscPres,Tauxx>(shp_discpres, factor*timefacfac, shp_tau);
+                assembler.template Matrix<DiscPres,Tauyy>(shp_discpres, factor*timefacfac, shp_tau);
+                assembler.template Matrix<DiscPres,Tauzz>(shp_discpres, factor*timefacfac, shp_tau);
+                
+                const double trace_tau = (tau(0, 0) + tau(1, 1) + tau(2, 2));
+                assembler.template Vector<DiscPres>(shp_discpres, -factor*timefacfac*trace_tau);
+            }
             
             
             // source term of the right hand side
@@ -811,7 +901,7 @@ void static Sysmat3(
             // Hellinger-Reissner terms
             if (tauele_unknowns_present)
             {
-                //const double reciproke_visc = 1.0 / visc;
+                const double reciproke_visc = 1.0 / visc;
                 /* viscous stress-viscous stress coupling, quadratic part */
                 /*
                                /                    \
@@ -820,7 +910,7 @@ void static Sysmat3(
                               |                      |
                                \                    /
                 */
-                const double factor = 1.0;//reciproke_visc;
+                const double factor = 1.0*reciproke_visc*area_ratio;
                 assembler.template Matrix<Tauxx,Tauxx>(shp_tau, -factor*timefacfac, shp_tau);
                 assembler.template Matrix<Tauxy,Tauxy>(shp_tau, -factor*timefacfac, shp_tau);
                 assembler.template Matrix<Tauxz,Tauxz>(shp_tau, -factor*timefacfac, shp_tau);
@@ -849,7 +939,7 @@ void static Sysmat3(
                               |                    |
                                \                  /
                 */
-                const double rect_factor = visc;
+                const double rect_factor = 1.0*area_ratio;
                 assembler.template Matrix<Tauxx,Velx>(shp_tau, 2.0*timefacfac*0.5*rect_factor, shp_dx);
                 assembler.template Matrix<Tauxy,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dy);
                 assembler.template Matrix<Tauxy,Vely>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
@@ -882,39 +972,39 @@ void static Sysmat3(
                 assembler.template Vector<Tauzy>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(1, 2));
                 assembler.template Vector<Tauzz>(shp_tau, -2.0*timefacfac*0.5*rect_factor*vderxy(2, 2));
                 
-//                /* pressure-pressure coupling, quadratic part */
-//                /*
-//                               /                  \
-//                              |                    |
-//                            - | virt tau^e , p^e I |
-//                              |                    |
-//                               \                  /
-//                */
-//                const double taue_pe_fac = 1.0;//reciproke_visc;
-//                assembler.template Matrix<Tauxx,DiscPres>(shp_tau, -taue_pe_fac*timefacfac, shp_discpres);
-//                assembler.template Matrix<Tauyy,DiscPres>(shp_tau, -taue_pe_fac*timefacfac, shp_discpres);
-//                assembler.template Matrix<Tauzz,DiscPres>(shp_tau, -taue_pe_fac*timefacfac, shp_discpres);
-//                
-//                assembler.template Vector<Tauxx>(shp_tau, taue_pe_fac*timefacfac*discpres);
-//                assembler.template Vector<Tauyy>(shp_tau, taue_pe_fac*timefacfac*discpres);
-//                assembler.template Vector<Tauzz>(shp_tau, taue_pe_fac*timefacfac*discpres);
-//
-//                /* pressure-pressure coupling, rectangular part */
-//                /*
-//                               /                \
-//                              |                  |
-//                              | virt tau^e , p I |
-//                              |                  |
-//                               \                /
-//                */
-//                const double taue_p_fac = 1.0;//reciproke_visc;
-//                assembler.template Matrix<Tauxx,Pres>(shp_tau, taue_p_fac*timefacfac, shp);
-//                assembler.template Matrix<Tauyy,Pres>(shp_tau, taue_p_fac*timefacfac, shp);
-//                assembler.template Matrix<Tauzz,Pres>(shp_tau, taue_p_fac*timefacfac, shp);
-//                
-//                assembler.template Vector<Tauxx>(shp_tau, -taue_p_fac*timefacfac*pres);
-//                assembler.template Vector<Tauyy>(shp_tau, -taue_p_fac*timefacfac*pres);
-//                assembler.template Vector<Tauzz>(shp_tau, -taue_p_fac*timefacfac*pres);
+                /* pressure-pressure coupling, quadratic part */
+                /*
+                               /                  \
+                              |                    |
+                            - | virt tau^e , p^e I |
+                              |                    |
+                               \                  /
+                */
+                const double taue_pe_fac = 1.0*reciproke_visc*area_ratio;
+                assembler.template Matrix<Tauxx,DiscPres>(shp_tau, -taue_pe_fac*timefacfac, shp_discpres);
+                assembler.template Matrix<Tauyy,DiscPres>(shp_tau, -taue_pe_fac*timefacfac, shp_discpres);
+                assembler.template Matrix<Tauzz,DiscPres>(shp_tau, -taue_pe_fac*timefacfac, shp_discpres);
+                
+                assembler.template Vector<Tauxx>(shp_tau, taue_pe_fac*timefacfac*discpres);
+                assembler.template Vector<Tauyy>(shp_tau, taue_pe_fac*timefacfac*discpres);
+                assembler.template Vector<Tauzz>(shp_tau, taue_pe_fac*timefacfac*discpres);
+
+                /* pressure-pressure coupling, rectangular part */
+                /*
+                               /                \
+                              |                  |
+                              | virt tau^e , p I |
+                              |                  |
+                               \                /
+                */
+                const double taue_p_fac = 1.0*reciproke_visc*area_ratio;
+                assembler.template Matrix<Tauxx,Pres>(shp_tau, taue_p_fac*timefacfac, shp);
+                assembler.template Matrix<Tauyy,Pres>(shp_tau, taue_p_fac*timefacfac, shp);
+                assembler.template Matrix<Tauzz,Pres>(shp_tau, taue_p_fac*timefacfac, shp);
+                
+                assembler.template Vector<Tauxx>(shp_tau, -taue_p_fac*timefacfac*pres);
+                assembler.template Vector<Tauyy>(shp_tau, -taue_p_fac*timefacfac*pres);
+                assembler.template Vector<Tauzz>(shp_tau, -taue_p_fac*timefacfac*pres);
                 
             }
             
@@ -1008,6 +1098,45 @@ void static Sysmat3(
                 assembler.template Vector<Pres>(shp_dx, -timetauMp*res_old(0));
                 assembler.template Vector<Pres>(shp_dy, -timetauMp*res_old(1));
                 assembler.template Vector<Pres>(shp_dz, -timetauMp*res_old(2));
+                
+//                if (tauele_unknowns_present)
+//                {
+//                  /* pressure stabilisation: pressure( L_pres_p) */
+//                  /*
+//                            /                      \
+//                           |                        |
+//                           |  nabla q^e , nabla Dp  |
+//                           |                        |
+//                            \                      /
+//                  */
+//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dx, ttimetauMp/10.0, shp_dx);
+//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dy, ttimetauMp/10.0, shp_dy);
+//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dz, ttimetauMp/10.0, shp_dz);
+//                  
+//                  // pressure stabilization
+//                  assembler.template Vector<DiscPres>(shp_discpres_dx, -timetauMp/10.0*gradp(0));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dy, -timetauMp/10.0*gradp(1));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dz, -timetauMp/10.0*gradp(2));
+//                  
+//                  /* pressure stabilisation: pressure( L_pres_p) */
+//                  /*
+//                            /                        \
+//                           |                          |
+//                         - |  nabla q^e , nabla Dp^e  |
+//                           |                          |
+//                            \                        /
+//                  */
+//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dx, ttimetauMp/10.0, shp_discpres_dx);
+//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dy, ttimetauMp/10.0, shp_discpres_dy);
+//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dz, ttimetauMp/10.0, shp_discpres_dz);
+//                  
+//                  // pressure stabilization
+//                  assembler.template Vector<DiscPres>(shp_discpres_dx, -timetauMp/10.0*graddiscp(0));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dy, -timetauMp/10.0*graddiscp(1));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dz, -timetauMp/10.0*graddiscp(2));
+//                }
+                
+                
             }
             
             //----------------------------------------------------------------------
@@ -1361,9 +1490,9 @@ void static Sysmat3(
             DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
 
             // discontinouos pressure shape functions
-            //static BlitzVec funct_discpres(DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement);
+            static BlitzVec funct_discpres(DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement);
             //const BlitzMat deriv_discpres(3, DRT::UTILS::getNumberOfElementNodes(discpresdistype),blitz::ColumnMajorArray<2>());
-            //DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
+            DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
             //DRT::UTILS::shape_function_3D_deriv1(deriv_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
             
             // position of the gausspoint in physical coordinates
@@ -1423,13 +1552,13 @@ void static Sysmat3(
             
             // temporary arrays
             BlitzVec enr_funct(numparamvelx);
-            BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
-            BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
+            //BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
+            //BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
 
             BlitzVec enr_funct_stress(numparamtauxx);
             //BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
             
-            //BlitzVec enr_funct_discpres(numparamdiscpres);
+            BlitzVec enr_funct_discpres(numparamdiscpres);
             //BlitzMat enr_derxy_discpres(3,numparamdiscpres,blitz::ColumnMajorArray<2>());
             
             // shape function for nodal dofs
@@ -1468,16 +1597,16 @@ void static Sysmat3(
                     XFEM::Enrichment::approachFromPlus,
                     funct_stress,
                     enr_funct_stress);
-//            // shape functions for element pressure dofs
-//            XFEM::ComputeEnrichedElementShapefunction(
-//                    *ele,
-//                    ih,
-//                    dofman,
-//                    DiscPres,
-//                    gauss_pos_xyz,
-//                    XFEM::Enrichment::approachFromPlus,
-//                    funct_discpres,
-//                    enr_funct_discpres);
+            // shape functions for element pressure dofs
+            XFEM::ComputeEnrichedElementShapefunction(
+                    *ele,
+                    ih,
+                    dofman,
+                    DiscPres,
+                    gauss_pos_xyz,
+                    XFEM::Enrichment::approachFromPlus,
+                    funct_discpres,
+                    enr_funct_discpres);
                 
             // perform integration for entire matrix and rhs
             // create vievs on the shape function arrays for easy handling in the assembly process
@@ -1486,7 +1615,7 @@ void static Sysmat3(
 //            const BlitzVec shp_dy(enr_derxy(1,_));
 //            const BlitzVec shp_dz(enr_derxy(2,_));
             const BlitzVec shp_tau(enr_funct_stress);
-            //const BlitzVec shp_discpres(enr_funct_discpres);
+            const BlitzVec shp_discpres(enr_funct_discpres);
             
             // get normal vector (in x coordinates) to surface element at integration point
             static BlitzVec3 normalvec;
@@ -1516,10 +1645,10 @@ void static Sysmat3(
             }
             
             // get discontinous pressure
-            //const double discpres(blitz::sum(shp_discpres*ediscprenp));
+            const double discpres(blitz::sum(shp_discpres*ediscprenp));
             
             // get pressure
-            const double pres(blitz::sum(shp*eprenp));
+            //const double press(blitz::sum(shp*eprenp));
 
             // get viscous stress unknowns
             static BlitzMat3x3 tau;
@@ -1584,13 +1713,13 @@ void static Sysmat3(
                            \                   /
             */
             const double pe_u_factor = 1.0;
-            assembler.template Matrix<Pres,Velx>(shp, pe_u_factor*timefacfac*normalvec(0), shp);
-            assembler.template Matrix<Pres,Vely>(shp, pe_u_factor*timefacfac*normalvec(1), shp);
-            assembler.template Matrix<Pres,Velz>(shp, pe_u_factor*timefacfac*normalvec(2), shp);
+            assembler.template Matrix<DiscPres,Velx>(shp_discpres, pe_u_factor*timefacfac*normalvec(0), shp);
+            assembler.template Matrix<DiscPres,Vely>(shp_discpres, pe_u_factor*timefacfac*normalvec(1), shp);
+            assembler.template Matrix<DiscPres,Velz>(shp_discpres, pe_u_factor*timefacfac*normalvec(2), shp);
                 
-            assembler.template Vector<Pres>(shp, -pe_u_factor*timefacfac*normalvec(0)*velint(0));
-            assembler.template Vector<Pres>(shp, -pe_u_factor*timefacfac*normalvec(1)*velint(1));
-            assembler.template Vector<Pres>(shp, -pe_u_factor*timefacfac*normalvec(2)*velint(2)); 
+            assembler.template Vector<DiscPres>(shp_discpres, -pe_u_factor*timefacfac*normalvec(0)*velint(0));
+            assembler.template Vector<DiscPres>(shp_discpres, -pe_u_factor*timefacfac*normalvec(1)*velint(1));
+            assembler.template Vector<DiscPres>(shp_discpres, -pe_u_factor*timefacfac*normalvec(2)*velint(2)); 
             
             /*
                            /                         \
@@ -1599,9 +1728,9 @@ void static Sysmat3(
                           |                           |
                            \                         /
             */
-            assembler.template Vector<Pres>(shp, pe_u_factor*timefacfac*normalvec(0)*interface_velint(0));
-            assembler.template Vector<Pres>(shp, pe_u_factor*timefacfac*normalvec(1)*interface_velint(1));
-            assembler.template Vector<Pres>(shp, pe_u_factor*timefacfac*normalvec(2)*interface_velint(2));
+            assembler.template Vector<DiscPres>(shp_discpres, pe_u_factor*timefacfac*normalvec(0)*interface_velint(0));
+            assembler.template Vector<DiscPres>(shp_discpres, pe_u_factor*timefacfac*normalvec(1)*interface_velint(1));
+            assembler.template Vector<DiscPres>(shp_discpres, pe_u_factor*timefacfac*normalvec(2)*interface_velint(2));
             
             // symmetric part from partial integration of stress term
             /*
@@ -1635,13 +1764,13 @@ void static Sysmat3(
                           |           |
                            \         /
             */
-            assembler.template Matrix<Velx,Pres>(shp, timefacfac*normalvec(0), shp);
-            assembler.template Matrix<Vely,Pres>(shp, timefacfac*normalvec(1), shp);
-            assembler.template Matrix<Velz,Pres>(shp, timefacfac*normalvec(2), shp);
+            assembler.template Matrix<Velx,DiscPres>(shp, timefacfac*normalvec(0), shp_discpres);
+            assembler.template Matrix<Vely,DiscPres>(shp, timefacfac*normalvec(1), shp_discpres);
+            assembler.template Matrix<Velz,DiscPres>(shp, timefacfac*normalvec(2), shp_discpres);
             
-            assembler.template Vector<Velx>(shp, -timefacfac*normalvec(0)*pres);
-            assembler.template Vector<Vely>(shp, -timefacfac*normalvec(1)*pres);
-            assembler.template Vector<Velz>(shp, -timefacfac*normalvec(2)*pres);
+            assembler.template Vector<Velx>(shp, -timefacfac*normalvec(0)*discpres);
+            assembler.template Vector<Vely>(shp, -timefacfac*normalvec(1)*discpres);
+            assembler.template Vector<Velz>(shp, -timefacfac*normalvec(2)*discpres);
             
             
             // here the interface force is integrated
@@ -1649,9 +1778,9 @@ void static Sysmat3(
             // hence, we can't use the local assembler here
             for (int inode = 0; inode < numnode_boundary; ++inode)
             {
-              force_boundary(0,inode) += funct_boundary(inode) * (- pres*normalvec(0) + disctau_times_n(0));
-              force_boundary(1,inode) += funct_boundary(inode) * (- pres*normalvec(1) + disctau_times_n(1));
-              force_boundary(2,inode) += funct_boundary(inode) * (- pres*normalvec(2) + disctau_times_n(2));
+              force_boundary(0,inode) += funct_boundary(inode) * (- discpres*normalvec(0) + disctau_times_n(0));
+              force_boundary(1,inode) += funct_boundary(inode) * (- discpres*normalvec(1) + disctau_times_n(1));
+              force_boundary(2,inode) += funct_boundary(inode) * (- discpres*normalvec(2) + disctau_times_n(2));
             }
             
             

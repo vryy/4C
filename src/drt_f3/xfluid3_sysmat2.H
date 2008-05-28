@@ -151,8 +151,11 @@ void static Sysmat2(
     const int numparamdiscpres = getNumParam<ASSTYPE>(dofman, DiscPres, 1);
 
     
+    double area_ratio = 1.0;
     //const double area_ratio = XFEM::AreaRatio<DISTYPE, ASSTYPE>(ele,ih);
-    const double area_ratio = 0.00000001;
+    if (instationary)
+      area_ratio = 0.00000001;
+    //const double area_ratio = 0.00000001;
     //cout << "area_ratio = " << area_ratio << endl;
     
     // split velocity and pressure (and stress)
