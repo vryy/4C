@@ -142,7 +142,7 @@ Input/w1q9_dyn_rot_drt.dat                              x        -        -     
 Input/contact_patch_linstatic.dat                       x        x        -        -        -        -
 Input/contact1.dat                                      x        x        -        -        -        -
 Input/contact1_lin.dat                                  x        x        -        -        -        -
-Input/xf3_drivencavity_stat_drt.dat                     -        -        -        -        -        -
+Input/xf3_drivencavity_stat_drt.dat                     x        -        -        -        -        -
 Input/xf3_beltrami_tet4_drt.dat                         -        -        -        -        -        -
 Input/xf3_ew_Q1_27x_drt.dat                             -        -        -        -        -        -
 Input/xf3_hit_the_corner.dat                            -        -        -        -        -        -
