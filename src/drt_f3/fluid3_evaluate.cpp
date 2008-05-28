@@ -619,6 +619,10 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                                       blitz::shape(elemat1.M(),elemat1.N()),
                                       blitz::neverDeleteData,
                                       blitz::ColumnMajorArray<2>());
+        blitz::Array<double, 2> emesh(elemat2.A(),
+                                      blitz::shape(elemat2.M(),elemat2.N()),
+                                      blitz::neverDeleteData,
+                                      blitz::ColumnMajorArray<2>());
         blitz::Array<double, 1> eforce(elevec1.Values(),
                                        blitz::shape(elevec1.Length()),
                                        blitz::neverDeleteData);
@@ -636,6 +640,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                        edispnp,
                        egridv,
                        estif,
+                       emesh,
                        eforce,
                        actmat,
                        time,

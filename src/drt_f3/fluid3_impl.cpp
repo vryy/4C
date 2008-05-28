@@ -18,7 +18,7 @@ Maintainer: Ulrich Kuettler
 
 #include "fluid3_impl.H"
 
-#include "../drt_mat/newtonianfluid.H" 
+#include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -134,7 +134,9 @@ DRT::ELEMENTS::Fluid3Impl::Fluid3Impl(int iel)
     visc_old_(3),
     res_old_(3),
     conv_resM_(iel_),
-    xder2_(6,3,blitz::ColumnMajorArray<2>())
+    xder2_(6,3,blitz::ColumnMajorArray<2>()),
+    vderiv_(3,3,blitz::ColumnMajorArray<2>()),
+    derxjm_(3,3,3,iel_,blitz::ColumnMajorArray<4>())
 {
 }
 
@@ -153,6 +155,7 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
   const blitz::Array<double,2>&           edispnp,
   const blitz::Array<double,2>&           egridv,
   blitz::Array<double,2>&                 estif,
+  blitz::Array<double,2>&                 emesh,
   blitz::Array<double,1>&                 eforce,
   struct _MATERIAL*                       material,
   double                                  time,
@@ -1506,6 +1509,198 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
         }
       }
     }
+
+    // linearization with respect to mesh motion
+    if (emesh.shape()[0]==estif.shape()[0] and
+        emesh.shape()[1]==estif.shape()[1])
+    {
+
+      // xGderiv_ = sum(gridx(k,i) * deriv_(j,k), k);
+      // xGderiv_ == xjm_
+
+      // mass + rhs
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        double v = fac*funct_(vi);
+        for (int ui=0; ui<numnode; ++ui)
+        {
+          emesh(vi*4    , ui*4    ) += v*(velint_(0)-rhsint_(0))*derxy_(0, ui);
+          emesh(vi*4    , ui*4 + 1) += v*(velint_(0)-rhsint_(0))*derxy_(1, ui);
+          emesh(vi*4    , ui*4 + 2) += v*(velint_(0)-rhsint_(0))*derxy_(2, ui);
+
+          emesh(vi*4 + 1, ui*4    ) += v*(velint_(1)-rhsint_(1))*derxy_(0, ui);
+          emesh(vi*4 + 1, ui*4 + 1) += v*(velint_(1)-rhsint_(1))*derxy_(1, ui);
+          emesh(vi*4 + 1, ui*4 + 2) += v*(velint_(1)-rhsint_(1))*derxy_(2, ui);
+
+          emesh(vi*4 + 2, ui*4    ) += v*(velint_(2)-rhsint_(2))*derxy_(0, ui);
+          emesh(vi*4 + 2, ui*4 + 1) += v*(velint_(2)-rhsint_(2))*derxy_(1, ui);
+          emesh(vi*4 + 2, ui*4 + 2) += v*(velint_(2)-rhsint_(2))*derxy_(2, ui);
+        }
+      }
+
+      vderiv_  = sum(evelnp(i,k) * deriv_(j,k), k);
+
+      for (int ui=0; ui<numnode; ++ui)
+      {
+        derxjm_(0,0,0,ui) = 0.;
+        derxjm_(0,0,1,ui) = deriv_(2, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(2, 2);
+        derxjm_(0,0,2,ui) = deriv_(1, ui)*xjm_(2, 1) - deriv_(2, ui)*xjm_(1, 1);
+
+        derxjm_(1,0,0,ui) = deriv_(1, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(1, 2);
+        derxjm_(1,0,1,ui) = 0.;
+        derxjm_(1,0,2,ui) = deriv_(2, ui)*xjm_(1, 0) - deriv_(1, ui)*xjm_(2, 0);
+
+        derxjm_(2,0,0,ui) = deriv_(2, ui)*xjm_(1, 1) - deriv_(1, ui)*xjm_(2, 1);
+        derxjm_(2,0,1,ui) = deriv_(1, ui)*xjm_(2, 0) - deriv_(2, ui)*xjm_(1, 0);
+        derxjm_(2,0,2,ui) = 0.;
+
+        derxjm_(0,1,0,ui) = 0.;
+        derxjm_(0,1,1,ui) = deriv_(0, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(0, 2);
+        derxjm_(0,1,2,ui) = deriv_(2, ui)*xjm_(0, 1) - deriv_(0, ui)*xjm_(2, 1);
+
+        derxjm_(1,1,0,ui) = deriv_(2, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(2, 2);
+        derxjm_(1,1,1,ui) = 0.;
+        derxjm_(1,1,2,ui) = deriv_(0, ui)*xjm_(2, 0) - deriv_(2, ui)*xjm_(0, 0);
+
+        derxjm_(2,1,0,ui) = deriv_(0, ui)*xjm_(2, 1) - deriv_(2, ui)*xjm_(0, 1);
+        derxjm_(2,1,1,ui) = deriv_(2, ui)*xjm_(0, 0) - deriv_(0, ui)*xjm_(2, 0);
+        derxjm_(2,1,2,ui) = 0.;
+
+        derxjm_(0,2,0,ui) = 0.;
+        derxjm_(0,2,1,ui) = deriv_(1, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(1, 2);
+        derxjm_(0,2,2,ui) = deriv_(0, ui)*xjm_(1, 1) - deriv_(1, ui)*xjm_(0, 1);
+
+        derxjm_(1,2,0,ui) = deriv_(0, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(0, 2);
+        derxjm_(1,2,1,ui) = 0.;
+        derxjm_(1,2,2,ui) = deriv_(1, ui)*xjm_(0, 0) - deriv_(0, ui)*xjm_(1, 0);
+
+        derxjm_(2,2,0,ui) = deriv_(1, ui)*xjm_(0, 1) - deriv_(0, ui)*xjm_(1, 1);
+        derxjm_(2,2,1,ui) = deriv_(0, ui)*xjm_(1, 0) - deriv_(1, ui)*xjm_(0, 0);
+        derxjm_(2,2,2,ui) = 0.;
+      }
+
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        double v = timefacfac/det*funct_(vi);
+        for (int ui=0; ui<numnode; ++ui)
+        {
+
+          emesh(vi*4 + 0, ui*4 + 0) += v*(
+            + convvelint_(1)*(vderiv_(0, 0)*derxjm_(0,0,1,ui) + vderiv_(0, 1)*derxjm_(0,1,1,ui) + vderiv_(0, 2)*derxjm_(0,2,1,ui))
+            + convvelint_(2)*(vderiv_(0, 0)*derxjm_(0,0,2,ui) + vderiv_(0, 1)*derxjm_(0,1,2,ui) + vderiv_(0, 2)*derxjm_(0,2,2,ui))
+            );
+
+          emesh(vi*4 + 0, ui*4 + 1) += v*(
+            + convvelint_(0)*(vderiv_(0, 0)*derxjm_(1,0,0,ui) + vderiv_(0, 1)*derxjm_(1,1,0,ui) + vderiv_(0, 2)*derxjm_(1,2,0,ui))
+            + convvelint_(2)*(vderiv_(0, 0)*derxjm_(1,0,2,ui) + vderiv_(0, 1)*derxjm_(1,1,2,ui) + vderiv_(0, 2)*derxjm_(1,2,2,ui))
+            );
+
+          emesh(vi*4 + 0, ui*4 + 2) += v*(
+            + convvelint_(0)*(vderiv_(0, 0)*derxjm_(2,0,0,ui) + vderiv_(0, 1)*derxjm_(2,1,0,ui) + vderiv_(0, 2)*derxjm_(2,2,0,ui))
+            + convvelint_(1)*(vderiv_(0, 0)*derxjm_(2,0,1,ui) + vderiv_(0, 1)*derxjm_(2,1,1,ui) + vderiv_(0, 2)*derxjm_(2,2,1,ui))
+            );
+
+          ////
+
+          emesh(vi*4 + 1, ui*4 + 0) += v*(
+            + convvelint_(1)*(vderiv_(1, 0)*derxjm_(0,0,1,ui) + vderiv_(1, 1)*derxjm_(0,1,1,ui) + vderiv_(1, 2)*derxjm_(0,2,1,ui))
+            + convvelint_(2)*(vderiv_(1, 0)*derxjm_(0,0,2,ui) + vderiv_(1, 1)*derxjm_(0,1,2,ui) + vderiv_(1, 2)*derxjm_(0,2,2,ui))
+            );
+
+          emesh(vi*4 + 1, ui*4 + 1) += v*(
+            + convvelint_(0)*(vderiv_(1, 0)*derxjm_(1,0,0,ui) + vderiv_(1, 1)*derxjm_(1,1,0,ui) + vderiv_(1, 2)*derxjm_(1,2,0,ui))
+            + convvelint_(2)*(vderiv_(1, 0)*derxjm_(1,0,2,ui) + vderiv_(1, 1)*derxjm_(1,1,2,ui) + vderiv_(1, 2)*derxjm_(1,2,2,ui))
+            );
+
+          emesh(vi*4 + 1, ui*4 + 2) += v*(
+            + convvelint_(0)*(vderiv_(1, 0)*derxjm_(2,0,0,ui) + vderiv_(1, 1)*derxjm_(2,1,0,ui) + vderiv_(1, 2)*derxjm_(2,2,0,ui))
+            + convvelint_(1)*(vderiv_(1, 0)*derxjm_(2,0,1,ui) + vderiv_(1, 1)*derxjm_(2,1,1,ui) + vderiv_(1, 2)*derxjm_(2,2,1,ui))
+            );
+
+          ////
+
+          emesh(vi*4 + 2, ui*4 + 0) += v*(
+            + convvelint_(1)*(vderiv_(2, 0)*derxjm_(0,0,1,ui) + vderiv_(2, 1)*derxjm_(0,1,1,ui) + vderiv_(2, 2)*derxjm_(0,2,1,ui))
+            + convvelint_(2)*(vderiv_(2, 0)*derxjm_(0,0,2,ui) + vderiv_(2, 1)*derxjm_(0,1,2,ui) + vderiv_(2, 2)*derxjm_(0,2,2,ui))
+            );
+
+          emesh(vi*4 + 2, ui*4 + 1) += v*(
+            + convvelint_(0)*(vderiv_(2, 0)*derxjm_(1,0,0,ui) + vderiv_(2, 1)*derxjm_(1,1,0,ui) + vderiv_(2, 2)*derxjm_(1,2,0,ui))
+            + convvelint_(2)*(vderiv_(2, 0)*derxjm_(1,0,2,ui) + vderiv_(2, 1)*derxjm_(1,1,2,ui) + vderiv_(2, 2)*derxjm_(1,2,2,ui))
+            );
+
+          emesh(vi*4 + 2, ui*4 + 2) += v*(
+            + convvelint_(0)*(vderiv_(2, 0)*derxjm_(2,0,0,ui) + vderiv_(2, 1)*derxjm_(2,1,0,ui) + vderiv_(2, 2)*derxjm_(2,2,0,ui))
+            + convvelint_(1)*(vderiv_(2, 0)*derxjm_(2,0,1,ui) + vderiv_(2, 1)*derxjm_(2,1,1,ui) + vderiv_(2, 2)*derxjm_(2,2,1,ui))
+            );
+
+        }
+      }
+
+#if 0
+      // convection
+      // Aus dem time discrete. Eine Beziehung zwischen Geschwindigkeit und Verschiebungsinkrement.
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        double v = -timefacfac*funct_(vi)/dt;
+        for (int ui=0; ui<numnode; ++ui)
+        {
+          emesh(vi*4    , ui*4    ) += v*funct_(ui)*vderxy_(0, 0) ;
+          emesh(vi*4    , ui*4 + 1) += v*funct_(ui)*vderxy_(0, 1) ;
+          emesh(vi*4    , ui*4 + 2) += v*funct_(ui)*vderxy_(0, 2) ;
+
+          emesh(vi*4 + 1, ui*4    ) += v*funct_(ui)*vderxy_(1, 0) ;
+          emesh(vi*4 + 1, ui*4 + 1) += v*funct_(ui)*vderxy_(1, 1) ;
+          emesh(vi*4 + 1, ui*4 + 2) += v*funct_(ui)*vderxy_(1, 2) ;
+
+          emesh(vi*4 + 2, ui*4    ) += v*funct_(ui)*vderxy_(2, 0) ;
+          emesh(vi*4 + 2, ui*4 + 1) += v*funct_(ui)*vderxy_(2, 1) ;
+          emesh(vi*4 + 2, ui*4 + 2) += v*funct_(ui)*vderxy_(2, 2) ;
+        }
+      }
+#endif
+
+      // pressure
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        double v = press*timefacfac/det;
+        for (int ui=0; ui<numnode; ++ui)
+        {
+          emesh(vi*4    , ui*4 + 1) += v*(deriv_(0, vi)*derxjm_(0,0,1,ui) + deriv_(1, vi)*derxjm_(0,1,1,ui) + deriv_(2, vi)*derxjm_(0,2,1,ui)) ;
+          emesh(vi*4    , ui*4 + 2) += v*(deriv_(0, vi)*derxjm_(0,0,2,ui) + deriv_(1, vi)*derxjm_(0,1,2,ui) + deriv_(2, vi)*derxjm_(0,2,2,ui)) ;
+
+          emesh(vi*4 + 1, ui*4 + 0) += v*(deriv_(0, vi)*derxjm_(1,0,0,ui) + deriv_(1, vi)*derxjm_(1,1,0,ui) + deriv_(2, vi)*derxjm_(1,2,0,ui)) ;
+          emesh(vi*4 + 1, ui*4 + 2) += v*(deriv_(0, vi)*derxjm_(1,0,2,ui) + deriv_(1, vi)*derxjm_(1,1,2,ui) + deriv_(2, vi)*derxjm_(1,2,2,ui)) ;
+
+          emesh(vi*4 + 2, ui*4 + 0) += v*(deriv_(0, vi)*derxjm_(2,0,0,ui) + deriv_(1, vi)*derxjm_(2,1,0,ui) + deriv_(2, vi)*derxjm_(2,2,0,ui)) ;
+          emesh(vi*4 + 2, ui*4 + 1) += v*(deriv_(0, vi)*derxjm_(2,0,1,ui) + deriv_(1, vi)*derxjm_(2,1,1,ui) + deriv_(2, vi)*derxjm_(2,2,1,ui)) ;
+        }
+      }
+
+      // div u
+      for (int vi=0; vi<numnode; ++vi)
+      {
+        double v = timefacfac/det*funct_(vi);
+        for (int ui=0; ui<numnode; ++ui)
+        {
+          emesh(vi*4 + 3, ui*4 + 0) += v*(
+            + vderiv_(1, 0)*derxjm_(0,0,1,ui) + vderiv_(1, 1)*derxjm_(0,1,1,ui) + vderiv_(1, 2)*derxjm_(0,2,1,ui)
+            + vderiv_(2, 0)*derxjm_(0,0,2,ui) + vderiv_(2, 1)*derxjm_(0,1,2,ui) + vderiv_(2, 2)*derxjm_(0,2,2,ui)
+            ) ;
+
+          emesh(vi*4 + 3, ui*4 + 1) += v*(
+            + vderiv_(0, 0)*derxjm_(1,0,0,ui) + vderiv_(0, 1)*derxjm_(1,1,0,ui) + vderiv_(0, 2)*derxjm_(1,2,0,ui)
+            + vderiv_(2, 0)*derxjm_(1,0,2,ui) + vderiv_(2, 1)*derxjm_(1,1,2,ui) + vderiv_(2, 2)*derxjm_(1,2,2,ui)
+            ) ;
+
+          emesh(vi*4 + 3, ui*4 + 2) += v*(
+            + vderiv_(0, 0)*derxjm_(2,0,0,ui) + vderiv_(0, 1)*derxjm_(2,1,0,ui) + vderiv_(0, 2)*derxjm_(2,2,0,ui)
+            + vderiv_(1, 0)*derxjm_(2,0,1,ui) + vderiv_(1, 1)*derxjm_(2,1,1,ui) + vderiv_(1, 2)*derxjm_(2,2,1,ui)
+            ) ;
+        }
+      }
+
+    }
   } // loop gausspoints
 }
 
@@ -2255,7 +2450,7 @@ void DRT::ELEMENTS::Fluid3Impl::CalVisc_AtGaussianPoint(
  |  the Neumann condition associated with the nodes is stored in the    |
  |  array edeadng only if all nodes have a VolumeNeumann condition      |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3Impl::BodyForce( Fluid3* ele, 
+void DRT::ELEMENTS::Fluid3Impl::BodyForce( Fluid3* ele,
 					   const double time,
 					   struct _MATERIAL* material)
 {
@@ -2270,7 +2465,7 @@ void DRT::ELEMENTS::Fluid3Impl::BodyForce( Fluid3* ele,
   }
 
   if (myneumcond.size()==1)
-  { 
+  {
 
     // check here, if we really have a fluid !!
     if( material->mattyp != m_fluid

@@ -86,6 +86,7 @@ namespace ELEMENTS
       \param edispnp          (i) nodal displacements (on moving mesh)
       \param egridv           (i) grid velocity (on moving mesh)
       \param estif            (o) element matrix to calculate
+      \param emesh            (o) linearization wrt mesh motion
       \param eforce           (o) element rhs to calculate
       \param material         (i) fluid material
       \param time             (i) current simulation time
@@ -122,6 +123,7 @@ namespace ELEMENTS
                 const blitz::Array<double,2>&            edispnp,
                 const blitz::Array<double,2>&            egridv,
                 blitz::Array<double,2>&                  estif,
+                blitz::Array<double,2>&                  emesh,
                 blitz::Array<double,1>&                  eforce,
                 struct _MATERIAL*                        material,
                 double                                   time,
@@ -156,11 +158,11 @@ namespace ELEMENTS
            tauMp: Barrenechea, Valentin
            tauMu: Franca, Valentin
            tauC : Wall
-           
+
       o Bazilevs: bazilevs
            tauM : Bazilevs, Whiting
            tauC : Bazilevs
-           
+
       o Codina: codina
            tauMp: Barrenechea, Valentin
            tauMu: Franca, Valentin
@@ -184,7 +186,7 @@ namespace ELEMENTS
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input
       \param fssgv            (i) ?????????????????????????
-    
+
     */
     void Caltau(
       Fluid3* ele,
@@ -204,17 +206,17 @@ namespace ELEMENTS
       double&                                 l_tau,
       const enum Fluid3::StabilisationAction  fssgv);
 
-    
+
     /*!
          \brief calculates viscosity at every gaussian point
 
   		 \param material		 (i) material
          \param visc             (o) kinematic material viscosity
     */
-    void CalVisc_AtGaussianPoint(  
+    void CalVisc_AtGaussianPoint(
       const struct _MATERIAL*                 material,
       double&                           	  visc);
-    
+
     /*!
      * \brief calculate the body force from the nodes condition
      */
@@ -272,7 +274,7 @@ namespace ELEMENTS
     blitz::Array<double,1> csconvint_;
     //! ale convective velocity in gausspoint, c=u-u_G
     blitz::Array<double,1> convvelint_;
-    //! pressure gradient in gausspoint 
+    //! pressure gradient in gausspoint
     blitz::Array<double,1> gradp_;
     //! the stabilisation parameters
     blitz::Array<double,1> tau_;
@@ -280,7 +282,7 @@ namespace ELEMENTS
     blitz::Array<double,3> viscs2_;
     //! linearisation of convect, convective part
     blitz::Array<double,1> conv_c_;
-    //! total right hand side terms at int.-point 
+    //! total right hand side terms at int.-point
     blitz::Array<double,1> rhsint_;
     //! (u_old*nabla)u_old
     blitz::Array<double,1> conv_old_;
@@ -294,6 +296,9 @@ namespace ELEMENTS
     blitz::Array<double,1> conv_resM_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t
     blitz::Array<double,2> xder2_;
+
+    blitz::Array<double,2> vderiv_;
+    blitz::Array<double,4> derxjm_;
   };
 
 }

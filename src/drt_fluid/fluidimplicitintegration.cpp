@@ -1522,10 +1522,14 @@ void FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 
   // finalize the system matrix
   sysmat_->Complete();
-  meshmovematrix_->Complete();
-  // apply Dirichlet conditions to a non-diagonal matrix
-  // (The Dirichlet rows will become all zero, no diagonal one.)
-  meshmovematrix_->ApplyDirichlet(dirichtoggle_,false);
+
+  if (meshmovematrix_ != Teuchos::null)
+  {
+    meshmovematrix_->Complete();
+    // apply Dirichlet conditions to a non-diagonal matrix
+    // (The Dirichlet rows will become all zero, no diagonal one.)
+    meshmovematrix_->ApplyDirichlet(dirichtoggle_,false);
+  }
 
   trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
 
