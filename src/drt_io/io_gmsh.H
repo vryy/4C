@@ -38,6 +38,9 @@ namespace IO
         case DRT::Element::quad4:
           return "Q";
           break;
+        case DRT::Element::quad8:
+          return "Q";
+          break;
         case DRT::Element::quad9:
           return "Q";
           break;
@@ -83,6 +86,9 @@ namespace IO
           return 1;
           break;
         case DRT::Element::quad4:
+          return 4;
+          break;
+        case DRT::Element::quad8:
           return 4;
           break;
         case DRT::Element::quad9:
