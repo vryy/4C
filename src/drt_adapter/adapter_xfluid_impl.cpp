@@ -387,11 +387,24 @@ void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> idis
   interface_.InsertCondVector(idisp,idisp_);
   LINALG::Export(*idisp_,*idispcol_);
 
-//
-//  idispcol_->Scale(0.0);
-//  //idispcol_->PutScalar(-0.14); // ganz schlecht
-//  //idispcol_->PutScalar( 0.04); // naja
-//  idispcol_->PutScalar(-0.05); // naja
+
+//  //idispcol_->PutScalar( 0.0); // ganz schlecht
+//  //idispcol_->PutScalar( 0.049); // naja
+//  //idispcol_->PutScalar(-0.149); // works best
+//  for (int entry = 0; entry < idispcol_->MyLength(); ++entry)
+//  {
+//    if (entry%3 == 0)
+//    {
+//      //(*ivelcol)[entry] = (-1.5*std::sin(2.0*time_* PI) * PI);
+//      //(*idispcol_)[entry] = -0.149;
+//      (*idispcol_)[entry] = 0.049;
+//    }
+//    else
+//    {
+//      (*idispcol_)[entry] = 0.0;
+//    }
+//        
+//  }
 
 }
 
