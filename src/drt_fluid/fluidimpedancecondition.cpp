@@ -92,8 +92,20 @@ FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
     hist_         = LINALG::CreateVector(*dofrowmap,true);
 
     flowrates_    = rcp(new vector<double>);
-    impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);
-  }
+    impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);    
+
+    // -------------------------------------------------------------------
+    // determine area of actual outlet and get material data
+    // -------------------------------------------------------------------
+    double density=0.0, viscosity=0.0;
+    double area = Area(density,viscosity);
+
+    // -------------------------------------------------------------------
+    // calculate impedance values and fill vector 'impvalues_'
+    // -------------------------------------------------------------------
+    impvalues_.resize(cyclesteps_);
+    Impedances(area,density,viscosity);
+  } // end if numcondlines_ > 0
 }
 
 
@@ -124,6 +136,227 @@ void FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  output )
 { 
   if ( numcondlines_ > 0 )
   {
+    // write the flowrates of the previous period
+    const string outstring1 = "flowrates";
+    output.WriteRedundantDoubleVector(outstring1,flowrates_);
+
+    // also write
+    const string outstring2 = "flowratespos";
+    output.WriteInt(outstring2, flowratespos_);
+  }
+  return;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Restart reading                                         chfoe 05/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader )
+{ 
+  if ( numcondlines_ > 0 )
+  {
+    flowratespos_ = reader.ReadInt("flowratespos");
+
+    reader.ReadRedundantDoubleVector(flowrates_ ,"flowrates");
+
+    if (flowrates_->size() == 0)
+      dserror("could not re-read vector of flowrates");
+
+  }
+  return;
+}
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | Area calculation                                         chfoe 05/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*! 
+
+*/
+double FluidImpedanceBc::Area( double& density, double& viscosity )
+{
+  // fill in parameter list for subsequent element evaluation
+  // there's no assembly required here
+  ParameterList eleparams;
+  eleparams.set("action","area calculation");
+  eleparams.set<double>("Area calculation", 0.0);
+  eleparams.set<double>("viscosity", 0.0);
+  eleparams.set<double>("density", 0.0);
+  eleparams.set("assemble matrix 1",false);
+  eleparams.set("assemble matrix 2",false);
+  eleparams.set("assemble vector 1",false);
+  eleparams.set("assemble vector 2",false);
+  eleparams.set("assemble vector 3",false);
+
+  const string condstring("ImpedanceCond");
+  discret_->EvaluateCondition(eleparams,condstring);
+
+  double actarea = eleparams.get<double>("Area calculation");
+  density = eleparams.get<double>("density");
+  viscosity = eleparams.get<double>("viscosity");
+
+  // get total area in parallel case
+  double pararea = 0.0;
+  discret_->Comm().SumAll(&actarea,&pararea,1);
+
+  if (myrank_ == 0)
+  {
+    cout << "This Area: " << pararea << endl;
+  }
+  return pararea;
+}//FluidImplicitTimeInt::Area
+
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Calculate Impedance depending on history           ac | chfoe 05/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/* 
+
+  This routine contains major parts of the following paper:
+
+  Olufsen et al.: "Numerical Simulation and Experimental Validation of 
+  Blood Flow in Arteries with Structured-Tree Outflow Conditions",
+  Annals of Biomedical Eingineering, Vol. 28, pp. 1281--1299, 2000.
+
+  Basic Idea:
+  (1) Calculate the root impedance of the cut-off vascular tree from an
+      analytical solution within the tree for different frequencies
+  (2) Transfer the frequency-domain solution back to the time domain via
+      inverse Fourier transform
+
+*/
+void FluidImpedanceBc::Impedances( double area, double density, double viscosity )
+{
+  // setup variables
+  vector<complex<double> > frequencydomain;  // impedances in the frequency domain
+  frequencydomain.resize(cyclesteps_,0);
+  vector<complex<double> > timedomain;       // impedances in the time domain
+  timedomain.resize(cyclesteps_,0);
+
+  // size: number of generations
+  std::complex<double> storage[35]={0}; // only as argument of other methods
+  std::complex<double> zleft, zparent (0,0);  // only as argument
+  std::complex<double> entry;
+
+  // **************** apparently this does not work as it should ... **********
+
+//       //Loop over all frequencies making a call to LungImpedance, w=2*pi*k/T
+//       //where k=-N/2,....,N/2, however k is self adjointed.
+//       for (int k=1; k<=cyclesteps_/2; k++)
+//       {
+// 	int generation=0;
+// 	entry = LungImpedance(k,generation,zparent,zleft,storage);
+// 	frequencydomain[k]             = conj(entry);
+// 	frequencydomain[cyclesteps_-k] = entry;
+//       }
+
+//       // calculate DC (direct current) component ...
+//       entry              = DCLungImpedance(0,0,zparent,storage);
+//       frequencydomain[0] = entry;
+
+//       // --------------------------------------------------------------------------
+//       // inverse Fourier transform
+//       // idea:
+//       //              
+//       //                    cyclesteps                i omega_k t
+//       //      imp(x,t) = sum          IMP(x,omega_k) e
+//       //                   -cyclesteps
+//       //
+//       // with omega_k = 2 PI k / T
+
+//       double trigonometrystuff = 2*PI/cyclesteps_;
+//       double realpart = cos(trigonometrystuff);
+//       double imagpart = sin(trigonometrystuff);
+//       std::complex<double> impcomplex (realpart,imagpart);
+
+//       for (int PeriodFraction=0; PeriodFraction<cyclesteps_; PeriodFraction++)
+//       {
+// 	for (int k=0; k<cyclesteps_; k++)
+// 	{
+// 	  timedomain[PeriodFraction] += pow(impcomplex,-PeriodFraction*k) * frequencydomain[k];
+// 	  timedomain[PeriodFraction] += pow(impcomplex,PeriodFraction*k) * frequencydomain[k];
+// 	}
+//       }
+
+  // **************** ... therefore an alternative approach ****************
+
+  //Loop over some frequencies making a call to Impedance, w=2*pi*k/T
+  //where k=-N/2,....,N/2, 
+
+  // calculate DC (direct current) component ...
+  frequencydomain[0] = DCLungImpedance(0,0,zparent,storage);
+
+  // this results in a field like
+  // frequencydomain = 
+  // [ Z(w_0)  Z(w_1)  Z(w_2)  Z(w_3)  ...  Z(w_cyclesteps) ]
+  //
+  // note that we also need the complex conjugated ones, i.e.
+  // Z(-w_1) = conj(Z(w_1)  to Z(-w_cyclesteps) = conj(Z(w_cyclesteps)
+  for (int k=1; k<cyclesteps_; k++)
+  {
+    int generation=0;
+    //frequencydomain[k] = LungImpedance(k,generation,zparent,zleft,storage);
+    frequencydomain[k] = ArteryImpedance(k,generation,area,density,viscosity,zparent,zleft,storage);
+  }
+
+  // --------------------------------------------------------------------------
+  // inverse Fourier transform
+  // idea:
+  //              
+  //                    cyclesteps                i omega_k t
+  //      imp(x,t) = sum          IMP(x,omega_k) e
+  //                   -cyclesteps
+  //
+  // with omega_k = 2 PI k / T
+
+
+  double constexp = 2*PI/cyclesteps_;
+  double realpart = cos(constexp);
+  double imagpart = sin(constexp);
+  std::complex<double> eiwt (realpart,imagpart);  // e^{i w_k / T}
+
+
+  // now for all discrete times get the influence of all frequencies that have
+  // been pre-computed
+  for (int timefrac = 0; timefrac < cyclesteps_; timefrac++)
+  {
+    for (int k=0; k<cyclesteps_; k++)
+      timedomain[timefrac] += pow(eiwt,timefrac*k) * frequencydomain[k];
+
+    // and now the conjugated ones are added
+    for (int k=1; k<cyclesteps_; k++)
+      timedomain[timefrac] += pow(eiwt,-timefrac*k) * conj(frequencydomain[k]);
+  }
+
+
+  //Get Real component of TimeDomain, imaginary part should be anyway zero.
+  //  vector<double> values;   // real impedance values
+  //  values.resize(cyclesteps_);
+
+  for (int i=0; i<cyclesteps_; i++)
+  {
+    //	values[i]=real(timedomain[i])/cyclesteps_;  // WHY division by cyclesteps?
+    impvalues_[i]=real(timedomain[i]);
+    if (abs(imag(timedomain[i])) > 1E-4 )
+      cout << "error in imaginary part is = " << timedomain[i] << endl;
   }
   return;
 }
@@ -162,7 +395,6 @@ void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
     ParameterList eleparams;
     eleparams.set("action","flowrate calculation");
     eleparams.set<double>("Outlet flowrate", 0.0);
-    eleparams.set<double>("Area calculation", 0.0); // required for diameter calculation
     eleparams.set("total time",time);
     eleparams.set("assemble matrix 1",false);
     eleparams.set("assemble matrix 2",false);
@@ -194,38 +426,20 @@ void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
       // new data is appended to our flowrates vector
       flowrates_->push_back(parflowrate);
 
- //      if (myrank_ == 0) {
-//       cout << "actual flowrates: " << endl;
-//       for( int i = 0; i < flowrates_->size(); i++ ) 
+  //     cout << "flowrates:" << endl;
+//       for (int i=0; i<flowrates_->size(); i++)
 //       {
-// 	cout << "Element " << i << " is " << (*flowrates_)[i] << endl;
-//       } }
+// 	cout << "[" << i <<"]" << (*flowrates_)[i] << endl;
+//       }
     }
     else
     {
       // we are now in the post-initial phase
-//       cout << "else block met\n";
-//       vector<double> ::iterator vecbegin;
-//       vecbegin = flowrates_->begin();
-
-//       flowrates_->erase(vecbegin);
-//       cout << "erase done\n";
-//       flowrates_->push_back(parflowrate);
-//       cout << "push back done\n";
-
       // replace the element that was computed exactly a cycle ago
       int pos = flowratespos_ % cyclesteps_;
       (*flowrates_)[pos] = parflowrate;
 
       flowratespos_++;
-
-   //    if (myrank_ == 0) {
-//       cout << "actual flowrates: " << endl;;
-//       for( int i = 0; i < flowrates_->size(); i++ ) 
-//       {
-// 	cout << "Element " << i << " is " << (*flowrates_)[i] << endl;
-//       } }
-
     }
 
     if (myrank_ == 0)
@@ -237,19 +451,27 @@ void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
 }//FluidImplicitTimeInt::FlowRateCalculation
 
 
-
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  ??????????????????????????                                     ???? |
+ |  Apply Impedance to outflow boundary                ac | chfoe 05/08 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /* 
 
-  do we have any chance of getting additional information here?        
+  This routine contains major parts of the following paper:
+
+  Olufsen et al.: "Numerical Simulation and Experimental Validation of 
+  Blood Flow in Arteries with Structured-Tree Outflow Conditions",
+  Annals of Biomedical Eingineering, Vol. 28, pp. 1281--1299, 2000.
+
+  Basic Idea:
+  (1) Evaluate convolution integral over one cycle to obtain outflow
+      pressure
+  (2) Apply this pressure as a Neumann-load type at the outflow boundary
 
 */
 void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta)
@@ -260,7 +482,19 @@ void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta)
     // calculate outflow boundary only for cycles past the first one
     if ( time > period_ )
     {
+      // evaluate convolution integral
+      double pressure=0.0;
 
+      // the integral over the last period
+      for (int j=0; j<cyclesteps_; j++)
+      {
+	//	pressure += values[j]*(*flowrates_)[cyclesteps_-1-j]*dta; // units: pressure x time
+	pressure += impvalues_[j] * (*flowrates_)[cyclesteps_-1-j] * dta; // units: pressure x time
+      }
+
+      pressure = pressure/period_; // this cures the dimension; missing in Olufsen paper
+
+      // call the element to apply the pressure
       ParameterList eleparams;
       // action for elements
       eleparams.set("action","Outlet impedance");
@@ -275,94 +509,21 @@ void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta)
       eleparams.set("total time",time);
       eleparams.set("delta time",dta);
       eleparams.set("thsl",theta*dta);
+      eleparams.set("ConvolutedPressure",pressure);
 
-      // setup variables
-      vector<double> values;   // impedance values, what ever this means
-      values.resize(cyclesteps_);
-
-      vector<complex<double> > frequencydomain;
-      frequencydomain.resize(cyclesteps_,0);
-      vector<complex<double> > timedomain;
-      timedomain.resize(cyclesteps_,0);
-
-      // size: number of generations
-      std::complex<double> storage[35]={0}; // only as argument of other methods
-
-      std::complex<double> zleft, zparent (0,0);  // only as arguments
-
-      std::complex<double> entry;
-      double PressureFromConv=0; 
-      double pressuretmp;
-
-      //Loop over all frequencies making a call to LungImpedance, w=2*pi*k/T
-      //where k=-N/2,....,N/2, however k is self adjointed.
-      for (int i=1; i<=cyclesteps_/2; i++)
-      {
-	int generation=0;
-	entry = LungImpedance(i,generation,zparent,zleft,storage);
-	frequencydomain[i]             = conj(entry);
-	frequencydomain[cyclesteps_-i] = entry;
-      }
-
-      // calculate DC (direct current) component ...
-      entry              = DCLungImpedance(0,0,zparent,storage);
-      frequencydomain[0] = entry;
-
-      // --------------------------------------------------------------------------
-      // inverse Fourier transform
-      // idea:
-      //              
-      //                    cyclesteps                i omega_k t
-      //      imp(x,t) = sum          IMP(x,omega_k) e
-      //                   -cyclesteps
-      //
-      // with omega_k = 2 PI k / T
-
-      double trigonometrystuff = 2*PI/cyclesteps_;
-      double realpart = cos(trigonometrystuff);
-      double imagpart = sin(trigonometrystuff);
-      std::complex<double> impcomplex (realpart,imagpart);
-
-      for (int PeriodFraction=0; PeriodFraction<cyclesteps_; PeriodFraction++)
-      {
-	for (int k=0; k<cyclesteps_; k++)
-	{
-	  timedomain[PeriodFraction] += pow(impcomplex,-PeriodFraction*k) * frequencydomain[k];
-	  timedomain[PeriodFraction] += pow(impcomplex,PeriodFraction*k) * frequencydomain[k];
-	}
-      }
-
-      //Get Real component of TimeDomain, imaginary part should be anyway zero.
-      for (int i=0; i<cyclesteps_; i++)
-      {
-	values[i]=real(timedomain[i])/cyclesteps_;
-// 	if (abs(imag(timedomain[i])) > 1E-4 )
-// 	  cout << "error in imaginary part is = " << timedomain[i] << endl;
-      }
-
-      // this is still somewhat mysterious
-      pressuretmp=0;
-      // the integral over the last period
-      for (int j=0; j<=cyclesteps_; j++)
-      {
-	pressuretmp += values[j]*(*flowrates_)[cyclesteps_-1-j]*dta; // units: pressure x time
-      }
-      PressureFromConv=pressuretmp;
-
-
-      eleparams.set("ConvolutedPressure",PressureFromConv);
       if (myrank_ == 0)
       {
-	printf("Pressure from convolution: %f\n",PressureFromConv);
+	printf("Pressure from convolution: %f\n",pressure);
       }
 
       impedancetbc_->PutScalar(0.0); // ??
       const string condstring("ImpedanceCond");
       discret_->EvaluateCondition(eleparams,impedancetbc_,condstring);
       discret_->ClearState();
+
     } // end if ( time too small )
   } // end if ( numcondlines_ > 0 )
-
+  return;
 }//FluidImplicitTimeInt::OutflowBoundary
 
 
@@ -385,6 +546,97 @@ void FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
   }
   return;
 }
+
+
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  ?????????????????????????                               chfoe 05/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*! 
+build up artery tree and calculate root impedance for a given frequency
+
+Data taken from 
+  Olufsen et al.: "Numerical Simulation and Experimental Validation of 
+  Blood Flow in Arteries with Structured-Tree Outflow Conditions",
+  Annals of Biomedical Eingineering, Vol. 28, pp. 1281--1299, 2000.
+
+Further also needed
+  Olufsen, M.S.: "Structured tree outflow condition for blood flow
+  in larger systematic arteries", American Physiological Society, 1999.
+
+*/
+std::complex<double> FluidImpedanceBc::ArteryImpedance(int k, 
+						       int generation, 
+						       double area,
+						       double density,
+						       double viscosity,
+						       std::complex<double> zparent,
+						       std::complex<double> zleft,
+						       std::complex<double> storage[])
+{
+  // general data
+  double lscale = 50.0; // length to radius ratio
+  double alpha = 0.9;   // right daughter vessel ratio
+  double beta = 0.6;    // left daughter vessel ratio
+
+  double omega = 2.0*PI*k/period_;
+
+  double k1 = 2.0;    // g/ms/ms/mm
+  double k2 = -2.253; // per mm
+  double k3 = 0.0865; // g/ms/ms/mm
+
+  // build up geometry of root generation
+  double rootrad = sqrt(area/PI); // an estimate for the root radius of the tree
+  double rootlength = lscale* rootrad;
+
+  // just as a test: root impedance only
+
+  double compliance = 1.5*area / ( k1 * exp(k2*rootrad) + k3 );
+
+  complex<double> koeff, imag(0,1), cwave;
+
+  double sqrdwo = rootrad*rootrad*omega/viscosity;
+//   complex<double> aux (0,-imgpart);
+//   complex<double> wonu = sqrt(aux);
+
+  double wonu = sqrt(sqrdwo);
+
+  if (wonu > 4.0)
+  {
+    complex<double> realone(1,0);
+    koeff = realone - (2.0/wonu)*sqrt(imag);
+  }
+  else
+  {
+    complex<double> number(1.333333333333333333,0);
+    koeff = 1.0 / ( number - 8.0*imag/ (wonu*wonu) );
+  }
+
+  // wave speed of this frequency in present vessel
+  cwave=sqrt( area*koeff / (density*compliance) );
+
+  //Convenience coefficient
+  complex<double> gcoeff = compliance * cwave;
+
+  dserror("Erst einmal Schluß!!");
+
+  // get Bessel functions
+  //  complex<double> j0 = boost::math::cyl_bessel_j(0, wonu);
+
+  return zparent;
+}
+
+
+
+
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -424,11 +676,13 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
   //K depends on the womersley number
   if (WomersleyNumber > 4)
   {
+    // are these lines correct???
   	StoredTmpVar=(2/WomersleyNumber)*Imag;
   	K=RealNumberOne+StoredTmpVar;
   }
   else
   {
+    // are these lines correct???
   	StoredTmpVar=8/WomersleyNumber*Imag;
   	K=RealThreeQuarters+StoredTmpVar;
   }

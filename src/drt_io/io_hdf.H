@@ -133,6 +133,13 @@ public:
   RefCountPtr<std::vector<char> >
   ReadResultDataVecChar(string id_path, string value_path, int columns, const Epetra_Comm& Comm, RefCountPtr<Epetra_Map>& elemap) const;
 
+  RefCountPtr<std::vector<double> > ReadDoubleVector(std::string path)
+  {
+    std::vector<int> length;
+    RCP<std::vector<double> > values = ReadDoubleData(path,0,1,length);
+    return values;
+  };
+
 private:
 
   /// reads the dataset 'path' in all the files in the range [start,end)

@@ -1040,6 +1040,7 @@ private:
   {
     none,
     integrate_Shapefunction,
+    areacalc,
     flowratecalc,
     Outletimpedance,
     calc_node_normal
@@ -1094,11 +1095,35 @@ private:
                        Epetra_SerialDenseVector&  elevec1,
                        const std::vector<double>& edispnp);
 
+  /*!
+  brief integrate elemental areas over a surface
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  */
+  void AreaCaculation(ParameterList& params);
+
+ /*!
+  brief integrate elemental flow rates over a surface
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  */
   void FlowRateParameterCaculation(ParameterList& params,
                   DRT::Discretization&       discretization,
-                  vector<int>&               lm,
-                  Epetra_SerialDenseVector&  elevec1);
+                  vector<int>&               lm);
 
+  /*!
+  \brief apply impedance boundary condition (outlet pressures)
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+  */
   void ImpedanceIntegration(ParameterList& params,
           DRT::Discretization&       discretization,
           vector<int>&               lm,

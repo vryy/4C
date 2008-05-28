@@ -145,6 +145,39 @@ void IO::DiscretizationReader::ReadMesh(int step)
 
 #endif
   return;
+}  
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<vector<double> >& doublevec, 
+							  const string name)
+{
+#ifdef BINIO
+  int length;
+
+  if (dis_->Comm().MyPID() == 0)
+  {
+    // only proc0 reads the vector entities
+    // was muß aber jetzt hier wirklich geschehen???
+
+    MAP* result = map_read_map(restart_step_, name.c_str());
+    string value_path = map_read_string(result, "values");
+
+    doublevec = reader_->ReadDoubleVector(value_path);
+
+    length = doublevec->size();
+  }
+
+  // communicate the length of the vector to come
+  dis_->Comm().Broadcast(&length,1,0);
+
+  // make vector having the correct length on all procs
+  doublevec->resize(length);
+
+  // now distribute information to all procs
+  dis_->Comm().Broadcast ( &((*doublevec)[0]), length, 0 );
+#endif
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -934,6 +967,52 @@ void IO::DiscretizationWriter::WriteElementData()
     WriteVector(fool->first, Teuchos::rcp(&sysdata,false), IO::DiscretizationWriter::elementvector);
 
   } // for (fool = names.begin(); fool!= names.end(); ++fool)
+
+#endif
+}
+
+/*----------------------------------------------------------------------*/
+/* write a stl vector of doubles from proc0                             */
+/*----------------------------------------------------------------------*/
+  void IO::DiscretizationWriter::WriteRedundantDoubleVector(const string name,
+							    Teuchos::RCP<vector<double> > doublevec)
+{
+#ifdef BINIO  
+  if (dis_->Comm().MyPID() == 0)
+  {
+    // only proc0 writes the vector entities to the binary data
+    // an appropriate name has to be provided
+    string valuename = name + ".values";
+    const hsize_t size = doublevec->size();
+    int length = 1;
+    if (size==0)
+      length = 0;
+    const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),length,&size,&((*doublevec)[0]));
+    if (make_status < 0)
+      dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+
+    // do I need the following naming stuff?
+    ostringstream groupname;
+
+    groupname << "/step"
+	      << step_
+	      << "/"
+      ;
+
+    valuename = groupname.str()+valuename;
+
+    // a comment is also added to the control file
+    output_->ControlFile()
+      << "    " << name << ":\n"
+      << "        values = \"" << valuename.c_str() << "\"\n\n" 
+      << std::flush;
+  
+    const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
+    if (flush_status < 0)
+    {
+      dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+    }
+  } // endif proc0
 
 #endif
 }

@@ -60,7 +60,20 @@ public:
   */
   virtual ~FluidImpedanceBc();
 
+  /*!
+  \brief write flowrates_ and flowratespos_ to result files
+  */
   void WriteRestart( IO::DiscretizationWriter&  output );
+
+  /*!
+  \brief read flowrates_ and flowratespos_
+  */
+  void ReadRestart( IO::DiscretizationReader& reader );
+
+  /*!
+  \brief calculate area at outflow boundary
+  */
+  double Area( double& density, double& viscosity );
 
   /*!
     \brief compute and store flow rate of all previous 
@@ -70,7 +83,13 @@ public:
 			    double dta);
 
   /*!
-    \brief ???
+    \brief determine impedances in frequency domain and time domain
+  */
+  void Impedances( double area, double density, double viscosity );
+
+  /*!
+    \brief compute convolution integral and apply pressure
+    to elements
   */
   void OutflowBoundary( double time,
 			double dta,
@@ -78,6 +97,17 @@ public:
 
   void UpdateResidual(RCP<Epetra_Vector>  residual );
 
+  /*!
+  \brief compute tree and root impedance for given frequency
+  */
+  std::complex<double> ArteryImpedance( int ImpedanceCounter, 
+					int generation, 
+					double area,
+					double density,
+					double viscosity,
+					std::complex<double> zparent,
+					std::complex<double> zleft,
+					std::complex<double> storage[]);
   /*!
     \brief ???
   */
@@ -122,15 +152,18 @@ private:
   //! the output writer
   IO::DiscretizationWriter&     output_;
 
-  // Flowrate array for impedance conditions
+  //! Flowrate array for impedance conditions
   RCP<std::vector<double> > flowrates_;
 
-  // Position at which the next element should be replaced
-  // initialised to zero as the first element will be replaced first
+  //! Position at which the next element should be replaced
+  //! initialised to zero as the first element will be replaced first
   int flowratespos_;
 
-  // Number of time steps which fit (exactly) into one period
+  //! Number of time steps which fit (exactly) into one period
   int cyclesteps_;
+
+  //! Real impedance values in the time domain
+  vector<double> impvalues_;   // real impedance values
 
   //! histvector --- a linear combination of velnm, veln (BDF)
   //!                or veln, accn (One-Step-Theta)

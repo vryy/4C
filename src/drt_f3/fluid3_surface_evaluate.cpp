@@ -18,6 +18,8 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid3.H"
 #include "../drt_lib/linalg_utils.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
@@ -46,6 +48,8 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
     if (action == "none") dserror("No action supplied");
     else if (action == "integrate_Shapefunction")
         act = Fluid3Surface::integrate_Shapefunction;
+    else if (action == "area calculation")
+        act = Fluid3Surface::areacalc;
     else if (action == "flowrate calculation")
         act = Fluid3Surface::flowratecalc;
     else if (action == "Outlet impedance")
@@ -74,9 +78,14 @@ int DRT::ELEMENTS::Fluid3Surface::Evaluate(     ParameterList&            params
       IntegrateShapeFunction(params,discretization,lm,elevec1,mydispnp);
       break;
     }
+    case areacalc:
+    {
+        AreaCaculation(params);
+        break;
+    }
     case flowratecalc:
     {
-        FlowRateParameterCaculation(params,discretization,lm,elevec1);
+        FlowRateParameterCaculation(params,discretization,lm);
         break;
     }
     case Outletimpedance:
@@ -125,7 +134,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
 
   const DiscretizationType distype = this->Shape();
 
-  double density; // density of my parent element
+  double invdensity = 0.0; // inverse density of my parent element
 
   // get material of volume element this surface belongs to
   RefCountPtr<MAT::Material> mat = parent_->Material();
@@ -137,25 +146,25 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
 
   MATERIAL* actmat = NULL;
 
+  // we shall need the inverse of rho
   if(mat->MaterialType()== m_fluid)
   {
     actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-    density = actmat->m.fluid->density;
+    invdensity = 1.0 / actmat->m.fluid->density;
   }
   else if(mat->MaterialType()== m_carreauyasuda)
   {
     actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
-    density = actmat->m.carreauyasuda->density;
+    invdensity = 1.0 / actmat->m.carreauyasuda->density;
   }
   else if(mat->MaterialType()== m_modpowerlaw)
   {
     actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
-    density = actmat->m.modpowerlaw->density;
+    invdensity = 1.0 / actmat->m.modpowerlaw->density;
   }
   else
     dserror("fluid material expected but got type %d", mat->MaterialType());
 
-  double invdensity = 1.0/density; // we shall need the inverse of rho
 
   // find out whether we will use a time curve
   bool usetime = true;
@@ -248,9 +257,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
           funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
       }
     }
-
   } /* end of loop over integration points gpid */
-
   return 0;
 }
 
@@ -580,72 +587,80 @@ void DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal(ParameterList& params,
 } // DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal
 
 
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& params,
-                  DRT::Discretization&       discretization,
-                  vector<int>&               lm,
-                  Epetra_SerialDenseVector&  elevec1)
+void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params)
 {
   const int iel   = this->NumNode();
   const DiscretizationType distype = this->Shape();
   // allocate vector for shape functions and matrix for derivatives
-  Epetra_SerialDenseVector  	funct       (iel);
-  Epetra_SerialDenseMatrix  	deriv       (2,iel);
+  LINALG::SerialDenseVector  	funct       (iel);
+  LINALG::SerialDenseMatrix  	deriv       (2,iel);
 
   // node coordinates
-  Epetra_SerialDenseMatrix  	xyze        (3,iel);
+  LINALG::SerialDenseMatrix  	xyze        (3,iel);
 
   // the metric tensor and the area of an infintesimal surface element
-  Epetra_SerialDenseMatrix 	metrictensor  (2,2);
+  LINALG::SerialDenseMatrix 	metrictensor  (2,2);
   double                        drs;
+
+  // get the required material information
+  RefCountPtr<MAT::Material> mat = parent_->Material();
+  double density, viscosity;
+
+  if( mat->MaterialType()    != m_carreauyasuda
+      && mat->MaterialType() != m_modpowerlaw
+      && mat->MaterialType() != m_fluid)
+          dserror("Material law is not a fluid");
+
+  MATERIAL* actmat = NULL;
+
+  if(mat->MaterialType()== m_fluid)
+  {
+    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+    density = actmat->m.fluid->density;
+    viscosity =  actmat->m.fluid->viscosity;
+  }
+  else if(mat->MaterialType()== m_carreauyasuda)
+  {
+    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
+    density = actmat->m.carreauyasuda->density;
+    dserror("How to extract viscosity from Carreau Yasuda material law for artery tree??");
+  }
+  else if(mat->MaterialType()== m_modpowerlaw)
+  {
+    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
+    density = actmat->m.modpowerlaw->density;
+    dserror("How to extract viscosity from modified power law material for artery tree??");
+  }
+  else
+    dserror("fluid material expected but got type %d", mat->MaterialType());
+
+  // set required material data for communication
+  params.set<double>("density", density);
+  params.set<double>("viscosity", viscosity);
 
   GaussRule2D  gaussrule = intrule2D_undefined;
   switch(distype)
   {
-  	case quad4:
-  	gaussrule = intrule_quad_4point;
-	break;
-	case quad8: case quad9:
-	gaussrule = intrule_quad_9point;
-	break;
-	case tri3 :
-	gaussrule = intrule_tri_3point;
-	break;
-	case tri6:
-	gaussrule = intrule_tri_6point;
-	break;
-	default:
-	dserror("shape type unknown!\n");
+  case quad4:
+    gaussrule = intrule_quad_4point;
+    break;
+  case quad8: case quad9:
+    gaussrule = intrule_quad_9point;
+    break;
+  case tri3 :
+    gaussrule = intrule_tri_3point;
+    break;
+  case tri6:
+    gaussrule = intrule_tri_6point;
+    break;
+  default:
+    dserror("shape type unknown!\n");
   }
 
-  RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
-
-  if (velnp==null){
-  	dserror("Cannot get state vector 'velnp'");
-  }
-
-  // extract local values from the global vectors
-  vector<double> myvelnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
-
-  double flowrate    = params.get<double>("Outlet flowrate");
   double area        = params.get<double>("Area calculation");
-
-  // create blitz objects for element arrays
-  const int numnode = NumNode();
-  blitz::Array<double, 1> eprenp(numnode);
-  blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
-  blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
-
-  // split velocity and pressure, insert into element arrays
-  for (int i=0;i<numnode;++i)
-  {
-    evelnp(0,i) = myvelnp[0+(i*4)];
-    evelnp(1,i) = myvelnp[1+(i*4)];
-    evelnp(2,i) = myvelnp[2+(i*4)];
-    eprenp(i) = myvelnp[3+(i*4)];
-  }
 
   for(int i=0;i<iel;i++)
   {
@@ -667,25 +682,137 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
     //Calculate infinitesimal area of element (drs)
     f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
 
-    if (iel==4)
-      drs=drs*4;
-    else
-      drs=drs/2;
+    const double fac = intpoints.qwgt[gpid] * drs;
+
+    area += fac;
+  }
+
+  params.set<double>("Area calculation", area);
+}//DRT::ELEMENTS::Fluid3Surface::AreaCaculation
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& params,
+                  DRT::Discretization&       discretization,
+                  vector<int>&               lm)
+{
+  const int iel   = this->NumNode();
+  const DiscretizationType distype = this->Shape();
+  // allocate vector for shape functions and matrix for derivatives
+  LINALG::SerialDenseVector  	funct       (iel);
+  LINALG::SerialDenseMatrix  	deriv       (2,iel);
+
+  // node coordinates
+  LINALG::SerialDenseMatrix  	xyze        (3,iel);
+
+  // the metric tensor and the area of an infintesimal surface element
+  LINALG::SerialDenseMatrix 	metrictensor  (2,2);
+  double                        drs;
+
+  GaussRule2D  gaussrule = intrule2D_undefined;
+  switch(distype)
+  {
+  case quad4:
+    gaussrule = intrule_quad_4point;
+    break;
+  case quad8: case quad9:
+    gaussrule = intrule_quad_9point;
+    break;
+  case tri3 :
+    gaussrule = intrule_tri_3point;
+    break;
+  case tri6:
+    gaussrule = intrule_tri_6point;
+    break;
+  default:
+    dserror("shape type unknown!\n");
+  }
+
+  RefCountPtr<const Epetra_Vector> velnp = discretization.GetState("velnp");
+
+  if (velnp==null)
+    dserror("Cannot get state vector 'velnp'");
+
+
+  // extract local values from the global vectors
+  vector<double> myvelnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+
+  double flowrate    = params.get<double>("Outlet flowrate");
+
+  // create blitz objects for element arrays
+  const int numnode = NumNode();
+  blitz::Array<double, 1> eprenp(numnode);
+  blitz::Array<double, 2> evelnp(3,numnode,blitz::ColumnMajorArray<2>());
+  blitz::Array<double, 2> evhist(3,numnode,blitz::ColumnMajorArray<2>());
+
+  // split velocity and pressure, insert into element arrays
+  for (int i=0;i<numnode;++i)
+  {
+    evelnp(0,i) = myvelnp[0+(i*4)];
+    evelnp(1,i) = myvelnp[1+(i*4)];
+    evelnp(2,i) = myvelnp[2+(i*4)];
+    eprenp(i)   = myvelnp[3+(i*4)];
+  }
+
+  for(int i=0;i<iel;i++)
+  {
+    xyze(0,i)=this->Nodes()[i]->X()[0];
+    xyze(1,i)=this->Nodes()[i]->X()[1];
+    xyze(2,i)=this->Nodes()[i]->X()[2];
+  }
+
+  // Determine normal to this element
+  std::vector<double> dist1(3), dist2(3), normal(3);
+  double length;
+
+  for (int i=0; i<3; i++)
+  {
+    dist1[i] = xyze(i,1)-xyze(i,0);
+    dist2[i] = xyze(i,2)-xyze(i,0);
+  }
+
+  normal[0] = dist1[1]*dist2[2] - dist1[2]*dist2[1];
+  normal[1] = dist1[2]*dist2[0] - dist1[0]*dist2[2];
+  normal[2] = dist1[0]*dist2[1] - dist1[1]*dist2[0];
+
+  length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
+
+  for (int i=0; i<3; i++)
+    normal[i] = normal[i] / length;
+
+
+  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
+  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  {
+    const double e0 = intpoints.qxg[gpid][0];
+    const double e1 = intpoints.qxg[gpid][1];
+
+    // get shape functions and derivatives in the plane of the element
+    shape_function_2D(funct, e0, e1, distype);
+    shape_function_2D_deriv1(deriv, e0, e1, distype);
+
+    //Calculate infinitesimal area of element (drs)
+    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+
+    const double fac = intpoints.qwgt[gpid] * drs;
 
     //Compute elment flowrate
     for (int node=0;node<iel;++node)
     {
       for(int dim=0;dim<3;dim++)
       {
-	flowrate += funct[node]*evelnp(dim,node)*drs;
+	flowrate += funct[node] * evelnp(dim,node)*normal[dim] *fac;
       }
     }
-    area += drs;
   }
-
-  params.set<double>("Area calculation", area);
   params.set<double>("Outlet flowrate", flowrate);
-}
+}//DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation
+
+
+
 
 
   /*----------------------------------------------------------------------*
@@ -701,7 +828,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   const int numdf = 4;
   const double thsl = params.get("thsl",0.0);
 
-  double density; // density of my parent element
+  double invdensity=0.0; // inverse density of my parent element
 
   // get material of volume element this surface belongs to
   RefCountPtr<MAT::Material> mat = parent_->Material();
@@ -716,34 +843,32 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   if(mat->MaterialType()== m_fluid)
   {
     actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
-    density = actmat->m.fluid->density;
+    invdensity = 1.0/actmat->m.fluid->density;
   }
   else if(mat->MaterialType()== m_carreauyasuda)
   {
     actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
-    density = actmat->m.carreauyasuda->density;
+    invdensity = 1.0/actmat->m.carreauyasuda->density;
   }
   else if(mat->MaterialType()== m_modpowerlaw)
   {
     actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
-    density = actmat->m.modpowerlaw->density;
+    invdensity = 1.0/actmat->m.modpowerlaw->density;
   }
   else
     dserror("fluid material expected but got type %d", mat->MaterialType());
 
-  double invdensity = 1.0/density; // we shall need the inverse of rho
-
 
   // allocate vector for shape functions and matrix for derivatives
-  Epetra_SerialDenseVector  	funct       (iel);
-  Epetra_SerialDenseMatrix  	deriv       (2,iel);
+  LINALG::SerialDenseVector  	funct       (iel);
+  LINALG::SerialDenseMatrix  	deriv       (2,iel);
 
   // node coordinates
-  Epetra_SerialDenseMatrix  	xyze        (3,iel);
+  LINALG::SerialDenseMatrix  	xyze (3,iel);
 
   // the metric tensor and the area of an infintesimal surface element
-  Epetra_SerialDenseMatrix 	metrictensor  (2,2);
-  double                      drs;
+  LINALG::SerialDenseMatrix 	metrictensor (2,2);
+  double                drs;
 
   // pressure from time integration
   double pressure = params.get<double>("ConvolutedPressure");
@@ -769,10 +894,30 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
 
   for(int i=0;i<iel;i++)
   {
-  	xyze(0,i)=this->Nodes()[i]->X()[0];
+    xyze(0,i)=this->Nodes()[i]->X()[0];
     xyze(1,i)=this->Nodes()[i]->X()[1];
     xyze(2,i)=this->Nodes()[i]->X()[2];
   }
+
+  // Determine normal to this element
+  std::vector<double> dist1(3), dist2(3), normal(3);
+  double length;
+
+  for (int i=0; i<3; i++)
+  {
+    dist1[i] = xyze(i,1)-xyze(i,0);
+    dist2[i] = xyze(i,2)-xyze(i,0);
+  }
+
+  normal[0] = dist1[1]*dist2[2] - dist1[2]*dist2[1];
+  normal[1] = dist1[2]*dist2[0] - dist1[0]*dist2[2];
+  normal[2] = dist1[0]*dist2[1] - dist1[1]*dist2[0];
+
+  length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
+
+  for (int i=0; i<3; i++)
+    normal[i] = normal[i] / length;
+
 
   const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
@@ -784,46 +929,23 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
     shape_function_2D(funct, e0, e1, distype);
     shape_function_2D_deriv1(deriv, e0, e1, distype);
 
-  	//Calculate infinitesimal area of element (drs)
-  	f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
-  	//Calculate streamwise velocity gradient
-
-    Epetra_SerialDenseMatrix  	DistanceVector       (3,2);
-    double 	Magnitude;
-    //Get two inplane vectors
-    DistanceVector(0,0)=xyze(0,1)-xyze(0,0);
-    DistanceVector(1,0)=xyze(1,1)-xyze(1,0);
-    DistanceVector(2,0)=xyze(2,1)-xyze(2,0);
-
-    DistanceVector(0,1)=xyze(0,2)-xyze(0,0);
-    DistanceVector(1,1)=xyze(1,2)-xyze(1,0);
-    DistanceVector(2,1)=xyze(2,2)-xyze(2,0);
-
-   //Calculate normal coordinate
-    Epetra_SerialDenseMatrix	SurfaceNormal		(3,1);
-
-    SurfaceNormal(0,0)=DistanceVector(1,0)*DistanceVector(2,1)-DistanceVector(2,0)*DistanceVector(1,1);
-    SurfaceNormal(1,0)=DistanceVector(2,0)*DistanceVector(0,1)-DistanceVector(0,0)*DistanceVector(2,1);
-	SurfaceNormal(2,0)=DistanceVector(0,0)*DistanceVector(1,1)-DistanceVector(1,0)*DistanceVector(0,1);
-    Magnitude=sqrt(pow(SurfaceNormal(0,0),2)+pow(SurfaceNormal(1,0),2)+pow(SurfaceNormal(2,0),2));
-    SurfaceNormal(0,0)=SurfaceNormal(0,0)/Magnitude;
-    SurfaceNormal(1,0)=SurfaceNormal(1,0)/Magnitude;
-    SurfaceNormal(2,0)=SurfaceNormal(2,0)/Magnitude;
+    // Calculate infinitesimal area of element (drs)
+    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+    //Calculate streamwise velocity gradient
 
     const double fac = intpoints.qwgt[gpid] * drs * thsl * pressure * invdensity;
 
     for (int node=0;node<iel;++node)
     {
-    	for(int dim=0;dim<3;dim++)
-    	{
-    		elevec1[node*numdf+dim]+=
-    		funct[node] * fac * SurfaceNormal(dim,0);
-        }
+      for(int dim=0;dim<3;dim++)
+      {
+	//	elevec1[node*numdf+dim] += funct[node] * fac * SurfaceNormal(dim,0);
+	elevec1[node*numdf+dim] += funct[node] * fac * normal[dim];
+      }
     }
-
   }
   return;
-}//DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation
+}//DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID3

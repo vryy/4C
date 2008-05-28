@@ -84,6 +84,14 @@ public:
   /// read into the discretization given in the constructor
   void ReadMesh(int step);
 
+  //! read a non discretisation based vector of doubles
+  /*!
+    This vector should have been written only by proc0. 
+    It is assumed that this is a 'small' vector which has to be present on all procs. 
+    It is read from proc0 again and then communicated to all present procs.
+   */
+  void ReadRedundantDoubleVector(Teuchos::RCP<vector<double> >& doublevec, const string name);
+
 protected:
 
   /// find control file entry to given time step
@@ -235,6 +243,15 @@ public:
 
   //! write element data to file
   virtual void WriteElementData();
+
+  //! write a non discretisation based vector of doubles
+  /*!
+    Write this vector only from proc0. It is assumed that this is a 'small' vector
+    which is present on all procs. It shall be read from proc0 again and then
+    communicated to all present procs.
+   */
+  virtual void WriteRedundantDoubleVector(const string name,
+					  Teuchos::RCP<vector<double> > doublevec);
 
   //! reset resultfile_changed_ to -1 in case of inverse analysis
   void RevertResultfileChanged() { resultfile_changed_ = -1;}

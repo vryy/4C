@@ -1688,6 +1688,9 @@ void FluidImplicitTimeInt::Output()
         output_.WriteVector("dispn", dispn_);
         output_.WriteVector("dispnm",dispnm_);
       }
+      // also write impedance bc information if required
+      // Note: this method acts only if there is an impedance BC
+      impedancebc_->FluidImpedanceBc::WriteRestart(output_);
     }
   }
 
@@ -1718,6 +1721,7 @@ void FluidImplicitTimeInt::Output()
     output_.WriteVector("velnm", velnm_);
 
     // also write impedance bc information if required
+    // Note: this method acts only if there is an impedance BC
     impedancebc_->FluidImpedanceBc::WriteRestart(output_);
   }
 
@@ -1768,6 +1772,9 @@ void FluidImplicitTimeInt::ReadRestart(int step)
     reader.ReadVector(dispn_ , "dispn");
     reader.ReadVector(dispnm_,"dispnm");
   }
+  // also read impedance bc information if required
+  // Note: this method acts only if there is an impedance BC
+  impedancebc_->FluidImpedanceBc::ReadRestart(reader);
 }
 
 
