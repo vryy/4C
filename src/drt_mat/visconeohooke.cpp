@@ -150,6 +150,8 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double E_f  = matdata_->m.visconeohooke->youngs_fast;  
   double tau  = matdata_->m.visconeohooke->relax;
   double theta= matdata_->m.visconeohooke->theta;
+  // compute relaxation time as quotient between sequential spring/dashpot
+  tau=tau*E_s/(E_f-E_s);
   
   // get time algorithmic parameters
   double dt = params.get("delta time",-1.0);
