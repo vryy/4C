@@ -108,6 +108,14 @@ public:
 					std::complex<double> zparent,
 					std::complex<double> zleft,
 					std::complex<double> storage[]);
+
+  std::complex<double> DCArteryImpedance( int ImpedanceCounter, 
+					  int generation,  
+					  double area,
+					  double density,
+					  double viscosity,
+					  std::complex<double> zparentdc,
+					  std::complex<double> storage[]);
   /*!
     \brief ???
   */

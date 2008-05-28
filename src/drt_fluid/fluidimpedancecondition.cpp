@@ -303,6 +303,7 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
 
   // calculate DC (direct current) component ...
   frequencydomain[0] = DCLungImpedance(0,0,zparent,storage);
+  //frequencydomain[0] = DCArteryImpedance(0,0,area,density,viscosity,zparent,storage);
 
   // this results in a field like
   // frequencydomain = 
@@ -313,8 +314,8 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   for (int k=1; k<cyclesteps_; k++)
   {
     int generation=0;
-    //frequencydomain[k] = LungImpedance(k,generation,zparent,zleft,storage);
-    frequencydomain[k] = ArteryImpedance(k,generation,area,density,viscosity,zparent,zleft,storage);
+    frequencydomain[k] = LungImpedance(k,generation,zparent,zleft,storage);
+    //frequencydomain[k] = ArteryImpedance(k,generation,area,density,viscosity,zparent,zleft,storage);
   }
 
   // --------------------------------------------------------------------------
@@ -485,11 +486,13 @@ void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta)
       // evaluate convolution integral
       double pressure=0.0;
 
-      // the integral over the last period
+      // the convolution integral
       for (int j=0; j<cyclesteps_; j++)
       {
-	//	pressure += values[j]*(*flowrates_)[cyclesteps_-1-j]*dta; // units: pressure x time
-	pressure += impvalues_[j] * (*flowrates_)[cyclesteps_-1-j] * dta; // units: pressure x time
+	int zindex = ( flowratespos_-1-j+cyclesteps_ ) % cyclesteps_;
+	int qindex = ( flowratespos_+j ) % cyclesteps_;
+
+	pressure += impvalues_[zindex] * (*flowrates_)[qindex] * dta; // units: pressure x time
       }
 
       pressure = pressure/period_; // this cures the dimension; missing in Olufsen paper
@@ -625,16 +628,56 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
   //Convenience coefficient
   complex<double> gcoeff = compliance * cwave;
 
-  dserror("Erst einmal Schluß!!");
+  // terminal resistance is assumed zero
+  complex<double> zterminal (0,0);
 
-  // get Bessel functions
-  //  complex<double> j0 = boost::math::cyl_bessel_j(0, wonu);
+  // calculate impedance of this, the parent, vessel
+  complex<double> argument = omega*rootlength/cwave;
+  zparent = (imag/gcoeff * sin(argument) + zterminal*cos(argument) ) /
+            ( cos(argument) + imag*gcoeff*zterminal*sin(argument) );
+
+  //  cout << "Impedance : " << zparent << endl;
 
   return zparent;
 }
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  impedance w.r.t. constant flow                          chfoe 05/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*! 
+  The special case of omega=0 is covered here, i.e. what is the impedance
+  of the tree for constant flow that is a very special harmonic function
+  with zero frequency.
 
+  This case is also called direct current component in the classical
+  analogy.
+*/
+std::complex<double> FluidImpedanceBc::DCArteryImpedance(int ImpedanceCounter, 
+						         int generation,  
+							 double area,
+							 double density,
+							 double viscosity,
+						         std::complex<double> zparentdc,
+						         std::complex<double> storage[])
+{
+  // general data
+  double lscale = 50.0; // length to radius ratio
+  double mu = viscosity * density; // dynamic (physical) viscosity
+
+  // build up geometry of root generation
+  double rootrad = sqrt(area/PI); // an estimate for the root radius of the tree
+
+  zparentdc = 8.0 * mu * lscale / ( PI*rootrad*rootrad*rootrad );
+
+  return zparentdc;
+}
 
 
 
