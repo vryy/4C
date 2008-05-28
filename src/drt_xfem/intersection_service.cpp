@@ -591,6 +591,12 @@ void XFEM::CurrentToSurfaceElementCoordinates(
         case DRT::Element::quad4:
             currentToSurfaceElementCoordinatesT<DRT::Element::quad4>(xyze_surfaceElement,physCoord,eleCoord);
             break;
+        case DRT::Element::quad8:
+            currentToSurfaceElementCoordinatesT<DRT::Element::quad8>(xyze_surfaceElement,physCoord,eleCoord);
+            break;
+        case DRT::Element::quad9:
+            currentToSurfaceElementCoordinatesT<DRT::Element::quad9>(xyze_surfaceElement,physCoord,eleCoord);
+            break;
         default:
             dserror("please add your surface element type here");
     }

@@ -483,10 +483,17 @@ namespace XFEM
           case DRT::Element::quad4:
               computeNormalToBoundaryElement<DRT::Element::quad4>(xs, xsi, unitnormalvec);
               break;
+          case DRT::Element::quad8:
+              computeNormalToBoundaryElement<DRT::Element::quad8>(xs, xsi, unitnormalvec);
+              break;
+          case DRT::Element::quad9:
+              computeNormalToBoundaryElement<DRT::Element::quad9>(xs, xsi, unitnormalvec);
+              break;
           case DRT::Element::tri3:
               computeNormalToBoundaryElement<DRT::Element::tri3>(xs, xsi, unitnormalvec);
               break;
           default:
+              cout << DRT::DistypeToString(surfaceElement->Shape()) << " not found!" << endl;
               dserror("please add your distype!");
       }
       return;
