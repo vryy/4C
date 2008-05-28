@@ -20,6 +20,8 @@ Maintainer: Christiane Förster
 #ifdef CCADISCRET
 
 #include "aaaneohooke.H"
+#include "../drt_lib/linalg_serialdensematrix.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 
 extern struct _MATERIAL *mat;
 
@@ -169,7 +171,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
 
   //--------------------------------------------------------------------------------------
   // invert C
-  Epetra_SerialDenseVector invc(6);
+  LINALG::SerialDenseVector invc(6);
 
   double invdet = 1./iiinv;
 
@@ -197,7 +199,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
 				- 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
 
   // contribution: Cinv
-  Epetra_SerialDenseVector pktwoiso(invc);
+  LINALG::SerialDenseVector pktwoiso(invc);
   pktwoiso.Scale(isochor2);
 
   // contribution: I
@@ -210,7 +212,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double scalar = komp/beta2 * (1.0-pow(detf,-beta2));
 
   // initialise PKtwo with volumetric part
-  Epetra_SerialDenseVector pktwovol(invc);
+  LINALG::SerialDenseVector pktwovol(invc);
   pktwovol.Scale(scalar);
 
   // 3rd step: add everything up
