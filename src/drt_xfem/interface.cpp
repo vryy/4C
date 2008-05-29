@@ -9,11 +9,13 @@ Maintainer: Axel Gerstenberger
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
-*/
+ */
 #ifdef CCADISCRET
 
 #include "interface.H"
 #include "xfem_condition.H"
+#include "xfsi_searchtree.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  |  ctor                                                        ag 11/07|
@@ -105,127 +107,136 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     std::ofstream f_system(filename.str().c_str());
     f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
     f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
-//    {
-//        stringstream gmshfilecontent;
-//        gmshfilecontent << "View \" " << "CellCenter" << " Elements and Integration Cells \" {" << endl;
-//        for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
-//        {
-//            const DRT::Element* xfemele = xfemdis_->lColElement(i);
-//            const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(xfemele->Id(), xfemele->Shape());
-//            XFEM::DomainIntCells::const_iterator cell;
-//            for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
-//            {
-//                const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*xfemele));
-//                gmshfilecontent << "SP(";
-//                gmshfilecontent << scientific << cellcenterpos(0) << ",";
-//                gmshfilecontent << scientific << cellcenterpos(1) << ",";
-//                gmshfilecontent << scientific << cellcenterpos(2);
-//                gmshfilecontent << "){";
-//                gmshfilecontent << "0.0};" << endl;
-//            };
-//        };
-//        gmshfilecontent << "};" << endl;
-//        f_system << gmshfilecontent.str();
-//    }
-    f_system << IO::GMSH::getConfigString(3);
+    //f_system << IO::GMSH::getConfigString(3);
     f_system.close();
-    std::cout << " done" << endl;
+    cout << " done" << endl;
   }
   
   // debug: write information about which structure we are in
   {
+    double LinearFSITime = 0;
+    double TreeFSITime = 0;
+    
+    std::stringstream filenameP;
+    filenameP << "points_" << std::setw(5) << setfill('0') << step << ".pos";
+    cout << "writing '"<<filenameP.str()<<"...";
+    std::ofstream f_systemP(filenameP.str().c_str());
+    
     std::stringstream filename;
     filename << "domains_" << std::setw(5) << setfill('0') << step << ".pos";
-    std::cout << "writing '"<<filename.str()<<"'...";
+    cout << "writing '"<<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
     //f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
     //f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
     {
-        BlitzMat cellpos(3,27);
+      map<int,bool> posInCondition;
+      // stringstream for domains
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
+      // stringstream for cellcenter points
+      stringstream gmshfilecontentP;
+      gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
       
-        map<int,bool> posInCondition;
-        stringstream gmshfilecontent;
-        gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
-        for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
+      for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
+      {
+        DRT::Element* actele = xfemdis_->lColElement(i);
+        const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
+        XFEM::DomainIntCells::const_iterator cell;
+        for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
         {
-            DRT::Element* actele = xfemdis_->lColElement(i);
-            const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
-            XFEM::DomainIntCells::const_iterator cell;
-            for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
+          
+          BlitzMat cellpos(3,cell->NumNode()); 
+          cell->NodalPosXYZ(*actele, cellpos);
+          const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
+          //cout << cellcenterpos << endl;
+          
+          double timeStart = ds_cputime();
+          PositionWithinCondition(cellcenterpos, *this, posInCondition);
+          LinearFSITime = LinearFSITime + (ds_cputime()-timeStart);
+          
+          timeStart = ds_cputime();
+          PositionWithinConditionTree(cellcenterpos, *this, posInCondition);
+          TreeFSITime = TreeFSITime + (ds_cputime()-timeStart);              
+          
+          int domain_id = 0;
+          // loop conditions
+          for (map<int,bool>::const_iterator entry = posInCondition.begin(); entry != posInCondition.end(); ++entry)
+          {
+            const int actdomain_id = entry->first;
+            const bool inside_condition = entry->second;
+            //cout << "Domain: " << actdomain_id << " -> inside? " << inside_condition << endl;
+            if (inside_condition)
             {
-              cell->NodalPosXYZ(*actele, cellpos);
-              const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
-              //cout << cellcenterpos << endl;
-              PositionWithinCondition(cellcenterpos, *this, posInCondition);
-              int domain_id = 0;
-              // loop conditions
-              for (map<int,bool>::const_iterator entry = posInCondition.begin(); entry != posInCondition.end(); ++entry)
-              {
-                const int actdomain_id = entry->first;
-                const bool inside_condition = entry->second;
-                //cout << "Domain: " << actdomain_id << " -> inside? " << inside_condition << endl;
-                if (inside_condition)
-                {
-                  //cout << "inside" << endl;
-                  domain_id = actdomain_id;
-                  break;
-                }
-              }
-              gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), domain_id, cellpos) << endl;
-            };
+              //cout << "inside" << endl;
+              domain_id = actdomain_id;
+              break;
+            }
+          }
+          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), domain_id, cellpos) << endl;
+          BlitzMat point(3,1);
+          point(0,0)=cellcenterpos(0);
+          point(1,0)=cellcenterpos(1);
+          point(2,0)=cellcenterpos(2);
+          gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, 1, point) << endl;              
         };
-        gmshfilecontent << "};" << endl;
-        f_system << gmshfilecontent.str();
+      };
+      gmshfilecontent << "};" << endl;
+      f_system << gmshfilecontent.str();
+      gmshfilecontentP << "};" << endl;
+      f_systemP << gmshfilecontentP.str();
     }
     //f_system << IO::GMSH::getConfigString(3);
     f_system.close();
-    std::cout << " done" << endl;
+    f_systemP.close();
+    cout << " done" << endl;
+    printf("\tLinear Time: %f\tTree Time: %f\n", LinearFSITime, TreeFSITime);
+    STree.printTree(step);
   }
+  //exit(0);
   return;
 }
 
 XFEM::DomainIntCells XFEM::InterfaceHandle::GetDomainIntCells(
-        const int gid,
-        const DRT::Element::DiscretizationType distype
-        ) const
+    const int gid,
+    const DRT::Element::DiscretizationType distype
+) const
 {
-    std::map<int,DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(gid);
-    if (tmp == elementalDomainIntCells_.end())
-    {   
-        // create default set with one dummy DomainIntCell of proper size
-        XFEM::DomainIntCells cells;
-        cells.push_back(XFEM::DomainIntCell(distype));
-        return cells;
-    }
-    return tmp->second;
+  std::map<int,DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(gid);
+  if (tmp == elementalDomainIntCells_.end())
+  {   
+    // create default set with one dummy DomainIntCell of proper size
+    XFEM::DomainIntCells cells;
+    cells.push_back(XFEM::DomainIntCell(distype));
+    return cells;
+  }
+  return tmp->second;
 }
 
 XFEM::BoundaryIntCells XFEM::InterfaceHandle::GetBoundaryIntCells(
-        const int gid
-        ) const
+    const int gid
+) const
 {
-    std::map<int,XFEM::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(gid);
-    if (tmp == elementalBoundaryIntCells_.end())
-    {   
-        // return empty list
-        return XFEM::BoundaryIntCells();
-    }
-    return tmp->second;
+  std::map<int,XFEM::BoundaryIntCells>::const_iterator tmp = elementalBoundaryIntCells_.find(gid);
+  if (tmp == elementalBoundaryIntCells_.end())
+  {   
+    // return empty list
+    return XFEM::BoundaryIntCells();
+  }
+  return tmp->second;
 }
 
 bool XFEM::InterfaceHandle::ElementIntersected(
-        const int element_gid
-        ) const
+    const int element_gid
+) const
 {
-    std::map<int,DomainIntCells>::const_iterator tmp = elementalDomainIntCells_.find(element_gid);
-    if (tmp == elementalDomainIntCells_.end())
-    {   
-        return false;
-    }
-    else
-    {
-        return true;
-    }
+  if (elementalDomainIntCells_.find(element_gid) == elementalDomainIntCells_.end())
+  {   
+    return false;
+  }
+  else
+  {
+    return true;
+  }
 }
 
 
@@ -233,13 +244,15 @@ bool XFEM::InterfaceHandle::ElementIntersected(
  |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
  *----------------------------------------------------------------------*/
 void XFEM::PositionWithinCondition(
-        const BlitzVec3&                  x_in,
-        const XFEM::InterfaceHandle&      ih,
-        std::map<int,bool>&               posInCondition
-    )
+    const BlitzVec3&                  x_in,
+    const XFEM::InterfaceHandle&      ih,
+    std::map<int,bool>&               posInCondition
+)
 {
+  
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinCondition");
+  //init
   posInCondition.clear();
-
   const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
   
   /////////////////
@@ -249,7 +262,7 @@ void XFEM::PositionWithinCondition(
   {
     const int label = conditer->first;
     posInCondition[label] = false; 
-
+    
     // point lies opposite to a element (basis point within element parameter space)
     // works only, if I can loop over ALL surface elements
     // MUST be modified, if only a subset of the surface is used
@@ -283,14 +296,45 @@ void XFEM::PositionWithinCondition(
     }
     
   } // end loop label
-
-    // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
+  
+  // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
 #ifdef PARALLEL
-    dserror("not implemented, yet");
+  dserror("not implemented, yet");
 #endif
-    //exit(0);
-    return;
+  //exit(0);
+  return;
 }
+
+/*----------------------------------------------------------------------*
+ |  CLI:    checks if a position is within condition-enclosed region      p.ede 05/08|   
+ *----------------------------------------------------------------------*/
+void XFEM::PositionWithinConditionTree(
+    const BlitzVec3&                  x_in,
+    const XFEM::InterfaceHandle&      ih,
+    std::map<int,bool>&               posInCondition
+)
+{
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinConditionTree");
+  
+  posInCondition.clear();
+  const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
+  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  {
+    const int label = conditer->first;
+    posInCondition[label] = false;    
+  }
+  int l = STree.queryPointType(ih, x_in);
+  posInCondition[l] = true;
+  //  printf("%d ", l);
+  
+  // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
+#ifdef PARALLEL
+  dserror("not implemented, yet");
+#endif
+  //exit(0);
+  return;
+}
+
 
 //const XFEM::InterfaceHandle::emptyBoundaryIntCells_ = XFEM::BoundaryIntCells(0);
 

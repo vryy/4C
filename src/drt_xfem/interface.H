@@ -124,6 +124,15 @@ void PositionWithinCondition(
         std::map<int,bool>&               posInCondition  ///< fill with bool values
     );
 
+/*!
+\brief checks if a position in current coordinates lies within a certain condition region using an octree
+*/
+void PositionWithinConditionTree(
+        const BlitzVec3&                  x,              ///< node in physical coordinates
+        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
+        std::map<int,bool>&               posInCondition  ///< fill with bool values
+    );
+
 }
 
 #endif  // #ifndef INTERFACE_H
