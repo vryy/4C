@@ -1454,6 +1454,8 @@ void FluidImplicitTimeInt::LinearSolve()
 void FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
   sysmat_->Zero();
+  if (meshmovematrix_ != Teuchos::null)
+    meshmovematrix_->Zero();
 
   // set the new solution we just got
   if (vel!=Teuchos::null)
@@ -2927,10 +2929,12 @@ void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condeleme
   mat->SetCondElements(condelements);
   sysmat_ = mat;
 
+#if 0
   // allocate special mesh moving matrix
   mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
   mat->SetCondElements(condelements);
   meshmovematrix_ = mat;
+#endif
 }
 
 
