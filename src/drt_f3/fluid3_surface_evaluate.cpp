@@ -781,7 +781,7 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
   length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
 
   for (int i=0; i<3; i++)
-    normal[i] = normal[i] / length;
+    normal[i] = -normal[i] / length;
 
 
   const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
@@ -916,8 +916,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
   length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
 
   for (int i=0; i<3; i++)
-    normal[i] = normal[i] / length;
-
+    normal[i] = -normal[i] / length;
 
   const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
   for (int gpid=0; gpid<intpoints.nquad; gpid++)
