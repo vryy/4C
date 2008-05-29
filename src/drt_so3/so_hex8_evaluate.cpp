@@ -737,8 +737,10 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     ** the stress vector, a C-matrix, and a density must be retrieved,
     ** every necessary data must be passed.
     */
-    Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
-    Epetra_SerialDenseVector stress(NUMSTR_SOH8);
+    LINALG::SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
+    LINALG::SerialDenseVector stress(NUMSTR_SOH8);
+    memset(cmat.A(),0,NUMSTR_SOH8*NUMSTR_SOH8*sizeof(double));
+    memset(stress.A(),0,NUMSTR_SOH8*sizeof(double));
     double density;
     const int ele_ID = Id();
     soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,ele_ID,params);
