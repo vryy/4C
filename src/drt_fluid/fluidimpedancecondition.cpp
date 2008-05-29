@@ -437,10 +437,13 @@ void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
     {
       // we are now in the post-initial phase
       // replace the element that was computed exactly a cycle ago
-      int pos = flowratespos_ % cyclesteps_;
-      (*flowrates_)[pos] = parflowrate;
+    	flowrates_->erase(flowrates_->begin());
+    	flowrates_->push_back(parflowrate);
 
-      flowratespos_++;
+      //int pos = flowratespos_ % cyclesteps_;
+      //(*flowrates_)[pos] = parflowrate;
+
+      //flowratespos_++;
     }
 
     if (myrank_ == 0)
@@ -694,13 +697,13 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int ImpedanceCounter,
 What is supposed to happen within these lines? 
 */
 std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter, 
-						     int generation, 
+						     int generation,
 						     std::complex<double> zparent,
 						     std::complex<double> zleft,
 						     std::complex<double> storage[])
 {
-  std::complex<double> Imag (0,1), RealNumberOne (1,0), RealThreeQuarters (0.75,0), RealNumberZero (0,0), K, wave_c, StoredTmpVar, g, zright, zend, StorageEntry=0;
-  double area, omega, WomersleyNumber, E=1e6, rho=1.206, nue=1.50912106e-5, compliance;
+  std::complex<double> imag (0,1), realone (1,0), koeff, wave_c, StoredTmpVar, g, zright, zend, StorageEntry=0;
+  double area, omega, E=1e6, rho=1.206, nue=1.50912106e-5, compliance;
   int generationLimit=33;
   storage[generation]=zleft;
 
@@ -713,46 +716,49 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
   //Area of vessel
   area=(PI*diameter[generation])/4;
   //Frequency
-  omega=2*PI*ImpedanceCounter/0.8;
+  omega=2*PI*ImpedanceCounter/period_;
   //Womersley number
-  WomersleyNumber=(diameter[generation]/2)*sqrt(omega/nue);
+  double sqrdwo=(diameter[generation]/2)*(diameter[generation]/2)*omega/nue;
   //K depends on the womersley number
-  if (WomersleyNumber > 4)
-  {
-    // are these lines correct???
-  	StoredTmpVar=(2/WomersleyNumber)*Imag;
-  	K=RealNumberOne+StoredTmpVar;
-  }
-  else
-  {
-    // are these lines correct???
-  	StoredTmpVar=8/WomersleyNumber*Imag;
-  	K=RealThreeQuarters+StoredTmpVar;
-  }
+  
+  double wonu = sqrt(sqrdwo);
+
+    if (wonu > 4.0)
+    {
+      complex<double> realone(1,0);
+      koeff = realone - (2.0/(wonu*sqrt(imag)));
+    }
+    else
+    {
+      complex<double> number(1.333333333333333333,0);
+      koeff = 1.0 / ( number - 8.0*imag/ (wonu*wonu) );
+    }
 
   //Compliance
   compliance=(3*area*diameter[generation]/2)/(2*E*h[generation]);
 
   //Wave speed
-  wave_c=sqrt(area*K/(rho*compliance));
+  wave_c=sqrt(area*koeff/(rho*compliance));
 
   //Convenience coefficient
-  g=sqrt(compliance*area*K/rho);
+  g=sqrt(compliance*area*koeff/rho);
 
-  if (real(zleft) == 0)
+  
+  
+  if (abs(zleft) == 0)
   {
-  	zleft = (Imag)*((RealNumberOne/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+  	zleft = (imag)*((realone/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
   	storage[generation]=zleft;
   }
 
   //Right side is always pre calculated!
-  if (real(zleft) != 0 && generation-delta[generation] == 0)
+  if ( abs(zleft) != 0 && generation-delta[generation] == 0)
   {
-  	zright = (Imag)*((RealNumberOne/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+  	zright = (imag)*((realone/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
   }
-  else if (real(storage[generation-delta[generation]]) == 0)
+  else if (abs(storage[generation-delta[generation]]) == 0)
   {
-  	zright = (Imag)*(RealNumberOne/g*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+  	zright = (imag)*(realone/g*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
   }
   else
   {
@@ -762,7 +768,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
   //Bifurcation condition
   zend = (zright*zleft)/(zleft+zright);
   //Impedance at the parent level
-  zparent = (Imag)*(RealNumberOne/g*sin(omega*length[generation]/wave_c)+zend*cos(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c)+Imag*g*zend*sin(omega*length[generation]/wave_c));
+  zparent = (imag)*(realone/g*sin(omega*length[generation]/wave_c)+zend*cos(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c)+imag*g*zend*sin(omega*length[generation]/wave_c));
   zleft=zparent;
   //Right side is always pre calculated!
   if (generation < generationLimit)
@@ -795,7 +801,7 @@ std::complex<double> FluidImpedanceBc::DCLungImpedance(int ImpedanceCounter,
 						       std::complex<double> storage[])
 {
   //DC impedance
-  std::complex<double> Imag (0,1), RealNumberOne (1,0), RealThreeQuarters (0.75,0), RealNumberZero (0,0), K, wave_c, StoredTmpVar, g, zleft, zright, StorageEntry, zend;
+  std::complex<double> zleft, zright, StorageEntry, zend;
   //double zend;
   int generationLimit=33;
 
@@ -805,17 +811,17 @@ std::complex<double> FluidImpedanceBc::DCLungImpedance(int ImpedanceCounter,
   double diameter[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0002, 0.0003, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0014, 0.0015, 0.0017, 0.0019, 0.0020, 0.0022, 0.0023, 0.0024, 0.0026, 0.0030, 0.0030, 0.0038, 0.0049, 0.0054, 0.0054, 0.0069, 0.0077, 0.011, 0.0121, 0.0167};
   double length[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0007, 0.0009, 0.0012, 0.0015, 0.0012, 0.0028, 0.0035, 0.0041, 0.0047, 0.0054, 0.0058, 0.0071, 0.0072, 0.0087, 0.0092, 0.0093, 0.0104, 0.0090, 0.0112, 0.0097, 0.0107, 0.0122, 0.0110, 0.0128, 0.0128, 0.0119, 0.0124, 0.0249, 0.0565, 0.1130};
 
-  if (real(zleft) == 0)
+  if ( abs(zleft) == 0)
   {
 	zleft = 8*length[generation]/(PI*diameter[generation]/2);
   	storage[generation]=zleft;
   }
 
-  if (real(zleft) != 0 && generation-delta[generation] == 0)
+  if ( abs(zleft) != 0 && generation-delta[generation] == 0)
   {
   	zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
   }
-  else if (real(storage[generation-delta[generation]]) == 0)     //Right side is always pre calculated!
+  else if ( abs(storage[generation-delta[generation]]) == 0)     //Right side is always pre calculated!
   {
   	zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
   }
