@@ -39,13 +39,6 @@ eleDofManager_()
     surfaceptrs_.resize(0);
     lines_.resize(0);
     lineptrs_.resize(0);
-
-    sub_acc_old_.resize(0,0);
-    sub_vel_.resize(0,0);
-    sub_vel_old_.resize(0,0);
-    sub_pre_.resize(0);
-    sub_pre_old_.resize(0);
-
     return;
 }
 
@@ -116,21 +109,6 @@ void DRT::ELEMENTS::XFluid3::Pack(vector<char>& data) const
   // is_ale_
   AddtoPack(data,is_ale_);
 
-  // history variables
-  AddtoPack(data,sub_acc_old_.extent(blitz::firstDim));
-  AddtoPack(data,sub_acc_old_.extent(blitz::secondDim));
-
-  int size = sub_acc_old_.extent(blitz::firstDim)
-             *sub_acc_old_.extent(blitz::secondDim)
-             *sizeof(double);
-  AddtoPack(data,sub_acc_old_.data(),size);
-  AddtoPack(data,sub_vel_.data()    ,size);
-  AddtoPack(data,sub_vel_old_.data(),size);
-
-  size = sub_acc_old_.extent(blitz::secondDim)*sizeof(double);
-  AddtoPack(data,sub_pre_.data()    ,size);
-  AddtoPack(data,sub_pre_old_.data(),size);
-
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -157,34 +135,6 @@ void DRT::ELEMENTS::XFluid3::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
   // is_ale_
   ExtractfromPack(position,data,is_ale_);
-
-
-  // history variables (subscale velocities, accelerations and pressure)
-  {
-    int firstdim;
-    int secondim;
-
-    ExtractfromPack(position,data,firstdim);
-    ExtractfromPack(position,data,secondim);
-
-    sub_acc_old_.resize(firstdim,secondim);
-    sub_vel_    .resize(firstdim,secondim);
-    sub_vel_old_.resize(firstdim,secondim);
-
-    const int size = firstdim*secondim*sizeof(double);
-
-    ExtractfromPack(position,data,&(sub_acc_old_.data()[0]),size);
-    ExtractfromPack(position,data,&(sub_vel_.data()[0])    ,size);
-    ExtractfromPack(position,data,&(sub_vel_old_.data()[0]),size);
-
-    sub_pre_    .resize(secondim);
-    sub_pre_old_.resize(secondim);
-
-    ExtractfromPack(position,data,&(sub_pre_.data()[0])    ,secondim*sizeof(double));
-    ExtractfromPack(position,data,&(sub_pre_old_.data()[0]),secondim*sizeof(double));
-
-
-  }
 
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
@@ -217,6 +167,7 @@ void DRT::ELEMENTS::XFluid3::Print(ostream& os) const
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  allocate and return Fluid3Register (public)              mwgee 02/08|
  *----------------------------------------------------------------------*/
@@ -227,265 +178,42 @@ RCP<DRT::ElementRegister> DRT::ELEMENTS::XFluid3::ElementRegister() const
 
 
 /*----------------------------------------------------------------------*
- |  get vector of lines (length 1) (public)                g.bau 03/07|
+ |  get vector of lines              (public)                  gjb 03/07|
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::XFluid3::Lines()
 {
-    const DiscretizationType distype = Shape();
-    const int nline = NumLine();
-    lines_.resize(nline);
-    lineptrs_.resize(nline);
-
-    switch (distype)
-    {
-    case tet4:
-        CreateLinesTet(nline, 2);
-        break;
-    case tet10:
-        CreateLinesTet(nline, 3);
-        break;
-    case hex8:
-        CreateLinesHex(nline, 2);
-        break;
-    case hex20: case hex27:
-        CreateLinesHex(nline, 3);
-        break;
-    default:
-        dserror("distype not supported");
-    }
+  // once constructed do not reconstruct again
+  // make sure they exist
+  if ((int)lines_.size()    == NumLine() &&
+      (int)lineptrs_.size() == NumLine() &&
+      dynamic_cast<DRT::ELEMENTS::XFluid3Line*>(lineptrs_[0]) )
     return (DRT::Element**)(&(lineptrs_[0]));
+  
+  // so we have to allocate new line elements
+  DRT::UTILS::ElementBoundaryFactory<XFluid3Line,XFluid3>(DRT::UTILS::buildLines,lines_,lineptrs_,this);
+
+  return (DRT::Element**)(&(lineptrs_[0]));
 }
 
-// support for above
-void DRT::ELEMENTS::XFluid3::CreateLinesTet(const int& nline,
-                                           const int& nnode)
-{
-    for(int iline=0;iline<nline;iline++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_lines[iline][inode]];
-             nodes[inode]   = Nodes()[eleNodeNumbering_tet10_lines[iline][inode]];
-        }
-        lines_[iline] = rcp(new DRT::ELEMENTS::XFluid3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],NULL,this,iline));
-        lineptrs_[iline] = lines_[iline].get();
-    }
-}
-
-
-// support for above
-void DRT::ELEMENTS::XFluid3::CreateLinesHex(const int& nline,
-                                           const int& nnode)
-{
-    for(int iline=0;iline<nline;iline++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_lines[iline][inode]];
-             nodes[inode]   = Nodes()[eleNodeNumbering_hex27_lines[iline][inode]];
-        }
-        lines_[iline] = rcp(new DRT::ELEMENTS::XFluid3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],NULL,this,iline));
-        lineptrs_[iline] = lines_[iline].get();
-    }
-}
 
 /*----------------------------------------------------------------------*
- |  get vector of surfaces (public)                          g.bau 03/07|
+ |  get vector of surfaces (public)                            gjb 05/08|
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::XFluid3::Surfaces()
 {
-    const DiscretizationType distype = Shape();
-    const int nsurf = NumSurface();
-    surfaces_.resize(nsurf);
-    surfaceptrs_.resize(nsurf);
-
-    switch (distype)
-    {
-    case tet4:
-        CreateSurfacesTet(nsurf, 3);
-        break;
-    case tet10:
-        CreateSurfacesTet(nsurf, 6);
-        break;
-    case hex8:
-        CreateSurfacesHex(nsurf, 4);
-        break;
-    case hex20:
-        CreateSurfacesHex(nsurf, 8);
-        break;
-    case hex27:
-        CreateSurfacesHex(nsurf, 9);
-        break;
-    case wedge6:
-      CreateSurfaceWedge(nsurf, 6);
-        break;
-    case wedge15:
-      CreateSurfaceWedge(nsurf, 15);
-        break;
-    case pyramid5:
-      CreateSurfacesPyramid();
-      break;
-    default:
-        dserror("distype not supported");
-    }
+  // once constructed do not reconstruct again
+  // make sure they exist
+  if ((int)surfaces_.size()    == NumSurface() &&
+      (int)surfaceptrs_.size() == NumSurface() &&
+      dynamic_cast<DRT::ELEMENTS::XFluid3Surface*>(surfaceptrs_[0]) )
     return (DRT::Element**)(&(surfaceptrs_[0]));
+
+  // so we have to allocate new surface elements
+  DRT::UTILS::ElementBoundaryFactory<XFluid3Surface,XFluid3>(DRT::UTILS::buildSurfaces,surfaces_,surfaceptrs_,this);
+  
+  return (DRT::Element**)(&(surfaceptrs_[0]));
 }
 
-
-
-// support for above
-void DRT::ELEMENTS::XFluid3::CreateSurfacesTet(const int& nsurf,
-                                               const int& nnode)
-{
-    for(int isurf=0;isurf<nsurf;isurf++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_surfaces[isurf][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_tet10_surfaces[isurf][inode]];
-        }
-        surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
-        surfaceptrs_[isurf] = surfaces_[isurf].get();
-    }
-}
-
-
-// support for above
-void DRT::ELEMENTS::XFluid3::CreateSurfacesHex(const int& nsurf,
-                                               const int& nnode)
-{
-    for(int isurf=0;isurf<nsurf;isurf++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_surfaces[isurf][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_hex27_surfaces[isurf][inode]];
-        }
-        surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
-        surfaceptrs_[isurf] = surfaces_[isurf].get();
-    }
-}
-
-void DRT::ELEMENTS::XFluid3::CreateSurfaceWedge(
-        const int& nsurf,
-        const int& wedgetype)
-{
-    switch (wedgetype)
-    {
-    case 6:
-    {
-        const int trisurfacenodes=3;   // tri3
-        const int quadsurfacenodes=4;  // quad4
-        for (int isurf=0; isurf<nsurf; isurf++)
-        {
-            int nnode = 0;
-            if (isurf < 2)
-                nnode=trisurfacenodes;
-            else
-                nnode=quadsurfacenodes;
-
-            vector<int> nodeids(nnode);
-            vector<DRT::Node*> nodes(nnode);
-
-            for (int inode=0; inode<nnode; inode++)
-            {
-                if (isurf < 2)
-                {
-                    nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
-                    nodes[  inode] = Nodes()[ eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
-                }
-                else
-                {
-                    nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
-                    nodes[  inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
-                }
-                surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
-                surfaceptrs_[isurf] = surfaces_[isurf].get();
-            }
-        }
-        break;
-    }
-    case 15:
-    {
-        const int trisurfacenodes=6;   // tri6
-        const int quadsurfacenodes=8;  // quad8
-
-        for (int isurf=0; isurf<nsurf; isurf++)
-        {
-            int nnode = 0;
-            if (isurf < 2)
-                nnode=trisurfacenodes;
-            else
-                nnode=quadsurfacenodes;
-
-            vector<int> nodeids(nnode);
-            vector<DRT::Node*> nodes(nnode);
-            for (int inode=0; inode<nnode; inode++)
-            {
-                if (isurf < 2)
-                {
-                    nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
-                    nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
-                }
-                else
-                {
-                    nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
-                    nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
-                }
-                surfaces_[isurf] = rcp(new DRT::ELEMENTS::XFluid3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
-                surfaceptrs_[isurf] = surfaces_[isurf].get();
-            }
-        }
-        break;
-    }
-    default:
-        dserror("incorrect wedgetype");
-    } // end switch wedge type
-}
-
-void DRT::ELEMENTS::XFluid3::CreateSurfacesPyramid()
-{
-  // Quad surface
-
-        const int nnode_surf = 4;
-        const int surfid = 0;
-        int nodeids[nnode_surf];
-        DRT::Node* nodes[nnode_surf];
-        for (int qinode = 0; qinode < nnode_surf; qinode++) {
-          nodeids[qinode] = NodeIds()[eleNodeNumbering_hex27_surfaces[surfid][qinode]];
-          nodes[qinode] = Nodes()[eleNodeNumbering_hex27_surfaces[surfid][qinode]];
-        }
-        surfaces_[surfid] = rcp(new DRT::ELEMENTS::XFluid3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
-        surfaceptrs_[surfid] = surfaces_[surfid].get();
-
-  // tri surfaces
-  for (int tisurf = 0; tisurf < 4; tisurf++)
-  {
-      const int nnode_surf = 3;
-      const int surfid = tisurf+1;
-      int nodeids[nnode_surf];
-      DRT::Node* nodes[nnode_surf];
-      for (int tinode = 0; tinode < nnode_surf; tinode++) {
-        nodeids[tinode] = NodeIds()[eleNodeNumbering_pyramid5_trisurfaces[tisurf][tinode]];
-        nodes[tinode] = Nodes()[eleNodeNumbering_pyramid5_trisurfaces[tisurf][tinode]];
-      }
-      surfaces_[surfid] = rcp(new DRT::ELEMENTS::XFluid3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
-      surfaceptrs_[surfid] = surfaces_[surfid].get();
-
-  }
-}
 
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                g.bau 03/07|

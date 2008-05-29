@@ -216,7 +216,7 @@ public:
   an DRT::ElementRegister. This method allocates and returns
   an instance of a matching DRT::ElementRegister.
   */
-  virtual RCP<DRT::ElementRegister> ElementRegister() const;
+  virtual Teuchos::RCP<DRT::ElementRegister> ElementRegister() const;
 
   //@}
 
@@ -372,6 +372,7 @@ private:
     fssgv_scale_similarity
   };
 
+
   //! physical turbulence models recognized by fluid3_genalpha implementation
   enum TurbModelAction
   {
@@ -390,39 +391,24 @@ private:
   DRT::Container                                  data_;
 
   //! vector of volumes of this element (length 1)
-  vector<DRT::Element*>                           volume_;
+  std::vector<DRT::Element*>                                volume_;
 
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-  vector<RCP<DRT::ELEMENTS::XFluid3Surface> > surfaces_;
+  std::vector<Teuchos::RCP<DRT::ELEMENTS::XFluid3Surface> > surfaces_;
   //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-  vector<DRT::ELEMENTS::XFluid3Surface*>              surfaceptrs_;
+  std::vector<DRT::ELEMENTS::XFluid3Surface*>               surfaceptrs_;
   //! vector of lines adjacent to this element
-  vector<RCP<DRT::ELEMENTS::XFluid3Line> > lines_;
+  std::vector<Teuchos::RCP<DRT::ELEMENTS::XFluid3Line> >    lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::XFluid3Line*>              lineptrs_;
+  std::vector<DRT::ELEMENTS::XFluid3Line*>                  lineptrs_;
 
 private:
-  //! factor including Smagorinsky's constant
-  double                                        Cs_delta_sq_;
-
-  //! matrices of subscale acceleration values in gausspoints of this element
-  blitz::Array<double,2>                        sub_acc_old_;
-
-  //! matrices of subscale velocity values, current iteration value, in gausspoints of this element
-  blitz::Array<double,2>                        sub_vel_;
-  //! matrices of subscale velocity values, last timestep, in gausspoints of this element
-  blitz::Array<double,2>                        sub_vel_old_;
-
-  //! vector of subscale pressure values, current iteration value, in gausspoints
-  blitz::Array<double,1>                        sub_pre_;
-  //! vector of subscale pressure values (history values) in gausspoints
-  blitz::Array<double,1>                        sub_pre_old_;
 
   //! store information about the unknowns of this element
-  XFEM::ElementDofManager                       eleDofManager_;
+  XFEM::ElementDofManager                                   eleDofManager_;
   
   //! store information about the intersection handle
-  RCP<XFEM::InterfaceHandle>                    ih_;
+  Teuchos::RCP<XFEM::InterfaceHandle>                       ih_;
 
   // internal calculation methods
 
@@ -438,230 +424,6 @@ private:
     const struct _MATERIAL*     material,
     ParameterList&    	  params
     );
-
-  /*!
-    \brief calculate spatial mean values for channel flow
-    (requires cartesian mesh)
-
-                                                             gammi 07/07
-
-    <pre>
-
-    this method assumes that each 2 dimensional integration element
-    in the homogeneous plane has the same size!!!
-
-    The necessary element integration is performed in here. The element
-    is cut into two (HEX8) or three (quadratic elements) planes (plus
-    additional planes for visualisation purposes, defined by planes
-    vector), the spatial functions (velocity, pressure etc.) are
-    integrated over this plane and this element contribution is added
-    to a processor local vector (see formulas below for a exact
-    description of the output).
-    The method assumes, that all elements are of the same rectangular
-    shape in the "inplanedirection". In addition, it is assumed that
-    the sampling planes are distributed equidistant in the element.
-
-
-                       ^ normdirect       integration plane
-                       |                /
-                       |               /
-                       |
-                 +-----|-------------+
-                /|     |            /|
-               / |     |           / |
-              /  |     |          /  |
-             /   |     |         /   |
-            /    +-----|--------/----+ ---- additional integration
-           /    /|     |       /    /|      plane (for quadratic elements)
-          /    / |     |      /    / |
-         +-------------------+    /  |
-         |   /   |     *-----|---+------------>
-         |  /    +----/------|--/----+         inplanedirect[1]
-         | /    /    /       | /    /
-         |/    /    /        |/    /   \
-         +---------+---------+    /     \
-         |   /    /          |   /       integration plane
-         |  /    /           |  /
-         | /    /            | /
-         |/    /             |/
-         +----/--------------+
-             /
-            /   inplanedirect[0]
-
-
-    Example for a mean value evaluation:
-
-                            1.0       /
-                     _               |
-                     u = -------- *  | u(x,y,z) dx dy dz =
-                         +---        |
-                          \         / A
-                          / area
-                         +---
-
-
-                           1.0      /
-                                   |            area
-                     =  -------- * | u(r,s,t) * ---- dr ds dt
-                        +---       |              4
-                         \        /  [-1:1]^2
-                         / area
-                        +---
-
-
-
-                            1.0      /
-                                    |            1
-                     =   -------- * | u(r,s,t) * - dr ds dt
-                                    |            4
-                          numele   /  [-1:1]^2
-
-                                   |                        |
-                                   +------------------------+
-                                this is the integral we compute!
-
-    The factor 1/4 is necessary since we use a reference element of
-    size 2x2
-
-    The method computes:
-                        _             _             _             _
-               numele * u  , numele * v  , numele * w  , numele * p
-                        ___           ___           ___           ___
-                         ^2            ^2            ^2            ^2
-    and        numele * u  , numele * v  , numele * w  , numele * p
-
-                        _ _           _ _           _ _
-   as well as  numele * u*v, numele * u*w, numele * v*w
-
-
-    as well as numele.
-    All results are communicated via the parameter list!
-
-    </pre>
-
-   */
-
-  void f3_calc_means(
-    vector<double>&           vel  ,
-    ParameterList& 	      params
-    );
-
-  /*!
-    \brief one point integration of convolutions with box filter
-    function. The filter function is not normalized yet, this has
-    to be done as a 'postprocessing' step after the patchvolume
-    is calculated, i.e. after the volume contribution of all
-    elements adjacent to a node has been added to the
-    normalisation constant.
-
-    See reference
-
-    A.E. Tejada-Martinez, K.E. Jansen
-    Spatial test filters for dynamic model large-eddy simulation with
-    finite elements.
-    Communications in numerical methods in engineering, 2000
-
-    for details
-
-    \param evelaf                        (in )  : nodal velocities
-    \param vel_hat                       (out)  : integrated convolution
-                                                  with velocity
-    \param reystr_hat                    (out)  : integrated convolution
-                                                  with reynolds stresses
-    \param modeled_stress_grid_scale_hat (out)  : integrated convolution
-                                                  with subgrid scale
-                                                  stress tensor model
-    \param volume                        (out)  : element volume
-    \return void
-
-   */
-  void f3_apply_box_filter(
-    blitz::Array<double, 2>&  evelaf,
-    blitz::Array<double, 1>&  vel_hat,
-    blitz::Array<double, 2>&  reystr_hat,
-    blitz::Array<double, 2>&  modeled_stress_grid_scale_hat,
-    double&                   volume
-    );
-
-  /*!
-    \brief compute the quantities necessary to determine Cs for the dynamic
-    model.
-
-    References are
-
-
-    M. Germano, U. Piomelli, P. Moin, W.H. Cabot:
-    A dynamic subgrid-scale eddy viscosity model
-    (Phys. Fluids 1991)
-
-    or
-
-    D.K. Lilly:
-    A proposed modification of the Germano subgrid-scale closure method
-    (Phys. Fluids 1992)
-
-    or
-    A.E. Tejada-Martinez
-    Dynamic subgrid-scale modeling for large eddy simulation of turbulent
-    flows with a stabilized finite element method
-    (Phd thesis, Rensselaer Polytechnic Institute, Troy, New York)
-
-    <pre>
-
-    L_ij : the tensor of resolved components of the stress tensor associated
-           with the scales of motion between the resolved and the test scale
-
-    M_ij : the tensor of modeled components of the stress tensor associated
-           with the scales of motion between the resolved and the test scale
-           (modulo 2Cs, a constant)
-
-    </pre>
-
-
-    \param evelaf                        (in )  : nodal velocities
-    \param vel_hat                       (in)   : integrated convolution
-                                                  with velocity
-    \param reystr_hat                    (in)   : integrated convolution
-                                                  with reynolds stresses
-    \param modeled_stress_grid_scale_hat (in)   : integrated convolution
-                                                  with subgrid scale
-                                                  stress tensor model
-    \param LijMij                        (out)  : trace of product of resolved
-                                                  stress tensor with modeled
-                                                  stress tensor
-    \param MijMij                        (out)  : trace of product of modeled
-                                                  resolved stress tensor with
-                                                  itself
-    \param center                        (out)  : element center
-    \return void
-
-   */
-
-void f3_calc_smag_const_LijMij_and_MijMij(
-  blitz::Array<double, 2> evelaf_hat,
-  blitz::Array<double, 3> ereynoldsstress_hat,
-  blitz::Array<double, 3> efiltered_modeled_subgrid_stress_hat,
-  double&                 LijMij,
-  double&                 MijMij,
-  double&                 center);
-
-
-  void CreateLinesTet(const int& nline,
-                      const int& nnode);
-
-  void CreateLinesHex(const int& nline,
-                      const int& nnode);
-
-  void CreateSurfacesTet(const int& nline,
-                         const int& nnode);
-
-  void CreateSurfacesHex(const int& nline,
-                         const int& nnode);
-
-  void CreateSurfaceWedge(const int& nsurf,
-                          const int& wedgetype);
-
-  void CreateSurfacesPyramid();
 
   /*!
    \brief get optimal gaussrule for given discretization type
@@ -1011,9 +773,9 @@ private:
   //! The local surface number of this surface w.r.t to the parent_ element
   const int                    lsurface_;
   //! vector of lines adjacent to this element
-  vector<RCP<DRT::ELEMENTS::XFluid3Line> > lines_;
+  std::vector<Teuchos::RCP<DRT::ELEMENTS::XFluid3Line> > lines_;
   //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::XFluid3Line*>              lineptrs_;
+  std::vector<DRT::ELEMENTS::XFluid3Line*>              lineptrs_;
 
   //  compute kovariant metric tensor G for fluid surface element
   //                                                  gammi 04/07
@@ -1023,12 +785,6 @@ private:
     const Epetra_SerialDenseMatrix  deriv,
     Epetra_SerialDenseMatrix&       metrictensor,
     double                         *drs);
-
-  void CreateLinesTri(const int& nline,
-                      const int& nnode);
-
-  void CreateLinesQuad(const int& nline,
-                       const int& nnode);
 
   /*!
   \brief integrate shapefunction over surface element
@@ -1073,8 +829,7 @@ public:
                 int nnode,
                 const int* nodeids,
                 DRT::Node** nodes,
-                DRT::ELEMENTS::XFluid3Surface* surfaceParent,
-                DRT::ELEMENTS::XFluid3* parent,
+                DRT::Element* parent,
                 const int lline);
 
   /*!
@@ -1245,11 +1000,8 @@ private:
   // don't want = operator
   XFluid3Line& operator = (const XFluid3Line& old);
 
-  //! The surface parent element of this line
-  DRT::ELEMENTS::XFluid3Surface* surfaceParent_;
-
   //! The volume parent element of this line
-  DRT::ELEMENTS::XFluid3* parent_;                  // problem !!! wth initialization
+  DRT::Element* parent_;
 
 
 

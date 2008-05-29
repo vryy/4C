@@ -151,7 +151,7 @@ void static Sysmat2(
     const int numparamdiscpres = getNumParam<ASSTYPE>(dofman, DiscPres, 1);
 
     
-    double area_ratio = 1.0;
+    double area_ratio = 0.1;
     //const double area_ratio = XFEM::AreaRatio<DISTYPE, ASSTYPE>(ele,ih);
     if (instationary)
       area_ratio = 0.00000001;
