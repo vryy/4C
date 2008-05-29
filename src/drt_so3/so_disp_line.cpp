@@ -30,11 +30,9 @@ DRT::ELEMENTS::SoDispLine::SoDispLine(  int id,
                                         int nnode,
                                         const int* nodeids,
                                         DRT::Node** nodes,
-                                        DRT::ELEMENTS::SoDispSurface* surfaceParent,
-                                        DRT::ELEMENTS::SoDisp* parent,  
+                                        DRT::Element* parent,
                                         const int lline) :
 DRT::Element(id,element_sodispline,owner),
-surfaceParent_(surfaceParent),
 parent_(parent),
 lline_(lline)
 {
@@ -49,7 +47,6 @@ lline_(lline)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::SoDispLine::SoDispLine(const DRT::ELEMENTS::SoDispLine& old) :
 DRT::Element(old),
-surfaceParent_(old.surfaceParent_),
 parent_(old.parent_),
 lline_(old.lline_)
 {

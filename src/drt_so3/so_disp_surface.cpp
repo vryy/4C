@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -26,7 +26,7 @@ Maintainer: Moritz Frenzel
 DRT::ELEMENTS::SoDispSurface::SoDispSurface(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::ELEMENTS::SoDisp* parent,
+                              DRT::Element* parent,
                               const int lsurface) :
 DRT::Element(id,element_sodispsurface,owner),
 parent_(parent),
@@ -198,7 +198,7 @@ void DRT::ELEMENTS::SoDispSurface::CreateLinesTri(const int& nline,
              nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
              nodes[inode]   = Nodes()[  DRT::UTILS::eleNodeNumbering_tri6_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::ELEMENTS::SoDispLine(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,NULL,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::SoDispLine(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }        
@@ -216,7 +216,7 @@ void DRT::ELEMENTS::SoDispSurface::CreateLinesQuad(const int& nline,
              nodeids[inode] = NodeIds()[DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
              nodes[inode]   = Nodes()[  DRT::UTILS::eleNodeNumbering_quad9_lines[iline][inode]];
         }
-        lines_[iline] = rcp(new DRT::ELEMENTS::SoDispLine(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,NULL,iline));
+        lines_[iline] = rcp(new DRT::ELEMENTS::SoDispLine(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,iline));
         lineptrs_[iline] = lines_[iline].get();
     }
 }    

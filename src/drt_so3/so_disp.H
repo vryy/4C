@@ -3,10 +3,10 @@
 \brief pure displacement based element for higher order shape functions (quadratic)
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -520,7 +520,7 @@ public:
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
   SoDispSurface(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::ELEMENTS::SoDisp* parent, const int lsurface);
+             DRT::Node** nodes, DRT::Element* parent, const int lsurface);
 
   /*!
   \brief Standard Constructor
@@ -717,7 +717,7 @@ private:
   };
 
   //! The parent element of this surface
-  DRT::ELEMENTS::SoDisp* parent_;
+  DRT::Element* parent_;
 
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
@@ -776,8 +776,7 @@ public:
                 int nnode,
                 const int* nodeids,
                 DRT::Node** nodes,
-                DRT::ELEMENTS::SoDispSurface* surfaceParent,
-                DRT::ELEMENTS::SoDisp* parent,
+                DRT::Element* parent,
                 const int lline);
 
   /*!
@@ -948,11 +947,8 @@ private:
   // don't want = operator
   SoDispLine& operator = (const SoDispLine& old);
 
-  //! The surface parent element of this line
-  DRT::ELEMENTS::SoDispSurface* surfaceParent_;
-
   //! The volume parent element of this line
-  DRT::ELEMENTS::SoDisp* parent_;                  // problem !!! wth initialization
+  DRT::Element* parent_;
 
   //! The local line number of this line w.r.t to the parent_ element
   int                    lline_;
