@@ -214,6 +214,12 @@ namespace UTILS
       return;
   }
 
+  enum BoundaryBuildType
+  {
+    buildSurfaces,
+    buildLines
+  };
+  
   /*!
    * create new instances of surface / line elements for a given parent element
    *
@@ -238,7 +244,7 @@ namespace UTILS
    */
   template <class BoundaryEle, class ParentEle>
   void ElementBoundaryFactory(
-      bool buildsurfs,
+      BoundaryBuildType buildtype,
       vector<RefCountPtr<BoundaryEle> >& boundaryeles,
       vector<BoundaryEle*>& boundaryelesptrs,
       ParentEle* ele
@@ -249,15 +255,20 @@ namespace UTILS
     unsigned int nele=0;
     const DRT::Element::DiscretizationType distype = ele->Shape();
     vector< vector<int> > connectivity;
-    if (buildsurfs)
+    switch (buildtype)
     {
-      nele = ele->NumSurface();
-      connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-    }
-    else
-    {
-      nele = ele->NumLine();
-      connectivity = DRT::UTILS::getEleNodeNumberingLines(distype);
+      case buildSurfaces:
+      {
+        nele = ele->NumSurface();
+        connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+        break;
+      }
+      case buildLines:
+      {
+        nele = ele->NumLine();
+        connectivity = DRT::UTILS::getEleNodeNumberingLines(distype);
+        break;
+      }
     }
     // resize vectors that will contain surface or line element information
     boundaryeles.resize(nele);

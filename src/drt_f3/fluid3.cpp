@@ -253,7 +253,7 @@ DRT::Element** DRT::ELEMENTS::Fluid3::Lines()
     return (DRT::Element**)(&(lineptrs_[0]));
   
   // so we have to allocate new line elements
-  DRT::UTILS::ElementBoundaryFactory<Fluid3Line,Fluid3>(false,lines_,lineptrs_,this);
+  DRT::UTILS::ElementBoundaryFactory<Fluid3Line,Fluid3>(DRT::UTILS::buildLines,lines_,lineptrs_,this);
 
   return (DRT::Element**)(&(lineptrs_[0]));
 }
@@ -272,7 +272,7 @@ DRT::Element** DRT::ELEMENTS::Fluid3::Surfaces()
     return (DRT::Element**)(&(surfaceptrs_[0]));
 
   // so we have to allocate new surface elements
-  DRT::UTILS::ElementBoundaryFactory<Fluid3Surface,Fluid3>(true,surfaces_,surfaceptrs_,this);
+  DRT::UTILS::ElementBoundaryFactory<Fluid3Surface,Fluid3>(DRT::UTILS::buildSurfaces,surfaces_,surfaceptrs_,this);
   
   return (DRT::Element**)(&(surfaceptrs_[0]));
 }

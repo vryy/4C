@@ -133,7 +133,7 @@ DRT::Element** DRT::ELEMENTS::Ale2::Lines()
     return (DRT::Element**)(&(lineptrs_[0]));
   
   // so we have to allocate new line elements
-  DRT::UTILS::ElementBoundaryFactory<Ale2Line,Ale2>(false,lines_,lineptrs_,this);
+  DRT::UTILS::ElementBoundaryFactory<Ale2Line,Ale2>(DRT::UTILS::buildLines,lines_,lineptrs_,this);
 
   return (DRT::Element**)(&(lineptrs_[0]));
 }

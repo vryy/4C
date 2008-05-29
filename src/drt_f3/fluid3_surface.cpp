@@ -137,7 +137,7 @@ DRT::Element** DRT::ELEMENTS::Fluid3Surface::Lines()
     return (DRT::Element**)(&(lineptrs_[0]));
   
   // so we have to allocate new line elements
-  DRT::UTILS::ElementBoundaryFactory<Fluid3Line,Fluid3Surface>(false,lines_,lineptrs_,this);
+  DRT::UTILS::ElementBoundaryFactory<Fluid3Line,Fluid3Surface>(DRT::UTILS::buildLines,lines_,lineptrs_,this);
 
   return (DRT::Element**)(&(lineptrs_[0]));
 
