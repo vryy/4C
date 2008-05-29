@@ -478,12 +478,6 @@ private:
   Wall1& operator = (const Wall1& old);
 
 
-  void CreateLinesTri(const int& nline,
-                      const int& nnode);
-
-  void CreateLinesQuad(const int& nline,
-                       const int& nnode);
-
   // set number of gauss points to element shape default
    DRT::UTILS::GaussRule2D getGaussrule(int* ngp);
 
