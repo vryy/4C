@@ -288,6 +288,8 @@ protected:
   RCP<LINALG::SparseMatrix>          mhatmatrix_;     // product of global Mortar matrices inv(D)*M
   RCP<Epetra_Vector>                 g_;              // global weighted gap vector g
   
+  RCP<LINALG::SparseMatrix>          mhata_;          // active part of mhatmatrix_ (needed for HüeberCheck)
+  
   RCP<LINALG::SparseMatrix>          nmatrix_;        // global Matrix N containing active node normals
   RCP<LINALG::SparseMatrix>          tmatrix_;        // global Matrix T containing active node tangents
   RCP<LINALG::SparseMatrix>          smatrix_;        // global Matrix S containing normal+D+M derivatives

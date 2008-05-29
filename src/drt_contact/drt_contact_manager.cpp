@@ -1521,6 +1521,10 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   /* and global matrix t with tangent vectors of active nodes           */
   /* and global matrix s with normal derivatives of active nodes        */
   /**********************************************************************/
+  // here and for the splitting later, we need the combined sm rowmap
+  // (this map is NOT allowed to have an overlap !!!)
+  RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
+  
 #ifdef CONTACTCHECKHUEEBER
   if (numiter==0)
   {
@@ -1537,9 +1541,7 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
   
   // FillComplete() global matrix S
-  // (here and for the spliiting later, we need the combined sm rowmap)
-  // (this map is NOT allowed to have an overlap !!!)
-  RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
+  
   smatrix_->Complete(*gsmdofs,*gactiven_);
   
   // FillComplete() global matrix P
@@ -1753,6 +1755,7 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   /**********************************************************************/
   RCP<LINALG::SparseMatrix> mhata;
   LINALG::SplitMatrix2x2(mhatmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mhata,tempmtx1,tempmtx2,tempmtx3);
+  mhata_=mhata;
   
   RCP<LINALG::SparseMatrix> invda;
   LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
@@ -2056,7 +2059,28 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
 {
 #ifdef CONTACTCHECKHUEEBER
   // debugging (check S. Hüeber)
-  dserror("ERROR: RecoverNoBasisTrafo: Quadr. convergence check not implemented");
+  if (IsInContact())
+  {
+    RCP<LINALG::SparseMatrix> nmhata = LINALG::Multiply(*nmatrix_,false,*mhata_,false,true);
+    
+    RCP<Epetra_Vector> gupdate = rcp(new Epetra_Vector(*gactiven_));
+    RCP<Epetra_Vector> gupdate2 = rcp(new Epetra_Vector(*gactiven_));
+    RCP<Epetra_Vector> activedisi =rcp(new Epetra_Vector(*gactivedofs_));
+    RCP<Epetra_Vector> masterdisi =rcp(new Epetra_Vector(*gmdofrowmap_));
+    LINALG::Export(*disi,*activedisi);
+    LINALG::Export(*disi,*masterdisi);
+    nmatrix_->Multiply(false,*activedisi,*gupdate);
+    nmhata->Multiply(false,*masterdisi,*gupdate2);
+    gupdate->ReplaceMap(*gactivenodes_);
+    gupdate2->ReplaceMap(*gactivenodes_);
+    RCP<Epetra_Vector> gupdateexp = rcp(new Epetra_Vector(*gsnoderowmap_));
+    RCP<Epetra_Vector> gupdateexp2 = rcp(new Epetra_Vector(*gsnoderowmap_));
+    LINALG::Export(*gupdate,*gupdateexp);
+    LINALG::Export(*gupdate2,*gupdateexp2);
+    gupdateexp->Update(1.0,*g_,-1.0);
+    gupdateexp->Update(1.0,*gupdateexp2,1.0);
+    g_=gupdateexp;
+  } 
 #endif // #ifdef CONTACTCHECKHUEEBER
   
   // extract slave displacements from disi
