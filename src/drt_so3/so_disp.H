@@ -316,7 +316,7 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
   //! vector of volume (length 1) of this element
-  vector<RefCountPtr<DRT::ELEMENTS::SoDispVolume> > volume_;
+  vector<DRT::Element*> volume_;
   //! vector of surfaces of this element
   vector<RefCountPtr<DRT::ELEMENTS::SoDispSurface> > surfaces_;
   //! vector of surfaces of this element
@@ -363,29 +363,6 @@ protected:
   	public:
   		Integrator_SoDisp(DRT::ELEMENTS::SoDisp& this_element);
   };
-
-  /*********** became obsolete ************************/
-  void sodisp_shapederiv(Epetra_SerialDenseMatrix** shapefct,
-                       Epetra_SerialDenseMatrix** deriv,
-                       Epetra_SerialDenseVector** weights);
-  /*****************************************************/
-  void CreateLinesTet(const int& nline,
-                      const int& nnode);
-
-  void CreateLinesHex(const int& nline,
-                      const int& nnode);
-
-  void CreateSurfacesTet(const int& nsurf,
-                         const int& nnode);
-
-  void CreateSurfacesHex(const int& nsurf,
-                         const int& nnode);
-
-  void CreateSurfacesWegde6(const int& nsurf);
-
-  void CreateSurfacesWegde15(const int& nsurf);
-
-
 
 }; // class SoDisp
 
@@ -734,12 +711,6 @@ private:
         double* sqrtdetg,                      // (o) pointer to sqrt of det(g)
         const Epetra_SerialDenseMatrix* xs,    // (i) element coords
         const Epetra_SerialDenseMatrix deriv); // (i) shape funct derivs
-
-  void CreateLinesTri(const int& nline,
-                      const int& nnode);
-
-  void CreateLinesQuad(const int& nline,
-                       const int& nnode);
 
 }; // class SoDispSurface
 

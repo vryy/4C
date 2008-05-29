@@ -349,13 +349,6 @@ private:
   // set number of gauss points to element shape default
   DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
-  void CreateLinesTri(const int& nline,
-                      const int& nnode);
-
-  void CreateLinesQuad(const int& nline,
-                       const int& nnode);
-
-
 }; // class Bele3
 
 

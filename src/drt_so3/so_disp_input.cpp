@@ -48,7 +48,7 @@ bool DRT::ELEMENTS::SoDisp::ReadElement()
     int   ierr = 0;
     int   nnode = 0;
     int   nodes[27];
-    DiscretizationType distype;
+    DiscretizationType distype = dis_none;
 
     Gid2DisType::iterator iter;
     for( iter = gid2distype.begin(); iter != gid2distype.end(); iter++ )

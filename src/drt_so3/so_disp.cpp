@@ -173,172 +173,51 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::SoDisp::ElementRegister() const
 
 
 /*----------------------------------------------------------------------*
+ |  get vector of lines              (public)                  gjb 03/07|
+ *----------------------------------------------------------------------*/
+DRT::Element** DRT::ELEMENTS::SoDisp::Lines()
+{
+  // once constructed do not reconstruct again
+  // make sure they exist
+  if ((int)lines_.size()    == NumLine() &&
+      (int)lineptrs_.size() == NumLine() &&
+      dynamic_cast<DRT::ELEMENTS::SoDispLine*>(lineptrs_[0]) )
+    return (DRT::Element**)(&(lineptrs_[0]));
+  
+  // so we have to allocate new line elements
+  DRT::UTILS::ElementBoundaryFactory<SoDispLine,SoDisp>(DRT::UTILS::buildLines,lines_,lineptrs_,this);
+
+  return (DRT::Element**)(&(lineptrs_[0]));
+}
+
+
+/*----------------------------------------------------------------------*
+ |  get vector of surfaces (public)                            gjb 05/08|
+ *----------------------------------------------------------------------*/
+DRT::Element** DRT::ELEMENTS::SoDisp::Surfaces()
+{
+  // once constructed do not reconstruct again
+  // make sure they exist
+  if ((int)surfaces_.size()    == NumSurface() &&
+      (int)surfaceptrs_.size() == NumSurface() &&
+      dynamic_cast<DRT::ELEMENTS::SoDispSurface*>(surfaceptrs_[0]) )
+    return (DRT::Element**)(&(surfaceptrs_[0]));
+
+  // so we have to allocate new surface elements
+  DRT::UTILS::ElementBoundaryFactory<SoDispSurface,SoDisp>(DRT::UTILS::buildSurfaces,surfaces_,surfaceptrs_,this);
+  
+  return (DRT::Element**)(&(surfaceptrs_[0]));
+}
+
+
+/*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                  maf 04/07|
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::SoDisp::Volumes()
 {
-  dserror("body force not implemented");
   volume_.resize(1);
-  return 0;
-}
-
- /*----------------------------------------------------------------------*
- |  get vector of surfaces (public)                             maf 04/07|
- |  surface normals always point outward                                 |
- *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::SoDisp::Surfaces()
-{
-
-    const DiscretizationType distype = Shape();
-    const int nsurf = NumSurface();
-    surfaces_.resize(nsurf);
-    surfaceptrs_.resize(nsurf);
-
-    switch (distype)
-    {
-    case tet4:
-        CreateSurfacesTet(nsurf, 3);
-        break;
-    case tet10:
-        CreateSurfacesTet(nsurf, 6);
-        break;
-    case hex8:
-        CreateSurfacesHex(nsurf, 4);
-        break;
-    case hex20:
-        CreateSurfacesHex(nsurf, 8);
-        break;
-    case hex27:
-        CreateSurfacesHex(nsurf, 9);
-        break;
-    case wedge6:
-        CreateSurfacesWegde6(nsurf);
-        break;
-    case wedge15:
-        CreateSurfacesWegde15(nsurf);
-        break;
-    case pyramid5:
-      dserror("pyramid5 is missing");
-    default:
-        dserror("distype not supported");
-    }
-    return (DRT::Element**)(&(surfaceptrs_[0]));
-}
-
-// support for above
-void DRT::ELEMENTS::SoDisp::CreateSurfacesTet(const int& nsurf,
-                                              const int& nnode)
-{
-    for(int isurf=0;isurf<nsurf;isurf++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_surfaces[isurf][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_tet10_surfaces[isurf][inode]];
-        }
-        surfaces_[isurf] = rcp(new DRT::ELEMENTS::SoDispSurface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
-        surfaceptrs_[isurf] = surfaces_[isurf].get();
-    }
-}
-
-
-// support for above
-void DRT::ELEMENTS::SoDisp::CreateSurfacesHex(const int& nsurf,
-                                               const int& nnode)
-{
-    for(int isurf=0;isurf<nsurf;isurf++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_surfaces[isurf][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_hex27_surfaces[isurf][inode]];
-        }
-        surfaces_[isurf] = rcp(new DRT::ELEMENTS::SoDispSurface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
-        surfaceptrs_[isurf] = surfaces_[isurf].get();
-    }
-}
-
-// support for above
-void DRT::ELEMENTS::SoDisp::CreateSurfacesWegde6(const int& nsurf)
-{
-    // first the 3 quad surfaces (#0..2)
-    for (int qisurf = 0; qisurf < 3; ++qisurf)
-    {
-          const int nnode_surf = 4;
-          const int surfid = qisurf;
-          int nodeids[nnode_surf];
-          DRT::Node* nodes[nnode_surf];
-          for (int qinode = 0; qinode < nnode_surf; ++qinode) {
-            nodeids[qinode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[surfid][qinode]];
-            nodes[qinode] = Nodes()[eleNodeNumbering_wedge15_quadsurfaces[surfid][qinode]];
-          }
-          surfaces_[qisurf] = rcp(new DRT::ELEMENTS::SoDispSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
-          surfaceptrs_[qisurf] = surfaces_[qisurf].get();
-    };
-    // then the tri's...
-    for (int tisurf = 0; tisurf < 2; ++tisurf)
-    {
-        const int nnode_surf = 3;
-        const int surfid = tisurf + 3;
-        int nodeids[nnode_surf];
-        DRT::Node* nodes[nnode_surf];
-        for (int tinode = 0; tinode < nnode_surf; ++tinode) {
-          nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[surfid][tinode]];
-          nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[surfid][tinode]];
-        }
-        surfaces_[surfid] = rcp(new DRT::ELEMENTS::SoDispSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
-        surfaceptrs_[surfid] = surfaces_[surfid].get();
-    };
-}
-
-// support for above
-void DRT::ELEMENTS::SoDisp::CreateSurfacesWegde15(const int& nsurf)
-{
-    // first the 3 quad surfaces (#0..2)
-    for (int qisurf = 0; qisurf < 3; ++qisurf)
-    {
-      const int nnode_surf = 8;
-      int nodeids[nnode_surf];
-      DRT::Node* nodes[nnode_surf];
-      for (int qinode = 0; qinode < nnode_surf; ++qinode) {
-        nodeids[qinode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[qisurf][qinode]];
-        nodes[qinode] = Nodes()[eleNodeNumbering_wedge15_quadsurfaces[qisurf][qinode]];
-      }
-      surfaces_[qisurf] = rcp(new DRT::ELEMENTS::SoDispSurface(qisurf,Owner(),nnode_surf,nodeids,nodes,this,qisurf));
-      surfaceptrs_[qisurf] = surfaces_[qisurf].get();
-    };
-    // then the tri's...
-    for (int tisurf = 0; tisurf < 2; ++tisurf)
-    {
-        const int nnode_surf = 6;
-        const int surfid = tisurf + 3;
-        int nodeids[nnode_surf];
-        DRT::Node* nodes[nnode_surf];
-        for (int tinode = 0; tinode < nnode_surf; ++tinode) {
-          nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[tisurf][tinode]];
-          nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[tisurf][tinode]];
-        }
-        surfaces_[surfid] = rcp(new DRT::ELEMENTS::SoDispSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
-        surfaceptrs_[surfid] = surfaces_[surfid].get();
-    };
-}
-
-/*----------------------------------------------------------------------*
- |  get vector of lines (public)                               maf 04/07|
- *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::SoDisp::Lines()
-{
-  dserror("SoDisp lines not yet implemented");
-  const int nline = NumLine();
-  lines_.resize(nline);
-  lineptrs_.resize(nline);
-  return (DRT::Element**)(&(lineptrs_[0]));
+  volume_[0] = this;
+  return &volume_[0];
 }
 
 
