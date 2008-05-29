@@ -279,10 +279,13 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   //Loop over some frequencies making a call to Impedance, w=2*pi*k/T
   //where k=-N/2,....,N/2, 
 
-  // calculate DC (direct current) component ...
-  frequencydomain[0] = DCLungImpedance(0,0,zparent,storage);
   double radius = sqrt(area/PI);
-  //frequencydomain[0] = DCArteryImpedance(0,0,area,density,viscosity,zparent,storage);
+  // calculate DC (direct current) component depending on type of tree
+  if ( treetype_ == "lung" )
+    frequencydomain[0] = DCLungImpedance(0,0,zparent,storage);
+  
+  if ( treetype_ == "artery" )
+    frequencydomain[0] = DCArteryImpedance(0,radius,density,viscosity,zparent);
 
   // this results in a field like
   // frequencydomain = 
@@ -293,8 +296,11 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   for (int k=1; k<cyclesteps_; k++)
   {
     int generation=0;
-    frequencydomain[k] = LungImpedance(k,generation,zparent,zleft,storage);
-    //frequencydomain[k] = ArteryImpedance(k,generation,radius,density,viscosity);
+    if ( treetype_ == "lung" )
+      frequencydomain[k] = LungImpedance(k,generation,zparent,zleft,storage);
+
+    if ( treetype_ == "artery" )
+      frequencydomain[k] = ArteryImpedance(k,generation,radius,density,viscosity,zparent);
   }
 
   // --------------------------------------------------------------------------
@@ -306,7 +312,7 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   //                   -cyclesteps
   //
   // with omega_k = 2 PI k / T
-
+  // --------------------------------------------------------------------------
 
   double constexp = 2*PI/cyclesteps_;
   double realpart = cos(constexp);
@@ -326,14 +332,9 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
       timedomain[timefrac] += pow(eiwt,-timefrac*k) * conj(frequencydomain[k]);
   }
 
-
   //Get Real component of TimeDomain, imaginary part should be anyway zero.
-  //  vector<double> values;   // real impedance values
-  //  values.resize(cyclesteps_);
-
   for (int i=0; i<cyclesteps_; i++)
   {
-    //	values[i]=real(timedomain[i])/cyclesteps_;  // WHY division by cyclesteps?
     impvalues_[i]=real(timedomain[i]);
     if (abs(imag(timedomain[i])) > 1E-4 )
       cout << "error in imaginary part is = " << timedomain[i] << endl;
@@ -410,10 +411,6 @@ void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
     {
       // we are now in the post-initial phase
       // replace the element that was computed exactly a cycle ago
-
-      //    	flowrates_->erase(flowrates_->begin());
-      //    	flowrates_->push_back(parflowrate);
-
       int pos = flowratespos_ % cyclesteps_;
       (*flowrates_)[pos] = parflowrate;
 
@@ -466,10 +463,10 @@ void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta)
       // the convolution integral
       for (int j=0; j<cyclesteps_; j++)
       {
-	int zindex = ( flowratespos_-1-j+cyclesteps_ ) % cyclesteps_;
 	int qindex = ( flowratespos_+j ) % cyclesteps_;
+	int zindex = -1-j+cyclesteps_;
 
-	pressure += 1e-12*impvalues_[zindex] * (*flowrates_)[qindex] * dta; // units: pressure x time
+	pressure += impvalues_[zindex] * (*flowrates_)[qindex] * dta; // units: pressure x time
       }
 
       pressure = pressure/period_; // this cures the dimension; missing in Olufsen paper
@@ -664,22 +661,63 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
   This case is also called direct current component in the classical
   analogy.
 */
-std::complex<double> FluidImpedanceBc::DCArteryImpedance(int ImpedanceCounter, 
-						         int generation,  
-							 double area,
+std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,  
+							 double radius,
 							 double density,
 							 double viscosity,
-						         std::complex<double> zparentdc,
-						         std::complex<double> storage[])
-{
+						         std::complex<double> zparentdc)
+{  
   // general data
   double lscale = 50.0; // length to radius ratio
+  double alpha = 0.9;   // right daughter vessel ratio
+  double beta = 0.6;    // left daughter vessel ratio 
   double mu = viscosity * density; // dynamic (physical) viscosity
 
-  // build up geometry of root generation
-  double rootrad = sqrt(area/PI); // an estimate for the root radius of the tree
+  // terminal resistance is assumed zero
+  complex<double> zterminal (0,0);
+  double termradius = 1;
 
-  zparentdc = 8.0 * mu * lscale / ( PI*rootrad*rootrad*rootrad );
+  // get dc impedances of downward vessels ...
+  //*****************************************
+  generation++;  // this is the next generation
+
+  // left hand side:
+  double nextradius = alpha*radius;
+  complex<double> zleft;
+  if (nextradius < termradius)
+    zleft = zterminal;
+  else
+    zleft  = DCArteryImpedance(generation,nextradius,density,viscosity,zparentdc);
+
+  // right hand side:
+  complex<double> zright;
+  nextradius = beta*radius;
+  if (nextradius < termradius)
+    zright = zterminal;
+  else
+    zright = DCArteryImpedance(generation,nextradius,density,viscosity,zparentdc);
+
+
+  // ... combine this to the dc impedance at my downstream end ...
+  //*************************************************************
+  complex<double> zdown;
+  if( zleft == 0.0 )
+    if( zright == 0.0 )
+      zdown = 0.0;  // both daughter impedances are zero, we are at the leafes of the tree
+    else
+      zdown = zright; // only the left downward vessel has already terminated
+  else if( zright == 0.0 )
+    zdown = zleft;    // only the right downward vessel has already terminated
+  else
+    // the standard case, both vessels contiunue
+    zdown = 1.0 / (1.0/zleft + 1.0/zright);
+
+
+  // ... and compute dc impedance at my upstream end!
+  //*************************************************************
+
+  // calculate dc impedance of this, the present vessel
+  zparentdc = 8.0 * mu * lscale / ( PI*radius*radius*radius ) + zdown;
 
   return zparentdc;
 }

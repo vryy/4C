@@ -101,7 +101,7 @@ private:
   /*!
   \brief compute tree and root impedance for given frequency for artery
   */
-  std::complex<double> ArteryImpedance( int ImpedanceCounter, 
+  std::complex<double> ArteryImpedance( int k, 
 					int generation, 
 					double radius,
 					double density,
@@ -111,13 +111,11 @@ private:
   /*!
   \brief compute tree and root impedance for zero frequency for artery
   */
-  std::complex<double> DCArteryImpedance( int ImpedanceCounter, 
-					  int generation,  
-					  double area,
+  std::complex<double> DCArteryImpedance( int generation,  
+					  double radius,
 					  double density,
 					  double viscosity,
-					  std::complex<double> zparentdc,
-					  std::complex<double> storage[]);
+					  std::complex<double> zparentdc);
 
   /*!
   \brief compute tree and root impedance for given frequency for lung
