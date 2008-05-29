@@ -206,7 +206,9 @@ private:
 
   //! in case of changed "thin" direction this is true
   bool nodes_rearranged_;
-  int inp_nodeIds_[NUMNOD_SOH8];
+  
+  //! vector in thickness direction for compatibility with sosh8
+  vector<double>                                   thickvec_;
   
   //! Compute stiffness and mass matrix
   void sosh8_nlnstiffmass(
@@ -244,6 +246,7 @@ private:
 
   //! Find "thin"=thickness direction
   ThicknessDirection sosh8_findthickdir();
+  const vector<double> GetThickvec(){return thickvec_;};
 
   //! Debug gmsh-plot to check thickness direction
   void sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8]);

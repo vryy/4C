@@ -34,7 +34,6 @@ data_()
   kintype_ = soh8_totlag;
   eastype_ = soh8_easnone;
   neas_ = 0;
-  thickvec_.resize(0);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   glprestrain_ = rcp(new Epetra_SerialDenseMatrix(NUMGPT_SOH8,NUMSTR_SOH8));
 #endif
@@ -60,7 +59,6 @@ surfaces_(old.surfaces_),
 surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
 lineptrs_(old.lineptrs_),
-thickvec_(old.thickvec_),
 detJ_(old.detJ_)
 {
 #if defined(PRESTRESS) || defined(POSTSTRESS)
@@ -116,8 +114,6 @@ void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
   AddtoPack(data,eastype_);
   // neas_
   AddtoPack(data,neas_);
-  // fiber related
-  AddtoPack(data,thickvec_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -163,8 +159,6 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,eastype_);
   // neas_
   ExtractfromPack(position,data,neas_);
-  // fiber related
-  ExtractfromPack(position,data,thickvec_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

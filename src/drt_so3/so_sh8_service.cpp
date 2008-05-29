@@ -246,7 +246,7 @@ void DRT::ELEMENTS::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& 
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
-    DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
+    DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8* failed");
     // plot vector in center of elements
     const vector<double> pv = actele->GetThickvec();

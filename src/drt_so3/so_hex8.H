@@ -328,7 +328,6 @@ public:
                               Epetra_SerialDenseVector& elevec1);
 
 
-  const vector<double> GetThickvec(){return thickvec_;};
   //const vector<double> GetFibervec(){return fiberdirection_;};
   const vector<double> soh8_ElementCenterRefeCoords();
 
@@ -431,8 +430,6 @@ protected:
 
 
 
-  //! vector in thickness direction for compatibility with sosh8
-  vector<double>                                   thickvec_;
   //! vector for fiber direction, needs better place in future
   //vector<double>                                   fiberdirection_;
 

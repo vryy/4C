@@ -1102,15 +1102,15 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
       case DRT::ELEMENTS::So_sh8::autor:
       case DRT::ELEMENTS::So_sh8::globx: {
         // resorting of nodes to arrive at local t-dir for global x-dir
-        new_nodeids[0] = actele->inp_nodeIds_[7];
-        new_nodeids[1] = actele->inp_nodeIds_[4];
-        new_nodeids[2] = actele->inp_nodeIds_[0];
-        new_nodeids[3] = actele->inp_nodeIds_[3];
-        new_nodeids[4] = actele->inp_nodeIds_[6];
-        new_nodeids[5] = actele->inp_nodeIds_[5];
-        new_nodeids[6] = actele->inp_nodeIds_[1];
-        new_nodeids[7] = actele->inp_nodeIds_[2];
-//        actele->sosh8_gmshplotlabeledelement(actele->inp_nodeIds_);
+        new_nodeids[0] = actele->NodeIds()[7];
+        new_nodeids[1] = actele->NodeIds()[4];
+        new_nodeids[2] = actele->NodeIds()[0];
+        new_nodeids[3] = actele->NodeIds()[3];
+        new_nodeids[4] = actele->NodeIds()[6];
+        new_nodeids[5] = actele->NodeIds()[5];
+        new_nodeids[6] = actele->NodeIds()[1];
+        new_nodeids[7] = actele->NodeIds()[2];
+//        actele->sosh8_gmshplotlabeledelement(actele->NodeIds());
 //        actele->sosh8_gmshplotlabeledelement(new_nodeids);
         actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
         actele->nodes_rearranged_ = true;
@@ -1119,14 +1119,14 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
       case DRT::ELEMENTS::So_sh8::autos:
       case DRT::ELEMENTS::So_sh8::globy: {
         // resorting of nodes to arrive at local t-dir for global y-dir
-        new_nodeids[0] = actele->inp_nodeIds_[4];
-        new_nodeids[1] = actele->inp_nodeIds_[5];
-        new_nodeids[2] = actele->inp_nodeIds_[1];
-        new_nodeids[3] = actele->inp_nodeIds_[0];
-        new_nodeids[4] = actele->inp_nodeIds_[7];
-        new_nodeids[5] = actele->inp_nodeIds_[6];
-        new_nodeids[6] = actele->inp_nodeIds_[2];
-        new_nodeids[7] = actele->inp_nodeIds_[3];
+        new_nodeids[0] = actele->NodeIds()[4];
+        new_nodeids[1] = actele->NodeIds()[5];
+        new_nodeids[2] = actele->NodeIds()[1];
+        new_nodeids[3] = actele->NodeIds()[0];
+        new_nodeids[4] = actele->NodeIds()[7];
+        new_nodeids[5] = actele->NodeIds()[6];
+        new_nodeids[6] = actele->NodeIds()[2];
+        new_nodeids[7] = actele->NodeIds()[3];
         actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
         actele->nodes_rearranged_ = true;
         break;
@@ -1135,7 +1135,7 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
       case DRT::ELEMENTS::So_sh8::globz: {
         // no resorting necessary
         for (int node = 0; node < 8; ++node) {
-          new_nodeids[node] = actele->inp_nodeIds_[node];
+          new_nodeids[node] = actele->NodeIds()[node];
         }
         actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
         actele->nodes_rearranged_ = true;
