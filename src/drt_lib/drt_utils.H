@@ -248,7 +248,7 @@ namespace UTILS
       const BoundaryBuildType buildtype,
       vector<RefCountPtr<BoundaryEle> >& boundaryeles,
       vector<BoundaryEle*>& boundaryelesptrs,
-      const ParentEle* ele
+      ParentEle* ele
       )
   {
     // do we have to build surface or line elements?
