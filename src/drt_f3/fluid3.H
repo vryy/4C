@@ -673,24 +673,6 @@ void f3_calc_smag_const_LijMij_and_MijMij(
   void ConvStresses(const blitz::Array<double,2>&  evelnp,
                           blitz::Array<double,1>&  econv);
 
-
-  void CreateLinesTet(const int& nline,
-                      const int& nnode);
-
-  void CreateLinesHex(const int& nline,
-                      const int& nnode);
-
-  void CreateSurfacesTet(const int& nline,
-                         const int& nnode);
-
-  void CreateSurfacesHex(const int& nline,
-                         const int& nnode);
-
-  void CreateSurfaceWedge(const int& nsurf,
-                          const int& wedgetype);
-
-  void CreateSurfacesPyramid();
-
   /*!
    \brief get optimal gaussrule for given discretization type
    \return enum with optimal gausrule for this element
