@@ -123,7 +123,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
 
-  FLUID_UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
+  FLUIDUTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
 
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
@@ -3119,8 +3119,8 @@ void FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> > conde
                                               const LINALG::MultiMapExtractor& domainmaps,
                                               const LINALG::MultiMapExtractor& rangemaps)
 {
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy> > mat =
-    Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy> > mat =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
   mat->SetCondElements(condelements);
   sysmat_ = mat;
 }

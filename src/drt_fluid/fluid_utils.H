@@ -29,7 +29,7 @@ Maintainer: Axel Gerstenberger
 /*!
  * \brief namespace for fluid related stuff
  */
-namespace FLUID_UTILS
+namespace FLUIDUTILS
 {
 
   /// velocity-pressure block matrix split strategy

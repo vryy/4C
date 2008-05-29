@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLUID_UTILS::SetupFluidSplit(const DRT::Discretization& dis,
+void FLUIDUTILS::SetupFluidSplit(const DRT::Discretization& dis,
                                  int ndim,
                                  LINALG::MapExtractor& extractor)
 {
@@ -75,7 +75,7 @@ void FLUID_UTILS::SetupFluidSplit(const DRT::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLUID_UTILS::SetupFluidSplit(const DRT::Discretization& dis,
+void FLUIDUTILS::SetupFluidSplit(const DRT::Discretization& dis,
                                  const DRT::DofSet& dofset,
                                  int ndim,
                                  LINALG::MapExtractor& extractor)
@@ -132,7 +132,7 @@ void FLUID_UTILS::SetupFluidSplit(const DRT::Discretization& dis,
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
-void FLUID_UTILS::SetupXFluidSplit(
+void FLUIDUTILS::SetupXFluidSplit(
         const DRT::Discretization& dis,
         const RCP<XFEM::DofManager> dofman,
         LINALG::MapExtractor& extractor)

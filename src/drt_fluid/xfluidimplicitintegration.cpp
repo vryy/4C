@@ -114,7 +114,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   dofset_out_.Reset();
   dofset_out_.AssignDegreesOfFreedom(*discret_,0);
   // split based on complete fluid field
-  FLUID_UTILS::SetupFluidSplit(*discret_,dofset_out_,3,velpressplitterForOutput_);
+  FLUIDUTILS::SetupFluidSplit(*discret_,dofset_out_,3,velpressplitterForOutput_);
   
   nodalDofDistributionMap_.clear();
   elementalDofDistributionMap_.clear();
@@ -646,7 +646,7 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // contains the velocity dofs and for one vector which only contains
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
-  FLUID_UTILS::SetupXFluidSplit(*discret_,dofmanager,velpressplitter_);
+  FLUIDUTILS::SetupXFluidSplit(*discret_,dofmanager,velpressplitter_);
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -2498,8 +2498,8 @@ void XFluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelem
 #else
   //const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy> > mat =
-    Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy> > mat =
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
   mat->SetCondElements(condelements);
   sysmat_ = mat;
 #endif

@@ -121,7 +121,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 
   const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
-  FLUID_UTILS::SetupFluidSplit(*discret_,numdim,velpressplitter_);
+  FLUIDUTILS::SetupFluidSplit(*discret_,numdim,velpressplitter_);
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -141,8 +141,8 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   }
   else
   {
-    Teuchos::RCP<LINALG::BlockSparseMatrix<FLUID_UTILS::VelPressSplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUID_UTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
+    Teuchos::RCP<LINALG::BlockSparseMatrix<FLUIDUTILS::VelPressSplitStrategy> > blocksysmat =
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
     blocksysmat->SetNumdim(numdim);
     sysmat_ = blocksysmat;
   }
@@ -2920,15 +2920,15 @@ void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condeleme
                                           const LINALG::MultiMapExtractor& domainmaps,
                                           const LINALG::MultiMapExtractor& rangemaps)
 {
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy> > mat;
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy> > mat;
 
   // (re)allocate system matrix
-  mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+  mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
   mat->SetCondElements(condelements);
   sysmat_ = mat;
 
   // allocate special mesh moving matrix
-  mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUID_UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+  mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
   mat->SetCondElements(condelements);
   meshmovematrix_ = mat;
 }
