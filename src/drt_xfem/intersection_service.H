@@ -440,7 +440,7 @@ namespace XFEM
         */
         static BlitzMat2x2 metrictensor;
         //metrictensor = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
-        LINALG::DENSE::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metrictensor);
+        BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metrictensor);
         
         unrm(0) = dxyzdrs(1,0) * dxyzdrs(2,1) - dxyzdrs(2,0) * dxyzdrs(1,1);
         unrm(1) = dxyzdrs(2,0) * dxyzdrs(0,1) - dxyzdrs(0,0) * dxyzdrs(2,1);

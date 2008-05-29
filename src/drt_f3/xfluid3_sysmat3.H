@@ -235,13 +235,13 @@ void static Sysmat3(
 
             // position of the gausspoint in physical coordinates
             static BlitzVec3 gauss_pos_xyz;
-            LINALG::DENSE::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
+            BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
             //BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
             static BlitzMat3x3 xjm;
-            LINALG::DENSE::MMt_product<3,3,numnode>(deriv,xyze,xjm);
+            BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
             const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                                xjm(0,1)*xjm(1,2)*xjm(2,0)+
@@ -673,7 +673,7 @@ void static Sysmat3(
             /* Convective term  u_old * grad u_old: */
             static BlitzVec3 conv_old;
             //conv_old = blitz::sum(vderxy(i, j)*velint(j), j);
-            LINALG::DENSE::MV_product<3,3>(vderxy,velint,conv_old);
+            BLITZTINY::MV_product<3,3>(vderxy,velint,conv_old);
             
             /* Viscous term  div epsilon(u_old) */
             static BlitzVec3 visc_old;
@@ -1525,7 +1525,7 @@ void static Sysmat3(
             // compute covariant metric tensor G for surface element (2x2)
             static BlitzMat2x2 metric;
             //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
-            LINALG::DENSE::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
+            BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
             //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
             
             // compute global derivates
@@ -1752,7 +1752,7 @@ void static Sysmat3(
             
             static BlitzVec3 disctau_times_n;
             //tau_times_n = blitz::sum(tau(i,j)*normalvec(j),j);
-            LINALG::DENSE::MV_product<3,3>(tau,normalvec,disctau_times_n);
+            BLITZTINY::MV_product<3,3>(tau,normalvec,disctau_times_n);
             assembler.template Vector<Velx>(shp, timefacfac*disctau_times_n(0));
             assembler.template Vector<Vely>(shp, timefacfac*disctau_times_n(1));
             assembler.template Vector<Velz>(shp, timefacfac*disctau_times_n(2));

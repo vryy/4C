@@ -506,7 +506,7 @@ void gder2(
 
     //const BlitzMat xder2(blitz::sum(deriv2(i,k)*xyze(j,k),k));
     static blitz::TinyMatrix<double,6,3> xder2;
-    LINALG::DENSE::MMt_product<6,3,numnode>(deriv2,xyze,xder2);
+    BLITZTINY::MMt_product<6,3,numnode>(deriv2,xyze,xder2);
 
     /*
     |        0...iel-1             0 1 2
@@ -807,13 +807,13 @@ double AreaRatio(
       
             // position of the gausspoint in physical coordinates
             static BlitzVec3 gauss_pos_xyz;
-            LINALG::DENSE::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
+            BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
             //BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
             static BlitzMat3x3 xjm;
-            LINALG::DENSE::MMt_product<3,3,numnode>(deriv,xyze,xjm);
+            BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
             const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
                                xjm(0,1)*xjm(1,2)*xjm(2,0)+
