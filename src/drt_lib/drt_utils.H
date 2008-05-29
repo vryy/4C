@@ -214,10 +214,11 @@ namespace UTILS
       return;
   }
 
+  //! flag, whether surfaces or lines have to be created in the ElementBoundaryFactory
   enum BoundaryBuildType
   {
-    buildSurfaces,
-    buildLines
+    buildSurfaces,  ///< build surfaces
+    buildLines      ///< build lines
   };
   
   /*!
@@ -234,7 +235,7 @@ namespace UTILS
    * Surfaces() and Lines() methods for every element class (especially in 3D) using
    * the BACI conventions for element connectivity
    * 
-   * \param buildsurfs      (in) flag, whether surfaces or lines have to be created
+   * \param buildtype       (in) flag, whether surfaces or lines have to be created
    * \param boundaryeles    (in) vector to be filled with RCPs of allocated boundary elements
    * \param boundaryeleptrs (in) vector to be filled with raw pointers of the boundary elements
    * \param ele             (in) pointer on the parent element
@@ -244,10 +245,10 @@ namespace UTILS
    */
   template <class BoundaryEle, class ParentEle>
   void ElementBoundaryFactory(
-      BoundaryBuildType buildtype,
+      const BoundaryBuildType buildtype,
       vector<RefCountPtr<BoundaryEle> >& boundaryeles,
       vector<BoundaryEle*>& boundaryelesptrs,
-      ParentEle* ele
+      const ParentEle* ele
       )
   {
     // do we have to build surface or line elements?
