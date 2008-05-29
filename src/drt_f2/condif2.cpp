@@ -155,76 +155,24 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Condif2::ElementRegister() cons
   return rcp(new DRT::ELEMENTS::Condif2Register(Type()));
 }
 
-//
-// get vector of lines
-//
+
+/*----------------------------------------------------------------------*
+ |  get vector of lines (public)                               gjb 05/08|
+ *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::Condif2::Lines()
 {
-  const DiscretizationType distype = Shape();
-  const int nline   = NumLine();
-  lines_.resize(nline);
-  lineptrs_.resize(nline);
-
-    switch (distype)
-    {
-    case tri3:
-        CreateLinesTri(nline, 2);
-        break;
-    case tri6:
-        CreateLinesTri(nline, 3);
-        break;
-    case quad4:
-        CreateLinesQuad(nline, 2);
-        break;
-    case quad8:
-        CreateLinesQuad(nline, 3);
-        break;
-    case quad9:
-        CreateLinesQuad(nline, 3);
-        break;
-    default:
-        dserror("distype not supported");
-    }
+    // once constructed do not reconstruct again
+    // make sure they exist
+    if ((int)lines_.size()    == NumLine() &&
+        (int)lineptrs_.size() == NumLine() &&
+        dynamic_cast<DRT::ELEMENTS::Condif2Line*>(lineptrs_[0]) )
+      return (DRT::Element**)(&(lineptrs_[0]));
+    
+    // so we have to allocate new line elements
+    DRT::UTILS::ElementBoundaryFactory<Condif2Line,Condif2>(false,lines_,lineptrs_,this);
 
     return (DRT::Element**)(&(lineptrs_[0]));
 }
-
-void DRT::ELEMENTS::Condif2::CreateLinesTri(const int& nline,
-                                           const int& nnode)
-{
-    for(int iline=0;iline<nline;iline++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_tri6_lines[iline][inode]];
-        }
-        lines_[iline] = rcp(new DRT::ELEMENTS::Condif2Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,iline));
-        lineptrs_[iline] = lines_[iline].get();
-    }
-}
-
-void DRT::ELEMENTS::Condif2::CreateLinesQuad(const int& nline,
-                                            const int& nnode)
-{
-    for(int iline=0;iline<nline;iline++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_quad9_lines[iline][inode]];
-        }
-        lines_[iline] = rcp(new DRT::ELEMENTS::Condif2Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,iline));
-        lineptrs_[iline] = lines_[iline].get();
-    }
-}
-
 
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)                  vg 05/07|

@@ -375,11 +375,6 @@ private:
   // set number of gauss points to element shape default
   DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype);
 
-  void CreateLinesTri(const int& nline,
-                      const int& nnode);
-
-  void CreateLinesQuad(const int& nline,
-                       const int& nnode);
 
 }; // class Condif2
 
@@ -680,7 +675,8 @@ private:
   enum ActionType
   {
      none,
-     integrate_Shapefunction
+     integrate_Shapefunction,
+     calc_normal_flux
   };
 
   // don't want = operator

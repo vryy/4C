@@ -138,7 +138,7 @@ DRT::Element** DRT::ELEMENTS::Ale3::Surfaces()
     return (DRT::Element**)(&(surfaceptrs_[0]));
 
   // so we have to allocate new surface elements
-  DRT::UTILS::ElementBoundaryFactory<Ale3Surface,Ale3>(false,surfaces_,surfaceptrs_,this);
+  DRT::UTILS::ElementBoundaryFactory<Ale3Surface,Ale3>(true,surfaces_,surfaceptrs_,this);
   
   return (DRT::Element**)(&(surfaceptrs_[0]));
 }
