@@ -23,18 +23,15 @@ Maintainer: Axel Gerstenberger (Ursula)
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 01/07|
- |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3Line::Fluid3Line(  int id,
                                         int owner,
                                         int nnode,
                                         const int* nodeids,
                                         DRT::Node** nodes,
-                                        DRT::ELEMENTS::Fluid3Surface* surfaceParent,
-                                        DRT::ELEMENTS::Fluid3* parent,  
+                                        DRT::Element* parent,  
                                         const int lline) :
 DRT::Element(id,element_fluid3line,owner),
-surfaceParent_(surfaceParent),
 parent_(parent),
 lline_(lline)
 {
@@ -49,7 +46,6 @@ lline_(lline)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid3Line::Fluid3Line(const DRT::ELEMENTS::Fluid3Line& old) :
 DRT::Element(old),
-surfaceParent_(old.surfaceParent_),
 parent_(old.parent_),
 lline_(old.lline_)
 {

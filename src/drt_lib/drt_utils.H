@@ -215,9 +215,12 @@ namespace UTILS
   }
 
   /*!
-   * create new instances of surface / line elements
+   * create new instances of surface / line elements for a given parent element
    *
    * template version
+   * 
+   * class BoundaryEle:  class name of desired surface/line element, e.g. Fluid3Surface
+   * class ParentEle:    class name of parent element, e.g. Fluid3
    *
    * this templated function creates all surface / line elements for a given element
    * and fills handed over vectors with RCPs and raw pointers of these boundary elements

@@ -130,189 +130,19 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Ale3::ElementRegister() const
 //
 DRT::Element** DRT::ELEMENTS::Ale3::Surfaces()
 {
-    const DiscretizationType distype = Shape();
-    const int nsurf = NumSurface();
-    surfaces_.resize(nsurf);
-    surfaceptrs_.resize(nsurf);
-
-    switch (distype)
-    {
-    case tet4:
-        CreateSurfacesTet(nsurf, 3);
-        break;
-    case tet10:
-        CreateSurfacesTet(nsurf, 6);
-        break;
-    case hex8:
-        CreateSurfacesHex(nsurf, 4);
-        break;
-    case hex20:
-        CreateSurfacesHex(nsurf, 8);
-        break;
-    case hex27:
-        CreateSurfacesHex(nsurf, 9);
-        break;
-    case wedge6:
-      CreateSurfaceWedge(nsurf, 6);
-        break;
-    case wedge15:
-      CreateSurfaceWedge(nsurf, 15);
-        break;
-    case pyramid5:
-      CreateSurfacesPyramid();
-      break;
-    default:
-        dserror("distype not supported");
-    }
+  // once constructed do not reconstruct again
+  // make sure they exist
+  if ((int)surfaces_.size()    == NumSurface() &&
+      (int)surfaceptrs_.size() == NumSurface() &&
+      dynamic_cast<DRT::ELEMENTS::Ale3Surface*>(surfaceptrs_[0]) )
     return (DRT::Element**)(&(surfaceptrs_[0]));
+
+  // so we have to allocate new surface elements
+  DRT::UTILS::ElementBoundaryFactory<Ale3Surface,Ale3>(false,surfaces_,surfaceptrs_,this);
+  
+  return (DRT::Element**)(&(surfaceptrs_[0]));
 }
 
-
-
-// support for above
-void DRT::ELEMENTS::Ale3::CreateSurfacesTet(const int& nsurf,
-                                            const int& nnode)
-{
-    for(int isurf=0;isurf<nsurf;isurf++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_tet10_surfaces[isurf][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_tet10_surfaces[isurf][inode]];
-        }
-        surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
-        surfaceptrs_[isurf] = surfaces_[isurf].get();
-    }
-}
-
-
-// support for above
-void DRT::ELEMENTS::Ale3::CreateSurfacesHex(const int& nsurf,
-                                            const int& nnode)
-{
-    for(int isurf=0;isurf<nsurf;isurf++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_hex27_surfaces[isurf][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_hex27_surfaces[isurf][inode]];
-        }
-        surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
-        surfaceptrs_[isurf] = surfaces_[isurf].get();
-    }
-}
-
-void DRT::ELEMENTS::Ale3::CreateSurfaceWedge(const int& nsurf, const int& wedgetype)
-{
-  switch (wedgetype){
-  case 6:
-  {
-    const int trisurfacenodes=3;
-    const int quadsurfacenodes=4;
-    for (int isurf=0; isurf<nsurf; isurf++)
-    {
-        int nnode = 0;
-        if (isurf < 2)
-            nnode=trisurfacenodes;
-        else
-            nnode=quadsurfacenodes;
-
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-
-        for (int inode=0; inode<nnode;inode++)
-        {
-            if (isurf < 2)
-            {
-                nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
-                nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
-            }
-            else
-            {
-                nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
-                nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
-            }
-            surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
-            surfaceptrs_[isurf] = surfaces_[isurf].get();
-        }
-    }
-    break;
-  }
-  case 15:
-  {
-    const int trisurfacenodes=6;
-    const int quadsurfacenodes=8;
-
-    for (int isurf=0; isurf<nsurf; isurf++)
-    {
-        int nnode = 0;
-        if (isurf < 2)
-            nnode=trisurfacenodes;
-        else
-            nnode=quadsurfacenodes;
-
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-        for (int inode=0; inode<nnode;inode++)
-        {
-            if (isurf < 2)
-            {
-                nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
-                nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_trisurfaces[isurf][inode]];
-            }
-            else
-            {
-                nodeids[inode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
-                nodes[inode] = Nodes()[ eleNodeNumbering_wedge15_quadsurfaces[isurf-2][inode]];
-            }
-            surfaces_[isurf] = rcp(new DRT::ELEMENTS::Ale3Surface(isurf,Owner(),nnode,&nodeids[0],&nodes[0],this,isurf));
-            surfaceptrs_[isurf] = surfaces_[isurf].get();
-        }
-    }
-    break;
-  }
-  default:
-      dserror("incorrect wedgetype");
-  } // end switch wedge type
-}
-
-void DRT::ELEMENTS::Ale3::CreateSurfacesPyramid()
-{
-  // Quad surface
-
-        const int nnode_surf = 4;
-        const int surfid = 0;
-        int nodeids[nnode_surf];
-        DRT::Node* nodes[nnode_surf];
-        for (int qinode = 0; qinode < nnode_surf; qinode++) {
-          nodeids[qinode] = NodeIds()[eleNodeNumbering_hex27_surfaces[surfid][qinode]];
-          nodes[qinode] = Nodes()[eleNodeNumbering_hex27_surfaces[surfid][qinode]];
-        }
-        surfaces_[surfid] = rcp(new DRT::ELEMENTS::Ale3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
-        surfaceptrs_[surfid] = surfaces_[surfid].get();
-
-  // tri surfaces
-  for (int tisurf = 0; tisurf < 4; tisurf++)
-  {
-      const int nnode_surf = 3;
-      const int surfid = tisurf+1;
-      int nodeids[nnode_surf];
-      DRT::Node* nodes[nnode_surf];
-      for (int tinode = 0; tinode < nnode_surf; tinode++) {
-        nodeids[tinode] = NodeIds()[eleNodeNumbering_pyramid5_trisurfaces[tisurf][tinode]];
-        nodes[tinode] = Nodes()[eleNodeNumbering_pyramid5_trisurfaces[tisurf][tinode]];
-      }
-      surfaces_[surfid] = rcp(new DRT::ELEMENTS::Ale3Surface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
-      surfaceptrs_[surfid] = surfaces_[surfid].get();
-
-  }
-}
 
 DRT::Element** DRT::ELEMENTS::Ale3::Volumes()
 {

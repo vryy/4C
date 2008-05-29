@@ -129,72 +129,20 @@ void DRT::ELEMENTS::Fluid3Surface::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 DRT::Element** DRT::ELEMENTS::Fluid3Surface::Lines()
 {
-    const DiscretizationType distype = Shape();
-    const int nline   = NumLine();
-    lines_.resize(nline);
-    lineptrs_.resize(nline);
-
-    switch (distype)
-    {
-    case tri3:
-        CreateLinesTri(3, 2);
-        break;
-    case tri6:
-        CreateLinesTri(3, 3);
-        break;
-    case quad4:
-        CreateLinesQuad(4, 2);
-        break;
-    case quad8:
-        CreateLinesQuad(4, 3);
-        break;
-    case quad9:
-        CreateLinesQuad(4, 3);
-        break;
-    default:
-        dserror("distype not supported");
-    }
-
+  // once constructed do not reconstruct again
+  // make sure they exist
+  if ((int)lines_.size()    == NumLine() &&
+      (int)lineptrs_.size() == NumLine() &&
+      dynamic_cast<DRT::ELEMENTS::Fluid3Line*>(lineptrs_[0]) )
     return (DRT::Element**)(&(lineptrs_[0]));
+  
+  // so we have to allocate new line elements
+  DRT::UTILS::ElementBoundaryFactory<Fluid3Line,Fluid3Surface>(false,lines_,lineptrs_,this);
+
+  return (DRT::Element**)(&(lineptrs_[0]));
+
 }
 
-
-
-void DRT::ELEMENTS::Fluid3Surface::CreateLinesTri(const int& nline,
-                                                  const int& nnode)
-{
-    for(int iline=0;iline<nline;iline++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-        
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_tri6_lines[iline][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_tri6_lines[iline][inode]];
-        }
-        lines_[iline] = rcp(new DRT::ELEMENTS::Fluid3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,NULL,iline));
-        lineptrs_[iline] = lines_[iline].get();
-    }
-}        
-
-void DRT::ELEMENTS::Fluid3Surface::CreateLinesQuad(const int& nline,
-                                                   const int& nnode)
-{
-    for(int iline=0;iline<nline;iline++)
-    {
-        vector<int> nodeids(nnode);
-        vector<DRT::Node*> nodes(nnode);
-        
-        for (int inode=0;inode<nnode;inode++)
-        {
-             nodeids[inode] = NodeIds()[eleNodeNumbering_quad9_lines[iline][inode]];
-             nodes[inode]   = Nodes()[  eleNodeNumbering_quad9_lines[iline][inode]];
-        }
-        lines_[iline] = rcp(new DRT::ELEMENTS::Fluid3Line(iline,Owner(),nnode,&nodeids[0],&nodes[0],this,NULL,iline));
-        lineptrs_[iline] = lines_[iline].get();
-    }
-}    
 
 #endif  // #ifdef CCADISCRET
 #endif // #ifdef D_FLUID3

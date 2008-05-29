@@ -1154,8 +1154,7 @@ public:
                 int nnode,
                 const int* nodeids,
                 DRT::Node** nodes,
-                DRT::ELEMENTS::Fluid3Surface* surfaceParent,
-                DRT::ELEMENTS::Fluid3* parent,
+                DRT::Element* parent,
                 const int lline);
 
   /*!
@@ -1326,11 +1325,8 @@ private:
   // don't want = operator
   Fluid3Line& operator = (const Fluid3Line& old);
 
-  //! The surface parent element of this line
-  DRT::ELEMENTS::Fluid3Surface* surfaceParent_;
-
   //! The volume parent element of this line
-  DRT::ELEMENTS::Fluid3* parent_;                  // problem !!! wth initialization
+  DRT::Element* parent_;
 
 
 
