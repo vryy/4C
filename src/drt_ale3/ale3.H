@@ -360,17 +360,6 @@ private:
   // don't want = operator
   Ale3& operator = (const Ale3& old);
 
-  void CreateSurfacesTet(const int& nline,
-                         const int& nnode);
-
-  void CreateSurfacesHex(const int& nline,
-                         const int& nnode);
-
-  void CreateSurfaceWedge(const int& nsurf,
-                          const int& wedgetype);
-
-  void CreateSurfacesPyramid();
-
   // get optimal gaussrule for given discretization type
   DRT::UTILS::GaussRule3D getOptimalGaussrule(const DiscretizationType& distype);
 };
