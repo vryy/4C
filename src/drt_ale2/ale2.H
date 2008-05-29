@@ -309,11 +309,7 @@ private:
   // don't want = operator
   Ale2& operator = (const Ale2& old);
 
-  void CreateLinesTri(const int& nline,
-                      const int& nnode);
 
-  void CreateLinesQuad(const int& nline,
-                       const int& nnode);
 };
 
 
