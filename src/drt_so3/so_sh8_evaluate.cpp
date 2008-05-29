@@ -432,9 +432,9 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
   // ANS modified rows of bop in local(parameter) coords
   Epetra_SerialDenseMatrix B_ans_loc(num_ans*num_sp,NUMDOF_SOH8);
   // Jacobian evaluated at all ANS sampling points
-  Epetra_SerialDenseMatrix jac_sps(NUMDIM_SOH8*num_sp,NUMDIM_SOH8);
+  LINALG::SerialDenseMatrix jac_sps(NUMDIM_SOH8*num_sp,NUMDIM_SOH8);
   // CURRENT Jacobian evaluated at all ANS sampling points
-  Epetra_SerialDenseMatrix jac_cur_sps(NUMDIM_SOH8*num_sp,NUMDIM_SOH8);
+  LINALG::SerialDenseMatrix jac_cur_sps(NUMDIM_SOH8*num_sp,NUMDIM_SOH8);
   // pointer to derivs evaluated at all sampling points
   Epetra_SerialDenseMatrix* deriv_sp; //[NUMDIM_SOH8*numsp][NUMNOD_SOH8]
   // evaluate all necessary variables for ANS
@@ -963,10 +963,10 @@ void DRT::ELEMENTS::So_sh8::sosh8_anssetup(
   }
 
   // compute Jacobian matrix at all sampling points
-  jac_sps.Multiply('N','N',1.0,df_sp,xrefe,1.0);
+  jac_sps.Multiply('N','N',1.0,df_sp,xrefe,0.0);
 
   // compute CURRENT Jacobian matrix at all sampling points
-  jac_cur_sps.Multiply('N','N',1.0,df_sp,xcurr,1.0);
+  jac_cur_sps.Multiply('N','N',1.0,df_sp,xcurr,0.0);
 
   /*
   ** Compute modified B-operator in local(parametric) space,
