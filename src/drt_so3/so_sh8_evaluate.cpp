@@ -74,7 +74,12 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+      // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
+      if (Type() == DRT::Element::element_sosh8){
+        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+      } else if (Type() == DRT::Element::element_so_hex8){
+        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+      }
     }
     break;
 
@@ -88,7 +93,12 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+      // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
+      if (Type() == DRT::Element::element_sosh8){
+        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+      } else if (Type() == DRT::Element::element_so_hex8){
+        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+      }
     }
     break;
 
@@ -112,7 +122,12 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+      // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
+      if (Type() == DRT::Element::element_sosh8){
+        sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+      } else if (Type() == DRT::Element::element_so_hex8){
+        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+      }
     }
     break;
 
@@ -133,8 +148,14 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix strain(NUMGPT_SOH8,NUMSTR_SOH8);
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
-      if (iostrain != "euler_almansi") sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy);
-      else    dserror("requested option not yet implemented for solidsh8");
+      // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
+      if (Type() == DRT::Element::element_sosh8){
+        if (iostrain != "euler_almansi") sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy);
+        else    dserror("requested option not yet implemented for solidsh8");
+      } else if (Type() == DRT::Element::element_so_hex8){
+        if (iostrain == "euler_almansi") soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,true);
+        else soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,false);
+      }
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -337,17 +358,17 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
   ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
   */
   // in any case declare variables, sizes etc. only in eascase
-  Epetra_SerialDenseMatrix* alpha;  // EAS alphas
-  Epetra_SerialDenseMatrix* M_GP;   // EAS matrix M at all GPs
-  Epetra_SerialDenseMatrix M;       // EAS matrix M at current GP
-  Epetra_SerialDenseVector feas;    // EAS portion of internal forces
-  Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
-  Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
-  double detJ0;                     // detJ(origin)
-  Epetra_SerialDenseMatrix T0invT;  // trafo matrix
-  Epetra_SerialDenseMatrix* oldfeas;   // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv; // EAS history
-  Epetra_SerialDenseMatrix* oldKda;    // EAS history
+  Epetra_SerialDenseMatrix* alpha = NULL;         // EAS alphas
+  vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
+  LINALG::SerialDenseMatrix M;                    // EAS matrix M at current GP
+  Epetra_SerialDenseVector feas;                  // EAS portion of internal forces
+  Epetra_SerialDenseMatrix Kaa;                   // EAS matrix Kaa
+  Epetra_SerialDenseMatrix Kda;                   // EAS matrix Kda
+  double detJ0;                                   // detJ(origin)
+  Epetra_SerialDenseMatrix T0invT;                // trafo matrix
+  Epetra_SerialDenseMatrix* oldfeas = NULL;       // EAS history
+  Epetra_SerialDenseMatrix* oldKaainv = NULL;     // EAS history
+  Epetra_SerialDenseMatrix* oldKda = NULL;        // EAS history
   if (eastype_ == soh8_eassosh8) {
     /*
     ** EAS Update of alphas:
@@ -366,7 +387,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
 
     // we need the (residual) displacement at the previous step
-    Epetra_SerialDenseVector res_d(NUMDOF_SOH8);
+    LINALG::SerialDenseVector res_d(NUMDOF_SOH8);
     for (int i = 0; i < NUMDOF_SOH8; ++i) {
       res_d(i) = residual[i];
     }
@@ -494,7 +515,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
 
     // local GL strain vector lstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     // but with modified ANS strains E33, E23 and E13
-    Epetra_SerialDenseVector lstrain(NUMSTR_SOH8);
+    LINALG::SerialDenseVector lstrain(NUMSTR_SOH8);
     // evaluate glstrains in local(parameter) coords
     // Err = 0.5 * (dx/dr * dx/dr^T - dX/dr * dX/dr^T)
     lstrain(0)= 0.5 * (
@@ -555,22 +576,16 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     // ANS modification of strains ************************************** ANS
 
     // transformation of local glstrains 'back' to global(material) space
-    Epetra_SerialDenseVector glstrain(NUMSTR_SOH8);
-    glstrain.Multiply('N','N',1.0,TinvT,lstrain,1.0);
+    LINALG::SerialDenseVector glstrain(NUMSTR_SOH8);
+    glstrain.Multiply('N','N',1.0,TinvT,lstrain,0.0);
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone) {
-      // get EAS matrix M at current gausspoint gp
-      M.Shape(NUMSTR_SOH8,neas_);
-      for (int m=0; m<NUMSTR_SOH8; ++m) {
-        for (int n=0; n<neas_; ++n) {
-          M(m,n)=(*M_GP)(NUMSTR_SOH8*gp+m,n);
-        }
-      }
+      M.LightShape(NUMSTR_SOH8,neas_);
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
-      Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
-      M.Multiply('N','N',detJ0/detJ,T0invT,Mtemp,0.0);
+      //Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
+      M.Multiply('N','N',detJ0/detJ,T0invT,M_GP->at(gp),0.0);
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       glstrain.Multiply('N','N',1.0,M,(*alpha),1.0);
     } // ------------------------------------------------------------------ EAS
@@ -1062,22 +1077,17 @@ void DRT::ELEMENTS::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix& jac,
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
-//int DRT::ELEMENTS::So_sh8::Initialize_numbers(DRT::Discretization& dis)
 {
   //sosh8_gmshplotdis(dis);
-  //-------------------- loop all my column elements and define thickness direction
+  
+  int num_morphed_so_hex8 = 0;
+  
+  // Loop through all elements
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     // get the actual element
     if (dis.lColElement(i)->Type() != DRT::Element::element_sosh8) continue;
     DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
-    // here comes plan B
-//    RCP<DRT::ELEMENTS::So_hex8> planB_soh8 = rcp(new DRT::ELEMENTS::So_hex8(*actele));
-//    cout << "actele: " << *actele << endl;
-//    cout << "planB_ele: " << *planB_soh8 << endl;
-//    exit(0);
-    
-
     if (!actele) dserror("cast to So_sh8* failed");
 
     if (!actele->nodes_rearranged_) {
@@ -1086,17 +1096,11 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
         actele->thickdir_ = actele->sosh8_findthickdir();
       }
 
-      //int orig_nodeids[NUMNOD_SOH8];
       int new_nodeids[NUMNOD_SOH8];
 
       switch (actele->thickdir_) {
       case DRT::ELEMENTS::So_sh8::autor:
       case DRT::ELEMENTS::So_sh8::globx: {
-        //        cout << endl << "thickness direction is X" << endl;
-        //        for (int node = 0; node < NUMNOD_SOH8; ++node) {
-        //          orig_nodeids[node] = actele->NodeIds()[node];
-        //          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
-        //        }
         // resorting of nodes to arrive at local t-dir for global x-dir
         new_nodeids[0] = actele->inp_nodeIds_[7];
         new_nodeids[1] = actele->inp_nodeIds_[4];
@@ -1108,14 +1112,12 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
         new_nodeids[7] = actele->inp_nodeIds_[2];
 //        actele->sosh8_gmshplotlabeledelement(actele->inp_nodeIds_);
 //        actele->sosh8_gmshplotlabeledelement(new_nodeids);
+        actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
+        actele->nodes_rearranged_ = true;
         break;
       }
       case DRT::ELEMENTS::So_sh8::autos:
       case DRT::ELEMENTS::So_sh8::globy: {
-        //        for (int node = 0; node < NUMNOD_SOH8; ++node) {
-        //          orig_nodeids[node] = actele->NodeIds()[node];
-        //          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
-        //        }
         // resorting of nodes to arrive at local t-dir for global y-dir
         new_nodeids[0] = actele->inp_nodeIds_[4];
         new_nodeids[1] = actele->inp_nodeIds_[5];
@@ -1125,6 +1127,8 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
         new_nodeids[5] = actele->inp_nodeIds_[6];
         new_nodeids[6] = actele->inp_nodeIds_[2];
         new_nodeids[7] = actele->inp_nodeIds_[3];
+        actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
+        actele->nodes_rearranged_ = true;
         break;
       }
       case DRT::ELEMENTS::So_sh8::autot:
@@ -1132,9 +1136,17 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
         // no resorting necessary
         for (int node = 0; node < 8; ++node) {
           new_nodeids[node] = actele->inp_nodeIds_[node];
-          //          orig_nodeids[node] = actele->NodeIds()[node];
-          //          cout << node << ": " << orig_nodeids[node] << " inputID: " << actele->inp_nodeIds_[node]<< endl;
         }
+        actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
+        actele->nodes_rearranged_ = true;
+        break;
+      }
+      case DRT::ELEMENTS::So_sh8::undefined: {
+        // here comes plan B: morph So_sh8 to So_hex8
+        actele->SetType(DRT::Element::element_so_hex8);
+        actele->soh8_reiniteas(DRT::ELEMENTS::So_hex8::soh8_easmild);
+        actele->InitJacobianMapping();
+        num_morphed_so_hex8++;
         break;
       }
       case DRT::ELEMENTS::So_sh8::none: break;
@@ -1142,10 +1154,15 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
         dserror("no thickness direction for So_sh8");
       }
       //actele->sosh8_gmshplotlabeledelement(actele->NodeIds());
-      actele->SetNodeIds(NUMNOD_SOH8, new_nodeids);
-      actele->nodes_rearranged_ = true;
     }
   }
+
+  if (num_morphed_so_hex8>0){
+    cout << endl << num_morphed_so_hex8
+    << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_mild" << endl;
+  }
+  
+  
   // fill complete again to reconstruct element-node pointers,
   // but without element init, etc.
   dis.FillComplete(false,false,false);

@@ -533,8 +533,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
   */
   // in any case declare variables, sizes etc. only in eascase
   Epetra_SerialDenseMatrix* alpha = NULL;  // EAS alphas
-  Epetra_SerialDenseMatrix* M_GP = NULL;   // EAS matrix M at all GPs
-  LINALG::SerialDenseMatrix M;       // EAS matrix M at current GP
+  vector<Epetra_SerialDenseMatrix>* M_GP = NULL;   // EAS matrix M at all GPs
+  LINALG::SerialDenseMatrix M;      // EAS matrix M at current GP
   Epetra_SerialDenseVector feas;    // EAS portion of internal forces
   Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
   Epetra_SerialDenseMatrix Kda;     // EAS matrix Kda
@@ -627,18 +627,11 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone)
     {
-      LINALG::SerialDenseMatrix Mtemp(NUMSTR_SOH8,neas_);
       M.LightShape(NUMSTR_SOH8,neas_);
-      // get EAS matrix M at current gausspoint gp
-      for (int m=0; m<NUMSTR_SOH8; ++m) {
-        for (int n=0; n<neas_; ++n) {
-          Mtemp(m,n)=(*M_GP)(NUMSTR_SOH8*gp+m,n);
-        }
-      }
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
       //Epetra_SerialDenseMatrix Mtemp(M); // temp M for Matrix-Matrix-Product
-      M.Multiply('N','N',detJ0/detJ,T0invT,Mtemp,0.0);
+      M.Multiply('N','N',detJ0/detJ,T0invT,M_GP->at(gp),0.0);
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       glstrain.Multiply('N','N',1.0,M,(*alpha),1.0);
     } // ------------------------------------------------------------------ EAS

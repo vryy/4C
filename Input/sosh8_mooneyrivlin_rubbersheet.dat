@@ -130,8 +130,8 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx VALUE 1.341849635575388666e-01 TOLERANCE 1e-12
-STRUCTURE DIS 1 NODE 1 POSITION dispz NAME dispz VALUE 6.550431087673732646e-03 TOLERANCE 1e-12
+STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx VALUE 1.341660690551701729e-01 TOLERANCE 1e-12
+STRUCTURE DIS 1 NODE 1 POSITION dispz NAME dispz VALUE 6.431456685316962359e-03 TOLERANCE 1e-12
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  1

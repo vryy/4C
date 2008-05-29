@@ -83,27 +83,30 @@ DRT::ELEMENTS::So_sh8::ThicknessDirection DRT::ELEMENTS::So_sh8::sosh8_findthick
 
   if (max_stretch == r_stretch) {
     if ((max_stretch / s_stretch <= 1.5) || (max_stretch / t_stretch <=1.5)) {
-      cout << "ID: " << this->Id() << ", has aspect ratio of: ";
-      cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
+      //cout << "ID: " << this->Id() << ", has aspect ratio of: ";
+      //cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
       //dserror("Solid-Shell element geometry has not a shell aspect ratio");
+      return undefined;
     }
     thickdir = autor;
     thick_index = 0;
   }
   else if (max_stretch == s_stretch) {
     if ((max_stretch / r_stretch <= 1.5) || (max_stretch / t_stretch <=1.5)) {
-      cout << "ID: " << this->Id() << ", has aspect ratio of: ";
-      cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
+      //cout << "ID: " << this->Id() << ", has aspect ratio of: ";
+      //cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
       //dserror("Solid-Shell element geometry has not a shell aspect ratio");
+      return undefined;
     }
     thickdir = autos;
     thick_index = 1;
   }
   else if (max_stretch == t_stretch) {
     if ((max_stretch / r_stretch <= 1.5) || (max_stretch / s_stretch <=1.5)) {
-      cout << "ID: " << this->Id() << ", has aspect ratio of: ";
-      cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
+      //cout << "ID: " << this->Id() << ", has aspect ratio of: ";
+      //cout << max_stretch / s_stretch << " , " << max_stretch / t_stretch << endl;
       //dserror("Solid-Shell element geometry has not a shell aspect ratio");
+      return undefined;
     }
     thickdir = autot;
     thick_index = 2;
@@ -151,10 +154,10 @@ void DRT::ELEMENTS::So_sh8::sosh8_setcylinderfiberdirection(const Epetra_SerialD
   //circ(0) = - cos(theta); circ(1) = - sin(theta);
   circ(0) = - midpoint(1); circ(1) = midpoint(0);
   // rotate by 45°
-  fiberdirection_.resize(3);
-  fiberdirection_[0] = circ(0);
-  fiberdirection_[1] = circ(1);
-  fiberdirection_[2] = sqrt(circ(0)*circ(0) + circ(1)*circ(1));
+//  fiberdirection_.resize(3);
+//  fiberdirection_[0] = circ(0);
+//  fiberdirection_[1] = circ(1);
+//  fiberdirection_[2] = sqrt(circ(0)*circ(0) + circ(1)*circ(1));
 
 //  fiberdirection_[0] = circ(0);
 //  fiberdirection_[1] = circ(1);
@@ -269,7 +272,7 @@ void DRT::ELEMENTS::Sosh8Register::sosh8_gmshplotdis(const DRT::Discretization& 
       pv = anba->ReturnGlobalFiberDirection();
     }
     else{
-      pv = actele->GetFibervec();
+      //pv = actele->GetFibervec();
     }
 
     //gmshfilecontent << "VP(0,0,0){1,1.3,1.7};" << endl;

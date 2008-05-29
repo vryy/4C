@@ -73,6 +73,7 @@ public:
 
   //! @name Friends
   friend class Soh8Register;
+  friend class Sosh8Register;
 
   //@}
   //! @name Constructors and destructors and related methods
@@ -328,7 +329,7 @@ public:
 
 
   const vector<double> GetThickvec(){return thickvec_;};
-  const vector<double> GetFibervec(){return fiberdirection_;};
+  //const vector<double> GetFibervec(){return fiberdirection_;};
   const vector<double> soh8_ElementCenterRefeCoords();
 
   //@}
@@ -433,7 +434,7 @@ protected:
   //! vector in thickness direction for compatibility with sosh8
   vector<double>                                   thickvec_;
   //! vector for fiber direction, needs better place in future
-  vector<double>                                   fiberdirection_;
+  //vector<double>                                   fiberdirection_;
 
 
   // internal calculation methods
@@ -514,10 +515,13 @@ protected:
 
   //! EAS technology, init
   void soh8_easinit();
+  
+  //! Re-initialize EAS data, needed for sosh8 morphing
+  void soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASType EASType);
 
   //! EAS technology, setup necessary data
   void soh8_eassetup(
-          Epetra_SerialDenseMatrix** M_GP,    // M-matrix evaluated at GPs
+          vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
           Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
           const Epetra_SerialDenseMatrix& xrefe);     // material element coords

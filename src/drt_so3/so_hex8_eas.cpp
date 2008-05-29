@@ -62,10 +62,43 @@ void DRT::ELEMENTS::So_hex8::soh8_easinit()
 }
 
 /*----------------------------------------------------------------------*
+ |  re-initialize EAS data (private)                           maf 05/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASType EASType)
+{
+  switch (EASType){
+  case DRT::ELEMENTS::So_hex8::soh8_easfull:  neas_ = 21; break;
+  case DRT::ELEMENTS::So_hex8::soh8_easmild:  neas_ =  9; break;
+  case DRT::ELEMENTS::So_hex8::soh8_eassosh8: neas_ =  7; break;
+  case DRT::ELEMENTS::So_hex8::soh8_easnone:  neas_ =  0; break;
+  }
+  eastype_ = EASType;
+  Epetra_SerialDenseMatrix* alpha = NULL;  // EAS alphas
+  Epetra_SerialDenseMatrix* alphao = NULL;  // EAS alphas
+  Epetra_SerialDenseMatrix* feas = NULL;   // EAS history
+  Epetra_SerialDenseMatrix* Kaainv = NULL; // EAS history
+  Epetra_SerialDenseMatrix* Kda = NULL;    // EAS history
+  alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // get alpha of previous iteration
+  alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");   // get alpha of previous iteration
+  feas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+  Kaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+  Kda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
+  if (!alpha || !Kaainv || !Kda || !feas) dserror("Missing EAS history-data");
+
+  alpha->Reshape(neas_,1);
+  alphao->Reshape(neas_,1);
+  feas->Reshape(neas_,1);
+  Kaainv->Reshape(neas_,neas_);
+  Kda->Reshape(neas_,NUMDOF_SOH8);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_eassetup(
-          Epetra_SerialDenseMatrix** M_GP,    // M-matrix evaluated at GPs
+          vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
           Epetra_SerialDenseMatrix& T0invT,   // maps M(origin) local to global
           const Epetra_SerialDenseMatrix& xrefe)    // material element coords
@@ -153,21 +186,12 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
   if ((err != 0) && (err2!=0)) dserror("Inversion of T0inv (Jacobian0) failed");
 
   // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8
-  static Epetra_SerialDenseMatrix M(NUMSTR_SOH8*NUMGPT_SOH8,neas_);
-  static bool M_eval;
-
-  if (M_eval==true){          // if true M already evaluated
-      *M_GP = &M;             // return adress of static object to target of pointer
-    return;
-  } else {
-    // (r,s,t) gp-locations of fully integrated linear 8-node Hex
-    const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
-    const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
-    const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
-    const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
 
     // fill up M at each gp
     if (eastype_ == soh8_easmild) {
+      //static Epetra_SerialDenseMatrix M_mild(NUMSTR_SOH8*NUMGPT_SOH8,neas_);
+      static vector<Epetra_SerialDenseMatrix> M_mild(NUMGPT_SOH8);
+      static bool M_mild_eval;
       /* easmild is the EAS interpolation of 9 modes, based on
       **            r 0 0   0 0 0 0 0 0
       **            0 s 0   0 0 0 0 0 0
@@ -176,20 +200,31 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       **            0 0 0   0 0 s t 0 0
       **            0 0 0   0 0 0 0 r t
       */
-      for (int i=0; i<NUMGPT_SOH8; ++i) {
-        M(i*NUMSTR_SOH8+0,0) = r[i];
-        M(i*NUMSTR_SOH8+1,1) = s[i];
-        M(i*NUMSTR_SOH8+2,2) = t[i];
-
-        M(i*NUMSTR_SOH8+3,3) = r[i]; M(i*NUMSTR_SOH8+3,4) = s[i];
-        M(i*NUMSTR_SOH8+4,5) = s[i]; M(i*NUMSTR_SOH8+4,6) = t[i];
-        M(i*NUMSTR_SOH8+5,7) = r[i]; M(i*NUMSTR_SOH8+5,8) = t[i];
+      if (!M_mild_eval){ // if true M already evaluated
+        // (r,s,t) gp-locations of fully integrated linear 8-node Hex
+        const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
+        const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+        const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+        const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+        // fill up M at each gp
+        for (int i=0; i<NUMGPT_SOH8; ++i) {
+          M_mild[i].Shape(NUMSTR_SOH8,neas_);
+          M_mild[i](0,0) = r[i];
+          M_mild[i](1,1) = s[i];
+          M_mild[i](2,2) = t[i];
+  
+          M_mild[i](3,3) = r[i]; M_mild[i](3,4) = s[i];
+          M_mild[i](4,5) = s[i]; M_mild[i](4,6) = t[i];
+          M_mild[i](5,7) = r[i]; M_mild[i](5,8) = t[i];
+        }
+        M_mild_eval = true;  // now the array is filled statically
       }
 
       // return adress of just evaluated matrix
-      *M_GP = &M;            // return adress of static object to target of pointer
-      M_eval = true;         // now the array is filled statically
+      *M_GP = &M_mild;       // return adress of static object to target of pointer
     } else if (eastype_ == soh8_easfull) {
+      static vector<Epetra_SerialDenseMatrix> M_full(NUMGPT_SOH8);
+      static bool M_full_eval;
       /* easfull is the EAS interpolation of 21 modes, based on
       **            r 0 0   0 0 0 0 0 0   0  0  0  0  0  0   rs rt 0  0  0  0
       **            0 s 0   0 0 0 0 0 0   0  0  0  0  0  0   0  0  rs st 0  0
@@ -198,19 +233,30 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       **            0 0 0   0 0 s t 0 0   0  0  rs rt 0  0   0  0  0  0  0  0
       **            0 0 0   0 0 0 0 r t   0  0  0  0  rs st  0  0  0  0  0  0
       */
-      for (int i=0; i<NUMGPT_SOH8; ++i) {
-        M(i*NUMSTR_SOH8+0,0) = r[i];        M(i*NUMSTR_SOH8+0,15) = r[i]*s[i]; M(i*NUMSTR_SOH8+0,16) = r[i]*t[i];
-        M(i*NUMSTR_SOH8+1,1) = s[i];        M(i*NUMSTR_SOH8+1,17) = r[i]*s[i]; M(i*NUMSTR_SOH8+1,18) = s[i]*t[i];
-        M(i*NUMSTR_SOH8+2,2) = t[i];        M(i*NUMSTR_SOH8+2,19) = r[i]*t[i]; M(i*NUMSTR_SOH8+2,20) = s[i]*t[i];
-
-        M(i*NUMSTR_SOH8+3,3) = r[i]; M(i*NUMSTR_SOH8+3,4) = s[i];   M(i*NUMSTR_SOH8+3, 9) = r[i]*t[i]; M(i*NUMSTR_SOH8+3,10) = s[i]*t[i];
-        M(i*NUMSTR_SOH8+4,5) = s[i]; M(i*NUMSTR_SOH8+4,6) = t[i];   M(i*NUMSTR_SOH8+4,11) = r[i]*s[i]; M(i*NUMSTR_SOH8+4,12) = r[i]*t[i];
-        M(i*NUMSTR_SOH8+5,7) = r[i]; M(i*NUMSTR_SOH8+5,8) = t[i];   M(i*NUMSTR_SOH8+5,13) = r[i]*s[i]; M(i*NUMSTR_SOH8+5,14) = s[i]*t[i];
+      if (!M_full_eval){ // if true M already evaluated
+        // (r,s,t) gp-locations of fully integrated linear 8-node Hex
+        const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
+        const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+        const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+        const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+        // fill up M at each gp
+        for (int i=0; i<NUMGPT_SOH8; ++i) {
+          M_full[i].Shape(NUMSTR_SOH8,neas_);
+          M_full[i](0,0) = r[i];        M_full[i](0,15) = r[i]*s[i]; M_full[i](0,16) = r[i]*t[i];
+          M_full[i](1,1) = s[i];        M_full[i](1,17) = r[i]*s[i]; M_full[i](1,18) = s[i]*t[i];
+          M_full[i](2,2) = t[i];        M_full[i](2,19) = r[i]*t[i]; M_full[i](2,20) = s[i]*t[i];
+    
+          M_full[i](3,3) = r[i]; M_full[i](3,4) = s[i];   M_full[i](3, 9) = r[i]*t[i]; M_full[i](3,10) = s[i]*t[i];
+          M_full[i](4,5) = s[i]; M_full[i](4,6) = t[i];   M_full[i](4,11) = r[i]*s[i]; M_full[i](4,12) = r[i]*t[i];
+          M_full[i](5,7) = r[i]; M_full[i](5,8) = t[i];   M_full[i](5,13) = r[i]*s[i]; M_full[i](5,14) = s[i]*t[i];
+        }
+        M_full_eval = true;  // now the array is filled statically
       }
       // return adress of just evaluated matrix
-      *M_GP = &M;            // return adress of static object to target of pointer
-      M_eval = true;         // now the array is filled statically
+      *M_GP = &M_full;            // return adress of static object to target of pointer
     } else if (eastype_ == soh8_eassosh8) {
+      static vector<Epetra_SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
+      static bool M_sosh8_eval;
       /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
       ** consisting of 7 modes, based on
       **            r 0 0   0 0 0  0
@@ -220,20 +266,29 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       **            0 0 0   0 0 0  0
       **            0 0 0   0 0 0  0
       */
-      for (int i=0; i<NUMGPT_SOH8; ++i) {
-        M(i*NUMSTR_SOH8+0,0) = r[i];
-        M(i*NUMSTR_SOH8+1,1) = s[i];
-        M(i*NUMSTR_SOH8+2,2) = t[i]; M(i*NUMSTR_SOH8+2,5) = r[i]*t[i]; M(i*NUMSTR_SOH8+2,6) = s[i]*t[i];
-
-        M(i*NUMSTR_SOH8+3,3) = r[i]; M(i*NUMSTR_SOH8+3,4) = s[i];
+      if (!M_sosh8_eval){ // if true M already evaluated
+        // (r,s,t) gp-locations of fully integrated linear 8-node Hex
+        const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
+        const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
+        const double s[NUMGPT_SOH8] = {-gploc,-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc};
+        const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
+        // fill up M at each gp
+        for (int i=0; i<NUMGPT_SOH8; ++i) {
+          M_sosh8[i].Shape(NUMSTR_SOH8,neas_);
+          M_sosh8[i](0,0) = r[i];
+          M_sosh8[i](1,1) = s[i];
+          M_sosh8[i](2,2) = t[i]; M_sosh8[i](2,5) = r[i]*t[i]; M_sosh8[i](2,6) = s[i]*t[i];
+  
+          M_sosh8[i](3,3) = r[i]; M_sosh8[i](3,4) = s[i];
+        }
+        M_sosh8_eval = true;  // now the array is filled statically
       }
       // return adress of just evaluated matrix
-      *M_GP = &M;            // return adress of static object to target of pointer
-      M_eval = true;         // now the array is filled statically
+      *M_GP = &M_sosh8;            // return adress of static object to target of pointer
     } else {
     dserror("eastype not implemented");
     }
-  }
+//  }
 } // end of soh8_eassetup
 
 

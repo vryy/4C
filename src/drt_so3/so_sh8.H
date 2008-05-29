@@ -192,10 +192,9 @@ public:
     autor,    // automatically set to x
     autos,    // automatically set to y
     autot,    // automatically set to z
+    undefined,// no clear direction identified
     none      // no rearrangement
   };
-
-  int Initialize_numbers(DRT::Discretization& dis);
 
 private:
 
@@ -205,11 +204,10 @@ private:
   //! shell-thickness direction
   ThicknessDirection                             thickdir_;
 
-  //! original (input) NodeIds, stored for eventual change to define thickness dir.
-  int inp_nodeIds_[NUMNOD_SOH8];
-
+  //! in case of changed "thin" direction this is true
   bool nodes_rearranged_;
-
+  int inp_nodeIds_[NUMNOD_SOH8];
+  
   //! Compute stiffness and mass matrix
   void sosh8_nlnstiffmass(
       vector<int>&              lm,             ///< location matrix
@@ -339,8 +337,11 @@ public:
   /*!
   \brief Call Element init routines
 
-  The method performs all steps needed to init the solid-shell8 elements,
-  e.g. defines shell-thickness direction
+  The method performs all steps needed to init the solid-shell8 elements.
+  This includes defining the thickness direction of the solid-shell by looking
+  at its geometric shape in reference configuration. Thus, the loop looks a bit 
+  complicated because a "not-thin" So_sh8 is morphed to a So_hex8 where the 
+  discretization is not filled-complete anymore.
   */
   int Initialize(DRT::Discretization& dis);
 

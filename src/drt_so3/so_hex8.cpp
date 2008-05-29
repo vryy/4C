@@ -35,7 +35,6 @@ data_()
   eastype_ = soh8_easnone;
   neas_ = 0;
   thickvec_.resize(0);
-  fiberdirection_.resize(0);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
   glprestrain_ = rcp(new Epetra_SerialDenseMatrix(NUMGPT_SOH8,NUMSTR_SOH8));
 #endif
@@ -62,7 +61,6 @@ surfaceptrs_(old.surfaceptrs_),
 lines_(old.lines_),
 lineptrs_(old.lineptrs_),
 thickvec_(old.thickvec_),
-fiberdirection_(old.fiberdirection_),
 detJ_(old.detJ_)
 {
 #if defined(PRESTRESS) || defined(POSTSTRESS)
@@ -120,7 +118,6 @@ void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
   AddtoPack(data,neas_);
   // fiber related
   AddtoPack(data,thickvec_);
-  AddtoPack(data,fiberdirection_);
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -168,7 +165,6 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,neas_);
   // fiber related
   ExtractfromPack(position,data,thickvec_);
-  ExtractfromPack(position,data,fiberdirection_);
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
@@ -540,12 +536,12 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
 
-  // element fiber direction vector
-  if (fiberdirection_.size()!=0)
-  {
-    string fibervecname = "FiberVec";
-    names[fibervecname] = 3;
-  }
+//  // element fiber direction vector
+//  if (fiberdirection_.size()!=0)
+//  {
+//    string fibervecname = "FiberVec";
+//    names[fibervecname] = 3;
+//  }
 
   return;
 }
@@ -558,17 +554,17 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisData(name,data);
 
-  // these are the names so_hex8 recognizes, do nothing for everything else
-  if (name != "FiberVec") return;
-
-  // check sizes
-  if ((name == "FiberVec") && (data.size()!=fiberdirection_.size()))
-    dserror("FiberVec size mismatch ");
-
-  if (name == "FiberVec"){
-      data = fiberdirection_;
-  }
-  else dserror("weirdo impossible case????");
+//  // these are the names so_hex8 recognizes, do nothing for everything else
+//  if (name != "FiberVec") return;
+//
+//  // check sizes
+//  if ((name == "FiberVec") && (data.size()!=fiberdirection_.size()))
+//    dserror("FiberVec size mismatch ");
+//
+//  if (name == "FiberVec"){
+//      data = fiberdirection_;
+//  }
+//  else dserror("weirdo impossible case????");
 
   return;
 }
