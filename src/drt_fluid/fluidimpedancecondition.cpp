@@ -206,6 +206,26 @@ double FluidImpedanceBc::Area( double& density, double& viscosity )
   density = eleparams.get<double>("density");
   viscosity = eleparams.get<double>("viscosity");
 
+  // find the lowest proc number that knows the material data
+  int numproc = discret_->Comm().NumProc();
+  int theproc = -1;   // the lowest proc that has the desired information
+  vector<double> alldens(numproc);
+
+  discret_->Comm().GatherAll( &density,&(alldens[0]),1 );
+  for(int i=0; i<numproc; i++)
+    if( alldens[i] > 0.0 )
+    {
+      theproc = i;
+      break;
+    }
+  if(theproc < 0)
+    dserror("Something parallel went terribly wrong!");
+
+  // do the actual communication of density ...
+  discret_->Comm().Broadcast(&density,1,theproc);
+  // ... and viscosity
+  discret_->Comm().Broadcast(&viscosity,1,theproc);
+
   // get total area in parallel case
   double pararea = 0.0;
   discret_->Comm().SumAll(&actarea,&pararea,1);
@@ -256,53 +276,12 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   std::complex<double> zleft, zparent (0,0);  // only as argument
   std::complex<double> entry;
 
-  // **************** apparently this does not work as it should ... **********
-
-//       //Loop over all frequencies making a call to LungImpedance, w=2*pi*k/T
-//       //where k=-N/2,....,N/2, however k is self adjointed.
-//       for (int k=1; k<=cyclesteps_/2; k++)
-//       {
-// 	int generation=0;
-// 	entry = LungImpedance(k,generation,zparent,zleft,storage);
-// 	frequencydomain[k]             = conj(entry);
-// 	frequencydomain[cyclesteps_-k] = entry;
-//       }
-
-//       // calculate DC (direct current) component ...
-//       entry              = DCLungImpedance(0,0,zparent,storage);
-//       frequencydomain[0] = entry;
-
-//       // --------------------------------------------------------------------------
-//       // inverse Fourier transform
-//       // idea:
-//       //              
-//       //                    cyclesteps                i omega_k t
-//       //      imp(x,t) = sum          IMP(x,omega_k) e
-//       //                   -cyclesteps
-//       //
-//       // with omega_k = 2 PI k / T
-
-//       double trigonometrystuff = 2*PI/cyclesteps_;
-//       double realpart = cos(trigonometrystuff);
-//       double imagpart = sin(trigonometrystuff);
-//       std::complex<double> impcomplex (realpart,imagpart);
-
-//       for (int PeriodFraction=0; PeriodFraction<cyclesteps_; PeriodFraction++)
-//       {
-// 	for (int k=0; k<cyclesteps_; k++)
-// 	{
-// 	  timedomain[PeriodFraction] += pow(impcomplex,-PeriodFraction*k) * frequencydomain[k];
-// 	  timedomain[PeriodFraction] += pow(impcomplex,PeriodFraction*k) * frequencydomain[k];
-// 	}
-//       }
-
-  // **************** ... therefore an alternative approach ****************
-
   //Loop over some frequencies making a call to Impedance, w=2*pi*k/T
   //where k=-N/2,....,N/2, 
 
   // calculate DC (direct current) component ...
   frequencydomain[0] = DCLungImpedance(0,0,zparent,storage);
+  double radius = sqrt(area/PI);
   //frequencydomain[0] = DCArteryImpedance(0,0,area,density,viscosity,zparent,storage);
 
   // this results in a field like
@@ -315,7 +294,7 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   {
     int generation=0;
     frequencydomain[k] = LungImpedance(k,generation,zparent,zleft,storage);
-    //frequencydomain[k] = ArteryImpedance(k,generation,area,density,viscosity,zparent,zleft,storage);
+    //frequencydomain[k] = ArteryImpedance(k,generation,radius,density,viscosity);
   }
 
   // --------------------------------------------------------------------------
@@ -426,24 +405,19 @@ void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
       // we are now in the initial fill-in phase
       // new data is appended to our flowrates vector
       flowrates_->push_back(parflowrate);
-
-  //     cout << "flowrates:" << endl;
-//       for (int i=0; i<flowrates_->size(); i++)
-//       {
-// 	cout << "[" << i <<"]" << (*flowrates_)[i] << endl;
-//       }
     }
     else
     {
       // we are now in the post-initial phase
       // replace the element that was computed exactly a cycle ago
-    	flowrates_->erase(flowrates_->begin());
-    	flowrates_->push_back(parflowrate);
 
-      //int pos = flowratespos_ % cyclesteps_;
-      //(*flowrates_)[pos] = parflowrate;
+      //    	flowrates_->erase(flowrates_->begin());
+      //    	flowrates_->push_back(parflowrate);
 
-      //flowratespos_++;
+      int pos = flowratespos_ % cyclesteps_;
+      (*flowrates_)[pos] = parflowrate;
+
+      flowratespos_++;
     }
 
     if (myrank_ == 0)
@@ -560,7 +534,7 @@ void FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  ?????????????????????????                               chfoe 05/08 |
+ |  arterial tree impedance for wave number k               chfoe 05/08 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -580,50 +554,81 @@ Further also needed
 */
 std::complex<double> FluidImpedanceBc::ArteryImpedance(int k, 
 						       int generation, 
-						       double area,
+						       double radius,
 						       double density,
 						       double viscosity,
-						       std::complex<double> zparent,
-						       std::complex<double> zleft,
-						       std::complex<double> storage[])
+						       std::complex<double> zparent)
 {
   // general data
   double lscale = 50.0; // length to radius ratio
   double alpha = 0.9;   // right daughter vessel ratio
   double beta = 0.6;    // left daughter vessel ratio
 
+  // some auxiliary stuff
+  complex<double> koeff, imag(0,1), cwave;
+
+  // terminal resistance is assumed zero
+  complex<double> zterminal (0,0);
+  double termradius = 1;
+
   double omega = 2.0*PI*k/period_;
 
+  // this has to be moved!!
   double k1 = 2.0;    // g/ms/ms/mm
   double k2 = -2.253; // per mm
   double k3 = 0.0865; // g/ms/ms/mm
 
-  // build up geometry of root generation
-  double rootrad = sqrt(area/PI); // an estimate for the root radius of the tree
-  double rootlength = lscale* rootrad;
+  // build up geometry of present generation
+  double area = radius*radius*PI;
+  double length = lscale * radius;
 
-  // just as a test: root impedance only
 
-  double compliance = 1.5*area / ( k1 * exp(k2*rootrad) + k3 );
+  // get impedances of downward vessels ...
+  //*****************************************
+  generation++;  // this is the next generation
 
-  complex<double> koeff, imag(0,1), cwave;
+  // left hand side:
+  double nextradius = alpha*radius;
+  complex<double> zleft;
+  if (nextradius < termradius)
+    zleft = zterminal;
+  else
+    zleft  = ArteryImpedance(k,generation,nextradius,density,viscosity,zparent);
 
-  double sqrdwo = rootrad*rootrad*omega/viscosity;
-//   complex<double> aux (0,-imgpart);
-//   complex<double> wonu = sqrt(aux);
+  // right hand side:
+  complex<double> zright;
+  nextradius = beta*radius;
+  if (nextradius < termradius)
+    zright = zterminal;
+  else
+    zright = ArteryImpedance(k,generation,nextradius,density,viscosity,zparent);
 
-  double wonu = sqrt(sqrdwo);
+
+  // ... combine this to the impedance at my downstream end ...
+  //*************************************************************
+  complex<double> zdown;
+  if( zleft == 0.0 )
+    if( zright == 0.0 )
+      zdown = 0.0;  // both daughter impedances are zero, we are at the leafes of the tree
+    else
+      zdown = zright; // only the left downward vessel has already terminated
+  else if( zright == 0.0 )
+    zdown = zleft;    // only the right downward vessel has already terminated
+  else
+    // the standard case, both vessels contiunue
+    zdown = 1.0 / (1.0/zleft + 1.0/zright);
+
+
+  // ... and compute impedance at my upstream end!
+  //*************************************************************
+  double compliance = 1.5*area / ( k1 * exp(k2*radius) + k3 );
+  double sqrdwo = radius*radius*omega/viscosity;  // square of Womersley number
+  double wonu = sqrt(sqrdwo);                     // Womersley number itself
 
   if (wonu > 4.0)
-  {
-    complex<double> realone(1,0);
-    koeff = realone - (2.0/wonu)*sqrt(imag);
-  }
+    koeff = 1.0 - (2.0/wonu)/sqrt(imag);
   else
-  {
-    complex<double> number(1.333333333333333333,0);
-    koeff = 1.0 / ( number - 8.0*imag/ (wonu*wonu) );
-  }
+    koeff = 1.0 / ( 1.333333333333333333 - 8.0*imag/ (wonu*wonu) );
 
   // wave speed of this frequency in present vessel
   cwave=sqrt( area*koeff / (density*compliance) );
@@ -631,18 +636,15 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
   //Convenience coefficient
   complex<double> gcoeff = compliance * cwave;
 
-  // terminal resistance is assumed zero
-  complex<double> zterminal (0,0);
-
-  // calculate impedance of this, the parent, vessel
-  complex<double> argument = omega*rootlength/cwave;
-  zparent = (imag/gcoeff * sin(argument) + zterminal*cos(argument) ) /
-            ( cos(argument) + imag*gcoeff*zterminal*sin(argument) );
-
-  //  cout << "Impedance : " << zparent << endl;
+  // calculate impedance of this, the present vessel
+  complex<double> argument = omega*length/cwave;
+  zparent = (imag/gcoeff * sin(argument) + zdown*cos(argument) ) /
+            ( cos(argument) + imag*gcoeff*zdown*sin(argument) );
 
   return zparent;
 }
+
+
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -704,6 +706,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
 {
   std::complex<double> imag (0,1), koeff, wave_c, g, zright, zend, StorageEntry=0;
   double area, omega, E=1, rho=1.206, nue=1.50912106e-5, compliance;
+
   int generationLimit=33;
   storage[generation]=zleft;
 
