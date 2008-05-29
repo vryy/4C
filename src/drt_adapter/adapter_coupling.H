@@ -176,10 +176,10 @@ namespace ADAPTER
     Teuchos::RCP<const Epetra_Map> SlaveDofMap()  const { return slavedofmap_; }
 
     /// the permuted interface dof map of the master side
-    //Teuchos::RCP<Epetra_Map> PermMasterDofMap() const { return permmasterdofmap_; }
+    Teuchos::RCP<const Epetra_Map> PermMasterDofMap() const { return permmasterdofmap_; }
 
     /// the permuted interface dof map of the slave side
-    //Teuchos::RCP<Epetra_Map> PermSlaveDofMap()  const { return permslavedofmap_; }
+    Teuchos::RCP<const Epetra_Map> PermSlaveDofMap()  const { return permslavedofmap_; }
 
     //@}
 
@@ -207,6 +207,82 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_CrsMatrix> SlaveToMasterMat() const { return matsm_; }
     Teuchos::RCP<Epetra_CrsMatrix> MasterToMasterMatTrans() const { return matmm_trans_; }
     Teuchos::RCP<Epetra_CrsMatrix> SlaveToMasterMatTrans() const { return matsm_trans_; }
+
+    /// abstract converter base
+    /*!
+      The point is that many generic coupling algorithms that transfer data
+      between master and slave might be used in both directions. These
+      algorithms can utilize a Converter to enable use in both directions.
+
+      \author u.kue
+      \date 05/08
+     */
+    class Converter
+    {
+    public:
+      virtual ~Converter() {}
+
+      virtual Teuchos::RCP<const Epetra_Map> SrcMap() const = 0;
+
+      virtual Teuchos::RCP<const Epetra_Map> DstMap() const = 0;
+
+      virtual Teuchos::RCP<const Epetra_Map> PermSrcMap() const = 0;
+
+      virtual Teuchos::RCP<const Epetra_Map> PermDstMap() const = 0;
+
+      virtual void FillSrcToDstMap(std::map<int,int>& rowmap) const = 0;
+
+    };
+
+    /// master to slave converter
+    class MasterConverter : public Converter
+    {
+    public:
+      explicit MasterConverter(const Coupling& coup) : coup_(coup) {}
+
+      virtual Teuchos::RCP<const Epetra_Map> SrcMap() const
+      { return coup_.MasterDofMap(); }
+
+      virtual Teuchos::RCP<const Epetra_Map> DstMap() const
+      { return coup_.SlaveDofMap(); }
+
+      virtual Teuchos::RCP<const Epetra_Map> PermSrcMap() const
+      { return coup_.PermMasterDofMap(); }
+
+      virtual Teuchos::RCP<const Epetra_Map> PermDstMap() const
+      { return coup_.PermSlaveDofMap(); }
+
+      virtual void FillSrcToDstMap(std::map<int,int>& rowmap) const
+      { coup_.FillMasterToSlaveMap(rowmap); }
+
+    private:
+      const Coupling& coup_;
+    };
+
+    /// slave to master converter
+    class SlaveConverter : public Converter
+    {
+    public:
+      explicit SlaveConverter(const Coupling& coup) : coup_(coup) {}
+
+      virtual Teuchos::RCP<const Epetra_Map> SrcMap() const
+      { return coup_.SlaveDofMap(); }
+
+      virtual Teuchos::RCP<const Epetra_Map> DstMap() const
+      { return coup_.MasterDofMap(); }
+
+      virtual Teuchos::RCP<const Epetra_Map> PermSrcMap() const
+      { return coup_.PermSlaveDofMap(); }
+
+      virtual Teuchos::RCP<const Epetra_Map> PermDstMap() const
+      { return coup_.PermMasterDofMap(); }
+
+      virtual void FillSrcToDstMap(std::map<int,int>& rowmap) const
+      { coup_.FillSlaveToMasterMap(rowmap); }
+
+    private:
+      const Coupling& coup_;
+    };
 
   private:
 

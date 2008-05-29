@@ -7,6 +7,7 @@
 
 #include "fsi_monolithic.H"
 #include "fsi_overlapprec.H"
+#include "fsi_matrixtransform.H"
 
 namespace FSI
 {
@@ -139,36 +140,17 @@ namespace FSI
                            const LINALG::SparseMatrix& fgg,
                            LINALG::SparseMatrix& s);
 
-    ///
-    Teuchos::RCP<LINALG::SparseMatrix>
-    ConvertFigColmap(const LINALG::SparseMatrix& fig,
-                     const std::map<int,int>& convcolmap,
-                     const Epetra_Map& domainmap,
-                     double scale,
-                     bool exactmatch=true);
-
-    ///
-    Teuchos::RCP<LINALG::SparseMatrix>
-    ConvertFgiRowmap(const LINALG::SparseMatrix& fgi,
-                     double scale,
-                     const Epetra_Map& structrowmap);
-
     /// block system matrix
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
     /// column fluid to structure dof map
     std::map<int,int> permfluidstructcolmap_;
 
-    std::map<int,int> fluidstructcolmap_;
-
-    std::map<int,int> alestructcolmap_;
-
-    std::map<int,int> fluidalecolmap_;
-
-    bool havefluidstructcolmap_;
     bool havepermfluidstructcolmap_;
-    bool havealestructcolmap_;
-    bool havefluidalecolmap_;
+
+    MatrixRowTransform fgitransform_;
+    MatrixColTransform figtransform_;
+    MatrixColTransform aigtransform_;
 
     /// keep the status tests available so we can connect them with our
     /// adaptive Newton direction

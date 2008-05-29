@@ -210,6 +210,7 @@ OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
 		src/drt_fsi/fsi_nox_epsilon.o \
 		src/drt_fsi/fsi_nox_group.o \
                 src/drt_fsi/fsi_utils.o \
+                src/drt_fsi/fsi_matrixtransform.o \
                 src/drt_fsi/fsi_debugwriter.o \
                 src/drt_fsi/fsi_statustest.o \
                 src/drt_fsi/fsi_overlapprec.o

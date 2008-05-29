@@ -939,39 +939,51 @@ void LINALG::BlockSparseMatrixBase::Complete()
     }
   }
 
-  // build full row map
-  int rowmaplength = 0;
-  for (int r=0; r<Rows(); ++r)
-  {
-    rowmaplength += Matrix(r,0).RowMap().NumMyElements();
-  }
-  std::vector<int> rowmapentries;
-  rowmapentries.reserve(rowmaplength);
-  for (int r=0; r<Rows(); ++r)
-  {
-    const Epetra_Map& rowmap = Matrix(r,0).RowMap();
-    copy(rowmap.MyGlobalElements(),
-         rowmap.MyGlobalElements()+rowmap.NumMyElements(),
-         back_inserter(rowmapentries));
-  }
-  fullrowmap_ = Teuchos::rcp(new Epetra_Map(-1,rowmapentries.size(),&rowmapentries[0],0,Comm()));
+  // FIXME: We already know the full range map from the MapExtractor. Here
+  // we build it again and call it row map. Maybe we need the distinction
+  // between row and range maps for block matrices one day. Right now it is
+  // not supported but still there different maps for a start... (The worst of
+  // both worlds.)
 
-  // build full col map
-  int colmaplength = 0;
-  for (int c=0; c<Cols(); ++c)
+  if (fullrowmap_==Teuchos::null)
   {
-    colmaplength += Matrix(0,c).ColMap().NumMyElements();
+    // build full row map
+    int rowmaplength = 0;
+    for (int r=0; r<Rows(); ++r)
+    {
+      rowmaplength += Matrix(r,0).RowMap().NumMyElements();
+    }
+    std::vector<int> rowmapentries;
+    rowmapentries.reserve(rowmaplength);
+    for (int r=0; r<Rows(); ++r)
+    {
+      const Epetra_Map& rowmap = Matrix(r,0).RowMap();
+      copy(rowmap.MyGlobalElements(),
+           rowmap.MyGlobalElements()+rowmap.NumMyElements(),
+           back_inserter(rowmapentries));
+    }
+    fullrowmap_ = Teuchos::rcp(new Epetra_Map(-1,rowmapentries.size(),&rowmapentries[0],0,Comm()));
   }
-  std::vector<int> colmapentries;
-  colmapentries.reserve(colmaplength);
-  for (int c=0; c<Cols(); ++c)
+
+  if (fullcolmap_==Teuchos::null)
   {
-    const Epetra_Map& colmap = Matrix(0,c).ColMap();
-    copy(colmap.MyGlobalElements(),
-         colmap.MyGlobalElements()+colmap.NumMyElements(),
-         back_inserter(colmapentries));
+    // build full col map
+    int colmaplength = 0;
+    for (int c=0; c<Cols(); ++c)
+    {
+      colmaplength += Matrix(0,c).ColMap().NumMyElements();
+    }
+    std::vector<int> colmapentries;
+    colmapentries.reserve(colmaplength);
+    for (int c=0; c<Cols(); ++c)
+    {
+      const Epetra_Map& colmap = Matrix(0,c).ColMap();
+      copy(colmap.MyGlobalElements(),
+           colmap.MyGlobalElements()+colmap.NumMyElements(),
+           back_inserter(colmapentries));
+    }
+    fullcolmap_ = Teuchos::rcp(new Epetra_Map(-1,colmapentries.size(),&colmapentries[0],0,Comm()));
   }
-  fullcolmap_ = Teuchos::rcp(new Epetra_Map(-1,colmapentries.size(),&colmapentries[0],0,Comm()));
 }
 
 
