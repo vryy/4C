@@ -702,7 +702,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
 						     std::complex<double> zleft,
 						     std::complex<double> storage[])
 {
-  std::complex<double> imag (0,1), realone (1,0), koeff, wave_c, StoredTmpVar, g, zright, zend, StorageEntry=0;
+  std::complex<double> imag (0,1), realone (1,0), koeff, wave_c, g, zright, zend, StorageEntry=0;
   double area, omega, E=1e6, rho=1.206, nue=1.50912106e-5, compliance;
   int generationLimit=33;
   storage[generation]=zleft;
