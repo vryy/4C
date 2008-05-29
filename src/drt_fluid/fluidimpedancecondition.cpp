@@ -495,7 +495,7 @@ void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta)
 	int zindex = ( flowratespos_-1-j+cyclesteps_ ) % cyclesteps_;
 	int qindex = ( flowratespos_+j ) % cyclesteps_;
 
-	pressure += impvalues_[zindex] * (*flowrates_)[qindex] * dta; // units: pressure x time
+	pressure += 1e-12*impvalues_[zindex] * (*flowrates_)[qindex] * dta; // units: pressure x time
       }
 
       pressure = pressure/period_; // this cures the dimension; missing in Olufsen paper
@@ -702,8 +702,8 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
 						     std::complex<double> zleft,
 						     std::complex<double> storage[])
 {
-  std::complex<double> imag (0,1), realone (1,0), koeff, wave_c, g, zright, zend, StorageEntry=0;
-  double area, omega, E=1e6, rho=1.206, nue=1.50912106e-5, compliance;
+  std::complex<double> imag (0,1), koeff, wave_c, g, zright, zend, StorageEntry=0;
+  double area, omega, E=1, rho=1.206, nue=1.50912106e-5, compliance;
   int generationLimit=33;
   storage[generation]=zleft;
 
@@ -724,15 +724,9 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
   double wonu = sqrt(sqrdwo);
 
     if (wonu > 4.0)
-    {
-      complex<double> realone(1,0);
-      koeff = realone - (2.0/(wonu*sqrt(imag)));
-    }
+      koeff = 1.0 - (2.0/(wonu*sqrt(imag)));
     else
-    {
-      complex<double> number(1.333333333333333333,0);
-      koeff = 1.0 / ( number - 8.0*imag/ (wonu*wonu) );
-    }
+      koeff = 1.0 / ( 1.333333333333333333 - 8.0*imag/ (wonu*wonu) );
 
   //Compliance
   compliance=(3*area*diameter[generation]/2)/(2*E*h[generation]);
@@ -747,18 +741,18 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
   
   if (abs(zleft) == 0)
   {
-  	zleft = (imag)*((realone/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+  	zleft = (imag)*((1.0/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
   	storage[generation]=zleft;
   }
 
   //Right side is always pre calculated!
   if ( abs(zleft) != 0 && generation-delta[generation] == 0)
   {
-  	zright = (imag)*((realone/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+  	zright = (imag)*((1.0/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
   }
   else if (abs(storage[generation-delta[generation]]) == 0)
   {
-  	zright = (imag)*(realone/g*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+  	zright = (imag)*(1.0/g*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
   }
   else
   {
@@ -768,7 +762,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
   //Bifurcation condition
   zend = (zright*zleft)/(zleft+zright);
   //Impedance at the parent level
-  zparent = (imag)*(realone/g*sin(omega*length[generation]/wave_c)+zend*cos(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c)+imag*g*zend*sin(omega*length[generation]/wave_c));
+  zparent = (imag)*(1.0/g*sin(omega*length[generation]/wave_c)+zend*cos(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c)+imag*g*zend*sin(omega*length[generation]/wave_c));
   zleft=zparent;
   //Right side is always pre calculated!
   if (generation < generationLimit)
