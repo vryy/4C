@@ -38,9 +38,12 @@ NOX::Abstract::Group::ReturnType FSI::NOXGroup::computeF()
   NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeF();
   if (ret==NOX::Abstract::Group::Ok)
   {
-    mfsi_.SetupSystemMatrix(*mfsi_.SystemMatrix());
-    sharedLinearSystem.getObject(this);
-    isValidJacobian = true;
+    if (not isValidJacobian)
+    {
+      mfsi_.SetupSystemMatrix(*mfsi_.SystemMatrix());
+      sharedLinearSystem.getObject(this);
+      isValidJacobian = true;
+    }
   }
   return ret;
 }
@@ -53,8 +56,11 @@ NOX::Abstract::Group::ReturnType FSI::NOXGroup::computeJacobian()
   NOX::Abstract::Group::ReturnType ret = NOX::Epetra::Group::computeJacobian();
   if (ret==NOX::Abstract::Group::Ok)
   {
-    mfsi_.SetupRHS(RHSVector.getEpetraVector());
-    isValidRHS = true;
+    if (not isValidRHS)
+    {
+      mfsi_.SetupRHS(RHSVector.getEpetraVector());
+      isValidRHS = true;
+    }
   }
   return ret;
 }
