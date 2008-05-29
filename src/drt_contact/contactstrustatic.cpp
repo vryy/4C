@@ -381,7 +381,14 @@ void contact_stru_static_drt()
         Epetra_Vector fresmcopy(*fresm);
         fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
       }
+      
+      // reset Lagrange multipliers to last converged state
+      RCP<Epetra_Vector> z = contactmanager->LagrMult();
+      RCP<Epetra_Vector> zold = contactmanager->LagrMultOld();
 
+      // update of LM (equal to last converged value)
+      z->Update(1.0,*zold,0.0);
+        
       //----------------------------------------------- build res/disi norm
       double norm;
       fresm->Norm2(&norm);

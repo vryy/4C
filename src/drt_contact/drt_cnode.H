@@ -258,6 +258,15 @@ public:
   virtual inline vector<map<int,double> >& GetDerivN() { return derivn_; }
   
   /*!
+  \brief Return the 'DerivT' map (vector) of this node
+    
+  These maps contain the directional derivatives of the node's
+  unit tangent vector with respect to the slave displacements.
+  A vector is used because the tangent itself is a vector (2 or 3 components).
+  */
+  virtual inline vector<map<int,double> >& GetDerivT() { return derivt_; }
+    
+  /*!
   \brief Return the 'DerivD' map of this node
   
   This map contains the directional derivatives of the node's
@@ -301,12 +310,15 @@ public:
   virtual void BuildAveragedNormal();
   
   /*!
-  \brief Build directional derivative of nodal normal
+  \brief Build directional derivative of nodal normal (+tangent)
   
   This method will be called after having finished the method
   BuildAveragedNormal() for the computation of nodal normals. The result
   (directional derivatives) will be stored in the nodal maps derivn_ and
   will later be assembled to the global system of equations.
+  Please note that we also compute the directional derivative of the
+  nodal tangent here, as this is very easy due to orthogonality. The
+  result will be stored analogously in the nodal maps derivt_.
   
   \param elens (in):  Matrix containing normals of adjacent elements
   \param length (in): Modified length of the nodal averaged normal
@@ -349,6 +361,7 @@ protected:
   double                        grow_;          // nodal entry of g vector
   
   vector<map<int,double> >      derivn_;        // directional derivative of nodal normal
+  vector<map<int,double> >      derivt_;        // directional derivative of nodal tangent
   map<int,double>               derivd_;        // directional derivative of nodal D-matrix value
   map<int,map<int,double> >     derivm_;        // directional derivative of nodal M-matrix values
   

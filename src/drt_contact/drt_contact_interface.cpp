@@ -319,6 +319,11 @@ void CONTACT::Interface::Initialize()
       (node->GetDerivN())[j].clear();
     (node->GetDerivN()).resize(0);
     
+    // reset derivative maps of tangent vector
+    for (int j=0;j<(int)((node->GetDerivT()).size());++j)
+      (node->GetDerivT())[j].clear();
+    (node->GetDerivT()).resize(0);
+        
     // reset closest node
     // (FIXME: at the moment we do not need this info. in the next
     // iteration, but it might be helpful for accelerated search!!!)
@@ -1111,7 +1116,7 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG(sele,sxia,sxib,mele,mxia,mxib);
 
   // compute directional derivative of M and store into nodes
-  integrator.DerivM(sele,sxia,sxib,mele,mxia,mxib);
+  //integrator.DerivM(sele,sxia,sxib,mele,mxia,mxib);
     
   // do the two assemblies into the slave nodes
   // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
@@ -1482,7 +1487,7 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
 }
 
 /*----------------------------------------------------------------------*
- |  Assemble matrix S containing normal+D derivatives         popp 05/08|
+ |  Assemble matrix S containing normal+D+M derivatives       popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
 {
@@ -1662,6 +1667,74 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Assemble matrix P containing tangent derivatives          popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal,
+                                   RCP<Epetra_Vector> zglobal)
+{
+  // nothing to do if no active nodes
+  if (activenodes_==null)
+    return;
+
+  // loop over all active slave nodes of the interface
+  for (int i=0;i<activenodes_->NumMyElements();++i)
+  {
+    int gid = activenodes_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+    
+    if (cnode->Owner() != comm_.MyPID())
+      dserror("ERROR: AssembleP: Node ownership inconsistency!");
+    
+    // prepare assembly
+    vector<map<int,double> > dtmap = cnode->GetDerivT();
+    map<int,double>::iterator colcurr;
+    int colsize = (int)dtmap[0].size();
+    int mapsize = (int)dtmap.size();
+    int row = activet_->GID(i);
+        
+    if (mapsize==3) dserror("ERROR: AssembleP: 3D case not yet implemented!");
+    
+    for (int j=0;j<mapsize-1;++j)
+      if ((int)dtmap[j].size() != (int)dtmap[j+1].size())
+        dserror("ERROR: AssembleS: Column dim. of nodal DerivT-map is inconsistent!");
+         
+    // begin assembly of P-matrix
+    //cout << endl << "->Assemble P for Node ID: " << cnode->Id() << endl;
+    
+    // we need the LM-vector of this node
+    double lm[3];
+    for (int dim=0;dim<3;++dim)
+     lm[dim] = (*zglobal)[zglobal->Map().LID(2*gid)+dim];
+    //cout << lm[0] << " " << lm[1] << endl;
+    
+    // loop over all derivative maps (=dimensions)
+    for (int j=0;j<mapsize;++j)
+    {
+      int k=0;
+    
+      // loop over all entries of the current derivative map
+      for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
+      {
+        int col = colcurr->first;
+        double val = lm[j]*(colcurr->second);
+        //cout << "lm[" << j << "]=" << lm[j] << " deriv=" << colcurr->second << endl;
+        //cout << "Assemble P: " << row << " " << col << " " << val << endl;
+        // do not assemble zeros into P matrix
+        if (abs(val)>1.0e-12) pglobal.Assemble(val,row,col);
+        ++k;
+      }
+
+      if (k!=colsize)
+        dserror("ERROR: AssembleP: k = %i but colsize = %i",k,colsize);
+    }
+    
+  } //for (int i=0;i<activenodes_->NumMyElements();++i)
+  
+  return;
+}
 /*----------------------------------------------------------------------*
  |  initialize active set (nodes / dofs)                      popp 03/08|
  *----------------------------------------------------------------------*/

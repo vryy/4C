@@ -460,8 +460,9 @@ void CONTACT::Manager::Initialize(int numiter)
 	r_       = LINALG::CreateVector(*gactivet_,true);
   }
   
-  // (re)setup globalmatrix containing normal derivatives
+  // (re)setup global matrices containing derivatives
   smatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
+  pmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
   
 #ifdef CONTACTCHECKHUEEBER
   }
@@ -1528,6 +1529,7 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
     interface_[i]->AssembleS(*smatrix_);
+    interface_[i]->AssembleP(*pmatrix_,z_);
   }
     
   // FillComplete() global matrices N and T
@@ -1539,6 +1541,9 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // (this map is NOT allowed to have an overlap !!!)
   RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
   smatrix_->Complete(*gsmdofs,*gactiven_);
+  
+  // FillComplete() global matrix P
+  pmatrix_->Complete(*gsdofrowmap_,*gactivet_);
   
 #ifdef CONTACTCHECKHUEEBER
   }
@@ -1744,10 +1749,13 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
 #endif // #ifdef CONTACTDIMOUTPUT
   
   /**********************************************************************/
-  /* Isolate active part from mhat                                      */
+  /* Isolate active part from mhat and invd                             */
   /**********************************************************************/
   RCP<LINALG::SparseMatrix> mhata;
   LINALG::SplitMatrix2x2(mhatmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mhata,tempmtx1,tempmtx2,tempmtx3);
+  
+  RCP<LINALG::SparseMatrix> invda;
+  LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
   
   /**********************************************************************/
   /* Build the final K and f blocks                                     */
@@ -1792,16 +1800,20 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // nmatrix: nothing to do
   
   // kan: multiply with tmatrix
-  RCP<LINALG::SparseMatrix> kanmod = LINALG::Multiply(*tmatrix_,false,*kan,false,true);
+  RCP<LINALG::SparseMatrix> kanmod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+  kanmod = LINALG::Multiply(*kanmod,false,*kan,false,true);
   
   // kam: multiply with tmatrix
-  RCP<LINALG::SparseMatrix> kammod = LINALG::Multiply(*tmatrix_,false,*kam,false,true);
-    
+  RCP<LINALG::SparseMatrix> kammod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+  kammod = LINALG::Multiply(*kammod,false,*kam,false,true);
+  
   // kai: multiply with tmatrix
-  RCP<LINALG::SparseMatrix> kaimod = LINALG::Multiply(*tmatrix_,false,*kai,false,true);
-      
+  RCP<LINALG::SparseMatrix> kaimod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+  kaimod = LINALG::Multiply(*kaimod,false,*kai,false,true);
+  
   // kaa: multiply with tmatrix
-  RCP<LINALG::SparseMatrix> kaamod = LINALG::Multiply(*tmatrix_,false,*kaa,false,true);
+  RCP<LINALG::SparseMatrix> kaamod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+  kaamod = LINALG::Multiply(*kaamod,false,*kaa,false,true);
   
   // t*mbaractive: do the multiplication
   RCP<LINALG::SparseMatrix> tmhata = LINALG::Multiply(*tmatrix_,false,*mhata,false,true);
@@ -1819,7 +1831,8 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
   // fa: mutliply with tmatrix
   RCP<Epetra_Vector> famod = rcp(new Epetra_Vector(*gactivet_));
-  tmatrix_->Multiply(false,*fa,*famod);
+  RCP<LINALG::SparseMatrix> tinvda = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+  tinvda->Multiply(false,*fa,*famod);
   
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including contact)              */
@@ -1849,8 +1862,11 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
 
   // add matrix n to kteffnew
   if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmatrix_,false,1.0,1.0);
+  
+  // add full linearization terms to kteffnew
 #ifdef CONTACTFULLLIN
   if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,1.0,1.0);
+  if (gactivet_->NumGlobalElements()) kteffnew->Add(*pmatrix_,false,-1.0,1.0);
 #endif // #ifdef CONTACTFULLLIN
   
   if (ftype=="none")
@@ -2102,8 +2118,11 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
     
     RCP<Epetra_Vector> zactive = rcp(new Epetra_Vector(*gactivedofs_));
     RCP<Epetra_Vector> zerotest = rcp(new Epetra_Vector(*gactivet_));
+    RCP<Epetra_Vector> zerotest2 = rcp(new Epetra_Vector(*gactivet_));
     LINALG::Export(*z_,*zactive);
     tmatrix_->Multiply(false,*zactive,*zerotest);
+    //pmatrix_->Multiply(false,*disis,*zerotest2);
+    //zerotest->Update(1.0,*zerotest2,1.0);
     cout << *zerotest << endl;
   }
 #endif // #ifdef DEBUG

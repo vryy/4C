@@ -372,8 +372,9 @@ void CONTACT::CNode::BuildAveragedNormal()
 void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
                                          double length)
 {
-  // prepare nodal storage map for derivative
+  // prepare nodal storage maps for derivative
   if ((int)GetDerivN().size()==0) GetDerivN().resize(NumDof());
+  if ((int)GetDerivT().size()==0) GetDerivT().resize(NumDof());
   
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
@@ -390,10 +391,10 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   // normalize directional derivative
   // (be careful with refernce / copy of derivative maps!)
   typedef map<int,double>::const_iterator CI;
-  map<int, double>& derivnx = GetDerivN()[0];
-  map<int, double>& derivny = GetDerivN()[1];
-  map<int, double> copyderivnx = GetDerivN()[0];
-  map<int, double> copyderivny = GetDerivN()[1];
+  map<int,double>& derivnx = GetDerivN()[0];
+  map<int,double>& derivny = GetDerivN()[1];
+  map<int,double> copyderivnx = GetDerivN()[0];
+  map<int,double> copyderivny = GetDerivN()[1];
   double nxnx = n()[0] * n()[0];
   double nxny = n()[0] * n()[1];
   double nyny = n()[1] * n()[1];
@@ -414,17 +415,37 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     derivny[col] = (val-nxny*copyderivnx[col]-nyny*val)/length;
   }
   
+  // get directional derivative of nodal tangent "for free"
+  // (we just have to use the orthogonality of n and t)
+  if (NumDof()==3) dserror("ERROR: Not yet implemented for 3D case");
+  map<int,double>& derivtx = GetDerivT()[0];
+  map<int,double>& derivty = GetDerivT()[1];
+  
+  for (CI p=derivny.begin();p!=derivny.end();++p)
+    derivtx[p->first] = -(p->second);
+  for (CI p=derivnx.begin();p!=derivnx.end();++p)
+    derivty[p->first] = (p->second);
+  
   /*
 #ifdef DEBUG
   cout << endl << "Node: " << Id() << "  Owner: " << Owner() << endl;
+  
   cout << "Normal: " << n()[0] << " " << n()[1] << endl;
   cout << "Deriv: " << endl;
   cout << "Row dof id: " << Dofs()[0] << endl;;
   for (CI p=derivnx.begin();p!=derivnx.end();++p)
-    cout << p->first << '\t' << p->second << endl;
-        
+    cout << p->first << '\t' << p->second << endl;       
   cout << "Row dof id: " << Dofs()[1] << endl;
   for (CI p=derivny.begin();p!=derivny.end();++p)
+    cout << p->first << '\t' << p->second << endl;
+    
+  cout << "Tangent: " << -n()[1] << " " << n()[0] << endl;
+  cout << "Deriv: " << endl;
+  cout << "Row dof id: " << Dofs()[0] << endl;;
+  for (CI p=derivtx.begin();p!=derivtx.end();++p)
+    cout << p->first << '\t' << p->second << endl;    
+  cout << "Row dof id: " << Dofs()[1] << endl;
+  for (CI p=derivty.begin();p!=derivty.end();++p)
     cout << p->first << '\t' << p->second << endl;
 #endif // #ifdef DEBUG
   */

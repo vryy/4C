@@ -434,6 +434,17 @@ public:
   Mortar matrix M linearization is still MISSING.  
   */
   virtual void AssembleS(LINALG::SparseMatrix& sglobal);
+  
+  /*!
+  \brief Assemble matrix P containing linearizations
+    
+  This method builds an algebraic form of the FULL linearization
+  of the tangential contact condition (frictionless). Concretely,
+  this means assembling the linearization of the slave side
+  nodal tangents and the current Lagrange multipliers.
+  */
+  virtual void AssembleP(LINALG::SparseMatrix& pglobal,
+                         RCP<Epetra_Vector> zglobal);
     
   /*!
   \brief Initialize active set of this interface (t=0)
@@ -472,7 +483,7 @@ public:
   virtual Epetra_SerialDenseMatrix& CSegs() {return contactsegs_;};
   
   /*!
-  \brief Check normal derivatives with finite differences
+  \brief Check normal/tangent derivatives with finite differences
     
   */
   virtual void FDCheckNormalDeriv();

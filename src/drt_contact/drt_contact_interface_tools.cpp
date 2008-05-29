@@ -160,7 +160,7 @@ void CONTACT::Interface::VisualizeGmsh(const Epetra_SerialDenseMatrix& csegs)
 }
 
 /*----------------------------------------------------------------------*
- | Finite difference check for normal derivatives             popp 05/08|
+ | Finite difference check for normal/tangent deriv.          popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::FDCheckNormalDeriv()
 {
@@ -180,12 +180,17 @@ void CONTACT::Interface::FDCheckNormalDeriv()
       //     << (element->Nodes()[1])->Id() << " Area: " << element->Area() << endl;
     }  
     
-    // create storage for normals
+    // create storage for normals / tangents
     vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
     vector<double> refny(int(snodecolmapbound_->NumMyElements()));
     vector<double> newnx(int(snodecolmapbound_->NumMyElements()));
     vector<double> newny(int(snodecolmapbound_->NumMyElements()));
     
+    vector<double> reftx(int(snodecolmapbound_->NumMyElements()));
+    vector<double> refty(int(snodecolmapbound_->NumMyElements()));
+    vector<double> newtx(int(snodecolmapbound_->NumMyElements()));
+    vector<double> newty(int(snodecolmapbound_->NumMyElements()));
+        
     // compute and print all nodal normals / derivatives (reference)
     for(int j=0; j<snodecolmapbound_->NumMyElements();++j)
     {
@@ -206,16 +211,24 @@ void CONTACT::Interface::FDCheckNormalDeriv()
         cout << "Normal-derivative-maps: " << endl;
         cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
         for (CI p=(jcnode->GetDerivN()[0]).begin();p!=(jcnode->GetDerivN()[0]).end();++p)
-          cout << p->first << '\t' << p->second << endl;
-              
+          cout << p->first << '\t' << p->second << endl;    
         cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
         for (CI p=(jcnode->GetDerivN()[1]).begin();p!=(jcnode->GetDerivN()[1]).end();++p)
           cout << p->first << '\t' << p->second << endl;
+        cout << "Tangent-derivative-maps: " << endl;
+        cout << "Row dof id: " << jcnode->Dofs()[0] << endl;
+        for (CI p=(jcnode->GetDerivT()[0]).begin();p!=(jcnode->GetDerivT()[0]).end();++p)
+          cout << p->first << '\t' << p->second << endl;    
+        cout << "Row dof id: " << jcnode->Dofs()[1] << endl;
+        for (CI p=(jcnode->GetDerivT()[1]).begin();p!=(jcnode->GetDerivT()[1]).end();++p)
+          cout << p->first << '\t' << p->second << endl;
       }
       
-      // store reference normals
-      refnx[j]=jcnode->n()[0];
-      refny[j]=jcnode->n()[1];
+      // store reference normals / tangents
+      refnx[j] = jcnode->n()[0];
+      refny[j] = jcnode->n()[1];
+      reftx[j] =-jcnode->n()[1];
+      refty[j] = jcnode->n()[0];
     }
     
     // now fincally get the node we want to apply the FD scheme to
@@ -262,24 +275,32 @@ void CONTACT::Interface::FDCheckNormalDeriv()
       // build NEW averaged normal at each slave node
       kcnode->BuildAveragedNormal();
             
-      newnx[k]=kcnode->n()[0];
-      newny[k]=kcnode->n()[1];
-            
-      // get reference normal
+      newnx[k] = kcnode->n()[0];
+      newny[k] = kcnode->n()[1];
+      newtx[k] =-kcnode->n()[1];
+      newty[k] = kcnode->n()[0];
+      
+      // get reference normal / tangent
       double refn[2] = {0.0, 0.0};
+      double reft[2] = {0.0, 0.0};
       refn[0] = refnx[k];
       refn[1] = refny[k];
+      reft[0] = reftx[k];
+      reft[1] = refty[k];
       
-      // get modified normal
+      // get modified normal / tangent
       double newn[2] = {0.0, 0.0};
+      double newt[2] = {0.0, 0.0};
       newn[0] = newnx[k];
       newn[1] = newny[k];
+      newt[0] = newtx[k];
+      newt[1] = newty[k];
       
       // print results (derivatives) to screen
       if (abs(newn[0]-refn[0])>1e-12 || abs(newn[1]-refn[1])>1e-12)
       {
         cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
-                  
+        cout << "Normal derivative (FD):" << endl;
         if (abs(newn[0]-refn[0])>1e-12)
         { 
           double val = (newn[0]-refn[0])/delta;
@@ -294,6 +315,26 @@ void CONTACT::Interface::FDCheckNormalDeriv()
           cout << snode->Dofs()[i%2] << '\t' << val << endl;
         }
       }
+      
+      if (abs(newt[0]-reft[0])>1e-12 || abs(newt[1]-reft[1])>1e-12)
+      {
+        cout << "Node: " << kcnode->Id() << "  Owner: " << kcnode->Owner() << endl;
+        cout << "Tangent derivative (FD):" << endl;
+        if (abs(newt[0]-reft[0])>1e-12)
+        { 
+          double val = (newt[0]-reft[0])/delta;
+          cout << "Row dof id: " << kcnode->Dofs()[0] << endl;
+          cout << snode->Dofs()[i%2] << '\t' << val << endl;
+        }
+      
+        if (abs(newt[1]-reft[1])>1e-12)
+        {
+          double val = (newt[1]-reft[1])/delta;
+          cout << "Row dof id: " << kcnode->Dofs()[1] << endl;
+          cout << snode->Dofs()[i%2] << '\t' << val << endl;
+        }
+      }
+      
     }
     
     // undo finite difference modification

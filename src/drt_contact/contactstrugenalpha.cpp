@@ -207,7 +207,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   RCP<Epetra_Vector> zm = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
 
-  // update of mid-point LM (equal to last end-point)
+  // update of mid-point LM (equal to predictor = last end-point)
   zm->Update(1.0,*zn,0.0);
 
   // evaluate Mortar coupling matrices for contact forces
@@ -397,7 +397,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   RCP<Epetra_Vector> zm = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
 
-  // update of mid-point LM (equal to last end-point)
+  // update of mid-point LM (equal to predictor = last end-point)
   zm->Update(1.0,*zn,0.0);
 
   // evaluate Mortar coupling matrices for contact forces

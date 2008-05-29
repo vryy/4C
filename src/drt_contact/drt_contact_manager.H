@@ -290,7 +290,8 @@ protected:
   
   RCP<LINALG::SparseMatrix>          nmatrix_;        // global Matrix N containing active node normals
   RCP<LINALG::SparseMatrix>          tmatrix_;        // global Matrix T containing active node tangents
-  RCP<LINALG::SparseMatrix>          smatrix_;        // global Matrix S containing active node normal derivatives
+  RCP<LINALG::SparseMatrix>          smatrix_;        // global Matrix S containing normal+D+M derivatives
+  RCP<LINALG::SparseMatrix>          pmatrix_;        // global Matrix P containing tangent derivatives
   
   RCP<Epetra_Vector>                 z_;              // vector of Lagrange multipliers (mid-point)
   RCP<Epetra_Vector>                 zold_;           // vector of last time step Lagrange multipliers (mid-point)
