@@ -67,7 +67,7 @@ public:
 
   /// return type of this material
   virtual MATERIAL_TYP MaterialType() const = 0;
-
+ 
   /// create element material object given the number of a material definition
   static Teuchos::RefCountPtr<Material> Factory(int matnum);
 };

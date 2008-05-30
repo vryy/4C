@@ -19,6 +19,8 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
+const int  NUM_STRESS_3D = 6; //6 stresses for 3D
+
 using namespace Teuchos;
 
 namespace MAT
@@ -88,7 +90,8 @@ namespace MAT
 
     double Density();
     
-    bool Initialized() { return (histstresscurr_!=Teuchos::null);}
+    bool Initialized() const
+      { return isinit_&&(histstresscurr_!=Teuchos::null);}
     
   private:
 

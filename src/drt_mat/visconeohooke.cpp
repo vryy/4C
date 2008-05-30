@@ -27,11 +27,11 @@ extern struct _MATERIAL *mat;
 MAT::ViscoNeoHooke::ViscoNeoHooke()
   : matdata_(NULL)
 {
-//  isinit_=false;
-//  histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
-//  artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
-//  histstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
-//  artstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
+  isinit_=false;
+  histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
+  artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
+  histstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
+  artstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
 }
 
 
@@ -57,6 +57,22 @@ void MAT::ViscoNeoHooke::Pack(vector<char>& data) const
   // matdata
   int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
   AddtoPack(data,matdata);
+  int histsize;
+  if (!Initialized())
+  {
+    histsize=0;
+  }
+  else 
+  {
+    histsize = histstresslast_->size();
+  }
+  AddtoPack(data,2*histsize);  // lenght of history vector(s)
+  for (int var = 0; var < histsize; ++var) 
+  {
+    AddtoPack(data,histstresslast_->at(var));
+    AddtoPack(data,artstresslast_->at(var));
+  }
+ 
 }
 
 
@@ -76,6 +92,26 @@ void MAT::ViscoNeoHooke::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,matdata);
   matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
 
+  int twicehistsize;
+  ExtractfromPack(position,data,twicehistsize);
+  
+  if (twicehistsize == 0) isinit_=false;
+  
+  histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
+  artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
+  histstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
+  artstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
+  for (int var=0; var<twicehistsize; var+=2)
+  {
+    Epetra_SerialDenseVector tmp(NUM_STRESS_3D);
+    histstresscurr_->push_back(tmp);
+    artstresscurr_->push_back(tmp);
+    ExtractfromPack(position,data,tmp);
+    histstresslast_->push_back(tmp);
+    ExtractfromPack(position,data,tmp);
+    artstresslast_->push_back(tmp);
+  }
+  
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 }
@@ -97,7 +133,7 @@ void MAT::ViscoNeoHooke::Initialize(const int numgp)
   artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
   histstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
   artstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
-  const Epetra_SerialDenseVector emptyvec(6);//6 stresses for 3D
+  const Epetra_SerialDenseVector emptyvec(NUM_STRESS_3D);
   histstresscurr_->resize(numgp);
   histstresslast_->resize(numgp);
   artstresscurr_->resize(numgp);
@@ -110,15 +146,15 @@ void MAT::ViscoNeoHooke::Initialize(const int numgp)
     artstresslast_->at(j) = emptyvec;
   }
   isinit_=true;
-    
   return ;
+  
 }
 
 void MAT::ViscoNeoHooke::Update()
 {
   histstresslast_=histstresscurr_;
   artstresslast_=artstresscurr_;
-  const Epetra_SerialDenseVector emptyvec(6);//6 stresses for 3D
+  const Epetra_SerialDenseVector emptyvec(NUM_STRESS_3D);//6 stresses for 3D
   histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
   artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
   const int numgp=histstresslast_->size();

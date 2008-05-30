@@ -133,7 +133,6 @@ void DRT::ELEMENTS::So_hex8::Pack(vector<char>& data) const
   for (int i=0; i<size; ++i)
     AddtoPack(data,invJ_[i]);
 
-
   return;
 }
 
