@@ -135,8 +135,7 @@ DRT::ELEMENTS::Fluid3Impl::Fluid3Impl(int iel)
     res_old_(3),
     conv_resM_(iel_),
     xder2_(6,3,blitz::ColumnMajorArray<2>()),
-    vderiv_(3,3,blitz::ColumnMajorArray<2>()),
-    derxjm_(3,3,3,iel_,blitz::ColumnMajorArray<4>())
+    vderiv_(3,3,blitz::ColumnMajorArray<2>())
 {
 }
 
@@ -1540,44 +1539,34 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
 
       vderiv_  = sum(evelnp(i,k) * deriv_(j,k), k);
 
-      for (int ui=0; ui<numnode; ++ui)
-      {
-        derxjm_(0,0,0,ui) = 0.;
-        derxjm_(0,0,1,ui) = deriv_(2, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(2, 2);
-        derxjm_(0,0,2,ui) = deriv_(1, ui)*xjm_(2, 1) - deriv_(2, ui)*xjm_(1, 1);
+#define derxjm_(r,c,d,i) derxjm_ ## r ## c ## d (i)
 
-        derxjm_(1,0,0,ui) = deriv_(1, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(1, 2);
-        derxjm_(1,0,1,ui) = 0.;
-        derxjm_(1,0,2,ui) = deriv_(2, ui)*xjm_(1, 0) - deriv_(1, ui)*xjm_(2, 0);
+#define derxjm_001(ui) (deriv_(2, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(2, 2))
+#define derxjm_002(ui) (deriv_(1, ui)*xjm_(2, 1) - deriv_(2, ui)*xjm_(1, 1))
 
-        derxjm_(2,0,0,ui) = deriv_(2, ui)*xjm_(1, 1) - deriv_(1, ui)*xjm_(2, 1);
-        derxjm_(2,0,1,ui) = deriv_(1, ui)*xjm_(2, 0) - deriv_(2, ui)*xjm_(1, 0);
-        derxjm_(2,0,2,ui) = 0.;
+#define derxjm_100(ui) (deriv_(1, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(1, 2))
+#define derxjm_102(ui) (deriv_(2, ui)*xjm_(1, 0) - deriv_(1, ui)*xjm_(2, 0))
 
-        derxjm_(0,1,0,ui) = 0.;
-        derxjm_(0,1,1,ui) = deriv_(0, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(0, 2);
-        derxjm_(0,1,2,ui) = deriv_(2, ui)*xjm_(0, 1) - deriv_(0, ui)*xjm_(2, 1);
+#define derxjm_200(ui) (deriv_(2, ui)*xjm_(1, 1) - deriv_(1, ui)*xjm_(2, 1))
+#define derxjm_201(ui) (deriv_(1, ui)*xjm_(2, 0) - deriv_(2, ui)*xjm_(1, 0))
 
-        derxjm_(1,1,0,ui) = deriv_(2, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(2, 2);
-        derxjm_(1,1,1,ui) = 0.;
-        derxjm_(1,1,2,ui) = deriv_(0, ui)*xjm_(2, 0) - deriv_(2, ui)*xjm_(0, 0);
+#define derxjm_011(ui) (deriv_(0, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(0, 2))
+#define derxjm_012(ui) (deriv_(2, ui)*xjm_(0, 1) - deriv_(0, ui)*xjm_(2, 1))
 
-        derxjm_(2,1,0,ui) = deriv_(0, ui)*xjm_(2, 1) - deriv_(2, ui)*xjm_(0, 1);
-        derxjm_(2,1,1,ui) = deriv_(2, ui)*xjm_(0, 0) - deriv_(0, ui)*xjm_(2, 0);
-        derxjm_(2,1,2,ui) = 0.;
+#define derxjm_110(ui) (deriv_(2, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(2, 2))
+#define derxjm_112(ui) (deriv_(0, ui)*xjm_(2, 0) - deriv_(2, ui)*xjm_(0, 0))
 
-        derxjm_(0,2,0,ui) = 0.;
-        derxjm_(0,2,1,ui) = deriv_(1, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(1, 2);
-        derxjm_(0,2,2,ui) = deriv_(0, ui)*xjm_(1, 1) - deriv_(1, ui)*xjm_(0, 1);
+#define derxjm_210(ui) (deriv_(0, ui)*xjm_(2, 1) - deriv_(2, ui)*xjm_(0, 1))
+#define derxjm_211(ui) (deriv_(2, ui)*xjm_(0, 0) - deriv_(0, ui)*xjm_(2, 0))
 
-        derxjm_(1,2,0,ui) = deriv_(0, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(0, 2);
-        derxjm_(1,2,1,ui) = 0.;
-        derxjm_(1,2,2,ui) = deriv_(1, ui)*xjm_(0, 0) - deriv_(0, ui)*xjm_(1, 0);
+#define derxjm_021(ui) (deriv_(1, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(1, 2))
+#define derxjm_022(ui) (deriv_(0, ui)*xjm_(1, 1) - deriv_(1, ui)*xjm_(0, 1))
 
-        derxjm_(2,2,0,ui) = deriv_(1, ui)*xjm_(0, 1) - deriv_(0, ui)*xjm_(1, 1);
-        derxjm_(2,2,1,ui) = deriv_(0, ui)*xjm_(1, 0) - deriv_(1, ui)*xjm_(0, 0);
-        derxjm_(2,2,2,ui) = 0.;
-      }
+#define derxjm_120(ui) (deriv_(0, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(0, 2))
+#define derxjm_122(ui) (deriv_(1, ui)*xjm_(0, 0) - deriv_(0, ui)*xjm_(1, 0))
+
+#define derxjm_220(ui) (deriv_(1, ui)*xjm_(0, 1) - deriv_(0, ui)*xjm_(1, 1))
+#define derxjm_221(ui) (deriv_(0, ui)*xjm_(1, 0) - deriv_(1, ui)*xjm_(0, 0))
 
       for (int vi=0; vi<numnode; ++vi)
       {

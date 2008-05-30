@@ -2929,12 +2929,14 @@ void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condeleme
   mat->SetCondElements(condelements);
   sysmat_ = mat;
 
-#if 0
-  // allocate special mesh moving matrix
-  mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
-  mat->SetCondElements(condelements);
-  meshmovematrix_ = mat;
-#endif
+  // if we never build the matrix nothing will be done
+  if (params_.get<bool>("mesh movement linearization"))
+  {
+    // allocate special mesh moving matrix
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    mat->SetCondElements(condelements);
+    meshmovematrix_ = mat;
+  }
 }
 
 

@@ -143,14 +143,17 @@ namespace FSI
     /// block system matrix
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
-    /// column fluid to structure dof map
-    std::map<int,int> permfluidstructcolmap_;
+    /// @name Matrix block transform objects
+    /// Handle row and column map exchange for matrix blocks
 
-    bool havepermfluidstructcolmap_;
+    UTILS::MatrixRowColTransform fggtransform_;
+    UTILS::MatrixRowTransform fgitransform_;
+    UTILS::MatrixColTransform figtransform_;
+    UTILS::MatrixColTransform aigtransform_;
+    UTILS::MatrixColTransform fmiitransform_;
+    UTILS::MatrixRowColTransform fmgitransform_;
 
-    MatrixRowTransform fgitransform_;
-    MatrixColTransform figtransform_;
-    MatrixColTransform aigtransform_;
+    ///@}
 
     /// keep the status tests available so we can connect them with our
     /// adaptive Newton direction

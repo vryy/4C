@@ -17,56 +17,98 @@
 
 namespace FSI
 {
-
-  /// base
-  /*!
-
-    This class encapsulates a very specific operation.
-
-    \author u.kue
-    \date 05/08
-   */
-  class MatrixTransform
+  namespace UTILS
   {
-  protected:
-
-    void InsertValues(Teuchos::RCP<Epetra_CrsMatrix> edst,
-                      const Epetra_Map& dstrowmap,
-                      const Epetra_Map& dstmap,
-                      int row,
-                      int NumEntries,
-                      double *Values,
-                      int *Indices);
-  };
 
   /// communicate matrix to new row map
   /*!
 
-    This class encapsulates a very specific operation.
+    Overlapping monolithic FSI adds matrices from different fields at the
+    interface. These matrices belong to different row maps. Thus adding them
+    requires moving one of them to a new row map. The relations between these
+    maps are managed by ADAPTER::Coupling objects. In a parallel setting there
+    is a master and a slave side (in case of matrix transformations we use
+    source and destination abstraction via ADAPTER::Coupling::Converter). The
+    parallel distribution of both is arbitrary. And in addition there are
+    permuted master and slave maps, that match the respective other side. So
+    the row map transformation requires a parallel redistribution followed by
+    a row map exchange.
 
+    This operator does not utilize Epetra_CrsMatrix::ReplaceRowMap() but
+    copies the temporary matrix. This is required both to preserve the
+    internal Epetra_CrsMatrix from the destination LINALG::SparseMatrix and
+    because the destination matrix row map may be much larger than the source
+    matrix row map.
+
+    The operator is meant to be usable on its own or as part of the composed
+    MatrixRowColTransform operator.
+
+    \note All matrix transformation operators work with filled and unfilled
+    destination matrices. The source matrix is never changed. The destination
+    matrix is not reallocated and its filled state is not explicitly
+    changed. There is a LINALG::SparseMatrix::Zero() call if addmatrix==false
+    and this can reset the filled state if the matrix graph is not preserved
+    by the LINALG::SparseMatrix object.
+
+    \warning This class encapsulates a very specific operation needed for
+    monolithic FSI block matrix assemble.
+
+    \sa MatrixColTransform, MatrixRowColTransform
     \author u.kue
     \date 05/08
    */
-  class MatrixRowTransform : public MatrixTransform
+  class MatrixRowTransform
   {
   public:
 
     /// transformation operation
+    /*!
+      The call operator to be used for a matrix data copy between \p src and
+      \p dst matrices.
+
+      \param src       (i) source matrix
+      \param scale     (i) scaling factor to be applied
+      \param converter (i) src to dst abstaction on ADAPTER::Coupling
+      \param dst     (i/o) destination matrix
+      \param addmatrix (i) remove current dst values if false
+     */
     bool operator()(const LINALG::SparseMatrix& src,
                     double scale,
                     const ADAPTER::Coupling::Converter& converter,
-                    LINALG::SparseMatrix& dst);
+                    LINALG::SparseMatrix& dst,
+                    bool addmatrix=false);
 
     /// redistribute source matrix according to permutation map
+    /*!
+      Internal method. Parallel redistribution of \p src to \p permsrcmap
+
+      \note There are the same gids in \p permsrcmap and src->RowMap(). The
+      distribution of \p permsrcmap however matches dst.RowMap().
+
+      \param src        (i) source matrix
+      \param permsrcmap (i) permuted source matrix row map
+     */
     Teuchos::RCP<Epetra_CrsMatrix> Redistribute(const LINALG::SparseMatrix& src,
                                                 const Epetra_Map& permsrcmap);
 
     /// copy values from source to destination matrix
-    void MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> permsrc,
+    /*!
+      Internal method. Copy values from \p esrc to \p edst with the
+      overlapping part of the destination row map being \p dstmap .
+
+      \param esrc      (i) source matrix
+      \param dstmap    (i) overlapping part of destination row map
+      \param edst    (i/o) destination matrix
+      \param addmatrix (i) remove current dst values if false
+     */
+    void MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc,
                       const Epetra_Map& dstmap,
-                      Teuchos::RCP<Epetra_CrsMatrix> edst);
+                      Teuchos::RCP<Epetra_CrsMatrix> edst,
+                      bool addmatrix);
 
   private:
+
+    /// exporter to communicate matrix to new row map
     Teuchos::RCP<Epetra_Export> exporter_;
   };
 
@@ -74,12 +116,33 @@ namespace FSI
   /// communicate matrix to new col map
   /*!
 
-    This class encapsulates a very specific operation.
+    Overlapping monolithic FSI needs to assign matrix blocks from one field to
+    block matrix slots belonging to another field. For some matrix blocks the
+    row map stays the same but the column map changes.
 
+    A special point here is that the source matrix column might include more
+    values that the respective destination matrix column. This happens with
+    fluid matrices that include velocity and pressure values whereas the
+    corresponding ale matrices just contain displacement values. In such a
+    case it is possible to advice the transformation to drop the pressure
+    values (\p exactmatch=false ). By default additional values raise a
+    \p dserror .
+
+    \note All matrix transformation operators work with filled and unfilled
+    destination matrices. The source matrix is never changed. The destination
+    matrix is not reallocated and its filled state is not explicitly
+    changed. There is a LINALG::SparseMatrix::Zero() call if addmatrix==false
+    and this can reset the filled state if the matrix graph is not preserved
+    by the LINALG::SparseMatrix object.
+
+    \warning This class encapsulates a very specific operation needed for monolithic
+    FSI block matrix assemble.
+
+    \sa MatrixRowTransform, MatrixRowColTransform
     \author u.kue
     \date 05/08
    */
-  class MatrixColTransform : public MatrixTransform
+  class MatrixColTransform
   {
   public:
 
@@ -87,17 +150,111 @@ namespace FSI
     MatrixColTransform() : havegidmap_(false) {}
 
     /// transformation operation
+    /*!
+      The call operator to be used for a matrix data copy between \p src and
+      \p dst matrices.
+
+      \param fullsrc   (i) full source block matrix
+      \param src       (i) source matrix
+      \param scale     (i) scaling factor to be applied
+      \param converter (i) src to dst abstaction on ADAPTER::Coupling
+      \param dst     (i/o) destination matrix
+      \param exactmatch (i) do not drop any source values if true
+      \param addmatrix (i) remove current dst values if false
+     */
     bool operator()(const LINALG::BlockSparseMatrixBase& fullsrc,
                     const LINALG::SparseMatrix& src,
                     double scale,
                     const ADAPTER::Coupling::Converter& converter,
                     LINALG::SparseMatrix& dst,
-                    bool exactmatch=true);
+                    bool exactmatch=true,
+                    bool addmatrix=false);
+
+    /// setup column map matching between source and destination gids
+    /*!
+      Internal method.
+     */
+    void SetupGidMap(const Epetra_Map& rowmap,
+                     const Epetra_Map& colmap,
+                     const ADAPTER::Coupling::Converter& converter,
+                     const Epetra_Comm& comm);
+
+    /// copy values from source to destination matrix
+    /*!
+      Internal method.
+     */
+    void MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc,
+                      const Epetra_Map& dstmap,
+                      Teuchos::RCP<Epetra_CrsMatrix> edst,
+                      bool exactmatch,
+                      bool addmatrix);
 
   private:
+
+    /// source and destination gid matching
     std::map<int,int> gidmap_;
+
+    /// setup done flag
     bool havegidmap_;
   };
+
+
+  /// communicate matrix to new row map and col map
+  /*!
+
+    A combined row and column map exchange between source and destination
+    matrix. This is really just a combination of MatrixRowTransform and
+    MatrixColTransform.
+
+    \note All matrix transformation operators work with filled and unfilled
+    destination matrices. The source matrix is never changed. The destination
+    matrix is not reallocated and its filled state is not explicitly
+    changed. There is a LINALG::SparseMatrix::Zero() call if addmatrix==false
+    and this can reset the filled state if the matrix graph is not preserved
+    by the LINALG::SparseMatrix object.
+
+    \warning This class encapsulates a very specific operation needed for monolithic
+    FSI block matrix assemble.
+
+    \sa MatrixRowTransform, MatrixColTransform
+    \author u.kue
+    \date 05/08
+   */
+  class MatrixRowColTransform
+  {
+  public:
+
+    /// transformation operation
+    /*!
+      The call operator to be used for a matrix data copy between \p src and
+      \p dst matrices.
+
+      \param src          (i) source matrix
+      \param scale        (i) scaling factor to be applied
+      \param rowconverter (i) src to dst abstaction on ADAPTER::Coupling
+      \param colconverter (i) src to dst abstaction on ADAPTER::Coupling
+      \param dst        (i/o) destination matrix
+      \param exactmatch   (i) do not drop any source values if true
+      \param addmatrix    (i) remove current dst values if false
+     */
+    bool operator()(const LINALG::SparseMatrix& src,
+                    double scale,
+                    const ADAPTER::Coupling::Converter& rowconverter,
+                    const ADAPTER::Coupling::Converter& colconverter,
+                    LINALG::SparseMatrix& dst,
+                    bool exactmatch=true,
+                    bool addmatrix=false);
+
+  private:
+
+    /// transformation for row redistribution
+    MatrixRowTransform rowtrans_;
+
+    /// transformation for column renumbering
+    MatrixColTransform coltrans_;
+  };
+
+  }
 }
 
 #endif

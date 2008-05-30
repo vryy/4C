@@ -32,7 +32,7 @@ FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
 				   IO::DiscretizationWriter& output,
 				   double dta) :
   // call constructor for "nontrivial" objects
-  discret_(actdis), 
+  discret_(actdis),
   output_ (output)
 {
   vector<DRT::Condition*> impedancecond;
@@ -92,7 +92,7 @@ FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
     hist_         = LINALG::CreateVector(*dofrowmap,true);
 
     flowrates_    = rcp(new vector<double>);
-    impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);    
+    impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);
 
     // -------------------------------------------------------------------
     // determine area of actual outlet and get material data
@@ -133,7 +133,7 @@ FluidImpedanceBc::~FluidImpedanceBc()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  output )
-{ 
+{
   if ( numcondlines_ > 0 )
   {
     // write the flowrates of the previous period
@@ -157,7 +157,7 @@ void FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  output )
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader )
-{ 
+{
   if ( numcondlines_ > 0 )
   {
     flowratespos_ = reader.ReadInt("flowratespos");
@@ -181,7 +181,7 @@ void FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader )
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*! 
+/*!
 
 */
 double FluidImpedanceBc::Area( double& density, double& viscosity )
@@ -248,11 +248,11 @@ double FluidImpedanceBc::Area( double& density, double& viscosity )
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/* 
+/*
 
   This routine contains major parts of the following paper:
 
-  Olufsen et al.: "Numerical Simulation and Experimental Validation of 
+  Olufsen et al.: "Numerical Simulation and Experimental Validation of
   Blood Flow in Arteries with Structured-Tree Outflow Conditions",
   Annals of Biomedical Eingineering, Vol. 28, pp. 1281--1299, 2000.
 
@@ -277,18 +277,18 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   std::complex<double> entry;
 
   //Loop over some frequencies making a call to Impedance, w=2*pi*k/T
-  //where k=-N/2,....,N/2, 
+  //where k=-N/2,....,N/2,
 
   double radius = sqrt(area/PI);
   // calculate DC (direct current) component depending on type of tree
   if ( treetype_ == "lung" )
     frequencydomain[0] = DCLungImpedance(0,0,zparent,storage);
-  
+
   if ( treetype_ == "artery" )
     frequencydomain[0] = DCArteryImpedance(0,radius,density,viscosity,zparent);
 
   // this results in a field like
-  // frequencydomain = 
+  // frequencydomain =
   // [ Z(w_0)  Z(w_1)  Z(w_2)  Z(w_3)  ...  Z(w_cyclesteps) ]
   //
   // note that we also need the complex conjugated ones, i.e.
@@ -306,7 +306,7 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   // --------------------------------------------------------------------------
   // inverse Fourier transform
   // idea:
-  //              
+  //
   //                    cyclesteps                i omega_k t
   //      imp(x,t) = sum          IMP(x,omega_k) e
   //                   -cyclesteps
@@ -351,18 +351,18 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*! 
+/*!
   modifyed by chfoe 04/08
 
   Calculate the flow rate accros an impedance boundary surface
 
-  Flow rates are 
-  (1) calculated for single element surfaces 
+  Flow rates are
+  (1) calculated for single element surfaces
   (2) added up over the elements of the single procs
   (3) communicated and added over the procs
   (4) and finally stored within the vector 'flowrates_'
 
-  The vector of the flowrates holds the flow rate history of the 
+  The vector of the flowrates holds the flow rate history of the
   very last cycle!
 
 */
@@ -435,11 +435,11 @@ void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/* 
+/*
 
   This routine contains major parts of the following paper:
 
-  Olufsen et al.: "Numerical Simulation and Experimental Validation of 
+  Olufsen et al.: "Numerical Simulation and Experimental Validation of
   Blood Flow in Arteries with Structured-Tree Outflow Conditions",
   Annals of Biomedical Eingineering, Vol. 28, pp. 1281--1299, 2000.
 
@@ -513,7 +513,7 @@ void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*! 
+/*!
 */
 void FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
 {
@@ -536,11 +536,11 @@ void FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*! 
+/*!
 build up artery tree and calculate root impedance for a given frequency
 
-Data taken from 
-  Olufsen et al.: "Numerical Simulation and Experimental Validation of 
+Data taken from
+  Olufsen et al.: "Numerical Simulation and Experimental Validation of
   Blood Flow in Arteries with Structured-Tree Outflow Conditions",
   Annals of Biomedical Eingineering, Vol. 28, pp. 1281--1299, 2000.
 
@@ -549,8 +549,8 @@ Further also needed
   in larger systematic arteries", American Physiological Society, 1999.
 
 */
-std::complex<double> FluidImpedanceBc::ArteryImpedance(int k, 
-						       int generation, 
+std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
+						       int generation,
 						       double radius,
 						       double density,
 						       double viscosity,
@@ -605,16 +605,25 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
   //*************************************************************
   complex<double> zdown;
   if( zleft == 0.0 )
+  {
     if( zright == 0.0 )
+    {
       zdown = 0.0;  // both daughter impedances are zero, we are at the leafes of the tree
+    }
     else
+    {
       zdown = zright; // only the left downward vessel has already terminated
+    }
+  }
   else if( zright == 0.0 )
+  {
     zdown = zleft;    // only the right downward vessel has already terminated
+  }
   else
+  {
     // the standard case, both vessels contiunue
     zdown = 1.0 / (1.0/zleft + 1.0/zright);
-
+  }
 
   // ... and compute impedance at my upstream end!
   //*************************************************************
@@ -653,7 +662,7 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*! 
+/*!
   The special case of omega=0 is covered here, i.e. what is the impedance
   of the tree for constant flow that is a very special harmonic function
   with zero frequency.
@@ -661,16 +670,16 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
   This case is also called direct current component in the classical
   analogy.
 */
-std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,  
+std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
 							 double radius,
 							 double density,
 							 double viscosity,
 						         std::complex<double> zparentdc)
-{  
+{
   // general data
   double lscale = 50.0; // length to radius ratio
   double alpha = 0.9;   // right daughter vessel ratio
-  double beta = 0.6;    // left daughter vessel ratio 
+  double beta = 0.6;    // left daughter vessel ratio
   double mu = viscosity * density; // dynamic (physical) viscosity
 
   // terminal resistance is assumed zero
@@ -733,10 +742,10 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*! 
-What is supposed to happen within these lines? 
+/*!
+What is supposed to happen within these lines?
 */
-std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter, 
+std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
 						     int generation,
 						     std::complex<double> zparent,
 						     std::complex<double> zleft,
@@ -761,7 +770,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
   //Womersley number
   double sqrdwo=(diameter[generation]/2)*(diameter[generation]/2)*omega/nue;
   //K depends on the womersley number
-  
+
   double wonu = sqrt(sqrdwo);
 
     if (wonu > 4.0)
@@ -778,8 +787,8 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
   //Convenience coefficient
   g=sqrt(compliance*area*koeff/rho);
 
-  
-  
+
+
   if (abs(zleft) == 0)
   {
   	zleft = (imag)*((1.0/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
@@ -803,7 +812,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
   //Bifurcation condition
   zend = (zright*zleft)/(zleft+zright);
   //Impedance at the parent level
-  
+
   //Right side is always pre calculated!
   if (generation < generationLimit)
   {
@@ -829,11 +838,11 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*! 
-What is supposed to happen within these lines? 
+/*!
+What is supposed to happen within these lines?
 */
-std::complex<double> FluidImpedanceBc::DCLungImpedance(int ImpedanceCounter, 
-						       int generation, 
+std::complex<double> FluidImpedanceBc::DCLungImpedance(int ImpedanceCounter,
+						       int generation,
 						       std::complex<double> zparentdc,
 						       std::complex<double> storage[])
 {
@@ -870,7 +879,7 @@ std::complex<double> FluidImpedanceBc::DCLungImpedance(int ImpedanceCounter,
   //Bifurcation condition
   zend = (zright*zleft)/(zleft+zright);
   //Impedance at the parent level
-  
+
 
   if (generation < generationLimit) //Number of Generations to model, better for small vessels ie. not the trachea
   {

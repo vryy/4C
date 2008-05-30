@@ -14,8 +14,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
-  : Monolithic(comm),
-    havepermfluidstructcolmap_(false)
+  : Monolithic(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -282,7 +281,18 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here.
 
-  AddFluidInterface(scale*timescale,fgg,*s);
+  // uncomplete because the fluid interface can have more connections than the
+  // structural one. (Tet elements in fluid can cause this.) We should do
+  // this just once...
+  s->UnComplete();
+
+  fggtransform_(fgg,
+                scale*timescale,
+                ADAPTER::Coupling::SlaveConverter(coupsf),
+                ADAPTER::Coupling::SlaveConverter(coupsf),
+                *s,
+                true,
+                true);
 
   mat.Assign(0,0,View,*s);
   fgitransform_(fgi,
@@ -307,7 +317,6 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
 
-#if 0
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
   if (mmm!=Teuchos::null)
   {
@@ -316,23 +325,23 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
     LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
     //LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
 
-    if (not havefluidalecolmap_)
-    {
-      DRT::Exporter ex(mmm->FullRowMap(),mmm->FullColMap(),mmm->Comm());
-      coupfa.FillMasterToSlaveMap(fluidalecolmap_);
-      ex.Export(fluidalecolmap_);
-      havefluidalecolmap_ = true;
-    }
-
     // We cannot copy the pressure value. It is not used anyway. So no exact
     // match here.
-    mat.Assign(1,2,View,*ConvertFigColmap(fmii,fluidalecolmap_,aii.DomainMap(),1.,false));
+    fmiitransform_(*mmm,
+                   fmii,
+                   1.,
+                   ADAPTER::Coupling::MasterConverter(coupfa),
+                   mat.Matrix(1,2),
+                   false);
 
-    //mat.Assign(0,2,View,*ConvertFigColmap(fmii,fluidalecolmap_,aii.DomainMap(),1.,false));
-
-    //AddFluidInterface(scale,fmgg,*s);
+    fmgitransform_(fmgi,
+                   1,
+                   ADAPTER::Coupling::SlaveConverter(coupsf),
+                   ADAPTER::Coupling::MasterConverter(coupfa),
+                   mat.Matrix(0,2),
+                   false,
+                   false);
   }
-#endif
 
   // done. make sure all blocks are filled.
   mat.Complete();
@@ -554,80 +563,6 @@ void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
   AleField().Interface().InsertCondVector(acx, a);
   ax = a;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::AddFluidInterface(double scale,
-                                               const LINALG::SparseMatrix& fgg,
-                                               LINALG::SparseMatrix& s)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::AddFluidInterface");
-
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-
-  Teuchos::RCP<LINALG::SparseMatrix> pfgg = coupsf.SlaveToPermSlave(fgg);
-  Teuchos::RCP<Epetra_CrsMatrix> perm_fgg = pfgg->EpetraMatrix();
-
-  const Epetra_Map& perm_rowmap = perm_fgg->RowMap();
-  const Epetra_Map& perm_colmap = perm_fgg->ColMap();
-
-  if (not havepermfluidstructcolmap_)
-  {
-    // fgg->RowMap()
-    DRT::Exporter ex(*coupsf.SlaveDofMap(),perm_colmap,perm_fgg->Comm());
-    coupsf.FillSlaveToMasterMap(permfluidstructcolmap_);
-    ex.Export(permfluidstructcolmap_);
-    havepermfluidstructcolmap_ = true;
-  }
-
-#define INTERFACE_MATRIX_UNCOMPLETE
-
-#ifdef INTERFACE_MATRIX_UNCOMPLETE
-  // uncomplete because the fluid interface can have more connections than the
-  // structural one. (Tet elements in fluid can cause this.) We should do
-  // this just once...
-  s.UnComplete();
-#endif
-
-  int rows = perm_fgg->NumMyRows();
-  for (int i=0; i<rows; ++i)
-  {
-    int NumEntries;
-    double *Values;
-    int *Indices;
-    int err = perm_fgg->ExtractMyRowView(i, NumEntries, Values, Indices);
-    if (err!=0)
-      dserror("ExtractMyRowView error: %d", err);
-
-    int gid = perm_rowmap.GID(i);
-    std::map<int,int>::iterator iter = permfluidstructcolmap_.find(gid);
-    if (iter==permfluidstructcolmap_.end())
-      dserror("gid %d not found", gid);
-    int structgid = iter->second;
-
-    for (int j=0; j<NumEntries; ++j)
-    {
-      int perm_gid = perm_colmap.GID(Indices[j]);
-      iter = permfluidstructcolmap_.find(perm_gid);
-      if (iter==permfluidstructcolmap_.end())
-        dserror("gid %d not found", perm_gid);
-      int index = iter->second;
-
-      // There might be zeros on Dirichlet lines that are not included in the
-      // structure matrix graph. Ignore them.
-      if (Values[j]!=0)
-      {
-        double value = Values[j]*scale;
-        s.Assemble(value, structgid, index);
-      }
-    }
-  }
-
-#ifdef INTERFACE_MATRIX_UNCOMPLETE
-  s.Complete();
-#endif
 }
 
 

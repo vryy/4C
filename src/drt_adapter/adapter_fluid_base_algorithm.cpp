@@ -223,6 +223,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       // there are a couple of restrictions in monolithic FSI
       fluidtimeparams->set<bool>("do explicit predictor",false);
+
+      fluidtimeparams->set<bool>("mesh movement linearization",
+                                 Teuchos::getIntegralValue<int>(fsidyn,"MESHLINEARIZATION"));
     }
   }
   // sanity checks and default flags

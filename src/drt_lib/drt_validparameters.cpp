@@ -1074,6 +1074,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Second order coupling at the interface.",
                                yesnotuple,yesnovalue,&fsidyn);
 
+  setStringToIntegralParameter("MESHLINEARIZATION","No",
+                               "Include linearization with respect to mesh movement in Navier Stokes equation.\n"
+                               "Supported in monolithic FSI for now.",
+                               yesnotuple,yesnovalue,&fsidyn);
+
   IntParameter("ITECHAPP",1,"",&fsidyn);
   IntParameter("ICHMAX",1,"",&fsidyn);
   IntParameter("ISDMAX",1,"not used up to now",&fsidyn);

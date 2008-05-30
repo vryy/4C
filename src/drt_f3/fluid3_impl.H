@@ -298,7 +298,6 @@ namespace ELEMENTS
     blitz::Array<double,2> xder2_;
 
     blitz::Array<double,2> vderiv_;
-    blitz::Array<double,4> derxjm_;
   };
 
 }
