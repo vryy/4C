@@ -31,7 +31,8 @@ Maintainer: Alexander Popp
 //#define CONTACTDIMOUTPUT       /* flag for output of global matrix dim. */
 //#define CONTACTCHECKHUEEBER    /* flag for S.Hüeber's quad. conv. check */
 //#define CONTACTFDNORMAL        /* flag for FD check of normal derivative */
-//#define CONTACTFDMORTAR        /* flag for FD check of mortar matrix D */
+//#define CONTACTFDMORTARD       /* flag for FD check of mortar matrix D */
+//#define CONTACTFDMORTARM       /* flag for FD check of mortar matrix M */
 
 /************************************************************************/
 /* Contact algorithm parameters                                         */

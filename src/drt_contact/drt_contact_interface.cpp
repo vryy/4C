@@ -495,9 +495,14 @@ void CONTACT::Interface::Evaluate()
     }
   }
 
-#ifdef CONTACTFDMORTAR
-  // FD check of Mortar matrix derivatives
-  FDCheckMortarDeriv();
+#ifdef CONTACTFDMORTARD
+  // FD check of Mortar matrix D derivatives
+  FDCheckMortarDDeriv();
+#endif // #ifdef CONTACTFDNORMAL
+
+#ifdef CONTACTFDMORTARM
+  // FD check of Mortar matrix M derivatives
+  FDCheckMortarMDeriv();
 #endif // #ifdef CONTACTFDNORMAL
   
 #ifdef DEBUG

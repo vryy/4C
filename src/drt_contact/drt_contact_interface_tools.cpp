@@ -354,9 +354,9 @@ void CONTACT::Interface::FDCheckNormalDeriv()
 }
 
 /*----------------------------------------------------------------------*
- | Finite difference check for Mortar derivatives             popp 05/08|
+ | Finite difference check for D-Mortar derivatives           popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::FDCheckMortarDeriv()
+void CONTACT::Interface::FDCheckMortarDDeriv()
 {
   // create storage for D-Matrix entries
   vector<double> refD(int(snoderowmap_->NumMyElements()));
@@ -525,6 +525,414 @@ void CONTACT::Interface::FDCheckMortarDeriv()
 #endif // #ifndef CONTACTONEMORTARLOOP
   }
       
+  //exit(0);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Finite difference check for M-Mortar derivatives           popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::FDCheckMortarMDeriv()
+{
+  // create storage for M-Matrix entries
+  int nrow = snoderowmap_->NumMyElements();
+  vector<map<int,double> > refM(nrow);
+  vector<map<int,double> > newM(nrow);
+  
+  // print reference to screen (M-derivative-maps)
+  // loop over proc's slave nodes
+  for (int i=0; i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+    
+    typedef map<int,map<int,double> >::const_iterator CIM;
+    typedef map<int,double>::const_iterator CI;
+    map<int,map<int,double> >& derivmmap = cnode->GetDerivM();
+    
+    map<int,double > mmap = cnode->GetM()[0];
+    
+    cout << endl << "Node: " << cnode->Id() << "  Owner: " << cnode->Owner() << endl;
+    
+    // store M-values into refM
+    refM[i]=mmap;
+   
+    // print to screen
+    for (CIM p=derivmmap.begin();p!=derivmmap.end();++p)
+    {
+      cout << "M-derivative-map for pair S" << cnode->Id() << " and M" << p->first << endl;
+      map<int,double>& currmap = derivmmap[p->first];
+      for (CI q=currmap.begin();q!=currmap.end();++q)
+        cout << q->first << "\t" << q->second << endl;
+    }
+  }
+  
+  
+  // global loop to apply FD scheme to all slave dofs (=2*nodes)
+  for (int fd=0; fd<2*snodefullmap_->NumMyElements();++fd)
+  {
+    // Initialize
+    Initialize();
+    
+    // now get the node we want to apply the FD scheme to
+    int gid = snodefullmap_->GID(fd/2);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    CNode* snode = static_cast<CNode*>(node);
+    
+    // apply finite difference scheme
+    if (Comm().MyPID()==snode->Owner())
+    {
+      cout << "\nBuilding FD for Slave Node: " << snode->Id() << " Dof(l): " << fd%2
+           << " Dof(g): " << snode->Dofs()[fd%2] << endl;
+    }
+    
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%2==0)
+    {
+      snode->xspatial()[0] += delta;
+      snode->u()[0] += delta;
+    }
+    else
+    {
+      snode->xspatial()[1] += delta;
+      snode->u()[1] += delta;
+    }
+    
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0;j<idiscret_->NumMyColElements();++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+    
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************    
+    // loop over proc's slave nodes of the interface
+    // use standard column map to include processor's ghosted nodes
+    // use boundary map to include slave side boundary nodes
+    for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
+    {
+      int gid1 = snodecolmapbound_->GID(i);
+      DRT::Node* node = idiscret_->gNode(gid1);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      // build averaged normal at each slave node
+      cnode->BuildAveragedNormal();
+    }
+
+    // contact search algorithm
+    EvaluateContactSearch();
+
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    {
+      int gid1 = selecolmap_->GID(i);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+
+  #ifndef CONTACTONEMORTARLOOP
+      // integrate Mortar matrix D (lives on slave side only!)
+      IntegrateSlave2D(*selement);
+  #else
+  #ifdef CONTACTFULLLIN
+      dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
+  #endif // #ifdef CONTACTFULLLIN
+  #endif // #ifndef CONTACTONEMORTARLOOP
+
+      // loop over the contact candidate master elements
+      // use slave element's candidate list SearchElements !!!
+      for (int j=0;j<selement->NumSearchElements();++j)
+      {
+        int gid2 = selement->SearchElements()[j];
+        DRT::Element* ele2 = idiscret_->gElement(gid2);
+        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+        CElement* melement = static_cast<CElement*>(ele2);
+
+        // prepare overlap integration
+        vector<bool> hasproj(4);
+        vector<double> xiproj(4);
+        bool overlap = false;
+
+        // project the element pair
+        Project2D(*selement,*melement,hasproj,xiproj);
+
+        // check for element overlap
+        overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
+
+        // integrate the element overlap
+        if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
+      }
+    }
+    // *******************************************************************
+    
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      CNode* kcnode = static_cast<CNode*>(knode);
+      map<int,double> mmap = kcnode->GetM()[0];
+      typedef map<int,double>::const_iterator CI;
+      
+      // store M-values into refM
+      newM[k]=mmap;
+              
+      // print results (derivatives) to screen
+      for (CI p=newM[k].begin();p!=newM[k].end();++p)
+      {
+        if (abs(newM[k][p->first]-refM[k][p->first]) > 1e-12)
+        {
+          cout << "M-FD-derivative for pair S" << kcnode->Id() << " and M" << (p->first)/2 << endl;
+          //cout << "Ref-M: " << refM[k][p->first] << endl;
+          //cout << "New-M: " << newM[k][p->first] << endl;
+          cout << "Deriv: " << snode->Dofs()[fd%2] << " " << (newM[k][p->first]-refM[k][p->first])/delta << endl;
+        }
+      }
+    }
+    
+    // undo finite difference modification
+    if (fd%2==0)
+    {
+      snode->xspatial()[0] -= delta;
+      snode->u()[0] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[1] -= delta;
+      snode->u()[1] -= delta;
+    }       
+  }
+  
+  // global loop to apply FD scheme to all master dofs (=2*nodes)
+  for (int fd=0; fd<2*mnodefullmap_->NumMyElements();++fd)
+  {
+    // Initialize
+    Initialize();
+    
+    // now get the node we want to apply the FD scheme to
+    int gid = mnodefullmap_->GID(fd/2);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find master node with gid %",gid);
+    CNode* mnode = static_cast<CNode*>(node);
+    
+    // apply finite difference scheme
+    if (Comm().MyPID()==mnode->Owner())
+    {
+      cout << "\nBuilding FD for Master Node: " << mnode->Id() << " Dof(l): " << fd%2
+           << " Dof(g): " << mnode->Dofs()[fd%2] << endl;
+    }
+    
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (fd%2==0)
+    {
+      mnode->xspatial()[0] += delta;
+      mnode->u()[0] += delta;
+    }
+    else
+    {
+      mnode->xspatial()[1] += delta;
+      mnode->u()[1] += delta;
+    }
+    
+    // loop over all elements to set current element length / area
+    // (use fully overlapping column map)
+    for (int j=0;j<idiscret_->NumMyColElements();++j)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+      element->Area()=element->ComputeArea();
+    }
+    
+    // *******************************************************************
+    // contents of Evaluate()
+    // *******************************************************************    
+    // loop over proc's slave nodes of the interface
+    // use standard column map to include processor's ghosted nodes
+    // use boundary map to include slave side boundary nodes
+    for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
+    {
+      int gid1 = snodecolmapbound_->GID(i);
+      DRT::Node* node = idiscret_->gNode(gid1);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      // build averaged normal at each slave node
+      cnode->BuildAveragedNormal();
+    }
+
+    // contact search algorithm
+    EvaluateContactSearch();
+
+    // loop over proc's slave elements of the interface for integration
+    // use standard column map to include processor's ghosted elements
+    for (int i=0; i<selecolmap_->NumMyElements();++i)
+    {
+      int gid1 = selecolmap_->GID(i);
+      DRT::Element* ele1 = idiscret_->gElement(gid1);
+      if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+      CElement* selement = static_cast<CElement*>(ele1);
+
+  #ifndef CONTACTONEMORTARLOOP
+      // integrate Mortar matrix D (lives on slave side only!)
+      IntegrateSlave2D(*selement);
+  #else
+  #ifdef CONTACTFULLLIN
+      dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
+  #endif // #ifdef CONTACTFULLLIN
+  #endif // #ifndef CONTACTONEMORTARLOOP
+
+      // loop over the contact candidate master elements
+      // use slave element's candidate list SearchElements !!!
+      for (int j=0;j<selement->NumSearchElements();++j)
+      {
+        int gid2 = selement->SearchElements()[j];
+        DRT::Element* ele2 = idiscret_->gElement(gid2);
+        if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+        CElement* melement = static_cast<CElement*>(ele2);
+
+        // prepare overlap integration
+        vector<bool> hasproj(4);
+        vector<double> xiproj(4);
+        bool overlap = false;
+
+        // project the element pair
+        Project2D(*selement,*melement,hasproj,xiproj);
+
+        // check for element overlap
+        overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
+
+        // integrate the element overlap
+        if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
+      }
+    }
+    // *******************************************************************
+    
+    // compute finite difference derivative
+    for (int k=0;k<snoderowmap_->NumMyElements();++k)
+    {
+      int kgid = snoderowmap_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      CNode* kcnode = static_cast<CNode*>(knode);
+      map<int,double> mmap = kcnode->GetM()[0];
+      typedef map<int,double>::const_iterator CI;
+      
+      // store M-values into refM
+      newM[k]=mmap;
+              
+      // print results (derivatives) to screen
+      for (CI p=newM[k].begin();p!=newM[k].end();++p)
+      {
+        if (abs(newM[k][p->first]-refM[k][p->first]) > 1e-12)
+        {
+          cout << "M-FD-derivative for pair S" << kcnode->Id() << " and M" << (p->first)/2 << endl;
+          //cout << "Ref-M: " << refM[k][p->first] << endl;
+          //cout << "New-M: " << newM[k][p->first] << endl;
+          cout << "Deriv: " << mnode->Dofs()[fd%2] << " " << (newM[k][p->first]-refM[k][p->first])/delta << endl;
+        }
+      }
+    }
+    
+    // undo finite difference modification
+    if (fd%2==0)
+    {
+      mnode->xspatial()[0] -= delta;
+      mnode->u()[0] -= delta;
+    }
+    else
+    {
+      mnode->xspatial()[1] -= delta;
+      mnode->u()[1] -= delta;
+    }       
+  }
+  
+  // back to normal...
+  
+  // Initialize
+  Initialize();
+  
+  // loop over all elements to set current element length / area
+  // (use fully overlapping column map)
+  for (int j=0;j<idiscret_->NumMyColElements();++j)
+  {
+    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+    element->Area()=element->ComputeArea();
+  }
+    
+  // *******************************************************************
+  // contents of Evaluate()
+  // *******************************************************************    
+  // loop over proc's slave nodes of the interface
+  // use standard column map to include processor's ghosted nodes
+  // use boundary map to include slave side boundary nodes
+  for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
+  {
+    int gid1 = snodecolmapbound_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid1);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
+    CNode* cnode = static_cast<CNode*>(node);
+    
+    // build averaged normal at each slave node
+    cnode->BuildAveragedNormal();
+  }
+
+  // contact search algorithm
+  EvaluateContactSearch();
+
+  // loop over proc's slave elements of the interface for integration
+  // use standard column map to include processor's ghosted elements
+  for (int i=0; i<selecolmap_->NumMyElements();++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
+    CElement* selement = static_cast<CElement*>(ele1);
+
+#ifndef CONTACTONEMORTARLOOP
+    // integrate Mortar matrix D (lives on slave side only!)
+    IntegrateSlave2D(*selement);
+#else
+#ifdef CONTACTFULLLIN
+    dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
+#endif // #ifdef CONTACTFULLLIN
+#endif // #ifndef CONTACTONEMORTARLOOP
+
+    // loop over the contact candidate master elements
+    // use slave element's candidate list SearchElements !!!
+    for (int j=0;j<selement->NumSearchElements();++j)
+    {
+      int gid2 = selement->SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+      CElement* melement = static_cast<CElement*>(ele2);
+
+      // prepare overlap integration
+      vector<bool> hasproj(4);
+      vector<double> xiproj(4);
+      bool overlap = false;
+
+      // project the element pair
+      Project2D(*selement,*melement,hasproj,xiproj);
+
+      // check for element overlap
+      overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
+
+      // integrate the element overlap
+      if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
+    }
+  }
+  // *******************************************************************
+  
   //exit(0);
   return;
 }

@@ -489,10 +489,16 @@ public:
   virtual void FDCheckNormalDeriv();
   
   /*!
-  \brief Check Mortar matrix derivatives with finite differences
+  \brief Check Mortar matrix D derivatives with finite differences
      
   */
-  virtual void FDCheckMortarDeriv();
+  virtual void FDCheckMortarDDeriv();
+  
+  /*!
+  \brief Check Mortar matrix M derivatives with finite differences
+       
+  */
+  virtual void FDCheckMortarMDeriv();
     
   //@}
 
