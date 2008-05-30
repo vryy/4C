@@ -793,7 +793,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
   }
   else if (abs(storage[generation-delta[generation]]) == 0)
   {
-  	zright = (imag)*(1.0/g*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
+  	zright = ((imag)*(1.0/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
   }
   else
   {
@@ -803,14 +803,16 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
   //Bifurcation condition
   zend = (zright*zleft)/(zleft+zright);
   //Impedance at the parent level
-  zparent = (imag)*(1.0/g*sin(omega*length[generation]/wave_c)+zend*cos(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c)+imag*g*zend*sin(omega*length[generation]/wave_c));
-  zleft=zparent;
+  
   //Right side is always pre calculated!
   if (generation < generationLimit)
   {
+  	zparent = (imag)*((1.0/g)*sin(omega*length[generation]/wave_c)+zend*cos(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c)+imag*g*zend*sin(omega*length[generation]/wave_c));
+  	zleft=zparent;
   	generation++;
   	LungImpedance(ImpedanceCounter, generation, zparent, zleft, storage);
   }
+  zparent=zend;
   return zparent;
 } //BioFluidImplicitTimeInt::LungImpedance
 
@@ -868,14 +870,16 @@ std::complex<double> FluidImpedanceBc::DCLungImpedance(int ImpedanceCounter,
   //Bifurcation condition
   zend = (zright*zleft)/(zleft+zright);
   //Impedance at the parent level
-  zparentdc = zend;
+  
 
   if (generation < generationLimit) //Number of Generations to model, better for small vessels ie. not the trachea
   {
+  	zparentdc = zend;
   	generation++;
   	DCLungImpedance(ImpedanceCounter, generation, zparentdc, storage);
   }
   //zparentdc= 8*length[generation]/(PI*diameter[generation]/2)+zparentdc;
+  zparentdc=zend;
   return StorageEntry=zparentdc;
 }//FluidImplicitTimeInt::DCLungImpedance
 
