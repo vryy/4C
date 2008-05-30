@@ -437,7 +437,53 @@ double CONTACT::CElement::Jacobian1D(const vector<double>& val,
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate derivative of Jacobian determinant               popp 05/08|
+ |  Evaluate derivative J,xi of Jacobian det. -  1D           popp 05/08|
+ *----------------------------------------------------------------------*/
+double CONTACT::CElement::DJacDXi1D(const vector<double>& val,
+                                    const vector<double>& deriv,
+                                    const vector<double>& secderiv,
+                                    const LINALG::SerialDenseMatrix& coord)
+{
+  // the derivative dJacdXi
+  double djacdxi = 0.0;
+  
+  // 2D linear case (2noded line element)
+  if (Shape()==line2)
+    djacdxi = 0.0;
+  
+  // 2D quadratic case (3noded line element)
+  else if (Shape()==line3)
+  {
+    double g[3] = {0.0, 0.0, 0.0};
+    double gsec[3] = {0.0, 0.0, 0.0};
+    for (int i=0;i<static_cast<int>(val.size());++i)
+    {
+      g[0] += deriv[i]*coord(0,i);
+      g[1] += deriv[i]*coord(1,i);
+      g[2] += deriv[i]*coord(2,i);
+      
+      gsec[0] += secderiv[i]*coord(0,i);
+      gsec[1] += secderiv[i]*coord(1,i);
+      gsec[2] += secderiv[i]*coord(2,i);
+    }
+    
+    // the Jacobian itself
+    double jac = sqrt(g[0]*g[0]+g[1]*g[1]+g[2]*g[2]);
+    
+    // compute dJacdXi
+    for (int dim=0;dim<3;++dim)
+      djacdxi += g[dim]*gsec[dim]/jac;
+  }
+  
+  // unknown case
+  else
+    dserror("ERROR: dJacdXi1D called for unknown element type!");
+  
+  return djacdxi;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate directional deriv. of Jacobian det.              popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CElement::DerivJacobian1D(const vector<double>& val,
                                         const vector<double>& deriv,

@@ -319,6 +319,15 @@ public:
                             const LINALG::SerialDenseMatrix& coord);
   
   /*!
+  \brief Evaluate derivative J,xi of Jacobian det - LINEAR / QUAD 1D
+  */
+  virtual double DJacDXi1D(const vector<double>& val,
+                           const vector<double>& deriv,
+                           const vector<double>& secderiv,
+                           const LINALG::SerialDenseMatrix& coord);
+    
+    
+  /*!
   \brief Compute Jacobian det derivative - LINEAR / QUAD 1D
   */
   virtual void DerivJacobian1D(const vector<double>& val,
@@ -364,6 +373,12 @@ public:
   virtual bool EvaluateShapeDual1D(const double* xi, vector<double>& val,
                                    vector<double>& deriv, const int valdim);
   
+  /*!
+  \brief Evaluate 2nd derivative of shape functions - LINEAR / QUAD 1D 
+  */
+  virtual bool Evaluate2ndDerivShape1D(const double* xi, vector<double>& val,
+                                       const int valdim);
+    
   /*!
   \brief Compute directional derivative of dual shape functions - LINEAR / QUAD 1D 
   

@@ -126,6 +126,26 @@ public:
   */
   void DerivM(CONTACT::CElement& sele, double sxia, double sxib,
               CONTACT::CElement& mele, double mxia, double mxib);
+  
+  /*!
+  \brief Compute directional derivative of segment end coordinates
+         Xi on a 1D slave / master overlap
+          
+  */
+  void DerivXiAB(CONTACT::CElement& sele, double sxia, double sxib,
+                 CONTACT::CElement& mele, double mxia, double mxib,
+                 vector<map<int,double> >& derivxi,
+                 bool startslave, bool endslave);
+  
+  /*!
+  \brief Compute directional derivative of master Gauss point
+         coordinates XiGP on a 1D slave / master overlap 
+            
+  */
+  void DerivXiGP(CONTACT::CElement& sele, double sxia, double sxib,
+                 CONTACT::CElement& mele, double mxia, double mxib,
+                 double sxigp,double mxigp, const map<int,double>& derivsxi,
+                 map<int,double>& derivmxi);
     
   /*!
   \brief Integrate modification Mmod on a 1D slave / master overlap
@@ -148,7 +168,6 @@ public:
                                            double sxia, double sxib,
                                            CONTACT::CElement& mele,
                                            double mxia, double mxib);
-  
   
   /*!
   \brief Assemble D contribution of current overlap into slave nodes

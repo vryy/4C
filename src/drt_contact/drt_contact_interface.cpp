@@ -1116,7 +1116,7 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG(sele,sxia,sxib,mele,mxia,mxib);
 
   // compute directional derivative of M and store into nodes
-  //integrator.DerivM(sele,sxia,sxib,mele,mxia,mxib);
+  integrator.DerivM(sele,sxia,sxib,mele,mxia,mxib);
     
   // do the two assemblies into the slave nodes
   // if CONTACTONEMORTARLOOP defined, then AssembleM does M AND D matrices !!!
@@ -1707,7 +1707,7 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal,
     // we need the LM-vector of this node
     double lm[3];
     for (int dim=0;dim<3;++dim)
-     lm[dim] = (*zglobal)[zglobal->Map().LID(2*gid)+dim];
+      lm[dim] = (*zglobal)[zglobal->Map().LID(2*gid)+dim];
     //cout << lm[0] << " " << lm[1] << endl;
     
     // loop over all derivative maps (=dimensions)

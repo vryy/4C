@@ -398,34 +398,739 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
                                  CONTACT::CElement& mele,
                                  double mxia, double mxib)
 {
-  /*
-  cout << "\nChecking overlap of CElement pair S" << sele.Id() << " M" << mele.Id() << endl;
-  cout << "Slave Nodes: " << sele.Nodes()[0]->Id() << " " << sele.Nodes()[1]->Id() << endl;
-  cout << "Master Nodes: " << mele.Nodes()[0]->Id() << " " << mele.Nodes()[1]->Id() << endl;
+  // *********************************************************************
+  // CAUTION: be careful with positive rotation direction ("Umlaufsinn")
+  // sxia -> belongs to sele.Nodes()[0]
+  // sxib -> belongs to sele.Nodes()[1]
+  // mxia -> belongs to mele.Nodes()[0]
+  // mxib -> belongs to mele.Nodes()[1]
+  // but slave and master have different positive rotation directions,
+  // counter-clockwise for slave side, clockwise for master side!
+  // this means that mxia belongs to sxib and vice versa!
+  // *********************************************************************
+  
+  //cout << "\nChecking overlap of CElement pair S" << sele.Id() << " M" << mele.Id() << endl;
+  //cout << "Slave Nodes: " << sele.Nodes()[0]->Id() << " " << sele.Nodes()[1]->Id() << endl;
+  //cout << "Master Nodes: " << mele.Nodes()[0]->Id() << " " << mele.Nodes()[1]->Id() << endl;
+  
+  bool startslave = false;
+  bool endslave = false;
+  typedef map<int,double>::const_iterator CI;
   
   if (sxia!=-1.0 && mxib!=1.0)
-    dserror("ERROR: Outer node A is neither slave nor master node");
+    dserror("ERROR: First outer node is neither slave nor master node");
   if (sxib!=1.0 && mxia!=-1.0)
-      dserror("ERROR: Outer node A is neither slave nor master node");
+      dserror("ERROR: Second outer node is neither slave nor master node");
   
-  cout << "sxia " << sxia << " sxib " << sxib << " mxia " << mxia << " mxib " << mxib << endl;
+  //cout << "sxia " << sxia << " sxib " << sxib << " mxia " << mxia << " mxib " << mxib << endl;
+  
   if (sxia==-1.0)
-    cout << "-> Overlap starts at Slave Node " << sele.Nodes()[0]->Id() << endl;
+  {
+    startslave = true;
+    //cout << "-> Overlap starts at Slave Node " << sele.Nodes()[0]->Id() << endl;
+  }
   else
-    cout << "-> Overlap starts at Master Node " << mele.Nodes()[1]->Id() << endl;
+  {
+    startslave = false;
+    //cout << "-> Overlap starts at Master Node " << mele.Nodes()[1]->Id() << endl;
+  }
   
   if (sxib==1.0)
-     cout << "-> Overlap ends at Slave Node " << sele.Nodes()[1]->Id() << endl;
-   else
-     cout << "-> Overlap ends at Master Node " << mele.Nodes()[0]->Id() << endl;
+  {
+    endslave = true;
+    //cout << "-> Overlap ends at Slave Node " << sele.Nodes()[1]->Id() << endl;
+  }
+  else
+  {
+    endslave = false;
+    //cout << "-> Overlap ends at Master Node " << mele.Nodes()[0]->Id() << endl;
+  }
+  
+  // get directional derivatives of sxia, sxib, mxia, mxib
+  vector<map<int,double> > ximaps(4);
+  DerivXiAB(sele,sxia,sxib,mele,mxia,mxib,ximaps,startslave,endslave);
+  
+  /*
+  if (startslave==true)
+  {
+    cout << "DerivMap of mxib:" << endl;
+    for (CI p=ximaps[3].begin();p!=ximaps[3].end();++p)
+      cout << p->first << "\t" << p->second << endl;
+  }
+  else
+  {
+    cout << "DerivMap of sxia:" << endl;
+    for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
+      cout << p->first << "\t" << p->second << endl;
+  }
+  
+  if (endslave==true)
+  {
+    cout << "DerivMap of mxia:" << endl;
+    for (CI p=ximaps[2].begin();p!=ximaps[2].end();++p)
+      cout << p->first << "\t" << p->second << endl;
+  }
+  else
+  {
+    cout << "DerivMap of sxib:" << endl;
+    for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
+      cout << p->first << "\t" << p->second << endl;
+  }
   */
+  
+  // check input data
+  if ((!sele.IsSlave()) || (mele.IsSlave()))
+    dserror("ERROR: DerivM called on a wrong type of CElement pair!");
+  if ((sxia<-1.0) || (sxib>1.0))
+    dserror("ERROR: DerivM called with infeasible slave limits!");
+  if ((mxia<-1.0) || (mxib>1.0))
+    dserror("ERROR: DerivM called with infeasible master limits!");
+  
+  // create empty mseg object and wrap it with RCP
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+  
+  // create empty vectors for shape fct. evaluation
+  vector<double> sval(nrow);
+  vector<double> sderiv(nrow);
+  vector<double> ssecderiv(nrow);
+  vector<double> mval(ncol);
+  vector<double> mderiv(ncol);
+  vector<double> dualval(nrow);
+  vector<double> dualderiv(nrow);
+
+  // get slave nodal coords for Jacobian evaluation
+  LINALG::SerialDenseMatrix scoord(3,nrow);
+  scoord = sele.GetNodalCoords();
+  
+  // prepare directional derivative of dual shape functions
+  // this is only necessary for qudratic shape functions in 2D
+  vector<vector<map<int,double> > > dualmap(nrow,vector<map<int,double> >(nrow));
+  if (sele.Shape()==CElement::line3)
+    sele.DerivShapeDual1D(dualmap);
+    
+  // loop over all Gauss points for integration
+  for (int gp=0;gp<nGP();++gp)
+  {
+    double eta[2] = {0.0, 0.0};
+    eta[0] = Coordinate(gp);
+    double wgt = Weight(gp);
+    
+    double sxi[2] = {0.0, 0.0};
+    double mxi[2] = {0.0, 0.0};
+    
+    // coordinate transformation sxi->eta (slave CElement->Overlap)
+    sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
+    
+    // project Gauss point onto master element
+    CONTACT::Projector projector(true);
+    projector.ProjectGaussPoint(sele,sxi,mele,mxi);
+    
+    // simple version (no Gauss point projection)
+    // double test[2] = {0.0, 0.0};
+    // test[0] = 0.5*(1-eta[0])*mxib + 0.5*(1+eta[0])*mxia;
+    // mxi[0]=test[0];
+    
+    // check GP projection
+    if ((mxi[0]<mxia) || (mxi[0]>mxib))
+    {
+      cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << endl;
+      cout << "Slave nodes: " << sele.NodeIds()[0] << " " << sele.NodeIds()[1] << endl;
+      cout << "Master nodes: " << mele.NodeIds()[0] << " " << mele.NodeIds()[1] << endl;
+      cout << "sxia: " << sxia << " sxib: " << sxib << endl;
+      cout << "mxia: " << mxia << " mxib: " << mxib << endl;
+      dserror("ERROR: IntegrateM: Gauss point projection failed! mxi=%d",mxi[0]);
+    }
+    // evaluate dual space shape functions (on slave element)
+    sele.EvaluateShapeDual1D(sxi,dualval,dualderiv,nrow);
+    
+    // evaluate trace space shape functions (on both elements)
+    sele.EvaluateShape1D(sxi,sval,sderiv,nrow);
+    sele.Evaluate2ndDerivShape1D(sxi,ssecderiv,nrow);
+    mele.EvaluateShape1D(mxi,mval,mderiv,ncol);
+    
+    // evaluate the two slave side Jacobians
+    double dxdsxi = sele.Jacobian1D(sval,sderiv,scoord);
+    double dsxideta = -0.5*sxia + 0.5*sxib;
+    
+    // evaluate the derivative dxdsxidsxi = Jac,xi
+    double dxdsxidsxi = sele.DJacDXi1D(sval,sderiv,ssecderiv,scoord);
+    
+    // evalute the GP slave coordinate derivatives
+    map<int,double> dsxigp;
+    for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
+      dsxigp[p->first] += 0.5*(1-eta[0])*(p->second);
+    for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
+      dsxigp[p->first] += 0.5*(1+eta[0])*(p->second);
+    
+    // evalute the GP master coordinate derivatives
+    map<int,double> dmxigp;
+    DerivXiGP(sele,sxia,sxib,mele,mxia,mxib,sxi[0],mxi[0],dsxigp,dmxigp);
+    
+    // simple version (no Gauss point projection)
+    //for (CI p=ximaps[2].begin();p!=ximaps[2].end();++p)
+    //  dmxigp[p->first] += 0.5*(1+eta[0])*(p->second);
+    //for (CI p=ximaps[3].begin();p!=ximaps[3].end();++p)
+    //  dmxigp[p->first] += 0.5*(1-eta[0])*(p->second);
+   
+    // evaluate the Jacobian derivative
+    map<int,double> testmap;
+    sele.DerivJacobian1D(sval,sderiv,scoord,testmap);
+    
+    // contributions to DerivM_jk
+    DRT::Node** mynodes = sele.Nodes();
+    if (!mynodes) dserror("ERROR: DerivM: Null pointer!");
+        
+    for (int j=0;j<nrow;++j)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
+      if (!mycnode) dserror("ERROR: DerivM: Null pointer!");
+            
+      for (int k=0;k<ncol;++k)
+      {
+        // global master node ID
+        int mgid = mele.Nodes()[k]->Id();
+        double fac = 0.0;
+        
+        // get the correct map as a reference
+        map<int,double>& dmmap_jk = mycnode->GetDerivM()[mgid];
+        
+        // (1) Lin(Phi) - dual shape functions
+        for (int m=0;m<nrow;++m)
+        {
+          fac = wgt*sval[m]*mval[k]*dsxideta*dxdsxi;
+          for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
+            dmmap_jk[p->first] += fac*(p->second);
+        }
+        
+        // (2) Lin(Phi) - slave GP coordinates
+        fac = wgt*dualderiv[j]*mval[k]*dsxideta*dxdsxi;
+        for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+          dmmap_jk[p->first] += fac*(p->second);
+        
+        // (3) Lin(NMaster) - master GP coordinates
+        fac = wgt*dualval[j]*mderiv[k]*dsxideta*dxdsxi;
+        for (CI p=dmxigp.begin();p!=dmxigp.end();++p)
+          dmmap_jk[p->first] += fac*(p->second);
+        
+        // (4) Lin(dsxideta) - segment end coordinates
+        fac = wgt*dualval[j]*mval[k]*dxdsxi;
+        for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
+          dmmap_jk[p->first] -= 0.5*fac*(p->second);
+        for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
+          dmmap_jk[p->first] += 0.5*fac*(p->second);
+        
+        // (5) Lin(dxdsxi) - slave GP Jacobian
+        fac = wgt*dualval[j]*mval[k]*dsxideta;
+        for (CI p=testmap.begin();p!=testmap.end();++p)
+          dmmap_jk[p->first] += fac*(p->second);
+        
+        // (6) Lin(dxdsxi) - slave GP coordinates
+        fac = wgt*dualval[j]*mval[k]*dsxideta*dxdsxidsxi;
+        for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+          dmmap_jk[p->first] += fac*(p->second);
+      }
+    }
+        
+  } // for (int gp=0;gp<nGP();++gp)
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute directional derivative of XiAB                    popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
+                                    double sxia, double sxib,
+                                    CONTACT::CElement& mele,
+                                    double mxia, double mxib,
+                                    vector<map<int,double> >& derivxi,
+                                    bool startslave, bool endslave)
+{
+  // we need the participating slave and master nodes
+  DRT::Node** snodes = sele.Nodes();
+  DRT::Node** mnodes = mele.Nodes();
+  vector<CONTACT::CNode*> scnodes(sele.NumNode());
+  vector<CONTACT::CNode*> mcnodes(mele.NumNode());
+  int numsnode = sele.NumNode();
+  int nummnode = mele.NumNode();
+  
+  for (int i=0;i<numsnode;++i)
+  {
+    scnodes[i] = static_cast<CONTACT::CNode*>(snodes[i]);
+    if (!scnodes[i]) dserror("ERROR: DerivXiAB: Null pointer!");
+  }
+  
+  for (int i=0;i<nummnode;++i)
+  {
+    mcnodes[i] = static_cast<CONTACT::CNode*>(mnodes[i]);
+    if (!mcnodes[i]) dserror("ERROR: DerivXiAB: Null pointer!");
+  }
+  
+  // we also need shape function derivs in A and B
+  double psxia[2] = {sxia, 0.0};
+  double psxib[2] = {sxib, 0.0};
+  double pmxia[2] = {mxia, 0.0};
+  double pmxib[2] = {mxib, 0.0};
+  vector<double> valsxia(numsnode);
+  vector<double> valsxib(numsnode);
+  vector<double> valmxia(nummnode);
+  vector<double> valmxib(nummnode);
+  vector<double> derivsxia(numsnode);
+  vector<double> derivsxib(numsnode);
+  vector<double> derivmxia(nummnode);
+  vector<double> derivmxib(nummnode);
+  
+  sele.EvaluateShape1D(psxia,valsxia,derivsxia,numsnode);
+  sele.EvaluateShape1D(psxib,valsxib,derivsxib,numsnode);
+  mele.EvaluateShape1D(pmxia,valmxia,derivmxia,nummnode);
+  mele.EvaluateShape1D(pmxib,valmxib,derivmxib,nummnode);
+  
+  // compute factors and leading constants for master
+  double cmxia = 0.0;
+  double cmxib = 0.0;
+  double fac_dxm_a = 0.0;
+  double fac_dym_a = 0.0;
+  double fac_xmsl_a = 0.0;
+  double fac_ymsl_a = 0.0;
+  double fac_dxm_b = 0.0;
+  double fac_dym_b = 0.0;
+  double fac_xmsl_b = 0.0;
+  double fac_ymsl_b = 0.0;
+  
+  // compute leading constant for DerivXiBMaster if start node = slave node
+  if (startslave==true)
+  {
+    for (int i=0;i<nummnode;++i)
+    {
+      fac_dxm_b += derivmxib[i]*(mcnodes[i]->xspatial()[0]);
+      fac_dym_b += derivmxib[i]*(mcnodes[i]->xspatial()[1]);
+      fac_xmsl_b += valmxib[i]*(mcnodes[i]->xspatial()[0]);
+      fac_ymsl_b += valmxib[i]*(mcnodes[i]->xspatial()[1]);
+    }
+    
+    cmxib = -1/(fac_dxm_b*(scnodes[0]->n()[1])-fac_dym_b*(scnodes[0]->n()[0]));
+    //cout << "cmxib: " << cmxib << endl;
+    
+    fac_xmsl_b -= scnodes[0]->xspatial()[0];
+    fac_ymsl_b -= scnodes[0]->xspatial()[1];
+  }
+  
+  // compute leading constant for DerivXiAMaster if end node = slave node
+  if (endslave==true)
+  {
+    for (int i=0;i<nummnode;++i)
+    {
+      fac_dxm_a += derivmxia[i]*(mcnodes[i]->xspatial()[0]);
+      fac_dym_a += derivmxia[i]*(mcnodes[i]->xspatial()[1]);
+      fac_xmsl_a += valmxia[i]*(mcnodes[i]->xspatial()[0]);
+      fac_ymsl_a += valmxia[i]*(mcnodes[i]->xspatial()[1]);
+    }
+    
+    cmxia = -1/(fac_dxm_a*(scnodes[1]->n()[1])-fac_dym_a*(scnodes[1]->n()[0]));
+    //cout << "cmxia: " << cmxia << endl;
+    
+    fac_xmsl_a -= scnodes[1]->xspatial()[0];
+    fac_ymsl_a -= scnodes[1]->xspatial()[1];
+  }
+  
+  // compute factors and leading constants for slave
+  double csxia = 0.0;
+  double csxib = 0.0;
+  double fac_dxsl_a = 0.0;
+  double fac_dysl_a = 0.0;
+  double fac_xslm_a = 0.0;
+  double fac_yslm_a = 0.0;
+  double fac_dnx_a = 0.0;
+  double fac_dny_a = 0.0;
+  double fac_nx_a = 0.0;
+  double fac_ny_a = 0.0;
+  double fac_dxsl_b = 0.0;
+  double fac_dysl_b = 0.0;
+  double fac_xslm_b = 0.0;
+  double fac_yslm_b = 0.0;
+  double fac_dnx_b = 0.0;
+  double fac_dny_b = 0.0;
+  double fac_nx_b = 0.0;
+  double fac_ny_b = 0.0;
+  
+  // compute leading constant for DerivXiASlave if start node = master node
+  if (startslave==false)
+  {
+    for (int i=0;i<numsnode;++i)
+    {
+      fac_dxsl_a += derivsxia[i]*(scnodes[i]->xspatial()[0]);
+      fac_dysl_a += derivsxia[i]*(scnodes[i]->xspatial()[1]);
+      fac_xslm_a += valsxia[i]*(scnodes[i]->xspatial()[0]);
+      fac_yslm_a += valsxia[i]*(scnodes[i]->xspatial()[1]);
+      fac_dnx_a  += derivsxia[i]*(scnodes[i]->n()[0]);
+      fac_dny_a  += derivsxia[i]*(scnodes[i]->n()[1]);
+      fac_nx_a   += valsxia[i]*(scnodes[i]->n()[0]);
+      fac_ny_a   += valsxia[i]*(scnodes[i]->n()[1]);
+    }
+    
+    fac_xslm_a -= mcnodes[1]->xspatial()[0];
+    fac_yslm_a -= mcnodes[1]->xspatial()[1];
+      
+    csxia = -1/(fac_dxsl_a*fac_ny_a - fac_dysl_a*fac_nx_a + fac_xslm_a*fac_dny_a - fac_yslm_a*fac_dnx_a);
+    //cout << "csxia: " << csxia << endl;
+  }
+  
+  // compute leading constant for DerivXiBSlave if end node = master node
+  if (endslave==false)
+  {
+    for (int i=0;i<numsnode;++i)
+    {
+      fac_dxsl_b  += derivsxib[i]*(scnodes[i]->xspatial()[0]);
+      fac_dysl_b  += derivsxib[i]*(scnodes[i]->xspatial()[1]);
+      fac_xslm_b += valsxib[i]*(scnodes[i]->xspatial()[0]);
+      fac_yslm_b += valsxib[i]*(scnodes[i]->xspatial()[1]);
+      fac_dnx_b  += derivsxib[i]*(scnodes[i]->n()[0]);
+      fac_dny_b  += derivsxib[i]*(scnodes[i]->n()[1]);
+      fac_nx_b   += valsxib[i]*(scnodes[i]->n()[0]);
+      fac_ny_b   += valsxib[i]*(scnodes[i]->n()[1]);
+    }
+    
+    fac_xslm_b -= mcnodes[0]->xspatial()[0];
+    fac_yslm_b -= mcnodes[0]->xspatial()[1];
+      
+    csxib = -1/(fac_dxsl_b*fac_ny_b - fac_dysl_b*fac_nx_b + fac_xslm_b*fac_dny_b - fac_yslm_b*fac_dnx_b);
+    //cout << "csxib: " << csxib << endl;
+  }
+  
+  // prepare linearizations
+  typedef map<int,double>::const_iterator CI;
+  
+  // *********************************************************************
+  // finally compute Lin(XiAB_master)
+  // *********************************************************************
+  // build DerivXiBMaster if start node = slave node
+  if (startslave==true)
+  {
+    map<int,double> dmap_mxib;
+    map<int,double>& nxmap_b = scnodes[0]->GetDerivN()[0];
+    map<int,double>& nymap_b = scnodes[0]->GetDerivN()[1];
+    
+    // add derivative of slave node coordinates
+    dmap_mxib[scnodes[0]->Dofs()[0]] -= scnodes[0]->n()[1];
+    dmap_mxib[scnodes[0]->Dofs()[1]] += scnodes[0]->n()[0];
+    
+    // add derivatives of master node coordinates
+    for (int i=0;i<nummnode;++i)
+    {
+      dmap_mxib[mcnodes[i]->Dofs()[0]] += derivmxib[i]*(scnodes[0]->n()[1]);
+      dmap_mxib[mcnodes[i]->Dofs()[1]] -= derivmxib[i]*(scnodes[0]->n()[0]);
+    }
+    
+    // add derivative of slave node normal
+    for (CI p=nxmap_b.begin();p!=nxmap_b.end();++p)
+      dmap_mxib[p->first] -= fac_ymsl_b*(p->second);
+    for (CI p=nymap_b.begin();p!=nymap_b.end();++p)
+      dmap_mxib[p->first] += fac_xmsl_b*(p->second);
+    
+    // multiply all entries with cmxib
+    for (CI p=dmap_mxib.begin();p!=dmap_mxib.end();++p)
+      dmap_mxib[p->first] = cmxib*(p->second);
+    
+    // return map to DerivM() method
+    derivxi[3] = dmap_mxib; 
+  }
+  
+  // build DerivXiAMaster if end node = slave node
+  if (endslave==true)
+  {
+    map<int,double> dmap_mxia;
+    map<int,double>& nxmap_a = scnodes[1]->GetDerivN()[0];
+    map<int,double>& nymap_a = scnodes[1]->GetDerivN()[1];
+      
+    // add derivative of slave node coordinates
+    dmap_mxia[scnodes[1]->Dofs()[0]] -= scnodes[1]->n()[1];
+    dmap_mxia[scnodes[1]->Dofs()[1]] += scnodes[1]->n()[0];
+    
+    // add derivatives of master node coordinates
+    for (int i=0;i<nummnode;++i)
+    {
+      dmap_mxia[mcnodes[i]->Dofs()[0]] += derivmxia[i]*(scnodes[1]->n()[1]);
+      dmap_mxia[mcnodes[i]->Dofs()[1]] -= derivmxia[i]*(scnodes[1]->n()[0]);
+    }
+    
+    // add derivative of slave node normal
+    for (CI p=nxmap_a.begin();p!=nxmap_a.end();++p)
+      dmap_mxia[p->first] += fac_ymsl_a*(p->second);
+    for (CI p=nymap_a.begin();p!=nymap_a.end();++p)
+      dmap_mxia[p->first] += fac_xmsl_a*(p->second);
+    
+    // multiply all entries with cmxia
+    for (CI p=dmap_mxia.begin();p!=dmap_mxia.end();++p)
+      dmap_mxia[p->first] = cmxia*(p->second);
+
+    // return map to DerivM() method
+    derivxi[2] = dmap_mxia;
+  }
+  
+  // *********************************************************************
+  // finally compute Lin(XiAB_slave)
+  // *********************************************************************
+  // build DerivXiASlave if start node = master node
+  if (startslave==false)
+  {
+    map<int,double> dmap_sxia;
+    
+    // add derivative of master node coordinates
+    dmap_sxia[mcnodes[1]->Dofs()[0]] -= fac_ny_a;
+    dmap_sxia[mcnodes[1]->Dofs()[1]] += fac_nx_a;
+    
+    // add derivatives of slave node coordinates
+    for (int i=0;i<numsnode;++i)
+    {
+      dmap_sxia[scnodes[i]->Dofs()[0]] += derivsxia[i]*fac_ny_a;
+      dmap_sxia[scnodes[i]->Dofs()[1]] -= derivsxia[i]*fac_nx_a;
+    }
+    
+    // add derivatives of slave node normals
+    for (int i=0;i<numsnode;++i)
+    {
+      map<int,double>& nxmap_curr = scnodes[i]->GetDerivN()[0];
+      map<int,double>& nymap_curr = scnodes[i]->GetDerivN()[1];
+      
+      for (CI p=nxmap_curr.begin();p!=nxmap_curr.end();++p)
+        dmap_sxia[p->first] -= derivsxia[i]*fac_yslm_a;
+      for (CI p=nymap_curr.begin();p!=nymap_curr.end();++p)
+        dmap_sxia[p->first] += derivsxia[i]*fac_xslm_a;
+    }
+    
+    // multiply all entries with csxia
+    for (CI p=dmap_sxia.begin();p!=dmap_sxia.end();++p)
+      dmap_sxia[p->first] = csxia*(p->second);
+    
+    // return map to DerivM() method
+    derivxi[0] = dmap_sxia;
+  }
+  
+  // build DerivXiBSlave if end node = master node
+  if (endslave==false)
+  {
+    map<int,double> dmap_sxib;
+    
+    // add derivative of master node coordinates
+    dmap_sxib[mcnodes[1]->Dofs()[0]] -= fac_ny_b;
+    dmap_sxib[mcnodes[1]->Dofs()[1]] += fac_nx_b;
+    
+    // add derivatives of slave node coordinates
+    for (int i=0;i<numsnode;++i)
+    {
+      dmap_sxib[scnodes[i]->Dofs()[0]] += derivsxib[i]*fac_ny_b;
+      dmap_sxib[scnodes[i]->Dofs()[1]] -= derivsxib[i]*fac_nx_b;
+    }
+      
+    // add derivatives of slave node normals
+    for (int i=0;i<numsnode;++i)
+    {
+      map<int,double>& nxmap_curr = scnodes[i]->GetDerivN()[0];
+      map<int,double>& nymap_curr = scnodes[i]->GetDerivN()[1];
+      
+      for (CI p=nxmap_curr.begin();p!=nxmap_curr.end();++p)
+        dmap_sxib[p->first] -= derivsxib[i]*fac_yslm_b;
+      for (CI p=nymap_curr.begin();p!=nymap_curr.end();++p)
+        dmap_sxib[p->first] += derivsxib[i]*fac_xslm_b;
+    }
+    
+    // multiply all entries with csxib
+    for (CI p=dmap_sxib.begin();p!=dmap_sxib.end();++p)
+      dmap_sxib[p->first] = csxib*(p->second);
+    
+    // return map to DerivM() method
+    derivxi[1] = dmap_sxib;
+  }
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute directional derivative of XiGP master             popp 05/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
+                                    double sxia, double sxib,
+                                    CONTACT::CElement& mele,
+                                    double mxia, double mxib,
+                                    double sxigp, double mxigp,
+                                    const map<int,double>& derivsxi,
+                                    map<int,double>& derivmxi)
+{
+  // we need the participating slave and master nodes
+  DRT::Node** snodes = sele.Nodes();
+  DRT::Node** mnodes = mele.Nodes();
+  vector<CONTACT::CNode*> scnodes(sele.NumNode());
+  vector<CONTACT::CNode*> mcnodes(mele.NumNode());
+  int numsnode = sele.NumNode();
+  int nummnode = mele.NumNode();
+  
+  for (int i=0;i<numsnode;++i)
+  {
+    scnodes[i] = static_cast<CONTACT::CNode*>(snodes[i]);
+    if (!scnodes[i]) dserror("ERROR: DerivXiAB: Null pointer!");
+  }
+  
+  for (int i=0;i<nummnode;++i)
+  {
+    mcnodes[i] = static_cast<CONTACT::CNode*>(mnodes[i]);
+    if (!mcnodes[i]) dserror("ERROR: DerivXiAB: Null pointer!");
+  }
+  
+  // we also need shape function derivs in A and B
+  double psxigp[2] = {sxigp, 0.0};
+  double pmxigp[2] = {mxigp, 0.0};
+  vector<double> valsxigp(numsnode);
+  vector<double> valmxigp(nummnode);
+  vector<double> derivsxigp(numsnode);
+  vector<double> derivmxigp(nummnode);
+  
+  sele.EvaluateShape1D(psxigp,valsxigp,derivsxigp,numsnode);
+  mele.EvaluateShape1D(pmxigp,valmxigp,derivmxigp,nummnode);
+  
+  // we also need the GP slave coordinates + normal
+  double sgpn[3] = {0.0,0.0,0.0};
+  double sgpx[3] = {0.0,0.0,0.0};
+  for (int i=0;i<numsnode;++i)
+  {
+    sgpn[0]+=valsxigp[i]*scnodes[i]->n()[0];
+    sgpn[1]+=valsxigp[i]*scnodes[i]->n()[1];
+    sgpn[2]+=valsxigp[i]*scnodes[i]->n()[2];
+          
+    sgpx[0]+=valsxigp[i]*scnodes[i]->xspatial()[0];
+    sgpx[1]+=valsxigp[i]*scnodes[i]->xspatial()[1];
+    sgpx[2]+=valsxigp[i]*scnodes[i]->xspatial()[2];
+  }
+  
+  // normalize interpolated GP normal back to length 1.0 !!!
+  double length = sqrt(sgpn[0]*sgpn[0]+sgpn[1]*sgpn[1]+sgpn[2]*sgpn[2]);
+  if (length<1.0e-12) dserror("ERROR: DerivXiGP: Divide by zero!");
+  for (int i=0;i<3;++i) sgpn[i]/=length;
+      
+  // compute factors and leading constants for master
+  double cmxigp = 0.0;
+  double fac_dxm_gp = 0.0;
+  double fac_dym_gp = 0.0;
+  double fac_xmsl_gp = 0.0;
+  double fac_ymsl_gp = 0.0;
+  
+  for (int i=0;i<nummnode;++i)
+  {
+    fac_dxm_gp += derivmxigp[i]*(mcnodes[i]->xspatial()[0]);
+    fac_dym_gp += derivmxigp[i]*(mcnodes[i]->xspatial()[1]);
+    
+    fac_xmsl_gp += valmxigp[i]*(mcnodes[i]->xspatial()[0]);
+    fac_ymsl_gp += valmxigp[i]*(mcnodes[i]->xspatial()[1]);
+  }
+  
+  cmxigp = -1/(fac_dxm_gp*sgpn[1]-fac_dym_gp*sgpn[0]);
+  //cout << "cmxigp: " << cmxigp << endl;
+  
+  fac_xmsl_gp -= sgpx[0];
+  fac_ymsl_gp -= sgpx[1];
+  
+  // prepare linearization
+  typedef map<int,double>::const_iterator CI;
+    
+  // build directional derivative of slave GP coordinates
+  map<int,double> dmap_xsl_gp;
+  map<int,double> dmap_ysl_gp;
+  
+  for (int i=0;i<numsnode;++i)
+  {
+    dmap_xsl_gp[scnodes[i]->Dofs()[0]] += derivsxigp[i];
+    dmap_ysl_gp[scnodes[i]->Dofs()[1]] += derivsxigp[i];
+    
+    for (CI p=derivsxi.begin();p!=derivsxi.end();++p)
+    {
+      double facx = derivsxigp[i]*(scnodes[i]->xspatial()[0]);
+      double facy = derivsxigp[i]*(scnodes[i]->xspatial()[1]);
+      dmap_xsl_gp[p->first] += facx*(p->second);
+      dmap_ysl_gp[p->first] += facy*(p->second);
+    }
+  }
+  
+  // build directional derivative of slave GP normal
+  map<int,double> dmap_nxsl_gp;
+  map<int,double> dmap_nysl_gp;
+  
+  double sgpnmod[3] = {0.0,0.0,0.0};
+  for (int i=0;i<3;++i) sgpnmod[i]=sgpn[i]*length;
+  
+  map<int,double> dmap_nxsl_gp_mod;
+  map<int,double> dmap_nysl_gp_mod;
+  
+  for (int i=0;i<numsnode;++i)
+  {
+    map<int,double>& dmap_nxsl_i = scnodes[i]->GetDerivN()[0];
+    map<int,double>& dmap_nysl_i = scnodes[i]->GetDerivN()[1];
+    
+    for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
+      dmap_nxsl_gp_mod[p->first] += derivsxigp[i]*(p->second);
+    for (CI p=dmap_nysl_i.begin();p!=dmap_nysl_i.end();++p)
+      dmap_nysl_gp_mod[p->first] += derivsxigp[i]*(p->second);
+    
+    for (CI p=derivsxi.begin();p!=derivsxi.end();++p)
+    {
+      double valx =  derivsxigp[i]*scnodes[i]->n()[0];
+      dmap_nxsl_gp_mod[p->first] += valx*(p->second);
+      double valy =  derivsxigp[i]*scnodes[i]->n()[1];
+      dmap_nysl_gp_mod[p->first] += valy*(p->second);
+    }
+  }
+  
+  double sxsx = sgpnmod[0]*sgpnmod[0];
+  double sxsy = sgpnmod[0]*sgpnmod[1];
+  double sysy = sgpnmod[1]*sgpnmod[1];
+  
+  for (CI p=dmap_nxsl_gp_mod.begin();p!=dmap_nxsl_gp_mod.end();++p)
+  {
+    dmap_nxsl_gp[p->first] += 1/length*(p->second);
+    dmap_nxsl_gp[p->first] -= 1/(length*length*length)*sxsx*(p->second);
+    dmap_nysl_gp[p->first] -= 1/(length*length*length)*sxsy*(p->second);
+  }
+  
+  for (CI p=dmap_nysl_gp_mod.begin();p!=dmap_nysl_gp_mod.end();++p)
+  {
+    dmap_nysl_gp[p->first] += 1/length*(p->second);
+    dmap_nysl_gp[p->first] -= 1/(length*length*length)*sysy*(p->second);
+    dmap_nxsl_gp[p->first] -= 1/(length*length*length)*sxsy*(p->second);
+  }
+  
+  // *********************************************************************
+  // finally compute Lin(XiGP_master)
+  // *********************************************************************
+  
+  // add derivative of slave GP coordinates
+  for (CI p=dmap_xsl_gp.begin();p!=dmap_xsl_gp.end();++p)
+    derivmxi[p->first] -= (scnodes[0]->n()[1])*(p->second);
+  for (CI p=dmap_ysl_gp.begin();p!=dmap_ysl_gp.end();++p)
+    derivmxi[p->first] += (scnodes[0]->n()[0])*(p->second);
+      
+  // add derivatives of master node coordinates
+  for (int i=0;i<nummnode;++i)
+  {
+    derivmxi[mcnodes[i]->Dofs()[0]] += derivmxigp[i]*(scnodes[0]->n()[1]);
+    derivmxi[mcnodes[i]->Dofs()[1]] -= derivmxigp[i]*(scnodes[0]->n()[0]);
+  }
+  
+  // add derivative of slave GP normal
+  for (CI p=dmap_nxsl_gp.begin();p!=dmap_nxsl_gp.end();++p)
+    derivmxi[p->first] -= fac_ymsl_gp*(p->second);
+  for (CI p=dmap_nysl_gp.begin();p!=dmap_nysl_gp.end();++p)
+      derivmxi[p->first] += fac_xmsl_gp*(p->second);
+  
+  // multiply all entries with cmxigp
+  for (CI p=derivmxi.begin();p!=derivmxi.end();++p)
+    derivmxi[p->first] = cmxigp*(p->second);
+    
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  Integrate a 1D slave / master overlap                     popp 01/08|
  |  This method integrates the modification to the Mortar matrix M      |
- |  for curved interface (Paper by Puso/Wohlmuth) from given local       |
+ |  for curved interface (Paper by Puso/Wohlmuth) from given local      |
  |  coordinates sxia to sxib. The corresponding master side local       |
  |  element coordinates given by mxia and mxib                          |
  |  Output is an Epetra_SerialDenseMatrix holding the int. values       |

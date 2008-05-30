@@ -645,6 +645,38 @@ bool CONTACT::CElement::EvaluateShapeDual1D(const double* xi, vector<double>& va
 }
 
 /*----------------------------------------------------------------------*
+ |  Evaluate 2nd derivative of shape functions - 1D           popp 05/08|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CElement::Evaluate2ndDerivShape1D(const double* xi,
+                                                vector<double>& secderiv,
+                                                const int valdim)
+{
+  if (!xi)
+    dserror("ERROR: Evaluate2ndDerivShape1D called with xi=NULL");
+  
+  // 2D linear case (2noded line element)
+  if ((valdim==2)&& (Shape()==line2))
+  {
+    secderiv[0] = 0;
+    secderiv[1] = 0;
+  }
+    
+  // 2D quadratic case (3noded line element)
+  else if ((valdim==3) && (Shape()==line3))
+  {
+    secderiv[0] =  1;
+    secderiv[1] =  1;
+    secderiv[2] = -2;
+  }
+  
+  // unknown case
+  else
+    dserror("ERROR: Evaluate2ndDerivShape1D called for unknown CElement type");
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
  |  Compute directional derivative of dual shape functions    popp 05/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::CElement::DerivShapeDual1D(vector<vector<map<int,double> > >& derivdual)
