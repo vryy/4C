@@ -16,6 +16,7 @@ Maintainer: Michael Gee
 #include "vector"
 #include "string"
 #include "linalg_serialdensematrix.H"
+#include "Epetra_SerialDenseVector.h"
 
 using namespace std;
 
@@ -364,6 +365,16 @@ public:
   /*!
   \brief Add stuff to the end of a char vector data
 
+  This method is an overload of the above template for Epetra_SerialDenseMatrix
+  \param data (in/out) : char string stuff shall be added to
+  \param stuff (in)    : Epetra_SerialDenseVector that get's added to stuff
+
+  */
+  static void AddtoPack(vector<char>& data, const Epetra_SerialDenseVector& stuff);
+
+  /*!
+  \brief Add stuff to the end of a char vector data
+
   This method is an overload of the above template for string
   \param data (in/out) : char string stuff shall be added to
   \param stuff (in)    : string that get's added to stuff
@@ -454,6 +465,18 @@ public:
   */
   static void ExtractfromPack(int& position, const vector<char>& data, Epetra_SerialDenseMatrix& stuff);
 
+
+  /*!
+  \brief Extract stuff from a char vector data and increment position
+
+  This method is an overload of the above template for stuff of type Epetra_SerialDenseVector
+
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
+  \param data (in)         : char vector where stuff is extracted from
+  \param stuff (out)       : Epetra_SerialDenseVector to extract from data
+
+  */
+  static void ExtractfromPack(int& position, const vector<char>& data, Epetra_SerialDenseVector& stuff);
 
   /*!
   \brief Extract stuff from a char vector data and increment position

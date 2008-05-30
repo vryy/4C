@@ -88,6 +88,18 @@ void DRT::ParObject::AddtoPack(vector<char>& data, const Epetra_SerialDenseMatri
   return;
 }
 /*----------------------------------------------------------------------*
+ | a Epetra_SerialDenseVector specialization                   (public) |
+ |                                                     TK & MAF  05/08  |
+ *----------------------------------------------------------------------*/
+void DRT::ParObject::AddtoPack(vector<char>& data, const Epetra_SerialDenseVector& stuff)
+{
+  int m = stuff.Length();
+  AddtoPack(data,m);
+  double* A = stuff.Values();
+  AddtoPack(data,A,m*sizeof(double));
+  return;
+}
+/*----------------------------------------------------------------------*
  | a string specialization                                     (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
@@ -152,6 +164,21 @@ void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
   double* a = stuff.A();
   if(m*n)
     ExtractfromPack(position,data,a,n*m*sizeof(double));
+  return;
+}
+/*----------------------------------------------------------------------*
+ | a Epetra_SerialDenseVector specialization                   (public) |
+ |                                                     TK & MAF  05/08  |
+ *----------------------------------------------------------------------*/
+void DRT::ParObject::ExtractfromPack(int& position, const vector<char>& data,
+                                     Epetra_SerialDenseVector& stuff)
+{
+  int m = 0;
+  ExtractfromPack(position,data,m);
+  stuff.Resize(m);
+  double* a = stuff.Values();
+  if(m)
+    ExtractfromPack(position,data,a,m*sizeof(double));
   return;
 }
 
