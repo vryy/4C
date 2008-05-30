@@ -204,14 +204,25 @@ int main(
         string exofilebasename = exofile.substr(0,exofile.find_last_of("."));
         datfile=exofilebasename+".dat";
       }
-      
+
       // screen info
       cout << "creating and checking BACI input file       --> " << datfile << endl;
       //cout << "checking BACI input file       --> "<<datfile<< endl;
-      
+
+      // communication objects needed for rewinding timer
+    #ifdef PARALLEL
+      int myrank = 0;
+      int nproc  = 1;
+      MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+      MPI_Comm_size(MPI_COMM_WORLD, &nproc);
+      if ((nproc>1) && (myrank==0)) dserror("Using more than one processor is not supported.");
+      RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+    #else
+      RefCountPtr<Epetra_Comm> comm = rcp(new Epetra_SerialComm());
+    #endif
+
       // check for positive Element-Center-Jacobians and otherwise rewind them 
-      Epetra_SerialComm Comm;
-      Epetra_Time time(Comm);
+      Epetra_Time time(*comm);
       RCP<Time> timerewind;
       timerewind= TimeMonitor::getNewTimer("Rewinding");
       RCP<TimeMonitor> tm_rewind = rcp(new TimeMonitor(*timerewind));
@@ -220,7 +231,7 @@ int main(
       cout << "...Ensure positive element jacobians";
       cout << "        in...." << time.ElapsedTime() <<" secs" << endl;
       //TimeMonitor::summarize();
-      
+
       // write the BACI input file
       RCP<Time> timewrite;
       timewrite = TimeMonitor::getNewTimer("Writing");
