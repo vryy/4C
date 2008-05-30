@@ -9,9 +9,16 @@
 #include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
 
+namespace NOX
+{
 namespace FSI
 {
   class PartialNormF;
+}
+}
+
+namespace FSI
+{
 
   /// monolithic FSI algorithm with overlapping interface equations
   /*!
@@ -157,7 +164,7 @@ namespace FSI
 
     /// keep the status tests available so we can connect them with our
     /// adaptive Newton direction
-    std::vector<Teuchos::RCP<PartialNormF> > statustests_;
+    std::vector<Teuchos::RCP<NOX::FSI::PartialNormF> > statustests_;
   };
 }
 

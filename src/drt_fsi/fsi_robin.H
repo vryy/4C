@@ -57,7 +57,7 @@ private:
     \author u.kue
     \date 04/08
   */
-  class InterfaceForceNormF : public GenericNormF
+  class InterfaceForceNormF : public NOX::FSI::GenericNormF
   {
   public:
 

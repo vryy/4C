@@ -38,6 +38,8 @@ namespace NOX
   }
 }
 
+namespace NOX
+{
 namespace FSI
 {
 
@@ -328,6 +330,7 @@ namespace FSI
     NOX::Utils utils;
   };
 
+}
 }
 
 #endif

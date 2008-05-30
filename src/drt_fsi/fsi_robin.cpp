@@ -142,7 +142,7 @@ double FSI::Robin::InterfaceForceNormF::computeNorm(const NOX::Abstract::Group& 
   Teuchos::RCP<Epetra_Vector> iforce = algorithm_.StructureField().ExtractInterfaceForces();
   iforce->Update(-1.,*algorithm_.iforcen_,1.);
 
-  return FSI::GenericNormF::computeNorm(*iforce);
+  return NOX::FSI::GenericNormF::computeNorm(*iforce);
 }
 
 

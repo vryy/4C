@@ -22,9 +22,9 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::GenericNormF::GenericNormF(std::string name,
-                                double tolerance,
-                                ScaleType stype)
+NOX::FSI::GenericNormF::GenericNormF(std::string name,
+                                     double tolerance,
+                                     ScaleType stype)
   : status_(NOX::StatusTest::Unevaluated),
     normType_(NOX::Abstract::Vector::TwoNorm),
     scaleType_(stype),
@@ -40,7 +40,7 @@ FSI::GenericNormF::GenericNormF(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::GenericNormF::computeNorm(const Epetra_Vector& v)
+double NOX::FSI::GenericNormF::computeNorm(const Epetra_Vector& v)
 {
   int n = v.GlobalLength();
   double norm;
@@ -84,7 +84,7 @@ double FSI::GenericNormF::computeNorm(const Epetra_Vector& v)
 #if 0
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::GenericNormF::relativeSetup(NOX::Abstract::Group& initialGuess)
+void NOX::FSI::GenericNormF::relativeSetup(NOX::Abstract::Group& initialGuess)
 {
   NOX::Abstract::Group::ReturnType rtype;
   rtype = initialGuess.computeF();
@@ -104,8 +104,8 @@ void FSI::GenericNormF::relativeSetup(NOX::Abstract::Group& initialGuess)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 NOX::StatusTest::StatusType
-FSI::GenericNormF::checkStatus(const NOX::Solver::Generic& problem,
-                               NOX::StatusTest::CheckType checkType)
+NOX::FSI::GenericNormF::checkStatus(const NOX::Solver::Generic& problem,
+                                    NOX::StatusTest::CheckType checkType)
 {
   if (checkType == NOX::StatusTest::None)
   {
@@ -131,7 +131,7 @@ FSI::GenericNormF::checkStatus(const NOX::Solver::Generic& problem,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::StatusTest::StatusType FSI::GenericNormF::getStatus() const
+NOX::StatusTest::StatusType NOX::FSI::GenericNormF::getStatus() const
 {
   return status_;
 }
@@ -139,7 +139,7 @@ NOX::StatusTest::StatusType FSI::GenericNormF::getStatus() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& FSI::GenericNormF::print(std::ostream& stream, int indent) const
+std::ostream& NOX::FSI::GenericNormF::print(std::ostream& stream, int indent) const
 {
   for (int j = 0; j < indent; j ++)
     stream << ' ';
@@ -183,7 +183,7 @@ std::ostream& FSI::GenericNormF::print(std::ostream& stream, int indent) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::GenericNormF::getNormF() const
+double NOX::FSI::GenericNormF::getNormF() const
 {
   return normF_;
 }
@@ -191,7 +191,7 @@ double FSI::GenericNormF::getNormF() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::GenericNormF::getTrueTolerance() const
+double NOX::FSI::GenericNormF::getTrueTolerance() const
 {
   return trueTolerance_;
 }
@@ -199,7 +199,7 @@ double FSI::GenericNormF::getTrueTolerance() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::GenericNormF::getSpecifiedTolerance() const
+double NOX::FSI::GenericNormF::getSpecifiedTolerance() const
 {
   return specifiedTolerance_;
 }
@@ -207,7 +207,7 @@ double FSI::GenericNormF::getSpecifiedTolerance() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::GenericNormF::getInitialTolerance() const
+double NOX::FSI::GenericNormF::getInitialTolerance() const
 {
   return initialTolerance_;
 }
@@ -215,11 +215,11 @@ double FSI::GenericNormF::getInitialTolerance() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::PartialNormF::PartialNormF(std::string name,
-                                const LINALG::MultiMapExtractor& extractor,
-                                int blocknum,
-                                double tolerance,
-                                ScaleType stype)
+NOX::FSI::PartialNormF::PartialNormF(std::string name,
+                                     const LINALG::MultiMapExtractor& extractor,
+                                     int blocknum,
+                                     double tolerance,
+                                     ScaleType stype)
   : GenericNormF(name,tolerance,stype),
     extractor_(extractor),
     blocknum_(blocknum)
@@ -229,7 +229,7 @@ FSI::PartialNormF::PartialNormF(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::PartialNormF::SetNewton(Teuchos::RCP<NOX::FSI::Newton> newton)
+void NOX::FSI::PartialNormF::SetNewton(Teuchos::RCP<NOX::FSI::Newton> newton)
 {
   newton_ = newton;
 }
@@ -237,7 +237,7 @@ void FSI::PartialNormF::SetNewton(Teuchos::RCP<NOX::FSI::Newton> newton)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
+double NOX::FSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
 {
   if (!grp.isF())
     return -1.0;
@@ -264,10 +264,10 @@ double FSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::GenericNormUpdate::GenericNormUpdate(std::string name,
-                                          double tol,
-                                          NOX::Abstract::Vector::NormType ntype,
-                                          ScaleType stype)
+NOX::FSI::GenericNormUpdate::GenericNormUpdate(std::string name,
+                                               double tol,
+                                               NOX::Abstract::Vector::NormType ntype,
+                                               ScaleType stype)
   : status_(NOX::StatusTest::Unevaluated),
     normType_(ntype),
     scaleType_(stype),
@@ -280,9 +280,9 @@ FSI::GenericNormUpdate::GenericNormUpdate(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::GenericNormUpdate::GenericNormUpdate(std::string name,
-                                          double tol,
-                                          ScaleType stype)
+NOX::FSI::GenericNormUpdate::GenericNormUpdate(std::string name,
+                                               double tol,
+                                               ScaleType stype)
   : status_(NOX::StatusTest::Unevaluated),
     normType_(NOX::Abstract::Vector::TwoNorm),
     scaleType_(stype),
@@ -295,15 +295,15 @@ FSI::GenericNormUpdate::GenericNormUpdate(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::GenericNormUpdate::~GenericNormUpdate()
+NOX::FSI::GenericNormUpdate::~GenericNormUpdate()
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::StatusTest::StatusType FSI::GenericNormUpdate::checkStatus(const NOX::Solver::Generic& problem,
-                                                                NOX::StatusTest::CheckType checkType)
+NOX::StatusTest::StatusType NOX::FSI::GenericNormUpdate::checkStatus(const NOX::Solver::Generic& problem,
+                                                                     NOX::StatusTest::CheckType checkType)
 {
   if (checkType == NOX::StatusTest::None)
   {
@@ -348,7 +348,7 @@ NOX::StatusTest::StatusType FSI::GenericNormUpdate::checkStatus(const NOX::Solve
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::GenericNormUpdate::computeNorm(const Epetra_Vector& v)
+double NOX::FSI::GenericNormUpdate::computeNorm(const Epetra_Vector& v)
 {
   int n = (scaleType_ == Scaled) ? updateVectorPtr_->length() : 0;
 
@@ -373,7 +373,7 @@ double FSI::GenericNormUpdate::computeNorm(const Epetra_Vector& v)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::StatusTest::StatusType FSI::GenericNormUpdate::getStatus() const
+NOX::StatusTest::StatusType NOX::FSI::GenericNormUpdate::getStatus() const
 {
   return status_;
 }
@@ -381,7 +381,7 @@ NOX::StatusTest::StatusType FSI::GenericNormUpdate::getStatus() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::ostream& FSI::GenericNormUpdate::print(std::ostream& stream, int indent) const
+std::ostream& NOX::FSI::GenericNormUpdate::print(std::ostream& stream, int indent) const
 {
   for (int j = 0; j < indent; j ++)
     stream << ' ';
@@ -397,7 +397,7 @@ std::ostream& FSI::GenericNormUpdate::print(std::ostream& stream, int indent) co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::GenericNormUpdate::getNormUpdate() const
+double NOX::FSI::GenericNormUpdate::getNormUpdate() const
 {
   return normUpdate_;
 }
@@ -405,7 +405,7 @@ double FSI::GenericNormUpdate::getNormUpdate() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::GenericNormUpdate::getTolerance() const
+double NOX::FSI::GenericNormUpdate::getTolerance() const
 {
   return tolerance_;
 }
@@ -413,11 +413,11 @@ double FSI::GenericNormUpdate::getTolerance() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
-                                          const LINALG::MultiMapExtractor& extractor,
-                                          int blocknum,
-                                          double tolerance,
-                                          ScaleType stype)
+NOX::FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
+                                               const LINALG::MultiMapExtractor& extractor,
+                                               int blocknum,
+                                               double tolerance,
+                                               ScaleType stype)
   : GenericNormUpdate(name,tolerance,stype),
     extractor_(extractor),
     blocknum_(blocknum)
@@ -427,7 +427,7 @@ FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double FSI::PartialNormUpdate::computeNorm(const Epetra_Vector& v)
+double NOX::FSI::PartialNormUpdate::computeNorm(const Epetra_Vector& v)
 {
   return FSI::GenericNormUpdate::computeNorm(*extractor_.ExtractVector(v,blocknum_));
 }
@@ -435,7 +435,7 @@ double FSI::PartialNormUpdate::computeNorm(const Epetra_Vector& v)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MinIters::MinIters(int minIterations, const NOX::Utils* u)
+NOX::FSI::MinIters::MinIters(int minIterations, const NOX::Utils* u)
   : miniters(minIterations),
     niters(0),
     status(NOX::StatusTest::Unevaluated)
@@ -453,14 +453,14 @@ FSI::MinIters::MinIters(int minIterations, const NOX::Utils* u)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MinIters::~MinIters()
+NOX::FSI::MinIters::~MinIters()
 {
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::StatusTest::StatusType FSI::MinIters::
+NOX::StatusTest::StatusType NOX::FSI::MinIters::
 checkStatus(const NOX::Solver::Generic& problem,
 	    NOX::StatusTest::CheckType checkType)
 {
@@ -485,7 +485,7 @@ checkStatus(const NOX::Solver::Generic& problem,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NOX::StatusTest::StatusType FSI::MinIters::getStatus() const
+NOX::StatusTest::StatusType NOX::FSI::MinIters::getStatus() const
 {
   return status;
 }
@@ -493,7 +493,7 @@ NOX::StatusTest::StatusType FSI::MinIters::getStatus() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ostream& FSI::MinIters::print(ostream& stream, int indent) const
+ostream& NOX::FSI::MinIters::print(ostream& stream, int indent) const
 {
  return stream;
 }
@@ -501,7 +501,7 @@ ostream& FSI::MinIters::print(ostream& stream, int indent) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int FSI::MinIters::getMinIters() const
+int NOX::FSI::MinIters::getMinIters() const
 {
   return miniters;
 }
@@ -509,7 +509,7 @@ int FSI::MinIters::getMinIters() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int FSI::MinIters::getNumIters() const
+int NOX::FSI::MinIters::getNumIters() const
 {
   return niters;
 }

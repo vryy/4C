@@ -444,23 +444,23 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
   combo->addStatusTest(maxiters);
 
   // require one solve
-  converged->addStatusTest(Teuchos::rcp(new MinIters(1)));
+  converged->addStatusTest(Teuchos::rcp(new NOX::FSI::MinIters(1)));
 
   // setup tests for structural displacements
 
   Teuchos::RCP<NOX::StatusTest::Combo> structcombo =
     Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
 
-  Teuchos::RCP<PartialNormF> structureDisp =
-    Teuchos::rcp(new PartialNormF("displacement",
-                                  Extractor(),0,
-                                  nlParams.get("Norm abs disp", 1.0e-6),
-                                  PartialNormF::Scaled));
-  Teuchos::RCP<PartialNormUpdate> structureDispUpdate =
-    Teuchos::rcp(new PartialNormUpdate("displacement update",
-                                       Extractor(),0,
-                                       nlParams.get("Norm abs disp", 1.0e-6),
-                                       PartialNormUpdate::Scaled));
+  Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp =
+    Teuchos::rcp(new NOX::FSI::PartialNormF("displacement",
+                                            Extractor(),0,
+                                            nlParams.get("Norm abs disp", 1.0e-6),
+                                            NOX::FSI::PartialNormF::Scaled));
+  Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate =
+    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("displacement update",
+                                                 Extractor(),0,
+                                                 nlParams.get("Norm abs disp", 1.0e-6),
+                                                 NOX::FSI::PartialNormUpdate::Scaled));
 
   statustests_.push_back(structureDisp);
   structcombo->addStatusTest(structureDisp);
@@ -479,16 +479,16 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
   Teuchos::RCP<NOX::StatusTest::Combo> fluidvelcombo =
     Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
 
-  Teuchos::RCP<PartialNormF> innerFluidVel =
-    Teuchos::rcp(new PartialNormF("velocity",
-                                  fluidvelextract,0,
-                                  nlParams.get("Norm abs vel", 1.0e-6),
-                                  PartialNormF::Scaled));
-  Teuchos::RCP<PartialNormUpdate> innerFluidVelUpdate =
-    Teuchos::rcp(new PartialNormUpdate("velocity update",
-                                       fluidvelextract,0,
-                                       nlParams.get("Norm abs vel", 1.0e-6),
-                                       PartialNormUpdate::Scaled));
+  Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel =
+    Teuchos::rcp(new NOX::FSI::PartialNormF("velocity",
+                                            fluidvelextract,0,
+                                            nlParams.get("Norm abs vel", 1.0e-6),
+                                            NOX::FSI::PartialNormF::Scaled));
+  Teuchos::RCP<NOX::FSI::PartialNormUpdate> innerFluidVelUpdate =
+    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("velocity update",
+                                                 fluidvelextract,0,
+                                                 nlParams.get("Norm abs vel", 1.0e-6),
+                                                 NOX::FSI::PartialNormUpdate::Scaled));
 
   statustests_.push_back(innerFluidVel);
   fluidvelcombo->addStatusTest(innerFluidVel);
@@ -507,16 +507,16 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
   Teuchos::RCP<NOX::StatusTest::Combo> fluidpresscombo =
     Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
 
-  Teuchos::RCP<PartialNormF> fluidPress =
-    Teuchos::rcp(new PartialNormF("pressure",
-                                  fluidpressextract,0,
-                                  nlParams.get("Norm abs pres", 1.0e-6),
-                                  PartialNormF::Scaled));
-  Teuchos::RCP<PartialNormUpdate> fluidPressUpdate =
-    Teuchos::rcp(new PartialNormUpdate("pressure update",
-                                       fluidpressextract,0,
-                                       nlParams.get("Norm abs pres", 1.0e-6),
-                                       PartialNormUpdate::Scaled));
+  Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress =
+    Teuchos::rcp(new NOX::FSI::PartialNormF("pressure",
+                                            fluidpressextract,0,
+                                            nlParams.get("Norm abs pres", 1.0e-6),
+                                            NOX::FSI::PartialNormF::Scaled));
+  Teuchos::RCP<NOX::FSI::PartialNormUpdate> fluidPressUpdate =
+    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("pressure update",
+                                                 fluidpressextract,0,
+                                                 nlParams.get("Norm abs pres", 1.0e-6),
+                                                 NOX::FSI::PartialNormUpdate::Scaled));
 
   statustests_.push_back(fluidPress);
   fluidpresscombo->addStatusTest(fluidPress);
