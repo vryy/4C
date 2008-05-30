@@ -46,7 +46,9 @@ Maintainer: Ulrich Kuettler
  */
 namespace FSI {
 
+namespace UTILS {
   class DebugWriter;
+}
 
 /// Partitioned FSI base
 /*!
@@ -126,7 +128,7 @@ protected:
                                 Teuchos::RCP<NOX::Epetra::Group> grp,
                                 Teuchos::RCP<NOX::StatusTest::Combo> converged);
 
-  Teuchos::RCP<DebugWriter> MyDebugWriter() const { return debugwriter_; }
+  Teuchos::RCP<UTILS::DebugWriter> MyDebugWriter() const { return debugwriter_; }
 
 private:
 
@@ -180,7 +182,7 @@ private:
   bool matchingnodes_;
 
   /// special debugging output
-  Teuchos::RCP<DebugWriter> debugwriter_;
+  Teuchos::RCP<UTILS::DebugWriter> debugwriter_;
 };
 
 }

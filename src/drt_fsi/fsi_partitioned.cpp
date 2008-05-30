@@ -60,7 +60,7 @@ FSI::Partitioned::Partitioned(Epetra_Comm& comm)
 
   // enable debugging
   if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT"))
-    debugwriter_ = Teuchos::rcp(new DebugWriter(StructureField().Discretization()));
+    debugwriter_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField().Discretization()));
 
 #if 0
   // create connection graph of interface elements

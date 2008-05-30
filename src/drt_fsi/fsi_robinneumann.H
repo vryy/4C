@@ -55,35 +55,6 @@ protected:
 
 private:
 
-#if 0
-  /// calculate interface force residual
-  /*!
-    At the FSI interface the residual norm of the sum of fluid and
-    structural residual is required to vanish.
-
-    \author u.kue
-    \date 04/08
-  */
-  class InterfaceForceNormF : public GenericNormF
-  {
-  public:
-
-    InterfaceForceNormF(RobinNeumann& algorithm,
-                        std::string name,
-                        double tolerance)
-      : GenericNormF(name,tolerance,Scaled),
-        algorithm_(algorithm)
-    {}
-
-  protected:
-
-    double computeNorm(const NOX::Abstract::Group& grp);
-
-  private:
-    RobinNeumann& algorithm_;
-  };
-#endif
-
   /// (structural) interface force at begin of FSI step
   Teuchos::RCP<Epetra_Vector> iforcen_;
 };

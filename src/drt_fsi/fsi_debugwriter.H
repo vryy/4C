@@ -15,6 +15,8 @@ namespace IO
 
 namespace FSI
 {
+namespace UTILS
+{
 
   /// Helper to write unconverged results at the FSI interface
   class DebugWriter
@@ -57,6 +59,7 @@ namespace FSI
     /// internal FSI iteration count
     int itnum_;
   };
+}
 }
 
 #endif

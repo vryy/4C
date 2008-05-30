@@ -206,8 +206,8 @@ FSI::Monolithic::Monolithic(Epetra_Comm& comm)
   // enable debugging
   if (Teuchos::getIntegralValue<int>(fsidyn,"DEBUGOUTPUT"))
   {
-    sdbg_ = Teuchos::rcp(new DebugWriter(StructureField().Discretization()));
-    fdbg_ = Teuchos::rcp(new DebugWriter(FluidField().Discretization()));
+    sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField().Discretization()));
+    fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField().Discretization()));
   }
 }
 

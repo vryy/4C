@@ -32,7 +32,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
+FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
 {
   vector<string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
@@ -48,7 +48,7 @@ FSI::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DebugWriter::NewTimeStep(int step, std::string name)
+void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
 {
   std::stringstream s;
   s << DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -75,7 +75,7 @@ void FSI::DebugWriter::NewTimeStep(int step, std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DebugWriter::NewIteration()
+void FSI::UTILS::DebugWriter::NewIteration()
 {
   writer_->NewStep(itnum_,itnum_);
   itnum_ += 1;
@@ -84,7 +84,7 @@ void FSI::DebugWriter::NewIteration()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::DebugWriter::WriteVector(const std::string& name, const Epetra_Vector& v)
+void FSI::UTILS::DebugWriter::WriteVector(const std::string& name, const Epetra_Vector& v)
 {
   writer_->WriteVector(name,coup_.MasterToSlave(Teuchos::rcp(&v,false)));
 }

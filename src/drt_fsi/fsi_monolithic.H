@@ -18,7 +18,10 @@
 
 namespace FSI
 {
+namespace UTILS
+{
   class DebugWriter;
+}
 
   /// monolithic FSI algorithm base
   /*!
@@ -241,8 +244,8 @@ namespace FSI
 
     /// @name special debugging output
 
-    Teuchos::RCP<DebugWriter> sdbg_;
-    Teuchos::RCP<DebugWriter> fdbg_;
+    Teuchos::RCP<UTILS::DebugWriter> sdbg_;
+    Teuchos::RCP<UTILS::DebugWriter> fdbg_;
   };
 }
 
