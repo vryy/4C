@@ -26,6 +26,8 @@ its parameters and conditions.
 #include "pre_exodus.H"
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_CommandLineProcessor.hpp>
+#include "Epetra_Time.h"
+#include "Teuchos_TimeMonitor.hpp"
 #include "../drt_lib/drt_validparameters.H"
 #include "../drt_lib/drt_validconditions.H"
 #include "../drt_lib/drt_conditiondefinition.H"
@@ -202,9 +204,24 @@ int main(
         string exofilebasename = exofile.substr(0,exofile.find_last_of("."));
         datfile=exofilebasename+".dat";
       }
-
+      
+      // screen info
+      cout << "creating and checking BACI input file       --> " << datfile << endl;
+      //cout << "checking BACI input file       --> "<<datfile<< endl;
+      
+      // check for positive Element-Center-Jacobians and otherwise rewind them 
+      Epetra_SerialComm Comm;
+      Epetra_Time time(Comm);
+      RCP<Time> timerewind;
+      timerewind= TimeMonitor::getNewTimer("Rewinding");
+      RCP<TimeMonitor> tm_rewind = rcp(new TimeMonitor(*timerewind));
+      ValidateMeshElementJacobians(mymesh);
+      tm_rewind = null;
+      cout << "...Ensure positive element jacobians";
+      cout << "        in...." << time.ElapsedTime() <<" secs" << endl;
+      //TimeMonitor::summarize();
+      
       // write the BACI input file
-      cout << "creating BACI input file       --> " << datfile << endl;
       EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
 
       //validate the generated BACI input file

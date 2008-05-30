@@ -41,7 +41,7 @@ using namespace EXODUS;
 void EXODUS::ValidateInputFile(string datfile)
 {
   // read and check the provided header file
-  cout << "checking BACI input file       --> "<<datfile<< endl;
+  //cout << "checking BACI input file       --> "<<datfile<< endl;
 
   // do some dirty tricks in order to keep ReadConditions() running
   // (compare with ntainp_ccadiscret() )
@@ -167,7 +167,7 @@ bool EXODUS::PositiveEle(vector<int>& nodes,Mesh& mymesh, Epetra_SerialDenseMatr
   LINALG::SerialDenseMatrix xyze(deriv.M(),iel);
   for (int inode=0; inode<iel; inode++)
   {
-    const vector<double> x = mymesh.GetNodeExo(inode);
+    const vector<double> x = mymesh.GetNodeExo(nodes.at(inode));
     xyze(0,inode) = x[0];
     xyze(1,inode) = x[1];
     xyze(2,inode) = x[2];
