@@ -222,7 +222,13 @@ int main(
       //TimeMonitor::summarize();
       
       // write the BACI input file
+      RCP<Time> timewrite;
+      timewrite = TimeMonitor::getNewTimer("Writing");
+      RCP<TimeMonitor> tm_write = rcp(new TimeMonitor(*timewrite));
       EXODUS::WriteDatFile(datfile, mymesh, headfile, eledefs, condefs);
+      tm_write = null;
+      cout << "...Writing dat-file";
+      cout << "                         in...." << time.ElapsedTime() << " secs" << endl;
 
       //validate the generated BACI input file
       EXODUS::ValidateInputFile(datfile);
