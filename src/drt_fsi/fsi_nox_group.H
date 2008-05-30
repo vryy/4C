@@ -6,19 +6,21 @@
 #include <NOX_Epetra_Group.H>
 #include "fsi_monolithic.H"
 
+namespace NOX
+{
 namespace FSI
 {
 
   /// Special NOX group that always sets Jacobian and RHS at the same time.
-  class NOXGroup : public NOX::Epetra::Group
+  class Group : public NOX::Epetra::Group
   {
   public:
 
-    NOXGroup(Monolithic& mfsi,
-             Teuchos::ParameterList& printParams,
-	     const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
-	     const NOX::Epetra::Vector& x,
-	     const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys);
+    Group(::FSI::Monolithic& mfsi,
+          Teuchos::ParameterList& printParams,
+          const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
+          const NOX::Epetra::Vector& x,
+          const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys);
 
     /// fetch the known Jacobian and RHS from the field solvers
     void CaptureSystemState();
@@ -29,8 +31,9 @@ namespace FSI
 
   private:
 
-    Monolithic& mfsi_;
+    ::FSI::Monolithic& mfsi_;
   };
+}
 }
 
 #endif

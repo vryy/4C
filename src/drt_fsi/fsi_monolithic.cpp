@@ -282,8 +282,8 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
       CreateLinearSystem(nlParams, noxSoln, utils_);
 
     // Create the Group
-    Teuchos::RCP<NOXGroup> grp =
-      Teuchos::rcp(new NOXGroup(*this, printParams, interface, noxSoln, linSys));
+    Teuchos::RCP<NOX::FSI::Group> grp =
+      Teuchos::rcp(new NOX::FSI::Group(*this, printParams, interface, noxSoln, linSys));
 
     // Convergence Tests
     Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
