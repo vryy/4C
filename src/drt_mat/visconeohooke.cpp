@@ -16,6 +16,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #include <Epetra_SerialDenseVector.h>
 #include "Epetra_SerialDenseSolver.h"
 #include "visconeohooke.H"
+#include "../drt_lib/linalg_serialdensevector.H"
 
 
 extern struct _MATERIAL *mat;
@@ -181,29 +182,36 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
 
 {
   // get material parameters
-  double E_s  = matdata_->m.visconeohooke->youngs_slow;
-  double nue  = matdata_->m.visconeohooke->poisson;
+  const double E_s  = matdata_->m.visconeohooke->youngs_slow;
+  const double nue  = matdata_->m.visconeohooke->poisson;
   double E_f  = matdata_->m.visconeohooke->youngs_fast;  
   double tau  = matdata_->m.visconeohooke->relax;
-  double theta= matdata_->m.visconeohooke->theta;
-  // compute relaxation time as quotient between sequential spring/dashpot
-  tau=tau*E_s/(E_f-E_s);
-  
+  const double theta= matdata_->m.visconeohooke->theta;
+ 
   // get time algorithmic parameters
   double dt = params.get("delta time",-1.0);
   const double time = params.get("total time",-1.0);
   const double gen_alphaf = params.get("alpha f",-1.0);
   if (gen_alphaf < 0) dserror("Visco only for dynamics! Negative Alpha_f detected!");
-  //cout << "Here we are at time: " << time << " with dt= " << dt << " and alpha f= " << gen_alphaf << endl;
+  
+  //check for meaningfull values
+  if (E_f < E_s) dserror("Wrong ratio between fast and slow Young's modulus");
+  else if (E_f>E_s)
+  {
+    if (tau<=0.0) dserror("Relaxation time tau has to be positive in case E_Fast > E_Slow!");
+    tau=tau*E_s/(E_f-E_s);
+  }
+  else if (tau==0.0) tau=1.0; // for algorithmic reasons tau has to be positiv 
+  
   
   // this is supposed to be consistent with strugenalpha
   if (time == dt) dt = (1.0-gen_alphaf)*dt;
     
   // evaluate "alpha" factors which distribute stress or stiffnes between parallel springs
   // sum_0^i alpha_j = 1
-  if (E_f < E_s) dserror("Wrong ratio between fast and slow Young's modulus");
   const double alpha0 = E_s / E_f;
   const double alpha1 = 1.0 - alpha0;
+  
   
   // evaluate Lame constants, bulk modulus
   const double lambda = nue*E_f / ((1.0+nue)*(1.0-2*nue));
@@ -217,6 +225,7 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // build identity tensor I
   Epetra_SerialDenseVector Id(6);
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
+  //for (int i =3; i<6;i++) Id(i)=0.0;
   Epetra_SerialDenseVector C(*glstrain);
   C.Scale(2.0);
   C += Id;
@@ -279,7 +288,6 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   *stress += SDevEla;
   Q.Scale(alpha1);
   *stress += Q;
-  
   // elasticity matrix
   double scalar1 = 2.0*kappa*J*J - kappa*J;
   double scalar2 = -2.0*kappa*J*J + 2.0*kappa*J;
