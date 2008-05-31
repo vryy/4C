@@ -583,6 +583,13 @@ namespace LINALG
     /// make a copy of me
     virtual Teuchos::RCP<BlockSparseMatrixBase> Clone(Epetra_DataAccess access) = 0;
 
+    /// setup of block preconditioners
+    /*!
+      This method can be implemented by subclasses that implement
+      ApplyInverse() to execute a block preconditioner on the matrix.
+     */
+    virtual void SetupPreconditioner() {}
+
     /** \name Block matrix access */
     //@{
 

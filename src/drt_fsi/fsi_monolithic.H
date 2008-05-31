@@ -13,8 +13,18 @@
 
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
+#include <NOX_Direction_UserDefinedFactory.H>
+
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
+
+namespace NOX
+{
+  namespace FSI
+  {
+    class PartialNormF;
+  }
+}
 
 namespace FSI
 {
@@ -152,13 +162,40 @@ namespace UTILS
   class Monolithic : public MonolithicBase,
                      public NOX::Epetra::Interface::Required,
                      public NOX::Epetra::Interface::Jacobian,
-                     public NOX::Epetra::Interface::Preconditioner
+                     public NOX::Epetra::Interface::Preconditioner,
+                     public NOX::Direction::UserDefinedFactory
   {
   public:
-    Monolithic(Epetra_Comm& comm);
+    explicit Monolithic(Epetra_Comm& comm);
 
     /// outer level FSI time loop
     void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+
+    //! @name NOX methods
+
+    /// compute FSI residual
+    bool computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
+
+    /// compute FSI block matrix
+    bool computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac);
+
+    /// preconditioner
+    bool computePreconditioner(const Epetra_Vector &x, Epetra_Operator &M, Teuchos::ParameterList *precParams=0);
+
+    //@}
+
+    /// create my own direction object
+    /*!
+      Monolithic is a (inherits from)
+      NOX::Direction::UserDefinedFactory. This is an implementation
+      detail. This way we can construct a specialized direction object at a
+      place where we know about the status tests. This is the whole point
+      here. Our specialized direction is of the type NOX::FSI::Newton, the
+      normal Newton direction enhanced with adaptive tolerance control for the
+      internal linear (iterative) solver.
+     */
+    virtual Teuchos::RCP<NOX::Direction::Generic> buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
+                                                                 Teuchos::ParameterList& params) const;
 
     //! @name Apply current field state to system
 
@@ -231,6 +268,12 @@ namespace UTILS
     /// flags passed to NOX
     Teuchos::ParameterList& NOXParameterList() { return noxparameterlist_; }
 
+    /// setup list with default parameters
+    void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
+
+    /// add a status test to be used for adaptive linear solver convergance
+    void AddStatusTest(Teuchos::RCP<NOX::FSI::PartialNormF> test) { statustests_.push_back(test); }
+
   private:
 
     /// dof row map splitted in (field) blocks
@@ -241,6 +284,10 @@ namespace UTILS
 
     /// flags passed to NOX
     Teuchos::ParameterList noxparameterlist_;
+
+    /// keep the status tests available so we can connect them with our
+    /// adaptive Newton direction
+    std::vector<Teuchos::RCP<NOX::FSI::PartialNormF> > statustests_;
 
     /// @name special debugging output
 

@@ -4,9 +4,12 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-#include "fsi_monolithic.H"
-#include "fsi_nox_group.H"
 #include "fsi_debugwriter.H"
+#include "fsi_monolithic.H"
+#include "fsi_nox_aitken.H"
+#include "fsi_nox_group.H"
+#include "fsi_nox_newton.H"
+#include "fsi_statustest.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
@@ -402,6 +405,116 @@ void FSI::Monolithic::SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_
 {
   Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(maps);
   blockrowdofmap_.Setup(*fullmap,maps);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
+                                           Teuchos::ParameterList& list)
+{
+  // Get the top level parameter list
+  Teuchos::ParameterList& nlParams = list;
+
+  nlParams.set<std::string>("Nonlinear Solver", "Line Search Based");
+  //nlParams.set("Preconditioner", "None");
+  //nlParams.set("Norm abs F", fsidyn.get<double>("CONVTOL"));
+  nlParams.set("Max Iterations", fsidyn.get<int>("ITEMAX"));
+
+  nlParams.set("Norm abs pres", fsidyn.get<double>("CONVTOL"));
+  nlParams.set("Norm abs vel",  fsidyn.get<double>("CONVTOL"));
+  nlParams.set("Norm abs disp", fsidyn.get<double>("CONVTOL"));
+
+  // sublists
+
+  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+
+  dirParams.set<std::string>("Method","User Defined");
+  Teuchos::RCP<NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this,false);
+  dirParams.set("User Defined Direction Factory",newtonfactory);
+
+  Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
+  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
+  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+  //Teuchos::ParameterList& lineSearchParams = nlParams.sublist("Line Search");
+
+  // status tests are expensive, but instructive
+  //solverOptions.set<std::string>("Status Test Check Type","Minimal");
+  solverOptions.set<std::string>("Status Test Check Type","Complete");
+
+  // be explicit about linear solver parameters
+  lsParams.set<std::string>("Aztec Solver","GMRES");
+  lsParams.set<int>("Size of Krylov Subspace",25);
+  lsParams.set<std::string>("Preconditioner","User Defined");
+  lsParams.set<int>("Output Frequency",AZ_all);
+  lsParams.set<bool>("Output Solver Details",true);
+
+  // adaptive tolerance settings
+  lsParams.set<double>("base tolerance",fsidyn.get<double>("BASETOL"));
+
+#if 0
+  // add Aitken relaxation to Newton step
+  // there is nothing to be gained...
+  Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
+    Teuchos::rcp(new NOX::FSI::AitkenFactory());
+  lineSearchParams.set("Method","User Defined");
+  lineSearchParams.set("User Defined Line Search Factory", aitkenfactory);
+
+  //lineSearchParams.sublist("Aitken").set("max step size",
+  //fsidyn.get<double>("MAXOMEGA"));
+#endif
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<NOX::Direction::Generic>
+FSI::Monolithic::buildDirection(const Teuchos::RCP<NOX::GlobalData>& gd,
+                                Teuchos::ParameterList& params) const
+{
+  Teuchos::RCP<NOX::FSI::Newton> newton = Teuchos::rcp(new NOX::FSI::Newton(gd,params));
+  for (unsigned i=0; i<statustests_.size(); ++i)
+  {
+    statustests_[i]->SetNewton(newton);
+  }
+  return newton;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::Monolithic::computeF(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::computeF");
+  Evaluate(Teuchos::rcp(&x,false));
+  SetupRHS(F);
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::Monolithic::computeJacobian(const Epetra_Vector &x, Epetra_Operator &Jac)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::computeJacobian");
+  Evaluate(Teuchos::rcp(&x,false));
+  LINALG::BlockSparseMatrixBase& mat = Teuchos::dyn_cast<LINALG::BlockSparseMatrixBase>(Jac);
+  SetupSystemMatrix(mat);
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool FSI::Monolithic::computePreconditioner(const Epetra_Vector &x,
+                                            Epetra_Operator &M,
+                                            Teuchos::ParameterList *precParams)
+{
+  // Create preconditioner operator.
+  // The blocks are already there. And this is the perfect place to initialize
+  // the block preconditioners.
+  SystemMatrix()->SetupPreconditioner();
+  return true;
 }
 
 

@@ -210,7 +210,7 @@ const char* FSI::OverlappingBlockMatrix::Label() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FSI::OverlappingBlockMatrix::SetupBlockPrecond()
+void FSI::OverlappingBlockMatrix::SetupPreconditioner()
 {
   const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);

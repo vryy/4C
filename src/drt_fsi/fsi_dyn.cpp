@@ -13,6 +13,7 @@
 #include "fsi_robinneumann.H"
 #include "fsi_robin.H"
 #include "fsi_monolithicoverlap.H"
+#include "fsi_monolithiclagrange.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
 #include "fsi_utils.H"

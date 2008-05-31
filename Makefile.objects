@@ -200,6 +200,7 @@ OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_structureale.o \
                 src/drt_fsi/fsi_monolithic.o \
                 src/drt_fsi/fsi_monolithicoverlap.o \
+                src/drt_fsi/fsi_monolithiclagrange.o \
                 src/drt_fsi/fsi_fluid_ale.o \
 		src/drt_fsi/fsi_nox_newton.o \
 		src/drt_fsi/fsi_nox_fixpoint.o \
@@ -214,6 +215,7 @@ OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_matrixtransform.o \
                 src/drt_fsi/fsi_debugwriter.o \
                 src/drt_fsi/fsi_statustest.o \
+                src/drt_fsi/fsi_lagrangeprec.o \
                 src/drt_fsi/fsi_overlapprec.o
 OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_ale.o \

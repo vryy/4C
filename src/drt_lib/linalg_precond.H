@@ -100,6 +100,8 @@ namespace LINALG
     /// Returns the Epetra_Map object associated with the range of this operator.
     virtual const Epetra_Map& OperatorRangeMap() const;
 
+    ///@}
+
   private:
 
     /// Get number of solver calls done on this solver

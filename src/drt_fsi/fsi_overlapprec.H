@@ -42,7 +42,7 @@ namespace FSI
     //@}
 
     /// setup of block preconditioners
-    void SetupBlockPrecond();
+    void SetupPreconditioner();
 
   private:
 
