@@ -335,6 +335,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   // -> we use the center of the cell to determine, where we come from
   const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
+  cellvalues = 0.0;
   for (int incn = 0; incn < cell.NumNode(); ++incn)
   {
     BlitzVec funct(ele.NumNode());
@@ -351,7 +352,6 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
     BlitzVec enr_funct(numparam);
     XFEM::ComputeEnrichedElementShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
     // interpolate value
-    cellvalues(incn) = 0.0;
     for (int iparam = 0; iparam < numparam; ++iparam)
     {
       cellvalues(incn) += elementvalues(iparam) * enr_funct(iparam);
@@ -376,6 +376,9 @@ void XFEM::computeVectorCellNodeValues(
   const int nsd = 3;
 
   const blitz::Array<double,2>* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+  
+  blitz::Array<double,2> xyz_cell(3,nen_cell);
+  cell.NodalPosXYZ(ele, xyz_cell);
 
   // if cell node is on the interface, the value is not defined for a jump.
   // however, we approach the interface from one particular side and therefore,
@@ -396,8 +399,18 @@ void XFEM::computeVectorCellNodeValues(
       (*nodalPosXiDomain)(1,inen),
       (*nodalPosXiDomain)(2,inen),
       ele.Shape());
-
-    XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
+    if (cell.Shape() == DRT::Element::tet4 or cell.Shape() == DRT::Element::tet10)
+    {
+      XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
+    }
+    else
+    {
+      static BlitzVec3 actpos;
+      actpos(0) = xyz_cell(0,inen);
+      actpos(1) = xyz_cell(1,inen);
+      actpos(2) = xyz_cell(2,inen);
+      XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
+    }
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
     {
