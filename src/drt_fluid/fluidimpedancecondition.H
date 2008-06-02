@@ -104,6 +104,7 @@ private:
   std::complex<double> ArteryImpedance( int k, 
 					int generation, 
 					double radius,
+					double termradius,
 					double density,
 					double viscosity,
 					std::complex<double> zparent);
@@ -113,6 +114,7 @@ private:
   */
   std::complex<double> DCArteryImpedance( int generation,  
 					  double radius,
+					  double termradius,
 					  double density,
 					  double viscosity,
 					  std::complex<double> zparentdc);
@@ -152,7 +154,11 @@ private:
   //! time period of present cyclic problem
   double period_;
   //! condition type ( lung / artery / kidney / ... )
+  //! implemented so far: lung, artery
   string treetype_;
+
+  //! 'material' parameters required for artery tree
+  double k1_, k2_, k3_;
 
   //! the processor ID from the communicator
   int                           myrank_;

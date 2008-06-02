@@ -639,6 +639,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     Teuchos::tuple<std::string>("lung","artery"),
     Teuchos::tuple<std::string>("lung","artery"),
     true)));
+  impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k1")));
+  impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k2")));
+  impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k3")));
 
   condlist.push_back(impedancebc);
 

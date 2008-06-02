@@ -61,6 +61,10 @@ FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
     condid_ = (impedancecond[0])->Getint("ConditionID");
     period_ = (impedancecond[0])->GetDouble("timeperiod");
     treetype_ = *((impedancecond[0])->Get<string>("tree"));
+    // 'material' parameters required for artery tree
+    k1_ = (impedancecond[0])->GetDouble("k1");
+    k2_ = (impedancecond[0])->GetDouble("k2");
+    k3_ = (impedancecond[0])->GetDouble("k3");
 
     // -------------------------------------------------------------------
     // test that we have an integer number of time steps per cycle
@@ -272,19 +276,25 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   timedomain.resize(cyclesteps_,0);
 
   // size: number of generations
-  std::complex<double> zleft, zparent (0,0);  // only as argument
-  std::complex<double> entry;
+  std::complex<double> zparent (0,0);  // only as argument
+
+  // to store already calculated impedances (to be developed)
+  map<const double*, std::complex<double> > zstored;
 
   //Loop over some frequencies making a call to Impedance, w=2*pi*k/T
   //where k=-N/2,....,N/2,
 
-  double radius = sqrt(area/PI);
+  //  double radius = sqrt(area/PI);   // the radius to which the artery tree is connected
+  double radius = 5.0;
+  //  double termradius = radius/5000; // the radius at which the artery tree is terminated
+  double termradius = 0.05; // the radius at which the artery tree is terminated
+
   // calculate DC (direct current) component depending on type of tree
   if ( treetype_ == "lung" )
     frequencydomain[0] = DCLungImpedance(0,radius,density,viscosity,zparent);
 
   if ( treetype_ == "artery" )
-    frequencydomain[0] = DCArteryImpedance(0,radius,density,viscosity,zparent);
+    frequencydomain[0] = DCArteryImpedance(0,radius,termradius,density,viscosity,zparent);
 
   // this results in a field like
   // frequencydomain =
@@ -292,6 +302,8 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   //
   // note that we also need the complex conjugated ones, i.e.
   // Z(-w_1) = conj(Z(w_1)  to Z(-w_cyclesteps) = conj(Z(w_cyclesteps)
+
+
   for (int k=1; k<cyclesteps_; k++)
   {
     int generation=0;
@@ -299,8 +311,20 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
       frequencydomain[k] = LungImpedance(k,generation,radius,density,viscosity,zparent);
 
     if ( treetype_ == "artery" )
-      frequencydomain[k] = ArteryImpedance(k,generation,radius,density,viscosity,zparent);
+      frequencydomain[k] = ArteryImpedance(k,generation,radius,termradius,density,viscosity,zparent);
   }
+
+  for (int k=0; k<cyclesteps_; k++)
+    cout << "wavenumber k = " << k << "  |Z| = " << abs(frequencydomain[k]) << endl;
+
+  cout << endl << endl;
+
+  for (int k=0; k<cyclesteps_; k++)
+    cout << k*2.0*PI << "   " << abs(frequencydomain[k]) << endl;
+
+//   ArteryImpedance(3,0,radius,termradius,density,viscosity,zparent);
+
+//   dserror("erst einmal Schluß");
 
   // --------------------------------------------------------------------------
   // inverse Fourier transform
@@ -551,6 +575,7 @@ Further also needed
 std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
 						       int generation,
 						       double radius,
+						       double termradius,
 						       double density,
 						       double viscosity,
 						       std::complex<double> zparent)
@@ -565,14 +590,8 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
 
   // terminal resistance is assumed zero
   complex<double> zterminal (0,0);
-  double termradius = 1;
 
   double omega = 2.0*PI*k/period_;
-
-  // this has to be moved!!
-  double k1 = 2.0;    // g/ms/ms/mm
-  double k2 = -2.253; // per mm
-  double k3 = 0.0865; // g/ms/ms/mm
 
   // build up geometry of present generation
   double area = radius*radius*PI;
@@ -584,49 +603,35 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
   generation++;  // this is the next generation
 
   // left hand side:
-  double nextradius = alpha*radius;
+  double leftradius  = alpha*radius;
+  double rightradius = beta*radius;
   complex<double> zleft;
-  if (nextradius < termradius)
-    zleft = zterminal;
-  else
-    zleft  = ArteryImpedance(k,generation,nextradius,density,viscosity,zparent);
-
-  // right hand side:
   complex<double> zright;
-  nextradius = beta*radius;
-  if (nextradius < termradius)
-    zright = zterminal;
+  bool terminated = false;
+
+  // only if both vessels are smaller than the limit truncate
+  if (leftradius < termradius && rightradius < termradius)
+    terminated = true;
   else
-    zright = ArteryImpedance(k,generation,nextradius,density,viscosity,zparent);
+  {
+    zleft  = ArteryImpedance(k,generation,leftradius,termradius,density,viscosity,zparent);
+    zright = ArteryImpedance(k,generation,rightradius,termradius,density,viscosity,zparent);
+  }
 
 
   // ... combine this to the impedance at my downstream end ...
   //*************************************************************
+  // note, we truncate both terminal vessels at once!
   complex<double> zdown;
-  if( zleft == 0.0 )
-  {
-    if( zright == 0.0 )
-    {
-      zdown = 0.0;  // both daughter impedances are zero, we are at the leafes of the tree
-    }
-    else
-    {
-      zdown = zright; // only the left downward vessel has already terminated
-    }
-  }
-  else if( zright == 0.0 )
-  {
-    zdown = zleft;    // only the right downward vessel has already terminated
-  }
+  if (terminated)
+    zdown = zterminal;
   else
-  {
-    // the standard case, both vessels contiunue
     zdown = 1.0 / (1.0/zleft + 1.0/zright);
-  }
+
 
   // ... and compute impedance at my upstream end!
   //*************************************************************
-  double compliance = 1.5*area / ( k1 * exp(k2*radius) + k3 );
+  double compliance = 1.5*area / ( k1_ * exp(k2_*radius) + k3_ );
   double sqrdwo = radius*radius*omega/viscosity;  // square of Womersley number
   double wonu = sqrt(sqrdwo);                     // Womersley number itself
 
@@ -645,6 +650,10 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
   complex<double> argument = omega*length/cwave;
   zparent = (imag/gcoeff * sin(argument) + zdown*cos(argument) ) /
             ( cos(argument) + imag*gcoeff*zdown*sin(argument) );
+
+//   cout << "Generation: " << generation << endl;
+//   cout << " argument = " << argument << "   g = " << gcoeff << endl;
+//   cout << " Zup = " << abs(zparent) << "   Zdown = " << abs(zdown) << "   Zleft = " << abs(zleft) << "   Zright = " << abs(zright) << endl;
 
   return zparent;
 }
@@ -670,7 +679,8 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
   analogy.
 */
 std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
-							 double radius,
+							 double radius,  
+							 double termradius,
 							 double density,
 							 double viscosity,
 						         std::complex<double> zparentdc)
@@ -683,41 +693,35 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
 
   // terminal resistance is assumed zero
   complex<double> zterminal (0,0);
-  double termradius = 1;
 
-  // get dc impedances of downward vessels ...
+
+  // get impedances of downward vessels ...
   //*****************************************
   generation++;  // this is the next generation
 
-  // left hand side:
-  double nextradius = alpha*radius;
+  double leftradius  = alpha*radius;
+  double rightradius = beta*radius;
   complex<double> zleft;
-  if (nextradius < termradius)
-    zleft = zterminal;
-  else
-    zleft  = DCArteryImpedance(generation,nextradius,density,viscosity,zparentdc);
-
-  // right hand side:
   complex<double> zright;
-  nextradius = beta*radius;
-  if (nextradius < termradius)
-    zright = zterminal;
+  bool terminated = false;
+
+  // only if both vessels are smaller than the limit truncate
+  if (leftradius < termradius && rightradius < termradius)
+    terminated = true;
   else
-    zright = DCArteryImpedance(generation,nextradius,density,viscosity,zparentdc);
+  {
+    zleft  = DCArteryImpedance(generation,leftradius,termradius,density,viscosity,zparentdc);
+    zright = DCArteryImpedance(generation,rightradius,termradius,density,viscosity,zparentdc);
+  }
 
 
-  // ... combine this to the dc impedance at my downstream end ...
+  // ... combine this to the impedance at my downstream end ...
   //*************************************************************
+  // note, we truncate both terminal vessels at once!
   complex<double> zdown;
-  if( zleft == 0.0 )
-    if( zright == 0.0 )
-      zdown = 0.0;  // both daughter impedances are zero, we are at the leafes of the tree
-    else
-      zdown = zright; // only the left downward vessel has already terminated
-  else if( zright == 0.0 )
-    zdown = zleft;    // only the right downward vessel has already terminated
+  if (terminated)
+    zdown = zterminal;
   else
-    // the standard case, both vessels contiunue
     zdown = 1.0 / (1.0/zleft + 1.0/zright);
 
 
@@ -726,7 +730,7 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
 
   // calculate dc impedance of this, the present vessel
   zparentdc = 8.0 * mu * lscale / ( PI*radius*radius*radius ) + zdown;
-
+  cout << "generation: " << generation << endl;
   return zparentdc;
 }
 
