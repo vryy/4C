@@ -5,7 +5,7 @@
 \brief routines for the tiny blitz arrays and matrix vector routines to combine various array formats
 
 \note: such mixing is not optimal in the sense, that matrix vector routines are tuned for one array library and
-it it hard to write similarily performing code. So this is more a debug solution until one settles for a array type
+it is hard to write similarily performing code. So this is more a debug solution until one settles for a array type
 in ones personal part of BACI 
 
 <pre>
@@ -33,32 +33,32 @@ namespace XFEM
     
     //! matrix matrix^T product
     template<int ni, int nj, int nk, class M1, class M2, class M3>
-    inline void MMt_product(const M1& deriv,const M2& xyze,M3& xjm)
+    inline void MMt_product(const M1& m1, const M2& m2, M3& m_out)
     {
       for (int i = 0; i < ni; ++i)
       {
         for (int j = 0; j < nj; ++j)
         {
-          xjm(i,j) = 0.0;
+          m_out(i,j) = 0.0;
           for (int k = 0; k < nk; ++k)
           {
-            xjm(i,j) += deriv(i,k)*xyze(j,k);
+            m_out(i,j) += m1(i,k)*m2(j,k);
           }
         }
       }
     }
     //! matrix^T matrix product
     template<int ni, int nj, int nk, class M1, class M2, class M3>
-    inline void MtM_product(const M1& deriv,const M2& xyze,M3& xjm)
+    inline void MtM_product(const M1& m1, const M2& m2, M3& m_out)
     {
       for (int i = 0; i < ni; ++i)
       {
         for (int j = 0; j < nj; ++j)
         {
-          xjm(i,j) = 0.0;
+          m_out(i,j) = 0.0;
           for (int k = 0; k < nk; ++k)
           {
-            xjm(i,j) += deriv(k,i)*xyze(k,j);
+            m_out(i,j) += m1(k,i)*m2(k,j);
           }
         }
       }
