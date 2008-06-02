@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid3_sysmat.H
+\file xfluid3_sysmat2.H
 
 \brief element formulations for 3d XFEM fluid element
 
