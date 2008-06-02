@@ -114,9 +114,6 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   
   // debug: write information about which structure we are in
   {
-    double LinearFSITime = 0;
-    double TreeFSITime = 0;
-    
     std::stringstream filenameP;
     filenameP << "points_" << std::setw(5) << setfill('0') << step << ".pos";
     cout << "writing '"<<filenameP.str()<<"...";
@@ -150,13 +147,9 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
           //cout << cellcenterpos << endl;
           
-          double timeStart = ds_cputime();
           PositionWithinCondition(cellcenterpos, *this, posInCondition);
-          LinearFSITime = LinearFSITime + (ds_cputime()-timeStart);
           
-          timeStart = ds_cputime();
-          PositionWithinConditionTree(cellcenterpos, *this, posInCondition);
-          TreeFSITime = TreeFSITime + (ds_cputime()-timeStart);              
+          //PositionWithinConditionTree(cellcenterpos, *this, posInCondition);
           
           int domain_id = 0;
           // loop conditions
@@ -189,10 +182,8 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     f_system.close();
     f_systemP.close();
     cout << " done" << endl;
-    printf("\tLinear Time: %f\tTree Time: %f\n", LinearFSITime, TreeFSITime);
-    STree.printTree(step);
+    //STree.printTree(step);
   }
-  //exit(0);
   return;
 }
 
@@ -301,7 +292,6 @@ void XFEM::PositionWithinCondition(
 #ifdef PARALLEL
   dserror("not implemented, yet");
 #endif
-  //exit(0);
   return;
 }
 
@@ -331,7 +321,6 @@ void XFEM::PositionWithinConditionTree(
 #ifdef PARALLEL
   dserror("not implemented, yet");
 #endif
-  //exit(0);
   return;
 }
 
