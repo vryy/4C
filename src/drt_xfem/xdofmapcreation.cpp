@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 #include <blitz/array.h>
 #include "xdofmapcreation.H"
 #include "xfem_condition.H"
+#include "enrichment_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -55,7 +56,12 @@ void XFEM::createDofMap(
       {
           const DRT::Element* actele = ih.xfemdis()->lColElement(i);
           const int element_gid = actele->Id();
-          if (ih.elementalDomainIntCells()->count(element_gid) >= 1)
+          
+          const double ratio = XFEM::AreaRatio(*actele,ih);
+          const bool almost_empty_element = (abs(1.0-ratio) < 1.0e-3);
+          const bool there_are_more_than_one_integration_cells = (ih.elementalDomainIntCells()->count(element_gid)>=1);
+          
+          if (there_are_more_than_one_integration_cells and !almost_empty_element )
           {
               
               const XFEM::BoundaryIntCells& bcells = ih.elementalBoundaryIntCells()->find(element_gid)->second;
