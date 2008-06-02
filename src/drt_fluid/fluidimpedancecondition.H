@@ -123,6 +123,8 @@ private:
   std::complex<double> LungImpedance( int k, 
 					int generation,
 					double radius,
+					double density,
+					double visosity,
 					std::complex<double> zparent);
 
   /*!
@@ -130,6 +132,8 @@ private:
   */
   std::complex<double> DCLungImpedance( int generation,
   					  double radius,
+  					  double density,
+  					  double viscosity,
 					  std::complex<double> zparentdc);
 
 protected:

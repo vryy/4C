@@ -281,7 +281,7 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   double radius = sqrt(area/PI);
   // calculate DC (direct current) component depending on type of tree
   if ( treetype_ == "lung" )
-    frequencydomain[0] = DCLungImpedance(0,radius,zparent);
+    frequencydomain[0] = DCLungImpedance(0,radius,density,viscosity,zparent);
 
   if ( treetype_ == "artery" )
     frequencydomain[0] = DCArteryImpedance(0,radius,density,viscosity,zparent);
@@ -296,7 +296,7 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   {
     int generation=0;
     if ( treetype_ == "lung" )
-      frequencydomain[k] = LungImpedance(k,generation,radius,zparent);
+      frequencydomain[k] = LungImpedance(k,generation,radius,density,viscosity,zparent);
 
     if ( treetype_ == "artery" )
       frequencydomain[k] = ArteryImpedance(k,generation,radius,density,viscosity,zparent);
@@ -746,26 +746,25 @@ What is supposed to happen within these lines?
 std::complex<double> FluidImpedanceBc::LungImpedance(int k, 
 						       int generation,
 						       double radius,
+							   double density,
+							   double viscosity,
 						       std::complex<double> zparent)
 {
    // general data
   double lscale = 5.8; // length to radius ratio
-  double alpha = 0.9;   // right daughter vessel ratio
-  double beta = 0.6;    // left daughter vessel ratio
+  double alpha = 0.876;   // right daughter vessel ratio
+  double beta = 0.686;    // left daughter vessel ratio
   double h=0.2;
-
   // some auxiliary stuff
   complex<double> koeff, imag(0,1), cwave;
   // terminal resistance is assumed zero ff
   complex<double> zterminal (0,0);
-  double termradius = 0.1;
-
+  double termradius = 0.5;
+  
   double omega = 2.0*PI*k/period_;
 
   // this has to be moved!!
-  double E=1e6;
-  double density=1.206;
-  double viscosity=1.50912106e-5;
+  double E=1;
 
   // build up geometry of present generation
   double area = radius*radius*PI;
@@ -781,7 +780,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
   if (nextradius < termradius)
     zleft = zterminal;
   else
-    zleft  = LungImpedance(k,generation,nextradius,zparent);
+    zleft  = LungImpedance(k,generation,nextradius,density,viscosity,zparent);
 
   // right hand side:
   complex<double> zright;
@@ -789,7 +788,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
   if (nextradius < termradius)
     zright = zterminal;
   else
-    zright = LungImpedance(k,generation,nextradius,zparent);
+    zright = LungImpedance(k,generation,nextradius,density,viscosity,zparent);
 
 
   // ... combine this to the impedance at my downstream end ...
@@ -850,20 +849,20 @@ What is supposed to happen within these lines?
 */
 std::complex<double> FluidImpedanceBc::DCLungImpedance(int generation,
 								 double radius,
+								 double density,
+								 double viscosity,
 						         std::complex<double> zparentdc)
 {
 // general data
   double lscale = 5.8; // length to radius ratio
-  double alpha = 0.9;   // right daughter vessel ratio
-  double beta = 0.6;    // left daughter vessel ratio
-  // density and viscosity
-  double density=1.206;
-  double viscosity=1.50912106e-5; 
+  double alpha = 0.876;   // right daughter vessel ratio
+  double beta = 0.686;    // left daughter vessel ratio
+
   double mu = viscosity * density; // dynamic (physical) viscosity
 
   // terminal resistance is assumed zero
   complex<double> zterminal (0,0);
-  double termradius = 0.1;
+  double termradius = 0.5;
 
   // get dc impedances of downward vessels ...
   //*****************************************
@@ -875,7 +874,7 @@ std::complex<double> FluidImpedanceBc::DCLungImpedance(int generation,
   if (nextradius < termradius)
     zleft = zterminal;
   else
-    zleft  = DCLungImpedance(generation,nextradius,zparentdc);
+    zleft  = DCLungImpedance(generation,nextradius,density,viscosity,zparentdc);
 
   // right hand side:
   complex<double> zright;
@@ -883,7 +882,7 @@ std::complex<double> FluidImpedanceBc::DCLungImpedance(int generation,
   if (nextradius < termradius)
     zright = zterminal;
   else
-    zright = DCLungImpedance(generation,nextradius,zparentdc);
+    zright = DCLungImpedance(generation,nextradius,density,viscosity,zparentdc);
 
 
   // ... combine this to the dc impedance at my downstream end ...
