@@ -286,11 +286,12 @@ void  DRT::ELEMENTS::XFluid3Surface::f3_metric_tensor_for_surface(
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over surface (private)          g.bau 07/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(ParameterList& params,
-                  DRT::Discretization&       discretization,
-                  vector<int>&               lm,
-                  Epetra_SerialDenseVector&  elevec1,
-                  const std::vector<double>& edispnp)
+void DRT::ELEMENTS::XFluid3Surface::IntegrateShapeFunction(
+    ParameterList&                   params,
+    DRT::Discretization&             discretization,
+    const vector<int>&               lm,
+    Epetra_SerialDenseVector&        elevec1,
+    const std::vector<double>&       edispnp)
 {
   // there are 3 velocities and 1 pressure
   return;
