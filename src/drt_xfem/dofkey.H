@@ -9,7 +9,7 @@ Maintainer: Axel Gerstenberger
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
-*/
+ */
 #ifdef CCADISCRET
 #ifndef DOFKEY_H
 #define DOFKEY_H
@@ -20,148 +20,143 @@ Maintainer: Axel Gerstenberger
 
 namespace XFEM
 {
-
-//! global Position in Epetra vector 
-typedef int DofPos; 
-
-/*!
- \brief Allows to distuingish between nodal and elemental dofs
- */
-enum DofType
-{
+  
+  //! global Position in Epetra vector 
+  typedef int DofPos; 
+  
+  //! Allows to distuingish between nodal and elemental dofs
+  enum DofType
+  {
     onNode,
     onElem
-};
-
-//! create a string from the DofType enum
-static std::string dofTypeToString(DofType doftype)
-{
+  };
+  
+  //! create a string from the DofType enum
+  static std::string dofTypeToString(DofType doftype)
+  {
     switch (doftype)
     {
-        case onNode: return "Node";
-        case onElem: return "Elem";
-        default:
-            dserror("unknown doftype");
-            exit(1);
+      case onNode: return "Node";
+      case onElem: return "Elem";
     }
-}
-
-/*!
- \brief A unique identifier for a degree of freedom (DOF)
-
- Haskell-esque:
- type DofKey = (DofType, Gid, FieldEnr)
- 
- \tparam DofType to distinguish between element and nodal dofs, now the compiler complains
-         when we mix them, since DofKey<onNode> is different from DofKey<onElement>
-
- */
-template <DofType doftype>
-class DofKey
-{
-public:
-    //! standard constructor
-    explicit DofKey(
-            const int             gid,      ///< global id
-            const FieldEnr        fieldenr  ///< enrichmed field
-            ) :
-                gid_(gid),
-                fieldenr_(fieldenr)
-    {
+  }
+  
+  /*!
+   * \brief A unique identifier for a degree of freedom (DOF)
+   * 
+   * Haskell-esque:
+   * type DofKey = (DofType, Gid, FieldEnr)
+   * 
+   * \tparam DofType to distinguish between element and nodal dofs, now the compiler complains
+   *         when we mix them, since DofKey<onNode> is different from DofKey<onElement>
+   */
+  template <DofType doftype>
+  class DofKey
+  {
+    public:
+      //! standard constructor
+      explicit DofKey(
+          const int             gid,      ///< global id
+          const FieldEnr        fieldenr  ///< enrichmed field
+      ) :
+        gid_(gid),
+        fieldenr_(fieldenr)
+        {
+            return;
+        }
+          
+      //! copy constructor
+      DofKey(
+          const DofKey& other           ///< source
+      ) :
+        gid_(other.gid_),
+        fieldenr_(other.fieldenr_)
+      {
+          assert(&other != this);
+          return;
+      }
+        
+      //! destructor
+      ~DofKey()
+      {
         return;
-    }
-    
-    //! copy constructor
-    DofKey(
-            const DofKey& other           ///< source
-            ) :
-                gid_(other.gid_),
-                fieldenr_(other.fieldenr_)
-    {
-        assert(&other != this);
-        return;
-    }
-
-    
-    //! destructor
-    ~DofKey()
-    {
-        return;
-    }
-
-    std::string toString() const
-    {
+      }
+      
+      //! return string representation of this class
+      std::string toString() const
+      {
         stringstream s;
         s << "Dofkey: <" << XFEM::dofTypeToString(doftype) << " Id: " << gid_ << ", " << fieldenr_.toString();
         return s.str();
-    };
-
-    int getGid() const
-    {
+      };
+            
+      int getGid() const
+      {
         return gid_;
-    };
-    
-    const FieldEnr& getFieldEnr() const
-    {
+      };
+      
+      const FieldEnr& getFieldEnr() const
+      {
         return fieldenr_;
-    };
-    
-    bool operator <(const DofKey& rhs) const
-    {
+      };
+      
+      bool operator <(const DofKey& rhs) const
+      {
         if (gid_ < rhs.gid_)
-            return true;
+          return true;
         else if (gid_ > rhs.gid_)
-            return false;
+          return false;
         else
         {
-            if (fieldenr_ < rhs.fieldenr_)
-                return true;
-            else
-                return false;
+          if (fieldenr_ < rhs.fieldenr_)
+            return true;
+          else
+            return false;
         }
-    }
-    
-    bool operator ==(const DofKey& rhs) const
-    {
+      }
+            
+      bool operator ==(const DofKey& rhs) const
+      {
         if (gid_ == rhs.gid_ and fieldenr_ == rhs.fieldenr_)
-            return true;
+          return true;
         else
-            return false;
-    }
-    
-    bool operator !=(const DofKey& rhs) const
-    {
-//        return (!(*this == rhs));
+          return false;
+      }
+      
+      bool operator !=(const DofKey& rhs) const
+      {
+        //        return (!(*this == rhs));
         if (gid_ != rhs.gid_ or fieldenr_ != rhs.fieldenr_)
-            return true;
+          return true;
         else
-            return false;
-    }
-    
-
-private:
+          return false;
+      }
+              
+              
+    private:
+      
+      //! don't want default constructor
+      explicit DofKey();
+      //    :
+      //        gid_(-1),
+      //        fieldenr_(FieldEnr())
+      //    {
+      //        dserror("DofKey() -> please don't call me!");
+      //        return;
+      //    }
+      
+      //! unique id among the choosen type of dof (for example: nodal global id)
+      const int       gid_;
+      //! specific enriched field
+      const XFEM::FieldEnr  fieldenr_;
+      
+  }; // class DofKey
   
-    //! empty constructor
-    explicit DofKey();
-//    :
-//        gid_(-1),
-//        fieldenr_(FieldEnr())
-//    {
-//        dserror("DofKey() -> please don't call me!");
-//        return;
-//    }
+  //! connects each dofkey on Node with a specific position in an solution vector
+  typedef map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos > NodalDofPosMap;
+  //! connects each dofkey on Element with a specific position in an solution vector
+  typedef map<XFEM::DofKey<XFEM::onElem>, XFEM::DofPos > ElementalDofPosMap;
   
-    //! unique id among the choosen type of dof
-    const int       gid_;
-    //! specific enrichment field
-    const FieldEnr  fieldenr_;
-
-}; // class DofKey
-
-//! connects each dofkey with a specific position in an solution vector
-typedef map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos > NodalDofPosMap;
-typedef map<XFEM::DofKey<XFEM::onElem>, XFEM::DofPos > ElementalDofPosMap;
-
 } // namespace XFEM
 
 #endif  // #ifndef DOFKEY_H
