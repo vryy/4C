@@ -673,11 +673,13 @@ private:
   DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
 
   // integrate shape functions over a line
-  void IntegrateShapeFunction(ParameterList& params,
-                  DRT::Discretization&       discretization,
-                  vector<int>&               lm,
-                  Epetra_SerialDenseVector&  elevec1,
-                  const std::vector<double>& edispnp);
+  void IntegrateShapeFunction(
+      ParameterList&             params,
+      DRT::Discretization&       discretization,
+      const vector<int>&         lm,
+      Epetra_SerialDenseVector&  elevec1,
+      const std::vector<double>& edispnp
+      );
 
 
 }; // class Bele3Line

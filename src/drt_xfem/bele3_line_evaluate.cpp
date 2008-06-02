@@ -225,7 +225,7 @@ double  DRT::ELEMENTS::Bele3Line::f2_substitution(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(ParameterList& params,
                   DRT::Discretization&       discretization,
-                  vector<int>&               lm,
+                  const vector<int>&         lm,
                   Epetra_SerialDenseVector&  elevec1,
                   const std::vector<double>& edispnp)
 {
