@@ -161,7 +161,26 @@ void fsi_ale_drt()
     testmanager.TestAll();
     break;
   }
+  case fsi_iter_monolithiclagrange:
+  {
+    // Lagranigan Monolithic FSI. A little more complicated that overlapping MFSI.
 
+    Teuchos::RCP<FSI::MonolithicLagrange> fsi = Teuchos::rcp(new FSI::MonolithicLagrange(comm));
+
+    if (genprob.restart)
+    {
+      // read the restart information, set vectors and variables
+      fsi->ReadRestart(genprob.restart);
+    }
+
+    fsi->Timeloop(fsi);
+
+    DRT::ResultTestManager testmanager(comm);
+    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
+    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
+    testmanager.TestAll();
+    break;
+  }
   default:
   {
     // Any partitioned algorithm. Stable of working horses.

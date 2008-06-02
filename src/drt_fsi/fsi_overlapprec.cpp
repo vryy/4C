@@ -33,6 +33,8 @@ int FSI::OverlappingBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetr
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrix::LowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
+#if 1
+
   const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
   const LINALG::SparseMatrix& fluidMeshOp   = Matrix(1,2);
@@ -115,6 +117,21 @@ void FSI::OverlappingBlockMatrix::LowerGS(const Epetra_MultiVector &X, Epetra_Mu
   RangeExtractor().InsertVector(*sy,0,y);
   RangeExtractor().InsertVector(*fy,1,y);
   RangeExtractor().InsertVector(*ay,2,y);
+
+#else
+
+  // this is really evil :)
+  Teuchos::RCP<LINALG::SparseMatrix> sparse = Merge();
+
+  const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
+  Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
+
+  fluidsolver_->Solve(sparse->EpetraMatrix(),
+                      Teuchos::rcp(&y,false),
+                      Teuchos::rcp(new Epetra_Vector(x)),
+                      true);
+
+#endif
 }
 
 

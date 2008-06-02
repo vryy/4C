@@ -479,6 +479,12 @@ namespace LINALG
              const double scalarA,
              const double scalarB);
 
+    /// Add a (transposed) Epetra_CrsMatrix to another: (*this) = (*this)*scalarB + A(^T)*scalarA
+    void Add(const Epetra_CrsMatrix& A,
+             const bool transposeA,
+             const double scalarA,
+             const double scalarB);
+
     /// Multiply a (transposed) matrix with another (transposed): C = A(^T)*B(^T)
     /*!
       Multiply one matrix with another. Both matrices must be completed. Sparsity
@@ -589,6 +595,9 @@ namespace LINALG
       ApplyInverse() to execute a block preconditioner on the matrix.
      */
     virtual void SetupPreconditioner() {}
+
+    /// Merge block matrix into a SparseMatrix
+    Teuchos::RCP<SparseMatrix> Merge() const;
 
     /** \name Block matrix access */
     //@{

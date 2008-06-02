@@ -200,13 +200,19 @@ namespace ADAPTER
 
     //@}
 
+    /// \name Lagrangian coupling helpers
+
     /// create coupling matrices for Lagrangian coupling conditions
-    void SetupCouplingMatrices(const Epetra_Map& masterdomainmap, const Epetra_Map& slavedomainmap);
+    void SetupCouplingMatrices(const Epetra_Map& shiftedmastermap,
+                               const Epetra_Map& masterdomainmap,
+                               const Epetra_Map& slavedomainmap);
 
     Teuchos::RCP<Epetra_CrsMatrix> MasterToMasterMat() const { return matmm_; }
     Teuchos::RCP<Epetra_CrsMatrix> SlaveToMasterMat() const { return matsm_; }
     Teuchos::RCP<Epetra_CrsMatrix> MasterToMasterMatTrans() const { return matmm_trans_; }
     Teuchos::RCP<Epetra_CrsMatrix> SlaveToMasterMatTrans() const { return matsm_trans_; }
+
+    //@}
 
     /// abstract converter base
     /*!

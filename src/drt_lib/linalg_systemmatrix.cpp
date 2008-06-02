@@ -671,6 +671,17 @@ void LINALG::SparseMatrix::Add(const LINALG::SparseMatrix& A,
                                const double scalarA,
                                const double scalarB)
 {
+  Add(*A.sysmat_,transposeA,scalarA,scalarB);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::SparseMatrix::Add(const Epetra_CrsMatrix& A,
+                               const bool transposeA,
+                               const double scalarA,
+                               const double scalarB)
+{
   if (!A.Filled()) dserror("FillComplete was not called on A");
   if (Filled()) dserror("FillComplete was called on me before");
 
@@ -679,11 +690,11 @@ void LINALG::SparseMatrix::Add(const LINALG::SparseMatrix& A,
   if (transposeA)
   {
     Atrans = rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
-    Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(*A.sysmat_)))));
+    Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
   }
   else
   {
-    Aprime = const_cast<Epetra_CrsMatrix*>(&*A.sysmat_);
+    Aprime = const_cast<Epetra_CrsMatrix*>(&A);
   }
 
   if (scalarB == 0.0)
@@ -903,6 +914,29 @@ LINALG::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtractor& do
       blocks_.push_back(SparseMatrix(RangeMap(r),npr,explicitdirichlet,savegraph));
     }
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::BlockSparseMatrixBase::Merge() const
+{
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::BlockSparseMatrixBase::Merge");
+
+  const SparseMatrix& m00 = Matrix(0,0);
+  Teuchos::RCP<SparseMatrix> sparse = Teuchos::rcp(new SparseMatrix(*fullrowmap_,
+                                                                    m00.MaxNumEntries(),
+                                                                    m00.ExplicitDirichlet(),
+                                                                    m00.SaveGraph()));
+  for (unsigned i=0; i<blocks_.size(); ++i)
+  {
+    sparse->Add(blocks_[i],false,1.0,1.0);
+  }
+  if (Filled())
+  {
+    sparse->Complete(FullDomainMap(),FullRangeMap());
+  }
+  return sparse;
 }
 
 

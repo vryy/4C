@@ -967,7 +967,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "iter_stagg_MFNK_FSI",
                                  "iter_stagg_MPE",
                                  "iter_stagg_RRE",
-                                 "iter_monolithic").append("pseudo_structure"),
+                                 "iter_monolithic")
+                               .append("iter_monolithiclagrange")
+                               .append("pseudo_structure"),
                                tuple<int>(
                                  fsi_basic_sequ_stagg,
                                  //fsi_sequ_stagg_pred,
@@ -980,7 +982,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  fsi_iter_stagg_MFNK_FSI,
                                  fsi_iter_stagg_MPE,
                                  fsi_iter_stagg_RRE,
-                                 fsi_iter_monolithic).append(fsi_pseudo_structureale),
+                                 fsi_iter_monolithic)
+                               .append(fsi_iter_monolithiclagrange)
+                               .append(fsi_pseudo_structureale),
                                &fsidyn);
 
   setStringToIntegralParameter("PARTITIONED","DirichletNeumann",

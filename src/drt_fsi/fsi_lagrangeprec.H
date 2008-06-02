@@ -10,6 +10,7 @@
 namespace FSI
 {
 
+  /// special version of block matrix that includes the FSI block preconditioner
   class LagrangianBlockMatrix : public LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>
   {
   public:

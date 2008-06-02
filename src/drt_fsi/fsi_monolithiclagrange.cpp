@@ -2,6 +2,7 @@
 
 #include "fsi_monolithiclagrange.H"
 #include "fsi_statustest.H"
+#include "fsi_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
@@ -63,8 +64,10 @@ FSI::MonolithicLagrange::MonolithicLagrange(Epetra_Comm& comm)
 
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField().DofRowMap());
-  vecSpaces.push_back(FluidField()    .Interface().OtherMap());
-  vecSpaces.push_back(AleField()      .Interface().OtherMap());
+  vecSpaces.push_back(FluidField()    .DofRowMap());
+  vecSpaces.push_back(AleField()      .DofRowMap());
+  vecSpaces.push_back(UTILS::ShiftMap(StructureField().Interface().CondMap(),vecSpaces));
+  vecSpaces.push_back(UTILS::ShiftMap(StructureField().Interface().CondMap(),vecSpaces));
 
   SetDofRowMaps(vecSpaces);
 
@@ -77,6 +80,24 @@ FSI::MonolithicLagrange::MonolithicLagrange(Epetra_Comm& comm)
 
   // build ale system matrix nonsplitted
   AleField().BuildSystemMatrix(true);
+
+  // setup Lagrangian coupling terms
+
+  coupsf.SetupCouplingMatrices(*vecSpaces[3],*StructureField().DofRowMap(),*FluidField().DofRowMap());
+  coupsa.SetupCouplingMatrices(*vecSpaces[4],*StructureField().DofRowMap(),*AleField().DofRowMap());
+
+  double timescale = FluidField().TimeScaling();
+
+  systemmatrix_->Matrix(3,0).Add(*coupsf.MasterToMasterMat(),false,1.0,1.0);
+  systemmatrix_->Matrix(3,1).Add(*coupsf.SlaveToMasterMat() ,false,-timescale,1.0);
+
+  systemmatrix_->Matrix(0,3).Add(*coupsf.MasterToMasterMatTrans(),false,1.0,1.0);
+  systemmatrix_->Matrix(1,3).Add(*coupsf.SlaveToMasterMatTrans() ,false,-timescale,1.0);
+
+  systemmatrix_->Matrix(4,0).Add(*coupsa.MasterToMasterMat(),false,1.0,1.0);
+  systemmatrix_->Matrix(4,2).Add(*coupsa.SlaveToMasterMat() ,false,-1.0,1.0);
+
+  systemmatrix_->Matrix(2,4).Add(*coupsa.SlaveToMasterMatTrans(),false,-1.0,1.0);
 }
 
 
@@ -112,9 +133,20 @@ void FSI::MonolithicLagrange::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& m
   // extract Jacobian matrices and put them into composite system
   // matrix W
 
-  const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  const ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  //const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
+  //const ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  //const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+
+  Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
+  Teuchos::RCP<LINALG::SparseMatrix> a = AleField().SystemMatrix();
+
+  mat.Assign(0,0,View,*s);
+  mat.Assign(1,1,View,*f);
+  mat.Assign(2,2,View,*a);
+
+  // done. make sure all blocks are filled.
+  mat.Complete();
 }
 
 
@@ -140,6 +172,10 @@ void FSI::MonolithicLagrange::SetupVector(Epetra_Vector &f,
                                           Teuchos::RCP<const Epetra_Vector> av,
                                           double fluidscale)
 {
+  f.PutScalar(0.);
+  Extractor().InsertVector(*sv,0,f);
+  Extractor().InsertVector(*fv,1,f);
+  Extractor().InsertVector(*av,2,f);
 }
 
 
@@ -194,6 +230,84 @@ FSI::MonolithicLagrange::CreateStatusTest(Teuchos::ParameterList& nlParams,
   // require one solve
   converged->addStatusTest(Teuchos::rcp(new NOX::FSI::MinIters(1)));
 
+  // setup tests for structural displacements
+
+  Teuchos::RCP<NOX::StatusTest::Combo> structcombo =
+    Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+
+  Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp =
+    Teuchos::rcp(new NOX::FSI::PartialNormF("displacement",
+                                            Extractor(),0,
+                                            nlParams.get("Norm abs disp", 1.0e-6),
+                                            NOX::FSI::PartialNormF::Scaled));
+  Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate =
+    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("displacement update",
+                                                 Extractor(),0,
+                                                 nlParams.get("Norm abs disp", 1.0e-6),
+                                                 NOX::FSI::PartialNormUpdate::Scaled));
+
+  AddStatusTest(structureDisp);
+  structcombo->addStatusTest(structureDisp);
+  //structcombo->addStatusTest(structureDispUpdate);
+
+  converged->addStatusTest(structcombo);
+
+  // setup tests for fluid velocities
+
+  std::vector<Teuchos::RCP<const Epetra_Map> > fluidvel;
+  fluidvel.push_back(FluidField().InnerVelocityRowMap());
+  fluidvel.push_back(LINALG::SplitMap(*DofRowMap(),
+                                      *FluidField().InnerVelocityRowMap()));
+  LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(),fluidvel);
+
+  Teuchos::RCP<NOX::StatusTest::Combo> fluidvelcombo =
+    Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+
+  Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel =
+    Teuchos::rcp(new NOX::FSI::PartialNormF("velocity",
+                                            fluidvelextract,0,
+                                            nlParams.get("Norm abs vel", 1.0e-6),
+                                            NOX::FSI::PartialNormF::Scaled));
+  Teuchos::RCP<NOX::FSI::PartialNormUpdate> innerFluidVelUpdate =
+    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("velocity update",
+                                                 fluidvelextract,0,
+                                                 nlParams.get("Norm abs vel", 1.0e-6),
+                                                 NOX::FSI::PartialNormUpdate::Scaled));
+
+  AddStatusTest(innerFluidVel);
+  fluidvelcombo->addStatusTest(innerFluidVel);
+  //fluidvelcombo->addStatusTest(innerFluidVelUpdate);
+
+  converged->addStatusTest(fluidvelcombo);
+
+  // setup tests for fluid pressure
+
+  std::vector<Teuchos::RCP<const Epetra_Map> > fluidpress;
+  fluidpress.push_back(FluidField().InnerVelocityRowMap());
+  fluidpress.push_back(LINALG::SplitMap(*DofRowMap(),
+                                        *FluidField().InnerVelocityRowMap()));
+  LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(),fluidpress);
+
+  Teuchos::RCP<NOX::StatusTest::Combo> fluidpresscombo =
+    Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+
+  Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress =
+    Teuchos::rcp(new NOX::FSI::PartialNormF("pressure",
+                                            fluidpressextract,0,
+                                            nlParams.get("Norm abs pres", 1.0e-6),
+                                            NOX::FSI::PartialNormF::Scaled));
+  Teuchos::RCP<NOX::FSI::PartialNormUpdate> fluidPressUpdate =
+    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("pressure update",
+                                                 fluidpressextract,0,
+                                                 nlParams.get("Norm abs pres", 1.0e-6),
+                                                 NOX::FSI::PartialNormUpdate::Scaled));
+
+  AddStatusTest(fluidPress);
+  fluidpresscombo->addStatusTest(fluidPress);
+  //fluidpresscombo->addStatusTest(fluidPressUpdate);
+
+  converged->addStatusTest(fluidpresscombo);
+
   return combo;
 }
 
@@ -206,6 +320,10 @@ void FSI::MonolithicLagrange::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vect
                                                   Teuchos::RCP<const Epetra_Vector>& ax)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicLagrange::ExtractFieldVectors");
+
+  sx = Extractor().ExtractVector(x,0);
+  fx = Extractor().ExtractVector(x,1);
+  ax = Extractor().ExtractVector(x,2);
 }
 
 

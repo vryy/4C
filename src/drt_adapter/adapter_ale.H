@@ -127,6 +127,9 @@ public:
   virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const = 0;
 
   /// direct access to system matrix
+  virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
+
+  /// direct access to system matrix
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const = 0;
 
   /// direct access to discretization
@@ -197,6 +200,8 @@ public:
     { return dispnp_; }
   virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const
     { return Teuchos::rcp(discret_->DofRowMap(),false); }
+  virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
+  { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
   { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
 
@@ -309,6 +314,8 @@ public:
     { return dispnp_; }
   virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const
     { return Teuchos::rcp(discret_->DofRowMap(),false); }
+  virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
+  { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() const
   { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
 

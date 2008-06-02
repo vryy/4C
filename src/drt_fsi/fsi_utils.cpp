@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <functional>
 
 #include "fsi_utils.H"
 #include "../drt_lib/drt_utils.H"
@@ -107,5 +108,29 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface,
 
   EpetraExt::RowMatrixToMatlabFile(filename.c_str(),*jacobian);
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map>
+FSI::UTILS::ShiftMap(Teuchos::RCP<const Epetra_Map> emap,
+                     const std::vector<Teuchos::RCP<const Epetra_Map> >& vecSpaces)
+{
+  int maxgid = 0;
+  for (unsigned i=0; i<vecSpaces.size(); ++i)
+  {
+    maxgid = max(maxgid,vecSpaces[i]->MaxAllGID());
+  }
+
+  std::vector<int> gids;
+  gids.reserve(emap->NumMyElements());
+  std::transform(emap->MyGlobalElements(),
+                 emap->MyGlobalElements()+emap->NumMyElements(),
+                 std::back_inserter(gids),
+                 std::bind2nd(std::plus<int>(),maxgid+1-emap->MinAllGID()));
+
+  return Teuchos::rcp(new Epetra_Map(-1,gids.size(),&gids[0],0,emap->Comm()));
+}
+
 
 #endif

@@ -448,44 +448,47 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::SlaveToPermSlave(const LIN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& masterdomainmap, const Epetra_Map& slavedomainmap)
+void ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& shiftedmastermap,
+                                              const Epetra_Map& masterdomainmap,
+                                              const Epetra_Map& slavedomainmap)
 {
   // we always use the masterdofmap for the domain
-  matmm_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*MasterDofMap(),1,true));
-  matsm_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,*MasterDofMap(),1,true));
+  matmm_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,shiftedmastermap,1,true));
+  matsm_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,shiftedmastermap,1,true));
 
   matmm_trans_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,masterdomainmap,1,true));
   matsm_trans_ = Teuchos::rcp(new Epetra_CrsMatrix(Copy,slavedomainmap,1,true));
 
-  int length = MasterDofMap()->NumMyElements();
+  int length = shiftedmastermap.NumMyElements();
   double one = 1.;
   for (int i=0; i<length; ++i)
   {
     int sgid = SlaveDofMap()->GID(i);
     int mgid = MasterDofMap()->GID(i);
+    int shiftedmgid = shiftedmastermap.GID(i);
 
-    int err = matmm_->InsertGlobalValues(mgid, 1, &one, &mgid);
+    int err = matmm_->InsertGlobalValues(shiftedmgid, 1, &one, &mgid);
     if (err!=0)
-      dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d",mgid,mgid,err);
+      dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d",shiftedmgid,mgid,err);
 
-    err = matsm_->InsertGlobalValues(mgid, 1, &one, &sgid);
+    err = matsm_->InsertGlobalValues(shiftedmgid, 1, &one, &sgid);
     if (err!=0)
-      dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d",mgid,sgid,err);
+      dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d",shiftedmgid,sgid,err);
 
-    err = matmm_trans_->InsertGlobalValues(mgid, 1, &one, &mgid);
+    err = matmm_trans_->InsertGlobalValues(mgid, 1, &one, &shiftedmgid);
     if (err!=0)
-      dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d",mgid,mgid,err);
+      dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d",mgid,shiftedmgid,err);
 
-    err = matsm_trans_->InsertGlobalValues(sgid, 1, &one, &mgid);
+    err = matsm_trans_->InsertGlobalValues(sgid, 1, &one, &shiftedmgid);
     if (err!=0)
-      dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d",sgid,mgid,err);
+      dserror("InsertGlobalValues for entry (%d,%d) failed with err=%d",sgid,shiftedmgid,err);
   }
 
-  matmm_->FillComplete(masterdomainmap,*MasterDofMap());
-  matsm_->FillComplete(slavedomainmap,*MasterDofMap());
+  matmm_->FillComplete(masterdomainmap,shiftedmastermap);
+  matsm_->FillComplete(slavedomainmap,shiftedmastermap);
 
-  matmm_trans_->FillComplete(*MasterDofMap(),masterdomainmap);
-  matsm_trans_->FillComplete(*MasterDofMap(),slavedomainmap);
+  matmm_trans_->FillComplete(shiftedmastermap,masterdomainmap);
+  matsm_trans_->FillComplete(shiftedmastermap,slavedomainmap);
 
 }
 

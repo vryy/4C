@@ -81,7 +81,7 @@ ncall_(0)
   // set the default solver
   Params().set("solver","klu");
   Params().set("symmetric",false);
-  
+
   // create an empty linear problem
   lp_ = rcp(new Epetra_LinearProblem());
 
@@ -395,15 +395,15 @@ void LINALG::Solver::Solve_aztec(const bool reset)
   bool   doml      = Params().isSublist("ML Parameters");
   bool   dwind     = azlist.get<bool>("downwinding",false);
   bool   dosimpler = Params().isSublist("SIMPLER");
-  if (!A || dosimpler) 
+  if (!A || dosimpler)
   {
     doifpack = false;
     doml     = false;
     dwind    = false; // we can do downwinding inside SIMPLER if desired
   }
-  
+
   if (create && dwind)
-  { 
+  {
     double tau  = azlist.get<double>("downwinding tau",1.0);
     int    nv   = azlist.get<int>("downwinding nv",1);
     int    np   = azlist.get<int>("downwinding np",0);
@@ -411,14 +411,14 @@ void LINALG::Solver::Solve_aztec(const bool reset)
     dwind_ = rcp(new LINALG::DownwindMatrix(fool,nv,np,tau,azoutput));
   }
   if (dwind && dwind_==null) dserror("Do not have downwinding matrix");
-    
+
   // pass linear problem to aztec
   RCP<Epetra_LinearProblem> dwproblem;
   RCP<Epetra_CrsMatrix>     dwA;
   RCP<Epetra_MultiVector>   dwx;
   RCP<Epetra_MultiVector>   dwb;
   if (!dwind) aztec_->SetProblem(*lp_);
-  else        
+  else
   {
     dwA = dwind_->Permute(A);
     dwx = dwind_->Permute(lp_->GetLHS());
@@ -483,11 +483,11 @@ void LINALG::Solver::Solve_aztec(const bool reset)
       //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
     }
   }
-  
+
   if (create && dosimpler)
   {
       // SIMPLER does not need copy of preconditioning matrix to live
-      // SIMPLER does not use the downwinding installed here, it does 
+      // SIMPLER does not use the downwinding installed here, it does
       // its own downwinding inside if desired
       P_ = rcp(new LINALG::SIMPLER_Operator(A_,Params(),
                                             Params().sublist("SIMPLER"),
@@ -497,12 +497,12 @@ void LINALG::Solver::Solve_aztec(const bool reset)
 
   // set preconditioner
   if (doifpack || doml || dosimpler) aztec_->SetPrecOperator(P_.get());
-  
+
   // iterate on the solution
   int iter = azlist.get("AZ_max_iter",500);
   double tol = azlist.get("AZ_tol",1.0e-6);
   aztec_->Iterate(iter,tol);
-  
+
   // undo downwinding
   if (dwind)
   {
@@ -786,17 +786,17 @@ void LINALG::Solver::TranslateSolverParameters(ParameterList& params,
       azlist.set("preconditioner","point relaxation");
     break;
     case azprec_SymmGaussSeidel:
-      // using ifpack 
+      // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","point relaxation");
     break;
     case azprec_GaussSeidel:
-      // using ifpack 
+      // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","point relaxation");
     break;
     case azprec_DownwindGaussSeidel:
-      // using ifpack 
+      // using ifpack
       azlist.set("AZ_precond",AZ_user_precond);
       azlist.set("preconditioner","point relaxation");
       azlist.set<bool>("downwinding",true);

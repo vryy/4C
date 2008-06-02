@@ -615,6 +615,7 @@ typedef enum _FSI_COUPLING
   fsi_iter_stagg_Newton_I=11,
   fsi_iter_nox=12,
   fsi_iter_monolithic=13,
+  fsi_iter_monolithiclagrange,
   fsi_iter_stagg_NLCG,
   fsi_iter_stagg_MFNK_FD,
   fsi_iter_stagg_MFNK_FSI,
