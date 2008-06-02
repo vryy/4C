@@ -120,19 +120,17 @@ private:
   /*!
   \brief compute tree and root impedance for given frequency for lung
   */
-  std::complex<double> LungImpedance(int ImpedanceCounter, 
-				     int generation, 
-				     std::complex<double> zparent,
-				     std::complex<double> zleft,
-				     std::complex<double> storage[]);
+  std::complex<double> LungImpedance( int k, 
+					int generation,
+					double radius,
+					std::complex<double> zparent);
 
   /*!
   \brief compute tree and root impedance for zero frequency for lung
   */
-  std::complex<double> DCLungImpedance(int ImpedanceCounter, 
-				       int generation, 
-				       std::complex<double> zparentdc,
-				       std::complex<double> storage[]);
+  std::complex<double> DCLungImpedance( int generation,
+  					  double radius,
+					  std::complex<double> zparentdc);
 
 protected:
 

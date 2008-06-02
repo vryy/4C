@@ -272,7 +272,6 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   timedomain.resize(cyclesteps_,0);
 
   // size: number of generations
-  std::complex<double> storage[35]={0}; // only as argument of other methods
   std::complex<double> zleft, zparent (0,0);  // only as argument
   std::complex<double> entry;
 
@@ -282,7 +281,7 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   double radius = sqrt(area/PI);
   // calculate DC (direct current) component depending on type of tree
   if ( treetype_ == "lung" )
-    frequencydomain[0] = DCLungImpedance(0,0,zparent,storage);
+    frequencydomain[0] = DCLungImpedance(0,radius,zparent);
 
   if ( treetype_ == "artery" )
     frequencydomain[0] = DCArteryImpedance(0,radius,density,viscosity,zparent);
@@ -297,7 +296,7 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   {
     int generation=0;
     if ( treetype_ == "lung" )
-      frequencydomain[k] = LungImpedance(k,generation,zparent,zleft,storage);
+      frequencydomain[k] = LungImpedance(k,generation,radius,zparent);
 
     if ( treetype_ == "artery" )
       frequencydomain[k] = ArteryImpedance(k,generation,radius,density,viscosity,zparent);
@@ -732,7 +731,6 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
 }
 
 
-
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -742,86 +740,95 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*!
-What is supposed to happen within these lines?
+/*! 
+What is supposed to happen within these lines? 
 */
-std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
-						     int generation,
-						     std::complex<double> zparent,
-						     std::complex<double> zleft,
-						     std::complex<double> storage[])
+std::complex<double> FluidImpedanceBc::LungImpedance(int k, 
+						       int generation,
+						       double radius,
+						       std::complex<double> zparent)
 {
-  std::complex<double> imag (0,1), koeff, wave_c, g, zright, zend, StorageEntry=0;
-  double area, omega, E=1, rho=1.206, nue=1.50912106e-5, compliance;
+   // general data
+  double lscale = 5.8; // length to radius ratio
+  double alpha = 0.9;   // right daughter vessel ratio
+  double beta = 0.6;    // left daughter vessel ratio
+  double h=0.2;
 
-  int generationLimit=33;
-  storage[generation]=zleft;
+  // some auxiliary stuff
+  complex<double> koeff, imag(0,1), cwave;
+  // terminal resistance is assumed zero ff
+  complex<double> zterminal (0,0);
+  double termradius = 0.1;
 
-  //Lung morphological data
-  int delta[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1};
-  double diameter[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0002, 0.0003, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0014, 0.0015, 0.0017, 0.0019, 0.0020, 0.0022, 0.0023, 0.0024, 0.0026, 0.0030, 0.0030, 0.0038, 0.0049, 0.0054, 0.0054, 0.0069, 0.0077, 0.011, 0.0121, 0.0167};
-  double length[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0007, 0.0009, 0.0012, 0.0015, 0.0012, 0.0028, 0.0035, 0.0041, 0.0047, 0.0054, 0.0058, 0.0071, 0.0072, 0.0087, 0.0092, 0.0093, 0.0104, 0.0090, 0.0112, 0.0097, 0.0107, 0.0122, 0.0110, 0.0128, 0.0128, 0.0119, 0.0124, 0.0249, 0.0565, 0.1130};
-  double h[]={0.00014, 0.00014, 0.00014, 0.00014, 0.00014, 0.00014, 0.00010, 0.00010, 0.00011, 0.00012, 0.00013, 0.00015, 0.00017, 0.00020, 0.00022, 0.00024, 0.00026, 0.00028, 0.00030, 0.00030, 0.00032, 0.00033, 0.00034, 0.00026, 0.00040, 0.00040, 0.00047, 0.00057, 0.00062, 0.00062, 0.00074, 0.00080, 0.00105, 0.00113, 0.00146};
+  double omega = 2.0*PI*k/period_;
 
-  //Area of vessel
-  area=(PI*diameter[generation])/4;
-  //Frequency
-  omega=2*PI*ImpedanceCounter/period_;
-  //Womersley number
-  double sqrdwo=(diameter[generation]/2)*(diameter[generation]/2)*omega/nue;
-  //K depends on the womersley number
+  // this has to be moved!!
+  double E=1e6;
+  double density=1.206;
+  double viscosity=1.50912106e-5;
 
-  double wonu = sqrt(sqrdwo);
+  // build up geometry of present generation
+  double area = radius*radius*PI;
+  double length = lscale * radius;
 
-    if (wonu > 4.0)
-      koeff = 1.0 - (2.0/(wonu*sqrt(imag)));
+
+  // get impedances of downward vessels ...
+  //*****************************************
+  generation++;  // this is the next generation
+  // left hand side:
+  double nextradius = alpha*radius;
+  complex<double> zleft;
+  if (nextradius < termradius)
+    zleft = zterminal;
+  else
+    zleft  = LungImpedance(k,generation,nextradius,zparent);
+
+  // right hand side:
+  complex<double> zright;
+  nextradius = beta*radius;
+  if (nextradius < termradius)
+    zright = zterminal;
+  else
+    zright = LungImpedance(k,generation,nextradius,zparent);
+
+
+  // ... combine this to the impedance at my downstream end ...
+  //*************************************************************
+  complex<double> zdown;
+  if( zleft == 0.0 )
+    if( zright == 0.0 )
+      zdown = 0.0;  // both daughter impedances are zero, we are at the leafes of the tree
     else
-      koeff = 1.0 / ( 1.333333333333333333 - 8.0*imag/ (wonu*wonu) );
+      zdown = zright; // only the left downward vessel has already terminated
+  else if( zright == 0.0 )
+    zdown = zleft;    // only the right downward vessel has already terminated
+  else
+    // the standard case, both vessels contiunue
+    zdown = 1.0 / (1.0/zleft + 1.0/zright);
 
-  //Compliance
-  compliance=(3*area*diameter[generation]/2)/(2*E*h[generation]);
 
-  //Wave speed
-  wave_c=sqrt(area*koeff/(rho*compliance));
+  // ... and compute impedance at my upstream end!
+  //*************************************************************
+  double compliance = (4.0*E*h)/(3*radius);
+  double sqrdwo = radius*radius*omega/viscosity;  // square of Womersley number
+  double wonu = sqrt(sqrdwo);                     // Womersley number itself
+
+  if (wonu > 4.0)
+    koeff = 1.0 - (2.0/wonu)/sqrt(imag);
+  else
+    koeff = 1.0 / ( 1.333333333333333333 - 8.0*imag/ (wonu*wonu) );
+
+  // wave speed of this frequency in present vessel
+  cwave=sqrt( area*koeff / (density*compliance) );
 
   //Convenience coefficient
-  g=sqrt(compliance*area*koeff/rho);
+  complex<double> gcoeff = compliance * cwave;
 
+  // calculate impedance of this, the present vessel
+  complex<double> argument = omega*length/cwave;
+  zparent = (imag/gcoeff * sin(argument) + zdown*cos(argument) ) /
+            ( cos(argument) + imag*gcoeff*zdown*sin(argument) );
 
-
-  if (abs(zleft) == 0)
-  {
-  	zleft = (imag)*((1.0/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
-  	storage[generation]=zleft;
-  }
-
-  //Right side is always pre calculated!
-  if ( abs(zleft) != 0 && generation-delta[generation] == 0)
-  {
-  	zright = (imag)*((1.0/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
-  }
-  else if (abs(storage[generation-delta[generation]]) == 0)
-  {
-  	zright = ((imag)*(1.0/g)*sin(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c));
-  }
-  else
-  {
-  	zright = storage[generation-delta[generation]];
-  }
-
-  //Bifurcation condition
-  zend = (zright*zleft)/(zleft+zright);
-  //Impedance at the parent level
-
-  //Right side is always pre calculated!
-  if (generation < generationLimit)
-  {
-  	zparent = (imag)*((1.0/g)*sin(omega*length[generation]/wave_c)+zend*cos(omega*length[generation]/wave_c))/(cos(omega*length[generation]/wave_c)+imag*g*zend*sin(omega*length[generation]/wave_c));
-  	zleft=zparent;
-  	generation++;
-  	LungImpedance(ImpedanceCounter, generation, zparent, zleft, storage);
-  }
-  zparent=zend;
   return zparent;
 } //BioFluidImplicitTimeInt::LungImpedance
 
@@ -838,59 +845,74 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int ImpedanceCounter,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*!
-What is supposed to happen within these lines?
+/*! 
+What is supposed to happen within these lines? 
 */
-std::complex<double> FluidImpedanceBc::DCLungImpedance(int ImpedanceCounter,
-						       int generation,
-						       std::complex<double> zparentdc,
-						       std::complex<double> storage[])
+std::complex<double> FluidImpedanceBc::DCLungImpedance(int generation,
+								 double radius,
+						         std::complex<double> zparentdc)
 {
-  //DC impedance
-  std::complex<double> zleft, zright, StorageEntry, zend;
-  //double zend;
-  int generationLimit=33;
+// general data
+  double lscale = 5.8; // length to radius ratio
+  double alpha = 0.9;   // right daughter vessel ratio
+  double beta = 0.6;    // left daughter vessel ratio
+  // density and viscosity
+  double density=1.206;
+  double viscosity=1.50912106e-5; 
+  double mu = viscosity * density; // dynamic (physical) viscosity
 
-  zleft=zparentdc;
-  storage[generation]=zleft;
-  int delta[]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 1};
-  double diameter[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0002, 0.0003, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0014, 0.0015, 0.0017, 0.0019, 0.0020, 0.0022, 0.0023, 0.0024, 0.0026, 0.0030, 0.0030, 0.0038, 0.0049, 0.0054, 0.0054, 0.0069, 0.0077, 0.011, 0.0121, 0.0167};
-  double length[]={0.0005, 0.0005, 0.0005, 0.0005, 0.0005, 0.0007, 0.0009, 0.0012, 0.0015, 0.0012, 0.0028, 0.0035, 0.0041, 0.0047, 0.0054, 0.0058, 0.0071, 0.0072, 0.0087, 0.0092, 0.0093, 0.0104, 0.0090, 0.0112, 0.0097, 0.0107, 0.0122, 0.0110, 0.0128, 0.0128, 0.0119, 0.0124, 0.0249, 0.0565, 0.1130};
+  // terminal resistance is assumed zero
+  complex<double> zterminal (0,0);
+  double termradius = 0.1;
 
-  if ( abs(zleft) == 0)
-  {
-	zleft = 8*length[generation]/(PI*diameter[generation]/2);
-  	storage[generation]=zleft;
-  }
+  // get dc impedances of downward vessels ...
+  //*****************************************
+  generation++;  // this is the next generation
 
-  if ( abs(zleft) != 0 && generation-delta[generation] == 0)
-  {
-  	zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
-  }
-  else if ( abs(storage[generation-delta[generation]]) == 0)     //Right side is always pre calculated!
-  {
-  	zright = 8*length[generation-delta[generation]]/(PI*diameter[generation-delta[generation]]/2);
-  }
+  // left hand side:
+  double nextradius = alpha*radius;
+  complex<double> zleft;
+  if (nextradius < termradius)
+    zleft = zterminal;
   else
-  {
-  	zright = storage[generation-delta[generation]];
-  }
+    zleft  = DCLungImpedance(generation,nextradius,zparentdc);
 
-  //Bifurcation condition
-  zend = (zright*zleft)/(zleft+zright);
-  //Impedance at the parent level
+  // right hand side:
+  complex<double> zright;
+  nextradius = beta*radius;
+  if (nextradius < termradius)
+    zright = zterminal;
+  else
+    zright = DCLungImpedance(generation,nextradius,zparentdc);
 
 
-  if (generation < generationLimit) //Number of Generations to model, better for small vessels ie. not the trachea
-  {
-  	zparentdc = zend;
-  	generation++;
-  	DCLungImpedance(ImpedanceCounter, generation, zparentdc, storage);
-  }
-  //zparentdc= 8*length[generation]/(PI*diameter[generation]/2)+zparentdc;
-  zparentdc=zend;
-  return StorageEntry=zparentdc;
+  // ... combine this to the dc impedance at my downstream end ...
+  //*************************************************************
+  complex<double> zdown;
+  if( zleft == 0.0 )
+    if( zright == 0.0 )
+      zdown = 0.0;  // both daughter impedances are zero, we are at the leafes of the tree
+    else
+      zdown = zright; // only the left downward vessel has already terminated
+  else if( zright == 0.0 )
+    zdown = zleft;    // only the right downward vessel has already terminated
+  else
+    // the standard case, both vessels contiunue
+    zdown = 1.0 / (1.0/zleft + 1.0/zright);
+
+
+  // ... and compute dc impedance at my upstream end!
+  //*************************************************************
+
+  // calculate dc impedance of this, the present vessel
+  zparentdc = 8.0 * mu * lscale / ( PI*radius*radius*radius ) + zdown;
+
+  return zparentdc;
+
 }//FluidImplicitTimeInt::DCLungImpedance
+
+
+
 
 
 #endif /* CCADISCRET       */
