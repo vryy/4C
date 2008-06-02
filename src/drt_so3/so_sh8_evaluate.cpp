@@ -29,6 +29,8 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_io/io_gmsh.H"
+#include "Epetra_Time.h"
+#include "Teuchos_TimeMonitor.hpp"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -623,58 +625,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
         }
       }
       else {                         // return Cauchy stresses
-        // with ANS you do NOT have the correct (locking-free) F, so we 
-        // compute it here JUST for mapping of correct (locking-free) stresses
-        Epetra_SerialDenseMatrix invJ(NUMDIM_SOH8,NUMDIM_SOH8);
-        invJ.Multiply('N','N',1.0,derivs[gp],xrefe,0.0);
-        LINALG::NonsymInverse3x3(invJ);
-        LINALG::SerialDenseMatrix N_XYZ(NUMDIM_SOH8,NUMNOD_SOH8);
-        // compute derivatives N_XYZ at gp w.r.t. material coordinates
-        // by N_XYZ = J^-1 * N_rst
-        N_XYZ.Multiply('N','N',1.0,invJ,derivs[gp],0.0);
-        // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-        LINALG::SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
-        defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,0.0);
-        double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
-                      defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
-                      defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
-                      defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
-                      defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
-                      defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
-        
-        /* to get the consistent (locking-free) F^mod, we need two spectral
-         * compositions. First, find R (rotation tensor) from F=RU,
-         * then from E^mod = 1/2((U^mod)^2 - 1) find U^mod,
-         * and finally F^mod = RU^mod */
-        
-        // spectral decomposition of F
-        Epetra_SerialDenseMatrix rot(defgrd);
-        Epetra_SerialDenseVector stretch(3);
-        LINALG::SymmetricEigenProblem(rot,stretch);
-        
-
-        LINALG::SerialDenseMatrix pkstress(NUMDIM_SOH8,NUMDIM_SOH8);
-        pkstress(0,0) = stress(0);
-        pkstress(0,1) = stress(3);
-        pkstress(0,2) = stress(5);
-        pkstress(1,0) = pkstress(0,1);
-        pkstress(1,1) = stress(1);
-        pkstress(1,2) = stress(4);
-        pkstress(2,0) = pkstress(0,2);
-        pkstress(2,1) = pkstress(1,2);
-        pkstress(2,2) = stress(2);
-
-        LINALG::SerialDenseMatrix temp(NUMDIM_SOH8,NUMDIM_SOH8);
-        LINALG::SerialDenseMatrix cauchystress(NUMDIM_SOH8,NUMDIM_SOH8);
-        temp.Multiply('N','N',1.0/detF,defgrd,pkstress,0.);
-        cauchystress.Multiply('N','T',1.0,temp,defgrd,0.);
-
-        (*elestress)(gp,0) = cauchystress(0,0);
-        (*elestress)(gp,1) = cauchystress(1,1);
-        (*elestress)(gp,2) = cauchystress(2,2);
-        (*elestress)(gp,3) = cauchystress(0,1);
-        (*elestress)(gp,4) = cauchystress(1,2);
-        (*elestress)(gp,5) = cauchystress(0,2);
+        sosh8_Cauchy(elestress,gp,derivs[gp],xrefe,xcurr,glstrain,stress);
       }
     }
 
@@ -1071,6 +1022,111 @@ void DRT::ELEMENTS::So_sh8::sosh8_evaluateT(const Epetra_SerialDenseMatrix& jac,
   if ((err != 0) && (err2!=0)) dserror("Inversion of Tinv (Jacobian) failed");
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  return Cauchy stress at gp                                 maf 06/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(Epetra_SerialDenseMatrix* elestress,
+                                         const int gp,
+                                         const Epetra_SerialDenseMatrix& deriv,
+                                         const Epetra_SerialDenseMatrix& xrefe,
+                                         const Epetra_SerialDenseMatrix& xcurr,
+                                         const Epetra_SerialDenseVector& glstrain,
+                                         const Epetra_SerialDenseVector& stress)
+{
+  // with ANS you do NOT have the correct (locking-free) F, so we 
+  // compute it here JUST for mapping of correct (locking-free) stresses
+  LINALG::SerialDenseMatrix invJ(NUMDIM_SOH8,NUMDIM_SOH8);
+  invJ.Multiply('N','N',1.0,deriv,xrefe,0.0);
+  LINALG::NonsymInverse3x3(invJ);
+  LINALG::SerialDenseMatrix N_XYZ(NUMDIM_SOH8,NUMNOD_SOH8);
+  LINALG::SerialDenseMatrix temp(NUMDIM_SOH8,NUMDIM_SOH8);
+  // compute derivatives N_XYZ at gp w.r.t. material coordinates
+  // by N_XYZ = J^-1 * N_rst
+  N_XYZ.Multiply('N','N',1.0,invJ,deriv,0.0);
+  // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+  LINALG::SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
+  defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,0.0);
+  
+# if consistent_F
+  //double disp1 = defgrd.NormOne();
+  //double dispinf = defgrd.NormInf();
+  
+  /* to get the consistent (locking-free) F^mod, we need two spectral
+   * compositions. First, find R (rotation tensor) from F=RU,
+   * then from E^mod = 1/2((U^mod)^2 - 1) find U^mod,
+   * and finally F^mod = RU^mod */
+
+  // polar decomposition of displacement based F
+  LINALG::SerialDenseMatrix u(NUMDIM_SOH8,NUMDIM_SOH8);
+  LINALG::SerialDenseMatrix s(NUMDIM_SOH8,NUMDIM_SOH8);
+  LINALG::SerialDenseMatrix v(NUMDIM_SOH8,NUMDIM_SOH8);
+  SVD(defgrd,u,s,v); // Singular Value Decomposition
+  LINALG::SerialDenseMatrix rot(NUMDIM_SOH8,NUMDIM_SOH8);
+  rot.Multiply('N','T',1.0,u,v,0.0);
+  //temp.Multiply('N','N',1.0,v,s,0.0);
+  //LINALG::SerialDenseMatrix stretch_disp(NUMDIM_SOH8,NUMDIM_SOH8);
+  //stretch_disp.Multiply('N','T',1.0,temp,v,0.0);
+  //defgrd.Multiply('N','N',1.0,rot,stretch_disp,0.0);
+  //cout << defgrd;
+  
+  // get modified squared stretch (U^mod)^2 from glstrain
+  LINALG::SerialDenseMatrix Usq_mod(NUMDIM_SOH8,NUMDIM_SOH8);
+  for (int i = 0; i < NUMDIM_SOH8; ++i) Usq_mod(i,i) = 2.0 * glstrain(i) + 1.0;
+  Usq_mod(0,1) = 0.5 * glstrain(3);  Usq_mod(1,0) = 0.5 * glstrain(3);
+  Usq_mod(1,2) = 0.5 * glstrain(4);  Usq_mod(2,1) = 0.5 * glstrain(4);
+  Usq_mod(0,2) = 0.5 * glstrain(5);  Usq_mod(2,0) = 0.5 * glstrain(5);
+  // polar decomposition of (U^mod)^2
+  SVD(Usq_mod,u,s,v); // Singular Value Decomposition
+  LINALG::SerialDenseMatrix U_mod(NUMDIM_SOH8,NUMDIM_SOH8);
+  for (int i = 0; i < NUMDIM_SOH8; ++i) s(i,i) = sqrt(s(i,i));
+  temp.Multiply('N','N',1.0,u,s,0.0);
+  U_mod.Multiply('N','T',1.0,temp,v,0.0);
+  
+  // F^mod = RU^mod
+  defgrd.Multiply('N','N',1.0,rot,U_mod,0.0);
+  
+  /* 
+  double mod1 = defgrd.NormOne();
+  double modinf = defgrd.NormInf();
+  if(((mod1-disp1)/mod1 > 0.03) || ((modinf-dispinf)/modinf > 0.03)){
+    cout << "difference in F! mod1= " << mod1 << " disp1= " << disp1 << " modinf= " << modinf << " dispinf= " << dispinf << endl;
+    cout << "Fmod" << endl << defgrd;
+  }
+  */
+#endif
+  
+  double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
+                defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
+                defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
+                defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
+                defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
+                defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
+  
+  LINALG::SerialDenseMatrix pkstress(NUMDIM_SOH8,NUMDIM_SOH8);
+  pkstress(0,0) = stress(0);
+  pkstress(0,1) = stress(3);
+  pkstress(0,2) = stress(5);
+  pkstress(1,0) = pkstress(0,1);
+  pkstress(1,1) = stress(1);
+  pkstress(1,2) = stress(4);
+  pkstress(2,0) = pkstress(0,2);
+  pkstress(2,1) = pkstress(1,2);
+  pkstress(2,2) = stress(2);
+
+  LINALG::SerialDenseMatrix cauchystress(NUMDIM_SOH8,NUMDIM_SOH8);
+  temp.Multiply('N','N',1.0/detF,defgrd,pkstress,0.);
+  cauchystress.Multiply('N','T',1.0,temp,defgrd,0.);
+
+  (*elestress)(gp,0) = cauchystress(0,0);
+  (*elestress)(gp,1) = cauchystress(1,1);
+  (*elestress)(gp,2) = cauchystress(2,2);
+  (*elestress)(gp,3) = cauchystress(0,1);
+  (*elestress)(gp,4) = cauchystress(1,2);
+  (*elestress)(gp,5) = cauchystress(0,2);
+}
+
+
 
 
 /*----------------------------------------------------------------------*

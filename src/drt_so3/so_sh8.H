@@ -244,6 +244,16 @@ private:
   void sosh8_evaluateT(const Epetra_SerialDenseMatrix& jac,  // actual jacobian
                        Epetra_SerialDenseMatrix& TinvT);    // T^{-T}
 
+  //! Return true Cauchy-stress at gausspoint
+  void sosh8_Cauchy(
+       Epetra_SerialDenseMatrix* elestress,
+       const int gp,
+       const Epetra_SerialDenseMatrix& deriv,
+       const Epetra_SerialDenseMatrix& xrefe,
+       const Epetra_SerialDenseMatrix& xcurr,
+       const Epetra_SerialDenseVector& glstrain,
+       const Epetra_SerialDenseVector& stress);
+
   //! Find "thin"=thickness direction
   ThicknessDirection sosh8_findthickdir();
   const vector<double> GetThickvec(){return thickvec_;};
