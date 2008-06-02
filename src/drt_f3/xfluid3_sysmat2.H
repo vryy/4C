@@ -44,7 +44,7 @@ namespace XFLUID
 {
 
 template<class M1, class M2, class M3>
-static void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau, M3& tau)
+static void fill_tau2(const int numparamtau, const M1&  shp_tau, const M2& etau, M3& tau)
 {
     tau = 0.0;
     for (int i = 0; i < numparamtau; ++i)
@@ -257,7 +257,7 @@ void static Sysmat2(
             }
 
             // inverse of jacobian
-            static BlitzMat xji(3,3);
+            static BlitzMat3x3 xji;
             Inverse3x3(xjm, det, xji);
 
             // compute global derivates
@@ -496,7 +496,7 @@ void static Sysmat2(
             static BlitzMat3x3 tau;
             if (tauele_unknowns_present)
             {
-                fill_tau(numparamtauxx, shp_tau, etau, tau);
+                fill_tau2(numparamtauxx, shp_tau, etau, tau);
             }
             else
             {
@@ -1508,7 +1508,7 @@ void static Sysmat2(
             }
       
             // get jacobian matrix d x / d \xi  (3x2)
-            static BlitzMat dxyzdrs(3,2);
+            static BlitzMat3x2 dxyzdrs;
             //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
             for (int i = 0; i < 3; ++i)
             {
@@ -1652,7 +1652,7 @@ void static Sysmat2(
 
             // get viscous stress unknowns
             static BlitzMat3x3 tau;
-            fill_tau(numparamtauxx, shp_tau, etau, tau);
+            fill_tau2(numparamtauxx, shp_tau, etau, tau);
             
             // integration factors and coefficients of single terms
             const double timefacfac = timefac * fac;

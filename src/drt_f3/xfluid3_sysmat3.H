@@ -257,7 +257,7 @@ void static Sysmat3(
             }
 
             // inverse of jacobian
-            static BlitzMat xji(3,3);
+            static BlitzMat3x3 xji;
             Inverse3x3(xjm, det, xji);
 
             // compute global derivates
@@ -496,7 +496,7 @@ void static Sysmat3(
             static BlitzMat3x3 tau;
             if (tauele_unknowns_present)
             {
-                fill_tau(numparamtauxx, shp_tau, etau, tau);
+                fill_tau3(numparamtauxx, shp_tau, etau, tau);
             }
             else
             {
@@ -1508,7 +1508,7 @@ void static Sysmat3(
             }
       
             // get jacobian matrix d x / d \xi  (3x2)
-            static BlitzMat dxyzdrs(3,2);
+            static BlitzMat3x2 dxyzdrs;
             //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
             for (int i = 0; i < 3; ++i)
             {
