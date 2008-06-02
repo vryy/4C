@@ -100,20 +100,20 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
             NodalDofPosMap::const_iterator newdof = newNodalDofDistrib_.find(olddofkey);
             if (newdof == newNodalDofDistrib_.end())  // if no successor found
             {
-                const int gnodeid = olddofkey.getGid();
-                const BlitzVec3 actpos(toBlitzArray(ih_->xfemdis()->gNode(gnodeid)->X()));
+                const int nodegid = olddofkey.getGid();
+                const BlitzVec3 actpos(toBlitzArray(ih_->xfemdis()->gNode(nodegid)->X()));
                 const XFEM::FieldEnr oldfieldenr = olddofkey.getFieldEnr();
                 const XFEM::Enrichment oldenr = oldfieldenr.getEnrichment();
                 const double enrval = oldenr.EnrValue(actpos, *ih_, Enrichment::approachUnknown);
                 
                 // create alternative dofkey
-                XFEM::Enrichment altenr(genAlternativeEnrichment(gnodeid, oldphysvar, dofman_));
+                XFEM::Enrichment altenr(genAlternativeEnrichment(nodegid, oldphysvar, dofman_));
                 
                 if (altenr.Type() != XFEM::Enrichment::typeUndefined) // if alternative key found, add old solution to it
                 {
                     // find dof position of alternative key
                     const XFEM::FieldEnr altfieldenr(oldfieldenr.getField(), altenr);
-                    const XFEM::DofKey<XFEM::onNode> altdofkey(gnodeid, altfieldenr);
+                    const XFEM::DofKey<XFEM::onNode> altdofkey(nodegid, altfieldenr);
                     const int newdofpos = newNodalDofDistrib_.find(altdofkey)->second;
                     
                     //std::cout << olddofkey.toString() << " -> " << altdofkey.toString() << endl;
@@ -164,7 +164,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
                 completely_unchanged = false;
             }
         }
-        //exit(1);
+        
         if (completely_unchanged)
           cout << "completely unchanged vector" << endl;
         else
