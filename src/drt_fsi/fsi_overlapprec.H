@@ -49,6 +49,9 @@ namespace FSI
     /// lower Gauss-Seidel block preconditioner
     void LowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 
+    /// fluid-structure-ale lower Gauss-Seidel block preconditioner
+    void FSALowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
     /// upper Gauss-Seidel block preconditioner
     void UpperGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 

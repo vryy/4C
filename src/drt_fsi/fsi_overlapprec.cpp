@@ -23,6 +23,7 @@ FSI::OverlappingBlockMatrix::OverlappingBlockMatrix(const LINALG::MultiMapExtrac
 int FSI::OverlappingBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
   LowerGS(X, Y);
+  //FSALowerGS(X, Y);
   //UpperGS(X, Y);
   //SGS(X, Y);
   return 0;
@@ -111,6 +112,117 @@ void FSI::OverlappingBlockMatrix::LowerGS(const Epetra_MultiVector &X, Epetra_Mu
     if (Comm().MyPID()==0)
       std::cout << tf.ElapsedTime() << "\n";
   }
+
+  // build solution vector
+
+  RangeExtractor().InsertVector(*sy,0,y);
+  RangeExtractor().InsertVector(*fy,1,y);
+  RangeExtractor().InsertVector(*ay,2,y);
+
+#else
+
+  // this is really evil :)
+  Teuchos::RCP<LINALG::SparseMatrix> sparse = Merge();
+
+  const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
+  Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
+
+  fluidsolver_->Solve(sparse->EpetraMatrix(),
+                      Teuchos::rcp(&y,false),
+                      Teuchos::rcp(new Epetra_Vector(x)),
+                      true);
+
+#endif
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::OverlappingBlockMatrix::FSALowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+{
+#if 1
+
+  const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
+  const LINALG::SparseMatrix& structBoundOp = Matrix(0,1);
+  const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
+  //const LINALG::SparseMatrix& fluidMeshOp   = Matrix(1,2);
+  //const LINALG::SparseMatrix& fluidBoundOp  = Matrix(1,0);
+  const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
+  const LINALG::SparseMatrix& aleBoundOp    = Matrix(2,0);
+
+  // Extract vector blocks
+  // RHS
+
+  const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
+
+  Teuchos::RCP<Epetra_Vector> sx = DomainExtractor().ExtractVector(x,0);
+  Teuchos::RCP<Epetra_Vector> fx = DomainExtractor().ExtractVector(x,1);
+  Teuchos::RCP<Epetra_Vector> ax = DomainExtractor().ExtractVector(x,2);
+
+  // initial guess
+
+  Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
+
+  Teuchos::RCP<Epetra_Vector> sy = RangeExtractor().ExtractVector(y,0);
+  Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y,1);
+  Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y,2);
+
+  {
+    // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy - F(Mesh) ay
+
+    //fluidInnerOp.EpetraMatrix()->Print(cout);
+
+    if (Comm().MyPID()==0)
+      std::cout << "    fluid solve: " << std::flush;
+
+    Epetra_Time tf(Comm());
+
+//     Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
+//     fluidBoundOp.Multiply(false,*sy,*tmpfx);
+//     fx->Update(-1.0,*tmpfx,1.0);
+//     fluidMeshOp.Multiply(false,*ay,*tmpfx);
+//     fx->Update(-1.0,*tmpfx,1.0);
+    fluidsolver_->Solve(fluidInnerOp.EpetraMatrix(),fy,fx,true);
+
+    if (Comm().MyPID()==0)
+      std::cout << tf.ElapsedTime() << std::flush;
+  }
+
+  {
+    // Solve structure equations for sy with the rhs sx
+    if (Comm().MyPID()==0)
+      std::cout << "    structural solve: " << std::flush;
+
+    Epetra_Time ts(Comm());
+
+    Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
+    structBoundOp.Multiply(false,*fy,*tmpsx);
+    sx->Update(-1.0,*tmpsx,1.0);
+    structuresolver_->Solve(structInnerOp.EpetraMatrix(),sy,sx,true);
+
+    if (Comm().MyPID()==0)
+      std::cout << ts.ElapsedTime() << std::flush;
+  }
+
+  {
+    // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
+
+    if (Comm().MyPID()==0)
+      std::cout << "    ale solve: " << std::flush;
+
+    Epetra_Time ta(Comm());
+
+    Teuchos::RCP<Epetra_Vector> tmpax = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
+    aleBoundOp.Multiply(false,*sy,*tmpax);
+    ax->Update(-1.0,*tmpax,1.0);
+    alesolver_->Solve(aleInnerOp.EpetraMatrix(),ay,ax,true);
+
+    if (Comm().MyPID()==0)
+      std::cout << ta.ElapsedTime() << std::flush;
+  }
+
+  if (Comm().MyPID()==0)
+    std::cout << "\n";
 
   // build solution vector
 
