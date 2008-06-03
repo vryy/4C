@@ -1,14 +1,14 @@
 /*!
- * \file dof_management.H
- * 
- * \brief provides the dofmanager classes
- * 
- * <pre>
- * Maintainer: Axel Gerstenberger
- *             gerstenberger@lnm.mw.tum.de
- *             http://www.lnm.mw.tum.de
- *             089 - 289-15236
- * </pre>
+\file dof_management.H
+
+\brief provides the dofmanager classes
+
+<pre>
+Maintainer: Axel Gerstenberger
+            gerstenberger@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
  */
 #ifdef CCADISCRET
 #ifndef DOF_MANAGEMENT_H
@@ -42,6 +42,10 @@ namespace XFEM
   class ElementDofManager
   {
     public:
+      
+      //! default constructor
+      explicit ElementDofManager();
+      
       //! standard constructor
       explicit ElementDofManager(
           const DRT::Element& ele,
@@ -49,6 +53,10 @@ namespace XFEM
           const map<int, const set<XFEM::FieldEnr> >&  elementnodalDofSet,
           const int numvirtualnodes
       );
+      
+      //! copy constructor
+      ElementDofManager(const ElementDofManager& old);
+      
       //! destructor
       ~ElementDofManager();
       //! return a string representation of this class
@@ -176,10 +184,6 @@ namespace XFEM
       };
       
     private:
-      //! don't want default constructor
-      explicit ElementDofManager();
-      //! don't want copy constructor
-      ElementDofManager(const ElementDofManager& old);
       
       //! unknowns for each global node id (gid)
       std::map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
@@ -206,14 +210,18 @@ namespace XFEM
   
   
   /*!
-   * \brief He knows everything about the XFEM enrichments for one particular interface setup
-   * 
+ \brief He knows everything about the XFEM enrichments for one particular interface setup
+
    */
   class DofManager
   {
     public:
+      //! default constructor
+      explicit DofManager();
       //! constructor
       explicit DofManager(const RCP<XFEM::InterfaceHandle> ih);
+      //! copy constructor
+      explicit DofManager(const XFEM::DofManager& dofman);
       //! destructor
       ~DofManager();
       //! return string representation of the dofmanager
@@ -241,7 +249,7 @@ namespace XFEM
         return entry->second;
       };
       
-      Teuchos::RCP<XFEM::ElementDofManager> constructElementDofManager(
+      XFEM::ElementDofManager constructElementDofManager(
           const DRT::Element& ele,
           const int numeleparam) const;
       
@@ -264,10 +272,6 @@ namespace XFEM
       ) const;
       
     private:
-      //! don't want default constructor
-      explicit DofManager();
-      //! don't want copy constructor
-      explicit DofManager(const XFEM::DofManager& dofman);
       
       //! pointer to the xfem discretization of which we hold the unknowns
       Teuchos::RCP<DRT::Discretization> xfemdis_;

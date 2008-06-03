@@ -29,6 +29,15 @@ Maintainer: Axel Gerstenberger
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+XFEM::ElementDofManager::ElementDofManager() :
+  nodalDofSet_(),
+  elementnodalDofSet_()
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::ElementDofManager(
     const DRT::Element& ele,
     const map<int, const set<XFEM::FieldEnr> >& nodalDofSet,
@@ -53,7 +62,8 @@ XFEM::ElementDofManager::ElementDofManager(
   for (tmp = nodalDofSet.begin(); tmp != nodalDofSet.end(); ++tmp)
   {
     const set<XFEM::FieldEnr> enrfieldset = tmp->second;
-    for (set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield) {
+    for (set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+    {
       const XFEM::PHYSICS::Field field = enrfield->getField();
       numParamsPerField_[field] = 0;
       paramsLocalEntries_[field] = vector<int>();
@@ -62,14 +72,15 @@ XFEM::ElementDofManager::ElementDofManager(
   for (tmp = elementnodalDofSet.begin(); tmp != elementnodalDofSet.end(); ++tmp)
   {
     const set<XFEM::FieldEnr> enrfieldset = tmp->second;
-    for (set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield) {
+    for (set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+    {
       const XFEM::PHYSICS::Field field = enrfield->getField();
       numParamsPerField_[field] = 0;
       paramsLocalEntries_[field] = vector<int>();
     }
   }
-  
-  
+      
+      
   unique_enrichments_.clear();
   // count number of parameters per field
   // define local position of unknown by looping first over nodes and then over its unknowns!
@@ -114,7 +125,16 @@ XFEM::ElementDofManager::ElementDofManager(
   return;
 }
 
-    
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+XFEM::ElementDofManager::ElementDofManager(const ElementDofManager& old)
+{
+  dserror("no copying");
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::~ElementDofManager()
@@ -178,16 +198,24 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
   }
   }
 
+/*----------------------------------------------------------------------*
+ |  copy-ctor                                                   ag 11/07|
+ *----------------------------------------------------------------------*/
+XFEM::DofManager::DofManager(const XFEM::DofManager& dofman)
+{
+  dserror("A DofManager shall not be copied!");
+}
 
 /*----------------------------------------------------------------------*
+ |  dtor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::DofManager::~DofManager()
 {
   return;
 }
 
-
 /*----------------------------------------------------------------------*
+ |  transform  to a string                                      ag 11/07|
  *----------------------------------------------------------------------*/
 std::string XFEM::DofManager::toString() const
 {
@@ -204,9 +232,6 @@ std::string XFEM::DofManager::toString() const
   return s.str();
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void XFEM::DofManager::toGmsh(
     const Teuchos::RCP<XFEM::InterfaceHandle> ih,
     const int step
@@ -471,10 +496,10 @@ void XFEM::DofManager::toGmsh(
   }
 }
 
-
 /*----------------------------------------------------------------------*
+ |  construct element dof manager                               ag 11/07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<XFEM::ElementDofManager> XFEM::DofManager::constructElementDofManager(
+XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
     const DRT::Element&  ele,
     const int      numeleparam
 ) const
@@ -497,7 +522,7 @@ Teuchos::RCP<XFEM::ElementDofManager> XFEM::DofManager::constructElementDofManag
   }
   
   // return a local dofmanager
-  return rcp(new XFEM::ElementDofManager(ele, nodaldofset, elementnodaldofset, numeleparam));
+  return XFEM::ElementDofManager(ele, nodaldofset, elementnodaldofset, numeleparam);
 }
 
 
@@ -509,10 +534,10 @@ void XFEM::DofManager::checkForConsistency(
 ) const
 {
   // create local copy of current information about dofs
-  Teuchos::RCP<XFEM::ElementDofManager> current_eledofman = this->constructElementDofManager(ele, stored_eledofman.NumVirtualNodes());
+  XFEM::ElementDofManager current_eledofman = this->constructElementDofManager(ele, stored_eledofman.NumVirtualNodes());
   
   // compare with given and report error
-  if (*current_eledofman != stored_eledofman)
+  if (current_eledofman != stored_eledofman)
   {
     dserror("given elementdofmanager is not consistent with global dofmanger");
   }

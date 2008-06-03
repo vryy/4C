@@ -191,13 +191,13 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                                        blitz::neverDeleteData);
 
         const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
-                *eleDofManager_, NumNode(), NodeIds());
+                eleDofManager_, NumNode(), NodeIds());
         
         //--------------------------------------------------
         // calculate element coefficient matrix and rhs
         //--------------------------------------------------
         XFLUID::callSysmat2(assembly_type,
-                this, ih_, *eleDofManager_, myvelnp, myhist, ivelcol, iforcecol, estif, eforce,
+                this, ih_, eleDofManager_, myvelnp, myhist, ivelcol, iforcecol, estif, eforce,
                 actmat, time, timefac, newton, pstab, supg, cstab, true);
 
         // This is a very poor way to transport the density to the
@@ -289,7 +289,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                                          blitz::neverDeleteData);
 
           const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
-                  *eleDofManager_, NumNode(), NodeIds());
+                  eleDofManager_, NumNode(), NodeIds());
           
 #if 0
           const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
@@ -306,8 +306,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               }
               // R_0
               // calculate element coefficient matrix and rhs
-              XFLUID::callSysmat2(assembly_type,
-                      this, ih_, *eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+              XFLUID::callSysmat3(assembly_type,
+                      this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                       actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
               blitz::Array<double, 1> eforce_0(locval.size());
@@ -334,8 +334,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
               // R_0+dx
               // calculate element coefficient matrix and rhs
-              XFLUID::callSysmat2(assembly_type,
-                      this, ih_, *eleDofManager_, locval_disturbed, locval_hist, ivelcol, iforcecol, estif, eforce,
+              XFLUID::callSysmat3(assembly_type,
+                      this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, iforcecol, estif, eforce,
                       actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
               
@@ -357,7 +357,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           {
           // calculate element coefficient matrix and rhs
           XFLUID::callSysmat2(assembly_type,
-                  this, ih_, *eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+                  this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                   actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
           }
           // This is a very poor way to transport the density to the
