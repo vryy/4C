@@ -470,7 +470,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "determines the material parameter for the hyperpolyconvex material",
                                yesnotuple,yesnovalue,
                                &sdyn);
-
+  DoubleParameter("MEASURED_DISP",0.0,"measured displacment of the tension testing",&sdyn);
+  
+  
   SetValidTimeAdaptivityParameters(sdyn);
 
   /*----------------------------------------------------------------------*/

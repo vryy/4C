@@ -79,6 +79,7 @@ UZAWAPARAM   1.0
 UZAWAMAXITER 20
 UZAWAALGO    newtonlinuzawa
 INV_ANALYSIS Yes
+MEASURED_DISP 0.02
 -------------------------------------------------------SSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.05

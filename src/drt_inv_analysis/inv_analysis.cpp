@@ -29,7 +29,7 @@ Inv_analysis::Inv_analysis(ParameterList& params,
     mu_ = 1;
     mu_minus_ = 0.1;
     mu_plus_ = 10;
-    measured_disp_ = 0.02;
+    measured_disp_ = params.get("measured_disp", 0.0);
     tol_=0.15*measured_disp_;
     for (unsigned int i=0; i<3; i++) {
     	delta_p_.push_back(0.0);
