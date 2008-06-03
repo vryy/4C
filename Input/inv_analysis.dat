@@ -24,21 +24,31 @@ DIM                3
 MATERIALS          1
 NUMDF              6
 -------------------------------------------------------PROBLEM TYP
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 PROBLEMTYP   Structure
 NUMFIELD     1
+ALGEBRA      Trilinos
 TIMETYP      Dynamic
 RESTART      0
 ----------------------------------------------------DISCRETISATION
-NUMFLUIDDIS  1
+NUMFLUIDDIS  0
 NUMSTRUCDIS  1
-NUMALEDIS    1
+NUMALEDIS    0
 ----------------------------------------------------------------IO
-STRUCT_DISP        Yes
-STRUCT_SM_DISP     No
-STRUCT_STRESS      No
-OUTPUT_BIN         No
-OUTPUT_GID         No
-OUTPUT_OUT         Yes
+OUTPUT_OUT             No
+OUTPUT_GID             No
+OUTPUT_BIN             Yes
+STRUCT_DISP            Yes
+STRUCT_STRESS          Cauchy
+STRUCT_STRAIN          yes
+STRUCT_SM_DISP         No
+FLUID_SOL              Yes
+FLUID_STRESS           No
+FLUID_VIS              No
+ALE_DISP               Yes
+THERM_TEMPERATURE      No
+THERM_HEATFLUX         No
+FILESTEPS              1000
 ------------------------------------------------------------STATIC
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
@@ -46,25 +56,31 @@ DYNAMICTYP   Gen_Alfa
 EIGEN        0
 RESEVRYDISP  1
 RESEVRYSTRS  1
-RESTARTEVRY  200     
-TIMESTEP     1.0
-NUMSTEP      20 
-MAXTIME      200.0
-BETA         0.25 
-GAMMA        0.5 
-ALPHA_M      0.5 
-ALPHA_F      0.5
-DAMPING      Yes 
-M_DAMP       0.5 
-K_DAMP       0.5
-ITERATION    full 
-TOLDISP      1.0E-07
-MAXITER      50
-TIMEADAPT    0
-ITWANT       4
-MAXDT        0.07
-RESULTDT     0.05
-INV_ANALYSIS	Yes
+RESTARTEVRY  10000
+NLNSOL       fullnewton // fullnewton modnewton nlncg ptc
+TIMESTEP     1.0E-1
+NUMSTEP      20
+MAXTIME      2.0
+BETA         0.291
+GAMMA        0.581
+ALPHA_M      0.378
+ALPHA_F      0.459
+DAMPING      Yes
+M_DAMP       0.00001
+K_DAMP       0.00001
+PREDICT      ConstDisVelAcc // ConstDisVelAcc ConstDis
+CONV_CHECK   AbsRes_And_AbsDis
+TOLDISP      1.0E-04
+TOLRES       1.0E-04
+TOLCONSTR    1.0E-04
+ADAPTCONV        yes
+ADAPTCONV_BETTER 0.1
+MAXITER      100
+UZAWAPARAM   1.0
+UZAWAMAXITER 20
+UZAWAALGO    newtonlinuzawa
+INV_ANALYSIS Yes
+//XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 -------------------------------------------------------SSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.05
@@ -217,14 +233,14 @@ AZPOLY         5
 //MAT       1 MAT_HYPER_POLYCONVEX  C 1.18413 K1 13.5117 K2 76.5117 EPSILON 20 GAMMA 20 DENS 5.325E-14
 //MAT       1 MAT_HYPER_POLYCONVEX  C 1.0 K1 13.5 K2 76.5 EPSILON 20 GAMMA 20 DENS 5.325E-14
 //MAT       1 MAT_HYPER_POLYCONVEX  C 1000.0 K1 13500. K2 76.5 EPSILON 10000. GAMMA 1.0 DENS 0.001
-MAT       1 MAT_HYPER_POLYCONVEX  C 400 K1 13000. K2 76.5 EPSILON 10000. GAMMA 1.0 DENS 0.001
+MAT       1 MAT_HYPER_POLYCONVEX  C 400.0 K1 13000.0. K2 76.5 EPSILON 10000.0. GAMMA 1.0 DENS 0.001
 
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 //CURVE1 on EXPR FUNC 20 * t t1 0.0 t2 1
-//CURVE1 on EXPR FUNC (1-cos(t*pi))/2.0 t1 0.0 t2 1000
+CURVE1 on EXPR FUNC (1-cos(t*pi))/2.0 t1 0.0 t2 1
 ------------------------------------------------------------CURVE2
 //CURVE2 on EXPR FUNC 1 t1 0 . t2 6050.  
 ------------------------------------------------------------CURVE3
@@ -275,7 +291,7 @@ DLINE 0
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL  TYPE  NSURF
 DSURF 1
 //node_ns1
-E 1 - none 1 0 0 0 0 0 1000.0 0.0 0.0 0.0 0.0 0.0 orthopressure
+E 1 - 1 1 0 0 0 0 0 -50.0 0.0 0.0 0.0 0.0 0.0 orthopressure
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
