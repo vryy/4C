@@ -151,10 +151,10 @@ void static Sysmat3(
     const int numparamdiscpres = getNumParam<ASSTYPE>(dofman, DiscPres, 1);
 
     
-    double area_ratio = 0.00000001;
+    double area_ratio = 1.000000;
     //const double area_ratio = XFEM::AreaRatio<DISTYPE, ASSTYPE>(ele,ih);
-    if (instationary)
-      area_ratio = 0.00000001;
+//    if (instationary)
+//      area_ratio = 0.00000001;
     //const double area_ratio = 0.00000001;
     //cout << "area_ratio = " << area_ratio << endl;
     
@@ -876,13 +876,13 @@ void static Sysmat3(
                 dsassert(tauele_unknowns_present, "there should be disc pressure");
                 /* Divergenzfreiheit*/
                 /*
-                               /                 \
-                              |                   |
-                              | q^e , tr(gamma^e) |
-                              |                   |
-                               \                 /
+                               /               \
+                              |                 |
+                              | q^e , tr(eps^e) |
+                              |                 |
+                               \               /
                 */
-                const double factor = 1.0/visc*area_ratio;
+                const double factor = 1.0/(2.0*visc)*area_ratio;
                 assembler.template Matrix<DiscPres,Tauxx>(shp_discpres, factor*timefacfac, shp_tau);
                 assembler.template Matrix<DiscPres,Tauyy>(shp_discpres, factor*timefacfac, shp_tau);
                 assembler.template Matrix<DiscPres,Tauzz>(shp_discpres, factor*timefacfac, shp_tau);
@@ -901,7 +901,6 @@ void static Sysmat3(
             // Hellinger-Reissner terms
             if (tauele_unknowns_present)
             {
-                const double reciproke_visc = 1.0 / visc;
                 /* viscous stress-viscous stress coupling, quadratic part */
                 /*
                                /                    \
@@ -910,26 +909,30 @@ void static Sysmat3(
                               |                      |
                                \                    /
                 */
-                const double factor = 1.0*reciproke_visc*area_ratio;
-                assembler.template Matrix<Tauxx,Tauxx>(shp_tau, -factor*timefacfac, shp_tau);
-                assembler.template Matrix<Tauxy,Tauxy>(shp_tau, -factor*timefacfac, shp_tau);
-                assembler.template Matrix<Tauxz,Tauxz>(shp_tau, -factor*timefacfac, shp_tau);
-                assembler.template Matrix<Tauyx,Tauyx>(shp_tau, -factor*timefacfac, shp_tau);
-                assembler.template Matrix<Tauyy,Tauyy>(shp_tau, -factor*timefacfac, shp_tau);
-                assembler.template Matrix<Tauyz,Tauyz>(shp_tau, -factor*timefacfac, shp_tau);
-                assembler.template Matrix<Tauzx,Tauzx>(shp_tau, -factor*timefacfac, shp_tau);
-                assembler.template Matrix<Tauzy,Tauzy>(shp_tau, -factor*timefacfac, shp_tau);
-                assembler.template Matrix<Tauzz,Tauzz>(shp_tau, -factor*timefacfac, shp_tau);
+                const double factor = 1.0/(2.0*visc)*area_ratio;
+                assembler.template Matrix<Tauxx,Tauxx>(shp_tau, -    factor*timefacfac, shp_tau);
+                assembler.template Matrix<Tauxy,Tauxy>(shp_tau, -    factor*timefacfac, shp_tau);
+                assembler.template Matrix<Tauxz,Tauxz>(shp_tau, -    factor*timefacfac, shp_tau);
                 
-                assembler.template Vector<Tauxx>(shp_tau, factor*timefacfac*tau(0,0));
-                assembler.template Vector<Tauxy>(shp_tau, factor*timefacfac*tau(0,1));
-                assembler.template Vector<Tauxz>(shp_tau, factor*timefacfac*tau(0,2));
-                assembler.template Vector<Tauyx>(shp_tau, factor*timefacfac*tau(1,0));
-                assembler.template Vector<Tauyy>(shp_tau, factor*timefacfac*tau(1,1));
-                assembler.template Vector<Tauyz>(shp_tau, factor*timefacfac*tau(1,2));
-                assembler.template Vector<Tauzx>(shp_tau, factor*timefacfac*tau(2,0));
-                assembler.template Vector<Tauzy>(shp_tau, factor*timefacfac*tau(2,1));
-                assembler.template Vector<Tauzz>(shp_tau, factor*timefacfac*tau(2,2));
+                assembler.template Matrix<Tauyx,Tauyx>(shp_tau, -    factor*timefacfac, shp_tau);
+                assembler.template Matrix<Tauyy,Tauyy>(shp_tau, -    factor*timefacfac, shp_tau);
+                assembler.template Matrix<Tauyz,Tauyz>(shp_tau, -    factor*timefacfac, shp_tau);
+                
+                assembler.template Matrix<Tauzx,Tauzx>(shp_tau, -    factor*timefacfac, shp_tau);
+                assembler.template Matrix<Tauzy,Tauzy>(shp_tau, -    factor*timefacfac, shp_tau);
+                assembler.template Matrix<Tauzz,Tauzz>(shp_tau, -    factor*timefacfac, shp_tau);
+                
+                assembler.template Vector<Tauxx>(shp_tau,     factor*timefacfac*tau(0,0));
+                assembler.template Vector<Tauxy>(shp_tau,     factor*timefacfac*tau(0,1));
+                assembler.template Vector<Tauxz>(shp_tau,     factor*timefacfac*tau(0,2));
+                
+                assembler.template Vector<Tauyx>(shp_tau,     factor*timefacfac*tau(1,0));
+                assembler.template Vector<Tauyy>(shp_tau,     factor*timefacfac*tau(1,1));
+                assembler.template Vector<Tauyz>(shp_tau,     factor*timefacfac*tau(1,2));
+                
+                assembler.template Vector<Tauzx>(shp_tau,     factor*timefacfac*tau(2,0));
+                assembler.template Vector<Tauzy>(shp_tau,     factor*timefacfac*tau(2,1));
+                assembler.template Vector<Tauzz>(shp_tau,     factor*timefacfac*tau(2,2));
                 
                 /* viscous stress-viscous stress coupling, rectangular part */
                 /*
@@ -940,47 +943,57 @@ void static Sysmat3(
                                \                  /
                 */
                 const double rect_factor = 1.0*area_ratio;
-                assembler.template Matrix<Tauxx,Velx>(shp_tau, 2.0*timefacfac*0.5*rect_factor, shp_dx);
+                assembler.template Matrix<Tauxx,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
+                assembler.template Matrix<Tauxx,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
                 assembler.template Matrix<Tauxy,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dy);
                 assembler.template Matrix<Tauxy,Vely>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
                 assembler.template Matrix<Tauxz,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dz);
                 assembler.template Matrix<Tauxz,Velz>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
+                
                 assembler.template Matrix<Tauyx,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dy);
                 assembler.template Matrix<Tauyx,Vely>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
-                assembler.template Matrix<Tauyy,Vely>(shp_tau, 2.0*timefacfac*0.5*rect_factor, shp_dy);
+                assembler.template Matrix<Tauyy,Vely>(shp_tau,     timefacfac*0.5*rect_factor, shp_dy);
+                assembler.template Matrix<Tauyy,Vely>(shp_tau,     timefacfac*0.5*rect_factor, shp_dy);
                 assembler.template Matrix<Tauyz,Velz>(shp_tau,     timefacfac*0.5*rect_factor, shp_dz);
                 assembler.template Matrix<Tauyz,Vely>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
+                
                 assembler.template Matrix<Tauzx,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dz);
                 assembler.template Matrix<Tauzx,Velz>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
                 assembler.template Matrix<Tauzy,Vely>(shp_tau,     timefacfac*0.5*rect_factor, shp_dz);
                 assembler.template Matrix<Tauzy,Velz>(shp_tau,     timefacfac*0.5*rect_factor, shp_dy);
-                assembler.template Matrix<Tauzz,Velz>(shp_tau, 2.0*timefacfac*0.5*rect_factor, shp_dz);
+                assembler.template Matrix<Tauzz,Velz>(shp_tau,     timefacfac*0.5*rect_factor, shp_dz);
+                assembler.template Matrix<Tauzz,Velz>(shp_tau,     timefacfac*0.5*rect_factor, shp_dz);
                 
-                assembler.template Vector<Tauxx>(shp_tau, -2.0*timefacfac*0.5*rect_factor*vderxy(0, 0));
+                assembler.template Vector<Tauxx>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(0, 0));
+                assembler.template Vector<Tauxx>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(0, 0));
                 assembler.template Vector<Tauxy>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(0, 1));
                 assembler.template Vector<Tauxy>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(1, 0));
                 assembler.template Vector<Tauxz>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(0, 2));
                 assembler.template Vector<Tauxz>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(2, 0));
+                
                 assembler.template Vector<Tauyx>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(1, 0));
                 assembler.template Vector<Tauyx>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(0, 1));
-                assembler.template Vector<Tauyy>(shp_tau, -2.0*timefacfac*0.5*rect_factor*vderxy(1, 1));
+                assembler.template Vector<Tauyy>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(1, 1));
+                assembler.template Vector<Tauyy>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(1, 1));
                 assembler.template Vector<Tauyz>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(1, 2));
                 assembler.template Vector<Tauyz>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(2, 1));
+                
                 assembler.template Vector<Tauzx>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(2, 0));
                 assembler.template Vector<Tauzx>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(0, 2));
                 assembler.template Vector<Tauzy>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(2, 1));
                 assembler.template Vector<Tauzy>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(1, 2));
-                assembler.template Vector<Tauzz>(shp_tau, -2.0*timefacfac*0.5*rect_factor*vderxy(2, 2));
+                assembler.template Vector<Tauzz>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(2, 2));
+                assembler.template Vector<Tauzz>(shp_tau, -    timefacfac*0.5*rect_factor*vderxy(2, 2));
                 
                 /* pressure-pressure coupling, quadratic part */
                 /*
-                               /                  \
-                              |                    |
-                            - | virt tau^e , p^e I |
-                              |                    |
-                               \                  /
+                               /                      \
+                              |                        |
+                            - | tr(virt tau^e) , p^e I |
+                              |                        |
+                               \                      /
                 */
-                const double taue_pe_fac = 1.0*reciproke_visc*area_ratio;
+                const double taue_pe_fac = 1.0/(2.0*visc)*area_ratio;
                 assembler.template Matrix<Tauxx,DiscPres>(shp_tau, -taue_pe_fac*timefacfac, shp_discpres);
                 assembler.template Matrix<Tauyy,DiscPres>(shp_tau, -taue_pe_fac*timefacfac, shp_discpres);
                 assembler.template Matrix<Tauzz,DiscPres>(shp_tau, -taue_pe_fac*timefacfac, shp_discpres);
@@ -991,13 +1004,13 @@ void static Sysmat3(
 
                 /* pressure-pressure coupling, rectangular part */
                 /*
-                               /                \
-                              |                  |
-                              | virt tau^e , p I |
-                              |                  |
-                               \                /
+                               /                    \
+                              |                      |
+                              | tr(virt tau^e) , p I |
+                              |                      |
+                               \                    /
                 */
-                const double taue_p_fac = 1.0*reciproke_visc*area_ratio;
+                const double taue_p_fac = 1.0/(2.0*visc)*area_ratio;
                 assembler.template Matrix<Tauxx,Pres>(shp_tau, taue_p_fac*timefacfac, shp);
                 assembler.template Matrix<Tauyy,Pres>(shp_tau, taue_p_fac*timefacfac, shp);
                 assembler.template Matrix<Tauzz,Pres>(shp_tau, taue_p_fac*timefacfac, shp);
