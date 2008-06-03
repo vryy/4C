@@ -192,13 +192,13 @@ void FSI::OverlappingBlockMatrix::FSALowerGS(const Epetra_MultiVector &X, Epetra
 
     Epetra_Time ts(Comm());
 
-    const LINALG::SparseMatrix& structBoundOp = Matrix(0,1);
+    //const LINALG::SparseMatrix& structBoundOp = Matrix(0,1);
 
-    Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
-    structBoundOp.Multiply(false,*fy,*tmpsx);
+    //Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
+    //structBoundOp.Multiply(false,*fy,*tmpsx);
     //sx->Update(-1.0,*tmpsx,1.0);
-    tmpsx->Update(1.0,*sx,-1.0);
-    structuresolver_->Solve(structInnerOp.EpetraMatrix(),sy,tmpsx,true);
+    //tmpsx->Update(1.0,*sx,-1.0);
+    structuresolver_->Solve(structInnerOp.EpetraMatrix(),sy,sx,true);
 
     if (Comm().MyPID()==0)
       std::cout << ts.ElapsedTime() << std::flush;
@@ -208,6 +208,9 @@ void FSI::OverlappingBlockMatrix::FSALowerGS(const Epetra_MultiVector &X, Epetra
 
   const LINALG::SparseMatrix& fluidBoundOp  = Matrix(1,0);
   const LINALG::SparseMatrix& structBoundOp = Matrix(0,1);
+
+  fy->PutScalar(0.);
+  sy->PutScalar(0.);
 
 #if 0
   BlockRichardson(fluidInnerOp,
@@ -233,8 +236,8 @@ void FSI::OverlappingBlockMatrix::FSALowerGS(const Epetra_MultiVector &X, Epetra
                   fy,
                   sx,
                   fx,
-                  1.0,
-                  200);
+                  0.001,
+                  40);
 #endif
 
 #endif
@@ -277,6 +280,8 @@ void FSI::OverlappingBlockMatrix::FSALowerGS(const Epetra_MultiVector &X, Epetra
 }
 
 
+#if 0
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrix::BlockRichardson(const LINALG::SparseMatrix& Aii,
@@ -315,7 +320,7 @@ void FSI::OverlappingBlockMatrix::BlockRichardson(const LINALG::SparseMatrix& Ai
     {
       double n1,n2;
       ti1->Norm2(&n1);
-      ti2->Norm2(&n2);
+      tg1->Norm2(&n2);
       if (Comm().MyPID()==0)
         std::cout << " " << sqrt(n1*n1+n2*n2);
     }
@@ -335,6 +340,73 @@ void FSI::OverlappingBlockMatrix::BlockRichardson(const LINALG::SparseMatrix& Ai
   if (Comm().MyPID()==0)
     std::cout << " " << tr.ElapsedTime() << std::flush;
 }
+
+#else
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::OverlappingBlockMatrix::BlockRichardson(const LINALG::SparseMatrix& Aii,
+                                                  const LINALG::SparseMatrix& Aig,
+                                                  const LINALG::SparseMatrix& Agi,
+                                                  const LINALG::SparseMatrix& Agg,
+                                                  Teuchos::RCP<LINALG::Preconditioner> Sii,
+                                                  Teuchos::RCP<LINALG::Preconditioner> Sgg,
+                                                  Teuchos::RCP<Epetra_Vector> xi,
+                                                  Teuchos::RCP<Epetra_Vector> xg,
+                                                  Teuchos::RCP<Epetra_Vector> bi,
+                                                  Teuchos::RCP<Epetra_Vector> bg,
+                                                  double omega,
+                                                  int itenum) const
+{
+  Epetra_Time tr(Comm());
+  if (Comm().MyPID()==0)
+    std::cout << "    richardson: " << std::flush;
+
+  Teuchos::RCP<Epetra_Vector> ti1 = Teuchos::rcp(new Epetra_Vector(bi->Map()));
+  Teuchos::RCP<Epetra_Vector> ti2 = Teuchos::rcp(new Epetra_Vector(bi->Map()));
+  Teuchos::RCP<Epetra_Vector> tg1 = Teuchos::rcp(new Epetra_Vector(bg->Map()));
+  Teuchos::RCP<Epetra_Vector> tg2 = Teuchos::rcp(new Epetra_Vector(bg->Map()));
+
+  Teuchos::RCP<Epetra_Vector> b = Teuchos::rcp(new Epetra_Vector(*bg));
+  Sii->Solve(Aii.EpetraMatrix(),ti1,bi,true);
+  Agi.Multiply(false,*ti1,*tg1);
+  b->Update(-1.0,*tg1,1.0);
+
+  for (int i=0; i<itenum; ++i)
+  {
+    Agg.Multiply(false,*xg,*tg1);
+
+    Aig.Multiply(false,*xg,*ti2);
+    Sii->Solve(Aii.EpetraMatrix(),ti1,ti2,true);
+    Agi.Multiply(false,*ti1,*tg2);
+
+    tg1->Update(1.0,*tg2,1.0,*b,-1.0);
+
+    if (i%10==0)
+    {
+      double n;
+      tg1->Norm2(&n);
+      if (Comm().MyPID()==0)
+        std::cout << " " << n;
+    }
+
+    Sgg->Solve(Agg.EpetraMatrix(),tg2,tg1,true);
+
+    xg->Update(omega,*tg2,1.0);
+
+    if (Comm().MyPID()==0)
+      std::cout << "." << std::flush;
+  }
+
+  Aig.Multiply(false,*xg,*ti2);
+  ti2->Update(1.0,*bi,-1.0);
+  Sii->Solve(Aii.EpetraMatrix(),xi,ti2,true);
+
+  if (Comm().MyPID()==0)
+    std::cout << " " << tr.ElapsedTime() << std::flush;
+}
+
+#endif
 
 
 /*----------------------------------------------------------------------*
