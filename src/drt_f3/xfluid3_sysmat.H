@@ -1524,21 +1524,21 @@ void callSysmat(
                         ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
-            case DRT::Element::hex20:
-                Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
-            case DRT::Element::hex27:
-                Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
-            case DRT::Element::tet4:
-                Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
+//            case DRT::Element::hex20:
+//                Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
+//            case DRT::Element::hex27:
+//                Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
+//            case DRT::Element::tet4:
+//                Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
             default:
                 dserror("Sysmat not templated yet");
         };
@@ -1552,16 +1552,16 @@ void callSysmat(
                         ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
-            case DRT::Element::hex20:
-                Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
-            case DRT::Element::hex27:
-                Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
+//            case DRT::Element::hex20:
+//                Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
+//            case DRT::Element::hex27:
+//                Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
             default:
                 dserror("Sysmat not templated yet");
         };

@@ -151,7 +151,7 @@ void static Sysmat2(
     const int numparamdiscpres = getNumParam<ASSTYPE>(dofman, DiscPres, 1);
 
     
-    double area_ratio = 0.1;
+    double area_ratio = 0.00000001;
     //const double area_ratio = XFEM::AreaRatio<DISTYPE, ASSTYPE>(ele,ih);
     if (instationary)
       area_ratio = 0.00000001;
@@ -1843,21 +1843,21 @@ void callSysmat2(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
-            case DRT::Element::hex20:
-                Sysmat2<DRT::Element::hex20,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
-            case DRT::Element::hex27:
-                Sysmat2<DRT::Element::hex27,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
-            case DRT::Element::tet4:
-                Sysmat2<DRT::Element::tet4,XFEM::standard_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
+//            case DRT::Element::hex20:
+//                Sysmat2<DRT::Element::hex20,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
+//            case DRT::Element::hex27:
+//                Sysmat2<DRT::Element::hex27,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
+//            case DRT::Element::tet4:
+//                Sysmat2<DRT::Element::tet4,XFEM::standard_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
             default:
                 dserror("Sysmat not templated yet");
         };
@@ -1871,16 +1871,16 @@ void callSysmat2(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
-            case DRT::Element::hex20:
-                Sysmat2<DRT::Element::hex20,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
-            case DRT::Element::hex27:
-                Sysmat2<DRT::Element::hex27,XFEM::xfem_assembly>(
-                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-                break;
+//            case DRT::Element::hex20:
+//                Sysmat2<DRT::Element::hex20,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
+//            case DRT::Element::hex27:
+//                Sysmat2<DRT::Element::hex27,XFEM::xfem_assembly>(
+//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+//                break;
             default:
                 dserror("Sysmat not templated yet");
         };
