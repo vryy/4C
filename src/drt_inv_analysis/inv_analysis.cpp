@@ -27,10 +27,10 @@ Inv_analysis::Inv_analysis(ParameterList& params,
   {
 	// test
     mu_ = 1;
-    mu_minus_ = 0.05;
-    mu_plus_ = 20;
-    measured_disp_ = 0.4;
-    tol_=0.001;
+    mu_minus_ = 0.1;
+    mu_plus_ = 10;
+    measured_disp_ = 0.02;
+    tol_=0.15*measured_disp_;
     for (unsigned int i=0; i<3; i++) {
     	delta_p_.push_back(0.0);
     	p_o_.push_back(0.0);
@@ -75,8 +75,11 @@ void Inv_analysis::Integrate()
   do {
 
     StruGenAlpha::Integrate();
-    cout << "******************************** run_ *********************************************" << endl;
-    cout << "**********************************\t " << numb_run_ <<"\t***********************************" << endl;
+    cout << "********************************************************************************************" << endl;
+    cout << "*******************************\t Inverse Analysis \t************************************" << endl;        
+    cout << "*******************************\t\t run \t\t************************************" << endl;      
+    cout << "*******************************\t\t  " << numb_run_ <<"\t\t************************************" << endl;   
+    cout << "********************************************************************************************" << endl;
     //Barrier
     // ask drt problem.instance() nach dem epetra comm (communicator) der weiss auf welchem prozessor wir sind myrank und dann nur fuer 0 laufen lassen!
     evaluate();
@@ -162,6 +165,7 @@ void Inv_analysis::calculate_new_parameters(){
   double J[3];											// jacobian
   for (unsigned int i=0; i<3; i++) {
 	  J[i]=0;
+	  //delta_p_[i]=0;
   }
 
   double storage[3][3];									// storage
@@ -182,59 +186,63 @@ void Inv_analysis::calculate_new_parameters(){
   	//calculating residual displa
 	  residual_disp_ = final_disp_ - measured_disp_;
 
-	  cout << "Beginning of the loop: measured_disp_: \t" << measured_disp_ << endl;
-	  cout << "Beginning of the loop: residual_disp_: \t" << residual_disp_ << endl;
-	  cout << "Beginning of the loop: final_disp_: \t" << final_disp_ << endl;
-	  cout << "Beginning of the loop: final_disp_o_: \t" << final_disp_o_ << endl;
-
-	  storage_final_disp_.push_back(final_disp_);  
-	  
-	  for (unsigned int i=0; i < storage_final_disp_.size(); i++)
+	  storage_residual_disp_.push_back(residual_disp_);  
+	  cout << "All old residual displacments:" << endl;
+	  for (unsigned int i=0; i < storage_residual_disp_.size(); i++)
 	  {
-		  cout << storage_final_disp_[i] << endl;  
+		  cout << storage_residual_disp_[i] << endl;  
 	  }
-	  
+	  cout << "---" << endl;	 
 	  
 	  //calculating J(p)
-		  for (unsigned int i=0; i<3; i++) {
-		      J[i] = (final_disp_ - final_disp_o_)/(p_[i]-p_o_[i]);
-		      cout << "J["<<i<<"]: " << J[i] << endl;
-		  }
-		  cout << "J: \t\t\t" << J[0] << " " << J[1] << " " << J[2] <<  endl;
+	  for (unsigned int i=0; i<3; i++) {
+		  J[i] = (final_disp_ - final_disp_o_)/(p_[i]-p_o_[i]);
+	  }
+	  cout << "J: \t\t\t" << J[0] << " " << J[1] << " " << J[2] <<  endl;
+	  
 	  //calculating (J.T*J+mu*I)
-		  for (unsigned int i=0; i<3; i++) {
-		    for (unsigned int j=0; j<3; j++) {
-		    	if (i==j) storage[i][j] = J[i]*J[j] + mu_;
-		    	else storage[i][j] = J[i]*J[j];
-		    }
+	  for (unsigned int i=0; i<3; i++) {
+		  for (unsigned int j=0; j<3; j++) {
+			  if (i==j) storage[i][j] = J[i]*J[j] + mu_;
+		      else storage[i][j] = J[i]*J[j];
 		  }
-	  // calculating (J.T*J+mu*I)
-		  storage_det = storage[0][0]*storage[1][1]*storage[2][2] + storage[0][1]*storage[1][2]*storage[2][0] + storage[0][2]*storage[1][0]*storage[2][1] - storage[0][0]*storage[1][2]*storage[2][1] - storage[0][1]*storage[1][0]*storage[2][2] - storage[0][2]*storage[1][1]*storage[2][0];
+	  }
+	  
+	  // calculating (J.T*J+mu*I).I
+	  storage_det = storage[0][0]*storage[1][1]*storage[2][2] + storage[0][1]*storage[1][2]*storage[2][0] + storage[0][2]*storage[1][0]*storage[2][1] - storage[0][0]*storage[1][2]*storage[2][1] - storage[0][1]*storage[1][0]*storage[2][2] - storage[0][2]*storage[1][1]*storage[2][0];
 
-		  storage[0][0]= 1/storage_det * (storage[1][1]*storage[2][2]-storage[1][2]*storage[2][1]);
-		  storage[0][1]= 1/storage_det * (storage[0][2]*storage[2][1]-storage[0][1]*storage[2][2]);
-		  storage[0][2]= 1/storage_det * (storage[0][1]*storage[1][2]-storage[0][2]*storage[1][1]);
-		  storage[1][0]= 1/storage_det * (storage[1][2]*storage[2][0]-storage[1][0]*storage[2][2]);
-		  storage[1][1]= 1/storage_det * (storage[0][0]*storage[2][2]-storage[0][2]*storage[2][0]);
-		  storage[1][2]= 1/storage_det * (storage[0][2]*storage[1][0]-storage[0][0]*storage[1][2]);
-		  storage[2][0]= 1/storage_det * (storage[1][0]*storage[2][1]-storage[1][1]*storage[2][0]);
-		  storage[2][1]= 1/storage_det * (storage[0][1]*storage[2][0]-storage[0][0]*storage[2][1]);
-		  storage[2][2]= 1/storage_det * (storage[0][0]*storage[1][1]-storage[0][1]*storage[1][0]);
-		// calculating (J.T*J+mu*I).I*J.T*residual_disp_
-		  for (unsigned int i=0; i<3; i++) {
-			for (unsigned int j=0; j<3; j++) {
-				delta_p_[i] = delta_p_[i]+storage[i][j]*J[j];
-		      }
-			delta_p_[i] = delta_p_[i] * residual_disp_;
+	  storage[0][0]= 1/storage_det * (storage[1][1]*storage[2][2]-storage[1][2]*storage[2][1]);
+	  storage[0][1]= 1/storage_det * (storage[0][2]*storage[2][1]-storage[0][1]*storage[2][2]);
+	  storage[0][2]= 1/storage_det * (storage[0][1]*storage[1][2]-storage[0][2]*storage[1][1]);
+	  storage[1][0]= 1/storage_det * (storage[1][2]*storage[2][0]-storage[1][0]*storage[2][2]);
+	  storage[1][1]= 1/storage_det * (storage[0][0]*storage[2][2]-storage[0][2]*storage[2][0]);
+	  storage[1][2]= 1/storage_det * (storage[0][2]*storage[1][0]-storage[0][0]*storage[1][2]);
+	  storage[2][0]= 1/storage_det * (storage[1][0]*storage[2][1]-storage[1][1]*storage[2][0]);
+	  storage[2][1]= 1/storage_det * (storage[0][1]*storage[2][0]-storage[0][0]*storage[2][1]);
+	  storage[2][2]= 1/storage_det * (storage[0][0]*storage[1][1]-storage[0][1]*storage[1][0]);
+	  
+	  
+	  cout << "----------------------------------------------------------------------------------------" << endl;
+	  cout << "delta_p_: \t\t" << delta_p_[0] << " " << delta_p_[1] << " " << delta_p_[2] << endl;	  
+
+	  // calculating (J.T*J+mu*I).I*J.T*residual_disp_
+	  for (unsigned int i=0; i<3; i++) {
+		  for (unsigned int j=0; j<3; j++) {
+			  delta_p_[i] = delta_p_[i]+storage[i][j]*J[j];
+			//  delta_p_[i] = storage[i][j]*J[j];
 		  }
-    // print  out
+	  delta_p_[i] = delta_p_[i] * residual_disp_;
+	  }
+	  
+	    cout << "delta_p_: \t\t" << delta_p_[0] << " " << delta_p_[1] << " " << delta_p_[2] << endl;
+		  cout << "----------------------------------------------------------------------------------------" << endl;
+
+	  // print  out
 	cout << "_________"<< endl;
-    cout << "p_o_: \t\t\t"<< p_o_[0] << " " << p_o_[1] << " " << p_o_[2] << endl;
-    cout << "p_:   \t\t\t"<< p_[0] << " " << p_[1] << " " << p_[2] << endl;
-    cout << "residual_disp_: \t" << residual_disp_ << endl;
+    cout << "old Parameters: \t\t\t"<< p_o_[0] << " " << p_o_[1] << " " << p_o_[2] << endl;
+    cout << "current Parameters:   \t\t\t"<< p_[0] << " " << p_[1] << " " << p_[2] << endl;
     cout << "delta_p_: \t\t" << delta_p_[0] << " " << delta_p_[1] << " " << delta_p_[2] << endl;
-    cout << "J: \t\t\t" << J[0] << " " << J[1] << " " << J[2] <<  endl;
-    cout << "storage_det: \t\t" << storage_det << endl;
+    cout << "residual_disp_: \t" << residual_disp_ << endl;    
     cout << "final_disp_: \t\t"<< final_disp_ << endl;
     cout << "final_disp_o_: \t\t" << final_disp_o_ << endl;
     cout << "measured_disp_: \t" << measured_disp_ << endl;
@@ -245,15 +253,11 @@ void Inv_analysis::calculate_new_parameters(){
 	  p_[i]            = p_[i]- delta_p_[i];
 	  }
 
-  cout << "mu_comparison:" << endl;
-  cout << abs(residual_disp_) << endl;
-  cout << abs((measured_disp_ - final_disp_o_)) << endl;
 
   if (abs(residual_disp_) < abs(measured_disp_ - final_disp_o_))
   	mu_ = mu_plus_;
   else
 	mu_ = mu_minus_;
-
 
   final_disp_o_ = final_disp_;
 
@@ -262,7 +266,10 @@ void Inv_analysis::calculate_new_parameters(){
   DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k1     = p_[1];
   DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->k2     = p_[2];
 
-
+  
+  cout << "new Parameters:   \t\t\t"<< p_[0] << " " << p_[1] << " " << p_[2] << endl;
+  cout << "---------------------ende----------------------------------------------------" << endl;
+  cout << "Toleranz: "<< tol_ << endl;
   return;
 }
 

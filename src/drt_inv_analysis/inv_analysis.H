@@ -36,7 +36,7 @@ class Inv_analysis : public StruGenAlpha {
 		MATERIAL& nonconstmat_;
 		int count_;
 		int numb_run_;
-		vector<double> storage_final_disp_;
+		vector<double> storage_residual_disp_;
 		
 	public:
 			
