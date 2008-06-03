@@ -1663,7 +1663,7 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
         //cout << "ndotx=" << ndotx <<  " deriv=" << colcurr->second << endl;
         //cout << "Assemble N_Mmortar: " << row << " " << col << " " << val << endl;
         // do not assemble zeros into s matrix
-        if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+        if (abs(val)>1.0e-12) sglobal.Assemble(-val,row,col);
       }
     }
     

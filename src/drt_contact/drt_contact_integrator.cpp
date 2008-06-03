@@ -412,6 +412,7 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
   //cout << "\nChecking overlap of CElement pair S" << sele.Id() << " M" << mele.Id() << endl;
   //cout << "Slave Nodes: " << sele.Nodes()[0]->Id() << " " << sele.Nodes()[1]->Id() << endl;
   //cout << "Master Nodes: " << mele.Nodes()[0]->Id() << " " << mele.Nodes()[1]->Id() << endl;
+  //cout << "sxia " << sxia << " sxib " << sxib << " mxia " << mxia << " mxib " << mxib << endl;
   
   bool startslave = false;
   bool endslave = false;
@@ -421,8 +422,6 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
     dserror("ERROR: First outer node is neither slave nor master node");
   if (sxib!=1.0 && mxia!=-1.0)
       dserror("ERROR: Second outer node is neither slave nor master node");
-  
-  //cout << "sxia " << sxia << " sxib " << sxib << " mxia " << mxia << " mxib " << mxib << endl;
   
   if (sxia==-1.0)
   {
@@ -449,34 +448,6 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
   // get directional derivatives of sxia, sxib, mxia, mxib
   vector<map<int,double> > ximaps(4);
   DerivXiAB(sele,sxia,sxib,mele,mxia,mxib,ximaps,startslave,endslave);
-  
-  /*
-  if (startslave==true)
-  {
-    cout << "DerivMap of mxib:" << endl;
-    for (CI p=ximaps[3].begin();p!=ximaps[3].end();++p)
-      cout << p->first << "\t" << p->second << endl;
-  }
-  else
-  {
-    cout << "DerivMap of sxia:" << endl;
-    for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-      cout << p->first << "\t" << p->second << endl;
-  }
-  
-  if (endslave==true)
-  {
-    cout << "DerivMap of mxia:" << endl;
-    for (CI p=ximaps[2].begin();p!=ximaps[2].end();++p)
-      cout << p->first << "\t" << p->second << endl;
-  }
-  else
-  {
-    cout << "DerivMap of sxib:" << endl;
-    for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-      cout << p->first << "\t" << p->second << endl;
-  }
-  */
   
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
@@ -818,8 +789,8 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
     // add derivatives of master node coordinates
     for (int i=0;i<nummnode;++i)
     {
-      dmap_mxib[mcnodes[i]->Dofs()[0]] += derivmxib[i]*(scnodes[0]->n()[1]);
-      dmap_mxib[mcnodes[i]->Dofs()[1]] -= derivmxib[i]*(scnodes[0]->n()[0]);
+      dmap_mxib[mcnodes[i]->Dofs()[0]] += valmxib[i]*(scnodes[0]->n()[1]);
+      dmap_mxib[mcnodes[i]->Dofs()[1]] -= valmxib[i]*(scnodes[0]->n()[0]);
     }
     
     // add derivative of slave node normal
@@ -850,13 +821,13 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
     // add derivatives of master node coordinates
     for (int i=0;i<nummnode;++i)
     {
-      dmap_mxia[mcnodes[i]->Dofs()[0]] += derivmxia[i]*(scnodes[1]->n()[1]);
-      dmap_mxia[mcnodes[i]->Dofs()[1]] -= derivmxia[i]*(scnodes[1]->n()[0]);
+      dmap_mxia[mcnodes[i]->Dofs()[0]] += valmxia[i]*(scnodes[1]->n()[1]);
+      dmap_mxia[mcnodes[i]->Dofs()[1]] -= valmxia[i]*(scnodes[1]->n()[0]);
     }
     
     // add derivative of slave node normal
     for (CI p=nxmap_a.begin();p!=nxmap_a.end();++p)
-      dmap_mxia[p->first] += fac_ymsl_a*(p->second);
+      dmap_mxia[p->first] -= fac_ymsl_a*(p->second);
     for (CI p=nymap_a.begin();p!=nymap_a.end();++p)
       dmap_mxia[p->first] += fac_xmsl_a*(p->second);
     
@@ -883,8 +854,8 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
     // add derivatives of slave node coordinates
     for (int i=0;i<numsnode;++i)
     {
-      dmap_sxia[scnodes[i]->Dofs()[0]] += derivsxia[i]*fac_ny_a;
-      dmap_sxia[scnodes[i]->Dofs()[1]] -= derivsxia[i]*fac_nx_a;
+      dmap_sxia[scnodes[i]->Dofs()[0]] += valsxia[i]*fac_ny_a;
+      dmap_sxia[scnodes[i]->Dofs()[1]] -= valsxia[i]*fac_nx_a;
     }
     
     // add derivatives of slave node normals
@@ -894,9 +865,9 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
       map<int,double>& nymap_curr = scnodes[i]->GetDerivN()[1];
       
       for (CI p=nxmap_curr.begin();p!=nxmap_curr.end();++p)
-        dmap_sxia[p->first] -= derivsxia[i]*fac_yslm_a;
+        dmap_sxia[p->first] -= valsxia[i]*fac_yslm_a*(p->second);
       for (CI p=nymap_curr.begin();p!=nymap_curr.end();++p)
-        dmap_sxia[p->first] += derivsxia[i]*fac_xslm_a;
+        dmap_sxia[p->first] += valsxia[i]*fac_xslm_a*(p->second);
     }
     
     // multiply all entries with csxia
@@ -913,14 +884,14 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
     map<int,double> dmap_sxib;
     
     // add derivative of master node coordinates
-    dmap_sxib[mcnodes[1]->Dofs()[0]] -= fac_ny_b;
-    dmap_sxib[mcnodes[1]->Dofs()[1]] += fac_nx_b;
+    dmap_sxib[mcnodes[0]->Dofs()[0]] -= fac_ny_b;
+    dmap_sxib[mcnodes[0]->Dofs()[1]] += fac_nx_b;
     
     // add derivatives of slave node coordinates
     for (int i=0;i<numsnode;++i)
     {
-      dmap_sxib[scnodes[i]->Dofs()[0]] += derivsxib[i]*fac_ny_b;
-      dmap_sxib[scnodes[i]->Dofs()[1]] -= derivsxib[i]*fac_nx_b;
+      dmap_sxib[scnodes[i]->Dofs()[0]] += valsxib[i]*fac_ny_b;
+      dmap_sxib[scnodes[i]->Dofs()[1]] -= valsxib[i]*fac_nx_b;
     }
       
     // add derivatives of slave node normals
@@ -930,9 +901,9 @@ void CONTACT::Integrator::DerivXiAB(CONTACT::CElement& sele,
       map<int,double>& nymap_curr = scnodes[i]->GetDerivN()[1];
       
       for (CI p=nxmap_curr.begin();p!=nxmap_curr.end();++p)
-        dmap_sxib[p->first] -= derivsxib[i]*fac_yslm_b;
+        dmap_sxib[p->first] -= valsxib[i]*fac_yslm_b*(p->second);
       for (CI p=nymap_curr.begin();p!=nymap_curr.end();++p)
-        dmap_sxib[p->first] += derivsxib[i]*fac_xslm_b;
+        dmap_sxib[p->first] += valsxib[i]*fac_xslm_b*(p->second);
     }
     
     // multiply all entries with csxib
@@ -1038,8 +1009,8 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
   
   for (int i=0;i<numsnode;++i)
   {
-    dmap_xsl_gp[scnodes[i]->Dofs()[0]] += derivsxigp[i];
-    dmap_ysl_gp[scnodes[i]->Dofs()[1]] += derivsxigp[i];
+    dmap_xsl_gp[scnodes[i]->Dofs()[0]] += valsxigp[i];
+    dmap_ysl_gp[scnodes[i]->Dofs()[1]] += valsxigp[i];
     
     for (CI p=derivsxi.begin();p!=derivsxi.end();++p)
     {
@@ -1066,9 +1037,9 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
     map<int,double>& dmap_nysl_i = scnodes[i]->GetDerivN()[1];
     
     for (CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
-      dmap_nxsl_gp_mod[p->first] += derivsxigp[i]*(p->second);
+      dmap_nxsl_gp_mod[p->first] += valsxigp[i]*(p->second);
     for (CI p=dmap_nysl_i.begin();p!=dmap_nysl_i.end();++p)
-      dmap_nysl_gp_mod[p->first] += derivsxigp[i]*(p->second);
+      dmap_nysl_gp_mod[p->first] += valsxigp[i]*(p->second);
     
     for (CI p=derivsxi.begin();p!=derivsxi.end();++p)
     {
@@ -1103,15 +1074,15 @@ void CONTACT::Integrator::DerivXiGP(CONTACT::CElement& sele,
   
   // add derivative of slave GP coordinates
   for (CI p=dmap_xsl_gp.begin();p!=dmap_xsl_gp.end();++p)
-    derivmxi[p->first] -= (scnodes[0]->n()[1])*(p->second);
+    derivmxi[p->first] -= sgpn[1]*(p->second);
   for (CI p=dmap_ysl_gp.begin();p!=dmap_ysl_gp.end();++p)
-    derivmxi[p->first] += (scnodes[0]->n()[0])*(p->second);
+    derivmxi[p->first] += sgpn[0]*(p->second);
       
   // add derivatives of master node coordinates
   for (int i=0;i<nummnode;++i)
   {
-    derivmxi[mcnodes[i]->Dofs()[0]] += derivmxigp[i]*(scnodes[0]->n()[1]);
-    derivmxi[mcnodes[i]->Dofs()[1]] -= derivmxigp[i]*(scnodes[0]->n()[0]);
+    derivmxi[mcnodes[i]->Dofs()[0]] += valmxigp[i]*sgpn[1];
+    derivmxi[mcnodes[i]->Dofs()[1]] -= valmxigp[i]*sgpn[0];
   }
   
   // add derivative of slave GP normal

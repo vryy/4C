@@ -350,6 +350,20 @@ void CONTACT::Interface::FDCheckNormalDeriv()
     }
   }
  
+  // back to normal...
+  // reset normal etc.
+  Initialize();
+  
+  // loop over all elements to set current element length / area
+  // (use fully overlapping column map)
+  for (int j=0;j<idiscret_->NumMyColElements();++j)
+  {
+    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
+    element->Area()=element->ComputeArea();
+    //cout << "Element: " << element->Id() << " Nodes: " << (element->Nodes()[0])->Id() << " "
+    //     << (element->Nodes()[1])->Id() << " Area: " << element->Area() << endl;
+  }  
+      
   return;
 }
 
@@ -569,13 +583,69 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     }
   }
   
-  
   // global loop to apply FD scheme to all slave dofs (=2*nodes)
   for (int fd=0; fd<2*snodefullmap_->NumMyElements();++fd)
   {
     // Initialize
-    Initialize();
-    
+    // loop over all nodes to reset normals, closestnode and Mortar maps
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColNodes();++i)
+    {
+      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
+
+      //reset nodal normal vector
+      for (int j=0;j<3;++j)
+        node->n()[j]=0.0;
+
+      // reset derivative maps of normal vector
+      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
+        (node->GetDerivN())[j].clear();
+      (node->GetDerivN()).resize(0);
+      
+      // reset derivative maps of tangent vector
+      for (int j=0;j<(int)((node->GetDerivT()).size());++j)
+        (node->GetDerivT())[j].clear();
+      (node->GetDerivT()).resize(0);
+          
+      // reset closest node
+      // (FIXME: at the moment we do not need this info. in the next
+      // iteration, but it might be helpful for accelerated search!!!)
+      node->ClosestNode() = -1;
+
+      // reset nodal Mortar maps
+      for (int j=0;j<(int)((node->GetD()).size());++j)
+        (node->GetD())[j].clear();
+      for (int j=0;j<(int)((node->GetM()).size());++j)
+        (node->GetM())[j].clear();
+      for (int j=0;j<(int)((node->GetMmod()).size());++j)
+        (node->GetMmod())[j].clear();
+
+      (node->GetD()).resize(0);
+      (node->GetM()).resize(0);
+      (node->GetMmod()).resize(0);
+
+      // reset derivative map of Mortar matrices
+      (node->GetDerivD()).clear();
+      (node->GetDerivM()).clear();
+      
+      // reset nodal weighted gap
+      node->Getg() = 1.0e12;
+
+      // reset feasible projection status
+      node->HasProj() = false;
+    }
+
+    // loop over all elements to reset contact candidates / search lists
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColElements();++i)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+      element->SearchElements().resize(0);
+    }
+
+    // reset matrix containing interface contact segments (gmsh)
+    CSegs().Shape(0,0);
+      
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap_->GID(fd/2);
     DRT::Node* node = idiscret_->gNode(gid);
@@ -692,6 +762,13 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       {
         if (abs(newM[k][p->first]-refM[k][p->first]) > 1e-12)
         {
+          // if we want to use the FD for DerivM
+          //map<int,map<int,double> >& derivm = kcnode->GetDerivM();
+          //double val = (newM[k][p->first]-refM[k][p->first])/delta;
+          //int outercol = p->first;
+          //int innercol = snode->Dofs()[fd%2];
+          //(derivm[outercol/2])[innercol] += val;
+          
           cout << "M-FD-derivative for pair S" << kcnode->Id() << " and M" << (p->first)/2 << endl;
           //cout << "Ref-M: " << refM[k][p->first] << endl;
           //cout << "New-M: " << newM[k][p->first] << endl;
@@ -717,8 +794,65 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
   for (int fd=0; fd<2*mnodefullmap_->NumMyElements();++fd)
   {
     // Initialize
-    Initialize();
-    
+    // loop over all nodes to reset normals, closestnode and Mortar maps
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColNodes();++i)
+    {
+      CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
+
+      //reset nodal normal vector
+      for (int j=0;j<3;++j)
+        node->n()[j]=0.0;
+
+      // reset derivative maps of normal vector
+      for (int j=0;j<(int)((node->GetDerivN()).size());++j)
+        (node->GetDerivN())[j].clear();
+      (node->GetDerivN()).resize(0);
+      
+      // reset derivative maps of tangent vector
+      for (int j=0;j<(int)((node->GetDerivT()).size());++j)
+        (node->GetDerivT())[j].clear();
+      (node->GetDerivT()).resize(0);
+          
+      // reset closest node
+      // (FIXME: at the moment we do not need this info. in the next
+      // iteration, but it might be helpful for accelerated search!!!)
+      node->ClosestNode() = -1;
+
+      // reset nodal Mortar maps
+      for (int j=0;j<(int)((node->GetD()).size());++j)
+        (node->GetD())[j].clear();
+      for (int j=0;j<(int)((node->GetM()).size());++j)
+        (node->GetM())[j].clear();
+      for (int j=0;j<(int)((node->GetMmod()).size());++j)
+        (node->GetMmod())[j].clear();
+
+      (node->GetD()).resize(0);
+      (node->GetM()).resize(0);
+      (node->GetMmod()).resize(0);
+
+      // reset derivative map of Mortar matrices
+      (node->GetDerivD()).clear();
+      (node->GetDerivM()).clear();
+      
+      // reset nodal weighted gap
+      node->Getg() = 1.0e12;
+
+      // reset feasible projection status
+      node->HasProj() = false;
+    }
+
+    // loop over all elements to reset contact candidates / search lists
+    // (use fully overlapping column map)
+    for (int i=0;i<idiscret_->NumMyColElements();++i)
+    {
+      CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+      element->SearchElements().resize(0);
+    }
+
+    // reset matrix containing interface contact segments (gmsh)
+    CSegs().Shape(0,0);
+      
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap_->GID(fd/2);
     DRT::Node* node = idiscret_->gNode(gid);
@@ -835,6 +969,13 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       {
         if (abs(newM[k][p->first]-refM[k][p->first]) > 1e-12)
         {
+          // if we want to use the FD for DerivM
+          //map<int,map<int,double> >& derivm = kcnode->GetDerivM();
+          //double val = (newM[k][p->first]-refM[k][p->first])/delta;
+          //int outercol = p->first;
+          //int innercol = mnode->Dofs()[fd%2];
+          //(derivm[outercol/2])[innercol] += val;
+          
           cout << "M-FD-derivative for pair S" << kcnode->Id() << " and M" << (p->first)/2 << endl;
           //cout << "Ref-M: " << refM[k][p->first] << endl;
           //cout << "New-M: " << newM[k][p->first] << endl;
@@ -859,7 +1000,64 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
   // back to normal...
   
   // Initialize
-  Initialize();
+  // loop over all nodes to reset normals, closestnode and Mortar maps
+  // (use fully overlapping column map)
+  for (int i=0;i<idiscret_->NumMyColNodes();++i)
+  {
+    CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
+
+    //reset nodal normal vector
+    for (int j=0;j<3;++j)
+      node->n()[j]=0.0;
+
+    // reset derivative maps of normal vector
+    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
+      (node->GetDerivN())[j].clear();
+    (node->GetDerivN()).resize(0);
+    
+    // reset derivative maps of tangent vector
+    for (int j=0;j<(int)((node->GetDerivT()).size());++j)
+      (node->GetDerivT())[j].clear();
+    (node->GetDerivT()).resize(0);
+        
+    // reset closest node
+    // (FIXME: at the moment we do not need this info. in the next
+    // iteration, but it might be helpful for accelerated search!!!)
+    node->ClosestNode() = -1;
+
+    // reset nodal Mortar maps
+    for (int j=0;j<(int)((node->GetD()).size());++j)
+      (node->GetD())[j].clear();
+    for (int j=0;j<(int)((node->GetM()).size());++j)
+      (node->GetM())[j].clear();
+    for (int j=0;j<(int)((node->GetMmod()).size());++j)
+      (node->GetMmod())[j].clear();
+
+    (node->GetD()).resize(0);
+    (node->GetM()).resize(0);
+    (node->GetMmod()).resize(0);
+
+    // reset derivative map of Mortar matrices
+    (node->GetDerivD()).clear();
+    (node->GetDerivM()).clear();
+    
+    // reset nodal weighted gap
+    node->Getg() = 1.0e12;
+
+    // reset feasible projection status
+    node->HasProj() = false;
+  }
+
+  // loop over all elements to reset contact candidates / search lists
+  // (use fully overlapping column map)
+  for (int i=0;i<idiscret_->NumMyColElements();++i)
+  {
+    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+    element->SearchElements().resize(0);
+  }
+
+  // reset matrix containing interface contact segments (gmsh)
+  CSegs().Shape(0,0);
   
   // loop over all elements to set current element length / area
   // (use fully overlapping column map)

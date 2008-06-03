@@ -2136,7 +2136,11 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
     RCP<Epetra_Vector> gtest2 = rcp(new Epetra_Vector(*gactiven_));
     LINALG::Export(*incrjump_,*activejump);
     nmatrix_->Multiply(false,*activejump,*gtest);
-    //smatrix_->Multiply(false,*disis,*gtest2);
+    
+    RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
+    RCP<Epetra_Vector> disism = rcp(new Epetra_Vector(*gsmdofs));
+    LINALG::Export(*disi,*disism);
+    //smatrix_->Multiply(false,*disism,*gtest2);
     //gtest->Update(1.0,*gtest2,1.0);
     cout << *gtest << endl << *g_ << endl;
     
