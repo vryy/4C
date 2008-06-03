@@ -14,6 +14,7 @@
 #include "fsi_robin.H"
 #include "fsi_monolithicoverlap.H"
 #include "fsi_monolithiclagrange.H"
+#include "fsi_monolithicstructuresplit.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
 #include "fsi_utils.H"
@@ -142,30 +143,23 @@ void fsi_ale_drt()
     break;
   }
   case fsi_iter_monolithic:
-  {
-    // Monolithic FSI. The real thing.
-
-    Teuchos::RCP<FSI::MonolithicOverlap> fsi = Teuchos::rcp(new FSI::MonolithicOverlap(comm));
-
-    if (genprob.restart)
-    {
-      // read the restart information, set vectors and variables
-      fsi->ReadRestart(genprob.restart);
-    }
-
-    fsi->Timeloop(fsi);
-
-    DRT::ResultTestManager testmanager(comm);
-    testmanager.AddFieldTest(fsi->FluidField().CreateFieldTest());
-    testmanager.AddFieldTest(fsi->StructureField().CreateFieldTest());
-    testmanager.TestAll();
-    break;
-  }
+  case fsi_iter_monolithicstructuresplit:
   case fsi_iter_monolithiclagrange:
   {
-    // Lagranigan Monolithic FSI. A little more complicated that overlapping MFSI.
+    Teuchos::RCP<FSI::Monolithic> fsi;
 
-    Teuchos::RCP<FSI::MonolithicLagrange> fsi = Teuchos::rcp(new FSI::MonolithicLagrange(comm));
+    if (coupling==fsi_iter_monolithic)
+      // Monolithic FSI. The real thing.
+      fsi = Teuchos::rcp(new FSI::MonolithicOverlap(comm));
+
+    else if (coupling==fsi_iter_monolithicstructuresplit)
+      fsi = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm));
+
+    else if (coupling==fsi_iter_monolithiclagrange)
+      fsi = Teuchos::rcp(new FSI::MonolithicLagrange(comm));
+
+    else
+      dserror("ups!");
 
     if (genprob.restart)
     {

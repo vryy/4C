@@ -1,16 +1,16 @@
+
 #ifdef CCADISCRET
 
-#include "fsi_monolithicoverlap.H"
+#include "fsi_monolithicstructuresplit.H"
 #include "fsi_statustest.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 
-#define FLUIDBLOCKMATRIX
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
+FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
   : Monolithic(comm)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
@@ -39,6 +39,14 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
                                 AleField().Interface(),
                                 "FSICoupling");
 
+  // fluid to ale at the interface
+
+  icoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
+                                  FluidField().Interface(),
+                                  *AleField().Discretization(),
+                                  AleField().Interface(),
+                                  "FSICoupling");
+
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
   // interface dof map for all fields and have just one transfer
@@ -63,8 +71,8 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   // create combined map
 
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
-  vecSpaces.push_back(StructureField().DofRowMap());
-  vecSpaces.push_back(FluidField()    .Interface().OtherMap());
+  vecSpaces.push_back(StructureField().Interface().OtherMap());
+  vecSpaces.push_back(FluidField()    .DofRowMap());
   vecSpaces.push_back(AleField()      .Interface().OtherMap());
 
   SetDofRowMaps(vecSpaces);
@@ -74,14 +82,8 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
   systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrix(Extractor(),
                                                           StructureField().LinearSolver(),
                                                           FluidField().LinearSolver(),
-                                                          AleField().LinearSolver()));
-
-#ifdef FLUIDBLOCKMATRIX
-  /*----------------------------------------------------------------------*/
-  // Switch fluid to interface split block matrix
-  FluidField().UseBlockMatrix(FluidField().Interface(),
-                              FluidField().Interface());
-#endif
+                                                          AleField().LinearSolver(),
+                                                          true));
 
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
@@ -90,9 +92,9 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f)
+void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::SetupRHS");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupRHS");
 
   if (Comm().MyPID()==0)
     std::cout << "FSI::MonolithicOverlap::SetupRHS\n";
@@ -110,39 +112,34 @@ void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
+void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::SetupSystemMatrix");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupSystemMatrix");
 
   if (Comm().MyPID()==0)
-    std::cout << "FSI::MonolithicOverlap::SetupSystemMatrix\n";
+    std::cout << "FSI::MonolithicStructureSplit::SetupSystemMatrix\n";
 
   // extract Jacobian matrices and put them into composite system
   // matrix W
 
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  const ADAPTER::Coupling& coupsa = StructureAleCoupling();
-  const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+  //const ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  //const ADAPTER::Coupling& coupfa = FluidAleCoupling();
 
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocks =
+    s->Split<LINALG::DefaultBlockMatrixStrategy>(StructureField().Interface(),
+                                                 StructureField().Interface());
+  blocks->Complete();
+
+  LINALG::SparseMatrix& sii = blocks->Matrix(0,0);
+  LINALG::SparseMatrix& sig = blocks->Matrix(0,1);
+  LINALG::SparseMatrix& sgi = blocks->Matrix(1,0);
+  LINALG::SparseMatrix& sgg = blocks->Matrix(1,1);
 
   // split fluid matrix
 
-#ifdef FLUIDBLOCKMATRIX
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
-#else
   Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
-
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf =
-    f->Split<LINALG::DefaultBlockMatrixStrategy>(FluidField().Interface(),
-                                                 FluidField().Interface());
-  blockf->Complete();
-#endif
-
-  LINALG::SparseMatrix& fii = blockf->Matrix(0,0);
-  LINALG::SparseMatrix& fig = blockf->Matrix(0,1);
-  LINALG::SparseMatrix& fgi = blockf->Matrix(1,0);
-  LINALG::SparseMatrix& fgg = blockf->Matrix(1,1);
 
   /*----------------------------------------------------------------------*/
 
@@ -163,42 +160,37 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here.
 
-  // uncomplete because the fluid interface can have more connections than the
-  // structural one. (Tet elements in fluid can cause this.) We should do
-  // this just once...
-  s->UnComplete();
-
-  fggtransform_(fgg,
-                scale*timescale,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
-                ADAPTER::Coupling::SlaveConverter(coupsf),
-                *s,
+  mat.Assign(0,0,View,sii);
+  sigtransform_(*blocks,
+                sig,
+                1./timescale,
+                ADAPTER::Coupling::MasterConverter(coupsf),
+                mat.Matrix(0,1));
+  sggtransform_(sgg,
+                1./(scale*timescale),
+                ADAPTER::Coupling::MasterConverter(coupsf),
+                ADAPTER::Coupling::MasterConverter(coupsf),
+                *f,
                 true,
                 true);
-
-  mat.Assign(0,0,View,*s);
-  fgitransform_(fgi,
-                scale,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
-                mat.Matrix(0,1));
-
-  figtransform_(*blockf,
-                fig,
-                timescale,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
+  sgitransform_(sgi,
+                1./scale,
+                ADAPTER::Coupling::MasterConverter(coupsf),
                 mat.Matrix(1,0));
-  mat.Assign(1,1,View,fii);
+
+  mat.Assign(1,1,View,*f);
 
   aigtransform_(*a,
                 aig,
-                1.,
-                ADAPTER::Coupling::SlaveConverter(coupsa),
-                mat.Matrix(2,0));
+                1./timescale,
+                ADAPTER::Coupling::SlaveConverter(icoupfa_),
+                mat.Matrix(2,1));
   mat.Assign(2,2,View,aii);
 
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
 
+#if 0
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
   if (mmm!=Teuchos::null)
   {
@@ -224,6 +216,7 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
                    false,
                    false);
   }
+#endif
 
   // done. make sure all blocks are filled.
   mat.Complete();
@@ -232,9 +225,9 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
+void FSI::MonolithicStructureSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::InitialGuess");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::InitialGuess");
 
   SetupVector(*ig,
               StructureField().InitialGuess(),
@@ -246,33 +239,33 @@ void FSI::MonolithicOverlap::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupVector(Epetra_Vector &f,
-                                         Teuchos::RCP<const Epetra_Vector> sv,
-                                         Teuchos::RCP<const Epetra_Vector> fv,
-                                         Teuchos::RCP<const Epetra_Vector> av,
-                                         double fluidscale)
+void FSI::MonolithicStructureSplit::SetupVector(Epetra_Vector &f,
+                                                Teuchos::RCP<const Epetra_Vector> sv,
+                                                Teuchos::RCP<const Epetra_Vector> fv,
+                                                Teuchos::RCP<const Epetra_Vector> av,
+                                                double fluidscale)
 {
 
   // extract the inner and boundary dofs of all three fields
 
-  Teuchos::RCP<Epetra_Vector> fov = FluidField()    .Interface().ExtractOtherVector(fv);
+  Teuchos::RCP<Epetra_Vector> sov = StructureField().Interface().ExtractOtherVector(sv);
   Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
 
   if (fluidscale!=0)
   {
     // add fluid interface values to structure vector
-    Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface().ExtractCondVector(fv);
-    Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertCondVector(FluidToStruct(fcv));
-    modsv->Update(1.0, *sv, fluidscale);
+    Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface().ExtractCondVector(sv);
+    Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertCondVector(StructToFluid(scv));
+    modfv->Update(1.0, *fv, 1./fluidscale);
 
-    Extractor().InsertVector(*modsv,0,f);
+    Extractor().InsertVector(*modfv,1,f);
   }
   else
   {
-    Extractor().InsertVector(*sv,0,f);
+    Extractor().InsertVector(*fv,1,f);
   }
 
-  Extractor().InsertVector(*fov,1,f);
+  Extractor().InsertVector(*sov,0,f);
   Extractor().InsertVector(*aov,2,f);
 }
 
@@ -280,9 +273,9 @@ void FSI::MonolithicOverlap::SetupVector(Epetra_Vector &f,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
-FSI::MonolithicOverlap::CreateLinearSystem(ParameterList& nlParams,
-                                           NOX::Epetra::Vector& noxSoln,
-                                           Teuchos::RCP<NOX::Utils> utils)
+FSI::MonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
+                                                  NOX::Epetra::Vector& noxSoln,
+                                                  Teuchos::RCP<NOX::Utils> utils)
 {
   Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
 
@@ -311,8 +304,8 @@ FSI::MonolithicOverlap::CreateLinearSystem(ParameterList& nlParams,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::StatusTest::Combo>
-FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
-                                         Teuchos::RCP<NOX::Epetra::Group> grp)
+FSI::MonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nlParams,
+                                                Teuchos::RCP<NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
   Teuchos::RCP<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
@@ -412,30 +405,25 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                                                 Teuchos::RCP<const Epetra_Vector>& sx,
-                                                 Teuchos::RCP<const Epetra_Vector>& fx,
-                                                 Teuchos::RCP<const Epetra_Vector>& ax)
+void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+                                                        Teuchos::RCP<const Epetra_Vector>& sx,
+                                                        Teuchos::RCP<const Epetra_Vector>& fx,
+                                                        Teuchos::RCP<const Epetra_Vector>& ax)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::ExtractFieldVectors");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::ExtractFieldVectors");
 
-  // We have overlap at the interface. Thus we need the interface part of the
-  // structure vector and append it to the fluid and ale vector. (With the
-  // right translation.)
+  fx = Extractor().ExtractVector(x,1);
 
-  sx = Extractor().ExtractVector(x,0);
-  Teuchos::RCP<const Epetra_Vector> scx = StructureField().Interface().ExtractCondVector(sx);
+  // process structure unknowns
 
-  // process fluid unknowns
+  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractCondVector(fx);
+  FluidField().VelocityToDisplacement(fcx);
+  Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
+  Teuchos::RCP<Epetra_Vector> scx = FluidToStruct(fcx);
 
-  Teuchos::RCP<const Epetra_Vector> fox = Extractor().ExtractVector(x,1);
-  Teuchos::RCP<Epetra_Vector> fcx = StructToFluid(scx);
-
-  FluidField().DisplacementToVelocity(fcx);
-
-  Teuchos::RCP<Epetra_Vector> f = FluidField().Interface().InsertOtherVector(fox);
-  FluidField().Interface().InsertCondVector(fcx, f);
-  fx = f;
+  Teuchos::RCP<Epetra_Vector> s = StructureField().Interface().InsertOtherVector(sox);
+  StructureField().Interface().InsertCondVector(scx, s);
+  sx = s;
 
   // process ale unknowns
 

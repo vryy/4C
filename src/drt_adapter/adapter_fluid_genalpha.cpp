@@ -344,7 +344,7 @@ void ADAPTER::FluidGenAlpha::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridv
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidGenAlpha::ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx)
+void ADAPTER::FluidGenAlpha::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // We convert Delta d(n+1,i+1) to Delta a(n+1,i+1) here.
   //
@@ -364,6 +364,21 @@ void ADAPTER::FluidGenAlpha::ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector>
 
   // reduce to Delta a(n+1,i+1)
   fcx->Scale(1./dt/gamma);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidGenAlpha::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+{
+  double dt = fluid_.Dt();
+  double gamma = fluid_.Gamma();
+
+  // get interface velocity at t(n)
+  Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(fluid_.Veln());
+
+  fcx->Update(1.,*veln,dt*gamma);
+  fcx->Scale(dt);
 }
 
 

@@ -403,7 +403,7 @@ void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> idis
 //    {
 //      (*idispcol_)[entry] = 0.0;
 //    }
-//        
+//
 //  }
 
 }
@@ -419,7 +419,7 @@ void ADAPTER::XFluidImpl::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx)
+void ADAPTER::XFluidImpl::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
   dserror("not implemented!");
   // get interface velocity at t(n)
@@ -430,6 +430,14 @@ void ADAPTER::XFluidImpl::ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fc
   // Delta d(n+1,i+1) = ( Delta u(n+1,i+1) + u(n) ) * dt
   //
   fcx->Update(-1.,*veln,TimeScaling());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::XFluidImpl::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+{
+  dserror("not implemented!");
 }
 
 

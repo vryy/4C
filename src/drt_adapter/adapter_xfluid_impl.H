@@ -132,7 +132,8 @@ namespace ADAPTER {
     virtual void ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> fluiddisp);
     virtual void ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel);
 
-    virtual void ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx);
+    virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
+    virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
 
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);

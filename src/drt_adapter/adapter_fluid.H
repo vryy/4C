@@ -224,7 +224,10 @@ namespace ADAPTER {
     //@}
 
     /// convert Delta d(n+1,i+1) to the fluid unknown at the interface
-    virtual void ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx) = 0;
+    virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) = 0;
+
+    /// convert the fluid unknown to Delta d(n+1,i+1) at the interface
+    virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) = 0;
 
     //! @name Number of Newton iterations
     //! For simplified FD MFNK solve we want to temporally limit the

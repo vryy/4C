@@ -23,7 +23,8 @@ namespace FSI
     OverlappingBlockMatrix(const LINALG::MultiMapExtractor& maps,
                            Teuchos::RCP<LINALG::Solver> structuresolver,
                            Teuchos::RCP<LINALG::Solver> fluidsolver,
-                           Teuchos::RCP<LINALG::Solver> alesolver);
+                           Teuchos::RCP<LINALG::Solver> alesolver,
+                           bool structuresplit=false);
 
     /** \name Mathematical functions */
     //@{
@@ -46,8 +47,8 @@ namespace FSI
 
   private:
 
-    /// lower Gauss-Seidel block preconditioner
-    void LowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    /// structure-ale-fluid lower Gauss-Seidel block preconditioner
+    void SAFLowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 
     /// fluid-structure-ale lower Gauss-Seidel block preconditioner
     void FSALowerGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
@@ -58,6 +59,9 @@ namespace FSI
     /// symmetric Gauss-Seidel block preconditioner
     void SGS(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
 
+    /// merge block matrix for direct solve
+    void MergeSolve(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
     /** \name Field solver objects */
     //@{
 
@@ -66,6 +70,8 @@ namespace FSI
     Teuchos::RCP<LINALG::Preconditioner> alesolver_;
 
     //@}
+
+    bool structuresplit_;
   };
 }
 

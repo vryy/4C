@@ -386,7 +386,7 @@ void ADAPTER::FluidImpl::ApplyMeshVelocity(Teuchos::RCP<Epetra_Vector> gridvel)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FluidImpl::ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx)
+void ADAPTER::FluidImpl::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(Veln());
@@ -396,6 +396,17 @@ void ADAPTER::FluidImpl::ConvertInterfaceUnknown(Teuchos::RCP<Epetra_Vector> fcx
   // Delta d(n+1,i+1) = ( Delta u(n+1,i+1) + u(n) ) * dt
   //
   fcx->Update(-1.,*veln,TimeScaling());
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+{
+  // get interface velocity at t(n)
+  const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractCondVector(Veln());
+  double scale = 1./TimeScaling();
+  fcx->Update(scale,*veln,scale);
 }
 
 

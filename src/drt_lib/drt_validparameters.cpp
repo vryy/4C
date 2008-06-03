@@ -971,6 +971,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "iter_stagg_RRE",
                                  "iter_monolithic")
                                .append("iter_monolithiclagrange")
+                               .append("iter_monolithicstructuresplit")
                                .append("pseudo_structure"),
                                tuple<int>(
                                  fsi_basic_sequ_stagg,
@@ -986,6 +987,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  fsi_iter_stagg_RRE,
                                  fsi_iter_monolithic)
                                .append(fsi_iter_monolithiclagrange)
+                               .append(fsi_iter_monolithicstructuresplit)
                                .append(fsi_pseudo_structureale),
                                &fsidyn);
 
