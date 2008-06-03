@@ -1263,7 +1263,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
         
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
+        const Teuchos::RCP<XFEM::ElementDofManager> eledofman =
           dofmanagerForOutput_->constructElementDofManager(*actele,
               numeleparam);
         
@@ -1275,8 +1275,8 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
         
-        const int numparam = eledofman.NumDofPerField(field);
-        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
+        const int numparam = eledofman->NumDofPerField(field);
+        const vector<int>& dofpos = eledofman->LocalDofPosPerField(field);
         
         BlitzVec elementvalues(numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
@@ -1288,7 +1288,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           BlitzVec cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, ihForOutput_, eledofman,
+          XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, ihForOutput_, *eledofman,
               *cell, field, elementvalues, cellvalues);
           BlitzMat xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1345,7 +1345,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
         
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
+        const Teuchos::RCP<XFEM::ElementDofManager> eledofman =
           dofmanagerForOutput_->constructElementDofManager(*actele,
               numeleparam);
         
@@ -1357,8 +1357,8 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
         
-        const int numparam = eledofman.NumDofPerField(field);
-        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
+        const int numparam = eledofman->NumDofPerField(field);
+        const vector<int>& dofpos = eledofman->LocalDofPosPerField(field);
         
         BlitzVec elementvalues(numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
@@ -1374,7 +1374,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
           domainintcells.begin(); cell != domainintcells.end(); ++cell)
         {
           BlitzVec cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman,
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, *eledofman,
               *cell, field, elementvalues, cellvalues);
           BlitzMat xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1420,7 +1420,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
         
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
+        const Teuchos::RCP<XFEM::ElementDofManager> eledofman =
           dofmanagerForOutput_->constructElementDofManager(*actele,
               numeleparam);
         
@@ -1434,13 +1434,13 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         
         
         const vector<int>& dofposvelx =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
+          eledofman->LocalDofPosPerField(XFEM::PHYSICS::Velx);
         const vector<int>& dofposvely =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
+          eledofman->LocalDofPosPerField(XFEM::PHYSICS::Vely);
         const vector<int>& dofposvelz =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+          eledofman->LocalDofPosPerField(XFEM::PHYSICS::Velz);
         
-        const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
+        const int numparam = eledofman->NumDofPerField(XFEM::PHYSICS::Velx);
         blitz::Array<double,2> elementvalues(3, numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
         {
@@ -1458,7 +1458,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
           {
             BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
             //std::cout << cellvalues << endl;
-            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
+            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, *eledofman,
                 *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
             BlitzMat xyze_cell(3, cell->NumNode());
             cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1477,7 +1477,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
             {
               BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
               //std::cout << cellvalues << endl;
-              XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
+              XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, *eledofman,
                   *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
               BlitzMat xyze_cell(3, cell->NumNode());
               cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1550,7 +1550,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
         
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
+        const Teuchos::RCP<XFEM::ElementDofManager> eledofman =
           dofmanagerForOutput_->constructElementDofManager(*actele,
               numeleparam);
         
@@ -1564,13 +1564,13 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         
         
         const vector<int>& dofposvelx =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
+          eledofman->LocalDofPosPerField(XFEM::PHYSICS::Velx);
         const vector<int>& dofposvely =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
+          eledofman->LocalDofPosPerField(XFEM::PHYSICS::Vely);
         const vector<int>& dofposvelz =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+          eledofman->LocalDofPosPerField(XFEM::PHYSICS::Velz);
         
-        const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
+        const int numparam = eledofman->NumDofPerField(XFEM::PHYSICS::Velx);
         blitz::Array<double,2> elementvalues(3, numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
         {
@@ -1588,7 +1588,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
           {
             BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
             //std::cout << cellvalues << endl;
-            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
+            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, *eledofman,
                 *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
             BlitzMat xyze_cell(3, cell->NumNode());
             cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1607,7 +1607,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
             {
               BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
               //std::cout << cellvalues << endl;
-              XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
+              XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, *eledofman,
                   *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
               BlitzMat xyze_cell(3, cell->NumNode());
               cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1620,7 +1620,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
           {
             BlitzMat elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()));
             const XFEM::DomainIntCell cell(actele->Shape());
-            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
+            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, *eledofman,
                 cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);
             
             const BlitzMat xyze_ele(DRT::UTILS::PositionArrayBlitz(actele));
@@ -1680,7 +1680,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
         
         // create local copy of information about dofs
-        const XFEM::ElementDofManager eledofman =
+        const Teuchos::RCP<XFEM::ElementDofManager> eledofman =
           dofmanagerForOutput_->constructElementDofManager(*actele,
               numeleparam);
         
@@ -1694,13 +1694,13 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         
         
         const vector<int>& dofposvelx =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
+          eledofman->LocalDofPosPerField(XFEM::PHYSICS::Velx);
         const vector<int>& dofposvely =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
+          eledofman->LocalDofPosPerField(XFEM::PHYSICS::Vely);
         const vector<int>& dofposvelz =
-          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+          eledofman->LocalDofPosPerField(XFEM::PHYSICS::Velz);
         
-        const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
+        const int numparam = eledofman->NumDofPerField(XFEM::PHYSICS::Velx);
         blitz::Array<double,2> elementvalues(3, numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
         {
@@ -1718,7 +1718,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
           {
             BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
             //std::cout << cellvalues << endl;
-            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
+            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, *eledofman,
                 *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
             BlitzMat xyze_cell(3, cell->NumNode());
             cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1737,7 +1737,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
             {
               BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
               //std::cout << cellvalues << endl;
-              XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
+              XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, *eledofman,
                   *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
               BlitzMat xyze_cell(3, cell->NumNode());
               cell->NodalPosXYZ(*actele, xyze_cell);
@@ -1750,7 +1750,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
           {
             BlitzMat elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()));
             const XFEM::DomainIntCell cell(actele->Shape());
-            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
+            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, *eledofman,
                 cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);
             
             const BlitzMat xyze_ele(DRT::UTILS::PositionArrayBlitz(actele));
