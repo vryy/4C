@@ -1108,6 +1108,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   &fsidyn);
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& xfem_general = list->sublist("XFEM GENERAL",false,"");
+
+  setStringToIntegralParameter("GMSH_DEBUG_OUT","No","Do you want to write extended Gmsh output for each timestep?",
+                               yesnotuple,yesnovalue,&xfem_general);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");
   SetValidSolverParameters(fluidsolver);
 

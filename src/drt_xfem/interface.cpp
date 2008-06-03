@@ -16,6 +16,7 @@ Maintainer: Axel Gerstenberger
 #include "xfem_condition.H"
 #include "xfsi_searchtree.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  |  ctor                                                        ag 11/07|
@@ -99,6 +100,10 @@ std::string XFEM::InterfaceHandle::toString() const
  *----------------------------------------------------------------------*/
 void XFEM::InterfaceHandle::toGmsh(const int step) const
 {
+  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
+  const bool gmshdebugout = (xfemparams.get<std::string>("GMSH_DEBUG_OUT") == "Yes");
+  
+  if (gmshdebugout)
   {
     // debug: write both meshes to file in Gmsh format
     std::stringstream filename;
@@ -112,8 +117,9 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     cout << " done" << endl;
   }
   
-  // debug: write information about which structure we are in
+  if (gmshdebugout)
   {
+    // debug: write information about which structure we are in
     std::stringstream filenameP;
     filenameP << "points_" << std::setw(5) << setfill('0') << step << ".pos";
     cout << "writing '"<<filenameP.str()<<"...";
