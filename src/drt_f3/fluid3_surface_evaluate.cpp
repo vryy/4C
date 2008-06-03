@@ -607,7 +607,7 @@ void DRT::ELEMENTS::Fluid3Surface::AreaCaculation(ParameterList& params)
 
   // get the required material information
   RefCountPtr<MAT::Material> mat = parent_->Material();
-  double density, viscosity;
+  double density=0.0, viscosity=0.0;
 
   if( mat->MaterialType()    != m_carreauyasuda
       && mat->MaterialType() != m_modpowerlaw
@@ -780,8 +780,9 @@ void DRT::ELEMENTS::Fluid3Surface::FlowRateParameterCaculation(ParameterList& pa
 
   length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
 
+  // here we need an outward normal!!!
   for (int i=0; i<3; i++)
-    normal[i] = -normal[i] / length;
+    normal[i] = normal[i] / length;
 
 
   const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
@@ -915,6 +916,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
 
   length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
 
+  // here we need an inward normal!!!
   for (int i=0; i<3; i++)
     normal[i] = -normal[i] / length;
 
@@ -930,7 +932,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
 
     // Calculate infinitesimal area of element (drs)
     f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
-    //Calculate streamwise velocity gradient
+   
 
     const double fac = intpoints.qwgt[gpid] * drs * thsl * pressure * invdensity;
 
@@ -938,7 +940,6 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
     {
       for(int dim=0;dim<3;dim++)
       {
-	//	elevec1[node*numdf+dim] += funct[node] * fac * SurfaceNormal(dim,0);
 	elevec1[node*numdf+dim] += funct[node] * fac * normal[dim];
       }
     }
