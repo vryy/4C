@@ -25,6 +25,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
 /*----------------------------------------------------------------------*
@@ -238,7 +239,7 @@ void XFEM::DofManager::toGmsh(
 ) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (xfemparams.get<std::string>("GMSH_DEBUG_OUT") == "Yes");
+  const bool gmshdebugout = (getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1);
   
   if (gmshdebugout)
   {

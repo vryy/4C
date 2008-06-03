@@ -35,6 +35,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/enrichment_utils.H"
 #include "fluid_utils.H"
 #include "../drt_f3/xfluid3_interpolation.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1234,7 +1235,7 @@ void XFluidImplicitTimeInt::Output()
 void XFluidImplicitTimeInt::OutputToGmsh()
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (xfemparams.get<std::string>("GMSH_DEBUG_OUT") == "Yes");
+  const bool gmshdebugout = (getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1);
   
   if (gmshdebugout)
   {

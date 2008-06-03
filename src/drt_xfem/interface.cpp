@@ -17,6 +17,7 @@ Maintainer: Axel Gerstenberger
 #include "xfsi_searchtree.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_lib/drt_globalproblem.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*----------------------------------------------------------------------*
  |  ctor                                                        ag 11/07|
@@ -101,7 +102,7 @@ std::string XFEM::InterfaceHandle::toString() const
 void XFEM::InterfaceHandle::toGmsh(const int step) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (xfemparams.get<std::string>("GMSH_DEBUG_OUT") == "Yes");
+  const bool gmshdebugout = (getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1);
   
   if (gmshdebugout)
   {

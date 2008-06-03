@@ -150,7 +150,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENCE MODEL", *list);
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
-
+  reader.ReadGidSection("--XFEM GENERAL", *list);
+  
   reader.ReadGidSection("--FLUID SOLVER", *list);
   reader.ReadGidSection("--FLUID PRESSURE SOLVER", *list);
   reader.ReadGidSection("--STRUCT SOLVER", *list);
