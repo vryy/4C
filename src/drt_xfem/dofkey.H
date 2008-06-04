@@ -32,12 +32,15 @@ namespace XFEM
   };
   
   //! create a string from the DofType enum
-  static std::string dofTypeToString(DofType doftype)
+  inline std::string dofTypeToString(DofType t)
   {
-    switch (doftype)
+    switch (t)
     {
       case onNode: return "Node";
       case onElem: return "Elem";
+      default:
+        dserror("undefined behaviour");
+        exit(1);
     }
   }
   
@@ -86,7 +89,7 @@ namespace XFEM
       std::string toString() const
       {
         stringstream s;
-        s << "Dofkey: <" << XFEM::dofTypeToString(doftype) << " Id: " << gid_ << ", " << fieldenr_.toString();
+        s << "Dofkey: <" << dofTypeToString(doftype) << " Id: " << gid_ << ", " << fieldenr_.toString();
         return s.str();
       };
             

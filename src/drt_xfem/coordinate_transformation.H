@@ -35,7 +35,8 @@ namespace XFEM
   inline void mapEtaToXi3D(
       const XFEM::DomainIntCell& cell,
       const PosEtaDomain&  pos_eta_domain,
-      PosXiDomain&  pos_xsi_domain)
+      PosXiDomain&  pos_xsi_domain
+      )
   {   
     // get cell node coordinates
     const BlitzMat* xyze_cell(cell.NodalPosXiDomainBlitz());
@@ -51,30 +52,33 @@ namespace XFEM
     {
       pos_xsi_domain(isd) = 0.0;
       for (int j = 0; j < numnodes; ++j)
+      {
         pos_xsi_domain(isd) += funct(j)*(*xyze_cell)(isd,j);
+      }
     }
     return;
   }
   //! map position from eta to xi space
   template<> 
   inline void mapEtaToXi3D<XFEM::standard_assembly>(
-      const XFEM::DomainIntCell& cell,
+      const XFEM::DomainIntCell&,
       const PosEtaDomain&  pos_eta_domain,
-      PosXiDomain&  pos_xsi_domain)
-      {   
+      PosXiDomain&  pos_xsi_domain
+      )
+  {   
     pos_xsi_domain(0) = pos_eta_domain(0);
     pos_xsi_domain(1) = pos_eta_domain(1);
     pos_xsi_domain(2) = pos_eta_domain(2);
     return;
-      }
-  
+  }  
   
   
   //! get determinante between eta and xi space
   template<XFEM::AssemblyType ASSTYPE>
   inline double detEtaToXi3D(
       const XFEM::DomainIntCell& cell,
-      const XFEM::PosEtaDomain&  pos_eta)
+      const XFEM::PosEtaDomain&  pos_eta
+      )
   {   
     // get node coordinates
     const BlitzMat* xyze_cell(cell.NodalPosXiDomainBlitz());
@@ -111,8 +115,9 @@ namespace XFEM
   //! get determinante between eta and xi space
   template<>
   inline double detEtaToXi3D<XFEM::standard_assembly>(
-      const XFEM::DomainIntCell& cell,
-      const XFEM::PosEtaDomain&  pos_eta)
+      const XFEM::DomainIntCell&,
+      const XFEM::PosEtaDomain&
+      )
   {   
     return 1.0;
   }
