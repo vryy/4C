@@ -1296,7 +1296,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
           gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
               cell->Shape(), cellvalues, xyze_cell) << endl;
         }
-        if (elegid == 1)
+        if (elegid == 1 and elementvalues.size() > 0)
         {
           //std::cout << elementvalues << std::endl;
           std::ofstream f;
@@ -1502,7 +1502,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
           
         }
         //if (ihForOutput_->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
-        if (elegid == 1)
+        if (elegid == 1 and elementvalues.size() > 0)
         {
           ele_to_textfile = true;
           //std::cout << elementvalues << std::endl;
@@ -1761,7 +1761,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
           
         }
         //if (ihForOutput_->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
-        if (elegid == 1)
+        if (elegid == 1 and elementvalues.size() > 0)
         {
           ele_to_textfile = true;
           //std::cout << elementvalues << std::endl;
