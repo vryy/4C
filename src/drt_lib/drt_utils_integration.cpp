@@ -122,7 +122,6 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
   }
   case intrule_tet_1point:
   {
-    // GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 0
     nquad = 1;
     qxg[0][0] =  Q14 ;
     qxg[0][1] =  Q14 ;
@@ -132,7 +131,6 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
   }
   case intrule_tet_4point:
   {
-    // GAUSS INTEGRATION        4 SAMPLING POINTS, DEG.OF PRECISION 1
     nquad = 4;
     const double palpha = (5.0 + 3.0*sqrt(5.0))/20.0;
     const double pbeta  = (5.0 - sqrt(5.0))/20.0;
@@ -148,7 +146,6 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
   }
   case intrule_tet_4point_alternative:
   {
-    // ALT.GAUSS INTEGRATION    4 SAMPLING POINTS, DEG.OF PRECISION ? (closed)
     nquad = 4;
     qxg[0][0] = 0.0;
     qxg[1][0] = 1.0;
@@ -170,7 +167,6 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
   }
   case intrule_tet_5point:
   {
-    // GAUSS INTEGRATION        5 SAMPLING POINTS, DEG.OF PRECISION 2 (open)
     nquad = 5;
     qxg[0][0] = Q14;   qxg[0][1] = Q14;   qxg[0][2] = Q14;
     qxg[1][0] = Q12;   qxg[1][1] = Q16;   qxg[1][2] = Q16;
@@ -188,7 +184,6 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
   }
   case intrule_tet_10point:
   {
-    // GAUSS INTEGRATION        10 SAMPLING POINTS, DEG.OF PRECISION 3 (closed)
     nquad = 10;
     qxg[0][0] = 0.5684305841968444;   qxg[0][1] = 0.1438564719343852;   qxg[0][2] = 0.1438564719343852;
     qxg[1][0] = 0.1438564719343852;   qxg[1][1] = 0.1438564719343852;   qxg[1][2] = 0.1438564719343852;
@@ -214,7 +209,6 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
   }
   case intrule_tet_11point:
   {
-    // KEAST5,        11 SAMPLING POINTS, DEG.OF PRECISION 4 (open)
     nquad = 11;
     qxg[ 0][0] = 0.2500000000000000;   qxg[ 0][1] = 0.2500000000000000;   qxg[ 0][2] = 0.2500000000000000;
     qxg[ 1][0] = 0.7857142857142857;   qxg[ 1][1] = 0.0714285714285714;   qxg[ 1][2] = 0.0714285714285714;
@@ -242,7 +236,6 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
   }
   case intrule_tet_24point:
   {
-      // KEAST7,        24 SAMPLING POINTS, DEG.OF PRECISION 6 (open)
       nquad = 24;
       qxg[ 0][0] = 0.3561913862225449;  qxg[ 0][1] = 0.2146028712591517;  qxg[ 0][2] = 0.2146028712591517;
       qxg[ 1][0] = 0.2146028712591517;  qxg[ 1][1] = 0.2146028712591517;  qxg[ 1][2] = 0.2146028712591517;
@@ -308,7 +301,6 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
 
   case intrule_wedge_6point:
   {
-    // GAUSS INTEGRATION         6 SAMPLING POINTS
     const double xi3 = 1.0/sqrt(3.0);
     const double Q23 = 2.0/3.0;
     const double Q16 = 1.0/6.0;
@@ -344,7 +336,6 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
 
    case intrule_wedge_9point:
     {
-     // GAUSS INTEGRATION         9 SAMPLING POINTS
      const double xi3 = 0.77459666924;
     const double Q23 = 2.0/3.0;
     const double Q5913 = 5.0/9.0*1.0/3.0;
@@ -553,7 +544,6 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
   }
   case intrule_tri_3point:
   {
-    // gp on triangular lines/edges
     nquad = 3;
     qwgt[0]  = 1.0/6.0 ;
     qwgt[1]  = 1.0/6.0 ;
@@ -606,7 +596,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     qxg[5][1] = 0.4459484909160;
     break;
   }
-  case intrule_tri_12point:  // degree of precision: 6 (Hughes, The Finite Element Method)
+  case intrule_tri_12point:
   {
     nquad = 12;
     qwgt[ 0] = 0.050844906370207;
@@ -661,6 +651,158 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     
     qxg[11][0] = 0.053145049844816;
     qxg[11][1] = 0.310352451033785;
+    break;
+  }
+  case intrule_tri_37point:
+  {
+    nquad = 37;
+    qwgt[0] = 0.0517397660657;
+    qwgt[1] = 0.00800779955556;
+    qwgt[2] = 0.00800779955556;
+    qwgt[3] = 0.00800779955556;
+    qwgt[4] = 0.0468688989818;
+    qwgt[5] = 0.0468688989818;
+    qwgt[6] = 0.0468688989818;
+    qwgt[7] = 0.046590940184;
+    qwgt[8] = 0.046590940184;
+    qwgt[9] = 0.046590940184;
+    qwgt[10] = 0.0310169433138;
+    qwgt[11] = 0.0310169433138;
+    qwgt[12] = 0.0310169433138;
+    qwgt[13] = 0.0107916127366;
+    qwgt[14] = 0.0107916127366;
+    qwgt[15] = 0.0107916127366;
+    qwgt[16] = 0.0321955342424;
+    qwgt[17] = 0.0321955342424;
+    qwgt[18] = 0.0321955342424;
+    qwgt[19] = 0.0154458342107;
+    qwgt[20] = 0.0154458342107;
+    qwgt[21] = 0.0154458342107;
+    qwgt[22] = 0.0154458342107;
+    qwgt[23] = 0.0154458342107;
+    qwgt[24] = 0.0154458342107;
+    qwgt[25] = 0.0178229899232;
+    qwgt[26] = 0.0178229899232;
+    qwgt[27] = 0.0178229899232;
+    qwgt[28] = 0.0178229899232;
+    qwgt[29] = 0.0178229899232;
+    qwgt[30] = 0.0178229899232;
+    qwgt[31] = 0.0370386836814;
+    qwgt[32] = 0.0370386836814;
+    qwgt[33] = 0.0370386836814;
+    qwgt[34] = 0.0370386836814;
+    qwgt[35] = 0.0370386836814;
+    qwgt[36] = 0.0370386836814;
+    qxg[0][0] = 0.333333333333;
+    qxg[0][1] = 0.333333333333;
+
+    qxg[1][0] = 0.950275662924;
+    qxg[1][1] = 0.0248621685379;
+
+    qxg[2][0] = 0.0248621685379;
+    qxg[2][1] = 0.950275662924;
+
+    qxg[3][0] = 0.0248621685379;
+    qxg[3][1] = 0.0248621685379;
+
+    qxg[4][0] = 0.171614914924;
+    qxg[4][1] = 0.414192542538;
+
+    qxg[5][0] = 0.414192542538;
+    qxg[5][1] = 0.171614914924;
+
+    qxg[6][0] = 0.414192542538;
+    qxg[6][1] = 0.414192542538;
+
+    qxg[7][0] = 0.539412243677;
+    qxg[7][1] = 0.230293878161;
+
+    qxg[8][0] = 0.230293878161;
+    qxg[8][1] = 0.539412243677;
+
+    qxg[9][0] = 0.230293878161;
+    qxg[9][1] = 0.230293878161;
+
+    qxg[10][0] = 0.772160036677;
+    qxg[10][1] = 0.113919981662;
+
+    qxg[11][0] = 0.113919981662;
+    qxg[11][1] = 0.772160036677;
+
+    qxg[12][0] = 0.113919981662;
+    qxg[12][1] = 0.113919981662;
+
+    qxg[13][0] = 0.00908539994984;
+    qxg[13][1] = 0.495457300025;
+
+    qxg[14][0] = 0.495457300025;
+    qxg[14][1] = 0.00908539994984;
+
+    qxg[15][0] = 0.495457300025;
+    qxg[15][1] = 0.495457300025;
+
+    qxg[16][0] = 0.0622772903059;
+    qxg[16][1] = 0.468861354847;
+
+    qxg[17][0] = 0.468861354847;
+    qxg[17][1] = 0.0622772903059;
+
+    qxg[18][0] = 0.468861354847;
+    qxg[18][1] = 0.468861354847;
+
+    qxg[19][0] = 0.0220762896536;
+    qxg[19][1] = 0.851306504174;
+
+    qxg[20][0] = 0.0220762896536;
+    qxg[20][1] = 0.126617206172;
+
+    qxg[21][0] = 0.851306504174;
+    qxg[21][1] = 0.0220762896536;
+
+    qxg[22][0] = 0.851306504174;
+    qxg[22][1] = 0.126617206172;
+
+    qxg[23][0] = 0.126617206172;
+    qxg[23][1] = 0.0220762896536;
+
+    qxg[24][0] = 0.126617206172;
+    qxg[24][1] = 0.851306504174;
+
+    qxg[25][0] = 0.0186205228025;
+    qxg[25][1] = 0.689441970729;
+
+    qxg[26][0] = 0.0186205228025;
+    qxg[26][1] = 0.291937506469;
+
+    qxg[27][0] = 0.689441970729;
+    qxg[27][1] = 0.0186205228025;
+
+    qxg[28][0] = 0.689441970729;
+    qxg[28][1] = 0.291937506469;
+
+    qxg[29][0] = 0.291937506469;
+    qxg[29][1] = 0.0186205228025;
+
+    qxg[30][0] = 0.291937506469;
+    qxg[30][1] = 0.689441970729;
+
+    qxg[31][0] = 0.0965064812922;
+    qxg[31][1] = 0.635867859434;
+
+    qxg[32][0] = 0.0965064812922;
+    qxg[32][1] = 0.267625659274;
+
+    qxg[33][0] = 0.635867859434;
+    qxg[33][1] = 0.0965064812922;
+
+    qxg[34][0] = 0.635867859434;
+    qxg[34][1] = 0.267625659274;
+
+    qxg[35][0] = 0.267625659274;
+    qxg[35][1] = 0.0965064812922;
+
+    qxg[36][0] = 0.267625659274;
+    qxg[36][1] = 0.635867859434;
     break;
   }
   case intrule2D_undefined:

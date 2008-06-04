@@ -24,20 +24,20 @@ namespace UTILS
 //! supported 3d gauss rules
 enum GaussRule3D
 {
-    intrule3D_undefined,   ///< use this to initialize a gaussrule, if you don't know the value, yet!
+    intrule3D_undefined,    ///< use this to initialize a gaussrule, if you don't know the value, yet!
     intrule_hex_1point,
     intrule_hex_8point,
     intrule_hex_27point,
-    intrule_tet_1point,
-    intrule_tet_4point,
-    intrule_tet_4point_alternative,
-    intrule_tet_5point,
-    intrule_tet_10point,
-    intrule_tet_11point,
-    intrule_tet_24point,
+    intrule_tet_1point,     ///< GAUSS INTEGRATION         1 SAMPLING POINT, DEG.OF PRECISION 0
+    intrule_tet_4point,     ///< GAUSS INTEGRATION        4 SAMPLING POINTS, DEG.OF PRECISION 1
+    intrule_tet_4point_alternative,  ///< ALT.GAUSS INTEGRATION    4 SAMPLING POINTS, DEG.OF PRECISION ? (closed)
+    intrule_tet_5point,     ///< GAUSS INTEGRATION        5 SAMPLING POINTS, DEG.OF PRECISION 2 (open)
+    intrule_tet_10point,    ///< GAUSS INTEGRATION        10 SAMPLING POINTS, DEG.OF PRECISION 3 (closed)
+    intrule_tet_11point,    ///< KEAST5,        11 SAMPLING POINTS, DEG.OF PRECISION 4 (open)
+    intrule_tet_24point,    ///< KEAST7,        24 SAMPLING POINTS, DEG.OF PRECISION 6 (open)
     intrule_wedge_1point,
-    intrule_wedge_6point,
-    intrule_wedge_9point,
+    intrule_wedge_6point,   ///< GAUSS INTEGRATION         6 SAMPLING POINTS, degree of precission ???
+    intrule_wedge_9point,   ///< GAUSS INTEGRATION         9 SAMPLING POINTS, degree of precission ???
     intrule_pyramid_1point,
     intrule_pyramid_8point
 };
@@ -51,10 +51,11 @@ enum GaussRule2D
     intrule_quad_4point,
     intrule_quad_9point,
     intrule_tri_1point,
-    intrule_tri_3point,
+    intrule_tri_3point,    ///< gp on triangular lines/edges
     intrule_tri_3point_on_corners,
     intrule_tri_6point,
-    intrule_tri_12point
+    intrule_tri_12point,   ///< degree of precision: 6 (Hughes, The Finite Element Method)
+    intrule_tri_37point    ///< degree of precision: 13 (rule from ACM TOMS algorithm #706)
 };
 
 //! supported 1d gauss rules
