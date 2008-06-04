@@ -443,8 +443,7 @@ public:
   this means assembling the linearization of the slave side
   nodal tangents and the current Lagrange multipliers.
   */
-  virtual void AssembleP(LINALG::SparseMatrix& pglobal,
-                         RCP<Epetra_Vector> zglobal);
+  virtual void AssembleP(LINALG::SparseMatrix& pglobal);
     
   /*!
   \brief Initialize active set of this interface (t=0)

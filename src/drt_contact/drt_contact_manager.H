@@ -258,6 +258,19 @@ public:
   */
   void ContactForces(RCP<Epetra_Vector> fresm);
   
+  /*!
+  \brief Store current Lagrange multipliers into CNodes
+  
+  The string input parameter defines, which Lagrange multiplier is
+  to be updated. Currently only the possibilities "old" and "current"
+  exist, with "old" meaning the converged value of the last time / load
+  step. Note that in Gen-alpa this refers to the last MID-POINT! The
+  string "current" adresses the current (not necessarily converged) value
+  of the LM. Again in Gen-alpha this refers to the current MID-POINT!
+  
+  */
+  void StoreNodalLM(const string& state);
+  
   //@}
   
   

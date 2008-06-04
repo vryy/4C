@@ -284,7 +284,8 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
 
   // update of mid-point LM (equal to predictor = last end-point)
   zm->Update(1.0,*zn,0.0);
-
+  contactmanager_->StoreNodalLM("current");
+  
   // evaluate Mortar coupling matrices for contact forces
   {
     contactmanager_->Initialize(0);
@@ -485,6 +486,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 
   // update of mid-point LM (equal to predictor = last end-point)
   zm->Update(1.0,*zn,0.0);
+  contactmanager_->StoreNodalLM("current");
 
   // evaluate Mortar coupling matrices for contact forces
   {
@@ -902,6 +904,7 @@ void CONTACT::ContactStruGenAlpha::Update()
   // Lagrange multipliers at generalized mid-point
   // we need these for checking the active set in the next time step
   zoldm->Update(1.0,*zm,0.0);
+  contactmanager_->StoreNodalLM("old");
 
 #ifdef PRESTRESS
   //----------- save the current green-lagrange strains in the material

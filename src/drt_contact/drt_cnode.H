@@ -168,6 +168,16 @@ public:
   virtual inline double* n() { return n_; }
   
   /*!
+  \brief Return current Lagrange mutliplier (only for slave side!) (length 3)
+  */
+  virtual inline double* lm() { return lm_; }
+  
+  /*!
+  \brief Return old Lagrange mutliplier (only for slave side!) (length 3)
+  */
+  virtual inline double* lmold() { return lmold_; }
+    
+  /*!
   \brief Return current closest node's global id (by reference)
   */
   virtual inline int& ClosestNode() { return closestnode_; }
@@ -351,6 +361,8 @@ protected:
   double          n_[3];           // nodal normal for contact methods
   double          xspatial_[3];    // current configuration
   double          u_[3];           // current displacement
+  double          lm_[3];          // current Lagrange multiplier value
+  double          lmold_[3];       // old Lagrange multiplier value (last converged mid-point)
   int             closestnode_;    // closest node id on the other side of interface
   bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
   bool            active_;         // true if cnode is in contact (active set strategy)

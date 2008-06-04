@@ -1533,7 +1533,7 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
     interface_[i]->AssembleS(*smatrix_);
-    interface_[i]->AssembleP(*pmatrix_,z_);
+    interface_[i]->AssembleP(*pmatrix_);
   }
     
   // FillComplete() global matrices N and T
@@ -2017,6 +2017,9 @@ void CONTACT::Manager::RecoverBasisTrafo(RCP<Epetra_Vector> disi)
   RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
   invd_->Multiply(false,*zcopy,*z_);
   
+  // store updated LM into nodes
+  StoreNodalLM("current");
+  
   /*
   // CHECK OF CONTACT COUNDARY CONDITIONS---------------------------------
 #ifdef DEBUG
@@ -2116,6 +2119,9 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
   RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
   invd_->Multiply(false,*zcopy,*z_);
  
+  // store updated LM into nodes
+  StoreNodalLM("current");
+    
   /* 
   // CHECK OF CONTACT COUNDARY CONDITIONS---------------------------------
 #ifdef DEBUG
@@ -2185,7 +2191,7 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    //if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
+    if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
     
     // loop over all slave nodes on the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
@@ -2213,10 +2219,10 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
       // compute normal part of Lagrange multiplier
       double nz = 0.0;
       double nzold = 0.0;
-      for (int k=0;k<3;++k)
+      for (int k=0;k<2;++k)
       {
-        nz += cnode->n()[k] * (*z_)[z_->Map().LID(2*gid)+k];
-        nzold += cnode->n()[k] * (*zold_)[zold_->Map().LID(2*gid)+k];
+        nz += cnode->n()[k] * cnode->lm()[k];
+        nzold += cnode->n()[k] * cnode->lmold()[k];
       }
       
       // define weighting factor cn
@@ -2476,6 +2482,52 @@ void CONTACT::Manager::ContactForces(RCP<Epetra_Vector> fresm)
   // CHECK OF CONTACT FORCE EQUILIBRIUM ----------------------------------
   */
   
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store current Lagrange mulitpliers into CNodes            popp 06/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::StoreNodalLM(const string& state)
+{
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    // currently this only works safely for 1 interface
+    if (i>0) dserror("ERROR: StoreNodalLM: Double active node check needed for n interfaces!");
+    
+    // export global LM vector to current interface slave dof row map
+    RCP<Epetra_Vector> zglobal = null;
+    if (state=="current") zglobal = LagrMult();
+    else if (state=="old") zglobal = LagrMultOld();
+    else dserror("ERROR: StoreNodalLM: Unknown state string variable!");
+    RCP<Epetra_Map> sdofrowmap = interface_[i]->SlaveRowDofs();
+    RCP<Epetra_Vector> zinterface = rcp(new Epetra_Vector(*sdofrowmap));
+    LINALG::Export(*zglobal,*zinterface);
+    
+    // loop over all slave row nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      if (cnode->NumDof() > 2) dserror("ERROR: StoreNodalLM: Not yet implemented for 3D!");
+      
+      // extract this node's LM from zcurr
+      for (int k=0;k<2;++k)
+      {
+        if (state=="current")
+          cnode->lm()[k] = (*zinterface)[zinterface->Map().LID(2*gid)+k];
+        else if (state=="old")
+          cnode->lmold()[k] = (*zinterface)[zinterface->Map().LID(2*gid)+k];
+        else
+          dserror("ERROR: StoreNodalLM: Unknown state string variable!");
+      }
+    }
+  }
+    
   return;
 }
 

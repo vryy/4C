@@ -1675,8 +1675,7 @@ void CONTACT::Interface::AssembleS(LINALG::SparseMatrix& sglobal)
 /*----------------------------------------------------------------------*
  |  Assemble matrix P containing tangent derivatives          popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal,
-                                   RCP<Epetra_Vector> zglobal)
+void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
 {
   // nothing to do if no active nodes
   if (activenodes_==null)
@@ -1709,12 +1708,6 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal,
     // begin assembly of P-matrix
     //cout << endl << "->Assemble P for Node ID: " << cnode->Id() << endl;
     
-    // we need the LM-vector of this node
-    double lm[3];
-    for (int dim=0;dim<3;++dim)
-      lm[dim] = (*zglobal)[zglobal->Map().LID(2*gid)+dim];
-    //cout << lm[0] << " " << lm[1] << endl;
-    
     // loop over all derivative maps (=dimensions)
     for (int j=0;j<mapsize;++j)
     {
@@ -1724,8 +1717,8 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal,
       for (colcurr=dtmap[j].begin();colcurr!=dtmap[j].end();++colcurr)
       {
         int col = colcurr->first;
-        double val = lm[j]*(colcurr->second);
-        //cout << "lm[" << j << "]=" << lm[j] << " deriv=" << colcurr->second << endl;
+        double val = cnode->lm()[j]*(colcurr->second);
+        //cout << "lm[" << j << "]=" << cnode->lm()[j] << " deriv=" << colcurr->second << endl;
         //cout << "Assemble P: " << row << " " << col << " " << val << endl;
         // do not assemble zeros into P matrix
         if (abs(val)>1.0e-12) pglobal.Assemble(val,row,col);

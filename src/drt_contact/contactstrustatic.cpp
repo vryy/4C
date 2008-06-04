@@ -388,7 +388,8 @@ void contact_stru_static_drt()
 
       // update of LM (equal to last converged value)
       z->Update(1.0,*zold,0.0);
-        
+      contactmanager->StoreNodalLM("current");
+      
       //----------------------------------------------- build res/disi norm
       double norm;
       fresm->Norm2(&norm);
@@ -537,9 +538,10 @@ void contact_stru_static_drt()
     time += dt;   // load factor / pseudo time  t_n := t_{n+1} = t_n + Delta t
 
     //-------------------------------- update contact Lagrange multipliers
-    RCP<Epetra_Vector> zm = contactmanager->LagrMult();
-    RCP<Epetra_Vector> zoldm = contactmanager->LagrMultOld();
-    zoldm->Update(1.0,*zm,0.0);
+    RCP<Epetra_Vector> z = contactmanager->LagrMult();
+    RCP<Epetra_Vector> zold = contactmanager->LagrMultOld();
+    zold->Update(1.0,*z,0.0);
+    contactmanager->StoreNodalLM("old");
 
     //------------------------------------------------- write restart step
     bool isdatawritten = false;
