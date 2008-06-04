@@ -146,8 +146,8 @@ struct IntegrationPoints2D
 {
   IntegrationPoints2D(const GaussRule2D gaussrule);
   int           nquad;        ///< number of gausspoints
-  double        qxg[12][2];    ///< coordinates
-  double        qwgt[12];      ///< weights
+  double        qxg[37][2];    ///< coordinates
+  double        qwgt[37];      ///< weights
 };
 
 /*!
