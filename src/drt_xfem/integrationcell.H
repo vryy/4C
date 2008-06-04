@@ -91,7 +91,7 @@ public:
     explicit IntCell(const IntCell& old);
     
     //! Destructor
-    ~IntCell();
+    virtual ~IntCell();
 
     /*!  = operator
      * create true copy -> allows to have constant instance members
@@ -127,7 +127,7 @@ private:
 /*
  * \brief An domain integration cell is used for integrating the XFEM elements domain 
  */
-class DomainIntCell : IntCell
+class DomainIntCell : private IntCell
 {
 
 public:
@@ -234,7 +234,7 @@ typedef std::set<XFEM::DomainIntCell > DomainIntCellSet;
 /*
  * \brief An boundary integration cell is used for integrating along a discontinuity caused by XFEM enrichments 
  */
-class BoundaryIntCell : IntCell
+class BoundaryIntCell : private IntCell
 {
 
 public:
