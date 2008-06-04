@@ -17,7 +17,6 @@ Maintainer: Axel Gerstenberger
 #include "xfsi_searchtree.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_lib/drt_globalproblem.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*----------------------------------------------------------------------*
  |  ctor                                                        ag 11/07|
@@ -77,6 +76,17 @@ XFEM::InterfaceHandle::InterfaceHandle(
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
 
+  labelByElement_.clear();
+  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel_.begin(); conditer!=elementsByLabel_.end(); ++conditer)
+  {
+    for(std::set<int>::const_iterator eleid = conditer->second.begin(); eleid!=conditer->second.end(); ++eleid)
+    {
+      cout << conditer->first << endl;
+      cout << *eleid << endl;
+      labelByElement_[*eleid] = conditer->first;
+    }
+  }
+  
 }
 		
 /*----------------------------------------------------------------------*
@@ -102,7 +112,7 @@ std::string XFEM::InterfaceHandle::toString() const
 void XFEM::InterfaceHandle::toGmsh(const int step) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1);
+  const bool gmshdebugout = (xfemparams.get<std::string>("GMSH_DEBUG_OUT") == "Yes");
   
   if (gmshdebugout)
   {

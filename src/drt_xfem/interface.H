@@ -65,6 +65,10 @@ public:
     //! get pointer to map with all elements gids sorted by their interface labels
     const std::map<int,std::set<int> >* elementsByLabel() const {return &elementsByLabel_;};
 
+    //! get pointer to vector with all label gids indexed by their element ids
+    const std::map<int, int>* labelByElement() const {return &labelByElement_;};
+
+    
     //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
     DomainIntCells GetDomainIntCells(
             const int                              gid,     ///< unique global element id
@@ -101,7 +105,7 @@ private:
     //! discretization that intersects the xfemdis_ -> should be a boundary discretization (surface of structure)
     const RCP<DRT::Discretization> cutterdis_;
     
-    //! ///< current positions of all cutter nodes
+    //! current positions of all cutter nodes
     std::map<int,BlitzVec3>        currentcutterpositions_;
 
     //! integration cells for domain (global id for element -> list of volume integration cells)
@@ -111,7 +115,10 @@ private:
     std::map<int, BoundaryIntCells > elementalBoundaryIntCells_;
     
     //! elements grouped by the xfem condition label
-    std::map<int,set<int> >        elementsByLabel_;
+    std::map<int,set<int> >          elementsByLabel_;
+    
+    //! gives the label per element (gid)
+    std::map<int,int>                labelByElement_;
 
 };
 
