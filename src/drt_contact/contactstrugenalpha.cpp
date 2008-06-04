@@ -53,11 +53,14 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
-  int    step        = params_.get<int>   ("step"           ,0);
+  double mdamp       = params_.get<double>("damping factor M",0.0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   double alpham      = params_.get<double>("alpha m"        ,0.378);
   double beta        = params_.get<double>("beta"           ,0.292);
+#ifdef STRUGENALPHA_BE
+  double delta       = params_.get<double>("delta"          ,beta);
+#endif
   double gamma       = params_.get<double>("gamma"          ,0.581);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
@@ -65,7 +68,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
-  if (step != 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (!firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -84,16 +87,11 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_eleload");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
     p.set("alpha f",alphaf);
+    p.set("damping factor M",mdamp);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -107,21 +105,82 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     discret_.ClearState();
   }
 
+  //cout << *disn_ << endl;
+
   // consistent predictor
   // predicting velocity V_{n+1} (veln)
   // V_{n+1} := gamma/(beta*dt) * (D_{n+1} - D_n)
   //          + (beta-gamma)/beta * V_n
   //          + (2.*beta-gamma)/(2.*beta) * A_n
   veln_->Update(1.0,*disn_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+  veln_->Update((delta-gamma)/delta,*vel_,
+                (-gamma-2.*delta*gamma+2.*beta*gamma+2.*delta)*dt/(2.*delta),*acc_,gamma/(delta*dt));
+#else
   veln_->Update((beta-gamma)/beta,*vel_,
                 (2.*beta-gamma)*dt/(2.*beta),*acc_,gamma/(beta*dt));
+#endif
+
+
+#ifdef STRUGENALPHA_STRONGDBC
+  // apply new velocities at DBCs
+  {
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_eleload");
+    // other parameters needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    //p.set("time derivative degree",1);  // we want velocities
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("velocity",veln_);
+    // predicted dirichlet values
+    // veln_ then also holds prescribed new Dirichlet velocities
+    discret_.EvaluateDirichlet(p,null,veln_,null,dirichtoggle_);
+    discret_.ClearState();
+  }
+#endif
+
+  //cout << *veln_ << endl;
+
   // predicting accelerations A_{n+1} (accn)
   // A_{n+1} := 1./(beta*dt*dt) * (D_{n+1} - D_n)
   //          - 1./(beta*dt) * V_n
   //          + (2.*beta-1.)/(2.*beta) * A_n
   accn_->Update(1.0,*disn_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+  accn_->Update(-1./(delta*dt),*vel_,
+                (2.*beta-1.)/(2.*delta),*acc_,1./(delta*dt*dt));
+#else
   accn_->Update(-1./(beta*dt),*vel_,
                 (2.*beta-1.)/(2.*beta),*acc_,1./(beta*dt*dt));
+#endif
+
+#ifdef STRUGENALPHA_STRONGDBC
+  // apply new accelerations at DBCs
+  {
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_eleload");
+    // other parameters needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    //p.set("time derivative degree",2);  // we want accelerations
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("acceleration",accn_);
+    // predicted dirichlet values
+    // accn_ then also holds prescribed new Dirichlet accelerations
+    discret_.EvaluateDirichlet(p,null,null,accn_,dirichtoggle_);
+    discret_.ClearState();
+  }
+#endif
+
+  //cout << *accn_ << endl;
+
 
   //------------------------------ compute interpolated dis, vel and acc
   // consistent predictor
@@ -149,12 +208,6 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -163,11 +216,27 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     discret_.ClearState();
     disi_->PutScalar(0.0);
     discret_.SetState("residual displacement",disi_);
+#ifdef STRUGENALPHA_FINTLIKETR
+    discret_.SetState("displacement",disn_);
+#else
     discret_.SetState("displacement",dism_);
+#endif
     //discret_.SetState("velocity",velm_); // not used at the moment
+#ifdef STRUGENALPHA_FINTLIKETR
+    fintn_->PutScalar(0.0);  // initialise internal force vector
+    discret_.Evaluate(p,stiff_,null,fintn_,null,null);
+#else
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
+#endif
     discret_.ClearState();
+
+    if (surf_stress_man_!=null)
+    {
+      p.set("surfstr_man", surf_stress_man_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+    }
+
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 
@@ -177,25 +246,31 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   //     + F_int(D_{n+1-alpha_f})
   //     + F_c(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
-
+  
   // FIXME: Strictly speaking we have to include the contact forces
   // here as well, but it does not matter for the following calculations,
   // so maybe we could just remove it and don't care about the wrong
   // predictor res-norm...?
-
+  
   // add mid-inertial force
   mass_->Multiply(false,*accm_,*finert_);
   fresm_->Update(1.0,*finert_,0.0);
+  
   // add mid-viscous damping force
   if (damping)
   {
-    //RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     damp_->Multiply(false,*velm_,*fvisc_);
     fresm_->Update(1.0,*fvisc_,1.0);
   }
 
   // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+  fresm_->Update(1.0,*fextm_,-1.0);
+  fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+#endif
 
   // blank residual at DOFs on Dirichlet BC
   {
@@ -218,35 +293,37 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     // (almost) all contact stuff is done here!
     contactmanager_->EvaluateMortar();
   }
-
+  
   // add contact forces
   contactmanager_->ContactForces(fresm_);
   RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
   Epetra_Vector fccopy(*fc);
   fc->Multiply(1.0,*invtoggle_,fccopy,0.0);
   if (fc!=null) fresm_->Update(-1.0,*fc,1.0);
-
+    
   //------------------------------------------------ build residual norm
-  double fresmnorm = 1.0e6;
+  double fresmnorm = 1.0;
 
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
-  // is desired and we are in the first time step
-  if (step == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  // is desired and we are in the first time step (possibly after a
+  // restart)
+  if (firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
+    firststep_=false;
   }
 
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
-  if (!myrank_ && printscreen)
+  if (!myrank_ and printscreen)
   {
     PrintPredictor(convcheck, fresmnorm);
   }
 
   // remove contact forces from equilibrium again
   if (fc!=null) fresm_->Update(1.0,*fc,1.0);
-
+    
   return;
 } // ContactStruGenAlpha::ConsistentPredictor()
 
@@ -256,13 +333,12 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
  *----------------------------------------------------------------------*/
 void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 {
-
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
   double time        = params_.get<double>("total time"     ,0.0);
   double dt          = params_.get<double>("delta time"     ,0.01);
-  int    step        = params_.get<int>   ("step"           ,0);
+  double mdamp       = params_.get<double>("damping factor M",0.0);
   bool   damping     = params_.get<bool>  ("damping"        ,false);
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
@@ -271,7 +347,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
   // check is desired
-  if (step != 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  if (!firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
   }
@@ -290,16 +366,11 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_eleload");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
     p.set("alpha f",alphaf);
+    p.set("damping factor M",mdamp);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -339,12 +410,6 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     ParameterList p;
     // action for elements
     p.set("action","calc_struct_nlnstiff");
-    // choose what to assemble
-    p.set("assemble matrix 1",true);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",true);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -353,11 +418,27 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     discret_.ClearState();
     disi_->PutScalar(0.0);
     discret_.SetState("residual displacement",disi_);
+#ifdef STRUGENALPHA_FINTLIKETR
+    discret_.SetState("displacement",disn_);
+#else
     discret_.SetState("displacement",dism_);
+#endif
     //discret_.SetState("velocity",velm_); // not used at the moment
+#ifdef STRUGENALPHA_FINTLIKETR
+    fintn_->PutScalar(0.0);  // initialise internal force vector
+    discret_.Evaluate(p,stiff_,null,fintn_,null,null);
+#else
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,null,fint_,null,null);
+#endif
     discret_.ClearState();
+
+    if (surf_stress_man_!=null)
+    {
+      p.set("surfstr_man", surf_stress_man_);
+      surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+    }
+
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 
@@ -367,25 +448,30 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   //     + F_int(D_{n+1-alpha_f})
   //     + F_c(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
-
+  
   // FIXME: Strictly speaking we have to include the contact forces
   // here as well, but it does not matter for the following calculations,
   // so maybe we could just remove it and don't care about the wrong
   // predictor res-norm...?
-
+  
   // add mid-inertial force
   mass_->Multiply(false,*accm_,*finert_);
   fresm_->Update(1.0,*finert_,0.0);
   // add mid-viscous damping force
   if (damping)
   {
-      //RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-      damp_->Multiply(false,*velm_,*fvisc_);
-      fresm_->Update(1.0,*fvisc_,1.0);
+    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+    damp_->Multiply(false,*velm_,*fvisc_);
+    fresm_->Update(1.0,*fvisc_,1.0);
   }
 
   // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+  fresm_->Update(1.0,*fextm_,-1.0);
+  fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
+#endif
 
   // blank residual at DOFs on Dirichlet BC
   {
@@ -415,30 +501,32 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   Epetra_Vector fccopy(*fc);
   fc->Multiply(1.0,*invtoggle_,fccopy,0.0);
   if (fc!=null) fresm_->Update(-1.0,*fc,1.0);
-
+    
   //------------------------------------------------ build residual norm
-  double fresmnorm = 1.0e6;
+  double fresmnorm = 1.0;
 
   // store norms of displacements and maximum of norms of internal,
   // external and inertial forces if a relative convergence check
-  // is desired and we are in the first time step
-  if (step == 0 && (convcheck != "AbsRes_And_AbsDis" || convcheck != "AbsRes_Or_AbsDis"))
+  // is desired and we are in the first time step (possibly after a
+  // restart)
+  if (firststep_ and (convcheck != "AbsRes_And_AbsDis" or convcheck != "AbsRes_Or_AbsDis"))
   {
     CalcRefNorms();
+    firststep_=false;
   }
 
   if (printscreen)
     fresm_->Norm2(&fresmnorm);
-  if (!myrank_ && printscreen)
+  if (!myrank_ and printscreen)
   {
     PrintPredictor(convcheck, fresmnorm);
   }
 
   // remove contact forces from equilibrium again
   if (fc!=null) fresm_->Update(1.0,*fc,1.0);
-
+    
   return;
-} // StruGenAlpha::ConstantPredictor()
+} // ContactStruGenAlpha::ConstantPredictor()
 
 
 /*----------------------------------------------------------------------*
@@ -455,6 +543,9 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   int    maxiter   = params_.get<int>   ("max iterations"         ,10);
   bool   damping   = params_.get<bool>  ("damping"                ,false);
   double beta      = params_.get<double>("beta"                   ,0.292);
+#ifdef STRUGENALPHA_BE
+  double delta     = params_.get<double>("delta"                  ,beta);
+#endif
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
@@ -464,7 +555,11 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   bool printscreen = params_.get<bool>  ("print to screen",true);
   bool printerr    = params_.get<bool>  ("print to err",false);
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
+  bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
+  //------------------------------ turn adaptive solver tolerance on/off
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
+  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
   // check whether we have a stiffness matrix, that is not filled yet
   // and mass and damping are present
@@ -475,8 +570,8 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 
   //=================================================== equilibrium loop
   int numiter=0;
-  double disinorm = 1.0e6;
   double fresmnorm = 1.0e6;
+  double disinorm = 1.0e6;
   fresm_->Norm2(&fresmnorm);
   Epetra_Time timer(discret_.Comm());
   timer.ResetStartTime();
@@ -487,10 +582,18 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
+#ifdef STRUGENALPHA_BE
+    stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
+#else
     stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
+#endif
     if (damping)
     {
+#ifdef STRUGENALPHA_BE
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
       stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
     }
     stiff_->Complete();
 
@@ -502,27 +605,36 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       // (almost) all contact stuff is done here!
       contactmanager_->Evaluate(stiff_,fresm_,numiter);
     }
-
+        
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (!numiter)
-      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,true);
-    else
-      solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,false);
+    if (isadapttol && numiter)
+    {
+      double worst = fresmnorm;
+      double wanted = tolres;
+      solver_.AdaptTolerance(wanted,worst,adaptolbetter);
+    }
+    solver_.Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter==0);
+    solver_.ResetTolerance();
 
     //------------------------------------ -- recover disi and Lag. Mult.
     {
       contactmanager_->Recover(disi_);
     }
-
+        
     //---------------------------------- update mid configuration values
     // displacements
     // D_{n+1-alpha_f} := D_{n+1-alpha_f} + (1-alpha_f)*IncD_{n+1}
+#ifdef STRUGENALPHA_FINTLIKETR
+    disn_->Update(1.0,*disi_,1.0);
+    dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
+#else
     dism_->Update(1.-alphaf,*disi_,1.0);
+#endif
     // velocities
 #ifndef STRUGENALPHA_INCRUPDT
     // iterative
@@ -532,9 +644,15 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 #else
     // incremental (required for constant predictor)
     velm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+    velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,
+                  (1.0-alphaf)*(-gamma-2.*delta*gamma+2.*beta*gamma+2.*delta)*dt/(2.*delta),*acc_,
+                  gamma/(delta*dt));
+#else
     velm_->Update((beta-(1.0-alphaf)*gamma)/beta,*vel_,
                   (1.0-alphaf)*(2.*beta-gamma)*dt/(2.*beta),*acc_,
                   gamma/(beta*dt));
+#endif
 #endif
     // accelerations
 #ifndef STRUGENALPHA_INCRUPDT
@@ -545,9 +663,15 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 #else
     // incremental (required for constant predictor)
     accm_->Update(1.0,*dism_,-1.0,*dis_,0.0);
+#ifdef STRUGENALPHA_BE
+    accm_->Update(-(1.-alpham)/(delta*dt),*vel_,
+                  (2.*beta-1.+alpham-2.*alpham*beta+2.*alpham*delta)/(2.*delta),*acc_,
+                  (1.-alpham)/((1.-alphaf)*delta*dt*dt));
+#else
     accm_->Update(-(1.-alpham)/(beta*dt),*vel_,
                   (2.*beta-1.+alpham)/(2.*beta),*acc_,
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
+#endif
 #endif
 
     //---------------------------- compute internal forces and stiffness
@@ -558,27 +682,68 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       ParameterList p;
       // action for elements
       p.set("action","calc_struct_nlnstiff");
-      // choose what to assemble
-      p.set("assemble matrix 1",true);
-      p.set("assemble matrix 2",false);
-      p.set("assemble vector 1",true);
-      p.set("assemble vector 2",false);
-      p.set("assemble vector 3",false);
       // other parameters that might be needed by the elements
       p.set("total time",timen);
       p.set("delta time",dt);
       p.set("alpha f",alphaf);
       // set vector values needed by elements
       discret_.ClearState();
-      // scale IncD_{n+1} to obtain mid residual displacements IncD_{n+1-alphaf}
+#ifdef STRUGENALPHA_FINTLIKETR
+#else
+      // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
       disi_->Scale(1.-alphaf);
+#endif
       discret_.SetState("residual displacement",disi_);
+#ifdef STRUGENALPHA_FINTLIKETR
+      discret_.SetState("displacement",disn_);
+#else
       discret_.SetState("displacement",dism_);
+#endif
       //discret_.SetState("velocity",velm_); // not used at the moment
+#ifdef STRUGENALPHA_FINTLIKETR
+      fintn_->PutScalar(0.0);  // initialise internal force vector
+      discret_.Evaluate(p,stiff_,null,fintn_,null,null);
+#else
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
+#endif
       discret_.ClearState();
+
+      if (surf_stress_man_!=null)
+      {
+        p.set("surfstr_man", surf_stress_man_);
+        surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+      }
+
+      if (constrMan_->HaveConstraint())
+      {
+        constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+      }
+
       // do NOT finalize the stiffness matrix to add masses to it later
+
+      // If we have a robin condition we need to modify both the rhs and the
+      // matrix diagonal corresponding to the dofs at the robin interface.
+      if (structrobin)
+      {
+        double alphas = params_.get<double>("alpha s",-1.);
+
+        // Add structural part of Robin force
+        fsisurface_->AddCondVector(alphas/dt,
+                                   fsisurface_->ExtractCondVector(dism_),
+                                   fint_);
+
+        double scale = alphas*(1.-alphaf)/dt;
+        const Epetra_Map& robinmap = *fsisurface_->CondMap();
+        int numrdofs = robinmap.NumMyElements();
+        int* rdofs = robinmap.MyGlobalElements();
+        for (int lid=0; lid<numrdofs; ++lid)
+        {
+          int gid = rdofs[lid];
+          // Note: This assemble might fail if we have a block matrix here.
+          stiff_->Assemble(scale,gid,gid);
+        }
+      }
     }
 
     //------------------------------------------ compute residual forces
@@ -587,20 +752,25 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     //     + F_int(D_{n+1-alpha_f})
     //      + F_c(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
+    
     // add inertia mid-forces
     mass_->Multiply(false,*accm_,*finert_);
     fresm_->Update(1.0,*finert_,0.0);
     // add viscous mid-forces
     if (damping)
     {
-      //RCP<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
       damp_->Multiply(false,*velm_,*fvisc_);
       fresm_->Update(1.0,*fvisc_,1.0);
     }
-
     // add static mid-balance
+#ifdef STRUGENALPHA_FINTLIKETR
+    fresm_->Update(1.0,*fextm_,-1.0);
+    fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
+#else
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
+#endif
     // blank residual DOFs that are on Dirichlet BC
     {
       Epetra_Vector fresmcopy(*fresm_);
@@ -613,7 +783,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     Epetra_Vector fccopy(*fc);
     fc->Multiply(1.0,*invtoggle_,fccopy,0.0);
     if (fc!=null) fresm_->Update(-1.0,*fc,1.0);
-
+        
     //---------------------------------------------- build residual norm
     disi_->Norm2(&disinorm);
 
@@ -621,9 +791,9 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 
     //remove contact forces from equilibrium again
     if (fc!=null) fresm_->Update(1.0,*fc,1.0);
-
+        
     // a short message
-    if (!myrank_ && (printscreen || printerr))
+    if (!myrank_ and (printscreen or printerr))
     {
       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
                   fresmnorm,disinorm,convcheck);
@@ -643,11 +813,15 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
   }
   else
   {
-     if (!myrank_ && printscreen)
-     {
-       PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
-                   fresmnorm,disinorm,convcheck);
-     }
+    if (constrMan_->HaveMonitor())
+    {
+      constrMan_->ComputeMonitorValues(dism_);
+    }
+    if (!myrank_ and printscreen)
+    {
+      PrintNewton(printscreen,printerr,print_unconv,errfile,timer,numiter,maxiter,
+                  fresmnorm,disinorm,convcheck);
+    }
   }
 
   params_.set<int>("num iterations",numiter);
@@ -661,6 +835,16 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
  *----------------------------------------------------------------------*/
 void CONTACT::ContactStruGenAlpha::UpdateandOutput()
 {
+  Update();
+  Output();
+  return;
+} // ContactStruGenAlpha::UpdateandOutput()
+
+/*----------------------------------------------------------------------*
+ |  do update and output (public)                            mwgee 03/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::ContactStruGenAlpha::Update()
+{
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -669,21 +853,13 @@ void CONTACT::ContactStruGenAlpha::UpdateandOutput()
   double timen         = time + dt;  // t_{n+1}
   int    step          = params_.get<int>   ("step"                   ,0);
   int    istep         = step + 1;  // n+1
-  int    nstep         = params_.get<int>   ("nstep"                  ,5);
-  int    numiter       = params_.get<int>   ("num iterations"         ,-1);
 
   double alpham        = params_.get<double>("alpha m"                ,0.378);
   double alphaf        = params_.get<double>("alpha f"                ,0.459);
 
-  bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
-  int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
   string iostress      = params_.get<string>("io structural stress"   ,"none");
-  int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
   string iostrain      = params_.get<string>("io structural strain"   ,"none");
 
-  int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
-
-  bool   printscreen   = params_.get<bool>  ("print to screen"        ,true);
   bool   printerr      = params_.get<bool>  ("print to err"           ,true);
   FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
   if (!errfile) printerr = false;
@@ -692,7 +868,7 @@ void CONTACT::ContactStruGenAlpha::UpdateandOutput()
   params_.set<double>("total time", timen);
   params_.set<int>("step", istep);
 
-  //---------------------------- determine new end-quantities and update
+  //---------------------- determine new end-point quantities and update
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1} = 1./(1.-alphaf) * D_{n+1-alpha_f}
   //                     - alphaf/(1.-alphaf) * D_n
@@ -708,6 +884,11 @@ void CONTACT::ContactStruGenAlpha::UpdateandOutput()
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0,*fextn_,0.0);
+#ifdef STRUGENALPHA_FINTLIKETR
+  // update new internal force
+  //    F_{int;n} := F_{int;n+1}
+  fint_->Update(1.0,*fintn_,0.0);
+#endif
 
   //--------------------------------- update contact Lagrange multipliers
   RCP<Epetra_Vector> zm = contactmanager_->LagrMult();
@@ -722,29 +903,102 @@ void CONTACT::ContactStruGenAlpha::UpdateandOutput()
   // we need these for checking the active set in the next time step
   zoldm->Update(1.0,*zm,0.0);
 
-  //----- update anything that needs to be updated at the element level
+#ifdef PRESTRESS
+  //----------- save the current green-lagrange strains in the material
   {
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
-    // p.set("action","calc_struct_update_istep");
-    p.set("action","calc_struct_update_genalpha_imrlike");
-    // choose what to assemble
-    p.set("assemble matrix 1",false);
-    p.set("assemble matrix 2",false);
-    p.set("assemble vector 1",false);
-    p.set("assemble vector 2",false);
-    p.set("assemble vector 3",false);
+    p.set("action","calc_struct_prestress_update_green_lagrange");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    discret_.SetState("displacement",dis_);
+    discret_.SetState("residual displacement",zeros_);
+    discret_.Evaluate(p,null,null,null,null,null);
+  }
+
+  //----------------------------- reset the current disp/vel/acc to zero
+  // (the structure does not move while prestraining it )
+  // (prestraining with DBCs != 0 not allowed!)
+  //dis_->Update(1.0,disold,0.0);
+  //vel_->Update(1.0,velold,0.0);
+  //acc_->Update(1.0,accold,0.0);
+  dis_->Scale(0.0);
+  vel_->Scale(0.0);
+  acc_->Scale(0.0);
+#endif
+
+
+  //------ update anything that needs to be updated at the element level
+#ifdef STRUGENALPHA_FINTLIKETR
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_update_istep");
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
     p.set("alpha f",alphaf);
     discret_.Evaluate(p,null,null,null,null,null);
   }
+#else
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    //p.set("action","calc_struct_update_istep");
+    p.set("action","calc_struct_update_genalpha_imrlike");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    discret_.Evaluate(p,null,null,null,null,null);
+  }
+#endif
 
-  //------------------------------------------------- write restart step
+  //----------------- update surface stress history variables if present
+  if (surf_stress_man_!=null)
+  {
+    surf_stress_man_->Update();
+  }
+} // ContactStruGenAlpha::Update()
+
+
+/*----------------------------------------------------------------------*
+ |  do update and output (public)                            mwgee 03/07|
+ *----------------------------------------------------------------------*/
+void CONTACT::ContactStruGenAlpha::Output()
+{
+  // -------------------------------------------------------------------
+  // get some parameters from parameter list
+  // -------------------------------------------------------------------
+  double timen         = params_.get<double>("total time"             ,0.0);
+  double dt            = params_.get<double>("delta time"             ,0.01);
+  double alphaf        = params_.get<double>("alpha f"                ,0.459);
+  int    istep         = params_.get<int>   ("step"                   ,0);
+  int    nstep         = params_.get<int>   ("nstep"                  ,5);
+  int    numiter       = params_.get<int>   ("num iterations"         ,-1);
+
+  bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
+  int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
+  string iostress      = params_.get<string>("io structural stress"   ,"none");
+  int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
+  string iostrain      = params_.get<string>("io structural strain"   ,"none");
+
+  int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
+
+  bool   printscreen   = params_.get<bool>  ("print to screen"        ,true);
+  bool   printerr      = params_.get<bool>  ("print to err"           ,true);
+  FILE*  errfile       = params_.get<FILE*> ("err file"               ,NULL);
+  if (!errfile) printerr = false;
+
   bool isdatawritten = false;
-  if (writeresevry && istep%writeresevry==0)
+ 
+  //------------------------------------------------- write restart step
+  if (writeresevry and istep%writeresevry==0)
   {
     output_.WriteMesh(istep,timen);
     output_.NewStep(istep, timen);
@@ -752,21 +1006,37 @@ void CONTACT::ContactStruGenAlpha::UpdateandOutput()
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
-
     isdatawritten = true;
-
+    
     // write restart information for contact
+    RCP<Epetra_Vector> zoldm = contactmanager_->LagrMultOld();
+    RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
     RCP<Epetra_Vector> activetoggle = contactmanager_->WriteRestart();
     output_.WriteVector("lagrmultend",zn);
     output_.WriteVector("lagrmultold",zoldm);
     output_.WriteVector("activetoggle",activetoggle);
 
-    if (discret_.Comm().MyPID()==0 && printscreen)
+    if (surf_stress_man_!=null)
+    {
+      RCP<Epetra_Map> surfrowmap=surf_stress_man_->GetSurfRowmap();
+      RCP<Epetra_Vector> A=rcp(new Epetra_Vector(*surfrowmap, true));
+      RCP<Epetra_Vector> con=rcp(new Epetra_Vector(*surfrowmap, true));
+      surf_stress_man_->GetHistory(A,con);
+      output_.WriteVector("Aold", A);
+      output_.WriteVector("conquot", con);
+    }
+
+    if (constrMan_->HaveConstraint())
+    {
+      output_.WriteDouble("uzawaparameter",constrMan_->GetUzawaParameter());
+    }
+
+    if (discret_.Comm().MyPID()==0 and printscreen)
     {
       cout << "====== Restart written in step " << istep << endl;
       fflush(stdout);
     }
-    if (errfile && printerr)
+    if (errfile and printerr)
     {
       fprintf(errfile,"====== Restart written in step %d\n",istep);
       fflush(errfile);
@@ -774,17 +1044,19 @@ void CONTACT::ContactStruGenAlpha::UpdateandOutput()
   }
 
   //----------------------------------------------------- output results
-  if (iodisp && updevrydisp && istep%updevrydisp==0 && !isdatawritten)
+  if (iodisp and updevrydisp and istep%updevrydisp==0 and !isdatawritten)
   {
     output_.NewStep(istep, timen);
     output_.WriteVector("displacement",dis_);
     output_.WriteVector("velocity",vel_);
     output_.WriteVector("acceleration",acc_);
+    output_.WriteVector("fexternal",fext_);
+    output_.WriteElementData();
     isdatawritten = true;
   }
 
-  //---------------------------------------------- do stress calculation
-  if (updevrystress && istep%updevrystress==0 && iostress!="none")
+  //------------------------------------- do stress calculation and output
+  if (updevrystress and !(istep%updevrystress) and iostress!="none")
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -816,9 +1088,13 @@ void CONTACT::ContactStruGenAlpha::UpdateandOutput()
     if (!isdatawritten) output_.NewStep(istep, timen);
     isdatawritten = true;
     if (iostress == "cauchy")
+    {
       output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementColMap());
+    }
     else
+    {
       output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementColMap());
+    }
     if (iostrain != "none")
     {
       if (iostrain == "euler_almansi")
@@ -850,11 +1126,7 @@ void CONTACT::ContactStruGenAlpha::UpdateandOutput()
       fflush(errfile);
     }
   }
-
-  return;
-} // ContactStruGenAlpha::UpdateandOutput()
-
-
+} // ContactStruGenAlpha::Output()
 
 
 /*----------------------------------------------------------------------*
@@ -862,8 +1134,9 @@ void CONTACT::ContactStruGenAlpha::UpdateandOutput()
  *----------------------------------------------------------------------*/
 void CONTACT::ContactStruGenAlpha::Integrate()
 {
-  int    step  = params_.get<int>   ("step" ,0);
-  int    nstep = params_.get<int>   ("nstep",5);
+  int    step    = params_.get<int>   ("step" ,0);
+  int    nstep   = params_.get<int>   ("nstep",5);
+  double maxtime = params_.get<double>("max time",0.0);
 
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
@@ -877,9 +1150,39 @@ void CONTACT::ContactStruGenAlpha::Integrate()
 
   // iteration counter for active set loop
   int numiteractive = 0;
-
+   
+  //in case a constraint is defined, use defined algorithm
+  if (constrMan_->HaveConstraint())
+  {
+    string algo = params_.get<string>("uzawa algorithm","newtonlinuzawa");
+    for (int i=step; i<nstep; ++i)
+    {
+      if      (predictor==1) ConstantPredictor();
+      else if (predictor==2) ConsistentPredictor();
+      //Does predicted displacement satisfy constraint?
+      double time = params_.get<double>("total time",0.0);
+      double dt   = params_.get<double>("delta time",0.01);
+      // what algorithm is used?
+      // - "newtonlinuzawa":      Potential is linearized wrt displacements and Lagrange multipliers
+      //                  Linear problem is solved with Uzawa algorithm
+      // - "augmentedlagrange":   Potential is linearized wrt displacements keeping Lagrange multiplier fixed
+      //                Until convergence Lagrange multiplier increased by Uzawa_param*(Vol_err)
+      if (algo=="newtonlinuzawa")
+      {
+        FullNewtonLinearUzawa();
+      }
+      else if (algo=="augmentedlagrange")
+      {
+         NonLinearUzawaFullNewton(predictor);
+      }
+      else dserror("Unknown type of algorithm to deal with constraints");
+      UpdateandOutput();
+      if (time>=maxtime) break;
+    }
+  }
+  
   // Newton as nonlinear iteration scheme
-  if (equil=="full newton")
+  else if (equil=="full newton")
   {
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
@@ -900,12 +1203,14 @@ void CONTACT::ContactStruGenAlpha::Integrate()
         // update of active set
         numiteractive++;
         contactmanager_->UpdateActiveSet(numiteractive,dism_);
-
       }
+      
       UpdateandOutput();
+      double time = params_.get<double>("total time",0.0);
+      if (time>=maxtime) break;
     }
   }
-
+  
   // other types of nonlinear iteration schemes
   else dserror("Unknown type of equilibrium iteration");
 
@@ -913,13 +1218,12 @@ void CONTACT::ContactStruGenAlpha::Integrate()
 } // void ContactStruGenAlpha::Integrate()
 
 
-
 /*----------------------------------------------------------------------*
  |  read restart (public)                                    mwgee 06/07|
  *----------------------------------------------------------------------*/
 void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
 {
-  RCP<DRT::Discretization> rcpdiscret = rcp(&discret_);
+  RefCountPtr<DRT::Discretization> rcpdiscret = rcp(&discret_);
   rcpdiscret.release();
   IO::DiscretizationReader reader(rcpdiscret,step);
   double time  = reader.ReadDouble("time");
@@ -942,13 +1246,39 @@ void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
   contactmanager_->LagrMultEnd()=zn;
   contactmanager_->LagrMultOld()=zoldm;
   contactmanager_->ReadRestart(activetoggle);
-
+    
   // override current time and step with values from file
   params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);
 
+  if (surf_stress_man_!=null)
+  {
+    RCP<Epetra_Map> surfmap=surf_stress_man_->GetSurfRowmap();
+    RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
+    RCP<Epetra_Vector> con_quot = LINALG::CreateVector(*surfmap,true);
+    reader.ReadVector(A_old, "Aold");
+    reader.ReadVector(con_quot, "conquot");
+    surf_stress_man_->SetHistory(A_old,con_quot);
+  }
+
+  if (DRT::Problem::Instance()->ProblemType()=="struct_multi")
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","multi_readrestart");
+    discret_.Evaluate(p,null,null,null,null,null);
+    discret_.ClearState();
+  }
+
+  if (constrMan_->HaveConstraint())
+  {
+    double uzawatemp = reader.ReadDouble("uzawaparameter");
+    constrMan_->SetUzawaParameter(uzawatemp);
+  }
+
   return;
-}
+} // void ContactStruGenAlpha::ReadRestart()
 
 
 #endif  // #ifdef CCADISCRET

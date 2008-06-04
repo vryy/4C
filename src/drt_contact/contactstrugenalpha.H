@@ -70,10 +70,16 @@ public:
 
     
   /*!
-  \brief update configuration and output to file/screen
+    \brief update configuration and output to file/screen
 
   */
-  void UpdateandOutput();
+  virtual void UpdateandOutput();
+
+  /// update configuration
+  virtual void Update();
+
+  /// output to file/screen
+  virtual void Output();
 
   /*!
   \brief restart calculation from a given step
