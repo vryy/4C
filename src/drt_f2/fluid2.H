@@ -772,8 +772,7 @@ public:
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               vector<int>&              lm,
-                              Epetra_SerialDenseVector& elevec1,
-			      struct _MATERIAL* material
+                              Epetra_SerialDenseVector& elevec1
 			      );
 
   //@}

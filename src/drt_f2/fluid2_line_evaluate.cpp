@@ -20,6 +20,9 @@ Maintainer: Peter Gmanitzer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_mat/carreauyasuda.H"
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/modpowerlaw.H"
 
 using namespace DRT::UTILS;
 
@@ -102,8 +105,7 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
     vector<int>&              lm,
-    Epetra_SerialDenseVector& elevec1,
-    struct _MATERIAL* material)
+    Epetra_SerialDenseVector& elevec1)
 {
 
   // there are 2 velocities and 1 pressure
@@ -114,23 +116,36 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
   // we need the material here to denormalise the body force making sure that 
   // we can cope with physical parameters (force per volume) in the input file
   // check here, if we really have a fluid !!
-  if( material->mattyp != m_fluid
-      &&  material->mattyp != m_carreauyasuda
-      &&  material->mattyp != m_modpowerlaw)
-        dserror("Material law is not a fluid");
-
   // get density
   double invdensity=0.0;
-  if(material->mattyp == m_fluid)
-    invdensity = 1./ material->m.fluid->density;
-  else if(material->mattyp == m_carreauyasuda)
-    invdensity = 1./ material->m.carreauyasuda->density;
-  else if(material->mattyp == m_modpowerlaw)
-    invdensity = 1./ material->m.modpowerlaw->density;
-  else
+  // get material of volume element this surface belongs to
+  RCP<MAT::Material> mat = parent_->Material();
+
+  if( mat->MaterialType()    != m_carreauyasuda
+      && mat->MaterialType() != m_modpowerlaw
+      && mat->MaterialType() != m_fluid)
+          dserror("Material law is not a fluid");
+
+  MATERIAL* actmat = NULL;
+
+  // we shall need the inverse of rho
+  if(mat->MaterialType()== m_fluid)
   {
-    dserror("Material law is not a fluid");
+    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+    invdensity = 1.0 / actmat->m.fluid->density;
   }
+  else if(mat->MaterialType()== m_carreauyasuda)
+  {
+    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
+    invdensity = 1.0 / actmat->m.carreauyasuda->density;
+  }
+  else if(mat->MaterialType()== m_modpowerlaw)
+  {
+    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
+    invdensity = 1.0 / actmat->m.modpowerlaw->density;
+  }
+  else
+    dserror("fluid material expected but got type %d", mat->MaterialType());
 
   // find out whether we will use a time curve
   bool usetime = true;
