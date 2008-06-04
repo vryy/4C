@@ -81,8 +81,6 @@ XFEM::InterfaceHandle::InterfaceHandle(
   {
     for(std::set<int>::const_iterator eleid = conditer->second.begin(); eleid!=conditer->second.end(); ++eleid)
     {
-      cout << conditer->first << endl;
-      cout << *eleid << endl;
       labelByElement_[*eleid] = conditer->first;
     }
   }
