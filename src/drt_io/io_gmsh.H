@@ -228,6 +228,34 @@ namespace IO
       pos_array_string << "};";
       return pos_array_string.str();
     }
+    
+    template<class M> std::string TensorFieldToString(
+        const M& tensorfield,
+        const DRT::Element::DiscretizationType distype)
+    {
+      stringstream pos_array_string;
+
+      const int numnode = distypeToGmshNumNode(distype);
+      const int numTensorEntries = 9;
+
+      // values
+      pos_array_string << "{";
+      for (int inode = 0; inode<numnode; ++inode)
+      {
+        for (int ientry = 0; ientry < numTensorEntries; ++ientry)
+        {
+          pos_array_string << scientific << tensorfield(ientry, inode);
+          if (ientry < numTensorEntries-1)
+            pos_array_string << ",";
+        }
+        if (inode < numnode-1)
+        {
+          pos_array_string << ",";
+        }
+      };
+      pos_array_string << "};";
+      return pos_array_string.str();
+    }
 
     std::string elementToString(
         const double scalar,
@@ -277,6 +305,22 @@ namespace IO
       gmsh_ele_line << CoordinatesToString(xyze, distype);
       // values
       gmsh_ele_line << VectorFieldToString(vectorfield, distype);
+
+      return gmsh_ele_line.str();
+    }
+    
+    template<class M1, class M2> std::string cellWithTensorFieldToString(
+        const DRT::Element::DiscretizationType distype,
+        const M1& tensorfield,
+        const M2& xyze)
+    {
+      stringstream gmsh_ele_line;
+      // header for this element
+      gmsh_ele_line << "T" << distypeToGmshElementHeader(distype);
+      // coordinates
+      gmsh_ele_line << CoordinatesToString(xyze, distype);
+      // values
+      gmsh_ele_line << TensorFieldToString(tensorfield, distype);
 
       return gmsh_ele_line.str();
     }

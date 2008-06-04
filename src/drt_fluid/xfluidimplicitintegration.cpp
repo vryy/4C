@@ -1394,6 +1394,169 @@ void XFluidImplicitTimeInt::OutputToGmsh()
     f_system.close();
     std::cout << " done" << endl;
   }
+  
+  if (gmshdebugout)
+  {
+    std::stringstream filename;
+    std::stringstream filenamexx;
+    std::stringstream filenameyy;
+    std::stringstream filenamezz;
+    std::stringstream filenamexy;
+    std::stringstream filenamexz;
+    std::stringstream filenameyz;
+    filename   << "solution_tau_disc_"   << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexx << "solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenameyy << "solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamezz << "solution_tauzz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexy << "solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexz << "solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenameyz << "solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    std::cout << "writing '"<<filename.str()<<"'...";
+    std::ofstream f_system(  filename.str().c_str());
+    std::ofstream f_systemxx(filenamexx.str().c_str());
+    std::ofstream f_systemyy(filenameyy.str().c_str());
+    std::ofstream f_systemzz(filenamezz.str().c_str());
+    std::ofstream f_systemxy(filenamexy.str().c_str());
+    std::ofstream f_systemxz(filenamexz.str().c_str());
+    std::ofstream f_systemyz(filenameyz.str().c_str());
+        
+    const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Tauxx;
+    
+    {
+      stringstream gmshfilecontent;
+      stringstream gmshfilecontentxx;
+      stringstream gmshfilecontentyy;
+      stringstream gmshfilecontentzz;
+      stringstream gmshfilecontentxy;
+      stringstream gmshfilecontentxz;
+      stringstream gmshfilecontentyz;
+      gmshfilecontent << "View \" " << "Discontinous Viscous Stress Solution (Physical) \" {" << endl;
+      gmshfilecontentxx << "View \" " << "Discontinous Viscous Stress (xx) Solution (Physical) \" {" << endl;
+      gmshfilecontentyy << "View \" " << "Discontinous Viscous Stress (yy) Solution (Physical) \" {" << endl;
+      gmshfilecontentzz << "View \" " << "Discontinous Viscous Stress (zz) Solution (Physical) \" {" << endl;
+      gmshfilecontentxy << "View \" " << "Discontinous Viscous Stress (xy) Solution (Physical) \" {" << endl;
+      gmshfilecontentxz << "View \" " << "Discontinous Viscous Stress (xz) Solution (Physical) \" {" << endl;
+      gmshfilecontentyz << "View \" " << "Discontinous Viscous Stress (yz) Solution (Physical) \" {" << endl;
+      for (int i=0; i<discret_->NumMyColElements(); ++i)
+      {
+        
+        const DRT::Element* actele = discret_->lColElement(i);
+        const int elegid = actele->Id();
+        //const int numnodeele = actele->Shape();
+        
+        const DRT::Element::DiscretizationType stressdistype =
+          XFLUID::getStressInterpolationType3D(actele->Shape());
+        const int numeleparam =
+          DRT::UTILS::getNumberOfElementNodes(stressdistype);
+        BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+        
+        // create local copy of information about dofs
+        const XFEM::ElementDofManager eledofman =
+          dofmanagerForOutput_->constructElementDofManager(*actele,
+              numeleparam);
+        
+        vector<int> lm;
+        vector<int> lmowner;
+        actele->LocationVector(*(discret_), lm, lmowner);
+        
+        // extract local values from the global vector
+        vector<double> myvelnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+        
+        const int numparam = eledofman.NumDofPerField(field);
+        const vector<int>& dofposxx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxx);
+        const vector<int>& dofposyy = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Tauyy);
+        const vector<int>& dofposzz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Tauzz);
+        const vector<int>& dofposxy = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxy);
+        const vector<int>& dofposxz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxz);
+        const vector<int>& dofposyz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Tauyz);
+        
+        BlitzMat elementvalues(9,numparam);
+        for (int iparam=0; iparam<numparam; ++iparam) elementvalues(0,iparam) = myvelnp[dofposxx[iparam]];
+        for (int iparam=0; iparam<numparam; ++iparam) elementvalues(1,iparam) = myvelnp[dofposxy[iparam]];
+        for (int iparam=0; iparam<numparam; ++iparam) elementvalues(2,iparam) = myvelnp[dofposxz[iparam]];
+        for (int iparam=0; iparam<numparam; ++iparam) elementvalues(3,iparam) = myvelnp[dofposxy[iparam]];
+        for (int iparam=0; iparam<numparam; ++iparam) elementvalues(4,iparam) = myvelnp[dofposyy[iparam]];
+        for (int iparam=0; iparam<numparam; ++iparam) elementvalues(5,iparam) = myvelnp[dofposyz[iparam]];
+        for (int iparam=0; iparam<numparam; ++iparam) elementvalues(6,iparam) = myvelnp[dofposxz[iparam]];
+        for (int iparam=0; iparam<numparam; ++iparam) elementvalues(7,iparam) = myvelnp[dofposyz[iparam]];
+        for (int iparam=0; iparam<numparam; ++iparam) elementvalues(8,iparam) = myvelnp[dofposzz[iparam]];
+        
+        BlitzVec elementvaluexx(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluexx(iparam) = myvelnp[dofposxx[iparam]];
+        BlitzVec elementvalueyy(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvalueyy(iparam) = myvelnp[dofposyy[iparam]];
+        BlitzVec elementvaluezz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluezz(iparam) = myvelnp[dofposzz[iparam]];
+        BlitzVec elementvaluexy(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluexy(iparam) = myvelnp[dofposxy[iparam]];
+        BlitzVec elementvaluexz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvaluexz(iparam) = myvelnp[dofposxz[iparam]];
+        BlitzVec elementvalueyz(numparam); for (int iparam=0; iparam<numparam; ++iparam) elementvalueyz(iparam) = myvelnp[dofposyz[iparam]];
+        
+        
+        const XFEM::DomainIntCells& domainintcells =
+          ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
+        for (XFEM::DomainIntCells::const_iterator cell =
+          domainintcells.begin(); cell != domainintcells.end(); ++cell)
+        {
+          BlitzMat xyze_cell(3, cell->NumNode());
+          cell->NodalPosXYZ(*actele, xyze_cell);
+          
+          {
+          BlitzMat cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman,
+              *cell, field, elementvalues, cellvalues);
+          gmshfilecontent << IO::GMSH::cellWithTensorFieldToString(cell->Shape(), cellvalues, xyze_cell) << endl;
+          }
+          
+          {
+          BlitzVec cellvaluexx(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman, *cell, field, elementvaluexx, cellvaluexx);
+          gmshfilecontentxx << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexx, xyze_cell) << endl;
+          }
+          {
+          BlitzVec cellvalueyy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman, *cell, field, elementvalueyy, cellvalueyy);
+          gmshfilecontentyy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyy, xyze_cell) << endl;
+          }
+          {
+          BlitzVec cellvaluezz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman, *cell, field, elementvaluezz, cellvaluezz);
+          gmshfilecontentzz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluezz, xyze_cell) << endl;
+          }
+          {
+          BlitzVec cellvaluexy(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman, *cell, field, elementvaluexy, cellvaluexy);
+          gmshfilecontentxy << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexy, xyze_cell) << endl;
+          }
+          {
+          BlitzVec cellvaluexz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman, *cell, field, elementvaluexz, cellvaluexz);
+          gmshfilecontentxz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvaluexz, xyze_cell) << endl;
+          }
+          {
+          BlitzVec cellvalueyz(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman, *cell, field, elementvalueyz, cellvalueyz);
+          gmshfilecontentyz << IO::GMSH::cellWithScalarFieldToString(cell->Shape(), cellvalueyz, xyze_cell) << endl;
+          }
+        }
+      }
+      gmshfilecontent   << "};" << endl;
+      gmshfilecontentxx << "};" << endl;
+      gmshfilecontentyy << "};" << endl;
+      gmshfilecontentzz << "};" << endl;
+      gmshfilecontentxy << "};" << endl;
+      gmshfilecontentxz << "};" << endl;
+      gmshfilecontentyz << "};" << endl;
+      f_system   << gmshfilecontent.str();
+      f_systemxx << gmshfilecontentxx.str();
+      f_systemyy << gmshfilecontentyy.str();
+      f_systemzz << gmshfilecontentzz.str();
+      f_systemxy << gmshfilecontentxy.str();
+      f_systemxz << gmshfilecontentxz.str();
+      f_systemyz << gmshfilecontentyz.str();
+    }
+    f_system.close();
+    std::cout << " done" << endl;
+  }
+  
+  
   if (gmshdebugout)
   {
     

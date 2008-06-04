@@ -136,6 +136,16 @@ void computeScalarCellNodeValuesFromElementUnknowns(
   BlitzVec&     cellvalues
   );
 
+void computeTensorCellNodeValuesFromElementUnknowns(
+  const DRT::Element&  ele,
+  const RCP<XFEM::InterfaceHandle>&  ih,
+  const XFEM::ElementDofManager& dofman,
+  const XFEM::DomainIntCell& cell,
+  const XFEM::PHYSICS::Field field,
+  const BlitzMat& elementvalues,
+  BlitzMat&     cellvalues
+  );
+
 void computeVectorCellNodeValues(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,

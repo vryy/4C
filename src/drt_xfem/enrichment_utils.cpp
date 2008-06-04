@@ -383,6 +383,74 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
 }
 
 
+void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
+  const DRT::Element&  ele,
+  const RCP<XFEM::InterfaceHandle>&  ih,
+  const XFEM::ElementDofManager& dofman,
+  const XFEM::DomainIntCell& cell,
+  const XFEM::PHYSICS::Field field,
+  const BlitzMat& elementvalues,
+  BlitzMat&      cellvalues
+  )
+{
+  const BlitzMat* nodalPosXiDomain(cell.NodalPosXiDomainBlitz());
+
+  // if cell node is on the interface, the value is not defined for a jump.
+  // however, we approach the interface from one particular side and therefore,
+  // -> we use the center of the cell to determine, where we come from
+  const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+
+  cellvalues = 0.0;
+  for (int incn = 0; incn < cell.NumNode(); ++incn)
+  {
+    const int numparam  = dofman.NumDofPerField(field);
+    if (numparam == 0)
+    {
+      continue;
+    }
+    //const int numvirtnode = dofman.NumVirtualNodes(field);
+    const int numvirtnode = dofman.NumVirtualNodes();
+    if (numvirtnode != numparam) dserror("bug");
+    
+    DRT::Element::DiscretizationType eleval_distype = DRT::Element::dis_none;
+    switch (numparam)
+    {
+      case 1:
+        eleval_distype = DRT::Element::point1;
+        break;
+      case 4:
+        eleval_distype = DRT::Element::tet4;
+        break;
+      case 8:
+        eleval_distype = DRT::Element::hex8;
+        break;
+      default:
+        dserror("add your distype here!");
+    }
+    
+    BlitzVec funct(numparam);
+    // fill shape functions
+    DRT::UTILS::shape_function_3D(funct,
+      (*nodalPosXiDomain)(0,incn),
+      (*nodalPosXiDomain)(1,incn),
+      (*nodalPosXiDomain)(2,incn),
+      eleval_distype);
+
+    BlitzVec enr_funct(numparam);
+    XFEM::ComputeEnrichedElementShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
+    // interpolate value
+    for (int iparam = 0; iparam < numparam; ++iparam)
+    {
+      for (int ientry = 0; ientry < 9; ++ientry)
+      {
+        cellvalues(ientry,incn) += elementvalues(ientry,iparam) * enr_funct(iparam);        
+      }
+    }
+  }
+  return;
+}
+
+
 void XFEM::computeVectorCellNodeValues(
   const DRT::Element&  ele,
   const RCP<XFEM::InterfaceHandle>&  ih,
