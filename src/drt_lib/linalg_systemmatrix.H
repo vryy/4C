@@ -501,9 +501,9 @@ namespace LINALG
       \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C upon output
       \return Matrix product A(^T)*B(^T)
     */
-    friend Teuchos::RCP<SparseMatrix> LINALG::Multiply(const SparseMatrix& A, bool transA,
-                                                       const SparseMatrix& B, bool transB,
-                                                       bool completeoutput = true);
+    friend Teuchos::RCP<SparseMatrix> Multiply(const SparseMatrix& A, bool transA,
+                                               const SparseMatrix& B, bool transB,
+                                               bool completeoutput = true);
 
     /*!
       \brief Split matrix in either 2x2 or 3x3 blocks (3x3 not yet impl.)
