@@ -58,7 +58,7 @@ void XFEM::createDofMap(
           const int element_gid = actele->Id();
           
           const double ratio = XFEM::AreaRatio(*actele,ih);
-          const bool almost_empty_element = (abs(1.0-ratio) < 1.0e-3);
+          const bool almost_empty_element = (abs(1.0-ratio) < 1.0e-6);
           const bool there_are_more_than_one_integration_cells = (ih.elementalDomainIntCells()->count(element_gid)>=1);
           
           if (there_are_more_than_one_integration_cells and !almost_empty_element )
