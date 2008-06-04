@@ -43,8 +43,8 @@ int getNumParam(
 }
 template<> 
 int getNumParam<XFEM::standard_assembly>(
-        const XFEM::ElementDofManager& dofman,
-        const XFEM::PHYSICS::Field     field,
+        const XFEM::ElementDofManager&,
+        const XFEM::PHYSICS::Field,
         const int numnode)
 {
     return numnode;

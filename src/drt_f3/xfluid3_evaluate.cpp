@@ -19,7 +19,7 @@ Maintainer: Axel Gerstenberger
 #endif
 
 #include "xfluid3.H"
-#include "xfluid3_sysmat2.H"
+//#include "xfluid3_sysmat2.H"
 #include "xfluid3_sysmat3.H"
 #include "xfluid3_interpolation.H"
 
@@ -34,14 +34,6 @@ Maintainer: Axel Gerstenberger
 
 #include <blitz/array.h>
 #include <Epetra_SerialDenseSolver.h>
-
-
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
 
 
 // converts a string into an Action for this element
@@ -196,7 +188,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         //--------------------------------------------------
         // calculate element coefficient matrix and rhs
         //--------------------------------------------------
-        XFLUID::callSysmat2(assembly_type,
+        XFLUID::callSysmat3(assembly_type,
                 this, ih_, eleDofManager_, myvelnp, myhist, ivelcol, iforcecol, estif, eforce,
                 actmat, time, timefac, newton, pstab, supg, cstab, true);
 
@@ -356,7 +348,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 #endif
           {
           // calculate element coefficient matrix and rhs
-          XFLUID::callSysmat2(assembly_type,
+          XFLUID::callSysmat3(assembly_type,
                   this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                   actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
           }
@@ -450,7 +442,6 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
   const DiscretizationType distype = this->Shape();
 
   Epetra_SerialDenseVector  funct(iel);
-  Epetra_SerialDenseMatrix  xjm(3,3);
   Epetra_SerialDenseMatrix  deriv(3,iel);
 
   // get node coordinates of element

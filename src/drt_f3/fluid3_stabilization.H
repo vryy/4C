@@ -87,7 +87,6 @@ namespace XFLUID
   template<DRT::Element::DiscretizationType DISTYPE, class M1>
   double HK(
       const BlitzMat&                         evelnp,
-      const double                            visc,
       const M1&                               xyze
   )
   {
