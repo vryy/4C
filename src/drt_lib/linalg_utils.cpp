@@ -394,7 +394,7 @@ double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
   // swapping rows of A changes the sign of the determinant, so we have to
   // undo lapack's permutation w.r.t. the determinant
   // note the fortran indexing convention in ipiv
-  for (int i=0; i<n; ++i) 
+  for (int i=0; i<n; ++i)
     if (ipiv[i]!=i+1) d *= -1.0;
   return d;
 }
@@ -878,9 +878,9 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
 
   // get Epetra objects out of the block matrix (prevents them from dying)
   A11 = (*Ablock)(0,0).EpetraMatrix();
-  A12 = (*Ablock)(0,0).EpetraMatrix();
-  A21 = (*Ablock)(0,0).EpetraMatrix();
-  A22 = (*Ablock)(0,0).EpetraMatrix();
+  A12 = (*Ablock)(0,1).EpetraMatrix();
+  A21 = (*Ablock)(1,0).EpetraMatrix();
+  A22 = (*Ablock)(1,1).EpetraMatrix();
 
   return true;
 }
