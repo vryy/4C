@@ -338,17 +338,39 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   cellvalues = 0.0;
   for (int incn = 0; incn < cell.NumNode(); ++incn)
   {
-    BlitzVec funct(ele.NumNode());
+    const int numparam  = dofman.NumDofPerField(field);
+    if (numparam == 0)
+    {
+      continue;
+    }
+    //const int numvirtnode = dofman.NumVirtualNodes(field);
+    const int numvirtnode = dofman.NumVirtualNodes();
+    if (numvirtnode != numparam) dserror("bug");
+    
+    DRT::Element::DiscretizationType eleval_distype = DRT::Element::dis_none;
+    switch (numparam)
+    {
+      case 1:
+        eleval_distype = DRT::Element::point1;
+        break;
+      case 4:
+        eleval_distype = DRT::Element::tet4;
+        break;
+      case 8:
+        eleval_distype = DRT::Element::hex8;
+        break;
+      default:
+        dserror("add your distype here!");
+    }
+    
+    BlitzVec funct(numparam);
     // fill shape functions
     DRT::UTILS::shape_function_3D(funct,
       (*nodalPosXiDomain)(0,incn),
       (*nodalPosXiDomain)(1,incn),
       (*nodalPosXiDomain)(2,incn),
-      ele.Shape());
+      eleval_distype);
 
-    const int numparam  = dofman.NumDofPerField(field);
-    if (numparam == 0)
-      continue;
     BlitzVec enr_funct(numparam);
     XFEM::ComputeEnrichedElementShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
     // interpolate value
