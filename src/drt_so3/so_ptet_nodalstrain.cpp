@@ -419,7 +419,6 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
   glstrain(4) = cauchygreen(1,2);
   glstrain(5) = cauchygreen(2,0);
 
-#if 1
   // material law and stresses
   if (matequal) // element patch has single material
   {
@@ -450,9 +449,98 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
     stress.Scale(1.0/VnodeL);
     cmat.Scale(1.0/VnodeL);
   }
-#endif  
 
-#if 1 // stabilization on deviatoric stresses only
+#if 0 // dev stab on cauchy stresses
+  {
+    const double third = 1./3.;
+    Epetra_SerialDenseMatrix Idev(NUMSTR_PTET,NUMSTR_PTET);
+    Idev(0,0) =  2.0;  Idev(0,1) = -1.0;  Idev(0,2) = -1.0;
+    Idev(1,0) = -1.0;  Idev(1,1) =  2.0;  Idev(1,2) = -1.0;
+    Idev(2,0) = -1.0;  Idev(2,1) = -1.0;  Idev(2,2) =  2.0;
+    Idev(3,3) = 3.0;
+    Idev(4,4) = 3.0;
+    Idev(5,5) = 3.0;
+    Idev.Scale(third);
+    
+    // detF and inverse of F needed
+    Epetra_SerialDenseMatrix Finv(FnodeL);
+    const double detF = LINALG::NonsymInverse3x3(Finv);
+
+    // PK2 as matrix
+    LINALG::SerialDenseMatrix pkstress(NUMDIM_PTET,NUMDIM_PTET);
+    pkstress(0,0) = stress(0);
+    pkstress(0,1) = stress(3);
+    pkstress(0,2) = stress(5);
+    pkstress(1,0) = pkstress(0,1);
+    pkstress(1,1) = stress(1);
+    pkstress(1,2) = stress(4);
+    pkstress(2,0) = pkstress(0,2);
+    pkstress(2,1) = pkstress(1,2);
+    pkstress(2,2) = stress(2);
+
+    // compute cauchy stresses as matrix
+    LINALG::SerialDenseMatrix temp(NUMDIM_PTET,NUMDIM_PTET);
+    LINALG::SerialDenseMatrix cauchystress(NUMDIM_PTET,NUMDIM_PTET);
+    temp.Multiply('N','N',1.0/detF,FnodeL,pkstress,0.);
+    cauchystress.Multiply('N','T',1.0,temp,FnodeL,0.);
+
+    // cauchy as vector
+    Epetra_SerialDenseVector cstress(NUMSTR_PTET);
+    cstress(0) = cauchystress(0,0);
+    cstress(1) = cauchystress(1,1);
+    cstress(2) = cauchystress(2,2);
+    cstress(3) = cauchystress(0,1);
+    cstress(4) = cauchystress(1,2);
+    cstress(5) = cauchystress(0,2);
+
+    // dev. cauchy as vector
+    Epetra_SerialDenseVector cstressdev(NUMSTR_PTET);
+    Idev.Multiply(false,cstress,cstressdev);
+
+    // dev cauchy as matrix
+    cauchystress(0,0) = cstressdev(0);
+    cauchystress(0,1) = cstressdev(3);
+    cauchystress(0,2) = cstressdev(5);
+    cauchystress(1,0) = cauchystress(0,1);
+    cauchystress(1,1) = cstressdev(1);
+    cauchystress(1,2) = cstressdev(4);
+    cauchystress(2,0) = cauchystress(0,2);
+    cauchystress(2,1) = cauchystress(1,2);
+    cauchystress(2,2) = cstressdev(2);
+
+    // compute dev. PK2 = detF F^{-1} \sigma F^{-T}
+    LINALG::SerialDenseMatrix pk2dev(NUMDIM_PTET,NUMDIM_PTET);
+    temp.Multiply('N','N',detF,Finv,cauchystress,0.0);
+    pk2dev.Multiply('N','T',1.0,temp,Finv,0.0);
+    Epetra_SerialDenseVector stressdev(NUMSTR_PTET);
+    stressdev(0) = pk2dev(0,0);
+    stressdev(1) = pk2dev(1,1);
+    stressdev(2) = pk2dev(2,2);
+    stressdev(3) = pk2dev(0,1);
+    stressdev(4) = pk2dev(1,2);
+    stressdev(5) = pk2dev(0,2);
+    
+    // do scaling of deviatoric components
+    const double* sdev = stressdev.Values();
+    double*       s    = stress.Values();
+    for (int i=0; i<NUMSTR_PTET; ++i) 
+      s[i] -= (ALPHA_PTET * sdev[i]);
+
+    // do weighting on deviatoric part of the tangent only
+    LINALG::SerialDenseMatrix tmp(NUMSTR_PTET,NUMSTR_PTET);
+    LINALG::SerialDenseMatrix cmatdev(NUMSTR_PTET,NUMSTR_PTET);
+    tmp.Multiply('N','N',1.0,cmat,Idev,0.0);
+    cmatdev.Multiply('N','N',1.0,Idev,tmp,0.0);
+    // cmatvol = cmat - cmatdev;
+    const double* cdev = cmatdev.A();
+    double*       c    = cmat.A();
+    for (int i=0; i<NUMSTR_PTET*NUMSTR_PTET; ++i) 
+      c[i] -= (ALPHA_PTET*cdev[i]);
+  }
+#endif
+
+#if 1 // prev. methods
+#if 0 // stabilization on deviatoric stresses only
   {
     const double third = 1./3.;
     Epetra_SerialDenseMatrix Idev(NUMSTR_PTET,NUMSTR_PTET);
@@ -488,7 +576,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
     stress.Scale(1.0-ALPHA_PTET);
     cmat.Scale(1.0-ALPHA_PTET);
 #endif
-
+#endif
   
   //----------------------------------------------------- internal forces
   force.Multiply('T','N',VnodeL,bop,stress,0.0);
