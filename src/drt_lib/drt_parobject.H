@@ -130,6 +130,7 @@ using namespace std;
 #define ParObject_Condif3Register       (int)105
 #define ParObject_Condif3               (int)106
 #define ParObject_Condif3Surface        (int)107
+#define ParObject_Knotvector            (int)108
 
 namespace DRT
 {
