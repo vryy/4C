@@ -20,13 +20,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 
-// we need to know all element types for the ale mesh creation
-#include "../drt_f2/fluid2.H"
-#include "../drt_f3/fluid3.H"
-
-#include "../drt_ale2/ale2.H"
-#include "../drt_ale3/ale3.H"
-
 #include <map>
 #include <set>
 #include <string>
