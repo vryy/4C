@@ -129,7 +129,7 @@ XFEM::ElementDofManager::ElementDofManager(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-XFEM::ElementDofManager::ElementDofManager(const ElementDofManager& old)
+XFEM::ElementDofManager::ElementDofManager(const ElementDofManager&)
 {
   dserror("no copying");
   return;
@@ -202,7 +202,7 @@ XFEM::DofManager::DofManager(const RCP<XFEM::InterfaceHandle> ih) :
 /*----------------------------------------------------------------------*
  |  copy-ctor                                                   ag 11/07|
  *----------------------------------------------------------------------*/
-XFEM::DofManager::DofManager(const XFEM::DofManager& dofman)
+XFEM::DofManager::DofManager(const XFEM::DofManager&)
 {
   dserror("A DofManager shall not be copied!");
 }
