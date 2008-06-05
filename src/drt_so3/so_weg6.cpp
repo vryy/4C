@@ -30,11 +30,6 @@ DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner) :
 DRT::Element(id,element_so_weg6,owner),
 data_()
 {
-  volume_.resize(0);
-  surfaces_.resize(0);
-  surfaceptrs_.resize(0);
-  lines_.resize(0);
-  lineptrs_.resize(0);
   kintype_ = sow6_totlag;
 #if defined(PRESTRESS) || defined(POSTSTRESS)  
   glprestrain_ = rcp(new Epetra_SerialDenseMatrix(NUMGPT_WEG6,NUMSTR_WEG6));
@@ -54,11 +49,6 @@ DRT::ELEMENTS::So_weg6::So_weg6(const DRT::ELEMENTS::So_weg6& old) :
 DRT::Element(old),
 kintype_(old.kintype_),
 data_(old.data_),
-volume_(old.volume_),
-surfaces_(old.surfaces_),
-surfaceptrs_(old.surfaceptrs_),
-lines_(old.lines_),
-lineptrs_(old.lineptrs_),
 detJ_(old.detJ_)
 {
 #if defined(PRESTRESS) || defined(POSTSTRESS)  
@@ -250,90 +240,42 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_weg6::ElementRegister() cons
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                  maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::So_weg6::Volumes()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Volumes()
 {
-  dserror("So_weg6 does not return volumes");
-  volume_.resize(1);
-  return NULL;
+  vector<RCP<Element> > volumes(1);
+  volumes[0]= rcp(this, false);
+  return volumes;
 }
 
  /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                             maf 04/07|
  |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::So_weg6::Surfaces()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Surfaces()
 {
-  // once constructed do not reconstruct again
-  // make sure they exist
-  if ((int)surfaces_.size()    == NumSurface() &&
-      (int)surfaceptrs_.size() == NumSurface() &&
-      dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(surfaceptrs_[0]) )
-    return (DRT::Element**)(&(surfaceptrs_[0]));
-    
-  
-  const int nsurf = NumSurface();
-  surfaces_.resize(nsurf);
-  surfaceptrs_.resize(nsurf);
-  // first the 3 quad surfaces (#0..2)
-  for (int qisurf = 0; qisurf < 3; ++qisurf)
-  {
-        const int nnode_surf = 4;
-        int nodeids[4];
-        DRT::Node* nodes[4];
-        for (int qinode = 0; qinode < nnode_surf; ++qinode) {
-          nodeids[qinode] = NodeIds()[eleNodeNumbering_wedge15_quadsurfaces[qisurf][qinode]];
-          nodes[qinode] = Nodes()[eleNodeNumbering_wedge15_quadsurfaces[qisurf][qinode]];
-        }
-        surfaces_[qisurf] = rcp(new DRT::ELEMENTS::StructuralSurface(qisurf,Owner(),nnode_surf,nodeids,nodes,this,qisurf));
-        surfaceptrs_[qisurf] = surfaces_[qisurf].get();
-  };
-  // then the tri's...
-  for (int tisurf = 0; tisurf < 2; ++tisurf)
-  {
-      const int nnode_surf = 3;
-      const int surfid = tisurf + 3;
-      int nodeids[nnode_surf];
-      DRT::Node* nodes[nnode_surf];
-      for (int tinode = 0; tinode < nnode_surf; ++tinode) {
-        nodeids[tinode] = NodeIds()[eleNodeNumbering_wedge15_trisurfaces[tisurf][tinode]];
-        nodes[tinode] = Nodes()[eleNodeNumbering_wedge15_trisurfaces[tisurf][tinode]];
-      }
-      surfaces_[surfid] = rcp(new DRT::ELEMENTS::StructuralSurface(surfid,Owner(),nnode_surf,nodeids,nodes,this,surfid));
-      surfaceptrs_[surfid] = surfaces_[surfid].get();
-  };
-  return (DRT::Element**)(&(surfaceptrs_[0]));
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
+
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface,DRT::Element>(DRT::UTILS::buildSurfaces,this);
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::So_weg6::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Lines()
 {
-  // once constructed do not reconstruct again
-  // make sure they exist
-  if ((int)lines_.size()    == NumLine() &&
-      (int)lineptrs_.size() == NumLine() &&
-      dynamic_cast<DRT::ELEMENTS::StructuralLine*>(lineptrs_[0]) )
-    return (DRT::Element**)(&(lineptrs_[0]));
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
 
-  const int nline = NumLine();
-  lines_.resize(nline);
-  lineptrs_.resize(nline);
-  
-  for (int i=0; i<nline; ++i)
-  {
-    const int numnode = 2;
-    int nodeids[2];
-    DRT::Node* nodes[2];
-    for (int j=0; j<numnode; ++j)
-    {
-      nodeids[j] = eleNodeNumbering_wedge15_lines[i][j];
-      nodes[j] = Nodes()[eleNodeNumbering_wedge15_lines[i][j]];
-    }
-    lines_[i] = rcp(new DRT::ELEMENTS::StructuralLine(i,Owner(),numnode,nodeids,nodes,this,i));
-    lineptrs_[i] = lines_[i].get();
-  }
-  return (DRT::Element**)(&(lineptrs_[0]));
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<StructuralLine,DRT::Element>(DRT::UTILS::buildLines,this);
 }
 
 

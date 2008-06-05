@@ -110,13 +110,13 @@ public:
   \brief Get vector of ptrs to the volume of this element
 
   */
-  virtual DRT::Element** Lines();
+  virtual vector<RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of ptrs to the surfaces of this element
+  \brief Get vector of RefCountPtrs to the surfaces of this element
 
   */
-  virtual DRT::Element** Surfaces();
+  virtual vector<RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Return unique ParObject id
@@ -309,13 +309,6 @@ private:
   //! container containing all kind of fluid2 thisandthat
   DRT::Container                                  data_;
 
-  //! vector of surfaces of this element (length 1)
-  vector<DRT::Element*>                           surface_;
-
-  //! vector of lines adjacent to this element (fluid2: 3 or 4 lines)
-  vector<RefCountPtr<DRT::ELEMENTS::Bele3Line> > lines_;
-  //! vector of lines adjacent to this element (fluid2: 3 or 4 lines)
-  vector<DRT::ELEMENTS::Bele3Line*>              lineptrs_;
 
   // internal calculation methods
 

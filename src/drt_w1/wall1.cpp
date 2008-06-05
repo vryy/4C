@@ -33,9 +33,6 @@ stresstype_(w1_none),
 iseas_(false)
 
 {
-  surfaces_.resize(0);	
-  lines_.resize(0);
-  lineptrs_.resize(0);
 //  tsi_couptyp_ = tsi_coup_none;
   return;
 }
@@ -51,10 +48,7 @@ thickness_(old.thickness_),
 gaussrule_(old.gaussrule_),
 wtype_(old.wtype_),
 stresstype_(old.stresstype_),
-iseas_(old.iseas_),
-surfaces_(old.surfaces_),
-lines_(old.lines_),
-lineptrs_(old.lineptrs_)
+iseas_(old.iseas_)
 
 // tsi_couptyp_(old.tsi_couptyp_)
 {
@@ -205,30 +199,27 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Wall1::ElementRegister() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mgit 07/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::Wall1::Lines()
+vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Lines()
 {
-  // once constructed do not reconstruct again
-  // make sure they exist
-  if ((int)lines_.size()    == NumLine() &&
-      (int)lineptrs_.size() == NumLine() &&
-      dynamic_cast<DRT::ELEMENTS::Wall1Line*>(lineptrs_[0]) )
-    return (DRT::Element**)(&(lineptrs_[0]));
-  
-  // so we have to allocate new line elements
-  DRT::UTILS::ElementBoundaryFactory<Wall1Line,Wall1>(DRT::UTILS::buildLines,lines_,lineptrs_,this);
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
 
-  return (DRT::Element**)(&(lineptrs_[0]));
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<Wall1Line,Wall1>(DRT::UTILS::buildLines,this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          mgit 03/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::Wall1::Surfaces()
+vector<RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Surfaces()
 {
-  surfaces_.resize(1);
-  surfaces_[0] = this;
-  return &surfaces_[0];
+  vector<RCP<Element> > surfaces(1);
+  surfaces[0]= rcp(this, false);
+  return surfaces;
 }
 
 

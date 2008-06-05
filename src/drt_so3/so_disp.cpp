@@ -30,10 +30,6 @@ DRT::ELEMENTS::SoDisp::SoDisp(int id, int owner) :
 DRT::Element(id,element_sodisp,owner),
 data_()
 {
-  surfaces_.resize(0);
-  surfaceptrs_.resize(0);
-  lines_.resize(0);
-  lineptrs_.resize(0);
   return;
 }
 
@@ -43,11 +39,7 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::SoDisp::SoDisp(const DRT::ELEMENTS::SoDisp& old) :
 DRT::Element(old),
-data_(old.data_),
-surfaces_(old.surfaces_),
-surfaceptrs_(old.surfaceptrs_),
-lines_(old.lines_),
-lineptrs_(old.lineptrs_)
+data_(old.data_)
 {
   return;
 }
@@ -175,49 +167,43 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::SoDisp::ElementRegister() const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                  gjb 03/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::SoDisp::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Lines()
 {
-  // once constructed do not reconstruct again
-  // make sure they exist
-  if ((int)lines_.size()    == NumLine() &&
-      (int)lineptrs_.size() == NumLine() &&
-      dynamic_cast<DRT::ELEMENTS::SoDispLine*>(lineptrs_[0]) )
-    return (DRT::Element**)(&(lineptrs_[0]));
-  
-  // so we have to allocate new line elements
-  DRT::UTILS::ElementBoundaryFactory<SoDispLine,SoDisp>(DRT::UTILS::buildLines,lines_,lineptrs_,this);
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
 
-  return (DRT::Element**)(&(lineptrs_[0]));
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<SoDispLine,SoDisp>(DRT::UTILS::buildLines,this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                            gjb 05/08|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::SoDisp::Surfaces()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Surfaces()
 {
-  // once constructed do not reconstruct again
-  // make sure they exist
-  if ((int)surfaces_.size()    == NumSurface() &&
-      (int)surfaceptrs_.size() == NumSurface() &&
-      dynamic_cast<DRT::ELEMENTS::SoDispSurface*>(surfaceptrs_[0]) )
-    return (DRT::Element**)(&(surfaceptrs_[0]));
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
 
-  // so we have to allocate new surface elements
-  DRT::UTILS::ElementBoundaryFactory<SoDispSurface,SoDisp>(DRT::UTILS::buildSurfaces,surfaces_,surfaceptrs_,this);
-  
-  return (DRT::Element**)(&(surfaceptrs_[0]));
+  // so we have to allocate new surface elements:
+  return DRT::UTILS::ElementBoundaryFactory<SoDispSurface,SoDisp>(DRT::UTILS::buildSurfaces,this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                  maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::SoDisp::Volumes()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Volumes()
 {
-  volume_.resize(1);
-  volume_[0] = this;
-  return &volume_[0];
+  vector<RCP<Element> > volumes(1);
+  volumes[0]= rcp(this, false);
+  return volumes;
 }
 
 

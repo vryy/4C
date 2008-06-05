@@ -258,22 +258,22 @@ public:
   virtual int NumLine() const {return 6;}
 
   /*!
-  \brief Get vector of ptrs to the lines of this element
+  \brief Get vector of RefCountPtrs to the lines of this element
 
   */
-  virtual DRT::Element** Lines();
+  virtual vector<RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of ptrs to the surfaces of this element
+  \brief Get vector of RefCountPtrs to the surfaces of this element
 
   */
-  virtual DRT::Element** Surfaces();
+  virtual vector<RCP<DRT::Element> > Surfaces();
 
   /*!
-  \brief Get vector of ptrs to the volumes of this element
+  \brief Get vector of RefCountPtrs to the volumes of this element
 
   */
-  virtual DRT::Element** Volumes();
+  virtual vector<RCP<DRT::Element> > Volumes();
 
   /*!
   \brief Return unique ParObject id
@@ -439,16 +439,6 @@ protected:
   StressType                                               stresstype_;
   //! number of the material law
   int                                                      material_;
-  //! vector of volume (length 1) of this element
-  vector<RCP<DRT::ELEMENTS::StructuralVolume> >            volume_;
-  //! vector of surfaces of this element
-    vector<RCP<DRT::ELEMENTS::StructuralSurface> >         surfaces_;
-  //! vector of surfaces of this element
-  vector<DRT::ELEMENTS::StructuralSurface*>                surfaceptrs_;
-  //! vector of lines adjacent to this element
-  vector<RCP<DRT::ELEMENTS::StructuralLine> >              lines_;
-  //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::StructuralLine*>                   lineptrs_;
   //! vector of history variables for each Gauss point
   vector<RCP<MAT::Material> >                              mat_;
   //! volume of element

@@ -123,22 +123,22 @@ public:
   virtual int NumLine() const {return 12;}
 
   /*!
-  \brief Get vector of ptrs to the lines of this element
+  \brief Get vector of RefCountPtrs to the lines of this element
 
   */
-  virtual DRT::Element** Lines();
+  virtual vector<RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of ptrs to the surfaces of this element
+  \brief Get vector of RefCountPtrs to the surfaces of this element
 
   */
-  virtual DRT::Element** Surfaces();
+  virtual vector<RCP<DRT::Element> > Surfaces();
 
   /*!
-  \brief Get vector of ptrs to the volumes of this element
+  \brief Get vector of RefCountPtrs to the volumes of this element
 
   */
-  virtual DRT::Element** Volumes();
+  virtual vector<RCP<DRT::Element> > Volumes();
 
   /*!
   \brief Return unique ParObject id
@@ -406,16 +406,6 @@ protected:
   int                                              neas_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                   data_;
-  //! vector of volumes of this element (length 1)
-  vector<DRT::Element*>                            volume_;
-  //! vector of surfaces of this element
-  vector<RefCountPtr<DRT::ELEMENTS::StructuralSurface> > surfaces_;
-  //! vector of surfaces of this element
-  vector<DRT::ELEMENTS::StructuralSurface*>              surfaceptrs_;
-  //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::StructuralLine> >    lines_;
-  //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::StructuralLine*>                 lineptrs_;
   //! vector of inverses of the jacobian in material frame
   vector<Epetra_SerialDenseMatrix>                 invJ_;
   //! determinant of Jacobian in material frame

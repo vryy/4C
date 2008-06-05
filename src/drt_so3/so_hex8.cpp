@@ -26,11 +26,6 @@ DRT::ELEMENTS::So_hex8::So_hex8(int id, int owner) :
 DRT::Element(id,element_so_hex8,owner),
 data_()
 {
-  volume_.resize(0);
-  surfaces_.resize(0);
-  surfaceptrs_.resize(0);
-  lines_.resize(0);
-  lineptrs_.resize(0);
   kintype_ = soh8_totlag;
   eastype_ = soh8_easnone;
   neas_ = 0;
@@ -54,11 +49,6 @@ kintype_(old.kintype_),
 eastype_(old.eastype_),
 neas_(old.neas_),
 data_(old.data_),
-volume_(old.volume_),
-surfaces_(old.surfaces_),
-surfaceptrs_(old.surfaceptrs_),
-lines_(old.lines_),
-lineptrs_(old.lineptrs_),
 detJ_(old.detJ_)
 {
 #if defined(PRESTRESS) || defined(POSTSTRESS)
@@ -317,208 +307,42 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::So_hex8::ElementRegister() cons
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                  maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::So_hex8::Volumes()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex8::Volumes()
 {
-  volume_.resize(1);
-  volume_[0] = this; //points to element itself
-  return (DRT::Element**)&volume_[0];
+  vector<RCP<Element> > volumes(1);
+  volumes[0]= rcp(this, false);
+  return volumes;
 }
 
  /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                             maf 04/07|
  |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::So_hex8::Surfaces()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex8::Surfaces()
 {
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
 
-  const int nsurf = NumSurface();
-  surfaces_.resize(nsurf);
-  surfaceptrs_.resize(nsurf);
-  int nodeids[100];
-  DRT::Node* nodes[100];
-
-  nodeids[0] = NodeIds()[0];
-  nodeids[1] = NodeIds()[3];
-  nodeids[2] = NodeIds()[2];
-  nodeids[3] = NodeIds()[1];
-  nodes[0] = Nodes()[0];
-  nodes[1] = Nodes()[3];
-  nodes[2] = Nodes()[2];
-  nodes[3] = Nodes()[1];
-  surfaces_[0] =
-    rcp(new DRT::ELEMENTS::StructuralSurface(0,Owner(),4,nodeids,nodes,this,0));
-  surfaceptrs_[0] = surfaces_[0].get();
-
-  nodeids[0] = NodeIds()[0];
-  nodeids[1] = NodeIds()[1];
-  nodeids[2] = NodeIds()[5];
-  nodeids[3] = NodeIds()[4];
-  nodes[0] = Nodes()[0];
-  nodes[1] = Nodes()[1];
-  nodes[2] = Nodes()[5];
-  nodes[3] = Nodes()[4];
-  surfaces_[1] =
-    rcp(new DRT::ELEMENTS::StructuralSurface(1,Owner(),4,nodeids,nodes,this,1));
-  surfaceptrs_[1] = surfaces_[1].get();
-
-  nodeids[0] = NodeIds()[0];
-  nodeids[1] = NodeIds()[4];
-  nodeids[2] = NodeIds()[7];
-  nodeids[3] = NodeIds()[3];
-  nodes[0] = Nodes()[0];
-  nodes[1] = Nodes()[4];
-  nodes[2] = Nodes()[7];
-  nodes[3] = Nodes()[3];
-  surfaces_[2] =
-    rcp(new DRT::ELEMENTS::StructuralSurface(2,Owner(),4,nodeids,nodes,this,2));
-  surfaceptrs_[2] = surfaces_[2].get();
-
-  nodeids[0] = NodeIds()[2];
-  nodeids[1] = NodeIds()[3];
-  nodeids[2] = NodeIds()[7];
-  nodeids[3] = NodeIds()[6];
-  nodes[0] = Nodes()[2];
-  nodes[1] = Nodes()[3];
-  nodes[2] = Nodes()[7];
-  nodes[3] = Nodes()[6];
-  surfaces_[3] =
-    rcp(new DRT::ELEMENTS::StructuralSurface(3,Owner(),4,nodeids,nodes,this,3));
-  surfaceptrs_[3] = surfaces_[3].get();
-
-  nodeids[0] = NodeIds()[1];
-  nodeids[1] = NodeIds()[2];
-  nodeids[2] = NodeIds()[6];
-  nodeids[3] = NodeIds()[5];
-  nodes[0] = Nodes()[1];
-  nodes[1] = Nodes()[2];
-  nodes[2] = Nodes()[6];
-  nodes[3] = Nodes()[5];
-  surfaces_[4] =
-    rcp(new DRT::ELEMENTS::StructuralSurface(4,Owner(),4,nodeids,nodes,this,4));
-  surfaceptrs_[4] = surfaces_[4].get();
-
-  nodeids[0] = NodeIds()[4];
-  nodeids[1] = NodeIds()[5];
-  nodeids[2] = NodeIds()[6];
-  nodeids[3] = NodeIds()[7];
-  nodes[0] = Nodes()[4];
-  nodes[1] = Nodes()[5];
-  nodes[2] = Nodes()[6];
-  nodes[3] = Nodes()[7];
-  surfaces_[5] =
-    rcp(new DRT::ELEMENTS::StructuralSurface(5,Owner(),4,nodeids,nodes,this,5));
-  surfaceptrs_[5] = surfaces_[5].get();
-
-  return (DRT::Element**)(&(surfaceptrs_[0]));
+  // so we have to allocate new surface elements:
+  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface,DRT::Element>(DRT::UTILS::buildSurfaces,this);
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::So_hex8::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex8::Lines()
 {
-  const int nline = NumLine();
-  lines_.resize(nline);
-  lineptrs_.resize(nline);
-  int nodeids[100];
-  DRT::Node* nodes[100];
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
 
-  nodeids[0] = NodeIds()[0];
-  nodeids[1] = NodeIds()[1];
-  nodes[0] = Nodes()[0];
-  nodes[1] = Nodes()[1];
-  lines_[0] =
-    rcp(new DRT::ELEMENTS::StructuralLine(0,Owner(),2,nodeids,nodes,this,0));
-  lineptrs_[0] = lines_[0].get();
-
-  nodeids[0] = NodeIds()[1];
-  nodeids[1] = NodeIds()[2];
-  nodes[0] = Nodes()[1];
-  nodes[1] = Nodes()[2];
-  lines_[1] =
-    rcp(new DRT::ELEMENTS::StructuralLine(1,Owner(),2,nodeids,nodes,this,1));
-  lineptrs_[1] = lines_[1].get();
-
-  nodeids[0] = NodeIds()[2];
-  nodeids[1] = NodeIds()[3];
-  nodes[0] = Nodes()[2];
-  nodes[1] = Nodes()[3];
-  lines_[2] =
-    rcp(new DRT::ELEMENTS::StructuralLine(2,Owner(),2,nodeids,nodes,this,2));
-  lineptrs_[2] = lines_[2].get();
-
-  nodeids[0] = NodeIds()[3];
-  nodeids[1] = NodeIds()[0];
-  nodes[0] = Nodes()[3];
-  nodes[1] = Nodes()[0];
-  lines_[3] =
-    rcp(new DRT::ELEMENTS::StructuralLine(3,Owner(),2,nodeids,nodes,this,3));
-  lineptrs_[3] = lines_[3].get();
-
-  nodeids[0] = NodeIds()[0];
-  nodeids[1] = NodeIds()[4];
-  nodes[0] = Nodes()[0];
-  nodes[1] = Nodes()[4];
-  lines_[4] =
-    rcp(new DRT::ELEMENTS::StructuralLine(4,Owner(),2,nodeids,nodes,this,4));
-  lineptrs_[4] = lines_[4].get();
-
-  nodeids[0] = NodeIds()[1];
-  nodeids[1] = NodeIds()[5];
-  nodes[0] = Nodes()[1];
-  nodes[1] = Nodes()[5];
-  lines_[5] =
-    rcp(new DRT::ELEMENTS::StructuralLine(5,Owner(),2,nodeids,nodes,this,5));
-  lineptrs_[5] = lines_[5].get();
-
-  nodeids[0] = NodeIds()[2];
-  nodeids[1] = NodeIds()[6];
-  nodes[0] = Nodes()[2];
-  nodes[1] = Nodes()[6];
-  lines_[6] =
-    rcp(new DRT::ELEMENTS::StructuralLine(6,Owner(),2,nodeids,nodes,this,6));
-  lineptrs_[6] = lines_[6].get();
-
-  nodeids[0] = NodeIds()[3];
-  nodeids[1] = NodeIds()[7];
-  nodes[0] = Nodes()[3];
-  nodes[1] = Nodes()[7];
-  lines_[7] =
-    rcp(new DRT::ELEMENTS::StructuralLine(7,Owner(),2,nodeids,nodes,this,7));
-  lineptrs_[7] = lines_[7].get();
-
-  nodeids[0] = NodeIds()[4];
-  nodeids[1] = NodeIds()[5];
-  nodes[0] = Nodes()[4];
-  nodes[1] = Nodes()[5];
-  lines_[8] =
-    rcp(new DRT::ELEMENTS::StructuralLine(8,Owner(),2,nodeids,nodes,this,8));
-  lineptrs_[8] = lines_[8].get();
-
-  nodeids[0] = NodeIds()[5];
-  nodeids[1] = NodeIds()[6];
-  nodes[0] = Nodes()[5];
-  nodes[1] = Nodes()[6];
-  lines_[9] =
-    rcp(new DRT::ELEMENTS::StructuralLine(9,Owner(),2,nodeids,nodes,this,9));
-  lineptrs_[9] = lines_[9].get();
-
-  nodeids[0] = NodeIds()[6];
-  nodeids[1] = NodeIds()[7];
-  nodes[0] = Nodes()[6];
-  nodes[1] = Nodes()[7];
-  lines_[10] =
-    rcp(new DRT::ELEMENTS::StructuralLine(10,Owner(),2,nodeids,nodes,this,10));
-  lineptrs_[10] = lines_[10].get();
-
-  nodeids[0] = NodeIds()[7];
-  nodeids[1] = NodeIds()[4];
-  nodes[0] = Nodes()[7];
-  nodes[1] = Nodes()[4];
-  lines_[11] =
-    rcp(new DRT::ELEMENTS::StructuralLine(11,Owner(),2,nodeids,nodes,this,11));
-  lineptrs_[11] = lines_[11].get();
-  return (DRT::Element**)(&(lineptrs_[0]));
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<StructuralLine,DRT::Element>(DRT::UTILS::buildLines,this);
 }
 
 /*----------------------------------------------------------------------*

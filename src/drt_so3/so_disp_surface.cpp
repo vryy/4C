@@ -154,20 +154,16 @@ DRT::ELEMENTS::SoDispSurface::~SoDispSurface()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::SoDispSurface::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDispSurface::Lines()
 {
-  // once constructed do not reconstruct again
-  // make sure they exist
-  if ((int)lines_.size()    == NumLine() &&
-      (int)lineptrs_.size() == NumLine() &&
-      dynamic_cast<DRT::ELEMENTS::SoDispLine*>(lineptrs_[0]) )
-    return (DRT::Element**)(&(lineptrs_[0]));
-  
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
+
   // so we have to allocate new line elements
-  DRT::UTILS::ElementBoundaryFactory<SoDispLine,SoDispSurface>(DRT::UTILS::buildLines,lines_,lineptrs_,this);
-
-  return (DRT::Element**)(&(lineptrs_[0]));
-
+  return DRT::UTILS::ElementBoundaryFactory<SoDispLine,SoDispSurface>(DRT::UTILS::buildLines,this);
 }
   
 

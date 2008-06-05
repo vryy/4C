@@ -113,22 +113,22 @@ public:
   virtual int NumSurface() const {return DRT::UTILS::getNumberOfElementSurfaces(Shape());}
 
   /*!
-  \brief Get vector of ptrs to the lines of this element
+  \brief Get vector of RefCountPtrs to the lines of this element
 
   */
-  virtual DRT::Element** Lines();
+  virtual vector<RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of ptrs to the surfaces of this element
+  \brief Get vector of RefCountPtrs to the surfaces of this element
 
   */
-  virtual DRT::Element** Surfaces();
+  virtual vector<RCP<DRT::Element> > Surfaces();
 
   /*!
-  \brief Get vector of ptrs to the volumes of this element
+  \brief Get vector of RefCountPtrs to the volumes of this element
 
   */
-  virtual DRT::Element** Volumes();
+  virtual vector<RCP<DRT::Element> > Volumes();
 
   /*!
   \brief Return unique ParObject id
@@ -315,16 +315,6 @@ protected:
   StressType                                      stresstype_;
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
-  //! vector of volume (length 1) of this element
-  vector<DRT::Element*> volume_;
-  //! vector of surfaces of this element
-  vector<RefCountPtr<DRT::ELEMENTS::SoDispSurface> > surfaces_;
-  //! vector of surfaces of this element
-  vector<DRT::ELEMENTS::SoDispSurface*>           surfaceptrs_;
-  //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::SoDispLine> > lines_;
-  //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::SoDispLine*>              lineptrs_;
   //! Gaussrule
   DRT::UTILS::GaussRule3D                         gaussrule_;
 
@@ -600,10 +590,10 @@ public:
   virtual int NumLine() const {return DRT::UTILS::getNumberOfElementLines(Shape());}
 
   /*!
-  \brief Get vector of ptrs to the lines of this element
+  \brief Get vector of RefCountPtrs to the lines of this element
 
   */
-  virtual DRT::Element** Lines();
+  virtual vector<RCP<DRT::Element> > Lines();
 
   /*!
   \brief Print this element
@@ -701,11 +691,6 @@ private:
 
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                  data_;
-
-  //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::SoDispLine> > lines_;
-  //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::SoDispLine*>              lineptrs_;
 
   void sodisp_surface_integ(
         double* sqrtdetg,                      // (o) pointer to sqrt of det(g)

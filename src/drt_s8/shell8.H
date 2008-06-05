@@ -101,16 +101,16 @@ public:
   virtual int NumSurface() const {return 1;}
 
   /*!
-  \brief Get vector of ptrs to the lines of this element
+  \brief Get vector of RefCountPtrs to the lines of this element
 
   */
-  virtual DRT::Element** Lines();
+  virtual vector<RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of ptrs to the surfaces of this element
+  \brief Get vector of RefCountPtrs to the surfaces of this element
 
   */
-  virtual DRT::Element** Surfaces();
+  virtual vector<RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Return unique ParObject id
@@ -355,12 +355,6 @@ private:
   int                                             material_;
   //! container containing all kind of shell8 thisandthat
   DRT::Container                                  data_;
-  //! vector of surfaces of this element (length 1)
-  vector<DRT::Element*>                           surfaces_;
-  //! vector of lines adjacent to this element (shell8: 3 or 4 lines)
-  vector<RefCountPtr<DRT::ELEMENTS::Shell8Line> > lines_;
-  //! vector of lines adjacent to this element (shell8: 3 or 4 lines)
-  vector<DRT::ELEMENTS::Shell8Line*>              lineptrs_;
 
   // internal calculation methods
 
