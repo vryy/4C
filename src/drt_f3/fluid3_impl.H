@@ -201,21 +201,20 @@ namespace ELEMENTS
       const enum Fluid3::TurbModelAction      turb_mod_action,
       double&                                 Cs,
       double&                                 Cs_delta_sq,
-      double&								  viscturb,
       double&                                 visceff,
       double&                                 l_tau,
       const enum Fluid3::StabilisationAction  fssgv);
 
 
     /*!
-         \brief calculates viscosity at every gaussian point
-
-  		 \param material		 (i) material
-         \param visc             (o) kinematic material viscosity
-    */
-    void CalVisc_AtGaussianPoint(
-      const struct _MATERIAL*                 material,
-      double&                           	  visc);
+       \brief calculates viscosity at a given point (element center or Gaussian point)
+       
+       \param material  (i) material
+       \param visc      (o) kinematic material viscosity
+     */
+    void CalVisc(
+      const struct _MATERIAL*   material,
+      double&                   visc);
 
     /*!
      * \brief calculate the body force from the nodes condition

@@ -209,7 +209,6 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
 
   // get viscosity
   double visc = 0.0;
-  double viscturb = 0.0;
   if(material->mattyp == m_fluid)
 	  visc = material->m.fluid->viscosity;
 
@@ -237,7 +236,6 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
          turb_mod_action,
          Cs,
          Cs_delta_sq,
-         viscturb,
          visceff,
          l_tau,
          fssgv);
@@ -384,13 +382,6 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
 
     // get bodyforce in gausspoint
     bodyforce_ = blitz::sum(edeadng_(i,j)*funct_(j),j);
-
-    // compute material viscosity at gaussian point
-    if(material->mattyp != m_fluid )
-    {
-      CalVisc_AtGaussianPoint( material, visc);
-      visceff = visc + viscturb;
-    }
 
     // perform integration for entire matrix and rhs
 
@@ -1711,7 +1702,6 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
   const enum Fluid3::TurbModelAction      turb_mod_action,
   double&                                 Cs,
   double&                                 Cs_delta_sq,
-  double&                                 viscturb,
   double&                                 visceff,
   double&                                 l_tau,
   const enum Fluid3::StabilisationAction  fssgv
@@ -1859,7 +1849,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
 
   // compute nonlinear viscosity according to the Carreau-Yasuda model
   if( material->mattyp != m_fluid )
-	  CalVisc_AtGaussianPoint( material, visc);
+    CalVisc( material, visc);
 
 
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
@@ -1964,8 +1954,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
     //          visc    = visc + visc
     //              eff              turbulent
 
-    viscturb = Cs_delta_sq * rateofstrain;
-    visceff = visc + viscturb;
+    visceff = visc + Cs_delta_sq * rateofstrain;
   }
   else if(turb_mod_action == Fluid3::dynamic_smagorinsky)
   {
@@ -2003,8 +1992,7 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
       rateofstrain = sqrt(rateofstrain);
     }
 
-    viscturb = Cs_delta_sq * rateofstrain;
-    visceff = visc + viscturb;
+    visceff = visc + Cs_delta_sq * rateofstrain;
 
     // for evaluation of statistics: remember the 'real' Cs
     Cs=sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0));
@@ -2378,9 +2366,9 @@ void DRT::ELEMENTS::Fluid3Impl::Caltau(
 
 
 //
-// calculate material viscosity at gaussian point  u.may 05/08
+// calculate material viscosity    u.may 05/08
 //
-void DRT::ELEMENTS::Fluid3Impl::CalVisc_AtGaussianPoint(
+void DRT::ELEMENTS::Fluid3Impl::CalVisc(
   const struct _MATERIAL*                 material,
   double&                           	  visc)
 {
@@ -2394,38 +2382,37 @@ void DRT::ELEMENTS::Fluid3Impl::CalVisc_AtGaussianPoint(
   epsilon = 0.5 * ( vderxy_(i,j) + vderxy_(j,i) );
 
   for(int rr=0;rr<3;rr++)
-  	for(int mm=0;mm<3;mm++)
-  		rateofshear += epsilon(rr,mm)*epsilon(rr,mm);
+    for(int mm=0;mm<3;mm++)
+      rateofshear += epsilon(rr,mm)*epsilon(rr,mm);
 
   rateofshear = sqrt(2.0*rateofshear);
 
-
   if(material->mattyp == m_carreauyasuda)
   {
-    double nu_0 	= material->m.carreauyasuda->nu_0;          // parameter for zero-shear viscosity
-    double nu_inf   = material->m.carreauyasuda->nu_inf;      	// parameter for infinite-shear viscosity
-    double lambda   = material->m.carreauyasuda->lambda;      	// parameter for characteristic time
-    double a 		= material->m.carreauyasuda->a_param;  			// constant parameter
-    double b 		= material->m.carreauyasuda->b_param;  			// constant parameter
+    double nu_0   = material->m.carreauyasuda->nu_0;    // parameter for zero-shear viscosity
+    double nu_inf = material->m.carreauyasuda->nu_inf;  // parameter for infinite-shear viscosity
+    double lambda = material->m.carreauyasuda->lambda;  // parameter for characteristic time
+    double a 	  = material->m.carreauyasuda->a_param; // constant parameter
+    double b      = material->m.carreauyasuda->b_param; // constant parameter
 
-	// compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
-	// see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
-	const double tmp = pow(lambda*rateofshear,b);
-	visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
+    // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
+    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+    const double tmp = pow(lambda*rateofshear,b);
+    visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
   }
   else if(material->mattyp == m_modpowerlaw)
   {
-	  // get material parameters
-	  double m  	  = material->m.modpowerlaw->m_cons;    // consistency constant
-	  double delta  = material->m.modpowerlaw->delta;       // safety factor
-	  double a      = material->m.modpowerlaw->a_exp;       // exponent
+    // get material parameters
+    double m     = material->m.modpowerlaw->m_cons;     // consistency constant
+    double delta = material->m.modpowerlaw->delta;      // safety factor
+    double a     = material->m.modpowerlaw->a_exp;      // exponent
 
-      // compute viscosity according to a modified power law model for shear-thinning fluids
-      // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
-      visc = m * pow((delta + rateofshear), (-1)*a);
+    // compute viscosity according to a modified power law model for shear-thinning fluids
+    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+    visc = m * pow((delta + rateofshear), (-1)*a);
   }
   else
-	  dserror("material type is not yet implemented");
+    dserror("material type is not yet implemented");
 }
 
 
