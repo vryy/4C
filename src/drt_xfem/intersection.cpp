@@ -115,15 +115,15 @@ void XFEM::Intersection::computeIntersection( const Teuchos::RCP<DRT::Discretiza
             }// for-loop over all geometryMap
 		    }// for-loop over all xfemConditions
 
-        const DRT::Element*const* xfemElementSurfaces = xfemElement->Surfaces();
-        const DRT::Element*const* xfemElementLines = xfemElement->Lines();
+        const vector<RCP<DRT::Element> > xfemElementSurfaces = xfemElement->Surfaces();
+        const vector<RCP<DRT::Element> > xfemElementLines = xfemElement->Lines();
 
         for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
         {
             DRT::Element* cutterElement = (*i);
             if(cutterElement == NULL) dserror("cutter element is null\n");
             const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
-            const DRT::Element*const* cutterElementLines = cutterElement->Lines();
+            const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
             const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
 
             // number of internal points
@@ -142,7 +142,7 @@ void XFEM::Intersection::computeIntersection( const Teuchos::RCP<DRT::Discretiza
             // collect intersection points
             for(int m=0; m<xfemElement->NumLine() ; m++)
             {
-                const DRT::Element* xfemElementLine = xfemElementLines[m];
+                const DRT::Element* xfemElementLine = xfemElementLines[m].get();
                 const BlitzMat xyze_xfemElementLine(DRT::UTILS::PositionArrayBlitz(xfemElementLine));
                 if(collectIntersectionPoints(   cutterElement, xyze_cutterElement,
                                                 xfemElementLine, xyze_xfemElementLine,
@@ -156,9 +156,9 @@ void XFEM::Intersection::computeIntersection( const Teuchos::RCP<DRT::Discretiza
             {
                 for(int p=0; p<xfemElement->NumSurface() ; p++)
                 {
-                    const DRT::Element* xfemElementSurface = xfemElementSurfaces[p];
+                    const DRT::Element* xfemElementSurface = xfemElementSurfaces[p].get();
                     const BlitzMat xyze_xfemElementSurface(DRT::UTILS::PositionArrayBlitz(xfemElementSurface));
-                    const DRT::Element* cutterElementLine = cutterElementLines[m];
+                    const DRT::Element* cutterElementLine = cutterElementLines[m].get();
                     const BlitzMat xyze_cutterElementLine(getCurrentNodalPositions(cutterElementLine, currentcutterpositions));
                     if(collectIntersectionPoints(   xfemElementSurface, xyze_xfemElementSurface,
                                                     cutterElementLine, xyze_cutterElementLine,
@@ -2535,7 +2535,7 @@ bool XFEM::Intersection::computeRecoveryPlane(
         int                         iter = 0;
         const int                   maxiter = 50;
         double                      residual = 1.0;
-        DRT::Element*               lineElement = cutterElement->Lines()[i];
+        DRT::Element*               lineElement = (cutterElement->Lines()[i]).get();
         const BlitzMat xyze_lineElement(getCurrentNodalPositions(lineElement, currentcutterpositions));
         
         static BlitzMat3x3 A;
@@ -3049,8 +3049,8 @@ bool XFEM::Intersection::findCommonCutterLine(
 {
     bool comparison = false;
     // get line arrays, which are computed onthe fly within the cutter elements
-    const DRT::Element*const* lines1 = intersectingCutterElements_[faceIndex1]->Lines();
-    const DRT::Element*const* lines2 = intersectingCutterElements_[faceIndex2]->Lines();
+    const vector<RCP<DRT::Element> > lines1 = intersectingCutterElements_[faceIndex1]->Lines();
+    const vector<RCP<DRT::Element> > lines2 = intersectingCutterElements_[faceIndex2]->Lines();
 
     const int numLines1 = intersectingCutterElements_[faceIndex1]->NumLine();
     const int numLines2 = intersectingCutterElements_[faceIndex2]->NumLine();
@@ -3146,7 +3146,7 @@ int XFEM::Intersection::findIntersectingSurfaceEdge(
     x1(0) = node1(0);
     x2(0) = node2(0);
 
-    DRT::Element** lines = cutterElement->Lines();
+    vector<RCP<DRT::Element> > lines = cutterElement->Lines();
 //    for(int i = 0; i < cutterElement->NumLine(); i++)
 //    {
 //        const DRT::Element*  lineElement = lines[i];
@@ -3206,7 +3206,7 @@ void XFEM::Intersection::storeHigherOrderNode(
     {
         BlitzVec1 xsiLine;
         xsiLine(0) = xsi(2);
-        const DRT::Element* lineele = cutterElement->Lines()[lineIndex];
+        const DRT::Element* lineele = cutterElement->Lines()[lineIndex].get();
         const BlitzMat xyze_lineElement(getCurrentNodalPositions(lineele, currentcutterpositions));
         elementToCurrentCoordinates(lineele, xyze_lineElement, xsiLine, curr);
     }

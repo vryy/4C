@@ -355,7 +355,6 @@ void EnsightWriter::WriteCells(
         case DRT::Element::quad8:
         case DRT::Element::tet4:
         case DRT::Element::tet10:
-        case DRT::Element::ctet10:
         case DRT::Element::tri3:
         case DRT::Element::tri6:
         case DRT::Element::wedge6:
@@ -722,7 +721,7 @@ string EnsightWriter::GetEnsightString(
   case DRT::Element::quad9:
     entry = distype2ensightstring_.find(DRT::Element::quad4);
     break;
-  case DRT::Element::ctet10:
+  case DRT::Element::tet10:
     entry = distype2ensightstring_.find(DRT::Element::tet10);
     break;
   default:
