@@ -365,13 +365,6 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       object->Unpack(data);
       return object;
     }
-    case ParObject_SoDispSurface:
-    {
-      DRT::ELEMENTS::SoDispSurface* object =
-                new DRT::ELEMENTS::SoDispSurface(-1,-1);
-      object->Unpack(data);
-      return object;
-    }
     case ParObject_SoDispRegister:
     {
       DRT::ELEMENTS::SoDispRegister* object =

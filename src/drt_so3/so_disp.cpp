@@ -14,6 +14,8 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "so_disp.H"
+#include "so_line.H"
+#include "so_surface.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -176,7 +178,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Lines()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new line elements:
-  return DRT::UTILS::ElementBoundaryFactory<SoDispLine,SoDisp>(DRT::UTILS::buildLines,this);
+  return DRT::UTILS::ElementBoundaryFactory<StructuralLine,DRT::Element>(DRT::UTILS::buildLines,this);
 }
 
 
@@ -192,7 +194,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::SoDisp::Surfaces()
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new surface elements:
-  return DRT::UTILS::ElementBoundaryFactory<SoDispSurface,SoDisp>(DRT::UTILS::buildSurfaces,this);
+  return DRT::UTILS::ElementBoundaryFactory<StructuralSurface,DRT::Element>(DRT::UTILS::buildSurfaces,this);
 }
 
 

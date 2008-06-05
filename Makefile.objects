@@ -471,11 +471,7 @@ OBJS_SOH8_LIB = src/drt_so3/so_hex8.o \
                 src/drt_so3/so_weg6_evaluate.o \
                 src/drt_so3/so_weg6_input.o \
                 src/drt_so3/so_disp.o \
-                src/drt_so3/so_disp_line.o \
-                src/drt_so3/so_disp_surface.o \
                 src/drt_so3/so_disp_input.o \
-                src/drt_so3/so_disp_line_evaluate.o \
-                src/drt_so3/so_disp_surface_evaluate.o \
                 src/drt_so3/so_disp_evaluate.o \
                 src/drt_so3/so_integrator.o\
                 src/drt_so3/so_shw6.o \

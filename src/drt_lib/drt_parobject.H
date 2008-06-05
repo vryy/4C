@@ -82,9 +82,6 @@ using namespace std;
 //#define ParObject_Sow6Line              (int)55
 #define ParObject_SoDisp                (int)56
 #define ParObject_SoDispRegister        (int)57
-#define ParObject_SoDispVolume          (int)58
-#define ParObject_SoDispSurface         (int)59
-#define ParObject_SoDispLine            (int)60
 #define ParObject_So_tet4               (int)61
 #define ParObject_Sotet4Register        (int)62
 #define ParObject_Sotet4Volume          (int)63

@@ -92,8 +92,6 @@ public:
     element_soctet10line,
     element_so_weg6,
     element_sodisp,
-    element_sodispsurface,
-    element_sodispline,
     element_structuralsurface,
     element_structuralline,
     element_contact,
