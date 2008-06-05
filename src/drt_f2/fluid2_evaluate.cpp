@@ -27,6 +27,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_timecurve.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/carreauyasuda.H"
+#include "../drt_mat/modpowerlaw.H"
 
 // different implementations
 #include "fluid2_genalpha_resVMM.H"
@@ -170,11 +172,24 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
 
   // get the material
   RCP<MAT::Material> mat = Material();
-  if (mat->MaterialType()!=m_fluid)
-    dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
 
-  MATERIAL* actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+  if( mat->MaterialType()    != m_carreauyasuda
+      && mat->MaterialType() != m_modpowerlaw
+      && mat->MaterialType() != m_fluid)
+        dserror("Material law is not a fluid");
 
+  MATERIAL* actmat = NULL;
+
+  if(mat->MaterialType()== m_fluid)
+    actmat = static_cast<MAT::NewtonianFluid*>(mat.get())->MaterialData();
+  else if(mat->MaterialType()== m_carreauyasuda)
+    actmat = static_cast<MAT::CarreauYasuda*>(mat.get())->MaterialData();
+  else if(mat->MaterialType()== m_modpowerlaw)
+    actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
+  else
+    dserror("fluid material expected but got type %d", mat->MaterialType());
+  
+  
   switch(act)
   {
     case calc_fluid_stationary_systemmat_and_residual:
@@ -282,8 +297,19 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       f2_sys_mat(lm,myvelnp,myfsvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elevec1,actmat,time,timefac,fssgv,Cs,is_stationary);
 
       // This is a very poor way to transport the density to the
-      // outside world. Is there a better one?
-      params.set("density", actmat->m.fluid->density);
+      // outside world. Is there a better one?    
+      double dens = 0.0;
+      if(mat->MaterialType()== m_fluid)
+        dens = actmat->m.fluid->density;
+      else if(mat->MaterialType()== m_carreauyasuda)
+        dens = actmat->m.carreauyasuda->density;
+      else if(mat->MaterialType()== m_modpowerlaw)
+        dens = actmat->m.modpowerlaw->density;
+      else
+        dserror("no fluid material found");
+
+      params.set("density", dens);
+              
     }
     break;
     case calc_fluid_genalpha_sysmat_and_residual:
@@ -468,7 +494,17 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
 
       // This is a very poor way to transport the density to the
       // outside world. Is there a better one?
-      params.set("density", actmat->m.fluid->density);
+      double dens = 0.0;
+      if(mat->MaterialType()== m_fluid)
+        dens = actmat->m.fluid->density;
+      else if(mat->MaterialType()== m_carreauyasuda)
+        dens = actmat->m.carreauyasuda->density;
+      else if(mat->MaterialType()== m_modpowerlaw)
+        dens = actmat->m.modpowerlaw->density;
+      else
+        dserror("no fluid material found");
+
+      params.set("density", dens);
     }
     break;
     case calc_fluid_genalpha_update_for_subscales:
@@ -582,8 +618,15 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
 
   /*---------------------------------------------- get viscosity ---*/
   // check here, if we really have a fluid !!
-  if(material->mattyp != m_fluid) dserror("Material law is not of type m_fluid.");
-  const double  visc = material->m.fluid->viscosity;
+  if( material->mattyp != m_fluid
+      &&  material->mattyp != m_carreauyasuda
+      &&  material->mattyp != m_modpowerlaw)
+        dserror("Material law is not a fluid");
+
+  // get viscosity
+  double visc = 0.0;
+  if(material->mattyp == m_fluid)
+    visc = material->m.fluid->viscosity;
 
   /*--------------------------------------------- stab-parameter ---*/
   // USFEM stabilization is default. No switch here at the moment.
@@ -709,6 +752,68 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
     hk = sqrt(area);
   }
 
+  /*-------------------------------- compute nonlinear viscosity ---*/
+  //TODO compute nonlinear viscosity
+  // compute shear rate
+  if( material->mattyp != m_fluid )
+  {
+    double rateofshear = 0.0;
+    blitz::Array<double,2> epsilon(2,2,blitz::ColumnMajorArray<2>());   // strain rate tensor
+    
+    // global derivatives at element center
+    f2_gder(derxy,deriv,xjm,det,iel);
+    
+    // compute velocity derivatives at element center
+    for (int i=0;i<2;i++)
+    {
+      vderxy(0,i)=0.0;
+      vderxy(1,i)=0.0;
+      for (int j=0;j<iel;j++)
+      {
+        vderxy(0,i) += derxy(i,j)*evelnp[0+(2*j)];
+        vderxy(1,i) += derxy(i,j)*evelnp[1+(2*j)];
+      } /* end of loop over j */
+    } /* end of loop over i */
+    
+    // compute strain rate tensor e(u)
+    for (int i=0;i<2;i++)
+      for (int j=0;j<2;j++)
+        epsilon(i,j) = 0.5 * ( vderxy(i,j) + vderxy(j,i) );
+  
+    for(int rr=0;rr<2;rr++)
+      for(int mm=0;mm<2;mm++)
+        rateofshear += epsilon(rr,mm)*epsilon(rr,mm);
+  
+    rateofshear = sqrt(2.0*rateofshear);
+  
+    if(material->mattyp == m_carreauyasuda)
+    {
+      double nu_0     = material->m.carreauyasuda->nu_0;      // parameter for zero-shear viscosity
+      double nu_inf   = material->m.carreauyasuda->nu_inf;    // parameter for infinite-shear viscosity
+      double lambda   = material->m.carreauyasuda->lambda;    // parameter for characteristic time
+      double a        = material->m.carreauyasuda->a_param;   // constant parameter
+      double b        = material->m.carreauyasuda->b_param;   // constant parameter
+  
+      // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
+      // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+      const double tmp = pow(lambda*rateofshear,b);
+      visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
+    }
+    else if(material->mattyp == m_modpowerlaw)
+    {
+      // get material parameters
+      double m      = material->m.modpowerlaw->m_cons;    // consistency constant
+      double delta  = material->m.modpowerlaw->delta;     // safety factor
+      double a      = material->m.modpowerlaw->a_exp;     // exponent
+  
+      // compute viscosity according to a modified power law model for shear-thinning fluids
+      // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+      visc = m * pow((delta + rateofshear), (-1)*a);
+    }
+    else
+      dserror("material type not yet implemented");
+  }
+  
   /*----------------------------------------------- get vel_norm ---*/
   vel_norm = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
 

@@ -139,9 +139,16 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   //                      SET MATERIAL DATA
   //------------------------------------------------------------------
   // get viscosity
-  // check here, if we really have a fluid !!
-  dsassert(material->mattyp == m_fluid, "Material law is not of type m_fluid.");
-  const double visc = material->m.fluid->viscosity;
+  // check here, if we really have a fluid !! 
+  if( material->mattyp != m_carreauyasuda
+      &&      material->mattyp != m_modpowerlaw
+      && material->mattyp != m_fluid)
+        dserror("Material law is not a fluid");
+
+  // get viscosity
+  double visc = 0.0;
+  if(material->mattyp == m_fluid)
+    visc = material->m.fluid->viscosity;
 
   //------------------------------------------------------------------
   //                      SET ELEMENT DATA
@@ -343,6 +350,10 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   /* in the gausspoints but just once in the middle of the element.   */
   /*------------------------------------------------------------------*/
 
+  // compute nonlinear viscosity according to the Carreau-Yasuda model
+  if( material->mattyp != m_fluid )
+      CalVisc( material, visc);
+  
   double visceff = visc;
 
   if(tds == Fluid2::subscales_time_dependent)
@@ -3846,6 +3857,55 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::CalcRes(
   cout << "Fluid2GenalphaResVMM:CalcRes is empty right now\n";
 
   return;
+}
+
+
+
+void DRT::ELEMENTS::Fluid2GenalphaResVMM::CalVisc(
+  const struct _MATERIAL*                 material,
+  double&                                 visc)
+{
+
+  blitz::firstIndex i;    // Placeholder for the first index
+  blitz::secondIndex j;   // Placeholder for the second index
+
+  // compute shear rate
+  double rateofshear = 0.0;
+  blitz::Array<double,2> epsilon(2,2,blitz::ColumnMajorArray<2>());   // strain rate tensor
+  epsilon = 0.5 * ( vderxyaf_(i,j) + vderxyaf_(j,i) );
+
+  for(int rr=0;rr<2;rr++)
+    for(int mm=0;mm<2;mm++)
+      rateofshear += epsilon(rr,mm)*epsilon(rr,mm);
+
+  rateofshear = sqrt(2.0*rateofshear);
+
+  if(material->mattyp == m_carreauyasuda)
+  {
+    double nu_0     = material->m.carreauyasuda->nu_0;      // parameter for zero-shear viscosity
+    double nu_inf   = material->m.carreauyasuda->nu_inf;    // parameter for infinite-shear viscosity
+    double lambda   = material->m.carreauyasuda->lambda;    // parameter for characteristic time
+    double a        = material->m.carreauyasuda->a_param;   // constant parameter
+    double b        = material->m.carreauyasuda->b_param;   // constant parameter
+
+    // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
+    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+    const double tmp = pow(lambda*rateofshear,b);
+    visc = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
+  }
+  else if(material->mattyp == m_modpowerlaw)
+  {
+    // get material parameters
+    double m      = material->m.modpowerlaw->m_cons;    // consistency constant
+    double delta  = material->m.modpowerlaw->delta;     // safety factor
+    double a      = material->m.modpowerlaw->a_exp;     // exponent
+
+    // compute viscosity according to a modified power law model for shear-thinning fluids
+    // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+    visc = m * pow((delta + rateofshear), (-1)*a);
+  }
+  else
+    dserror("material type not yet implemented");
 }
 
 
