@@ -104,7 +104,9 @@ public:
     element_dgfluid2interface,
     element_dgfluid3,
     element_dgfluid3interface,
-    element_constraintelement
+    element_constraintelement,
+    element_condif3,
+    element_condif3surface
   };
 
   /*!
@@ -123,7 +125,6 @@ public:
     hex27,                      // 27 noded hexahedra
     tet4,                       // 4 noded tetrahedra
     tet10,                      // 10 noded tetrahedra
-    ctet10,                     // 10 noded tetrahedra
     wedge6,                     // 6 noded wedge
     wedge15,                    // 15 noded wedge
     pyramid5,                   // 5 noded pyramid
@@ -298,7 +299,7 @@ public:
 
 
   /*!
-  \brief Get vector of ptrs to the lines of this element
+  \brief Get vector of RefCountPtrs to the lines of this element
 
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
@@ -312,11 +313,15 @@ public:
        Neumann boundary conditions on a line itself.
 
   */
-  virtual Element** Lines() { return NULL; }
+  virtual vector<RCP<DRT::Element> > Lines()
+  {
+   vector<RCP<DRT::Element> > lines(0);
+   return lines;
+  }
   //virtual const Element*const* Lines() const { dserror("unexpected base method called."); return NULL; }
 
   /*!
-  \brief Get vector of ptrs to the surfaces of this element
+  \brief Get vector of RefCountPtrs to the surfaces of this element
 
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
@@ -330,11 +335,15 @@ public:
        Neumann boundary conditions on a surface itself.
 
   */
-  virtual Element** Surfaces() { return NULL; }
+  virtual vector<RCP<DRT::Element> > Surfaces()
+  {
+   vector<RCP<DRT::Element> > surfaces(0);
+   return surfaces;
+  }
   //virtual const Element*const* Surfaces() const { dserror("unexpected base method called."); return NULL; }
 
   /*!
-  \brief Get vector of ptrs to the volumes of this element
+  \brief Get vector of RefCountPtrs to the volumes of this element
 
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
@@ -348,7 +357,11 @@ public:
        In this case, the element itself must be able to evaluate the
        Neumann boundary conditions on a volume itself.
   */
-  virtual Element** Volumes() { return NULL; }
+  virtual vector<RCP<DRT::Element> > Volumes()
+  {
+   vector<RCP<DRT::Element> > volumes(0);
+   return volumes;
+  }
 
   /*!
   \brief Get number of degrees of freedom of a certain node
@@ -797,7 +810,6 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
     case DRT::Element::hex27:      s = "HEX27";  break;
     case DRT::Element::tet4:       s = "TET4";  break;
     case DRT::Element::tet10:      s = "TET10";  break;
-    case DRT::Element::ctet10:     s = "CTET10";  break;
     case DRT::Element::wedge6:     s = "WEDGE6";  break;
     case DRT::Element::wedge15:    s = "WEDGE15";  break;
     case DRT::Element::pyramid5:   s = "PYRAMID5";  break;

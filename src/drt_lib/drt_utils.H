@@ -236,18 +236,15 @@ namespace UTILS
    * the BACI conventions for element connectivity
    * 
    * \param buildtype       (in) flag, whether surfaces or lines have to be created
-   * \param boundaryeles    (in) vector to be filled with RCPs of allocated boundary elements
-   * \param boundaryeleptrs (in) vector to be filled with raw pointers of the boundary elements
    * \param ele             (in) pointer on the parent element
+   * \param boundaryeles    (out) vector filled with RCPs of allocated boundary elements
    *
    * \author gjb
    * \date 05/08
    */
   template <class BoundaryEle, class ParentEle>
-  void ElementBoundaryFactory(
+  vector<RCP<DRT::Element> > ElementBoundaryFactory(
       const BoundaryBuildType buildtype,
-      vector<RefCountPtr<BoundaryEle> >& boundaryeles,
-      vector<BoundaryEle*>& boundaryelesptrs,
       ParentEle* ele
       )
   {
@@ -271,9 +268,8 @@ namespace UTILS
         break;
       }
     }
-    // resize vectors that will contain surface or line element information
-    boundaryeles.resize(nele);
-    boundaryelesptrs.resize(nele);
+    // create vectors that will contain the surface or line elements
+    vector<RCP<DRT::Element> > boundaryeles(nele);
 
     // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
     if (nele != connectivity.size()) dserror("number of surfaces or lines does not match!");
@@ -296,11 +292,9 @@ namespace UTILS
       // allocate a new boundary element
       boundaryeles[iele] = rcp(new BoundaryEle(iele,ele->Owner(),nodeids.size(),&nodeids[0],&nodes[0],ele,iele));
 
-      // store also a raw pointer of the new boundary element
-      boundaryelesptrs[iele] = boundaryeles[iele].get();
     }
 
-    return;
+    return boundaryeles;
   }
 
 } // namespace UTILS

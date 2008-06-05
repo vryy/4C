@@ -431,11 +431,11 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
       // loop all lines of all elements attached to actnode
       const int numlines = elements[i]->NumLine();
       if( !numlines ) continue;
-      DRT::Element** lines = elements[i]->Lines();
-      if( !lines ) dserror("Element returned no lines");
+      vector<RCP<DRT::Element> >  lines = elements[i]->Lines();
+      if(lines.size()==0) dserror("Element returned no lines");
       for( int j = 0; j < numlines; ++j )
       {
-        DRT::Element* actline = lines[j];
+        RCP<DRT::Element> actline = lines[j];
         // find lines that are attached to actnode
         const int nnodeperline   = actline->NumNode();
         DRT::Node** nodesperline = actline->Nodes();
@@ -538,11 +538,11 @@ void DRT::Discretization::BuildSurfacesinCondition(
       // loop all surfaces of all elements attached to actnode
       const int numsurfs = elements[i]->NumSurface();
       if (!numsurfs) continue;
-      DRT::Element** surfs = elements[i]->Surfaces();
-      if (!surfs) dserror("Element does not return any surfaces");
+      vector<RCP<DRT::Element> >  surfs = elements[i]->Surfaces();
+      if (surfs.size()==0) dserror("Element does not return any surfaces");
       for (int j=0; j<numsurfs; ++j)
       {
-        DRT::Element* actsurf = surfs[j];
+        RCP<DRT::Element> actsurf = surfs[j];
         // find surfs attached to actnode
         const int nnodepersurf = actsurf->NumNode();
         DRT::Node** nodespersurf = actsurf->Nodes();
@@ -643,11 +643,11 @@ void DRT::Discretization::BuildVolumesinCondition(
       // loop all volumes of all elements attached to actnode
       const int numvols = elements[i]->NumVolume();
       if (!numvols) continue;
-      DRT::Element** volumes = elements[i]->Volumes();
-      if (!volumes) dserror("Element returned no volumes");
+      vector<RCP<DRT::Element> >  volumes = elements[i]->Volumes();
+      if (volumes.size()==0) dserror("Element returned no volumes");
       for (int j=0; j<numvols; ++j)
       {
-        DRT::Element* actvol = volumes[j];
+        RCP<DRT::Element> actvol = volumes[j];
         // find volumes that are attached to actnode
         const int nnodepervol   = actvol->NumNode();
         DRT::Node** nodespervol = actvol->Nodes();
@@ -779,14 +779,6 @@ void DRT::Discretization::BuildVolumesinCondition(
 
   return;
 } // DRT::Discretization::BuildVolumesinCondition
-
-
-
-
-
-
-
-
 
 
 
