@@ -100,10 +100,10 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
-                                    Epetra_SerialDenseMatrix& elemat2,
+                                    Epetra_SerialDenseMatrix&,
                                     Epetra_SerialDenseVector& elevec1,
-                                    Epetra_SerialDenseVector& elevec2,
-                                    Epetra_SerialDenseVector& elevec3)
+                                    Epetra_SerialDenseVector&,
+                                    Epetra_SerialDenseVector&)
 {
   // get the action required
   const string action = params.get<string>("action","none");
@@ -614,7 +614,7 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::XFluid3Register::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::XFluid3Register::Initialize(DRT::Discretization&)
 {
   return 0;
 }
