@@ -354,35 +354,35 @@ bool XFEM::searchForNearestPointOnSurface(
     const BlitzVec3&                        physCoord,
     BlitzVec2&                              xsi,
     BlitzVec3&                              normal,
-    double&									distance)
+    double&                                 distance)
 {
-	distance = -1.0;
-	normal = 0;
-	
-	CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, physCoord, xsi);
-	
-	const bool pointWithinElement = checkPositionWithinElementParameterSpace(xsi, surfaceElement->Shape());
-	
-	// normal vector at position xsi
-	static BlitzVec3 eleNormalAtXsi;
-	computeNormalToBoundaryElement(surfaceElement, xyze_surfaceElement, xsi, eleNormalAtXsi);
-	
-	BlitzVec3 x_surface_phys;
-	elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsi, x_surface_phys);
-	// normal pointing away from the surface towards physCoord
-	normal(0) = physCoord(0) - x_surface_phys(0);
-	normal(1) = physCoord(1) - x_surface_phys(1);
-	normal(2) = physCoord(2) - x_surface_phys(2);
-	// absolute distance between point and surface
-	distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
-	// compute distance with sign
-	const double scalarproduct = eleNormalAtXsi(0)*normal(0) + eleNormalAtXsi(1)*normal(1) + eleNormalAtXsi(2)*normal(2);
-	const double teiler = Norm2(eleNormalAtXsi) * Norm2(normal);
-	const double cosphi = scalarproduct / teiler;
-	const double vorzeichen = cosphi/abs(cosphi);
-	distance *= vorzeichen;
+  distance = -1.0;
+  normal = 0;
   
-	return pointWithinElement;
+  CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, physCoord, xsi);
+  
+  const bool pointWithinElement = checkPositionWithinElementParameterSpace(xsi, surfaceElement->Shape());
+  
+  // normal vector at position xsi
+  static BlitzVec3 eleNormalAtXsi;
+  computeNormalToBoundaryElement(surfaceElement, xyze_surfaceElement, xsi, eleNormalAtXsi);
+  
+  BlitzVec3 x_surface_phys;
+  elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsi, x_surface_phys);
+  // normal pointing away from the surface towards physCoord
+  normal(0) = physCoord(0) - x_surface_phys(0);
+  normal(1) = physCoord(1) - x_surface_phys(1);
+  normal(2) = physCoord(2) - x_surface_phys(2);
+  // absolute distance between point and surface
+  distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
+  // compute distance with sign
+  const double scalarproduct = eleNormalAtXsi(0)*normal(0) + eleNormalAtXsi(1)*normal(1) + eleNormalAtXsi(2)*normal(2);
+  const double teiler = Norm2(eleNormalAtXsi) * Norm2(normal);
+  const double cosphi = scalarproduct / teiler;
+  const double vorzeichen = cosphi/abs(cosphi);
+  distance *= vorzeichen;
+  
+  return pointWithinElement;
 }
 
 /*!
@@ -550,7 +550,7 @@ static void currentToSurfaceElementCoordinatesT(
     const double residual = sqrt(b(0)*b(0)+b(1)*b(1));
     if (residual < XFEM::TOL14)
     {
-      nodeWithinElement = true;
+      nodeWithinElement = true; //TODO: brauchen wir das noch???
       break;
     }
     
