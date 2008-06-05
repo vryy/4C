@@ -156,14 +156,22 @@ public:
 
 
   /*!
-  \brief Get vector of ptrs to the lines of this element
+  \brief Get vector of RefCountPtrs to the lines of this element
   */
-  virtual Element** Lines() { return NULL; }
+  virtual vector<RCP<DRT::Element> > Lines()
+  {
+   vector<RCP<DRT::Element> > lines(0);
+   return lines;
+  }
 
   /*!
-  \brief Get vector of ptrs to the surfaces of this element
+  \brief Get vector of RefCountPtrs to the surfaces of this element
   */
-  virtual Element** Surfaces() { return NULL; }
+  virtual vector<RCP<DRT::Element> > Surfaces()
+  {
+   vector<RCP<DRT::Element> > surfaces(0);
+   return surfaces;
+  }
 
 
   /*!
