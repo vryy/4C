@@ -244,8 +244,6 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
       }
   } //end of loop over integrationen points
 
-
-  //dserror("Line Neumann condition not yet implemented for Fluid2");
   return 0;
 }
 
