@@ -103,11 +103,11 @@ namespace DRT
         
         virtual int NumVolume() const {return 1;}
         
-        virtual DRT::Element** Lines();
+        virtual vector<RCP<DRT::Element> > Lines();
         
-        virtual DRT::Element** Surfaces();
+        virtual vector<RCP<DRT::Element> > Surfaces();
         
-        virtual DRT::Element** Volumes();
+        virtual vector<RCP<DRT::Element> > Volumes();
         
         virtual int UniqueParObjectId() const { return ParObject_XFluid3;}
         
@@ -236,18 +236,6 @@ namespace DRT
         bool                                            is_ale_;
         //! container containing all kind of fluid3 thisandthat
         DRT::Container                                  data_;
-        
-        //! vector of volumes of this element (length 1)
-        std::vector<DRT::Element*>                                volume_;
-        
-        //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-        std::vector<Teuchos::RCP<DRT::ELEMENTS::XFluid3Surface> > surfaces_;
-        //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-        std::vector<DRT::ELEMENTS::XFluid3Surface*>               surfaceptrs_;
-        //! vector of lines adjacent to this element
-        std::vector<Teuchos::RCP<DRT::ELEMENTS::XFluid3Line> >    lines_;
-        //! vector of lines adjacent to this element
-        std::vector<DRT::ELEMENTS::XFluid3Line*>                  lineptrs_;
         
       private:
         
@@ -391,7 +379,7 @@ namespace DRT
         }
         }
         
-        virtual DRT::Element** Lines();
+        virtual vector<RCP<DRT::Element> > Lines();
         
         virtual int UniqueParObjectId() const { return ParObject_XFluid3Surface;}
         
@@ -452,11 +440,7 @@ namespace DRT
         DRT::ELEMENTS::XFluid3* parent_;
         //! The local surface number of this surface w.r.t to the parent_ element
         const int                    lsurface_;
-        //! vector of lines adjacent to this element
-        std::vector<Teuchos::RCP<DRT::ELEMENTS::XFluid3Line> > lines_;
-        //! vector of lines adjacent to this element
-        std::vector<DRT::ELEMENTS::XFluid3Line*>              lineptrs_;
-        
+
         //!  compute kovariant metric tensor G for fluid surface element
         void f3_metric_tensor_for_surface(
             const Epetra_SerialDenseMatrix  xyze,

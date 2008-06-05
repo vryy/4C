@@ -150,9 +150,9 @@ public:
 
 
   /*!
-  \brief Get vector of ptrs to the lines of this element
+  \brief Get vector of RefCountPtrs to the lines of this element
   */
-  virtual Element** Lines();
+  virtual vector<RCP<DRT::Element> > Lines();
 
 
   /*!
@@ -329,9 +329,7 @@ private:
   double Arbeit_M;
   double Arbeit_Q;
   double x_verschiebung;
-  
-   //! vector of lines of this element (length 1)
-  vector<DRT::Element*> lines_; 
+
  
   //! gaussrule_ will be initialized automatically to a 2 point integration rule 
   DRT::UTILS::GaussRule1D gaussrule_;

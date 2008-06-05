@@ -110,16 +110,16 @@ public:
   virtual int NumVolume() const {return -1;}
 
   /*!
-  \brief Get vector of ptrs to the volume of this element
+  \brief Get vector of RefCountPtrs to the volume of this element
 
   */
-  virtual DRT::Element** Lines();
+  virtual vector<RCP<Element> > Lines();
 
   /*!
-  \brief Get vector of ptrs to the surfaces of this element
+  \brief Get vector of RefCountPtrs to the surfaces of this element
 
   */
-  virtual DRT::Element** Surfaces();
+  virtual vector<RCP<Element> > Surfaces();
 
   /*!
   \brief Return unique ParObject id
@@ -276,15 +276,6 @@ private:
 
   //! container containing all kind of condif2 thisandthat
   DRT::Container                                  data_;
-
-  //! vector of surfaces of this element (length 1)
-  vector<DRT::Element*>                           surface_;
-
-  //! vector of lines adjacent to this element (condif2: 3 or 4 lines)
-  vector<RefCountPtr<DRT::ELEMENTS::Condif2Line> > lines_;
-  //! vector of lines adjacent to this element (condif2: 3 or 4 lines)
-  vector<DRT::ELEMENTS::Condif2Line*>              lineptrs_;
-
 
   // internal calculation methods
 

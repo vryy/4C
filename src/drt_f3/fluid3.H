@@ -141,19 +141,19 @@ public:
   virtual int NumVolume() const {return 1;}
 
   /*!
-  \brief Get vector of ptrs to the lines of this element
+  \brief Get vector of RefCountPtrs to the lines of this element
   */
-  virtual DRT::Element** Lines();
+  virtual vector<RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of ptrs to the surfaces of this element
+  \brief Get vector of RefCountPtrs to the surfaces of this element
   */
-  virtual DRT::Element** Surfaces();
+  virtual vector<RCP<DRT::Element> > Surfaces();
 
   /*!
-  \brief Get vector of ptrs to the volume of this element
+  \brief Get vector of RefCountPtrs to the volume of this element
   */
-  virtual DRT::Element** Volumes();
+  virtual vector<RCP<DRT::Element> > Volumes();
 
   /*!
   \brief Return unique ParObject id
@@ -409,18 +409,6 @@ private:
   bool                                            is_ale_;
   //! container containing all kind of fluid3 thisandthat
   DRT::Container                                  data_;
-
-  //! vector of volumes of this element (length 1)
-  vector<DRT::Element*>                           volume_;
-
-  //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-  vector<RefCountPtr<DRT::ELEMENTS::Fluid3Surface> > surfaces_;
-  //! vector of surfaces adjacent to this element (fluid3: 4 or 6 surfaces)
-  vector<DRT::ELEMENTS::Fluid3Surface*>              surfaceptrs_;
-  //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::Fluid3Line> > lines_;
-  //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::Fluid3Line*>              lineptrs_;
 
 private:
   //! factor including Smagorinsky's constant
@@ -873,10 +861,10 @@ public:
   }
 
   /*!
-  \brief Get vector of ptrs to the lines of this element
+  \brief Get vector of RefCountPtrs to the lines of this element
 
   */
-  virtual DRT::Element** Lines();
+  virtual vector<RCP<DRT::Element> > Lines();
 
   /*!
   \brief Return unique ParObject id
@@ -1035,10 +1023,6 @@ private:
   DRT::ELEMENTS::Fluid3* parent_;
   //! The local surface number of this surface w.r.t to the parent_ element
   int                    lsurface_;
-  //! vector of lines adjacent to this element
-  vector<RefCountPtr<DRT::ELEMENTS::Fluid3Line> > lines_;
-  //! vector of lines adjacent to this element
-  vector<DRT::ELEMENTS::Fluid3Line*>              lineptrs_;
 
   //  compute kovariant metric tensor G for fluid surface element
   //                                                  gammi 04/07

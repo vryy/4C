@@ -42,8 +42,6 @@ Arbeit_N(0),
 Arbeit_M(0),
 Arbeit_Q(0),
 x_verschiebung(0),
-//since lines_ is a vector it calls its constructor automatically -> 
-//no initialization of lines_ necessary here
 
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
@@ -70,7 +68,6 @@ Arbeit_N(old.Arbeit_N),
 Arbeit_M(old.Arbeit_M),
 Arbeit_Q(old.Arbeit_Q),
 x_verschiebung(old.x_verschiebung),
-lines_(old.lines_),
 gaussrule_(old.gaussrule_)
 
 {
@@ -218,11 +215,11 @@ void DRT::ELEMENTS::Beam2::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          cyron 01/08|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::Beam2::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2::Lines()
 {
-  lines_.resize(1);
-  lines_[0] = this;
-  return &lines_[0];
+  vector<RCP<Element> > lines(1);
+  lines[0]= rcp(this, false);
+  return lines;
 }
 
 

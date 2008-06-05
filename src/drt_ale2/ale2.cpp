@@ -22,16 +22,12 @@ DRT::ELEMENTS::Ale2::Ale2(int id, int owner)
   : DRT::Element(id,element_ale2,owner),
     data_()
 {
-  lines_.resize(0);
-  lines_.resize(0);
 }
 
 
 DRT::ELEMENTS::Ale2::Ale2(const DRT::ELEMENTS::Ale2& old)
   : DRT::Element(old),
-    data_(old.data_),
-    lines_(old.lines_),
-    lineptrs_(old.lineptrs_)
+    data_(old.data_)
 {
   return;
 }
@@ -123,27 +119,24 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Ale2::ElementRegister() const
 //
 // get vector of lines
 //
-DRT::Element** DRT::ELEMENTS::Ale2::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Lines()
 {
-  // once constructed do not reconstruct again
-  // make sure they exist
-  if ((int)lines_.size()    == NumLine() &&
-      (int)lineptrs_.size() == NumLine() &&
-      dynamic_cast<DRT::ELEMENTS::Ale2Line*>(lineptrs_[0]) )
-    return (DRT::Element**)(&(lineptrs_[0]));
-  
-  // so we have to allocate new line elements
-  DRT::UTILS::ElementBoundaryFactory<Ale2Line,Ale2>(DRT::UTILS::buildLines,lines_,lineptrs_,this);
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
 
-  return (DRT::Element**)(&(lineptrs_[0]));
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<Ale2Line,Ale2>(DRT::UTILS::buildLines,this);
 }
 
 
-DRT::Element** DRT::ELEMENTS::Ale2::Surfaces()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Surfaces()
 {
-  surface_.resize(1);
-  surface_[0] = this; //points to Ale2 element itself
-  return &surface_[0];
+  vector<RCP<Element> > surfaces(1);
+  surfaces[0]= rcp(this, false);
+  return surfaces;
 }
 
 

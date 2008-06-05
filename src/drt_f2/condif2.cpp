@@ -29,8 +29,6 @@ DRT::ELEMENTS::Condif2::Condif2(int id, int owner) :
 DRT::Element(id,element_condif2,owner),
 data_()
 {
-  lines_.resize(0);
-  lineptrs_.resize(0);
   return;
 }
 
@@ -40,9 +38,7 @@ data_()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Condif2::Condif2(const DRT::ELEMENTS::Condif2& old) :
 DRT::Element(old),
-data_(old.data_),
-lines_(old.lines_),
-lineptrs_(old.lineptrs_)
+data_(old.data_)
 {
   return;
 }
@@ -159,29 +155,26 @@ RefCountPtr<DRT::ElementRegister> DRT::ELEMENTS::Condif2::ElementRegister() cons
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::Condif2::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::Condif2::Lines()
 {
-    // once constructed do not reconstruct again
-    // make sure they exist
-    if ((int)lines_.size()    == NumLine() &&
-        (int)lineptrs_.size() == NumLine() &&
-        dynamic_cast<DRT::ELEMENTS::Condif2Line*>(lineptrs_[0]) )
-      return (DRT::Element**)(&(lineptrs_[0]));
-    
-    // so we have to allocate new line elements
-    DRT::UTILS::ElementBoundaryFactory<Condif2Line,Condif2>(DRT::UTILS::buildLines,lines_,lineptrs_,this);
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
 
-    return (DRT::Element**)(&(lineptrs_[0]));
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<Condif2Line,Condif2>(DRT::UTILS::buildLines,this);
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)                  vg 05/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::Condif2::Surfaces()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::Condif2::Surfaces()
 {
-  surface_.resize(1);
-  surface_[0] = this; //points to Condif2 element itself
-  return &surface_[0];
+  vector<RCP<Element> > surfaces(1);
+  surfaces[0]= rcp(this, false);
+  return surfaces;
 }
 
 

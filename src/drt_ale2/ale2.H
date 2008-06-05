@@ -105,16 +105,16 @@ public:
   virtual int NumVolume() const {return -1;}
 
   /*!
-  \brief Get vector of ptrs to the volume of this element
+  \brief Get vector of RefCountPtrs to the lines of this element
 
   */
-  virtual DRT::Element** Lines();
+  virtual vector<RCP<DRT::Element> > Lines();
 
   /*!
-  \brief Get vector of ptrs to the surfaces of this element
+  \brief Get vector of RefCountPtrs to the surfaces of this element
 
   */
-  virtual DRT::Element** Surfaces();
+  virtual vector<RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Return unique ParObject id
@@ -294,14 +294,6 @@ private:
 
   //! container containing all kind of ale2 thisandthat
   DRT::Container                                  data_;
-
-  //! vector of surfaces of this element (length 1)
-  vector<DRT::Element*>                           surface_;
-
-  //! vector of lines adjacent to this element (ale2: 3 or 4 lines)
-  vector<RefCountPtr<DRT::ELEMENTS::Ale2Line> > lines_;
-  //! vector of lines adjacent to this element (ale2: 3 or 4 lines)
-  vector<DRT::ELEMENTS::Ale2Line*>              lineptrs_;
 
 
   // internal calculation methods

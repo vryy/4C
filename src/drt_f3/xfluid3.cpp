@@ -35,10 +35,6 @@ is_ale_(false),
 data_(),
 eleDofManager_()
 {
-    surfaces_.resize(0);
-    surfaceptrs_.resize(0);
-    lines_.resize(0);
-    lineptrs_.resize(0);
     return;
 }
 
@@ -50,10 +46,6 @@ DRT::ELEMENTS::XFluid3::XFluid3(const DRT::ELEMENTS::XFluid3& old) :
 DRT::Element(old),
 is_ale_(old.is_ale_),
 data_(old.data_),
-surfaces_(old.surfaces_),
-surfaceptrs_(old.surfaceptrs_),
-lines_(old.lines_),
-lineptrs_(old.lineptrs_),
 eleDofManager_(old.eleDofManager_)
 {
     return;
@@ -180,49 +172,43 @@ RCP<DRT::ElementRegister> DRT::ELEMENTS::XFluid3::ElementRegister() const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                  gjb 03/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::XFluid3::Lines()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::XFluid3::Lines()
 {
-  // once constructed do not reconstruct again
-  // make sure they exist
-  if ((int)lines_.size()    == NumLine() &&
-      (int)lineptrs_.size() == NumLine() &&
-      dynamic_cast<DRT::ELEMENTS::XFluid3Line*>(lineptrs_[0]) )
-    return (DRT::Element**)(&(lineptrs_[0]));
-  
-  // so we have to allocate new line elements
-  DRT::UTILS::ElementBoundaryFactory<XFluid3Line,XFluid3>(DRT::UTILS::buildLines,lines_,lineptrs_,this);
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
 
-  return (DRT::Element**)(&(lineptrs_[0]));
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<XFluid3Line,XFluid3>(DRT::UTILS::buildLines,this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                            gjb 05/08|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::XFluid3::Surfaces()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::XFluid3::Surfaces()
 {
-  // once constructed do not reconstruct again
-  // make sure they exist
-  if ((int)surfaces_.size()    == NumSurface() &&
-      (int)surfaceptrs_.size() == NumSurface() &&
-      dynamic_cast<DRT::ELEMENTS::XFluid3Surface*>(surfaceptrs_[0]) )
-    return (DRT::Element**)(&(surfaceptrs_[0]));
+  // do NOT store line or surface elements inside the parent element 
+  // after their creation.
+  // Reason: if a Redistribute() is performed on the discretization, 
+  // stored node ids and node pointers owned by these boundary elements might
+  // have become illegal and you will get a nice segmentation fault ;-)
 
-  // so we have to allocate new surface elements
-  DRT::UTILS::ElementBoundaryFactory<XFluid3Surface,XFluid3>(DRT::UTILS::buildSurfaces,surfaces_,surfaceptrs_,this);
-  
-  return (DRT::Element**)(&(surfaceptrs_[0]));
+  // so we have to allocate new line elements:
+  return DRT::UTILS::ElementBoundaryFactory<XFluid3Surface,XFluid3>(DRT::UTILS::buildSurfaces,this);
 }
 
 
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                g.bau 03/07|
  *----------------------------------------------------------------------*/
-DRT::Element** DRT::ELEMENTS::XFluid3::Volumes()
+vector<RCP<DRT::Element> > DRT::ELEMENTS::XFluid3::Volumes()
 {
-  volume_.resize(1);
-  volume_[0] = this; //points to Fluid3 element itself
-  return &volume_[0];
+  vector<RCP<Element> > volumes(1);
+  volumes[0]= rcp(this, false);
+  return volumes;
 }
 
 
