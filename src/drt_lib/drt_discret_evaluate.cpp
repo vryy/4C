@@ -467,10 +467,11 @@ void DoDirichletCondition(DRT::Condition&             cond,
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition(ParameterList& params,
                                             RefCountPtr<Epetra_Vector> systemvector,
-                                            const string& condstring)
+                                            const string& condstring,
+					    const int condid)
 {
-	EvaluateCondition(params,Teuchos::null,Teuchos::null,systemvector,Teuchos::null,Teuchos::null,condstring);
-	return;
+  EvaluateCondition(params,Teuchos::null,Teuchos::null,systemvector,Teuchos::null,Teuchos::null,condstring,condid);
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -478,10 +479,11 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
  |  calls more general method                                           |
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition(ParameterList& params,
-					    const string& condstring)
+					    const string& condstring,
+					    const int condid)
 {
-	EvaluateCondition(params,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condstring);
-	return;
+  EvaluateCondition(params,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condstring,condid);
+  return;
 }
 
 
@@ -494,7 +496,8 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
                                             RefCountPtr<Epetra_Vector> systemvector1,
                                             Teuchos::RCP<Epetra_Vector> systemvector2,
                                             Teuchos::RCP<Epetra_Vector> systemvector3,
-                                            const string& condstring)
+                                            const string& condstring,
+					    const int condid)
 {
   if (!Filled()) dserror("FillComplete() was not called");
   if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
@@ -520,6 +523,8 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
     if (fool->first == condstring)
     {
       DRT::Condition& cond = *(fool->second);
+      if (condid == -1 || condid ==cond.Getint("ConditionID"))
+      {
       map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
       // if (geom.empty()) dserror("evaluation of condition with empty geometry");
       // no check for empty geometry here since in parallel computations
@@ -585,6 +590,7 @@ void DRT::Discretization::EvaluateCondition(ParameterList& params,
         if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
         if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
         if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
+      }
       }
     }
   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)

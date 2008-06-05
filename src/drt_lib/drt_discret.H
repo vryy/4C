@@ -937,7 +937,8 @@ public:
   */
   virtual void EvaluateCondition(ParameterList& params,
 		                 RefCountPtr<Epetra_Vector> systemvector1,
-				 const string& condstring);
+				 const string& condstring,
+				 const int condid=-1);
 
   /*!
   \brief Evaluate a specified condition
@@ -951,7 +952,8 @@ public:
   \param condstring (in):	   Name of condition to be evaluated
   */
   virtual void EvaluateCondition(ParameterList& params,
-				 const string& condstring);
+				 const string& condstring,
+				 const int condid=-1);
 
   /*
   \brief Evaluate a specific condition
@@ -989,7 +991,8 @@ public:
                          RefCountPtr<Epetra_Vector> systemvector1,
                          RCP<Epetra_Vector>    systemvector2,
                          RCP<Epetra_Vector>    systemvector3,
-                         const string& condstring);
+                         const string& condstring,
+			 const int condid=-1);
   /*!
   \brief Compute the nullspace of the discretization
 

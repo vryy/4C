@@ -60,6 +60,7 @@ FluidImpedanceWrapper::FluidImpedanceWrapper(RefCountPtr<DRT::Discretization> ac
     for (int i=0; i<numcondlines; i++)
     {
       int condid = (impedancecond[i])->Getint("ConditionID");
+
       double thisperiod = (impedancecond[i])->GetDouble("timeperiod");
       if (thisperiod != period)
 	dserror("all periods of impedance conditions in one problem have to be the same!!!");
@@ -80,7 +81,7 @@ FluidImpedanceWrapper::FluidImpedanceWrapper(RefCountPtr<DRT::Discretization> ac
       // -------------------------------------------------------------------
       // allocate the impedance bc class members for every case
       // -------------------------------------------------------------------
-      RCP<FluidImpedanceBc> impedancebc = rcp(new FluidImpedanceBc(discret_, output_, dta, i) );
+      RCP<FluidImpedanceBc> impedancebc = rcp(new FluidImpedanceBc(discret_, output_, dta, condid, i) );
 
       // -----------------------------------------------------------------
       // sort impedance bc's in map and test, if one condition ID appears
@@ -125,7 +126,7 @@ void FluidImpedanceWrapper::FlowRateCalculation(double time, double dta)
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
-    mapiter->second->FluidImpedanceBc::FlowRateCalculation(time,dta);
+    mapiter->second->FluidImpedanceBc::FlowRateCalculation(time,dta,mapiter->first);
   }
   return;
 }
@@ -145,7 +146,7 @@ void FluidImpedanceWrapper::OutflowBoundary(double time, double dta, double thet
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
-    mapiter->second->FluidImpedanceBc::OutflowBoundary(time,dta,theta);
+    mapiter->second->FluidImpedanceBc::OutflowBoundary(time,dta,theta,mapiter->first);
   }
   return;
 }
@@ -224,6 +225,7 @@ void FluidImpedanceWrapper::ReadRestart( IO::DiscretizationReader& reader)
 FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
 				   IO::DiscretizationWriter& output,
 				   double dta,
+				   int condid,
 				   int numcond) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
@@ -267,13 +269,15 @@ FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
   // determine area of actual outlet and get material data
   // ---------------------------------------------------------------------
   double density=0.0, viscosity=0.0;
-  double area = Area(density,viscosity);
+  double area = Area(density,viscosity,condid);
 
   // ---------------------------------------------------------------------
   // calculate impedance values and fill vector 'impvalues_'
   // ---------------------------------------------------------------------
   impvalues_.resize(cyclesteps_);
   Impedances(area,density,viscosity);
+
+  return;
 }
 
 
@@ -361,7 +365,7 @@ void FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader, int condnu
 /*!
 
 */
-double FluidImpedanceBc::Area( double& density, double& viscosity )
+double FluidImpedanceBc::Area( double& density, double& viscosity, int condid )
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
@@ -377,7 +381,8 @@ double FluidImpedanceBc::Area( double& density, double& viscosity )
   eleparams.set("assemble vector 3",false);
 
   const string condstring("ImpedanceCond");
-  discret_->EvaluateCondition(eleparams,condstring);
+
+  discret_->EvaluateCondition(eleparams,condstring,condid);
 
   double actarea = eleparams.get<double>("Area calculation");
   density = eleparams.get<double>("density");
@@ -409,7 +414,7 @@ double FluidImpedanceBc::Area( double& density, double& viscosity )
 
   if (myrank_ == 0)
   {
-    cout << "This Area: " << pararea << endl;
+    cout << "Impedance condition Id: " << condid << " area = " << pararea << endl;
   }
   return pararea;
 }//FluidImplicitTimeInt::Area
@@ -456,9 +461,9 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
 
   // set up some geometry data
   double radius = sqrt(area/PI);   // the radius to which the artery tree is connected
-  //  double radius = 5.0;
+  //double radius = 5.0;
   //  double termradius = radius/5000; // the radius at which the artery tree is terminated
-  double termradius = 0.5; // the radius at which the artery tree is terminated
+  double termradius = 0.25; // the radius at which the artery tree is terminated
 
   // calculate DC (direct current) component depending on type of tree
   if ( treetype_ == "lung" )
@@ -488,9 +493,9 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
       frequencydomain[k] = ArteryImpedance(k,generation,radius,termradius,density,viscosity,zstored);
   }
 
-  if(myrank_ == 0)
-    for (int k=0; k<cyclesteps_; k++)
-      cout << k*2.0*PI << "   " << abs(frequencydomain[k]) << endl;
+//   if(myrank_ == 0)
+//     for (int k=0; k<cyclesteps_; k++)
+//       cout << k*2.0*PI << "   " << abs(frequencydomain[k]) << endl;
 
   // --------------------------------------------------------------------------
   // inverse Fourier transform
@@ -555,7 +560,7 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   very last cycle!
 
 */
-void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
+void FluidImpedanceBc::FlowRateCalculation(double time, double dta, int condid)
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
@@ -574,15 +579,15 @@ void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
   //                 local <-> global dof numbering
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  // get elemental flowrates ...
+// get elemental flowrates ...
   RCP<Epetra_Vector> myStoredFlowrates=rcp(new Epetra_Vector(*dofrowmap,100));
   const string condstring("ImpedanceCond");
-  discret_->EvaluateCondition(eleparams,myStoredFlowrates,condstring);
+  discret_->EvaluateCondition(eleparams,myStoredFlowrates,condstring,condid);
 
   // ... as well as actual total flowrate on this proc
   double actflowrate = eleparams.get<double>("Outlet flowrate");
 
-  // get total flowrate in parallel case
+// get total flowrate in parallel case
   double parflowrate = 0.0;
   discret_->Comm().SumAll(&actflowrate,&parflowrate,1);
 
@@ -605,7 +610,7 @@ void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
 
   if (myrank_ == 0)
   {
-    cout << "Current Flowrate: " << parflowrate << endl;
+    cout << "Impedance condition Id : " << condid << " current Flowrate = " << parflowrate << endl;
   }
 
   return;
@@ -635,7 +640,7 @@ void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
   (2) Apply this pressure as a Neumann-load type at the outflow boundary
 
 */
-void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta)
+void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta,int condid)
 {
   // calculate outflow boundary only for cycles past the first one
   if ( time > period_ )
@@ -677,7 +682,7 @@ void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta)
 
      impedancetbc_->PutScalar(0.0); // ??
      const string condstring("ImpedanceCond");
-     discret_->EvaluateCondition(eleparams,impedancetbc_,condstring);
+     discret_->EvaluateCondition(eleparams,impedancetbc_,condstring,condid);
      discret_->ClearState();
 
   } // end if ( time too small )
@@ -749,7 +754,7 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
 						       map<const double,complex<double> > zstored)
 {
   // general data
-  double lscale = 130.0; // length to radius ratio
+  double lscale = 50.0; // length to radius ratio
   double alpha = 0.9;   // right daughter vessel ratio
   double beta = 0.6;    // left daughter vessel ratio
 
@@ -815,6 +820,15 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
   // ... and compute impedance at my upstream end!
   //*************************************************************
   double compliance = 1.5*area / ( k1_ * exp(k2_*radius) + k3_ );
+
+  // alternativ
+  double h = radius/10;
+  double E = 0.4144;
+
+  //double compliance = 1.5*area*radius / (E*h);
+
+  //  cout << "compliance_Olufsen = " << compliance1 << "     my_Compliance = " << compliance << "    ratio = " << compliance/compliance1 <<endl;
+
   double sqrdwo = radius*radius*omega/viscosity;  // square of Womersley number
   double wonu = sqrt(sqrdwo);                     // Womersley number itself
 
@@ -865,7 +879,7 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
 							 map<const double,complex<double> > zstored)
 {
   // general data
-  double lscale = 130.0; // length to radius ratio
+  double lscale = 50.0; // length to radius ratio
   double alpha = 0.9;   // right daughter vessel ratio
   double beta = 0.6;    // left daughter vessel ratio
   double mu = viscosity * density; // dynamic (physical) viscosity

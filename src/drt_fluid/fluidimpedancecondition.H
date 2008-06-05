@@ -113,7 +113,7 @@ private:
 */
 class FluidImpedanceBc
 {
-  friend class FluidImplicitTimeInt;
+  friend class FluidImpedanceWrapper;
 
 public:
 
@@ -123,6 +123,7 @@ public:
   FluidImpedanceBc( RCP<DRT::Discretization>  actdis, 
 		    IO::DiscretizationWriter& output,
 		    double dta,
+		    int condid,
 		    int numcond );
 
   /*!
@@ -135,6 +136,7 @@ public:
   */
   virtual ~FluidImpedanceBc();
 
+protected:
   /*!
   \brief write flowrates_ and flowratespos_ to result files
   */
@@ -150,7 +152,8 @@ public:
     time steps belonging to one cycle 
   */
   void FlowRateCalculation( double time,
-			    double dta );
+			    double dta,
+			    int condid );
 
   /*!
     \brief compute convolution integral and apply pressure
@@ -158,7 +161,8 @@ public:
   */
   void OutflowBoundary( double time,
 			double dta,
-			double theta );
+			double theta,
+			int condid );
 
   void UpdateResidual( RCP<Epetra_Vector> residual );
 
@@ -167,7 +171,7 @@ private:
   /*!
   \brief calculate area at outflow boundary
   */
-  double Area( double& density, double& viscosity );
+  double Area( double& density, double& viscosity, int numcond );
 
   /*!
     \brief determine impedances in frequency domain and time domain
