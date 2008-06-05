@@ -759,7 +759,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
   double lscale = 5.8; // length to radius ratio
   double alpha = 0.876;   // right daughter vessel ratio
   double beta = 0.686;    // left daughter vessel ratio
-  double h=0.2;
+  
   // some auxiliary stuff
   complex<double> koeff, imag(0,1), cwave;
   // terminal resistance is assumed zero ff
@@ -769,7 +769,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
 
   // this has to be moved!!
   double E=0.0033;
-
+  //double E=0.001;
   // build up geometry of present generation
   double area = radius*radius*PI;
   double length = lscale * radius;
@@ -807,6 +807,8 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
  
   // ... and compute impedance at my upstream end!
   //*************************************************************
+  
+  double h=-0.0057*radius*radius+0.2096*radius+0.0904;
   double compliance = (4.0*E*h)/(3*radius);
   double sqrdwo = radius*radius*omega/viscosity;  // square of Womersley number
   double wonu = sqrt(sqrdwo);                     // Womersley number itself
