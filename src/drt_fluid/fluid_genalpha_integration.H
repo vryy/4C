@@ -681,6 +681,9 @@ private:
   //! flag for special flow: currently channel flow or flow in a lid-driven cavity
   string special_flow_;
 
+  //! flag for potential Neumann-type outflow stabilization
+  string outflow_stab_;
+
   //! turbulence statistics for turbulent channel flow example
   RCP<TurbulenceStatistics> turbulencestatistics_;
 
@@ -713,6 +716,9 @@ private:
 
   //! the vector containing body and surface forces
   RCP<Epetra_Vector>        neumann_loads_;
+
+  //! the vector containing potential Neumann-type outflow stabilization
+  RCP<Epetra_Vector>    outflow_stabil_;
 
   //! Nonlinear iteration increment vector contains accleeration
   //! and pressure increment

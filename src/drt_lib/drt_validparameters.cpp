@@ -854,6 +854,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1,2),
                                &fdyn_stab);
 
+  setStringToIntegralParameter("OUTFLOW_STAB",
+                               "no_outstab",
+                               "Flag to (de)activate outflow stabilization term",
+                               tuple<std::string>(
+                                 "no_outstab",
+                                 "yes_outstab"),
+                               tuple<std::string>(
+                                 "No outflow stabilization term",
+                                 "Add outflow stabilization term."),
+                               tuple<int>(0,1),
+                               &fdyn_stab);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_turbu = fdyn.sublist("TURBULENCE MODEL",false,"");
 

@@ -246,6 +246,18 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
       turbulencestatistics_sqc_=rcp(new TurbulenceStatisticsSqc(discret_,params_));
   }
 
+  // -------------------------------------------------------------------
+  // initialize outflow boundary stabilization if required
+  // -------------------------------------------------------------------
+  ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+
+  // flag for potential Neumann-type outflow stabilization
+  outflow_stab_ = stabparams->get<string>("OUTFLOW_STAB","no_outstab");
+
+  // the vector containing potential Neumann-type outflow stabilization
+  if(outflow_stab_ == "yes_outstab") 
+    outflow_stabil_= LINALG::CreateVector(*dofrowmap,true);
+
   // (fine-scale) subgrid viscosity?
   fssgv_ = params_.get<string>("fs subgrid viscosity","No");
 
@@ -977,6 +989,23 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // create the parameters for the discretization
   ParameterList eleparams;
 
+  // add stabilization term at Neumann outflow boundary if required
+  if(outflow_stab_ == "yes_outstab")
+  {
+    discret_->ClearState();
+    discret_->SetState("velnp",velnp_);
+    eleparams.set("thsl",1.);
+    eleparams.set("outflow stabilization",outflow_stab_);
+
+    outflow_stabil_->PutScalar(0.0);
+    discret_->EvaluateNeumann(eleparams,*outflow_stabil_);
+    discret_->ClearState();
+
+    // add Neumann-type stabilization term to residual vector
+    residual_->Update(1.0,*outflow_stabil_,1.0);
+  }
+
+  // compute convective stresses when scale-similarity models are used
   if (fssgv_ == "scale_similarity" ||
       fssgv_ == "mixed_Smagorinsky_all" || fssgv_ == "mixed_Smagorinsky_small")
   {
@@ -1175,8 +1204,10 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       // zero system matrix again
       sysmat_->Zero();
 
-      // add Neumann loads again
+      // add Neumann loads and potential Neumann-type outflow stabilization again
       residual_->Update(1.0,*neumann_loads_,0.0);
+      if(outflow_stab_ == "yes_outstab")
+        residual_->Update(1.0,*outflow_stabil_,1.0);
     }
 
     // check whether VM3 solver exists

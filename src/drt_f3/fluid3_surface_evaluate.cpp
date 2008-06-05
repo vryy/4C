@@ -132,6 +132,9 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
 
   const double thsl = params.get("thsl",0.0);
 
+  // get flag whether outflow stabilization or not
+  string outflow_stab = params.get("outflow stabilization","no_outstab");
+
   const DiscretizationType distype = this->Shape();
 
   double invdensity = 0.0; // inverse density of my parent element
@@ -165,24 +168,6 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   else
     dserror("fluid material expected but got type %d", mat->MaterialType());
 
-
-  // find out whether we will use a time curve
-  bool usetime = true;
-  const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
-
-  // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-
-  // get values and switches from the condition
-  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val"  );
-
   // set number of nodes
   const int iel   = this->NumNode();
 
@@ -204,6 +189,7 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
   default:
       dserror("shape type unknown!\n");
   }
+  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
 
   // allocate vector for shape functions and matrix for derivatives
   Epetra_SerialDenseVector  funct       (iel);
@@ -224,40 +210,141 @@ int DRT::ELEMENTS::Fluid3Surface::EvaluateNeumann(
     xyze(2,i)=this->Nodes()[i]->X()[2];
   }
 
-  /*----------------------------------------------------------------------*
-  |               start loop over integration points                     |
-  *----------------------------------------------------------------------*/
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(gaussrule);
-  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  // this part will be run when outflow stabilization is required
+  if(outflow_stab == "yes_outstab")
   {
-    const double e0 = intpoints.qxg[gpid][0];
-    const double e1 = intpoints.qxg[gpid][1];
+    // Determine normal to this element
+    std::vector<double> dist1(3), dist2(3), normal(3);
+    double length;
 
-    // get shape functions and derivatives in the plane of the element
-    shape_function_2D(funct, e0, e1, distype);
-    shape_function_2D_deriv1(deriv, e0, e1, distype);
-
-    // compute measure tensor for surface element and the infinitesimal
-    // area element drs for the integration
-    f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
-
-    // values are multiplied by the product from inf. area element,
-    // the gauss weight, the timecurve factor and the constant
-    // belonging to the time integration algorithm (theta*dt for
-    // one step theta, 2/3 for bdf with dt const.)
-    // further our equation is normalised by the density, hence we need to
-    // normalise also our rhs contribution
-    const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl * invdensity;
-
-    for (int node=0;node<iel;++node)
+    for (int i=0; i<3; i++)
     {
+      dist1[i] = xyze(i,1)-xyze(i,0);
+      dist2[i] = xyze(i,2)-xyze(i,0);
+    }
+
+    normal[0] = dist1[1]*dist2[2] - dist1[2]*dist2[1];
+    normal[1] = dist1[2]*dist2[0] - dist1[0]*dist2[2];
+    normal[2] = dist1[0]*dist2[1] - dist1[1]*dist2[0];
+
+    length = sqrt( normal[0]*normal[0] + normal[1]*normal[1] + normal[2]*normal[2] );
+
+    // outward pointing normal of length 1
+    for (int i=0; i<3; i++) normal[i] = normal[i] / length;
+
+    RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+
+    if (velnp==null) dserror("Cannot get state vector 'velnp'");
+
+    // extract local values from the global vectors
+    vector<double> myvelnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+
+    // create blitz object for element array
+    blitz::Array<double, 2> evelnp(3,iel,blitz::ColumnMajorArray<2>());
+
+    // insert velocity into element array
+    for (int i=0;i<iel;++i)
+    {
+      evelnp(0,i) = myvelnp[0+(i*4)];
+      evelnp(1,i) = myvelnp[1+(i*4)];
+      evelnp(2,i) = myvelnp[2+(i*4)];
+    }
+
+    /*----------------------------------------------------------------------*
+    |               start loop over integration points                     |
+    *----------------------------------------------------------------------*/
+    for (int gpid=0; gpid<intpoints.nquad; gpid++)
+    {
+      const double e0 = intpoints.qxg[gpid][0];
+      const double e1 = intpoints.qxg[gpid][1];
+
+      // get shape functions and derivatives in the plane of the element
+      shape_function_2D(funct, e0, e1, distype);
+
+      std::vector<double> vel(3);
+      double normvel=0;
       for(int dim=0;dim<3;dim++)
       {
-        elevec1[node*numdf+dim]+=
-          funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
+        vel[dim] = 0;
+        for (int node=0;node<iel;++node)
+        {
+          vel[dim]+= funct[node] * evelnp(dim,node);
+        }
+        normvel += vel[dim]*normal[dim];
       }
-    }
-  } /* end of loop over integration points gpid */
+
+      if(normvel<-0.0001)
+      {
+        // compute measure tensor for surface element and the infinitesimal
+        // area element drs for the integration
+        shape_function_2D_deriv1(deriv, e0, e1, distype);
+        f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+
+        const double fac = intpoints.qwgt[gpid] * drs * thsl * invdensity * normvel;
+
+        for (int node=0;node<iel;++node)
+        {
+          for(int dim=0;dim<3;dim++)
+          {
+            elevec1[node*numdf+dim]+= funct[node] * evelnp(dim,node) * fac;
+          }
+        }
+      }
+    } /* end of loop over integration points gpid */
+  }
+  else
+  {
+    // find out whether we will use a time curve
+    bool usetime = true;
+    const double time = params.get("total time",-1.0);
+    if (time<0.0) usetime = false;
+
+    // find out whether we will use a time curve and get the factor
+    const vector<int>* curve  = condition.Get<vector<int> >("curve");
+    int curvenum = -1;
+    if (curve) curvenum = (*curve)[0];
+    double curvefac = 1.0;
+    if (curvenum>=0 && usetime)
+      curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
+
+    // get values and switches from the condition
+    const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
+    const vector<double>* val   = condition.Get<vector<double> >("val"  );
+
+    /*----------------------------------------------------------------------*
+    |               start loop over integration points                     |
+    *----------------------------------------------------------------------*/
+    for (int gpid=0; gpid<intpoints.nquad; gpid++)
+    {
+      const double e0 = intpoints.qxg[gpid][0];
+      const double e1 = intpoints.qxg[gpid][1];
+
+      // get shape functions and derivatives in the plane of the element
+      shape_function_2D(funct, e0, e1, distype);
+      shape_function_2D_deriv1(deriv, e0, e1, distype);
+
+      // compute measure tensor for surface element and the infinitesimal
+      // area element drs for the integration
+      f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
+
+      // values are multiplied by the product from inf. area element,
+      // the gauss weight, the timecurve factor and the constant
+      // belonging to the time integration algorithm (theta*dt for
+      // one step theta, 2/3 for bdf with dt const.)
+      // further our equation is normalised by the density, hence we need to
+      // normalise also our rhs contribution
+      const double fac = intpoints.qwgt[gpid] * drs * curvefac * thsl * invdensity;
+
+      for (int node=0;node<iel;++node)
+      {
+        for(int dim=0;dim<3;dim++)
+        {
+          elevec1[node*numdf+dim]+= funct[node] * (*onoff)[dim] * (*val)[dim] * fac;
+        }
+      }
+    } /* end of loop over integration points gpid */
+  }
   return 0;
 }
 

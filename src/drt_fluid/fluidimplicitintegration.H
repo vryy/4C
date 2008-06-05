@@ -330,6 +330,9 @@ protected:
   /// flag for special flow: currently channel flow or flow in a lid-driven cavity
   string special_flow_;
 
+  /// flag for potential Neumann-type outflow stabilization
+  string outflow_stab_;
+
   /// fine-scale subgrid-viscosity flag
   string fssgv_;
 
@@ -349,6 +352,9 @@ protected:
 
   /// the vector containing body and surface forces
   RCP<Epetra_Vector>    neumann_loads_;
+
+  /// the vector containing potential Neumann-type outflow stabilization
+  RCP<Epetra_Vector>    outflow_stabil_;
 
   /// (standard) residual vector (rhs for the incremental form),
   RCP<Epetra_Vector>    residual_;
