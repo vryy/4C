@@ -127,6 +127,9 @@ using namespace std;
 #define ParObject_MooneyRivlin          (int)102
 #define ParObject_HyperPolyOgden        (int)103
 #define ParObject_ViscoNeoHooke         (int)104
+#define ParObject_Condif3Register       (int)105
+#define ParObject_Condif3               (int)106
+#define ParObject_Condif3Surface        (int)107
 
 namespace DRT
 {

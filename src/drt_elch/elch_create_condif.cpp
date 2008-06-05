@@ -18,6 +18,7 @@
 #include "../drt_f2/fluid2.H"
 #include "../drt_f3/fluid3.H"
 #include "../drt_f2/condif2.H"
+#include "../drt_condif3/condif3.H"
 
 
 namespace ELCH{
@@ -81,8 +82,7 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
     if (not found and f3!=NULL)
     {
       found = true;
-        //condiftype.push_back("CONDIF3");
-      dserror("cannot create 3D condif element from Fluid3");
+      condiftype.push_back("CONDIF3");
     }
 #endif
 
@@ -188,10 +188,20 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
       condif2->SetMaterial(matnr);
     }
     else
-    {
-      dserror("unsupported condif element type '%s'", typeid(*condifele).name());
-    }
 #endif
+    {
+#ifdef D_FLUID3
+      DRT::ELEMENTS::Condif3* condif3 = dynamic_cast<DRT::ELEMENTS::Condif3*>(condifele.get());
+      if (condif3!=NULL)
+      {
+        condif3->SetMaterial(matnr);
+      }
+      else
+#endif
+      {
+        dserror("unsupported element type '%s'", typeid(*condifele).name());
+      }
+    }
 
     // add new condif element to discretization
     condifdis->AddElement(condifele);
