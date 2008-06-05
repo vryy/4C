@@ -1004,7 +1004,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
   //*************************************************************
   
   double h=-0.0057*radius*radius+0.2096*radius+0.0904;
-  double compliance = (4.0*E*h)/(3*radius);
+  double compliance = (3*PI*radius*radius*radius)/(2*E*h);
   double sqrdwo = radius*radius*omega/viscosity;  // square of Womersley number
   double wonu = sqrt(sqrdwo);                     // Womersley number itself
 
