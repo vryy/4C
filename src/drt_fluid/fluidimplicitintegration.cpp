@@ -369,8 +369,8 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
     }
   }
 
-  // construct impedance bc
-  impedancebc_ = rcp(new FluidImpedanceBc(discret_, output_, dta_) );
+  // construct impedance bc wrapper
+  impedancebc_ = rcp(new FluidImpedanceWrapper(discret_, output_, dta_) );
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -1696,7 +1696,7 @@ void FluidImplicitTimeInt::Output()
       }
       // also write impedance bc information if required
       // Note: this method acts only if there is an impedance BC
-      impedancebc_->FluidImpedanceBc::WriteRestart(output_);
+      impedancebc_->WriteRestart(output_);
     }
   }
 
@@ -1728,7 +1728,7 @@ void FluidImplicitTimeInt::Output()
 
     // also write impedance bc information if required
     // Note: this method acts only if there is an impedance BC
-    impedancebc_->FluidImpedanceBc::WriteRestart(output_);
+    impedancebc_->WriteRestart(output_);
   }
 
   // dumping of turbulence statistics if required
@@ -1780,7 +1780,7 @@ void FluidImplicitTimeInt::ReadRestart(int step)
   }
   // also read impedance bc information if required
   // Note: this method acts only if there is an impedance BC
-  impedancebc_->FluidImpedanceBc::ReadRestart(reader);
+  impedancebc_->ReadRestart(reader);
 }
 
 

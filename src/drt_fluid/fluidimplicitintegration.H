@@ -443,7 +443,7 @@ protected:
   map<int,vector<int> >     pbcmapmastertoslave_;
 
   /// bio related special (outflow) boudaries
-  RCP<FluidImpedanceBc> impedancebc_;
+  RCP<FluidImpedanceWrapper> impedancebc_;
 
 }; // class FluidImplicitTimeInt
 

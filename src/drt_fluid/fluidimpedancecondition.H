@@ -32,6 +32,80 @@ using namespace std;
 using namespace Teuchos;
 
 
+
+//--------------------------------------------------------------------
+// Wrapper class (to be called from outside) for impedance bc
+//--------------------------------------------------------------------
+
+/*!
+\brief impedance boundary condition wrapper
+this class is meant to do some organisation stuff
+
+\author chfoe (foerster@lnm.mw.tum.de)
+*/
+class FluidImpedanceWrapper
+{
+  friend class FluidImplicitTimeInt;
+
+
+public:
+  /*!
+  \brief Standard Constructor
+  */
+  FluidImpedanceWrapper( RCP<DRT::Discretization>  actdis, 
+			 IO::DiscretizationWriter& output,
+			 double dta);
+
+  /*!
+  \brief Destructor
+  */
+  virtual ~FluidImpedanceWrapper();
+
+  /*!
+  \brief Wrapper for FluidImpedanceBc::FlowRateCalculation
+  */
+  void FlowRateCalculation(double time, double dta);
+
+  /*!
+  \brief Wrapper for FluidImpedacnceBc::OutflowBoundary
+  */
+  void OutflowBoundary(double time, double dta, double theta);
+
+  /*!
+  \brief Wrapper for FluidImpedacnceBc::UpdateResidual
+  */
+  void UpdateResidual(RCP<Epetra_Vector>  residual );
+
+  /*!
+  \brief Wrapper for FluidImpedacnceBc::WriteRestart
+  */
+  void WriteRestart( IO::DiscretizationWriter&  output );
+
+  /*!
+  \brief Wrapper for FluidImpedacnceBc::ReadRestart
+  */
+  void ReadRestart( IO::DiscretizationReader& reader);
+
+
+private:
+  /*!
+  \brief all single impedance conditions
+  */
+  map<const int, RCP<class FluidImpedanceBc> > impmap_;
+
+  //! fluid discretization
+  RCP<DRT::Discretization>      discret_;
+
+  //! the output writer
+  IO::DiscretizationWriter&     output_;
+
+}; // class FluidImpedanceWrapper
+
+
+
+//--------------------------------------------------------------------
+// Actual impedance bc calculation stuff
+//--------------------------------------------------------------------
 /*!
 \brief impedance boundary condition for vascular outflow boundaries
 
@@ -48,7 +122,8 @@ public:
   */
   FluidImpedanceBc( RCP<DRT::Discretization>  actdis, 
 		    IO::DiscretizationWriter& output,
-		    double dta);
+		    double dta,
+		    int numcond );
 
   /*!
   \brief Empty Constructor
@@ -63,29 +138,19 @@ public:
   /*!
   \brief write flowrates_ and flowratespos_ to result files
   */
-  void WriteRestart( IO::DiscretizationWriter&  output );
+  void WriteRestart( IO::DiscretizationWriter&  output, int condnum );
 
   /*!
   \brief read flowrates_ and flowratespos_
   */
-  void ReadRestart( IO::DiscretizationReader& reader );
-
-  /*!
-  \brief calculate area at outflow boundary
-  */
-  double Area( double& density, double& viscosity );
+  void ReadRestart( IO::DiscretizationReader& reader, int condnum );
 
   /*!
     \brief compute and store flow rate of all previous 
     time steps belonging to one cycle 
   */
   void FlowRateCalculation( double time,
-			    double dta);
-
-  /*!
-    \brief determine impedances in frequency domain and time domain
-  */
-  void Impedances( double area, double density, double viscosity );
+			    double dta );
 
   /*!
     \brief compute convolution integral and apply pressure
@@ -93,11 +158,22 @@ public:
   */
   void OutflowBoundary( double time,
 			double dta,
-			double theta);
+			double theta );
 
-  void UpdateResidual(RCP<Epetra_Vector>  residual );
+  void UpdateResidual( RCP<Epetra_Vector> residual );
 
 private:
+
+  /*!
+  \brief calculate area at outflow boundary
+  */
+  double Area( double& density, double& viscosity );
+
+  /*!
+    \brief determine impedances in frequency domain and time domain
+  */
+  void Impedances( double area, double density, double viscosity );
+
   /*!
   \brief compute tree and root impedance for given frequency for artery
   */
@@ -107,7 +183,7 @@ private:
 					double termradius,
 					double density,
 					double viscosity,
-					std::complex<double> zparent);
+					map<const double,complex<double> > zstored);
 
   /*!
   \brief compute tree and root impedance for zero frequency for artery
@@ -117,7 +193,7 @@ private:
 					  double termradius,
 					  double density,
 					  double viscosity,
-					  std::complex<double> zparentdc);
+					  map<const double,complex<double> > zstored);
 
   /*!
   \brief compute tree and root impedance for given frequency for lung
@@ -145,11 +221,6 @@ protected:
   RCP<Epetra_Vector> impedancetbc_;
 
 private:
-
-  //! number of impedance boundary condition lines in input
-  int numcondlines_;
-  //! number
-  int numcond_;
 
   //! ID of present condition
   int condid_;
@@ -183,10 +254,6 @@ private:
 
   //! Real impedance values in the time domain
   vector<double> impvalues_;   // real impedance values
-
-  //! histvector --- a linear combination of velnm, veln (BDF)
-  //!                or veln, accn (One-Step-Theta)
-  RCP<Epetra_Vector>    hist_;
 
 };  // class FluidImpedanceBc
 

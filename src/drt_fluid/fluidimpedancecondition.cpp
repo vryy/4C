@@ -19,18 +19,19 @@ Maintainer: Christiane Förster
 #include "../drt_lib/linalg_ana.H"
 
 
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  Constructor (public)                                     chfoe 04/08|
+ |  Constructor (public)                                     chfoe 06/08|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
-				   IO::DiscretizationWriter& output,
-				   double dta) :
+FluidImpedanceWrapper::FluidImpedanceWrapper(RefCountPtr<DRT::Discretization> actdis,
+					IO::DiscretizationWriter& output,
+					double dta) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
   output_ (output)
@@ -42,74 +43,237 @@ FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
   // note that some of these lines could belong to the same physical condition
   // which is then marked by the same 'ConditionID'
   // The corresponding resorting of result values has to be done later
-  numcondlines_ = impedancecond.size();
+  int numcondlines = impedancecond.size();
 
-  // debugging output
-  //  cout << *impedancecond[0] << endl;
-
-  if (numcondlines_ > 0) // if there is at least one impedance condition
+  if (numcondlines > 0) // if there is at least one impedance condition
   {
+    // -------------------------------------------------------------------
+    // get time period length of first condition, this should always be
+    // the same!
+    // -------------------------------------------------------------------
+    double period = (impedancecond[0])->GetDouble("timeperiod");
+
     // -------------------------------------------------------------------
     // now care for the fact that there could be more than one input line
     // belonging to the same impedance boundary condition
     // -------------------------------------------------------------------
-    // still to come ... will cause restructuring of the remainder ...
+    for (int i=0; i<numcondlines; i++)
+    {
+      int condid = (impedancecond[i])->Getint("ConditionID");
+      double thisperiod = (impedancecond[i])->GetDouble("timeperiod");
+      if (thisperiod != period)
+	dserror("all periods of impedance conditions in one problem have to be the same!!!");
 
-    // -------------------------------------------------------------------
-    // get relevant data from impedance condition
-    // -------------------------------------------------------------------
-    condid_ = (impedancecond[0])->Getint("ConditionID");
-    period_ = (impedancecond[0])->GetDouble("timeperiod");
-    treetype_ = *((impedancecond[0])->Get<string>("tree"));
-    // 'material' parameters required for artery tree
-    k1_ = (impedancecond[0])->GetDouble("k1");
-    k2_ = (impedancecond[0])->GetDouble("k2");
-    k3_ = (impedancecond[0])->GetDouble("k3");
+      // -------------------------------------------------------------------
+      // test that we have an integer number of time steps per cycle
+      // -------------------------------------------------------------------
+      // something more intelligent could possibly be found one day ...
+      double doublestepnum = period/dta;
 
-    // -------------------------------------------------------------------
-    // test that we have an integer number of time steps per cycle
-    // -------------------------------------------------------------------
-    // something more intelligent could possibly be found one day ...
-    double doublestepnum = period_/dta;
+      int cyclesteps = (int)(doublestepnum+0.5);
+      double diff = doublestepnum - (double)cyclesteps;
 
-    cyclesteps_ = (int)(doublestepnum+0.5);
-    double diff = doublestepnum - (double)cyclesteps_;
+      if ( abs(diff) > 1.0E-5 )
+	dserror("Make sure that the cycle can be calculated within an integer number of steps!!!");
 
-    if ( abs(diff) > 1.0E-5 )
-      dserror("Make sure that the cycle can be calculated within an integer number of steps!!!");
 
-    flowratespos_ = 0;
+      // -------------------------------------------------------------------
+      // allocate the impedance bc class members for every case
+      // -------------------------------------------------------------------
+      RCP<FluidImpedanceBc> impedancebc = rcp(new FluidImpedanceBc(discret_, output_, dta, i) );
 
-    // -------------------------------------------------------------------
-    // get the processor ID from the communicator
-    // -------------------------------------------------------------------
-    myrank_  = discret_->Comm().MyPID();
+      // -----------------------------------------------------------------
+      // sort impedance bc's in map and test, if one condition ID appears
+      // more than once. Currently this case is forbidden.
+      // -----------------------------------------------------------------
+      bool inserted = impmap_.insert( make_pair( condid, impedancebc ) ).second; 
+      if ( !inserted )
+	dserror("There are more than one impedance condition lines with the same ID. This can not yet be handled.");
+    } // end loop over condition lines from input
+  } // end if there were conditions
+  return;
+} // end FluidImpedanceWrapper
 
-    // -------------------------------------------------------------------
-    // get a vector layout from the discretization to construct matching
-    // vectors and matrices
-    //                 local <-> global dof numbering
-    // -------------------------------------------------------------------
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-    // history data
-    hist_         = LINALG::CreateVector(*dofrowmap,true);
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Destructor dtor (public)                                chfoe 06/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+FluidImpedanceWrapper::~FluidImpedanceWrapper()
+{
+  return;
+}
 
-    flowrates_    = rcp(new vector<double>);
-    impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Wrap flow rate calculation                              chfoe 06/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidImpedanceWrapper::FlowRateCalculation(double time, double dta)
+{
+  // get an iterator to my map
+  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
-    // -------------------------------------------------------------------
-    // determine area of actual outlet and get material data
-    // -------------------------------------------------------------------
-    double density=0.0, viscosity=0.0;
-    double area = Area(density,viscosity);
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  {
+    mapiter->second->FluidImpedanceBc::FlowRateCalculation(time,dta);
+  }
+  return;
+}
 
-    // -------------------------------------------------------------------
-    // calculate impedance values and fill vector 'impvalues_'
-    // -------------------------------------------------------------------
-    impvalues_.resize(cyclesteps_);
-    Impedances(area,density,viscosity);
-  } // end if numcondlines_ > 0
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Wrap outflow boundary pressure application              chfoe 06/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidImpedanceWrapper::OutflowBoundary(double time, double dta, double theta)
+{
+  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  {
+    mapiter->second->FluidImpedanceBc::OutflowBoundary(time,dta,theta);
+  }
+  return;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Wrap update of residual                                 chfoe 06/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidImpedanceWrapper::UpdateResidual(RCP<Epetra_Vector>  residual )
+{
+  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  {
+    mapiter->second->FluidImpedanceBc::UpdateResidual(residual);
+  }
+  return;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Wrap restart writing                                    chfoe 06/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidImpedanceWrapper::WriteRestart( IO::DiscretizationWriter&  output )
+{
+  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  {
+    mapiter->second->FluidImpedanceBc::WriteRestart(output,mapiter->first);
+  }
+  return;
+}
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Wrap restart reading                                    chfoe 06/08 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FluidImpedanceWrapper::ReadRestart( IO::DiscretizationReader& reader)
+{
+  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+
+  for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
+  {
+    mapiter->second->FluidImpedanceBc::ReadRestart(reader,mapiter->first);
+  }
+  return;
+}
+
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  Constructor (public)                                     chfoe 04/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
+				   IO::DiscretizationWriter& output,
+				   double dta,
+				   int numcond) :
+  // call constructor for "nontrivial" objects
+  discret_(actdis),
+  output_ (output)
+{
+  vector<DRT::Condition*> impedancecond;
+  discret_->GetCondition("ImpedanceCond",impedancecond);
+
+  // ---------------------------------------------------------------------
+  // get time period length, steps per cycle and initialise flowratespos
+  // ---------------------------------------------------------------------
+  period_ = (impedancecond[numcond])->GetDouble("timeperiod");
+  cyclesteps_ = (int)(period_/dta+0.5);
+  flowratespos_ = 0;
+
+  // ---------------------------------------------------------------------
+  // get relevant data from impedance condition
+  // ---------------------------------------------------------------------
+  treetype_ = *((impedancecond[numcond])->Get<string>("tree"));
+  // 'material' parameters required for artery tree
+  k1_ = (impedancecond[numcond])->GetDouble("k1");
+  k2_ = (impedancecond[numcond])->GetDouble("k2");
+  k3_ = (impedancecond[numcond])->GetDouble("k3");
+
+  // ---------------------------------------------------------------------
+  // get the processor ID from the communicator
+  // ---------------------------------------------------------------------
+  myrank_  = discret_->Comm().MyPID();
+
+  // ---------------------------------------------------------------------
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  // ---------------------------------------------------------------------
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  flowrates_    = rcp(new vector<double>);
+  impedancetbc_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // ---------------------------------------------------------------------
+  // determine area of actual outlet and get material data
+  // ---------------------------------------------------------------------
+  double density=0.0, viscosity=0.0;
+  double area = Area(density,viscosity);
+
+  // ---------------------------------------------------------------------
+  // calculate impedance values and fill vector 'impvalues_'
+  // ---------------------------------------------------------------------
+  impvalues_.resize(cyclesteps_);
+  Impedances(area,density,viscosity);
 }
 
 
@@ -136,18 +300,22 @@ FluidImpedanceBc::~FluidImpedanceBc()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  output )
+void FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  output, int condnum )
 {
-  if ( numcondlines_ > 0 )
-  {
-    // write the flowrates of the previous period
-    const string outstring1 = "flowrates";
-    output.WriteRedundantDoubleVector(outstring1,flowrates_);
+  // condnum contains the number of the present condition
+  // condition Id numbers must not change at restart!!!!
 
-    // also write
-    const string outstring2 = "flowratespos";
-    output.WriteInt(outstring2, flowratespos_);
-  }
+  std::stringstream stream1, stream2;
+
+  stream1 << "flowratesId" << condnum;
+
+  // write the flowrates of the previous period
+  output.WriteRedundantDoubleVector(stream1.str(),flowrates_);
+
+  // also write flowratesposition of this outlet
+  stream2 << "flowratesposId" << condnum;
+  output.WriteInt(stream2.str(), flowratespos_);
+
   return;
 }
 
@@ -160,18 +328,23 @@ void FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  output )
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader )
+void FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader, int condnum  )
 {
-  if ( numcondlines_ > 0 )
-  {
-    flowratespos_ = reader.ReadInt("flowratespos");
+  // condnum contains the number of the present condition
+  // condition Id numbers must not change at restart!!!!
 
-    reader.ReadRedundantDoubleVector(flowrates_ ,"flowrates");
+  std::stringstream stream1, stream2;
+  stream1 << "flowratesId" << condnum;
+  stream2 << "flowratesposId" << condnum;
 
-    if (flowrates_->size() == 0)
-      dserror("could not re-read vector of flowrates");
+  flowratespos_ = reader.ReadInt(stream2.str());
 
-  }
+  reader.ReadRedundantDoubleVector(flowrates_ ,stream1.str());
+
+  // check if vector of flowrates is not empty
+  if (flowrates_->size() == 0)
+    dserror("could not re-read vector of flowrates");
+
   return;
 }
 
@@ -279,13 +452,11 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   std::complex<double> zparent (0,0);  // only as argument
 
   // to store already calculated impedances (to be developed)
-  map<const double*, std::complex<double> > zstored;
+  map<const double, std::complex<double> > zstored;     // as argument
 
-  //Loop over some frequencies making a call to Impedance, w=2*pi*k/T
-  //where k=-N/2,....,N/2,
-
+  // set up some geometry data
   double radius = sqrt(area/PI);   // the radius to which the artery tree is connected
-  //double radius = 3.0;
+  //  double radius = 5.0;
   //  double termradius = radius/5000; // the radius at which the artery tree is terminated
   double termradius = 0.5; // the radius at which the artery tree is terminated
 
@@ -294,15 +465,18 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
     frequencydomain[0] = DCLungImpedance(0,radius,termradius,density,viscosity,zparent);
 
   if ( treetype_ == "artery" )
-    frequencydomain[0] = DCArteryImpedance(0,radius,termradius,density,viscosity,zparent);
+    frequencydomain[0] = DCArteryImpedance(0,radius,termradius,density,viscosity,zstored);
 
+  // erase all DC entities from the stored data
+  zstored.clear();
+
+  //Loop over some frequencies making a call to Impedance, w=2*pi*k/T
   // this results in a field like
   // frequencydomain =
   // [ Z(w_0)  Z(w_1)  Z(w_2)  Z(w_3)  ...  Z(w_cyclesteps) ]
   //
   // note that we also need the complex conjugated ones, i.e.
   // Z(-w_1) = conj(Z(w_1)  to Z(-w_cyclesteps) = conj(Z(w_cyclesteps)
-
 
   for (int k=1; k<cyclesteps_; k++)
   {
@@ -311,20 +485,12 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
       frequencydomain[k] = LungImpedance(k,generation,radius,termradius,density,viscosity,zparent);
 
     if ( treetype_ == "artery" )
-      frequencydomain[k] = ArteryImpedance(k,generation,radius,termradius,density,viscosity,zparent);
+      frequencydomain[k] = ArteryImpedance(k,generation,radius,termradius,density,viscosity,zstored);
   }
 
-  for (int k=0; k<cyclesteps_; k++)
-    cout << "wavenumber k = " << k << "  |Z| = " << abs(frequencydomain[k]) << endl;
-
-  cout << endl << endl;
-
-  for (int k=0; k<cyclesteps_; k++)
-    cout << k*2.0*PI << "   " << abs(frequencydomain[k]) << endl;
-
-//   ArteryImpedance(3,0,radius,termradius,density,viscosity,zparent);
-
-//   dserror("erst einmal Schluß");
+  if(myrank_ == 0)
+    for (int k=0; k<cyclesteps_; k++)
+      cout << k*2.0*PI << "   " << abs(frequencydomain[k]) << endl;
 
   // --------------------------------------------------------------------------
   // inverse Fourier transform
@@ -391,60 +557,57 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
 */
 void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
 {
-  // act only, if there is some impedance condition
-  if ( numcondlines_ > 0 )
+  // fill in parameter list for subsequent element evaluation
+  // there's no assembly required here
+  ParameterList eleparams;
+  eleparams.set("action","flowrate calculation");
+  eleparams.set<double>("Outlet flowrate", 0.0);
+  eleparams.set("total time",time);
+  eleparams.set("assemble matrix 1",false);
+  eleparams.set("assemble matrix 2",false);
+  eleparams.set("assemble vector 1",false);
+  eleparams.set("assemble vector 2",false);
+  eleparams.set("assemble vector 3",false);
+
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  // get elemental flowrates ...
+  RCP<Epetra_Vector> myStoredFlowrates=rcp(new Epetra_Vector(*dofrowmap,100));
+  const string condstring("ImpedanceCond");
+  discret_->EvaluateCondition(eleparams,myStoredFlowrates,condstring);
+
+  // ... as well as actual total flowrate on this proc
+  double actflowrate = eleparams.get<double>("Outlet flowrate");
+
+  // get total flowrate in parallel case
+  double parflowrate = 0.0;
+  discret_->Comm().SumAll(&actflowrate,&parflowrate,1);
+
+  // fill vector of flowrates calculated within the last cycle
+  if (time <= period_) // we are within the very first cycle
   {
-    // fill in parameter list for subsequent element evaluation
-    // there's no assembly required here
-    ParameterList eleparams;
-    eleparams.set("action","flowrate calculation");
-    eleparams.set<double>("Outlet flowrate", 0.0);
-    eleparams.set("total time",time);
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",false);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
+    // we are now in the initial fill-in phase
+    // new data is appended to our flowrates vector
+    flowrates_->push_back(parflowrate);
+  }
+  else
+  {
+    // we are now in the post-initial phase
+    // replace the element that was computed exactly a cycle ago
+    int pos = flowratespos_ % cyclesteps_;
+    (*flowrates_)[pos] = parflowrate;
 
-    // get a vector layout from the discretization to construct matching
-    // vectors and matrices
-    //                 local <-> global dof numbering
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    flowratespos_++;
+  }
 
-    // get elemental flowrates ...
-    RCP<Epetra_Vector> myStoredFlowrates=rcp(new Epetra_Vector(*dofrowmap,100));
-    const string condstring("ImpedanceCond");
-    discret_->EvaluateCondition(eleparams,myStoredFlowrates,condstring);
+  if (myrank_ == 0)
+  {
+    cout << "Current Flowrate: " << parflowrate << endl;
+  }
 
-    // ... as well as actual total flowrate on this proc
-    double actflowrate = eleparams.get<double>("Outlet flowrate");
-
-    // get total flowrate in parallel case
-    double parflowrate = 0.0;
-    discret_->Comm().SumAll(&actflowrate,&parflowrate,1);
-
-    // fill vector of flowrates calculated within the last cycle
-    if (time <= period_) // we are within the very first cycle
-    {
-      // we are now in the initial fill-in phase
-      // new data is appended to our flowrates vector
-      flowrates_->push_back(parflowrate);
-    }
-    else
-    {
-      // we are now in the post-initial phase
-      // replace the element that was computed exactly a cycle ago
-      int pos = flowratespos_ % cyclesteps_;
-      (*flowrates_)[pos] = parflowrate;
-
-      flowratespos_++;
-    }
-
-    if (myrank_ == 0)
-    {
-      cout << "Current Flowrate: " << parflowrate << endl;
-    }
-  } // end if ( numcondlines_ > 0 )
   return;
 }//FluidImplicitTimeInt::FlowRateCalculation
 
@@ -474,55 +637,51 @@ void FluidImpedanceBc::FlowRateCalculation(double time, double dta)
 */
 void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta)
 {
-  // act only if we have impedance conditions
-  if ( numcondlines_ > 0 )
+  // calculate outflow boundary only for cycles past the first one
+  if ( time > period_ )
   {
-    // calculate outflow boundary only for cycles past the first one
-    if ( time > period_ )
+    // evaluate convolution integral
+    double pressure=0.0;
+
+    // the convolution integral
+    for (int j=0; j<cyclesteps_; j++)
     {
-      // evaluate convolution integral
-      double pressure=0.0;
+      int qindex = ( flowratespos_+j ) % cyclesteps_;
+      int zindex = -1-j+cyclesteps_;
 
-      // the convolution integral
-      for (int j=0; j<cyclesteps_; j++)
-      {
-	int qindex = ( flowratespos_+j ) % cyclesteps_;
-	int zindex = -1-j+cyclesteps_;
+      pressure += impvalues_[zindex] * (*flowrates_)[qindex] * dta; // units: pressure x time
+    }
 
-	pressure += impvalues_[zindex] * (*flowrates_)[qindex] * dta; // units: pressure x time
-      }
+    pressure = pressure/period_; // this cures the dimension; missing in Olufsen paper
 
-      pressure = pressure/period_; // this cures the dimension; missing in Olufsen paper
+    // call the element to apply the pressure
+    ParameterList eleparams;
+    // action for elements
+    eleparams.set("action","Outlet impedance");
 
-      // call the element to apply the pressure
-      ParameterList eleparams;
-      // action for elements
-      eleparams.set("action","Outlet impedance");
+    //Only assemble a single vector
+    eleparams.set("assemble matrix 1",false);
+    eleparams.set("assemble matrix 2",false);
+    eleparams.set("assemble vector 1",true);
+    eleparams.set("assemble vector 2",false);
+    eleparams.set("assemble vector 3",false);
 
-      //Only assemble a single vector
-      eleparams.set("assemble matrix 1",false);
-      eleparams.set("assemble matrix 2",false);
-      eleparams.set("assemble vector 1",true);
-      eleparams.set("assemble vector 2",false);
-      eleparams.set("assemble vector 3",false);
+    eleparams.set("total time",time);
+    eleparams.set("delta time",dta);
+    eleparams.set("thsl",theta*dta);
+    eleparams.set("ConvolutedPressure",pressure);
 
-      eleparams.set("total time",time);
-      eleparams.set("delta time",dta);
-      eleparams.set("thsl",theta*dta);
-      eleparams.set("ConvolutedPressure",pressure);
+     if (myrank_ == 0)
+       printf("Pressure from convolution: %f\n",pressure);
 
-      if (myrank_ == 0)
-      {
-	printf("Pressure from convolution: %f\n",pressure);
-      }
 
-      impedancetbc_->PutScalar(0.0); // ??
-      const string condstring("ImpedanceCond");
-      discret_->EvaluateCondition(eleparams,impedancetbc_,condstring);
-      discret_->ClearState();
+     impedancetbc_->PutScalar(0.0); // ??
+     const string condstring("ImpedanceCond");
+     discret_->EvaluateCondition(eleparams,impedancetbc_,condstring);
+     discret_->ClearState();
 
-    } // end if ( time too small )
-  } // end if ( numcondlines_ > 0 )
+  } // end if ( time too small )
+
   return;
 }//FluidImplicitTimeInt::OutflowBoundary
 
@@ -540,11 +699,7 @@ void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta)
 */
 void FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
 {
-  if ( numcondlines_ > 0 )
-  {
-    residual->Update(1.0,*impedancetbc_,1.0);
-  }
-  return;
+  residual->Update(1.0,*impedancetbc_,1.0);
 }
 
 
@@ -560,7 +715,8 @@ void FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*!
-build up artery tree and calculate root impedance for a given frequency
+build up artery tree and calculate root impedance recursively for a given 
+frequency determined by the wave number k
 
 Data taken from
   Olufsen et al.: "Numerical Simulation and Experimental Validation of
@@ -571,6 +727,18 @@ Further also needed
   Olufsen, M.S.: "Structured tree outflow condition for blood flow
   in larger systematic arteries", American Physiological Society, 1999.
 
+parameter:
+
+int     k           (i)   wavenumber
+int     generation  (i)   generation of actual vessel (root is generation 1)
+double  radius      (i)   radius of present vessel
+double  termradius  (i)   termination radius (minimal radius)
+double  density     (i)   the fluid's density
+double  viscosity   (i)   the fluid's viscosity
+
+returns impedance of present vessel, after recursive call: impedance of 
+root vessel for given frequency  
+
 */
 std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
 						       int generation,
@@ -578,10 +746,10 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
 						       double termradius,
 						       double density,
 						       double viscosity,
-						       std::complex<double> zparent)
+						       map<const double,complex<double> > zstored)
 {
   // general data
-  double lscale = 50.0; // length to radius ratio
+  double lscale = 130.0; // length to radius ratio
   double alpha = 0.9;   // right daughter vessel ratio
   double beta = 0.6;    // left daughter vessel ratio
 
@@ -614,8 +782,23 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
     terminated = true;
   else
   {
-    zleft  = ArteryImpedance(k,generation,leftradius,termradius,density,viscosity,zparent);
-    zright = ArteryImpedance(k,generation,rightradius,termradius,density,viscosity,zparent);
+    map<const double,complex<double> >::iterator iter = zstored.find(leftradius);
+    if(iter != zstored.end()) // impedance of this left radius was already computed, is in map
+      zleft = iter->second;
+    else                      // left hand side impedance not yet stored
+    {
+      zleft  = ArteryImpedance(k,generation,leftradius,termradius,density,viscosity,zstored);
+      zstored.insert( make_pair( leftradius, zleft ) );
+    }
+
+    iter = zstored.find(rightradius);    
+    if(iter != zstored.end()) // impedance of this right radius was already computed, is in map
+      zright = iter->second;
+    else                      // right hand side impedance not yet stored
+    {
+      zright = ArteryImpedance(k,generation,rightradius,termradius,density,viscosity,zstored);
+      zstored.insert( make_pair( rightradius, zright ) );
+    }
   }
 
 
@@ -648,12 +831,8 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
 
   // calculate impedance of this, the present vessel
   complex<double> argument = omega*length/cwave;
-  zparent = (imag/gcoeff * sin(argument) + zdown*cos(argument) ) /
-            ( cos(argument) + imag*gcoeff*zdown*sin(argument) );
-
-//   cout << "Generation: " << generation << endl;
-//   cout << " argument = " << argument << "   g = " << gcoeff << endl;
-//   cout << " Zup = " << abs(zparent) << "   Zdown = " << abs(zdown) << "   Zleft = " << abs(zleft) << "   Zright = " << abs(zright) << endl;
+  complex<double> zparent  = (imag/gcoeff * sin(argument) + zdown*cos(argument) ) /
+                             ( cos(argument) + imag*gcoeff*zdown*sin(argument) );
 
   return zparent;
 }
@@ -683,10 +862,10 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
 							 double termradius,
 							 double density,
 							 double viscosity,
-						         std::complex<double> zparentdc)
+							 map<const double,complex<double> > zstored)
 {
   // general data
-  double lscale = 50.0; // length to radius ratio
+  double lscale = 130.0; // length to radius ratio
   double alpha = 0.9;   // right daughter vessel ratio
   double beta = 0.6;    // left daughter vessel ratio
   double mu = viscosity * density; // dynamic (physical) viscosity
@@ -710,8 +889,23 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
     terminated = true;
   else
   {
-    zleft  = DCArteryImpedance(generation,leftradius,termradius,density,viscosity,zparentdc);
-    zright = DCArteryImpedance(generation,rightradius,termradius,density,viscosity,zparentdc);
+    map<const double,complex<double> >::iterator iter = zstored.find(leftradius);
+    if(iter != zstored.end()) // impedance of this left radius was already computed, is in map
+      zleft = iter->second;
+    else                      // left hand side impedance not yet stored
+    {
+      zleft  = DCArteryImpedance(generation,leftradius,termradius,density,viscosity,zstored);
+      zstored.insert( make_pair( leftradius, zleft ) );
+    }
+
+    iter = zstored.find(rightradius);    
+    if(iter != zstored.end()) // impedance of this right radius was already computed, is in map
+      zright = iter->second;
+    else                      // right hand side impedance not yet stored
+    {
+      zright = DCArteryImpedance(generation,rightradius,termradius,density,viscosity,zstored);
+      zstored.insert( make_pair( rightradius, zright ) );
+    }
   }
 
 
@@ -729,7 +923,7 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
   //*************************************************************
 
   // calculate dc impedance of this, the present vessel
-  zparentdc = 8.0 * mu * lscale / ( PI*radius*radius*radius ) + zdown;
+  complex<double> zparentdc = 8.0 * mu * lscale / ( PI*radius*radius*radius ) + zdown;
   cout << "generation: " << generation << endl;
   return zparentdc;
 }
@@ -739,7 +933,7 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  ?????????????????????????                               ????? 04/08 |
+ |  ?????????????????????????                                  ac 06/08 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -748,12 +942,12 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
 What is supposed to happen within these lines? 
 */
 std::complex<double> FluidImpedanceBc::LungImpedance(int k, 
-						       int generation,
-						       double radius,
-						       double termradius,
-							   double density,
-							   double viscosity,
-						       std::complex<double> zparent)
+						     int generation,
+						     double radius,
+						     double termradius,
+						     double density,
+						     double viscosity,
+						     std::complex<double> zparent)
 {
    // general data
   double lscale = 5.8; // length to radius ratio
@@ -770,6 +964,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
   // this has to be moved!!
   double E=0.0033;
   //double E=0.001;
+
   // build up geometry of present generation
   double area = radius*radius*PI;
   double length = lscale * radius;
@@ -840,7 +1035,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- |  ?????????????????????????                               ????? 05/08 |
+ |  ?????????????????????????                                  ac 06/08 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
