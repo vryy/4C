@@ -7,6 +7,7 @@ Maintainer: Peter Gamnitzer
             089 - 289-15235
 
 *----------------------------------------------------------------------*/
+#ifdef CCADISCRET
 
 #include "drt_control_point.H"
 
@@ -114,3 +115,4 @@ void DRT::NURBS::ControlPoint::Print(ostream& os) const
 
 }
 
+#endif // CCADISCRET

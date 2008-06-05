@@ -30,6 +30,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RefCountPtr.hpp>
 
 #include "drt_discret.H"
+#include "drt_control_point.H"
 
 using namespace std;
 using namespace Teuchos;

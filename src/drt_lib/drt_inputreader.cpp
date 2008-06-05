@@ -1038,6 +1038,33 @@ void NodeReader::Read()
               break;
             }
         }
+        else if (tmp=="CP")
+        {
+          // read control points for isogeometric analysis
+          double coords[3];
+          double weight;
+
+          int cpid;
+          file >> cpid >> tmp >> coords[0] >> coords[1] >> coords[2] >> weight;
+          cpid--;
+          Teuchos::RCP<DRT::Discretization> dis = FindDisNode(cpid);
+          if (dis==null)
+            continue;
+          if (cpid != filecount)
+            dserror("Reading of control points failed: They must be numbered consecutive!!");
+          if (tmp!="COORD")
+            dserror("failed to read control point %d",cpid);
+          // create node/control point and add to discretization
+          Teuchos::RCP<DRT::NURBS::ControlPoint> node = rcp(new DRT::NURBS::ControlPoint(cpid,coords,weight,myrank));
+          dis->AddNode(node);
+          ++bcount;
+          if (block != nblock-1) // last block takes all the rest
+            if (bcount==bsize)   // block is full
+            {
+              ++filecount;
+              break;
+            }
+        }
         else if (tmp.find("--")==0)
           break;
         else
