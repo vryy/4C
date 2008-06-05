@@ -28,9 +28,13 @@ Inv_analysis::Inv_analysis(ParameterList& params,
 	// test
     mu_ = 1;
     mu_minus_ = 0.1;
-    mu_plus_ = 10;
+    mu_plus_ = 1.0E9;
+    negative_material_parameters_= false;
     measured_disp_ = params.get("measured_disp", 0.0);
-    tol_=0.15*measured_disp_;
+    tol_=0.2*measured_disp_;
+    p_start_.push_back(1000.0);
+    p_start_.push_back(13500.0);
+    p_start_.push_back(76.5);
     for (unsigned int i=0; i<3; i++) {
     	delta_p_.push_back(0.0);
     	p_o_.push_back(0.0);
@@ -192,7 +196,12 @@ void Inv_analysis::calculate_new_parameters(){
 	  {
 		  cout << storage_residual_disp_[i] << endl;  
 	  }
-	  cout << "---" << endl;	 
+	  cout << "---" << endl;
+	  if (negative_material_parameters_== true)
+	  {
+		  cout << "Negative Material Parameters" << endl;
+		  //negative_material_parameters_=false;
+	  }
 	  
 	  //calculating J(p)
 	  for (unsigned int i=0; i<3; i++) {
@@ -250,7 +259,7 @@ void Inv_analysis::calculate_new_parameters(){
 
   for (unsigned int i=0; i<3; i++) {
 	  p_o_[i]          = p_[i];
-	  p_[i]            = p_[i]- delta_p_[i];
+	  p_[i]            = p_[i] - delta_p_[i];
 	  }
 
 
@@ -260,6 +269,18 @@ void Inv_analysis::calculate_new_parameters(){
 	mu_ = mu_minus_;
 
   final_disp_o_ = final_disp_;
+  
+  // Material Parameter muessen positiv sein
+  
+  for (unsigned int i=0; i<3; i++) {
+	  if (p_[i]<0) {
+		  cout << "p[i]: " << p_[i] << endl;
+		  p_[i] = p_start_[i] + numb_run_/100 * p_start_[i];
+		  cout << "p[i]_neu: " << p_[i] << endl;
+		  		  
+		  negative_material_parameters_=true;
+	  }
+	  }
 
   // write back new material properties
   DRT::Problem::Instance()->Material(0).m.hyper_polyconvex->c      = p_[0];

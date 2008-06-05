@@ -25,6 +25,7 @@ class Inv_analysis : public StruGenAlpha {
 		double mu_plus_;
 		double mu_minus_;								
 		float tol_;
+		vector<double> p_start_ ;			// start parameter vector
 		vector<double> p_ ;					// parameter vector
 		vector<double> p_o_;				// old parameter vector
 		vector<double> delta_p_;			// change of paramter to the next step
@@ -37,6 +38,8 @@ class Inv_analysis : public StruGenAlpha {
 		int count_;
 		int numb_run_;
 		vector<double> storage_residual_disp_;
+		bool negative_material_parameters_;
+		
 		
 	public:
 			
