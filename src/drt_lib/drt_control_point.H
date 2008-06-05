@@ -1,0 +1,155 @@
+/*!----------------------------------------------------------------------
+\file drt_control_point.H
+
+   This is basically a (3d-) node with an additional weight.
+   The weight is required for the evaluation of the nurbs 
+   basis functions.
+
+   note that X() is not the coordinate of some grid point
+   anymore, it's just the control point position
+
+<pre>
+Maintainer: Peter Gamnitzer
+            gamnitzer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+#ifndef CONTROL_POINT_H
+#define CONTROL_POINT_H
+
+using namespace std;
+
+#include "drt_node.H"
+
+/*!
+\brief DRT: namespace of the ccarat discretization module
+
+*/
+namespace DRT
+{
+
+/*!
+\brief NURBS: namespace of all isogeometric analysis tools
+
+*/
+namespace NURBS
+{
+
+/*!
+\brief Control points for nurbs surfaces/volumes
+
+Control points are derived from nodes. For isogeometric
+analysis, they replace the nodes in the (nurbs) 
+discretisation.
+They are connected to elements, have degrees of freedom 
+etc just like normal nodes (and hence the discretisation
+can handle them correctly), the only difference is that
+their coordinate is just a control point coordinate and 
+not a mesh point coordinate.
+
+\author gammi (gamnitzer@lnm.mw.tum.de)
+*/
+class ControlPoint : public DRT::Node
+{
+public:
+
+  //! @name Enums and Friends
+
+  /*!
+  \brief The Discretization is a friend of the control point
+  */
+  friend class Discretization;
+
+  //@}
+
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  \param id     (in): A globally unique control point id
+  \param coords (in): vector of nodal coordinates, length 3
+  \param weight (in): nurbs weight
+  \param owner  (in): Owner of this node.
+  */
+  ControlPoint(int           id    , 
+	       const double* coords, 
+	       const double  weight, 
+	       const int     owner );
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a control point
+
+  */
+  ControlPoint(const DRT::NURBS::ControlPoint& old);
+
+  /*!
+  \brief Deep copy the derived class and return 
+         pointer to it
+
+  */
+  virtual DRT::NURBS::ControlPoint* Clone() const;
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~ControlPoint();
+
+  /*!
+  \brief Return unique ParObject id
+
+  every class implementing ParObject needs a unique 
+  id defined at the top of drt_parobject.H.
+  */
+  virtual int UniqueParObjectId() const { return ParObject_ControlPoint;}
+
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this CP
+
+  */
+  virtual void Pack(vector<char>& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this CP
+
+  */
+  virtual void Unpack(const vector<char>& data);
+
+  //@}
+
+  //! @name Additional access methods
+
+  /*!
+  \brief Return weight
+  */
+  virtual inline const double W() const { return w_; }
+
+  /*!
+  \brief Print this node
+  */
+  virtual void Print(ostream& os) const ;
+
+  //@}
+
+protected:
+  //! nurbs weight
+  double w_;
+
+}; // class ControlPoint
+
+} // namespace NURBS
+
+} // namespace DRT
+
+#endif  // #ifndef CONTROL_POINT_H
+#endif  // #ifdef CCADISCRET

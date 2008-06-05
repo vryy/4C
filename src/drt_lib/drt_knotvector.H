@@ -38,6 +38,9 @@ using namespace std;
 namespace DRT
 {
 
+namespace NURBS
+{
+  
 /*!
 \brief A class to manage a nurbs knotvector
 
@@ -81,7 +84,7 @@ public:
       
       \param old const Knotvector (i)         
   */
-  Knotvector(const DRT::Knotvector & old);
+  Knotvector(const DRT::NURBS::Knotvector & old);
 
   //@}
 
@@ -334,7 +337,9 @@ private:
 
 };
 
-}
+} // namespace NURBS
+  
+} // namespace DRT
 
 #endif // KNOTVECTOR_H
 #endif // CCADISCRET

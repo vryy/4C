@@ -18,7 +18,7 @@ Maintainer: Peter Gamnitzer
 /*----------------------------------------------------------------------*
  |  empty ctor (public)                                      gammi 05/08|
  *----------------------------------------------------------------------*/
-DRT::Knotvector::Knotvector() :
+DRT::NURBS::Knotvector::Knotvector() :
   ParObject              (         ),
   dim_                   (0        ),
   filled_                (false    ),
@@ -34,7 +34,7 @@ DRT::Knotvector::Knotvector() :
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/08|
  *----------------------------------------------------------------------*/
-DRT::Knotvector::Knotvector(
+DRT::NURBS::Knotvector::Knotvector(
   int         dim       ,
   vector<int> degree    ,
   vector<int> n_x_m_x_l
@@ -76,7 +76,7 @@ DRT::Knotvector::Knotvector(
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            gammi 05/08|
  *----------------------------------------------------------------------*/
-DRT::Knotvector::~Knotvector()
+DRT::NURBS::Knotvector::~Knotvector()
 {
   return;
 }
@@ -85,7 +85,7 @@ DRT::Knotvector::~Knotvector()
 /*----------------------------------------------------------------------*
  |  copy ctor (public)                                       gammi 05/08|
  *----------------------------------------------------------------------*/
-DRT::Knotvector::Knotvector(const DRT::Knotvector & old)
+DRT::NURBS::Knotvector::Knotvector(const DRT::NURBS::Knotvector & old)
 :
   ParObject     (old               ),
   dim_          (old.dim_          ),
@@ -108,7 +108,7 @@ DRT::Knotvector::Knotvector(const DRT::Knotvector & old)
  | convert an element gid to its corresponding triple knot index        |
  |                                                  (public) gammi 05/08|
  *----------------------------------------------------------------------*/
-vector<int> DRT::Knotvector::ConvertEleGidToKnotIds(int gid)
+vector<int> DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(int gid)
 {
   
   vector<int> knotindex(dim_);
@@ -153,7 +153,7 @@ vector<int> DRT::Knotvector::ConvertEleGidToKnotIds(int gid)
 /*----------------------------------------------------------------------*
  | get element knot vectors to a given element id   (public) gammi 05/08|
  *----------------------------------------------------------------------*/
-void DRT::Knotvector::GetEleKnots(
+void DRT::NURBS::Knotvector::GetEleKnots(
   vector<blitz::Array<double,1> > & eleknots,
   int                               gid
   )
@@ -204,7 +204,7 @@ void DRT::Knotvector::GetEleKnots(
 /*----------------------------------------------------------------------*
  | set knots in one direction                       (public) gammi 05/08|
  *----------------------------------------------------------------------*/
-void DRT::Knotvector::SetKnots(
+void DRT::NURBS::Knotvector::SetKnots(
   const int                     & direction       , 
   const std::string             & knotvectortype  ,
   Teuchos::RCP<vector<double> > & directions_knots)
@@ -240,7 +240,7 @@ void DRT::Knotvector::SetKnots(
 /*----------------------------------------------------------------------*
  | finish                                           (public) gammi 05/08|
  *----------------------------------------------------------------------*/ 
-void DRT::Knotvector::FinishKnots()
+void DRT::NURBS::Knotvector::FinishKnots()
 {
   // do we have a knotvector for each dimension?
   if ((int)knot_values_.size()!=dim_)
@@ -315,7 +315,7 @@ void DRT::Knotvector::FinishKnots()
  |  Pack data                                                  (public) |
  |                                                          gammi 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::Knotvector::Pack(vector<char>& data) const
+void DRT::NURBS::Knotvector::Pack(vector<char>& data) const
 {
   data.resize(0);
 
@@ -357,7 +357,7 @@ void DRT::Knotvector::Pack(vector<char>& data) const
  |  Unpack Knotvectors data                                    (public) |
  |                                                          gammi 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::Knotvector::Unpack(const vector<char>& data)
+void DRT::NURBS::Knotvector::Unpack(const vector<char>& data)
 {
   int position = 0;
 

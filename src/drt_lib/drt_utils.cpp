@@ -39,6 +39,7 @@ extern "C"
 
 #include "drt_utils.H"
 #include "drt_node.H"
+#include "drt_control_point.H"
 #include "drt_dofset.H"
 #include "drt_discret.H"
 #include "../drt_beam2/beam2.H"
@@ -110,6 +111,15 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     {
       double dummycoord[3] = {999.,999.,999.};
       DRT::Node* object = new DRT::Node(-1,dummycoord,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_ControlPoint:
+    {
+      double dummycoord[3] = {999.,999.,999.};
+      double dummyweight   =  999.;
+      DRT::NURBS::ControlPoint* object = new DRT::NURBS::ControlPoint(-1,dummycoord,dummyweight,-1);
       object->Unpack(data);
       return object;
     }
