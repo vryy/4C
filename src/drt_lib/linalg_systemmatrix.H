@@ -877,9 +877,18 @@ namespace LINALG
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const LINALG::SparseMatrix& mat);
-ostream& operator << (ostream& os, const LINALG::BlockSparseMatrixBase& mat);
 
+  /// output of SparseMatrix
+  ostream& operator << (ostream& os, const LINALG::SparseMatrix& mat);
+
+  /// output of BlockSparseMatrixBase
+  ostream& operator << (ostream& os, const LINALG::BlockSparseMatrixBase& mat);
+
+  /// merge 2x2 system
+  Teuchos::RCP<SparseMatrix> Merge(const LINALG::SparseMatrix& Aii,
+                                   const LINALG::SparseMatrix& Aig,
+                                   const LINALG::SparseMatrix& Agi,
+                                   const LINALG::SparseMatrix& Agg);
 } // end of namespace LINALG
 
 

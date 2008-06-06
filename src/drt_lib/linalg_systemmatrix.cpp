@@ -1363,4 +1363,30 @@ void LINALG::DefaultBlockMatrixStrategy::Complete()
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix>
+LINALG::Merge(const LINALG::SparseMatrix& Aii,
+              const LINALG::SparseMatrix& Aig,
+              const LINALG::SparseMatrix& Agi,
+              const LINALG::SparseMatrix& Agg)
+{
+  if (not Aii.RowMap().SameAs(Aig.RowMap()) or
+      not Agi.RowMap().SameAs(Agg.RowMap()))
+    dserror("row maps mismatch");
+
+  Teuchos::RCP<Epetra_Map> rowmap = MergeMap(Aii.RowMap(),Agi.RowMap(),false);
+
+  Teuchos::RCP<LINALG::SparseMatrix> mat
+    = Teuchos::rcp(new SparseMatrix(*rowmap,max(Aii.MaxNumEntries()+Aig.MaxNumEntries(),
+                                                Agi.MaxNumEntries()+Agg.MaxNumEntries())));
+
+  mat->Add(Aii,false,1.0,1.0);
+  mat->Add(Aig,false,1.0,1.0);
+  mat->Add(Agi,false,1.0,1.0);
+  mat->Add(Agg,false,1.0,1.0);
+
+  return mat;
+}
+
 #endif
