@@ -253,8 +253,8 @@ public:
   virtual void WriteRedundantDoubleVector(const string name,
 					  Teuchos::RCP<vector<double> > doublevec);
 
-  //! reset resultfile_changed_ to -1 in case of inverse analysis
-  void RevertResultfileChanged() { resultfile_changed_ = -1;}
+    // creating new result files for the inverse analysis
+  void NewResultFile(int numb_run);
 
   //@}
 

@@ -35,7 +35,10 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
                                  int ndim,
                                  int restart,
                                  int filesteps)
-  : filename_(outputname),
+  : problemtype_(problemtype),
+    inputfile_(inputfile),
+    ndim_(ndim),
+    filename_(outputname),
     restartname_(outputname),
     filesteps_(filesteps)
 {
@@ -142,7 +145,10 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
                                  int ndim,
                                  int restart,
                                  int filesteps)
-  : filename_(outputname),
+  : problemtype_(problemtype),
+    inputfile_(inputfile),
+    ndim_(ndim),
+    filename_(outputname),
     restartname_(restartname),
     filesteps_(filesteps)
 {
@@ -192,9 +198,9 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
 #endif
                  << " on " << hostname << " at " << ctime(&time_value)
                  << "# using code revision " CHANGEDREVISION " from " CHANGEDDATE " \n\n"
-                 << "input_file = \"" << inputfile << "\"\n"
-                 << "problem_type = \"" << problemtype << "\"\n"
-                 << "ndim = " << ndim << "\n"
+                 << "input_file = \"" << inputfile_ << "\"\n"
+                 << "problem_type = \"" << problemtype_ << "\"\n"
+                 << "ndim = " << ndim_ << "\n"
                  << "\n";
 
     // insert back reference
@@ -207,6 +213,58 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
 
     controlfile_ << std::flush;
   }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::OutputControl::NewResultFile(int numb_run)
+{
+  if (numb_run > 1)
+  {
+    unsigned pos = filename_.rfind("_");
+    if (pos==string::npos)
+      dserror("inconsistent file name");
+    filename_ = filename_.substr(0, pos);
+  }
+
+  std::stringstream name;
+  name << filename_ << "_"<< numb_run;
+  filename_ = name.str();
+  name << ".control";
+  controlfile_.close();
+  controlfile_.open(name.str().c_str(),std::ios_base::out);
+  if (not controlfile_)
+    dserror("could not open control file '%s' for writing", name.str().c_str());
+
+  time_t time_value;
+  time_value = time(NULL);
+
+  char hostname[31];
+  struct passwd *user_entry;
+#ifndef WIN_MUENCH
+  user_entry = getpwuid(getuid());
+  gethostname(hostname, 30);
+#else
+  strcpy(hostname, "unknown host");
+#endif
+
+  controlfile_ << "# baci output control file\n"
+               << "# created by "
+#if !defined(WIN_MUENCH) && !defined(HPUX_GNU)
+               << user_entry->pw_name
+#else
+               << "unknown"
+#endif
+               << " on " << hostname << " at " << ctime(&time_value)
+               << "# using code revision " CHANGEDREVISION " from " CHANGEDDATE " \n\n"
+               << "input_file = \"" << inputfile_ << "\"\n"
+               << "problem_type = \"" << problemtype_ << "\"\n"
+               << "ndim = " << ndim_ << "\n"
+               << "\n";
+
+  controlfile_ << std::flush;
+
 }
 
 

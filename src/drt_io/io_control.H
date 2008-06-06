@@ -65,8 +65,14 @@ namespace IO
 
     /// number of output steps per binary file
     int FileSteps() const { return filesteps_; }
+    
+    /// creates new result files for the inverse analysis
+    void NewResultFile(int numb_run);
 
   private:
+    std::string problemtype_;
+    std::string inputfile_;
+    int ndim_;
     std::string filename_;
     std::string restartname_;
     std::fstream controlfile_;
