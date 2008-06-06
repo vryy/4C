@@ -334,9 +334,13 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
     break;
   }
 
-   case intrule_wedge_9point:
-    {
-     const double xi3 = 0.77459666924;
+  case intrule_wedge_9point:
+  {
+    cout << "Sorry if I interupt your work, but I think this rule is not sufficient for a wedge15 element. ";
+    cout << "In my opinion, you need 18 gauss points here. If you are sure, go ahead, otherwise aks me or implement the 18 point rule. Axel (06.06.08)\n" << endl;
+    dserror("stopped code due to believed unsufficient gaussrule 'intrule_wedge_9point' for wedge15. Axel");
+      
+    const double xi3 = 0.77459666924;
     const double Q23 = 2.0/3.0;
     const double Q5913 = 5.0/9.0*1.0/3.0;
 
