@@ -43,6 +43,7 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator> matrix)
     if (doifpack)
     {
       Teuchos::ParameterList& ifpacklist = solver_->Params().sublist("IFPACK Parameters");
+      ifpacklist.set<bool>("relaxation: zero starting solution",true);
       // create a copy of the scaled matrix
       // so we can reuse the preconditioner
       Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
@@ -110,11 +111,14 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator>  matrix,
   {
     // do just the preconditioner from iterative solver
 
-    //Teuchos::ParameterList& azlist = solver_->Params().sublist("Aztec Parameters");
-
-    // decide whether we recreate preconditioners
-    //int  reuse  = azlist.get("reuse",0);
-    //bool create = reset or not Ncall() or not reuse or (Ncall()%reuse==0);
+#if 0
+    bool   doifpack  = solver_->Params().isSublist("IFPACK Parameters");
+    if (doifpack)
+    {
+      Teuchos::ParameterList& ifpacklist = solver_->Params().sublist("IFPACK Parameters");
+      ifpacklist.set<bool>("relaxation: zero starting solution",false);
+    }
+#endif
 
     // apply the preconditioner
     // This is were the work happens.
