@@ -154,6 +154,8 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
   for(i_ele=eleconn->begin();i_ele!=eleconn->end();++i_ele){
     if(!PositiveEle(i_ele->second,mymesh,deriv)){
       i_ele->second = RewindEle(i_ele->second,distype);
+      // double check
+      if(!PositiveEle(i_ele->second,mymesh,deriv)) dserror("Could not determine a proper rewinding");
     }
   }
 
@@ -184,11 +186,8 @@ bool EXODUS::PositiveEle(vector<int>& nodes,Mesh& mymesh, Epetra_SerialDenseMatr
                      xjm(0,1)*xjm(1,0)*xjm(2,2);
   if (abs(det) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
   
-  bool rewind = false;
-  if (det < 0.0) rewind = true;
-  else rewind = false;
- 
-  return rewind;
+  if (det < 0.0) return false;
+  else return true;
 }
 
 vector<int> EXODUS::RewindEle(vector<int> old_nodeids, const DRT::Element::DiscretizationType distype)
