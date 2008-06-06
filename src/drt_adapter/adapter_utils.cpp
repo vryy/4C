@@ -49,6 +49,18 @@ void ADAPTER::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
                                         std::string condname,
                                         LINALG::MapExtractor& extractor)
 {
+  SetupExtractor(dis,condname,0,genprob.ndim,extractor);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::UTILS::SetupExtractor(const DRT::Discretization& dis,
+                                    std::string condname,
+                                    unsigned startdim,
+                                    unsigned enddim,
+                                    LINALG::MapExtractor& extractor)
+{
   std::set<int> conddofset;
   std::set<int> otherdofset;
 
@@ -79,7 +91,7 @@ void ADAPTER::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
     for (unsigned j=0; j<dof.size(); ++j)
     {
       // test for condition coverage and dof position
-      if (conditioned and j<static_cast<unsigned>(genprob.ndim))
+      if (conditioned and startdim<=j and j<enddim)
       {
         conddofset.insert(dof[j]);
       }

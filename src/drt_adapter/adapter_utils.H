@@ -39,6 +39,13 @@ namespace ADAPTER
                             std::string condname,
                             LINALG::MapExtractor& extractor);
 
+    /// setup the extractor object to couple some dofs at the named condition
+    void SetupExtractor(const DRT::Discretization& dis,
+                        std::string condname,
+                        unsigned startdim,
+                        unsigned enddim,
+                        LINALG::MapExtractor& extractor);
+
     /// row map with nodes from condition
     Teuchos::RCP<Epetra_Map> ConditionNodeMap(const DRT::Discretization& dis,
                                               std::string condname);
