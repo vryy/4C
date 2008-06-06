@@ -200,10 +200,10 @@ void MAT::AddtoCmatHolzapfelProduct( Epetra_SerialDenseMatrix& cmat,
 
 
 /*----------------------------------------------------------------------*
- |  compute the "material tensor product" A x B of two 2nd order tensors|
- | (in matrix notation) and add the result to a 4th order tensor        |
- | (also in matrix notation) using the symmetry-conditions inherent to  |
- | material tensors, or tangent matrices, respectively.                 |
+ | compute the "elasticity tensor product" A x B of                     |
+ | two 2nd order tensors (in matrix notation) and add the result to     |
+ | a 4th order tensor (in Voigt matrix notation!) using the             |
+ | symmetry-conditions inherent to elasticity tensors                   |
  | The implementation is based on the Epetra-Method Matrix.Multiply.    |
  | (public)                                                    maf 11/07|
  *----------------------------------------------------------------------*/
@@ -223,12 +223,10 @@ void MAT::ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
   Epetra_SerialDenseMatrix AVoigt(6,1);
   Epetra_SerialDenseMatrix BVoigt(6,1);
   AVoigt(0,0) = A(0,0); AVoigt(1,0) = A(1,1); AVoigt(2,0) = A(2,2);
-  // Voigts vector notation implies 2 times ()12 ()23 ()13 !
-  //AVoigt(3,0) = 2.0*A(1,0); AVoigt(4,0) = 2.0*A(2,1); AVoigt(5,0) = 2.0*A(2,0);
+  /* Voigts vector notation on strain entities usually implies 2 times ()12 ()23 ()13
+   * however, this is not the case here to arrive at the consistent elasticity */
   AVoigt(3,0) = A(1,0); AVoigt(4,0) = A(2,1); AVoigt(5,0) = A(2,0);
   BVoigt(0,0) = B(0,0); BVoigt(1,0) = B(1,1); BVoigt(2,0) = B(2,2);
-  // Voigts vector notation implies 2 times ()12 ()23 ()13 !
-  //BVoigt(3,0) = 2.0*B(1,0); BVoigt(4,0) = 2.0*B(2,1); BVoigt(5,0) = 2.0*B(2,0);
   BVoigt(3,0) = B(1,0); BVoigt(4,0) = B(2,1); BVoigt(5,0) = B(2,0);
   C.Multiply('N','T',ScalarAB,AVoigt,BVoigt,ScalarThis);
 
@@ -279,11 +277,10 @@ void MAT::ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C,
 }
 
 /*----------------------------------------------------------------------*
- | compute the "material tensor product" (A x B + B x A) of two 2nd     |
- | order tensors                                                        |
- | (in matrix notation) and add the result to a 4th order tensor        |
- | (also in matrix notation) using the symmetry-conditions inherent to  |
- | material tensors, or tangent matrices, respectively.                 |
+ | compute the "elasticity tensor product" (A x B + B x A) of           |
+ | two 2nd order tensors (in matrix notation) and add the result to     |
+ | a 4th order tensor (in Voigt matrix notation!) using the             |
+ | symmetry-conditions inherent to elasticity tensors                   |
  | The implementation is based on the Epetra-Method Matrix.Multiply.    |
  | (public)                                                    maf 11/07|
  *----------------------------------------------------------------------*/
@@ -303,12 +300,10 @@ void MAT::ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C,
   Epetra_SerialDenseMatrix AVoigt(6,1);
   Epetra_SerialDenseMatrix BVoigt(6,1);
   AVoigt(0,0) = A(0,0); AVoigt(1,0) = A(1,1); AVoigt(2,0) = A(2,2);
-  // Voigts vector notation implies 2 times ()12 ()23 ()13 !
-  //AVoigt(3,0) = 2.0*A(1,0); AVoigt(4,0) = 2.0*A(2,1); AVoigt(5,0) = 2.0*A(2,0);
+  /* Voigts vector notation on strain entities usually implies 2 times ()12 ()23 ()13
+   * however, this is not the case here to arrive at the consistent elasticity */
   AVoigt(3,0) = A(1,0); AVoigt(4,0) = A(2,1); AVoigt(5,0) = A(2,0);
   BVoigt(0,0) = B(0,0); BVoigt(1,0) = B(1,1); BVoigt(2,0) = B(2,2);
-  // Voigts vector notation implies 2 times ()12 ()23 ()13 !
-  //BVoigt(3,0) = 2.0*B(1,0); BVoigt(4,0) = 2.0*B(2,1); BVoigt(5,0) = 2.0*B(2,0);
   BVoigt(3,0) = B(1,0); BVoigt(4,0) = B(2,1); BVoigt(5,0) = B(2,0);
   C.Multiply('N','T',ScalarAB,AVoigt,BVoigt,ScalarThis);
   C.Multiply('N','T',ScalarAB,BVoigt,AVoigt,1.0);

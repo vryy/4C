@@ -76,6 +76,12 @@ public:
   \brief Multiply two 2nd order tensors A x B and add the result to a
    4th order symmetric material tensor in matrix notation
 
+   compute the "elasticity tensor product" A x B of                   
+   two 2nd order tensors (in matrix notation) and add the result to  
+   a 4th order tensor (in Voigt matrix notation!) using the        
+   symmetry-conditions inherent to elasticity tensors                
+   The implementation is based on the Epetra-Method Matrix.Multiply. 
+
   \param C (in/out): Material tangent matrix to be modified
   \param AB (in)   : Scalar to multiply with A x B
   \param A (in)    : Dense matrix (3 by 3) as 2nd order tensor A
@@ -91,6 +97,11 @@ public:
   /*!
   \brief Multiply two 2nd order tensors (A x B + B x A) and add the result to a
    4th order symmetric material tensor in matrix notation
+
+   compute the "elasticity tensor product" (A x B + B x A) of 
+   two 2nd order tensors (in matrix notation) and add the result to
+   a 4th order tensor (in Voigt matrix notation!) using the 
+   symmetry-conditions inherent to elasticity tensors 
 
   \param C (in/out): Material tangent matrix to be modified
   \param AB (in)   : Scalar to multiply with (A x B + B x A)
