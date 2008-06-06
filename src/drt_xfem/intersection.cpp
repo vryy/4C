@@ -386,9 +386,7 @@ template<DRT::Element::DiscretizationType surftype,
 void updateAForCSI(
         BlitzMat3x3&                      A,
         const BlitzVec3&                  xsi,
-        const DRT::Element*               surfaceElement,
         const BlitzMat&                   xyze_surfaceElement,
-        const DRT::Element*               lineElement,
         const BlitzMat&                   xyze_lineElement
         )
 {
@@ -435,9 +433,7 @@ template<DRT::Element::DiscretizationType surftype,
 void updateRHSForCSI(
         BlitzVec3&         b,
         const BlitzVec3&   xsi,
-        const DRT::Element*               surfaceElement,
         const BlitzMat&                   xyze_surfaceElement,
-        const DRT::Element*               lineElement,
         const BlitzMat&                   xyze_lineElement
         )
 {
@@ -476,9 +472,7 @@ template<DRT::Element::DiscretizationType surftype,
          DRT::Element::DiscretizationType linetype>
 bool computeSingularCSI(
         BlitzVec3&                  xsi,
-        const DRT::Element*         surfaceElement,
         const BlitzMat&             xyze_surfaceElement,
-        const DRT::Element*         lineElement,
         const BlitzMat&             xyze_lineElement
         )
 {
@@ -490,11 +484,11 @@ bool computeSingularCSI(
     static BlitzVec3   b;
     static BlitzVec3   dx;
 
-    updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
+    updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
 
     while(residual > XFEM::TOL14)
     {
-        updateAForCSI<surftype,linetype>( A, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
+        updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
 
         if(XFEM::solveLinearSystemWithSVD<3>(A, b, dx))
         {
@@ -504,7 +498,7 @@ bool computeSingularCSI(
         }
 
         xsi += dx;
-        updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
+        updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
         residual = XFEM::Norm2(b);
         iter++;
 
@@ -530,6 +524,9 @@ bool computeCurveSurfaceIntersectionT(
     const BlitzVec3&                  loLimit
     )
 {
+    if (surfaceElement->Shape() != surftype) dserror("bug in template instantiation");
+    if (lineElement->Shape() != linetype) dserror("bug in template instantiation");
+  
     bool intersection = true;
     int iter = 0;
     const int maxiter = 30;
@@ -538,15 +535,15 @@ bool computeCurveSurfaceIntersectionT(
     static BlitzVec3   b;
     static BlitzVec3   dx;
 
-    updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
+    updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
 
     while(residual > XFEM::TOL14)
     {
-        updateAForCSI<surftype,linetype>( A, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
+        updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
 
         if(!XFEM::gaussElimination<true, 3, 1>(A, b, dx))
         {
-            if(computeSingularCSI<surftype,linetype>(xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement))
+            if(computeSingularCSI<surftype,linetype>(xsi, xyze_surfaceElement, xyze_lineElement))
             {
                 intersection = false;
                 break;
@@ -557,7 +554,7 @@ bool computeCurveSurfaceIntersectionT(
         }
 
         xsi += dx;
-        updateRHSForCSI<surftype,linetype>( b, xsi, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement);
+        updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
         residual = XFEM::Norm2(b);
         iter++;
 
