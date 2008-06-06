@@ -30,6 +30,7 @@ Input/f2_channel_carreauyasuda_genalpha_drt.dat         x        x        -     
 Input/f2_dc2D_usfem_ld.dat                              x        x        x        x        -        -
 Input/f2_drivencavity20x20.dat                          x        x        x        x        -        -
 Input/f2_drivencavity20x20_drt.dat                      x        x        -        -        x        x
+Input/f2_nurbs9_dc_drt.dat                              x        x        -        -        -        -
 Input/f2_drivencavity20x20_is.dat                       x        x        x        x        -        -
 Input/f2_drivencavity20x20_q.dat                        x        x        x        x        -        -
 Input/f2_drivencavity20x20_sd.dat                       x        x        x        x        -        -
