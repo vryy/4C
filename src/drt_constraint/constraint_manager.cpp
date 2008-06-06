@@ -606,7 +606,7 @@ RCP<DRT::Discretization> ConstrManager::CreateDiscretizationFromCondition
 
     if (myrank == 0)
     {
-      RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name, j, myrank);
+      RCP<DRT::Element> constraintele = DRT::UTILS::Factory(element_name,"Polynomial", j, myrank);
       // set the same global node ids to the ale element
       constraintele->SetNodeIds(ngid.size(), &(ngid[0]));
 

@@ -296,7 +296,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>("Trilinos","ccarat"),
                                tuple<int>(1,0),
                                &type);
-
+  setStringToIntegralParameter("SHAPEFCT","Polynomial","Defines the function spaces for the spatial approximation",
+                               tuple<std::string>("Polynomial","Nurbs"),
+                               tuple<int>(1,0),
+                               &type);
+  
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io = list->sublist("IO",false,"");
 

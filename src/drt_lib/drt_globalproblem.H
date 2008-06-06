@@ -23,6 +23,7 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
 #include "drt_discret.H"
+#include "drt_nurbs_discret.H"
 #include "drt_inputreader.H"
 
 #ifdef PARALLEL
@@ -170,6 +171,9 @@ public:
   /// input of conditions
   void ReadConditions(const DRT::INPUT::DatFileReader& reader);
 
+  /// input of knots for isogeometric analysis
+  void ReadKnots(const DRT::INPUT::DatFileReader& reader);
+ 
   //@}
 
   /// @name General query methods
@@ -178,6 +182,9 @@ public:
   /// give string name of my problem type
   std::string ProblemType() const;
 
+  // give string name of my basis function type (polynomial/nurbs)
+  std::string SpatialApproximation() const;
+    
   //@}
 
   /// @name Control file

@@ -61,6 +61,7 @@ void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
     new IO::OutputControl(
       dis_->Comm(),
       "none",                   // we do not have a problem type
+      "not specified",          // we do not have a problem type
       "debug-output",           // no input file either
       s.str(),                  // an output file name is needed
       genprob.ndim,

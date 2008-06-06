@@ -894,6 +894,9 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 
     WriteCondition("XFEMCoupling");
 
+    // knotvectors for nurbs-discretisation
+    WriteKnotvector();
+    
     output_->ControlFile()
       << "field:\n"
       << "    field = \"" << dis_->Name() << "\"\n"
@@ -979,6 +982,51 @@ void IO::DiscretizationWriter::WriteElementData()
   } // for (fool = names.begin(); fool!= names.end(); ++fool)
 
 #endif
+}
+
+
+/*----------------------------------------------------------------------*
+ *                                                          gammi 05/08 *
+ *----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::WriteKnotvector() const
+{
+  #ifdef BINIO
+  // try a dynamic cast of the discretisation to a nurbs discretisation
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+    =
+    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis_));
+
+  if(nurbsdis!=NULL)
+  {
+    // get knotvector from nurbsdis
+    RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+
+    // put knotvector into block
+    Teuchos::RCP<vector<char> > block = Teuchos::rcp(new vector<char>);
+
+    knots->Pack(*block);
+
+    // write block to file
+    if(!block->empty())
+    {
+      hsize_t dim = static_cast<hsize_t>(block->size());
+      const herr_t status = H5LTmake_dataset_char(
+        meshgroup_,
+        "knotvector",
+        1,
+        &dim,
+        &((*block)[0]));
+      if (status < 0)
+        dserror("Failed to create dataset in HDF-meshfile");
+    }
+    else
+    {
+      dserror("block empty --- couldn't write knots\n");
+    }
+  }
+  #endif
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/

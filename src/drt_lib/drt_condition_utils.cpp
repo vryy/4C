@@ -238,7 +238,7 @@ void DRT::UTILS::CreateAleDiscretization()
     DRT::Element* fluidele = fluiddis->gElement(egid[i]);
 
     // create the ale element with the same global element id
-    RefCountPtr<DRT::Element> aleele = DRT::UTILS::Factory(aletype[i], egid[i], myrank);
+    RefCountPtr<DRT::Element> aleele = DRT::UTILS::Factory(aletype[i],"Polynomial",egid[i], myrank);
 
     // get global node ids of fluid element
     vector<int> nids;
@@ -427,7 +427,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
     const RCP<DRT::Element> sourceele = sourceelements[i];
 
     // create an element with the same global element id
-    RCP<DRT::Element> condele = DRT::UTILS::Factory(element_name, egid[i], myrank);
+    RCP<DRT::Element> condele = DRT::UTILS::Factory(element_name, "Polynomial", egid[i], myrank);
 
     // get global node ids of fluid element
     vector<int> nids;

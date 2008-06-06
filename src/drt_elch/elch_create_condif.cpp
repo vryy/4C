@@ -166,7 +166,10 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
     DRT::Element* fluidele = fluiddis->gElement(egid[i]);
 
     // create the condif element with the same global element id
-    RefCountPtr<DRT::Element> condifele = DRT::UTILS::Factory(condiftype[i], egid[i], myrank);
+    RefCountPtr<DRT::Element> condifele = DRT::UTILS::Factory(condiftype[i],
+                                                              "Polynomial" ,
+                                                              egid[i]      ,
+                                                              myrank       );
 
     // get global node ids of fluid element
     vector<int> nids;

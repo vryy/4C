@@ -30,6 +30,7 @@ extern "C" {
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm,
                                  std::string problemtype,
+                                 std::string spatial_approx,
                                  std::string inputfile,
                                  std::string outputname,
                                  int ndim,
@@ -118,6 +119,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
                  << "# using code revision " CHANGEDREVISION " from " CHANGEDDATE " \n\n"
                  << "input_file = \"" << inputfile << "\"\n"
                  << "problem_type = \"" << problemtype << "\"\n"
+                 << "spatial_approximation = \"" << spatial_approx << "\"\n"
                  << "ndim = " << ndim << "\n"
                  << "\n";
 
@@ -139,6 +141,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm,
                                  std::string problemtype,
+                                 std::string spatial_approx,
                                  std::string inputfile,
                                  std::string restartname,
                                  std::string outputname,
@@ -198,9 +201,10 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
 #endif
                  << " on " << hostname << " at " << ctime(&time_value)
                  << "# using code revision " CHANGEDREVISION " from " CHANGEDDATE " \n\n"
-                 << "input_file = \"" << inputfile_ << "\"\n"
-                 << "problem_type = \"" << problemtype_ << "\"\n"
-                 << "ndim = " << ndim_ << "\n"
+                 << "input_file = \"" << inputfile << "\"\n"
+                 << "problem_type = \"" << problemtype << "\"\n"
+                 << "spatial_approximation = \"" << spatial_approx << "\"\n"
+                 << "ndim = " << ndim << "\n"
                  << "\n";
 
     // insert back reference

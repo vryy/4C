@@ -238,6 +238,15 @@ public:
   //! write a condition identified by its name
   virtual void WriteCondition(const string condname) const;
 
+
+  /*!
+    \brief write a knotvector for a nurbs discretisation
+    
+    \author gammi
+    \date 06/08
+  */
+  virtual void WriteKnotvector() const;
+
   //! write new "field" group to control file including node and element chunks
   virtual void WriteMesh(const int step, const double time);
 

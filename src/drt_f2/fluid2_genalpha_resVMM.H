@@ -20,6 +20,8 @@ Maintainer: Peter Gamnitzer
 #define FLUID2_GENALPHA_H
 
 #include "fluid2.H"
+#include "fluid2_nurbs.H"
+#include "../drt_lib/drt_utils_nurbs_shapefunctions.H" 
 #include <blitz/array.h>
 
 namespace DRT
@@ -118,6 +120,8 @@ namespace DRT
         Calculate matrix and rhs. Here the whole thing is hidden.
 
         \param ele             (i) the element those matrix is calculated
+        \param myknots         (i) the elements knotvector segments for nurbs shape
+                                   function evaluation
         \param estif           (o) element matrix to calculate
         \param eforce          (o) element rhs to calculate
         \param evelnp          (i) nodal velocities at n+1
@@ -135,13 +139,14 @@ namespace DRT
         \param inertia         (i) flag for use of subscale accelerations for stabilisation (only for tds==true)
         \param pspg            (i) flag for use of nabla q testfunctions 
         \param supg            (i) flag for use of (u o nabla) v testfunctions 
-        \param vstab            (i) flag for use of 2 * nu * grad o eps(v) testfunctions
+        \param vstab           (i) flag for use of 2 * nu * grad o eps(v) testfunctions
         \param cross           (i) flag to add (u,(u_sub o nabla) v) to right hand side
         \param reynolds        (i) flag to add (u_sub,(u_sub o nabla) v) to right hand side
         \param compute_elemat  (i) if false, element matrices are not computed
         
       */
       void Sysmat(Fluid2*                                               ele,
+                  std::vector<blitz::Array<double,1> >&                 myknots,
                   Epetra_SerialDenseMatrix&                             elemat,
                   Epetra_SerialDenseVector&                             elevec,
                   const blitz::Array<double,2>&                         edispnp,
@@ -211,6 +216,8 @@ namespace DRT
       // ------------
       //! node coordinates
       blitz::Array<double,2> xyze_;
+      //! weights for nurbs elements
+      blitz::Array<double,1> weights_;
       //! value of body force in the nodes of the element
       blitz::Array<double,2> edeadaf_;      
 

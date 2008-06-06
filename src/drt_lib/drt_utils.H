@@ -71,11 +71,15 @@ namespace UTILS
   allocated depends on the input parameter eletype.
 
   \param eletype (in): A string containing the type of element
-  \param id (in)     : id of the new element to be created
-  \param owner (in)  : owner of the new element
+  \param distype (in): A string containing the distype of the element
+  \param id      (in): id of the new element to be created
+  \param owner   (in): owner of the new element
 
   */
-  RefCountPtr<DRT::Element> Factory(const string eletype, const int id, const int owner);
+  RefCountPtr<DRT::Element> Factory(const string eletype,
+                                    const string distype,
+                                    const int id        ,
+                                    const int owner     );
 
   /*!
   \brief Partition a graph with metis

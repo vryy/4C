@@ -287,7 +287,128 @@ void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<
   }
 }
 
+//----------------------------------------------------------------------
+/// read a knotvector section (for isogeometric analysis)
+//----------------------------------------------------------------------
+void DatFileReader::ReadKnots(
+  std::vector<int>                                 & degree   ,
+  std::vector<int>                                 & n_x_m_x_l,
+  std::vector<string>                              & knotvectortype,
+  std::vector<Teuchos::RCP<std::vector<double> > > & knots    ) const
+{
+  
+  // open input file --- this is done on all procs
+  ifstream file;
+  
+  file.open(filename_.c_str());
 
+  // temporary strings
+  string tmp;
+  string dummy;
+
+  // string for u/v/w
+  string dir;
+
+  // index for u/v/w
+  int    direction;
+  
+  int filecount=0;
+
+  // start to read something when read is true
+  bool read=false;
+  
+  // loop lines in file
+  for (; file; ++filecount)
+  {
+    file >> tmp ;
+    
+    if(!(tmp[0]=='-'&&tmp[1]=='-'))
+    {
+      // this is a standard line --- not a new section
+      
+      // if read is true, we are in the coordinate section of a knotvector
+      // --- just read it
+      if(read)
+      {
+        char* endptr = NULL;
+        
+        double dv = strtod(tmp.c_str(), &endptr);
+        
+        (*(knots[direction])).push_back(dv);
+      }
+    }
+    else
+    {
+      // this a new section
+
+      // section lines ---------SOMETHING never contain knot data
+
+      // reset read on each new section
+      read=false;
+      
+      string::size_type loc = tmp.rfind("KNOT");
+      if (loc != string::npos)
+      {
+        // if this is true, we are at the beginning of a knot section 
+        
+        file >> dummy >> dir;
+        
+        tmp = tmp.substr(loc,string::npos);
+        
+        if(dir[0]=='U' || dir[0]=='V' || dir[0]=='W')
+        {
+          // get the direction
+          if(dir[0]=='U')
+          {
+            direction=0;
+          }
+          if(dir[0]=='V')
+          {
+            direction=1;
+          }
+          if(dir[0]=='W')
+          {
+            direction=2;
+            if(degree.size()<3)
+            {
+              dserror("cowardly refusing to read a third knotvector in 2d-problems\n");
+            }
+          }
+          
+          // make sure no dirt is left on knots
+          (*(knots[direction])).clear();
+          
+          // activate read for the following coordinate section
+          read = true;
+          
+          // get number of knots in this direction
+          string numknots;
+          file >> dummy >> numknots;
+
+          char* endptr = NULL;
+          n_x_m_x_l[direction]=strtol(numknots.c_str(),&endptr,10);
+
+          // finally get degree and interpolation properties in this direction
+          string degreestr;
+
+          file >> dummy >> degreestr;
+
+          string interpol;
+          file >> dummy >> interpol;
+
+          (knotvectortype[direction]).insert(0,interpol);
+
+          endptr = NULL;
+          degree[direction]=strtol(degreestr.c_str(),&endptr,10);
+        } // selection of directions
+      } // knotvector section
+    } // if this is the beginning of a section
+  } // end loop through file
+  
+  return;
+}
+
+  
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::ParameterList& DatFileReader::FindSublist(string name, Teuchos::ParameterList& list)
@@ -694,8 +815,9 @@ void ElementReader::Partition()
           t.str(line);
           int elenumber;
           string eletype;
-          // read element id and type
-          t >> elenumber >> eletype;
+          string distype;
+          // read element id type and distype
+          t >> elenumber >> eletype >> distype;
           elenumber -= 1;
 
           // Set the current row to the empty slot after the file rows
@@ -705,7 +827,7 @@ void ElementReader::Partition()
           allfiles.actrow = allfiles.numrows;
           allfiles.actplace = allfiles.input_file[allfiles.actrow] = const_cast<char*>(line.c_str());
           // let the factory create a matching empty element
-          Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(eletype,elenumber,0);
+          Teuchos::RCP<DRT::Element> ele = DRT::UTILS::Factory(eletype,distype,elenumber,0);
           // let this element read its input line
           ele->ReadElement();
           // add element to discretization

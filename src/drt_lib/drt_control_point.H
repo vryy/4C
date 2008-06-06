@@ -85,6 +85,8 @@ public:
 
   Makes a deep copy of a control point
 
+  \param old (in): The control point to copy
+  
   */
   ControlPoint(const DRT::NURBS::ControlPoint& old);
 
@@ -106,6 +108,8 @@ public:
 
   every class implementing ParObject needs a unique 
   id defined at the top of drt_parobject.H.
+
+  \return the parobject id
   */
   virtual int UniqueParObjectId() const { return ParObject_ControlPoint;}
 
@@ -114,6 +118,8 @@ public:
 
   \ref Pack and \ref Unpack are used to communicate this CP
 
+  \param data (in/out): a char vector to pack the data into 
+  
   */
   virtual void Pack(vector<char>& data) const;
 
@@ -121,6 +127,8 @@ public:
   \brief Unpack data from a char vector into this class
 
   \ref Pack and \ref Unpack are used to communicate this CP
+
+  \param data (in): a char vector to unpack the data from 
 
   */
   virtual void Unpack(const vector<char>& data);
@@ -131,11 +139,16 @@ public:
 
   /*!
   \brief Return weight
+
+  \return weight
+  
   */
   virtual inline const double W() const { return w_; }
 
   /*!
   \brief Print this node
+
+  \param os ofstrem
   */
   virtual void Print(ostream& os) const ;
 

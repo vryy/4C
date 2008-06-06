@@ -20,6 +20,7 @@ Maintainer: Peter Gamnitzer
 #endif
 #include "fluid2.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_nurbs_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
@@ -464,8 +465,23 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       const bool compute_elemat = params.get<bool>("compute element matrix");
 
       // --------------------------------------------------
+      // Now do the nurbs specific stuff
+      std::vector<blitz::Array<double,1> > myknots(2);
+
+      // for isogeometric elements
+      if(this->Shape()==nurbs4 || this->Shape()==nurbs9)
+      {
+        DRT::NURBS::NurbsDiscretization* nurbsdis
+            =
+          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+        (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+      }
+      
+      // --------------------------------------------------
       // calculate element coefficient matrix
       GenalphaResVMM()->Sysmat(this,
+                               myknots,
                                elemat1,
                                elevec1,
                                edispnp,

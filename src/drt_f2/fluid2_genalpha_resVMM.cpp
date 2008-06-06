@@ -35,6 +35,7 @@ DRT::ELEMENTS::Fluid2GenalphaResVMM::Fluid2GenalphaResVMM(int iel)
 //-----------------------+------------+------------------------------------
 //                  dim  | derivative | node
     xyze_         (  2   ,              iel_,blitz::ColumnMajorArray<2>()),
+    weights_      (                     iel_                             ),
     edeadaf_      (  2   ,              iel_,blitz::ColumnMajorArray<2>()),
 //-----------------------+------------+------------------------------------
 // gausspoint data
@@ -84,6 +85,7 @@ DRT::ELEMENTS::Fluid2GenalphaResVMM::Fluid2GenalphaResVMM(int iel)
   *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   Fluid2*                                               ele,
+  std::vector<blitz::Array<double,1> >&                 myknots,
   Epetra_SerialDenseMatrix&                             elemat,
   Epetra_SerialDenseVector&                             elevec,
   const blitz::Array<double,2>&                         edispnp,
@@ -171,6 +173,19 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
     xyze_ += edispnp;
   }
 
+  // get node weights for nurbs elements
+  if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs9)
+  {
+    for (int inode=0; inode<iel_; inode++)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+      
+      weights_(inode) = cp->W();
+    }
+  }
+  
   // dead load in element nodes
   GetNodalBodyForce(ele,timealphaF);
 
@@ -200,6 +215,8 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
       case DRT::Element::quad4:
       case DRT::Element::quad8:
       case DRT::Element::quad9:
+      case DRT::Element::nurbs4:
+      case DRT::Element::nurbs9:
       {
         integrationrule_stabili = DRT::UTILS::intrule_quad_1point;
         break;
@@ -219,23 +236,43 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   const DRT::UTILS::IntegrationPoints2D intpoints_onepoint(integrationrule_stabili);
 
   // shape functions and derivs at element center
-  const double e1    = intpoints_onepoint.qxg[0][0];
-  const double e2    = intpoints_onepoint.qxg[0][1];
   const double wquad = intpoints_onepoint.qwgt[0];
+        
+  blitz::Array<double, 1> gp(2);
+  gp(0)=intpoints_onepoint.qxg[0][0];
+  gp(1)=intpoints_onepoint.qxg[0][1];
 
-  DRT::UTILS::shape_function_2D       (funct_,e1,e2,distype);
-  DRT::UTILS::shape_function_2D_deriv1(deriv_,e1,e2,distype);
-
+  if(distype == DRT::Element::nurbs4
+          ||
+     distype == DRT::Element::nurbs9)
+  {
+    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+      (funct_  ,
+       deriv_  ,
+       gp      ,
+       myknots ,
+       weights_,
+       distype );
+  }
+  else
+  {
+    // get values of shape functions and derivatives in the gausspoint
+    DRT::UTILS::shape_function_2D(funct_,gp(0),gp(1),distype);
+    DRT::UTILS::shape_function_2D_deriv1(deriv_,gp(0),gp(1),distype);
+  }
+  
   // get element type constant for tau
   double mk=0.0;
   switch (distype)
   {
       case DRT::Element::tri3:
       case DRT::Element::quad4:
+      case DRT::Element::nurbs4:
         mk = 0.333333333333333333333;
         break;
       case DRT::Element::quad8:
       case DRT::Element::quad9:
+      case DRT::Element::nurbs9:
       case DRT::Element::tri6:
         mk = 0.083333333333333333333;
         break;
@@ -587,17 +624,51 @@ void DRT::ELEMENTS::Fluid2GenalphaResVMM::Sysmat(
   {
 
     // set gauss point coordinates
-    const double e1 = intpoints.qxg[iquad][0];
-    const double e2 = intpoints.qxg[iquad][1];
+    blitz::Array<double, 1> gp(2);
 
-    // get values of shape functions and derivatives in the gausspoint
-    DRT::UTILS::shape_function_2D(funct_,e1,e2,distype);
-    DRT::UTILS::shape_function_2D_deriv1(deriv_,e1,e2,distype);
-    if (higher_order_ele)
+    gp(0)=intpoints.qxg[iquad][0];
+    gp(1)=intpoints.qxg[iquad][1];
+
+
+    if(!(distype == DRT::Element::nurbs4
+          ||
+         distype == DRT::Element::nurbs9))
     {
-      DRT::UTILS::shape_function_2D_deriv2(deriv2_,e1,e2,distype);
-    }
+      // get values of shape functions and derivatives in the gausspoint
+      DRT::UTILS::shape_function_2D(funct_,gp(0),gp(1),distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv_,gp(0),gp(1),distype);
 
+      if (higher_order_ele)
+      {
+        // get values of shape functions and derivatives in the gausspoint
+        DRT::UTILS::shape_function_2D_deriv2(deriv2_,gp(0),gp(1),distype);
+      }
+    }
+    else
+    {
+      if (higher_order_ele)
+      {
+        DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2
+          (funct_  ,
+           deriv_  ,
+           deriv2_ ,
+           gp      ,
+           myknots ,
+           weights_,
+           distype );
+      }
+      else
+      {
+        DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+          (funct_  ,
+           deriv_  ,
+           gp      ,
+           myknots ,
+           weights_,
+           distype );
+      }
+    }
+    
     // get transposed Jacobian matrix and determinant
     //
     //        +-       -+ T      +-       -+

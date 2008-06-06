@@ -132,6 +132,7 @@ using namespace std;
 #define ParObject_Condif3Surface        (int)107
 #define ParObject_Knotvector            (int)108
 #define ParObject_ControlPoint          (int)109
+#define ParObject_Fluid2Nurbs           (int)110
 
 namespace DRT
 {

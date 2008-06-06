@@ -128,6 +128,20 @@ public:
   /// read a node-design topology section
   void ReadDesign(const std::string& name, std::vector<std::vector<int> >& dobj_fenode) const;
 
+  /*!
+    \brief read a knotvector section (for isogeometric analysis)
+      
+    \param  degree         (out): degrees of the bsplines used in this discretisation 
+    \param  size           (out): knotvector sizes n_x_m_x_l
+    \param  knotvectortype (out): string for interpolated or periodic knotvector
+    \param  knots          (out): node vector coordinates
+    
+  */
+  void ReadKnots(std::vector<int>                                 & degree        ,
+                 std::vector<int>                                 & size          ,
+                 std::vector<string>                              & knotvectortype,
+                 std::vector<Teuchos::RCP<std::vector<double> > > & knots         ) const;
+
 private:
 
   /// parse name string an get sublist of global input list

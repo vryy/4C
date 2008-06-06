@@ -324,7 +324,7 @@ private:
       bool hoel = true;
       switch (distype)
       {
-          case quad4: case quad8: case quad9: case tri6:
+          case quad4: case quad8: case quad9: case tri6: case nurbs4: case nurbs9:
             hoel = true;
             break;
           case tri3:

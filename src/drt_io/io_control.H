@@ -27,6 +27,7 @@ namespace IO
   public:
     OutputControl(const Epetra_Comm& comm,
                   std::string problemtype,
+                  std::string type_of_spatial_approx,
                   std::string inputfile,
                   std::string filename,
                   int ndim,
@@ -35,6 +36,7 @@ namespace IO
 
     OutputControl(const Epetra_Comm& comm,
                   std::string problemtype,
+                  std::string type_of_spatial_approx,
                   std::string inputfile,
                   std::string restartfilename,
                   std::string outputfilename,

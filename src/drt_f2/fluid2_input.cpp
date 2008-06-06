@@ -87,7 +87,24 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
     if (ierr!=1) dserror("Reading of ELEMENT Topology failed\n");
   }
 
+  frchk("NURBS4",&ierr);
+  if (ierr==1)
+  {
+    distype = nurbs4;
+    nnode=4;
+    frint_n("NURBS4",nodes,nnode,&ierr);
+    if (ierr!=1) dserror("Reading of nurbs ELEMENT Topology failed\n");
+  }
 
+  frchk("NURBS9",&ierr);
+  if (ierr==1)
+  {
+    distype = nurbs9;
+    nnode=9;
+    frint_n("NURBS9",nodes,nnode,&ierr);
+    if (ierr!=1) dserror("Reading of nurbs ELEMENT Topology failed\n");
+  }
+  
   // reduce node numbers by one
   for (int i=0; i<nnode; ++i) nodes[i]--;
 
@@ -189,7 +206,7 @@ bool DRT::ELEMENTS::Fluid2::ReadElement()
   int myngp[2];
   switch (distype)
   {
-  case quad4: case quad8: case quad9:
+  case quad4: case quad8: case quad9: case nurbs4: case nurbs9:
   {
     frint_n("GP",myngp,2,&ierr);
     dsassert(ierr==1, "Reading of FLUID2 element failed: GP");

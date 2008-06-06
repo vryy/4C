@@ -32,7 +32,6 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct(
 
   int degree = 1;
 
-#if 0
   switch (distype)
   {
   case DRT::Element::nurbs4:
@@ -41,12 +40,17 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct(
 
     break;
   }
+  case DRT::Element::nurbs9:
+  {
+    degree=2;
+
+    break;
+  }
   default:
   {
     dserror("Unknown distype for nurbs element evaluation\n");
   }
   }
-#endif
   
   // size is the number of control points/basis 
   // functions of this element
@@ -253,7 +257,6 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
 
   int degree = 1;
 
-#if 0
   switch (distype)
   {
   case DRT::Element::nurbs4:
@@ -262,12 +265,17 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
 
     break;
   }
+  case DRT::Element::nurbs9:
+  {
+    degree=2;
+
+    break;
+  }
   default:
   {
     dserror("Unknown distype for nurbs element evaluation\n");
   }
   }
-#endif
   
   // size is the number of control points/basis 
   // functions of this element
@@ -560,7 +568,6 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
 
   int degree = 1;
 
-#if 0
   switch (distype)
   {
   case DRT::Element::nurbs4:
@@ -569,12 +576,17 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
 
     break;
   }
+  case DRT::Element::nurbs9:
+  {
+    degree=2;
+
+    break;
+  }
   default:
   {
     dserror("Unknown distype for nurbs element evaluation\n");
   }
   }
-#endif`
   
   // size is the number of control points/basis 
   // functions of this element

@@ -79,7 +79,6 @@ void DRT::NURBS::ControlPoint::Pack(vector<char>& data) const
   DRT::Node::AddtoPack(data,&w_,  sizeof(double));
 
   return;
-
 }
 
 /*
@@ -100,6 +99,8 @@ void DRT::NURBS::ControlPoint::Unpack(const vector<char>& data)
   DRT::Node::Unpack(basedata);
   // extract weight
   DRT::Node::ExtractfromPack(position,data,w_);
+
+  return;
 }
 
 /*

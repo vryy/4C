@@ -132,6 +132,19 @@ std::string DRT::Problem::ProblemType() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+std::string DRT::Problem::SpatialApproximation() const
+{
+  // decide which kind of spatial representation is required
+  const Teuchos::ParameterList& ptype = ProblemTypeParams();
+
+  std::string basis_fct_type = ptype.get<std::string>("SHAPEFCT");
+
+  return basis_fct_type;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 {
   RCP<ParameterList> list = rcp(new ParameterList("DAT FILE"));
@@ -606,6 +619,79 @@ void DRT::Problem::ReadConditions(const DRT::INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
+{
+  // decide which kind of spatial representation is required
+  const Teuchos::ParameterList& ptype = ProblemTypeParams();
+
+  // get information on the spatial approximation --- we only read knots
+  // in the nurbs case
+  std::string distype = ptype.get<std::string>("SHAPEFCT");
+
+  // get problem dimension
+  const Teuchos::ParameterList& psize= ProblemSizeParams();
+
+  int dim = psize.get<int>("DIM");
+
+  // Iterate through all discretizations and sort the appropiate condition
+  // into the correct discretization it applies to
+  for (unsigned i=0; i<NumFields(); ++i)
+  {
+    for (unsigned j=0; j<NumDis(i); ++j)
+    {
+      Teuchos::RCP<DRT::Discretization> actdis = Dis(i,j);
+
+      if(distype == "Nurbs")
+      {
+        // cast discretisation to nurbs variant to be able
+        // to add the knotvector
+        DRT::NURBS::NurbsDiscretization* nurbsdis
+          =
+          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*actdis));
+
+        if(i!=0 || j!=0)
+        {
+          dserror("up to now I'm only supporting single patch, single field and single dis isogeometric analysis!\n");
+        }
+
+        std::vector<Teuchos::RCP<std::vector<double> > > knots(dim);
+        for(int dir=0;dir<dim;++dir)
+        {
+          knots[dir]=Teuchos::rcp(new std::vector<double> );
+        }
+
+        // read the knotvector data from the input
+        std::vector<int>    degree        (dim);
+        std::vector<int>    n_x_m_x_l     (dim);
+        std::vector<string> knotvectortype(dim);
+
+        reader.ReadKnots(degree,n_x_m_x_l,knotvectortype,knots);
+
+        // allocate and set knot vector object
+        Teuchos::RCP<DRT::NURBS::Knotvector> disknots
+            =
+          Teuchos::rcp (new DRT::NURBS::Knotvector(dim,degree,n_x_m_x_l));
+
+        for(int dir=0;dir<dim;++dir)
+        {
+          disknots->SetKnots(dir,knotvectortype[dir],knots[dir]);
+        }
+
+        // consistency checks
+        disknots->FinishKnots();
+
+        // add knots to discretisation
+        nurbsdis->SetKnotVector(disknots);
+      }
+    } //loop discretisations of field
+  } //loop fields
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfile, std::string prefix)
 {
   if (genprob.restart)
@@ -613,6 +699,7 @@ void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfil
 
   outputcontrol_ = Teuchos::rcp(new IO::OutputControl(comm,
                                                       ProblemType(),
+                                                      SpatialApproximation(),
                                                       inputfile,
                                                       prefix,
                                                       genprob.ndim,
@@ -793,7 +880,20 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for fluid problem");
 
-    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+    // decide which kind of spatial representation is required
+    const Teuchos::ParameterList& ptype = ProblemTypeParams();
+
+    std::string distype = ptype.get<std::string>("SHAPEFCT");
+
+    if(distype == "Nurbs")
+    {
+      fluiddis = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
+    }
+    else
+    {
+      fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+    }
+
     AddDis(genprob.numff, fluiddis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");

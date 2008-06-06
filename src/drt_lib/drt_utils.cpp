@@ -46,6 +46,7 @@ extern "C"
 #include "../drt_beam3/beam3.H"
 #include "../drt_s8/shell8.H"
 #include "../drt_f2/fluid2.H"
+#include "../drt_f2/fluid2_nurbs.H"
 #include "../drt_f2/condif2.H"
 #include "../drt_condif3/condif3.H"
 #include "../drt_f3/fluid3.H"
@@ -201,6 +202,13 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     case ParObject_Fluid2:
     {
       DRT::ELEMENTS::Fluid2* object = new DRT::ELEMENTS::Fluid2(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Fluid2Nurbs:
+    {
+      DRT::ELEMENTS::NURBS::Fluid2Nurbs* object = new DRT::ELEMENTS::NURBS::Fluid2Nurbs(-1,-1);
       object->Unpack(data);
       return object;
     }
@@ -586,6 +594,7 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
  |  allocate an element of a specific type (public)          mwgee 03|07|
  *----------------------------------------------------------------------*/
 RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
+                                              const string eledistype,
                                               const int id,
                                               const int owner)
 {
@@ -673,7 +682,16 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_FLUID2
     case fluid2:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Fluid2(id,owner));
+      RefCountPtr<DRT::Element> ele;
+      
+      if(eledistype=="NURBS4" || eledistype=="NURBS9")
+      {
+        ele = rcp(new DRT::ELEMENTS::NURBS::Fluid2Nurbs(id,owner));
+      }
+      else
+      {
+        ele = rcp(new DRT::ELEMENTS::Fluid2(id,owner));
+      }
       return ele;
     }
     break;

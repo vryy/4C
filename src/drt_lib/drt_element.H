@@ -129,7 +129,9 @@ public:
     line2,                      // 2 noded line
     line3,                      // 3 noded line
     point1,                     // 1 noded point
-    max_distype                 //  end marker. must be the last entry
+    nurbs4,                     // 4 control point first order nurbs element
+    nurbs9,                     // 9 control point second order nurbs element
+    max_distype                 // end marker. must be the last entry
   };
 
   //@}
@@ -814,6 +816,8 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
     case DRT::Element::line2:      s = "LINE2";  break;
     case DRT::Element::line3:      s = "LINE3";  break;
     case DRT::Element::point1:     s = "POINT1";  break;
+    case DRT::Element::nurbs4:     s = "NURBS4";  break;
+    case DRT::Element::nurbs9:     s = "NURBS9";  break;
     default:
         dserror("no string for this distype defined!");
     };

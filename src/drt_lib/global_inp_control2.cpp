@@ -92,6 +92,10 @@ void ntainp_ccadiscret()
   // Also read time and space functions and local coord systems
   problem->ReadConditions(reader);
 
+  // read all knot information for isogeometric analysis
+  // and add it to the (derived) nurbs discretization
+  problem->ReadKnots(reader);
+
   /*---------------------------------------- input of result descriptions */
   inp_resultdescr();
 
