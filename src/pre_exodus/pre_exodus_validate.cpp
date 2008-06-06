@@ -114,7 +114,7 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
     case DRT::Element::pyramid5:
       ValidateElementJacobian(mymesh,distype,eb); break;
     default:
-        dserror("No ElementJacobian Validation for this distype");
+        cout << "Warning: No ElementJacobian Validation for this distype: " << DRT::DistypeToString(distype) << endl;
     }
   }
   return;
