@@ -224,8 +224,9 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<FILE*> ("err file",allfiles.out_err);
 
       genalphaparams.set<bool>  ("inv_analysis",Teuchos::getIntegralValue<int>(sdyn,"INV_ANALYSIS"));
-      genalphaparams.set<double>("measured_disp",sdyn.get<double>("MEASURED_DISP"));      
-            
+      genalphaparams.set<double>("measured_disp0",sdyn.get<double>("MEASURED_DISP0"));      
+      genalphaparams.set<double>("measured_disp1",sdyn.get<double>("MEASURED_DISP1")); 
+      genalphaparams.set<double>("measured_disp2",sdyn.get<double>("MEASURED_DISP2")); 
 
       switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
       {

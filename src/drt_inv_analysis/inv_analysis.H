@@ -17,10 +17,10 @@ class Inv_analysis : public StruGenAlpha {
 	private:
 		vector<int> surfneum_nodes_;
 		vector<double> disp_;		// displacment vector in all three direction
-		double final_disp_;			// calculated displacment
-		double final_disp_o_;		// calculated displacment of the previous loop
-		double measured_disp_;		// measured displacment of the experiments (target value)
-		double residual_disp_;		// final_disp_ - measured_disp
+		vector<double> final_disp_;			// calculated displacment
+		vector<double> final_disp_o_;		// calculated displacment of the previous loop
+		vector<double> measured_disp_;		// measured displacment of the experiments (target value)
+		vector<double> residual_disp_;		// final_disp_ - measured_disp
 		double mu_;
 		double mu_plus_;
 		double mu_minus_;								
@@ -50,7 +50,7 @@ class Inv_analysis : public StruGenAlpha {
 	                          bool init = true);
 	  
 		void get_surfneum_nodes(vector<DRT::Condition*> surfneum);
-		void get_final_displacment(const RefCountPtr<Epetra_Vector> disp);
+		void get_final_displacment(const RefCountPtr<Epetra_Vector> disp, int numb);
 		void calculate_new_parameters();
 		void evaluate();
 		void Integrate();
