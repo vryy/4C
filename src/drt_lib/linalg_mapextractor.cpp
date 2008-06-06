@@ -37,7 +37,10 @@ void LINALG::MultiMapExtractor::Setup(const Epetra_Map& fullmap, const std::vect
   importer_.resize(maps_.size());
   for (unsigned i=0; i<importer_.size(); ++i)
   {
-    importer_[i] = Teuchos::rcp(new Epetra_Import(*maps_[i], *fullmap_));
+    if (maps_[i]!=Teuchos::null)
+    {
+      importer_[i] = Teuchos::rcp(new Epetra_Import(*maps_[i], *fullmap_));
+    }
   }
 }
 
@@ -51,6 +54,8 @@ Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::MergeMaps(const std::vector<
   int maplength = 0;
   for (unsigned i=0; i<maps.size(); ++i)
   {
+    if (maps[i]==Teuchos::null)
+      dserror("can not merge extractor with null maps");
     if (not maps[i]->UniqueGIDs())
       dserror("map %d not unique", i);
     maplength += maps[i]->NumMyElements();
@@ -72,6 +77,8 @@ Teuchos::RCP<Epetra_Map> LINALG::MultiMapExtractor::MergeMaps(const std::vector<
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> LINALG::MultiMapExtractor::ExtractVector(const Epetra_Vector& full, int block) const
 {
+  if (maps_[block]==Teuchos::null)
+    dserror("null map at block %d",block);
   Teuchos::RefCountPtr<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*maps_[block]));
   ExtractVector(full,block,*vec);
   return vec;
@@ -82,6 +89,8 @@ Teuchos::RCP<Epetra_Vector> LINALG::MultiMapExtractor::ExtractVector(const Epetr
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> LINALG::MultiMapExtractor::ExtractVector(const Epetra_MultiVector& full, int block) const
 {
+  if (maps_[block]==Teuchos::null)
+    dserror("null map at block %d",block);
   Teuchos::RefCountPtr<Epetra_MultiVector> vec = Teuchos::rcp(new Epetra_MultiVector(*maps_[block],full.NumVectors()));
   ExtractVector(full,block,*vec);
   return vec;
@@ -92,6 +101,8 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::MultiMapExtractor::ExtractVector(const 
 /*----------------------------------------------------------------------*/
 void LINALG::MultiMapExtractor::ExtractVector(const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial) const
 {
+  if (maps_[block]==Teuchos::null)
+    dserror("null map at block %d",block);
   int err = partial.Import(full,*importer_[block],Insert);
   if (err)
     dserror("Import using importer returned err=%d",err);
@@ -122,6 +133,8 @@ Teuchos::RCP<Epetra_MultiVector> LINALG::MultiMapExtractor::InsertVector(const E
 /*----------------------------------------------------------------------*/
 void LINALG::MultiMapExtractor::InsertVector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const
 {
+  if (maps_[block]==Teuchos::null)
+    dserror("null map at block %d",block);
   int err = full.Export(partial,*importer_[block],Insert);
   if (err)
     dserror("Export using importer returned err=%d",err);
