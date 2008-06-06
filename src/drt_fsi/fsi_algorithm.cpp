@@ -48,7 +48,6 @@ void FSI::Algorithm::ReadRestart(int step)
   time_ = MBFluidField().ReadRestart(step);
   step_ = step;
 
-  Output();
 }
 
 
