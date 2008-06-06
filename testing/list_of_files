@@ -25,6 +25,8 @@ Input/condif2_straight_convection_vm3gls.dat            -        x        -     
 Input/dyn_shell_dirich.dat                              x        x        x        x        -        -
 Input/dyn_shell_neum.dat                                x        x        x        x        -        -
 Input/f2_channel_neumann.dat                            x        x        x        x        -        -
+Input/f2_channel_modpowerlaw_impl_drt.dat               x        x        -        -        -        -
+Input/f2_channel_carreauyasuda_genalpha_drt.dat         x        x        -        -        -        -
 Input/f2_dc2D_usfem_ld.dat                              x        x        x        x        -        -
 Input/f2_drivencavity20x20.dat                          x        x        x        x        -        -
 Input/f2_drivencavity20x20_drt.dat                      x        x        -        -        x        x
@@ -52,6 +54,8 @@ Input/f3_beltrami_fastass2.dat                          x        x        x     
 Input/f3_beltrami_fastass2_sd.dat                       x        x        x        x        x        x
 Input/f3_beltrami_fastass2_sd2.dat                      x        x        x        x        x        x
 Input/f3_beltrami_umfpack_fastass.dat                   -        -        -        -        x        x
+Input/f3_channel_modpowerlaw_impl_drt.dat               x        x        -        -        -        -
+Input/f3_channel_carreauyasuda_genalpha_drt.dat         x        x        -        -        -        -
 Input/f3_drivencavity_stat_drt.dat                      x        x        -        -        -        -
 Input/f3_drt_genalpha_initialfield_volforce_pbc.dat     x        x        -        -        -        -
 Input/f3_beltrami_tet4_drt.dat                          x        x        -        -        -        -  

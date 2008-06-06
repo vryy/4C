@@ -1,0 +1,1447 @@
+//
+// Maintainer: Ursula Mayer
+//             mayer@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-15257
+// 
+// necessary defines: D_FLUID2 CCADISCRET BINIO 
+//
+
+==================================================================
+        General Data File CCARAT
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus 
+------------------------------------------------------PROBLEM SIZE
+ELEMENTS 	400
+NODES    	441
+DIM      	2
+MATERIALS	1
+NUMDF    	6
+--------------------------------------------------------ALE DYNAMIC
+ALE_TYPE                        classic_lin
+MAXTIME                         4
+NUMSTEP                         41
+NUM_INITSTEP                    0
+QUALITY                         none
+RESEVRYDISP                     1
+TIMESTEP                        0.1
+---------------------------------------------------------ALE SOLVER
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZFILL                          1
+AZGFILL                         0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZOVERLAP                       0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               KLU
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1 1
+PARTITION                       Cut_Elements
+SOLVER                          UMFPACK
+----------------------------------------------------CONDITION NAMES
+-------------------------------------------------DESIGN DESCRIPTION
+NDLINE                          0
+NDPOINT                         0
+NDSURF                          0
+NDVOL                           0
+-----------------------------------------------------DISCRETISATION
+NUMALEDIS                       0
+NUMFLUIDDIS                     1
+NUMSTRUCDIS                     0
+NUMTHERMDIS                     0
+------------------------------------------------------FLUID DYNAMIC
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.1
+ALPHA_F                         1
+ALPHA_M                         1
+CD_INITFUNCNO                   -1
+CD_INITIALFIELD                 zero_field
+CD_VELFUNCNO                    -1
+CD_VELOCITY                     zero
+CONVCHECK                       L_2_norm
+CONVTOL                         1e-06
+DYNAMICTYP                      Nlin_Time_Int
+FSSUGRVISC                      No
+GAMMA                           1
+GRIDVEL                         1
+INITIALFIELD                    zero_field
+ITEMAX                          50
+LIFTDRAG                        No
+MAXTIME                         1000
+NONLINITER                      fixed_point_like
+NUMSTASTEPS                     0
+NUMSTEP                         10
+RESSTEP                         0
+RESTARTEVRY                     20
+SIMPLER                         no
+STARTFUNCNO                     -1
+STARTINGALGO                    One_Step_Theta
+START_THETA                     0.67
+STEADYCHECK                     L_2_norm
+STEADYSTEP                      -1
+STEADYTOL                       1e-06
+THETA                           0.66
+TIMEINTEGR                      One_Step_Theta
+TIMESTEP                        0.05
+UPOUT                           10
+UPPSS                           10
+UPRES                           10
+----------------------------------------FLUID DYNAMIC/STABILIZATION
+CROSS-STRESS                    no_cross
+CSTAB                           cstab_qs
+DEFINITION_TAU                  Barrenechea_Franca_Valentin_Wall
+PSPG                            yes_pspg
+REYNOLDS-STRESS                 no_reynolds
+STABTYPE                        residual_based
+SUPG                            yes_supg
+TDS                             quasistatic
+TRANSIENT                       no_transient
+VSTAB                           no_vstab
+-------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
+CANONICAL_FLOW                  no
+CHANNEL_HOMPLANE                xz
+CHANNEL_L_TAU                   0
+CHAN_AMPL_INIT_DIST             0.1
+C_SMAGORINSKY                   0
+DUMPING_PERIOD                  1
+PHYSICAL_MODEL                  no_model
+SAMPLING_START                  1
+SAMPLING_STOP                   1
+TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
+----------------------------------------------FLUID PRESSURE SOLVER
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZFILL                          1
+AZGFILL                         0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZOVERLAP                       0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               KLU
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1 1
+PARTITION                       Cut_Elements
+SOLVER                          UMFPACK
+-------------------------------------------------------FLUID SOLVER
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZFILL                          1
+AZGFILL                         0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZOVERLAP                       0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               KLU
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1 1
+PARTITION                       Cut_Elements
+SOLVER                          UMFPACK
+--------------------------------------------------------FSI DYNAMIC
+ALPHA_F                         -1
+ALPHA_S                         -1
+BASETOL                         0.001
+CONVCRIT                        ||g(i)||:sqrt(neq)
+CONVTOL                         1e-06
+COUPALGO                        iter_stagg_AITKEN_rel_param
+COUPFORCE                       nodeforce
+COUPMETHOD                      conforming
+COUPVARIABLE                    Displacement
+DEBUGOUTPUT                     No
+ENERGYCHECK                     No
+IALE                            Pseudo_Structure
+ICHMAX                          1
+ISDMAX                          1
+ITECHAPP                        1
+ITEMAX                          100
+MAXOMEGA                        0
+MAXTIME                         1000
+NUMSTEP                         200
+PARTITIONED                     DirichletNeumann
+PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
+RELAX                           1
+RESTARTEVRY                     1
+TIMESTEP                        0.1
+TOLENCHECK                      1e-06
+UPPSS                           1
+UPRES                           1
+-----------------------------------------------------------------IO
+ALE_DISP                        No
+FILESTEPS                       1000
+FLUID_SOL                       Yes
+FLUID_STRESS                    Yes
+FLUID_VIS                       No
+OUTPUT_BIN                      No
+OUTPUT_GID                      No
+OUTPUT_OUT                      No
+STRUCT_DISP                     No
+STRUCT_SM_DISP                  No
+STRUCT_STRAIN                   No
+STRUCT_STRESS                   No
+THERM_HEATFLUX                  No
+THERM_TEMPERATURE               No
+--------------------------------------------------------PROBLEM TYP
+ALGEBRA                         Trilinos
+MULTISC_STRUCT                  0
+NUMFIELD                        1
+PROBLEMTYP                      Fluid
+RESTART                         0
+TIMETYP                         Dynamic
+------------------------------------------------------STRUCT SOLVER
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZFILL                          1
+AZGFILL                         0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZOVERLAP                       0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               KLU
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1 1
+PARTITION                       Cut_Elements
+SOLVER                          UMFPACK
+-------------------------------------------------STRUCTURAL CONTACT
+BASISTRAFO                      No
+CONTACT                         None
+FRBOUND                         0
+FRCOEFF                         0
+FRICTION                        None
+INIT_CONTACT                    No
+-------------------------------------------------STRUCTURAL DYNAMIC
+ADAPTCONV                       No
+ADAPTCONV_BETTER                0.1
+ALPHA_F                         0.5
+ALPHA_M                         0.5
+BETA                            0.25
+CONV_CHECK                      AbsRes_Or_AbsDis
+DAMPING                         No
+DELTA                           0.25
+DYNAMICTYP                      Gen_Alfa
+EIGEN                           0
+GAMMA                           0.5
+INV_ANALYSIS                    No
+ITERATION                       full
+ITWANT                          0
+K_DAMP                          0.5
+MAXDT                           0
+MAXITER                         50
+MAXTIME                         5
+MEASURED_DISP                   0
+M_DAMP                          0.5
+NLNSOL                          fullnewton
+NUMSTEP                         200
+PREDICT                         ConstDis
+RESEVRYDISP                     1
+RESEVRYSTRS                     1
+RESTARTEVRY                     1
+RESULTDT                        0
+TA_ADAPTSTEPMAX                 0
+TA_ERRNORM                      Vague
+TA_ERRTOL                       0
+TA_KIND                         None
+TA_SIZERATIOMAX                 0
+TA_SIZERATIOMIN                 0
+TA_SIZERATIOSCALE               0
+TA_STEPSIZEMAX                  0
+TA_STEPSIZEMIN                  0
+TIMEADAPT                       0
+TIMESTEP                        0.05
+TOLCONSTR                       1e-08
+TOLDISP                         1e-10
+TOLRES                          1e-08
+UZAWAALGO                       newtonlinuzawa
+UZAWAMAXITER                    50
+UZAWAPARAM                      1
+-----------------------------------------------------THERMAL SOLVER
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZFILL                          1
+AZGFILL                         0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZOVERLAP                       0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               KLU
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1 1
+PARTITION                       Cut_Elements
+SOLVER                          UMFPACK
+-------------------------------------------------------XFEM GENERAL
+GMSH_DEBUG_OUT                  No
+---------------------------------------------------------MATERIALS
+MAT 1 MAT_modpowerlaw  MCONS 0.42 DELTA 0.001 AEXP 0.39 DENSITY 1.0
+-------------------------------------------------------LOAD CURVES
+------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC (1-cos(2*t*pi))/2.0 t1 0.0 t2 0.5
+CURVE1 on EXPR FUNC 1 t1 0.5 t2 10000.0
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------CURVE4
+------------------------------------------------------------FUNCT1
+FUNCT1 EXPR 0 0 0 FUNCTION y*(1-y)
+------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT3
+------------------------------------------------------------FUNCT4
+
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 4
+NDLINE  5
+NDSURF  0
+NDVOL   0
+-----------------------------------------------------DESIGN POINTS
+------------------------------------------------------DESIGN LINES
+---------------------------------------------------DESIGN SURFACES
+----------------------------------------------------DESIGN VOLUMES
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+DPOINT 0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+DLINE  0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF  0
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL   0
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT 4
+// vertex left bottom
+E 1 - 1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+// vertex left top
+E 2 - 1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+// vertex right top
+E 3 - 1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+// vertex right bottom
+E 4 - 1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  4
+// left edge
+E 1 - 1 1 0 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  1 0 0 0 0 0
+// top edge
+E 2 - 1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+// right edge
+E 3 - 0 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+// bottom edge
+E 4 - 1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF  0
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
+DVOL   0
+--------------------------------DESIGN POINT ALE DIRICH CONDITIONS
+DPOINT 0
+---------------------------------DESIGN LINE ALE DIRICH CONDITIONS
+DLINE  0
+---------------------------------DESIGN SURF ALE DIRICH CONDITIONS
+DSURF  0
+--------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
+DPOINT 0
+---------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
+DLINE  0
+---------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
+DSURF  0
+---------------------------------------------CONTACT CONDITIONS 2D
+DLINE  0
+---------------------------------------------CONTACT CONDITIONS 3D
+DSURF  0
+--------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
+DLINE  0
+--------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
+DSURF  0
+-------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+DLINE  0
+-------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+DSURF  0
+-------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+DLINE  0
+-------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+DSURF  0
+------------------------------DESIGN XFEM COUPLING LINE CONDITIONS
+DLINE  0
+------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
+DSURF  0
+----------------------------------------SURFACE TENSION CONDITIONS
+DSURF  0
+---------------------------------------------SURFACTANT CONDITIONS
+DSURF  0
+---------------------------------------------MICROSCALE CONDITIONS
+DSURF  0
+--------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
+DLINE  1
+// bottom edge
+E 4 - standard
+--------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
+DSURF  0
+---------------------------------------DESIGN FLUID LINE LIFT&DRAG
+DLINE  0
+---------------------------------------DESIGN FLUID SURF LIFT&DRAG
+DSURF  0
+-------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
+DSURF  0
+---------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
+DSURF  0
+----------------------------------DESIGN SURFACE VOLUME MONITOR 3D
+DSURF  0
+------------------------------------DESIGN SURFACE AREA MONITOR 3D
+DSURF  0
+------------------------------------DESIGN LINE AREA CONSTRAINT 2D
+DLINE  0
+---------------------------------------DESIGN LINE AREA MONITOR 2D
+DLINE  0
+----------------------------------------------IMPEDANCE CONDITIONS
+DSURF  0
+-----------------------------------DESIGN MULTIPOINT CONSTRAINT 3D
+DVOL   0
+-----------------------------------DESIGN MULTIPOINT CONSTRAINT 2D
+DLINE  0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    1 DNODE 1
+NODE    83 DNODE 2
+NODE    43 DNODE 3
+NODE    41 DNODE 4
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    1 DLINE 1
+NODE    4 DLINE 1
+NODE    83 DLINE 1
+NODE    84 DLINE 1
+NODE    119 DLINE 1
+NODE    121 DLINE 1
+NODE    123 DLINE 1
+NODE    125 DLINE 1
+NODE    127 DLINE 1
+NODE    129 DLINE 1
+NODE    131 DLINE 1
+NODE    133 DLINE 1
+NODE    135 DLINE 1
+NODE    137 DLINE 1
+NODE    139 DLINE 1
+NODE    141 DLINE 1
+NODE    143 DLINE 1
+NODE    145 DLINE 1
+NODE    147 DLINE 1
+NODE    149 DLINE 1
+NODE    151 DLINE 1
+NODE    43 DLINE 2
+NODE    44 DLINE 2
+NODE    47 DLINE 2
+NODE    49 DLINE 2
+NODE    51 DLINE 2
+NODE    53 DLINE 2
+NODE    55 DLINE 2
+NODE    57 DLINE 2
+NODE    59 DLINE 2
+NODE    61 DLINE 2
+NODE    63 DLINE 2
+NODE    65 DLINE 2
+NODE    67 DLINE 2
+NODE    69 DLINE 2
+NODE    71 DLINE 2
+NODE    73 DLINE 2
+NODE    75 DLINE 2
+NODE    77 DLINE 2
+NODE    79 DLINE 2
+NODE    81 DLINE 2
+NODE    83 DLINE 2
+NODE    41 DLINE 3
+NODE    42 DLINE 3
+NODE    43 DLINE 3
+NODE    46 DLINE 3
+NODE    85 DLINE 3
+NODE    87 DLINE 3
+NODE    89 DLINE 3
+NODE    91 DLINE 3
+NODE    93 DLINE 3
+NODE    95 DLINE 3
+NODE    97 DLINE 3
+NODE    99 DLINE 3
+NODE    101 DLINE 3
+NODE    103 DLINE 3
+NODE    105 DLINE 3
+NODE    107 DLINE 3
+NODE    109 DLINE 3
+NODE    111 DLINE 3
+NODE    113 DLINE 3
+NODE    115 DLINE 3
+NODE    117 DLINE 3
+NODE    1 DLINE 4
+NODE    2 DLINE 4
+NODE    5 DLINE 4
+NODE    7 DLINE 4
+NODE    9 DLINE 4
+NODE    11 DLINE 4
+NODE    13 DLINE 4
+NODE    15 DLINE 4
+NODE    17 DLINE 4
+NODE    19 DLINE 4
+NODE    21 DLINE 4
+NODE    23 DLINE 4
+NODE    25 DLINE 4
+NODE    27 DLINE 4
+NODE    29 DLINE 4
+NODE    31 DLINE 4
+NODE    33 DLINE 4
+NODE    35 DLINE 4
+NODE    37 DLINE 4
+NODE    39 DLINE 4
+NODE    41 DLINE 4
+-----------------------------------------------DSURF-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE 1  	COORD	0.00000000e+00	0.00000000e+00	0.00000000e+00	
+NODE 2  	COORD	5.00000007e-02	0.00000000e+00	0.00000000e+00	
+NODE 3  	COORD	5.00376225e-02	5.00139482e-02	0.00000000e+00	
+NODE 4  	COORD	0.00000000e+00	5.00000007e-02	0.00000000e+00	
+NODE 5  	COORD	1.00000001e-01	0.00000000e+00	0.00000000e+00	
+NODE 6  	COORD	1.00020014e-01	5.00031747e-02	0.00000000e+00	
+NODE 7  	COORD	1.50000006e-01	0.00000000e+00	0.00000000e+00	
+NODE 8  	COORD	1.50010511e-01	4.99881357e-02	0.00000000e+00	
+NODE 9  	COORD	2.00000003e-01	0.00000000e+00	0.00000000e+00	
+NODE 10  	COORD	2.00004324e-01	4.99892011e-02	0.00000000e+00	
+NODE 11  	COORD	2.50000000e-01	0.00000000e+00	0.00000000e+00	
+NODE 12  	COORD	2.50000894e-01	4.99913953e-02	0.00000000e+00	
+NODE 13  	COORD	3.00000012e-01	0.00000000e+00	0.00000000e+00	
+NODE 14  	COORD	2.99999207e-01	4.99944761e-02	0.00000000e+00	
+NODE 15  	COORD	3.49999994e-01	0.00000000e+00	0.00000000e+00	
+NODE 16  	COORD	3.49998623e-01	4.99968454e-02	0.00000000e+00	
+NODE 17  	COORD	4.00000006e-01	0.00000000e+00	0.00000000e+00	
+NODE 18  	COORD	3.99998635e-01	4.99983206e-02	0.00000000e+00	
+NODE 19  	COORD	4.49999988e-01	0.00000000e+00	0.00000000e+00	
+NODE 20  	COORD	4.49998915e-01	4.99991514e-02	0.00000000e+00	
+NODE 21  	COORD	5.00000000e-01	0.00000000e+00	0.00000000e+00	
+NODE 22  	COORD	4.99999225e-01	4.99995910e-02	0.00000000e+00	
+NODE 23  	COORD	5.50000012e-01	0.00000000e+00	0.00000000e+00	
+NODE 24  	COORD	5.49999475e-01	4.99998108e-02	0.00000000e+00	
+NODE 25  	COORD	6.00000024e-01	0.00000000e+00	0.00000000e+00	
+NODE 26  	COORD	5.99999666e-01	4.99999188e-02	0.00000000e+00	
+NODE 27  	COORD	6.49999976e-01	0.00000000e+00	0.00000000e+00	
+NODE 28  	COORD	6.50008023e-01	5.00006750e-02	0.00000000e+00	
+NODE 29  	COORD	6.99999988e-01	0.00000000e+00	0.00000000e+00	
+NODE 30  	COORD	7.00030804e-01	4.99936938e-02	0.00000000e+00	
+NODE 31  	COORD	7.50000000e-01	0.00000000e+00	0.00000000e+00	
+NODE 32  	COORD	7.50013530e-01	4.99815494e-02	0.00000000e+00	
+NODE 33  	COORD	8.00000012e-01	0.00000000e+00	0.00000000e+00	
+NODE 34  	COORD	8.00013959e-01	5.00056967e-02	0.00000000e+00	
+NODE 35  	COORD	8.50000024e-01	0.00000000e+00	0.00000000e+00	
+NODE 36  	COORD	8.49992394e-01	5.00000156e-02	0.00000000e+00	
+NODE 37  	COORD	8.99999976e-01	0.00000000e+00	0.00000000e+00	
+NODE 38  	COORD	8.99995565e-01	4.99987155e-02	0.00000000e+00	
+NODE 39  	COORD	9.49999988e-01	0.00000000e+00	0.00000000e+00	
+NODE 40  	COORD	9.49990988e-01	5.00068143e-02	0.00000000e+00	
+NODE 41  	COORD	1.00000000e+00	0.00000000e+00	0.00000000e+00	
+NODE 42  	COORD	1.00000000e+00	5.00000007e-02	0.00000000e+00	
+NODE 43  	COORD	1.00000000e+00	1.00000000e+00	0.00000000e+00	
+NODE 44  	COORD	9.49999988e-01	1.00000000e+00	0.00000000e+00	
+NODE 45  	COORD	9.49962378e-01	9.49986041e-01	0.00000000e+00	
+NODE 46  	COORD	1.00000000e+00	9.49999988e-01	0.00000000e+00	
+NODE 47  	COORD	8.99999976e-01	1.00000000e+00	0.00000000e+00	
+NODE 48  	COORD	8.99980009e-01	9.49996829e-01	0.00000000e+00	
+NODE 49  	COORD	8.50000024e-01	1.00000000e+00	0.00000000e+00	
+NODE 50  	COORD	8.49989474e-01	9.50011849e-01	0.00000000e+00	
+NODE 51  	COORD	8.00000012e-01	1.00000000e+00	0.00000000e+00	
+NODE 52  	COORD	7.99995661e-01	9.50010777e-01	0.00000000e+00	
+NODE 53  	COORD	7.50000000e-01	1.00000000e+00	0.00000000e+00	
+NODE 54  	COORD	7.49999106e-01	9.50008571e-01	0.00000000e+00	
+NODE 55  	COORD	6.99999988e-01	1.00000000e+00	0.00000000e+00	
+NODE 56  	COORD	7.00000823e-01	9.50005531e-01	0.00000000e+00	
+NODE 57  	COORD	6.49999976e-01	1.00000000e+00	0.00000000e+00	
+NODE 58  	COORD	6.50001407e-01	9.50002909e-01	0.00000000e+00	
+NODE 59  	COORD	6.00000024e-01	1.00000000e+00	0.00000000e+00	
+NODE 60  	COORD	6.00001395e-01	9.50001419e-01	0.00000000e+00	
+NODE 61  	COORD	5.50000012e-01	1.00000000e+00	0.00000000e+00	
+NODE 62  	COORD	5.50001085e-01	9.50000703e-01	0.00000000e+00	
+NODE 63  	COORD	5.00000000e-01	1.00000000e+00	0.00000000e+00	
+NODE 64  	COORD	5.00000775e-01	9.50000346e-01	0.00000000e+00	
+NODE 65  	COORD	4.49999988e-01	1.00000000e+00	0.00000000e+00	
+NODE 66  	COORD	4.50000525e-01	9.50000167e-01	0.00000000e+00	
+NODE 67  	COORD	4.00000006e-01	1.00000000e+00	0.00000000e+00	
+NODE 68  	COORD	4.00000334e-01	9.50000048e-01	0.00000000e+00	
+NODE 69  	COORD	3.49999994e-01	1.00000000e+00	0.00000000e+00	
+NODE 70  	COORD	3.49991947e-01	9.49999094e-01	0.00000000e+00	
+NODE 71  	COORD	3.00000012e-01	1.00000000e+00	0.00000000e+00	
+NODE 72  	COORD	2.99969196e-01	9.50006068e-01	0.00000000e+00	
+NODE 73  	COORD	2.50000000e-01	1.00000000e+00	0.00000000e+00	
+NODE 74  	COORD	2.49986440e-01	9.50018287e-01	0.00000000e+00	
+NODE 75  	COORD	2.00000003e-01	1.00000000e+00	0.00000000e+00	
+NODE 76  	COORD	1.99986041e-01	9.49994206e-01	0.00000000e+00	
+NODE 77  	COORD	1.50000006e-01	1.00000000e+00	0.00000000e+00	
+NODE 78  	COORD	1.50007591e-01	9.49999928e-01	0.00000000e+00	
+NODE 79  	COORD	1.00000001e-01	1.00000000e+00	0.00000000e+00	
+NODE 80  	COORD	1.00004405e-01	9.50001299e-01	0.00000000e+00	
+NODE 81  	COORD	5.00000007e-02	1.00000000e+00	0.00000000e+00	
+NODE 82  	COORD	5.00090308e-02	9.49993193e-01	0.00000000e+00	
+NODE 83  	COORD	0.00000000e+00	1.00000000e+00	0.00000000e+00	
+NODE 84  	COORD	0.00000000e+00	9.49999988e-01	0.00000000e+00	
+NODE 85  	COORD	1.00000000e+00	1.00000001e-01	0.00000000e+00	
+NODE 86  	COORD	9.49991882e-01	9.99972895e-02	0.00000000e+00	
+NODE 87  	COORD	1.00000000e+00	1.50000006e-01	0.00000000e+00	
+NODE 88  	COORD	9.50004101e-01	1.49997592e-01	0.00000000e+00	
+NODE 89  	COORD	1.00000000e+00	2.00000003e-01	0.00000000e+00	
+NODE 90  	COORD	9.50008512e-01	1.99999034e-01	0.00000000e+00	
+NODE 91  	COORD	1.00000000e+00	2.50000000e-01	0.00000000e+00	
+NODE 92  	COORD	9.50007558e-01	2.49998555e-01	0.00000000e+00	
+NODE 93  	COORD	1.00000000e+00	3.00000012e-01	0.00000000e+00	
+NODE 94  	COORD	9.50006425e-01	2.99998730e-01	0.00000000e+00	
+NODE 95  	COORD	1.00000000e+00	3.49999994e-01	0.00000000e+00	
+NODE 96  	COORD	9.50004041e-01	3.49999249e-01	0.00000000e+00	
+NODE 97  	COORD	1.00000000e+00	4.00000006e-01	0.00000000e+00	
+NODE 98  	COORD	9.50002015e-01	3.99999738e-01	0.00000000e+00	
+NODE 99  	COORD	1.00000000e+00	4.49999988e-01	0.00000000e+00	
+NODE 100  	COORD	9.50000823e-01	4.50000018e-01	0.00000000e+00	
+NODE 101  	COORD	1.00000000e+00	5.00000000e-01	0.00000000e+00	
+NODE 102  	COORD	9.50000286e-01	5.00000119e-01	0.00000000e+00	
+NODE 103  	COORD	1.00000000e+00	5.50000012e-01	0.00000000e+00	
+NODE 104  	COORD	9.50000107e-01	5.50000131e-01	0.00000000e+00	
+NODE 105  	COORD	1.00000000e+00	6.00000024e-01	0.00000000e+00	
+NODE 106  	COORD	9.50000048e-01	6.00000143e-01	0.00000000e+00	
+NODE 107  	COORD	1.00000000e+00	6.49999976e-01	0.00000000e+00	
+NODE 108  	COORD	9.49992418e-01	6.50010824e-01	0.00000000e+00	
+NODE 109  	COORD	1.00000000e+00	6.99999988e-01	0.00000000e+00	
+NODE 110  	COORD	9.49996829e-01	7.00034738e-01	0.00000000e+00	
+NODE 111  	COORD	1.00000000e+00	7.50000000e-01	0.00000000e+00	
+NODE 112  	COORD	9.50018644e-01	7.50096858e-01	0.00000000e+00	
+NODE 113  	COORD	1.00000000e+00	8.00000012e-01	0.00000000e+00	
+NODE 114  	COORD	9.50025797e-01	8.00054848e-01	0.00000000e+00	
+NODE 115  	COORD	1.00000000e+00	8.50000024e-01	0.00000000e+00	
+NODE 116  	COORD	9.49987411e-01	8.50009918e-01	0.00000000e+00	
+NODE 117  	COORD	1.00000000e+00	8.99999976e-01	0.00000000e+00	
+NODE 118  	COORD	9.49982584e-01	8.99994135e-01	0.00000000e+00	
+NODE 119  	COORD	0.00000000e+00	8.99999976e-01	0.00000000e+00	
+NODE 120  	COORD	5.00081331e-02	9.00002718e-01	0.00000000e+00	
+NODE 121  	COORD	0.00000000e+00	8.50000024e-01	0.00000000e+00	
+NODE 122  	COORD	4.99958992e-02	8.50002408e-01	0.00000000e+00	
+NODE 123  	COORD	0.00000000e+00	8.00000012e-01	0.00000000e+00	
+NODE 124  	COORD	4.99915034e-02	8.00000966e-01	0.00000000e+00	
+NODE 125  	COORD	0.00000000e+00	7.50000000e-01	0.00000000e+00	
+NODE 126  	COORD	4.99924459e-02	7.50001431e-01	0.00000000e+00	
+NODE 127  	COORD	0.00000000e+00	6.99999988e-01	0.00000000e+00	
+NODE 128  	COORD	4.99935783e-02	7.00001240e-01	0.00000000e+00	
+NODE 129  	COORD	0.00000000e+00	6.49999976e-01	0.00000000e+00	
+NODE 130  	COORD	4.99959104e-02	6.50000691e-01	0.00000000e+00	
+NODE 131  	COORD	0.00000000e+00	6.00000024e-01	0.00000000e+00	
+NODE 132  	COORD	4.99979369e-02	6.00000203e-01	0.00000000e+00	
+NODE 133  	COORD	0.00000000e+00	5.50000012e-01	0.00000000e+00	
+NODE 134  	COORD	4.99991253e-02	5.49999893e-01	0.00000000e+00	
+NODE 135  	COORD	0.00000000e+00	5.00000000e-01	0.00000000e+00	
+NODE 136  	COORD	4.99996804e-02	4.99999762e-01	0.00000000e+00	
+NODE 137  	COORD	0.00000000e+00	4.49999988e-01	0.00000000e+00	
+NODE 138  	COORD	4.99999002e-02	4.49999779e-01	0.00000000e+00	
+NODE 139  	COORD	0.00000000e+00	4.00000006e-01	0.00000000e+00	
+NODE 140  	COORD	4.99999747e-02	3.99999827e-01	0.00000000e+00	
+NODE 141  	COORD	0.00000000e+00	3.49999994e-01	0.00000000e+00	
+NODE 142  	COORD	5.00076376e-02	3.49989086e-01	0.00000000e+00	
+NODE 143  	COORD	0.00000000e+00	3.00000012e-01	0.00000000e+00	
+NODE 144  	COORD	5.00032306e-02	2.99965173e-01	0.00000000e+00	
+NODE 145  	COORD	0.00000000e+00	2.50000000e-01	0.00000000e+00	
+NODE 146  	COORD	4.99813817e-02	2.49903038e-01	0.00000000e+00	
+NODE 147  	COORD	0.00000000e+00	2.00000003e-01	0.00000000e+00	
+NODE 148  	COORD	4.99741994e-02	1.99945047e-01	0.00000000e+00	
+NODE 149  	COORD	0.00000000e+00	1.50000006e-01	0.00000000e+00	
+NODE 150  	COORD	5.00125848e-02	1.49990037e-01	0.00000000e+00	
+NODE 151  	COORD	0.00000000e+00	1.00000001e-01	0.00000000e+00	
+NODE 152  	COORD	5.00174351e-02	1.00005858e-01	0.00000000e+00	
+NODE 153  	COORD	9.00008321e-01	1.00004658e-01	0.00000000e+00	
+NODE 154  	COORD	9.00008202e-01	1.49998963e-01	0.00000000e+00	
+NODE 155  	COORD	9.00010228e-01	1.99996904e-01	0.00000000e+00	
+NODE 156  	COORD	9.00010347e-01	2.49997109e-01	0.00000000e+00	
+NODE 157  	COORD	9.00008678e-01	2.99997121e-01	0.00000000e+00	
+NODE 158  	COORD	9.00006294e-01	3.49997640e-01	0.00000000e+00	
+NODE 159  	COORD	9.00003731e-01	3.99998337e-01	0.00000000e+00	
+NODE 160  	COORD	9.00001884e-01	4.49999005e-01	0.00000000e+00	
+NODE 161  	COORD	9.00000811e-01	4.99999464e-01	0.00000000e+00	
+NODE 162  	COORD	9.00000334e-01	5.49999774e-01	0.00000000e+00	
+NODE 163  	COORD	8.99997354e-01	6.00009382e-01	0.00000000e+00	
+NODE 164  	COORD	8.99993360e-01	6.50033653e-01	0.00000000e+00	
+NODE 165  	COORD	9.00005937e-01	7.00068951e-01	0.00000000e+00	
+NODE 166  	COORD	9.00018275e-01	7.50088573e-01	0.00000000e+00	
+NODE 167  	COORD	9.00016069e-01	8.00052762e-01	0.00000000e+00	
+NODE 168  	COORD	8.99996519e-01	8.50017428e-01	0.00000000e+00	
+NODE 169  	COORD	8.99984181e-01	9.00010407e-01	0.00000000e+00	
+NODE 170  	COORD	9.99916717e-02	8.99995327e-01	0.00000000e+00	
+NODE 171  	COORD	9.99917835e-02	8.50001037e-01	0.00000000e+00	
+NODE 172  	COORD	9.99897495e-02	8.00003052e-01	0.00000000e+00	
+NODE 173  	COORD	9.99896452e-02	7.50002861e-01	0.00000000e+00	
+NODE 174  	COORD	9.99913514e-02	7.00002491e-01	0.00000000e+00	
+NODE 175  	COORD	9.99939293e-02	6.50001943e-01	0.00000000e+00	
+NODE 176  	COORD	9.99964401e-02	6.00001335e-01	0.00000000e+00	
+NODE 177  	COORD	9.99982134e-02	5.50000787e-01	0.00000000e+00	
+NODE 178  	COORD	9.99992117e-02	5.00000358e-01	0.00000000e+00	
+NODE 179  	COORD	9.99996960e-02	4.50000107e-01	0.00000000e+00	
+NODE 180  	COORD	1.00002751e-01	3.99990171e-01	0.00000000e+00	
+NODE 181  	COORD	1.00006580e-01	3.49965870e-01	0.00000000e+00	
+NODE 182  	COORD	9.99938324e-02	2.99930692e-01	0.00000000e+00	
+NODE 183  	COORD	9.99815539e-02	2.49911174e-01	0.00000000e+00	
+NODE 184  	COORD	9.99838784e-02	1.99947044e-01	0.00000000e+00	
+NODE 185  	COORD	1.00003466e-01	1.49982437e-01	0.00000000e+00	
+NODE 186  	COORD	1.00015841e-01	9.99895483e-02	0.00000000e+00	
+NODE 187  	COORD	8.49990129e-01	9.00017977e-01	0.00000000e+00	
+NODE 188  	COORD	7.99994528e-01	9.00021434e-01	0.00000000e+00	
+NODE 189  	COORD	7.49997854e-01	9.00016010e-01	0.00000000e+00	
+NODE 190  	COORD	6.99999869e-01	9.00010407e-01	0.00000000e+00	
+NODE 191  	COORD	6.50000811e-01	9.00006413e-01	0.00000000e+00	
+NODE 192  	COORD	6.00001156e-01	9.00003493e-01	0.00000000e+00	
+NODE 193  	COORD	5.50001085e-01	9.00001705e-01	0.00000000e+00	
+NODE 194  	COORD	5.00000894e-01	9.00000811e-01	0.00000000e+00	
+NODE 195  	COORD	4.50000703e-01	9.00000393e-01	0.00000000e+00	
+NODE 196  	COORD	4.00000423e-01	8.99999499e-01	0.00000000e+00	
+NODE 197  	COORD	3.49969923e-01	8.99997830e-01	0.00000000e+00	
+NODE 198  	COORD	2.99978286e-01	9.00016129e-01	0.00000000e+00	
+NODE 199  	COORD	2.49981418e-01	9.00020182e-01	0.00000000e+00	
+NODE 200  	COORD	1.99983329e-01	8.99995863e-01	0.00000000e+00	
+NODE 201  	COORD	1.49993047e-01	8.99998963e-01	0.00000000e+00	
+NODE 202  	COORD	1.50009856e-01	9.99819562e-02	0.00000000e+00	
+NODE 203  	COORD	2.00005487e-01	9.99784917e-02	0.00000000e+00	
+NODE 204  	COORD	2.50002146e-01	9.99839306e-02	0.00000000e+00	
+NODE 205  	COORD	3.00000191e-01	9.99889970e-02	0.00000000e+00	
+NODE 206  	COORD	3.49999249e-01	9.99932662e-02	0.00000000e+00	
+NODE 207  	COORD	3.99998903e-01	9.99962986e-02	0.00000000e+00	
+NODE 208  	COORD	4.49998945e-01	9.99980941e-02	0.00000000e+00	
+NODE 209  	COORD	4.99999106e-01	9.99990553e-02	0.00000000e+00	
+NODE 210  	COORD	5.49999356e-01	9.99995545e-02	0.00000000e+00	
+NODE 211  	COORD	5.99999547e-01	9.99998674e-02	0.00000000e+00	
+NODE 212  	COORD	6.50030017e-01	1.00001805e-01	0.00000000e+00	
+NODE 213  	COORD	7.00021625e-01	9.99836698e-02	0.00000000e+00	
+NODE 214  	COORD	7.50018537e-01	9.99796689e-02	0.00000000e+00	
+NODE 215  	COORD	8.00016642e-01	1.00004077e-01	0.00000000e+00	
+NODE 216  	COORD	8.50006938e-01	1.00001007e-01	0.00000000e+00	
+NODE 217  	COORD	8.50010395e-01	1.49999723e-01	0.00000000e+00	
+NODE 218  	COORD	8.50010276e-01	1.99997902e-01	0.00000000e+00	
+NODE 219  	COORD	8.50010574e-01	2.49996915e-01	0.00000000e+00	
+NODE 220  	COORD	8.50009084e-01	2.99997091e-01	0.00000000e+00	
+NODE 221  	COORD	8.50006819e-01	3.49997431e-01	0.00000000e+00	
+NODE 222  	COORD	8.50004494e-01	3.99997920e-01	0.00000000e+00	
+NODE 223  	COORD	8.50002587e-01	4.49998438e-01	0.00000000e+00	
+NODE 224  	COORD	8.50001276e-01	4.99998897e-01	0.00000000e+00	
+NODE 225  	COORD	8.50000083e-01	5.50003767e-01	0.00000000e+00	
+NODE 226  	COORD	8.49997520e-01	6.00019991e-01	0.00000000e+00	
+NODE 227  	COORD	8.49996567e-01	6.50037527e-01	0.00000000e+00	
+NODE 228  	COORD	8.50007117e-01	7.00064182e-01	0.00000000e+00	
+NODE 229  	COORD	8.50012600e-01	7.50057697e-01	0.00000000e+00	
+NODE 230  	COORD	8.50008368e-01	8.00043046e-01	0.00000000e+00	
+NODE 231  	COORD	8.49998772e-01	8.50028992e-01	0.00000000e+00	
+NODE 232  	COORD	1.49989575e-01	8.50000203e-01	0.00000000e+00	
+NODE 233  	COORD	1.49989769e-01	8.00001919e-01	0.00000000e+00	
+NODE 234  	COORD	1.49989665e-01	7.50001967e-01	0.00000000e+00	
+NODE 235  	COORD	1.49991453e-01	7.00002134e-01	0.00000000e+00	
+NODE 236  	COORD	1.49993539e-01	6.50002062e-01	0.00000000e+00	
+NODE 237  	COORD	1.49995774e-01	6.00001752e-01	0.00000000e+00	
+NODE 238  	COORD	1.49997592e-01	5.50001323e-01	0.00000000e+00	
+NODE 239  	COORD	1.49998799e-01	5.00000954e-01	0.00000000e+00	
+NODE 240  	COORD	1.50000080e-01	4.49995190e-01	0.00000000e+00	
+NODE 241  	COORD	1.50002167e-01	3.99979264e-01	0.00000000e+00	
+NODE 242  	COORD	1.50003046e-01	3.49961936e-01	0.00000000e+00	
+NODE 243  	COORD	1.49992779e-01	2.99935341e-01	0.00000000e+00	
+NODE 244  	COORD	1.49987236e-01	2.49941915e-01	0.00000000e+00	
+NODE 245  	COORD	1.49991557e-01	1.99956775e-01	0.00000000e+00	
+NODE 246  	COORD	1.50001168e-01	1.49970844e-01	0.00000000e+00	
+NODE 247  	COORD	2.00000882e-01	1.49972826e-01	0.00000000e+00	
+NODE 248  	COORD	2.50000805e-01	1.49979010e-01	0.00000000e+00	
+NODE 249  	COORD	3.00000161e-01	1.49985731e-01	0.00000000e+00	
+NODE 250  	COORD	3.49999607e-01	1.49990857e-01	0.00000000e+00	
+NODE 251  	COORD	3.99999321e-01	1.49994448e-01	0.00000000e+00	
+NODE 252  	COORD	4.49999243e-01	1.49996921e-01	0.00000000e+00	
+NODE 253  	COORD	4.99999285e-01	1.49998397e-01	0.00000000e+00	
+NODE 254  	COORD	5.49999475e-01	1.49999425e-01	0.00000000e+00	
+NODE 255  	COORD	6.00004792e-01	1.50000736e-01	0.00000000e+00	
+NODE 256  	COORD	6.50031149e-01	1.49996594e-01	0.00000000e+00	
+NODE 257  	COORD	7.00021982e-01	1.49981648e-01	0.00000000e+00	
+NODE 258  	COORD	7.50017345e-01	1.49987161e-01	0.00000000e+00	
+NODE 259  	COORD	8.00013781e-01	1.49996638e-01	0.00000000e+00	
+NODE 260  	COORD	7.99999058e-01	8.50027025e-01	0.00000000e+00	
+NODE 261  	COORD	7.49999225e-01	8.50020349e-01	0.00000000e+00	
+NODE 262  	COORD	6.99999809e-01	8.50013733e-01	0.00000000e+00	
+NODE 263  	COORD	6.50000393e-01	8.50008667e-01	0.00000000e+00	
+NODE 264  	COORD	6.00000679e-01	8.50005329e-01	0.00000000e+00	
+NODE 265  	COORD	5.50000787e-01	8.50002944e-01	0.00000000e+00	
+NODE 266  	COORD	5.00000715e-01	8.50001514e-01	0.00000000e+00	
+NODE 267  	COORD	4.50000346e-01	8.49999905e-01	0.00000000e+00	
+NODE 268  	COORD	3.99994999e-01	8.49999011e-01	0.00000000e+00	
+NODE 269  	COORD	3.49968761e-01	8.50003302e-01	0.00000000e+00	
+NODE 270  	COORD	2.99978077e-01	8.50017965e-01	0.00000000e+00	
+NODE 271  	COORD	2.49982715e-01	8.50012124e-01	0.00000000e+00	
+NODE 272  	COORD	1.99986294e-01	8.50003004e-01	0.00000000e+00	
+NODE 273  	COORD	1.99994728e-01	1.99964762e-01	0.00000000e+00	
+NODE 274  	COORD	2.49997437e-01	1.99974671e-01	0.00000000e+00	
+NODE 275  	COORD	2.99998850e-01	1.99983284e-01	0.00000000e+00	
+NODE 276  	COORD	3.49999309e-01	1.99989349e-01	0.00000000e+00	
+NODE 277  	COORD	3.99999410e-01	1.99993417e-01	0.00000000e+00	
+NODE 278  	COORD	4.49999452e-01	1.99996054e-01	0.00000000e+00	
+NODE 279  	COORD	4.99999613e-01	1.99998021e-01	0.00000000e+00	
+NODE 280  	COORD	5.50001562e-01	1.99999288e-01	0.00000000e+00	
+NODE 281  	COORD	6.00008905e-01	1.99998587e-01	0.00000000e+00	
+NODE 282  	COORD	6.50022566e-01	1.99993566e-01	0.00000000e+00	
+NODE 283  	COORD	7.00020015e-01	1.99988097e-01	0.00000000e+00	
+NODE 284  	COORD	7.50015140e-01	1.99990332e-01	0.00000000e+00	
+NODE 285  	COORD	8.00012827e-01	1.99995145e-01	0.00000000e+00	
+NODE 286  	COORD	8.00005138e-01	8.00034821e-01	0.00000000e+00	
+NODE 287  	COORD	7.50002623e-01	8.00024331e-01	0.00000000e+00	
+NODE 288  	COORD	7.00001180e-01	8.00016105e-01	0.00000000e+00	
+NODE 289  	COORD	6.50000691e-01	8.00010324e-01	0.00000000e+00	
+NODE 290  	COORD	6.00000560e-01	8.00006390e-01	0.00000000e+00	
+NODE 291  	COORD	5.50000548e-01	8.00003827e-01	0.00000000e+00	
+NODE 292  	COORD	5.00000119e-01	8.00001621e-01	0.00000000e+00	
+NODE 293  	COORD	4.49998081e-01	8.00000429e-01	0.00000000e+00	
+NODE 294  	COORD	3.99991184e-01	8.00001323e-01	0.00000000e+00	
+NODE 295  	COORD	3.49977612e-01	8.00005615e-01	0.00000000e+00	
+NODE 296  	COORD	2.99980193e-01	8.00011039e-01	0.00000000e+00	
+NODE 297  	COORD	2.49985054e-01	8.00009072e-01	0.00000000e+00	
+NODE 298  	COORD	1.99987367e-01	8.00003827e-01	0.00000000e+00	
+NODE 299  	COORD	1.99989289e-01	7.50004113e-01	0.00000000e+00	
+NODE 300  	COORD	1.99991301e-01	7.00003147e-01	0.00000000e+00	
+NODE 301  	COORD	1.99993610e-01	6.50002480e-01	0.00000000e+00	
+NODE 302  	COORD	1.99995592e-01	6.00001931e-01	0.00000000e+00	
+NODE 303  	COORD	1.99997276e-01	5.50001562e-01	0.00000000e+00	
+NODE 304  	COORD	1.99998572e-01	4.99999195e-01	0.00000000e+00	
+NODE 305  	COORD	1.99999660e-01	4.49990928e-01	0.00000000e+00	
+NODE 306  	COORD	2.00001389e-01	3.99978310e-01	0.00000000e+00	
+NODE 307  	COORD	2.00001284e-01	3.49969506e-01	0.00000000e+00	
+NODE 308  	COORD	1.99994296e-01	2.99958140e-01	0.00000000e+00	
+NODE 309  	COORD	1.99992612e-01	2.49958768e-01	0.00000000e+00	
+NODE 310  	COORD	8.00011158e-01	2.49995127e-01	0.00000000e+00	
+NODE 311  	COORD	8.00008953e-01	2.99996406e-01	0.00000000e+00	
+NODE 312  	COORD	8.00006628e-01	3.49997282e-01	0.00000000e+00	
+NODE 313  	COORD	8.00004542e-01	3.99997860e-01	0.00000000e+00	
+NODE 314  	COORD	8.00002873e-01	4.49998319e-01	0.00000000e+00	
+NODE 315  	COORD	8.00001562e-01	4.99999672e-01	0.00000000e+00	
+NODE 316  	COORD	8.00000131e-01	5.50008178e-01	0.00000000e+00	
+NODE 317  	COORD	7.99998403e-01	6.00020885e-01	0.00000000e+00	
+NODE 318  	COORD	7.99998820e-01	6.50029659e-01	0.00000000e+00	
+NODE 319  	COORD	8.00005555e-01	7.00041234e-01	0.00000000e+00	
+NODE 320  	COORD	8.00007403e-01	7.50040412e-01	0.00000000e+00	
+NODE 321  	COORD	2.49996275e-01	2.49972731e-01	0.00000000e+00	
+NODE 322  	COORD	2.99998015e-01	2.49982283e-01	0.00000000e+00	
+NODE 323  	COORD	3.49998951e-01	2.49988735e-01	0.00000000e+00	
+NODE 324  	COORD	3.99999380e-01	2.49992952e-01	0.00000000e+00	
+NODE 325  	COORD	4.49999720e-01	2.49995828e-01	0.00000000e+00	
+NODE 326  	COORD	5.00000596e-01	2.49997616e-01	0.00000000e+00	
+NODE 327  	COORD	5.50003052e-01	2.49998242e-01	0.00000000e+00	
+NODE 328  	COORD	6.00008368e-01	2.49997512e-01	0.00000000e+00	
+NODE 329  	COORD	6.50014937e-01	2.49994963e-01	0.00000000e+00	
+NODE 330  	COORD	7.00014412e-01	2.49991819e-01	0.00000000e+00	
+NODE 331  	COORD	7.50012457e-01	2.49993160e-01	0.00000000e+00	
+NODE 332  	COORD	7.50003695e-01	7.50026703e-01	0.00000000e+00	
+NODE 333  	COORD	7.00002015e-01	7.50017345e-01	0.00000000e+00	
+NODE 334  	COORD	6.50001109e-01	7.50011086e-01	0.00000000e+00	
+NODE 335  	COORD	6.00000620e-01	7.50006855e-01	0.00000000e+00	
+NODE 336  	COORD	5.50000072e-01	7.50003994e-01	0.00000000e+00	
+NODE 337  	COORD	4.99998927e-01	7.50002086e-01	0.00000000e+00	
+NODE 338  	COORD	4.49997067e-01	7.50001550e-01	0.00000000e+00	
+NODE 339  	COORD	3.99991721e-01	7.50001848e-01	0.00000000e+00	
+NODE 340  	COORD	3.49985212e-01	7.50004709e-01	0.00000000e+00	
+NODE 341  	COORD	2.99985766e-01	7.50007689e-01	0.00000000e+00	
+NODE 342  	COORD	2.49987781e-01	7.50006437e-01	0.00000000e+00	
+NODE 343  	COORD	2.49990791e-01	7.00004518e-01	0.00000000e+00	
+NODE 344  	COORD	2.49993563e-01	6.50003016e-01	0.00000000e+00	
+NODE 345  	COORD	2.49995649e-01	6.00002110e-01	0.00000000e+00	
+NODE 346  	COORD	2.49997184e-01	5.50001144e-01	0.00000000e+00	
+NODE 347  	COORD	2.49998361e-01	4.99997348e-01	0.00000000e+00	
+NODE 348  	COORD	2.49999344e-01	4.49990243e-01	0.00000000e+00	
+NODE 349  	COORD	2.50000656e-01	3.99983555e-01	0.00000000e+00	
+NODE 350  	COORD	2.49999747e-01	3.49978060e-01	0.00000000e+00	
+NODE 351  	COORD	2.49996990e-01	2.99972951e-01	0.00000000e+00	
+NODE 352  	COORD	7.50009358e-01	2.99995124e-01	0.00000000e+00	
+NODE 353  	COORD	7.50006557e-01	3.49996686e-01	0.00000000e+00	
+NODE 354  	COORD	7.50004411e-01	3.99997652e-01	0.00000000e+00	
+NODE 355  	COORD	7.50002861e-01	4.49998289e-01	0.00000000e+00	
+NODE 356  	COORD	7.50001550e-01	5.00001371e-01	0.00000000e+00	
+NODE 357  	COORD	7.50000596e-01	5.50008833e-01	0.00000000e+00	
+NODE 358  	COORD	7.49999344e-01	6.00015700e-01	0.00000000e+00	
+NODE 359  	COORD	7.50000238e-01	6.50021315e-01	0.00000000e+00	
+NODE 360  	COORD	7.50003040e-01	7.00026512e-01	0.00000000e+00	
+NODE 361  	COORD	2.99998492e-01	2.99982488e-01	0.00000000e+00	
+NODE 362  	COORD	3.49999040e-01	2.99988896e-01	0.00000000e+00	
+NODE 363  	COORD	3.99999529e-01	2.99993068e-01	0.00000000e+00	
+NODE 364  	COORD	4.50000167e-01	2.99995780e-01	0.00000000e+00	
+NODE 365  	COORD	5.00001073e-01	2.99997270e-01	0.00000000e+00	
+NODE 366  	COORD	5.50003111e-01	2.99998075e-01	0.00000000e+00	
+NODE 367  	COORD	6.00006402e-01	2.99997568e-01	0.00000000e+00	
+NODE 368  	COORD	6.50009334e-01	2.99995780e-01	0.00000000e+00	
+NODE 369  	COORD	7.00009823e-01	2.99994737e-01	0.00000000e+00	
+NODE 370  	COORD	7.00001538e-01	7.00017273e-01	0.00000000e+00	
+NODE 371  	COORD	6.50000930e-01	7.00010896e-01	0.00000000e+00	
+NODE 372  	COORD	6.00000381e-01	7.00006783e-01	0.00000000e+00	
+NODE 373  	COORD	5.49999535e-01	7.00004041e-01	0.00000000e+00	
+NODE 374  	COORD	4.99998748e-01	7.00002432e-01	0.00000000e+00	
+NODE 375  	COORD	4.49996859e-01	7.00001717e-01	0.00000000e+00	
+NODE 376  	COORD	3.99993628e-01	7.00002253e-01	0.00000000e+00	
+NODE 377  	COORD	3.49990845e-01	7.00003862e-01	0.00000000e+00	
+NODE 378  	COORD	2.99990386e-01	7.00004816e-01	0.00000000e+00	
+NODE 379  	COORD	2.99993724e-01	6.50003195e-01	0.00000000e+00	
+NODE 380  	COORD	2.99995869e-01	6.00002170e-01	0.00000000e+00	
+NODE 381  	COORD	2.99997360e-01	5.50000489e-01	0.00000000e+00	
+NODE 382  	COORD	2.99998254e-01	4.99996871e-01	0.00000000e+00	
+NODE 383  	COORD	2.99999237e-01	4.49992537e-01	0.00000000e+00	
+NODE 384  	COORD	2.99999952e-01	3.99988294e-01	0.00000000e+00	
+NODE 385  	COORD	2.99999356e-01	3.49984825e-01	0.00000000e+00	
+NODE 386  	COORD	7.00006485e-01	3.49996477e-01	0.00000000e+00	
+NODE 387  	COORD	7.00004280e-01	3.99997592e-01	0.00000000e+00	
+NODE 388  	COORD	7.00002670e-01	4.49998677e-01	0.00000000e+00	
+NODE 389  	COORD	7.00001717e-01	5.00002027e-01	0.00000000e+00	
+NODE 390  	COORD	7.00000823e-01	5.50007105e-01	0.00000000e+00	
+NODE 391  	COORD	6.99999988e-01	6.00011170e-01	0.00000000e+00	
+NODE 392  	COORD	7.00000644e-01	6.50014758e-01	0.00000000e+00	
+NODE 393  	COORD	3.49999458e-01	3.49989980e-01	0.00000000e+00	
+NODE 394  	COORD	3.99999827e-01	3.49993646e-01	0.00000000e+00	
+NODE 395  	COORD	4.50000256e-01	3.49996060e-01	0.00000000e+00	
+NODE 396  	COORD	5.00001132e-01	3.49997491e-01	0.00000000e+00	
+NODE 397  	COORD	5.50002694e-01	3.49998087e-01	0.00000000e+00	
+NODE 398  	COORD	6.00004375e-01	3.49997729e-01	0.00000000e+00	
+NODE 399  	COORD	6.50005937e-01	3.49996954e-01	0.00000000e+00	
+NODE 400  	COORD	6.50003731e-01	3.99997950e-01	0.00000000e+00	
+NODE 401  	COORD	6.50002480e-01	4.49999094e-01	0.00000000e+00	
+NODE 402  	COORD	6.50001585e-01	5.00001907e-01	0.00000000e+00	
+NODE 403  	COORD	6.50000691e-01	5.50004840e-01	0.00000000e+00	
+NODE 404  	COORD	6.50000393e-01	6.00007534e-01	0.00000000e+00	
+NODE 405  	COORD	6.50000572e-01	6.50009751e-01	0.00000000e+00	
+NODE 406  	COORD	3.49994242e-01	6.50002778e-01	0.00000000e+00	
+NODE 407  	COORD	3.49996388e-01	6.00001931e-01	0.00000000e+00	
+NODE 408  	COORD	3.49997610e-01	5.50000191e-01	0.00000000e+00	
+NODE 409  	COORD	3.49998474e-01	4.99997437e-01	0.00000000e+00	
+NODE 410  	COORD	3.49999279e-01	4.49994683e-01	0.00000000e+00	
+NODE 411  	COORD	3.49999636e-01	3.99991989e-01	0.00000000e+00	
+NODE 412  	COORD	6.00000143e-01	6.50006175e-01	0.00000000e+00	
+NODE 413  	COORD	5.49999475e-01	6.50003731e-01	0.00000000e+00	
+NODE 414  	COORD	4.99998748e-01	6.50002360e-01	0.00000000e+00	
+NODE 415  	COORD	4.49997336e-01	6.50001824e-01	0.00000000e+00	
+NODE 416  	COORD	3.99995685e-01	6.50002122e-01	0.00000000e+00	
+NODE 417  	COORD	3.99997085e-01	6.00001514e-01	0.00000000e+00	
+NODE 418  	COORD	3.99998099e-01	5.50000072e-01	0.00000000e+00	
+NODE 419  	COORD	3.99998903e-01	4.99998331e-01	0.00000000e+00	
+NODE 420  	COORD	3.99999470e-01	4.49996471e-01	0.00000000e+00	
+NODE 421  	COORD	3.99999797e-01	3.99994791e-01	0.00000000e+00	
+NODE 422  	COORD	6.00003004e-01	3.99998367e-01	0.00000000e+00	
+NODE 423  	COORD	6.00001931e-01	4.49999392e-01	0.00000000e+00	
+NODE 424  	COORD	6.00001156e-01	5.00001252e-01	0.00000000e+00	
+NODE 425  	COORD	6.00000501e-01	5.50003231e-01	0.00000000e+00	
+NODE 426  	COORD	6.00000143e-01	6.00004911e-01	0.00000000e+00	
+NODE 427  	COORD	5.49999654e-01	6.00003004e-01	0.00000000e+00	
+NODE 428  	COORD	4.99998957e-01	6.00001931e-01	0.00000000e+00	
+NODE 429  	COORD	4.49998051e-01	6.00001454e-01	0.00000000e+00	
+NODE 430  	COORD	4.50000167e-01	3.99996728e-01	0.00000000e+00	
+NODE 431  	COORD	5.00000954e-01	3.99997920e-01	0.00000000e+00	
+NODE 432  	COORD	5.50001919e-01	3.99998426e-01	0.00000000e+00	
+NODE 433  	COORD	4.49998766e-01	5.50000370e-01	0.00000000e+00	
+NODE 434  	COORD	4.49999392e-01	4.99999136e-01	0.00000000e+00	
+NODE 435  	COORD	4.49999899e-01	4.49997783e-01	0.00000000e+00	
+NODE 436  	COORD	5.50001264e-01	4.49999243e-01	0.00000000e+00	
+NODE 437  	COORD	5.50000608e-01	5.00000596e-01	0.00000000e+00	
+NODE 438  	COORD	5.50000072e-01	5.50001919e-01	0.00000000e+00	
+NODE 439  	COORD	4.99999434e-01	5.50001025e-01	0.00000000e+00	
+NODE 440  	COORD	5.00000536e-01	4.49998707e-01	0.00000000e+00	
+NODE 441  	COORD	5.00000000e-01	4.99999851e-01	0.00000000e+00	
+----------------------------------------------------------ELEMENTS
+----------------------------------------------------FLUID ELEMENTS
+   1 FLUID2 QUAD4  1 2 3 4    MAT 1 NA Euler GP 2 2 2 CA No 
+   2 FLUID2 QUAD4  2 5 6 3    MAT 1 NA Euler GP 2 2 2 CA No 
+   3 FLUID2 QUAD4  5 7 8 6    MAT 1 NA Euler GP 2 2 2 CA No 
+   4 FLUID2 QUAD4  7 9 10 8    MAT 1 NA Euler GP 2 2 2 CA No 
+   5 FLUID2 QUAD4  9 11 12 10    MAT 1 NA Euler GP 2 2 2 CA No 
+   6 FLUID2 QUAD4  11 13 14 12    MAT 1 NA Euler GP 2 2 2 CA No 
+   7 FLUID2 QUAD4  13 15 16 14    MAT 1 NA Euler GP 2 2 2 CA No 
+   8 FLUID2 QUAD4  15 17 18 16    MAT 1 NA Euler GP 2 2 2 CA No 
+   9 FLUID2 QUAD4  17 19 20 18    MAT 1 NA Euler GP 2 2 2 CA No 
+   10 FLUID2 QUAD4  19 21 22 20    MAT 1 NA Euler GP 2 2 2 CA No 
+   11 FLUID2 QUAD4  21 23 24 22    MAT 1 NA Euler GP 2 2 2 CA No 
+   12 FLUID2 QUAD4  23 25 26 24    MAT 1 NA Euler GP 2 2 2 CA No 
+   13 FLUID2 QUAD4  25 27 28 26    MAT 1 NA Euler GP 2 2 2 CA No 
+   14 FLUID2 QUAD4  27 29 30 28    MAT 1 NA Euler GP 2 2 2 CA No 
+   15 FLUID2 QUAD4  29 31 32 30    MAT 1 NA Euler GP 2 2 2 CA No 
+   16 FLUID2 QUAD4  31 33 34 32    MAT 1 NA Euler GP 2 2 2 CA No 
+   17 FLUID2 QUAD4  33 35 36 34    MAT 1 NA Euler GP 2 2 2 CA No 
+   18 FLUID2 QUAD4  35 37 38 36    MAT 1 NA Euler GP 2 2 2 CA No 
+   19 FLUID2 QUAD4  37 39 40 38    MAT 1 NA Euler GP 2 2 2 CA No 
+   20 FLUID2 QUAD4  39 41 42 40    MAT 1 NA Euler GP 2 2 2 CA No 
+   21 FLUID2 QUAD4  43 44 45 46    MAT 1 NA Euler GP 2 2 2 CA No 
+   22 FLUID2 QUAD4  44 47 48 45    MAT 1 NA Euler GP 2 2 2 CA No 
+   23 FLUID2 QUAD4  47 49 50 48    MAT 1 NA Euler GP 2 2 2 CA No 
+   24 FLUID2 QUAD4  49 51 52 50    MAT 1 NA Euler GP 2 2 2 CA No 
+   25 FLUID2 QUAD4  51 53 54 52    MAT 1 NA Euler GP 2 2 2 CA No 
+   26 FLUID2 QUAD4  53 55 56 54    MAT 1 NA Euler GP 2 2 2 CA No 
+   27 FLUID2 QUAD4  55 57 58 56    MAT 1 NA Euler GP 2 2 2 CA No 
+   28 FLUID2 QUAD4  57 59 60 58    MAT 1 NA Euler GP 2 2 2 CA No 
+   29 FLUID2 QUAD4  59 61 62 60    MAT 1 NA Euler GP 2 2 2 CA No 
+   30 FLUID2 QUAD4  61 63 64 62    MAT 1 NA Euler GP 2 2 2 CA No 
+   31 FLUID2 QUAD4  63 65 66 64    MAT 1 NA Euler GP 2 2 2 CA No 
+   32 FLUID2 QUAD4  65 67 68 66    MAT 1 NA Euler GP 2 2 2 CA No 
+   33 FLUID2 QUAD4  67 69 70 68    MAT 1 NA Euler GP 2 2 2 CA No 
+   34 FLUID2 QUAD4  69 71 72 70    MAT 1 NA Euler GP 2 2 2 CA No 
+   35 FLUID2 QUAD4  71 73 74 72    MAT 1 NA Euler GP 2 2 2 CA No 
+   36 FLUID2 QUAD4  73 75 76 74    MAT 1 NA Euler GP 2 2 2 CA No 
+   37 FLUID2 QUAD4  75 77 78 76    MAT 1 NA Euler GP 2 2 2 CA No 
+   38 FLUID2 QUAD4  77 79 80 78    MAT 1 NA Euler GP 2 2 2 CA No 
+   39 FLUID2 QUAD4  79 81 82 80    MAT 1 NA Euler GP 2 2 2 CA No 
+   40 FLUID2 QUAD4  81 83 84 82    MAT 1 NA Euler GP 2 2 2 CA No 
+   41 FLUID2 QUAD4  42 85 86 40    MAT 1 NA Euler GP 2 2 2 CA No 
+   42 FLUID2 QUAD4  85 87 88 86    MAT 1 NA Euler GP 2 2 2 CA No 
+   43 FLUID2 QUAD4  87 89 90 88    MAT 1 NA Euler GP 2 2 2 CA No 
+   44 FLUID2 QUAD4  89 91 92 90    MAT 1 NA Euler GP 2 2 2 CA No 
+   45 FLUID2 QUAD4  91 93 94 92    MAT 1 NA Euler GP 2 2 2 CA No 
+   46 FLUID2 QUAD4  93 95 96 94    MAT 1 NA Euler GP 2 2 2 CA No 
+   47 FLUID2 QUAD4  95 97 98 96    MAT 1 NA Euler GP 2 2 2 CA No 
+   48 FLUID2 QUAD4  97 99 100 98    MAT 1 NA Euler GP 2 2 2 CA No 
+   49 FLUID2 QUAD4  99 101 102 100    MAT 1 NA Euler GP 2 2 2 CA No 
+   50 FLUID2 QUAD4  101 103 104 102    MAT 1 NA Euler GP 2 2 2 CA No 
+   51 FLUID2 QUAD4  103 105 106 104    MAT 1 NA Euler GP 2 2 2 CA No 
+   52 FLUID2 QUAD4  105 107 108 106    MAT 1 NA Euler GP 2 2 2 CA No 
+   53 FLUID2 QUAD4  107 109 110 108    MAT 1 NA Euler GP 2 2 2 CA No 
+   54 FLUID2 QUAD4  109 111 112 110    MAT 1 NA Euler GP 2 2 2 CA No 
+   55 FLUID2 QUAD4  111 113 114 112    MAT 1 NA Euler GP 2 2 2 CA No 
+   56 FLUID2 QUAD4  113 115 116 114    MAT 1 NA Euler GP 2 2 2 CA No 
+   57 FLUID2 QUAD4  115 117 118 116    MAT 1 NA Euler GP 2 2 2 CA No 
+   58 FLUID2 QUAD4  117 46 45 118    MAT 1 NA Euler GP 2 2 2 CA No 
+   59 FLUID2 QUAD4  84 119 120 82    MAT 1 NA Euler GP 2 2 2 CA No 
+   60 FLUID2 QUAD4  119 121 122 120    MAT 1 NA Euler GP 2 2 2 CA No 
+   61 FLUID2 QUAD4  121 123 124 122    MAT 1 NA Euler GP 2 2 2 CA No 
+   62 FLUID2 QUAD4  123 125 126 124    MAT 1 NA Euler GP 2 2 2 CA No 
+   63 FLUID2 QUAD4  125 127 128 126    MAT 1 NA Euler GP 2 2 2 CA No 
+   64 FLUID2 QUAD4  127 129 130 128    MAT 1 NA Euler GP 2 2 2 CA No 
+   65 FLUID2 QUAD4  129 131 132 130    MAT 1 NA Euler GP 2 2 2 CA No 
+   66 FLUID2 QUAD4  131 133 134 132    MAT 1 NA Euler GP 2 2 2 CA No 
+   67 FLUID2 QUAD4  133 135 136 134    MAT 1 NA Euler GP 2 2 2 CA No 
+   68 FLUID2 QUAD4  135 137 138 136    MAT 1 NA Euler GP 2 2 2 CA No 
+   69 FLUID2 QUAD4  137 139 140 138    MAT 1 NA Euler GP 2 2 2 CA No 
+   70 FLUID2 QUAD4  139 141 142 140    MAT 1 NA Euler GP 2 2 2 CA No 
+   71 FLUID2 QUAD4  141 143 144 142    MAT 1 NA Euler GP 2 2 2 CA No 
+   72 FLUID2 QUAD4  143 145 146 144    MAT 1 NA Euler GP 2 2 2 CA No 
+   73 FLUID2 QUAD4  145 147 148 146    MAT 1 NA Euler GP 2 2 2 CA No 
+   74 FLUID2 QUAD4  147 149 150 148    MAT 1 NA Euler GP 2 2 2 CA No 
+   75 FLUID2 QUAD4  149 151 152 150    MAT 1 NA Euler GP 2 2 2 CA No 
+   76 FLUID2 QUAD4  151 4 3 152    MAT 1 NA Euler GP 2 2 2 CA No 
+   77 FLUID2 QUAD4  40 86 153 38    MAT 1 NA Euler GP 2 2 2 CA No 
+   78 FLUID2 QUAD4  86 88 154 153    MAT 1 NA Euler GP 2 2 2 CA No 
+   79 FLUID2 QUAD4  88 90 155 154    MAT 1 NA Euler GP 2 2 2 CA No 
+   80 FLUID2 QUAD4  90 92 156 155    MAT 1 NA Euler GP 2 2 2 CA No 
+   81 FLUID2 QUAD4  92 94 157 156    MAT 1 NA Euler GP 2 2 2 CA No 
+   82 FLUID2 QUAD4  94 96 158 157    MAT 1 NA Euler GP 2 2 2 CA No 
+   83 FLUID2 QUAD4  96 98 159 158    MAT 1 NA Euler GP 2 2 2 CA No 
+   84 FLUID2 QUAD4  98 100 160 159    MAT 1 NA Euler GP 2 2 2 CA No 
+   85 FLUID2 QUAD4  100 102 161 160    MAT 1 NA Euler GP 2 2 2 CA No 
+   86 FLUID2 QUAD4  102 104 162 161    MAT 1 NA Euler GP 2 2 2 CA No 
+   87 FLUID2 QUAD4  104 106 163 162    MAT 1 NA Euler GP 2 2 2 CA No 
+   88 FLUID2 QUAD4  106 108 164 163    MAT 1 NA Euler GP 2 2 2 CA No 
+   89 FLUID2 QUAD4  108 110 165 164    MAT 1 NA Euler GP 2 2 2 CA No 
+   90 FLUID2 QUAD4  110 112 166 165    MAT 1 NA Euler GP 2 2 2 CA No 
+   91 FLUID2 QUAD4  112 114 167 166    MAT 1 NA Euler GP 2 2 2 CA No 
+   92 FLUID2 QUAD4  114 116 168 167    MAT 1 NA Euler GP 2 2 2 CA No 
+   93 FLUID2 QUAD4  116 118 169 168    MAT 1 NA Euler GP 2 2 2 CA No 
+   94 FLUID2 QUAD4  118 45 48 169    MAT 1 NA Euler GP 2 2 2 CA No 
+   95 FLUID2 QUAD4  82 120 170 80    MAT 1 NA Euler GP 2 2 2 CA No 
+   96 FLUID2 QUAD4  120 122 171 170    MAT 1 NA Euler GP 2 2 2 CA No 
+   97 FLUID2 QUAD4  122 124 172 171    MAT 1 NA Euler GP 2 2 2 CA No 
+   98 FLUID2 QUAD4  124 126 173 172    MAT 1 NA Euler GP 2 2 2 CA No 
+   99 FLUID2 QUAD4  126 128 174 173    MAT 1 NA Euler GP 2 2 2 CA No 
+   100 FLUID2 QUAD4  128 130 175 174    MAT 1 NA Euler GP 2 2 2 CA No 
+   101 FLUID2 QUAD4  130 132 176 175    MAT 1 NA Euler GP 2 2 2 CA No 
+   102 FLUID2 QUAD4  132 134 177 176    MAT 1 NA Euler GP 2 2 2 CA No 
+   103 FLUID2 QUAD4  134 136 178 177    MAT 1 NA Euler GP 2 2 2 CA No 
+   104 FLUID2 QUAD4  136 138 179 178    MAT 1 NA Euler GP 2 2 2 CA No 
+   105 FLUID2 QUAD4  138 140 180 179    MAT 1 NA Euler GP 2 2 2 CA No 
+   106 FLUID2 QUAD4  140 142 181 180    MAT 1 NA Euler GP 2 2 2 CA No 
+   107 FLUID2 QUAD4  142 144 182 181    MAT 1 NA Euler GP 2 2 2 CA No 
+   108 FLUID2 QUAD4  144 146 183 182    MAT 1 NA Euler GP 2 2 2 CA No 
+   109 FLUID2 QUAD4  146 148 184 183    MAT 1 NA Euler GP 2 2 2 CA No 
+   110 FLUID2 QUAD4  148 150 185 184    MAT 1 NA Euler GP 2 2 2 CA No 
+   111 FLUID2 QUAD4  150 152 186 185    MAT 1 NA Euler GP 2 2 2 CA No 
+   112 FLUID2 QUAD4  152 3 6 186    MAT 1 NA Euler GP 2 2 2 CA No 
+   113 FLUID2 QUAD4  48 50 187 169    MAT 1 NA Euler GP 2 2 2 CA No 
+   114 FLUID2 QUAD4  50 52 188 187    MAT 1 NA Euler GP 2 2 2 CA No 
+   115 FLUID2 QUAD4  52 54 189 188    MAT 1 NA Euler GP 2 2 2 CA No 
+   116 FLUID2 QUAD4  54 56 190 189    MAT 1 NA Euler GP 2 2 2 CA No 
+   117 FLUID2 QUAD4  56 58 191 190    MAT 1 NA Euler GP 2 2 2 CA No 
+   118 FLUID2 QUAD4  58 60 192 191    MAT 1 NA Euler GP 2 2 2 CA No 
+   119 FLUID2 QUAD4  60 62 193 192    MAT 1 NA Euler GP 2 2 2 CA No 
+   120 FLUID2 QUAD4  62 64 194 193    MAT 1 NA Euler GP 2 2 2 CA No 
+   121 FLUID2 QUAD4  64 66 195 194    MAT 1 NA Euler GP 2 2 2 CA No 
+   122 FLUID2 QUAD4  66 68 196 195    MAT 1 NA Euler GP 2 2 2 CA No 
+   123 FLUID2 QUAD4  68 70 197 196    MAT 1 NA Euler GP 2 2 2 CA No 
+   124 FLUID2 QUAD4  70 72 198 197    MAT 1 NA Euler GP 2 2 2 CA No 
+   125 FLUID2 QUAD4  72 74 199 198    MAT 1 NA Euler GP 2 2 2 CA No 
+   126 FLUID2 QUAD4  74 76 200 199    MAT 1 NA Euler GP 2 2 2 CA No 
+   127 FLUID2 QUAD4  76 78 201 200    MAT 1 NA Euler GP 2 2 2 CA No 
+   128 FLUID2 QUAD4  78 80 170 201    MAT 1 NA Euler GP 2 2 2 CA No 
+   129 FLUID2 QUAD4  6 8 202 186    MAT 1 NA Euler GP 2 2 2 CA No 
+   130 FLUID2 QUAD4  8 10 203 202    MAT 1 NA Euler GP 2 2 2 CA No 
+   131 FLUID2 QUAD4  10 12 204 203    MAT 1 NA Euler GP 2 2 2 CA No 
+   132 FLUID2 QUAD4  12 14 205 204    MAT 1 NA Euler GP 2 2 2 CA No 
+   133 FLUID2 QUAD4  14 16 206 205    MAT 1 NA Euler GP 2 2 2 CA No 
+   134 FLUID2 QUAD4  16 18 207 206    MAT 1 NA Euler GP 2 2 2 CA No 
+   135 FLUID2 QUAD4  18 20 208 207    MAT 1 NA Euler GP 2 2 2 CA No 
+   136 FLUID2 QUAD4  20 22 209 208    MAT 1 NA Euler GP 2 2 2 CA No 
+   137 FLUID2 QUAD4  22 24 210 209    MAT 1 NA Euler GP 2 2 2 CA No 
+   138 FLUID2 QUAD4  24 26 211 210    MAT 1 NA Euler GP 2 2 2 CA No 
+   139 FLUID2 QUAD4  26 28 212 211    MAT 1 NA Euler GP 2 2 2 CA No 
+   140 FLUID2 QUAD4  28 30 213 212    MAT 1 NA Euler GP 2 2 2 CA No 
+   141 FLUID2 QUAD4  30 32 214 213    MAT 1 NA Euler GP 2 2 2 CA No 
+   142 FLUID2 QUAD4  32 34 215 214    MAT 1 NA Euler GP 2 2 2 CA No 
+   143 FLUID2 QUAD4  34 36 216 215    MAT 1 NA Euler GP 2 2 2 CA No 
+   144 FLUID2 QUAD4  36 38 153 216    MAT 1 NA Euler GP 2 2 2 CA No 
+   145 FLUID2 QUAD4  153 154 217 216    MAT 1 NA Euler GP 2 2 2 CA No 
+   146 FLUID2 QUAD4  154 155 218 217    MAT 1 NA Euler GP 2 2 2 CA No 
+   147 FLUID2 QUAD4  155 156 219 218    MAT 1 NA Euler GP 2 2 2 CA No 
+   148 FLUID2 QUAD4  156 157 220 219    MAT 1 NA Euler GP 2 2 2 CA No 
+   149 FLUID2 QUAD4  157 158 221 220    MAT 1 NA Euler GP 2 2 2 CA No 
+   150 FLUID2 QUAD4  158 159 222 221    MAT 1 NA Euler GP 2 2 2 CA No 
+   151 FLUID2 QUAD4  159 160 223 222    MAT 1 NA Euler GP 2 2 2 CA No 
+   152 FLUID2 QUAD4  160 161 224 223    MAT 1 NA Euler GP 2 2 2 CA No 
+   153 FLUID2 QUAD4  161 162 225 224    MAT 1 NA Euler GP 2 2 2 CA No 
+   154 FLUID2 QUAD4  162 163 226 225    MAT 1 NA Euler GP 2 2 2 CA No 
+   155 FLUID2 QUAD4  163 164 227 226    MAT 1 NA Euler GP 2 2 2 CA No 
+   156 FLUID2 QUAD4  164 165 228 227    MAT 1 NA Euler GP 2 2 2 CA No 
+   157 FLUID2 QUAD4  165 166 229 228    MAT 1 NA Euler GP 2 2 2 CA No 
+   158 FLUID2 QUAD4  166 167 230 229    MAT 1 NA Euler GP 2 2 2 CA No 
+   159 FLUID2 QUAD4  167 168 231 230    MAT 1 NA Euler GP 2 2 2 CA No 
+   160 FLUID2 QUAD4  168 169 187 231    MAT 1 NA Euler GP 2 2 2 CA No 
+   161 FLUID2 QUAD4  170 171 232 201    MAT 1 NA Euler GP 2 2 2 CA No 
+   162 FLUID2 QUAD4  171 172 233 232    MAT 1 NA Euler GP 2 2 2 CA No 
+   163 FLUID2 QUAD4  172 173 234 233    MAT 1 NA Euler GP 2 2 2 CA No 
+   164 FLUID2 QUAD4  173 174 235 234    MAT 1 NA Euler GP 2 2 2 CA No 
+   165 FLUID2 QUAD4  174 175 236 235    MAT 1 NA Euler GP 2 2 2 CA No 
+   166 FLUID2 QUAD4  175 176 237 236    MAT 1 NA Euler GP 2 2 2 CA No 
+   167 FLUID2 QUAD4  176 177 238 237    MAT 1 NA Euler GP 2 2 2 CA No 
+   168 FLUID2 QUAD4  177 178 239 238    MAT 1 NA Euler GP 2 2 2 CA No 
+   169 FLUID2 QUAD4  178 179 240 239    MAT 1 NA Euler GP 2 2 2 CA No 
+   170 FLUID2 QUAD4  179 180 241 240    MAT 1 NA Euler GP 2 2 2 CA No 
+   171 FLUID2 QUAD4  180 181 242 241    MAT 1 NA Euler GP 2 2 2 CA No 
+   172 FLUID2 QUAD4  181 182 243 242    MAT 1 NA Euler GP 2 2 2 CA No 
+   173 FLUID2 QUAD4  182 183 244 243    MAT 1 NA Euler GP 2 2 2 CA No 
+   174 FLUID2 QUAD4  183 184 245 244    MAT 1 NA Euler GP 2 2 2 CA No 
+   175 FLUID2 QUAD4  184 185 246 245    MAT 1 NA Euler GP 2 2 2 CA No 
+   176 FLUID2 QUAD4  185 186 202 246    MAT 1 NA Euler GP 2 2 2 CA No 
+   177 FLUID2 QUAD4  202 203 247 246    MAT 1 NA Euler GP 2 2 2 CA No 
+   178 FLUID2 QUAD4  203 204 248 247    MAT 1 NA Euler GP 2 2 2 CA No 
+   179 FLUID2 QUAD4  204 205 249 248    MAT 1 NA Euler GP 2 2 2 CA No 
+   180 FLUID2 QUAD4  205 206 250 249    MAT 1 NA Euler GP 2 2 2 CA No 
+   181 FLUID2 QUAD4  206 207 251 250    MAT 1 NA Euler GP 2 2 2 CA No 
+   182 FLUID2 QUAD4  207 208 252 251    MAT 1 NA Euler GP 2 2 2 CA No 
+   183 FLUID2 QUAD4  208 209 253 252    MAT 1 NA Euler GP 2 2 2 CA No 
+   184 FLUID2 QUAD4  209 210 254 253    MAT 1 NA Euler GP 2 2 2 CA No 
+   185 FLUID2 QUAD4  210 211 255 254    MAT 1 NA Euler GP 2 2 2 CA No 
+   186 FLUID2 QUAD4  211 212 256 255    MAT 1 NA Euler GP 2 2 2 CA No 
+   187 FLUID2 QUAD4  212 213 257 256    MAT 1 NA Euler GP 2 2 2 CA No 
+   188 FLUID2 QUAD4  213 214 258 257    MAT 1 NA Euler GP 2 2 2 CA No 
+   189 FLUID2 QUAD4  214 215 259 258    MAT 1 NA Euler GP 2 2 2 CA No 
+   190 FLUID2 QUAD4  215 216 217 259    MAT 1 NA Euler GP 2 2 2 CA No 
+   191 FLUID2 QUAD4  187 188 260 231    MAT 1 NA Euler GP 2 2 2 CA No 
+   192 FLUID2 QUAD4  188 189 261 260    MAT 1 NA Euler GP 2 2 2 CA No 
+   193 FLUID2 QUAD4  189 190 262 261    MAT 1 NA Euler GP 2 2 2 CA No 
+   194 FLUID2 QUAD4  190 191 263 262    MAT 1 NA Euler GP 2 2 2 CA No 
+   195 FLUID2 QUAD4  191 192 264 263    MAT 1 NA Euler GP 2 2 2 CA No 
+   196 FLUID2 QUAD4  192 193 265 264    MAT 1 NA Euler GP 2 2 2 CA No 
+   197 FLUID2 QUAD4  193 194 266 265    MAT 1 NA Euler GP 2 2 2 CA No 
+   198 FLUID2 QUAD4  194 195 267 266    MAT 1 NA Euler GP 2 2 2 CA No 
+   199 FLUID2 QUAD4  195 196 268 267    MAT 1 NA Euler GP 2 2 2 CA No 
+   200 FLUID2 QUAD4  196 197 269 268    MAT 1 NA Euler GP 2 2 2 CA No 
+   201 FLUID2 QUAD4  197 198 270 269    MAT 1 NA Euler GP 2 2 2 CA No 
+   202 FLUID2 QUAD4  198 199 271 270    MAT 1 NA Euler GP 2 2 2 CA No 
+   203 FLUID2 QUAD4  199 200 272 271    MAT 1 NA Euler GP 2 2 2 CA No 
+   204 FLUID2 QUAD4  200 201 232 272    MAT 1 NA Euler GP 2 2 2 CA No 
+   205 FLUID2 QUAD4  246 247 273 245    MAT 1 NA Euler GP 2 2 2 CA No 
+   206 FLUID2 QUAD4  247 248 274 273    MAT 1 NA Euler GP 2 2 2 CA No 
+   207 FLUID2 QUAD4  248 249 275 274    MAT 1 NA Euler GP 2 2 2 CA No 
+   208 FLUID2 QUAD4  249 250 276 275    MAT 1 NA Euler GP 2 2 2 CA No 
+   209 FLUID2 QUAD4  250 251 277 276    MAT 1 NA Euler GP 2 2 2 CA No 
+   210 FLUID2 QUAD4  251 252 278 277    MAT 1 NA Euler GP 2 2 2 CA No 
+   211 FLUID2 QUAD4  252 253 279 278    MAT 1 NA Euler GP 2 2 2 CA No 
+   212 FLUID2 QUAD4  253 254 280 279    MAT 1 NA Euler GP 2 2 2 CA No 
+   213 FLUID2 QUAD4  254 255 281 280    MAT 1 NA Euler GP 2 2 2 CA No 
+   214 FLUID2 QUAD4  255 256 282 281    MAT 1 NA Euler GP 2 2 2 CA No 
+   215 FLUID2 QUAD4  256 257 283 282    MAT 1 NA Euler GP 2 2 2 CA No 
+   216 FLUID2 QUAD4  257 258 284 283    MAT 1 NA Euler GP 2 2 2 CA No 
+   217 FLUID2 QUAD4  258 259 285 284    MAT 1 NA Euler GP 2 2 2 CA No 
+   218 FLUID2 QUAD4  259 217 218 285    MAT 1 NA Euler GP 2 2 2 CA No 
+   219 FLUID2 QUAD4  231 260 286 230    MAT 1 NA Euler GP 2 2 2 CA No 
+   220 FLUID2 QUAD4  260 261 287 286    MAT 1 NA Euler GP 2 2 2 CA No 
+   221 FLUID2 QUAD4  261 262 288 287    MAT 1 NA Euler GP 2 2 2 CA No 
+   222 FLUID2 QUAD4  262 263 289 288    MAT 1 NA Euler GP 2 2 2 CA No 
+   223 FLUID2 QUAD4  263 264 290 289    MAT 1 NA Euler GP 2 2 2 CA No 
+   224 FLUID2 QUAD4  264 265 291 290    MAT 1 NA Euler GP 2 2 2 CA No 
+   225 FLUID2 QUAD4  265 266 292 291    MAT 1 NA Euler GP 2 2 2 CA No 
+   226 FLUID2 QUAD4  266 267 293 292    MAT 1 NA Euler GP 2 2 2 CA No 
+   227 FLUID2 QUAD4  267 268 294 293    MAT 1 NA Euler GP 2 2 2 CA No 
+   228 FLUID2 QUAD4  268 269 295 294    MAT 1 NA Euler GP 2 2 2 CA No 
+   229 FLUID2 QUAD4  269 270 296 295    MAT 1 NA Euler GP 2 2 2 CA No 
+   230 FLUID2 QUAD4  270 271 297 296    MAT 1 NA Euler GP 2 2 2 CA No 
+   231 FLUID2 QUAD4  271 272 298 297    MAT 1 NA Euler GP 2 2 2 CA No 
+   232 FLUID2 QUAD4  272 232 233 298    MAT 1 NA Euler GP 2 2 2 CA No 
+   233 FLUID2 QUAD4  233 234 299 298    MAT 1 NA Euler GP 2 2 2 CA No 
+   234 FLUID2 QUAD4  234 235 300 299    MAT 1 NA Euler GP 2 2 2 CA No 
+   235 FLUID2 QUAD4  235 236 301 300    MAT 1 NA Euler GP 2 2 2 CA No 
+   236 FLUID2 QUAD4  236 237 302 301    MAT 1 NA Euler GP 2 2 2 CA No 
+   237 FLUID2 QUAD4  237 238 303 302    MAT 1 NA Euler GP 2 2 2 CA No 
+   238 FLUID2 QUAD4  238 239 304 303    MAT 1 NA Euler GP 2 2 2 CA No 
+   239 FLUID2 QUAD4  239 240 305 304    MAT 1 NA Euler GP 2 2 2 CA No 
+   240 FLUID2 QUAD4  240 241 306 305    MAT 1 NA Euler GP 2 2 2 CA No 
+   241 FLUID2 QUAD4  241 242 307 306    MAT 1 NA Euler GP 2 2 2 CA No 
+   242 FLUID2 QUAD4  242 243 308 307    MAT 1 NA Euler GP 2 2 2 CA No 
+   243 FLUID2 QUAD4  243 244 309 308    MAT 1 NA Euler GP 2 2 2 CA No 
+   244 FLUID2 QUAD4  244 245 273 309    MAT 1 NA Euler GP 2 2 2 CA No 
+   245 FLUID2 QUAD4  218 219 310 285    MAT 1 NA Euler GP 2 2 2 CA No 
+   246 FLUID2 QUAD4  219 220 311 310    MAT 1 NA Euler GP 2 2 2 CA No 
+   247 FLUID2 QUAD4  220 221 312 311    MAT 1 NA Euler GP 2 2 2 CA No 
+   248 FLUID2 QUAD4  221 222 313 312    MAT 1 NA Euler GP 2 2 2 CA No 
+   249 FLUID2 QUAD4  222 223 314 313    MAT 1 NA Euler GP 2 2 2 CA No 
+   250 FLUID2 QUAD4  223 224 315 314    MAT 1 NA Euler GP 2 2 2 CA No 
+   251 FLUID2 QUAD4  224 225 316 315    MAT 1 NA Euler GP 2 2 2 CA No 
+   252 FLUID2 QUAD4  225 226 317 316    MAT 1 NA Euler GP 2 2 2 CA No 
+   253 FLUID2 QUAD4  226 227 318 317    MAT 1 NA Euler GP 2 2 2 CA No 
+   254 FLUID2 QUAD4  227 228 319 318    MAT 1 NA Euler GP 2 2 2 CA No 
+   255 FLUID2 QUAD4  228 229 320 319    MAT 1 NA Euler GP 2 2 2 CA No 
+   256 FLUID2 QUAD4  229 230 286 320    MAT 1 NA Euler GP 2 2 2 CA No 
+   257 FLUID2 QUAD4  273 274 321 309    MAT 1 NA Euler GP 2 2 2 CA No 
+   258 FLUID2 QUAD4  274 275 322 321    MAT 1 NA Euler GP 2 2 2 CA No 
+   259 FLUID2 QUAD4  275 276 323 322    MAT 1 NA Euler GP 2 2 2 CA No 
+   260 FLUID2 QUAD4  276 277 324 323    MAT 1 NA Euler GP 2 2 2 CA No 
+   261 FLUID2 QUAD4  277 278 325 324    MAT 1 NA Euler GP 2 2 2 CA No 
+   262 FLUID2 QUAD4  278 279 326 325    MAT 1 NA Euler GP 2 2 2 CA No 
+   263 FLUID2 QUAD4  279 280 327 326    MAT 1 NA Euler GP 2 2 2 CA No 
+   264 FLUID2 QUAD4  280 281 328 327    MAT 1 NA Euler GP 2 2 2 CA No 
+   265 FLUID2 QUAD4  281 282 329 328    MAT 1 NA Euler GP 2 2 2 CA No 
+   266 FLUID2 QUAD4  282 283 330 329    MAT 1 NA Euler GP 2 2 2 CA No 
+   267 FLUID2 QUAD4  283 284 331 330    MAT 1 NA Euler GP 2 2 2 CA No 
+   268 FLUID2 QUAD4  284 285 310 331    MAT 1 NA Euler GP 2 2 2 CA No 
+   269 FLUID2 QUAD4  286 287 332 320    MAT 1 NA Euler GP 2 2 2 CA No 
+   270 FLUID2 QUAD4  287 288 333 332    MAT 1 NA Euler GP 2 2 2 CA No 
+   271 FLUID2 QUAD4  288 289 334 333    MAT 1 NA Euler GP 2 2 2 CA No 
+   272 FLUID2 QUAD4  289 290 335 334    MAT 1 NA Euler GP 2 2 2 CA No 
+   273 FLUID2 QUAD4  290 291 336 335    MAT 1 NA Euler GP 2 2 2 CA No 
+   274 FLUID2 QUAD4  291 292 337 336    MAT 1 NA Euler GP 2 2 2 CA No 
+   275 FLUID2 QUAD4  292 293 338 337    MAT 1 NA Euler GP 2 2 2 CA No 
+   276 FLUID2 QUAD4  293 294 339 338    MAT 1 NA Euler GP 2 2 2 CA No 
+   277 FLUID2 QUAD4  294 295 340 339    MAT 1 NA Euler GP 2 2 2 CA No 
+   278 FLUID2 QUAD4  295 296 341 340    MAT 1 NA Euler GP 2 2 2 CA No 
+   279 FLUID2 QUAD4  296 297 342 341    MAT 1 NA Euler GP 2 2 2 CA No 
+   280 FLUID2 QUAD4  297 298 299 342    MAT 1 NA Euler GP 2 2 2 CA No 
+   281 FLUID2 QUAD4  299 300 343 342    MAT 1 NA Euler GP 2 2 2 CA No 
+   282 FLUID2 QUAD4  300 301 344 343    MAT 1 NA Euler GP 2 2 2 CA No 
+   283 FLUID2 QUAD4  301 302 345 344    MAT 1 NA Euler GP 2 2 2 CA No 
+   284 FLUID2 QUAD4  302 303 346 345    MAT 1 NA Euler GP 2 2 2 CA No 
+   285 FLUID2 QUAD4  303 304 347 346    MAT 1 NA Euler GP 2 2 2 CA No 
+   286 FLUID2 QUAD4  304 305 348 347    MAT 1 NA Euler GP 2 2 2 CA No 
+   287 FLUID2 QUAD4  305 306 349 348    MAT 1 NA Euler GP 2 2 2 CA No 
+   288 FLUID2 QUAD4  306 307 350 349    MAT 1 NA Euler GP 2 2 2 CA No 
+   289 FLUID2 QUAD4  307 308 351 350    MAT 1 NA Euler GP 2 2 2 CA No 
+   290 FLUID2 QUAD4  308 309 321 351    MAT 1 NA Euler GP 2 2 2 CA No 
+   291 FLUID2 QUAD4  310 311 352 331    MAT 1 NA Euler GP 2 2 2 CA No 
+   292 FLUID2 QUAD4  311 312 353 352    MAT 1 NA Euler GP 2 2 2 CA No 
+   293 FLUID2 QUAD4  312 313 354 353    MAT 1 NA Euler GP 2 2 2 CA No 
+   294 FLUID2 QUAD4  313 314 355 354    MAT 1 NA Euler GP 2 2 2 CA No 
+   295 FLUID2 QUAD4  314 315 356 355    MAT 1 NA Euler GP 2 2 2 CA No 
+   296 FLUID2 QUAD4  315 316 357 356    MAT 1 NA Euler GP 2 2 2 CA No 
+   297 FLUID2 QUAD4  316 317 358 357    MAT 1 NA Euler GP 2 2 2 CA No 
+   298 FLUID2 QUAD4  317 318 359 358    MAT 1 NA Euler GP 2 2 2 CA No 
+   299 FLUID2 QUAD4  318 319 360 359    MAT 1 NA Euler GP 2 2 2 CA No 
+   300 FLUID2 QUAD4  319 320 332 360    MAT 1 NA Euler GP 2 2 2 CA No 
+   301 FLUID2 QUAD4  321 322 361 351    MAT 1 NA Euler GP 2 2 2 CA No 
+   302 FLUID2 QUAD4  322 323 362 361    MAT 1 NA Euler GP 2 2 2 CA No 
+   303 FLUID2 QUAD4  323 324 363 362    MAT 1 NA Euler GP 2 2 2 CA No 
+   304 FLUID2 QUAD4  324 325 364 363    MAT 1 NA Euler GP 2 2 2 CA No 
+   305 FLUID2 QUAD4  325 326 365 364    MAT 1 NA Euler GP 2 2 2 CA No 
+   306 FLUID2 QUAD4  326 327 366 365    MAT 1 NA Euler GP 2 2 2 CA No 
+   307 FLUID2 QUAD4  327 328 367 366    MAT 1 NA Euler GP 2 2 2 CA No 
+   308 FLUID2 QUAD4  328 329 368 367    MAT 1 NA Euler GP 2 2 2 CA No 
+   309 FLUID2 QUAD4  329 330 369 368    MAT 1 NA Euler GP 2 2 2 CA No 
+   310 FLUID2 QUAD4  330 331 352 369    MAT 1 NA Euler GP 2 2 2 CA No 
+   311 FLUID2 QUAD4  332 333 370 360    MAT 1 NA Euler GP 2 2 2 CA No 
+   312 FLUID2 QUAD4  333 334 371 370    MAT 1 NA Euler GP 2 2 2 CA No 
+   313 FLUID2 QUAD4  334 335 372 371    MAT 1 NA Euler GP 2 2 2 CA No 
+   314 FLUID2 QUAD4  335 336 373 372    MAT 1 NA Euler GP 2 2 2 CA No 
+   315 FLUID2 QUAD4  336 337 374 373    MAT 1 NA Euler GP 2 2 2 CA No 
+   316 FLUID2 QUAD4  337 338 375 374    MAT 1 NA Euler GP 2 2 2 CA No 
+   317 FLUID2 QUAD4  338 339 376 375    MAT 1 NA Euler GP 2 2 2 CA No 
+   318 FLUID2 QUAD4  339 340 377 376    MAT 1 NA Euler GP 2 2 2 CA No 
+   319 FLUID2 QUAD4  340 341 378 377    MAT 1 NA Euler GP 2 2 2 CA No 
+   320 FLUID2 QUAD4  341 342 343 378    MAT 1 NA Euler GP 2 2 2 CA No 
+   321 FLUID2 QUAD4  343 344 379 378    MAT 1 NA Euler GP 2 2 2 CA No 
+   322 FLUID2 QUAD4  344 345 380 379    MAT 1 NA Euler GP 2 2 2 CA No 
+   323 FLUID2 QUAD4  345 346 381 380    MAT 1 NA Euler GP 2 2 2 CA No 
+   324 FLUID2 QUAD4  346 347 382 381    MAT 1 NA Euler GP 2 2 2 CA No 
+   325 FLUID2 QUAD4  347 348 383 382    MAT 1 NA Euler GP 2 2 2 CA No 
+   326 FLUID2 QUAD4  348 349 384 383    MAT 1 NA Euler GP 2 2 2 CA No 
+   327 FLUID2 QUAD4  349 350 385 384    MAT 1 NA Euler GP 2 2 2 CA No 
+   328 FLUID2 QUAD4  350 351 361 385    MAT 1 NA Euler GP 2 2 2 CA No 
+   329 FLUID2 QUAD4  352 353 386 369    MAT 1 NA Euler GP 2 2 2 CA No 
+   330 FLUID2 QUAD4  353 354 387 386    MAT 1 NA Euler GP 2 2 2 CA No 
+   331 FLUID2 QUAD4  354 355 388 387    MAT 1 NA Euler GP 2 2 2 CA No 
+   332 FLUID2 QUAD4  355 356 389 388    MAT 1 NA Euler GP 2 2 2 CA No 
+   333 FLUID2 QUAD4  356 357 390 389    MAT 1 NA Euler GP 2 2 2 CA No 
+   334 FLUID2 QUAD4  357 358 391 390    MAT 1 NA Euler GP 2 2 2 CA No 
+   335 FLUID2 QUAD4  358 359 392 391    MAT 1 NA Euler GP 2 2 2 CA No 
+   336 FLUID2 QUAD4  359 360 370 392    MAT 1 NA Euler GP 2 2 2 CA No 
+   337 FLUID2 QUAD4  361 362 393 385    MAT 1 NA Euler GP 2 2 2 CA No 
+   338 FLUID2 QUAD4  362 363 394 393    MAT 1 NA Euler GP 2 2 2 CA No 
+   339 FLUID2 QUAD4  363 364 395 394    MAT 1 NA Euler GP 2 2 2 CA No 
+   340 FLUID2 QUAD4  364 365 396 395    MAT 1 NA Euler GP 2 2 2 CA No 
+   341 FLUID2 QUAD4  365 366 397 396    MAT 1 NA Euler GP 2 2 2 CA No 
+   342 FLUID2 QUAD4  366 367 398 397    MAT 1 NA Euler GP 2 2 2 CA No 
+   343 FLUID2 QUAD4  367 368 399 398    MAT 1 NA Euler GP 2 2 2 CA No 
+   344 FLUID2 QUAD4  368 369 386 399    MAT 1 NA Euler GP 2 2 2 CA No 
+   345 FLUID2 QUAD4  386 387 400 399    MAT 1 NA Euler GP 2 2 2 CA No 
+   346 FLUID2 QUAD4  387 388 401 400    MAT 1 NA Euler GP 2 2 2 CA No 
+   347 FLUID2 QUAD4  388 389 402 401    MAT 1 NA Euler GP 2 2 2 CA No 
+   348 FLUID2 QUAD4  389 390 403 402    MAT 1 NA Euler GP 2 2 2 CA No 
+   349 FLUID2 QUAD4  390 391 404 403    MAT 1 NA Euler GP 2 2 2 CA No 
+   350 FLUID2 QUAD4  391 392 405 404    MAT 1 NA Euler GP 2 2 2 CA No 
+   351 FLUID2 QUAD4  392 370 371 405    MAT 1 NA Euler GP 2 2 2 CA No 
+   352 FLUID2 QUAD4  378 379 406 377    MAT 1 NA Euler GP 2 2 2 CA No 
+   353 FLUID2 QUAD4  379 380 407 406    MAT 1 NA Euler GP 2 2 2 CA No 
+   354 FLUID2 QUAD4  380 381 408 407    MAT 1 NA Euler GP 2 2 2 CA No 
+   355 FLUID2 QUAD4  381 382 409 408    MAT 1 NA Euler GP 2 2 2 CA No 
+   356 FLUID2 QUAD4  382 383 410 409    MAT 1 NA Euler GP 2 2 2 CA No 
+   357 FLUID2 QUAD4  383 384 411 410    MAT 1 NA Euler GP 2 2 2 CA No 
+   358 FLUID2 QUAD4  384 385 393 411    MAT 1 NA Euler GP 2 2 2 CA No 
+   359 FLUID2 QUAD4  371 372 412 405    MAT 1 NA Euler GP 2 2 2 CA No 
+   360 FLUID2 QUAD4  372 373 413 412    MAT 1 NA Euler GP 2 2 2 CA No 
+   361 FLUID2 QUAD4  373 374 414 413    MAT 1 NA Euler GP 2 2 2 CA No 
+   362 FLUID2 QUAD4  374 375 415 414    MAT 1 NA Euler GP 2 2 2 CA No 
+   363 FLUID2 QUAD4  375 376 416 415    MAT 1 NA Euler GP 2 2 2 CA No 
+   364 FLUID2 QUAD4  376 377 406 416    MAT 1 NA Euler GP 2 2 2 CA No 
+   365 FLUID2 QUAD4  406 407 417 416    MAT 1 NA Euler GP 2 2 2 CA No 
+   366 FLUID2 QUAD4  407 408 418 417    MAT 1 NA Euler GP 2 2 2 CA No 
+   367 FLUID2 QUAD4  408 409 419 418    MAT 1 NA Euler GP 2 2 2 CA No 
+   368 FLUID2 QUAD4  409 410 420 419    MAT 1 NA Euler GP 2 2 2 CA No 
+   369 FLUID2 QUAD4  410 411 421 420    MAT 1 NA Euler GP 2 2 2 CA No 
+   370 FLUID2 QUAD4  411 393 394 421    MAT 1 NA Euler GP 2 2 2 CA No 
+   371 FLUID2 QUAD4  399 400 422 398    MAT 1 NA Euler GP 2 2 2 CA No 
+   372 FLUID2 QUAD4  400 401 423 422    MAT 1 NA Euler GP 2 2 2 CA No 
+   373 FLUID2 QUAD4  401 402 424 423    MAT 1 NA Euler GP 2 2 2 CA No 
+   374 FLUID2 QUAD4  402 403 425 424    MAT 1 NA Euler GP 2 2 2 CA No 
+   375 FLUID2 QUAD4  403 404 426 425    MAT 1 NA Euler GP 2 2 2 CA No 
+   376 FLUID2 QUAD4  404 405 412 426    MAT 1 NA Euler GP 2 2 2 CA No 
+   377 FLUID2 QUAD4  412 413 427 426    MAT 1 NA Euler GP 2 2 2 CA No 
+   378 FLUID2 QUAD4  413 414 428 427    MAT 1 NA Euler GP 2 2 2 CA No 
+   379 FLUID2 QUAD4  414 415 429 428    MAT 1 NA Euler GP 2 2 2 CA No 
+   380 FLUID2 QUAD4  415 416 417 429    MAT 1 NA Euler GP 2 2 2 CA No 
+   381 FLUID2 QUAD4  394 395 430 421    MAT 1 NA Euler GP 2 2 2 CA No 
+   382 FLUID2 QUAD4  395 396 431 430    MAT 1 NA Euler GP 2 2 2 CA No 
+   383 FLUID2 QUAD4  396 397 432 431    MAT 1 NA Euler GP 2 2 2 CA No 
+   384 FLUID2 QUAD4  397 398 422 432    MAT 1 NA Euler GP 2 2 2 CA No 
+   385 FLUID2 QUAD4  417 418 433 429    MAT 1 NA Euler GP 2 2 2 CA No 
+   386 FLUID2 QUAD4  418 419 434 433    MAT 1 NA Euler GP 2 2 2 CA No 
+   387 FLUID2 QUAD4  419 420 435 434    MAT 1 NA Euler GP 2 2 2 CA No 
+   388 FLUID2 QUAD4  420 421 430 435    MAT 1 NA Euler GP 2 2 2 CA No 
+   389 FLUID2 QUAD4  422 423 436 432    MAT 1 NA Euler GP 2 2 2 CA No 
+   390 FLUID2 QUAD4  423 424 437 436    MAT 1 NA Euler GP 2 2 2 CA No 
+   391 FLUID2 QUAD4  424 425 438 437    MAT 1 NA Euler GP 2 2 2 CA No 
+   392 FLUID2 QUAD4  425 426 427 438    MAT 1 NA Euler GP 2 2 2 CA No 
+   393 FLUID2 QUAD4  427 428 439 438    MAT 1 NA Euler GP 2 2 2 CA No 
+   394 FLUID2 QUAD4  428 429 433 439    MAT 1 NA Euler GP 2 2 2 CA No 
+   395 FLUID2 QUAD4  430 431 440 435    MAT 1 NA Euler GP 2 2 2 CA No 
+   396 FLUID2 QUAD4  431 432 436 440    MAT 1 NA Euler GP 2 2 2 CA No 
+   397 FLUID2 QUAD4  436 437 441 440    MAT 1 NA Euler GP 2 2 2 CA No 
+   398 FLUID2 QUAD4  437 438 439 441    MAT 1 NA Euler GP 2 2 2 CA No 
+   399 FLUID2 QUAD4  441 439 433 434    MAT 1 NA Euler GP 2 2 2 CA No 
+   400 FLUID2 QUAD4  434 435 440 441    MAT 1 NA Euler GP 2 2 2 CA No 
+------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+-------------------------------------------------LEVELSET ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+------------------------------------------------RESULT DESCRIPTION
+FLUID DIS 1 NODE 101 POSITION velx      NAME velx      VALUE  2.297408347e-01 TOLERANCE 1e-9
+FLUID DIS 1 NODE 101 POSITION vely      NAME vely      VALUE  0.000000000e+00 TOLERANCE 1e-9
+FLUID DIS 1 NODE 101 POSITION pressure  NAME pressure  VALUE  1.341225897e-02 TOLERANCE 1e-9
+FLUID DIS 1 NODE 21 POSITION tractionx NAME tractionx VALUE  4.684477485e-01 TOLERANCE 1e-9
+FLUID DIS 1 NODE 21 POSITION tractiony NAME tractiony VALUE -4.792579456e-01 TOLERANCE 1e-9
+---------------------------------------------------------------END
+// END
