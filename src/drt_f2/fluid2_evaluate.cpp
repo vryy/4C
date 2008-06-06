@@ -753,8 +753,6 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
   }
 
   /*-------------------------------- compute nonlinear viscosity ---*/
-  //TODO compute nonlinear viscosity
-  // compute shear rate
   if( material->mattyp != m_fluid )
   {
     double rateofshear = 0.0;
