@@ -320,21 +320,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             }
             break;
         }
-        case DRT::Element::hex20:
-        {
-            const int nLine = 12;
-            const int nNode = 3;
-            vector<int> submap(nNode, -1);
-
-            for(int i = 0; i < nLine; i++)
-            {
-                map.push_back(submap);
-                for(int j = 0; j < nNode; j++)
-                    map[i][j] = eleNodeNumbering_hex27_lines[i][j];
-            }
-            break;
-        }
-        case DRT::Element::hex27:
+        case DRT::Element::hex20: case DRT::Element::hex27:
         {
             const int nLine = 12;
             const int nNode = 3;
@@ -377,6 +363,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             break;
         }
         case DRT::Element::quad9:
+        case DRT::Element::quad8:
         {
             const int nLine = 4;
             const int nNode = 3;
