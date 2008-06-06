@@ -312,6 +312,7 @@ protected:
   RCP<Epetra_Vector>                 zold_;           // vector of last time step Lagrange multipliers (mid-point)
   RCP<Epetra_Vector>                 zn_;             // vector of Lagrange multipliers (end-point)
   RCP<Epetra_Vector>                 incrjump_;       // incremental displacement jump (slave dofs)
+  RCP<Epetra_Vector>                 jump_;           // displacement jump (slave dofs)
   RCP<Epetra_Vector>                 fc_;             // vector of current contact forces
   bool                               isincontact_;    // flag indicatoing global contact status
   

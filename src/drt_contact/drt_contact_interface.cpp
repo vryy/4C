@@ -1485,10 +1485,104 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
  |  Assemble matrix L / vector R for Tresca friction          mgit 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
-                                        Epetra_Vector& rglobal)
+                                        Epetra_Vector& rglobal,
+                                        RCP<Epetra_Vector> jumpglobal,
+                                        RCP<Epetra_Vector> zglobal,
+                                        RCP<LINALG::SparseMatrix> tglobal,
+                                        double frbound)
 {
-  dserror("ERROR: Assembly of Tresca friction not yet implemented!");
+  // nothing to do if no active nodes
+  if (activenodes_==null)
   return;
+  
+  // calculate vector ztangential of tangential lagrange multipliers and 
+  // change the row map to active tangential dofs 
+  RCP<Epetra_Vector> ztangential = rcp(new Epetra_Vector(*activet_));
+  tglobal->Multiply(false,*zglobal,*ztangential);
+  ztangential->ReplaceMap(*activenodes_);
+  
+  // calculate vector utangential of tangential displacement jumps and 
+  // change the row map to active tangential dofs 
+  RCP<Epetra_Vector> utangential = rcp(new Epetra_Vector(*activet_));
+  tglobal->Multiply(false,*jumpglobal,*utangential);
+  utangential->ReplaceMap(*activenodes_);
+  
+  // loop over all active slave nodes of the interface
+  for (int i=0;i<activenodes_->NumMyElements();++i)
+  {
+    int gid = activenodes_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+
+    if (cnode->Owner() != comm_.MyPID())
+      dserror("ERROR: AssembleTresca: Node ownership inconsistency!");
+    
+    // prepare assembly (only 2D so far !!!!)
+    int colsize = 1;
+    vector<int> lmrowT(1);
+    vector<int> lmrowownerT(1);
+    vector<int> lmcol(colsize);
+
+    lmrowT[0] = activet_->GID(i);
+    lmrowownerT[0] = cnode->Owner();
+
+    if (colsize==3)
+      dserror("ERROR: AssembleTresca: 3D case not yet implemented!");
+
+    /******************************** L-matrix and R-vector********************/
+    // the L-Matrix is calculated according to Huebner, Stadler, Wohlmuth: 
+    // A primal-dual active set algorithm for three dimensional contact problems
+    // with coulomn friction, 2008
+    
+    // FIXGIT: later, we always start with stick conditions.
+    // In the meantime, we set the lagrange multipliers to two
+    // in case of beeing null!
+    
+    if(abs((*ztangential)[i]) < 0.001)
+    {
+    	(*ztangential)[i] = 2;
+    	cout << "Warning: lagrange multiplier in tangential direction had been set to" 
+    	"two (hard coded)" << endl;
+    }
+    
+    // CT
+    double ct = 1;
+    
+    // epk = gp/(abs(ztangential + utangential))
+    double temp = (*ztangential)[i]+ct*(*utangential)[i];
+    double epk = frbound/abs(temp);
+    
+    // Fpk = ztangential*(ztangential + utangential)/(gp*(abs(ztangential + utangential))
+    double Fpk = (*ztangential)[i]*temp/(frbound*abs(temp));
+    
+    // Mpk = epk(1-Fpk)
+    double Mpk = epk*(1-Fpk);
+    
+    //hpk = epk*ct*utangential + ztangential*epk*Fpk 
+    double hpk = epk*ct*(*utangential)[i] + (*ztangential)[i]*epk*Fpk;
+    
+    Epetra_SerialDenseMatrix Lnode(1,1);
+    Lnode(0,0)= Mpk/(1-Mpk)*ct;
+    lmcol[0] = cnode->Dofs()[1];
+        
+    //assemble into L matrix 
+    lglobal.Assemble(-1,Lnode,lmrowT,lmrowownerT,lmcol); 
+    
+    Epetra_SerialDenseVector Rnode(1);
+    vector<int> lm(1);
+    vector<int> lmowner(1);
+
+    Rnode(0) = -hpk/(1-Mpk);
+    
+    lm[0] = cnode->Dofs()[1];
+    lmowner[0] = cnode->Owner();
+
+    LINALG::Assemble(rglobal,Rnode,lm,lmowner);
+    }
+      
+  return;
+    
 }
 
 /*----------------------------------------------------------------------*

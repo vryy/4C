@@ -238,7 +238,10 @@ isincontact_(false)
   z_          = rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_       = rcp(new Epetra_Vector(*gsdofrowmap_));
   zn_         = rcp(new Epetra_Vector(*gsdofrowmap_));
-  		
+  
+  // friction
+  // setup vector of displacement jumps (slave dof) 
+  jump_       = rcp(new Epetra_Vector(*gsdofrowmap_));
   return;
 }
 
@@ -557,7 +560,7 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
 #endif // #ifdef CONTACTCHECKHUEEBER
   for (int i=0; i<(int)interface_.size(); ++i)
   { 
-	interface_[i]->Evaluate();
+	  interface_[i]->Evaluate();
     interface_[i]->AssembleDMG(*dmatrix_,*mmatrix_,*g_);
   }
 
@@ -586,12 +589,29 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
-    interface_[i]->AssembleTresca(*lmatrix_,*r_);
   }
-    
+  
   // FillComplete() global matrices N and T
   nmatrix_->Complete(*gactivedofs_,*gactiven_);
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
+  
+  // build global matrix L and global Vector R
+  // FIXGIT: dserror for more than one interface
+  if(interface_.size()>1) 
+  {	
+  	dserror("ERROR: tresca friction for more than one interface not yet implemented");
+  }
+  
+  // read tresca friction bound
+  double frbound = scontact_.get<double>("friction bound",0.0);
+
+  for (int i=0; i<(int)interface_.size(); ++i)
+  	
+  {
+    interface_[i]->AssembleTresca(*lmatrix_,*r_,jump_,z_,tmatrix_,frbound); 
+  }
+  
+  // FillComplete() global matrices N and T
   lmatrix_->Complete(*gactivet_,*gactivet_);
 #ifdef CONTACTCHECKHUEEBER
   }
@@ -605,7 +625,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
   // extract diagonal of invd into diag
   invd->ExtractDiagonalCopy(*diag);
-  
   // set zero diagonal values to dummy 1.0
   for (int i=0;i<diag->MyLength();++i)
     if ((*diag)[i]==0.0) (*diag)[i]=1.0;
@@ -640,6 +659,7 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   RCP<Epetra_Map> tempmap;
   RCP<LINALG::SparseMatrix> tempmtx1;
   RCP<LINALG::SparseMatrix> tempmtx2;
+  RCP<LINALG::SparseMatrix> tempmtx3;
   
   // split into slave/master part + structure part
   LINALG::SplitMatrix2x2(kteff,gsmdofs,gndofrowmap_,gsmdofs,gndofrowmap_,ksmsm,ksmn,knsm,knn);
@@ -892,21 +912,53 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   }
 #endif // #ifdef CONTACTDIMOUTPUT
   
+  /**********************************************************************/
+  /* Isolate active part from invd                             */
+  /**********************************************************************/
+  RCP<LINALG::SparseMatrix> invda;
+  LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
+    
   // do the multiplications with t matrix
-  RCP<LINALG::SparseMatrix> tkanmod, tkammod, tkaimod, tkaamod;
+  RCP<LINALG::SparseMatrix> tkanmod, tkammod, tkaimod, tkaamod, tlmatrix;
   RCP<Epetra_Vector> tfamod;
   
   if(gactivedofs_->NumGlobalElements())
   {
-    tkanmod = LINALG::Multiply(*tmatrix_,false,*kanmod,false);
-    tkammod = LINALG::Multiply(*tmatrix_,false,*kammod,false);
-    tkaamod = LINALG::Multiply(*tmatrix_,false,*kaamod,false);
+  	// kanmod: multiply with tmatrix
+  	tkanmod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+  	tkanmod = LINALG::Multiply(*tkanmod,false,*kanmod,false,true);
+  	
+  	// kammod: multiply with tmatrix
+  	tkammod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+  	tkammod = LINALG::Multiply(*tkammod,false,*kammod,false,true);
+  	  	
+  	// friction
+  	// lmatrix: multiply with tmatrix 
+  	tlmatrix = LINALG::Multiply(*lmatrix_,false,*tmatrix_,false,true);
+  	 	
+  	// kaamod: multiply with tmatrix
+  	tkaamod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+  	tkaamod = LINALG::Multiply(*tkaamod,false,*kaamod,false,false);
+  	
+  	// add tlmatirx to tkaamod
+  	tkaamod->Add(*tlmatrix,false,1.0,1.0);
+  	tkaamod->Complete(kaamod->DomainMap(),kaamod->RowMap());
+  	
+  	if (gidofs->NumGlobalElements())
+    {
+      //kaimod: multiply with tmatrix
+    	tkaimod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+    	tkaimod = LINALG::Multiply(*tkaimod,false,*kaimod,false,true);
+    }	  		
     
-    if (gidofs->NumGlobalElements())
-      tkaimod = LINALG::Multiply(*tmatrix_,false,*kaimod,false);
+    // famod: multiply with tmatrix    
+    tfamod = rcp(new Epetra_Vector(*gactivet_));
+    RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+    temp->Multiply(false,*famod,*tfamod); 
     
-    tfamod = rcp(new Epetra_Vector(tmatrix_->RowMap()));
-    tmatrix_->Multiply(false,*famod,*tfamod);
+    // friction
+    // add r to famod
+    tfamod->Update(1.0,*r_,1.0);
   }
   
   // output for checking everything
@@ -1981,6 +2033,10 @@ void CONTACT::Manager::RecoverBasisTrafo(RCP<Epetra_Vector> disi)
   incrjump_ = rcp(new Epetra_Vector(*gsdofrowmap_));
   LINALG::Export(*disi,*incrjump_);
   
+  // friction
+  // sum up incremental jumps from active set nodes
+  jump_->Update(1.0,*incrjump_,1.0);
+  
   // extract master displacements from disi
   RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
   LINALG::Export(*disi,*disim);
@@ -2309,7 +2365,11 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
   gactivedofs_ = null;
   gactiven_ = null;
   gactivet_ = null;
-  
+
+  // friction  
+  // reset displacement jumps (slave dofs)
+   jump_->Scale(0.0);  
+   
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
