@@ -1126,7 +1126,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfem_general = list->sublist("XFEM GENERAL",false,"");
 
-  setStringToIntegralParameter("GMSH_DEBUG_OUT","No","Do you want to write extended Gmsh output for each timestep?",
+  setStringToIntegralParameter("GMSH_DEBUG_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
 
   /*----------------------------------------------------------------------*/
