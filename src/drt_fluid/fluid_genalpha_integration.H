@@ -664,12 +664,8 @@ private:
 
   //! write restart every uprestart_ steps
   int                       uprestart_;
-  //! count steps till uprestart_
-  int                       restartstep_;
-  //! write result every upres_ steps
+ //! write result every upres_ steps
   int                       upres_;
-  //! count steps till upres_
-  int                       writestep_;
   //! compute and write traction vector
   int                       writestresses_;
 

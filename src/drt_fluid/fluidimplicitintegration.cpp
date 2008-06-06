@@ -58,9 +58,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   time_(0.0),
   step_(0),
   extrapolationpredictor_(params.get("do explicit predictor",true)),
-  restartstep_(0),
   uprestart_(params.get("write restart every", -1)),
-  writestep_(0),
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0)),
   freesurface_(NULL),
@@ -1681,14 +1679,8 @@ void FluidImplicitTimeInt::Output()
 
   //-------------------------------------------- output of solution
 
-  //increase counters
-  restartstep_ += 1;
-  writestep_ += 1;
-
-  if (writestep_ == upres_)  //write solution
+  if (step_%upres_ == 0)  //write solution
   {
-    writestep_= 0;
-
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
 
@@ -1712,10 +1704,8 @@ void FluidImplicitTimeInt::Output()
     if (step_==upres_)
      output_.WriteElementData();
 
-    if (restartstep_ == uprestart_) //add restart data
+    if (step_%uprestart_ == 0) //add restart data
     {
-      restartstep_ = 0;
-
       output_.WriteVector("accn", accn_);
       output_.WriteVector("veln", veln_);
       output_.WriteVector("velnm", velnm_);
@@ -1732,10 +1722,8 @@ void FluidImplicitTimeInt::Output()
   }
 
   // write restart also when uprestart_ is not a integer multiple of upres_
-  if ((restartstep_ == uprestart_) && (writestep_ > 0))
+  else if (step_%uprestart_ == 0)
   {
-    restartstep_ = 0;
-
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", velnp_);
     //output_.WriteVector("residual", trueresidual_);

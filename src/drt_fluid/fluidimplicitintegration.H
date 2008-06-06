@@ -308,9 +308,7 @@ protected:
   bool extrapolationpredictor_;
 
   //! @name restart variables
-  int restartstep_;
   int uprestart_;
-  int writestep_;
   int upres_;
   int writestresses_;
   //@}

@@ -48,9 +48,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   time_(0.0),
   step_(0),
   uprestart_(params.get("write restart every", -1)),
-  restartstep_(0),
   upres_(params.get("write solution every", -1)),
-  writestep_(0),
   writestresses_(params.get("write stresses", 0))
 {
 
@@ -814,12 +812,8 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 void FluidGenAlphaIntegration::GenAlphaOutput()
 {
   //-------------------------------------------- output of solution
-  restartstep_ += 1;
-  writestep_ += 1;
-
-  if (writestep_ == upres_)  //write solution
+  if (step_%upres_ == 0)  //write solution
   {
-    writestep_= 0;
     output_.NewStep    (step_,time_);
 
     output_.WriteVector("velnp"   , velnp_);
@@ -842,10 +836,8 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     }
 
     // do restart if we have to
-    if (restartstep_ == uprestart_)
+    if (step_%uprestart_ == 0)
     {
-      restartstep_ = 0;
-
       output_.WriteVector("veln ", veln_ );
       output_.WriteVector("accnp", accnp_);
       output_.WriteVector("accn ", accn_ );
@@ -870,10 +862,8 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
     }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
-  if ((restartstep_ == uprestart_) && (writestep_ > 0))
+  else if (step_%uprestart_ == 0)
   {
-    restartstep_ = 0;
-
     output_.NewStep    (step_,time_);
 
     output_.WriteVector("velnp", velnp_);
