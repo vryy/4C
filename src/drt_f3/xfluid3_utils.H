@@ -659,18 +659,16 @@ inline DRT::UTILS::GaussRule3D getXFEMGaussrule(const bool intersected)
         {
           // set integration rule for tetrahedral integrtion cells
           // attention: use "open" rules -> no integration points on boundary of element
-          // don't use gausspoint rules that have gausspoints on the element boundary 
-          // (so called closed rules)
           // -> enrichment values might be undefined
-            if (distype == DRT::Element::hex8)
-            {
-                rule = DRT::UTILS::intrule_tet_24point;
-            }
-            else
-            {
-              dserror("we need higher order gauss rules here, but they still need to be implemented :-(");
-                rule = DRT::UTILS::intrule_tet_24point;
-            }
+//            if (distype == DRT::Element::hex8 or distype == DRT::Element::hex27)
+//            {
+          rule = DRT::UTILS::intrule_tet_24point;
+//            }
+//            else
+//            {
+//              //dserror("we need higher order gauss rules here, but they still need to be implemented :-(");
+//                rule = DRT::UTILS::intrule_tet_24point;
+//            }
         }
     }
     return rule;

@@ -320,6 +320,8 @@ inline double AreaRatio(
   {
     case DRT::Element::hex8:
       return XFEM::AreaRatioT<DRT::Element::hex8>(ele,ih);
+    case DRT::Element::hex20:
+      return XFEM::AreaRatioT<DRT::Element::hex20>(ele,ih);
     case DRT::Element::hex27:
       return XFEM::AreaRatioT<DRT::Element::hex27>(ele,ih);
     default:
