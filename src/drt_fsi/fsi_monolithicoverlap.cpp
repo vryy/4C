@@ -6,8 +6,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 
-#define FLUIDBLOCKMATRIX
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
@@ -76,12 +74,10 @@ FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
                                                           FluidField().LinearSolver(),
                                                           AleField().LinearSolver()));
 
-#ifdef FLUIDBLOCKMATRIX
   /*----------------------------------------------------------------------*/
   // Switch fluid to interface split block matrix
   FluidField().UseBlockMatrix(FluidField().Interface(),
                               FluidField().Interface());
-#endif
 
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
@@ -128,16 +124,7 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
   // split fluid matrix
 
-#ifdef FLUIDBLOCKMATRIX
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
-#else
-  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
-
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf =
-    f->Split<LINALG::DefaultBlockMatrixStrategy>(FluidField().Interface(),
-                                                 FluidField().Interface());
-  blockf->Complete();
-#endif
 
   LINALG::SparseMatrix& fii = blockf->Matrix(0,0);
   LINALG::SparseMatrix& fig = blockf->Matrix(0,1);
@@ -354,8 +341,7 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidvel;
   fluidvel.push_back(FluidField().InnerVelocityRowMap());
-  fluidvel.push_back(LINALG::SplitMap(*DofRowMap(),
-                                      *FluidField().InnerVelocityRowMap()));
+  fluidvel.push_back(Teuchos::null);
   LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(),fluidvel);
 
   Teuchos::RCP<NOX::StatusTest::Combo> fluidvelcombo =
@@ -381,9 +367,8 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
   // setup tests for fluid pressure
 
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidpress;
-  fluidpress.push_back(FluidField().InnerVelocityRowMap());
-  fluidpress.push_back(LINALG::SplitMap(*DofRowMap(),
-                                        *FluidField().InnerVelocityRowMap()));
+  fluidpress.push_back(FluidField().PressureRowMap());
+  fluidpress.push_back(Teuchos::null);
   LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(),fluidpress);
 
   Teuchos::RCP<NOX::StatusTest::Combo> fluidpresscombo =
