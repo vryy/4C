@@ -156,6 +156,28 @@ namespace FSI
   };
 
 
+  /// generic norm F enhanced for adaptive Newton
+  class AdaptiveNewtonNormF : public GenericNormF
+  {
+  public:
+
+    AdaptiveNewtonNormF(std::string name,
+                        double tolerance,
+                        ScaleType stype = Scaled)
+      : GenericNormF(name,tolerance,stype) {}
+
+    void SetNewton(Teuchos::RCP<NOX::FSI::Newton> newton)
+    { newton_ = newton; }
+
+  protected:
+
+    Teuchos::RCP<NOX::FSI::Newton> Newton() { return newton_; }
+
+  private:
+    Teuchos::RCP<NOX::FSI::Newton> newton_;
+  };
+
+
   /// Norm of inner dofs of one of our fields
   /*!
 
@@ -165,7 +187,7 @@ namespace FSI
     \author u.kue
     \date 11/07
    */
-  class PartialNormF : public GenericNormF
+  class PartialNormF : public AdaptiveNewtonNormF
   {
   public:
 
@@ -175,8 +197,6 @@ namespace FSI
                  double tolerance,
                  ScaleType stype = Scaled);
 
-    void SetNewton(Teuchos::RCP<NOX::FSI::Newton> newton);
-
   protected:
 
     double computeNorm(const NOX::Abstract::Group& grp);
@@ -184,7 +204,32 @@ namespace FSI
   private:
     const LINALG::MultiMapExtractor extractor_;
     int blocknum_;
-    Teuchos::RCP<NOX::FSI::Newton> newton_;
+  };
+
+
+  /// norm of sum of two (matching) parts of a large vector
+  class PartialSumNormF : public AdaptiveNewtonNormF
+  {
+  public:
+    PartialSumNormF(std::string name,
+                    const LINALG::MapExtractor& extractor1,
+                    double scale1,
+                    const LINALG::MapExtractor& extractor2,
+                    double scale2,
+                    Teuchos::RCP<ADAPTER::Coupling::Converter> converter,
+                    double tolerance,
+                    ScaleType stype = Scaled);
+
+  protected:
+
+    double computeNorm(const NOX::Abstract::Group& grp);
+
+  private:
+    const LINALG::MapExtractor extractor1_;
+    const LINALG::MapExtractor extractor2_;
+    double scale1_;
+    double scale2_;
+    Teuchos::RCP<ADAPTER::Coupling::Converter> converter_;
   };
 
 

@@ -220,18 +220,10 @@ NOX::FSI::PartialNormF::PartialNormF(std::string name,
                                      int blocknum,
                                      double tolerance,
                                      ScaleType stype)
-  : GenericNormF(name,tolerance,stype),
+  : AdaptiveNewtonNormF(name,tolerance,stype),
     extractor_(extractor),
     blocknum_(blocknum)
 {
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void NOX::FSI::PartialNormF::SetNewton(Teuchos::RCP<NOX::FSI::Newton> newton)
-{
-  newton_ = newton;
 }
 
 
@@ -253,9 +245,60 @@ double NOX::FSI::PartialNormF::computeNorm(const NOX::Abstract::Group& grp)
 
   double norm = FSI::GenericNormF::computeNorm(*v);
 
-  if (newton_!=Teuchos::null)
+  if (Newton()!=Teuchos::null)
   {
-    newton_->Residual(norm,Tolerance());
+    Newton()->Residual(norm,Tolerance());
+  }
+
+  return norm;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+NOX::FSI::PartialSumNormF::PartialSumNormF(std::string name,
+                                           const LINALG::MapExtractor& extractor1,
+                                           double scale1,
+                                           const LINALG::MapExtractor& extractor2,
+                                           double scale2,
+                                           Teuchos::RCP<ADAPTER::Coupling::Converter> converter,
+                                           double tolerance,
+                                           ScaleType stype)
+  : AdaptiveNewtonNormF(name,tolerance,stype),
+    extractor1_(extractor1),
+    extractor2_(extractor2),
+    scale1_(scale1),
+    scale2_(scale2),
+    converter_(converter)
+{
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double NOX::FSI::PartialSumNormF::computeNorm(const NOX::Abstract::Group& grp)
+{
+  if (!grp.isF())
+    return -1.0;
+
+  // extract the block epetra vector
+
+  const NOX::Abstract::Vector& abstract_f = grp.getF();
+  const NOX::Epetra::Vector& f = Teuchos::dyn_cast<const NOX::Epetra::Vector>(abstract_f);
+
+  // extract the inner vector elements we are interested in
+
+  Teuchos::RCP<Epetra_Vector> v1 = extractor1_.ExtractCondVector(f.getEpetraVector());
+  Teuchos::RCP<Epetra_Vector> v2 = extractor2_.ExtractCondVector(f.getEpetraVector());
+
+  Teuchos::RCP<Epetra_Vector> v = converter_->SrcToDst(v2);
+  v->Update(scale1_,*v1,scale2_);
+
+  double norm = FSI::GenericNormF::computeNorm(*v);
+
+  if (Newton()!=Teuchos::null)
+  {
+    Newton()->Residual(norm,Tolerance());
   }
 
   return norm;

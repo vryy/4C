@@ -22,7 +22,7 @@ namespace NOX
 {
   namespace FSI
   {
-    class PartialNormF;
+    class AdaptiveNewtonNormF;
   }
 }
 
@@ -272,7 +272,7 @@ namespace UTILS
     void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     /// add a status test to be used for adaptive linear solver convergance
-    void AddStatusTest(Teuchos::RCP<NOX::FSI::PartialNormF> test) { statustests_.push_back(test); }
+    void AddStatusTest(Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> test) { statustests_.push_back(test); }
 
   private:
 
@@ -287,7 +287,7 @@ namespace UTILS
 
     /// keep the status tests available so we can connect them with our
     /// adaptive Newton direction
-    std::vector<Teuchos::RCP<NOX::FSI::PartialNormF> > statustests_;
+    std::vector<Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> > statustests_;
 
     /// @name special debugging output
 
