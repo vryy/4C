@@ -219,7 +219,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     fluidtimeparams->set<bool>("interface second order", Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER"));
 
-    if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") == fsi_iter_monolithic)
+    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    if (coupling == fsi_iter_monolithic or
+        coupling == fsi_iter_monolithiclagrange or
+        coupling == fsi_iter_monolithicstructuresplit)
     {
       // there are a couple of restrictions in monolithic FSI
       fluidtimeparams->set<bool>("do explicit predictor",false);
@@ -233,7 +236,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
-    if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") == fsi_iter_monolithic)
+    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    if (coupling == fsi_iter_monolithic or
+        coupling == fsi_iter_monolithiclagrange or
+        coupling == fsi_iter_monolithicstructuresplit)
     {
       // there are a couple of restrictions in monolithic FSI
       dserror("XFEM and monolithic FSI not tested!");

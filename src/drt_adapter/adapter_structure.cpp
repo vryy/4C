@@ -654,7 +654,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
 
     genalphaparams->set<double>("alpha s",fsidyn.get<double>("ALPHA_S"));
 
-    if (Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO") == fsi_iter_monolithic)
+    int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+    if (coupling == fsi_iter_monolithic or
+        coupling == fsi_iter_monolithiclagrange or
+        coupling == fsi_iter_monolithicstructuresplit)
     {
       if (Teuchos::getIntegralValue<int>(sdyn,"PREDICT")!=STRUCT_DYNAMIC::pred_constdisvelacc)
         dserror("only constant structure predictor with monolithic FSI possible");
