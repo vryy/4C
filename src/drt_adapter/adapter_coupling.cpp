@@ -465,7 +465,7 @@ void ADAPTER::Coupling::SetupCouplingMatrices(const Epetra_Map& shiftedmastermap
   double one = 1.;
   for (int i=0; i<length; ++i)
   {
-    int sgid = SlaveDofMap()->GID(i);
+    int sgid = PermSlaveDofMap()->GID(i);
     int mgid = MasterDofMap()->GID(i);
     int shiftedmgid = shiftedmastermap.GID(i);
 
