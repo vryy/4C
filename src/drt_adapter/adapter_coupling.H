@@ -228,6 +228,10 @@ namespace ADAPTER
     public:
       virtual ~Converter() {}
 
+      virtual Teuchos::RCP<Epetra_Vector> SrcToDst(Teuchos::RCP<const Epetra_Vector> s) const = 0;
+
+      virtual Teuchos::RCP<Epetra_Vector> DstToSrc(Teuchos::RCP<const Epetra_Vector> d) const = 0;
+
       virtual Teuchos::RCP<const Epetra_Map> SrcMap() const = 0;
 
       virtual Teuchos::RCP<const Epetra_Map> DstMap() const = 0;
@@ -245,6 +249,12 @@ namespace ADAPTER
     {
     public:
       explicit MasterConverter(const Coupling& coup) : coup_(coup) {}
+
+      virtual Teuchos::RCP<Epetra_Vector> SrcToDst(Teuchos::RCP<const Epetra_Vector> s) const
+      { return coup_.MasterToSlave(s); }
+
+      virtual Teuchos::RCP<Epetra_Vector> DstToSrc(Teuchos::RCP<const Epetra_Vector> d) const
+      { return coup_.SlaveToMaster(d); }
 
       virtual Teuchos::RCP<const Epetra_Map> SrcMap() const
       { return coup_.MasterDofMap(); }
@@ -270,6 +280,12 @@ namespace ADAPTER
     {
     public:
       explicit SlaveConverter(const Coupling& coup) : coup_(coup) {}
+
+      virtual Teuchos::RCP<Epetra_Vector> SrcToDst(Teuchos::RCP<const Epetra_Vector> s) const
+      { return coup_.SlaveToMaster(s); }
+
+      virtual Teuchos::RCP<Epetra_Vector> DstToSrc(Teuchos::RCP<const Epetra_Vector> d) const
+      { return coup_.MasterToSlave(d); }
 
       virtual Teuchos::RCP<const Epetra_Map> SrcMap() const
       { return coup_.SlaveDofMap(); }
