@@ -359,11 +359,6 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
       sdbg_->NewIteration();
       sdbg_->WriteVector("x",*StructureField().Interface().ExtractCondVector(sx));
     }
-
-    // debug
-    //debug_.DumpVector("sx",*StructureField()->Discretization(),*sx);
-    //debug_.DumpVector("fx",*FluidField()->Discretization(),*fx);
-    //debug_.DumpVector("ax",*AleField()->Discretization(),*ax);
   }
 
   // Call all elements and assemble rhs and matrices
