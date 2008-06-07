@@ -55,6 +55,8 @@ EnsightWriter::EnsightWriter(PostField* field,
   distype2ensightstring_[DRT::Element::hex20] = "hexa20";
   distype2ensightstring_[DRT::Element::tet4] = "tetra4";
   distype2ensightstring_[DRT::Element::tet10] = "tetra10";
+  distype2ensightstring_[DRT::Element::nurbs4] = "quad4";
+  distype2ensightstring_[DRT::Element::nurbs9] = "quad4";
   distype2ensightstring_[DRT::Element::quad4] = "quad4";
   distype2ensightstring_[DRT::Element::quad8] = "quad8";
   distype2ensightstring_[DRT::Element::tri3] = "tria3";
@@ -226,8 +228,45 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
   Write(file, field_->field_pos()+1);
   Write(file, field_->name() + " field");
 
-  Write(file, "coordinates");
-  Write(file, field_->num_nodes());
+
+  //switch between nurbs an others
+  if(field_->problem()->SpatialApproximation()=="Nurbs")
+  {
+
+    // cast dis to NurbsDiscretisation
+    DRT::NURBS::NurbsDiscretization* nurbsdis 
+      = 
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(field_->discretization())));
+    
+    if(nurbsdis==NULL)
+    {
+      dserror("This probably isn't a NurbsDiscretization\n");
+    }
+   
+    // get nurbs dis' knotvector sizes
+    vector<int> degree(nurbsdis->Return_degree());
+    
+    // get nurbs dis' knotvector sizes
+    vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l());
+    
+    int numvisp=1;
+
+    for(unsigned rr=0;rr<n_x_m_x_l.size();++rr)
+    {
+      numvisp*=2*(n_x_m_x_l[rr]-2*degree[rr])-1;
+    }
+    if(myrank_==0)
+    {
+      cout << "Writing coordinates for " << numvisp << " visualisation points\n";
+    }
+    Write(file, "coordinates");
+    Write(file, numvisp);
+  }
+  else
+  {
+    Write(file, "coordinates");
+    Write(file, field_->num_nodes());
+  }
 
   // write the grid information
   RefCountPtr<Epetra_Map> proc0map = WriteCoordinates(file, field_->discretization());
@@ -244,59 +283,584 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
 RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
   ofstream& geofile,
   const RefCountPtr<DRT::Discretization> dis
-  ) const
+  )
 {
-  const Epetra_Map* nodemap = dis->NodeRowMap();
-  const int numnp = nodemap->NumMyElements();
-  const int numnpglobal = nodemap->NumGlobalElements();
-  RefCountPtr<Epetra_MultiVector> nodecoords = rcp(new Epetra_MultiVector(*nodemap,3));
+
+  if (myrank_==0)
+  {
+    cout << "(computing) coordinates for  a ";
+    cout << field_->problem()->SpatialApproximation();
+    cout << " approximation\n";
+  }
+
+  // map for all visualisation points after they have been 
+  // communicated to proc 0
+  RefCountPtr<Epetra_Map> proc0map;
+
+  // refcountpointer to vector of all coordinates 
+  // distributed among all procs 
+  RefCountPtr<Epetra_MultiVector> nodecoords;
 
   const int NSD = 3; // number of space dimensions
 
-  // loop over the nodes on this proc and store the coordinate information
-  for (int inode=0; inode<numnp; inode++)
+  if(field_->problem()->SpatialApproximation()=="Polynomial")
   {
-    int gid = nodemap->GID(inode);
-    const DRT::Node* actnode = dis->gNode(gid);
-    for (int isd=0; isd<NSD; ++isd)
+    const Epetra_Map* nodemap = dis->NodeRowMap();
+    const int numnp = nodemap->NumMyElements();
+    const int numnpglobal = nodemap->NumGlobalElements();
+    nodecoords = rcp(new Epetra_MultiVector(*nodemap,3));
+    
+    // loop over the nodes on this proc and store the coordinate information
+    for (int inode=0; inode<numnp; inode++)
     {
-      double val = ((actnode->X())[isd]);
-      nodecoords->ReplaceMyValue(inode, isd, val);
-    }
-  }
-
-  // put all coordinate information on proc 0
-  RefCountPtr<Epetra_Map> proc0map;
-  proc0map = LINALG::AllreduceEMap(*nodemap,0);
-
-  // import my new values (proc0 gets everything, other procs empty)
-  Epetra_Import proc0importer(*proc0map,*nodemap);
-  RefCountPtr<Epetra_MultiVector> allnodecoords = rcp(new Epetra_MultiVector(*proc0map,3));
-  int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
-  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-
-  // write the node coordinates (only proc 0)
-  // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
-  // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
-  if (myrank_==0)
-  {
-    double* coords = allnodecoords->Values();
-    int numentries = (3*(allnodecoords->GlobalLength()));
-    dsassert(numentries == (3*numnpglobal),"proc 0 has not all of the node coordinates");
-    if (nodeidgiven_)
-    {
-      // first write node global ids (default)
-      for (int inode=0; inode<proc0map->NumGlobalElements(); ++inode)
+      int gid = nodemap->GID(inode);
+      const DRT::Node* actnode = dis->gNode(gid);
+      for (int isd=0; isd<NSD; ++isd)
       {
-        Write(geofile,static_cast<float>(proc0map->GID(inode))+1);
-        // gid+1 delivers the node numbering of the *.dat file starting with 1
+	double val = ((actnode->X())[isd]);
+	nodecoords->ReplaceMyValue(inode, isd, val);
       }
     }
-    // now write the coordinate information
-    for (int i=0; i<numentries; ++i)
+    
+    // put all coordinate information on proc 0
+    proc0map = LINALG::AllreduceEMap(*nodemap,0);
+    
+    // import my new values (proc0 gets everything, other procs empty)
+    Epetra_Import proc0importer(*proc0map,*nodemap);
+    RefCountPtr<Epetra_MultiVector> allnodecoords = rcp(new Epetra_MultiVector(*proc0map,3));
+    int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
+    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+    
+    // write the node coordinates (only proc 0)
+    // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
+    // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
+    if (myrank_==0)
     {
-      Write(geofile, static_cast<float>(coords[i]));
+      double* coords = allnodecoords->Values();
+      int numentries = (3*(allnodecoords->GlobalLength()));
+      dsassert(numentries == (3*numnpglobal),"proc 0 has not all of the node coordinates");
+      if (nodeidgiven_)
+      {
+	// first write node global ids (default)
+	for (int inode=0; inode<proc0map->NumGlobalElements(); ++inode)
+	{
+	  Write(geofile,static_cast<float>(proc0map->GID(inode))+1);
+	  // gid+1 delivers the node numbering of the *.dat file starting with 1
+	}
+      }
+      // now write the coordinate information
+      for (int i=0; i<numentries; ++i)
+      {
+	Write(geofile, static_cast<float>(coords[i]));
+      }
     }
+  }
+  else if(field_->problem()->SpatialApproximation()=="Nurbs")
+  {
+    // the ids of the visualisation points on this proc
+    vector<int> local_vis_point_ids;
+    local_vis_point_ids.clear();
+
+    // the coordinates of the visualisation points on this proc
+    // used to construct the multivector nodecoords
+    vector<vector<double> > local_vis_point_x;
+    local_vis_point_x.clear();
+
+    // cast dis to NurbsDiscretisation
+    DRT::NURBS::NurbsDiscretization* nurbsdis 
+      = 
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
+
+    if(nurbsdis==NULL)
+    {
+      dserror("This probably isn't a NurbsDiscretization\n");
+    }
+
+    // get nurbs dis' knotvector sizes
+    vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l());
+
+    // get nurbs dis' element numbers
+    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele());
+
+    // get the knotvector itself 
+    RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+
+    // get element map
+    const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
+  
+    // loop all available elements
+    for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
+    {
+      DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+      DRT::Node**   nodes = actele->Nodes();
+
+	
+      // get gid, location in the patch
+      int gid = actele->Id();
+	
+      vector<int> ele_cart_id=knots->ConvertEleGidToKnotIds(gid);
+      
+      // want to loop all control points of the element, 
+      // so get the number of points
+      const int numnp = actele->NumNode();
+      
+	// access elements knot span
+      std::vector<blitz::Array<double,1> > knots(2);
+      (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots,actele->Id());
+      
+      // aquire weights from nodes
+      blitz::Array<double,1> weights(numnp);
+      
+      for (int inode=0; inode<numnp; ++inode)
+      {
+	DRT::NURBS::ControlPoint* cp 
+	  = 
+	  dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+	
+	weights(inode) = cp->W();
+      }
+	
+      // get shapefunctions, compute all visualisation point positions
+      blitz::Array<double,1> nurbs_shape_funct(numnp);
+
+      // element local point position
+      blitz::Array<double,1> uv(2);    
+      
+      switch (actele->Shape())
+      {
+      case DRT::Element::nurbs4:
+      {
+	// standard
+
+	// 3           4
+	//  X---------X
+	//  |         |
+	//  |         |
+	//  |         |
+	//  |         |
+	//  |         |
+	//  X---------X
+	// 1           2
+	// append 4 points
+	local_vis_point_ids.push_back((2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]  );
+	local_vis_point_ids.push_back((2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]+1);
+	local_vis_point_ids.push_back((2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]  );
+	local_vis_point_ids.push_back((2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]+1);
+
+	// temporary x vector
+	std::vector<double> x(3);
+	x[2]=0;
+	
+	// point 1
+	uv(0)= -1.0;
+	uv(1)= -1.0;
+	DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+					      uv               ,
+					      knots            ,
+					      weights          ,
+					      actele->Shape()  );
+	for (int isd=0; isd<2; ++isd)
+	{
+	  double val = 0;
+	  for (int inode=0; inode<numnp; ++inode)
+	  {
+	    val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	  }
+	  x[isd]=val;
+	}
+	local_vis_point_x.push_back(x);
+
+	// point 2
+	uv(0)=  1.0;
+	uv(1)= -1.0;
+	DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+					      uv               ,
+					      knots            ,
+					      weights          ,
+					      actele->Shape()  );
+	for (int isd=0; isd<2; ++isd)
+	{
+	  double val = 0;
+	  for (int inode=0; inode<numnp; ++inode)
+	  {
+	    val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	  }
+	  x[isd]=val;
+	}
+	local_vis_point_x.push_back(x);
+	
+	// point 3
+	uv(0)= -1.0;
+	uv(1)=  1.0;
+	DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+					      uv               ,
+					      knots            ,
+					      weights          ,
+					      actele->Shape()  );
+	for (int isd=0; isd<2; ++isd)
+	{
+	  double val = 0;
+	  for (int inode=0; inode<numnp; ++inode)
+	  {
+	    val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	  }
+	  x[isd]=val;
+	}
+	local_vis_point_x.push_back(x);
+	
+	// point 4
+	uv(0)= 1.0;
+	uv(1)= 1.0;
+	DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+					      uv               ,
+					      knots            ,
+					      weights          ,
+					      actele->Shape()  );
+	for (int isd=0; isd<2; ++isd)
+	{
+	  double val = 0;
+	  for (int inode=0; inode<numnp; ++inode)
+	  {
+	    val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	  }
+	  x[isd]=val;
+	}
+	local_vis_point_x.push_back(x);
+           
+	break;
+      }
+      case DRT::Element::nurbs9:
+      {
+	{
+	  // standard
+
+	  //
+	  //  +---------+
+	  //  |         |
+	  //  |         |
+	  //  X    X    |
+	  // 3|   4     |
+	  //  |         |
+	  //  X----X----+
+	  // 1    2
+	  // append 4 points
+	  local_vis_point_ids.push_back((2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]  );
+	  local_vis_point_ids.push_back((2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]+1);
+	  local_vis_point_ids.push_back((2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]  );
+	  local_vis_point_ids.push_back((2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]+1);
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+	  x[2]=0;
+
+	  // point 1
+	  uv(0)= -1.0;
+	  uv(1)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<2; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 2
+	  uv(0)=  0.0;
+	  uv(1)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<2; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 3
+	  uv(0)= -1.0;
+	  uv(1)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<2; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 4
+	  uv(0)= 0.0;
+	  uv(1)= 0.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<2; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+	}
+	
+	if(ele_cart_id[1]+1==nele_x_mele_x_lele[1])
+	{
+	  // top line
+
+	  //
+	  //  X----X----+
+	  // 5|   6     |
+	  //  |         |
+	  //  X    X    |
+	  // 3|   4     |
+	  //  |         |
+	  //  X----X----+
+	  // 1    2
+	  //                 
+
+	  // append points 5 and 6
+	  local_vis_point_ids.push_back((2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]  );
+	  local_vis_point_ids.push_back((2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]+1);
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+	  x[2]=0;
+
+	  // point 5
+	  uv(0)= -1.0;
+	  uv(1)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	
+	  for (int isd=0; isd<2; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 6
+	  uv(0)=  0.0;
+	  uv(1)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<2; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+	}
+
+	if(ele_cart_id[0]+1==nele_x_mele_x_lele[0])
+	{
+	  // right line
+
+	  //
+	  //  +---------+
+	  //  |         |
+	  //  |         |
+	  //  X    X    X
+	  // 4|   5    6|
+	  //  |         |
+	  //  X----X----X
+	  // 1    2    3
+
+	  // append points 3 and 6
+	  local_vis_point_ids.push_back((2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]+2);
+	  local_vis_point_ids.push_back((2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]+2);
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+	  x[2]=0;
+
+	  // point 3
+	  uv(0)=  1.0;
+	  uv(1)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<2; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 6
+	  uv(0)=  1.0;
+	  uv(1)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<2; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+	}
+	if(ele_cart_id[1]+1==nele_x_mele_x_lele[1]
+	   && 
+	   ele_cart_id[0]+1==nele_x_mele_x_lele[0])
+	{
+	  // top right corner
+
+	  //
+	  //  X----X----X
+	  // 7|   8    9|
+	  //  |         |
+	  //  X    X    X
+	  // 4|   5    6|
+	  //  |         |
+	  //  X----X----X
+	  // 1    2    3
+
+	  // append point 9
+	  local_vis_point_ids.push_back((2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1)+2*ele_cart_id[0]+2);
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+	  x[2]=0;
+
+	  // point 9
+	  uv(0)=  1.0;
+	  uv(1)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<2; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+	}
+	break;
+      }
+      default:
+	dserror("Unknown distype for nurbs element output\n");
+      }      
+    }
+    
+    // construct map for visualisation points. Store it in 
+    // class variable for access in data interpolation
+    int numvispoints = (2*nele_x_mele_x_lele[0]+1)*(2*nele_x_mele_x_lele[1]+1);
+
+    vispointmap_ = Teuchos::rcp(new Epetra_Map(numvispoints,
+					       local_vis_point_ids.size(),
+					       &local_vis_point_ids[0],
+					       0,
+					       nurbsdis->Comm()));
+
+    // allocate the coordinates of the vizualisation points
+    nodecoords = rcp(new Epetra_MultiVector(*vispointmap_,3));
+
+    // loop over the nodes on this proc and store the coordinate information
+    for (int inode=0; inode<(int)local_vis_point_x.size(); inode++)
+    {
+      for (int isd=0; isd<3; ++isd)
+      {
+	double val = (local_vis_point_x[inode])[isd];
+	nodecoords->ReplaceMyValue(inode, isd, val);
+      }
+    }
+
+    //new procmap
+    proc0map = LINALG::AllreduceEMap(*vispointmap_,0);
+
+    // import my new values (proc0 gets everything, other procs empty)
+    Epetra_Import proc0importer(*proc0map,*vispointmap_);
+    RefCountPtr<Epetra_MultiVector> allnodecoords = rcp(new Epetra_MultiVector(*proc0map,3));
+    int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
+    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+  
+    // write the node coordinates (only proc 0)
+    // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
+    // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
+    if (myrank_==0)
+    {
+      double* coords = allnodecoords->Values();
+      int numentries = (3*(allnodecoords->GlobalLength()));
+
+      if (nodeidgiven_)
+      {
+	// first write node global ids (default)
+	for (int inode=0; inode<proc0map->NumGlobalElements(); ++inode)
+	{
+	  Write(geofile,static_cast<float>(proc0map->GID(inode))+1);
+	  // gid+1 delivers the node numbering of the *.dat file starting with 1
+	}
+      }
+      // now write the coordinate information
+      for (int i=0; i<numentries; ++i)
+      {
+	Write(geofile, static_cast<float>(coords[i]));
+      }
+    }
+  }
+  else
+  {
+    dserror("spatial approximation neither Nurbs nor Polynomial\n");
   }
 
   return proc0map;
@@ -396,7 +960,143 @@ void EnsightWriter::WriteCells(
                 nodevector.push_back(nodes[subquadmap[isubele][isubnode]]->Id());
           break;
         }
+	case DRT::Element::nurbs4:
+	{
+	  // cast dis to NurbsDiscretisation
+	  DRT::NURBS::NurbsDiscretization* nurbsdis 
+	    = 
+	    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
+	  
+	  if(nurbsdis==NULL)
+	  {
+	    dserror("This probably isn't a NurbsDiscretization\n");
+	  }
+    
+	  // number of visualisation points in u direction
+	  int nvpu=(nurbsdis->Return_nele_x_mele_x_lele())[0]+1;
 
+	  // get the knotvector itself 
+	  RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+
+	  // determine type of element 
+	  
+	  // get gid, location in the patch
+	  int gid = actele->Id();
+	  
+	  vector<int> ele_cart_id=knots->ConvertEleGidToKnotIds(gid);
+	  {
+	    // 3           4
+	    //  X---------X
+	    //  |         |
+	    //  |         |
+	    //  |         |
+	    //  |         |
+	    //  |         |
+	    //  X---------X
+	    // 1           2
+	    
+	    // append 4 elements
+            if (myrank_==0) // proc0 can write its elements immediately
+	    {
+              Write(geofile, proc0map->LID(((ele_cart_id[1]  )*(nvpu)+ele_cart_id[0]  ))+1);
+	      Write(geofile, proc0map->LID(((ele_cart_id[1]  )*(nvpu)+ele_cart_id[0]+1))+1);
+              Write(geofile, proc0map->LID(((ele_cart_id[1]+1)*(nvpu)+ele_cart_id[0]+1))+1);
+              Write(geofile, proc0map->LID(((ele_cart_id[1]+1)*(nvpu)+ele_cart_id[0]  ))+1);
+	    }
+            else // elements on other procs have to store their global node ids
+	    {
+	      nodevector.push_back((ele_cart_id[1]  )*(nvpu)+ele_cart_id[0]  );
+	      nodevector.push_back((ele_cart_id[1]  )*(nvpu)+ele_cart_id[0]+1);
+	      nodevector.push_back((ele_cart_id[1]+1)*(nvpu)+ele_cart_id[0]+1);
+	      nodevector.push_back((ele_cart_id[1]+1)*(nvpu)+ele_cart_id[0]  );
+	    }
+	  }
+
+	  break;
+	}
+	case DRT::Element::nurbs9:
+	{
+	  // cast dis to NurbsDiscretisation
+	  DRT::NURBS::NurbsDiscretization* nurbsdis 
+	    = 
+	    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
+	  
+	  if(nurbsdis==NULL)
+	  {
+	    dserror("This probably isn't a NurbsDiscretization\n");
+	  }
+    
+	  // number of visualisation points in u direction
+	  int nvpu=2*(nurbsdis->Return_nele_x_mele_x_lele())[0]+1;
+
+	  // get the knotvector itself 
+	  RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+
+	  // determine type of element 
+	  
+	  // get gid, location in the patch
+	  int gid = actele->Id();
+	  
+	  vector<int> ele_cart_id=knots->ConvertEleGidToKnotIds(gid);
+	  {
+	    //
+	    //  X----X----X
+	    // 7|   8    9|
+	    //  |         |
+	    //  X    X    X
+	    // 4|   5    6|
+	    //  |         |
+	    //  X----X----X
+	    // 1    2    3
+	    
+	    // append 4 elements
+            if (myrank_==0) // proc0 can write its elements immediately
+	    {
+              Write(geofile, proc0map->LID(((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]  ))+1);
+	      Write(geofile, proc0map->LID(((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+1))+1);
+              Write(geofile, proc0map->LID(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1))+1);
+              Write(geofile, proc0map->LID(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]  ))+1);
+
+              Write(geofile, proc0map->LID(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]  ))+1);
+	      Write(geofile, proc0map->LID(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1))+1);
+              Write(geofile, proc0map->LID(((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+1))+1);
+              Write(geofile, proc0map->LID(((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]  ))+1);
+
+              Write(geofile, proc0map->LID(((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+1))+1);
+	      Write(geofile, proc0map->LID(((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+2))+1);
+              Write(geofile, proc0map->LID(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+2))+1);
+              Write(geofile, proc0map->LID(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1))+1);
+
+              Write(geofile, proc0map->LID(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1))+1);
+	      Write(geofile, proc0map->LID(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+2))+1);
+              Write(geofile, proc0map->LID(((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+2))+1);
+              Write(geofile, proc0map->LID(((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+1))+1);
+	    }
+            else // elements on other procs have to store their global node ids
+	    {
+	      nodevector.push_back(((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]  ));
+	      nodevector.push_back(((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+1));
+	      nodevector.push_back(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1));
+	      nodevector.push_back(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]  ));
+				                                                               
+	      nodevector.push_back(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]  ));
+	      nodevector.push_back(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1));
+	      nodevector.push_back(((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+1));
+	      nodevector.push_back(((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]  ));
+				                                                               
+	      nodevector.push_back(((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+1));
+	      nodevector.push_back(((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+2));
+	      nodevector.push_back(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+2));
+	      nodevector.push_back(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1));
+				                                                               
+	      nodevector.push_back(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1));
+	      nodevector.push_back(((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+2));
+	      nodevector.push_back(((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+2));
+	      nodevector.push_back(((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+1));
+	    }
+	  }
+	  break;
+	}
         default:
           dserror("don't know, how to write this element type as a cell");
         }
@@ -583,6 +1283,9 @@ int EnsightWriter::GetNumEleOutput(
     numeleout = 8*numele;
     break;
   case DRT::Element::quad9:
+    numeleout = 4*numele;
+    break;
+  case DRT::Element::nurbs9:
     numeleout = 4*numele;
     break;
   default:
@@ -1050,105 +1753,641 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
                                      datamap.MyGlobalElements(),
                                      0,
                                      datamap.Comm()));
-#if 0
-  if (epetradatamap->PointSameAs(*proc0map_))
-    cout<<"INFO: proc0map and epetradatamap are identical."<<endl;
-  // check if the data is distributed over several processors
-  bool isdistributed = (data->DistributedGlobal());
-#endif
 
-  //------------------------------------------------------
-  // each processor provides its result values for proc 0
-  //------------------------------------------------------
 
-  RefCountPtr<Epetra_Map> proc0datamap;
-  proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
 
-  // contract result values on proc0 (proc0 gets everything, other procs empty)
-  Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
-  RefCountPtr<Epetra_Vector> proc0data = rcp(new Epetra_Vector(*proc0datamap));
-  int err = proc0data->Import(*data,proc0dataimporter,Insert);
-  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-
-  const Epetra_BlockMap& finaldatamap = proc0data->Map();
-
-  // determine offset of dofs in case of multiple discretizations in
-  // separate files (e.g. multi-scale problems). during calculation,
-  // dofs are numbered consecutively for all discretizations. in the
-  // post-processing phase, when only one discretization is called,
-  // numbering always starts with 0, so a potential offset needs to be
-  // taken into account
-  int offset = finaldatamap.MinAllGID() - dis->DofRowMap()->MinAllGID();
-
-  //------------------------------------------------------------------
-  // each processor provides its dof global id information for proc 0
-  //------------------------------------------------------------------
-
-  RefCountPtr<Epetra_MultiVector> dofgidpernodelid = rcp(new Epetra_MultiVector(*nodemap,numdf));
-  dofgidpernodelid->PutScalar(-1.0);
-
-  const int mynumnp = nodemap->NumMyElements();
-  for (int idf=0; idf<numdf; ++idf)
+  //switch between nurbs an others
+  if(field_->problem()->SpatialApproximation()=="Nurbs")
   {
-    for (int inode=0; inode<mynumnp; inode++)
+    // a multivector for the interpolated data
+    Teuchos::RefCountPtr<Epetra_MultiVector> idata;
+    idata = Teuchos::rcp(new Epetra_MultiVector(*vispointmap_,numdf));
+
+    DRT::NURBS::NurbsDiscretization* nurbsdis 
+      = 
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*field_->discretization()));
+    
+    if(nurbsdis==NULL)
     {
-      DRT::Node* n = dis->lRowNode(inode);
-      const double dofgid = (double) dis->Dof(n, frompid + idf) + offset;
-      if (dofgid > -1.0)
+      dserror("This probably isn't a NurbsDiscretization\n");
+    }
+
+    // get nurbs dis' element numbers
+    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele());
+
+    // the number of vizualisation points
+    int numvispoints = (2*nele_x_mele_x_lele[0]+1)*(2*nele_x_mele_x_lele[1]+1);
+
+    // get the knotvector itself 
+    RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+
+    // get element map
+    const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
+
+    // construct a colmap for data to have it available at 
+    // all elements (the critical ones are the ones at the
+    // processor boundary)
+    // loop all available elements
+
+    std::set<int> coldofset;
+    for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
+    {
+      DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+
+      vector<int> lm;
+      vector<int> lmowner;
+      
+      // extract local values from the global vectors
+      actele->LocationVector(*nurbsdis,lm,lmowner); 
+      
+      vector<double> my_data(lm.size());
+      for (int inode=0; inode<actele->NumNode(); ++inode)
       {
-        dofgidpernodelid->ReplaceMyValue(inode, idf, dofgid);
+	
+	if(name == "velocity")
+	{
+	  coldofset.insert(lm[inode*3  ]);
+	  coldofset.insert(lm[inode*3+1]);
+	}
+	else if(name == "pressure")
+	{
+	  coldofset.insert(lm[inode*3+2]);
+	}
+	else
+	{
+	  dserror("up to now, I'm only able to write velocity and pressure\n");
+	}
+      }
+    }
+
+    std::vector<int> coldofmapvec;
+    coldofmapvec.reserve(coldofset.size());
+    coldofmapvec.assign(coldofset.begin(), coldofset.end());
+    coldofset.clear();
+    Teuchos::RCP<Epetra_Map> coldofmap =
+    Teuchos::rcp(new Epetra_Map(-1,
+                                coldofmapvec.size(),
+                                &coldofmapvec[0],
+                                0,
+                                nurbsdis->Comm()));
+    coldofmapvec.clear();
+
+
+    const Epetra_Map* fulldofmap = &(*coldofmap);
+    const RefCountPtr<Epetra_Vector> coldata 
+      = Teuchos::rcp(new Epetra_Vector(*fulldofmap,true));
+
+    // create an importer and import the data
+    Epetra_Import importer((*coldata).Map(),(*data).Map());
+    int imerr = (*coldata).Import((*data),importer,Insert);
+    if(imerr)
+    {
+      dserror("import falied\n");
+    }
+    
+    // loop all available elements
+    for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
+    {
+      DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+      DRT::Node**   nodes = actele->Nodes();
+      
+      // get gid, location in the patch
+      int gid = actele->Id();
+	
+      vector<int> ele_cart_id=knots->ConvertEleGidToKnotIds(gid);
+	
+      // number of all control points of the element
+      const int numnp = actele->NumNode();
+
+      // access elements knot span
+      std::vector<blitz::Array<double,1> > eleknots(2);
+      knots->GetEleKnots(eleknots,actele->Id());
+
+      // aquire weights from nodes
+      blitz::Array<double,1> weights(numnp);
+	
+      for (int inode=0; inode<numnp; ++inode)
+      {
+	DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+	weights(inode) = cp->W();
+      }
+	
+      // get shapefunctions, compute all visualisation point positions
+      blitz::Array<double,1> nurbs_shape_funct(numnp);
+
+      // element local visualisation point position
+      blitz::Array<double,1> uv(2);    
+	
+
+      // extract local values from the global vectors
+      vector<int> lm;
+      vector<int> lmowner;
+
+      actele->LocationVector(*nurbsdis,lm,lmowner); 
+	
+      vector<double> my_data(lm.size());
+      if(name == "velocity")
+      {
+	my_data.resize(2*numnp);
+	
+	for (int inode=0; inode<numnp; ++inode)
+	{
+	  my_data[2*inode  ]=(*coldata)[(*coldata).Map().LID(lm[inode*3  ])];
+	  my_data[2*inode+1]=(*coldata)[(*coldata).Map().LID(lm[inode*3+1])];
+	  
+	}
+      }
+      else if(name == "pressure")
+      {
+	my_data.resize(numnp);
+	
+	for (int inode=0; inode<numnp; ++inode)
+	{
+	  my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*3+2])];
+	}
       }
       else
       {
-        dserror("Error while creating Epetra_MultiVector dofgidperlocalnodeid");
+	dserror("up to now, I'm only able to write velocity and pressure\n");
+      }
+
+      switch (actele->Shape())
+      {
+      case DRT::Element::nurbs4:
+      {
+    
+	// number of visualisation points in u direction
+	int nvpu=(nurbsdis->Return_nele_x_mele_x_lele())[0]+1;
+
+	{
+	  // standard
+
+	  // 3           4
+	  //  X---------X
+	  //  |         |
+	  //  |         |
+	  //  |         |
+	  //  |         |
+	  //  |         |
+	  //  X---------X
+	  // 1           2
+
+	  // point 1
+	  uv(0)= -1.0;
+	  uv(1)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((ele_cart_id[1]  )*(nvpu)+ele_cart_id[0]  );
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 2
+	  uv(0)=  1.0;
+	  uv(1)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((ele_cart_id[1]  )*(nvpu)+ele_cart_id[0]+1);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+
+	  // point 3
+	  uv(0)= -1.0;
+	  uv(1)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((ele_cart_id[1]+1)*(nvpu)+ele_cart_id[0]  );
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 4
+	  uv(0)=  1.0;
+	  uv(1)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((ele_cart_id[1]+1)*(nvpu)+ele_cart_id[0]+1);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	}
+	break;
+      }
+      case DRT::Element::nurbs9:
+      {
+
+	// number of visualisation points in u direction
+	int nvpu=(nurbsdis->Return_nele_x_mele_x_lele())[0]+1;
+
+	{
+	  // standard
+
+	  //
+	  //  +---------+
+	  //  |         |
+	  //  |         |
+	  //  X    X    |
+	  // 3|   4     |
+	  //  |         |
+	  //  X----X----+
+	  // 1    2
+
+	  // point 1
+	  uv(0)= -1.0;
+	  uv(1)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]  );
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 2
+	  uv(0)=  0.0;
+	  uv(1)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+1);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+
+	  // point 3
+	  uv(0)= -1.0;
+	  uv(1)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]  );
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 4
+	  uv(0)=  0.0;
+	  uv(1)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+1);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	}
+	// top line
+
+	//
+	//  X----X----+
+	// 5|   6     |
+	//  |         |
+	//  X    X    |
+	// 3|   4     |
+	//  |         |
+	//  X----X----+
+	// 1    2
+	//                 
+	// two additional points
+
+	if(ele_cart_id[1]+1==nele_x_mele_x_lele[1])
+	{
+	  // point 5
+	  uv(0)= -1.0;
+	  uv(1)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]  );
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 6
+	  uv(0)=  0.0;
+	  uv(1)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+1);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+	}
+
+	// right line
+	if(ele_cart_id[0]+1==nele_x_mele_x_lele[0])
+	{
+
+	  //
+	  //  +---------+
+	  //  |         |
+	  //  |         |
+	  //  x    x    X
+	  // 4|   5    6|
+	  //  |         |
+	  //  x----x----X
+	  // 1    2    3
+
+	  // two additional points
+	  // point 5
+	  uv(0)=  1.0;
+	  uv(1)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((2*ele_cart_id[1]  )*(nvpu)+2*ele_cart_id[0]+2);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 6
+	  uv(0)=  1.0;
+	  uv(1)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((2*ele_cart_id[1]+1)*(nvpu)+2*ele_cart_id[0]+2);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+	}
+
+	// top right corner
+	if(ele_cart_id[0]+1==nele_x_mele_x_lele[0]&&ele_cart_id[1]+1==nele_x_mele_x_lele[1])
+	{
+	  //
+	  //  x----x----X
+	  // 7|   8    9|
+	  //  |         |
+	  //  x    x    x
+	  // 4|   5    6|
+	  //  |         |
+	  //  x----x----x
+	  // 1    2    3
+
+	  // point 9
+	  uv(0)=  1.0;
+	  uv(1)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_2D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots         ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID((2*ele_cart_id[1]+2)*(nvpu)+2*ele_cart_id[0]+2);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+	}
+	break;
+      }
+      default:
+	dserror("unable to visualise this as a nurbs discretisation\n");
+      }
+    }
+
+    // import my new values (proc0 gets everything, other procs empty)
+    Epetra_Import proc0importer(*proc0map_,*vispointmap_);
+    RefCountPtr<Epetra_MultiVector> allsols = rcp(new Epetra_MultiVector(*proc0map_,numdf));
+    int err = allsols->Import(*idata,proc0importer,Insert);
+    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+    
+    // write the node results (only proc 0)
+    // ensight format requires u_1 .. u_n, v_1 .. v_n, w_1 ... w_n, as for nodes 
+    // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
+    if (myrank_==0)
+    {
+      double* solvals = allsols->Values();
+      int numentries = (numdf*(allsols->GlobalLength()));
+      
+      // now write the solution
+      for (int i=0; i<numentries; ++i)
+      {
+	Write(file, static_cast<float>(solvals[i]));
+      }
+    
+      // 2 component vectors in a 3d problem require a row of zeros.
+      // do we really need this?
+      if (numdf==2)
+      {
+	for (int inode=0; inode<numvispoints; inode++)
+	{
+	  Write<float>(file, 0.);
+	}
       }
     }
   }
-
-  // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RefCountPtr<Epetra_MultiVector> dofgidpernodelid_proc0 = rcp(new Epetra_MultiVector(*proc0map_,numdf));
-  Epetra_Import proc0dofimporter(*proc0map_,*nodemap);
-  err = dofgidpernodelid_proc0->Import(*dofgidpernodelid,proc0dofimporter,Insert);
-  if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
-
-  //---------------
-  // write results
-  //---------------
-
-  const int finalnumnode = proc0map_->NumGlobalElements();
-  if (myrank_==0) // ensures pointer dofgids is valid
+  else if(field_->problem()->SpatialApproximation()=="Polynomial")
   {
-    double* dofgids = (dofgidpernodelid_proc0->Values()); // columnwise data storage
+    //------------------------------------------------------
+    // each processor provides its result values for proc 0
+    //------------------------------------------------------
+    
+    RefCountPtr<Epetra_Map> proc0datamap;
+    proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
+    
+    // contract result values on proc0 (proc0 gets everything, other procs empty)
+    Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
+    RefCountPtr<Epetra_Vector> proc0data = rcp(new Epetra_Vector(*proc0datamap));
+    int err = proc0data->Import(*data,proc0dataimporter,Insert);
+    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+    
+    const Epetra_BlockMap& finaldatamap = proc0data->Map();
+    
+    // determine offset of dofs in case of multiple discretizations in
+    // separate files (e.g. multi-scale problems). during calculation,
+    // dofs are numbered consecutively for all discretizations. in the
+    // post-processing phase, when only one discretization is called,
+    // numbering always starts with 0, so a potential offset needs to be
+    // taken into account
+    int offset = finaldatamap.MinAllGID() - dis->DofRowMap()->MinAllGID();
+    
+    //------------------------------------------------------------------
+    // each processor provides its dof global id information for proc 0
+    //------------------------------------------------------------------
+    
+    RefCountPtr<Epetra_MultiVector> dofgidpernodelid = rcp(new Epetra_MultiVector(*nodemap,numdf));
+    dofgidpernodelid->PutScalar(-1.0);
+    
+    const int mynumnp = nodemap->NumMyElements();
     for (int idf=0; idf<numdf; ++idf)
     {
-      for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
+      for (int inode=0; inode<mynumnp; inode++)
       {
-        // local storage position of desired dof gid
-        const int doflid = inode + (idf*numnp);
-        // get the dof global id
-        const int actdofgid = (int) (dofgids[doflid]);
-        dsassert(actdofgid>= 0, "error while getting dof global id");
-        // get the dof local id w.r.t. the finaldatamap
-        int lid = finaldatamap.LID(actdofgid);
-        if (lid > -1)
-        {
-          Write(file, static_cast<float>((*proc0data)[lid]));
-        }
-        else
-          dserror("received illegal dof local id: %d", lid);
-      }
-    }// for idf
-
-    // 2 component vectors in a 3d problem require a row of zeros.
-    // do we really need this?
-    if (numdf==2)
-    {
-      for (int inode=0; inode<numnp; inode++)
-      {
-        Write<float>(file, 0.);
+	DRT::Node* n = dis->lRowNode(inode);
+	const double dofgid = (double) dis->Dof(n, frompid + idf) + offset;
+	if (dofgid > -1.0)
+	{
+	  dofgidpernodelid->ReplaceMyValue(inode, idf, dofgid);
+	}
+	else
+	{
+	  dserror("Error while creating Epetra_MultiVector dofgidperlocalnodeid");
+	}
       }
     }
-  } // if (myrank_==0)
+
+    // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
+    RefCountPtr<Epetra_MultiVector> dofgidpernodelid_proc0 = rcp(new Epetra_MultiVector(*proc0map_,numdf));
+    Epetra_Import proc0dofimporter(*proc0map_,*nodemap);
+    err = dofgidpernodelid_proc0->Import(*dofgidpernodelid,proc0dofimporter,Insert);
+    if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
+
+    //---------------
+    // write results
+    //---------------
+    
+    const int finalnumnode = proc0map_->NumGlobalElements();
+    if (myrank_==0) // ensures pointer dofgids is valid
+    {
+      double* dofgids = (dofgidpernodelid_proc0->Values()); // columnwise data storage
+      for (int idf=0; idf<numdf; ++idf)
+      {
+	for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
+	{
+	  // local storage position of desired dof gid
+	  const int doflid = inode + (idf*numnp);
+	  // get the dof global id
+	  const int actdofgid = (int) (dofgids[doflid]);
+	  dsassert(actdofgid>= 0, "error while getting dof global id");
+	  // get the dof local id w.r.t. the finaldatamap
+	  int lid = finaldatamap.LID(actdofgid);
+	  if (lid > -1)
+	  {
+	    Write(file, static_cast<float>((*proc0data)[lid]));
+	  }
+	  else
+          dserror("received illegal dof local id: %d", lid);
+	}
+      }// for idf
+      
+      // 2 component vectors in a 3d problem require a row of zeros.
+      // do we really need this?
+      if (numdf==2)
+      {
+	for (int inode=0; inode<numnp; inode++)
+	{
+	  Write<float>(file, 0.);
+	}
+      }
+    } // if (myrank_==0)
+  }
+  else
+  {
+    dserror("spatial approximation neither Nurbs nor Polynomial\n");
+  }
+
 
   Write(file, "END TIME STEP");
   return;

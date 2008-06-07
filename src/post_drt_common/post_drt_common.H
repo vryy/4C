@@ -143,6 +143,9 @@ public:
   //! returns type of the simulation
   PROBLEM_TYP Problemtype() { return problemtype_; }
 
+  //! returns type of the spatial approximation (nurbs/polynomial)
+  string SpatialApproximation() { return spatial_approx_; }
+  
   //! returns stress type
   string stresstype() { return stresstype_; }
 
@@ -175,6 +178,9 @@ private:
 
   //! type of the problem we post process
   PROBLEM_TYP problemtype_;
+
+  //! type of the spatial approximation of theproblem we post process
+  string spatial_approx_;
 
   //! number of dimensions
   int ndim_;

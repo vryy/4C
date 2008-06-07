@@ -26,6 +26,9 @@
 
 #include "../post_drt_common/post_drt_common.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_nurbs_discret.H"
+#include "../drt_lib/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_lib/drt_control_point.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
@@ -180,7 +183,7 @@ protected:
     RefCountPtr<Epetra_Map> WriteCoordinates(
             ofstream& geofile,                         ///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis ///< discretization where the nodal positions are take from
-            ) const;
+            ) ;
     void WriteCells(
             ofstream& geofile,///< filestream for the geometry
             const RefCountPtr<DRT::Discretization> dis, ///< discretization where the nodal positions are take from
@@ -322,6 +325,8 @@ protected:
 
     RCP<Epetra_Map> proc0map_; ///< allreduced node row map for proc 0, empty on other procs
 
+    Teuchos::RCP<Epetra_Map> vispointmap_; ///< map for all visualisation points
+    
     map<string,vector<int> > filesetmap_;
     map<string,vector<double> > timesetmap_;
 

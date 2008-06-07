@@ -105,6 +105,17 @@ public:
         const int my_id,
         const string condname) const;
 
+  /*!
+  //  \brief reads the packed knotvector data from the mesh files
+  //
+  //    \param   step (i)
+  //
+  //      \return  The whole knotvector data in a char vector
+  //      */
+  RefCountPtr<std::vector<char> > ReadKnotvector(
+    const int step) const;
+  
+  
   //! read an Epetra_MultiVector from the result files
   /*!
     Right now an Epetra_MultiVector has to be read along with its map. Thus

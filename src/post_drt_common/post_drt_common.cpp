@@ -146,6 +146,17 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
     dserror("unknown problem type '%s'", type);
   }
 
+  
+  spatial_approx_
+    = 
+    map_read_string(&control_table_, "spatial_approximation");
+
+  if (strcmp(spatial_approx_.c_str(),"Nurbs")!=0 
+      && 
+      strcmp(spatial_approx_.c_str(),"Polynomial")!=0)
+  {
+    dserror("unknown type of spatial approximation '%s'", type);
+  }
 
   /*--------------------------------------------------------------------*/
   /* collect all result groups */
@@ -460,6 +471,26 @@ void PostProblem::read_meshes()
         reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "SurfacePeriodic");
       currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
 
+      // read knot vectors for nurbs discretisations
+      if(spatial_approx_=="Nurbs")
+      {
+	RCP<vector<char> > packed_knots =
+	  reader.ReadKnotvector(step);
+
+	RefCountPtr<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
+	
+	knots->Unpack(*packed_knots);
+
+	knots->FinishKnots();
+	
+	// try a dynamic cast of the discretisation to a nurbs discretisation
+	DRT::NURBS::NurbsDiscretization* nurbsdis 
+	  =
+	  dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
+
+	nurbsdis->SetKnotVector(knots);
+      }
+
       // read XFEMCoupling boundary conditions if available
       RCP<vector<char> > cond_xfem =
         reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "XFEMCoupling");
@@ -497,8 +528,23 @@ PostField PostProblem::getfield(MAP* field_info)
   int numele = map_read_int(field_info, "num_ele");
   int type;
 
-  RCP<DRT::Discretization> dis = rcp(new DRT::Discretization(field_name,comm_));
-  //DRT::Problem::Instance()->SetDis(field_pos, disnum, dis);
+
+  RCP<DRT::Discretization> dis;
+
+  if(spatial_approx_=="Polynomial")
+  {
+    dis=rcp(new DRT::Discretization(field_name,comm_));
+    //DRT::Problem::Instance()->SetDis(field_pos, disnum, dis);
+  }
+  else if(spatial_approx_=="Nurbs")
+  {
+    dis=rcp(new DRT::NURBS::NurbsDiscretization(field_name,comm_));
+  }
+  else
+  {
+    dserror("Unknown type of spatial approximation\n");
+  }
+
   return PostField(dis, this, field_name, (FIELDTYP)type, numnd, numele);
 }
 
