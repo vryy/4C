@@ -207,6 +207,14 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidGenAlpha::InnerVelocityRowMap()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> ADAPTER::FluidGenAlpha::VelocityRowMap()
+{
+  return fluid_.VelocityRowMap();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ADAPTER::FluidGenAlpha::PressureRowMap()
 {
   return fluid_.PressureRowMap();

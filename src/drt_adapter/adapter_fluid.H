@@ -160,6 +160,9 @@ namespace ADAPTER {
     /// Map of all velocity dofs that are not Dirichlet-constrained
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() = 0;
 
+    /// Map of all velocity dofs
+    virtual Teuchos::RCP<const Epetra_Map>    VelocityRowMap() = 0;
+
     /// Map of all pressure dofs
     virtual Teuchos::RCP<const Epetra_Map> PressureRowMap() = 0;
 

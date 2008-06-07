@@ -104,6 +104,7 @@ namespace ADAPTER {
 
     /// the interface map contains all velocity dofs at the interface
     virtual Teuchos::RCP<const Epetra_Map>    InnerVelocityRowMap();
+    virtual Teuchos::RCP<const Epetra_Map>    VelocityRowMap();
     virtual Teuchos::RCP<const Epetra_Map>    PressureRowMap();
 
     /// the mesh map contains all velocity dofs that are covered by an ALE node
