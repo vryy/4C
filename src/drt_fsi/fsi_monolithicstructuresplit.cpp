@@ -347,8 +347,7 @@ FSI::MonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nlParams
 
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidvel;
   fluidvel.push_back(FluidField().InnerVelocityRowMap());
-  fluidvel.push_back(LINALG::SplitMap(*DofRowMap(),
-                                      *FluidField().InnerVelocityRowMap()));
+  fluidvel.push_back(Teuchos::null);
   LINALG::MultiMapExtractor fluidvelextract(*DofRowMap(),fluidvel);
 
   Teuchos::RCP<NOX::StatusTest::Combo> fluidvelcombo =
@@ -374,9 +373,8 @@ FSI::MonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nlParams
   // setup tests for fluid pressure
 
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidpress;
-  fluidpress.push_back(FluidField().InnerVelocityRowMap());
-  fluidpress.push_back(LINALG::SplitMap(*DofRowMap(),
-                                        *FluidField().InnerVelocityRowMap()));
+  fluidpress.push_back(FluidField().PressureRowMap());
+  fluidpress.push_back(Teuchos::null);
   LINALG::MultiMapExtractor fluidpressextract(*DofRowMap(),fluidpress);
 
   Teuchos::RCP<NOX::StatusTest::Combo> fluidpresscombo =
