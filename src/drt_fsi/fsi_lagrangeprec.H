@@ -42,6 +42,9 @@ namespace FSI
 
   private:
 
+    // evil debug helper
+    void MergeSolve(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+
     /** \name Field solver objects */
     //@{
 
