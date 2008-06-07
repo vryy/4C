@@ -683,7 +683,6 @@ void LINALG::SparseMatrix::Add(const Epetra_CrsMatrix& A,
                                const double scalarB)
 {
   if (!A.Filled()) dserror("FillComplete was not called on A");
-  if (Filled()) dserror("FillComplete was called on me before");
 
   Epetra_CrsMatrix* Aprime = NULL;
   RCP<EpetraExt::RowMatrix_Transpose> Atrans;
