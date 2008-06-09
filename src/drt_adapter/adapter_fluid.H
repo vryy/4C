@@ -246,7 +246,8 @@ namespace ADAPTER {
 
     /// switch fluid field to block matrix
     virtual void UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                                const LINALG::MultiMapExtractor& rangemaps) = 0;
+                                const LINALG::MultiMapExtractor& rangemaps,
+                                bool splitmatrix) = 0;
 
     /// create result test for encapulated fluid algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;

@@ -477,7 +477,8 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::IntegrateInterfaceShape()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainmaps,
-                                         const LINALG::MultiMapExtractor& rangemaps)
+                                         const LINALG::MultiMapExtractor& rangemaps,
+                                         bool splitmatrix)
 {
   dserror("no, probably not");
 }

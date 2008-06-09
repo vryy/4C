@@ -85,6 +85,12 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
                                                           AleField().LinearSolver(),
                                                           true));
 
+  // Use normal matrix for fluid equations but build (splitted) mesh movement
+  // linearization (if requested in the input file)
+  FluidField().UseBlockMatrix(FluidField().Interface(),
+                              FluidField().Interface(),
+                              false);
+
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);
 }
@@ -190,33 +196,17 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
   /*----------------------------------------------------------------------*/
   // add optional fluid linearization with respect to mesh motion block
 
-#if 0
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().MeshMoveMatrix();
   if (mmm!=Teuchos::null)
   {
-    LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
-    //LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
-    LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
-    //LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
+    //LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
+    LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
+    //LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
+    LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
 
-    // We cannot copy the pressure value. It is not used anyway. So no exact
-    // match here.
-    fmiitransform_(*mmm,
-                   fmii,
-                   1.,
-                   ADAPTER::Coupling::MasterConverter(coupfa),
-                   mat.Matrix(1,2),
-                   false);
-
-    fmgitransform_(fmgi,
-                   1,
-                   ADAPTER::Coupling::SlaveConverter(coupsf),
-                   ADAPTER::Coupling::MasterConverter(coupfa),
-                   mat.Matrix(0,2),
-                   false,
-                   false);
+    mat.Matrix(1,1).Add(fmgg,false,1./(scale*timescale),1.0);
+    mat.Matrix(1,1).Add(fmig,false,1./(scale*timescale),1.0);
   }
-#endif
 
   // done. make sure all blocks are filled.
   mat.Complete();

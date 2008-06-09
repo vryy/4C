@@ -83,7 +83,8 @@ FSI::MonolithicLagrange::MonolithicLagrange(Epetra_Comm& comm)
   /*----------------------------------------------------------------------*/
   // Switch fluid to interface split block matrix
   FluidField().UseBlockMatrix(FluidField().Interface(),
-                              FluidField().Interface());
+                              FluidField().Interface(),
+                              true);
 
   // build ale system matrix in splitted system
   AleField().BuildSystemMatrix(false);

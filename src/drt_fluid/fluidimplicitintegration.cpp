@@ -347,7 +347,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   outflow_stab_ = stabparams->get<string>("OUTFLOW_STAB","no_outstab");
 
   // the vector containing potential Neumann-type outflow stabilization
-  if(outflow_stab_ == "yes_outstab") 
+  if(outflow_stab_ == "yes_outstab")
     outflow_stabil_= LINALG::CreateVector(*dofrowmap,true);
 
   // -------------------------------------------------------------------
@@ -2939,14 +2939,18 @@ Teuchos::RCP<Epetra_Vector> FluidImplicitTimeInt::IntegrateInterfaceShape(std::s
  *----------------------------------------------------------------------*/
 void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
                                           const LINALG::MultiMapExtractor& domainmaps,
-                                          const LINALG::MultiMapExtractor& rangemaps)
+                                          const LINALG::MultiMapExtractor& rangemaps,
+                                          bool splitmatrix)
 {
   Teuchos::RCP<LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy> > mat;
 
-  // (re)allocate system matrix
-  mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
-  mat->SetCondElements(condelements);
-  sysmat_ = mat;
+  if (splitmatrix)
+  {
+    // (re)allocate system matrix
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    mat->SetCondElements(condelements);
+    sysmat_ = mat;
+  }
 
   // if we never build the matrix nothing will be done
   if (params_.get<bool>("mesh movement linearization"))

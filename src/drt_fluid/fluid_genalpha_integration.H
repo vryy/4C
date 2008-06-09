@@ -570,7 +570,8 @@ public:
   /// switch fluid field to block matrix
   void UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
                       const LINALG::MultiMapExtractor& domainmaps,
-                      const LINALG::MultiMapExtractor& rangemaps);
+                      const LINALG::MultiMapExtractor& rangemaps,
+                      bool splitmatrix);
 
   /// linear solve with prescribed dirichlet conditions and without history
   /*!
