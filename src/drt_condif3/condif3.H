@@ -325,13 +325,31 @@ private:
   //! container containing all kind of condif3 thisandthat
   DRT::Container                                  data_;
 
-
-private:
-
   // internal calculation methods
 
   // don't want = operator
   Condif3& operator = (const Condif3& old);
+  
+  // calculating system matrix and RHS
+  void Condif3SysMat(
+                   vector<int>&              lm,
+                   vector<double>&           ehist,
+                   Epetra_SerialDenseMatrix* sys_mat,
+                   Epetra_SerialDenseMatrix* sys_mat_sd,
+                   Epetra_SerialDenseVector* residual,
+                   Epetra_SerialDenseVector& sugrvisc,
+                   struct _MATERIAL*         material,
+                   double                    time,
+                   double                    timefac,
+                   Epetra_SerialDenseVector& vel,
+                   string                    fssgd,
+                   bool                      is_stationary
+                   );
+
+  /*!
+   \brief extract local nodal values from a node-rowmap-based Epetra_Multivector
+   */
+  void ExtractMyNodeBasedValues(Epetra_SerialDenseVector& local,const RCP<Epetra_MultiVector>& global);
 
   /*!
    \brief get optimal gaussrule for given discretization type
@@ -342,14 +360,41 @@ private:
     );
 
   /*!
-   * \brief check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-   * \return boolean indicating higher order status
+   * \brief check for higher order derivatives for shape functions
    */
-  bool isHigherOrderElement(
-    const DRT::Element::DiscretizationType  distype  ///< discretization type
-    ) const;
+  bool isHigherOrderElement(const DRT::Element::DiscretizationType& distype) const;
 
+  /*!
+   * \brief calculate the body force
+   */
+  const Epetra_SerialDenseVector BodyForce(const double time) const;
+
+  /*!
+   * \brief convert action string to condif3 action type
+   */
   ActionType convertStringToActionType(const string& action) const;
+  
+  /*!
+   * \brief calculate matrix entries for actual Gauss point
+   */
+  void Condif3CalMat(
+      Epetra_SerialDenseMatrix& estif,
+      Epetra_SerialDenseMatrix& esd,
+      Epetra_SerialDenseVector& eforce,
+      vector<double>&           velint,
+      const double&             hist,
+      Epetra_SerialDenseVector& funct,
+      Epetra_SerialDenseMatrix& derxy,
+      Epetra_SerialDenseMatrix& derxy2,
+      const double&             edeadng,
+      const double&             tau,
+      const double&             kart,
+      const double&             fac,
+      const double&             diffus,
+      const int&                iel,
+      string                    fssgd,
+      double                    timefac
+      );
 
 }; // class Condif3
 
@@ -577,7 +622,7 @@ public:
   separately.
   */
   virtual int NumDofPerNode(const DRT::Node& node) const
-  {return 4;}
+  {return 1;}
 
   /*!
   \brief Get number of degrees of freedom per element

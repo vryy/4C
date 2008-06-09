@@ -70,7 +70,7 @@ int DRT::ELEMENTS::Condif3Surface::EvaluateNeumann(
                                            vector<int>&              lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
- dserror("EvaluateNeumann not implemented.");
+  dserror("EvaluateNeumann not implemented.");
   return 0;
 }
 
