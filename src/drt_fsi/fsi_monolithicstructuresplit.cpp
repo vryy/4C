@@ -204,8 +204,8 @@ void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixB
     //LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
     LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
 
-    mat.Matrix(1,1).Add(fmgg,false,1./(scale*timescale),1.0);
-    mat.Matrix(1,1).Add(fmig,false,1./(scale*timescale),1.0);
+    mat.Matrix(1,1).Add(fmgg,false,1./(timescale),1.0);
+    mat.Matrix(1,1).Add(fmig,false,1./(timescale),1.0);
   }
 
   // done. make sure all blocks are filled.
