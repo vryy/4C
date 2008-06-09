@@ -508,6 +508,12 @@ public:
          
   */
   virtual void FDCheckGapDeriv();
+  
+  /*!
+  \brief Check tangential LM derivatives with finite differences
+           
+  */
+  virtual void FDCheckTangLMDeriv();
     
   //@}
 

@@ -1889,6 +1889,7 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   tinvda->Multiply(false,*fa,*famod);
   
 #ifdef CONTACTFDGAP
+  // FD check of weighted gap g derivatives
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     RCP<LINALG::SparseMatrix> deriv = rcp(new LINALG::SparseMatrix(*gactiven_,81));
@@ -1897,10 +1898,18 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
     deriv->Add(*nmhata,false,-1.0,1.0);
     deriv->Complete(*gsmdofs,*gactiven_);
     cout << *deriv << endl;
-    // FD check of weighted gap g derivatives
     interface_[i]->FDCheckGapDeriv();
   }
 #endif // #ifdef CONTACTFDGAP
+  
+#ifdef CONTACTFDTANGLM
+  // FD check of tangential LM derivatives (frictionless condition)
+  for (int i=0; i<(int)interface_.size();++i)
+  {
+    cout << *pmatrix_ << endl;
+    interface_[i]->FDCheckTangLMDeriv();
+  }
+#endif // #ifdef CONTACTFDTANGLM
     
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including contact)              */

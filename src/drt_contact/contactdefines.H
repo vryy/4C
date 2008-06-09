@@ -34,6 +34,7 @@ Maintainer: Alexander Popp
 //#define CONTACTFDMORTARD       /* flag for FD check of mortar matrix D */
 //#define CONTACTFDMORTARM       /* flag for FD check of mortar matrix M */
 //#define CONTACTFDGAP           /* flag for FD check of weighted gap g */
+//#define CONTACTFDTANGLM        /* flag for FD check of tangential LM */
 
 /************************************************************************/
 /* Contact algorithm parameters                                         */
