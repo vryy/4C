@@ -164,7 +164,7 @@ void FSI::MonolithicLagrange::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& m
   double scale     = FluidField().ResidualScaling();
 
   mat.Matrix(5,0).Add(*coupsf.MasterToMasterMat(),false,1.0,0.0);
-  mat.Matrix(5,2).Add(*coupsf.SlaveToMasterMat() ,false,-timescale,0.0);
+  mat.Matrix(5,2).Add(*coupsf.SlaveToMasterMat() ,false,-1./timescale,0.0);
 
   mat.Matrix(0,5).Add(*coupsf.MasterToMasterMatTrans(),false,1.0,0.0);
   mat.Matrix(2,5).Add(*coupsf.SlaveToMasterMatTrans() ,false,-1./scale,0.0);
