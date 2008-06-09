@@ -127,6 +127,13 @@ namespace XFEM
         return paramsLocalEntries_.find(field)->second;
       };
       
+      //! return reference to list of local positions in a array of dofs
+      template <XFEM::PHYSICS::Field field>
+      const std::vector<int>& LocalDofPosPerField() const
+      {
+        return paramsLocalEntries_.find(field)->second;
+      }
+      
       //! return unique enrichments for this proc
       const std::set<XFEM::Enrichment>& getUniqueEnrichments() const
       {

@@ -76,8 +76,8 @@ public:
             const BlitzVec&     trialshape
             ) const
     {
-        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField(MangleField<testfield>::name);
-        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField(MangleField<trialfield>::name);
+        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField<MangleField<testfield>::name>();
+        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField<MangleField<trialfield>::name>();
         
 //        const int numparamtest  = testdof.size();
 //        const int numparamtrial = trialdof.size();
@@ -112,7 +112,7 @@ public:
             const double&       fac
             ) const
     {
-        const std::vector<int>& testdof = dofman_.LocalDofPosPerField(MangleField<testfield>::name);
+        const std::vector<int>& testdof = dofman_.LocalDofPosPerField<MangleField<testfield>::name>();
         
 //        const int numparamtest  = testdof.size();
 //        

@@ -76,10 +76,10 @@ void fillElementUnknownsArrays2(
     const int numparamtauxx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 1);
     const int numparamdiscpres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
     
-    const vector<int>& velxdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Velx));
-    const vector<int>& velydof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Vely));
-    const vector<int>& velzdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Velz));
-    const vector<int>& presdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Pres));
+    const vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
+    const vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
+    const vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
+    const vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
     
     for (int iparam=0; iparam<numparamvelx; ++iparam)
     {
@@ -106,12 +106,12 @@ void fillElementUnknownsArrays2(
         const int numparamtauxy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 1);
         const int numparamtauxz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 1);
         const int numparamtauyz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 1);
-        const vector<int>& tauxxdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxx));
-        const vector<int>& tauyydof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauyy));
-        const vector<int>& tauzzdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauzz));
-        const vector<int>& tauxydof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxy));
-        const vector<int>& tauxzdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxz));
-        const vector<int>& tauyzdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauyz));
+        const vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxx>());
+        const vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyy>());
+        const vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauzz>());
+        const vector<int>& tauxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxy>());
+        const vector<int>& tauxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxz>());
+        const vector<int>& tauyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyz>());
         for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = locval[tauxxdof[iparam]];
         for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = locval[tauyydof[iparam]];
         for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = locval[tauzzdof[iparam]];
@@ -122,7 +122,7 @@ void fillElementUnknownsArrays2(
     const bool discpres_unknowns_present = (getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 0) > 0);
     if (discpres_unknowns_present)
     {
-        const vector<int>& discpresdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::DiscPres));
+        const vector<int>& discpresdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::DiscPres>());
         for (int iparam=0; iparam<numparamdiscpres; ++iparam)   ediscprenp(iparam) = locval[discpresdof[iparam]];
     }
 }
@@ -151,10 +151,10 @@ void fillElementUnknownsArrays3(
     // in the xfem assembly, the numparam is determined by the dofmanager
     const int numparamtauxx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 1);
     
-    const vector<int>& velxdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Velx));
-    const vector<int>& velydof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Vely));
-    const vector<int>& velzdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Velz));
-    const vector<int>& presdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Pres));
+    const vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
+    const vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
+    const vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
+    const vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
     
     for (int iparam=0; iparam<numparamvelx; ++iparam)
     {
@@ -181,12 +181,12 @@ void fillElementUnknownsArrays3(
         const int numparamtauxy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 1);
         const int numparamtauxz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 1);
         const int numparamtauyz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 1);
-        const vector<int>& tauxxdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxx));
-        const vector<int>& tauyydof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauyy));
-        const vector<int>& tauzzdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauzz));
-        const vector<int>& tauxydof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxy));
-        const vector<int>& tauxzdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauxz));
-        const vector<int>& tauyzdof(dofman.LocalDofPosPerField(XFEM::PHYSICS::Tauyz));
+        const vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxx>());
+        const vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyy>());
+        const vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauzz>());
+        const vector<int>& tauxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxy>());
+        const vector<int>& tauxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxz>());
+        const vector<int>& tauyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyz>());
         for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = locval[tauxxdof[iparam]];
         for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = locval[tauyydof[iparam]];
         for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = locval[tauzzdof[iparam]];
