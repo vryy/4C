@@ -502,6 +502,12 @@ public:
        
   */
   virtual void FDCheckMortarMDeriv();
+  
+  /*!
+  \brief Check weighted gap g derivatives with finite differences
+         
+  */
+  virtual void FDCheckGapDeriv();
     
   //@}
 

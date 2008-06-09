@@ -33,6 +33,7 @@ Maintainer: Alexander Popp
 //#define CONTACTFDNORMAL        /* flag for FD check of normal derivative */
 //#define CONTACTFDMORTARD       /* flag for FD check of mortar matrix D */
 //#define CONTACTFDMORTARM       /* flag for FD check of mortar matrix M */
+//#define CONTACTFDGAP           /* flag for FD check of weighted gap g */
 
 /************************************************************************/
 /* Contact algorithm parameters                                         */

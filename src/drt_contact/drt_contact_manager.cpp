@@ -1593,7 +1593,6 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
   
   // FillComplete() global matrix S
-  
   smatrix_->Complete(*gsmdofs,*gactiven_);
   
   // FillComplete() global matrix P
@@ -1889,6 +1888,20 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   RCP<LINALG::SparseMatrix> tinvda = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
   tinvda->Multiply(false,*fa,*famod);
   
+#ifdef CONTACTFDGAP
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    RCP<LINALG::SparseMatrix> deriv = rcp(new LINALG::SparseMatrix(*gactiven_,81));
+    deriv->Add(*nmatrix_,false,1.0,1.0);
+    deriv->Add(*smatrix_,false,1.0,1.0);
+    deriv->Add(*nmhata,false,-1.0,1.0);
+    deriv->Complete(*gsmdofs,*gactiven_);
+    cout << *deriv << endl;
+    // FD check of weighted gap g derivatives
+    interface_[i]->FDCheckGapDeriv();
+  }
+#endif // #ifdef CONTACTFDGAP
+    
   /**********************************************************************/
   /* Global setup of kteffnew, feffnew (including contact)              */
   /**********************************************************************/
