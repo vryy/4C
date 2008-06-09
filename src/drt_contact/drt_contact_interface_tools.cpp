@@ -660,6 +660,9 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     typedef map<int,double>::const_iterator CI;
     map<int,map<int,double> >& derivmmap = cnode->GetDerivM();
     
+    if ((int)(cnode->GetM().size())==0)
+      break;
+    
     map<int,double > mmap = cnode->GetM()[0];
     
     cout << endl << "Node: " << cnode->Id() << "  Owner: " << cnode->Owner() << endl;
@@ -845,7 +848,12 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
+      
+      if ((int)(kcnode->GetM().size())==0)
+        break;
+      
       map<int,double> mmap = kcnode->GetM()[0];
+      
       typedef map<int,double>::const_iterator CI;
       
       // store M-values into refM
@@ -1052,6 +1060,10 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
       CNode* kcnode = static_cast<CNode*>(knode);
+      
+      if ((int)(kcnode->GetM().size())==0)
+        break;
+      
       map<int,double> mmap = kcnode->GetM()[0];
       typedef map<int,double>::const_iterator CI;
       
