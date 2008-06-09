@@ -499,21 +499,68 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     }
   }
   
-  // back to normal(1)...
+  // back to normal...
+  
+  // Initialize
   // loop over all nodes to reset normals, closestnode and Mortar maps
   // (use fully overlapping column map)
   for (int i=0;i<idiscret_->NumMyColNodes();++i)
   {
     CONTACT::CNode* node = static_cast<CONTACT::CNode*>(idiscret_->lColNode(i));
+
+    //reset nodal normal vector
+    for (int j=0;j<3;++j)
+      node->n()[j]=0.0;
+
+    // reset derivative maps of normal vector
+    for (int j=0;j<(int)((node->GetDerivN()).size());++j)
+      (node->GetDerivN())[j].clear();
+    (node->GetDerivN()).resize(0);
     
+    // reset derivative maps of tangent vector
+    for (int j=0;j<(int)((node->GetDerivT()).size());++j)
+      (node->GetDerivT())[j].clear();
+    (node->GetDerivT()).resize(0);
+        
+    // reset closest node
+    // (FIXME: at the moment we do not need this info. in the next
+    // iteration, but it might be helpful for accelerated search!!!)
+    node->ClosestNode() = -1;
+
     // reset nodal Mortar maps
     for (int j=0;j<(int)((node->GetD()).size());++j)
       (node->GetD())[j].clear();
+    for (int j=0;j<(int)((node->GetM()).size());++j)
+      (node->GetM())[j].clear();
+    for (int j=0;j<(int)((node->GetMmod()).size());++j)
+      (node->GetMmod())[j].clear();
 
     (node->GetD()).resize(0);
+    (node->GetM()).resize(0);
+    (node->GetMmod()).resize(0);
+
+    // reset derivative map of Mortar matrices
+    (node->GetDerivD()).clear();
+    (node->GetDerivM()).clear();
+    
+    // reset nodal weighted gap
+    node->Getg() = 1.0e12;
+
+    // reset feasible projection status
+    node->HasProj() = false;
   }
-      
-  // back to normal(2)...
+
+  // loop over all elements to reset contact candidates / search lists
+  // (use fully overlapping column map)
+  for (int i=0;i<idiscret_->NumMyColElements();++i)
+  {
+    CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(i));
+    element->SearchElements().resize(0);
+  }
+
+  // reset matrix containing interface contact segments (gmsh)
+  CSegs().Shape(0,0);
+  
   // loop over all elements to set current element length / area
   // (use fully overlapping column map)
   for (int j=0;j<idiscret_->NumMyColElements();++j)
@@ -521,24 +568,71 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     CONTACT::CElement* element = static_cast<CONTACT::CElement*>(idiscret_->lColElement(j));
     element->Area()=element->ComputeArea();
   }
-  
-  // back to normal(3)...
-  // compute new D-Matrix entries
+    
+  // *******************************************************************
+  // contents of Evaluate()
+  // *******************************************************************    
+  // loop over proc's slave nodes of the interface
+  // use standard column map to include processor's ghosted nodes
+  // use boundary map to include slave side boundary nodes
+  for(int i=0; i<snodecolmapbound_->NumMyElements();++i)
+  {
+    int gid1 = snodecolmapbound_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid1);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid1);
+    CNode* cnode = static_cast<CNode*>(node);
+    
+    // build averaged normal at each slave node
+    cnode->BuildAveragedNormal();
+  }
+
+  // contact search algorithm
+  EvaluateContactSearch();
+
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
-  for (int j=0; j<selecolmap_->NumMyElements();++j)
+  for (int i=0; i<selecolmap_->NumMyElements();++i)
   {
-    int gid1 = selecolmap_->GID(j);
+    int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     CElement* selement = static_cast<CElement*>(ele1);
-    
+
 #ifndef CONTACTONEMORTARLOOP
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave2D(*selement);
+#else
+#ifdef CONTACTFULLLIN
+    dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
+#endif // #ifdef CONTACTFULLLIN
 #endif // #ifndef CONTACTONEMORTARLOOP
+
+    // loop over the contact candidate master elements
+    // use slave element's candidate list SearchElements !!!
+    for (int j=0;j<selement->NumSearchElements();++j)
+    {
+      int gid2 = selement->SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
+      CElement* melement = static_cast<CElement*>(ele2);
+
+      // prepare overlap integration
+      vector<bool> hasproj(4);
+      vector<double> xiproj(4);
+      bool overlap = false;
+
+      // project the element pair
+      Project2D(*selement,*melement,hasproj,xiproj);
+
+      // check for element overlap
+      overlap = DetectOverlap2D(*selement,*melement,hasproj,xiproj);
+
+      // integrate the element overlap
+      if (overlap) IntegrateOverlap2D(*selement,*melement,xiproj);
+    }
   }
-      
+  // *******************************************************************
+  
   //exit(0);
   return;
 }
