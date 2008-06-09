@@ -498,12 +498,12 @@ void CONTACT::Interface::Evaluate()
 #ifdef CONTACTFDMORTARD
   // FD check of Mortar matrix D derivatives
   FDCheckMortarDDeriv();
-#endif // #ifdef CONTACTFDNORMAL
+#endif // #ifdef CONTACTFDMORTARD
 
 #ifdef CONTACTFDMORTARM
   // FD check of Mortar matrix M derivatives
   FDCheckMortarMDeriv();
-#endif // #ifdef CONTACTFDNORMAL
+#endif // #ifdef CONTACTFDMORTARM
   
 #ifdef DEBUG
   // Visualize every iteration with gmsh
