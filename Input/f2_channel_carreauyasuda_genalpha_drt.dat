@@ -313,7 +313,7 @@ K_DAMP                          0.5
 MAXDT                           0
 MAXITER                         50
 MAXTIME                         5
-MEASURED_DISP                   0
+MEASURED_DISP0                  0
 M_DAMP                          0.5
 NLNSOL                          fullnewton
 NUMSTEP                         200
