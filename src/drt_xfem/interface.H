@@ -132,6 +132,15 @@ void PositionWithinCondition(
     );
 
 /*!
+\brief checks if a position in current coordinates lies within a certain condition region           
+*/  
+bool PositionWithinAnyInfluencingCondition(
+        const BlitzVec3&                  x,              ///< node in physical coordinates
+        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
+        const std::set<int>&              xlabelset       ///< influencing enrichment labels
+    );
+
+/*!
 \brief checks if a position in current coordinates lies within a certain condition region using an octree
 */
 void PositionWithinConditionTree(

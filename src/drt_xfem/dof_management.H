@@ -133,6 +133,19 @@ namespace XFEM
         return unique_enrichments_;
       }
       
+      //! return unique enrichments for this proc
+      std::set<int> getUniqueEnrichmentLabels() const
+      {
+        std::set<int> xlabelset;
+        for(std::set<XFEM::Enrichment>::const_iterator enr = unique_enrichments_.begin();
+        enr != unique_enrichments_.end();
+        ++enr)
+        {
+          xlabelset.insert(enr->XFEMConditionLabel());
+        }
+        return xlabelset;
+      }
+      
       std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getDisTypePerFieldMap() const
       {
         return DisTypePerElementField_;

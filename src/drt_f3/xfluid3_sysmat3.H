@@ -170,6 +170,17 @@ static void Sysmat3(
     for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
 
+        // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
+        if (ih->ElementIntersected(ele->Id()))
+        {
+            const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*ele));
+            const bool compute = PositionWithinAnyInfluencingCondition(cellcenter, *ih, dofman.getUniqueEnrichmentLabels());
+            if (not compute)
+            {
+              continue;
+            }
+        }
+      
         // gaussian points
         const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 

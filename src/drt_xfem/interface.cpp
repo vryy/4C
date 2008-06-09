@@ -340,6 +340,38 @@ void XFEM::PositionWithinConditionTree(
 }
 
 
+/*----------------------------------------------------------------------*
+ |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
+ *----------------------------------------------------------------------*/
+bool XFEM::PositionWithinAnyInfluencingCondition(
+    const BlitzVec3&                  x_in,
+    const XFEM::InterfaceHandle&      ih,
+    const std::set<int>&              xlabelset
+)
+{
+  
+  TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinAnyInfluencingCondition");
+  
+  std::map<int,bool> posInCondition;
+  PositionWithinCondition(x_in, ih, posInCondition);
+  bool compute = false;
+  for (set<int>::const_iterator xlabel = xlabelset.begin(); xlabel != xlabelset.end(); ++xlabel)
+  {
+    if (posInCondition.find(*xlabel)->second == false)
+    {
+      compute = true;
+      break;
+    }
+  }
+  
+  // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
+#ifdef PARALLEL
+  dserror("not implemented, yet");
+#endif
+  return compute;
+}
+
+
 //const XFEM::InterfaceHandle::emptyBoundaryIntCells_ = XFEM::BoundaryIntCells(0);
 
 #endif  // #ifdef CCADISCRET
