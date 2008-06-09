@@ -800,6 +800,7 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
     string s = "";
     switch (distype)
     {
+    case DRT::Element::dis_none:   s = "DIS_NONE";  break;
     case DRT::Element::quad4:      s = "QUAD4";  break;
     case DRT::Element::quad8:      s = "QUAD8";  break;
     case DRT::Element::quad9:      s = "QUAD9";  break;
@@ -818,7 +819,9 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
     case DRT::Element::point1:     s = "POINT1";  break;
     case DRT::Element::nurbs4:     s = "NURBS4";  break;
     case DRT::Element::nurbs9:     s = "NURBS9";  break;
+    case DRT::Element::max_distype:s = "MAX_DISTYPE";  break;
     default:
+        cout << distype << endl;
         dserror("no string for this distype defined!");
     };
     return s;

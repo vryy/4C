@@ -58,7 +58,8 @@ int DRT::UTILS::getNumberOfElementNodes(
     case DRT::Element::tet4:         return 4;    break;
     case DRT::Element::tet10:        return 10;   break;
     default:
-        dserror("discretization type not yet implemented");
+        cout << DRT::DistypeToString(distype) << endl;
+        dserror("discretization type %s not yet implemented", DRT::DistypeToString(distype));
     }
 
     return numnodes;
