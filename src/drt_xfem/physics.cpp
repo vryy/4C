@@ -12,6 +12,7 @@ Maintainer: Axel Gerstenberger
 */
 #ifdef CCADISCRET
 
+#include <iostream>
 #include "physics.H"
 #include "../drt_lib/drt_dserror.H"
 
@@ -28,6 +29,7 @@ std::string XFEM::PHYSICS::physVarToString(const XFEM::PHYSICS::Field var)
         case Velz:             text = "Velz "; break;
         case Temp:             text = "Temp "; break;
         case Pres:             text = "Pres "; break;
+        case DiscPres:         text = "DiscPres "; break;
         case LMPLambdax:       text = "LMPLambdax"; break;
         case LMPLambday:       text = "LMPLambday"; break;
         case LMPLambdaz:       text = "LMPLambdaz"; break;
@@ -40,7 +42,9 @@ std::string XFEM::PHYSICS::physVarToString(const XFEM::PHYSICS::Field var)
         case Tauzx:            text = "Tauzx"; break;
         case Tauzy:            text = "Tauzy"; break;
         case Tauzz:            text = "Tauzz"; break;
-        default: dserror("no string defined for Field");
+        default:
+          std::cout << var << std::endl;
+          dserror("no string defined for Field");
     };
     return text;
 }

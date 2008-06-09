@@ -213,20 +213,20 @@ void XFEM::ComputeEnrichedElementShapefunction(
             approachdirection));
     
     int dofcounter = 0;
-    for (int inode = 0; inode < dofman.NumVirtualNodes(); ++inode)
+    
+    const std::set<XFEM::FieldEnr>& enrfieldset = dofman.getEnrichedFieldsPerEleField(field);
+    const DRT::Element::DiscretizationType distype = dofman.getDisTypePerField(field);
+    const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
+    dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
+    for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+            enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
     {
-        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerVirtualElementNode(inode);
-        dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
-        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-        {
-            if (enrfield->getField() == field)
-            {
-                const double enrval = enrvals.find(enrfield->getEnrichment())->second;
-                enr_funct(dofcounter) = funct(inode) * enrval;
-                dofcounter += 1;                
-            }
-        }
+      for (int inode = 0; inode < numvirtualnode; ++inode)
+      {
+        const double enrval = enrvals.find(enrfield->getEnrichment())->second;
+        enr_funct(dofcounter) = funct(inode) * enrval;
+        dofcounter += 1;
+      }
     }
     dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
@@ -258,21 +258,21 @@ void XFEM::ComputeEnrichedElementShapefunction(
     blitz::Range _  = blitz::Range::all();
     
     int dofcounter = 0;
-    for (int inode = 0; inode < dofman.NumVirtualNodes(); ++inode)
+
+    const std::set<XFEM::FieldEnr>& enrfieldset = dofman.getEnrichedFieldsPerEleField(field);
+    const DRT::Element::DiscretizationType distype = dofman.getDisTypePerField(field);
+    const int numvirtualnode = DRT::UTILS::getNumberOfElementNodes(distype);
+    dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
+    for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
+            enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
     {
-        const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerVirtualElementNode(inode);
-        dsassert(enrfieldset.size() > 0, "empty enrfieldset not allowed at this point!");
-        for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
-                enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-        {
-            if (enrfield->getField() == field)
-            {
-                const double enrval = enrvals.find(enrfield->getEnrichment())->second;
-                enr_funct(dofcounter) = funct(inode) * enrval;
-                enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
-                dofcounter += 1;
-            }
-        }
+      for (int inode = 0; inode < numvirtualnode; ++inode)
+      {
+        const double enrval = enrvals.find(enrfield->getEnrichment())->second;
+        enr_funct(dofcounter) = funct(inode) * enrval;
+        enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
+        dofcounter += 1;
+      }
     }
     dsassert(dofcounter == dofman.NumDofPerField(field), "mismatch in information from eledofmanager!");
 }
@@ -343,25 +343,10 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
     {
       continue;
     }
-    //const int numvirtnode = dofman.NumVirtualNodes(field);
-    const int numvirtnode = dofman.NumVirtualNodes();
-    if (numvirtnode != numparam) dserror("bug");
     
-    DRT::Element::DiscretizationType eleval_distype = DRT::Element::dis_none;
-    switch (numparam)
-    {
-      case 1:
-        eleval_distype = DRT::Element::point1;
-        break;
-      case 4:
-        eleval_distype = DRT::Element::tet4;
-        break;
-      case 8:
-        eleval_distype = DRT::Element::hex8;
-        break;
-      default:
-        dserror("add your distype here!");
-    }
+    const DRT::Element::DiscretizationType eleval_distype = dofman.getDisTypePerField(field);
+    const int numvirtnode = DRT::UTILS::getNumberOfElementNodes(eleval_distype);
+    if (numvirtnode != numparam) dserror("bug");
     
     BlitzVec funct(numparam);
     // fill shape functions
@@ -408,25 +393,10 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
     {
       continue;
     }
-    //const int numvirtnode = dofman.NumVirtualNodes(field);
-    const int numvirtnode = dofman.NumVirtualNodes();
-    if (numvirtnode != numparam) dserror("bug");
     
-    DRT::Element::DiscretizationType eleval_distype = DRT::Element::dis_none;
-    switch (numparam)
-    {
-      case 1:
-        eleval_distype = DRT::Element::point1;
-        break;
-      case 4:
-        eleval_distype = DRT::Element::tet4;
-        break;
-      case 8:
-        eleval_distype = DRT::Element::hex8;
-        break;
-      default:
-        dserror("add your distype here!");
-    }
+    const DRT::Element::DiscretizationType eleval_distype = dofman.getDisTypePerField(field);
+    const int numvirtnode = DRT::UTILS::getNumberOfElementNodes(eleval_distype);
+    if (numvirtnode != numparam) dserror("bug");
     
     BlitzVec funct(numparam);
     // fill shape functions

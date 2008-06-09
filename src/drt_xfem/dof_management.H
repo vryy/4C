@@ -50,8 +50,8 @@ namespace XFEM
       explicit ElementDofManager(
           const DRT::Element& ele,
           const map<int, const set<XFEM::FieldEnr> >&  nodalDofSet,
-          const map<int, const set<XFEM::FieldEnr> >&  elementnodalDofSet,
-          const int numvirtualnodes
+          const std::set<XFEM::FieldEnr>& enrfieldset,
+          const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
       );
       
       //! copy constructor
@@ -85,27 +85,6 @@ namespace XFEM
         return tmp->second;
       };
       
-      /*!
-       * \brief get a set with the enriched fields on this element
-       * 
-       * \return set with enriched fields
-       * 
-       */
-      const std::set<FieldEnr>& FieldEnrSetPerVirtualElementNode(
-          const int  lid    ///< local node id
-      ) const
-      {
-        map<int, const set<FieldEnr> >::const_iterator tmp = elementnodalDofSet_.find(lid);
-        if (tmp == elementnodalDofSet_.end())
-        {
-          std::cout << lid << endl;
-          // let this always be here so we can recognize errors early
-          dserror("FieldEnrSetPerVirtualElementNode: local node id not found!");
-          //return std::set<FieldEnr>();
-        }
-        return tmp->second;
-      };
-      
       //! function that returns node specific number of dofs or the given default number
       int NumDofPerNode(
           const int gid,            ///< unique global node id
@@ -123,19 +102,7 @@ namespace XFEM
       //! function that returns element specific number of dofs or the given default number
       int NumDofPerElement() const
       {
-        int numdofele = 0;
-        const int numvirtualnodes = elementnodalDofSet_.size();
-        if (numvirtualnodes > 0)
-        {
-          numdofele = numvirtualnodes * elementnodalDofSet_.find(0)->second.size();
-        }
-        return numdofele;
-      };
-      
-      //! function that returns element specific number of dofs or the given default number
-      int NumVirtualNodes() const
-      {
-        return elementnodalDofSet_.size();
+        return numElemDof_;
       };
       
       /*! return number of dofs on this element for a given field. E.g., if we have 4 nodes with
@@ -166,6 +133,21 @@ namespace XFEM
         return unique_enrichments_;
       }
       
+      std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getDisTypePerFieldMap() const
+      {
+        return DisTypePerElementField_;
+      }
+      
+      DRT::Element::DiscretizationType getDisTypePerField(XFEM::PHYSICS::Field field) const
+      {
+        return DisTypePerElementField_.find(field)->second;
+      }
+      
+      const std::set<XFEM::FieldEnr>& getEnrichedFieldsPerEleField(XFEM::PHYSICS::Field field) const
+      {
+        return enrichedFieldperPhysField_.find(field)->second;
+      }
+      
       //! not equal operator (for use in STL iterators)
       bool operator !=(const ElementDofManager& rhs) const
       {
@@ -188,20 +170,23 @@ namespace XFEM
       //! unknowns for each global node id (gid)
       std::map<int, const set<XFEM::FieldEnr> > nodalDofSet_;
       
-      //! unknowns for each virtual node id (lid)
-      std::map<int, const set<XFEM::FieldEnr> > elementnodalDofSet_;
-      
-      //! number of parameter/virtual nodes per enriched field
-      std::map<XFEM::PHYSICS::Field, int > numVirtualNodesPerEnrichedField_; //TODO: this is needed if different interpolation for stress and pressure is used
-      
       //! number of unknowns for each global node id (gid)
       std::map<int, int> nodalNumDof_;
       
       //! number of parameters for each field
       std::map<XFEM::PHYSICS::Field, int> numParamsPerField_;
       
+      //! number of parameters for each field
+      std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> DisTypePerElementField_;
+      
+      //! number of element degrees of freedom
+      int numElemDof_;
+      
       //! local (elemental) dofpos
       std::map<XFEM::PHYSICS::Field, std::vector<int> > paramsLocalEntries_;
+      
+      //! local (elemental) dofpos
+      std::map<XFEM::PHYSICS::Field, std::set<XFEM::FieldEnr> > enrichedFieldperPhysField_;
       
       //! set of all enrichments that are available on this proc.
       std::set<XFEM::Enrichment> unique_enrichments_;
@@ -251,7 +236,8 @@ namespace XFEM
       
       XFEM::ElementDofManager constructElementDofManager(
           const DRT::Element& ele,
-          const int numeleparam) const;
+          const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz
+          ) const;
       
       void checkForConsistency(
           const DRT::Element& ele,

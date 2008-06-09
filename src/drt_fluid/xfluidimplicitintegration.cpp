@@ -997,6 +997,28 @@ void XFluidImplicitTimeInt::NonlinearSolve(
     //cout << "*iforcecol" << endl;
     //cout << *iforcecol << endl;
   }
+  
+  
+  
+  const int nsd = 3;
+  const Epetra_Map* dofcolmap = cutterdiscret->DofColMap();
+  BlitzVec3 c;
+  c = 0.0;
+  for (int inode = 0; inode < cutterdiscret->NumMyColNodes(); ++inode)
+  {
+    const DRT::Node* node = cutterdiscret->lColNode(inode);
+    const std::vector<int> dof = cutterdiscret->Dof(node);
+    for (int isd = 0; isd < nsd; ++isd)
+    {
+      const double val = (*iforcecol)[dofcolmap->LID(dof[isd])];
+      c(isd) += val;
+    }
+    
+  }
+  
+  cout << "Drag: "<< c(0) << endl;
+  cout << "Lift: "<< c(1) << endl;
+  
 } // FluidImplicitTimeInt::NonlinearSolve
 
 
@@ -1239,6 +1261,8 @@ void XFluidImplicitTimeInt::OutputToGmsh()
   
   if (gmshdebugout)
   {
+    cout << "XFluidImplicitTimeInt::OutputToGmsh()" << endl;
+    
     std::stringstream filename;
     filename << "solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
     std::cout << "writing '"<<filename.str()<<"'...";
@@ -1255,18 +1279,22 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
-        //const int numnodeele = actele->Shape();
         
-        const DRT::Element::DiscretizationType stressdistype =
-          XFLUID::getStressInterpolationType3D(actele->Shape());
-        const int numeleparam =
-          DRT::UTILS::getNumberOfElementNodes(stressdistype);
         BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+        
+        map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+        element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(actele->Shape());
         
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman =
           dofmanagerForOutput_->constructElementDofManager(*actele,
-              numeleparam);
+              element_ansatz);
         
         vector<int> lm;
         vector<int> lmowner;
@@ -1337,18 +1365,22 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
-        //const int numnodeele = actele->Shape();
         
-        const DRT::Element::DiscretizationType stressdistype =
-          XFLUID::getStressInterpolationType3D(actele->Shape());
-        const int numeleparam =
-          DRT::UTILS::getNumberOfElementNodes(stressdistype);
         BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+        
+        map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+        element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(actele->Shape());
         
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman =
           dofmanagerForOutput_->constructElementDofManager(*actele,
-              numeleparam);
+              element_ansatz);
         
         vector<int> lm;
         vector<int> lmowner;
@@ -1442,18 +1474,22 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
-        //const int numnodeele = actele->Shape();
         
-        const DRT::Element::DiscretizationType stressdistype =
-          XFLUID::getStressInterpolationType3D(actele->Shape());
-        const int numeleparam =
-          DRT::UTILS::getNumberOfElementNodes(stressdistype);
         BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+        
+        map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+        element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(actele->Shape());
         
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman =
           dofmanagerForOutput_->constructElementDofManager(*actele,
-              numeleparam);
+              element_ansatz);
         
         vector<int> lm;
         vector<int> lmowner;
@@ -1577,16 +1613,21 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
         
-        const DRT::Element::DiscretizationType stressdistype =
-          XFLUID::getStressInterpolationType3D(actele->Shape());
-        const int numeleparam =
-          DRT::UTILS::getNumberOfElementNodes(stressdistype);
         BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+        
+        map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+        element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(actele->Shape());
         
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman =
           dofmanagerForOutput_->constructElementDofManager(*actele,
-              numeleparam);
+              element_ansatz);
         
         vector<int> lm;
         vector<int> lmowner;
@@ -1707,16 +1748,21 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
         
-        const DRT::Element::DiscretizationType stressdistype =
-          XFLUID::getStressInterpolationType3D(actele->Shape());
-        const int numeleparam =
-          DRT::UTILS::getNumberOfElementNodes(stressdistype);
         BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+        
+        map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+        element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(actele->Shape());
         
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman =
           dofmanagerForOutput_->constructElementDofManager(*actele,
-              numeleparam);
+              element_ansatz);
         
         vector<int> lm;
         vector<int> lmowner;
@@ -1837,16 +1883,21 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
         
-        const DRT::Element::DiscretizationType stressdistype =
-          XFLUID::getStressInterpolationType3D(actele->Shape());
-        const int numeleparam =
-          DRT::UTILS::getNumberOfElementNodes(stressdistype);
         BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+        
+        map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+        element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(actele->Shape());
+        element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(actele->Shape());
         
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman =
           dofmanagerForOutput_->constructElementDofManager(*actele,
-              numeleparam);
+              element_ansatz);
         
         vector<int> lm;
         vector<int> lmowner;

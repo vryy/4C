@@ -32,7 +32,7 @@ Maintainer: Axel Gerstenberger
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager::ElementDofManager() :
   nodalDofSet_(),
-  elementnodalDofSet_()
+  numElemDof_(0)
 {
   return;
 }
@@ -42,21 +42,18 @@ XFEM::ElementDofManager::ElementDofManager() :
 XFEM::ElementDofManager::ElementDofManager(
     const DRT::Element& ele,
     const map<int, const set<XFEM::FieldEnr> >& nodalDofSet,
-    const map<int, const set<XFEM::FieldEnr> >& elementnodalDofSet,
-    const int numvirtualnodes
+    const std::set<XFEM::FieldEnr>& enrfieldset,
+    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz
 ) :
   nodalDofSet_(nodalDofSet),
-  elementnodalDofSet_(elementnodalDofSet)
+  DisTypePerElementField_(element_ansatz)
 {
   // count number of dofs for each node
   map<int, const set<XFEM::FieldEnr> >::const_iterator tmp;
   for (tmp = nodalDofSet.begin(); tmp != nodalDofSet.end(); ++tmp)
   {
     const int gid = tmp->first;
-    const set<XFEM::FieldEnr> enrfieldset = tmp->second;
-    const int numdof = enrfieldset.size();
-    //dsassert(numdof > 0, "sollte jetzt noch nicht sein");
-    nodalNumDof_[gid] = numdof;
+    nodalNumDof_[gid] = tmp->second.size();
   }
   
   // set number of parameters per field to zero
@@ -70,22 +67,18 @@ XFEM::ElementDofManager::ElementDofManager(
       paramsLocalEntries_[field] = vector<int>();
     }
   }
-  for (tmp = elementnodalDofSet.begin(); tmp != elementnodalDofSet.end(); ++tmp)
+  for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
   {
-    const set<XFEM::FieldEnr> enrfieldset = tmp->second;
-    for (set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
-    {
-      const XFEM::PHYSICS::Field field = enrfield->getField();
-      numParamsPerField_[field] = 0;
-      paramsLocalEntries_[field] = vector<int>();
-    }
+    const XFEM::PHYSICS::Field field = enrfield->getField();
+    numParamsPerField_[field] = 0;
+    paramsLocalEntries_[field] = vector<int>();
   }
       
       
   unique_enrichments_.clear();
   // count number of parameters per field
   // define local position of unknown by looping first over nodes and then over its unknowns!
-  int counter = 0;
+  int dofcounter = 0;
   const DRT::Node*const* nodes = ele.Nodes();
   for (int inode=0; inode<ele.NumNode(); ++inode)
   {
@@ -99,27 +92,36 @@ XFEM::ElementDofManager::ElementDofManager(
     {
       const XFEM::PHYSICS::Field field = enrfield->getField();
       numParamsPerField_[field] += 1;
-      paramsLocalEntries_[field].push_back(counter);
+      paramsLocalEntries_[field].push_back(dofcounter);
       unique_enrichments_.insert(enrfield->getEnrichment());
-      counter++;
+      dofcounter++;
     }
   }
   // loop now over element dofs
-  // for that we have to loop over the "virtual element nodes" ansatz function
-  for (int inode=0; inode<numvirtualnodes; ++inode)
+  // we first loop over the fields and then over the params
+  numElemDof_ = 0;
+  enrichedFieldperPhysField_.clear();
+  for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
   {
-    map<int, const set <XFEM::FieldEnr> >::const_iterator entry = elementnodalDofSet_.find(inode);
-    if (entry == elementnodalDofSet_.end())
-      dserror("impossible ;-)");
-    const set<XFEM::FieldEnr> enrfieldset = entry->second;
-    
-    for (std::set<XFEM::FieldEnr>::const_iterator enrfield = enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
+    const XFEM::PHYSICS::Field field = enrfield->getField();
+    //cout << physVarToString(field) << endl;
+    std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator schnack = element_ansatz.find(field);
+    if (schnack == element_ansatz.end())
     {
-      const XFEM::PHYSICS::Field field = enrfield->getField();
+      dserror("field not found -> bug");
+    }
+    
+    enrichedFieldperPhysField_[field].insert(*enrfield);
+    
+    const DRT::Element::DiscretizationType eledofdistype = schnack->second;
+    const int numparam = DRT::UTILS::getNumberOfElementNodes(eledofdistype);
+    for (int inode=0; inode<numparam; ++inode)
+    {
+      numElemDof_ +=1;
       numParamsPerField_[field] += 1;
-      paramsLocalEntries_[field].push_back(counter);
+      paramsLocalEntries_[field].push_back(dofcounter);
       unique_enrichments_.insert(enrfield->getEnrichment());
-      counter++;
+      dofcounter++;
     }
   }
   
@@ -243,7 +245,7 @@ void XFEM::DofManager::toGmsh(
   
   if (gmshdebugout)
   {
-    
+    cout << "XFEM::DofManager::toGmsh()" << endl;
     std::stringstream filename;
     filename << "numdof_coupled_system_" << std::setw(5) << setfill('0') << step << ".pos";
     std::ofstream f_system(filename.str().c_str());
@@ -458,34 +460,6 @@ void XFEM::DofManager::toGmsh(
           gmshfilecontent << "};" << endl;
           f_system << gmshfilecontent.str();
         }
-        //      {
-        //          stringstream gmshfilecontent;
-        //          gmshfilecontent << "View \" " << " eleDofManager->label in element \" {" << endl;
-        //          for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
-        //          {
-        //              const DRT::Element* actele = ihForOutput_->xfemdis()->lColElement(i);
-        //              const int numvirtualnodes = DRT::UTILS::getNumberOfElementNodes(actele->Shape());
-        //              
-        //              // create local copy of information about dofs
-        //              const XFEM::ElementDofManager eleDofManager = dofmanager->constructElementDofManager(*actele, numvirtualnodes);
-        //              
-        //              //const int ele_gid = actele->Id();
-        //              double val = 0.0;
-        //              
-        //              if (actele->NumDofPerElement() > 0)
-        //              {
-        //                const std::set<XFEM::FieldEnr> enrfieldset = eleDofManager.FieldEnrSetPerVirtualElementNode(0);
-        //                XFEM::FieldEnr firstenrfield = *(enrfieldset.begin());
-        //                const int label = firstenrfield.getEnrichment().XFEMConditionLabel();
-        //                val = label;
-        //              }
-        //              gmshfilecontent << IO::GMSH::elementToString(val, actele);
-        //
-        //          };
-        //          gmshfilecontent << "};" << endl;
-        //          f_system << gmshfilecontent.str();
-        //      }
-        //f_system << IO::GMSH::getConfigString(2);
         f_system.close();
       }
       std::cout << "done" << endl;
@@ -502,28 +476,32 @@ void XFEM::DofManager::toGmsh(
  *----------------------------------------------------------------------*/
 XFEM::ElementDofManager XFEM::DofManager::constructElementDofManager(
     const DRT::Element&  ele,
-    const int      numeleparam
+    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz
 ) const
 {
-  // create a list with number of dofs per local node
-  const int numnode = ele.NumNode();
-  const int* nodegids = ele.NodeIds();
-  
   // nodal dofs for ele
   std::map<int, const set <XFEM::FieldEnr> > nodaldofset;
-  for (int inode = 0; inode < numnode; ++inode) {
-    const int gid = nodegids[inode];
+  for (int inode = 0; inode < ele.NumNode(); ++inode)
+  {
+    const int gid = ele.NodeIds()[inode];
     nodaldofset.insert(make_pair(gid,this->getNodeDofSet(gid)));
   }
   
   // element dofs for ele
-  std::map<int, const set <XFEM::FieldEnr> > elementnodaldofset;
-  for (int inode = 0; inode < numeleparam; ++inode) {
-    elementnodaldofset.insert(make_pair(inode,this->getElementDofSet(ele.Id())));
+  std::set<XFEM::FieldEnr> enrfieldset;
+  
+  std::map<int,const std::set<XFEM::FieldEnr> >::const_iterator enrfieldsetiter = elementalDofs_.find(ele.Id());
+  if (enrfieldsetiter != elementalDofs_.end())
+  {
+    enrfieldset = enrfieldsetiter->second;
+  }
+  else
+  {
+    // use empty set
   }
   
   // return a local dofmanager
-  return XFEM::ElementDofManager(ele, nodaldofset, elementnodaldofset, numeleparam);
+  return XFEM::ElementDofManager(ele, nodaldofset, enrfieldset, element_ansatz);
 }
 
 
@@ -535,7 +513,7 @@ void XFEM::DofManager::checkForConsistency(
 ) const
 {
   // create local copy of current information about dofs
-  XFEM::ElementDofManager current_eledofman = this->constructElementDofManager(ele, stored_eledofman.NumVirtualNodes());
+  const XFEM::ElementDofManager current_eledofman = this->constructElementDofManager(ele, stored_eledofman.getDisTypePerFieldMap());
   
   // compare with given and report error
   if (current_eledofman != stored_eledofman)

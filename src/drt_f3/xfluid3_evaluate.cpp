@@ -362,11 +362,17 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           // get access to global dofman
           const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
           
-          const DRT::Element::DiscretizationType stressdistype = XFLUID::getStressInterpolationType3D(this->Shape());
-          const int numvirtualnodes = DRT::UTILS::getNumberOfElementNodes(stressdistype);
-          
           // create local copy of information about dofs
-          eleDofManager_ = globaldofman->constructElementDofManager((*this), numvirtualnodes);
+          map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+          element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(Shape());
+          element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(Shape());
+          element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(Shape());
+          element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(Shape());
+          element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(Shape());
+          element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(Shape());
+          element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(Shape());
+          
+          eleDofManager_ = globaldofman->constructElementDofManager(*this, element_ansatz);
           
           // store pointer to interface handle
           ih_ = params.get< RCP< XFEM::InterfaceHandle > >("interfacehandle",null);
