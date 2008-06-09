@@ -22,9 +22,6 @@ FSI::LagrangianBlockMatrix::LagrangianBlockMatrix(const LINALG::MultiMapExtracto
  *----------------------------------------------------------------------*/
 int FSI::LagrangianBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
 {
-  MergeSolve(X, Y);
-  return 0;
-
   const LINALG::SparseMatrix& S    = Matrix(0,0);
 
   const LINALG::SparseMatrix& Fii  = Matrix(1,1);
@@ -99,51 +96,51 @@ int FSI::LagrangianBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetra
 
     Epetra_Time ta(Comm());
 
-//     CSA.Multiply(false,*sy,*say);
+    CSA.Multiply(false,*sy,*say);
 
-//     // invert diagonal matrix CAS
+    // invert diagonal matrix CAS
 
-//     int len = say->MyLength();
-//     for (int i=0; i<len; ++i)
-//     {
-//       int NumEntries;
-//       double *Values;
-//       int *Indices;
-//       int err = CAS.EpetraMatrix()->ExtractMyRowView(i,NumEntries,Values,Indices);
-//       if (err)
-//         dserror("ExtractMyRowView: err=%d",err);
-//       if (NumEntries!=1)
-//         dserror("diagonal matrix expected");
-//       (*agy)[Indices[0]] = -(*say)[i] / Values[0];
-//     }
+    int len = say->MyLength();
+    for (int i=0; i<len; ++i)
+    {
+      int NumEntries;
+      double *Values;
+      int *Indices;
+      int err = CAS.EpetraMatrix()->ExtractMyRowView(i,NumEntries,Values,Indices);
+      if (err)
+        dserror("ExtractMyRowView: err=%d",err);
+      if (NumEntries!=1)
+        dserror("diagonal matrix expected");
+      (*agy)[Indices[0]] = -(*say)[i] / Values[0];
+    }
 
-//     Teuchos::RCP<Epetra_Vector> tmpaix = Teuchos::rcp(new Epetra_Vector(DomainMap(3)));
-//     Aig.Multiply(false,*agy,*tmpaix);
-//     aix->Update(-1.0,*tmpaix,1.0);
+    Teuchos::RCP<Epetra_Vector> tmpaix = Teuchos::rcp(new Epetra_Vector(DomainMap(3)));
+    Aig.Multiply(false,*agy,*tmpaix);
+    aix->Update(-1.0,*tmpaix,1.0);
 
     alesolver_->Solve(Aii.EpetraMatrix(),aiy,aix,true);
 
-//     Teuchos::RCP<Epetra_Vector> tmpagx = Teuchos::rcp(new Epetra_Vector(DomainMap(4)));
-//     Agi.Multiply(false,*aiy,*tmpagx);
-//     agx->Update(-1.0,*tmpagx,1.0);
-//     Agg.Multiply(false,*agy,*tmpagx);
-//     agx->Update(-1.0,*tmpagx,1.0);
+    Teuchos::RCP<Epetra_Vector> tmpagx = Teuchos::rcp(new Epetra_Vector(DomainMap(4)));
+    Agi.Multiply(false,*aiy,*tmpagx);
+    agx->Update(-1.0,*tmpagx,1.0);
+    Agg.Multiply(false,*agy,*tmpagx);
+    agx->Update(-1.0,*tmpagx,1.0);
 
-//     // invert diagonal matrix CAST
+    // invert diagonal matrix CAST
 
-//     len = agx->MyLength();
-//     for (int i=0; i<len; ++i)
-//     {
-//       int NumEntries;
-//       double *Values;
-//       int *Indices;
-//       int err = CAST.EpetraMatrix()->ExtractMyRowView(i,NumEntries,Values,Indices);
-//       if (err)
-//         dserror("ExtractMyRowView: err=%d",err);
-//       if (NumEntries!=1)
-//         dserror("diagonal matrix expected");
-//       (*say)[Indices[0]] = -(*agx)[i] / Values[0];
-//     }
+    len = agx->MyLength();
+    for (int i=0; i<len; ++i)
+    {
+      int NumEntries;
+      double *Values;
+      int *Indices;
+      int err = CAST.EpetraMatrix()->ExtractMyRowView(i,NumEntries,Values,Indices);
+      if (err)
+        dserror("ExtractMyRowView: err=%d",err);
+      if (NumEntries!=1)
+        dserror("diagonal matrix expected");
+      (*say)[Indices[0]] = (*agx)[i] / Values[0];
+    }
 
     if (Comm().MyPID()==0)
       std::cout << ta.ElapsedTime() << std::flush;
@@ -155,51 +152,51 @@ int FSI::LagrangianBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetra
 
     Epetra_Time tf(Comm());
 
-//     CSF.Multiply(false,*sy,*sfy);
+    CSF.Multiply(false,*sy,*sfy);
 
-//     // invert diagonal matrix CFS
+    // invert diagonal matrix CFS
 
-//     int len = sfy->MyLength();
-//     for (int i=0; i<len; ++i)
-//     {
-//       int NumEntries;
-//       double *Values;
-//       int *Indices;
-//       int err = CFS.EpetraMatrix()->ExtractMyRowView(i,NumEntries,Values,Indices);
-//       if (err)
-//         dserror("ExtractMyRowView: err=%d",err);
-//       if (NumEntries!=1)
-//         dserror("diagonal matrix expected");
-//       (*fgy)[Indices[0]] = -(*sfy)[i] / Values[0];
-//     }
+    int len = sfy->MyLength();
+    for (int i=0; i<len; ++i)
+    {
+      int NumEntries;
+      double *Values;
+      int *Indices;
+      int err = CFS.EpetraMatrix()->ExtractMyRowView(i,NumEntries,Values,Indices);
+      if (err)
+        dserror("ExtractMyRowView: err=%d",err);
+      if (NumEntries!=1)
+        dserror("diagonal matrix expected");
+      (*fgy)[Indices[0]] = -(*sfy)[i] / Values[0];
+    }
 
-//     Teuchos::RCP<Epetra_Vector> tmpfix = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
-//     Fig.Multiply(false,*fgy,*tmpfix);
-//     fix->Update(-1.0,*tmpfix,1.0);
+    Teuchos::RCP<Epetra_Vector> tmpfix = Teuchos::rcp(new Epetra_Vector(DomainMap(1)));
+    Fig.Multiply(false,*fgy,*tmpfix);
+    fix->Update(-1.0,*tmpfix,1.0);
 
     fluidsolver_->Solve(Fii.EpetraMatrix(),fiy,fix,true);
 
-//     Teuchos::RCP<Epetra_Vector> tmpfgx = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
-//     Fgi.Multiply(false,*fiy,*tmpfgx);
-//     fgx->Update(-1.0,*tmpfgx,1.0);
-//     Fgg.Multiply(false,*fgy,*tmpfgx);
-//     fgx->Update(-1.0,*tmpfgx,1.0);
+    Teuchos::RCP<Epetra_Vector> tmpfgx = Teuchos::rcp(new Epetra_Vector(DomainMap(2)));
+    Fgi.Multiply(false,*fiy,*tmpfgx);
+    fgx->Update(-1.0,*tmpfgx,1.0);
+    Fgg.Multiply(false,*fgy,*tmpfgx);
+    fgx->Update(-1.0,*tmpfgx,1.0);
 
-//     // invert diagonal matrix CFST
+    // invert diagonal matrix CFST
 
-//     len = fgx->MyLength();
-//     for (int i=0; i<len; ++i)
-//     {
-//       int NumEntries;
-//       double *Values;
-//       int *Indices;
-//       int err = CFST.EpetraMatrix()->ExtractMyRowView(i,NumEntries,Values,Indices);
-//       if (err)
-//         dserror("ExtractMyRowView: err=%d",err);
-//       if (NumEntries!=1)
-//         dserror("diagonal matrix expected");
-//       (*sfy)[Indices[0]] = -(*fgx)[i] / Values[0];
-//     }
+    len = fgx->MyLength();
+    for (int i=0; i<len; ++i)
+    {
+      int NumEntries;
+      double *Values;
+      int *Indices;
+      int err = CFST.EpetraMatrix()->ExtractMyRowView(i,NumEntries,Values,Indices);
+      if (err)
+        dserror("ExtractMyRowView: err=%d",err);
+      if (NumEntries!=1)
+        dserror("diagonal matrix expected");
+      (*sfy)[Indices[0]] = (*fgx)[i] / Values[0];
+    }
 
     if (Comm().MyPID()==0)
       std::cout << tf.ElapsedTime() << "\n";
@@ -210,13 +207,13 @@ int FSI::LagrangianBlockMatrix::ApplyInverse(const Epetra_MultiVector &X, Epetra
   RangeExtractor().InsertVector(*sy,0,y);
 
   RangeExtractor().InsertVector(*fiy,1,y);
-//   RangeExtractor().InsertVector(*fgy,2,y);
+  RangeExtractor().InsertVector(*fgy,2,y);
 
   RangeExtractor().InsertVector(*aiy,3,y);
-//   RangeExtractor().InsertVector(*agy,4,y);
+  RangeExtractor().InsertVector(*agy,4,y);
 
-//   RangeExtractor().InsertVector(*sfy,5,y);
-//   RangeExtractor().InsertVector(*say,6,y);
+  RangeExtractor().InsertVector(*sfy,5,y);
+  RangeExtractor().InsertVector(*say,6,y);
 
   return 0;
 }
