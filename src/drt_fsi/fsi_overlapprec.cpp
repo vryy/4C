@@ -169,8 +169,6 @@ void FSI::OverlappingBlockMatrix::FSALowerGS(const Epetra_MultiVector &X, Epetra
   Teuchos::RCP<Epetra_Vector> fy = RangeExtractor().ExtractVector(y,1);
   Teuchos::RCP<Epetra_Vector> ay = RangeExtractor().ExtractVector(y,2);
 
-#if 1
-
   {
     // Solve fluid equations for fy with the rhs fx - F(I,Gamma) sy - F(Mesh) ay
 
@@ -192,55 +190,16 @@ void FSI::OverlappingBlockMatrix::FSALowerGS(const Epetra_MultiVector &X, Epetra
 
     Epetra_Time ts(Comm());
 
-    //const LINALG::SparseMatrix& structBoundOp = Matrix(0,1);
+    const LINALG::SparseMatrix& structBoundOp = Matrix(0,1);
 
-    //Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
-    //structBoundOp.Multiply(false,*fy,*tmpsx);
-    //sx->Update(-1.0,*tmpsx,1.0);
-    //tmpsx->Update(1.0,*sx,-1.0);
+    Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp(new Epetra_Vector(DomainMap(0)));
+    structBoundOp.Multiply(false,*fy,*tmpsx);
+    sx->Update(-1.0,*tmpsx,1.0);
     structuresolver_->Solve(structInnerOp.EpetraMatrix(),sy,sx,true);
 
     if (Comm().MyPID()==0)
       std::cout << ts.ElapsedTime() << std::flush;
   }
-
-#else
-
-  const LINALG::SparseMatrix& fluidBoundOp  = Matrix(1,0);
-  const LINALG::SparseMatrix& structBoundOp = Matrix(0,1);
-
-  fy->PutScalar(0.);
-  sy->PutScalar(0.);
-
-#if 0
-  BlockRichardson(fluidInnerOp,
-                  fluidBoundOp,
-                  structBoundOp,
-                  structInnerOp,
-                  fluidsolver_,
-                  structuresolver_,
-                  fy,
-                  sy,
-                  fx,
-                  sx,
-                  1.0,
-                  200);
-#else
-  BlockRichardson(structInnerOp,
-                  structBoundOp,
-                  fluidBoundOp,
-                  fluidInnerOp,
-                  structuresolver_,
-                  fluidsolver_,
-                  sy,
-                  fy,
-                  sx,
-                  fx,
-                  0.001,
-                  40);
-#endif
-
-#endif
 
   {
     // Solve ale equations for ay with the rhs ax - A(I,Gamma) sy
