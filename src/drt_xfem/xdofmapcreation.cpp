@@ -57,12 +57,14 @@ void XFEM::createDofMap(
           const DRT::Element* actele = ih.xfemdis()->lColElement(i);
           const int element_gid = actele->Id();
           
-          const double ratio = XFEM::AreaRatio(*actele,ih);
-          const bool almost_empty_element = (abs(1.0-ratio) < 1.0e-6);
-          const bool there_are_more_than_one_integration_cells = (ih.elementalDomainIntCells()->count(element_gid)>=1);
+          const bool there_is_more_than_one_integration_cell = (ih.elementalDomainIntCells()->count(element_gid)>=1);
           
-          if (there_are_more_than_one_integration_cells and !almost_empty_element )
+          if (there_is_more_than_one_integration_cell)
           {
+            const double ratio = XFEM::AreaRatio(*actele,ih);
+            const bool almost_empty_element = (abs(1.0-ratio) < 1.0e-6);
+            if ( not almost_empty_element )  
+            {
               
               const XFEM::BoundaryIntCells& bcells = ih.elementalBoundaryIntCells()->find(element_gid)->second;
                 //TODO: check if element is intersected by the CURRENT condition label
@@ -109,6 +111,7 @@ void XFEM::createDofMap(
                 elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::DiscPres, voidenr));
               };
             }
+          }
         };
     };
     
