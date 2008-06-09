@@ -257,23 +257,25 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 		 }	
 	  
 	  //calculating diagonal entry of damping matrix  
-	  double gamma;
-	  gamma = 4*params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_/3;  
+	  double gamma_trans = params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_/2;
+	  double gamma_rot   = params.get<double>("damping factor M",0.0) * mominer_  * density * lrefe_/2;
 	  
 	  //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-	  double stand_dev = pow(2 * thermalenergy_ * gamma / params.get<double>("delta time",0.01),0.5);
+	  double stand_dev_trans = pow(2 * thermalenergy_ * gamma_trans / params.get<double>("delta time",0.01),0.5);
+	  double stand_dev_rot   = pow(2 * thermalenergy_ * gamma_rot   / params.get<double>("delta time",0.01),0.5);
 
 	  //creating a random generator object which creates random numbers with mean = 0 and standard deviation
 	  //stand_dev; using Blitz namespace "ranlib" for random number generation
-	  ranlib::Normal<double> normalGen(0,stand_dev);
+	  ranlib::Normal<double> normalGen_trans(0,stand_dev_trans);
+	  ranlib::Normal<double> normalGen_rot(0,stand_dev_rot);
 	  
 	  //adding statistical forces accounting for connectivity of nodes
-	  elevec1[0] += normalGen.random() / sqrt( Nodes()[0]->NumElement() );  
-	  elevec1[1] += normalGen.random() / sqrt( Nodes()[0]->NumElement() );
-	  elevec1[2] += normalGen.random() / sqrt( Nodes()[0]->NumElement() );
-  	  elevec1[3] += normalGen.random() / sqrt( Nodes()[1]->NumElement() );
-  	  elevec1[4] += normalGen.random() / sqrt( Nodes()[1]->NumElement() ); 
-  	  elevec1[5] += normalGen.random() / sqrt( Nodes()[1]->NumElement() );    	   
+	  elevec1[0] += normalGen_trans.random();  
+	  elevec1[1] += normalGen_trans.random();
+	  elevec1[2] += normalGen_rot.random();
+  	elevec1[3] += normalGen_trans.random();
+  	elevec1[4] += normalGen_trans.random(); 
+  	elevec1[5] += normalGen_rot.random();    	   
   }   
   return 0;
 }
@@ -537,15 +539,12 @@ x_verschiebung = disp[numdf];
  	 massmatrix.Shape(6,6);
  	 //note: this is not an exact lumped mass matrix, but it is modified in such a way that it leads
  	 //to a diagonal mass matrix with constant diagonal entries
- 	 massmatrix(0,0) = 4*density*lrefe_*crosssec_/( 3*Nodes()[0]->NumElement() );
- 	 massmatrix(1,1) = 4*density*lrefe_*crosssec_/( 3*Nodes()[0]->NumElement() );
- 	 
- 	 massmatrix(2,2) = 4*density*lrefe_*crosssec_/( 3*Nodes()[0]->NumElement() );
- 	 
- 	 massmatrix(3,3) = 4*density*lrefe_*crosssec_/( 3*Nodes()[1]->NumElement() );
- 	 massmatrix(4,4) = 4*density*lrefe_*crosssec_/( 3*Nodes()[1]->NumElement() );
- 	 
- 	 massmatrix(5,5) = 4*density*lrefe_*crosssec_/( 3*Nodes()[1]->NumElement() );
+ 	 massmatrix(0,0) = density*lrefe_*crosssec_/2;
+ 	 massmatrix(1,1) = density*lrefe_*crosssec_/2;	 
+ 	 massmatrix(2,2) = density*lrefe_*mominer_/2; 
+ 	 massmatrix(3,3) = density*lrefe_*crosssec_/2;
+ 	 massmatrix(4,4) = density*lrefe_*crosssec_/2; 
+ 	 massmatrix(5,5) = density*lrefe_*mominer_/2;
    }
   else
 	  dserror("improper value of variable lumpedflag_");    
