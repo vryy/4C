@@ -82,9 +82,8 @@ int DRT::ELEMENTS::Fluid2Line::Evaluate(        ParameterList&            params
           mydispnp.resize(lm.size());
           DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
         }
-        ElementNodeNormal(params,discretization,lm,elevec1,mydispnp);
       }
-      else dserror("height function for ale only");
+      ElementNodeNormal(params,discretization,lm,elevec1,mydispnp);
       break;
     }
     default:
