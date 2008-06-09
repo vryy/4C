@@ -18,7 +18,6 @@
 
 #include "post_drt_ensight_writer.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_xfem/physics.H"
 
 /*!
  \brief Writer for structural problems

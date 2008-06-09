@@ -14,14 +14,8 @@
 
 #ifdef CCADISCRET
 
-#include "post_drt_ensight_writer.H"
-#include <string>
 #include "post_drt_ensight_single_field_writers.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_xfem/integrationcell.H"
-#include "../drt_xfem/physics.H"
-#include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/enrichment_utils.H"
+#include <string>
 
 
 

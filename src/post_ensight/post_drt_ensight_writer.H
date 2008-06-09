@@ -33,7 +33,6 @@
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_xfem/dof_management.H"
 
 using namespace std;
 
