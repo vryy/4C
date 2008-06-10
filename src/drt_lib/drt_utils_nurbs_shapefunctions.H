@@ -29,9 +29,201 @@ namespace NURBS
 {
 namespace UTILS
 {
+
+  
+  /*
+   
+  \brief Evaluate basis functions of nurbs basis functions (line element version).
+  
+  \verbatim
+  
+          reference element          element in knotspan
+                              Psi
+          --+XXX+XXX+-->    ------>   ****+XXX+**** --->
+           -1      +1   u                             xi
+                  \            knot(degree)   knot(degree+1)D
+                   \
+                    \                       |
+                     \                      |
+                      \                     |
+                       \                    |
+                        \                   |
+                         \                  |
+                          \                 |
+                           \                |      +----
+                            \               |       \
+                 Phi o Psi   \              | Phi =  +  N_{i}(xi)*f_{i}
+                  ^           \             |       /
+                  N_{i}(u,v)   \            |      +----
+                                \           |
+                                 \          |
+                                  \         |
+                                   \        |
+                                    \       |
+                                            v
+                                         *
+                                          *
+                                           +
+                                           X
+                                           X
+                                           X
+                                           +
+                                            *
+                                             *
+                                 'real' geometry element
+
+   \endverbatim
+
+   PART   I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
+
+   \verbatim
+
+   B_{i}(xi) = N_i(xi)
+
+   \endverbatim
+
+   PART  II: PROJECTING TO NURBS SHAPE FUNCTIONS
+   
+   \verbatim
+
+                        w_{i} * B_{i}(xi)
+            N_{i} = --------------------------
+                     +----+
+                      \
+                       +    w_{k} * B_{k}(xi)
+                      /
+                     +----+
+                       k
+   \endverbatim
+   
+   
+    \param nurbs_shape_funct  (o)
+    \param u                  (i)
+    \param knots              (i)
+    \param weights            (i)
+    \param distype            (i)
+   
+    \return void
+    
+  */
+
+  void nurbs_get_1D_funct(
+    blitz::Array<double,1>                 & nurbs_shape_funct  ,
+    const double                           & u                  ,
+    const blitz::Array<double, 1>          & knots              ,
+    const blitz::Array<double, 1>          & weights            ,
+    const DRT::Element::DiscretizationType & distype            );
+
+
+  /*!
+    \brief Evaluate basis functions and derivatives (with
+    respect to the coordinates of the reference element)
+    of nurbs basis functions --- version for 1d line
+    elements.
+   
+   \verbatim
+   
+           reference element          element in knotspan
+                                 Psi
+          --+XXX+XXX+-->    ------>   ****+XXX+**** --->
+           -1      +1   u                             xi
+                  \            knot(degree)   knot(degree+1)D
+                   \
+                    \                       |
+                     \                      |
+                      \                     |
+                       \                    |
+                        \                   |
+                         \                  |
+                          \                 |
+                           \                |      +----
+                            \               |       \
+                 Phi o Psi   \              | Phi =  +  N_{i}(xi)*f_{i}
+                  ^           \             |       /
+                  N_{i}(u,v)   \            |      +----
+                                \           |
+                                 \          |
+                                  \         |
+                                   \        |
+                                    \       |
+                                            v
+                                         *
+                                          *
+                                           +
+                                           X
+                                           X
+                                           X
+                                           +
+                                            *
+                                             *
+                                 'real' geometry element
+
+   \endverbatim
+
+   PART   I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
+   
+  \verbatim
+
+              B_{i}(xi) = N_i(xi)
+
+
+              dB_{i}
+              ------(xi) = N_i'(xi)
+               dxi
+
+  \endverbatim
+
+  PART  II: PROJECTING TO NURBS SHAPE FUNCTIONS
+
+  \verbatim
+
+                      w_{i} * B_{i}(xi)
+          N_{i} = --------------------------
+                  +----+
+                   \
+                    +    w_{k} * B_{k}(xi)
+                   /
+                  +----+
+                    k
+                    
+  \endverbatim
+  
+  Derivatives are evaluated using the chain rule
+  
+  PART III: TRANSFORMING DERIVATIVES FROM xi TO u
+  
+  \verbatim
+   
+            +-   -+   +-   -+
+            | dxi |   |  du |
+     Psi' = | --- | = | --- |
+            |  du |   | 2.0 |
+            +-   -+   +-   -+
+  
+  \endverbatim
+
+  \param nurbs_shape_funct  (o)
+  \param nurbs_shape_deriv  (o)
+  \param uv                 (i)
+  \param knots              (i)
+  \param weights            (i)
+  \param distype            (i)
+  
+  \return void
+  
+  */
+
+  void nurbs_get_1D_funct_deriv(
+    blitz::Array<double,1>                 & nurbs_shape_funct,
+    blitz::Array<double,1>                 & nurbs_shape_deriv,
+    const double                           & u                ,
+    const blitz::Array<double, 1>          & knots            ,
+    const blitz::Array<double, 1>          & weights          ,
+    const DRT::Element::DiscretizationType & distype          );
+
   
 /*!
-\brief Evaluate basis functions of nurbs basis functions.
+\brief Evaluate 2d basis functions of nurbs basis functions.
 
 \verbatim
 
@@ -123,7 +315,7 @@ void nurbs_get_2D_funct(
 
 
 /*!
-\brief Evaluate basis functions and derivatives (with 
+\brief Evaluate 2d basis functions and derivatives (with 
 respect to the coordinates of the reference element) 
 of nurbs basis functions.
 
@@ -247,7 +439,7 @@ void nurbs_get_2D_funct_deriv(
 
 /*!
 
-\brief Evaluate basis functions, first and second derivatives 
+\brief Evaluate 2d basis functions, first and second derivatives 
        (with respect to the coordinates of the reference 
        element) of nurbs basis functions.
 

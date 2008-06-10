@@ -17,6 +17,9 @@ Maintainer: Peter Gmanitzer
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_nurbs_discret.H"
+#include "../drt_lib/drt_control_point.H"
+#include "../drt_lib/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
@@ -161,9 +164,9 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
-  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val"  );
-  const vector<int>*    functions = condition.Get<vector<int> >("funct");
+  const vector<int>*    onoff     = condition.Get<vector<int> >   ("onoff");
+  const vector<double>* val       = condition.Get<vector<double> >("val"  );
+  const vector<int>*    functions = condition.Get<vector<int> >   ("funct");
 
     // set number of nodes
   const int iel   = this->NumNode();
@@ -174,13 +177,54 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
   const GaussRule1D gaussrule = getOptimalGaussrule(distype);
   const IntegrationPoints1D  intpoints = getIntegrationPoints1D(gaussrule);
 
+  // --------------------------------------------------
+  // Now initialise the nurbs specific stuff
+  blitz::Array<double,1> myknots;
+
+  blitz::Array<double,1> weights(iel);
+  
+  // for isogeometric elements
+  if(this->Shape()==nurbs2 || this->Shape()==nurbs3)
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+    
+    std::vector<blitz::Array<double,1> > surfaceknots(2);
+    (*((*nurbsdis).GetKnotVector())).GetEleKnots(surfaceknots,parent_->Id());
+    
+    //           6    7    8
+    //            +---+---+
+    //            *       |
+    //            *       |
+    //            +   +   +
+    //           3*   4   |5
+    //            *       |
+    //            +---+---+
+    //           0    1    2  
+    //
+    // Example: Id()=3 -> (Id())%2=1, i.e. direction v (OK)
+    myknots.resize((surfaceknots[(Id())%2]).extent(blitz::firstDim));
+    myknots=surfaceknots[(Id())%2];
+
+    DRT::Node** nodes = Nodes();
+
+    for (int inode=0; inode<iel; inode++)
+    {
+      DRT::NURBS::ControlPoint* cp 
+	= 
+	dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+
+      weights(inode) = cp->W();
+    }
+  }
 
   // allocate vector for shape functions and for derivatives
-  Epetra_SerialDenseVector   funct(iel);
-  Epetra_SerialDenseMatrix   deriv(1, iel);
+  blitz::Array<double,1> funct(iel);
+  blitz::Array<double,1> deriv(iel);
 
   // node coordinates
-  Epetra_SerialDenseMatrix xye(2,iel);
+  blitz::Array<double,2> xye(2,iel);
 
   // get node coordinates
   for(int i=0;i<iel;++i)
@@ -195,11 +239,50 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
   {
     const double e1 = intpoints.qxg[gpid];
     // get shape functions and derivatives in the line
-    shape_function_1D(funct,e1,distype);
-    shape_function_1D_deriv1(deriv,e1,distype);
+    if(!(distype == DRT::Element::nurbs2 
+	 || 
+	 distype == DRT::Element::nurbs3))
+    {
+      DRT::UTILS::shape_function_1D(funct,
+				    e1,
+				    distype);
+      DRT::UTILS::shape_function_1D_deriv1(deriv,
+					   e1,
+					   distype);
+    }
+    else
+    {
+      DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(funct  ,
+						  deriv  ,
+						  e1     ,
+						  myknots,
+						  weights,
+						  distype);
+    }
+
+    // The Jacobian is computed using the formula
+    //
+    //            +-----
+    //   dx_j(u)   \      dN_k(r)
+    //   -------  = +     ------- * (x_j)_k
+    //     du      /       du         |
+    //            +-----    |         |
+    //            node k    |         |
+    //                  derivative    |
+    //                   of shape     |
+    //                   function     |
+    //                           component of
+    //                          node coordinate
+    //
+
+    blitz::firstIndex  i;   // Placeholder for the first index
+    blitz::secondIndex j;   // Placeholder for the second index
+
+    blitz::Array<double,1> der_par(2);
+    der_par = blitz::sum(deriv(j)*xye(i,j),j);
 
     // compute infinitesimal line element dr for integration along the line
-    const double dr = f2_substitution(xye,deriv,iel);
+    const double dr = sqrt(der_par(0)*der_par(0)+der_par(1)*der_par(1));
 
     // values are multiplied by the product from inf. area element,
     // the gauss weight, the timecurve factor and the constant
@@ -215,32 +298,36 @@ int DRT::ELEMENTS::Fluid2Line::EvaluateNeumann(
     coordgp[0]=0.0;
     coordgp[0]=0.0;
     for (int i = 0; i< iel; i++)
-      {
-       coordgp[0]+=xye(0,i)*funct[i];
-       coordgp[1]+=xye(1,i)*funct[i];
-      }
+    {
+      coordgp[0]+=xye(0,i)*funct(i);
+      coordgp[1]+=xye(1,i)*funct(i);
+    }
 
     int functnum = -1;
     const double* coordgpref = &coordgp[0]; // needed for function evaluation
 
     for (int node=0;node<iel;++node)
+    {
+      for(int dim=0;dim<3;dim++)
       {
-       for(int dim=0;dim<3;dim++)
-        {
-         // factor given by spatial function
-	 if (functions) functnum = (*functions)[dim];
-       	   {
-            if (functnum>0)
-              // evaluate function at current gauss point
-              functionfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);
-            else
-              functionfac = 1.0;
-       	   }
-
-          elevec1[node*numdf+dim]+=
-          funct[node] * (*onoff)[dim] * (*val)[dim] * fac * functionfac * invdensity;
-        }
+	// factor given by spatial function
+	if (functions) functnum = (*functions)[dim];
+	{
+	  if (functnum>0)
+	  {
+	    // evaluate function at current gauss point
+	    functionfac = DRT::UTILS::FunctionManager::Instance().Funct(functnum-1).Evaluate(dim,coordgpref);
+	  }
+	  else
+	  {
+	    functionfac = 1.0;
+	  }
+	}
+	
+	elevec1[node*numdf+dim]+=
+          funct(node)*(*onoff)[dim]*(*val)[dim]*fac*functionfac*invdensity;
       }
+    }
   } //end of loop over integrationen points
 
   return 0;
@@ -254,12 +341,12 @@ GaussRule1D DRT::ELEMENTS::Fluid2Line::getOptimalGaussrule(const DiscretizationT
   GaussRule1D rule = intrule1D_undefined;
   switch (distype)
     {
-    case line2:
-      rule = intrule_line_2point;
-      break;
-    case line3:
-      rule = intrule_line_3point;
-      break;
+        case line2: case nurbs2:
+          rule = intrule_line_2point;
+          break;
+        case line3: case nurbs3:
+          rule = intrule_line_3point;
+          break;
     default:
     dserror("unknown number of nodes for gaussrule initialization");
     }

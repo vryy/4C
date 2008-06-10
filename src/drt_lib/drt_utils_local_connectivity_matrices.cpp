@@ -52,6 +52,10 @@ int DRT::UTILS::getNumberOfElementNodes(
     case DRT::Element::quad4:        return 4;    break;
     case DRT::Element::quad8:        return 8;    break;
     case DRT::Element::quad9:        return 9;    break;
+    case DRT::Element::nurbs2:       return 2;    break;
+    case DRT::Element::nurbs3:       return 3;    break;
+    case DRT::Element::nurbs4:       return 4;    break;
+    case DRT::Element::nurbs9:       return 9;    break;
     case DRT::Element::hex8:         return 8;    break;
     case DRT::Element::hex20:        return 20;   break;
     case DRT::Element::hex27:        return 27;   break;
@@ -59,7 +63,7 @@ int DRT::UTILS::getNumberOfElementNodes(
     case DRT::Element::tet10:        return 10;   break;
     default:
         cout << DRT::DistypeToString(distype) << endl;
-        dserror("discretization type %s not yet implemented", DRT::DistypeToString(distype));
+        dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
 
     return numnodes;
@@ -121,7 +125,10 @@ int DRT::UTILS::getNumberOfElementLines(
         case DRT::Element::tet4: case DRT::Element::tet10:
             numLines = 6;
             break;
-        case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9:
+        case DRT::Element::quad4: case DRT::Element::quad8: case DRT::Element::quad9: 
+            numLines = 4;
+            break;
+        case DRT::Element::nurbs4: case DRT::Element::nurbs9: 
             numLines = 4;
             break;
         case DRT::Element::tri3: case DRT::Element::tri6:
@@ -378,6 +385,20 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
             }
             break;
         }
+        case DRT::Element::nurbs9:
+        {
+            const int nLine = 4;
+            const int nNode = 3;
+            vector<int> submap(nNode, -1);
+
+            for(int i = 0; i < nLine; i++)
+            {
+                map.push_back(submap);
+                for(int j = 0; j < nNode; j++)
+                    map[i][j] = eleNodeNumbering_nurbs9_lines[i][j];
+            }
+            break;
+        }
         case DRT::Element::quad4:
         {
             const int nLine = 4;
@@ -389,6 +410,20 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
                 map.push_back(submap);
                 for(int j = 0; j < nNode; j++)
                     map[i][j] = eleNodeNumbering_quad9_lines[i][j];
+            }
+            break;
+        }
+        case DRT::Element::nurbs4:
+        {
+            const int nLine = 4;
+            const int nNode = 2;
+            vector<int> submap(nNode, -1);
+
+            for(int i = 0; i < nLine; i++)
+            {
+                map.push_back(submap);
+                for(int j = 0; j < nNode; j++)
+                    map[i][j] = eleNodeNumbering_nurbs4_lines[i][j];
             }
             break;
         }
@@ -850,13 +885,15 @@ int DRT::UTILS::getDimension(const DRT::Element::DiscretizationType distype)
 
     switch(distype)
     {
-        case DRT::Element::line2 :  case DRT::Element::line3 :
+        case DRT::Element::line2  : case DRT::Element::line3  :
+        case DRT::Element::nurbs2 : case DRT::Element::nurbs3 :
         {
             dim = 1;
             break;
         }
-        case DRT::Element::quad4 : case DRT::Element::quad8 : case DRT::Element::quad9 :
-        case DRT::Element::tri3 : case DRT::Element::tri6 :
+        case DRT::Element::quad4  : case DRT::Element::quad8  : case DRT::Element::quad9 :
+        case DRT::Element::tri3   : case DRT::Element::tri6   :
+        case DRT::Element::nurbs4 : case DRT::Element::nurbs9 :
         {
             dim = 2;
             break;

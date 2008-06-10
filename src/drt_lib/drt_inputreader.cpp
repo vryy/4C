@@ -310,7 +310,7 @@ void DatFileReader::ReadKnots(
   string dir;
 
   // index for u/v/w
-  int    direction;
+  int direction=0;
   
   int filecount=0;
 

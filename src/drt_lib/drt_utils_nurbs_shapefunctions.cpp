@@ -18,7 +18,455 @@ using namespace std;
 
 /*
 
-Evaluate basis functions of nurbs basis functions.
+Evaluate basis functions of nurbs basis functions (line element version).
+
+*/
+
+void DRT::NURBS::UTILS::nurbs_get_1D_funct(
+  blitz::Array<double,1>                 & nurbs_shape_funct  ,
+  const double                           & u                  ,
+  const blitz::Array<double, 1>          & knots              ,
+  const blitz::Array<double, 1>          & weights            ,
+  const DRT::Element::DiscretizationType & distype            )
+{
+
+  int degree = 0;
+
+  switch (distype)
+  {
+  case DRT::Element::nurbs2:
+  {
+    degree=1;
+    
+    break;
+  }
+  case DRT::Element::nurbs3:
+  {
+    degree=2;
+    
+    break;
+  }
+  default:
+  {
+    dserror("Unknown distype for nurbs line element evaluation\n");
+  }
+  }
+ 
+  // size is the number of control points/basis 
+  // functions of this element
+  const int size   = (degree+1);
+
+  // Gausspoint is in [-1:1]
+  //
+  // has to be mapped into knotvector evaluation interval
+  
+  /*
+       reference element          element in knotspan
+      
+                            Psi                     
+        --+XXX+XXX+-->    ------>   ****+XXX+**** --->
+
+         -1      +1   u                             xi
+                                                 
+                \       (knot[0])(degree)   (knot[0])(degree+1)
+                 \
+                  \                       |
+                   \                      |
+                    \                     |
+                     \                    |
+                      \                   |
+                       \                  |
+                        \                 |
+                         \                |      +----
+                          \               |       \
+               Phi o Psi   \              | Phi =  +  N_{i}(xi)*f_{i}
+                ^           \             |       /
+                N_{i}(u,v)   \            |      +----
+                              \           |
+                               \          |
+                                \         |
+                                 \        |
+                                  \       |
+                                          v
+                                       *         
+                                        *               
+                                         +             
+                                         X            
+                                         X           
+                                         X              
+                                         +         
+                                          *         
+                                           *
+                              'real' geometry element
+  */
+    
+  // the jacobian matrix of Psi is of the very 
+  // simple form
+  //
+  //              Ju
+  //              |
+  //              |
+  //          +-  du -+
+  //   Psi' = |  ---  |
+  //          +- 2.0 -+
+  //                 
+  //                 
+  //                 
+  //
+
+  double du = knots(degree+1)-knots(degree);
+
+  double Ju =du/2.0;
+
+  // get mapped coordinates
+  
+  double xi = knots(degree)+(u+1.0)*Ju;
+  
+  // -----------------------------------------------
+  //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
+  // -----------------------------------------------
+  
+  blitz::Array<double,1> bezier_shape_funct(size);
+    
+  // allocate bspline polynomials for both direction
+  DRT::NURBS::UTILS::BsplinePolynomial bspline_xi (degree,knots);
+  
+  // get temporary double
+  double bspline_xi_value;
+  
+  //          
+  //  Bezier basis function 
+  //          |
+  //          |
+  //       B_{i}(xi) = N_i(xi)
+  //                     |       
+  //                     |       
+  //            bspline_u_value  
+  //
+  
+  // loop all basis functions (corresponding to 
+  // control points)
+  for(int rr=0;rr<degree+1;++rr)
+  {
+    // in first direction:
+    
+    // get bsplinevalue
+    bspline_xi.EvaluateBspline(bspline_xi_value,
+			       xi              ,
+			       rr              );
+
+    // add value to bezier_shape_funct
+    bezier_shape_funct(rr)=bspline_xi_value;
+  }
+
+  // -----------------------------------------------
+  //  PART II: PROJECTING TO NURBS SHAPE FUNCTIONS
+  // -----------------------------------------------
+  
+  // alloc temporary doubles, initialise to zero
+  double                 sum_funct_weight;
+  
+  sum_funct_weight=0;
+  
+  /*loop all control points, compute sums
+      
+                         +----+
+                          \
+       sum_funct_weight =  +    w_{i} * B_{i}(xi)
+                          /
+                         +----+
+  */
+
+  for(int rr=0;rr<size;++rr)
+  {
+    sum_funct_weight+=weights(rr)*bezier_shape_funct(rr);
+  }
+  
+  /* Compute Nurbs basis functions
+      
+      
+                    w_{i} * B_{i}(xi)
+                
+       N_{i} = ------------------------
+               +----+				
+                \				
+                 +    w_{k} * B_{k}(xi)
+      		/				
+      	       +----+				
+      		  k                           
+  */
+
+  // loop all basis functions
+  for(int rr=0;rr<size;++rr)
+  {    
+    // get shape function
+    nurbs_shape_funct(rr)=weights(rr)*bezier_shape_funct(rr)/sum_funct_weight;
+  }
+
+  return;
+}
+
+
+/*
+
+Evaluate basis functions and derivatives of nurbs basis functions (1d).
+
+*/
+void DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
+  blitz::Array<double,1>                 & nurbs_shape_funct,
+  blitz::Array<double,1>                 & nurbs_shape_deriv,
+  const double                           & u                ,
+  const blitz::Array<double, 1>          & knots            ,
+  const blitz::Array<double, 1>          & weights          ,
+  const DRT::Element::DiscretizationType & distype
+  )
+{
+  int degree = 0;
+
+  switch (distype)
+  {
+  case DRT::Element::nurbs2:
+  {
+    degree=1;
+
+    break;
+  }
+  case DRT::Element::nurbs3:
+  {
+    degree=2;
+    
+    break;
+  }
+  default:
+  {
+    dserror("Unknown distype for nurbs line element evaluation\n");
+  }
+  }
+ 
+  // size is the number of control points/basis 
+  // functions of this element
+  const int size   = (degree+1);
+
+  // Gausspoint is in [-1:1]
+  //
+  // has to be mapped into knotvector evaluation interval
+  
+  /*
+       reference element          element in knotspan
+      
+                            Psi                     
+        --+XXX+XXX+-->    ------>   ****+XXX+**** --->
+
+         -1      +1   u                             xi
+                                                 
+                \       (knot[0])(degree)   (knot[0])(degree+1)
+                 \
+                  \                       |
+                   \                      |
+                    \                     |
+                     \                    |
+                      \                   |
+                       \                  |
+                        \                 |
+                         \                |      +----
+                          \               |       \
+               Phi o Psi   \              | Phi =  +  N_{i}(xi)*f_{i}
+                ^           \             |       /
+                N_{i}(u,v)   \            |      +----
+                              \           |
+                               \          |
+                                \         |
+                                 \        |
+                                  \       |
+                                          v
+                                       *         
+                                        *               
+                                         +             
+                                         X            
+                                         X           
+                                         X              
+                                         +         
+                                          *         
+                                           *
+                              'real' geometry element
+  */
+    
+  // the jacobian matrix of Psi is of the very 
+  // simple form
+  //
+  //              Ju
+  //              |
+  //              |
+  //          +-  du -+
+  //   Psi' = |  ---  |
+  //          +- 2.0 -+
+  //                 
+  //                 
+  //                 
+  //
+
+  double du = knots(degree+1)-knots(degree);
+
+  double Ju =du/2.0;
+
+  // get mapped coordinates
+  
+  double xi = knots(degree)+(u+1.0)*Ju;
+  
+  // -----------------------------------------------
+  //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
+  // -----------------------------------------------
+  
+  blitz::Array<double,1> bezier_shape_funct(size);
+  blitz::Array<double,1> bezier_shape_deriv(size);
+    
+  // allocate bspline polynomials for both direction
+  DRT::NURBS::UTILS::BsplinePolynomial bspline_xi (degree,knots);
+  
+  // get temporary doubles
+  double bspline_xi_value;
+  double bspline_xi_derivative;
+  
+  //          
+  //  Bezier basis function 
+  //          |
+  //          |
+  //       B_{i}(xi,eta) = N_i(xi)
+  //                         |       
+  //                         |       
+  //                bspline_u_value  
+  //
+  
+  //      dB_{i}   
+  //      ------(xi,eta) = N_i'(xi)
+  //       dxi 
+  //
+  
+  // loop all basis functions (corresponding to 
+  // control points)
+  for(int rr=0;rr<degree+1;++rr)
+  {
+    // in first direction:
+    
+    // get bsplinevalue and derivative
+    bspline_xi.EvaluateBsplineAndDeriv(bspline_xi_value,
+				       bspline_xi_derivative,
+				       xi,
+				       rr);
+      
+    // add value to bezier_shape_funct
+    bezier_shape_funct(rr)=bspline_xi_value;
+      
+    // add values to bezier_shape_deriv
+    bezier_shape_deriv(rr)=bspline_xi_derivative;
+  }
+
+  // -----------------------------------------------
+  //  PART II: PROJECTING TO NURBS SHAPE FUNCTIONS
+  // -----------------------------------------------
+  
+  // alloc temporary doubles, initialise to zero
+  double sum_funct_weight;
+  double sum_deriv_weight;
+  
+  sum_funct_weight=0;
+  sum_deriv_weight=0;
+  
+  /*loop all control points, compute sums
+      
+                         +----+
+                          \
+       sum_funct_weight =  +    w_{i} * B_{i}(xi)
+                          /
+                         +----+
+      
+      
+                         +----+
+                          \             dB'_{i}
+       sum_deriv_weight =  +    w_{i} * -------(xi)
+                          /               dxi
+                         +----+
+  */
+
+  for(int rr=0;rr<size;++rr)
+  {
+    sum_funct_weight+=weights(rr)*bezier_shape_funct(rr);
+    
+    sum_deriv_weight+=weights(rr)*bezier_shape_deriv(rr);
+  }
+  
+  /* Compute Nurbs basis functions
+      
+      
+                  w_{i} * B_{i}(xi)
+               
+       N_{i} = ------------------------
+               +----+				
+                \				
+                 +    w_{k} * B_{k}(xi)
+      	        /				
+      	       +----+				
+      	          k                           
+  */
+
+  // Nurbs derivatives are defined by the chain rule
+  //
+  //                         +- +----+          -+               +- +----+             -+ 
+  //                         |   \               |               |   \	         dB_{k} |
+  //                  dB_{i} |    +  w_{k}*B_{k} |               |    +    w_{k}*------ |
+  //            w_{i}*------*|   /               | - w_{i}*B_{i}*|   /             dxi  |
+  //	  	       dxi   |  +----+           |               |  +----+              |
+  // dN_{i}                  +-   k             -+               +-   k                -+
+  // ------ = ----------------------------------------------------------------------------
+  //  dxi                         +- +----+                  -+ 2
+  //                              |   \                       |
+  //                              |    +    w_{k} * B_{k}(xi) |
+  //		                  |   /                       |
+  //		                  |  +----+                   |
+  //		                  +-   k                     -+
+
+  // loop all basis functions
+  for(int rr=0;rr<size;++rr)
+  {    
+    // get shape function
+    nurbs_shape_funct(rr)=weights(rr)*bezier_shape_funct(rr)/sum_funct_weight;
+    
+    // loop directions to compute derivatives
+    nurbs_shape_deriv(rr)
+      =
+      bezier_shape_deriv(rr)*sum_funct_weight
+      -
+      bezier_shape_funct(rr)*sum_deriv_weight;
+      
+      nurbs_shape_deriv(rr)*=weights(rr)/(sum_funct_weight*sum_funct_weight);
+  }
+    
+  // -----------------------------------------------
+  //  PART III: TRANSFORMING DERIVATIVES FROM xi
+  //            TO u
+  // -----------------------------------------------
+   
+  // we already know the jacobian matrix of psi
+  //
+  //          +- dxi -+   +-  du -+
+  //   Psi' = |  ---  | = |  ---  |
+  //          +-  du -+   +- 2.0 -+
+  //
+  // we will obtain the derivatives with respect to  
+  // u,v just by multiplication  
+  
+  // loop all basis function derivatives
+  for(int rr=0;rr<size;++rr)
+  {
+    nurbs_shape_deriv(rr)*=Ju;
+  }    
+
+  return;
+}
+
+/*
+
+Evaluate basis functions of 2d nurbs basis functions.
 
 */
 
@@ -242,7 +690,7 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct(
 
 Evaluate basis functions and derivatives (with 
 respect to the coordinates of the reference element) 
-of nurbs basis functions.
+of 2d nurbs basis functions.
 
 */
 
@@ -552,7 +1000,7 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
 
 Evaluate basis functions, first and second derivatives 
 (with respect to the coordinates of the reference 
-element) of nurbs basis functions.
+element) of 2d nurbs basis functions.
 
 */
 

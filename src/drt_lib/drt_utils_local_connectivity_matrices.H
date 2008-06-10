@@ -118,6 +118,54 @@ namespace UTILS
           {2,  3,  6},
           {3,  0,  7}};
 
+  //! 4 Lines of a nurbs4 element with 2 control points per line
+  //! we apply the nurbs specific cartesian numbering
+  //!
+  //! \verbatim
+  //!
+  //!          2   (2)   3
+  //!           +-------+
+  //!           |       |
+  //!           |       |(1)
+  //!        (3)|       |
+  //!           |       |
+  //!           +-------+
+  //!          0   (0)   1
+  //!
+  //! \endverbatim
+
+  const int eleNodeNumbering_nurbs4_lines[4][2] = {
+          {0,  1},
+          {1,  2},
+          {2,  3},
+          {3,  0}};
+
+
+  //! 4 Lines of a nurbs9 element with 3 control points per line
+  //! we apply the nurbs specific cartesian numbering.
+  //!
+  //! \verbatim
+  //!
+  //!            (2)
+  //!          6    7    8
+  //!           +---+---+
+  //!           |       | (1)
+  //!       (3) |       |
+  //!           +   +   +
+  //!          3|   4   |5
+  //!           |       |
+  //!           +---+---+
+  //!          0    1    2  
+  //!            (0)
+  //!
+  //! \endverbatim
+
+  const int eleNodeNumbering_nurbs9_lines[4][3] = {
+          {0,  1,  2},
+          {2,  5,  8},
+          {8,  7,  6},
+          {6,  3,  0}};
+
   //! 3 Lines of a Tri6 element with 3 nodes per line
   const int eleNodeNumbering_tri6_lines[3][3] = {
           {0,  1,  3},
@@ -269,9 +317,13 @@ namespace UTILS
   template<> struct _switchDisType<DRT::Element::point1>   {static const int numNodePerElement = 1;};
   template<> struct _switchDisType<DRT::Element::line2>    {static const int numNodePerElement = 2;};
   template<> struct _switchDisType<DRT::Element::line3>    {static const int numNodePerElement = 3;};
+  template<> struct _switchDisType<DRT::Element::nurbs2>   {static const int numNodePerElement = 2;};
+  template<> struct _switchDisType<DRT::Element::nurbs3>   {static const int numNodePerElement = 3;};
   template<> struct _switchDisType<DRT::Element::quad4>    {static const int numNodePerElement = 4;};
   template<> struct _switchDisType<DRT::Element::quad8>    {static const int numNodePerElement = 8;};
   template<> struct _switchDisType<DRT::Element::quad9>    {static const int numNodePerElement = 9;};
+  template<> struct _switchDisType<DRT::Element::nurbs4>   {static const int numNodePerElement = 8;};
+  template<> struct _switchDisType<DRT::Element::nurbs9>   {static const int numNodePerElement = 9;};
   template<> struct _switchDisType<DRT::Element::tri3>     {static const int numNodePerElement = 3;};
   template<> struct _switchDisType<DRT::Element::tri6>     {static const int numNodePerElement = 6;};
   template<> struct _switchDisType<DRT::Element::hex8>     {static const int numNodePerElement = 8;};
@@ -425,9 +477,13 @@ namespace UTILS
   template<> struct DisTypeToDim<DRT::Element::point1>   {static const int dim = 0;};
   template<> struct DisTypeToDim<DRT::Element::line2>    {static const int dim = 1;};
   template<> struct DisTypeToDim<DRT::Element::line3>    {static const int dim = 1;};
+  template<> struct DisTypeToDim<DRT::Element::nurbs2>   {static const int dim = 1;};
+  template<> struct DisTypeToDim<DRT::Element::nurbs3>   {static const int dim = 1;};
   template<> struct DisTypeToDim<DRT::Element::quad4>    {static const int dim = 2;};
   template<> struct DisTypeToDim<DRT::Element::quad8>    {static const int dim = 2;};
   template<> struct DisTypeToDim<DRT::Element::quad9>    {static const int dim = 2;};
+  template<> struct DisTypeToDim<DRT::Element::nurbs4>   {static const int dim = 2;};
+  template<> struct DisTypeToDim<DRT::Element::nurbs9>   {static const int dim = 2;};
   template<> struct DisTypeToDim<DRT::Element::tri3>     {static const int dim = 2;};
   template<> struct DisTypeToDim<DRT::Element::tri6>     {static const int dim = 2;};
   template<> struct DisTypeToDim<DRT::Element::hex8>     {static const int dim = 3;};

@@ -250,10 +250,10 @@ GaussRule2D DRT::ELEMENTS::Fluid2::getOptimalGaussrule(const DiscretizationType&
     GaussRule2D rule = intrule2D_undefined;
     switch (distype)
     {
-    case quad4:
+    case quad4: case nurbs4:
         rule = intrule_quad_4point;
         break;
-    case quad8: case quad9:
+    case quad8: case quad9: case nurbs9:
         rule = intrule_quad_9point;
         break;
     case tri3:
