@@ -50,161 +50,35 @@ int getNumParam<XFEM::standard_assembly>(
     return numnode;
 }
 
-template <DRT::Element::DiscretizationType DISTYPE,
-          XFEM::AssemblyType ASSTYPE>
-void fillElementUnknownsArrays2(
-        const XFEM::ElementDofManager& dofman,
-        const vector<double>& locval,
-        const vector<double>& locval_hist,
-        BlitzMat& evelnp,
-        BlitzMat& evelnp_hist,
-        BlitzVec& eprenp,
-        BlitzMat& etau,
-        BlitzVec& ediscprenp
-        )
+template<class M1, class M2, class M3>
+static void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau, M3& tau)
 {
-    
-    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
-    
-    // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-    const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
-    const int numparamvely = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Vely, numnode);
-    const int numparamvelz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velz, numnode);
-    const int numparampres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Pres, numnode);
-    // put one here to create arrays of size 1, since they are not needed anyway
-    // in the xfem assembly, the numparam is determined by the dofmanager
-    const int numparamtauxx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 1);
-    const int numparamdiscpres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
-    
-    const vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
-    const vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
-    const vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
-    const vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
-    
-    for (int iparam=0; iparam<numparamvelx; ++iparam)
+    tau = 0.0;
+    for (int i = 0; i < numparamtau; ++i)
     {
-        evelnp(     0,iparam) = locval[     velxdof[iparam]];
-        evelnp_hist(0,iparam) = locval_hist[velxdof[iparam]];
+        const double fac = shp_tau(i);
+        tau(0,0) += fac*etau(0,i);
+        tau(1,1) += fac*etau(1,i);
+        tau(2,2) += fac*etau(2,i);
+        tau(0,1) += fac*etau(3,i);
+        tau(0,2) += fac*etau(4,i);
+        tau(1,2) += fac*etau(5,i);
     }
-    for (int iparam=0; iparam<numparamvely; ++iparam)
-    {
-        evelnp(     1,iparam) = locval[     velydof[iparam]];
-        evelnp_hist(1,iparam) = locval_hist[velydof[iparam]];
-    }
-    for (int iparam=0; iparam<numparamvelz; ++iparam)
-    {
-        evelnp(     2,iparam) = locval[     velzdof[iparam]];
-        evelnp_hist(2,iparam) = locval_hist[velzdof[iparam]];
-    }
-    for (int iparam=0; iparam<numparampres; ++iparam)
-        eprenp(iparam) = locval[presdof[iparam]];
-    const bool tauele_unknowns_present = (getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 0) > 0);
-    if (tauele_unknowns_present)
-    {
-        const int numparamtauyy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 1);
-        const int numparamtauzz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 1);
-        const int numparamtauxy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 1);
-        const int numparamtauxz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 1);
-        const int numparamtauyz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 1);
-        const vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxx>());
-        const vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyy>());
-        const vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauzz>());
-        const vector<int>& tauxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxy>());
-        const vector<int>& tauxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxz>());
-        const vector<int>& tauyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyz>());
-        for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = locval[tauxxdof[iparam]];
-        for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = locval[tauyydof[iparam]];
-        for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = locval[tauzzdof[iparam]];
-        for (int iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = locval[tauxydof[iparam]];
-        for (int iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = locval[tauxzdof[iparam]];
-        for (int iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = locval[tauyzdof[iparam]];
-    }
-    const bool discpres_unknowns_present = (getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 0) > 0);
-    if (discpres_unknowns_present)
-    {
-        const vector<int>& discpresdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::DiscPres>());
-        for (int iparam=0; iparam<numparamdiscpres; ++iparam)   ediscprenp(iparam) = locval[discpresdof[iparam]];
-    }
-}
-
-template <DRT::Element::DiscretizationType DISTYPE,
-          XFEM::AssemblyType ASSTYPE>
-void fillElementUnknownsArrays3(
-        const XFEM::ElementDofManager& dofman,
-        const vector<double>& locval,
-        const vector<double>& locval_hist,
-        BlitzMat& evelnp,
-        BlitzMat& evelnp_hist,
-        BlitzVec& eprenp,
-        BlitzMat& etau
-        )
-{
-    
-    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
-    
-    // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
-    const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
-    const int numparamvely = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Vely, numnode);
-    const int numparamvelz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velz, numnode);
-    const int numparampres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Pres, numnode);
-    // put one here to create arrays of size 1, since they are not needed anyway
-    // in the xfem assembly, the numparam is determined by the dofmanager
-    const int numparamtauxx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 1);
-    
-    const vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
-    const vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
-    const vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
-    const vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
-    
-    for (int iparam=0; iparam<numparamvelx; ++iparam)
-    {
-        evelnp(     0,iparam) = locval[     velxdof[iparam]];
-        evelnp_hist(0,iparam) = locval_hist[velxdof[iparam]];
-    }
-    for (int iparam=0; iparam<numparamvely; ++iparam)
-    {
-        evelnp(     1,iparam) = locval[     velydof[iparam]];
-        evelnp_hist(1,iparam) = locval_hist[velydof[iparam]];
-    }
-    for (int iparam=0; iparam<numparamvelz; ++iparam)
-    {
-        evelnp(     2,iparam) = locval[     velzdof[iparam]];
-        evelnp_hist(2,iparam) = locval_hist[velzdof[iparam]];
-    }
-    for (int iparam=0; iparam<numparampres; ++iparam)
-        eprenp(iparam) = locval[presdof[iparam]];
-    const bool tauele_unknowns_present = (getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxx, 0) > 0);
-    if (tauele_unknowns_present)
-    {
-        const int numparamtauyy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyy, 1);
-        const int numparamtauzz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauzz, 1);
-        const int numparamtauxy = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxy, 1);
-        const int numparamtauxz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauxz, 1);
-        const int numparamtauyz = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Tauyz, 1);
-        const vector<int>& tauxxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxx>());
-        const vector<int>& tauyydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyy>());
-        const vector<int>& tauzzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauzz>());
-        const vector<int>& tauxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxy>());
-        const vector<int>& tauxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauxz>());
-        const vector<int>& tauyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Tauyz>());
-        for (int iparam=0; iparam<numparamtauxx; ++iparam)   etau(0,iparam) = locval[tauxxdof[iparam]];
-        for (int iparam=0; iparam<numparamtauyy; ++iparam)   etau(1,iparam) = locval[tauyydof[iparam]];
-        for (int iparam=0; iparam<numparamtauzz; ++iparam)   etau(2,iparam) = locval[tauzzdof[iparam]];
-        for (int iparam=0; iparam<numparamtauxy; ++iparam)   etau(3,iparam) = locval[tauxydof[iparam]];
-        for (int iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = locval[tauxzdof[iparam]];
-        for (int iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = locval[tauyzdof[iparam]];
-    }
+    tau(1,0) = tau(0,1);
+    tau(2,0) = tau(0,2);
+    tau(2,1) = tau(1,2);
 }
 
 
 /*!
  * \brief calculate the body force from the nodes condition
+ * 
+ *  get the body force in the nodes of the element (private) gammi 04/07
+ *  the Neumann condition associated with the nodes is stored in the
+ *  array edeadng only if all nodes have a VolumeNeumann condition
+ *
  */
-/*----------------------------------------------------------------------*
- |  get the body force in the nodes of the element (private) gammi 04/07|
- |  the Neumann condition associated with the nodes is stored in the    |
- |  array edeadng only if all nodes have a VolumeNeumann condition      |
- *----------------------------------------------------------------------*/
+
 template <DRT::Element::DiscretizationType DISTYPE>
 BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
 {

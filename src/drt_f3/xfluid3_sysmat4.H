@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file xfluid3_sysmat3.H
+\file xfluid3_sysmat4.H
 
 \brief element formulations for 3d XFEM fluid element
 
@@ -16,8 +16,8 @@ Maintainer: Axel Gerstenberger
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
-#ifndef XFLUID3_SYSMAT3_H
-#define XFLUID3_SYSMAT3_H
+#ifndef XFLUID3_SYSMAT4_H
+#define XFLUID3_SYSMAT4_H
 
 #include <math.h>
 #include "xfluid3.H"
@@ -46,7 +46,7 @@ namespace XFLUID
 
   template <DRT::Element::DiscretizationType DISTYPE,
             XFEM::AssemblyType ASSTYPE>
-  void fillElementUnknownsArrays3(
+  void fillElementUnknownsArrays4(
           const XFEM::ElementDofManager& dofman,
           const vector<double>& locval,
           const vector<double>& locval_hist,
@@ -121,12 +121,13 @@ namespace XFLUID
       }
   }
   
+  
 /*!
   Calculate matrix and rhs for stationary problem formulation
   */
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
-static void Sysmat3(
+static void Sysmat4(
         const DRT::Element*               ele,           ///< the element those matrix is calculated
         const RCP<XFEM::InterfaceHandle>  ih,            ///< connection to the interface handler
         const XFEM::ElementDofManager&    dofman,        ///< dofmanager of the current element
@@ -216,7 +217,7 @@ static void Sysmat3(
     BlitzMat evelnp_hist(3,numparamvelx,blitz::ColumnMajorArray<2>());
     BlitzMat etau(6,numparamtauxx,blitz::ColumnMajorArray<2>());
     
-    fillElementUnknownsArrays3<DISTYPE,ASSTYPE>(dofman, locval, locval_hist, evelnp, evelnp_hist, eprenp, etau, ediscprenp);
+    fillElementUnknownsArrays4<DISTYPE,ASSTYPE>(dofman, locval, locval_hist, evelnp, evelnp_hist, eprenp, etau, ediscprenp);
     
     // stabilization parameter
     const double hk = XFLUID::HK<DISTYPE>(evelnp,xyze);
@@ -1896,7 +1897,7 @@ static void Sysmat3(
  * at one point, one has to call specific template intantiations of Sysmat using the current Shape() of the element.
  * This is the point.
  */
-void callSysmat3(
+void callSysmat4(
         const XFEM::AssemblyType          assembly_type,
         const DRT::ELEMENTS::XFluid3*     ele,
         const RCP<XFEM::InterfaceHandle>  ih,
@@ -1922,17 +1923,17 @@ void callSysmat3(
         switch (ele->Shape())
         {
             case DRT::Element::hex8:
-                Sysmat3<DRT::Element::hex8,XFEM::standard_assembly>(
+                Sysmat4<DRT::Element::hex8,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex20:
-                Sysmat3<DRT::Element::hex20,XFEM::standard_assembly>(
+                Sysmat4<DRT::Element::hex20,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex27:
-                Sysmat3<DRT::Element::hex27,XFEM::standard_assembly>(
+                Sysmat4<DRT::Element::hex27,XFEM::standard_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
@@ -1950,17 +1951,17 @@ void callSysmat3(
         switch (ele->Shape())
         {
             case DRT::Element::hex8:
-                Sysmat3<DRT::Element::hex8,XFEM::xfem_assembly>(
+                Sysmat4<DRT::Element::hex8,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex20:
-                Sysmat3<DRT::Element::hex20,XFEM::xfem_assembly>(
+                Sysmat4<DRT::Element::hex20,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
             case DRT::Element::hex27:
-                Sysmat3<DRT::Element::hex27,XFEM::xfem_assembly>(
+                Sysmat4<DRT::Element::hex27,XFEM::xfem_assembly>(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
