@@ -111,6 +111,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==ImpedanceCond)				        os << "Impedance boundary condition";
   else if (Type()==MPC_NodeOnPlane_3D)          os << "Multipoint constraint on a plane";
   else if (Type()==MPC_NodeOnLine_2D)           os << "Multipoint constraint on a line";
+  else if (Type()==LJ_Potential)                os << "Lennard-Jones potential on a surface";
 
   else dserror("no output string for condition defined in DRT::Condition::Print");
   Container::Print(os);

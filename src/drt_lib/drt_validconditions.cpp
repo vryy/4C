@@ -452,6 +452,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(surfactant,"gamma_min_eq");
 
   condlist.push_back(surfactant);
+  
+  
+  /*--------------------------------------------------------------------*/
+  // Lennard Jones potential
+  
+  Teuchos::RCP<ConditionDefinition> lj_potential =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF LJ_POTENTIAL CONDITIONS",
+                                         "LJ_Potential",
+                                         "Surface Stress (LJ_Potential)",
+                                         DRT::Condition::LJ_Potential,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  lj_potential->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedReal(lj_potential,"depth");
+  AddNamedReal(lj_potential,"rootDist");
+
+  condlist.push_back(lj_potential);
 
   /*--------------------------------------------------------------------*/
   // microscale boundary
