@@ -18,6 +18,7 @@ Maintainer: Axel Gerstenberger
 #include "xdofmapcreation.H"
 #include "xfem_condition.H"
 #include "enrichment_utils.H"
+#include "../drt_f3/xfluid3_interpolation.H"
 
 
 /*----------------------------------------------------------------------*
@@ -95,21 +96,14 @@ void XFEM::createDofMap(
                 // add discontinuous stress unknowns
                 // the number of each of these parameters will be determined later
                 // by using a discretization type and appropriate shape functions
-//                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Sigmaxx, voidenr));
-//                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Sigmayy, voidenr));
-//                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Sigmazz, voidenr));
-//                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Sigmaxy, voidenr));
-//                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Sigmaxz, voidenr));
-//                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Sigmayz, voidenr));
+                const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
                 
-                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauxx, voidenr));
-                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauyy, voidenr));
-                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauzz, voidenr));
-                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauxy, voidenr));
-                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauxz, voidenr));
-                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauyz, voidenr));
-                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::DiscPres, voidenr));
-              };
+                map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
+                for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
+                {
+                  elementalDofs[element_gid].insert(XFEM::FieldEnr(fielditer->first, voidenr));
+                }
+             };
             }
           }
         };

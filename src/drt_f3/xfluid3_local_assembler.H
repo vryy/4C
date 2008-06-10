@@ -24,6 +24,23 @@ Maintainer: Axel Gerstenberger
 //#include "xfluid3_shapefunction_handle.H"
 
 
+enum DerivDir
+{
+  D0 = 0,
+  Dx = 1,
+  Dy = 2,
+  Dz = 3,
+  DxDx = 4,
+  DyDy = 5,
+  DzDz = 6,
+  DxDy = 7,
+  DxDz = 8,
+  DyDz = 9,
+  DyDx = 7,
+  DzDx = 8,
+  DzDy = 9
+};
+
 //! for non-xfem elements, figure out the order of unknowns per node in the array
 template<XFEM::PHYSICS::Field field>
 struct FieldNum {static const int pos = -1;};
@@ -34,13 +51,49 @@ template<> struct FieldNum<XFEM::PHYSICS::Pres> {static const int pos = 3;};
 
 //! for the viscous stress, replace shear stress components with symmetric part
 template <XFEM::PHYSICS::Field FIELD>
-struct MangleField {static const XFEM::PHYSICS::Field name = FIELD;};
-template<> struct MangleField<XFEM::PHYSICS::Sigmayx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxy;};
-template<> struct MangleField<XFEM::PHYSICS::Sigmazx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxz;};
-template<> struct MangleField<XFEM::PHYSICS::Sigmazy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmayz;};
-template<> struct MangleField<XFEM::PHYSICS::Tauyx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxy;};
-template<> struct MangleField<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxz;};
-template<> struct MangleField<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauyz;};
+struct SymmetryMangle {static const XFEM::PHYSICS::Field name = FIELD;};
+template<> struct SymmetryMangle<XFEM::PHYSICS::Sigmayx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxy;};
+template<> struct SymmetryMangle<XFEM::PHYSICS::Sigmazx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxz;};
+template<> struct SymmetryMangle<XFEM::PHYSICS::Sigmazy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmayz;};
+template<> struct SymmetryMangle<XFEM::PHYSICS::Tauyx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxy;};
+template<> struct SymmetryMangle<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxz;};
+template<> struct SymmetryMangle<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauyz;};
+
+//! which shape functions are equal anyway
+template <XFEM::PHYSICS::Field FIELD>
+struct ShapeMangle {};
+template<> struct ShapeMangle<XFEM::PHYSICS::Velx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Vely> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Velz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Pres> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Velx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::DiscPres> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::DiscPres;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Sigmaxx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Sigmaxy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Sigmaxz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Sigmayx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Sigmayy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Sigmayz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Sigmazx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Sigmazy> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Sigmazz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Tauxx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Tauxy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Tauxz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Tauyx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Tauyy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Tauyz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
+template<> struct ShapeMangle<XFEM::PHYSICS::Tauzz>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxx;};
+
+template <XFEM::PHYSICS::Field FIELD>
+struct ShapeSelector {static BlitzMat shp;};
+//template<> struct ShapeSelector<XFEM::PHYSICS::Velx> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxy;};
+//template<> struct ShapeSelector<XFEM::PHYSICS::Vely> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmaxz;};
+//template<> struct ShapeSelector<XFEM::PHYSICS::Velz> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Sigmayz;};
+//template<> struct ShapeSelector<XFEM::PHYSICS::Pres> {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxy;};
+//template<> struct ShapeSelector<XFEM::PHYSICS::Tauzx>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauxz;};
+//template<> struct ShapeSelector<XFEM::PHYSICS::Tauzy>   {static const XFEM::PHYSICS::Field name = XFEM::PHYSICS::Tauyz;};
 
 //! class that assembles one after another integral of the weak form into the stiffness matrix
 template <DRT::Element::DiscretizationType DISTYPE, 
@@ -76,8 +129,8 @@ public:
             const BlitzVec&     trialshape
             ) const
     {
-        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField<MangleField<testfield>::name>();
-        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField<MangleField<trialfield>::name>();
+        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField(SymmetryMangle<testfield>::name);
+        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField(SymmetryMangle<trialfield>::name);
         
 //        const int numparamtest  = testdof.size();
 //        const int numparamtrial = trialdof.size();
@@ -105,6 +158,31 @@ public:
         }
     }
     
+    //! assemble one expression for the element stiffness matrix for a given test and trial field
+    template <XFEM::PHYSICS::Field testfield,
+              DerivDir testDerivId,
+              XFEM::PHYSICS::Field trialfield,
+              DerivDir trialDerivId>
+    void Matrix(
+            const double&       fac
+            ) const
+    {
+        const std::vector<int>& testdof  = dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>();
+        const std::vector<int>& trialdof = dofman_.LocalDofPosPerField<SymmetryMangle<trialfield>::name>();
+        
+        int ui = 0;
+        for (std::vector<int>::const_iterator trialpos = trialdof.begin(); trialpos != trialdof.end(); ++trialpos)
+        {
+            int vi = 0;
+            for (std::vector<int>::const_iterator testpos = testdof.begin(); testpos != testdof.end(); ++testpos)
+            {
+                estif_(*testpos, *trialpos) += fac*ShapeSelector<ShapeMangle<SymmetryMangle<testfield>::name>::name >::shp(testDerivId,vi)*ShapeSelector<trialfield>::shp(trialDerivId,ui) ;
+                vi++;
+            }
+            ui++;
+        }
+    }
+    
     //! assemble one expression for the element rhs for a given test field
     template <XFEM::PHYSICS::Field testfield>
     void Vector(
@@ -112,7 +190,7 @@ public:
             const double&       fac
             ) const
     {
-        const std::vector<int>& testdof = dofman_.LocalDofPosPerField<MangleField<testfield>::name>();
+        const std::vector<int>& testdof = dofman_.LocalDofPosPerField<SymmetryMangle<testfield>::name>();
         
 //        const int numparamtest  = testdof.size();
 //        

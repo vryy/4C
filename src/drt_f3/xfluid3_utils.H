@@ -69,7 +69,6 @@ static void fill_tau(const int numparamtau, const M1&  shp_tau, const M2& etau, 
     tau(2,1) = tau(1,2);
 }
 
-
 /*!
  * \brief calculate the body force from the nodes condition
  * 

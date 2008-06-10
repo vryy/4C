@@ -35,7 +35,7 @@ namespace XFLUID
   template<DRT::Element::DiscretizationType veldistype>
   struct StressInterpolation3D {};
   template<> struct StressInterpolation3D<DRT::Element::tet4>  {static const DRT::Element::DiscretizationType distype = DRT::Element::point1;};
-  template<> struct StressInterpolation3D<DRT::Element::hex8>  {static const DRT::Element::DiscretizationType distype = DRT::Element::point1;};
+  template<> struct StressInterpolation3D<DRT::Element::hex8>  {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
   template<> struct StressInterpolation3D<DRT::Element::hex20> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
   template<> struct StressInterpolation3D<DRT::Element::hex27> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
   
@@ -112,6 +112,24 @@ namespace XFLUID
     return distype;
   }
   
+  inline map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype)
+  {
+    map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+    //          element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(Shape());
+    //          element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(Shape());
+    //          element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(Shape());
+    //          element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(Shape());
+    //          element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(Shape());
+    //          element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(Shape());
+    //          element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(Shape());
+    element_ansatz[XFEM::PHYSICS::Sigmaxx] = XFLUID::getStressInterpolationType3D(eledistype);
+    element_ansatz[XFEM::PHYSICS::Sigmayy] = XFLUID::getStressInterpolationType3D(eledistype);
+    element_ansatz[XFEM::PHYSICS::Sigmazz] = XFLUID::getStressInterpolationType3D(eledistype);
+    element_ansatz[XFEM::PHYSICS::Sigmaxy] = XFLUID::getStressInterpolationType3D(eledistype);
+    element_ansatz[XFEM::PHYSICS::Sigmaxz] = XFLUID::getStressInterpolationType3D(eledistype);
+    element_ansatz[XFEM::PHYSICS::Sigmayz] = XFLUID::getStressInterpolationType3D(eledistype);
+    return element_ansatz;
+  }
 }
 
 

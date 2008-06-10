@@ -189,7 +189,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         //--------------------------------------------------
         // calculate element coefficient matrix and rhs
         //--------------------------------------------------
-        XFLUID::callSysmat3(assembly_type,
+        XFLUID::callSysmat4(assembly_type,
                 this, ih_, eleDofManager_, myvelnp, myhist, ivelcol, iforcecol, estif, eforce,
                 actmat, time, timefac, newton, pstab, supg, cstab, true);
 
@@ -299,7 +299,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
               }
               // R_0
               // calculate element coefficient matrix and rhs
-              XFLUID::callSysmat3(assembly_type,
+              XFLUID::callSysmat4(assembly_type,
                       this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                       actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
@@ -327,7 +327,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 
               // R_0+dx
               // calculate element coefficient matrix and rhs
-              XFLUID::callSysmat3(assembly_type,
+              XFLUID::callSysmat4(assembly_type,
                       this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, iforcecol, estif, eforce,
                       actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
 
@@ -349,7 +349,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
 #endif
           {
           // calculate element coefficient matrix and rhs
-          XFLUID::callSysmat3(assembly_type,
+          XFLUID::callSysmat4(assembly_type,
                   this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                   actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
           }
@@ -364,14 +364,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
           
           // create local copy of information about dofs
-          map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
-          element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(Shape());
-          element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(Shape());
-          element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(Shape());
-          element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(Shape());
-          element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(Shape());
-          element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(Shape());
-          element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(Shape());
+          const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(this->Shape()));
           
           eleDofManager_ = globaldofman->constructElementDofManager(*this, element_ansatz);
           
