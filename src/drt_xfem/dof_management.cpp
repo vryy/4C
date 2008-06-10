@@ -108,6 +108,7 @@ XFEM::ElementDofManager::ElementDofManager(
     std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator schnack = element_ansatz.find(field);
     if (schnack == element_ansatz.end())
     {
+      cout << XFEM::PHYSICS::physVarToString(field) << endl;
       dserror("field not found -> bug");
     }
     
