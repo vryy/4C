@@ -324,14 +324,19 @@ static void Sysmat3(
             
             if (ASSTYPE == XFEM::xfem_assembly)
             {
+                std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+                      ih,
+                      dofman.getUniqueEnrichments(),
+                      gauss_pos_xyz,
+                      XFEM::Enrichment::approachUnknown));
+              
                 // shape function for nodal dofs
                 XFEM::ComputeEnrichedNodalShapefunction(
                         *ele,
                         ih,
                         dofman,
                         Velx,
-                        gauss_pos_xyz,
-                        XFEM::Enrichment::approachUnknown,
+                        enrvals,
                         funct,
                         derxy,
                         derxy2, 
@@ -347,8 +352,7 @@ static void Sysmat3(
                             ih,
                             dofman,
                             Tauxx,
-                            gauss_pos_xyz,
-                            XFEM::Enrichment::approachUnknown,
+                            enrvals,
                             funct_stress,
                             enr_funct_stress);
                 }
@@ -365,8 +369,7 @@ static void Sysmat3(
                           ih,
                           dofman,
                           DiscPres,
-                          gauss_pos_xyz,
-                          XFEM::Enrichment::approachUnknown,
+                          enrvals,
                           funct_discpres,
                           enr_funct_discpres);
 //                  // shape functions for element dofs
@@ -1586,14 +1589,19 @@ static void Sysmat3(
             BlitzVec enr_funct_discpres(numparamdiscpres);
             //BlitzMat enr_derxy_discpres(3,numparamdiscpres,blitz::ColumnMajorArray<2>());
             
+            std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+                  ih,
+                  dofman.getUniqueEnrichments(),
+                  gauss_pos_xyz,
+                  XFEM::Enrichment::approachFromPlus));
+            
             // shape function for nodal dofs
             XFEM::ComputeEnrichedNodalShapefunction(
                     *ele,
                     ih,
                     dofman,
                     Velx,
-                    gauss_pos_xyz,
-                    XFEM::Enrichment::approachFromPlus,
+                    enrvals,
                     funct,
                     enr_funct);
             
@@ -1618,8 +1626,7 @@ static void Sysmat3(
                     ih,
                     dofman,
                     Tauxx,
-                    gauss_pos_xyz,
-                    XFEM::Enrichment::approachFromPlus,
+                    enrvals,
                     funct_stress,
                     enr_funct_stress);
             // shape functions for element pressure dofs
@@ -1628,8 +1635,7 @@ static void Sysmat3(
                     ih,
                     dofman,
                     DiscPres,
-                    gauss_pos_xyz,
-                    XFEM::Enrichment::approachFromPlus,
+                    enrvals,
                     funct_discpres,
                     enr_funct_discpres);
                 

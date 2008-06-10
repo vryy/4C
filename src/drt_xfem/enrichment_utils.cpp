@@ -51,30 +51,21 @@ std::map<XFEM::Enrichment, double> XFEM::computeEnrvalMap(
 // For a given situation compute the enriched shape functions
 // 
 void XFEM::ComputeEnrichedNodalShapefunction(
-        const DRT::Element&                   ele,
-        const RCP<XFEM::InterfaceHandle>      ih,
-        const XFEM::ElementDofManager&        dofman,
-        const XFEM::PHYSICS::Field            field,
-        const BlitzVec3&                      actpos,
-        const XFEM::Enrichment::ApproachFrom  approachdirection,
-        const BlitzVec&                       funct,
-        BlitzVec&                             enr_funct
-        )
+    const DRT::Element&                        ele,
+    const RCP<XFEM::InterfaceHandle>           ih,
+    const XFEM::ElementDofManager&             dofman,
+    const XFEM::PHYSICS::Field                 field,
+    const std::map<XFEM::Enrichment, double>&  enrvals,
+    const BlitzVec&                            funct,
+    BlitzVec&                                  enr_funct
+    )
 {
-    
-    // compute enrichment values for all available enrichemnts in this dofmap (saves lots of time)
-    std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
-            ih,
-            dofman.getUniqueEnrichments(),
-            actpos,
-            approachdirection));
-    
-    const DRT::Node*const* nodes = ele.Nodes();
+    const int* nodeids = ele.NodeIds();
     
     int dofcounter = 0;
-    for (int inode=0; inode<ele.NumNode(); ++inode)
+    for (int inode=0; inode < ele.NumNode(); ++inode)
     {
-        const int gid = nodes[inode]->Id();
+        const int gid = nodeids[inode];
         const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
@@ -98,30 +89,21 @@ void XFEM::ComputeEnrichedNodalShapefunction(
         const RCP<XFEM::InterfaceHandle>      ih,
         const XFEM::ElementDofManager&        dofman,
         const XFEM::PHYSICS::Field            field,
-        const BlitzVec3&                      actpos,
-        const XFEM::Enrichment::ApproachFrom  approachdirection,
+        const std::map<XFEM::Enrichment, double>&  enrvals,
         const BlitzVec&                       funct,
         const BlitzMat&                       derxy,
         BlitzVec&                             enr_funct,
         BlitzMat&                             enr_derxy
         )
 {
-    
-    // compute enrichment values for all available enrichemnts in this dofmap (saves lots of time)
-    std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
-            ih,
-            dofman.getUniqueEnrichments(),
-            actpos,
-            approachdirection));
-    
     blitz::Range _  = blitz::Range::all();
     
-    const DRT::Node*const* nodes = ele.Nodes();
+    const int* nodeids = ele.NodeIds();
     
     int dofcounter = 0;
-    for (int inode=0; inode<ele.NumNode(); ++inode)
+    for (int inode=0; inode < ele.NumNode(); ++inode)
     {
-        const int gid = nodes[inode]->Id();
+        const int gid = nodeids[inode];
         const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
@@ -146,8 +128,7 @@ void XFEM::ComputeEnrichedNodalShapefunction(
         const RCP<XFEM::InterfaceHandle>      ih,
         const XFEM::ElementDofManager&        dofman,
         const XFEM::PHYSICS::Field            field,
-        const BlitzVec3&                      actpos,
-        const XFEM::Enrichment::ApproachFrom  approachdirection,
+        const std::map<XFEM::Enrichment, double>&  enrvals,
         const BlitzVec&                       funct,
         const BlitzMat&                       derxy,
         const BlitzMat&                       derxy2,
@@ -156,22 +137,14 @@ void XFEM::ComputeEnrichedNodalShapefunction(
         BlitzMat&                             enr_derxy2
         )
 {
-    
-    // compute enrichment values for all available enrichemnts in this dofmap (saves lots of time)
-    std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
-            ih,
-            dofman.getUniqueEnrichments(),
-            actpos,
-            approachdirection));
-    
     blitz::Range _  = blitz::Range::all();
     
-    const DRT::Node*const* nodes = ele.Nodes();
+    const int* nodeids = ele.NodeIds();
     
     int dofcounter = 0;
-    for (int inode=0; inode<ele.NumNode(); ++inode)
+    for (int inode=0; inode < ele.NumNode(); ++inode)
     {
-        const int gid = nodes[inode]->Id();
+        const int gid = nodeids[inode];
         const std::set<XFEM::FieldEnr>& enrfieldset = dofman.FieldEnrSetPerNode(gid);
         for (std::set<XFEM::FieldEnr>::const_iterator enrfield =
                 enrfieldset.begin(); enrfield != enrfieldset.end(); ++enrfield)
@@ -198,20 +171,11 @@ void XFEM::ComputeEnrichedElementShapefunction(
         const RCP<XFEM::InterfaceHandle>      ih,
         const XFEM::ElementDofManager&        dofman,
         const XFEM::PHYSICS::Field            field,
-        const BlitzVec3&                      actpos,
-        const XFEM::Enrichment::ApproachFrom  approachdirection,
+        const std::map<XFEM::Enrichment, double>&  enrvals,
         const BlitzVec&                       funct,
         BlitzVec&                             enr_funct
         )
 {
-    
-    // compute enrichment values for all available enrichemnts in this dofmap (saves lots of time)
-    std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
-            ih,
-            dofman.getUniqueEnrichments(),
-            actpos,
-            approachdirection));
-    
     int dofcounter = 0;
     
     const std::set<XFEM::FieldEnr>& enrfieldset = dofman.getEnrichedFieldsPerEleField(field);
@@ -239,22 +203,13 @@ void XFEM::ComputeEnrichedElementShapefunction(
         const RCP<XFEM::InterfaceHandle>      ih,
         const XFEM::ElementDofManager&        dofman,
         const XFEM::PHYSICS::Field            field,
-        const BlitzVec3&                      actpos,
-        const XFEM::Enrichment::ApproachFrom  approachdirection,
+        const std::map<XFEM::Enrichment, double>&  enrvals,
         const BlitzVec&                       funct,
         const BlitzMat&                       derxy,
         BlitzVec&                             enr_funct,
         BlitzMat&                             enr_derxy
         )
 {
-    
-    // compute enrichment values for all available enrichemnts in this dofmap (saves lots of time)
-    std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
-            ih,
-            dofman.getUniqueEnrichments(),
-            actpos,
-            approachdirection));
-    
     blitz::Range _  = blitz::Range::all();
     
     int dofcounter = 0;
@@ -294,6 +249,12 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
   // -> we use the center of the cell to determine, where we come from
   const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
+  std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+        ih,
+        dofman.getUniqueEnrichments(),
+        cellcenterpos,
+        XFEM::Enrichment::approachUnknown));
+  
   cellvalues = 0.0;
   for (int inen = 0; inen < cell.NumNode(); ++inen)
   {
@@ -307,7 +268,7 @@ void XFEM::computeScalarCellNodeValuesFromNodalUnknowns(
 
     const int numparam  = dofman.NumDofPerField(field);
     BlitzVec enr_funct(numparam);
-    XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
+    XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
     {
@@ -334,6 +295,12 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
   const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
+  
+  std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+        ih,
+        dofman.getUniqueEnrichments(),
+        cellcenterpos,
+        XFEM::Enrichment::approachUnknown));
 
   cellvalues = 0.0;
   for (int incn = 0; incn < cell.NumNode(); ++incn)
@@ -357,7 +324,7 @@ void XFEM::computeScalarCellNodeValuesFromElementUnknowns(
       eleval_distype);
 
     BlitzVec enr_funct(numparam);
-    XFEM::ComputeEnrichedElementShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
+    XFEM::ComputeEnrichedElementShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
     {
@@ -385,6 +352,12 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
   // -> we use the center of the cell to determine, where we come from
   const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
+  std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+        ih,
+        dofman.getUniqueEnrichments(),
+        cellcenterpos,
+        XFEM::Enrichment::approachUnknown));
+  
   cellvalues = 0.0;
   for (int incn = 0; incn < cell.NumNode(); ++incn)
   {
@@ -407,7 +380,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
       eleval_distype);
 
     BlitzVec enr_funct(numparam);
-    XFEM::ComputeEnrichedElementShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
+    XFEM::ComputeEnrichedElementShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
     {
@@ -445,6 +418,12 @@ void XFEM::computeVectorCellNodeValues(
   // -> we use the center of the cell to determine, where we come from
   const blitz::TinyVector<double,3> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
+  std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+        ih,
+        dofman.getUniqueEnrichments(),
+        cellcenterpos,
+        XFEM::Enrichment::approachUnknown));
+  
   // cell corner nodes
   //const blitz::Array<double,2> cellnodeposvectors = cell.NodalPosXYZ(ele);
   blitz::Array<double,1> enr_funct(numparam);
@@ -461,7 +440,7 @@ void XFEM::computeVectorCellNodeValues(
       ele.Shape());
     if (cell.Shape() == DRT::Element::tet4 or cell.Shape() == DRT::Element::tet10)
     {
-      XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
+      XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
     }
     else
     {
@@ -469,7 +448,7 @@ void XFEM::computeVectorCellNodeValues(
       actpos(0) = xyz_cell(0,inen);
       actpos(1) = xyz_cell(1,inen);
       actpos(2) = xyz_cell(2,inen);
-      XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachUnknown, funct, enr_funct);
+      XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
     }
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
@@ -504,6 +483,12 @@ void XFEM::computeVectorCellNodeValues(
   // -> we use the center of the cell to determine, where we come from
   const blitz::TinyVector<double,3> cellcenterpos(cell.GetPhysicalCenterPosition(ele));
 
+  std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
+        ih,
+        dofman.getUniqueEnrichments(),
+        cellcenterpos,
+        XFEM::Enrichment::approachFromPlus));
+  
   // cell corner nodes
   //const blitz::Array<double,2> cellnodeposvectors = cell.NodalPosXYZ(ele);
   blitz::Array<double,1> enr_funct(numparam);
@@ -519,7 +504,7 @@ void XFEM::computeVectorCellNodeValues(
       (*nodalPosXiDomain)(2,inen),
       ele.Shape());
 
-    XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, cellcenterpos, XFEM::Enrichment::approachFromPlus, funct, enr_funct);
+    XFEM::ComputeEnrichedNodalShapefunction(ele, ih, dofman, field, enrvals, funct, enr_funct);
     // interpolate value
     for (int iparam = 0; iparam < numparam; ++iparam)
     {

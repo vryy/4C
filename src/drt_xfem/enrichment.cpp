@@ -57,8 +57,8 @@ double XFEM::Enrichment::EnrValue(
 {
     // return value
     double enrval = 1.0;
-    map<int,bool> posInCondition;
-    switch (Type()){
+    switch (Type())
+    {
     case XFEM::Enrichment::typeStandard:
     {
         enrval = 1.0;
@@ -80,6 +80,7 @@ double XFEM::Enrichment::EnrValue(
             }
             case approachUnknown:
             {
+                map<int,bool> posInCondition;
                 const int xfemcondition_label = this->XFEMConditionLabel();
                 PositionWithinCondition(actpos,ih,posInCondition);
                 double actpos_enr_val = 0.0;
@@ -111,6 +112,7 @@ double XFEM::Enrichment::EnrValue(
             }
             case approachUnknown:
             {
+                map<int,bool> posInCondition;
                 const int xfemcondition_label = this->XFEMConditionLabel();
                 PositionWithinCondition(actpos,ih,posInCondition);
                 double actpos_enr_val = 0.0;

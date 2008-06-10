@@ -132,6 +132,16 @@ void PositionWithinCondition(
     );
 
 /*!
+\brief as above, but only for givven xfem labels           
+*/  
+void PositionWithinGivenCondition(
+        const BlitzVec3&                  x,              ///< node in physical coordinates
+        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
+        const std::set<int>&              xlabelset,      ///< enrichment labels
+        std::map<int,bool>&               posInCondition  ///< fill with bool values
+    );
+
+/*!
 \brief checks if a position in current coordinates lies within a certain condition region           
 */  
 bool PositionWithinAnyInfluencingCondition(

@@ -46,23 +46,21 @@ std::map<XFEM::Enrichment, double> computeEnrvalMap(
  * TODO: if enrichment function has derivatives not equal to zero, we need the chain rule here
  */
 void ComputeEnrichedNodalShapefunction(
-        const DRT::Element&                     ele,
-        const RCP<XFEM::InterfaceHandle>  ih,
-        const XFEM::ElementDofManager&    dofman,
-        const XFEM::PHYSICS::Field        field,
-        const BlitzVec3&                  actpos,      ///< Position in physical coordinates
-        const XFEM::Enrichment::ApproachFrom approachdirection,
-        const BlitzVec&                   funct,
-        BlitzVec&                         enr_funct
-        );
+    const DRT::Element&                        ele,
+    const RCP<XFEM::InterfaceHandle>           ih,
+    const XFEM::ElementDofManager&             dofman,
+    const XFEM::PHYSICS::Field                 field,
+    const std::map<XFEM::Enrichment, double>&  enrvals,
+    const BlitzVec&                            funct,
+    BlitzVec&                                  enr_funct
+    );
 
 void ComputeEnrichedNodalShapefunction(
         const DRT::Element&  ele,
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
-        const BlitzVec3& actpos,                  ///< Position in physical coordinates
-        const XFEM::Enrichment::ApproachFrom approachdirection,
+        const std::map<XFEM::Enrichment, double>&  enrvals,
         const BlitzVec& funct,
         const BlitzMat& derxy,
         BlitzVec& enr_funct,
@@ -74,8 +72,7 @@ void ComputeEnrichedNodalShapefunction(
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
-        const BlitzVec3& actpos,                   ///< Position in physical coordinates
-        const XFEM::Enrichment::ApproachFrom approachdirection,
+        const std::map<XFEM::Enrichment, double>&  enrvals,
         const BlitzVec& funct,
         const BlitzMat& derxy,
         const BlitzMat& derxy2,
@@ -96,8 +93,7 @@ void ComputeEnrichedElementShapefunction(
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
-        const BlitzVec3& actpos,
-        const XFEM::Enrichment::ApproachFrom approachdirection,
+        const std::map<XFEM::Enrichment, double>&  enrvals,
         const BlitzVec& funct,
         BlitzVec& enr_funct
         );
@@ -107,8 +103,7 @@ void ComputeEnrichedElementShapefunction(
         const RCP<XFEM::InterfaceHandle>  ih,
         const XFEM::ElementDofManager& dofman,
         const XFEM::PHYSICS::Field field,
-        const BlitzVec3& actpos,
-        const XFEM::Enrichment::ApproachFrom approachdirection,
+        const std::map<XFEM::Enrichment, double>&  enrvals,
         const BlitzVec& funct,
         const BlitzMat& derxy,
         BlitzVec& enr_funct,
