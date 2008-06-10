@@ -1073,9 +1073,10 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(Epetra_SerialDenseMatrix* elestress,
   // get modified squared stretch (U^mod)^2 from glstrain
   LINALG::SerialDenseMatrix Usq_mod(NUMDIM_SOH8,NUMDIM_SOH8);
   for (int i = 0; i < NUMDIM_SOH8; ++i) Usq_mod(i,i) = 2.0 * glstrain(i) + 1.0;
-  Usq_mod(0,1) = 0.5 * glstrain(3);  Usq_mod(1,0) = 0.5 * glstrain(3);
-  Usq_mod(1,2) = 0.5 * glstrain(4);  Usq_mod(2,1) = 0.5 * glstrain(4);
-  Usq_mod(0,2) = 0.5 * glstrain(5);  Usq_mod(2,0) = 0.5 * glstrain(5);
+  // off-diagonal terms are already twice in the Voigt-GLstrain-vector
+  Usq_mod(0,1) =  glstrain(3);  Usq_mod(1,0) =  glstrain(3);
+  Usq_mod(1,2) =  glstrain(4);  Usq_mod(2,1) =  glstrain(4);
+  Usq_mod(0,2) =  glstrain(5);  Usq_mod(2,0) =  glstrain(5);
   // polar decomposition of (U^mod)^2
   SVD(Usq_mod,u,s,v); // Singular Value Decomposition
   LINALG::SerialDenseMatrix U_mod(NUMDIM_SOH8,NUMDIM_SOH8);
