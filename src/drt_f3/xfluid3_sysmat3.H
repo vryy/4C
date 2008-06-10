@@ -170,6 +170,8 @@ static void Sysmat3(
     for (XFEM::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
     {
 
+        TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - domain");
+        
         // shortcut for intersected elements: if cell is only in solid domains for all influencing enrichments, skip it
         if (ih->ElementIntersected(ele->Id()))
         {
@@ -265,9 +267,9 @@ static void Sysmat3(
             Inverse3x3(xjm, det, xji);
 
             // compute global derivates
-            BlitzMat derxy(3, numnode);
-            //BlitzMat derxy_stress(3, DRT::UTILS::getNumberOfElementNodes(stressdistype),blitz::ColumnMajorArray<2>());
-            BlitzMat derxy_discpres(3, DRT::UTILS::getNumberOfElementNodes(discpresdistype),blitz::ColumnMajorArray<2>());
+            static BlitzMat derxy(3, numnode);
+            //static BlitzMat derxy_stress(3, DRT::UTILS::_switchDisType<stressdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
+            //static BlitzMat derxy_discpres(3, DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
             //derxy          = blitz::sum(xji(i,k)*deriv(k,j),k);
             for (int isd = 0; isd < nsd; ++isd)
             {
@@ -280,17 +282,17 @@ static void Sysmat3(
                 }
               }
             }
-            for (int isd = 0; isd < nsd; ++isd)
-            {
-              for (int inode = 0; inode < DRT::UTILS::getNumberOfElementNodes(discpresdistype); ++inode)
-              {
-                derxy_discpres(isd,inode) = 0.0;
-                for (int jsd = 0; jsd < nsd; ++jsd)
-                {
-                  derxy_discpres(isd,inode) += xji(isd,jsd)*deriv_discpres(jsd,inode);
-                }
-              }
-            }
+//            for (int isd = 0; isd < nsd; ++isd)
+//            {
+//              for (int inode = 0; inode < DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement; ++inode)
+//              {
+//                derxy_discpres(isd,inode) = 0.0;
+//                for (int jsd = 0; jsd < nsd; ++jsd)
+//                {
+//                  derxy_discpres(isd,inode) += xji(isd,jsd)*deriv_discpres(jsd,inode);
+//                }
+//              }
+//            }
 
             // compute second global derivative
             static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
@@ -318,7 +320,7 @@ static void Sysmat3(
             //BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
             
             BlitzVec enr_funct_discpres(numparamdiscpres);
-            BlitzMat enr_derxy_discpres(3,numparamdiscpres,blitz::ColumnMajorArray<2>());
+            //BlitzMat enr_derxy_discpres(3,numparamdiscpres,blitz::ColumnMajorArray<2>());
             
             if (ASSTYPE == XFEM::xfem_assembly)
             {
@@ -357,18 +359,28 @@ static void Sysmat3(
                 
                 if (discpres_unknowns_present)
                 {
-                    // shape functions for element dofs
-                    XFEM::ComputeEnrichedElementShapefunction(
-                            *ele,
-                            ih,
-                            dofman,
-                            DiscPres,
-                            gauss_pos_xyz,
-                            XFEM::Enrichment::approachUnknown,
-                            funct_discpres,
-                            derxy_discpres,
-                            enr_funct_discpres,
-                            enr_derxy_discpres);
+                  // shape functions for element dofs
+                  XFEM::ComputeEnrichedElementShapefunction(
+                          *ele,
+                          ih,
+                          dofman,
+                          DiscPres,
+                          gauss_pos_xyz,
+                          XFEM::Enrichment::approachUnknown,
+                          funct_discpres,
+                          enr_funct_discpres);
+//                  // shape functions for element dofs
+//                    XFEM::ComputeEnrichedElementShapefunction(
+//                            *ele,
+//                            ih,
+//                            dofman,
+//                            DiscPres,
+//                            gauss_pos_xyz,
+//                            XFEM::Enrichment::approachUnknown,
+//                            funct_discpres,
+//                            derxy_discpres,
+//                            enr_funct_discpres,
+//                            enr_derxy_discpres);
                 }
                 else
                 {
@@ -385,7 +397,7 @@ static void Sysmat3(
                 //enr_derxy_stress.reference(derxy_stress);
                 
                 enr_funct_discpres.reference(funct_discpres);
-                enr_derxy_discpres.reference(derxy_discpres);
+                //enr_derxy_discpres.reference(derxy_discpres);
             }
       
             // create views on the shape function arrays for easy handling in the assembly process
@@ -476,15 +488,15 @@ static void Sysmat3(
                     gradp(isd) += enr_derxy(isd,iparam)*eprenp(iparam);
             }
     
-            // get discont. pressure gradients
-            static BlitzVec3 graddiscp;
-            //gradp = blitz::sum(enr_derxy(i,j)*eprenp(j),j);
-            for (int isd = 0; isd < nsd; ++isd)
-            {
-                graddiscp(isd) = 0.0;
-                for (int iparam = 0; iparam < numparamdiscpres; ++iparam)
-                    graddiscp(isd) += enr_derxy_discpres(isd,iparam)*ediscprenp(iparam);
-            }
+//            // get discont. pressure gradients
+//            static BlitzVec3 graddiscp;
+//            //gradp = blitz::sum(enr_derxy(i,j)*eprenp(j),j);
+//            for (int isd = 0; isd < nsd; ++isd)
+//            {
+//                graddiscp(isd) = 0.0;
+//                for (int iparam = 0; iparam < numparamdiscpres; ++iparam)
+//                    graddiscp(isd) += enr_derxy_discpres(isd,iparam)*ediscprenp(iparam);
+//            }
             
             // get pressure
             //const double pres(blitz::sum(enr_funct*eprenp));
@@ -1440,6 +1452,8 @@ static void Sysmat3(
     for (XFEM::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
     {
 
+      TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - boundary");
+      
         // gaussian points
         const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_37point);
         
@@ -1521,14 +1535,14 @@ static void Sysmat3(
             // get jacobian matrix d x / d \xi  (3x2)
             static BlitzMat3x2 dxyzdrs;
             //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
-            for (int i = 0; i < 3; ++i)
+            for (int isd = 0; isd < 3; ++isd)
             {
                 for (int j = 0; j < 2; ++j)
                 {
-                    dxyzdrs(i,j) = 0.0;
+                    dxyzdrs(isd,j) = 0.0;
                     for (int k = 0; k < numnode_boundary; ++k)
                     {
-                        dxyzdrs(i,j) += xyze_boundary(i,k)*deriv_boundary(j,k);
+                        dxyzdrs(isd,j) += xyze_boundary(isd,k)*deriv_boundary(j,k);
                     }
                 }
             }
@@ -1659,7 +1673,10 @@ static void Sysmat3(
             }
             
             // get discontinous pressure
-            const double discpres(blitz::sum(shp_discpres*ediscprenp));
+            //const double discpres(blitz::sum(shp_discpres*ediscprenp));
+            double discpres = 0.0;
+            for (int iparam = 0; iparam < numparamdiscpres; ++iparam)
+              discpres += shp_discpres(iparam)*ediscprenp(iparam);
             
             // get pressure
             //const double press(blitz::sum(shp*eprenp));
