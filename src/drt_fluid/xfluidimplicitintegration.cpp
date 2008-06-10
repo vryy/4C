@@ -1525,7 +1525,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         {
           BlitzMat xyze_cell(3, cell->NumNode());
           cell->NodalPosXYZ(*actele, xyze_cell);
-          cout << "hallo" ;
+          
           {
           BlitzMat cellvalues(9,DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
           XFEM::computeTensorCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman,
