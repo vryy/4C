@@ -101,22 +101,13 @@ public:
     };
 
     /*!
-         \brief Scale increment of lagrange multiplier increment by a double d
-    */
-    void ScaleLagrIncr(double d)
-    {
-        lagrMultInc_->Scale(d);
-        return;
-    };
-
-    /*!
              \brief Scale lagrange multiplier by a double d
     */
     void ScaleLagrMult(double d)
-        {
-            lagrMultVec_->Scale(d);
-            return;
-        };
+    {
+        lagrMultVec_->Scale(d);
+        return;
+    };
 
     /*!
          \brief Update lagrange multiplier lambda_{n+1}=lambda_{n}+factor*(volerr)
@@ -125,14 +116,6 @@ public:
     
     void UpdateLagrMult( RCP<Epetra_Vector> vect);
     
-    /*!
-         \brief Return lagrange multiplier increment
-    */
-    double GetLagrIncr(int i)
-    {
-        return (*lagrMultInc_)[i];
-    };
-
     /*!
          \brief Compute difference between current and prescribed values at a given time and a given displacement
     */
@@ -154,7 +137,6 @@ public:
          \brief Add Increment to lagrange multiplier
     */
     void UpdateLagrMult();
-
     
     /*!
      \brief Return EpetraMap that determined distributation of constraints and lagrange 
@@ -186,16 +168,6 @@ public:
       LINALG::Export(*lagrMultVec_,*tmpmult);
       return ;
     };
-    /*!
-      \brief Set all lagrange multiplier for restart, assuming that Epetra_Maps fit together
-    */
-    void SetLagrMultVector(RCP<Epetra_Vector> restartvec)
-    {
-      LINALG::Export(*restartvec,*lagrMultVec_);
-      return;
-    };
-
-  
 
     /*!
      \brief Return if there are constraints
@@ -219,22 +191,6 @@ public:
     {
         return (*actvalues_)[i];
     };
-
-    /*!
-     \brief Computes inner product of constraint multivector times lagrange multiplier increment
-     vector as required for the uzawa algorithm to compute new displacement increment
-
-     \param dotprod (out):      resulting value of B^T * Delta lambda
-     */
-    void ComputeConstrTimesLagrIncr(RCP<Epetra_Vector> dotprod);
-
-    /*!
-      \brief Return inner product of constraint multivector times displacement increment
-
-      \param disi (in)      :      displacement increment Delta u
-      \param dotprod (out)     :      resulting value of B * Delta u
-      */
-    void ComputeConstrTimesDisi(Epetra_Vector disi,RCP<Epetra_Vector> dotprod);
 
     /*
          \brief Print out the values of current monitor values
@@ -365,8 +321,6 @@ private:
     int minMonitorID_;
     RCP<Epetra_Vector> fact_;
     RCP<Epetra_Vector> lagrMultVec_;
-    RCP<Epetra_Vector> lagrMultInc_;
-    //RCP<Epetra_MultiVector> constrVec_;
     RCP<LINALG::SparseMatrix> constrMatrix_;
     bool haveconstraint_;
     bool havevolconstr_;

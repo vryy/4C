@@ -128,9 +128,7 @@ actdisc_(discr)
     actvalues_->Scale(0.0);
     constrainterr_=rcp(new Epetra_Vector(*constrmap_));
     lagrMultVec_=rcp(new Epetra_Vector(*constrmap_));
-    lagrMultInc_=rcp(new Epetra_Vector(*constrmap_));
     lagrMultVec_->Scale(0.0);
-    lagrMultInc_->Scale(0.0);
     fact_=rcp(new Epetra_Vector(*constrmap_));
   }
   //-----------------------------Monitor Conditions!
@@ -376,45 +374,9 @@ void ConstrManager::UpdateLagrMult(double factor)
 |(public)                                                       tk 01/08|
 |Add Lagrange increment to Lagrange multiplier.                         |
 *-----------------------------------------------------------------------*/
-void ConstrManager::UpdateLagrMult()
-{
-  lagrMultVec_->Update(1.0,*lagrMultInc_,1.0);
-  return;
-}
-
-/*----------------------------------------------------------------------*
-|(public)                                                       tk 01/08|
-|Add Lagrange increment to Lagrange multiplier.                         |
-*-----------------------------------------------------------------------*/
 void ConstrManager::UpdateLagrMult(RCP<Epetra_Vector> vect)
 {
   lagrMultVec_->Update(1.0,*vect,1.0);
-  return;
-}
-
-/*-----------------------------------------------------------------------*
-|(public)                                                        tk 01/08|
-|Compute matrix-vector-product of matrix of constraint conditions with   |
-|lagrange increment as needed for uzawa algorithm                        |
-*------------------------------------------------------------------------*/
-void ConstrManager::ComputeConstrTimesLagrIncr(RCP<Epetra_Vector> dotprod)
-{
-  dotprod->PutScalar(0.0);
-  constrMatrix_->Multiply(false,*lagrMultInc_,*dotprod) ;
-  dotprod->Scale(-1.0);
-  return;
-}
-
-/*-----------------------------------------------------------------------*
-|(public)                                                        tk 01/08|
-|Compute matrix-vector-product of matrix of constraint conditions with   |
-|displacement increment as needed to compute residual of uzawa algorithm |
-*-----------------------------------------------------------------------*/
-void ConstrManager::ComputeConstrTimesDisi(Epetra_Vector disi, RCP<Epetra_Vector> dotprod)
-{
-
-  dotprod->PutScalar(0.0);
-  constrMatrix_->Multiply(true,disi,*dotprod) ;
   return;
 }
 
