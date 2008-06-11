@@ -704,8 +704,10 @@ std::vector<double> DRT::UTILS::ExprTimeSlice::FctDer(const double t,
     // return 1st derivative value at time t
     res[1] = fdfad.dx(ivar).val();
 
+    // 2nd derivative requested
     if (deg >= 2)
     {
+      // set 2nd derivative at time t
       res[2] = fdfad.dx(ivar).dx(ivar);
     }
   }

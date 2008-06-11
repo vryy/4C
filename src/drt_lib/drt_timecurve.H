@@ -61,8 +61,8 @@ namespace UTILS {
     /// \author bborn
     /// \date 02/08
     virtual std::vector<double> FctDer(
-      const double t,  //!< evaluation time
-      const unsigned deg  //!< highest degree of differentiation
+      const double t,  ///< evaluation time
+      const unsigned deg  ///< highest degree of differentiation
     ) = 0;
 
     /// begin time of slice
