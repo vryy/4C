@@ -82,6 +82,7 @@ void MAT::ViscoNeoHooke::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void MAT::ViscoNeoHooke::Unpack(const vector<char>& data)
 {
+  isinit_=true;
   int position = 0;
   // extract type
   int type = 0;
