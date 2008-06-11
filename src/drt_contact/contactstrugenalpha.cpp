@@ -1031,7 +1031,7 @@ void CONTACT::ContactStruGenAlpha::Output()
 
     if (constrMan_->HaveConstraint())
     {
-      output_.WriteDouble("uzawaparameter",constrMan_->GetUzawaParameter());
+      output_.WriteDouble("uzawaparameter",uzawaSolv_->GetUzawaParameter());
     }
 
     if (discret_.Comm().MyPID()==0 and printscreen)
@@ -1277,7 +1277,7 @@ void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
   if (constrMan_->HaveConstraint())
   {
     double uzawatemp = reader.ReadDouble("uzawaparameter");
-    constrMan_->SetUzawaParameter(uzawatemp);
+    uzawaSolv_->SetUzawaParameter(uzawatemp);
   }
 
   return;

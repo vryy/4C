@@ -24,6 +24,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_constraint/constraint_manager.H"
+#include "../drt_constraint/uzawasolver.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 
 #include "Epetra_Vector.h"
@@ -308,7 +309,7 @@ public:
     virtual void PrintNewton(bool printscreen, bool printerr, bool print_unconv,
                              FILE* errfile, Epetra_Time timer, int numiter,
                              int maxiter, double fresmnorm, double disinorm,
-                             string convcheck, double volnorm, double UPara);
+                             string convcheck, double volnorm);
 
   /*!
   \brief Print PTC output to screen and/or error file
@@ -438,6 +439,7 @@ protected:
 
   /// whatever constraints
   RCP<ConstrManager>   constrMan_;
+  RCP<UzawaSolver> uzawaSolv_;
 
   /// surface stresses
   RCP<DRT::SurfStressManager>   surf_stress_man_;

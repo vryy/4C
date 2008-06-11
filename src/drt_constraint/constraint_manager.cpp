@@ -1,8 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_constraint_manager.cpp
 
-\brief Class controlling constraint and containing the necessary data
-
+\brief Class constaining uzawa algorithm to solve linear system.
 <pre>
 Maintainer: Thomas Kloeppel
             kloeppel@lnm.mw.tum.de
@@ -362,15 +361,6 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
     return;
 }
 
-/*-----------------------------------------------------------------------*
-|(public)                                                        tk 01/08|
-|Update Lagrange increment according to linear uzawa algorithm.          |
-*-----------------------------------------------------------------------*/
-void ConstrManager::UpdateLagrIncr(double factor, Epetra_Vector vect)
-{
-  lagrMultInc_->Update(factor,vect,factor,*constrainterr_,1.0);
-  return;
-}
 
 /*----------------------------------------------------------------------*
 |(public)                                                       tk 01/08|
@@ -389,6 +379,16 @@ void ConstrManager::UpdateLagrMult(double factor)
 void ConstrManager::UpdateLagrMult()
 {
   lagrMultVec_->Update(1.0,*lagrMultInc_,1.0);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+|(public)                                                       tk 01/08|
+|Add Lagrange increment to Lagrange multiplier.                         |
+*-----------------------------------------------------------------------*/
+void ConstrManager::UpdateLagrMult(RCP<Epetra_Vector> vect)
+{
+  lagrMultVec_->Update(1.0,*vect,1.0);
   return;
 }
 

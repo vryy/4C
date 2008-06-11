@@ -119,14 +119,12 @@ public:
         };
 
     /*!
-         \brief Update increment of lagrange multiplier Delta lambda_{n+1}=Delta lambda_{n}+factor*(vect+volerr)
-    */
-    void UpdateLagrIncr(double factor, Epetra_Vector vect);
-
-    /*!
          \brief Update lagrange multiplier lambda_{n+1}=lambda_{n}+factor*(volerr)
     */
     void UpdateLagrMult(double factor);
+    
+    void UpdateLagrMult( RCP<Epetra_Vector> vect);
+    
     /*!
          \brief Return lagrange multiplier increment
     */
@@ -166,6 +164,11 @@ public:
     {
       return constrmap_;
     };
+    
+    RCP<LINALG::SparseMatrix> GetConstrMatrix()
+    {
+      return constrMatrix_;
+    };
 
     /*!
       \brief Return lagrange multiplier for constraint i
@@ -192,22 +195,8 @@ public:
       return;
     };
 
-    /*!
-      \brief Set uzawa parameter (used for dynamic adaptation and restart)
-    */
-    void SetUzawaParameter(double restartval)
-    {
-      uzawaparam_=restartval;
-      return;
-    }    
-    
-    /*!
-       \brief Return the current value of the uzawa parameter
-    */
-    double GetUzawaParameter()
-    {
-      return uzawaparam_;
-    }
+  
+
     /*!
      \brief Return if there are constraints
     */
