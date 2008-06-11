@@ -246,7 +246,10 @@ public:
   \brief Get time integration scheme (TIS) parameters
 
   */
-  virtual void GetTISPara(double& beta,double& gamma,double& alpham,double& alphaf);
+  virtual void GetTISPara(double& beta,
+                          double& gamma,
+                          double& alpham,
+                          double& alphaf);
 
   /*!
   \brief set time step size
