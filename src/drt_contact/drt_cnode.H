@@ -288,7 +288,7 @@ public:
   \brief Return the 'DerivM' map of maps of this node
    
   This map contains the directional derivatives of the node's
-  M-matrix diagonal entries with respect to the slave displacements.
+  M-matrix diagonal entries with respect to the slave/master displacements.
   It is a "map of maps", with the outer map containing all master
   node indices k adjacent to this node i and the inner map containing
   all directional derivatives l existing for M_ik.

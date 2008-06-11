@@ -434,8 +434,7 @@ public:
   This method builds an algebraic form of the FULL linearization
   of the normal contact condition g~ = 0. Concretely, this
   includes assembling the linearizations of the slave side
-  nodal normals and of the Mortar matrix D. Note, that the
-  Mortar matrix M linearization is still MISSING.  
+  nodal normals and of the Mortar matrices D  and M.
   */
   virtual void AssembleS(LINALG::SparseMatrix& sglobal);
   
@@ -448,6 +447,17 @@ public:
   nodal tangents and the current Lagrange multipliers.
   */
   virtual void AssembleP(LINALG::SparseMatrix& pglobal);
+  
+  /*!
+  \brief Assemble matrices LinD, LinM containing linearizations
+      
+  This method builds an algebraic form of the FULL linearization
+  of the contact force vector. Concretely, this means assembling
+  the linearization of the Mortar matrices D and M and the
+  current Lagrange multipliers.
+  */
+  virtual void AssembleLinDM(LINALG::SparseMatrix& lindglobal,
+                             LINALG::SparseMatrix& linmglobal);
     
   /*!
   \brief Initialize active set of this interface (t=0)

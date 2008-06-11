@@ -467,6 +467,11 @@ void CONTACT::Manager::Initialize(int numiter)
   smatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
   pmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
   
+  // (re)setup global matrices containing fc derivatives
+  lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+  linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+  
+  
 #ifdef CONTACTCHECKHUEEBER
   }
 #endif // #ifdef CONTACTCHECKHUEEBER
@@ -1586,6 +1591,7 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
     interface_[i]->AssembleS(*smatrix_);
     interface_[i]->AssembleP(*pmatrix_);
+    interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
   }
     
   // FillComplete() global matrices N and T
@@ -1597,6 +1603,10 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
   // FillComplete() global matrix P
   pmatrix_->Complete(*gsdofrowmap_,*gactivet_);
+  
+  // FillComplete() global matrices LinD, LinM
+  lindmatrix_->Complete();
+  linmmatrix_->Complete(*gsmdofs,*gmdofrowmap_);
   
 #ifdef CONTACTCHECKHUEEBER
   }
@@ -1811,6 +1821,26 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   RCP<LINALG::SparseMatrix> invda;
   LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
   
+#ifdef CONTACTFULLLIN
+  /**********************************************************************/
+  /* Split LinD and LinM into blocks                                    */
+  /**********************************************************************/
+  // we want to split lindmatrix_ into 2 groups a,i = 4 blocks
+  RCP<LINALG::SparseMatrix> lindai, lindaa;
+  
+  // we want to split linmmatrix_ into 3 groups a,i,m = 3 blocks
+  RCP<LINALG::SparseMatrix> linmmi, linmma, linmmm, linmms;
+  
+  // do the splitting
+  LINALG::SplitMatrix2x2(lindmatrix_,gactivedofs_,gidofs,gactivedofs_,gidofs,lindaa,lindai,tempmtx1,tempmtx2);
+  LINALG::SplitMatrix2x2(linmmatrix_,gmdofrowmap_,tempmap,gmdofrowmap_,gsdofrowmap_,linmmm,linmms,tempmtx1,tempmtx2);
+  LINALG::SplitMatrix2x2(linmms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,linmma,linmmi,tempmtx1,tempmtx2);
+  
+  // modify kai,kaa
+  kai->Add(*lindai,false,1.0,1.0);
+  kaa->Add(*lindaa,false,1.0,1.0);
+#endif // #ifdef CONTACTFULLLIN
+  
   /**********************************************************************/
   /* Build the final K and f blocks                                     */
   /**********************************************************************/
@@ -1828,16 +1858,25 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // kmm: add T(mbaractive)*kam
   RCP<LINALG::SparseMatrix> kmmmod = LINALG::Multiply(*mhata,true,*kam,false,false);
   kmmmod->Add(*kmm,false,1.0,1.0);
+#ifdef CONTACTFULLLIN
+  kmmmod->Add(*linmmm,false,1.0,1.0);
+#endif // #ifdef CONTACTFULLLIN
   kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
   
   // kmi: add T(mbaractive)*kai
   RCP<LINALG::SparseMatrix> kmimod = LINALG::Multiply(*mhata,true,*kai,false,false);
   kmimod->Add(*kmi,false,1.0,1.0);
+#ifdef CONTACTFULLLIN
+  kmimod->Add(*linmmi,false,1.0,1.0);
+#endif // #ifdef CONTACTFULLLIN
   kmimod->Complete(kmi->DomainMap(),kmi->RowMap());
   
   // kma: add T(mbaractive)*kaa
   RCP<LINALG::SparseMatrix> kmamod = LINALG::Multiply(*mhata,true,*kaa,false,false);
   kmamod->Add(*kma,false,1.0,1.0);
+#ifdef CONTACTFULLLIN
+  kmamod->Add(*linmma,false,1.0,1.0);
+#endif // #ifdef CONTACTFULLLIN
   kmamod->Complete(kma->DomainMap(),kma->RowMap());
   
   // kin: nothing to do

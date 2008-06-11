@@ -307,6 +307,8 @@ protected:
   RCP<LINALG::SparseMatrix>          tmatrix_;        // global Matrix T containing active node tangents
   RCP<LINALG::SparseMatrix>          smatrix_;        // global Matrix S containing normal+D+M derivatives
   RCP<LINALG::SparseMatrix>          pmatrix_;        // global Matrix P containing tangent derivatives
+  RCP<LINALG::SparseMatrix>          lindmatrix_;     // global Matrix LinD containing slave fc derivatives
+  RCP<LINALG::SparseMatrix>          linmmatrix_;     // global Matrix LinM containing master fc derivatives
   
   RCP<Epetra_Vector>                 z_;              // vector of Lagrange multipliers (mid-point)
   RCP<Epetra_Vector>                 zold_;           // vector of last time step Lagrange multipliers (mid-point)

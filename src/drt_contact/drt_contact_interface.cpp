@@ -1785,6 +1785,160 @@ void CONTACT::Interface::AssembleP(LINALG::SparseMatrix& pglobal)
   
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Assemble matrices LinDM containing fc derivatives         popp 06/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
+                                       LINALG::SparseMatrix& linmglobal)
+{
+  /********************************************** LinDMatrix **********/
+  // This is easy and can be done without communication, as the global
+  // matrix lind has the same row map as the storage of the derivatives
+  // of the D matrix.
+  /**********************************************************************/
+  
+  // loop over all slave nodes (row map)
+  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+    int numdof = cnode->NumDof();
+    
+    // Mortar matrix D derivatives
+    map<int,double>& dderiv = cnode->GetDerivD();
+    map<int,double>::iterator colcurr;
+    
+    // current Lagrange multipliers
+    double* lm = cnode->lm();
+    
+    // loop over all slave node dofs for assembly
+    for (int j=0;j<numdof;++j)
+    {
+      int row = cnode->Dofs()[j];
+      
+      // loop over all directional derivative entries
+      for (colcurr=dderiv.begin();colcurr!=dderiv.end();++colcurr)
+      {
+        int col = colcurr->first;
+        double val = lm[j] * (colcurr->second);
+        //cout << "Assemble LinD: " << row << " " << col << " " << val << endl;
+        if (abs(val)>1.0e-12) lindglobal.Assemble(val,row,col);
+      }
+    }
+  }
+  
+  /********************************************** LinMMatrix ************/
+  // This is a quite complex task and we have to do a lot of parallel
+  // communication here!!! The reason for this is that the directional
+  // derivative of M is stored slave-node-wise meaning that we can only
+  // address the derivative of M via the slave node row map! But now
+  // we have to assemble into a matrix linm which is based on the
+  // master node row map!!! This is not straight forward as we CANNOT
+  // do this without communication: when we have collected one slave
+  // node's contribution to linm we have to assemble this portion to
+  // the respective master nodes in parallel! Only the processor owning
+  // the master node can do this! Therefore, we communicate the derivatives
+  // of M to all procs and then explicitly call the current master proc
+  // to do the assembly into the sparse matrix linm.
+  /**********************************************************************/
+  
+  // loop over all slave nodes (full map)
+  for (int i=0;i<snodefullmap_->NumMyElements();++i)
+  {
+    int gid = snodefullmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+    
+    // Mortar matrix M derivatives
+    map<int,map<int,double> >& mderiv = cnode->GetDerivM();
+    map<int,double>::iterator colcurr;
+    map<int,map<int,double> >::iterator mcurr;
+    
+    // current Lagrange multipliers
+    double* lm = cnode->lm();
+    
+    // inter-proc. communication
+    // (we want to keep all procs around, although at the moment only
+    // the cnode owning proc does relevant work!)
+    int mastersize = 0;
+    if (Comm().MyPID()==cnode->Owner())
+    {
+      mastersize = (int)mderiv.size();
+      mcurr = mderiv.begin();
+    }
+    Comm().Broadcast(&mastersize,1,cnode->Owner());
+    
+    // loop over all master nodes in the DerivM-map of the current slave node
+    for (int j=0;j<mastersize;++j)
+    {
+      int mgid = 0;
+      if (Comm().MyPID()==cnode->Owner())
+      {
+        mgid = mcurr->first;
+        ++mcurr;
+      }
+      Comm().Broadcast(&mgid,1,cnode->Owner());
+      
+      DRT::Node* mnode = idiscret_->gNode(mgid);
+      if (!mnode) dserror("ERROR: Cannot find node with gid %",mgid);
+      CNode* cmnode = static_cast<CNode*>(mnode);
+      int mnumdof = cmnode->NumDof();
+      
+      // Mortar matrix M derivatives
+      map<int,double>& thismderiv = cnode->GetDerivM()[mgid];
+      int mapsize = 0;
+      if (Comm().MyPID()==cnode->Owner())
+        mapsize = (int)(thismderiv.size());
+      Comm().Broadcast(&mapsize,1,cnode->Owner());
+      
+      // loop over all master node dofs
+      for (int k=0;k<mnumdof;++k)
+      {
+        int row = cmnode->Dofs()[k];
+        
+        if (Comm().MyPID()==cnode->Owner())
+          colcurr = thismderiv.begin();
+        
+        // loop over all directional derivative entries
+        for (int c=0;c<mapsize;++c)
+        {
+          int col = 0;
+          double val = 0.0;
+          if (Comm().MyPID()==cnode->Owner())
+          {
+            col = colcurr->first;
+            val = lm[k] * (colcurr->second);
+            ++colcurr;
+          }
+          Comm().Broadcast(&col,1,cnode->Owner());
+          Comm().Broadcast(&val,1,cnode->Owner());
+          
+          // owner of master node has to do the assembly!!!
+          if (Comm().MyPID()==cmnode->Owner())
+          {
+            //cout << "Assemble LinM: " << row << " " << col << " " << val << endl;
+            if (abs(val)>1.0e-12) linmglobal.Assemble(-val,row,col);
+          }
+        }
+        
+        // check for completeness of DerivM-Derivatives-iteration
+        if (Comm().MyPID()==cnode->Owner() && colcurr!=thismderiv.end())
+          dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivM considered!");
+      }
+    }
+    
+    // check for completeness of DerivM-Master-iteration
+    if (Comm().MyPID()==cnode->Owner() && mcurr!=mderiv.end())
+      dserror("ERROR: AssembleLinDM: Not all master entries of DerivM considered!");
+  }
+  
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  initialize active set (nodes / dofs)                      popp 03/08|
  *----------------------------------------------------------------------*/
