@@ -3011,6 +3011,12 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
   eleparams.set("using stationary formulation",false);
   eleparams.set("include reactive terms for linearisation",newton_);
 
+  // parameters for stabilization
+  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+
+  // parameters for stabilization
+  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+
   // set vector values needed by elements
   discret_->ClearState();
   discret_->SetState("velnp",velnp_);
