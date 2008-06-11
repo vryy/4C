@@ -189,8 +189,8 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
     actmat = static_cast<MAT::ModPowerLaw*>(mat.get())->MaterialData();
   else
     dserror("fluid material expected but got type %d", mat->MaterialType());
-  
-  
+
+
   switch(act)
   {
     case calc_fluid_stationary_systemmat_and_residual:
@@ -295,10 +295,10 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
       }
 
       // calculate element coefficient matrix and rhs
-      f2_sys_mat(lm,myvelnp,myfsvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elevec1,actmat,time,timefac,fssgv,Cs,is_stationary);
+      f2_sys_mat(lm,myvelnp,myfsvelnp,myprenp,myvhist,mydispnp,mygridv,&elemat1,&elemat2,&elevec1,actmat,time,timefac,fssgv,Cs,is_stationary);
 
       // This is a very poor way to transport the density to the
-      // outside world. Is there a better one?    
+      // outside world. Is there a better one?
       double dens = 0.0;
       if(mat->MaterialType()== m_fluid)
         dens = actmat->m.fluid->density;
@@ -310,7 +310,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
         dserror("no fluid material found");
 
       params.set("density", dens);
-              
+
     }
     break;
     case calc_fluid_genalpha_sysmat_and_residual:
@@ -477,7 +477,7 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
 
         (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
       }
-      
+
       // --------------------------------------------------
       // calculate element coefficient matrix
       GenalphaResVMM()->Sysmat(this,
@@ -598,6 +598,7 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
                                        vector<double>&           edispnp,
                                        vector<double>&           egridv,
                                        Epetra_SerialDenseMatrix* sys_mat,
+                                       Epetra_SerialDenseMatrix* mesh_mat,
                                        Epetra_SerialDenseVector* residual,
                                        struct _MATERIAL*         material,
                                        double                    time,
@@ -652,6 +653,7 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
   Epetra_SerialDenseMatrix 	deriv(2,iel);
   Epetra_SerialDenseMatrix 	deriv2(3,iel);
   static Epetra_SerialDenseMatrix 	xjm(2,2);
+  static Epetra_SerialDenseMatrix 	vderiv(2,2);
   static Epetra_SerialDenseMatrix 	vderxy(2,2);
   static Epetra_SerialDenseMatrix 	fsvderxy(2,2);
   static vector<double> 	pderxy(2);
@@ -662,7 +664,6 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
   vector<double> 		ephin(iel);
   vector<double> 		ephing(iel);
   vector<double> 		iedgnod(iel);
-  //Epetra_SerialDenseMatrix 	wa1(100,100);  // working matrix used as dummy
   static vector<double>    	histvec(2); /* history data at integration point      */
   double         		hk;         /* element length for calculation of tau  */
   double         		vel_norm, fsvel_norm, pe, re, xi1, xi2, xi;
@@ -773,10 +774,10 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
   {
     double rateofshear = 0.0;
     blitz::Array<double,2> epsilon(2,2,blitz::ColumnMajorArray<2>());   // strain rate tensor
-    
+
     // global derivatives at element center
     f2_gder(derxy,deriv,xjm,det,iel);
-    
+
     // compute velocity derivatives at element center
     for (int i=0;i<2;i++)
     {
@@ -788,18 +789,18 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
         vderxy(1,i) += derxy(i,j)*evelnp[1+(2*j)];
       } /* end of loop over j */
     } /* end of loop over i */
-    
+
     // compute strain rate tensor e(u)
     for (int i=0;i<2;i++)
       for (int j=0;j<2;j++)
         epsilon(i,j) = 0.5 * ( vderxy(i,j) + vderxy(j,i) );
-  
+
     for(int rr=0;rr<2;rr++)
       for(int mm=0;mm<2;mm++)
         rateofshear += epsilon(rr,mm)*epsilon(rr,mm);
-  
+
     rateofshear = sqrt(2.0*rateofshear);
-  
+
     if(material->mattyp == m_carreauyasuda)
     {
       double nu_0     = material->m.carreauyasuda->nu_0;      // parameter for zero-shear viscosity
@@ -807,7 +808,7 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
       double lambda   = material->m.carreauyasuda->lambda;    // parameter for characteristic time
       double a        = material->m.carreauyasuda->a_param;   // constant parameter
       double b        = material->m.carreauyasuda->b_param;   // constant parameter
-  
+
       // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
       // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
       const double tmp = pow(lambda*rateofshear,b);
@@ -819,7 +820,7 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
       double m      = material->m.modpowerlaw->m_cons;    // consistency constant
       double delta  = material->m.modpowerlaw->delta;     // safety factor
       double a      = material->m.modpowerlaw->a_exp;     // exponent
-  
+
       // compute viscosity according to a modified power law model for shear-thinning fluids
       // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
       visc = m * pow((delta + rateofshear), (-1)*a);
@@ -827,7 +828,7 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
     else
       dserror("material type not yet implemented");
   }
-  
+
   /*----------------------------------------------- get vel_norm ---*/
   vel_norm = sqrt(DSQR(velint[0]) + DSQR(velint[1]));
 
@@ -1058,6 +1059,26 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
         } /* end of loop over j */
       } /* end of loop over i */
 
+      //
+      for (int i=0;i<2;i++)
+      {
+        vderiv(0,i)=0.0;
+        vderiv(1,i)=0.0;
+        for (int j=0;j<iel;j++)
+        {
+          vderiv(0,i) += deriv(i,j)*evelnp[0+(2*j)];
+          vderiv(1,i) += deriv(i,j)*evelnp[1+(2*j)];
+        } /* end of loop over j */
+        if (is_ale_)
+        {
+          for (int j=0;j<iel;j++)
+          {
+            vderiv(0,i) -= deriv(i,j)*egridv[0+(3*j)];
+            vderiv(1,i) -= deriv(i,j)*egridv[1+(3*j)];
+          } /* end of loop over j */
+        }
+      } /* end of loop over i */
+
       /*----------- get velocity (np,i) derivatives at integration point */
       // expression for f2_vder(vderxy,derxy,evelnp,iel);
       for (int i=0;i<2;i++)
@@ -1132,12 +1153,12 @@ void DRT::ELEMENTS::Fluid2::f2_sys_mat(vector<int>&              lm,
 
       // perform integration for entire matrix and rhs
       if(is_stationary==false)
-        f2_calmat(*sys_mat,*residual,
+        f2_calmat(*sys_mat,*mesh_mat,*residual,
                   velint,histvec,gridvelint,press,
-                  vderxy,fsvderxy,vderxy2,gradp,
-                  funct,tau,vart,
+                  vderiv,vderxy,fsvderxy,vderxy2,gradp,
+                  funct,deriv,tau,vart,
                   derxy,derxy2,edeadng,
-                  fac,visc,iel,fssgv,
+                  det,fac,visc,iel,fssgv,
                   timefac);
       else
         f2_calmat_stationary(*sys_mat,*residual,
@@ -1233,7 +1254,7 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Fluid2::f2_getbodyforce(
 
   if (myneumcond.size()==1)
   {
-    // we need the material here to denormalise the body force making sure that 
+    // we need the material here to denormalise the body force making sure that
     // we can cope with physical parameters (force per volume) in the input file
     // check here, if we really have a fluid !!
     if( material->mattyp != m_fluid
@@ -1680,21 +1701,25 @@ for further comments see comment lines within code.
 
 void DRT::ELEMENTS::Fluid2::f2_calmat(
     Epetra_SerialDenseMatrix& estif,
+    Epetra_SerialDenseMatrix& emesh,
     Epetra_SerialDenseVector& eforce,
     vector<double>&           velint,
     vector<double>&           histvec,
     vector<double>&           gridvint,
     double&   	              press,
+    Epetra_SerialDenseMatrix& vderiv,
     Epetra_SerialDenseMatrix& vderxy,
     Epetra_SerialDenseMatrix& fsvderxy,
     Epetra_SerialDenseMatrix& vderxy2,
     vector<double>&           gradp,
     Epetra_SerialDenseVector& funct,
+    const Epetra_SerialDenseMatrix& deriv,
     vector<double>&           tau,
     const double&             vart,
     Epetra_SerialDenseMatrix& derxy,
     Epetra_SerialDenseMatrix& derxy2,
     const vector<double>&     edeadng,
+    double                    det,
     const double&             fac,
     const double&             visc,
     const int&                iel,
@@ -1857,6 +1882,89 @@ void DRT::ELEMENTS::Fluid2::f2_calmat(
   {
 #include "fluid2_stiff.cpp"
 #include "fluid2_rhs_incr.cpp"
+  }
+
+  // linearization with respect to mesh motion
+  if (is_ale_)
+  if (emesh.M()==estif.M() and emesh.N()==estif.N())
+  {
+    // mass + rhs
+    for (int vi=0; vi<iel; ++vi)
+    {
+      double v = fac*funct_(vi);
+      for (int ui=0; ui<iel; ++ui)
+      {
+        emesh(vi*3    , ui*3    ) += v*(velint_(0)-rhsint_(0))*derxy_(0, ui);
+        emesh(vi*3    , ui*3 + 1) += v*(velint_(0)-rhsint_(0))*derxy_(1, ui);
+
+        emesh(vi*3 + 1, ui*3    ) += v*(velint_(1)-rhsint_(1))*derxy_(0, ui);
+        emesh(vi*3 + 1, ui*3 + 1) += v*(velint_(1)-rhsint_(1))*derxy_(1, ui);
+
+        emesh(vi*3 + 2, ui*3    ) += v*(velint_(2)-rhsint_(2))*derxy_(0, ui);
+        emesh(vi*3 + 2, ui*3 + 1) += v*(velint_(2)-rhsint_(2))*derxy_(1, ui);
+      }
+    }
+
+// #define derxjm_(r,c,d,i) derxjm_ ## r ## c ## d (i)
+
+// #define derxjm_001(ui) (deriv_(2, ui)*xjm_(1, 2) - deriv_(1, ui)*xjm_(2, 2))
+// #define derxjm_100(ui) (deriv_(1, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(1, 2))
+// #define derxjm_011(ui) (deriv_(0, ui)*xjm_(2, 2) - deriv_(2, ui)*xjm_(0, 2))
+// #define derxjm_110(ui) (deriv_(2, ui)*xjm_(0, 2) - deriv_(0, ui)*xjm_(2, 2))
+
+    for (int vi=0; vi<iel; ++vi)
+    {
+      double v = timefacfac/det*funct_(vi);
+      for (int ui=0; ui<iel; ++ui)
+      {
+
+        emesh(vi*3 + 0, ui*3 + 0) += v*(
+          + (velint_(1)-gridvint_(1))*(-vderiv(0, 0)*deriv(1,ui) + vderiv(0, 1)*deriv(0,ui))
+          );
+
+        emesh(vi*3 + 0, ui*3 + 1) += v*(
+          + (velint_(0)-gridvint_(0))*(-vderiv(0, 0)*deriv(1,ui) + vderiv(0, 1)*deriv(0,ui))
+          );
+
+        ////
+
+        emesh(vi*3 + 1, ui*3 + 0) += v*(
+          + (velint_(1)-gridvint_(1))*(-vderiv(1, 0)*deriv(1,ui) + vderiv(1, 1)*deriv(0,ui))
+          );
+
+        emesh(vi*3 + 1, ui*3 + 1) += v*(
+          + (velint_(0)-gridvint_(0))*(-vderiv(1, 0)*deriv(1,ui) + vderiv(1, 1)*deriv(0,ui))
+          );
+      }
+    }
+
+    // pressure
+    for (int vi=0; vi<iel; ++vi)
+    {
+      double v = press*timefacfac/det;
+      for (int ui=0; ui<iel; ++ui)
+      {
+        emesh(vi*3 + 0, ui*3 + 1) += v*(deriv(0, vi)*deriv(1, ui) - deriv(0, ui)*deriv(1, vi)) ;
+        emesh(vi*3 + 1, ui*3 + 0) += v*(deriv(0, vi)*deriv(1, ui) - deriv(0, ui)*deriv(1, vi)) ;
+      }
+    }
+
+    // div u
+    for (int vi=0; vi<iel; ++vi)
+    {
+      double v = timefacfac/det*funct_(vi);
+      for (int ui=0; ui<iel; ++ui)
+      {
+        emesh(vi*3 + 2, ui*3 + 0) += v*(
+          deriv(0,ui)*vderiv(1,1) - deriv(1,ui)*vderiv(1,0)
+          ) ;
+
+        emesh(vi*3 + 2, ui*3 + 1) += v*(
+          deriv(0,ui)*vderiv(0,1) - deriv(1,ui)*vderiv(0,0)
+          ) ;
+      }
+    }
+
   }
 
 #undef estif_
