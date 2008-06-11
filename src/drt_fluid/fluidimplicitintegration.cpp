@@ -3008,7 +3008,7 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
   eleparams.set("action","calc_fluid_systemmat_and_residual");
   eleparams.set("total time",time_);
   eleparams.set("thsl",theta_*dta_);
-  eleparams.set("using stationary formulation",false);
+  eleparams.set("dt",dta_);
   eleparams.set("include reactive terms for linearisation",newton_);
 
   // parameters for stabilization
