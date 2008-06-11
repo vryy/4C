@@ -332,7 +332,6 @@ private:
   
   // calculating system matrix and RHS
   void Condif3SysMat(
-                   vector<int>&              lm,
                    vector<double>&           ehist,
                    Epetra_SerialDenseMatrix* sys_mat,
                    Epetra_SerialDenseMatrix* sys_mat_sd,
@@ -373,6 +372,18 @@ private:
    * \brief convert action string to condif3 action type
    */
   ActionType convertStringToActionType(const string& action) const;
+
+
+  /*!
+   * \brief compute second global derivatives
+   */
+  void gder2(const Epetra_SerialDenseMatrix& xyze,
+      const Epetra_SerialDenseMatrix& xjm_,
+      const Epetra_SerialDenseMatrix& derxy,
+      Epetra_SerialDenseMatrix& derxy2_,
+      const Epetra_SerialDenseMatrix& deriv2,
+      const int iel
+      );
   
   /*!
    * \brief calculate matrix entries for actual Gauss point
@@ -394,6 +405,25 @@ private:
       const int&                iel,
       string                    fssgd,
       double                    timefac
+      );
+  
+  /*!
+   * \brief calculate matrix entries for actual Gauss point
+   *        (stationary formulation)
+   */
+  void Condif3CalMatStationary(
+      Epetra_SerialDenseMatrix& estif,
+      Epetra_SerialDenseVector& eforce,
+      vector<double>&           velint,
+      const double&             hist,
+      Epetra_SerialDenseVector& funct,
+      Epetra_SerialDenseMatrix& derxy,
+      Epetra_SerialDenseMatrix& derxy2,
+      const double&             edeadng,
+      const double&             tau,
+      const double&             fac,
+      const double&             diffus,
+      const int&                iel
       );
 
 }; // class Condif3
@@ -566,7 +596,7 @@ public:
   else if (NumNode()==3 || NumNode()==6) return 3;
   else
   {
-    dserror("Could not determine number of surfaces");
+    dserror("Could not determine number of lines");
     return -1;
   }
   }
