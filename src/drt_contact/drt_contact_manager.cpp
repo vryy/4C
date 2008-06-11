@@ -551,6 +551,11 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // because there are still problems with the transposed version of
   // MLMultiply if a row has no entries! One day we should use ML...
   
+  // FIXME: Not yet implemented for CONTACTFULLLIN
+#ifdef CONTACTFULLLIN
+  dserror("ERROR: Full linearization not yet implemented for Tresca basis trafo case!");
+#endif // #ifdef CONTACTFULLLIN
+    
   // input parameters
   string ctype   = scontact_.get<string>("contact type","none");
   string ftype   = scontact_.get<string>("friction type","none");
