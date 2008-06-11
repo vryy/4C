@@ -545,6 +545,55 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
 
 
 /*----------------------------------------------------------------------*
+ |  singular value decomposition (SVD) of a real M-by-N matrix A.       |
+ |  Wrapper for Lapack/Epetra_Lapack           (public)        maf 05/08|
+ *----------------------------------------------------------------------*/
+void LINALG::SVD(LINALG::SerialDenseMatrix& A,
+                 LINALG::SerialDenseMatrix& U,
+                 LINALG::SerialDenseMatrix& SIGMA,
+                 LINALG::SerialDenseMatrix& Vt)
+{
+  Epetra_SerialDenseMatrix tmp(A);  // copy, because content of A ist destroyed
+  Epetra_LAPACK lapack;
+  const char jobu = 'A';  // compute and return all M columns of U
+  const char jobvt = 'A'; // compute and return all N rows of V^T
+  const int n = tmp.N();
+  const int m = tmp.M();
+  vector<double> s(min(n,m));
+  vector<double> u(m*m);
+  vector<double> vt(n*n);
+  int info;
+  int lwork = max(3*min(m,n)+max(m,n),5*min(m,n));
+  vector<double> work(lwork);
+  lapack.GESVD(jobu,jobvt,m,n,tmp.A(),tmp.LDA(),&s[0],
+               &u[0],tmp.LDA(),&vt[0],tmp.LDA(),&work[0],&lwork,&info);
+  if (info) dserror("Lapack's dgesvd returned %d",info);
+  
+  for (int i = 0; i < m; ++i) {
+    for (int j = 0; j < m; ++j) {
+      U(i,j) = u[j*m + i];
+    }
+  }
+
+  // return transpose Vt
+  for (int i = 0; i < n; ++i) {
+    for (int j = 0; j < n; ++j) {
+      Vt(j,i) = vt[j*n + i];
+    }
+  }
+
+  for (int i = 0; i < min(n,m); ++i) {
+    for (int j = 0; j < min(n,m); ++j) {
+      SIGMA(i,j) = (i==j) * s[i];   // 0 for off-diagonal, otherwise s
+    }
+  }
+  
+  
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | invert a dense nonsymmetric matrix (public)       g.bau 03/07|
 *----------------------------------------------------------------------*/
 void LINALG::NonSymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)

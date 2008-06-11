@@ -208,6 +208,20 @@ namespace LINALG
                       const bool postproc=false);
   
   /*!
+  \brief Compute singular value decomposition (SVD) of a real M-by-N matrix A
+                        A = U * SIGMA * transpose(V)
+   
+  \param A (in/out):    Matrix to be decomposed
+  \param U (in/out):    M-by-M orthogonal matrix
+  \param SIGMA (in/out):M-by-N matrix which is zero except for its min(m,n) diagonal elements
+  \param Vt (in/out):   V is a N-by-N orthogonal matrix, actually returned is V^T
+  */
+  void SVD( LINALG::SerialDenseMatrix& A,
+            LINALG::SerialDenseMatrix& U,
+            LINALG::SerialDenseMatrix& SIGMA,
+            LINALG::SerialDenseMatrix& Vt);
+
+  /*!
   \brief Explicit inverse and determinant of nonsymmetric 3x3 matrix
 
   \param A (in/out): Matrix to be inverted
