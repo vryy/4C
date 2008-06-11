@@ -23,10 +23,14 @@ Maintainer: Ursula Mayer
 
 namespace XFEM
 {
-  BlitzMat3x2 getXAABBofDis(const XFEM::InterfaceHandle& ih);
-  const DRT::Element* nearestNeighbourInList(const XFEM::InterfaceHandle& ih, const list<const DRT::Element* > ElementList, const BlitzVec3& x, double& dist);
+  //! gives the AABB of a complete Discretization and adds TOL07, doesn't care about displacements
+  BlitzMat3x2         getXAABBofDis         (const RCP<DRT::Discretization> dis);  
+  //! gives the AABB of a complete Discretization and adds TOL07, also takes into account current displacements
+  BlitzMat3x2         getXAABBofDis         (const RCP<DRT::Discretization> dis,const std::map<int,BlitzVec3>& currentpositions);  
+  //! gives back the nearest Element in an List of Elements
+  const DRT::Element* nearestNeighbourInList(const RCP<DRT::Discretization> dis,const std::map<int,BlitzVec3>& currentpositions, const list<const DRT::Element* > ElementList, const BlitzVec3& x, double& dist);
 }
-  
+
 #endif
 #endif
 

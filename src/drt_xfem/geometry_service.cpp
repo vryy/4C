@@ -18,38 +18,62 @@ using namespace XFEM;
 
 
 
-BlitzMat3x2 XFEM::getXAABBofDis(const XFEM::InterfaceHandle& ih){
+BlitzMat3x2 XFEM::getXAABBofDis(const RCP<DRT::Discretization> dis){
   const int nsd = 3;
   BlitzMat3x2 XAABB;
   
   // XAABB of cutterElements
   // first node
-  const double* pos = ih.cutterdis()->lRowElement(0)->Nodes()[0]->X();
+  const double* pos = dis->lRowElement(0)->Nodes()[0]->X();
   for(int dim=0; dim<nsd; ++dim)
   {
     XAABB(dim, 0) = pos[dim] - TOL7;
     XAABB(dim, 1) = pos[dim] + TOL7;
   }
-  for (int j=0; j< ih.cutterdis()->NumMyRowElements(); ++j) {
+  for (int j=0; j< dis->NumMyRowElements(); ++j) {
     // remaining node
-    for(int i=0; i< ih.cutterdis()->lRowElement(j)->NumNode(); ++i)
+    for(int i=0; i< dis->lRowElement(j)->NumNode(); ++i)
     {
-      const double* posEle = ih.cutterdis()->lRowElement(j)->Nodes()[i]->X();
+      const double* posEle = dis->lRowElement(j)->Nodes()[i]->X();
       for(int dim=0; dim<nsd; dim++)
       {
         XAABB(dim, 0) = std::min( XAABB(dim, 0), posEle[dim] - TOL7);
         XAABB(dim, 1) = std::max( XAABB(dim, 1), posEle[dim] + TOL7);
       }
-      //      cout << "XAABB=" << XAABB(0,0) << ","<< XAABB(0,1) << "," << XAABB(1,0) << "," << XAABB(1,1) << "," << XAABB(2,0) << "," << XAABB(2,1) << endl;
     }  
   }
+   XAABB(0,0) = XAABB(0,0) - TOL7;
+   XAABB(0,1) = XAABB(0,1) + TOL7;
+   XAABB(1,0) = XAABB(1,0) - TOL7;
+   XAABB(1,1) = XAABB(1,1) + TOL7;
+   XAABB(2,0) = XAABB(2,0) - TOL7;
+   XAABB(2,1) = XAABB(2,1) + TOL7;
+   
+   //  cout << "_XAABB=" << XAABB(0,0) << ","<< XAABB(0,1) << "," << XAABB(1,0) << "," << XAABB(1,1) << "," << XAABB(2,0) << "," << XAABB(2,1) << endl;
+   return XAABB;
+}
   
+BlitzMat3x2 XFEM::getXAABBofDis(const RCP<DRT::Discretization> dis,const std::map<int,BlitzVec3>& currentpositions){
+  const int nsd = 3;
+  BlitzMat3x2 XAABB;
+  if (dis->NumGlobalElements() == 0){ 
+    XAABB(0,0)=0;XAABB(0,1)=0;
+    XAABB(1,0)=0;XAABB(1,1)=0;
+    XAABB(2,0)=0;XAABB(2,1)=0;
+    return XAABB;
+    }
   // extend XAABB to xfem elements
-  for (int j=0; j< ih.xfemdis()->NumMyRowElements(); ++j) {
+  const double* pos = dis->lRowElement(0)->Nodes()[0]->X();
+  for(int dim=0; dim<nsd; ++dim)
+  {
+    XAABB(dim, 0) = pos[dim] - TOL7;
+    XAABB(dim, 1) = pos[dim] + TOL7;
+  }
+  for (int j=0; j< dis->NumMyRowElements(); ++j) {
     // remaining node
-    for(int i=0; i< ih.xfemdis()->lRowElement(j)->NumNode(); ++i)
+    for(int i=0; i< dis->lRowElement(j)->NumNode(); ++i)
     {
-      const double* posEle = ih.xfemdis()->lRowElement(j)->Nodes()[i]->X();
+      const double* posEle = dis->lRowElement(j)->Nodes()[i]->X();
       for(int dim=0; dim<nsd; dim++)
       {
         XAABB(dim, 0) = std::min( XAABB(dim, 0), posEle[dim] - TOL7);
@@ -69,7 +93,7 @@ BlitzMat3x2 XFEM::getXAABBofDis(const XFEM::InterfaceHandle& ih){
 }
 
 
-const DRT::Element* XFEM::nearestNeighbourInList(const XFEM::InterfaceHandle& ih, const list<const DRT::Element* > ElementList, const BlitzVec3& x_in, double& dist)
+const DRT::Element* XFEM::nearestNeighbourInList(const RCP<DRT::Discretization> dis,const std::map<int,BlitzVec3>& currentpositions, const list<const DRT::Element* > ElementList, const BlitzVec3& x_in, double& dist)
 {
   bool in_element = false;
   double min_ele_distance = 1.0e12;
@@ -82,7 +106,7 @@ const DRT::Element* XFEM::nearestNeighbourInList(const XFEM::InterfaceHandle& ih
   {
     double distance = 1.0e12;
     const DRT::Element* cutterele = &**myIt;
-    const BlitzMat xyze_cutter(getCurrentNodalPositions(cutterele, *ih.currentcutterpositions()));
+    const BlitzMat xyze_cutter(getCurrentNodalPositions(cutterele, currentpositions));
     static BlitzVec2 eleCoord;
     static BlitzVec3 normal;
     in_element = XFEM::searchForNearestPointOnSurface(cutterele,xyze_cutter,x_in,eleCoord,normal,distance);
@@ -111,7 +135,7 @@ const DRT::Element* XFEM::nearestNeighbourInList(const XFEM::InterfaceHandle& ih
         BlitzVec3 vector;
         const DRT::Node* cutternode = nodes[inode]; 
         // node position in physical coordinates
-        const BlitzVec3 x_node = ih.currentcutterpositions()->find(cutternode->Id())->second;
+        const BlitzVec3 x_node = currentpositions.find(cutternode->Id())->second;
         
         // vector pointing away from the node towards physCoord
         vector(0) = x_in(0) - x_node(0);
@@ -133,11 +157,11 @@ const DRT::Element* XFEM::nearestNeighbourInList(const XFEM::InterfaceHandle& ih
     // calculate normal at node by (vectorial) addition of element normals
     BlitzVec3 normal;
     normal(0)=0;normal(1)=0;normal(2)=0;
-    DRT::Node*  node = ih.cutterdis()->gNode(closest_node->Id());
+    DRT::Node*  node = dis->gNode(closest_node->Id());
     for(int j=0; j<node->NumElement();j++)
     {
       DRT::Element* surfaceElement = node->Elements()[j];
-      BlitzMat xyze_surfaceElement(getCurrentNodalPositions(surfaceElement, *ih.currentcutterpositions()));
+      BlitzMat xyze_surfaceElement(getCurrentNodalPositions(surfaceElement, currentpositions));
       BlitzVec3 eleNormalAtXsi;
       BlitzVec2 xsi;
       CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, node->X(), xsi);

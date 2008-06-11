@@ -64,10 +64,6 @@ public:
     
     //! get pointer to map with all elements gids sorted by their interface labels
     const std::map<int,std::set<int> >* elementsByLabel() const {return &elementsByLabel_;};
-
-    //! get pointer to vector with all label gids indexed by their element ids
-    const std::map<int, int>* labelByElement() const {return &labelByElement_;};
-
     
     //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
     DomainIntCells GetDomainIntCells(
@@ -116,9 +112,6 @@ private:
     
     //! elements grouped by the xfem condition label
     std::map<int,set<int> >          elementsByLabel_;
-    
-    //! gives the label per element (gid)
-    std::map<int,int>                labelByElement_;
 
 };
 
@@ -131,15 +124,15 @@ void PositionWithinCondition(
         std::map<int,bool>&               posInCondition  ///< fill with bool values
     );
 
-/*!
-\brief as above, but only for givven xfem labels           
-*/  
-void PositionWithinGivenCondition(
-        const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
-        const std::set<int>&              xlabelset,      ///< enrichment labels
-        std::map<int,bool>&               posInCondition  ///< fill with bool values
-    );
+///*!
+//\brief as above, but only for givven xfem labels           
+//*/  
+//void PositionWithinGivenCondition(
+//        const BlitzVec3&                  x,              ///< node in physical coordinates
+//        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
+//        const std::set<int>&              xlabelset,      ///< enrichment labels
+//        std::map<int,bool>&               posInCondition  ///< fill with bool values
+//    );
 
 /*!
 \brief checks if a position in current coordinates lies within a certain condition region           
@@ -154,6 +147,12 @@ bool PositionWithinAnyInfluencingCondition(
 \brief checks if a position in current coordinates lies within a certain condition region using an octree
 */
 void PositionWithinConditionTree(
+        const BlitzVec3&                  x,              ///< node in physical coordinates
+        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
+        std::map<int,bool>&               posInCondition  ///< fill with bool values
+    );
+
+void PositionWithinConditionBruteForce(
         const BlitzVec3&                  x,              ///< node in physical coordinates
         const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
         std::map<int,bool>&               posInCondition  ///< fill with bool values

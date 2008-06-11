@@ -13,7 +13,6 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "interface.H"
-#include "xfem_condition.H"
 #include "xfsi_searchtree.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_lib/drt_globalproblem.H"
@@ -76,15 +75,8 @@ XFEM::InterfaceHandle::InterfaceHandle(
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
 
-  labelByElement_.clear();
-  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel_.begin(); conditer!=elementsByLabel_.end(); ++conditer)
-  {
-    for(std::set<int>::const_iterator eleid = conditer->second.begin(); eleid!=conditer->second.end(); ++eleid)
-    {
-      labelByElement_[*eleid] = conditer->first;
-    }
-  }
-  
+  cout << "set rebuild flag" << endl;
+  STree.setRebuildFlag();
 }
 		
 /*----------------------------------------------------------------------*
@@ -137,6 +129,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     std::stringstream filename;
     filename << "domains_" << std::setw(5) << setfill('0') << step << ".pos";
     cout << "writing '"<<filename.str()<<"...";
+
     std::ofstream f_system(filename.str().c_str());
     //f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
     //f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
@@ -161,10 +154,12 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           cell->NodalPosXYZ(*actele, cellpos);
           const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
           //cout << cellcenterpos << endl;
-          
+//          cout << endl << "calling PositionWithinCondition...";
+//          flush(cout);          
           PositionWithinCondition(cellcenterpos, *this, posInCondition);
-          
-          //PositionWithinConditionTree(cellcenterpos, *this, posInCondition);
+//          cout <<"done"<<endl;
+//          flush(cout);                    
+//          PositionWithinConditionTree(cellcenterpos, *this, posInCondition);
           
           int domain_id = 0;
           // loop conditions
@@ -197,7 +192,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     f_system.close();
     f_systemP.close();
     cout << " done" << endl;
-    //STree.printTree(step);
+//    STree.printTree(step);
   }
   return;
 }
@@ -247,7 +242,7 @@ bool XFEM::InterfaceHandle::ElementIntersected(
 
 
 /*----------------------------------------------------------------------*
- |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
+ |  CLI:    checks if a position is within condition-enclosed region      p.ede 05/08|   
  *----------------------------------------------------------------------*/
 void XFEM::PositionWithinCondition(
     const BlitzVec3&                  x_in,
@@ -255,54 +250,26 @@ void XFEM::PositionWithinCondition(
     std::map<int,bool>&               posInCondition
 )
 {
+  std::map<int,bool> posInCondition1;
+  std::map<int,bool> posInCondition2;
   
-  TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinCondition");
-  //init
-  posInCondition.clear();
-  const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
-  
-  /////////////////
-  // loop labels
-  /////////////////
-  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
-  {
-    const int label = conditer->first;
-    posInCondition[label] = false; 
+  PositionWithinConditionBruteForce(x_in, ih, posInCondition1);
+//  PositionWithinConditionTree(x_in, ih, posInCondition2);
+//  const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
+//  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+//   {
+//     const int label = conditer->first;
+//     if (posInCondition1[label]!=posInCondition2[label])
+//     {
+////       cout << " bruteforce posInCondition[" << label <<"] = "<< posInCondition1[label] << endl;    
+////       cout << "xsearchtree posInCondition[" << label <<"] = "<< posInCondition2[label] << endl;
+//       //cout <<  posInCondition1[label] << " " << posInCondition2[label] << endl;
+//       flush(cout);  
+//       dserror("results for searchtree and brute force do not match");
+//     }
+//   }
+  posInCondition = posInCondition1;
     
-    // point lies opposite to a element (basis point within element parameter space)
-    // works only, if I can loop over ALL surface elements
-    // MUST be modified, if only a subset of the surface is used
-    bool in_element = false;
-    double min_ele_distance = 1.0e12;
-    const DRT::Element* closest_element;
-    for (set<int>::const_iterator elegid = conditer->second.begin(); elegid != conditer->second.end(); ++elegid)
-    {
-      const DRT::Element* cutterele = ih.cutterdis()->gElement(*elegid);
-      const BlitzMat xyze_cutter(getCurrentNodalPositions(cutterele, *ih.currentcutterpositions()));
-      double distance = 0.0;
-      static BlitzVec2 eleCoord;
-      static BlitzVec3 normal;
-      in_element = searchForNearestPointOnSurface(cutterele,xyze_cutter,x_in,eleCoord,normal,distance);
-      if (in_element)
-      {
-        if (abs(distance) < abs(min_ele_distance))
-        {
-          closest_element = cutterele;
-          min_ele_distance = distance;
-        }
-      }
-    }
-    
-    if (in_element)
-    {
-      if (min_ele_distance < 0.0)
-      {
-        posInCondition[label] = true;
-      }
-    }
-    
-  } // end loop label
-  
   // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
 #ifdef PARALLEL
   dserror("not implemented, yet");
@@ -313,10 +280,9 @@ void XFEM::PositionWithinCondition(
 /*----------------------------------------------------------------------*
  |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
  *----------------------------------------------------------------------*/
-void XFEM::PositionWithinGivenCondition(
+void XFEM::PositionWithinConditionBruteForce(
     const BlitzVec3&                  x_in,
     const XFEM::InterfaceHandle&      ih,
-    const std::set<int>&              xlabelset,
     std::map<int,bool>&               posInCondition
 )
 {
@@ -332,12 +298,6 @@ void XFEM::PositionWithinGivenCondition(
   for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
     const int label = conditer->first;
-    
-    if (xlabelset.find(label) == xlabelset.end())
-    {
-      continue;
-    }
-    
     posInCondition[label] = false; 
     
     // point lies opposite to a element (basis point within element parameter space)
@@ -391,7 +351,6 @@ void XFEM::PositionWithinConditionTree(
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinConditionTree");
-  
   posInCondition.clear();
   const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
   for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
@@ -399,7 +358,7 @@ void XFEM::PositionWithinConditionTree(
     const int label = conditer->first;
     posInCondition[label] = false;    
   }
-  int l = STree.queryPointType(ih, x_in);
+  int l = STree.queryPointType(ih.cutterdis(), *ih.currentcutterpositions(), x_in);
   posInCondition[l] = true;
   //  printf("%d ", l);
   
