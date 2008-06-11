@@ -218,6 +218,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
     fluidtimeparams->set<bool>("interface second order", Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER"));
+    fluidtimeparams->set<bool>("mesh movement linearization",
+                               Teuchos::getIntegralValue<int>(fsidyn,"MESHLINEARIZATION"));
 
     int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
     if (coupling == fsi_iter_monolithic or
@@ -226,9 +228,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       // there are a couple of restrictions in monolithic FSI
       fluidtimeparams->set<bool>("do explicit predictor",false);
-
-      fluidtimeparams->set<bool>("mesh movement linearization",
-                                 Teuchos::getIntegralValue<int>(fsidyn,"MESHLINEARIZATION"));
     }
   }
   // sanity checks and default flags

@@ -577,7 +577,7 @@ public:
   /*!
     This is the linear solve as required for steepest descent FSI.
    */
-  void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
+  void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax, double dt);
 
 
 protected:

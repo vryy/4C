@@ -122,7 +122,7 @@ public:
   */
   void NonlinearSolve(
           RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
-          RCP<Epetra_Vector>       idispcol,          ///< interface displacement with coloumn distribution 
+          RCP<Epetra_Vector>       idispcol,          ///< interface displacement with coloumn distribution
           RCP<Epetra_Vector>       ivelcol,           ///< interface velocity with coloumn distribution
           RCP<Epetra_Vector>       itruerescol        ///< interface residual with coloumn distribution
           );
@@ -156,7 +156,7 @@ public:
 
   */
   void Output();
-  
+
   /*!
   \brief output solution fields to Gmsh for debugging
 
@@ -258,7 +258,7 @@ public:
   /*!
     This is the linear solve as needed for steepest descent FSI.
    */
-  void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
+  void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax, double dt);
 
   //@}
 
@@ -318,7 +318,7 @@ protected:
    *  should always fit to the current Epetra_Maps in this class
    */
   XFEM::ElementalDofPosMap   elementalDofDistributionMap_;
-  
+
   RCP<XFEM::InterfaceHandle> ihForOutput_;
   RCP<XFEM::DofManager>      dofmanagerForOutput_;
   DRT::DofSet                dofset_out_;
@@ -378,7 +378,7 @@ protected:
 
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
-  
+
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitterForOutput_;
 

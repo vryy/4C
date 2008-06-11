@@ -150,7 +150,7 @@ namespace ADAPTER {
     virtual void NonlinearSolve() = 0;
 
     /// linear fluid solve with just a interface load
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) = 0;
+    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp, double dt) = 0;
 
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() = 0;

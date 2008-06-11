@@ -3154,7 +3154,8 @@ void FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> > conde
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FluidGenAlphaIntegration::LinearRelaxationSolve(
-  Teuchos::RCP<Epetra_Vector> relax
+  Teuchos::RCP<Epetra_Vector> relax,
+  double dt
   )
 {
   dserror("No steepest descent for genalpha fluid\n");

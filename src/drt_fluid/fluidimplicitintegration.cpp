@@ -2965,7 +2965,7 @@ void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condeleme
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
+void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax, double dt)
 {
   //
   // This method is really stupid, but simple. We calculate the fluid
@@ -2982,9 +2982,6 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
   // a real nightmare.
   //
 
-  //relax_->PutScalar(0.0);
-  //interface_.InsertCondVector(ivel,relax_);
-
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   Teuchos::RCP<Epetra_Vector> griddisp = LINALG::CreateVector(*dofrowmap,false);
 
@@ -2999,6 +2996,13 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
 
   // zero out residual, no neumann bc
   residual_->PutScalar(0.0);
+
+  // Get matrix for mesh derivatives. This is not meant to be efficient.
+  Teuchos::RCP<LINALG::SparseMatrix> mmm;
+  if (params_.get<bool>("mesh movement linearization"))
+  {
+    mmm = Teuchos::rcp(new LINALG::SparseMatrix(*SystemMatrix()));
+  }
 
   ParameterList eleparams;
   eleparams.set("action","calc_fluid_systemmat_and_residual");
@@ -3015,7 +3019,7 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
   discret_->SetState("gridv", gridv_);
 
   // call loop over elements
-  discret_->Evaluate(eleparams,sysmat_,residual_);
+  discret_->Evaluate(eleparams,sysmat_,mmm,residual_);
   discret_->ClearState();
 
   // finalize the system matrix
@@ -3024,10 +3028,24 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
   // No, we do not want to have any rhs. There cannot be any.
   residual_->PutScalar(0.0);
 
+  if (mmm!=Teuchos::null)
+  {
+    mmm->Complete();
+
+    // Calculate rhs due to mesh movement induced by the interface
+    // displacement.
+    mmm->Apply(*relax,*residual_);
+    residual_->Scale(-1.);
+
+    mmm = Teuchos::null;
+  }
+
   //--------- Apply dirichlet boundary conditions to system of equations
   //          residual discplacements are supposed to be zero at
   //          boundary conditions
   incvel_->PutScalar(0.0);
+  // displacement to velocity conversion
+  relax->Scale(1./dt);
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,relax,dirichtoggle_);
 
   //-------solve for residual displacements to correct incremental displacements
