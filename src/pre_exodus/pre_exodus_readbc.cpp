@@ -97,6 +97,8 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
         eledefs.push_back(edef);
       }
       else if (type.compare("CONDITION")==0) {
+        // the geometry type is figured out by finding the identifier e.g. "SURF"
+        // within the condition name (sectionname) which therefore should carry it!
         EXODUS::cond_def cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
         switch (cdef.gtype) {
         case DRT::Condition::Point: {
