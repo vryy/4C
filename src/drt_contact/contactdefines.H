@@ -22,7 +22,7 @@ Maintainer: Alexander Popp
 #define CONTACTWNORMAL           /* flag for weighted nodal normal calc. */
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
 //#define CONTACTONEMORTARLOOP   /* flag for computation of D,M matrices */
-//#define CONTACTFULLLIN         /* flag for full linearization of contact */
+#define CONTACTFULLLIN         /* flag for full linearization of contact */
 
 /************************************************************************/
 /* Debugging options                                                    */

@@ -26,8 +26,10 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
  *----------------------------------------------------------------------*/
-CONTACT::Manager::Manager(DRT::Discretization& discret) :
+CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf) :
 discret_(discret),
+alphaf_(alphaf),
+restart_(false),
 activesetconv_(false),
 isincontact_(false)
 {
@@ -237,7 +239,12 @@ isincontact_(false)
   // setup Lagrange muliplier vectors
   z_          = rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_       = rcp(new Epetra_Vector(*gsdofrowmap_));
-  zn_         = rcp(new Epetra_Vector(*gsdofrowmap_));
+  
+  // setup global Mortar matrices Dold and Mold
+  dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+  dold_->Complete();
+  mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+  mold_->Complete(*gmdofrowmap_,*gsdofrowmap_);
   
   // friction
   // setup vector of displacement jumps (slave dof) 
@@ -423,6 +430,9 @@ void CONTACT::Manager::ReadRestart(const RCP<Epetra_Vector> activetoggle)
   if (gactivenodes_->NumGlobalElements())
     IsInContact()=true;
   
+  // set restart variable to true
+  restart_=true;
+  
   return;
 }
 
@@ -442,6 +452,18 @@ void CONTACT::Manager::Initialize(int numiter)
     interface_[i]->Initialize();
   }
 
+  // intitialize Dold and Mold if not done already
+   if (dold_==null)
+   {
+     dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+     dold_->Complete();
+   }
+   if (mold_==null)
+   {
+     mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+     mold_->Complete(*gmdofrowmap_,*gsdofrowmap_);
+   }
+   
   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
   dmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
   mmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
@@ -491,6 +513,7 @@ void CONTACT::Manager::SetState(const string& statename,
   }
   return;
 }
+
 /*----------------------------------------------------------------------*
  |  evaluate contact Mortar matrices D,M only (public)        popp 03/08|
  *----------------------------------------------------------------------*/
@@ -1817,7 +1840,7 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
 #endif // #ifdef CONTACTDIMOUTPUT
   
   /**********************************************************************/
-  /* Isolate active part from mhat and invd                             */
+  /* Isolate active part from mhat, invd and dold                       */
   /**********************************************************************/
   RCP<LINALG::SparseMatrix> mhata;
   LINALG::SplitMatrix2x2(mhatmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mhata,tempmtx1,tempmtx2,tempmtx3);
@@ -1825,6 +1848,10 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
   RCP<LINALG::SparseMatrix> invda;
   LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
+  invda->Scale(1/(1-alphaf_));
+  
+  RCP<LINALG::SparseMatrix> dolda, doldi;
+  LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
   
 #ifdef CONTACTFULLLIN
   /**********************************************************************/
@@ -1841,9 +1868,11 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(linmmatrix_,gmdofrowmap_,tempmap,gmdofrowmap_,gsdofrowmap_,linmmm,linmms,tempmtx1,tempmtx2);
   LINALG::SplitMatrix2x2(linmms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,linmma,linmmi,tempmtx1,tempmtx2);
   
-  // modify kai,kaa
-  kai->Add(*lindai,false,1.0,1.0);
-  kaa->Add(*lindaa,false,1.0,1.0);
+  // modification of kai, kaa
+  // (this has to be done first as they are needed below)
+  kai->Add(*lindai,false,1.0-alphaf_,1.0);
+  kaa->Add(*lindaa,false,1.0-alphaf_,1.0);
+    
 #endif // #ifdef CONTACTFULLLIN
   
   /**********************************************************************/
@@ -1864,7 +1893,7 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   RCP<LINALG::SparseMatrix> kmmmod = LINALG::Multiply(*mhata,true,*kam,false,false);
   kmmmod->Add(*kmm,false,1.0,1.0);
 #ifdef CONTACTFULLLIN
-  kmmmod->Add(*linmmm,false,1.0,1.0);
+  kmmmod->Add(*linmmm,false,1.0-alphaf_,1.0);
 #endif // #ifdef CONTACTFULLLIN
   kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
   
@@ -1872,7 +1901,7 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   RCP<LINALG::SparseMatrix> kmimod = LINALG::Multiply(*mhata,true,*kai,false,false);
   kmimod->Add(*kmi,false,1.0,1.0);
 #ifdef CONTACTFULLLIN
-  kmimod->Add(*linmmi,false,1.0,1.0);
+  kmimod->Add(*linmmi,false,1.0-alphaf_,1.0);
 #endif // #ifdef CONTACTFULLLIN
   kmimod->Complete(kmi->DomainMap(),kmi->RowMap());
   
@@ -1880,7 +1909,7 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   RCP<LINALG::SparseMatrix> kmamod = LINALG::Multiply(*mhata,true,*kaa,false,false);
   kmamod->Add(*kma,false,1.0,1.0);
 #ifdef CONTACTFULLLIN
-  kmamod->Add(*linmma,false,1.0,1.0);
+  kmamod->Add(*linmma,false,1.0-alphaf_,1.0);
 #endif // #ifdef CONTACTFULLLIN
   kmamod->Complete(kma->DomainMap(),kma->RowMap());
   
@@ -1918,19 +1947,43 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
   // fn: nothing to do
   
+  // fi: subtract alphaf * old contact forces (t_n)
+  if (gidofs->NumGlobalElements())
+  {
+    RCP<Epetra_Vector> modi = rcp(new Epetra_Vector(*gidofs));
+    LINALG::Export(*zold_,*modi);
+    RCP<Epetra_Vector> tempveci = rcp(new Epetra_Vector(*gidofs));
+    doldi->Multiply(false,*modi,*tempveci);
+    fi->Update(-alphaf_,*tempveci,1.0);
+  }
+  
+  // fa: subtract alphaf * old contact forces (t_n)
+  if (gactivedofs_->NumGlobalElements())
+  {
+    RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gactivedofs_));
+    LINALG::Export(*zold_,*mod);
+    RCP<Epetra_Vector> tempvec = rcp(new Epetra_Vector(*gactivedofs_));
+    dolda->Multiply(false,*mod,*tempvec);
+    fa->Update(-alphaf_,*tempvec,1.0);
+  }
+    
+  // fm: add alphaf * old contact forces (t_n)
+  RCP<Epetra_Vector> tempvecm = rcp(new Epetra_Vector(*gmdofrowmap_));
+  mold_->Multiply(true,*zold_,*tempvecm);
+  fm->Update(alphaf_,*tempvecm,1.0);
+    
   // fm: add T(mbaractive)*fa
   RCP<Epetra_Vector> fmmod = rcp(new Epetra_Vector(*gmdofrowmap_));
   mhata->Multiply(true,*fa,*fmmod);
   fmmod->Update(1.0,*fm,1.0);
-  
-  // fi: nothing to do
-  
-  // gactive: nothing to do
-  
+    
   // fa: mutliply with tmatrix
+  // (this had to wait as we had to modify fm first)
   RCP<Epetra_Vector> famod = rcp(new Epetra_Vector(*gactivet_));
   RCP<LINALG::SparseMatrix> tinvda = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
   tinvda->Multiply(false,*fa,*famod);
+  
+  // gactive: nothing to do
   
 #ifdef CONTACTFDGAP
   // FD check of weighted gap g derivatives
@@ -2222,7 +2275,7 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
   incrjump_->Update(1.0,*disis,-1.0);
   
   /**********************************************************************/
-  /* Update Lagrange multipliers                                        */
+  /* Update Lagrange multipliers z_n+1                                  */
   /**********************************************************************/
   // approximate update
   //invd_->Multiply(false,*fs_,*z_);
@@ -2238,9 +2291,12 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
   LINALG::Export(*disi,*disin);
   ksn_->Multiply(false,*disin,*mod);
   z_->Update(-1.0,*mod,1.0);
+  dold_->Multiply(false,*zold_,*mod);
+  z_->Update(-alphaf_,*mod,1.0);
   RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
   invd_->Multiply(false,*zcopy,*z_);
- 
+  z_->Scale(1/(1-alphaf_));
+  
   // store updated LM into nodes
   StoreNodalLM("current");
     
@@ -2530,22 +2586,38 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::ContactForces(RCP<Epetra_Vector> fresm)
 {
+  // Note that we ALWAYS use a TR-like approach to compute the contact
+  // forces. This means we never explicitly compute fc at the generalized
+  // mid-point n+1-alphaf, but use a linear combination of the old end-
+  // point n and the new end-point n+1 instead:
+  // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
+  
   // FIXME: fresm is only here for debugging purposes!
-  // compute two subvectors of fc via Lagrange multipliers z
+  // compute two subvectors of fc each via Lagrange multipliers z_n+1, z_n
   RCP<Epetra_Vector> fcslavetemp  = rcp(new Epetra_Vector(dmatrix_->RowMap()));
   RCP<Epetra_Vector> fcmastertemp = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
+  RCP<Epetra_Vector> fcslavetempend  = rcp(new Epetra_Vector(dold_->RowMap()));
+  RCP<Epetra_Vector> fcmastertempend = rcp(new Epetra_Vector(mold_->DomainMap()));
   dmatrix_->Multiply(false,*z_,*fcslavetemp);
   mmatrix_->Multiply(true,*z_,*fcmastertemp);
+  dold_->Multiply(false,*zold_,*fcslavetempend);
+  mold_->Multiply(true,*zold_,*fcmastertempend);
   
   // export the contact forces to full dof layout
   RCP<Epetra_Vector> fcslave  = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
   RCP<Epetra_Vector> fcmaster = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  RCP<Epetra_Vector> fcslaveend  = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  RCP<Epetra_Vector> fcmasterend = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
   LINALG::Export(*fcslavetemp,*fcslave);
   LINALG::Export(*fcmastertemp,*fcmaster);
+  LINALG::Export(*fcslavetempend,*fcslaveend);
+  LINALG::Export(*fcmastertempend,*fcmasterend);
   
-  // build total contact force vector
+  // build total contact force vector (TR-like!!!)
   fc_=fcslave;
-  fc_->Update(-1.0,*fcmaster,1.0);
+  fc_->Update(-(1.0-alphaf_),*fcmaster,1.0-alphaf_);
+  fc_->Update(alphaf_,*fcslaveend,1.0);
+  fc_->Update(-alphaf_,*fcmasterend,1.0);
   
   /*
   // CHECK OF CONTACT FORCE EQUILIBRIUM ----------------------------------
@@ -2586,21 +2658,27 @@ void CONTACT::Manager::ContactForces(RCP<Epetra_Vector> fresm)
   
   double slavenorm = 0.0;
   fcslavetemp->Norm2(&slavenorm);
+  double slavenormend = 0.0;
+  fcslavetempend->Norm2(&slavenormend);
   double fresmslavenorm = 0.0;
   fresmslave->Norm2(&fresmslavenorm);
   if (Comm().MyPID()==0)
   {
-    cout << "Slave Contact Force Norm:  " << slavenorm << endl;
+    cout << "Slave Contact Force Norm (n+1):  " << slavenorm << endl;
+    cout << "Slave Contact Force Norm (n):  " << slavenormend << endl;
     cout << "Slave Residual Force Norm: " << fresmslavenorm << endl;
     cout << "Slave Contact Force Vector: " << ggfcs[0] << " " << ggfcs[1] << " " << ggfcs[2] << endl;
   }
   double masternorm = 0.0;
   fcmastertemp->Norm2(&masternorm);
+  double masternormend = 0.0;
+  fcmastertempend->Norm2(&masternormend);
   double fresmmasternorm = 0.0;
   fresmmaster->Norm2(&fresmmasternorm);
   if (Comm().MyPID()==0)
   {
-    cout << "Master Contact Force Norm: " << masternorm << endl;
+    cout << "Master Contact Force Norm (n+1): " << masternorm << endl;
+    cout << "Master Contact Force Norm (n): " << masternormend << endl;
     cout << "Master Residual Force Norm " << fresmmasternorm << endl;
     cout << "Master Contact Force Vector: " << ggfcm[0] << " " << ggfcm[1] << " " << ggfcm[2] << endl;
   }
@@ -2654,6 +2732,32 @@ void CONTACT::Manager::StoreNodalLM(const string& state)
     }
   }
     
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Store D and M last coverged step <-> current step        popp 06/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::StoreDM(const string& state)
+{
+  //store Dold and Mold matrix in D and M
+  if (state=="current")
+  {
+    dmatrix_ = dold_;
+    mmatrix_ = mold_;
+  } 
+    
+  // store D and M matrix in Dold and Mold
+  else if (state=="old")
+  {
+    dold_ = dmatrix_;
+    mold_ = mmatrix_;
+  }
+  
+  // unknown conversion
+  else
+    dserror("ERROR: StoreDM: Unknown conversion requested!");
+  
   return;
 }
 

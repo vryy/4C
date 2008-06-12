@@ -54,8 +54,9 @@ public:
   input discretization.
   
   \param discret (in): A discretization containing contact boundary conditions
+  \param alphaf (in): Generalized-alpha parameter (set to 0.0 for statics)
   */
-  explicit Manager(DRT::Discretization& discret);
+  explicit Manager(DRT::Discretization& discret, double alphaf = 0.0);
 
 
   /*!
@@ -110,22 +111,16 @@ public:
   inline RCP<Epetra_Vector> GetContactForces() { return fc_; }
   
   /*!
-  \brief Return Lagrange multiplier vector (mid-point)
+  \brief Return Lagrange multiplier vector (t_n+1)
     
   */
   inline RCP<Epetra_Vector> LagrMult() { return z_; }
   
   /*!
-  \brief Return old Lagrange multiplier vector (mid-point)
+  \brief Return old Lagrange multiplier vector (t_n)
       
   */
   inline RCP<Epetra_Vector> LagrMultOld() { return zold_; }
-  
-  /*!
-  \brief Return Lagrange multiplier vector (end-point)
-        
-  */
-  inline RCP<Epetra_Vector> LagrMultEnd() { return zn_; }
   
   /*!
   \brief Return current global contact status
@@ -133,6 +128,12 @@ public:
   */
   inline bool& IsInContact() { return isincontact_; }
   
+  /*!
+  \brief Return current restart status
+          
+  */
+  inline bool& IsRestart() { return restart_; }
+    
   //@}
   
   //! @name Evaluation methods
@@ -170,10 +171,11 @@ public:
   /*!
   \brief Evaluate contact Mortar matrices D,M only
     
-  This is a light version of the Evaluate() method, which include the
+  This is a light version of the Evaluate() method, which includes the
   evluation of the current Mortar operators D and M only. No setup of
   the global system is to be done here, so there is no need to pass
-  in the effective stiffness K or the effective load vector f.
+  in the effective stiffness K or the effective load vector f. We need
+  this method after having restarted a simulation.
       
   */
   void EvaluateMortar();
@@ -259,17 +261,31 @@ public:
   void ContactForces(RCP<Epetra_Vector> fresm);
   
   /*!
-  \brief Store current Lagrange multipliers into CNodes
+  \brief Store Lagrange multipliers into CNodes
   
   The string input parameter defines, which Lagrange multiplier is
   to be updated. Currently only the possibilities "old" and "current"
-  exist, with "old" meaning the converged value of the last time / load
-  step. Note that in Gen-alpa this refers to the last MID-POINT! The
-  string "current" adresses the current (not necessarily converged) value
-  of the LM. Again in Gen-alpha this refers to the current MID-POINT!
+  exist, with "old" meaning the converged value LM_n of the last time
+  / load step.  The string "current" adresses the current (not
+  necessarily converged) value of the LM_n+1
   
   */
   void StoreNodalLM(const string& state);
+  
+  /*!
+  \brief Update Mortar matrices D and M
+  
+  The string input parameter defines in which direction the conversion
+  is to be performed. Currently only the possibilities "old" and "current"
+  exist, with "old" meaning the Mortar matrices of the last time / load step
+  will be set to the current values D_n+1 and M_n+1 (this happens after
+  completion of a time / load step!). The string "current" adresses the
+  current Mortar matrices, which when called will be reset to the last
+  converged values D_n and M_n (this happens in the predictor step when
+  the active set has not yet converged!).
+  
+  */
+  void StoreDM(const string& state);
   
   //@}
   
@@ -284,6 +300,8 @@ protected:
   DRT::Discretization&               discret_;        // the underlying problem discretization
   vector<RCP<CONTACT::Interface> >   interface_;      // contact interfaces
   Teuchos::ParameterList             scontact_;       // containing contact input parameters
+  double                             alphaf_;         // Generalized-alpha parameter (0.0 for statics)
+  bool                               restart_;        // flag indicating whether we are in restart step
   
   RCP<Epetra_Map>                    gsnoderowmap_;   // global slave node row map (of all interfaces)
   RCP<Epetra_Map>                    gsdofrowmap_;    // global slave dof row map (of all interfaces)
@@ -310,9 +328,11 @@ protected:
   RCP<LINALG::SparseMatrix>          lindmatrix_;     // global Matrix LinD containing slave fc derivatives
   RCP<LINALG::SparseMatrix>          linmmatrix_;     // global Matrix LinM containing master fc derivatives
   
-  RCP<Epetra_Vector>                 z_;              // vector of Lagrange multipliers (mid-point)
-  RCP<Epetra_Vector>                 zold_;           // vector of last time step Lagrange multipliers (mid-point)
-  RCP<Epetra_Vector>                 zn_;             // vector of Lagrange multipliers (end-point)
+  RCP<LINALG::SparseMatrix>          dold_;           // global Mortar matrix D (last end-point t_n)
+  RCP<LINALG::SparseMatrix>          mold_;           // global Mortar matrix D (last end-point t_n)
+  
+  RCP<Epetra_Vector>                 z_;              // current vector of Lagrange multipliers at t_n+1
+  RCP<Epetra_Vector>                 zold_;           // old vector of Lagrange multipliers at t_n
   RCP<Epetra_Vector>                 incrjump_;       // incremental displacement jump (slave dofs)
   RCP<Epetra_Vector>                 jump_;           // displacement jump (slave dofs)
   RCP<Epetra_Vector>                 fc_;             // vector of current contact forces

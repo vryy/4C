@@ -37,7 +37,8 @@ StruGenAlpha(params,dis,solver,output)
     vector<DRT::Condition*> contactconditions(0);
     discret_.GetCondition("Contact",contactconditions);
     if (!contactconditions.size()) dserror("No contact boundary conditions present");
-    contactmanager_ = rcp(new CONTACT::Manager(discret_));
+    double alphaf = params_.get<double>("alpha f",0.459);
+    contactmanager_ = rcp(new CONTACT::Manager(discret_,alphaf));
   }
   return;
 } // ContactStruGenAlpha::ContactStruGenAlpha
@@ -279,22 +280,29 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   }
 
   //------------------------------------------------------------ contact
-  RCP<Epetra_Vector> zm = contactmanager_->LagrMult();
-  RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
-
-  // update of mid-point LM (equal to predictor = last end-point)
-  zm->Update(1.0,*zn,0.0);
+  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
+  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
+  
+  // update current LM (predictor = last converged state)
+  // this resetting is necessary due to multiple active set steps
+  z->Update(1.0,*zold,0.0);
   contactmanager_->StoreNodalLM("current");
   
-  // evaluate Mortar coupling matrices for contact forces
+  if (!contactmanager_->IsRestart())
   {
-    contactmanager_->Initialize(0);
-    contactmanager_->SetState("displacement",dism_);
-
-    // (almost) all contact stuff is done here!
-    contactmanager_->EvaluateMortar();
+    // reset D and M matrices to Dold and Mold
+    contactmanager_->StoreDM("current");
   }
-  
+  else
+  {
+    // evaluate Mortar coupling matrices for contact forces
+    contactmanager_->Initialize(0);
+    contactmanager_->SetState("displacement",disn_);
+    contactmanager_->EvaluateMortar();
+    contactmanager_->StoreDM("current");
+    contactmanager_->IsRestart()=false;
+  }
+    
   // add contact forces
   contactmanager_->ContactForces(fresm_);
   RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
@@ -481,20 +489,27 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   }
 
   //------------------------------------------------------------ contact
-  RCP<Epetra_Vector> zm = contactmanager_->LagrMult();
-  RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
-
-  // update of mid-point LM (equal to predictor = last end-point)
-  zm->Update(1.0,*zn,0.0);
+  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
+  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
+  
+  // update current LM (predictor = last converged state)
+  // this resetting is necessary due to multiple active set steps
+  z->Update(1.0,*zold,0.0);
   contactmanager_->StoreNodalLM("current");
-
-  // evaluate Mortar coupling matrices for contact forces
+  
+  if (!contactmanager_->IsRestart())
   {
+    // reset D and M matrices to Dold and Mold
+    contactmanager_->StoreDM("current");
+  }
+  else
+  {
+    // evaluate Mortar coupling matrices for contact forces
     contactmanager_->Initialize(0);
-    contactmanager_->SetState("displacement",dism_);
-
-    // (almost) all contact stuff is done here!
+    contactmanager_->SetState("displacement",disn_);
     contactmanager_->EvaluateMortar();
+    contactmanager_->StoreDM("current");
+    contactmanager_->IsRestart()=false;
   }
 
   // add contact forces
@@ -602,7 +617,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     //-------------------------make contact modifications to lhs and rhs
     {
       contactmanager_->Initialize(numiter);
-      contactmanager_->SetState("displacement",dism_);
+      contactmanager_->SetState("displacement",disn_);
 
       // (almost) all contact stuff is done here!
       contactmanager_->Evaluate(stiff_,fresm_,numiter);
@@ -635,6 +650,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     disn_->Update(1.0,*disi_,1.0);
     dism_->Update(1.-alphaf,*disn_,alphaf,*dis_,0.0);
 #else
+    disn_->Update(1.0,*disi_,1.0);
     dism_->Update(1.-alphaf,*disi_,1.0);
 #endif
     // velocities
@@ -779,6 +795,12 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     }
 
+    // FIXME:
+    // Strictly speaking, we would have to evaluate all contact stuff
+    // here, to build the corect residuum.
+    // this could be done by rearranging the code such that we move
+    // the whole contact initialize - set state - evaluate to here!
+      
     // add contact forces
     contactmanager_->ContactForces(fresm_);
     RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();
@@ -892,19 +914,12 @@ void CONTACT::ContactStruGenAlpha::Update()
   fint_->Update(1.0,*fintn_,0.0);
 #endif
 
-  //--------------------------------- update contact Lagrange multipliers
-  RCP<Epetra_Vector> zm = contactmanager_->LagrMult();
-  RCP<Epetra_Vector> zoldm = contactmanager_->LagrMultOld();
-  RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
-
-  // Lagrange multipliers at end-point
-  // z_{n+1} = 1./(1.-alphaf) * z_{n+1-alpha_f} - alphaf/(1.-alphaf) * z_n
-  zn->Update(1./(1.-alphaf),*zm,-alphaf/(1.-alphaf));
-
-  // Lagrange multipliers at generalized mid-point
-  // we need these for checking the active set in the next time step
-  zoldm->Update(1.0,*zm,0.0);
+  //---------------------------------- store Lagrange multipliers, D and M
+  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
+  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
+  zold->Update(1.0,*z,0.0);
   contactmanager_->StoreNodalLM("old");
+  contactmanager_->StoreDM("old");
 
 #ifdef PRESTRESS
   //----------- save the current green-lagrange strains in the material
@@ -1012,11 +1027,9 @@ void CONTACT::ContactStruGenAlpha::Output()
     isdatawritten = true;
     
     // write restart information for contact
-    RCP<Epetra_Vector> zoldm = contactmanager_->LagrMultOld();
-    RCP<Epetra_Vector> zn = contactmanager_->LagrMultEnd();
+    RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
     RCP<Epetra_Vector> activetoggle = contactmanager_->WriteRestart();
-    output_.WriteVector("lagrmultend",zn);
-    output_.WriteVector("lagrmultold",zoldm);
+    output_.WriteVector("lagrmultold",zold);
     output_.WriteVector("activetoggle",activetoggle);
 
     if (surf_stress_man_!=null)
@@ -1226,6 +1239,14 @@ void CONTACT::ContactStruGenAlpha::Integrate()
  *----------------------------------------------------------------------*/
 void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
 {
+  //FIXME
+  // currently restart with contact only works for the evaluation of
+  // fint IMR-like at the new mid-point. For a TR-like evaluation in
+  // the new predictor, one would have to store fint for restart!
+#ifdef STRUGENALPHA_FINTLIKETR
+  dserror("ERROR: ReadRestart: Not yet implemented for FINTLIKETR!");
+#endif // #ifdef STRUGENALPHA_FINTLIKETR
+  
   RefCountPtr<DRT::Discretization> rcpdiscret = rcp(&discret_);
   rcpdiscret.release();
   IO::DiscretizationReader reader(rcpdiscret,step);
@@ -1240,16 +1261,20 @@ void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
   reader.ReadMesh(step);
 
   // read restart information for contact
-  RCP<Epetra_Vector> zn = rcp(new Epetra_Vector(*(contactmanager_->SlaveRowDofs())));
-  RCP<Epetra_Vector> zoldm = rcp(new Epetra_Vector(*(contactmanager_->SlaveRowDofs())));
+  RCP<Epetra_Vector> zold = rcp(new Epetra_Vector(*(contactmanager_->SlaveRowDofs())));
   RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(contactmanager_->SlaveRowNodes())));
-  reader.ReadVector(zn,"lagrmultend");
-  reader.ReadVector(zoldm,"lagrmultold");
+  reader.ReadVector(zold,"lagrmultold");
   reader.ReadVector(activetoggle,"activetoggle");
-  contactmanager_->LagrMultEnd()=zn;
-  contactmanager_->LagrMultOld()=zoldm;
+  *(contactmanager_->LagrMultOld())=*zold;
+  contactmanager_->StoreNodalLM("old");
   contactmanager_->ReadRestart(activetoggle);
-    
+  
+  // build restart Mortar matrices D and M
+  contactmanager_->Initialize(0);
+  contactmanager_->SetState("displacement",dis_);
+  contactmanager_->EvaluateMortar();
+  contactmanager_->StoreDM("old");
+  
   // override current time and step with values from file
   params_.set<double>("total time",time);
   params_.set<int>   ("step",rstep);
