@@ -103,6 +103,7 @@ void MAT::ContChainNetw::Initialize(const int numgp)
   l1_= rcp(new vector<double> (numgp,isotropy));
   l2_= rcp(new vector<double> (numgp,isotropy));
   l3_= rcp(new vector<double> (numgp,isotropy));
+  isinit_ = true;
   
   return ;
   
@@ -139,7 +140,15 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // scalar to arrive at stressfree reference conf
   const double stressfree = - chn_stiffact * ( 1.0/L + 1.0/(4.0*r0*(1.0-r0/L)*(1.0-r0/L)) - 1.0/(4.0*r0) );
   
+  const double time = params.get("total time",-1.0);
   const double kappa = matdata_->m.contchainnetw->relax; // relaxation time for remodeling
+  const double decay = exp(-kappa*time);
+
+  // initial cell dimensions (isotropy)
+  const double isotropy  = 1/sqrt(3.0) * r0;
+  const double l10 = isotropy;
+  const double l20 = isotropy;
+  const double l30 = isotropy;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
@@ -222,6 +231,32 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
     if (eig_sp(i) > 0.0) eig_sp(i) = 0.0;
     else eig_sp(i) = 1.0;
   }
+  
+  // update cell dimensions (remodeling!)
+  const double l1 = (eig_sp(0) - l10/r0)*(1 - decay)*r0 + l10;
+  const double l2 = (eig_sp(1) - l20/r0)*(1 - decay)*r0 + l20;
+  const double l3 = (eig_sp(2) - l30/r0)*(1 - decay)*r0 + l30;
+  
+  // evaluate chain stress and add to isotropic stress
+  l1sq = l1*l1;
+  l2sq = l2*l2;
+  l3sq = l3*l3;
+  r = sqrt(I1*l1sq + I2*l2sq + I3*l3sq);
+  s_chn = chn_stiffact*(4.0/L + 1.0/(r*(1.0-r/L)*(1.0-r/L)) - 1.0/r);
+  (*stress)(0) += l1sq*s_chn + l1sq*I1*4*stressfree;
+  (*stress)(1) += l2sq*s_chn + l2sq*I2*4*stressfree;
+  (*stress)(2) += l3sq*s_chn + l3sq*I3*4*stressfree;
+  
+  //evaluate chain tangent and add to isotropic cmat
+  double c_chn = s_chn/(r*r*r) * (1.0 - 1.0/((1.0-r/L)*(1.0-r/L)) + 2.0*r/(L*(1.0-r/L)*(1.0-r/L)*(1.0-r/L)) );
+  (*cmat)(0,0) += c_chn*(l1*l1*l1*l1) - 8.0*stressfree*l1*l1/(I1*I1);
+  (*cmat)(1,1) += c_chn*(l2*l2*l2*l2) - 8.0*stressfree*l2*l2/(I2*I2);
+  (*cmat)(2,2) += c_chn*(l3*l3*l3*l3) - 8.0*stressfree*l3*l3/(I3*I3);
+  
+  // store history values
+  l1_->at(gp) = l1;
+  l2_->at(gp) = l2;
+  l3_->at(gp) = l3;
   
   return;
 }
