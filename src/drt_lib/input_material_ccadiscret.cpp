@@ -546,6 +546,22 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
       frdouble("RELAX"       ,&(localmat.m.visconeohooke->relax)      ,&ierr);
       frdouble("THETA"       ,&(localmat.m.visconeohooke->theta)      ,&ierr);
    }
+   // Continuum Chain Network material law
+   frchk("MAT_CONTCHAINNETW",&ierr);
+   if (ierr==1)
+   {
+     localmat.mattyp      = m_contchainnetw;
+     localmat.m.contchainnetw = new CONTCHAINNETW();
+     frdouble("LAMBDA" ,&(localmat.m.contchainnetw->lambda)     ,&ierr);
+     frdouble("MUE"    ,&(localmat.m.contchainnetw->mue)        ,&ierr);
+     frdouble("DENS"   ,&(localmat.m.contchainnetw->density)    ,&ierr);
+     frdouble("NCHAIN" ,&(localmat.m.contchainnetw->nchain)     ,&ierr);
+     frdouble("ABSTEMP",&(localmat.m.contchainnetw->abstemp)    ,&ierr);
+     frdouble("CONTL_L",&(localmat.m.contchainnetw->contl_l)    ,&ierr);
+     frdouble("PERSL_A",&(localmat.m.contchainnetw->persl_a)    ,&ierr);
+     frdouble("R0"     ,&(localmat.m.contchainnetw->r0)         ,&ierr);
+     frdouble("RELAX"  ,&(localmat.m.contchainnetw->relax)      ,&ierr);
+   }
    /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */
    frchk("MAT_Therm_Fourier_iso",&ierr);
    if (ierr==1)

@@ -28,6 +28,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_lib/drt_validparameters.H"
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "stru_resulttest.H"
+#include "Teuchos_TimeMonitor.hpp"
 
 
 /*----------------------------------------------------------------------*
@@ -654,6 +655,8 @@ void stru_static_drt()
   DRT::ResultTestManager testmanager(actdis->Comm());
   testmanager.AddFieldTest(rcp(new StruResultTest(actdis,dis,null,null)));
   testmanager.TestAll();
+  
+  TimeMonitor::summarize();
 
   //----------------------------- this is the end my lonely friend the end
   return;

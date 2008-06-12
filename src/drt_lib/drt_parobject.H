@@ -133,6 +133,7 @@ using namespace std;
 #define ParObject_Knotvector            (int)108
 #define ParObject_ControlPoint          (int)109
 #define ParObject_Fluid2Nurbs           (int)110
+#define ParObject_ContChainNetw         (int)111
 
 namespace DRT
 {

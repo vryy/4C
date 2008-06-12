@@ -57,6 +57,7 @@ typedef struct _MATERIAL
      struct _ANISOTROPIC_BALZANI *anisotropic_balzani; /* anisotropic hyperelastic polyconvex material */
      struct _MOONEYRIVLIN     *mooneyrivlin; /* Mooney-Rivlin material */
      struct _VISCONEOHOOKE    *visconeohooke; /* Viscous NeoHookean material */
+     struct _CONTCHAINNETW    *contchainnetw; /* Viscous NeoHookean material */
      struct _TH_FOURIER_ISO   *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
      struct _TH_FOURIER_GEN   *th_fourier_gen;   /* general heat conduction matrix of Fourier's (linear) law of heat conduction */
      struct _VP_ROBINSON      *vp_robinson;  /* viscoplastic Robinson material */
@@ -679,6 +680,21 @@ typedef struct _VISCONEOHOOKE
      DOUBLE                    relax;
      DOUBLE                    theta;
 } VISCONEOHOOKE;
+/*----------------------------------------------------------------------*
+ | Continuum Chain Network Material Law                       maf 06/08 |
+ *----------------------------------------------------------------------*/
+typedef struct _CONTCHAINNETW
+{
+     DOUBLE                    lambda;
+     DOUBLE                    mue;
+     DOUBLE                    density;
+     DOUBLE                    nchain;
+     DOUBLE                    abstemp;
+     DOUBLE                    contl_l;
+     DOUBLE                    persl_a;
+     DOUBLE                    r0;
+     DOUBLE                    relax;
+} CONTCHAINNETW;
 /*----------------------------------------------------------------------*
  | Isotropic heat conduction coefficient                    bborn 03/06 |
  | of Fourier's law of heat conduction                                  |
