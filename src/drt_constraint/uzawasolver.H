@@ -45,18 +45,18 @@ public:
     //! @name Constructors and destructors and related methods
 
     /*!
-    \brief Standard Constructor
+    \brief Constructor
 
     \param disc (in): Discretization
     \param disp (in): current displacement to compute initial constraints
     */
 
     UzawaSolver(
-        RCP<DRT::Discretization> discr,
-        LINALG::Solver& solver,
-        RCP<Epetra_Vector>    dirichtoggle,
-        RCP<Epetra_Vector>    invtoggle,
-        ParameterList param);
+        RCP<DRT::Discretization> discr,     ///< Discretization
+        LINALG::Solver& solver,             ///< Solver to solve linear subproblem in iteration
+        RCP<Epetra_Vector>    dirichtoggle, ///< Vector used for ApplyDirichletToSystem
+        RCP<Epetra_Vector>    invtoggle,    ///< Vector to blank residuals of Dirichlet DOFs 
+        ParameterList param);               ///< parameterlist containing solver parameters
 
     /*!
         \brief Destructor
@@ -97,6 +97,7 @@ public:
     void SetUzawaParameter(double restartval)
     {
       uzawaParam_=restartval;
+      counter_=1;
       return;
     }    
  
