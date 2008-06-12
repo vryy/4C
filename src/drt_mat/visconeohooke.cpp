@@ -199,126 +199,233 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   const double gen_alphaf = params.get("alpha f",-1.0);
   if (gen_alphaf < 0) dserror("Visco only for dynamics! Negative Alpha_f detected!");
   
+  double tau1=tau;
   //check for meaningfull values
   if (E_f < E_s) dserror("Wrong ratio between fast and slow Young's modulus");
   else if (E_f>E_s)
   {
     if (tau<=0.0) dserror("Relaxation time tau has to be positive in case E_Fast > E_Slow!");
-    tau=tau*E_s/(E_f-E_s);
+    tau1=tau*E_s/(E_f-E_s);
   }
-  else if (tau==0.0) tau=1.0; // for algorithmic reasons tau has to be positiv 
-  
+  else if (tau==0.0) tau1=1.0; // for algorithmic reasons tau has to be positiv 
   
   // this is supposed to be consistent with strugenalpha
   if (time == dt) dt = (1.0-gen_alphaf)*dt;
     
-  // evaluate "alpha" factors which distribute stress or stiffnes between parallel springs
-  // sum_0^i alpha_j = 1
-  const double alpha0 = E_s / E_f;
-  const double alpha1 = 1.0 - alpha0;
-  
-  
-  // evaluate Lame constants, bulk modulus
-  const double lambda = nue*E_f / ((1.0+nue)*(1.0-2*nue));
-  const double mue = E_f / (2*(1.0+nue));
-  const double kappa = lambda + 2.0/3.0 * mue;
-  
-  // remark: in the following we use Voigt-notation
-  // and keep the strain-factor-2 at the strains
-  
-  // right Cauchy-Green Tensor  C = 2 * E + I
-  // build identity tensor I
-  Epetra_SerialDenseVector Id(6);
-  for (int i = 0; i < 3; i++) Id(i) = 1.0;
-  //for (int i =3; i<6;i++) Id(i)=0.0;
-  Epetra_SerialDenseVector C(*glstrain);
-  C.Scale(2.0);
-  C += Id;
-
-  // invariants
-  const double I1 = C(0) + C(1) + C(2);  // 1st invariant, trace
-  const double I3 = C(0)*C(1)*C(2)
-        + 0.25 * C(3)*C(4)*C(5)
-        - 0.25 * C(1)*C(5)*C(5)
-        - 0.25 * C(2)*C(3)*C(3)
-        - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
-  const double J = sqrt(I3);
-  const double I3invcubroot = pow(I3,-1.0/3.0);
-  
-  // invert C
-  Epetra_SerialDenseVector Cinv(6);
-
-  Cinv(0) = C(1)*C(2) - 0.25*C(4)*C(4);
-  Cinv(1) = C(0)*C(2) - 0.25*C(5)*C(5);
-  Cinv(2) = C(0)*C(1) - 0.25*C(3)*C(3);
-  Cinv(3) = 0.25*C(5)*C(4) - 0.5*C(3)*C(2);
-  Cinv(4) = 0.25*C(3)*C(5) - 0.5*C(0)*C(4);
-  Cinv(5) = 0.25*C(3)*C(4) - 0.5*C(5)*C(1);
-
-  Cinv.Scale(1.0/I3);
-  
-  // Split into volumetric and deviatoric parts. Viscosity affects only deviatoric part
-  
-  // Volumetric part of PK2 stress
-  Epetra_SerialDenseVector SVol(Cinv);
-  SVol.Scale(kappa*(J-1.0)*J);
-  *stress+=SVol;
-  
-  // Deviatoric elastic part (2 d W^dev/d C)
-  Epetra_SerialDenseVector SDevEla(Cinv);
-  SDevEla.Scale(-1.0/3.0*I1);
-  SDevEla+=Id;
-  SDevEla.Scale(mue*I3invcubroot);  //mue*I3^(-1/3) (Id-1/3*I1*Cinv)
-    
-  // visco part
-  
-  // read history
-  Epetra_SerialDenseVector S_n (histstresslast_->at(gp));
-  S_n.Scale(-1.0);
-  Epetra_SerialDenseVector Q_n (artstresslast_->at(gp));
-  
-  // artificial visco stresses
-  Epetra_SerialDenseVector Q(Q_n);
-  Q.Scale((tau - dt + theta*dt)/tau);
-  Q += SDevEla;
-  Q += S_n;
-  Q.Scale(tau/(tau + theta*dt));  // Q^(n+1) = tau/(tau+theta*dt) [(tau-dt+theta*dt)/tau Q + S^(n+1) - S^n]
-  
-  // update history
-  histstresscurr_->at(gp) = SDevEla;
-  artstresscurr_->at(gp) = Q;
-  
-  // add visco PK2 stress, weighted with alphas
-  SDevEla.Scale(alpha0);
-  *stress += SDevEla;
-  Q.Scale(alpha1);
-  *stress += Q;
-  // elasticity matrix
-  double scalar1 = 2.0*kappa*J*J - kappa*J;
-  double scalar2 = -2.0*kappa*J*J + 2.0*kappa*J;
-  double scalar3 = 2.0/3.0*mue*I3invcubroot*I1;
-  double scalar4 = 2.0/3.0*mue*I3invcubroot;
-  double scalarvisco = alpha0+alpha1*tau/(tau+theta*dt);
-
-  // add volumetric elastic part 1
-  // add scalar2 Cinv o Cinv (see Holzapfel p. 254)
-  AddtoCmatHolzapfelProduct((*cmat),Cinv,scalar2);
-  
-  // add visco-elastic deviatoric part 1
-  AddtoCmatHolzapfelProduct(*cmat,Cinv,scalarvisco*scalar3);
-  
-  for (int i=0; i<6; ++i)
+  if (E_f/E_s<=1E8)  // generalized Maxwell modell in case stiffness ratio is not too high
   {
-     for (int j=0; j<6; ++j)
-     {
-       // add volumetric elastic part 2
-       (*cmat)(i,j) += scalar1 * Cinv(i) * Cinv(j) // add scalar Cinv x Cinv
-       // add visco-elastic deviatoric part 2
-           + scalarvisco*(-scalar4)*Id(i)*Cinv(j)// add scalar Id x Cinv
-           + scalarvisco*(-scalar4)*Id(j)*Cinv(i)// add scalar Cinv x Id
-           + scalarvisco*(scalar3)*Cinv(i)*Cinv(j)/3.0;// add scalar Cinv x Cinv
-     }
+    tau=tau1;
+    // evaluate "alpha" factors which distribute stress or stiffnes between parallel springs
+    // sum_0^i alpha_j = 1
+    const double alpha0 = E_s / E_f;
+    const double alpha1 = 1.0 - alpha0;
+    
+    
+    // evaluate Lame constants, bulk modulus
+    const double lambda = nue*E_f / ((1.0+nue)*(1.0-2*nue));
+    const double mue = E_f / (2*(1.0+nue));
+    const double kappa = lambda + 2.0/3.0 * mue;
+    
+    // remark: in the following we use Voigt-notation
+    // and keep the strain-factor-2 at the strains
+    
+    // right Cauchy-Green Tensor  C = 2 * E + I
+    // build identity tensor I
+    Epetra_SerialDenseVector Id(6);
+    for (int i = 0; i < 3; i++) Id(i) = 1.0;
+    //for (int i =3; i<6;i++) Id(i)=0.0;
+    Epetra_SerialDenseVector C(*glstrain);
+    C.Scale(2.0);
+    C += Id;
+  
+    // invariants
+    const double I1 = C(0) + C(1) + C(2);  // 1st invariant, trace
+    const double I3 = C(0)*C(1)*C(2)
+          + 0.25 * C(3)*C(4)*C(5)
+          - 0.25 * C(1)*C(5)*C(5)
+          - 0.25 * C(2)*C(3)*C(3)
+          - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
+    const double J = sqrt(I3);
+    const double I3invcubroot = pow(I3,-1.0/3.0);
+    
+    // invert C
+    Epetra_SerialDenseVector Cinv(6);
+  
+    Cinv(0) = C(1)*C(2) - 0.25*C(4)*C(4);
+    Cinv(1) = C(0)*C(2) - 0.25*C(5)*C(5);
+    Cinv(2) = C(0)*C(1) - 0.25*C(3)*C(3);
+    Cinv(3) = 0.25*C(5)*C(4) - 0.5*C(3)*C(2);
+    Cinv(4) = 0.25*C(3)*C(5) - 0.5*C(0)*C(4);
+    Cinv(5) = 0.25*C(3)*C(4) - 0.5*C(5)*C(1);
+  
+    Cinv.Scale(1.0/I3);
+    
+    // Split into volumetric and deviatoric parts. Viscosity affects only deviatoric part
+    
+    // Volumetric part of PK2 stress
+    Epetra_SerialDenseVector SVol(Cinv);
+    SVol.Scale(kappa*(J-1.0)*J);
+    *stress+=SVol;
+    
+    // Deviatoric elastic part (2 d W^dev/d C)
+    Epetra_SerialDenseVector SDevEla(Cinv);
+    SDevEla.Scale(-1.0/3.0*I1);
+    SDevEla+=Id;
+    SDevEla.Scale(mue*I3invcubroot);  //mue*I3^(-1/3) (Id-1/3*I1*Cinv)
+      
+    // visco part
+    
+    // read history
+    Epetra_SerialDenseVector S_n (histstresslast_->at(gp));
+    S_n.Scale(-1.0);
+    Epetra_SerialDenseVector Q_n (artstresslast_->at(gp));
+    
+    // artificial visco stresses
+    Epetra_SerialDenseVector Q(Q_n);
+    Q.Scale((tau - dt + theta*dt)/tau);
+    Q += SDevEla;
+    Q += S_n;
+    Q.Scale(tau/(tau + theta*dt));  // Q^(n+1) = tau/(tau+theta*dt) [(tau-dt+theta*dt)/tau Q + S^(n+1) - S^n]
+    
+    // update history
+    histstresscurr_->at(gp) = SDevEla;
+    artstresscurr_->at(gp) = Q;
+    
+    // add visco PK2 stress, weighted with alphas
+    SDevEla.Scale(alpha0);
+    *stress += SDevEla;
+    Q.Scale(alpha1);
+    *stress += Q;
+    // elasticity matrix
+    double scalar1 = 2.0*kappa*J*J - kappa*J;
+    double scalar2 = -2.0*kappa*J*J + 2.0*kappa*J;
+    double scalar3 = 2.0/3.0*mue*I3invcubroot*I1;
+    double scalar4 = 2.0/3.0*mue*I3invcubroot;
+    double scalarvisco = alpha0+alpha1*tau/(tau+theta*dt);
+  
+    // add volumetric elastic part 1
+    // add scalar2 Cinv o Cinv (see Holzapfel p. 254)
+    AddtoCmatHolzapfelProduct((*cmat),Cinv,scalar2);
+    
+    // add visco-elastic deviatoric part 1
+    AddtoCmatHolzapfelProduct(*cmat,Cinv,scalarvisco*scalar3);
+    
+    for (int i=0; i<6; ++i)
+    {
+       for (int j=0; j<6; ++j)
+       {
+         // add volumetric elastic part 2
+         (*cmat)(i,j) += scalar1 * Cinv(i) * Cinv(j) // add scalar Cinv x Cinv
+         // add visco-elastic deviatoric part 2
+             + scalarvisco*(-scalar4)*Id(i)*Cinv(j)// add scalar Id x Cinv
+             + scalarvisco*(-scalar4)*Id(j)*Cinv(i)// add scalar Cinv x Id
+             + scalarvisco*(scalar3)*Cinv(i)*Cinv(j)/3.0;// add scalar Cinv x Cinv
+       }
+    }
   }
+  else //in case stiffness ratio is very high, Kelvin-Voigt like model is used
+  {
+    // evaluate Lame constants, bulk modulus
+    const double lambda = nue*E_s / ((1.0+nue)*(1.0-2*nue));
+    const double mue = E_s / (2*(1.0+nue));
+    const double kappa = lambda + 2.0/3.0 * mue;
+    
+    // remark: in the following we use Voigt-notation
+    // and keep the strain-factor-2 at the strains
+    
+    // right Cauchy-Green Tensor  C = 2 * E + I
+    // build identity tensor I
+    Epetra_SerialDenseVector Id(6);
+    for (int i = 0; i < 3; i++) Id(i) = 1.0;
+    //for (int i =3; i<6;i++) Id(i)=0.0;
+    Epetra_SerialDenseVector C(*glstrain);
+    C.Scale(2.0);
+    C += Id;
+  
+    // invariants
+    const double I1 = C(0) + C(1) + C(2);  // 1st invariant, trace
+    const double I3 = C(0)*C(1)*C(2)
+          + 0.25 * C(3)*C(4)*C(5)
+          - 0.25 * C(1)*C(5)*C(5)
+          - 0.25 * C(2)*C(3)*C(3)
+          - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
+    const double J = sqrt(I3);
+    const double I3invcubroot = pow(I3,-1.0/3.0);
+    
+    // invert C
+    Epetra_SerialDenseVector Cinv(6);
+  
+    Cinv(0) = C(1)*C(2) - 0.25*C(4)*C(4);
+    Cinv(1) = C(0)*C(2) - 0.25*C(5)*C(5);
+    Cinv(2) = C(0)*C(1) - 0.25*C(3)*C(3);
+    Cinv(3) = 0.25*C(5)*C(4) - 0.5*C(3)*C(2);
+    Cinv(4) = 0.25*C(3)*C(5) - 0.5*C(0)*C(4);
+    Cinv(5) = 0.25*C(3)*C(4) - 0.5*C(5)*C(1);
+  
+    Cinv.Scale(1.0/I3);
+    
+    // Split into volumetric and deviatoric parts. Viscosity affects only deviatoric part
+    
+    // Volumetric part of PK2 stress
+    Epetra_SerialDenseVector SVol(Cinv);
+    SVol.Scale(kappa*(J-1.0)*J);
+    *stress+=SVol;
+    
+    // Deviatoric elastic part (2 d W^dev/d C)
+    Epetra_SerialDenseVector SDevEla(Cinv);
+    SDevEla.Scale(-1.0/3.0*I1);
+    SDevEla+=Id;
+    SDevEla.Scale(mue*I3invcubroot);  //mue*I3^(-1/3) (Id-1/3*I1*Cinv)
+      
+    // visco part
+    
+    // read history
+    Epetra_SerialDenseVector S_n (histstresslast_->at(gp));
+    S_n.Scale(-1.0);
+    Epetra_SerialDenseVector Q_n (artstresslast_->at(gp));
+    
+    // artificial visco stresses
+    Epetra_SerialDenseVector Q(Q_n);
+    Q.Scale(-dt+theta*dt);
+    Q += SDevEla;
+    Q += S_n;
+    Q.Scale(tau/(theta*dt));  // Q^(n+1) = tau/(theta*dt) [(-dt+theta*dt) Q + S^(n+1) - S^n]
+    
+    // update history
+    histstresscurr_->at(gp) = SDevEla;
+    artstresscurr_->at(gp) = Q;
+    
+    // add visco PK2 stress, weighted with alphas
+    *stress += SDevEla;
+    *stress += Q;
+    // elasticity matrix
+    double scalar1 = 2.0*kappa*J*J - kappa*J;
+    double scalar2 = -2.0*kappa*J*J + 2.0*kappa*J;
+    double scalar3 = 2.0/3.0*mue*I3invcubroot*I1;
+    double scalar4 = 2.0/3.0*mue*I3invcubroot;
+    double scalarvisco = 1+tau/(theta*dt);
+  
+    // add volumetric elastic part 1
+    // add scalar2 Cinv o Cinv (see Holzapfel p. 254)
+    AddtoCmatHolzapfelProduct((*cmat),Cinv,scalar2);
+    
+    // add visco-elastic deviatoric part 1
+    AddtoCmatHolzapfelProduct(*cmat,Cinv,scalarvisco*scalar3);
+    
+    for (int i=0; i<6; ++i)
+    {
+       for (int j=0; j<6; ++j)
+       {
+         // add volumetric elastic part 2
+         (*cmat)(i,j) += scalar1 * Cinv(i) * Cinv(j) // add scalar Cinv x Cinv
+         // add visco-elastic deviatoric part 2
+             + scalarvisco*(-scalar4)*Id(i)*Cinv(j)// add scalar Id x Cinv
+             + scalarvisco*(-scalar4)*Id(j)*Cinv(i)// add scalar Cinv x Id
+             + scalarvisco*(scalar3)*Cinv(i)*Cinv(j)/3.0;// add scalar Cinv x Cinv
+       }
+    }    
+  }
+  
   return;
 }
 
