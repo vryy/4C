@@ -78,33 +78,28 @@ namespace MAT
     
     void Initialize(const int numgp) ;
     
-    void Update();
-    
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   const int gp,
                   Teuchos::ParameterList& params,
                   Epetra_SerialDenseMatrix* cmat,
                   Epetra_SerialDenseVector* stress);
 
-    double Density();
+    double Density() {return matdata_->m.contchainnetw->density;}
     
     bool Initialized() const
-      { return isinit_&&(histstresscurr_!=Teuchos::null);}
+      { return isinit_&&(l1_!=Teuchos::null);}
     
   private:
 
     /// my material parameters
     MATERIAL* matdata_;
     
-    /// visco history stresses
-    Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstresscurr_;
-    Teuchos::RCP<vector<Epetra_SerialDenseVector> > histstresslast_;
-    Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstresscurr_;
-    Teuchos::RCP<vector<Epetra_SerialDenseVector> > artstresslast_;
+    /// unit cell dimensions per gp
+    Teuchos::RCP<vector<double> > l1_;
+    Teuchos::RCP<vector<double> > l2_;
+    Teuchos::RCP<vector<double> > l3_;
     
     bool isinit_;
-    
-    double lasttime_;
     
   };
 }

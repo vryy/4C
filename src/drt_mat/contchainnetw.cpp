@@ -17,6 +17,7 @@ Maintainer: Moritz Frenzel
 #include "Epetra_SerialDenseSolver.h"
 #include "contchainnetw.H"
 #include "../drt_lib/linalg_serialdensevector.H"
+#include "../drt_lib/linalg_utils.H"
 
 
 extern struct _MATERIAL *mat;
@@ -29,10 +30,9 @@ MAT::ContChainNetw::ContChainNetw()
   : matdata_(NULL)
 {
   isinit_=false;
-  histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
-  artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
-  histstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
-  artstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
+  l1_=rcp(new vector<double>);
+  l2_=rcp(new vector<double>);
+  l3_=rcp(new vector<double>);
 }
 
 
@@ -58,22 +58,11 @@ void MAT::ContChainNetw::Pack(vector<char>& data) const
   // matdata
   int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
   AddtoPack(data,matdata);
-  int histsize;
-  if (!Initialized())
-  {
-    histsize=0;
-  }
-  else 
-  {
-    histsize = histstresslast_->size();
-  }
-  AddtoPack(data,2*histsize);  // lenght of history vector(s)
-  for (int var = 0; var < histsize; ++var) 
-  {
-    AddtoPack(data,histstresslast_->at(var));
-    AddtoPack(data,artstresslast_->at(var));
-  }
- 
+  AddtoPack(data,l1_);
+  AddtoPack(data,l2_);
+  AddtoPack(data,l3_);
+  
+  return;
 }
 
 
@@ -93,80 +82,32 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,matdata);
   matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
 
-  int twicehistsize;
-  ExtractfromPack(position,data,twicehistsize);
-  
-  if (twicehistsize == 0) isinit_=false;
-  
-  histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
-  artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
-  histstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
-  artstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
-  for (int var=0; var<twicehistsize; var+=2)
-  {
-    Epetra_SerialDenseVector tmp(6);
-    histstresscurr_->push_back(tmp);
-    artstresscurr_->push_back(tmp);
-    ExtractfromPack(position,data,tmp);
-    histstresslast_->push_back(tmp);
-    ExtractfromPack(position,data,tmp);
-    artstresslast_->push_back(tmp);
-  }
+  ExtractfromPack(position,data,l1_);
+  ExtractfromPack(position,data,l2_);
+  ExtractfromPack(position,data,l3_);
   
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  
+  return;
 }
 
 
-/*----------------------------------------------------------------------*
- |  Return density                                (public)         06/08|
- *----------------------------------------------------------------------*/
-double MAT::ContChainNetw::Density()
-{
-  return matdata_->m.contchainnetw->density;  // density, returned to evaluate mass matrix
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MAT::ContChainNetw::Initialize(const int numgp) 
 {
-  histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
-  artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
-  histstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
-  artstresslast_=rcp(new vector<Epetra_SerialDenseVector>);
-  const Epetra_SerialDenseVector emptyvec(6);
-  histstresscurr_->resize(numgp);
-  histstresslast_->resize(numgp);
-  artstresscurr_->resize(numgp);
-  artstresslast_->resize(numgp);
-  for (int j=0; j<numgp; ++j) 
-  {
-    histstresscurr_->at(j) = emptyvec;
-    histstresslast_->at(j) = emptyvec;
-    artstresscurr_->at(j) = emptyvec;
-    artstresslast_->at(j) = emptyvec;
-  }
-  isinit_=true;
+  const double isotropy  = 1/sqrt(3.0) * matdata_->m.contchainnetw->r0;
+
+  l1_= rcp(new vector<double> (numgp,isotropy));
+  l2_= rcp(new vector<double> (numgp,isotropy));
+  l3_= rcp(new vector<double> (numgp,isotropy));
+  
   return ;
   
 }
 
-void MAT::ContChainNetw::Update()
-{
-  histstresslast_=histstresscurr_;
-  artstresslast_=artstresscurr_;
-  const Epetra_SerialDenseVector emptyvec(6);//6 stresses for 3D
-  histstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
-  artstresscurr_=rcp(new vector<Epetra_SerialDenseVector>);
-  const int numgp=histstresslast_->size();
-  histstresscurr_->resize(numgp);
-  artstresscurr_->resize(numgp);
-  for (int j=0; j<numgp; ++j) 
-  {
-    histstresscurr_->at(j) = emptyvec;
-    artstresscurr_->at(j) = emptyvec;
-  }
-}  
 
 /*----------------------------------------------------------------------*
  |  Evaluate Material                             (public)         06/08|
@@ -181,6 +122,107 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
                                   Epetra_SerialDenseVector* stress)
 
 {
+  // bulk (isotropic) NeoHooke material parameters (Lame constants)
+  const double lambda = matdata_->m.contchainnetw->lambda;
+  const double mue = matdata_->m.contchainnetw->mue;
+  // chain network unit cell material parameters
+  const double nchain = matdata_->m.contchainnetw->nchain; // chain density ~= cell stiffness
+  const double abstemp = matdata_->m.contchainnetw->abstemp; // absolute temperature (K)
+  const double L = matdata_->m.contchainnetw->contl_l;  // chain contour length
+  const double A = matdata_->m.contchainnetw->persl_a;  // chain persistence length
+  const double r0 = matdata_->m.contchainnetw->r0;      // initial chain length
+  const double boltzmann = 1.3806503E-23;
+  
+  // the chain stiffness factor
+  const double chn_stiffact = boltzmann * abstemp * nchain / (4*A);
+  
+  // scalar to arrive at stressfree reference conf
+  const double stressfree = - chn_stiffact * ( 1.0/L + 1.0/(4.0*r0*(1.0-r0/L)*(1.0-r0/L)) - 1.0/(4.0*r0) );
+  
+  const double kappa = matdata_->m.contchainnetw->relax; // relaxation time for remodeling
+
+  // right Cauchy-Green Tensor  C = 2 * E + I
+  // build identity tensor I
+  Epetra_SerialDenseVector Id(6);
+  for (int i = 0; i < 3; i++) Id(i) = 1.0;
+  Epetra_SerialDenseVector C(*glstrain);
+  C.Scale(2.0);
+  C += Id;
+
+  // invariants
+  const double IC3 = C(0)*C(1)*C(2)
+        + 0.25 * C(3)*C(4)*C(5)
+        - 0.25 * C(1)*C(5)*C(5)
+        - 0.25 * C(2)*C(3)*C(3)
+        - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
+  const double J = sqrt(IC3);
+  const double lJ = log(J);
+  // 'non-standard' invariants representing stretch^2 in n0_i direction
+  double I1 = C(0);
+  double I2 = C(1);
+  double I3 = C(2);
+  
+  // invert C
+  Epetra_SerialDenseVector Cinv(6);
+
+  Cinv(0) = C(1)*C(2) - 0.25*C(4)*C(4);
+  Cinv(1) = C(0)*C(2) - 0.25*C(5)*C(5);
+  Cinv(2) = C(0)*C(1) - 0.25*C(3)*C(3);
+  Cinv(3) = 0.25*C(5)*C(4) - 0.5*C(3)*C(2);
+  Cinv(4) = 0.25*C(3)*C(5) - 0.5*C(0)*C(4);
+  Cinv(5) = 0.25*C(3)*C(4) - 0.5*C(5)*C(1);
+
+  Cinv.Scale(1.0/IC3);
+
+  // isotropic part: NeoHooke  ************************************************
+  // W = 1/2 lambda ln^2(J) + 1/2 mue (I1-3) - mue ln(J)
+  // S = (lambda ln(J) - mue) Cinv + mue Id
+  // Elasticity = lambda (Cinv x Cinv) + 2(mue - lambda ln(J))(Cinv o Cinv) 
+  Epetra_SerialDenseVector Siso1(Cinv);
+  Siso1.Scale(lambda*lJ-mue);
+  *stress += Siso1;
+  Siso1 = Id;
+  Siso1.Scale(mue);
+  *stress += Siso1;
+  
+  AddtoCmatHolzapfelProduct((*cmat),Cinv,2*(mue-lambda*lJ));
+  for (int i = 0; i < 6; ++i) {
+    for (int j = 0; j < 6; ++j) {
+      (*cmat)(i,j) += lambda * Cinv(i) * Cinv(j); // add lambda Cinv x Cinv
+    }
+  }
+  // end of isotropic part ****************************************************
+  
+  // trial S to compute eigenvalues *******************************************
+  Epetra_SerialDenseMatrix Strial(3,3);
+  double l1sq = l1_->at(gp)*l1_->at(gp);
+  double l2sq = l2_->at(gp)*l2_->at(gp);
+  double l3sq = l3_->at(gp)*l3_->at(gp);
+  
+  // structural tensors
+  Epetra_SerialDenseVector N01(6); N01(0) = 1.0;
+  Epetra_SerialDenseVector N02(6); N02(1) = 1.0;
+  Epetra_SerialDenseVector N03(6); N03(2) = 1.0;
+  
+  // current chain length
+  double r = sqrt(I1*l1sq + I2*l2sq + I3*l3sq);
+  
+  double s_chn = chn_stiffact*(4.0/L + 1.0/(r*(1.0-r/L)*(1.0-r/L)) - 1.0/r);
+  
+  Strial(0,0) = (*stress)(0) + l1sq*s_chn + l1sq*I1*4*stressfree;
+  Strial(1,1) = (*stress)(1) + l2sq*s_chn + l2sq*I2*4*stressfree;
+  Strial(2,2) = (*stress)(2) + l3sq*s_chn + l3sq*I3*4*stressfree;
+  Strial(0,1) = (*stress)(3); Strial(1,0) = (*stress)(3);
+  Strial(1,2) = (*stress)(4); Strial(2,1) = (*stress)(4);
+  Strial(0,2) = (*stress)(5); Strial(2,0) = (*stress)(5);
+  
+  Epetra_SerialDenseVector eig_sp(3);  // lambda^(sigma+)
+  LINALG::SymmetricEigenValues(Strial,eig_sp);
+  for (int i = 0; i < 3; ++i) {
+    if (eig_sp(i) > 0.0) eig_sp(i) = 0.0;
+    else eig_sp(i) = 1.0;
+  }
+  
   return;
 }
 
