@@ -85,7 +85,7 @@ void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
   // perform microscale simulation and homogenization (if fint and stiff/mass or stress calculation is required)
   else
   {
-    actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat, density, time, action, eleowner);
+    actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat, density, time, eleowner);
   }
 
   // reactivate macroscale material

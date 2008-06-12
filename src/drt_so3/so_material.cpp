@@ -54,9 +54,8 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       Epetra_SerialDenseMatrix* cmat,
       double* density,
       const Epetra_SerialDenseVector* glstrain,
-      const Epetra_SerialDenseMatrix* defgrd,
+      Epetra_SerialDenseMatrix* defgrd,
       const int gp,
-      const int ele_ID,
       ParameterList&  params,
       const string action)
 {
@@ -78,7 +77,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::HyperPolyconvex* hypo = static_cast <MAT::HyperPolyconvex*>(mat.get());
 
       const double time = params.get("total time",-1.0);
-      hypo->Evaluate(glstrain,defgrd,gp,ele_ID,time,cmat,stress);
+      hypo->Evaluate(glstrain,defgrd,gp,Id(),time,cmat,stress);
 
       *density = hypo->Density();
 
@@ -97,7 +96,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       }
 
       const double time = params.get("total time",-1.0);
-      anba->Evaluate(glstrain,defgrd,gp,ele_ID,time,cmat,stress,avec);
+      anba->Evaluate(glstrain,defgrd,gp,Id(),time,cmat,stress,avec);
 
       *density = anba->Density();
 
@@ -123,19 +122,46 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     }
     case m_struct_multiscale: /*------------------- multiscale approach */
     {
-      // Here macro-micro transition (localization) will take place
-
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
 
+      // Check if we use EAS on this (macro-)scale
+      if (eastype_ != soh8_easnone)
+      {
+        // In this case, we have to calculate the "enhanced" deformation gradient
+        // from the enhanced GL strains with the help of two polar decompositions
+
+        // First step: determine enhanced material stretch tensor U_enh from C_enh=U_enh^T*U_enh
+        // -> get C_enh from enhanced GL strains
+        LINALG::SerialDenseMatrix C_enh(NUMDIM_SOH8,NUMDIM_SOH8);
+        for (int i = 0; i < NUMDIM_SOH8; ++i) C_enh(i,i) = 2.0 * (*glstrain)(i) + 1.0;
+        // off-diagonal terms are already twice in the Voigt-GLstrain-vector
+        C_enh(0,1) =  (*glstrain)(3);  C_enh(1,0) =  (*glstrain)(3);
+        C_enh(1,2) =  (*glstrain)(4);  C_enh(2,1) =  (*glstrain)(4);
+        C_enh(0,2) =  (*glstrain)(5);  C_enh(2,0) =  (*glstrain)(5);
+
+        // -> polar decomposition of (U^mod)^2
+        LINALG::SerialDenseMatrix Q(NUMDIM_SOH8,NUMDIM_SOH8);
+        LINALG::SerialDenseMatrix S(NUMDIM_SOH8,NUMDIM_SOH8);
+        LINALG::SerialDenseMatrix VT(NUMDIM_SOH8,NUMDIM_SOH8);
+        SVD(C_enh,Q,S,VT); // Singular Value Decomposition
+        LINALG::SerialDenseMatrix U_enh(NUMDIM_SOH8,NUMDIM_SOH8);
+        LINALG::SerialDenseMatrix temp(NUMDIM_SOH8,NUMDIM_SOH8);
+        for (int i = 0; i < NUMDIM_SOH8; ++i) S(i,i) = sqrt(S(i,i));
+        temp.Multiply('N','N',1.0,Q,S,0.0);
+        U_enh.Multiply('N','N',1.0,temp,VT,0.0);
+
+        // Second step: determine rotation tensor R from F (F=R*U)
+        // -> polar decomposition of displacement based F
+        SVD(*defgrd,Q,S,VT); // Singular Value Decomposition
+        LINALG::SerialDenseMatrix R(NUMDIM_SOH8,NUMDIM_SOH8);
+        R.Multiply('N','N',1.0,Q,VT,0.0);
+
+        // Third step: determine "enhanced" deformation gradient (F_enh=R*U_enh)
+        defgrd->Multiply('N','N',1.0,R,U_enh,0.0);
+      }
+
       const double time = params.get("total time",-1.0);
-      micro->Evaluate(defgrd, cmat, stress, density, gp, ele_ID, time, action);
-
-      // test case
-      //micromat->CalcStressStiffDens(stress, cmat, density, glstrain);
-
-      // perform microscale simulation
-      //micromat->PerformMicroSimulation();
-
+      micro->Evaluate(defgrd, cmat, stress, density, gp, Id(), time, action);
 
       break;
     }

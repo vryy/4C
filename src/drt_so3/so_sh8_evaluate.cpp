@@ -613,8 +613,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     // Caution!! the defgrd can not be modified with ANS to remedy locking
     // therefore it is empty and passed only for compatibility reasons
     Epetra_SerialDenseMatrix defgrd; // Caution!! empty!!
-    const int ele_ID = Id();
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,ele_ID,params);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -697,7 +696,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
       // integrate concistent mass matrix
       for (int inod=0; inod<NUMNOD_SOH8; ++inod) {
         for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod) {
-          double massfactor = shapefcts[gp](inod) * shapefcts[gp](jnod) 
+          double massfactor = shapefcts[gp](inod) * shapefcts[gp](jnod)
                               * density * detJ * gpweights[gp];     // intermediate factor
           (*massmatrix)(NUMDIM_SOH8*inod+0,NUMDIM_SOH8*jnod+0) += massfactor;
           (*massmatrix)(NUMDIM_SOH8*inod+1,NUMDIM_SOH8*jnod+1) += massfactor;
@@ -753,7 +752,7 @@ const vector<Epetra_SerialDenseVector> DRT::ELEMENTS::So_sh8::sosh8_shapefcts()
   const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
   // fill up nodal f at each gp
   for (int i=0; i<NUMGPT_SOH8; ++i) {
-    shapefcts[i].Size(NUMNOD_SOH8);    
+    shapefcts[i].Size(NUMNOD_SOH8);
     (shapefcts[i])(0) = (1.0-r[i])*(1.0-s[i])*(1.0-t[i])*0.125;
     (shapefcts[i])(1) = (1.0+r[i])*(1.0-s[i])*(1.0-t[i])*0.125;
     (shapefcts[i])(2) = (1.0+r[i])*(1.0+s[i])*(1.0-t[i])*0.125;
@@ -1034,7 +1033,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(Epetra_SerialDenseMatrix* elestress,
                                          const Epetra_SerialDenseVector& glstrain,
                                          const Epetra_SerialDenseVector& stress)
 {
-  // with ANS you do NOT have the correct (locking-free) F, so we 
+  // with ANS you do NOT have the correct (locking-free) F, so we
   // compute it here JUST for mapping of correct (locking-free) stresses
   LINALG::SerialDenseMatrix invJ(NUMDIM_SOH8,NUMDIM_SOH8);
   invJ.Multiply('N','N',1.0,deriv,xrefe,0.0);
@@ -1047,11 +1046,11 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(Epetra_SerialDenseMatrix* elestress,
   // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
   LINALG::SerialDenseMatrix defgrd(NUMDIM_SOH8,NUMDIM_SOH8);
   defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,0.0);
-  
+
 # if consistent_F
   //double disp1 = defgrd.NormOne();
   //double dispinf = defgrd.NormInf();
-  
+
   /* to get the consistent (locking-free) F^mod, we need two spectral
    * compositions. First, find R (rotation tensor) from F=RU,
    * then from E^mod = 1/2((U^mod)^2 - 1) find U^mod,
@@ -1063,13 +1062,13 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(Epetra_SerialDenseMatrix* elestress,
   LINALG::SerialDenseMatrix v(NUMDIM_SOH8,NUMDIM_SOH8);
   SVD(defgrd,u,s,v); // Singular Value Decomposition
   LINALG::SerialDenseMatrix rot(NUMDIM_SOH8,NUMDIM_SOH8);
-  rot.Multiply('N','T',1.0,u,v,0.0);
+  rot.Multiply('N','N',1.0,u,v,0.0);
   //temp.Multiply('N','N',1.0,v,s,0.0);
   //LINALG::SerialDenseMatrix stretch_disp(NUMDIM_SOH8,NUMDIM_SOH8);
   //stretch_disp.Multiply('N','T',1.0,temp,v,0.0);
   //defgrd.Multiply('N','N',1.0,rot,stretch_disp,0.0);
   //cout << defgrd;
-  
+
   // get modified squared stretch (U^mod)^2 from glstrain
   LINALG::SerialDenseMatrix Usq_mod(NUMDIM_SOH8,NUMDIM_SOH8);
   for (int i = 0; i < NUMDIM_SOH8; ++i) Usq_mod(i,i) = 2.0 * glstrain(i) + 1.0;
@@ -1082,12 +1081,12 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(Epetra_SerialDenseMatrix* elestress,
   LINALG::SerialDenseMatrix U_mod(NUMDIM_SOH8,NUMDIM_SOH8);
   for (int i = 0; i < NUMDIM_SOH8; ++i) s(i,i) = sqrt(s(i,i));
   temp.Multiply('N','N',1.0,u,s,0.0);
-  U_mod.Multiply('N','T',1.0,temp,v,0.0);
-  
+  U_mod.Multiply('N','N',1.0,temp,v,0.0);
+
   // F^mod = RU^mod
   defgrd.Multiply('N','N',1.0,rot,U_mod,0.0);
-  
-  /* 
+
+  /*
   double mod1 = defgrd.NormOne();
   double modinf = defgrd.NormInf();
   if(((mod1-disp1)/mod1 > 0.03) || ((modinf-dispinf)/modinf > 0.03)){
@@ -1096,14 +1095,14 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(Epetra_SerialDenseMatrix* elestress,
   }
   */
 #endif
-  
+
   double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
                 defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
                 defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
                 defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
                 defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
                 defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
-  
+
   LINALG::SerialDenseMatrix pkstress(NUMDIM_SOH8,NUMDIM_SOH8);
   pkstress(0,0) = stress(0);
   pkstress(0,1) = stress(3);
@@ -1136,9 +1135,9 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(Epetra_SerialDenseMatrix* elestress,
 int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
 {
   //sosh8_gmshplotdis(dis);
-  
+
   int num_morphed_so_hex8 = 0;
-  
+
   // Loop through all elements
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
@@ -1218,8 +1217,8 @@ int DRT::ELEMENTS::Sosh8Register::Initialize(DRT::Discretization& dis)
     cout << endl << num_morphed_so_hex8
     << " Sosh8-Elements have no clear 'thin' direction and have morphed to So_hex8 with eas_mild" << endl;
   }
-  
-  
+
+
   // fill complete again to reconstruct element-node pointers,
   // but without element init, etc.
   dis.FillComplete(false,false,false);

@@ -149,8 +149,7 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params,
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
     double density;
-    const int ele_ID = Id();
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain, &defgrd, gp,ele_ID,params);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double integrationfactor = detJ * (*weights)(gp);

@@ -334,7 +334,6 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
                                                   Epetra_SerialDenseMatrix* cmat,
                                                   double* density,
                                                   const double time,
-                                                  string action,
                                                   const bool eleowner)
 {
   // this is a comparison of two doubles, but since timen_ is always a

@@ -49,7 +49,6 @@ public:
                               Epetra_SerialDenseMatrix* cmat,
                               double* density,
                               const double time,
-                              string action,
                               const bool eleowner);
 
   /// Set up microscale static "time integrator"

@@ -494,15 +494,14 @@ protected:
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
-                    const Epetra_SerialDenseMatrix* defgrd,
+                    Epetra_SerialDenseMatrix* defgrd,
                     const int gp,
-                    const int ele_ID,
                     ParameterList&  params,
                     const string action = string());
 
   //! EAS technology, init
   void soh8_easinit();
-  
+
   //! Re-initialize EAS data, needed for sosh8 morphing
   void soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASType EASType);
 
