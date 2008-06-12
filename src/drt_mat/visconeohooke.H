@@ -106,8 +106,6 @@ namespace MAT
     
     bool isinit_;
     
-    double lasttime_;
-    
   };
 }
 

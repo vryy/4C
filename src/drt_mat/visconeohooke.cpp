@@ -73,7 +73,7 @@ void MAT::ViscoNeoHooke::Pack(vector<char>& data) const
     AddtoPack(data,histstresslast_->at(var));
     AddtoPack(data,artstresslast_->at(var));
   }
- 
+  return;
 }
 
 
@@ -116,6 +116,8 @@ void MAT::ViscoNeoHooke::Unpack(const vector<char>& data)
   
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+  
+  return;
 }
 
 
@@ -167,6 +169,8 @@ void MAT::ViscoNeoHooke::Update()
     histstresscurr_->at(j) = emptyvec;
     artstresscurr_->at(j) = emptyvec;
   }
+  
+  return;
 }  
 
 /*----------------------------------------------------------------------*
