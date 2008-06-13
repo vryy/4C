@@ -2669,6 +2669,11 @@ void StruGenAlpha::Update()
   {
     surf_stress_man_->Update();
   }
+  
+  if (pot_man_!=null)
+  {
+    pot_man_->Update();
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -2720,6 +2725,14 @@ void StruGenAlpha::Output()
       surf_stress_man_->GetHistory(A,con);
       output_.WriteVector("Aold", A);
       output_.WriteVector("conquot", con);
+    }
+    
+    if (pot_man_!=null)
+    {
+      RCP<Epetra_Map> surfrowmap=pot_man_->GetSurfRowmap();
+      RCP<Epetra_Vector> A=rcp(new Epetra_Vector(*surfrowmap, true));
+      pot_man_->GetHistory(A);
+      output_.WriteVector("Aold", A);
     }
 
     if (constrMan_->HaveConstraint())
@@ -3080,6 +3093,14 @@ void StruGenAlpha::ReadRestart(int step)
     reader.ReadVector(A_old, "Aold");
     reader.ReadVector(con_quot, "conquot");
     surf_stress_man_->SetHistory(A_old,con_quot);
+  }
+  
+  if (pot_man_!=null)
+  {
+    RCP<Epetra_Map> surfmap=pot_man_->GetSurfRowmap();
+    RCP<Epetra_Vector> A_old = LINALG::CreateVector(*surfmap,true);
+    reader.ReadVector(A_old, "Aold");
+    pot_man_->SetHistory(A_old);
   }
 
   if (DRT::Problem::Instance()->ProblemType()=="struct_multi")

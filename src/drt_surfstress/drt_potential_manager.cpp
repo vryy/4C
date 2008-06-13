@@ -19,6 +19,7 @@ Maintainer: Ursula Mayer
 #include "drt_potential_manager.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_xfem/xfsi_searchtree.H"
 #include <cstdlib>
 
 
@@ -36,10 +37,9 @@ discret_(discret)
   // since we apply the equilibrium concentration gradually, thus we
   // do not need these history variables needed for the dynamic model
   // in the beginning.
-  A_old_temp_    = rcp(new Epetra_Vector(*surfcolmap,true));
-  A_old_         = rcp(new Epetra_Vector(*surfcolmap,true));
-  
-  // include initialize tree
+  A_old_temp_   = rcp(new Epetra_Vector(*surfcolmap,true));
+  A_old_        = rcp(new Epetra_Vector(*surfcolmap,true));
+  xTree_        = rcp(new XFEM::XSearchTree());
 }
 
 

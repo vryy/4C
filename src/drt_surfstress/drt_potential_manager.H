@@ -21,6 +21,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io.H"
+#include "../drt_xfem/xfsi_searchtree.H"
 
 
 using namespace std;
@@ -30,7 +31,7 @@ using namespace Teuchos;
 namespace DRT
 {
 /*!
-\brief Class controlling surface stresses due to interfacial phenomena
+\brief Class controlling surface stresses due to potential forces
 and containing all necessary history data
 */
 class PotentialManager
@@ -149,6 +150,9 @@ private:
 
   // surface areas of former time step
   RefCountPtr<Epetra_Vector> A_old_;
+  
+  //! XSearchTree xTree_
+  Teuchos::RCP<XFEM::XSearchTree>  xTree_;
 
 
   //@}
