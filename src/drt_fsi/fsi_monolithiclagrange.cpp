@@ -102,9 +102,6 @@ void FSI::MonolithicLagrange::SetupRHS(Epetra_Vector& f)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicLagrange::SetupRHS");
 
-  if (Comm().MyPID()==0)
-    std::cout << "FSI::MonolithicLagrange::SetupRHS\n";
-
   SetupVector(f,
               StructureField().RHS(),
               FluidField().RHS(),
@@ -121,9 +118,6 @@ void FSI::MonolithicLagrange::SetupRHS(Epetra_Vector& f)
 void FSI::MonolithicLagrange::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicLagrange::SetupSystemMatrix");
-
-  if (Comm().MyPID()==0)
-    std::cout << "FSI::MonolithicLagrange::SetupSystemMatrix\n";
 
   // extract Jacobian matrices and put them into composite system
   // matrix W

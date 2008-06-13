@@ -102,9 +102,6 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupRHS");
 
-  if (Comm().MyPID()==0)
-    std::cout << "FSI::MonolithicOverlap::SetupRHS\n";
-
   SetupVector(f,
               StructureField().RHS(),
               FluidField().RHS(),
@@ -121,9 +118,6 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f)
 void FSI::MonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupSystemMatrix");
-
-  if (Comm().MyPID()==0)
-    std::cout << "FSI::MonolithicStructureSplit::SetupSystemMatrix\n";
 
   // extract Jacobian matrices and put them into composite system
   // matrix W
