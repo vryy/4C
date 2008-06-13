@@ -17,9 +17,10 @@ Maintainer: Ursula Mayer
 
 using namespace std;
 
-XFEM::XSearchTree::XSearchTree() {
-  TreeInit_  = false;
-  treeRoot_  = NULL;
+XFEM::XSearchTree::XSearchTree() :
+  TreeInit_(false),
+  treeRoot_(NULL)
+{
 }
 
 XFEM::XSearchTree::~XSearchTree() {
@@ -75,12 +76,11 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   if (treeRoot_ != NULL){
     delete treeRoot_;
   }
-  const BlitzMat3x2 aabb =getXAABBofDis(dis, currentpositions);
+  const BlitzMat3x2 aabb(getXAABBofDis(dis, currentpositions));
   treeRoot_ = new TreeNode(0,aabb, this);
   cout << "inserting new elements (" << dis.NumMyRowElements() << ")"<< endl;
   for (int i=0; i<dis.NumMyRowElements(); ++i) {
-    const DRT::Element* ele =  dis.lRowElement(i);
-    insertElement(ele);
+    insertElement(dis.lRowElement(i));
   }
   TreeInit_ = true;
   
@@ -97,11 +97,11 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   
 }
 
-XFEM::XSearchTree::TreeNode::TreeNode(int Depth,BlitzMat3x2 aabb, XSearchTree* tree)
+XFEM::XSearchTree::TreeNode::TreeNode(const int Depth, const BlitzMat3x2& aabb, XSearchTree* tree) :
+  actTreedepth_(Depth),
+  tree_(tree),
+  AABB_(aabb)
 {
-  tree_ = tree;
-  actTreedepth_ = Depth;
-  AABB_=aabb;
   XPlaneCoordinate_ = aabb(0,0)+(aabb(0,1)-aabb(0,0))/2.0;
   YPlaneCoordinate_ = aabb(1,0)+(aabb(1,1)-aabb(1,0))/2.0;
   ZPlaneCoordinate_ = aabb(2,0)+(aabb(2,1)-aabb(2,0))/2.0;
@@ -147,9 +147,8 @@ void XFEM::XSearchTree::TreeNode::setSolid(const int label){
   labelID_ = label;
 }
 
-BlitzVec3& XFEM::XSearchTree::TreeNode::getCenterCoord(){
-  BlitzVec3* t = new BlitzVec3(this->XPlaneCoordinate_, this->YPlaneCoordinate_, this->ZPlaneCoordinate_);
-  return *t;
+BlitzVec3 XFEM::XSearchTree::TreeNode::getCenterCoord(){
+  return BlitzVec3(this->XPlaneCoordinate_, this->YPlaneCoordinate_, this->ZPlaneCoordinate_);
 }
 
 list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords, int& lID) {
@@ -179,7 +178,7 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
       {
         // create Octants
         for (int i=0; i<8; i++){
-          BlitzMat3x2 chldAABB = getChildOctAABB(i+1);
+          const BlitzMat3x2 chldAABB(getChildOctAABB(i+1));
           children_[i] = new TreeNode(actTreedepth_ + 1, chldAABB, tree_);
         }
         // actual node becomes an inner tree node,
@@ -188,7 +187,7 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
           list<int> childIdx = classifyElement(*myIt);
           for (list<int>::const_iterator myIt2 = childIdx.begin(); myIt2 != childIdx.end(); myIt2++){
             this->children_[*myIt2-1]->insertElement(*myIt);
-            BlitzMat3x2 ab = this->children_[*myIt2-1]->getAABB();
+            const BlitzMat3x2 ab(this->children_[*myIt2-1]->getAABB());
             //  printf("inserted elem to AABB(%f,%f,%f,%f,%f,%f)\n", ab(0,0),ab(0,1),ab(1,0),ab(1,1),ab(2,0),ab(2,1));
            }
         }
@@ -197,12 +196,12 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
         for (int i=0; i< 8; i++){
           if ((children_[i]->getElementList()).empty()){
             double dista=0;
-            BlitzVec3 c= children_[i]->getCenterCoord();
+            const BlitzVec3 c(children_[i]->getCenterCoord());
             //          printf("centerX (%f,%f,%f)\n", c(0),c(1),c(2)); 
             const DRT::Element* closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, ElementList_, children_[i]->getCenterCoord(),dista);
             //          printf("distance of empty octant center to next element is %f\n", dista);
             if (dista<0) {
-              int eleId = closestEle->Id();
+              const int eleId = closestEle->Id();
               children_[i]->setSolid(tree_->getLabelByElementID(eleId)); 
             }
             else {
@@ -219,7 +218,7 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
         // ElementList_.clear();
         // do recursion
         // cout << "classified searchpoint to oct "<< classifyPoint(pointCoords)-1 << " , so i will search there" << endl;
-        list< const DRT::Element* > myL = children_[classifyPoint(pointCoords)-1]->queryPointType(dis, currentpositions, pointCoords, lID);
+        const list< const DRT::Element* > myL = children_[classifyPoint(pointCoords)-1]->queryPointType(dis, currentpositions, pointCoords, lID);
         return myL;
       }
       else  // if there is only one Element, just return it
@@ -236,7 +235,7 @@ void XFEM::XSearchTree::TreeNode::insertElement(const DRT::Element* elem) {
 //    cout << "inserted element at depth " << actTreedepth_ <<endl;
     State_ = STATE_LEAF_NODE;
   } else if(State_ == STATE_INNER_NODE) {
-    list<int> childIdx = classifyElement(elem);
+    const list<int> childIdx(classifyElement(elem));
     for (list<int>::const_iterator myIt = childIdx.begin(); myIt != childIdx.end(); myIt++){
       this->children_[*myIt-1]->insertElement(elem);
 //      BlitzMat3x2 ab = this->children_[*myIt-1]->getAABB();
@@ -250,7 +249,7 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::getElementList(){
   return ElementList_;
 }
 
-BlitzMat3x2 XFEM::XSearchTree::TreeNode::getChildOctAABB(int i){
+BlitzMat3x2 XFEM::XSearchTree::TreeNode::getChildOctAABB(const int i){
   BlitzMat3x2 chldAABB;
   if (i>4){
     chldAABB(0,0) = XPlaneCoordinate_;
@@ -284,18 +283,18 @@ BlitzMat3x2 XFEM::XSearchTree::TreeNode::getChildOctAABB(int i){
 int XFEM::XSearchTree::TreeNode::classifyPoint(const BlitzVec3& pointcoords) {
   int octIdx = 1;
   if (pointcoords(0) > XPlaneCoordinate_)
-    octIdx = octIdx + 4;
+    octIdx += 4;
   if (pointcoords(1) > YPlaneCoordinate_)
-    octIdx = octIdx + 2;
+    octIdx += 2;
   if (pointcoords(2) > ZPlaneCoordinate_)
-    octIdx = octIdx + 1;
+    octIdx += 1;
   return octIdx;
 }
 
 list<int> XFEM::XSearchTree::TreeNode::classifyElement(const DRT::Element* elem) {
   list<int> octants;
   const BlitzMat xyze(DRT::UTILS::PositionArrayBlitz(&*elem));
-  const BlitzMat3x2 elemXAABB= XFEM::computeFastXAABB(&*elem, xyze);
+  const BlitzMat3x2 elemXAABB(XFEM::computeFastXAABB(&*elem, xyze));
   
   if (elemXAABB(0, 1) > XPlaneCoordinate_) {
     if (elemXAABB(1, 1) > YPlaneCoordinate_) {
@@ -341,7 +340,7 @@ int XFEM::XSearchTree::TreeNode::getState() {
   return State_;
 }
 
-int XFEM::XSearchTree::getLabelByElementID(int gid){
+int XFEM::XSearchTree::getLabelByElementID(const int gid){
   return labelByElement_[gid];
 }
 
@@ -349,7 +348,7 @@ const BlitzMat3x2& XFEM::XSearchTree::TreeNode::getAABB(){
   return AABB_;
 }
 
-XFEM::XSearchTree::TreeNode* XFEM::XSearchTree::TreeNode::getChild(int idx) {
+XFEM::XSearchTree::TreeNode* XFEM::XSearchTree::TreeNode::getChild(const int idx) {
   return children_[idx-1];
 }
 

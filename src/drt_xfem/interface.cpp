@@ -52,8 +52,9 @@ XFEM::InterfaceHandle::InterfaceHandle(
   XFEM::Intersection is;
   is.computeIntersection(xfemdis, cutterdis, currentcutterpositions_,elementalDomainIntCells_, elementalBoundaryIntCells_);
   
-  std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
-  std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
+  std::cout << " numcuttedelements = " << elementalDomainIntCells_.size() << endl;
+//  std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
+//  std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
   dsassert(elementalDomainIntCells_.size() == elementalBoundaryIntCells_.size(), "mismatch in cutted elements maps!");
   
   // sanity check, whether, we realy have integration cells in the map
@@ -77,7 +78,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
 
-  cout << "create new xTree_ object" << endl;
+  //cout << "create new xTree_ object" << endl;
   xTree_ = rcp(new XSearchTree());
 }
 		

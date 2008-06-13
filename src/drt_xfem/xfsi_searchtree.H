@@ -57,7 +57,7 @@ namespace XFEM
       list< const DRT::Element* > ElementList_;
       
       public:
-        TreeNode(int Depth, BlitzMat3x2 aabb, XSearchTree* tree);
+        TreeNode(const int Depth, const BlitzMat3x2& aabb, XSearchTree* tree);
         virtual ~TreeNode();
         
         //! gives STATE_INNER_NODE or STATE_LEAF_NODE
@@ -76,7 +76,7 @@ namespace XFEM
         //! recusivly searches for the nearest neigbour to pointcoords (NOT YET IMPLEMENTED)
         void queryNearestNeighbour(const BlitzVec3& pointcoords);
         //! gives the center coords of the AABB of this treenode
-        BlitzVec3& getCenterCoord();
+        BlitzVec3 getCenterCoord();
         //! sets an treenode to be completly fluid (label should be set to 0)
         void setFluid(const int label);
         //! sets an treenode to be completly surrounded by a solid with given XFEM-coupling condidition
@@ -92,7 +92,7 @@ namespace XFEM
         //! gives the AxisAlignedBoundingBox of the treenode (which of course is the same as the "strict" BB)
         const BlitzMat3x2& getAABB();
         //! gives the AABB of a child of this treenode
-        BlitzMat3x2 getChildOctAABB(int chldIdx);
+        BlitzMat3x2 getChildOctAABB(const int chldIdx);
       
     }; // class TreeNode
     
@@ -130,7 +130,7 @@ namespace XFEM
       //! dumps a visualization of the tree in a gmsh file (tree0000<step>.pos)
       void printTree(const int step) const;
       //! the XFEM-Coupling-Condition-Label of a element by its gid
-      int getLabelByElementID(int gid);
+      int getLabelByElementID(const int gid);
   }; 
   //! a static object is created. (will disappear)
   //static STree; 
