@@ -192,7 +192,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
     Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
     Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-    lsParams.set("Tolerance", 0.1);
+    lsParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
 
     break;
   }
@@ -210,7 +210,7 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
     Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
     Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-    lsParams.set("Tolerance", 0.1);
+    lsParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
 
     break;
   }
