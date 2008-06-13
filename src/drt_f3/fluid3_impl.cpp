@@ -1667,333 +1667,319 @@ void DRT::ELEMENTS::Fluid3Impl::Sysmat(
       // part 2: derivative of viscosity residual
 
       v = timefacfac*visceff/det;
-      for (int vi=0; vi<numnode; ++vi)
+      for (int ui=0; ui<numnode; ++ui)
       {
-        for (int ui=0; ui<numnode; ++ui)
+        double v0 = - vderiv_(0,0)*(xji_10*derxjm_100(ui) + xji_10*derxjm_100(ui) + xji_20*derxjm_200(ui) + xji_20*derxjm_200(ui))
+                    - vderiv_(0,1)*(xji_11*derxjm_100(ui) + xji_10*derxjm_110(ui) + xji_21*derxjm_200(ui) + xji_20*derxjm_210(ui))
+                    - vderiv_(0,2)*(xji_12*derxjm_100(ui) + xji_10*derxjm_120(ui) + xji_22*derxjm_200(ui) + xji_20*derxjm_220(ui))
+                    - vderiv_(1,0)*(derxjm_100(ui)*xji_00)
+                    - vderiv_(1,1)*(derxjm_100(ui)*xji_01)
+                    - vderiv_(1,2)*(derxjm_100(ui)*xji_02)
+                    - vderiv_(2,0)*(derxjm_200(ui)*xji_00)
+                    - vderiv_(2,1)*(derxjm_200(ui)*xji_01)
+                    - vderiv_(2,2)*(derxjm_200(ui)*xji_02);
+        double v1 = - vderiv_(0,0)*(xji_10*derxjm_110(ui) + xji_11*derxjm_100(ui) + xji_20*derxjm_210(ui) + xji_21*derxjm_200(ui))
+                    - vderiv_(0,1)*(xji_11*derxjm_110(ui) + xji_11*derxjm_110(ui) + xji_21*derxjm_210(ui) + xji_21*derxjm_210(ui))
+                    - vderiv_(0,2)*(xji_12*derxjm_110(ui) + xji_11*derxjm_120(ui) + xji_22*derxjm_210(ui) + xji_21*derxjm_220(ui))
+                    - vderiv_(1,0)*(derxjm_110(ui)*xji_00)
+                    - vderiv_(1,1)*(derxjm_110(ui)*xji_01)
+                    - vderiv_(1,2)*(derxjm_110(ui)*xji_02)
+                    - vderiv_(2,0)*(derxjm_210(ui)*xji_00)
+                    - vderiv_(2,1)*(derxjm_210(ui)*xji_01)
+                    - vderiv_(2,2)*(derxjm_210(ui)*xji_02);
+        double v2 = - vderiv_(0,0)*(xji_10*derxjm_120(ui) + xji_12*derxjm_100(ui) + xji_20*derxjm_220(ui) + xji_22*derxjm_200(ui))
+                    - vderiv_(0,1)*(xji_11*derxjm_120(ui) + xji_12*derxjm_110(ui) + xji_21*derxjm_220(ui) + xji_22*derxjm_210(ui))
+                    - vderiv_(0,2)*(xji_12*derxjm_120(ui) + xji_12*derxjm_120(ui) + xji_22*derxjm_220(ui) + xji_22*derxjm_220(ui))
+                    - vderiv_(1,0)*(derxjm_120(ui)*xji_00)
+                    - vderiv_(1,1)*(derxjm_120(ui)*xji_01)
+                    - vderiv_(1,2)*(derxjm_120(ui)*xji_02)
+                    - vderiv_(2,0)*(derxjm_220(ui)*xji_00)
+                    - vderiv_(2,1)*(derxjm_220(ui)*xji_01)
+                    - vderiv_(2,2)*(derxjm_220(ui)*xji_02);
+
+        for (int vi=0; vi<numnode; ++vi)
         {
-          emesh(vi*4 + 0, ui*4 + 0) += v*(
-            + deriv_(0,vi)*(
-              - vderiv_(0,0)*(xji_10*derxjm_100(ui) + xji_10*derxjm_100(ui) + xji_20*derxjm_200(ui) + xji_20*derxjm_200(ui))
-              - vderiv_(0,1)*(xji_11*derxjm_100(ui) + xji_10*derxjm_110(ui) + xji_21*derxjm_200(ui) + xji_20*derxjm_210(ui))
-              - vderiv_(0,2)*(xji_12*derxjm_100(ui) + xji_10*derxjm_120(ui) + xji_22*derxjm_200(ui) + xji_20*derxjm_220(ui))
-              - vderiv_(1,0)*(derxjm_100(ui)*xji_00)
-              - vderiv_(1,1)*(derxjm_100(ui)*xji_01)
-              - vderiv_(1,2)*(derxjm_100(ui)*xji_02)
-              - vderiv_(2,0)*(derxjm_200(ui)*xji_00)
-              - vderiv_(2,1)*(derxjm_200(ui)*xji_01)
-              - vderiv_(2,2)*(derxjm_200(ui)*xji_02)
-              )
-            + deriv_(1,vi)*(
-              - vderiv_(0,0)*(xji_10*derxjm_110(ui) + xji_11*derxjm_100(ui) + xji_20*derxjm_210(ui) + xji_21*derxjm_200(ui))
-              - vderiv_(0,1)*(xji_11*derxjm_110(ui) + xji_11*derxjm_110(ui) + xji_21*derxjm_210(ui) + xji_21*derxjm_210(ui))
-              - vderiv_(0,2)*(xji_12*derxjm_110(ui) + xji_11*derxjm_120(ui) + xji_22*derxjm_210(ui) + xji_21*derxjm_220(ui))
-              - vderiv_(1,0)*(derxjm_110(ui)*xji_00)
-              - vderiv_(1,1)*(derxjm_110(ui)*xji_01)
-              - vderiv_(1,2)*(derxjm_110(ui)*xji_02)
-              - vderiv_(2,0)*(derxjm_210(ui)*xji_00)
-              - vderiv_(2,1)*(derxjm_210(ui)*xji_01)
-              - vderiv_(2,2)*(derxjm_210(ui)*xji_02)
-              )
-            + deriv_(2,vi)*(
-              - vderiv_(0,0)*(xji_10*derxjm_120(ui) + xji_12*derxjm_100(ui) + xji_20*derxjm_220(ui) + xji_22*derxjm_200(ui))
-              - vderiv_(0,1)*(xji_11*derxjm_120(ui) + xji_12*derxjm_110(ui) + xji_21*derxjm_220(ui) + xji_22*derxjm_210(ui))
-              - vderiv_(0,2)*(xji_12*derxjm_120(ui) + xji_12*derxjm_120(ui) + xji_22*derxjm_220(ui) + xji_22*derxjm_220(ui))
-              - vderiv_(1,0)*(derxjm_120(ui)*xji_00)
-              - vderiv_(1,1)*(derxjm_120(ui)*xji_01)
-              - vderiv_(1,2)*(derxjm_120(ui)*xji_02)
-              - vderiv_(2,0)*(derxjm_220(ui)*xji_00)
-              - vderiv_(2,1)*(derxjm_220(ui)*xji_01)
-              - vderiv_(2,2)*(derxjm_220(ui)*xji_02)
-              )
-            );
+          emesh(vi*4 + 0, ui*4 + 0) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
 
-          emesh(vi*4 + 0, ui*4 + 1) += v*(
-            + deriv_(0,vi)*(
-              - vderiv_(0,0)*(2*derxjm_001(ui)*xji_00 + 2*derxjm_001(ui)*xji_00 + xji_20*derxjm_201(ui) + xji_20*derxjm_201(ui))
-              - vderiv_(0,1)*(2*derxjm_011(ui)*xji_00 + 2*derxjm_001(ui)*xji_01 + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
-              - vderiv_(0,2)*(2*derxjm_021(ui)*xji_00 + 2*derxjm_001(ui)*xji_02 + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
-              - vderiv_(1,0)*(derxjm_001(ui)*xji_10)
-              - vderiv_(1,1)*(derxjm_011(ui)*xji_10)
-              - vderiv_(1,2)*(derxjm_021(ui)*xji_10)
-              - vderiv_(2,0)*(derxjm_201(ui)*xji_00 + derxjm_001(ui)*xji_20)
-              - vderiv_(2,1)*(derxjm_201(ui)*xji_01 + derxjm_011(ui)*xji_20)
-              - vderiv_(2,2)*(derxjm_201(ui)*xji_02 + derxjm_021(ui)*xji_20)
-              )
-            + deriv_(1,vi)*(
-              - vderiv_(0,0)*(2*derxjm_011(ui)*xji_00 + 2*derxjm_001(ui)*xji_01 + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
-              - vderiv_(0,1)*(2*derxjm_011(ui)*xji_01 + 2*derxjm_011(ui)*xji_01 + xji_21*derxjm_211(ui) + xji_21*derxjm_211(ui))
-              - vderiv_(0,2)*(2*derxjm_011(ui)*xji_02 + 2*derxjm_021(ui)*xji_01 + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
-              - vderiv_(1,0)*(derxjm_001(ui)*xji_11)
-              - vderiv_(1,1)*(derxjm_011(ui)*xji_11)
-              - vderiv_(1,2)*(derxjm_021(ui)*xji_11)
-              - vderiv_(2,0)*(derxjm_211(ui)*xji_00 + derxjm_001(ui)*xji_21)
-              - vderiv_(2,1)*(derxjm_211(ui)*xji_01 + derxjm_011(ui)*xji_21)
-              - vderiv_(2,2)*(derxjm_211(ui)*xji_02 + derxjm_021(ui)*xji_21)
-              )
-            + deriv_(2,vi)*(
-              - vderiv_(0,0)*(2*derxjm_021(ui)*xji_00 + 2*derxjm_001(ui)*xji_02 + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
-              - vderiv_(0,1)*(2*derxjm_011(ui)*xji_02 + 2*derxjm_021(ui)*xji_01 + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
-              - vderiv_(0,2)*(2*derxjm_021(ui)*xji_02 + 2*derxjm_021(ui)*xji_02 + xji_22*derxjm_221(ui) + xji_22*derxjm_221(ui))
-              - vderiv_(1,0)*(derxjm_001(ui)*xji_12)
-              - vderiv_(1,1)*(derxjm_011(ui)*xji_12)
-              - vderiv_(1,2)*(derxjm_021(ui)*xji_12)
-              - vderiv_(2,0)*(derxjm_221(ui)*xji_00 + derxjm_001(ui)*xji_22)
-              - vderiv_(2,1)*(derxjm_221(ui)*xji_01 + derxjm_011(ui)*xji_22)
-              - vderiv_(2,2)*(derxjm_221(ui)*xji_02 + derxjm_021(ui)*xji_22)
-              )
-            );
+        ////////////////////////////////////////////////////////////////
 
-          emesh(vi*4 + 0, ui*4 + 2) += v*(
-            + deriv_(0,vi)*(
-              - vderiv_(0,0)*(2*derxjm_002(ui)*xji_00 + 2*derxjm_002(ui)*xji_00 + xji_10*derxjm_102(ui) + xji_10*derxjm_102(ui))
-              - vderiv_(0,1)*(2*derxjm_012(ui)*xji_00 + 2*derxjm_002(ui)*xji_01 + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
-              - vderiv_(0,2)*(2*derxjm_022(ui)*xji_00 + 2*derxjm_002(ui)*xji_02 + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui))
-              - vderiv_(1,0)*(derxjm_002(ui)*xji_10 + derxjm_102(ui)*xji_00)
-              - vderiv_(1,1)*(derxjm_012(ui)*xji_10 + derxjm_102(ui)*xji_01)
-              - vderiv_(1,2)*(derxjm_022(ui)*xji_10 + derxjm_102(ui)*xji_02)
-              - vderiv_(2,0)*(derxjm_002(ui)*xji_20)
-              - vderiv_(2,1)*(derxjm_012(ui)*xji_20)
-              - vderiv_(2,2)*(derxjm_022(ui)*xji_20)
-              )
-            + deriv_(1,vi)*(
-              - vderiv_(0,0)*(2*derxjm_012(ui)*xji_00 + 2*derxjm_002(ui)*xji_01 + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
-              - vderiv_(0,1)*(2*derxjm_012(ui)*xji_01 + 2*derxjm_012(ui)*xji_01 + xji_11*derxjm_112(ui) + xji_11*derxjm_112(ui))
-              - vderiv_(0,2)*(2*derxjm_012(ui)*xji_02 + 2*derxjm_022(ui)*xji_01 + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
-              - vderiv_(1,0)*(derxjm_002(ui)*xji_11 + derxjm_112(ui)*xji_00)
-              - vderiv_(1,1)*(derxjm_012(ui)*xji_11 + derxjm_112(ui)*xji_01)
-              - vderiv_(1,2)*(derxjm_022(ui)*xji_11 + derxjm_112(ui)*xji_02)
-              - vderiv_(2,0)*(derxjm_002(ui)*xji_21)
-              - vderiv_(2,1)*(derxjm_012(ui)*xji_21)
-              - vderiv_(2,2)*(derxjm_022(ui)*xji_21)
-              )
-            + deriv_(2,vi)*(
-              - vderiv_(0,0)*(2*derxjm_022(ui)*xji_00 + 2*derxjm_002(ui)*xji_02 + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui))
-              - vderiv_(0,1)*(2*derxjm_012(ui)*xji_02 + 2*derxjm_022(ui)*xji_01 + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
-              - vderiv_(0,2)*(2*derxjm_022(ui)*xji_02 + 2*derxjm_022(ui)*xji_02 + xji_12*derxjm_122(ui) + xji_12*derxjm_122(ui))
-              - vderiv_(1,0)*(derxjm_002(ui)*xji_12 + derxjm_122(ui)*xji_00)
-              - vderiv_(1,1)*(derxjm_012(ui)*xji_12 + derxjm_122(ui)*xji_01)
-              - vderiv_(1,2)*(derxjm_022(ui)*xji_12 + derxjm_122(ui)*xji_02)
-              - vderiv_(2,0)*(derxjm_002(ui)*xji_22)
-              - vderiv_(2,1)*(derxjm_012(ui)*xji_22)
-              - vderiv_(2,2)*(derxjm_022(ui)*xji_22)
-              )
-            );
+        v0 = - vderiv_(0,0)*(2*derxjm_001(ui)*xji_00 + 2*derxjm_001(ui)*xji_00 + xji_20*derxjm_201(ui) + xji_20*derxjm_201(ui))
+             - vderiv_(0,1)*(2*derxjm_011(ui)*xji_00 + 2*derxjm_001(ui)*xji_01 + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
+             - vderiv_(0,2)*(2*derxjm_021(ui)*xji_00 + 2*derxjm_001(ui)*xji_02 + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
+             - vderiv_(1,0)*(derxjm_001(ui)*xji_10)
+             - vderiv_(1,1)*(derxjm_011(ui)*xji_10)
+             - vderiv_(1,2)*(derxjm_021(ui)*xji_10)
+             - vderiv_(2,0)*(derxjm_201(ui)*xji_00 + derxjm_001(ui)*xji_20)
+             - vderiv_(2,1)*(derxjm_201(ui)*xji_01 + derxjm_011(ui)*xji_20)
+             - vderiv_(2,2)*(derxjm_201(ui)*xji_02 + derxjm_021(ui)*xji_20);
+        v1 = - vderiv_(0,0)*(2*derxjm_011(ui)*xji_00 + 2*derxjm_001(ui)*xji_01 + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
+             - vderiv_(0,1)*(2*derxjm_011(ui)*xji_01 + 2*derxjm_011(ui)*xji_01 + xji_21*derxjm_211(ui) + xji_21*derxjm_211(ui))
+             - vderiv_(0,2)*(2*derxjm_011(ui)*xji_02 + 2*derxjm_021(ui)*xji_01 + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
+             - vderiv_(1,0)*(derxjm_001(ui)*xji_11)
+             - vderiv_(1,1)*(derxjm_011(ui)*xji_11)
+             - vderiv_(1,2)*(derxjm_021(ui)*xji_11)
+             - vderiv_(2,0)*(derxjm_211(ui)*xji_00 + derxjm_001(ui)*xji_21)
+             - vderiv_(2,1)*(derxjm_211(ui)*xji_01 + derxjm_011(ui)*xji_21)
+             - vderiv_(2,2)*(derxjm_211(ui)*xji_02 + derxjm_021(ui)*xji_21);
+        v2 = - vderiv_(0,0)*(2*derxjm_021(ui)*xji_00 + 2*derxjm_001(ui)*xji_02 + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
+             - vderiv_(0,1)*(2*derxjm_011(ui)*xji_02 + 2*derxjm_021(ui)*xji_01 + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
+             - vderiv_(0,2)*(2*derxjm_021(ui)*xji_02 + 2*derxjm_021(ui)*xji_02 + xji_22*derxjm_221(ui) + xji_22*derxjm_221(ui))
+             - vderiv_(1,0)*(derxjm_001(ui)*xji_12)
+             - vderiv_(1,1)*(derxjm_011(ui)*xji_12)
+             - vderiv_(1,2)*(derxjm_021(ui)*xji_12)
+             - vderiv_(2,0)*(derxjm_221(ui)*xji_00 + derxjm_001(ui)*xji_22)
+             - vderiv_(2,1)*(derxjm_221(ui)*xji_01 + derxjm_011(ui)*xji_22)
+             - vderiv_(2,2)*(derxjm_221(ui)*xji_02 + derxjm_021(ui)*xji_22);
 
-          emesh(vi*4 + 1, ui*4 + 0) += v*(
-            + deriv_(0,vi)*(
-              - vderiv_(0,0)*(derxjm_100(ui)*xji_00)
-              - vderiv_(0,1)*(derxjm_110(ui)*xji_00)
-              - vderiv_(0,2)*(derxjm_120(ui)*xji_00)
-              - vderiv_(1,0)*(2*xji_10*derxjm_100(ui) + 2*xji_10*derxjm_100(ui) + xji_20*derxjm_200(ui) + xji_20*derxjm_200(ui))
-              - vderiv_(1,1)*(2*xji_11*derxjm_100(ui) + 2*xji_10*derxjm_110(ui) + xji_21*derxjm_200(ui) + xji_20*derxjm_210(ui))
-              - vderiv_(1,2)*(2*xji_12*derxjm_100(ui) + 2*xji_10*derxjm_120(ui) + xji_22*derxjm_200(ui) + xji_20*derxjm_220(ui))
-              - vderiv_(2,0)*(derxjm_200(ui)*xji_10 + derxjm_100(ui)*xji_20)
-              - vderiv_(2,1)*(derxjm_200(ui)*xji_11 + derxjm_110(ui)*xji_20)
-              - vderiv_(2,2)*(derxjm_200(ui)*xji_12 + derxjm_120(ui)*xji_20)
-              )
-            + deriv_(1,vi)*(
-              - vderiv_(0,0)*(derxjm_100(ui)*xji_01)
-              - vderiv_(0,1)*(derxjm_110(ui)*xji_01)
-              - vderiv_(0,2)*(derxjm_120(ui)*xji_01)
-              - vderiv_(1,0)*(2*xji_10*derxjm_110(ui) + 2*xji_11*derxjm_100(ui) + xji_20*derxjm_210(ui) + xji_21*derxjm_200(ui))
-              - vderiv_(1,1)*(2*xji_11*derxjm_110(ui) + 2*xji_11*derxjm_110(ui) + xji_21*derxjm_210(ui) + xji_21*derxjm_210(ui))
-              - vderiv_(1,2)*(2*xji_12*derxjm_110(ui) + 2*xji_11*derxjm_120(ui) + xji_22*derxjm_210(ui) + xji_21*derxjm_220(ui))
-              - vderiv_(2,0)*(derxjm_210(ui)*xji_10 + derxjm_100(ui)*xji_21)
-              - vderiv_(2,1)*(derxjm_210(ui)*xji_11 + derxjm_110(ui)*xji_21)
-              - vderiv_(2,2)*(derxjm_210(ui)*xji_12 + derxjm_120(ui)*xji_21)
-              )
-            + deriv_(2,vi)*(
-              - vderiv_(0,0)*(derxjm_100(ui)*xji_02)
-              - vderiv_(0,1)*(derxjm_110(ui)*xji_02)
-              - vderiv_(0,2)*(derxjm_120(ui)*xji_02)
-              - vderiv_(1,0)*(2*xji_10*derxjm_120(ui) + 2*xji_12*derxjm_100(ui) + xji_20*derxjm_220(ui) + xji_22*derxjm_200(ui))
-              - vderiv_(1,1)*(2*xji_11*derxjm_120(ui) + 2*xji_12*derxjm_110(ui) + xji_21*derxjm_220(ui) + xji_22*derxjm_210(ui))
-              - vderiv_(1,2)*(2*xji_12*derxjm_120(ui) + 2*xji_12*derxjm_120(ui) + xji_22*derxjm_220(ui) + xji_22*derxjm_220(ui))
-              - vderiv_(2,0)*(derxjm_220(ui)*xji_10 + derxjm_100(ui)*xji_22)
-              - vderiv_(2,1)*(derxjm_220(ui)*xji_11 + derxjm_110(ui)*xji_22)
-              - vderiv_(2,2)*(derxjm_220(ui)*xji_12 + derxjm_120(ui)*xji_22)
-              )
-            );
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          emesh(vi*4 + 0, ui*4 + 1) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
 
-          emesh(vi*4 + 1, ui*4 + 1) += v*(
-            + deriv_(0,vi)*(
-              - vderiv_(0,0)*(derxjm_001(ui)*xji_10)
-              - vderiv_(0,1)*(derxjm_001(ui)*xji_11)
-              - vderiv_(0,2)*(derxjm_001(ui)*xji_12)
-              - vderiv_(1,0)*(xji_00*derxjm_001(ui) + xji_00*derxjm_001(ui) + xji_20*derxjm_201(ui) + xji_20*derxjm_201(ui))
-              - vderiv_(1,1)*(xji_01*derxjm_001(ui) + xji_00*derxjm_011(ui) + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
-              - vderiv_(1,2)*(xji_02*derxjm_001(ui) + xji_00*derxjm_021(ui) + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
-              - vderiv_(2,0)*(derxjm_201(ui)*xji_10)
-              - vderiv_(2,1)*(derxjm_201(ui)*xji_11)
-              - vderiv_(2,2)*(derxjm_201(ui)*xji_12)
-              )
-            + deriv_(1,vi)*(
-              - vderiv_(0,0)*(derxjm_011(ui)*xji_10)
-              - vderiv_(0,1)*(derxjm_011(ui)*xji_11)
-              - vderiv_(0,2)*(derxjm_011(ui)*xji_12)
-              - vderiv_(1,0)*(xji_00*derxjm_011(ui) + xji_01*derxjm_001(ui) + xji_20*derxjm_211(ui) + xji_21*derxjm_201(ui))
-              - vderiv_(1,1)*(xji_01*derxjm_011(ui) + xji_01*derxjm_011(ui) + xji_21*derxjm_211(ui) + xji_21*derxjm_211(ui))
-              - vderiv_(1,2)*(xji_02*derxjm_011(ui) + xji_01*derxjm_021(ui) + xji_22*derxjm_211(ui) + xji_21*derxjm_221(ui))
-              - vderiv_(2,0)*(derxjm_211(ui)*xji_10)
-              - vderiv_(2,1)*(derxjm_211(ui)*xji_11)
-              - vderiv_(2,2)*(derxjm_211(ui)*xji_12)
-              )
-            + deriv_(2,vi)*(
-              - vderiv_(0,0)*(derxjm_021(ui)*xji_10)
-              - vderiv_(0,1)*(derxjm_021(ui)*xji_11)
-              - vderiv_(0,2)*(derxjm_021(ui)*xji_12)
-              - vderiv_(1,0)*(xji_00*derxjm_021(ui) + xji_02*derxjm_001(ui) + xji_20*derxjm_221(ui) + xji_22*derxjm_201(ui))
-              - vderiv_(1,1)*(xji_01*derxjm_021(ui) + xji_02*derxjm_011(ui) + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
-              - vderiv_(1,2)*(xji_02*derxjm_021(ui) + xji_02*derxjm_021(ui) + xji_22*derxjm_221(ui) + xji_22*derxjm_221(ui))
-              - vderiv_(2,0)*(derxjm_221(ui)*xji_10)
-              - vderiv_(2,1)*(derxjm_221(ui)*xji_11)
-              - vderiv_(2,2)*(derxjm_221(ui)*xji_12)
-              )
-            );
+        ////////////////////////////////////////////////////////////////
 
-          emesh(vi*4 + 1, ui*4 + 2) += v*(
-            + deriv_(0,vi)*(
-              - vderiv_(0,0)*(derxjm_002(ui)*xji_10 + derxjm_102(ui)*xji_00)
-              - vderiv_(0,1)*(derxjm_002(ui)*xji_11 + derxjm_112(ui)*xji_00)
-              - vderiv_(0,2)*(derxjm_002(ui)*xji_12 + derxjm_122(ui)*xji_00)
-              - vderiv_(1,0)*(xji_00*derxjm_002(ui) + xji_00*derxjm_002(ui) + 2*xji_10*derxjm_102(ui) + 2*xji_10*derxjm_102(ui))
-              - vderiv_(1,1)*(xji_01*derxjm_002(ui) + xji_00*derxjm_012(ui) + 2*xji_11*derxjm_102(ui) + 2*xji_10*derxjm_112(ui))
-              - vderiv_(1,2)*(xji_02*derxjm_002(ui) + xji_00*derxjm_022(ui) + 2*xji_12*derxjm_102(ui) + 2*xji_10*derxjm_122(ui))
-              - vderiv_(2,0)*(derxjm_102(ui)*xji_20)
-              - vderiv_(2,1)*(derxjm_112(ui)*xji_20)
-              - vderiv_(2,2)*(derxjm_122(ui)*xji_20)
-              )
-            + deriv_(1,vi)*(
-              - vderiv_(0,0)*(derxjm_012(ui)*xji_10 + derxjm_102(ui)*xji_01)
-              - vderiv_(0,1)*(derxjm_012(ui)*xji_11 + derxjm_112(ui)*xji_01)
-              - vderiv_(0,2)*(derxjm_012(ui)*xji_12 + derxjm_122(ui)*xji_01)
-              - vderiv_(1,0)*(xji_00*derxjm_012(ui) + xji_01*derxjm_002(ui) + 2*xji_10*derxjm_112(ui) + 2*xji_11*derxjm_102(ui))
-              - vderiv_(1,1)*(xji_01*derxjm_012(ui) + xji_01*derxjm_012(ui) + 2*xji_11*derxjm_112(ui) + 2*xji_11*derxjm_112(ui))
-              - vderiv_(1,2)*(xji_02*derxjm_012(ui) + xji_01*derxjm_022(ui) + 2*xji_12*derxjm_112(ui) + 2*xji_11*derxjm_122(ui))
-              - vderiv_(2,0)*(derxjm_102(ui)*xji_21)
-              - vderiv_(2,1)*(derxjm_112(ui)*xji_21)
-              - vderiv_(2,2)*(derxjm_122(ui)*xji_21)
-              )
-            + deriv_(2,vi)*(
-              - vderiv_(0,0)*(derxjm_022(ui)*xji_10 + derxjm_102(ui)*xji_02)
-              - vderiv_(0,1)*(derxjm_022(ui)*xji_11 + derxjm_112(ui)*xji_02)
-              - vderiv_(0,2)*(derxjm_022(ui)*xji_12 + derxjm_122(ui)*xji_02)
-              - vderiv_(1,0)*(xji_00*derxjm_022(ui) + xji_02*derxjm_002(ui) + 2*xji_10*derxjm_122(ui) + 2*xji_12*derxjm_102(ui))
-              - vderiv_(1,1)*(xji_01*derxjm_022(ui) + xji_02*derxjm_012(ui) + 2*xji_11*derxjm_122(ui) + 2*xji_12*derxjm_112(ui))
-              - vderiv_(1,2)*(xji_02*derxjm_022(ui) + xji_02*derxjm_022(ui) + 2*xji_12*derxjm_122(ui) + 2*xji_12*derxjm_122(ui))
-              - vderiv_(2,0)*(derxjm_102(ui)*xji_22)
-              - vderiv_(2,1)*(derxjm_112(ui)*xji_22)
-              - vderiv_(2,2)*(derxjm_122(ui)*xji_22)
-              )
-            );
+        v0 = - vderiv_(0,0)*(2*derxjm_002(ui)*xji_00 + 2*derxjm_002(ui)*xji_00 + xji_10*derxjm_102(ui) + xji_10*derxjm_102(ui))
+             - vderiv_(0,1)*(2*derxjm_012(ui)*xji_00 + 2*derxjm_002(ui)*xji_01 + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
+             - vderiv_(0,2)*(2*derxjm_022(ui)*xji_00 + 2*derxjm_002(ui)*xji_02 + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui))
+             - vderiv_(1,0)*(derxjm_002(ui)*xji_10 + derxjm_102(ui)*xji_00)
+             - vderiv_(1,1)*(derxjm_012(ui)*xji_10 + derxjm_102(ui)*xji_01)
+             - vderiv_(1,2)*(derxjm_022(ui)*xji_10 + derxjm_102(ui)*xji_02)
+             - vderiv_(2,0)*(derxjm_002(ui)*xji_20)
+             - vderiv_(2,1)*(derxjm_012(ui)*xji_20)
+             - vderiv_(2,2)*(derxjm_022(ui)*xji_20);
+        v1 = - vderiv_(0,0)*(2*derxjm_012(ui)*xji_00 + 2*derxjm_002(ui)*xji_01 + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
+             - vderiv_(0,1)*(2*derxjm_012(ui)*xji_01 + 2*derxjm_012(ui)*xji_01 + xji_11*derxjm_112(ui) + xji_11*derxjm_112(ui))
+             - vderiv_(0,2)*(2*derxjm_012(ui)*xji_02 + 2*derxjm_022(ui)*xji_01 + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
+             - vderiv_(1,0)*(derxjm_002(ui)*xji_11 + derxjm_112(ui)*xji_00)
+             - vderiv_(1,1)*(derxjm_012(ui)*xji_11 + derxjm_112(ui)*xji_01)
+             - vderiv_(1,2)*(derxjm_022(ui)*xji_11 + derxjm_112(ui)*xji_02)
+             - vderiv_(2,0)*(derxjm_002(ui)*xji_21)
+             - vderiv_(2,1)*(derxjm_012(ui)*xji_21)
+             - vderiv_(2,2)*(derxjm_022(ui)*xji_21);
+        v2 = - vderiv_(0,0)*(2*derxjm_022(ui)*xji_00 + 2*derxjm_002(ui)*xji_02 + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui))
+             - vderiv_(0,1)*(2*derxjm_012(ui)*xji_02 + 2*derxjm_022(ui)*xji_01 + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
+             - vderiv_(0,2)*(2*derxjm_022(ui)*xji_02 + 2*derxjm_022(ui)*xji_02 + xji_12*derxjm_122(ui) + xji_12*derxjm_122(ui))
+             - vderiv_(1,0)*(derxjm_002(ui)*xji_12 + derxjm_122(ui)*xji_00)
+             - vderiv_(1,1)*(derxjm_012(ui)*xji_12 + derxjm_122(ui)*xji_01)
+             - vderiv_(1,2)*(derxjm_022(ui)*xji_12 + derxjm_122(ui)*xji_02)
+             - vderiv_(2,0)*(derxjm_002(ui)*xji_22)
+             - vderiv_(2,1)*(derxjm_012(ui)*xji_22)
+             - vderiv_(2,2)*(derxjm_022(ui)*xji_22);
 
-          emesh(vi*4 + 2, ui*4 + 0) += v*(
-            + deriv_(0,vi)*(
-              - vderiv_(0,0)*(derxjm_200(ui)*xji_00)
-              - vderiv_(0,1)*(derxjm_210(ui)*xji_00)
-              - vderiv_(0,2)*(derxjm_220(ui)*xji_00)
-              - vderiv_(1,0)*(derxjm_200(ui)*xji_10 + derxjm_100(ui)*xji_20)
-              - vderiv_(1,1)*(derxjm_210(ui)*xji_10 + derxjm_100(ui)*xji_21)
-              - vderiv_(1,2)*(derxjm_220(ui)*xji_10 + derxjm_100(ui)*xji_22)
-              - vderiv_(2,0)*(xji_10*derxjm_100(ui) + xji_10*derxjm_100(ui) + 2*xji_20*derxjm_200(ui) + 2*xji_20*derxjm_200(ui))
-              - vderiv_(2,1)*(xji_11*derxjm_100(ui) + xji_10*derxjm_110(ui) + 2*xji_21*derxjm_200(ui) + 2*xji_20*derxjm_210(ui))
-              - vderiv_(2,2)*(xji_12*derxjm_100(ui) + xji_10*derxjm_120(ui) + 2*xji_22*derxjm_200(ui) + 2*xji_20*derxjm_220(ui))
-              )
-            + deriv_(1,vi)*(
-              - vderiv_(0,0)*(derxjm_200(ui)*xji_01)
-              - vderiv_(0,1)*(derxjm_210(ui)*xji_01)
-              - vderiv_(0,2)*(derxjm_220(ui)*xji_01)
-              - vderiv_(1,0)*(derxjm_200(ui)*xji_11 + derxjm_110(ui)*xji_20)
-              - vderiv_(1,1)*(derxjm_210(ui)*xji_11 + derxjm_110(ui)*xji_21)
-              - vderiv_(1,2)*(derxjm_220(ui)*xji_11 + derxjm_110(ui)*xji_22)
-              - vderiv_(2,0)*(xji_10*derxjm_110(ui) + xji_11*derxjm_100(ui) + 2*xji_20*derxjm_210(ui) + 2*xji_21*derxjm_200(ui))
-              - vderiv_(2,1)*(xji_11*derxjm_110(ui) + xji_11*derxjm_110(ui) + 2*xji_21*derxjm_210(ui) + 2*xji_21*derxjm_210(ui))
-              - vderiv_(2,2)*(xji_12*derxjm_110(ui) + xji_11*derxjm_120(ui) + 2*xji_22*derxjm_210(ui) + 2*xji_21*derxjm_220(ui))
-              )
-            + deriv_(2,vi)*(
-              - vderiv_(0,0)*(derxjm_200(ui)*xji_02)
-              - vderiv_(0,1)*(derxjm_210(ui)*xji_02)
-              - vderiv_(0,2)*(derxjm_220(ui)*xji_02)
-              - vderiv_(1,0)*(derxjm_200(ui)*xji_12 + derxjm_120(ui)*xji_20)
-              - vderiv_(1,1)*(derxjm_210(ui)*xji_12 + derxjm_120(ui)*xji_21)
-              - vderiv_(1,2)*(derxjm_220(ui)*xji_12 + derxjm_120(ui)*xji_22)
-              - vderiv_(2,0)*(xji_10*derxjm_120(ui) + xji_12*derxjm_100(ui) + 2*xji_20*derxjm_220(ui) + 2*xji_22*derxjm_200(ui))
-              - vderiv_(2,1)*(xji_11*derxjm_120(ui) + xji_12*derxjm_110(ui) + 2*xji_21*derxjm_220(ui) + 2*xji_22*derxjm_210(ui))
-              - vderiv_(2,2)*(xji_12*derxjm_120(ui) + xji_12*derxjm_120(ui) + 2*xji_22*derxjm_220(ui) + 2*xji_22*derxjm_220(ui))
-              )
-            );
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          emesh(vi*4 + 0, ui*4 + 2) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
 
-          emesh(vi*4 + 2, ui*4 + 1) += v*(
-            + deriv_(0,vi)*(
-              - vderiv_(0,0)*(derxjm_201(ui)*xji_00 + derxjm_001(ui)*xji_20)
-              - vderiv_(0,1)*(derxjm_211(ui)*xji_00 + derxjm_001(ui)*xji_21)
-              - vderiv_(0,2)*(derxjm_221(ui)*xji_00 + derxjm_001(ui)*xji_22)
-              - vderiv_(1,0)*(derxjm_201(ui)*xji_10)
-              - vderiv_(1,1)*(derxjm_211(ui)*xji_10)
-              - vderiv_(1,2)*(derxjm_221(ui)*xji_10)
-              - vderiv_(2,0)*(xji_00*derxjm_001(ui) + xji_00*derxjm_001(ui) + 2*xji_20*derxjm_201(ui) + 2*xji_20*derxjm_201(ui))
-              - vderiv_(2,1)*(xji_01*derxjm_001(ui) + xji_00*derxjm_011(ui) + 2*xji_21*derxjm_201(ui) + 2*xji_20*derxjm_211(ui))
-              - vderiv_(2,2)*(xji_02*derxjm_001(ui) + xji_00*derxjm_021(ui) + 2*xji_22*derxjm_201(ui) + 2*xji_20*derxjm_221(ui))
-              )
-            + deriv_(1,vi)*(
-              - vderiv_(0,0)*(derxjm_201(ui)*xji_01 + derxjm_011(ui)*xji_20)
-              - vderiv_(0,1)*(derxjm_211(ui)*xji_01 + derxjm_011(ui)*xji_21)
-              - vderiv_(0,2)*(derxjm_221(ui)*xji_01 + derxjm_011(ui)*xji_22)
-              - vderiv_(1,0)*(derxjm_201(ui)*xji_11)
-              - vderiv_(1,1)*(derxjm_211(ui)*xji_11)
-              - vderiv_(1,2)*(derxjm_221(ui)*xji_11)
-              - vderiv_(2,0)*(xji_00*derxjm_011(ui) + xji_01*derxjm_001(ui) + 2*xji_20*derxjm_211(ui) + 2*xji_21*derxjm_201(ui))
-              - vderiv_(2,1)*(xji_01*derxjm_011(ui) + xji_01*derxjm_011(ui) + 2*xji_21*derxjm_211(ui) + 2*xji_21*derxjm_211(ui))
-              - vderiv_(2,2)*(xji_02*derxjm_011(ui) + xji_01*derxjm_021(ui) + 2*xji_22*derxjm_211(ui) + 2*xji_21*derxjm_221(ui))
-              )
-            + deriv_(2,vi)*(
-              - vderiv_(0,0)*(derxjm_201(ui)*xji_02 + derxjm_021(ui)*xji_20)
-              - vderiv_(0,1)*(derxjm_211(ui)*xji_02 + derxjm_021(ui)*xji_21)
-              - vderiv_(0,2)*(derxjm_221(ui)*xji_02 + derxjm_021(ui)*xji_22)
-              - vderiv_(1,0)*(derxjm_201(ui)*xji_12)
-              - vderiv_(1,1)*(derxjm_211(ui)*xji_12)
-              - vderiv_(1,2)*(derxjm_221(ui)*xji_12)
-              - vderiv_(2,0)*(xji_00*derxjm_021(ui) + xji_02*derxjm_001(ui) + 2*xji_20*derxjm_221(ui) + 2*xji_22*derxjm_201(ui))
-              - vderiv_(2,1)*(xji_01*derxjm_021(ui) + xji_02*derxjm_011(ui) + 2*xji_21*derxjm_221(ui) + 2*xji_22*derxjm_211(ui))
-              - vderiv_(2,2)*(xji_02*derxjm_021(ui) + xji_02*derxjm_021(ui) + 2*xji_22*derxjm_221(ui) + 2*xji_22*derxjm_221(ui))
-              )
-            );
+        ////////////////////////////////////////////////////////////////
 
-          emesh(vi*4 + 2, ui*4 + 2) += v*(
-            + deriv_(0,vi)*(
-              - vderiv_(0,0)*(derxjm_002(ui)*xji_20)
-              - vderiv_(0,1)*(derxjm_002(ui)*xji_21)
-              - vderiv_(0,2)*(derxjm_002(ui)*xji_22)
-              - vderiv_(1,0)*(derxjm_102(ui)*xji_20)
-              - vderiv_(1,1)*(derxjm_102(ui)*xji_21)
-              - vderiv_(1,2)*(derxjm_102(ui)*xji_22)
-              - vderiv_(2,0)*(xji_00*derxjm_002(ui) + xji_00*derxjm_002(ui) + xji_10*derxjm_102(ui) + xji_10*derxjm_102(ui))
-              - vderiv_(2,1)*(xji_01*derxjm_002(ui) + xji_00*derxjm_012(ui) + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
-              - vderiv_(2,2)*(xji_02*derxjm_002(ui) + xji_00*derxjm_022(ui) + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui))
-              )
-            + deriv_(1,vi)*(
-              - vderiv_(0,0)*(derxjm_012(ui)*xji_20)
-              - vderiv_(0,1)*(derxjm_012(ui)*xji_21)
-              - vderiv_(0,2)*(derxjm_012(ui)*xji_22)
-              - vderiv_(1,0)*(derxjm_112(ui)*xji_20)
-              - vderiv_(1,1)*(derxjm_112(ui)*xji_21)
-              - vderiv_(1,2)*(derxjm_112(ui)*xji_22)
-              - vderiv_(2,0)*(xji_00*derxjm_012(ui) + xji_01*derxjm_002(ui) + xji_10*derxjm_112(ui) + xji_11*derxjm_102(ui))
-              - vderiv_(2,1)*(xji_01*derxjm_012(ui) + xji_01*derxjm_012(ui) + xji_11*derxjm_112(ui) + xji_11*derxjm_112(ui))
-              - vderiv_(2,2)*(xji_02*derxjm_012(ui) + xji_01*derxjm_022(ui) + xji_12*derxjm_112(ui) + xji_11*derxjm_122(ui))
-              )
-            + deriv_(2,vi)*(
-              - vderiv_(0,0)*(derxjm_022(ui)*xji_20)
-              - vderiv_(0,1)*(derxjm_022(ui)*xji_21)
-              - vderiv_(0,2)*(derxjm_022(ui)*xji_22)
-              - vderiv_(1,0)*(derxjm_122(ui)*xji_20)
-              - vderiv_(1,1)*(derxjm_122(ui)*xji_21)
-              - vderiv_(1,2)*(derxjm_122(ui)*xji_22)
-              - vderiv_(2,0)*(xji_00*derxjm_022(ui) + xji_02*derxjm_002(ui) + xji_10*derxjm_122(ui) + xji_12*derxjm_102(ui))
-              - vderiv_(2,1)*(xji_01*derxjm_022(ui) + xji_02*derxjm_012(ui) + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
-              - vderiv_(2,2)*(xji_02*derxjm_022(ui) + xji_02*derxjm_022(ui) + xji_12*derxjm_122(ui) + xji_12*derxjm_122(ui))
-              )
-            );
+        v0 = - vderiv_(0,0)*(derxjm_100(ui)*xji_00)
+             - vderiv_(0,1)*(derxjm_110(ui)*xji_00)
+             - vderiv_(0,2)*(derxjm_120(ui)*xji_00)
+             - vderiv_(1,0)*(2*xji_10*derxjm_100(ui) + 2*xji_10*derxjm_100(ui) + xji_20*derxjm_200(ui) + xji_20*derxjm_200(ui))
+             - vderiv_(1,1)*(2*xji_11*derxjm_100(ui) + 2*xji_10*derxjm_110(ui) + xji_21*derxjm_200(ui) + xji_20*derxjm_210(ui))
+             - vderiv_(1,2)*(2*xji_12*derxjm_100(ui) + 2*xji_10*derxjm_120(ui) + xji_22*derxjm_200(ui) + xji_20*derxjm_220(ui))
+             - vderiv_(2,0)*(derxjm_200(ui)*xji_10 + derxjm_100(ui)*xji_20)
+             - vderiv_(2,1)*(derxjm_200(ui)*xji_11 + derxjm_110(ui)*xji_20)
+             - vderiv_(2,2)*(derxjm_200(ui)*xji_12 + derxjm_120(ui)*xji_20);
+        v1 = - vderiv_(0,0)*(derxjm_100(ui)*xji_01)
+             - vderiv_(0,1)*(derxjm_110(ui)*xji_01)
+             - vderiv_(0,2)*(derxjm_120(ui)*xji_01)
+             - vderiv_(1,0)*(2*xji_10*derxjm_110(ui) + 2*xji_11*derxjm_100(ui) + xji_20*derxjm_210(ui) + xji_21*derxjm_200(ui))
+             - vderiv_(1,1)*(2*xji_11*derxjm_110(ui) + 2*xji_11*derxjm_110(ui) + xji_21*derxjm_210(ui) + xji_21*derxjm_210(ui))
+             - vderiv_(1,2)*(2*xji_12*derxjm_110(ui) + 2*xji_11*derxjm_120(ui) + xji_22*derxjm_210(ui) + xji_21*derxjm_220(ui))
+             - vderiv_(2,0)*(derxjm_210(ui)*xji_10 + derxjm_100(ui)*xji_21)
+             - vderiv_(2,1)*(derxjm_210(ui)*xji_11 + derxjm_110(ui)*xji_21)
+             - vderiv_(2,2)*(derxjm_210(ui)*xji_12 + derxjm_120(ui)*xji_21);
+        v2 = - vderiv_(0,0)*(derxjm_100(ui)*xji_02)
+             - vderiv_(0,1)*(derxjm_110(ui)*xji_02)
+             - vderiv_(0,2)*(derxjm_120(ui)*xji_02)
+             - vderiv_(1,0)*(2*xji_10*derxjm_120(ui) + 2*xji_12*derxjm_100(ui) + xji_20*derxjm_220(ui) + xji_22*derxjm_200(ui))
+             - vderiv_(1,1)*(2*xji_11*derxjm_120(ui) + 2*xji_12*derxjm_110(ui) + xji_21*derxjm_220(ui) + xji_22*derxjm_210(ui))
+             - vderiv_(1,2)*(2*xji_12*derxjm_120(ui) + 2*xji_12*derxjm_120(ui) + xji_22*derxjm_220(ui) + xji_22*derxjm_220(ui))
+             - vderiv_(2,0)*(derxjm_220(ui)*xji_10 + derxjm_100(ui)*xji_22)
+             - vderiv_(2,1)*(derxjm_220(ui)*xji_11 + derxjm_110(ui)*xji_22)
+             - vderiv_(2,2)*(derxjm_220(ui)*xji_12 + derxjm_120(ui)*xji_22);
+
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          emesh(vi*4 + 1, ui*4 + 0) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(derxjm_001(ui)*xji_10)
+             - vderiv_(0,1)*(derxjm_001(ui)*xji_11)
+             - vderiv_(0,2)*(derxjm_001(ui)*xji_12)
+             - vderiv_(1,0)*(xji_00*derxjm_001(ui) + xji_00*derxjm_001(ui) + xji_20*derxjm_201(ui) + xji_20*derxjm_201(ui))
+             - vderiv_(1,1)*(xji_01*derxjm_001(ui) + xji_00*derxjm_011(ui) + xji_21*derxjm_201(ui) + xji_20*derxjm_211(ui))
+             - vderiv_(1,2)*(xji_02*derxjm_001(ui) + xji_00*derxjm_021(ui) + xji_22*derxjm_201(ui) + xji_20*derxjm_221(ui))
+             - vderiv_(2,0)*(derxjm_201(ui)*xji_10)
+             - vderiv_(2,1)*(derxjm_201(ui)*xji_11)
+             - vderiv_(2,2)*(derxjm_201(ui)*xji_12);
+        v1 = - vderiv_(0,0)*(derxjm_011(ui)*xji_10)
+             - vderiv_(0,1)*(derxjm_011(ui)*xji_11)
+             - vderiv_(0,2)*(derxjm_011(ui)*xji_12)
+             - vderiv_(1,0)*(xji_00*derxjm_011(ui) + xji_01*derxjm_001(ui) + xji_20*derxjm_211(ui) + xji_21*derxjm_201(ui))
+             - vderiv_(1,1)*(xji_01*derxjm_011(ui) + xji_01*derxjm_011(ui) + xji_21*derxjm_211(ui) + xji_21*derxjm_211(ui))
+             - vderiv_(1,2)*(xji_02*derxjm_011(ui) + xji_01*derxjm_021(ui) + xji_22*derxjm_211(ui) + xji_21*derxjm_221(ui))
+             - vderiv_(2,0)*(derxjm_211(ui)*xji_10)
+             - vderiv_(2,1)*(derxjm_211(ui)*xji_11)
+             - vderiv_(2,2)*(derxjm_211(ui)*xji_12);
+        v2 = - vderiv_(0,0)*(derxjm_021(ui)*xji_10)
+             - vderiv_(0,1)*(derxjm_021(ui)*xji_11)
+             - vderiv_(0,2)*(derxjm_021(ui)*xji_12)
+             - vderiv_(1,0)*(xji_00*derxjm_021(ui) + xji_02*derxjm_001(ui) + xji_20*derxjm_221(ui) + xji_22*derxjm_201(ui))
+             - vderiv_(1,1)*(xji_01*derxjm_021(ui) + xji_02*derxjm_011(ui) + xji_21*derxjm_221(ui) + xji_22*derxjm_211(ui))
+             - vderiv_(1,2)*(xji_02*derxjm_021(ui) + xji_02*derxjm_021(ui) + xji_22*derxjm_221(ui) + xji_22*derxjm_221(ui))
+             - vderiv_(2,0)*(derxjm_221(ui)*xji_10)
+             - vderiv_(2,1)*(derxjm_221(ui)*xji_11)
+             - vderiv_(2,2)*(derxjm_221(ui)*xji_12);
+
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          emesh(vi*4 + 1, ui*4 + 1) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(derxjm_002(ui)*xji_10 + derxjm_102(ui)*xji_00)
+             - vderiv_(0,1)*(derxjm_002(ui)*xji_11 + derxjm_112(ui)*xji_00)
+             - vderiv_(0,2)*(derxjm_002(ui)*xji_12 + derxjm_122(ui)*xji_00)
+             - vderiv_(1,0)*(xji_00*derxjm_002(ui) + xji_00*derxjm_002(ui) + 2*xji_10*derxjm_102(ui) + 2*xji_10*derxjm_102(ui))
+             - vderiv_(1,1)*(xji_01*derxjm_002(ui) + xji_00*derxjm_012(ui) + 2*xji_11*derxjm_102(ui) + 2*xji_10*derxjm_112(ui))
+             - vderiv_(1,2)*(xji_02*derxjm_002(ui) + xji_00*derxjm_022(ui) + 2*xji_12*derxjm_102(ui) + 2*xji_10*derxjm_122(ui))
+             - vderiv_(2,0)*(derxjm_102(ui)*xji_20)
+             - vderiv_(2,1)*(derxjm_112(ui)*xji_20)
+             - vderiv_(2,2)*(derxjm_122(ui)*xji_20);
+        v1 = - vderiv_(0,0)*(derxjm_012(ui)*xji_10 + derxjm_102(ui)*xji_01)
+             - vderiv_(0,1)*(derxjm_012(ui)*xji_11 + derxjm_112(ui)*xji_01)
+             - vderiv_(0,2)*(derxjm_012(ui)*xji_12 + derxjm_122(ui)*xji_01)
+             - vderiv_(1,0)*(xji_00*derxjm_012(ui) + xji_01*derxjm_002(ui) + 2*xji_10*derxjm_112(ui) + 2*xji_11*derxjm_102(ui))
+             - vderiv_(1,1)*(xji_01*derxjm_012(ui) + xji_01*derxjm_012(ui) + 2*xji_11*derxjm_112(ui) + 2*xji_11*derxjm_112(ui))
+             - vderiv_(1,2)*(xji_02*derxjm_012(ui) + xji_01*derxjm_022(ui) + 2*xji_12*derxjm_112(ui) + 2*xji_11*derxjm_122(ui))
+             - vderiv_(2,0)*(derxjm_102(ui)*xji_21)
+             - vderiv_(2,1)*(derxjm_112(ui)*xji_21)
+             - vderiv_(2,2)*(derxjm_122(ui)*xji_21);
+        v2 = - vderiv_(0,0)*(derxjm_022(ui)*xji_10 + derxjm_102(ui)*xji_02)
+             - vderiv_(0,1)*(derxjm_022(ui)*xji_11 + derxjm_112(ui)*xji_02)
+             - vderiv_(0,2)*(derxjm_022(ui)*xji_12 + derxjm_122(ui)*xji_02)
+             - vderiv_(1,0)*(xji_00*derxjm_022(ui) + xji_02*derxjm_002(ui) + 2*xji_10*derxjm_122(ui) + 2*xji_12*derxjm_102(ui))
+             - vderiv_(1,1)*(xji_01*derxjm_022(ui) + xji_02*derxjm_012(ui) + 2*xji_11*derxjm_122(ui) + 2*xji_12*derxjm_112(ui))
+             - vderiv_(1,2)*(xji_02*derxjm_022(ui) + xji_02*derxjm_022(ui) + 2*xji_12*derxjm_122(ui) + 2*xji_12*derxjm_122(ui))
+             - vderiv_(2,0)*(derxjm_102(ui)*xji_22)
+             - vderiv_(2,1)*(derxjm_112(ui)*xji_22)
+             - vderiv_(2,2)*(derxjm_122(ui)*xji_22);
+
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          emesh(vi*4 + 1, ui*4 + 2) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(derxjm_200(ui)*xji_00)
+             - vderiv_(0,1)*(derxjm_210(ui)*xji_00)
+             - vderiv_(0,2)*(derxjm_220(ui)*xji_00)
+             - vderiv_(1,0)*(derxjm_200(ui)*xji_10 + derxjm_100(ui)*xji_20)
+             - vderiv_(1,1)*(derxjm_210(ui)*xji_10 + derxjm_100(ui)*xji_21)
+             - vderiv_(1,2)*(derxjm_220(ui)*xji_10 + derxjm_100(ui)*xji_22)
+             - vderiv_(2,0)*(xji_10*derxjm_100(ui) + xji_10*derxjm_100(ui) + 2*xji_20*derxjm_200(ui) + 2*xji_20*derxjm_200(ui))
+             - vderiv_(2,1)*(xji_11*derxjm_100(ui) + xji_10*derxjm_110(ui) + 2*xji_21*derxjm_200(ui) + 2*xji_20*derxjm_210(ui))
+             - vderiv_(2,2)*(xji_12*derxjm_100(ui) + xji_10*derxjm_120(ui) + 2*xji_22*derxjm_200(ui) + 2*xji_20*derxjm_220(ui));
+        v1 = - vderiv_(0,0)*(derxjm_200(ui)*xji_01)
+             - vderiv_(0,1)*(derxjm_210(ui)*xji_01)
+             - vderiv_(0,2)*(derxjm_220(ui)*xji_01)
+             - vderiv_(1,0)*(derxjm_200(ui)*xji_11 + derxjm_110(ui)*xji_20)
+             - vderiv_(1,1)*(derxjm_210(ui)*xji_11 + derxjm_110(ui)*xji_21)
+             - vderiv_(1,2)*(derxjm_220(ui)*xji_11 + derxjm_110(ui)*xji_22)
+             - vderiv_(2,0)*(xji_10*derxjm_110(ui) + xji_11*derxjm_100(ui) + 2*xji_20*derxjm_210(ui) + 2*xji_21*derxjm_200(ui))
+             - vderiv_(2,1)*(xji_11*derxjm_110(ui) + xji_11*derxjm_110(ui) + 2*xji_21*derxjm_210(ui) + 2*xji_21*derxjm_210(ui))
+             - vderiv_(2,2)*(xji_12*derxjm_110(ui) + xji_11*derxjm_120(ui) + 2*xji_22*derxjm_210(ui) + 2*xji_21*derxjm_220(ui));
+        v2 = - vderiv_(0,0)*(derxjm_200(ui)*xji_02)
+             - vderiv_(0,1)*(derxjm_210(ui)*xji_02)
+             - vderiv_(0,2)*(derxjm_220(ui)*xji_02)
+             - vderiv_(1,0)*(derxjm_200(ui)*xji_12 + derxjm_120(ui)*xji_20)
+             - vderiv_(1,1)*(derxjm_210(ui)*xji_12 + derxjm_120(ui)*xji_21)
+             - vderiv_(1,2)*(derxjm_220(ui)*xji_12 + derxjm_120(ui)*xji_22)
+             - vderiv_(2,0)*(xji_10*derxjm_120(ui) + xji_12*derxjm_100(ui) + 2*xji_20*derxjm_220(ui) + 2*xji_22*derxjm_200(ui))
+             - vderiv_(2,1)*(xji_11*derxjm_120(ui) + xji_12*derxjm_110(ui) + 2*xji_21*derxjm_220(ui) + 2*xji_22*derxjm_210(ui))
+             - vderiv_(2,2)*(xji_12*derxjm_120(ui) + xji_12*derxjm_120(ui) + 2*xji_22*derxjm_220(ui) + 2*xji_22*derxjm_220(ui));
+
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          emesh(vi*4 + 2, ui*4 + 0) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(derxjm_201(ui)*xji_00 + derxjm_001(ui)*xji_20)
+             - vderiv_(0,1)*(derxjm_211(ui)*xji_00 + derxjm_001(ui)*xji_21)
+             - vderiv_(0,2)*(derxjm_221(ui)*xji_00 + derxjm_001(ui)*xji_22)
+             - vderiv_(1,0)*(derxjm_201(ui)*xji_10)
+             - vderiv_(1,1)*(derxjm_211(ui)*xji_10)
+             - vderiv_(1,2)*(derxjm_221(ui)*xji_10)
+             - vderiv_(2,0)*(xji_00*derxjm_001(ui) + xji_00*derxjm_001(ui) + 2*xji_20*derxjm_201(ui) + 2*xji_20*derxjm_201(ui))
+             - vderiv_(2,1)*(xji_01*derxjm_001(ui) + xji_00*derxjm_011(ui) + 2*xji_21*derxjm_201(ui) + 2*xji_20*derxjm_211(ui))
+             - vderiv_(2,2)*(xji_02*derxjm_001(ui) + xji_00*derxjm_021(ui) + 2*xji_22*derxjm_201(ui) + 2*xji_20*derxjm_221(ui));
+        v1 = - vderiv_(0,0)*(derxjm_201(ui)*xji_01 + derxjm_011(ui)*xji_20)
+             - vderiv_(0,1)*(derxjm_211(ui)*xji_01 + derxjm_011(ui)*xji_21)
+             - vderiv_(0,2)*(derxjm_221(ui)*xji_01 + derxjm_011(ui)*xji_22)
+             - vderiv_(1,0)*(derxjm_201(ui)*xji_11)
+             - vderiv_(1,1)*(derxjm_211(ui)*xji_11)
+             - vderiv_(1,2)*(derxjm_221(ui)*xji_11)
+             - vderiv_(2,0)*(xji_00*derxjm_011(ui) + xji_01*derxjm_001(ui) + 2*xji_20*derxjm_211(ui) + 2*xji_21*derxjm_201(ui))
+             - vderiv_(2,1)*(xji_01*derxjm_011(ui) + xji_01*derxjm_011(ui) + 2*xji_21*derxjm_211(ui) + 2*xji_21*derxjm_211(ui))
+             - vderiv_(2,2)*(xji_02*derxjm_011(ui) + xji_01*derxjm_021(ui) + 2*xji_22*derxjm_211(ui) + 2*xji_21*derxjm_221(ui));
+        v2 = - vderiv_(0,0)*(derxjm_201(ui)*xji_02 + derxjm_021(ui)*xji_20)
+             - vderiv_(0,1)*(derxjm_211(ui)*xji_02 + derxjm_021(ui)*xji_21)
+             - vderiv_(0,2)*(derxjm_221(ui)*xji_02 + derxjm_021(ui)*xji_22)
+             - vderiv_(1,0)*(derxjm_201(ui)*xji_12)
+             - vderiv_(1,1)*(derxjm_211(ui)*xji_12)
+             - vderiv_(1,2)*(derxjm_221(ui)*xji_12)
+             - vderiv_(2,0)*(xji_00*derxjm_021(ui) + xji_02*derxjm_001(ui) + 2*xji_20*derxjm_221(ui) + 2*xji_22*derxjm_201(ui))
+             - vderiv_(2,1)*(xji_01*derxjm_021(ui) + xji_02*derxjm_011(ui) + 2*xji_21*derxjm_221(ui) + 2*xji_22*derxjm_211(ui))
+             - vderiv_(2,2)*(xji_02*derxjm_021(ui) + xji_02*derxjm_021(ui) + 2*xji_22*derxjm_221(ui) + 2*xji_22*derxjm_221(ui));
+
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          emesh(vi*4 + 2, ui*4 + 1) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+        v0 = - vderiv_(0,0)*(derxjm_002(ui)*xji_20)
+             - vderiv_(0,1)*(derxjm_002(ui)*xji_21)
+             - vderiv_(0,2)*(derxjm_002(ui)*xji_22)
+             - vderiv_(1,0)*(derxjm_102(ui)*xji_20)
+             - vderiv_(1,1)*(derxjm_102(ui)*xji_21)
+             - vderiv_(1,2)*(derxjm_102(ui)*xji_22)
+             - vderiv_(2,0)*(xji_00*derxjm_002(ui) + xji_00*derxjm_002(ui) + xji_10*derxjm_102(ui) + xji_10*derxjm_102(ui))
+             - vderiv_(2,1)*(xji_01*derxjm_002(ui) + xji_00*derxjm_012(ui) + xji_11*derxjm_102(ui) + xji_10*derxjm_112(ui))
+             - vderiv_(2,2)*(xji_02*derxjm_002(ui) + xji_00*derxjm_022(ui) + xji_12*derxjm_102(ui) + xji_10*derxjm_122(ui));
+        v1 = - vderiv_(0,0)*(derxjm_012(ui)*xji_20)
+             - vderiv_(0,1)*(derxjm_012(ui)*xji_21)
+             - vderiv_(0,2)*(derxjm_012(ui)*xji_22)
+             - vderiv_(1,0)*(derxjm_112(ui)*xji_20)
+             - vderiv_(1,1)*(derxjm_112(ui)*xji_21)
+             - vderiv_(1,2)*(derxjm_112(ui)*xji_22)
+             - vderiv_(2,0)*(xji_00*derxjm_012(ui) + xji_01*derxjm_002(ui) + xji_10*derxjm_112(ui) + xji_11*derxjm_102(ui))
+             - vderiv_(2,1)*(xji_01*derxjm_012(ui) + xji_01*derxjm_012(ui) + xji_11*derxjm_112(ui) + xji_11*derxjm_112(ui))
+             - vderiv_(2,2)*(xji_02*derxjm_012(ui) + xji_01*derxjm_022(ui) + xji_12*derxjm_112(ui) + xji_11*derxjm_122(ui));
+        v2 = - vderiv_(0,0)*(derxjm_022(ui)*xji_20)
+             - vderiv_(0,1)*(derxjm_022(ui)*xji_21)
+             - vderiv_(0,2)*(derxjm_022(ui)*xji_22)
+             - vderiv_(1,0)*(derxjm_122(ui)*xji_20)
+             - vderiv_(1,1)*(derxjm_122(ui)*xji_21)
+             - vderiv_(1,2)*(derxjm_122(ui)*xji_22)
+             - vderiv_(2,0)*(xji_00*derxjm_022(ui) + xji_02*derxjm_002(ui) + xji_10*derxjm_122(ui) + xji_12*derxjm_102(ui))
+             - vderiv_(2,1)*(xji_01*derxjm_022(ui) + xji_02*derxjm_012(ui) + xji_11*derxjm_122(ui) + xji_12*derxjm_112(ui))
+             - vderiv_(2,2)*(xji_02*derxjm_022(ui) + xji_02*derxjm_022(ui) + xji_12*derxjm_122(ui) + xji_12*derxjm_122(ui));
+
+        for (int vi=0; vi<numnode; ++vi)
+        {
+          emesh(vi*4 + 2, ui*4 + 2) += v*(deriv_(0,vi)*v0 + deriv_(1,vi)*v1 + deriv_(2,vi)*v2);
         }
       }
 
