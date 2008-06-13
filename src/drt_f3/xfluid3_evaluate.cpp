@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 //#include "xfluid3_sysmat2.H"
 //#include "xfluid3_sysmat3.H"
 #include "xfluid3_sysmat4.H"
+//#include "xfluid3_sysmat5.H"
 #include "xfluid3_interpolation.H"
 
 #include "../drt_lib/drt_discret.H"
@@ -34,7 +35,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management.H"
 
 #include <blitz/array.h>
-#include <Epetra_SerialDenseSolver.h>
 
 
 // converts a string into an Action for this element
@@ -362,6 +362,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       {
           // get access to global dofman
           const RCP<XFEM::DofManager> globaldofman = params.get< RCP< XFEM::DofManager > >("dofmanager",null);
+          if (globaldofman == null)
+            dserror("nope, I need a DofManager!");
           
           // create local copy of information about dofs
           const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(this->Shape()));
