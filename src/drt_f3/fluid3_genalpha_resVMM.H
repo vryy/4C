@@ -20,6 +20,8 @@ Maintainer: Peter Gamnitzer
 #define FLUID3_GENALPHA_H
 
 #include "fluid3.H"
+#include "fluid3_nurbs.H"
+#include "../drt_lib/drt_utils_nurbs_shapefunctions.H" 
 #include <blitz/array.h>
 
 #ifdef PERF
@@ -214,6 +216,7 @@ namespace DRT
 
       */
       void Sysmat(Fluid3*                                               ele,
+                  std::vector<blitz::Array<double,1> >&                 myknots,
                   Epetra_SerialDenseMatrix&                             elemat,
                   Epetra_SerialDenseVector&                             elevec,
                   const blitz::Array<double,2>&                         edispnp,
@@ -332,6 +335,8 @@ namespace DRT
       // ------------
       //! node coordinates
       blitz::Array<double,2> xyze_;
+      //! weights for nurbs elements
+      blitz::Array<double,1> weights_;
       //! value of body force in the nodes of the element
       blitz::Array<double,2> edeadaf_;
 

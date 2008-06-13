@@ -134,6 +134,7 @@ using namespace std;
 #define ParObject_ControlPoint          (int)109
 #define ParObject_Fluid2Nurbs           (int)110
 #define ParObject_ContChainNetw         (int)111
+#define ParObject_Fluid3Nurbs           (int)112
 
 namespace DRT
 {

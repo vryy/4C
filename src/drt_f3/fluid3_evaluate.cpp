@@ -25,6 +25,7 @@ Maintainer: Georg Bauer
 #include "fluid3_stationary.H"
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_nurbs_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
@@ -1410,9 +1411,27 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 #ifdef PERF
         RefCountPtr<TimeMonitor> timeelesysmat_ref = rcp(new TimeMonitor(*timeelesysmat));
 #endif
+
+
+	// --------------------------------------------------
+	// Now do the nurbs specific stuff
+	std::vector<blitz::Array<double,1> > myknots(3);
+	
+	// for isogeometric elements
+	if(this->Shape()==nurbs8 || this->Shape()==nurbs27)
+	{
+	  DRT::NURBS::NurbsDiscretization* nurbsdis
+            =
+	    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+	  
+	  (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+	}
+
         // --------------------------------------------------
         // calculate element coefficient matrix
-        DRT::ELEMENTS::Fluid3GenalphaResVMM::Impl(this)->Sysmat(this,
+        DRT::ELEMENTS::Fluid3GenalphaResVMM::Impl(this)->Sysmat(
+	                         this,
+				 myknots,
                                  elemat1,
                                  elevec1,
                                  edispnp,

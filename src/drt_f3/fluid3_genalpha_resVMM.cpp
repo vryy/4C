@@ -105,6 +105,7 @@ DRT::ELEMENTS::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
 //-----------------------+------------+------------------------------------
 //                  dim  | derivative | node
     xyze_         (  3   ,              iel_,blitz::ColumnMajorArray<2>()),
+    weights_      (                     iel_                             ),
     edeadaf_      (  3   ,              iel_,blitz::ColumnMajorArray<2>()),
 //-----------------------+------------+------------------------------------
 // gausspoint data
@@ -159,6 +160,7 @@ DRT::ELEMENTS::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
   *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   Fluid3*                                               ele,
+  std::vector<blitz::Array<double,1> >&                 myknots,
   Epetra_SerialDenseMatrix&                             elemat,
   Epetra_SerialDenseVector&                             elevec,
   const blitz::Array<double,2>&                         edispnp,
@@ -278,6 +280,19 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     }
   }
 
+  // get node weights for nurbs elements
+  if(distype==DRT::Element::nurbs8 || distype==DRT::Element::nurbs27)
+  {
+    for (int inode=0; inode<iel_; inode++)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+      
+      weights_(inode) = cp->W();
+    }
+  }
+
   // dead load in element nodes
   GetNodalBodyForce(ele,timealphaF);
 
@@ -313,6 +328,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       case DRT::Element::hex8:
       case DRT::Element::hex20:
       case DRT::Element::hex27:
+      case DRT::Element::nurbs8:
+      case DRT::Element::nurbs27:
         integrationrule_stabili = DRT::UTILS::intrule_hex_1point;
         break;
       case DRT::Element::tet4:
@@ -327,13 +344,31 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   const DRT::UTILS::IntegrationPoints3D intpoints_onepoint(integrationrule_stabili);
 
   // shape functions and derivs at element center
-  const double e1    = intpoints_onepoint.qxg[0][0];
-  const double e2    = intpoints_onepoint.qxg[0][1];
-  const double e3    = intpoints_onepoint.qxg[0][2];
   const double wquad = intpoints_onepoint.qwgt[0];
+        
+  blitz::Array<double, 1> gp(3);
+  gp(0)=intpoints_onepoint.qxg[0][0];
+  gp(1)=intpoints_onepoint.qxg[0][1];
+  gp(2)=intpoints_onepoint.qxg[0][2];
 
-  DRT::UTILS::shape_function_3D       (funct_,e1,e2,e3,distype);
-  DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
+
+  if(distype == DRT::Element::nurbs8
+     ||
+     distype == DRT::Element::nurbs27)
+  {
+    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+      (funct_  ,
+       deriv_  ,
+       gp      ,
+       myknots ,
+       weights_,
+       distype );
+  }
+  else
+  {
+    DRT::UTILS::shape_function_3D       (funct_,gp(0),gp(1),gp(2),distype);
+    DRT::UTILS::shape_function_3D_deriv1(deriv_,gp(0),gp(1),gp(2),distype);
+  }
 
   // get element type constant for tau
   double mk=0.0;
@@ -341,10 +376,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   {
       case DRT::Element::tet4:
       case DRT::Element::hex8:
+      case DRT::Element::nurbs8:
         mk = 0.333333333333333333333;
         break;
       case DRT::Element::hex20:
       case DRT::Element::hex27:
+      case DRT::Element::nurbs27:
       case DRT::Element::tet10:
         mk = 0.083333333333333333333;
         break;
@@ -1450,24 +1487,56 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   //------------------------------------------------------------------
   for (int iquad=0;iquad<intpoints.nquad;++iquad)
   {
-
     // set gauss point coordinates
-    const double e1 = intpoints.qxg[iquad][0];
-    const double e2 = intpoints.qxg[iquad][1];
-    const double e3 = intpoints.qxg[iquad][2];
+    blitz::Array<double, 1> gp(3);
+
+    gp(0)=intpoints.qxg[iquad][0];
+    gp(1)=intpoints.qxg[iquad][1];
+    gp(2)=intpoints.qxg[iquad][2];
 
 #ifdef PERF
     RefCountPtr<TimeMonitor> timeelederxy_ref = rcp(new TimeMonitor(*timeelederxy));
 #endif
 
-    // get values of shape functions and derivatives in the gausspoint
-    DRT::UTILS::shape_function_3D(funct_,e1,e2,e3,distype);
-    DRT::UTILS::shape_function_3D_deriv1(deriv_,e1,e2,e3,distype);
-    if (higher_order_ele)
+    if(!(distype == DRT::Element::nurbs8
+          ||
+         distype == DRT::Element::nurbs27))
     {
-      DRT::UTILS::shape_function_3D_deriv2(deriv2_,e1,e2,e3,distype);
-    }
+      // get values of shape functions and derivatives in the gausspoint
+      DRT::UTILS::shape_function_3D(funct_,gp(0),gp(1),gp(2),distype);
+      DRT::UTILS::shape_function_3D_deriv1(deriv_,gp(0),gp(1),gp(2),distype);
 
+      if (higher_order_ele)
+      {
+        // get values of shape functions and derivatives in the gausspoint
+        DRT::UTILS::shape_function_3D_deriv2(deriv2_,gp(0),gp(1),gp(2),distype);
+      }
+    }
+    else
+    {
+      if (higher_order_ele)
+      {
+        DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2
+          (funct_  ,
+           deriv_  ,
+           deriv2_ ,
+           gp      ,
+           myknots ,
+           weights_,
+           distype );
+      }
+      else
+      {
+        DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+          (funct_  ,
+           deriv_  ,
+           gp      ,
+           myknots ,
+           weights_,
+           distype );
+      }
+    }
+    
     // get transposed Jacobian matrix and determinant
     //
     //        +-            -+ T      +-            -+
