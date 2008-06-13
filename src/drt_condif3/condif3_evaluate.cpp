@@ -176,17 +176,12 @@ void DRT::ELEMENTS::Condif3::Condif3SysMat(
   static vector<double>         velint(nsd);
   double                        edeadng;
   double                        hist; /* history data at integration point      */
-  double                        hk;  /* element length for calculation of tau  */
-  double                        vel_norm, epe1, epe2, xi1, xi2;
-  double                        mk=0.0;
   double                        tau; // stabilization parameter
-  double                        kart; // artificial diffusivity
 
   /*----------------------------------------------------------------------*/
   // calculation of stabilization parameter
   /*----------------------------------------------------------------------*/
-
-  //ToDo!
+  Caltau(tau,evel,distype,funct,deriv,xyze,derxy,xjm,velint,diffus,iel,timefac,is_stationary);
   
   /*----------------------------------------------------------------------*/
   // integration loop for one condif3 element
@@ -327,7 +322,7 @@ void DRT::ELEMENTS::Condif3::Condif3SysMat(
     /*-------------- perform integration for entire matrix and rhs ---*/
     if(is_stationary==false)
     {
-      Condif3CalMat(*sys_mat,*sys_mat_sd,*residual,velint,hist,funct,derxy,derxy2,edeadng,tau,kart,fac,diffus,iel,fssgd,timefac);
+      Condif3CalMat(*sys_mat,*residual,velint,hist,funct,derxy,derxy2,edeadng,tau,fac,diffus,iel,timefac);
       cout<<"calmat_instationary"<<endl;
     }
       else
@@ -337,16 +332,6 @@ void DRT::ELEMENTS::Condif3::Condif3SysMat(
       }
 
   } // integration loop
-  
-
-#if 0
-  //debug output
-  //cout<<"diffusivity:"<<diffus<<endl;
-  //cout<<"node coordinates: "<<endl<<xyze<<endl;
-  cout<<"sys_mat:"<<*sys_mat<<endl;
-  cout<<"residual:"<<*residual<<endl;
-  //cout<<"velocity:"<<evel<<endl;
-#endif
 
   return;
 } // DRT::ELEMENTS::Condif3::Condif3SysMat
@@ -442,7 +427,7 @@ const Epetra_SerialDenseVector DRT::ELEMENTS::Condif3::BodyForce(const double ti
    if (myneumcond.size()==1)
    {
     dserror("body force not implemented for condif3 element.");
-    }
+   }
 
   return bodyforce;
 
@@ -538,7 +523,6 @@ for further comments see comment lines within code.
 
 void DRT::ELEMENTS::Condif3::Condif3CalMat(
     Epetra_SerialDenseMatrix& estif,
-    Epetra_SerialDenseMatrix& esd,
     Epetra_SerialDenseVector& eforce,
     vector<double>&           velint,
     const double&             hist,
@@ -547,11 +531,9 @@ void DRT::ELEMENTS::Condif3::Condif3CalMat(
     Epetra_SerialDenseMatrix& derxy2,
     const double&             edeadng,
     const double&             tau,
-    const double&             kart,
     const double&             fac,
     const double&             diffus,
     const int&                iel,
-    string                    fssgd,
     double                    timefac
     )
 {
@@ -574,12 +556,12 @@ rhsint = hist + edeadng*timefac;
 for (int i=0; i<iel; i++) /* loop over nodes of element */
 {
    /* convective part */
-   /* u_x * N,x  +  u_y * N,y          with  N .. form function matrix */
-   conv[i] = velint[0] * derxy(0,i) + velint[1] * derxy(1,i) ;
+   /* u_x * N,x  +  u_y * N,y +  u_z * N,z   with  N .. form function matrix */
+   conv[i] = velint[0] * derxy(0,i) + velint[1] * derxy(1,i) + velint[2] * derxy(2,i);
 
    /* diffusive part */
-   /* diffus * ( N,xx  +  N,yy  ) */
-   diff[i] = diffus * ( derxy2(0,i) + derxy2(1,i) );
+   /* diffus * ( N,xx  +  N,yy +  N,zz ) */
+   diff[i] = diffus * (derxy2(0,i) + derxy2(1,i) + derxy2(2,i));
 
 } // end of loop over nodes of element
 
@@ -592,13 +574,13 @@ for (int vi=0; vi<iel; ++vi)
     {
     /* Standard Galerkin terms: */
     /* transient term */
-    //estif(vi, ui) += fac*funct_(vi)*funct_(ui) ;
+    estif(vi, ui) += fac*funct[vi]*funct[ui] ;
 
     /* convective term */
     estif(vi, ui) += timefacfac*funct[vi]*conv[ui] ;
 
     /* diffusive term */
-    estif(vi, ui) += timefacfac*diffus*(derxy(0, ui)*derxy(0, vi) + derxy(1, ui)*derxy(1, vi)) ;
+    estif(vi, ui) += timefacfac*diffus*(derxy(0, ui)*derxy(0, vi) + derxy(1, ui)*derxy(1, vi) + derxy(2, ui)*derxy(2, vi)) ;
 
     /* Stabilization terms: */
     /* 1) transient stabilization (USFEM assumed here, sign change necessary for GLS) */
@@ -756,7 +738,7 @@ for (int vi=0; vi<iel; ++vi)
     /* diffusive term */
     estif(vi, ui) += fac_diffus*(derxy(0, ui)*derxy(0, vi) + derxy(1, ui)*derxy(1, vi)+ derxy(2, ui)*derxy(2, vi)) ;
 
-    /* Stabilization terms:
+    /* Stabilization terms: */
     /* 1) convective stabilization */
 
     /* convective term */
@@ -1139,6 +1121,235 @@ void DRT::ELEMENTS::Condif3::gder2(
 
   return;
 } //Condif3::gder2
+
+
+//
+// calculate stabilization parameter
+//
+void DRT::ELEMENTS::Condif3::Caltau(
+    double&                                 tau,
+    const Epetra_SerialDenseVector&         evel,
+    const DRT::Element::DiscretizationType& distype,
+    Epetra_SerialDenseVector&               funct,
+    Epetra_SerialDenseMatrix&               deriv,
+    Epetra_SerialDenseMatrix&               xyze,
+    Epetra_SerialDenseMatrix&               derxy,
+    Epetra_SerialDenseMatrix&               xjm,
+    vector<double>&                         velint,
+    const double&                           diffus,
+    const int&                              iel,
+    const double&                           timefac,
+    bool&                                   is_stationary
+  )
+{
+  /*------------------------------------------------------- initialize ---*/
+  // use one point gauss rule to calculate tau at element center
+  GaussRule3D integrationrule_stabili = intrule3D_undefined;
+  switch (distype)
+  {
+  case DRT::Element::hex8:
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+    integrationrule_stabili = DRT::UTILS::intrule_hex_1point;
+    break;
+  case DRT::Element::tet4:
+  case DRT::Element::tet10:
+    integrationrule_stabili = DRT::UTILS::intrule_tet_1point;
+    break;
+  case DRT::Element::wedge6:
+  case DRT::Element::wedge15:
+    integrationrule_stabili = DRT::UTILS::intrule_wedge_1point;
+    break;
+  case DRT::Element::pyramid5:
+    integrationrule_stabili = DRT::UTILS::intrule_pyramid_1point;
+    break;
+  default:
+    dserror("invalid discretization type for fluid3");
+  }
+
+  // gaussian points
+  const IntegrationPoints3D  intpoints_tau = getIntegrationPoints3D(integrationrule_stabili);
+  
+  // shape functions and derivs at element center
+  const double e1    = intpoints_tau.qxg[0][0];
+  const double e2    = intpoints_tau.qxg[0][1];
+  const double e3    = intpoints_tau.qxg[0][2];
+  const double wquad = intpoints_tau.qwgt[0];
+
+  // shape functions and their derivatives
+  DRT::UTILS::shape_function_3D(funct,e1,e2,e3,distype);
+  DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+
+  // get element type constant for tau
+  double mk=0.0;
+  switch (distype)
+  {
+  case DRT::Element::tet4:
+  case DRT::Element::pyramid5:
+  case DRT::Element::hex8:
+  case DRT::Element::wedge6:
+    mk = 0.333333333333333333333;
+    break;
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+  case DRT::Element::tet10:
+  case DRT::Element::wedge15:
+    mk = 0.083333333333333333333;
+    break;
+  default:
+    dserror("type unknown!\n");
+  }
+
+  // get velocities at element center
+  // use same shape functions for velocity as for unknown scalar field phi
+  for (int i=0;i<3;i++)
+  {
+      velint[i]=0.0;
+      for (int j=0;j<iel;j++)
+      {
+          velint[i] += funct[j]*evel[i+(3*j)];
+      }
+  } //end loop over i
+  
+  
+  /*------------------------------ get Jacobian matrix and determinant ---*/
+  /*----------------------------- determine Jacobi Matrix at point r,s ---*/
+  double dum;
+   for (int i=0; i<3; i++)
+   {
+      for (int j=0; j<3; j++)
+      {
+         dum=0.0;
+         for (int l=0; l<iel; l++)
+         {
+            dum += deriv(i,l)*xyze(j,l);
+         }
+         xjm(i,j)=dum;
+      } /* end of loop j */
+   } /* end of loop i */
+   // ------------------------------------- calculate Jacobi determinant
+   const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+                      xjm(0,1)*xjm(1,2)*xjm(2,0)+
+                      xjm(0,2)*xjm(1,0)*xjm(2,1)-
+                      xjm(0,2)*xjm(1,1)*xjm(2,0)-
+                      xjm(0,0)*xjm(1,2)*xjm(2,1)-
+                      xjm(0,1)*xjm(1,0)*xjm(2,2);
+   if (det < 0.0)
+     dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", Id(), det);
+   if (abs(det) < 1E-16)
+     dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", Id(), det);
+   
+   /*------------------------------------------------------------------*/
+   /*                                         compute global derivates */
+   /*------------------------------------------------------------------*/
+    /*------------------------------------------------- initialization */
+   for(int k=0;k<iel;k++)
+    {
+      derxy(0,k)=0.0;
+      derxy(1,k)=0.0;
+      derxy(2,k)=0.0;
+    } /* end of loop over k */
+    
+    // ---------------------------------------inverse of transposed jacobian
+    static Epetra_SerialDenseMatrix       xij(3,3);
+    double idet = 1./det;
+    xij(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))*idet;
+    xij(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))*idet;
+    xij(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))*idet;
+    xij(0,1) = (- xjm(0,1)*xjm(2,2) + xjm(2,1)*xjm(0,2))*idet;
+    xij(1,1) = (  xjm(0,0)*xjm(2,2) - xjm(2,0)*xjm(0,2))*idet;
+    xij(2,1) = (- xjm(0,0)*xjm(2,1) + xjm(2,0)*xjm(0,1))*idet;
+    xij(0,2) = (  xjm(0,1)*xjm(1,2) - xjm(1,1)*xjm(0,2))*idet;
+    xij(1,2) = (- xjm(0,0)*xjm(1,2) + xjm(1,0)*xjm(0,2))*idet;
+    xij(2,2) = (  xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1))*idet;
+    /*---------------------------------------- calculate global derivatives */
+    for (int k=0;k<iel;k++)
+    {
+      derxy(0,k) +=   xij(0,0) * deriv(0,k) + xij(0,1) * deriv(1,k) + xij(0,2) * deriv(2,k);
+      derxy(1,k) +=   xij(1,0) * deriv(0,k) + xij(1,1) * deriv(1,k) + xij(1,2) * deriv(2,k);
+      derxy(2,k) +=   xij(2,0) * deriv(0,k) + xij(2,1) * deriv(1,k) + xij(2,2) * deriv(2,k);
+    } /* end of loop over k */
+
+   const double vol = wquad*det;
+   /*----------------------------------------------- get vel_norm ---*/
+   const double vel_norm = sqrt(DSQR(velint[0]) + DSQR(velint[1]) + DSQR(velint[2]));
+
+
+   // there exist different definitions for 'the' characteristic element length hk:
+   // 1)
+   // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
+   //const double hk = pow((6.*vol/PI),(1.0/3.0))/sqrt(3.0);
+   // 2)
+   // streamlength
+   // normed velocity at element centre
+   vector<double> velino(3);
+   if (vel_norm>=1e-6)
+   {
+     velino[0] = velint[0]/vel_norm;
+     velino[1] = velint[1]/vel_norm;
+     velino[2] = velint[2]/vel_norm;
+   }
+   else
+   {
+     velino[0] = 1.0;
+     velino[1] = 0.0;
+     velino[2] = 0.0;
+   }
+   // get streamlength
+   double val = 0;
+   for (int i=0;i<iel;++i)
+   {
+     double sum = 0;
+     for (int j=0;j<3;++j)
+     {
+       sum += velino[j]*derxy(j,i);
+     }
+     val+= abs(sum);
+   }
+   const double strle = 2.0/val; 
+   cout<<"warning: is strlen correct?"<<endl;
+   //const double hk = strle;
+   
+   // 3) use cubic root of the element volume as characteristic length
+   const double hk = pow(vol,(1.0/3.0));
+
+   double epe1, xi1, xi2;
+
+   if (is_stationary == false)
+   {// stabilization parameters for instationary case (default)
+     dserror("condif3 - instationary formulation not yet verified.");
+     /* parameter relating diffusive : reactive forces */
+     epe1 = 2.0 * timefac * diffus / (mk * DSQR(hk));
+     /* parameter relating convective : diffusive forces */
+     const double epe2 = mk * vel_norm * hk / diffus;
+     xi1 = DMAX(epe1,1.0);
+     xi2 = DMAX(epe2,1.0);
+
+     /*--------------------------------------------------- compute tau ---*/
+     tau = DSQR(hk)/((DSQR(hk)*xi1)/timefac + (2.0*diffus/mk)*xi2);
+
+   }
+   else
+   {// stabilization parameters for stationary case
+
+     /*------------------------------------------------------ compute tau ---*/
+     /* stability parameter definition according to Franca and Valentin (2000) */
+     epe1 = mk * vel_norm * hk / diffus;      /* convective : diffusive forces */
+     xi1 = DMAX(epe1,1.0);
+
+     tau = (DSQR(hk)*mk)/(2.0*diffus*xi1);
+
+   }
+
+#if 0
+   cout<<"hk (volume equiv diam)            = "<<pow((6.*vol/PI),(1.0/3.0))/sqrt(3.0)<<endl;
+   cout<<"strle                             = "<<strle<<endl;
+   cout<<"hk (cubic root of element volume) = "<<pow(vol,(1.0/3.0))<<endl;
+   cout<<"tau = "<<tau<<endl;
+#endif
+
+  return;
+} //Condif3::Caltau
 
 //=======================================================================
 //=======================================================================

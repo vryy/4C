@@ -194,7 +194,7 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Condif3::Surfaces()
   // stored node ids and node pointers owned by these boundary elements might
   // have become illegal and you will get a nice segmentation fault ;-)
 
-  // so we have to allocate new line elements:
+  // so we have to allocate new surface elements:
   return DRT::UTILS::ElementBoundaryFactory<Condif3Surface,Condif3>(DRT::UTILS::buildSurfaces,this);
 }
 

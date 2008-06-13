@@ -378,19 +378,38 @@ private:
    * \brief compute second global derivatives
    */
   void gder2(const Epetra_SerialDenseMatrix& xyze,
-      const Epetra_SerialDenseMatrix& xjm_,
-      const Epetra_SerialDenseMatrix& derxy,
-      Epetra_SerialDenseMatrix& derxy2_,
-      const Epetra_SerialDenseMatrix& deriv2,
-      const int iel
+      const Epetra_SerialDenseMatrix&        xjm_,
+      const Epetra_SerialDenseMatrix&        derxy,
+      Epetra_SerialDenseMatrix&              derxy2_,
+      const Epetra_SerialDenseMatrix&        deriv2,
+      const int                              iel
       );
-  
+
+
+  /*!
+   * \brief calculate stabilization parameter
+   */
+  void Caltau(
+      double&                                 tau,
+      const Epetra_SerialDenseVector&         evel,
+      const DRT::Element::DiscretizationType& distype,
+      Epetra_SerialDenseVector&               funct,
+      Epetra_SerialDenseMatrix&               deriv,
+      Epetra_SerialDenseMatrix&               xyze,
+      Epetra_SerialDenseMatrix&               derxy,
+      Epetra_SerialDenseMatrix&               xjm,
+      vector<double>&                         velint,
+      const double&                           diffus,
+      const int&                              iel,
+      const double&                           timefac,
+      bool&                                   is_stationary
+  );
+
   /*!
    * \brief calculate matrix entries for actual Gauss point
    */
   void Condif3CalMat(
       Epetra_SerialDenseMatrix& estif,
-      Epetra_SerialDenseMatrix& esd,
       Epetra_SerialDenseVector& eforce,
       vector<double>&           velint,
       const double&             hist,
@@ -399,11 +418,9 @@ private:
       Epetra_SerialDenseMatrix& derxy2,
       const double&             edeadng,
       const double&             tau,
-      const double&             kart,
       const double&             fac,
       const double&             diffus,
       const int&                iel,
-      string                    fssgd,
       double                    timefac
       );
   
