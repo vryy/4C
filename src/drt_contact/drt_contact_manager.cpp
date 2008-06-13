@@ -946,11 +946,37 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
 #endif // #ifdef CONTACTDIMOUTPUT
   
   /**********************************************************************/
-  /* Isolate active part from invd                             */
+  /* Isolate active part from invd and dold                             */
   /**********************************************************************/
   RCP<LINALG::SparseMatrix> invda;
   LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
     
+  RCP<LINALG::SparseMatrix> dolda, doldi;
+  LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
+    
+  /**********************************************************************/
+  /* Gen-alpha modifications                                            */
+  /**********************************************************************/
+  // fi: subtract alphaf * old contact forces (t_n)
+  if (gidofs->NumGlobalElements())
+  {
+    RCP<Epetra_Vector> modi = rcp(new Epetra_Vector(*gidofs));
+    LINALG::Export(*zold_,*modi);
+    RCP<Epetra_Vector> tempveci = rcp(new Epetra_Vector(*gidofs));
+    doldi->Multiply(false,*modi,*tempveci);
+    fimod->Update(-alphaf_,*tempveci,1.0);
+  }
+   
+  // fa: subtract alphaf * old contact forces (t_n)
+  if (gactivedofs_->NumGlobalElements())
+  {
+    RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gactivedofs_));
+    LINALG::Export(*zold_,*mod);
+    RCP<Epetra_Vector> tempvec = rcp(new Epetra_Vector(*gactivedofs_));
+    dolda->Multiply(false,*mod,*tempvec);
+    famod->Update(-alphaf_,*tempvec,1.0);
+  }
+     
   // do the multiplications with t matrix
   RCP<LINALG::SparseMatrix> tkanmod, tkammod, tkaimod, tkaamod, tlmatrix;
   RCP<Epetra_Vector> tfamod;
@@ -1438,6 +1464,36 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   }
 #endif // #ifdef CONTACTDIMOUTPUT
   
+  /**********************************************************************/
+  /* Isolate active / inactive part from dold                           */
+  /**********************************************************************/
+  
+  RCP<LINALG::SparseMatrix> dolda, doldi;
+  LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
+  
+  /**********************************************************************/
+  /* Gen-alpha modifications                                            */
+  /**********************************************************************/
+  // fi: subtract alphaf * old contact forces (t_n)
+  if (gidofs->NumGlobalElements())
+  {
+    RCP<Epetra_Vector> modi = rcp(new Epetra_Vector(*gidofs));
+    LINALG::Export(*zold_,*modi);
+    RCP<Epetra_Vector> tempveci = rcp(new Epetra_Vector(*gidofs));
+    doldi->Multiply(false,*modi,*tempveci);
+    fimod->Update(-alphaf_,*tempveci,1.0);
+  }
+   
+  // fa: subtract alphaf * old contact forces (t_n)
+  if (gactivedofs_->NumGlobalElements())
+  {
+    RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*gactivedofs_));
+    LINALG::Export(*zold_,*mod);
+    RCP<Epetra_Vector> tempvec = rcp(new Epetra_Vector(*gactivedofs_));
+    dolda->Multiply(false,*mod,*tempvec);
+    famod->Update(-alphaf_,*tempvec,1.0);
+  }
+   
   // do the multiplications with t matrix
   RCP<LINALG::SparseMatrix> tkanmod, tkammod, tkaimod, tkaamod;
   RCP<Epetra_Vector> tfamod;
@@ -2189,8 +2245,11 @@ void CONTACT::Manager::RecoverBasisTrafo(RCP<Epetra_Vector> disi)
   LINALG::Export(*disi,*innerdisp);
   ksn_->Multiply(false,*innerdisp,*mod2);
   z_->Update(-1.0,*mod2,1.0);
+  dold_->Multiply(false,*zold_,*mod);
+  z_->Update(-alphaf_,*mod,1.0);
   RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
   invd_->Multiply(false,*zcopy,*z_);
+  z_->Scale(1/(1-alphaf_));
   
   // store updated LM into nodes
   StoreNodalLM("current");
