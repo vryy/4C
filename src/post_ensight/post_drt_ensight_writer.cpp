@@ -2016,7 +2016,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
       {
 
 	// number of visualisation points in u direction
-	int nvpu=(nurbsdis->Return_nele_x_mele_x_lele())[0]+1;
+	int nvpu=2*(nurbsdis->Return_nele_x_mele_x_lele())[0]+1;
 
 	{
 	  // standard
