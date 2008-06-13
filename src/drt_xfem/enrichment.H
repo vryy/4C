@@ -16,7 +16,7 @@
 
 #include <blitz/array.h>
 #include "Teuchos_RefCountPtr.hpp"
-#include "../drt_lib/drt_discret.H"
+//#include "../drt_lib/drt_discret.H"
 #include "xfem.H"
 #include "interface.H"
 

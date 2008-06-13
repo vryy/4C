@@ -80,11 +80,8 @@ double XFEM::Enrichment::EnrValue(
             }
             case approachUnknown:
             {
-                map<int,bool> posInCondition;
-                const int xfemcondition_label = this->XFEMConditionLabel();
-                PositionWithinCondition(actpos,ih,posInCondition);
                 double actpos_enr_val = 0.0;
-                if (posInCondition.find(xfemcondition_label)->second) {
+                if (PositionWithinCondition(actpos,ih) == this->XFEMConditionLabel()) {
                     actpos_enr_val = 0.0;
                 } else {
                     actpos_enr_val = 1.0;
@@ -112,11 +109,8 @@ double XFEM::Enrichment::EnrValue(
             }
             case approachUnknown:
             {
-                map<int,bool> posInCondition;
-                const int xfemcondition_label = this->XFEMConditionLabel();
-                PositionWithinCondition(actpos,ih,posInCondition);
                 double actpos_enr_val = 0.0;
-                if (posInCondition.find(xfemcondition_label)->second) {
+                if (PositionWithinCondition(actpos,ih) == this->XFEMConditionLabel()) {
                     actpos_enr_val = -1.0;
                 } else {
                     actpos_enr_val = 1.0;
@@ -149,7 +143,6 @@ double XFEM::Enrichment::ModifiedEnrValue(
     dserror("needs update for the approach variable");
     // return value
     double enrval = 1.0;
-    map<int,bool> posInCondition;
     
     switch (Type()){
     case XFEM::Enrichment::typeStandard:
@@ -159,19 +152,15 @@ double XFEM::Enrichment::ModifiedEnrValue(
     }
     case XFEM::Enrichment::typeVoid:
     {
-        const int xfemcondition_label = this->XFEMConditionLabel();
-        
-        PositionWithinCondition(actpos,ih,posInCondition);
         double actpos_enr_val = 0.0;
-        if (posInCondition.find(xfemcondition_label)->second) {
+        if (PositionWithinCondition(actpos,ih) == this->XFEMConditionLabel()) {
             actpos_enr_val = 0.0;
         } else {
             actpos_enr_val = 1.0;
         }
         
-        PositionWithinCondition(nodalpos,ih,posInCondition);
         double nodepos_enr_val = 0.0;
-        if (posInCondition.find(xfemcondition_label)->second) {
+        if (PositionWithinCondition(nodalpos,ih) == this->XFEMConditionLabel()) {
             nodepos_enr_val = 0.0;
         } else {
             nodepos_enr_val = 1.0;
@@ -183,19 +172,15 @@ double XFEM::Enrichment::ModifiedEnrValue(
     }
     case XFEM::Enrichment::typeJump:
     {
-        const int xfemcondition_label = this->XFEMConditionLabel();
-        
-        PositionWithinCondition(actpos,ih,posInCondition);
         double actpos_enr_val = 0.0;
-        if (posInCondition.find(xfemcondition_label)->second) {
+        if (PositionWithinCondition(actpos,ih) == this->XFEMConditionLabel()) {
             actpos_enr_val = -1.0;
         } else {
             actpos_enr_val = 1.0;
         }
         
-        PositionWithinCondition(nodalpos,ih,posInCondition);
         double nodepos_enr_val = 0.0;
-        if (posInCondition.find(xfemcondition_label)->second) {
+        if (PositionWithinCondition(nodalpos,ih) == this->XFEMConditionLabel()) {
             nodepos_enr_val = -1.0;
         } else {
             nodepos_enr_val = 1.0;

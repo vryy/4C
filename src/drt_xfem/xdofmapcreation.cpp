@@ -120,19 +120,18 @@ void XFEM::createDofMap(
             const int* nodeidptrs = xfemele->NodeIds();
             const BlitzVec3 nodalpos(toBlitzArray(xfemele->Nodes()[0]->X()));
             
-            map<int,bool> posInCondition;
-            PositionWithinCondition(nodalpos, ih, posInCondition);
-            bool in_solid = false;
-            for (map<int,bool>::const_iterator p = posInCondition.begin(); p != posInCondition.end(); ++p)
+            bool in_fluid = false;
+            const int label = PositionWithinCondition(nodalpos, ih);
+            if (label == 0)
             {
-              if (p->second == true)
-              {
-                in_solid = true;
-                break;
-              }
+              in_fluid = true;
             }
-            
-            if (not in_solid)
+            else
+            {
+              in_fluid = false;
+            }
+                        
+            if (in_fluid)
             {
                 for (int inen = 0; inen<xfemele->NumNode(); ++inen)
                 {

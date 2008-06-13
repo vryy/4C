@@ -16,10 +16,8 @@ Maintainer: Ursula Mayer
 #define XFSI_SEARCHTREE_H
 
 #include <list>
-//#include "intersection_service.H"
 #include "geometry_service.H"
 #include "xfem_condition.H"
-#include "../drt_io/io_gmsh.H"
 
 namespace XFEM
 {

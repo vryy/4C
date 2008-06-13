@@ -20,13 +20,15 @@ Maintainer: Axel Gerstenberger
 #include <string>
 
 #include "integrationcell.H"
-#include "../drt_lib/drt_discret.H"
+//#include "../drt_lib/drt_discret.H"
 #include "intersection.H"
 #include "xfsi_searchtree.H"
 
 namespace XFEM
 {
 
+class DRT::Discretization;
+  
 /*!
  \brief It knows everything about the XFEM enrichments for one particular interface setup
 
@@ -132,21 +134,11 @@ private:
 /*!
 \brief checks if a position in current coordinates lies within a certain condition region           
 */  
-void PositionWithinCondition(
+int PositionWithinCondition(
         const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
-        std::map<int,bool>&               posInCondition  ///< fill with bool values
+        const XFEM::InterfaceHandle&      ih              ///< the ubiquitious interface handle with all geometry information
     );
 
-///*!
-//\brief as above, but only for given xfem labels           
-//*/  
-//void PositionWithinGivenCondition(
-//        const BlitzVec3&                  x,              ///< node in physical coordinates
-//        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
-//        const std::set<int>&              xlabelset,      ///< enrichment labels
-//        std::map<int,bool>&               posInCondition  ///< fill with bool values
-//    );
 
 /*!
 \brief checks if a position in current coordinates lies within a certain condition region           
@@ -160,16 +152,14 @@ bool PositionWithinAnyInfluencingCondition(
 /*!
 \brief checks if a position in current coordinates lies within a certain condition region using an octree
 */
-void PositionWithinConditionTree(
+int PositionWithinConditionTree(
         const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
-        std::map<int,bool>&               posInCondition  ///< fill with bool values
+        const XFEM::InterfaceHandle&      ih              ///< the ubiquitious interface handle with all geometry information
     );
 
-void PositionWithinConditionBruteForce(
+int PositionWithinConditionBruteForce(
         const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
-        std::map<int,bool>&               posInCondition  ///< fill with bool values
+        const XFEM::InterfaceHandle&      ih              ///< the ubiquitious interface handle with all geometry information
     );
 
 }

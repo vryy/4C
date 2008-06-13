@@ -136,7 +136,6 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     //f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
     //f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
     {
-      map<int,bool> posInCondition;
       // stringstream for domains
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
@@ -155,28 +154,9 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           BlitzMat cellpos(3,cell->NumNode()); 
           cell->NodalPosXYZ(*actele, cellpos);
           const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
-          //cout << cellcenterpos << endl;
-//          cout << endl << "calling PositionWithinCondition...";
-//          flush(cout);          
-          PositionWithinCondition(cellcenterpos, *this, posInCondition);
-//          cout <<"done"<<endl;
-//          flush(cout);                    
-//          PositionWithinConditionTree(cellcenterpos, *this, posInCondition);
           
-          int domain_id = 0;
-          // loop conditions
-          for (map<int,bool>::const_iterator entry = posInCondition.begin(); entry != posInCondition.end(); ++entry)
-          {
-            const int actdomain_id = entry->first;
-            const bool inside_condition = entry->second;
-            //cout << "Domain: " << actdomain_id << " -> inside? " << inside_condition << endl;
-            if (inside_condition)
-            {
-              //cout << "inside" << endl;
-              domain_id = actdomain_id;
-              break;
-            }
-          }
+          const int domain_id = PositionWithinCondition(cellcenterpos, *this);
+          
           gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), domain_id, cellpos) << endl;
           BlitzMat point(3,1);
           point(0,0)=cellcenterpos(0);
@@ -246,15 +226,14 @@ bool XFEM::InterfaceHandle::ElementIntersected(
 /*----------------------------------------------------------------------*
  |  CLI:    checks if a position is within condition-enclosed region      p.ede 05/08|   
  *----------------------------------------------------------------------*/
-void XFEM::PositionWithinCondition(
+int XFEM::PositionWithinCondition(
     const BlitzVec3&                  x_in,
-    const XFEM::InterfaceHandle&      ih,
-    std::map<int,bool>&               posInCondition
+    const XFEM::InterfaceHandle&      ih
 )
 {
   
   //PositionWithinConditionBruteForce(x_in, ih, posInCondition);
-  PositionWithinConditionTree(x_in, ih, posInCondition);
+  const int label = PositionWithinConditionTree(x_in, ih);
 //  const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
 //  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
 //   {
@@ -274,30 +253,30 @@ void XFEM::PositionWithinCondition(
 #ifdef PARALLEL
   dserror("not implemented, yet");
 #endif
-  return;
+  return label;
 }
 
 /*----------------------------------------------------------------------*
  |  CLI:    checks if a position is within condition-enclosed region      a.ger 12/07|   
  *----------------------------------------------------------------------*/
-void XFEM::PositionWithinConditionBruteForce(
+int XFEM::PositionWithinConditionBruteForce(
     const BlitzVec3&                  x_in,
-    const XFEM::InterfaceHandle&      ih,
-    std::map<int,bool>&               posInCondition
+    const XFEM::InterfaceHandle&      ih
 )
 {
   
   TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinCondition");
   //init
-  posInCondition.clear();
+  std::map<int,bool>  posInCondition; // not really needed, but this method could go away soon, so it won't be cleaned
   const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
   
   /////////////////
   // loop labels
   /////////////////
+  int label = 0;
   for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
-    const int label = conditer->first;
+    label = conditer->first;
     posInCondition[label] = false; 
     
     // point lies opposite to a element (basis point within element parameter space)
@@ -329,6 +308,7 @@ void XFEM::PositionWithinConditionBruteForce(
       if (min_ele_distance < 0.0)
       {
         posInCondition[label] = true;
+        break;
       }
     }
     
@@ -338,36 +318,35 @@ void XFEM::PositionWithinConditionBruteForce(
 #ifdef PARALLEL
   dserror("not implemented, yet");
 #endif
-  return;
+  return label;
 }
 
 /*----------------------------------------------------------------------*
  |  CLI:    checks if a position is within condition-enclosed region      p.ede 05/08|   
  *----------------------------------------------------------------------*/
-void XFEM::PositionWithinConditionTree(
+int XFEM::PositionWithinConditionTree(
     const BlitzVec3&                  x_in,
-    const XFEM::InterfaceHandle&      ih,
-    std::map<int,bool>&               posInCondition
+    const XFEM::InterfaceHandle&      ih
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinConditionTree");
-  posInCondition.clear();
-  const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
-  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
-  {
-    const int label = conditer->first;
-    posInCondition[label] = false;    
-  }
+  //posInCondition.clear();
+  //const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
+//  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+//  {
+//    const int label = conditer->first;
+//    posInCondition[label] = false;    
+//  }
   Teuchos::RCP<XSearchTree> xt = ih.getSearchTree(); // pointer is constant, object is not!
   int l = xt->queryPointType(*ih.cutterdis() , *ih.currentcutterpositions(), x_in);
-  if (l>0)
-    posInCondition[l] = true;
+//  if (l>0)
+//    posInCondition[l] = true;
   
   // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
 #ifdef PARALLEL
   dserror("not implemented, yet");
 #endif
-  return;
+  return l;
 }
 
 
@@ -383,18 +362,18 @@ bool XFEM::PositionWithinAnyInfluencingCondition(
   
   TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinAnyInfluencingCondition");
   
-  std::map<int,bool> posInCondition;
-  PositionWithinCondition(x_in, ih, posInCondition);
-  bool compute = false;
-  for (set<int>::const_iterator xlabel = xlabelset.begin(); xlabel != xlabelset.end(); ++xlabel)
+  if (xlabelset.size() > 1)
   {
-    if (posInCondition.find(*xlabel)->second == false)
-    {
-      compute = true;
-      break;
-    }
+    dserror("this function has to be extended to allow contact problems!");
   }
   
+  const int label = PositionWithinCondition(x_in, ih);
+  bool compute = false;
+  if (xlabelset.find(label) == xlabelset.end())
+  {
+    compute = true;
+  }
+  //compute = true;
   // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
 #ifdef PARALLEL
   dserror("not implemented, yet");

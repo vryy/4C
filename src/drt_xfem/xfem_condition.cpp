@@ -43,6 +43,5 @@ void XFEM::CollectElementsByXFEMCouplingLabel(
     }
   }
 }
-//const XFEM::InterfaceHandle::emptyBoundaryIntCells_ = XFEM::BoundaryIntCells(0);
 
 #endif  // #ifdef CCADISCRET

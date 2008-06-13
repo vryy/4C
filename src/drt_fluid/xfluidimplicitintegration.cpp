@@ -36,6 +36,7 @@ Maintainer: Axel Gerstenberger
 #include "fluid_utils.H"
 #include "../drt_f3/xfluid3_interpolation.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_io/io_gmsh.H"
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

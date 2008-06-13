@@ -13,9 +13,9 @@ Maintainer: Ursula Mayer
 #ifdef CCADISCRET
 #include "xfsi_searchtree.H"
 #include "intersection_service.H"
+#include "../drt_io/io_gmsh.H"
 
 using namespace std;
-using namespace XFEM;
 
 XFEM::XSearchTree::XSearchTree() {
   TreeInit_  = false;
@@ -45,16 +45,15 @@ int XFEM::XSearchTree::queryPointType(const DRT::Discretization& dis,const std::
     return 0;
     }
   // search for candidates in tree
-  list< const DRT::Element* > candidates;
   int labID;
-  candidates = treeRoot_->queryPointType(dis, currentpositions, pointCoords, labID);
+  const list< const DRT::Element* > candidates = treeRoot_->queryPointType(dis, currentpositions, pointCoords, labID);
   if (candidates.empty()){
     return labID;
   }
   // do excat routines
   int within = 0;
   double dist = 0;
-  list< const DRT::Element* >::iterator myIt = candidates.begin();
+  list< const DRT::Element* >::const_iterator myIt = candidates.begin();
   const DRT::Element* closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, candidates, pointCoords,dist);
   if (dist<0){
     within = labelByElement_[closestEle->Id()];
@@ -76,7 +75,7 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   if (treeRoot_ != NULL){
     delete treeRoot_;
   }
-  BlitzMat3x2 aabb =getXAABBofDis(dis, currentpositions);
+  const BlitzMat3x2 aabb =getXAABBofDis(dis, currentpositions);
   treeRoot_ = new TreeNode(0,aabb, this);
   cout << "inserting new elements (" << dis.NumMyRowElements() << ")"<< endl;
   for (int i=0; i<dis.NumMyRowElements(); ++i) {
@@ -86,7 +85,6 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   TreeInit_ = true;
   
   std::map<int,set<int> >   elementsByLabel;
-  cout<<"collectElementsByXFEMCouplingLabels" << endl;
   XFEM::CollectElementsByXFEMCouplingLabel(dis, elementsByLabel);
   labelByElement_.clear();
   for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
