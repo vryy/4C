@@ -42,6 +42,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/hyperpolyconvex_ogden.H"
 #include "../drt_mat/visconeohooke.H"
+#include "../drt_mat/contchainnetw.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -117,6 +118,16 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
         visco->Initialize(NUMGPT_SOH8);
       visco->Evaluate(glstrain,gp,params,cmat,stress);
       *density = visco->Density();
+
+      break;
+    }
+    case m_contchainnetw: /*------------ Continuum Chain Network Material */
+    {
+      MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
+      if (!chain->Initialized())
+        chain->Initialize(NUMGPT_SOH8);
+      chain->Evaluate(glstrain,gp,params,cmat,stress);
+      *density = chain->Density();
 
       break;
     }
