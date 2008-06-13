@@ -187,6 +187,7 @@ protected:
     calc_struct_constrarea,
     calc_init_vol,
     calc_surfstress_stiff,
+    calc_potential_stiff,
     calc_struct_areaconstrstiff,
     calc_struct_monitarea
   };

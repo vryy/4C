@@ -26,6 +26,8 @@ Maintainer: Michael Gee
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/uzawasolver.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
+#include "../drt_surfstress/drt_potential_manager.H"
+
 
 #include "Epetra_Vector.h"
 #include "Epetra_Operator.h"
@@ -443,6 +445,9 @@ protected:
 
   /// surface stresses
   RCP<DRT::SurfStressManager>   surf_stress_man_;
+  
+  /// stresses due to potentials
+  RCP<DRT::PotentialManager>    pot_man_;
 
   // For a relative convergence check, reference norms have to be
   // calculated. We need to know whether we are in the first step

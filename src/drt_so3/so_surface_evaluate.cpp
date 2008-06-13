@@ -22,6 +22,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
+#include "../drt_surfstress/drt_potential_manager.H"
 
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
@@ -240,6 +241,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
   else if (action=="calc_struct_areaconstrstiff") act = StructuralSurface::calc_struct_areaconstrstiff;
   else if (action=="calc_init_vol")               act = StructuralSurface::calc_init_vol;
   else if (action=="calc_surfstress_stiff")       act = StructuralSurface::calc_surfstress_stiff;
+  else if (action=="calc_potential_stiff")       act = StructuralSurface::calc_potential_stiff;
   else dserror("Unknown type of action for StructuralSurface");
   //create communicator
   const Epetra_Comm& Comm = discretization.Comm();
@@ -478,6 +480,60 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
       }
       break;
 
+      // compute additional stresses due to potential forces
+      case calc_potential_stiff:
+      {
+        dserror("not yet fully  implemented");
+        
+        if (distype!=quad4)
+          cout << "Surface Stresses were only tested for quad4 surfaces! Use with caution!" << endl;
+   
+        // element geometry update
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vector 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        const int numnode = NumNode();
+        LINALG::SerialDenseMatrix x(numnode,3);
+        SpatialConfiguration(x,mydisp);
+
+        RefCountPtr<PotentialManager> potentialmanager =
+          params.get<RefCountPtr<PotentialManager> >("pot_man", null);
+
+        if (potentialmanager==null)
+          dserror("No PotentialManager in Solid3 Surface available");
+
+        double time = params.get<double>("total time",-1.0);
+        double dt = params.get<double>("delta time",0.0);
+        RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+        if (cond==null)
+          dserror("Condition not available in Solid3 Surface");
+
+        const DRT::UTILS::IntegrationPoints2D  intpoints =
+          getIntegrationPoints2D(gaussrule_);
+
+        // set up matrices and parameters needed for the evaluation of current
+        // interfacial area
+        //int ngp = intpoints.nquad;                                // number of Gauss points
+        int ndof = 3*numnode;                                     // overall number of surface dofs
+        double A = 0.;                                            // interfacial area
+        
+        if (cond->Type()==DRT::Condition::LJ_Potential) // Lennard-Jones potential
+        {
+          const int curvenum = cond->Getint("curve");
+          const double label = cond->GetDouble("label");
+          const double depth = cond->GetDouble("depth");
+          const double rootDist = cond->GetDouble("rootDist");
+          const double cutOff = cond->GetDouble("cutOff");
+ 
+          potentialmanager->StiffnessAndInternalForces(curvenum, A, elevector1, elematrix1, this->Id(),
+                                                       time, dt, label, depth, rootDist, cutOff);
+        }
+        else
+          dserror("Unknown condition type %d",cond->Type());
+      }
+      break;
+      
       //compute the area (e.g. for initialization)
       case calc_struct_monitarea:
       {

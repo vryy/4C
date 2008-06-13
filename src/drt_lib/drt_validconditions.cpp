@@ -459,15 +459,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   
   Teuchos::RCP<ConditionDefinition> lj_potential =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF LJ_POTENTIAL CONDITIONS",
+                                         "Potential",
                                          "LJ_Potential",
-                                         "Surface Stress (LJ_Potential)",
                                          DRT::Condition::LJ_Potential,
                                          true,
                                          DRT::Condition::Surface));
 
   lj_potential->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
+  AddNamedReal(lj_potential,"label");
   AddNamedReal(lj_potential,"depth");
   AddNamedReal(lj_potential,"rootDist");
+  AddNamedReal(lj_potential,"cutOff");
 
   condlist.push_back(lj_potential);
 

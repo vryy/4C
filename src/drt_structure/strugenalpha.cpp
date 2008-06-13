@@ -195,7 +195,7 @@ fsisurface_(NULL)
   mass_->Complete();
 
   // -------------------------------------------------------------------
-  // do surface stress and constraints manager
+  // do surface stress and constraints manager and stresses due to potentials
   // -------------------------------------------------------------------
     //initialize Constraint Manager and UzawaSolver
     constrMan_=rcp(new ConstrManager(Discretization(), dis_, params_));
@@ -206,6 +206,11 @@ fsisurface_(NULL)
     discret_.GetCondition("SurfaceStress",surfstresscond);
     if (surfstresscond.size())
       surf_stress_man_=rcp(new DRT::SurfStressManager(discret_));
+    // Check for potential conditions 
+    vector<DRT::Condition*> potentialcond(0);
+    discret_.GetCondition("Potential",potentialcond);
+    if (potentialcond.size())
+      pot_man_=rcp(new DRT::PotentialManager(discret_));
 
 
   // build damping matrix if desired
@@ -347,6 +352,12 @@ void StruGenAlpha::ConstantPredictor()
     {
       p.set("surfstr_man", surf_stress_man_);
       surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+    }
+    
+    if (pot_man_!=null)
+    {
+      p.set("pot_man", pot_man_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
     }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
@@ -601,6 +612,12 @@ void StruGenAlpha::ConsistentPredictor()
       surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
     }
 
+    if (pot_man_!=null)
+    {
+      p.set("pot_man", pot_man_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
+    }
+    
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 
@@ -754,6 +771,12 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     {
       p.set("surfstr_man", surf_stress_man_);
       surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+    }
+    
+    if (pot_man_!=null)
+    {
+      p.set("pot_man", pot_man_);
+      pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
     }
 
     // do NOT finalize the stiffness matrix, add mass and damping to it later
@@ -1169,6 +1192,12 @@ void StruGenAlpha::FullNewton()
       {
         p.set("surfstr_man", surf_stress_man_);
         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
+      }
+      
+      if (pot_man_!=null)
+      {
+        p.set("pot_man", pot_man_);
+        pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
       }
 
       if (constrMan_->HaveConstraint())
