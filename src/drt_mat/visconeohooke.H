@@ -26,7 +26,7 @@ using namespace Teuchos;
 namespace MAT
 {
 
-  /// Wrapper for Mooney-Rivlin material
+  /// Wrapper for Visco-NeoHooke material
   class ViscoNeoHooke : public Material
   {
   public:
@@ -53,7 +53,8 @@ namespace MAT
       Resizes the vector data and stores all information of a class in it.
       The first information to be stored in data has to be the
       unique parobject id delivered by UniqueParObjectId() which will then
-      identify the exact class on the receiving processor.
+      identify the exact class on the receiving processor. 
+      This material contains history variables, which are packed for restart purposes.
 
       \param data (in/out): char vector to store class information
     */
@@ -67,6 +68,7 @@ namespace MAT
       The first entry in data has to be an integer which is the unique
       parobject id defined at the top of this file and delivered by
       UniqueParObjectId().
+      History data is unpacked in restart. 
 
       \param data (in) : vector storing all data to be unpacked into this
       instance.
@@ -110,4 +112,4 @@ namespace MAT
 }
 
 #endif /*CCADISCRET*/
-#endif /*MOONEYRIVLIN_H_*/
+#endif /*VISCONEOHOOKE_H_*/
