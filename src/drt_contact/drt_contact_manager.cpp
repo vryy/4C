@@ -950,7 +950,8 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   /**********************************************************************/
   RCP<LINALG::SparseMatrix> invda;
   LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
-    
+  invda->Scale(1/(1-alphaf_));
+  
   RCP<LINALG::SparseMatrix> dolda, doldi;
   LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
     
@@ -1467,7 +1468,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   /**********************************************************************/
   /* Isolate active / inactive part from dold                           */
   /**********************************************************************/
-  
   RCP<LINALG::SparseMatrix> dolda, doldi;
   LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
   
