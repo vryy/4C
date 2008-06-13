@@ -131,8 +131,10 @@ public:
     point1,                     // 1 noded point
     nurbs2,                     // 2 control point first order nurbs line element
     nurbs3,                     // 3 control point second order nurbs line element
-    nurbs4,                     // 4 control point first order nurbs element
-    nurbs9,                     // 9 control point second order nurbs element
+    nurbs4,                     // 4 control point first order nurbs surface element
+    nurbs9,                     // 9 control point second order nurbs surface element
+    nurbs8,                     // 8 control point first order nurbs volume element
+    nurbs27,                    // 27 control point second order nurbs volume element
     max_distype                 // end marker. must be the last entry
   };
 
@@ -823,6 +825,8 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
     case DRT::Element::nurbs3:     s = "NURBS3";  break;
     case DRT::Element::nurbs4:     s = "NURBS4";  break;
     case DRT::Element::nurbs9:     s = "NURBS9";  break;
+    case DRT::Element::nurbs8:     s = "NURBS8";  break;
+    case DRT::Element::nurbs27:    s = "NURBS27";  break;
     case DRT::Element::max_distype:s = "MAX_DISTYPE";  break;
     default:
         cout << distype << endl;
