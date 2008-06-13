@@ -30,6 +30,7 @@ MAT::ContChainNetw::ContChainNetw()
   : matdata_(NULL)
 {
   isinit_=false;
+  li_ = rcp(new vector<vector<double> >);
   l1_=rcp(new vector<double>);
   l2_=rcp(new vector<double>);
   l3_=rcp(new vector<double>);
@@ -58,6 +59,21 @@ void MAT::ContChainNetw::Pack(vector<char>& data) const
   // matdata
   int matdata = matdata_ - mat;   // pointer difference to reach 0-entry
   AddtoPack(data,matdata);
+  int histsize;
+  if (!Initialized())
+  {
+    histsize=0;
+  }
+  else 
+  {
+    histsize = li_->size();
+  }
+  AddtoPack(data,histsize);  // lenght of history vector(s)
+  for (int var = 0; var < histsize; ++var) 
+  {
+    AddtoPack(data,li_->at(var));
+  }
+
   AddtoPack(data,l1_);
   AddtoPack(data,l2_);
   AddtoPack(data,l3_);
@@ -82,6 +98,20 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,matdata);
   matdata_ = &mat[matdata];     // unpack pointer to my specific matdata_
 
+  // history data
+  isinit_ = true;
+  int histsize;
+  ExtractfromPack(position,data,histsize);
+  
+  if (histsize == 0) isinit_=false;
+  li_ = rcp(new vector<vector<double> >);
+  for (int var = 0; var < histsize; ++var) {
+    vector<double> li;
+    ExtractfromPack(position,data,li);
+    li_->push_back(li);
+  }
+
+  
   l1_=rcp(new vector<double>);
   l2_=rcp(new vector<double>);
   l3_=rcp(new vector<double>);
@@ -107,6 +137,15 @@ void MAT::ContChainNetw::Initialize(const int numgp)
   l1_= rcp(new vector<double> (numgp,isotropy));
   l2_= rcp(new vector<double> (numgp,isotropy));
   l3_= rcp(new vector<double> (numgp,isotropy));
+  
+  li_ = rcp(new vector<vector<double> > (numgp));
+  for(int j=0; j<numgp; ++j){
+    li_->at(j).resize(3);
+    for (int i = 0; i < 3; ++i) {
+      li_->at(j)[i] = isotropy;
+    }
+  }
+  
   isinit_ = true;
   
   return ;
@@ -211,6 +250,10 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double l1sq = l1_->at(gp)*l1_->at(gp);
   double l2sq = l2_->at(gp)*l2_->at(gp);
   double l3sq = l3_->at(gp)*l3_->at(gp);
+
+  l1sq = li_->at(gp)[0] * li_->at(gp)[0];
+  l2sq = li_->at(gp)[1] * li_->at(gp)[1];
+  l3sq = li_->at(gp)[2] * li_->at(gp)[2];
   
   // structural tensors
   Epetra_SerialDenseVector N01(6); N01(0) = 1.0;
@@ -271,6 +314,10 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   l1_->at(gp) = l1;
   l2_->at(gp) = l2;
   l3_->at(gp) = l3;
+  
+  li_->at(gp)[0] = l1;
+  li_->at(gp)[1] = l2;
+  li_->at(gp)[2] = l3;
   
   return;
 }

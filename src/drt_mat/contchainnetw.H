@@ -89,12 +89,15 @@ namespace MAT
     bool Initialized() const
       { return isinit_&&(l1_!=Teuchos::null);}
     
+    RCP<vector<vector<double> > > Getli() const {return li_;}
+    
   private:
 
     /// my material parameters
     MATERIAL* matdata_;
     
     /// unit cell dimensions per gp
+    Teuchos::RCP<vector<vector<double> > > li_;
     Teuchos::RCP<vector<double> > l1_;
     Teuchos::RCP<vector<double> > l2_;
     Teuchos::RCP<vector<double> > l3_;
