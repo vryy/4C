@@ -3042,8 +3042,6 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
     // displacement.
     mmm->Apply(*relax,*residual_);
     residual_->Scale(-1.);
-
-    mmm = Teuchos::null;
   }
 
   //--------- Apply dirichlet boundary conditions to system of equations
@@ -3086,8 +3084,20 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
   // finalize the system matrix
   sysmat_->Complete();
 
+  // No, we do not want to have any rhs. There cannot be any.
+  residual_->PutScalar(0.0);
+
+  if (mmm!=Teuchos::null)
+  {
+    // Calculate rhs due to mesh movement induced by the interface
+    // displacement.
+    relax->Scale(dt);
+    mmm->Apply(*relax,*residual_);
+  }
+
   if (sysmat_->Apply(*incvel_, *trueresidual_)!=0)
     dserror("sysmat_->Apply() failed");
+  trueresidual_->Update(-1.0,*residual_,1.0);
   trueresidual_->Scale(-density_/dta_/theta_);
 }
 
