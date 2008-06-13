@@ -154,6 +154,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
     RCP<OutputControl> microcontrol =
       rcp(new OutputControl(microdis->Comm(),
                             DRT::Problem::Instance(1)->ProblemType(),
+                            microproblem->SpatialApproximation(),
                             "micro-input-file-not-known",
                             restartname_,
                             newfilename,
