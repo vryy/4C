@@ -127,6 +127,9 @@ private:
 \author Axel Gerstenberger
 
 In this structure the coordinates and weights used by gauss integration are stored.
+
+\note tetrahedral integration rule weights are stored such that after integration over the parameter space,
+we get the real volume of 0.1666..., NOT the unit volume of 1.0. Integration over the hex rules gives an volume of 8.0.
 */
 struct IntegrationPoints3D
 {
@@ -141,6 +144,9 @@ struct IntegrationPoints3D
 \author Axel Gerstenberger
 
 In this structure the coordinates and weights used by gauss integration are stored.
+
+\note triangular integration rule weights are stored such that after integration over the parameter space,
+we get the real area of 0.5, NOT the unit area of 1.0. Integration over the quad rules gives an area of 4.0.
 */
 struct IntegrationPoints2D
 {
