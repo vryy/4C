@@ -12,10 +12,10 @@ Maintainer: Ursula Mayer
  */
 #ifdef CCADISCRET
 #include "xfsi_searchtree.H"
+#include "intersection_service.H"
 
 using namespace std;
 using namespace XFEM;
-
 
 XFEM::XSearchTree::XSearchTree() {
   TreeInit_  = false;
@@ -37,11 +37,11 @@ int XFEM::XSearchTree::getMeanSearchlength(){
   return MeanSearchLength_;
 }
 
-int XFEM::XSearchTree::queryPointType(const RCP<DRT::Discretization> dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords) {
+int XFEM::XSearchTree::queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords) {
   searchRequests_++;
   if (!TreeInit_)
     rebuild(dis, currentpositions);
-  if (dis->NumGlobalElements() == 0){ 
+  if (dis.NumGlobalElements() == 0){ 
     return 0;
     }
   // search for candidates in tree
@@ -72,22 +72,22 @@ void XFEM::XSearchTree::insertElement(const DRT::Element* elem) {
   treeRoot_->insertElement(elem);
 }
 
-void XFEM::XSearchTree::rebuild(const RCP<DRT::Discretization> dis,const std::map<int,BlitzVec3>& currentpositions) {
+void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions) {
   if (treeRoot_ != NULL){
     delete treeRoot_;
   }
   BlitzMat3x2 aabb =getXAABBofDis(dis, currentpositions);
   treeRoot_ = new TreeNode(0,aabb, this);
-  cout << "inserting new elements (" << dis->NumMyRowElements() << ")"<< endl;
-  for (int i=0; i<dis->NumMyRowElements(); ++i) {
-    const DRT::Element* ele =  dis->lRowElement(i);
+  cout << "inserting new elements (" << dis.NumMyRowElements() << ")"<< endl;
+  for (int i=0; i<dis.NumMyRowElements(); ++i) {
+    const DRT::Element* ele =  dis.lRowElement(i);
     insertElement(ele);
   }
   TreeInit_ = true;
   
   std::map<int,set<int> >   elementsByLabel;
   cout<<"collectElementsByXFEMCouplingLabels" << endl;
-  XFEM::CollectElementsByXFEMCouplingLabel(*dis, elementsByLabel);
+  XFEM::CollectElementsByXFEMCouplingLabel(dis, elementsByLabel);
   labelByElement_.clear();
   for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
@@ -154,7 +154,7 @@ BlitzVec3& XFEM::XSearchTree::TreeNode::getCenterCoord(){
   return *t;
 }
 
-list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const RCP<DRT::Discretization> dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords, int& lID) {
+list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords, int& lID) {
   //  printf("AABB(%f\t%f\t%f\t%f\t%f\t%f)\t", AABB(0,0),AABB(0,1),AABB(1,0),AABB(1,1),AABB(2,0),AABB(2,1));
   //  printf("x_in(%f\t%f\t%f)\n",pointCoords(0), pointCoords(1),pointCoords(2));
   switch (State_) {
@@ -218,7 +218,7 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const RC
         }
         // this node becomes an inner tree node
         State_ = STATE_INNER_NODE;
-        ElementList_.clear();
+        // ElementList_.clear();
         // do recursion
         // cout << "classified searchpoint to oct "<< classifyPoint(pointCoords)-1 << " , so i will search there" << endl;
         list< const DRT::Element* > myL = children_[classifyPoint(pointCoords)-1]->queryPointType(dis, currentpositions, pointCoords, lID);
@@ -235,7 +235,7 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const RC
 void XFEM::XSearchTree::TreeNode::insertElement(const DRT::Element* elem) {
   if ((actTreedepth_ >= XFEM::XSearchTree::MAX_TREEDEPTH) || (State_ == STATE_LEAF_NODE) ) {
     ElementList_.push_back(elem);
-//    cout << "inserted element" <<endl;
+//    cout << "inserted element at depth " << actTreedepth_ <<endl;
     State_ = STATE_LEAF_NODE;
   } else if(State_ == STATE_INNER_NODE) {
     list<int> childIdx = classifyElement(elem);
@@ -356,14 +356,19 @@ XFEM::XSearchTree::TreeNode* XFEM::XSearchTree::TreeNode::getChild(int idx) {
 }
 
 void XFEM::XSearchTree::printTree(const int step) const{
+  cout << endl << "writing... ";
+  if (!TreeInit_) {
+    cout << "nothing to write, tree not initialized yet -> done" << endl;
+    return;
+  }
   if (treeRoot_->getElementList().empty()){ 
-    cout << "nothing to write, tree empty" << endl;
+    cout << "nothing to write, tree empty -> done" << endl;
     return;
     }
   std::stringstream filename;
   std::stringstream fc;
   filename << "tree" << std::setw(5) << setfill('0') << step << ".pos";
-  cout << "writing "<<filename.str()<<" ...";
+  cout << " "<<filename.str()<<" ...";
   fc << "View \" " << "fsiOctree \" {" << endl;
   treeRoot_->printTree(fc);
   fc << "};" << endl;

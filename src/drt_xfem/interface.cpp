@@ -13,9 +13,11 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "interface.H"
-#include "xfsi_searchtree.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_lib/drt_globalproblem.H"
+#include "xfsi_searchtree.H"
+#include "xfem_condition.H"
+#include "../drt_io/io_gmsh.H"
 
 /*----------------------------------------------------------------------*
  |  ctor                                                        ag 11/07|
@@ -75,8 +77,8 @@ XFEM::InterfaceHandle::InterfaceHandle(
   elementsByLabel_.clear();
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
 
-  cout << "set rebuild flag" << endl;
-  STree.setRebuildFlag();
+  cout << "create new xTree_ object" << endl;
+  xTree_ = rcp(new XSearchTree());
 }
 		
 /*----------------------------------------------------------------------*
@@ -192,7 +194,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     f_system.close();
     f_systemP.close();
     cout << " done" << endl;
-//    STree.printTree(step);
+    //xTree_->printTree(step);
   }
   return;
 }
@@ -250,11 +252,9 @@ void XFEM::PositionWithinCondition(
     std::map<int,bool>&               posInCondition
 )
 {
-  std::map<int,bool> posInCondition1;
-  std::map<int,bool> posInCondition2;
   
-  PositionWithinConditionBruteForce(x_in, ih, posInCondition1);
-//  PositionWithinConditionTree(x_in, ih, posInCondition2);
+  //PositionWithinConditionBruteForce(x_in, ih, posInCondition);
+  PositionWithinConditionTree(x_in, ih, posInCondition);
 //  const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
 //  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
 //   {
@@ -268,7 +268,7 @@ void XFEM::PositionWithinCondition(
 //       dserror("results for searchtree and brute force do not match");
 //     }
 //   }
-  posInCondition = posInCondition1;
+  //posInCondition = posInCondition1;
     
   // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
 #ifdef PARALLEL
@@ -358,9 +358,10 @@ void XFEM::PositionWithinConditionTree(
     const int label = conditer->first;
     posInCondition[label] = false;    
   }
-  int l = STree.queryPointType(ih.cutterdis(), *ih.currentcutterpositions(), x_in);
-  posInCondition[l] = true;
-  //  printf("%d ", l);
+  Teuchos::RCP<XSearchTree> xt = ih.getSearchTree(); // pointer is constant, object is not!
+  int l = xt->queryPointType(*ih.cutterdis() , *ih.currentcutterpositions(), x_in);
+  if (l>0)
+    posInCondition[l] = true;
   
   // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
 #ifdef PARALLEL

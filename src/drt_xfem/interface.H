@@ -22,7 +22,7 @@ Maintainer: Axel Gerstenberger
 #include "integrationcell.H"
 #include "../drt_lib/drt_discret.H"
 #include "intersection.H"
-#include "../drt_io/io_gmsh.H"
+#include "xfsi_searchtree.H"
 
 namespace XFEM
 {
@@ -64,6 +64,10 @@ public:
     
     //! get pointer to map with all elements gids sorted by their interface labels
     const std::map<int,std::set<int> >* elementsByLabel() const {return &elementsByLabel_;};
+
+    //! get pointer to map with all elements gids sorted by their interface labels
+    Teuchos::RCP<XSearchTree> getSearchTree() const {return xTree_;};
+ 
     
     //! return list of domain integrationcells for a given global element id, returned list can be empty -> always terminates
     DomainIntCells GetDomainIntCells(
@@ -95,6 +99,13 @@ public:
     }
 
 private:
+  
+    //! don't want default constructor
+    explicit InterfaceHandle();
+    
+    //! don't want copy constructor
+    explicit InterfaceHandle(const InterfaceHandle&);
+  
     //! intersected domain
     const RCP<DRT::Discretization> xfemdis_;
 
@@ -112,6 +123,9 @@ private:
     
     //! elements grouped by the xfem condition label
     std::map<int,set<int> >          elementsByLabel_;
+    
+    //! XSearchTree xTree_
+    Teuchos::RCP<XFEM::XSearchTree>  xTree_;
 
 };
 
@@ -125,7 +139,7 @@ void PositionWithinCondition(
     );
 
 ///*!
-//\brief as above, but only for givven xfem labels           
+//\brief as above, but only for given xfem labels           
 //*/  
 //void PositionWithinGivenCondition(
 //        const BlitzVec3&                  x,              ///< node in physical coordinates

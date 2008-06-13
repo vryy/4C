@@ -351,7 +351,7 @@ void XFEM::computeTensorCellNodeValuesFromElementUnknowns(
   // however, we approach the interface from one particular side and therefore,
   // -> we use the center of the cell to determine, where we come from
   const BlitzVec3 cellcenterpos(cell.GetPhysicalCenterPosition(ele));
-
+  flush(cout);
   std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
         ih,
         dofman.getUniqueEnrichments(),

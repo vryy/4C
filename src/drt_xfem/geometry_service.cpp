@@ -12,29 +12,30 @@ Maintainer: Ursula Mayer
  */
 #ifdef CCADISCRET
 #include "geometry_service.H"
+#include "intersection_service.H"
 
 using namespace std;
 using namespace XFEM;
 
 
 
-BlitzMat3x2 XFEM::getXAABBofDis(const RCP<DRT::Discretization> dis){
+BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis){
   const int nsd = 3;
   BlitzMat3x2 XAABB;
   
   // XAABB of cutterElements
   // first node
-  const double* pos = dis->lRowElement(0)->Nodes()[0]->X();
+  const double* pos = dis.lRowElement(0)->Nodes()[0]->X();
   for(int dim=0; dim<nsd; ++dim)
   {
     XAABB(dim, 0) = pos[dim] - TOL7;
     XAABB(dim, 1) = pos[dim] + TOL7;
   }
-  for (int j=0; j< dis->NumMyRowElements(); ++j) {
+  for (int j=0; j< dis.NumMyRowElements(); ++j) {
     // remaining node
-    for(int i=0; i< dis->lRowElement(j)->NumNode(); ++i)
+    for(int i=0; i< dis.lRowElement(j)->NumNode(); ++i)
     {
-      const double* posEle = dis->lRowElement(j)->Nodes()[i]->X();
+      const double* posEle = dis.lRowElement(j)->Nodes()[i]->X();
       for(int dim=0; dim<nsd; dim++)
       {
         XAABB(dim, 0) = std::min( XAABB(dim, 0), posEle[dim] - TOL7);
@@ -53,27 +54,27 @@ BlitzMat3x2 XFEM::getXAABBofDis(const RCP<DRT::Discretization> dis){
    return XAABB;
 }
   
-BlitzMat3x2 XFEM::getXAABBofDis(const RCP<DRT::Discretization> dis,const std::map<int,BlitzVec3>& currentpositions){
+BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions){
   const int nsd = 3;
   BlitzMat3x2 XAABB;
-  if (dis->NumGlobalElements() == 0){ 
+  if (dis.NumGlobalElements() == 0){ 
     XAABB(0,0)=0;XAABB(0,1)=0;
     XAABB(1,0)=0;XAABB(1,1)=0;
     XAABB(2,0)=0;XAABB(2,1)=0;
     return XAABB;
     }
   // extend XAABB to xfem elements
-  const double* pos = dis->lRowElement(0)->Nodes()[0]->X();
+  const double* pos = dis.lRowElement(0)->Nodes()[0]->X();
   for(int dim=0; dim<nsd; ++dim)
   {
     XAABB(dim, 0) = pos[dim] - TOL7;
     XAABB(dim, 1) = pos[dim] + TOL7;
   }
-  for (int j=0; j< dis->NumMyRowElements(); ++j) {
+  for (int j=0; j< dis.NumMyRowElements(); ++j) {
     // remaining node
-    for(int i=0; i< dis->lRowElement(j)->NumNode(); ++i)
+    for(int i=0; i< dis.lRowElement(j)->NumNode(); ++i)
     {
-      const double* posEle = dis->lRowElement(j)->Nodes()[i]->X();
+      const double* posEle = dis.lRowElement(j)->Nodes()[i]->X();
       for(int dim=0; dim<nsd; dim++)
       {
         XAABB(dim, 0) = std::min( XAABB(dim, 0), posEle[dim] - TOL7);
@@ -93,7 +94,7 @@ BlitzMat3x2 XFEM::getXAABBofDis(const RCP<DRT::Discretization> dis,const std::ma
 }
 
 
-const DRT::Element* XFEM::nearestNeighbourInList(const RCP<DRT::Discretization> dis,const std::map<int,BlitzVec3>& currentpositions, const list<const DRT::Element* > ElementList, const BlitzVec3& x_in, double& dist)
+const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const list<const DRT::Element* >& ElementList, const BlitzVec3& x_in, double& dist)
 {
   bool in_element = false;
   double min_ele_distance = 1.0e12;
@@ -157,7 +158,7 @@ const DRT::Element* XFEM::nearestNeighbourInList(const RCP<DRT::Discretization> 
     // calculate normal at node by (vectorial) addition of element normals
     BlitzVec3 normal;
     normal(0)=0;normal(1)=0;normal(2)=0;
-    DRT::Node*  node = dis->gNode(closest_node->Id());
+    DRT::Node*  node = dis.gNode(closest_node->Id());
     for(int j=0; j<node->NumElement();j++)
     {
       DRT::Element* surfaceElement = node->Elements()[j];

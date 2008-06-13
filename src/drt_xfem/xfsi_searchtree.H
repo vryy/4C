@@ -16,15 +16,10 @@ Maintainer: Ursula Mayer
 #define XFSI_SEARCHTREE_H
 
 #include <list>
-#include <bitset>
-#include "../drt_lib/drt_element.H"
-#include "intersection_service.H"
+//#include "intersection_service.H"
 #include "geometry_service.H"
 #include "xfem_condition.H"
-#include "enrichment.H"
-#include "bele3.H"
-#include "xfem.H"
-
+#include "../drt_io/io_gmsh.H"
 
 namespace XFEM
 {
@@ -76,7 +71,7 @@ namespace XFEM
         //! insert Element
         void insertElement(const DRT::Element* elem);	
         //! recursive method to get candidates of surface elements in order to determine the point type of x_in, gives back an empty list and labelId in lID if point type is definitly known
-        list< const DRT::Element* > queryPointType(const RCP<DRT::Discretization> dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointcoords, int& lID);
+        list< const DRT::Element* > queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointcoords, int& lID);
         //! gives back ElementList_ 
         list< const DRT::Element* > getElementList();
         
@@ -129,18 +124,18 @@ namespace XFEM
       //! searches for the nearest neigbour to pointcoords (NOT YET IMPLEMENTED)
       void queryNearestNeighbour(const BlitzVec& pointCoords);
       //! gives back the type of a point (fluid or solid): 0->fluid 1..n->Solid with XFEM-Coupling condition
-      int queryPointType(const RCP<DRT::Discretization> dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords);
+      int queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords);
       //! destroys and rebuilds the whole tree
-      void rebuild(const RCP<DRT::Discretization> dis,const std::map<int,BlitzVec3>& currentpositions);
+      void rebuild(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions);
       //! if the flag is set by this method, rebuild will be called within the next search request
       void setRebuildFlag();
       //! dumps a visualization of the tree in a gmsh file (tree0000<step>.pos)
       void printTree(const int step) const;
       //! the XFEM-Coupling-Condition-Label of a element by its gid
       int getLabelByElementID(int gid);
-  } 
+  }; 
   //! a static object is created. (will disappear)
-  static STree; 
+  //static STree; 
   
 } // namespace XFEM
 
