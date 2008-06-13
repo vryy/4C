@@ -126,32 +126,38 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
         thisplane!=planes.end();
         ++thisplane)
     {
-      // master and slave sets for this periodic direction
-      std::set<int> masterset;
-      std::set<int> slaveset;
-
-      //----------------------------------------------------
-      // in the following, we loop all periodic boundary
-      // conditions which have the prescribed periodic 
-      // direction. 
-      // For every Master condition, we add the nodes into
-      // the set of all masternodeids for periodic boundary
-      // conditions with this homogeneous direction.
-      // The same is done for the slave conditions.
-      
-      // loop pairs of periodic boundary conditions
-      for (int pbcid=0;pbcid<numpbcpairs_;++pbcid)
+      // loop over all three layers (we allow three layers since
+      // the code should be able to deal with up to cubic splines
+      // which couple three layers of nodes)
+      for(int nlayer=0;nlayer<3;++nlayer)
       {
-        //--------------------------------------------------
-        // get master and slave condition pair with id pbcid
+        // master and slave sets for this periodic direction
+        std::set<int> masterset;
+        std::set<int> slaveset;
+
+        //----------------------------------------------------
+        // in the following, we loop all periodic boundary
+        // conditions which have the prescribed periodic 
+        // direction. 
+        // For every Master condition, we add the nodes into
+        // the set of all masternodeids for periodic boundary
+        // conditions with this homogeneous direction.
+        // The same is done for the slave conditions.
+      
+        // loop pairs of periodic boundary conditions
+        for (int pbcid=0;pbcid<numpbcpairs_;++pbcid)
         {
+          //--------------------------------------------------
+          // get master and slave condition pair with id pbcid
+
           for (unsigned numcond=0;numcond<mysurfpbcs_.size();++numcond)
           {
             const vector<int>* myid
               = mysurfpbcs_[numcond]->Get<vector<int> >("Id of periodic boundary condition");
-
-            // yes, I am the condition with id pbcid
-            if (myid[0][0] == pbcid)
+            const vector<int>* mylayer
+              = mysurfpbcs_[numcond]->Get<vector<int> >("Layer of periodic boundary condition");
+            // yes, I am the condition with id pbcid and in the desired layer
+            if (myid[0][0] == pbcid && (mylayer[0][0]+1) == nlayer)
             {
               const string* mymasterslavetoggle
                 = mysurfpbcs_[numcond]->Get<string>("Is slave periodic boundary condition");
@@ -159,7 +165,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
               if(*mymasterslavetoggle=="Master")
               {
                 mastercond =mysurfpbcs_[numcond];
-
+                
                 //--------------------------------------------------
                 // check whether this periodic boundary condition belongs
                 // to thisplane
@@ -167,7 +173,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
                 const string* dofsforpbcplanename
                   =
                   mastercond->Get<string>("degrees of freedom for the pbc plane");
-              
+                
                 if(*dofsforpbcplanename == *thisplane)
                 {
                   // add all master nodes to masterset
@@ -175,7 +181,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
                   //--------------------------------------------------
                   // get global master node Ids
                   const vector <int>* masteridstoadd;
-                  
+                    
                   masteridstoadd = mastercond->Nodes();
                   
                   for(vector<int>::const_iterator idtoadd =(*masteridstoadd).begin();
@@ -189,7 +195,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
               else if (*mymasterslavetoggle=="Slave")
               {
                 slavecond =mysurfpbcs_[numcond];
-
+                
                 //--------------------------------------------------
                 // check whether this periodic boundary condition belongs
                 // to thisplane
@@ -217,115 +223,114 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
               {
                 dserror("pbc is neither master nor slave");
               }
-
-            }
-          }
-        }
-      } // end loop pairs of periodic boundary conditions
+            } // end if i am the right condition in the right layer
+          } // end loop over conditions 
+        } // end loop pairs of periodic boundary conditions
       
 
-      //--------------------------------------------------
-      // vector specifying the plane of this pair
-      //
-      //     |                           |
-      //     |                           |
-      //     |      parallel planes      |
-      //     |-------------------------->|
-      //     |                           |
-      //     |                           |
-      //     |                           |
-      //   slave                      master
-      //
-      //
+        //--------------------------------------------------
+        // vector specifying the plane of this pair
+        //
+        //     |                           |
+        //     |                           |
+        //     |      parallel planes      |
+        //     |-------------------------->|
+        //     |                           |
+        //     |                           |
+        //     |                           |
+        //   slave                      master
+        //
+        //
+        
+        // we transform the three strings "xy", "xz", "yz" into integer
+        // values dofsforpbcplanename
+        vector<int> dofsforpbcplane(2);
+        
+        // this is a char-operation:
+        //
+        //       x -> 0
+        //       y -> 1
+        //       z -> 2
+        //
+        // it is based on the fact that the letters x, y and z are 
+        // consecutive in the ASCII table --- 'x' is the ASCII
+        // calue of x ....
+        dofsforpbcplane[0] = thisplane->c_str()[0] - 'x';
+        dofsforpbcplane[1] = thisplane->c_str()[1] - 'x';
 
-      // we transform the three strings "xy", "xz", "yz" into integer
-      // values dofsforpbcplanename
-      vector<int> dofsforpbcplane(2);
+        //--------------------------------------------------
+        // we just write the sets into vectors
+        (masternodeids).clear();
+        (slavenodeids ).clear();
+        
+        for(std::set<int>::iterator appendednode = masterset.begin();
+            appendednode != masterset.end();
+            ++appendednode)
+        {
+          masternodeids.push_back(*appendednode);
+        }
+        
+        for(std::set<int>::iterator appendednode = slaveset.begin();
+            appendednode != slaveset.end();
+            ++appendednode)
+        {
+          slavenodeids.push_back(*appendednode);
+        }
+        
+        //----------------------------------------------------------------------
+        //      CONSTRUCT NODE MATCHING BETWEEN MASTER AND SLAVE NODES
+        //                        FOR THIS DIRECTION
+        //----------------------------------------------------------------------
+        
+        // clear map from global masternodeids (on this proc) to global
+        // slavenodeids --- it belongs to this master slave pair!!!
+        midtosid.clear();
+        
+        if (discret_->Comm().MyPID() == 0)
+        {
+          cout << " creating layer " << nlayer << " of midtosid-map in " << *thisplane << " direction ... ";
+          fflush(stdout);
+        }
+        
+        // get map master on this proc -> slave on some proc
+        CreateNodeCouplingForSinglePBC(
+          midtosid,
+          masternodeids,
+          slavenodeids ,
+          dofsforpbcplane);
+        // time measurement --- this causes the TimeMonitor tm1 to stop here
+        tm1_ref_ = null;
 
-      // this is a char-operation:
-      //
-      //       x -> 0
-      //       y -> 1
-      //       z -> 2
-      //
-      // it is based on the fact that the letters x, y and z are 
-      // consecutive in the ASCII table --- 'x' is the ASCII
-      // calue of x ....
-      dofsforpbcplane[0] = thisplane->c_str()[0] - 'x';
-      dofsforpbcplane[1] = thisplane->c_str()[1] - 'x';
+        if (discret_->Comm().MyPID() == 0)
+        {
+          cout << "adding connectivity to previous pbcs ... ";
+          fflush(stdout);
+        }
+        
+        // time measurement --- start TimeMonitor tm4
+        tm4_ref_        = rcp(new TimeMonitor(*timepbcaddcon_ ));
 
-      //--------------------------------------------------
-      // we just write the sets into vectors
-      (masternodeids).clear();
-      (slavenodeids ).clear();
+        //----------------------------------------------------------------------
+        //      ADD CONNECTIVITY TO CONNECTIVITY OF ALL PREVIOUS PBCS
+        //----------------------------------------------------------------------
+        // Add the connectivity from this condition to the connectivity
+        // of all previously processed periodic boundary conditions.
+        // Redistribute the nodes (rownodes+ghosting)
+        // Assign the same degrees of freedom to coupled nodes
+        AddConnectivity(midtosid,num);
 
-      for(std::set<int>::iterator appendednode = masterset.begin();
-          appendednode != masterset.end();
-          ++appendednode)
-      {
-        masternodeids.push_back(*appendednode);
-      }
-
-      for(std::set<int>::iterator appendednode = slaveset.begin();
-          appendednode != slaveset.end();
-          ++appendednode)
-      {
-        slavenodeids.push_back(*appendednode);
-      }
-
-      //----------------------------------------------------------------------
-      //      CONSTRUCT NODE MATCHING BETWEEN MASTER AND SLAVE NODES
-      //                        FOR THIS DIRECTION
-      //----------------------------------------------------------------------
-
-      // clear map from global masternodeids (on this proc) to global
-      // slavenodeids --- it belongs to this master slave pair!!!
-      midtosid.clear();
-
-      if (discret_->Comm().MyPID() == 0)
-      {
-        cout << " creating midtosid-map in " << *thisplane << " direction ... ";
-        fflush(stdout);
-      }
-
-      // get map master on this proc -> slave on some proc
-      CreateNodeCouplingForSinglePBC(
-        midtosid,
-        masternodeids,
-        slavenodeids ,
-        dofsforpbcplane);
-      // time measurement --- this causes the TimeMonitor tm1 to stop here
-      tm1_ref_ = null;
-
-      if (discret_->Comm().MyPID() == 0)
-      {
-        cout << "adding connectivity to previous pbcs ... ";
-        fflush(stdout);
-      }
-
-      // time measurement --- start TimeMonitor tm4
-      tm4_ref_        = rcp(new TimeMonitor(*timepbcaddcon_ ));
-
-      //----------------------------------------------------------------------
-      //      ADD CONNECTIVITY TO CONNECTIVITY OF ALL PREVIOUS PBCS
-      //----------------------------------------------------------------------
-      // Add the connectivity from this condition to the connectivity
-      // of all previously processed periodic boundary conditions.
-      // Redistribute the nodes (rownodes+ghosting)
-      // Assign the same degrees of freedom to coupled nodes
-      AddConnectivity(midtosid,num);
-
-      // time measurement --- this causes the TimeMonitor tm4 to stop here
-      tm4_ref_ = null;
-
-      if (discret_->Comm().MyPID() == 0)
-      {
-        cout << " done\n";
-        fflush(stdout);
-      }
-
-      ++num;
-    }
+        // time measurement --- this causes the TimeMonitor tm4 to stop here
+        tm4_ref_ = null;
+        
+        if (discret_->Comm().MyPID() == 0)
+        {
+          cout << " done\n";
+          fflush(stdout);
+        }
+        
+        ++num;
+      } // end loop over layers
+    } // end loop over planes
 
     //----------------------------------------------------------------------
     //         REDISTRIBUTE ACCORDING TO THE GENERATED CONNECTIVITY

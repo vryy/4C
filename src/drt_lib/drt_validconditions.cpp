@@ -279,6 +279,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         Teuchos::tuple<std::string>("xy","yx","yz","zy","xz","zx"),
         Teuchos::tuple<std::string>("xy","xy","yz","yz","xz","xz"))));
 
+  pbccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("LAYER")));
+  pbccomponents.push_back(Teuchos::rcp(new IntConditionComponent("Layer of periodic boundary condition",true)));
+
   Teuchos::RCP<ConditionDefinition> lineperiodic =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE PERIODIC BOUNDARY CONDITIONS",
                                          "LinePeriodic",
