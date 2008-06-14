@@ -3097,7 +3097,7 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
 
   if (sysmat_->Apply(*incvel_, *trueresidual_)!=0)
     dserror("sysmat_->Apply() failed");
-  trueresidual_->Update(-1.0,*residual_,1.0);
+  trueresidual_->Update(1.0,*residual_,1.0);
   trueresidual_->Scale(-density_/dta_/theta_);
 }
 
