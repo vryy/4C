@@ -50,6 +50,7 @@ extern "C"
 #include "../drt_f2/condif2.H"
 #include "../drt_condif3/condif3.H"
 #include "../drt_f3/fluid3.H"
+#include "../drt_f3/fluid3_nurbs.H"
 #include "../drt_f3/xfluid3.H"
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale3/ale3.H"
@@ -242,6 +243,13 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
     case ParObject_Fluid3:
     {
       DRT::ELEMENTS::Fluid3* object = new DRT::ELEMENTS::Fluid3(-1,-1);
+      object->Unpack(data);
+      return object;
+    }
+    break;
+    case ParObject_Fluid3Nurbs:
+    {
+      DRT::ELEMENTS::NURBS::Fluid3Nurbs* object = new DRT::ELEMENTS::NURBS::Fluid3Nurbs(-1,-1);
       object->Unpack(data);
       return object;
     }
@@ -712,7 +720,16 @@ RefCountPtr<DRT::Element> DRT::UTILS::Factory(const string eletype,
 #ifdef D_FLUID3
     case fluid3:
     {
-      RefCountPtr<DRT::Element> ele = rcp(new DRT::ELEMENTS::Fluid3(id,owner));
+      RefCountPtr<DRT::Element> ele;
+      
+      if(eledistype=="NURBS8" || eledistype=="NURBS27")
+      {
+        ele = rcp(new DRT::ELEMENTS::NURBS::Fluid3Nurbs(id,owner));
+      }
+      else
+      {
+        ele = rcp(new DRT::ELEMENTS::Fluid3(id,owner));
+      }
       return ele;
     }
     break;

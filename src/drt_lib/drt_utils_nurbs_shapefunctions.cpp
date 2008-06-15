@@ -1917,7 +1917,7 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
   // -----------------------------------------------
   
   blitz::Array<double,1> bezier_shape_funct (  size);
-  blitz::Array<double,2> bezier_shape_deriv (2,size);
+  blitz::Array<double,2> bezier_shape_deriv (3,size);
     
   // allocate bspline polynomials for both direction
   DRT::NURBS::UTILS::BsplinePolynomial bspline_xi (degree,knots[0]);
@@ -2309,8 +2309,8 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
   // -----------------------------------------------
   
   blitz::Array<double,1> bezier_shape_funct (  size);
-  blitz::Array<double,2> bezier_shape_deriv (2,size);
-  blitz::Array<double,2> bezier_shape_deriv2(3,size);
+  blitz::Array<double,2> bezier_shape_deriv (3,size);
+  blitz::Array<double,2> bezier_shape_deriv2(6,size);
     
   // allocate bspline polynomials for both direction
   DRT::NURBS::UTILS::BsplinePolynomial bspline_xi (degree,knots[0]);
