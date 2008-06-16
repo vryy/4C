@@ -123,6 +123,12 @@ public:
   inline RCP<Epetra_Vector> LagrMultOld() { return zold_; }
   
   /*!
+  \brief Return jump vector (mid-point)
+      
+  */
+  inline RCP<Epetra_Vector> Jump() { return jump_; }
+  
+  /*!
   \brief Return current global contact status
         
   */
@@ -255,16 +261,18 @@ public:
   void ContactForces(RCP<Epetra_Vector> fresm);
   
   /*!
-  \brief Store Lagrange multipliers into CNodes
+  \brief Store Lagrange multipliers and sum of incremental jumps per time step into CNodes
   
-  The string input parameter defines, which Lagrange multiplier is
-  to be updated. Currently only the possibilities "old" and "current"
-  exist, with "old" meaning the converged value LM_n of the last time
-  / load step.  The string "current" adresses the current (not
-  necessarily converged) value of the LM_n+1
+  The string input parameter defines, what is
+  to be updated (lagrange multipliers or sum of incremental jumps).
+  Currently only the possibilities "lmold", "lmcurrent" and "jump"
+  exist, with "lmold" meaning the converged value LM_n of the last time
+  / load step.  The string "lmcurrent" adresses the current (not
+  necessarily converged) value of the LM_n+1 and "jump" the current value (not
+  necessarily converged) of d_nt1-d_n
   
   */
-  void StoreNodalLM(const string& state);
+  void StoreNodalQuantities(const string& state);
   
   /*!
   \brief Update Mortar matrices D and M
@@ -305,6 +313,9 @@ protected:
   RCP<Epetra_Map>                    gactivedofs_;    // global active slave dof row map (of all interfaces)
   RCP<Epetra_Map>                    gactiven_;       // global row map of matrix N (of all interfaces)
   RCP<Epetra_Map>                    gactivet_;       // global row map of matrix T (of all interfaces)
+  RCP<Epetra_Map>                    gslipnodes_;     // global slip slave node row map (of all interfaces)
+  RCP<Epetra_Map>                    gslipdofs_;      // global slip slave dof row map (of all interfaces)
+  RCP<Epetra_Map>                    gslipt_;         // global row map of matrix T for slip dofs (of all interfaces)
   bool                               activesetconv_;  // convergence flag for active set
   
   RCP<LINALG::SparseMatrix>          dmatrix_;        // global Mortar matrix D
@@ -350,13 +361,6 @@ protected:
 
 // << operator
 ostream& operator << (ostream& os, const CONTACT::Manager& manager);
-
-
-
-
-
-
-
 
 
 #endif  // #ifndef DRT_CONTACT_MANAGER_H

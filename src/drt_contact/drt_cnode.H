@@ -176,7 +176,12 @@ public:
   \brief Return old Lagrange mutliplier (only for slave side!) (length 3)
   */
   virtual inline double* lmold() { return lmold_; }
-    
+  
+  /*!
+  \brief Return summation of incremental jumps per time step (only for slave side!) (length 3)
+  */
+  virtual inline double* jump() { return jump_; }
+   
   /*!
   \brief Return current closest node's global id (by reference)
   */
@@ -191,6 +196,11 @@ public:
   \brief Return contact status of this node (active=true)
   */
   virtual inline bool& Active() { return active_; }
+  
+  /*!
+  \brief Return friction status of this node (stick=true)
+  */
+  virtual inline bool& Slip() { return slip_; }
   
   /*!
   brief Add a value to the 'D' map of this node
@@ -363,9 +373,11 @@ protected:
   double          u_[3];           // current displacement
   double          lm_[3];          // current Lagrange multiplier value
   double          lmold_[3];       // old Lagrange multiplier value (last converged mid-point)
+  double          jump_[3];        // summation of incremental jumps per time step 
   int             closestnode_;    // closest node id on the other side of interface
   bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
   bool            active_;         // true if cnode is in contact (active set strategy)
+  bool            slip_;           // true if cnode slips (contact force reachs friction bound)
   
   vector<map<int,double> >      drows_;         // nodal rows of D matrix
   vector<map<int,double> >      mrows_;         // nodal rows of M matrix

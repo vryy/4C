@@ -102,7 +102,6 @@ isincontact_(false)
 
     // create an empty interface and store it in this Manager
     interface_.push_back(rcp(new CONTACT::Interface(groupid1,Comm())));
-
     // get it again
     RCP<CONTACT::Interface> interface = interface_[(int)interface_.size()-1];
 
@@ -223,7 +222,7 @@ isincontact_(false)
   gndofrowmap_ = LINALG::SplitMap(*(discret_.DofRowMap()),*gsdofrowmap_);
   gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_,*gmdofrowmap_);
   
-  // initialize active sets of all interfaces
+  // initialize active sets and slip sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   bool initialcontact = scontact_.get("initial contact",false);
   for (int i=0;i<(int)interface_.size();++i)
@@ -233,6 +232,9 @@ isincontact_(false)
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
+    gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
+    gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
+    gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
   }
     
   // setup Lagrange muliplier vectors
@@ -617,7 +619,12 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   /**********************************************************************/
   /* build global matrix n with normal vectors of active nodes          */
   /* and global matrix t with tangent vectors of active nodes           */
+  /* and global matrix L and R for frictional contact                   */
   /**********************************************************************/
+  
+  // read tresca friction bound
+  double frbound = scontact_.get<double>("friction bound",0.0);
+
 #ifdef CONTACTCHECKHUEEBER
   if (numiter==0)
   {
@@ -625,29 +632,12 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
+    interface_[i]->AssembleTresca(*lmatrix_,*r_,frbound); 
   }
   
-  // FillComplete() global matrices N and T
+  // FillComplete() global matrices N, T and L
   nmatrix_->Complete(*gactivedofs_,*gactiven_);
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
-  
-  // build global matrix L and global Vector R
-  // FIXGIT: dserror for more than one interface
-  if(interface_.size()>1) 
-  {	
-  	dserror("ERROR: tresca friction for more than one interface not yet implemented");
-  }
-  
-  // read tresca friction bound
-  double frbound = scontact_.get<double>("friction bound",0.0);
-
-  for (int i=0; i<(int)interface_.size(); ++i)
-  	
-  {
-    interface_[i]->AssembleTresca(*lmatrix_,*r_,jump_,z_,tmatrix_,frbound); 
-  }
-  
-  // FillComplete() global matrices N and T
   lmatrix_->Complete(*gactivet_,*gactivet_);
 #ifdef CONTACTCHECKHUEEBER
   }
@@ -2206,6 +2196,10 @@ void CONTACT::Manager::RecoverBasisTrafo(RCP<Epetra_Vector> disi)
   // sum up incremental jumps from active set nodes
   jump_->Update(1.0,*incrjump_,1.0);
   
+  // friction
+  // store updaded jumps to nodes
+  StoreNodalQuantities("jump");
+  
   // extract master displacements from disi
   RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*gmdofrowmap_));
   LINALG::Export(*disi,*disim);
@@ -2246,7 +2240,7 @@ void CONTACT::Manager::RecoverBasisTrafo(RCP<Epetra_Vector> disi)
   z_->Scale(1/(1-alphaf_));
   
   // store updated LM into nodes
-  StoreNodalLM("current");
+  StoreNodalQuantities("lmcurrent");
   
   /*
   // CHECK OF CONTACT COUNDARY CONDITIONS---------------------------------
@@ -2351,7 +2345,7 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
   z_->Scale(1/(1-alphaf_));
   
   // store updated LM into nodes
-  StoreNodalLM("current");
+  StoreNodalQuantities("lmcurrent");
     
   /* 
   // CHECK OF CONTACT COUNDARY CONDITIONS---------------------------------
@@ -2574,8 +2568,9 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
 
   // friction  
   // reset displacement jumps (slave dofs)
-   jump_->Scale(0.0);  
-   
+   jump_->Scale(0.0); 
+   StoreNodalQuantities("jump");
+      
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
@@ -2774,24 +2769,25 @@ void CONTACT::Manager::ContactForces(RCP<Epetra_Vector> fresm)
 }
 
 /*----------------------------------------------------------------------*
- |  Store current Lagrange mulitpliers into CNodes            popp 06/08|
+ |  Store Lagrange mulitpliers and displacent jumps into CNode popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::StoreNodalLM(const string& state)
+void CONTACT::Manager::StoreNodalQuantities(const string& state)
 {
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     // currently this only works safely for 1 interface
-    if (i>0) dserror("ERROR: StoreNodalLM: Double active node check needed for n interfaces!");
+    if (i>0) dserror("ERROR: StoreNodalQuantities: Double active node check needed for n interfaces!");
     
-    // export global LM vector to current interface slave dof row map
-    RCP<Epetra_Vector> zglobal = null;
-    if (state=="current") zglobal = LagrMult();
-    else if (state=="old") zglobal = LagrMultOld();
-    else dserror("ERROR: StoreNodalLM: Unknown state string variable!");
+    // export global LM vector or Jump vector to current interface slave dof row map
+    RCP<Epetra_Vector> vectorglobal = null;
+    if (state=="lmcurrent") vectorglobal = LagrMult();
+    else if (state=="lmold") vectorglobal = LagrMultOld();
+    else if (state=="jump") vectorglobal = Jump(); 
+    else dserror("ERROR: StoreNodalQuantities: Unknown state string variable!");
     RCP<Epetra_Map> sdofrowmap = interface_[i]->SlaveRowDofs();
-    RCP<Epetra_Vector> zinterface = rcp(new Epetra_Vector(*sdofrowmap));
-    LINALG::Export(*zglobal,*zinterface);
+    RCP<Epetra_Vector> vectorinterface = rcp(new Epetra_Vector(*sdofrowmap));
+    LINALG::Export(*vectorglobal,*vectorinterface);
     
     // loop over all slave row nodes on the current interface
     for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
@@ -2801,17 +2797,19 @@ void CONTACT::Manager::StoreNodalLM(const string& state)
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CNode* cnode = static_cast<CNode*>(node);
       
-      if (cnode->NumDof() > 2) dserror("ERROR: StoreNodalLM: Not yet implemented for 3D!");
+      if (cnode->NumDof() > 2) dserror("ERROR: StoreNodalQuantities: Not yet implemented for 3D!");
       
       // extract this node's LM from zcurr
       for (int k=0;k<2;++k)
       {
-        if (state=="current")
-          cnode->lm()[k] = (*zinterface)[zinterface->Map().LID(2*gid)+k];
-        else if (state=="old")
-          cnode->lmold()[k] = (*zinterface)[zinterface->Map().LID(2*gid)+k];
+        if (state=="lmcurrent")
+          cnode->lm()[k] = (*vectorinterface)[vectorinterface->Map().LID(2*gid)+k];
+        else if (state=="lmold")
+          cnode->lmold()[k] = (*vectorinterface)[vectorinterface->Map().LID(2*gid)+k];
+        else if (state=="jump")
+        	cnode->jump()[k] = (*vectorinterface)[vectorinterface->Map().LID(2*gid)+k];
         else
-          dserror("ERROR: StoreNodalLM: Unknown state string variable!");
+          dserror("ERROR: StoreNodalQuantities: Unknown state string variable!");
       }
     }
   }

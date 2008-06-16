@@ -282,6 +282,39 @@ public:
     exit(EXIT_FAILURE); // calm down the compiler
   }
   
+  /*!
+  \brief Get row map of slip nodes (Filled()==true is prerequisite)
+    
+  */
+  virtual const RCP<Epetra_Map> SlipNodes() const 
+  { 
+    if (Filled()) return slipnodes_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  
+  /*!
+  \brief Get row map of slip node dofs (Filled()==true is prerequisite)
+      
+  */
+  virtual const RCP<Epetra_Map> SlipDofs() const 
+  { 
+    if (Filled()) return slipdofs_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  
+  /*!
+  \brief Get row map of matrix T for slip nodes (Filled()==true is prerequisite)
+      
+  */
+  virtual const RCP<Epetra_Map> SlipTDofs() const 
+  { 
+    if (Filled()) return slipt_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+  
   //@}
   
   //! @name Evlauation methods
@@ -423,9 +456,6 @@ public:
   */
   virtual void AssembleTresca(LINALG::SparseMatrix& lglobal,
                               Epetra_Vector& rglobal,
-                              RCP<Epetra_Vector> jumpglobal,
-                              RCP<Epetra_Vector> zglobal,
-                              RCP<LINALG::SparseMatrix> tglobal,
                               double frbound);
     
   /*!
@@ -561,8 +591,11 @@ protected:
   
   RCP<Epetra_Map>             activenodes_;   // row map of all active slave nodes
   RCP<Epetra_Map>             activedofs_;    // row map of all active slave dofs
+  RCP<Epetra_Map>             slipnodes_;     // row map of all slip slave nodes
+  RCP<Epetra_Map>             slipdofs_;      // row map of all slip slave dofs  
   RCP<Epetra_Map>             activen_;       // row map of global N-matrix
   RCP<Epetra_Map>             activet_;       // row map of global T-matrix
+  RCP<Epetra_Map>             slipt_;         // row map of part of T-matrix (slip nodes)
   
   Epetra_SerialDenseMatrix    contactsegs_;   // contains coordinates of all contact segments (gmsh)
   int                         counter_;       // counts the number of calls to this interface (gmsh)

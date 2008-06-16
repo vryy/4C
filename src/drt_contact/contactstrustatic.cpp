@@ -200,7 +200,7 @@ void contact_stru_static_drt()
     reader.ReadVector(zold,"lagrmultold");
     reader.ReadVector(activetoggle,"activetoggle");
     *(contactmanager->LagrMultOld())=*zold;
-    contactmanager->StoreNodalLM("old");
+    contactmanager->StoreNodalQuantities("lmold");
     contactmanager->ReadRestart(activetoggle);
       
     // override current time and step with values from file
@@ -397,7 +397,7 @@ void contact_stru_static_drt()
       RCP<Epetra_Vector> z = contactmanager->LagrMult();
       RCP<Epetra_Vector> zold = contactmanager->LagrMultOld();
       z->Update(1.0,*zold,0.0);
-      contactmanager->StoreNodalLM("current");
+      contactmanager->StoreNodalQuantities("lmcurrent");
       
       // evaluate Mortar coupling matrices for contact forces
       contactmanager->Initialize(0);
@@ -564,7 +564,7 @@ void contact_stru_static_drt()
     RCP<Epetra_Vector> z = contactmanager->LagrMult();
     RCP<Epetra_Vector> zold = contactmanager->LagrMultOld();
     zold->Update(1.0,*z,0.0);
-    contactmanager->StoreNodalLM("old");
+    contactmanager->StoreNodalQuantities("lmold");
 
     //------------------------------------------------- write restart step
     bool isdatawritten = false;

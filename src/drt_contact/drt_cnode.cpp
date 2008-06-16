@@ -40,6 +40,7 @@ grow_(1.0e12)
     xspatial()[i]=X()[i];
     lm()[i]=0.0;
     lmold()[i]=0.0;
+    jump()[i]=0.0;
   }
    
   return;
@@ -69,6 +70,7 @@ grow_(old.grow_)
     xspatial()[i]=old.xspatial_[i];
     lm()[i]=old.lm_[i];
     lmold()[i]=old.lmold_[i];
+    jump()[i]=old.jump_[i];
   }
   
   return;
@@ -149,6 +151,8 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,lm_,3);
   // add lmold_
   AddtoPack(data,lmold_,3);
+  // add jump_
+  AddtoPack(data,jump_,3);
   // add closestnode_
   AddtoPack(data,closestnode_);
   // add hasproj_
@@ -193,6 +197,8 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,lm_,3);
   // lmold_
   ExtractfromPack(position,data,lmold_,3);
+  // jump_
+  ExtractfromPack(position,data,jump_,3);
   // closestnode_
   ExtractfromPack(position,data,closestnode_);
   // hasproj_

@@ -286,7 +286,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   // update current LM (predictor = last converged state)
   // this resetting is necessary due to multiple active set steps
   z->Update(1.0,*zold,0.0);
-  contactmanager_->StoreNodalLM("current");
+  contactmanager_->StoreNodalQuantities("lmcurrent");
   
   // evaluate Mortar coupling matrices for contact forces
   contactmanager_->Initialize(0);
@@ -485,7 +485,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   // update current LM (predictor = last converged state)
   // this resetting is necessary due to multiple active set steps
   z->Update(1.0,*zold,0.0);
-  contactmanager_->StoreNodalLM("current");
+  contactmanager_->StoreNodalQuantities("lmcurrent");
   
   // evaluate Mortar coupling matrices for contact forces
   contactmanager_->Initialize(0);
@@ -898,7 +898,7 @@ void CONTACT::ContactStruGenAlpha::Update()
   RCP<Epetra_Vector> z = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
   zold->Update(1.0,*z,0.0);
-  contactmanager_->StoreNodalLM("old");
+  contactmanager_->StoreNodalQuantities("lmold");
   contactmanager_->StoreDM("old");
 
 #ifdef PRESTRESS
@@ -1246,7 +1246,7 @@ void CONTACT::ContactStruGenAlpha::ReadRestart(int step)
   reader.ReadVector(zold,"lagrmultold");
   reader.ReadVector(activetoggle,"activetoggle");
   *(contactmanager_->LagrMultOld())=*zold;
-  contactmanager_->StoreNodalLM("old");
+  contactmanager_->StoreNodalQuantities("lmold");
   contactmanager_->ReadRestart(activetoggle);
   
   // build restart Mortar matrices D and M

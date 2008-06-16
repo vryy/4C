@@ -1442,26 +1442,11 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
                                         Epetra_Vector& rglobal,
-                                        RCP<Epetra_Vector> jumpglobal,
-                                        RCP<Epetra_Vector> zglobal,
-                                        RCP<LINALG::SparseMatrix> tglobal,
                                         double frbound)
 {
   // nothing to do if no active nodes
   if (activenodes_==null)
   return;
-  
-  // calculate vector ztangential of tangential lagrange multipliers and 
-  // change the row map to active tangential dofs 
-  RCP<Epetra_Vector> ztangential = rcp(new Epetra_Vector(*activet_));
-  tglobal->Multiply(false,*zglobal,*ztangential);
-  ztangential->ReplaceMap(*activenodes_);
-  
-  // calculate vector utangential of tangential displacement jumps and 
-  // change the row map to active tangential dofs 
-  RCP<Epetra_Vector> utangential = rcp(new Epetra_Vector(*activet_));
-  tglobal->Multiply(false,*jumpglobal,*utangential);
-  utangential->ReplaceMap(*activenodes_);
   
   // loop over all active slave nodes of the interface
   for (int i=0;i<activenodes_->NumMyElements();++i)
@@ -1491,35 +1476,51 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     // A primal-dual active set algorithm for three dimensional contact problems
     // with coulomn friction, 2008
     
+    // we need the tangent vector, the vector of lagrange multipliers and 
+    // the vector of displacement jumps per timestep of this node (only 2D case so far!)
+    double tangent[3];
+    tangent[0] = -cnode->n()[1];
+    tangent[1] =  cnode->n()[0];
+    tangent[2] =  0.0;
+    double z[3];
+    z[0] = cnode->lm()[0];
+    z[1] = cnode->lm()[1];
+    z[2] =  0.0;
+    double jump[3];
+    jump[0] = cnode->jump()[0];
+    jump[1] = cnode->jump()[1];
+    jump[2] =  0.0;
+    
+    // lagrange multiplier and jump in tangential direction (projection) 
+    double ztan    = tangent[0]*z[0] + tangent[1]*z[1];
+    double jumptan = tangent[0]*jump[0] + tangent[1]*jump[1];
+
     // FIXGIT: later, we always start with stick conditions.
     // In the meantime, we set the lagrange multipliers to two
-    // in case of beeing null!
+    // in case of being null!
     
-    if(abs((*ztangential)[i]) < 0.001)
+    if(abs(ztan) < 0.001)
     {
-    	(*ztangential)[i] = 2;
-    	cout << "Warning: lagrange multiplier in tangential direction had been set to" 
-    	"two (hard coded)" << endl;
+      ztan = 2;
+     	cout << "Warning: lagrange multiplier in tangential direction had been set to" 
+     	"two (hard coded)" << endl;
     }
     
-    // CT
-    double ct = 1;
-    
-    // epk = gp/(abs(ztangential + utangential))
-    double temp = (*ztangential)[i]+ct*(*utangential)[i];
+    // epk = gp/(abs(ztan + utan))
+    double temp = ztan + CONTACTCT*jumptan;
     double epk = frbound/abs(temp);
     
-    // Fpk = ztangential*(ztangential + utangential)/(gp*(abs(ztangential + utangential))
-    double Fpk = (*ztangential)[i]*temp/(frbound*abs(temp));
+    // Fpk = ztan*(ztan + utan)/(gp*(abs(ztan + utan))
+    double Fpk = ztan*temp/(frbound*abs(temp));
     
     // Mpk = epk(1-Fpk)
     double Mpk = epk*(1-Fpk);
     
-    //hpk = epk*ct*utangential + ztangential*epk*Fpk 
-    double hpk = epk*ct*(*utangential)[i] + (*ztangential)[i]*epk*Fpk;
+    //hpk = epk*ct*utan + ztan*epk*Fpk 
+    double hpk = epk*CONTACTCT*jumptan + ztan*epk*Fpk;
     
     Epetra_SerialDenseMatrix Lnode(1,1);
-    Lnode(0,0)= Mpk/(1-Mpk)*ct;
+    Lnode(0,0)= Mpk/(1-Mpk)*CONTACTCT;
     lmcol[0] = cnode->Dofs()[1];
         
     //assemble into L matrix 
@@ -1538,7 +1539,6 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     }
       
   return;
-    
 }
 
 /*----------------------------------------------------------------------*
@@ -1947,6 +1947,10 @@ bool CONTACT::Interface::InitializeActiveSet(bool initialcontact)
   int countdofs = 0;
   vector<int> mynodegids(snoderowmap_->NumMyElements());
   vector<int> mydofgids(sdofrowmap_->NumMyElements());
+  
+  // define local variables for slip maps
+  vector<int> myslipnodegids(0);
+  vector<int> myslipdofgids(0);
 
   // loop over all slave nodes
   for (int i=0;i<snoderowmap_->NumMyElements();++i)
@@ -2003,7 +2007,6 @@ bool CONTACT::Interface::InitializeActiveSet(bool initialcontact)
   // resize the temporary vectors
   mynodegids.resize(countnodes);
   mydofgids.resize(countdofs);
-
   // communicate countnodes and countdofs among procs
   int gcountnodes, gcountdofs;
   Comm().SumAll(&countnodes,&gcountnodes,1);
@@ -2012,8 +2015,17 @@ bool CONTACT::Interface::InitializeActiveSet(bool initialcontact)
   // create active node map and active dof map
   activenodes_ = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
   activedofs_  = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
-
-  // split active dofs into Ndofs and Tdofs
+  // create an empty slip node map and slip dof map 
+ 
+  // for the first time step (t=0) all nodes are stick nodes 
+  slipnodes_   = rcp(new Epetra_Map(0,0,Comm()));
+  slipdofs_    = rcp(new Epetra_Map(0,0,Comm()));
+  
+  //FiXGIT: Only for develobing: Initializing slipnodes_ to activenodes_
+  slipnodes_ = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
+  slipdofs_  = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
+   
+  // split active dofs into Ndofs, Tdofs and slipTdofs 
   SplitActiveDofs();
 
   return true;
@@ -2073,7 +2085,7 @@ bool CONTACT::Interface::BuildActiveSet()
 }
 
 /*----------------------------------------------------------------------*
- |  split active dofs into Ndofs and Tdofs                    popp 02/08|
+ |  split active dofs into Ndofs, Tdofs and slipTdofs          popp 02/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Interface::SplitActiveDofs()
 {
@@ -2127,12 +2139,12 @@ bool CONTACT::Interface::SplitActiveDofs()
   // resize the temporary vectors
   myNgids.resize(countN);
   myTgids.resize(countT);
-
+ 
   // communicate countN and countT among procs
   int gcountN, gcountT;
   Comm().SumAll(&countN,&gcountN,1);
   Comm().SumAll(&countT,&gcountT,1);
-
+  
   // check global dimensions
   if ((gcountN+gcountT)!=activedofs_->NumGlobalElements())
     dserror("ERROR: SplitActiveDofs: Splitting went wrong!");
@@ -2141,6 +2153,61 @@ bool CONTACT::Interface::SplitActiveDofs()
   activen_ = rcp(new Epetra_Map(gcountN,countN,&myNgids[0],0,Comm()));
   activet_ = rcp(new Epetra_Map(gcountT,countT,&myTgids[0],0,Comm()));
 
+   
+  // *******************************************************************
+  // EXTRACTING TANGENTIAL DOFS FROM SLIP DOFS 
+  // *******************************************************************
+
+  // get out of here if slip set is empty
+   
+  if (slipnodes_==null)
+  {
+    slipt_ = rcp(new Epetra_Map(0,0,Comm()));
+    return true;
+  }
+
+  else if (slipnodes_->NumGlobalElements()==0)
+  {
+    slipt_ = rcp(new Epetra_Map(0,0,Comm()));
+    return true;
+  }
+
+  // define local variables
+  int countslipT=0;
+  vector<int> myslipTgids(slipnodes_->NumMyElements());
+   
+  // dimension check
+  dimcheck =(slipdofs_->NumGlobalElements())/(slipnodes_->NumGlobalElements());
+  if (dimcheck!=2.0 && dimcheck!=3.0)
+    dserror("ERROR: SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
+
+  // loop over all slip row nodes
+  for (int i=0;i<slipnodes_->NumMyElements();++i)
+  {
+    int gid = slipnodes_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    CNode* cnode = static_cast<CNode*>(node);
+    const int numdof = cnode->NumDof();
+
+    // add dofs to slipTmap
+    for (int j=1;j<numdof;++j)
+    {
+      myslipTgids[countslipT] = cnode->Dofs()[j];
+      ++countslipT;
+    }
+  }
+     
+  // resize the temporary vectors
+  myslipTgids.resize(countslipT);
+  
+  // communicate countslipT among procs
+  int gcountslipT;
+  Comm().SumAll(&countslipT,&gcountslipT,1); 
+
+  // create Tslipmap objects
+  slipt_   = rcp(new Epetra_Map(gcountslipT,countslipT,&myslipTgids[0],0,Comm()));
+  
   return true;
 }
 
