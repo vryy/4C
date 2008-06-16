@@ -148,9 +148,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::RelaxationSolve(Teuchos::RCP<Epe
   // grid position is done inside RelaxationSolve
 
   // the displacement -> velocity conversion at the interface
-  //idisp->Scale(1./dt);
+  idisp->Scale(1./dt);
 
-  return FluidField().RelaxationSolve(idisp,dt);
+  return FluidField().RelaxationSolve(idisp);
 }
 
 

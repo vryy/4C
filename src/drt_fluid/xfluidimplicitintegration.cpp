@@ -2636,7 +2636,7 @@ void XFluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelem
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax, double dt)
+void XFluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
   //
   // This method is really stupid, but simple. We calculate the fluid
@@ -2696,7 +2696,6 @@ void XFluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> re
   //          residual discplacements are supposed to be zero at
   //          boundary conditions
   incvel_->PutScalar(0.0);
-  relax->Scale(1./dt);
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,relax,dirichtoggle_);
 
   //-------solve for residual displacements to correct incremental displacements

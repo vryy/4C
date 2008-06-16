@@ -150,7 +150,7 @@ namespace ADAPTER {
 
       \note Can only be called after a valid fluid solve.
     */
-    virtual Teuchos::RCP<Epetra_Vector>    RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp, double dt);
+    virtual Teuchos::RCP<Epetra_Vector>    RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
 
     virtual Teuchos::RCP<DRT::ResultTest>  CreateFieldTest();
 

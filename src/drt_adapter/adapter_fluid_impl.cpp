@@ -456,12 +456,12 @@ void ADAPTER::FluidImpl::UseBlockMatrix(const LINALG::MultiMapExtractor& domainm
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp, double dt)
+Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
 {
   const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
   Teuchos::RCP<Epetra_Vector> relax = LINALG::CreateVector(*dofrowmap,true);
-  interface_.InsertCondVector(idisp,relax);
-  fluid_.LinearRelaxationSolve(relax,dt);
+  interface_.InsertCondVector(ivel,relax);
+  fluid_.LinearRelaxationSolve(relax);
   return ExtractInterfaceForces();
 }
 

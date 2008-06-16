@@ -2965,7 +2965,7 @@ void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condeleme
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax, double dt)
+void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
   //
   // This method is really stupid, but simple. We calculate the fluid
@@ -3022,7 +3022,8 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
   discret_->SetState("velnp",velnp_);
   discret_->SetState("hist"  ,zeros_);
   discret_->SetState("dispnp", griddisp);
-  discret_->SetState("gridv", gridv_);
+  //discret_->SetState("gridv", gridv_);
+  discret_->SetState("gridv", zeros_);
 
   // call loop over elements
   discret_->Evaluate(eleparams,sysmat_,mmm,residual_);
@@ -3040,16 +3041,14 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
 
     // Calculate rhs due to mesh movement induced by the interface
     // displacement.
-    mmm->Apply(*relax,*residual_);
-    residual_->Scale(-1.);
+    mmm->Apply(*gridv_,*residual_);
+    residual_->Scale(-dta_);
   }
 
   //--------- Apply dirichlet boundary conditions to system of equations
   //          residual discplacements are supposed to be zero at
   //          boundary conditions
   incvel_->PutScalar(0.0);
-  // displacement to velocity conversion
-  relax->Scale(1./dt);
   LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,relax,dirichtoggle_);
 
   //-------solve for residual displacements to correct incremental displacements
@@ -3073,7 +3072,8 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
   discret_->SetState("velnp",velnp_);
   discret_->SetState("hist"  ,zeros_);
   discret_->SetState("dispnp", griddisp);
-  discret_->SetState("gridv", gridv_);
+  //discret_->SetState("gridv", gridv_);
+  discret_->SetState("gridv", zeros_);
 
   // call loop over elements
   discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -3084,20 +3084,17 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
   // finalize the system matrix
   sysmat_->Complete();
 
-  // No, we do not want to have any rhs. There cannot be any.
-  residual_->PutScalar(0.0);
+  if (sysmat_->Apply(*incvel_, *trueresidual_)!=0)
+    dserror("sysmat_->Apply() failed");
 
   if (mmm!=Teuchos::null)
   {
     // Calculate rhs due to mesh movement induced by the interface
     // displacement.
-    relax->Scale(dt);
-    mmm->Apply(*relax,*residual_);
+    mmm->Apply(*gridv_,*residual_);
+    trueresidual_->Update(dta_,*residual_,1.0);
   }
 
-  if (sysmat_->Apply(*incvel_, *trueresidual_)!=0)
-    dserror("sysmat_->Apply() failed");
-  trueresidual_->Update(1.0,*residual_,1.0);
   trueresidual_->Scale(-density_/dta_/theta_);
 }
 
