@@ -31,6 +31,7 @@ dofs_(dofs),
 closestnode_(-1),
 hasproj_(false),
 active_(false),
+slip_(false),
 grow_(1.0e12)
 {
   for (int i=0;i<3;++i)
@@ -58,6 +59,7 @@ dofs_(old.dofs_),
 closestnode_(old.closestnode_),
 hasproj_(old.hasproj_),
 active_(old.active_),
+slip_(old.slip_),
 drows_(old.drows_),
 mrows_(old.mrows_),
 mmodrows_(old.mmodrows_),
@@ -159,7 +161,8 @@ void CONTACT::CNode::Pack(vector<char>& data) const
   AddtoPack(data,hasproj_);
   // add active_
   AddtoPack(data,active_);
-    
+  // add slip_
+  AddtoPack(data,slip_);
   return;
 }
 
@@ -205,7 +208,10 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,hasproj_);
   // active_
   ExtractfromPack(position,data,active_);
+  // active_
+  ExtractfromPack(position,data,slip_);
 
+  
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
