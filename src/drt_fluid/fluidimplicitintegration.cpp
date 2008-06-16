@@ -683,12 +683,6 @@ void FluidImplicitTimeInt::ExplicitPredictor()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::PrepareTimeStep()
 {
-  inrelaxation_ = false;
-  dirichletlines_ = Teuchos::null;
-  // Do not remove meshmatrix_ here as we want to reuse its graph.
-  // (We pay for the memory anyway if we use it, we might as well keep it.)
-  //meshmatrix_ = Teuchos::null;
-
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
@@ -810,6 +804,12 @@ void FluidImplicitTimeInt::PrepareTimeStep()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FluidImplicitTimeInt::NonlinearSolve()
 {
+  inrelaxation_ = false;
+  dirichletlines_ = Teuchos::null;
+  // Do not remove meshmatrix_ here as we want to reuse its graph.
+  // (We pay for the memory anyway if we use it, we might as well keep it.)
+  //meshmatrix_ = Teuchos::null;
+
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
