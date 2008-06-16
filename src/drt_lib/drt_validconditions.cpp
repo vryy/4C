@@ -469,7 +469,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Surface));
 
   lj_potential->AddComponent(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
-  AddNamedReal(lj_potential,"label");
+  AddNamedInt(lj_potential,"label");
   AddNamedReal(lj_potential,"depth");
   AddNamedReal(lj_potential,"rootDist");
   AddNamedReal(lj_potential,"cutOff");

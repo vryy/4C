@@ -392,6 +392,16 @@ namespace INPUT
   };
 
 
+  /// add a separator followed by a single integer value
+  /*!
+    The name on the input line becames the name used to put the int value into DRT::Condition.
+   */
+  inline void AddNamedInt(Teuchos::RCP<ConditionDefinition> conddef, std::string name)
+  {
+    conddef->AddComponent(Teuchos::rcp(new SeparatorConditionComponent(name)));
+    conddef->AddComponent(Teuchos::rcp(new IntConditionComponent      (name)));
+  }
+  
   /// add a separator followed by a single real value
   /*!
     The name on the input line becames the name used to put the value into DRT::Condition.
