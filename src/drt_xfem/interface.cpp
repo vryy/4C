@@ -121,62 +121,62 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     cout << " done" << endl;
   }
   
-  if (gmshdebugout)
-  {
-    // debug: write information about which structure we are in
-    std::stringstream filenameP;
-    filenameP << "points_" << std::setw(5) << setfill('0') << step << ".pos";
-    cout << "writing '"<<filenameP.str()<<"...";
-    std::ofstream f_systemP(filenameP.str().c_str());
-    
-    std::stringstream filename;
-    filename << "domains_" << std::setw(5) << setfill('0') << step << ".pos";
-    cout << "writing '"<<filename.str()<<"...";
-
-    std::ofstream f_system(filename.str().c_str());
-    //f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
-    //f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
-    {
-      // stringstream for domains
-      stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
-      // stringstream for cellcenter points
-      stringstream gmshfilecontentP;
-      gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
-      
-      for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
-      {
-        DRT::Element* actele = xfemdis_->lColElement(i);
-        const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
-        XFEM::DomainIntCells::const_iterator cell;
-        for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
-        {
-          
-          BlitzMat cellpos(3,cell->NumNode()); 
-          cell->NodalPosXYZ(*actele, cellpos);
-          const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
-          
-          const int domain_id = PositionWithinCondition(cellcenterpos, *this);
-          
-          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), domain_id, cellpos) << endl;
-          BlitzMat point(3,1);
-          point(0,0)=cellcenterpos(0);
-          point(1,0)=cellcenterpos(1);
-          point(2,0)=cellcenterpos(2);
-          gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, 1, point) << endl;              
-        };
-      };
-      gmshfilecontent << "};" << endl;
-      f_system << gmshfilecontent.str();
-      gmshfilecontentP << "};" << endl;
-      f_systemP << gmshfilecontentP.str();
-    }
-    //f_system << IO::GMSH::getConfigString(3);
-    f_system.close();
-    f_systemP.close();
-    cout << " done" << endl;
-    //xTree_->printTree(step);
-  }
+//  if (gmshdebugout)
+//  {
+//    // debug: write information about which structure we are in
+//    std::stringstream filenameP;
+//    filenameP << "points_" << std::setw(5) << setfill('0') << step << ".pos";
+//    cout << "writing '"<<filenameP.str()<<"...";
+//    std::ofstream f_systemP(filenameP.str().c_str());
+//    
+//    std::stringstream filename;
+//    filename << "domains_" << std::setw(5) << setfill('0') << step << ".pos";
+//    cout << "writing '"<<filename.str()<<"...";
+//
+//    std::ofstream f_system(filename.str().c_str());
+//    //f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis, elementalDomainIntCells_, elementalBoundaryIntCells_);
+//    //f_system << IO::GMSH::disToString("Solid", 1.0, cutterdis_, currentcutterpositions_);
+//    {
+//      // stringstream for domains
+//      stringstream gmshfilecontent;
+//      gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
+//      // stringstream for cellcenter points
+//      stringstream gmshfilecontentP;
+//      gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
+//      
+//      for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
+//      {
+//        DRT::Element* actele = xfemdis_->lColElement(i);
+//        const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
+//        XFEM::DomainIntCells::const_iterator cell;
+//        for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
+//        {
+//          
+//          BlitzMat cellpos(3,cell->NumNode()); 
+//          cell->NodalPosXYZ(*actele, cellpos);
+//          const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
+//          
+//          const int domain_id = PositionWithinCondition(cellcenterpos, *this);
+//          
+//          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), domain_id, cellpos) << endl;
+//          BlitzMat point(3,1);
+//          point(0,0)=cellcenterpos(0);
+//          point(1,0)=cellcenterpos(1);
+//          point(2,0)=cellcenterpos(2);
+//          gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, 1, point) << endl;              
+//        };
+//      };
+//      gmshfilecontent << "};" << endl;
+//      f_system << gmshfilecontent.str();
+//      gmshfilecontentP << "};" << endl;
+//      f_systemP << gmshfilecontentP.str();
+//    }
+//    //f_system << IO::GMSH::getConfigString(3);
+//    f_system.close();
+//    f_systemP.close();
+//    cout << " done" << endl;
+//    //xTree_->printTree(step);
+//  }
   return;
 }
 
