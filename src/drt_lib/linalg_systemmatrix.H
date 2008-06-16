@@ -320,6 +320,9 @@ namespace LINALG
 
     void ApplyDirichlet(const Teuchos::RCP<Epetra_Vector> dbctoggle, bool diagonalblock=true);
 
+    /// create matrix that contains all Dirichlet lines from my
+    Teuchos::RCP<SparseMatrix> ExtractDirichletLines(const Teuchos::RCP<Epetra_Vector> dbctoggle);
+
     //@}
 
     /** \name Matrix Properties Query Methods */
