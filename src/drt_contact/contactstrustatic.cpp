@@ -194,6 +194,15 @@ void contact_stru_static_drt()
     //reader.ReadVector(fext, "fexternal");
     //reader.ReadMesh(restartstep);
 
+    // read restart information for contact
+    RCP<Epetra_Vector> zold = rcp(new Epetra_Vector(*(contactmanager->SlaveRowDofs())));
+    RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(contactmanager->SlaveRowNodes())));
+    reader.ReadVector(zold,"lagrmultold");
+    reader.ReadVector(activetoggle,"activetoggle");
+    *(contactmanager->LagrMultOld())=*zold;
+    contactmanager->StoreNodalLM("old");
+    contactmanager->ReadRestart(activetoggle);
+      
     // override current time and step with values from file
     time = rtime;
     istep = rstep;
@@ -382,13 +391,25 @@ void contact_stru_static_drt()
         fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
       }
       
+      //---------------------------------------------------- contact forces
       // reset Lagrange multipliers to last converged state
+      // this resetting is necessary due to multiple active set steps
       RCP<Epetra_Vector> z = contactmanager->LagrMult();
       RCP<Epetra_Vector> zold = contactmanager->LagrMultOld();
-
-      // update of LM (equal to last converged value)
       z->Update(1.0,*zold,0.0);
       contactmanager->StoreNodalLM("current");
+      
+      // evaluate Mortar coupling matrices for contact forces
+      contactmanager->Initialize(0);
+      contactmanager->SetState("displacement",disn);
+      contactmanager->EvaluateMortar();
+      
+      // add contact forces
+      contactmanager->ContactForces(fresm);
+      RCP<Epetra_Vector> fc = contactmanager->GetContactForces();
+      Epetra_Vector fccopy(*fc);
+      fc->Multiply(1.0,*invtoggle,fccopy,0.0);
+      if (fc!=null) fresm->Update(1.0,*fc,1.0);
       
       //----------------------------------------------- build res/disi norm
       double norm;
@@ -397,6 +418,9 @@ void contact_stru_static_drt()
 
       if (!myrank) cout << " Predictor residual forces " << norm << endl; fflush(stdout);
 
+      //remove contact forces from equilibrium again
+      if (fc!=null) fresm->Update(-1.0,*fc,1.0);
+              
       // reset Newton iteration counter
       numiter=0;
 
@@ -467,6 +491,12 @@ void contact_stru_static_drt()
         // R{istep,numiter} = F_int{istep,numiter} - F_ext{istep}
         fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
 
+        // blank residual DOFs which are on Dirichlet BC
+        {
+          Epetra_Vector fresmcopy(*fresm);
+          fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
+        }
+    
         // add contact forces
         contactmanager->ContactForces(fresm);
         RCP<Epetra_Vector> fc = contactmanager->GetContactForces();
@@ -476,13 +506,6 @@ void contact_stru_static_drt()
 
         //for (int k=0;k<fint->MyLength();++k)
         //  cout << (*fint)[k] << " " << -(*fextn)[k] << " " << (*fc)[k] << endl;
-
-        // blank residual DOFs which are on Dirichlet BC
-        {
-          Epetra_Vector fresmcopy(*fresm);
-          fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
-        }
-
 
         //---------------------------------------------- build res/disi norm
         fresm->Norm2(&norm);
@@ -553,6 +576,12 @@ void contact_stru_static_drt()
       //output.WriteVector("fexternal", fext);
       isdatawritten = true;
 
+      // write restart information for contact
+      RCP<Epetra_Vector> zold = contactmanager->LagrMultOld();
+      RCP<Epetra_Vector> activetoggle = contactmanager->WriteRestart();
+      output.WriteVector("lagrmultold",zold);
+      output.WriteVector("activetoggle",activetoggle);
+          
       if (!myrank)
       {
         cout << "====== Restart written in step " << istep << endl;

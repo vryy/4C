@@ -2445,6 +2445,29 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
       else
        wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
       
+      /*
+      // check weighted gap by definition (linear)
+      // include this line above!!! // interface_[i]->SetState("displacement",dism);
+      double testwgap = 0.0;
+      for (int k=0;k<3;++k)
+        testwgap -= cnode->n()[k] * wii * cnode->xspatial()[k];
+      
+      map<int,double>& mmap = cnode->GetM()[0];
+      map<int,double>::iterator it;
+      for (it=mmap.begin();it!=mmap.end();++it)
+      {
+        int mgid = it->first / 2;
+        double mik = it->second;
+        DRT::Node* mnode = interface_[i]->Discret().gNode(mgid);
+        if (!mnode) dserror("ERROR: Cannot find node with gid %",mgid);
+        CNode* cmnode = static_cast<CNode*>(mnode);
+        
+        for (int k=0;k<3;++k)
+          testwgap += cnode->n()[k] * mik * cmnode->xspatial()[k];
+      }
+      cout << "Node: " << cnode->Id() << " WGap: " << testwgap << endl;
+      */
+      
       // compute incr. normal displacement and weighted gap
       double nincr = 0.0;
       for (int k=0;k<3;++k)
