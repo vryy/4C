@@ -450,6 +450,16 @@ protected:
   /// bio related special (outflow) boudaries
   RCP<FluidImpedanceWrapper> impedancebc_;
 
+  /// @name special relaxation state
+
+  bool inrelaxation_;
+
+  Teuchos::RCP<LINALG::SparseMatrix> dirichletlines_;
+
+  Teuchos::RCP<LINALG::SparseMatrix> meshmatrix_;
+
+  //@}
+
 }; // class FluidImplicitTimeInt
 
 
