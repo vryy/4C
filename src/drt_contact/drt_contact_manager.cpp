@@ -29,7 +29,6 @@ Maintainer: Michael Gee
 CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf) :
 discret_(discret),
 alphaf_(alphaf),
-restart_(false),
 activesetconv_(false),
 isincontact_(false)
 {
@@ -429,9 +428,6 @@ void CONTACT::Manager::ReadRestart(const RCP<Epetra_Vector> activetoggle)
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
     IsInContact()=true;
-  
-  // set restart variable to true
-  restart_=true;
   
   return;
 }

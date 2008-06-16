@@ -288,20 +288,10 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   z->Update(1.0,*zold,0.0);
   contactmanager_->StoreNodalLM("current");
   
-  if (!contactmanager_->IsRestart())
-  {
-    // reset D and M matrices to Dold and Mold
-    contactmanager_->StoreDM("current");
-  }
-  else
-  {
-    // evaluate Mortar coupling matrices for contact forces
-    contactmanager_->Initialize(0);
-    contactmanager_->SetState("displacement",disn_);
-    contactmanager_->EvaluateMortar();
-    contactmanager_->StoreDM("current");
-    contactmanager_->IsRestart()=false;
-  }
+  // evaluate Mortar coupling matrices for contact forces
+  contactmanager_->Initialize(0);
+  contactmanager_->SetState("displacement",disn_);
+  contactmanager_->EvaluateMortar();
     
   // add contact forces
   contactmanager_->ContactForces(fresm_);
@@ -497,21 +487,11 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   z->Update(1.0,*zold,0.0);
   contactmanager_->StoreNodalLM("current");
   
-  if (!contactmanager_->IsRestart())
-  {
-    // reset D and M matrices to Dold and Mold
-    contactmanager_->StoreDM("current");
-  }
-  else
-  {
-    // evaluate Mortar coupling matrices for contact forces
-    contactmanager_->Initialize(0);
-    contactmanager_->SetState("displacement",disn_);
-    contactmanager_->EvaluateMortar();
-    contactmanager_->StoreDM("current");
-    contactmanager_->IsRestart()=false;
-  }
-
+  // evaluate Mortar coupling matrices for contact forces
+  contactmanager_->Initialize(0);
+  contactmanager_->SetState("displacement",disn_);
+  contactmanager_->EvaluateMortar();
+    
   // add contact forces
   contactmanager_->ContactForces(fresm_);
   RCP<Epetra_Vector> fc = contactmanager_->GetContactForces();

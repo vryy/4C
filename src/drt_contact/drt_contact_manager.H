@@ -127,12 +127,6 @@ public:
         
   */
   inline bool& IsInContact() { return isincontact_; }
-  
-  /*!
-  \brief Return current restart status
-          
-  */
-  inline bool& IsRestart() { return restart_; }
     
   //@}
   
@@ -301,7 +295,6 @@ protected:
   vector<RCP<CONTACT::Interface> >   interface_;      // contact interfaces
   Teuchos::ParameterList             scontact_;       // containing contact input parameters
   double                             alphaf_;         // Generalized-alpha parameter (0.0 for statics)
-  bool                               restart_;        // flag indicating whether we are in restart step
   
   RCP<Epetra_Map>                    gsnoderowmap_;   // global slave node row map (of all interfaces)
   RCP<Epetra_Map>                    gsdofrowmap_;    // global slave dof row map (of all interfaces)
