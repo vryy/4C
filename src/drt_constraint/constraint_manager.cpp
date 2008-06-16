@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_constraint_manager.cpp
 
-\brief Class constaining uzawa algorithm to solve linear system.
+\brief Class controlling constraints and containing the necessary data
 <pre>
 Maintainer: Thomas Kloeppel
             kloeppel@lnm.mw.tum.de

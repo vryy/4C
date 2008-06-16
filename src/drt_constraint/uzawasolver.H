@@ -35,7 +35,9 @@ using namespace Teuchos;
 
 
 /*!
-\brief Class controlling constraints and containing the necessary data
+\brief Class containing uzawa algorithm to solve linear system.
+
+\author Kloeppel (kloeppel@lnm.mw.tum.de)
 */
 class UzawaSolver
 {
@@ -105,7 +107,7 @@ public:
     
 private:
 
-    // don't want = operator, cctor and destructor
+    // do not want = operator, cctor
 
     UzawaSolver operator = (const UzawaSolver& old);
     UzawaSolver(const UzawaSolver& old);

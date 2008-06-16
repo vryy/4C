@@ -36,6 +36,8 @@ using namespace Teuchos;
 
 /*!
 \brief Class controlling constraints and containing the necessary data
+
+\author Kloeppel (kloeppel@lnm.mw.tum.de)
 */
 class ConstrManager
 {
