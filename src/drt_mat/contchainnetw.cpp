@@ -31,9 +31,6 @@ MAT::ContChainNetw::ContChainNetw()
 {
   isinit_=false;
   li_ = rcp(new vector<vector<double> >);
-  l1_=rcp(new vector<double>);
-  l2_=rcp(new vector<double>);
-  l3_=rcp(new vector<double>);
 }
 
 
@@ -74,10 +71,6 @@ void MAT::ContChainNetw::Pack(vector<char>& data) const
     AddtoPack(data,li_->at(var));
   }
 
-  AddtoPack(data,l1_);
-  AddtoPack(data,l2_);
-  AddtoPack(data,l3_);
-  
   return;
 }
 
@@ -111,15 +104,6 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
     li_->push_back(li);
   }
 
-  
-  l1_=rcp(new vector<double>);
-  l2_=rcp(new vector<double>);
-  l3_=rcp(new vector<double>);
-
-  ExtractfromPack(position,data,l1_);
-  ExtractfromPack(position,data,l2_);
-  ExtractfromPack(position,data,l3_);
-  
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   
@@ -133,11 +117,6 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
 void MAT::ContChainNetw::Initialize(const int numgp) 
 {
   const double isotropy  = 1/sqrt(3.0) * matdata_->m.contchainnetw->r0;
-
-  l1_= rcp(new vector<double> (numgp,isotropy));
-  l2_= rcp(new vector<double> (numgp,isotropy));
-  l3_= rcp(new vector<double> (numgp,isotropy));
-  
   li_ = rcp(new vector<vector<double> > (numgp));
   for(int j=0; j<numgp; ++j){
     li_->at(j).resize(3);
@@ -189,9 +168,7 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
 
   // initial cell dimensions (isotropy)
   const double isotropy  = 1/sqrt(3.0) * r0;
-  const double l10 = isotropy;
-  const double l20 = isotropy;
-  const double l30 = isotropy;
+  vector<double> li0(3,isotropy);
 
   // right Cauchy-Green Tensor  C = 2 * E + I
   // build identity tensor I
@@ -247,27 +224,17 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   
   // trial S to compute eigenvalues *******************************************
   Epetra_SerialDenseMatrix Strial(3,3);
-  double l1sq = l1_->at(gp)*l1_->at(gp);
-  double l2sq = l2_->at(gp)*l2_->at(gp);
-  double l3sq = l3_->at(gp)*l3_->at(gp);
-
-  l1sq = li_->at(gp)[0] * li_->at(gp)[0];
-  l2sq = li_->at(gp)[1] * li_->at(gp)[1];
-  l3sq = li_->at(gp)[2] * li_->at(gp)[2];
-  
-  // structural tensors
-  Epetra_SerialDenseVector N01(6); N01(0) = 1.0;
-  Epetra_SerialDenseVector N02(6); N02(1) = 1.0;
-  Epetra_SerialDenseVector N03(6); N03(2) = 1.0;
+  vector<double> lisq(3);
+  for (int i = 0; i < 3; ++i) lisq[i] = li_->at(gp)[i] * li_->at(gp)[i]; 
   
   // current chain length
-  double r = sqrt(I1*l1sq + I2*l2sq + I3*l3sq);
+  double r = sqrt(I1*lisq[0] + I2*lisq[1] + I3*lisq[2]);
   
   double s_chn = chn_stiffact*(4.0/L + 1.0/(r*(1.0-r/L)*(1.0-r/L)) - 1.0/r);
   
-  Strial(0,0) = (*stress)(0) + l1sq*s_chn + l1sq/I1*4*stressfree;
-  Strial(1,1) = (*stress)(1) + l2sq*s_chn + l2sq/I2*4*stressfree;
-  Strial(2,2) = (*stress)(2) + l3sq*s_chn + l3sq/I3*4*stressfree;
+  Strial(0,0) = (*stress)(0) + lisq[0]*s_chn + lisq[0]/I1*4*stressfree;
+  Strial(1,1) = (*stress)(1) + lisq[1]*s_chn + lisq[1]/I2*4*stressfree;
+  Strial(2,2) = (*stress)(2) + lisq[2]*s_chn + lisq[2]/I3*4*stressfree;
   Strial(0,1) = (*stress)(3); Strial(1,0) = (*stress)(3);
   Strial(1,2) = (*stress)(4); Strial(2,1) = (*stress)(4);
   Strial(0,2) = (*stress)(5); Strial(2,0) = (*stress)(5);
@@ -278,46 +245,32 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
     if (eig_sp(i) > 0.0) eig_sp(i) = 1.0;
     else eig_sp(i) = 0.0;
   }
+  // end of trial S to compute eigenvalues ************************************
   
   // update cell dimensions (remodeling!)
-  const double l1 = (eig_sp(0) - l10/r0)*(1 - decay)*r0 + l10;
-  const double l2 = (eig_sp(1) - l20/r0)*(1 - decay)*r0 + l20;
-  const double l3 = (eig_sp(2) - l30/r0)*(1 - decay)*r0 + l30;
+  for (int i = 0; i < 3; ++i){
+    li_->at(gp)[i] = (eig_sp(i) - li0[i]/r0)*(1-decay)*r0 + li0[i];
+    lisq[i] = li_->at(gp)[i] * li_->at(gp)[i]; 
+  }
   
   // evaluate chain stress and add to isotropic stress
-  l1sq = l1*l1;
-  l2sq = l2*l2;
-  l3sq = l3*l3;
-  vector<double> lsq(3);
-  lsq[0] = l1sq; lsq[1] = l2sq; lsq[2] = l3sq;
-  
-  r = sqrt(I1*l1sq + I2*l2sq + I3*l3sq);
+  r = sqrt(I1*lisq[0] + I2*lisq[1] + I3*lisq[2]);
   s_chn = chn_stiffact*(4.0/L + 1.0/(r*(1.0-r/L)*(1.0-r/L)) - 1.0/r);
-  (*stress)(0) += l1sq*s_chn + l1sq/I1*4*stressfree;
-  (*stress)(1) += l2sq*s_chn + l2sq/I2*4*stressfree;
-  (*stress)(2) += l3sq*s_chn + l3sq/I3*4*stressfree;
+  (*stress)(0) += lisq[0]*s_chn + lisq[0]/I1*4*stressfree;
+  (*stress)(1) += lisq[1]*s_chn + lisq[1]/I2*4*stressfree;
+  (*stress)(2) += lisq[2]*s_chn + lisq[2]/I3*4*stressfree;
   
   //evaluate chain tangent and add to isotropic cmat
   double c_chn = chn_stiffact/(r*r*r) * (1.0 - 1.0/((1.0-r/L)*(1.0-r/L)) + 2.0*r/(L*(1.0-r/L)*(1.0-r/L)*(1.0-r/L)) );
   // chain part only affects upper left block of cmat (no shear)
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 3; ++j) {
-      (*cmat)(i,j) += c_chn * lsq[i] * lsq[j];
+      (*cmat)(i,j) += c_chn * lisq[i] * lisq[j];
     }
   }
-  (*cmat)(0,0) +=  - 8.0*stressfree*l1sq/(I1*I1);
-  (*cmat)(1,1) +=  - 8.0*stressfree*l2sq/(I2*I2);
-  (*cmat)(2,2) +=  - 8.0*stressfree*l3sq/(I3*I3);
-  
-  
-  // store history values
-  l1_->at(gp) = l1;
-  l2_->at(gp) = l2;
-  l3_->at(gp) = l3;
-  
-  li_->at(gp)[0] = l1;
-  li_->at(gp)[1] = l2;
-  li_->at(gp)[2] = l3;
+  (*cmat)(0,0) +=  - 8.0*stressfree*lisq[0]/(I1*I1);
+  (*cmat)(1,1) +=  - 8.0*stressfree*lisq[1]/(I2*I2);
+  (*cmat)(2,2) +=  - 8.0*stressfree*lisq[2]/(I3*I3);
   
   return;
 }
