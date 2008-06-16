@@ -79,7 +79,7 @@ STARTINGALGO     One_Step_Theta
 NONLINITER       Newton
 ITEMAX           20
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-12
+CONVTOL          1.0E-8
 STEADYCHECK      L_2_norm
 STEADYSTEP       -1
 STEADYTOL        1.0E-8
@@ -11066,7 +11066,7 @@ NODE         1883     COORD 0.000000000000000e+00     1.000000000000000e+00     
 ------------------------------------------------------ALE ELEMENTS
 --------------------------------------------------THERMAL ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
+MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 10000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
@@ -11082,9 +11082,9 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 10000.0 NUE 0.0 DENS 0.0 THEXPAN
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 773 POSITION velx     NAME velx     VALUE 1.939255169e+00 TOLERANCE 1e-6
-FLUID DIS 1 NODE 773 POSITION vely     NAME vely     VALUE 1.733352770e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 773 POSITION velx     NAME velx     VALUE 1.804087333e+00 TOLERANCE 1e-6
+FLUID DIS 1 NODE 773 POSITION vely     NAME vely     VALUE 1.479453056e-01 TOLERANCE 1e-6
 FLUID DIS 1 NODE 773 POSITION velz     NAME velz     VALUE 0.000000000e+00 TOLERANCE 1e-6
-FLUID DIS 1 NODE 773 POSITION pressure NAME pressure VALUE 5.739389137e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 773 POSITION pressure NAME pressure VALUE 4.155440744e+00 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END

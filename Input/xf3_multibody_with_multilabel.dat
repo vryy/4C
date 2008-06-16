@@ -191,7 +191,7 @@ ST_ALPHA_M   0.5
 ST_ALPHA_F   0.5
 TH_INITMPR   0.0
 ------------------------------------------------------FLUID SOLVER
-SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER         UMFPACK          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC         ILU           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -30336,9 +30336,9 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 10000.0 NUE 0.0 DENS 0.0 THEXPAN
 -----------------------------------------------------------LOCSYS4
 -----------------------------------------------------------LOCSYS5
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 1103 POSITION velx     NAME velx     VALUE 8.995703432e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 1103 POSITION vely     NAME vely     VALUE 2.702804038e-02 TOLERANCE 1e-6
-FLUID DIS 1 NODE 1103 POSITION velz     NAME velz     VALUE -2.947538448e-06 TOLERANCE 1e-6
-FLUID DIS 1 NODE 1103 POSITION pressure NAME pressure VALUE 2.554582803e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 1103 POSITION velx     NAME velx     VALUE 9.332904920e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 1103 POSITION vely     NAME vely     VALUE 2.870863690e-02 TOLERANCE 1e-6
+FLUID DIS 1 NODE 1103 POSITION velz     NAME velz     VALUE 2.213675704e-11 TOLERANCE 1e-6
+FLUID DIS 1 NODE 1103 POSITION pressure NAME pressure VALUE 2.566176116e+01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
