@@ -347,7 +347,7 @@ namespace UTILS {
     void ReadInput();
 
     /// return a specified time curve
-    TimeCurve& Curve(int num) { return curves_[num]; }
+    TimeCurve& Curve(int num);
 
   private:
 

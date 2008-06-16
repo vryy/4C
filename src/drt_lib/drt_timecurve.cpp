@@ -229,6 +229,18 @@ void DRT::UTILS::TimeCurveManager::ReadInput()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+DRT::UTILS::TimeCurve& DRT::UTILS::TimeCurveManager::Curve(int num)
+{  
+  // ensure that desired curve is available (prevents segmentation fault)
+  if ((curves_.size()< (unsigned int)(num+1)) || num<0) 
+    dserror("time curve %d not available",num+1);
+
+  return curves_[num]; 
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 DRT::UTILS::PolygonalTimeSlice::PolygonalTimeSlice(double begin,
                                                    double end,
                                                    double vbegin,
