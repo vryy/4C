@@ -1,0 +1,28 @@
+/*!---------------------------------------------------------------------
+\file combust_utils.H
+
+\brief collection of functions in namespace COMBUST
+
+<pre>
+Maintainer: Florian Henke
+            henke@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15265
+</pre>
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+#ifndef COMBUST_UTILS_H
+#define COMBUST_UTILS_H
+
+namespace COMBUST
+{
+
+/*----------------------------------------------------------------------*
+ | print COMBUST module logo on screen                      henke 06/08 |
+ *----------------------------------------------------------------------*/
+void printlogo();
+
+} //namespace COMBUST
+
+#endif  // #ifndef COMBUST_UTILS_H
+#endif  // #ifdef CCADISCRET

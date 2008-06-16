@@ -275,6 +275,12 @@ void DRT::Problem::InputControl()
     genprob.numcdf = 1; /* convection-diffusion field index */
     break;
   }
+  case prb_combust:
+  {
+    genprob.numff = 0;  /* fluid field index */
+    genprob.numcdf = 1; /* convection-diffusion field (=G-function) index */
+    break;
+  }
   default:
     dserror("problem type %d unknown", genprob.probtyp);
   }
@@ -492,6 +498,23 @@ void DRT::Problem::InputControl()
     break;
   }
 
+  /* for combustion (COMBUST)*/
+  case prb_combust:
+  {
+    if (genprob.numfld!=2) dserror("numfld != 2 for combustion problem");
+    solver_.resize(genprob.numfld);
+    solv = &solver_[0];
+
+    // solver for fluid problem
+    solv[genprob.numff].fieldtyp = fluid;
+    InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
+
+    // solver for convection-diffusion problem (at the moment the same!!!)
+    solv[genprob.numcdf].fieldtyp = condif;
+    InputSolverControl("FLUID SOLVER",&(solv[genprob.numcdf]));
+
+    break;
+  }
   default:
     dserror("problem type %d unknown", genprob.probtyp);
   }
@@ -1075,6 +1098,25 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     break;
   } // end of else if (genprob.probtyp==prb_elch)
 
+  case prb_combust:
+  {
+    // allocate and input general old stuff....
+    if (genprob.numfld!=2) dserror("numfld != 2 for combustion problem");
+
+    // create empty discretizations
+    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+    AddDis(genprob.numff, fluiddis);
+
+    condifdis = rcp(new DRT::Discretization("condif",reader.Comm()));
+    AddDis(genprob.numcdf, condifdis);
+
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.Read();
+
+    break;
+  } // end of else if (genprob.probtyp==prb_combust)  
+  
   default:
     dserror("Type of problem unknown");
   }

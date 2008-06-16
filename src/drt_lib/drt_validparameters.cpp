@@ -269,7 +269,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Ale",
                                  "Thermal_Structure_Interaction")
                                .append("Structure_Multiscale")
-                               .append("Electrochemistry"),
+                               .append("Electrochemistry")
+                               .append("Combustion"),
                                tuple<PROBLEM_TYP>(
                                  prb_structure,
                                  prb_fluid,
@@ -282,7 +283,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  prb_ale,
                                  prb_tsi)
                                .append(prb_struct_multi)
-                               .append(prb_elch),
+                               .append(prb_elch)
+                               .append(prb_combust),
                                &type);
   IntParameter("NUMFIELD",1,"",&type);
   setStringToIntegralParameter("TIMETYP","Dynamic","",
@@ -947,6 +949,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("SAMPLING_START",1,"Time step after when sampling shall be started",&fdyn_turbu);
   IntParameter("SAMPLING_STOP",1,"Time step when sampling shall be stopped",&fdyn_turbu);
   IntParameter("DUMPING_PERIOD",1,"Period of time steps after which statistical data shall be dumped",&fdyn_turbu);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& fdyn_combust = fdyn.sublist("COMBUSTION",false,"");  
+  
+  DoubleParameter("LAMINAR FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&fdyn_combust);
+  DoubleParameter("MARKSTEIN LENGTH",0.0,"The Markstein length takes flame curvature into account",&fdyn_combust);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC",false,"");

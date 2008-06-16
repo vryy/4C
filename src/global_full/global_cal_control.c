@@ -75,6 +75,7 @@ extern struct _FIELD      *sm_field;
 #include "../drt_adapter/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
 #include "../drt_elch/elch_dyn.H"
+#include "../drt_combust/combust_dyn.H"
 #endif
 
 /*----------------------------------------------------------------------*
@@ -333,6 +334,14 @@ case prb_elch:
 #endif
   break;
 
+case prb_combust:
+#ifndef CCADISCRET
+  dserror("combustion module not available in CCARAT");
+#else
+  combust_dyn();
+#endif
+  break;  
+  
 default:
   dserror("solution of unknown problemtyp requested");
 break;

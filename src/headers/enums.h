@@ -32,13 +32,14 @@ typedef enum _PROBLEM_TYP
                        prb_condif,       /*  convection-diffusion problem */
                        prb_pfsi,         /*  projection fsi */
                        prb_struct_multi, /*  multi-scale problem (structure) */
-                       prb_elch          /*  electrochemical problem */
+                       prb_elch,          /*  electrochemical problem */
+                       prb_combust        /*  combustion problem */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "none","fsi","fsi_xfem","ssi","structure","fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","fluid_pm","condif","pfsi","struct_multi","elch",NULL }
+#define PROBLEMNAMES { "none","fsi","fsi_xfem","ssi","structure","fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","fluid_pm","condif","pfsi","struct_multi","elch","combustion",NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/

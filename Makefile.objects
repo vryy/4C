@@ -1175,3 +1175,8 @@ OBJS_INV_ANALYSIS = src/drt_inv_analysis/inv_analysis.o
 OBJS_DRT_ELCH = src/drt_elch/elch_dyn.o \
                 src/drt_elch/elch_algorithm.o \
                 src/drt_elch/elch_create_condif.o
+#               combustion 
+OBJS_DRT_COMBUST = src/drt_combust/combust_dyn.o \
+                src/drt_combust/combust_algorithm.o \
+                src/drt_combust/combust_create_gfunction.o \
+                src/drt_combust/combust_utils.o
