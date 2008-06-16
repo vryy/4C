@@ -602,9 +602,7 @@ void CONTACT::Interface::FDCheckMortarDDeriv()
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave2D(*selement);
 #else
-#ifdef CONTACTFULLLIN
-    dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
-#endif // #ifdef CONTACTFULLLIN
+    cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
 #endif // #ifndef CONTACTONEMORTARLOOP
 
     // loop over the contact candidate master elements
@@ -810,9 +808,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave2D(*selement);
   #else
-  #ifdef CONTACTFULLLIN
-      dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
-  #endif // #ifdef CONTACTFULLLIN
+      cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
 
       // loop over the contact candidate master elements
@@ -1022,9 +1018,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave2D(*selement);
   #else
-  #ifdef CONTACTFULLLIN
-      dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
-  #endif // #ifdef CONTACTFULLLIN
+      cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
 
       // loop over the contact candidate master elements
@@ -1206,9 +1200,7 @@ void CONTACT::Interface::FDCheckMortarMDeriv()
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave2D(*selement);
 #else
-#ifdef CONTACTFULLLIN
-    dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
-#endif // #ifdef CONTACTFULLLIN
+    cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
 #endif // #ifndef CONTACTONEMORTARLOOP
 
     // loop over the contact candidate master elements
@@ -1437,9 +1429,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave2D(*selement);
   #else
-  #ifdef CONTACTFULLLIN
-      dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
-  #endif // #ifdef CONTACTFULLLIN
+      cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
 
       // loop over the contact candidate master elements
@@ -1676,9 +1666,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave2D(*selement);
   #else
-  #ifdef CONTACTFULLLIN
-      dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
-  #endif // #ifdef CONTACTFULLLIN
+      cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
 
       // loop over the contact candidate master elements
@@ -1887,9 +1875,7 @@ void CONTACT::Interface::FDCheckGapDeriv()
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave2D(*selement);
 #else
-#ifdef CONTACTFULLLIN
-    dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
-#endif // #ifdef CONTACTFULLLIN
+    cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
 #endif // #ifndef CONTACTONEMORTARLOOP
 
     // loop over the contact candidate master elements
@@ -2082,9 +2068,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave2D(*selement);
   #else
-  #ifdef CONTACTFULLLIN
-      dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
-  #endif // #ifdef CONTACTFULLLIN
+      cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
 
       // loop over the contact candidate master elements
@@ -2285,9 +2269,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
       // integrate Mortar matrix D (lives on slave side only!)
       IntegrateSlave2D(*selement);
   #else
-  #ifdef CONTACTFULLLIN
-      dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
-  #endif // #ifdef CONTACTFULLLIN
+      cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
   #endif // #ifndef CONTACTONEMORTARLOOP
 
       // loop over the contact candidate master elements
@@ -2460,9 +2442,7 @@ void CONTACT::Interface::FDCheckTangLMDeriv()
     // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave2D(*selement);
 #else
-#ifdef CONTACTFULLLIN
-    dserror("ERROR: Full linearization not yet implemented for 1 mortar loop case!");
-#endif // #ifdef CONTACTFULLLIN
+    cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
 #endif // #ifndef CONTACTONEMORTARLOOP
 
     // loop over the contact candidate master elements

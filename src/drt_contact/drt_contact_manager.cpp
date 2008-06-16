@@ -241,8 +241,10 @@ isincontact_(false)
   
   // setup global Mortar matrices Dold and Mold
   dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+  dold_->Zero();
   dold_->Complete();
   mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_));
+  mold_->Zero();
   mold_->Complete(*gmdofrowmap_,*gsdofrowmap_);
   
   // friction
@@ -339,13 +341,17 @@ bool CONTACT::Manager::ReadAndCheckInput()
   scontact_.set<double> ("friction bound",input.get<double>("FRBOUND"));
   scontact_.set<double> ("friction coefficient",input.get<double>("FRCOEFF"));
   
+  // read full linearization flag
+  scontact_.set<bool> ("full linearization",Teuchos::getIntegralValue<int>(input,"FULL_LINEARIZATION"));
+    
   // check contact input parameters
   string ctype   = scontact_.get<string>("contact type","none");
   bool init      = scontact_.get<bool>("initial contact",false);
-  //bool btrafo    = scontact_.get<bool>("basis transformation",false);
+  bool btrafo    = scontact_.get<bool>("basis transformation",false);
   string ftype   = scontact_.get<string>("friction type","none");
   //double frbound = scontact_.get<double>("friction bound",0.0);
   //double frcoeff = scontact_.get<double>("friction coeffiecient",0.0);
+  bool fulllin   = scontact_.get<bool>("full linearization",false);
   
   // invalid parameter combinations
   if (ctype=="normal" && ftype !="none")
@@ -354,6 +360,10 @@ bool CONTACT::Manager::ReadAndCheckInput()
     dserror("No friction law supplied for frictional contact");
   if (ctype=="frictional" && ftype=="coulomb")
     dserror("Coulomb friction law not yet implemented");
+  if (ctype=="frictional" && fulllin)
+    dserror("Full linearization not yet implemented for friction");
+  if (btrafo && fulllin)
+    dserror("Full linearization not yet implemented for basis trafo case");
   
   // overrule input in certain cases
   if (ctype=="meshtying" && !init)
@@ -452,11 +462,13 @@ void CONTACT::Manager::Initialize(int numiter)
    if (dold_==null)
    {
      dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+     dold_->Zero();
      dold_->Complete();
    }
    if (mold_==null)
    {
      mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+     mold_->Zero();
      mold_->Complete(*gmdofrowmap_,*gsdofrowmap_);
    }
    
@@ -570,11 +582,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // because there are still problems with the transposed version of
   // MLMultiply if a row has no entries! One day we should use ML...
   
-  // FIXME: Not yet implemented for CONTACTFULLLIN
-#ifdef CONTACTFULLLIN
-  dserror("ERROR: Full linearization not yet implemented for Tresca basis trafo case!");
-#endif // #ifdef CONTACTFULLLIN
-    
   // input parameters
   string ctype   = scontact_.get<string>("contact type","none");
   string ftype   = scontact_.get<string>("friction type","none");
@@ -1111,11 +1118,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // because there are still problems with the transposed version of
   // MLMultiply if a row has no entries! One day we should use ML...
   
-  // FIXME: Not yet implemented for CONTACTFULLLIN
-#ifdef CONTACTFULLLIN
-  dserror("ERROR: Full linearization not yet implemented for basis trafo case!");
-#endif // #ifdef CONTACTFULLLIN
-  
   // input parameters
   string ctype   = scontact_.get<string>("contact type","none");
   string ftype   = scontact_.get<string>("friction type","none");
@@ -1622,7 +1624,8 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // input parameters
   string ctype   = scontact_.get<string>("contact type","none");
   string ftype   = scontact_.get<string>("friction type","none");
-    
+  bool fulllin   = scontact_.get<bool>("full linearization",false);
+  
   /**********************************************************************/
   /* evaluate interfaces                                                */
   /* (nodal normals, projections, Mortar integration, Mortar assembly)  */
@@ -1905,7 +1908,6 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   RCP<LINALG::SparseMatrix> dolda, doldi;
   LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
   
-#ifdef CONTACTFULLLIN
   /**********************************************************************/
   /* Split LinD and LinM into blocks                                    */
   /**********************************************************************/
@@ -1915,17 +1917,18 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // we want to split linmmatrix_ into 3 groups a,i,m = 3 blocks
   RCP<LINALG::SparseMatrix> linmmi, linmma, linmmm, linmms;
   
-  // do the splitting
-  LINALG::SplitMatrix2x2(lindmatrix_,gactivedofs_,gidofs,gactivedofs_,gidofs,lindaa,lindai,tempmtx1,tempmtx2);
-  LINALG::SplitMatrix2x2(linmmatrix_,gmdofrowmap_,tempmap,gmdofrowmap_,gsdofrowmap_,linmmm,linmms,tempmtx1,tempmtx2);
-  LINALG::SplitMatrix2x2(linmms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,linmma,linmmi,tempmtx1,tempmtx2);
+  if (fulllin)
+  {
+    // do the splitting
+    LINALG::SplitMatrix2x2(lindmatrix_,gactivedofs_,gidofs,gactivedofs_,gidofs,lindaa,lindai,tempmtx1,tempmtx2);
+    LINALG::SplitMatrix2x2(linmmatrix_,gmdofrowmap_,tempmap,gmdofrowmap_,gsdofrowmap_,linmmm,linmms,tempmtx1,tempmtx2);
+    LINALG::SplitMatrix2x2(linmms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,linmma,linmmi,tempmtx1,tempmtx2);
   
-  // modification of kai, kaa
-  // (this has to be done first as they are needed below)
-  kai->Add(*lindai,false,1.0-alphaf_,1.0);
-  kaa->Add(*lindaa,false,1.0-alphaf_,1.0);
-    
-#endif // #ifdef CONTACTFULLLIN
+    // modification of kai, kaa
+    // (this has to be done first as they are needed below)
+    kai->Add(*lindai,false,1.0-alphaf_,1.0);
+    kaa->Add(*lindaa,false,1.0-alphaf_,1.0);
+  }  
   
   /**********************************************************************/
   /* Build the final K and f blocks                                     */
@@ -1944,25 +1947,19 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // kmm: add T(mbaractive)*kam
   RCP<LINALG::SparseMatrix> kmmmod = LINALG::Multiply(*mhata,true,*kam,false,false);
   kmmmod->Add(*kmm,false,1.0,1.0);
-#ifdef CONTACTFULLLIN
-  kmmmod->Add(*linmmm,false,1.0-alphaf_,1.0);
-#endif // #ifdef CONTACTFULLLIN
+  if (fulllin) kmmmod->Add(*linmmm,false,1.0-alphaf_,1.0);
   kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
   
   // kmi: add T(mbaractive)*kai
   RCP<LINALG::SparseMatrix> kmimod = LINALG::Multiply(*mhata,true,*kai,false,false);
   kmimod->Add(*kmi,false,1.0,1.0);
-#ifdef CONTACTFULLLIN
-  kmimod->Add(*linmmi,false,1.0-alphaf_,1.0);
-#endif // #ifdef CONTACTFULLLIN
+  if (fulllin) kmimod->Add(*linmmi,false,1.0-alphaf_,1.0);
   kmimod->Complete(kmi->DomainMap(),kmi->RowMap());
   
   // kma: add T(mbaractive)*kaa
   RCP<LINALG::SparseMatrix> kmamod = LINALG::Multiply(*mhata,true,*kaa,false,false);
   kmamod->Add(*kma,false,1.0,1.0);
-#ifdef CONTACTFULLLIN
-  kmamod->Add(*linmma,false,1.0-alphaf_,1.0);
-#endif // #ifdef CONTACTFULLLIN
+  if (fulllin) kmamod->Add(*linmma,false,1.0-alphaf_,1.0);
   kmamod->Complete(kma->DomainMap(),kma->RowMap());
   
   // kin: nothing to do
@@ -2090,10 +2087,11 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   if (gactiven_->NumGlobalElements()) kteffnew->Add(*nmatrix_,false,1.0,1.0);
   
   // add full linearization terms to kteffnew
-#ifdef CONTACTFULLLIN
-  if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,1.0,1.0);
-  if (gactivet_->NumGlobalElements()) kteffnew->Add(*pmatrix_,false,-1.0,1.0);
-#endif // #ifdef CONTACTFULLLIN
+  if (fulllin)
+  {
+   if (gactiven_->NumGlobalElements()) kteffnew->Add(*smatrix_,false,1.0,1.0);
+   if (gactivet_->NumGlobalElements()) kteffnew->Add(*pmatrix_,false,-1.0,1.0);
+  }
   
   if (ftype=="none")
   {
@@ -2367,6 +2365,8 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
     cout << *zinactive << endl;
   }
   
+  bool fulllin   = scontact_.get<bool>("full linearization",false);
+  
   // debugging (check for N*[d_a] = g_a and T*z_a = 0)
   if (gactivedofs_->NumGlobalElements())
   { 
@@ -2379,8 +2379,11 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
     RCP<Epetra_Map> gsmdofs = LINALG::MergeMap(gsdofrowmap_,gmdofrowmap_,false);
     RCP<Epetra_Vector> disism = rcp(new Epetra_Vector(*gsmdofs));
     LINALG::Export(*disi,*disism);
-    //smatrix_->Multiply(false,*disism,*gtest2);
-    //gtest->Update(1.0,*gtest2,1.0);
+    if (fulllin)
+    {
+      smatrix_->Multiply(false,*disism,*gtest2);
+      gtest->Update(1.0,*gtest2,1.0);
+    }
     cout << *gtest << endl << *g_ << endl;
     
     RCP<Epetra_Vector> zactive = rcp(new Epetra_Vector(*gactivedofs_));
@@ -2388,8 +2391,11 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
     RCP<Epetra_Vector> zerotest2 = rcp(new Epetra_Vector(*gactivet_));
     LINALG::Export(*z_,*zactive);
     tmatrix_->Multiply(false,*zactive,*zerotest);
-    //pmatrix_->Multiply(false,*disis,*zerotest2);
-    //zerotest->Update(1.0,*zerotest2,1.0);
+    if (fulllin)
+    {
+    pmatrix_->Multiply(false,*disis,*zerotest2);
+    zerotest->Update(1.0,*zerotest2,1.0);
+    }
     cout << *zerotest << endl;
   }
 #endif // #ifdef DEBUG

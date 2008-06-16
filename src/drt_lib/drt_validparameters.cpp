@@ -500,7 +500,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&scontact);
 
   setStringToIntegralParameter("BASISTRAFO","No","If chosen basis transformation is applied to displacements",
-                                yesnotuple,yesnovalue,&scontact);
+                               yesnotuple,yesnovalue,&scontact);
 
   setStringToIntegralParameter("FRICTION","None","Type of friction law",
                                 tuple<std::string>("None","none",
@@ -516,6 +516,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("FRBOUND",0.0,"Friction bound for Tresca friction",&scontact);
   DoubleParameter("FRCOEFF",0.0,"Friction coefficient for Coulomb friction",&scontact);
 
+  setStringToIntegralParameter("FULL_LINEARIZATION","No","If chosen full linearization of contact is applied",
+                               yesnotuple,yesnovalue,&scontact);
+  
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 
