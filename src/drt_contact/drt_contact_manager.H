@@ -105,6 +105,12 @@ public:
   inline bool& ActiveSetConverged() { return activesetconv_; }
   
   /*!
+  \brief Return no. of active sets in this time/load step
+        
+  */
+  inline int& ActiveSetSteps() { return activesetsteps_; }
+  
+  /*!
   \brief Return contact force vector
   
   */
@@ -123,7 +129,7 @@ public:
   inline RCP<Epetra_Vector> LagrMultOld() { return zold_; }
   
   /*!
-  \brief Return jump vector (mid-point)
+  \brief Return jump vector (t_n+1)
       
   */
   inline RCP<Epetra_Vector> Jump() { return jump_; }
@@ -249,10 +255,22 @@ public:
   slave nodes to check, whether the assumption of them being active
   or inactive respectively has been correct. If a single node changes
   state, the active set is adapted accordingly and the convegence
-  flag is kept on false -> another Newton iteration!
+  flag is kept on false -> another full Newton iteration!
   
   */
-  void UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dism);
+  void UpdateActiveSet(RCP<Epetra_Vector> disn);
+  
+  /*!
+  \brief Update active set and check for convergence
+  
+  In this function we loop over all interfaces and then over all
+  slave nodes to check, whether the assumption of them being active
+  or inactive respectively has been correct. If a single node changes
+  state, the active set is adapted accordingly and the convegence
+  flag is kept on false -> another Newton step!
+  
+  */
+  void UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn);
   
   /*!
   \brief Compute contact force vector
@@ -289,6 +307,12 @@ public:
   */
   void StoreDM(const string& state);
   
+  /*!
+  \brief Print current active set to screen
+  
+  */
+  void PrintActiveSet();
+    
   //@}
   
   
@@ -317,7 +341,8 @@ protected:
   RCP<Epetra_Map>                    gslipdofs_;      // global slip slave dof row map (of all interfaces)
   RCP<Epetra_Map>                    gslipt_;         // global row map of matrix T for slip dofs (of all interfaces)
   bool                               activesetconv_;  // convergence flag for active set
-  
+  int                                activesetsteps_; // no. of active sets in this time/load step
+    
   RCP<LINALG::SparseMatrix>          dmatrix_;        // global Mortar matrix D
   RCP<LINALG::SparseMatrix>          mmatrix_;        // global Mortar matrix M
   RCP<LINALG::SparseMatrix>          mhatmatrix_;     // product of global Mortar matrices inv(D)*M

@@ -805,7 +805,12 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
-
+    
+    //-------------------- update active set for semi-smooth Newton case
+#ifdef CONTACTSEMISMOOTH
+    contactmanager_->UpdateActiveSetSemiSmooth(disn_);
+#endif // #ifdef CONTACTSEMISMOOTH
+    
   }
   //=================================================================== end equilibrium loop
   print_unconv = false;
@@ -894,6 +899,9 @@ void CONTACT::ContactStruGenAlpha::Update()
   fint_->Update(1.0,*fintn_,0.0);
 #endif
 
+  //---------------------------------------------- print contact to screen
+  contactmanager_->PrintActiveSet();
+    
   //---------------------------------- store Lagrange multipliers, D and M
   RCP<Epetra_Vector> z = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
@@ -1144,9 +1152,6 @@ void CONTACT::ContactStruGenAlpha::Integrate()
   else if (pred=="consistent") predictor = 2;
   else dserror("Unknown type of predictor");
 
-  // iteration counter for active set loop
-  int numiteractive = 0;
-   
   //in case a constraint is defined, use defined algorithm
   if (constrMan_->HaveConstraint())
   {
@@ -1180,11 +1185,46 @@ void CONTACT::ContactStruGenAlpha::Integrate()
   // Newton as nonlinear iteration scheme
   else if (equil=="full newton")
   {
+    //********************************************************************
+    // OPTIONS FOR PRIMAL-DUAL ACTIVE SET STRATEGY (PDASS)
+    //********************************************************************
+    // SEMI-SMOOTH NEWTON
+    // The search for the correct active set (=contact nonlinearity) and
+    // the large deformstion linearization (=geometrical nonlinearity) are
+    // merged into one semi-smooth Newton method and solved within ONE
+    // iteration loop
+    //********************************************************************
+    // FIXED-POINT APPROACH
+    // The search for the correct active set (=contact nonlinearity) is
+    // represented by a fixed-point approach, whereas the large deformation
+    // linearization (=geimetrical nonlinearity) is treated by a standard
+    // Newton scheme. This yields TWO nested iteration loops
+    //********************************************************************
+#ifdef CONTACTSEMISMOOTH
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
       contactmanager_->ActiveSetConverged() = false;
-      numiteractive = 0;
+      contactmanager_->ActiveSetSteps() = 1;
+
+      // predictor step
+      if      (predictor==1) ConstantPredictor();
+      else if (predictor==2) ConsistentPredictor();
+
+      // LOOP2: nonlinear iteration (Newton)
+      FullNewton();
+      
+      UpdateandOutput();
+      double time = params_.get<double>("total time",0.0);
+      if (time>=maxtime) break;
+    }
+    
+#else
+    // LOOP1: time steps
+    for (int i=step; i<nstep; ++i)
+    {
+      contactmanager_->ActiveSetConverged() = false;
+      contactmanager_->ActiveSetSteps() = 1;
 
       // LOOP2: active set strategy
       while (contactmanager_->ActiveSetConverged()==false)
@@ -1197,14 +1237,14 @@ void CONTACT::ContactStruGenAlpha::Integrate()
         FullNewton();
 
         // update of active set
-        numiteractive++;
-        contactmanager_->UpdateActiveSet(numiteractive,dism_);
+        contactmanager_->UpdateActiveSet(disn_);
       }
       
       UpdateandOutput();
       double time = params_.get<double>("total time",0.0);
       if (time>=maxtime) break;
     }
+#endif // #ifdef CONTACTSEMISMOOTH
   }
   
   // other types of nonlinear iteration schemes

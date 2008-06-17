@@ -30,6 +30,7 @@ CONTACT::Manager::Manager(DRT::Discretization& discret, double alphaf) :
 discret_(discret),
 alphaf_(alphaf),
 activesetconv_(false),
+activesetsteps_(0),
 isincontact_(false)
 {
 #ifdef CONTACTMESHTYING
@@ -102,6 +103,7 @@ isincontact_(false)
 
     // create an empty interface and store it in this Manager
     interface_.push_back(rcp(new CONTACT::Interface(groupid1,Comm())));
+    
     // get it again
     RCP<CONTACT::Interface> interface = interface_[(int)interface_.size()-1];
 
@@ -617,9 +619,9 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   }
   
   /**********************************************************************/
-  /* build global matrix n with normal vectors of active nodes          */
-  /* and global matrix t with tangent vectors of active nodes           */
-  /* and global matrix L and R for frictional contact                   */
+  /* build global matrix n with normal vectors of active nodes,         */
+  /* global matrix t with tangent vectors of active nodes               */
+  /* and global matrix l and vector r for frictional contact            */
   /**********************************************************************/
   
   // read tresca friction bound
@@ -642,6 +644,7 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
 #ifdef CONTACTCHECKHUEEBER
   }
 #endif // #ifdef CONTACTCHECKHUEEBER
+
   /**********************************************************************/
   /* Multiply Mortar matrices: m^ = inv(d) * m                          */
   /**********************************************************************/
@@ -2402,7 +2405,7 @@ void CONTACT::Manager::RecoverNoBasisTrafo(RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  |  Update active set and check for convergence (public)      popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dism)
+void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
 {
   // get input parameter ctype
   string ctype   = scontact_.get<string>("contact type","none");
@@ -2415,7 +2418,7 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
   {
     RCP<LINALG::SparseMatrix> temp1 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));;
     RCP<LINALG::SparseMatrix> temp2 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));;
-    interface_[i]->SetState("displacement",dism);
+    interface_[i]->SetState("displacement",disn);
     interface_[i]->Evaluate();
     interface_[i]->AssembleDMG(*temp1,*temp2,*g_);
   }
@@ -2436,33 +2439,8 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
       
       // get weighting factor from nodal D-map
       double wii;
-      if ((int)((cnode->GetD()).size())==0)
-        wii = 0.0;
-      else
-       wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
-      
-      /*
-      // check weighted gap by definition (linear)
-      // include this line above!!! // interface_[i]->SetState("displacement",dism);
-      double testwgap = 0.0;
-      for (int k=0;k<3;++k)
-        testwgap -= cnode->n()[k] * wii * cnode->xspatial()[k];
-      
-      map<int,double>& mmap = cnode->GetM()[0];
-      map<int,double>::iterator it;
-      for (it=mmap.begin();it!=mmap.end();++it)
-      {
-        int mgid = it->first / 2;
-        double mik = it->second;
-        DRT::Node* mnode = interface_[i]->Discret().gNode(mgid);
-        if (!mnode) dserror("ERROR: Cannot find node with gid %",mgid);
-        CNode* cmnode = static_cast<CNode*>(mnode);
-        
-        for (int k=0;k<3;++k)
-          testwgap += cnode->n()[k] * mik * cmnode->xspatial()[k];
-      }
-      cout << "Node: " << cnode->Id() << " WGap: " << testwgap << endl;
-      */
+      if ((int)((cnode->GetD()).size())==0) wii = 0.0;
+      else wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
       
       // compute incr. normal displacement and weighted gap
       double nincr = 0.0;
@@ -2481,15 +2459,6 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
         nzold += cnode->n()[k] * cnode->lmold()[k];
       }
       
-      // define weighting factor cn
-      // *****************************************************************
-      // for our EXACT active set strategy this value can be chosen
-      // arbitrarily, as the contact conditions are satisfied exactly.
-      // Cn only makes a difference for INEXACT active set strategy with
-      // multigrid methods, which will follow in the future.
-      // *****************************************************************
-      double c = CONTACTCN;
-      
       // check nodes of inactive set *************************************
       // (by definition they fulfill the condition z_j = 0)
       // (thus we only have to check ncr.disp. jump and weighted gap)
@@ -2501,15 +2470,11 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
         //          "for node ID: %i ", cnode->Id());
         
         // check for penetration
-        if (nz + c*(nincr-wgap) > 0)
+        if (nincr-wgap > 0)
         {
           cnode->Active() = true;
           activesetconv_ = false;
         }
-        
-        cout << "INACTIVE: " << i << " " << j << " " << gid << " "
-             << nincr << " " << wgap << " " << cnode->HasProj() << " "
-             << cnode->xspatial()[0] << endl;
       }
       
       // check nodes of active set ***************************************
@@ -2523,8 +2488,8 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
         //         "for node ID: %i ", cnode->Id());
         
         // check for tensile contact forces
-        //if (nz + c*(nincr-wgap) <= 0) // no averaging of Lagrange multipliers
-        if ((0.5*nz+0.5*nzold) + c*(nincr-wgap) <= 0) // averaging of Lagrange multipliers
+        //if (nz <= 0) // no averaging of Lagrange multipliers
+        if (0.5*nz+0.5*nzold <= 0) // averaging of Lagrange multipliers
         {
           if (ctype!="meshtying")
           {
@@ -2537,12 +2502,7 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
             activesetconv_ = true;    // no active set loop for mesh tying
           }
         }
-        
-        cout << "ACTIVE: " << i << " " << j << " " << gid << " "
-             << nz << " " << nzold << " " << 0.5*nz+0.5*nzold
-             << " " << cnode->Getg() << " " << cnode->xspatial()[0] << endl;  
       }
-      
     }
   }
 
@@ -2552,8 +2512,12 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
   Comm().SumAll(&localcheck,&convcheck,1);
   
   // active set is only converged, if converged on all procs
+  // if not, increase no. of active set steps too
   if (convcheck!=Comm().NumProc())
+  {
     activesetconv_=false;
+    ActiveSetSteps() += 1;
+  }
   
   // update zig-zagging history (shift by one)
   if (zigzagtwo_!=null) zigzagthree_  = rcp(new Epetra_Map(*zigzagtwo_));
@@ -2601,7 +2565,7 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
   // version of the active set and proceeding with the next time/load step.
   // This very simple approach helps stabilizing the contact algorithm!
   // *********************************************************************
-  if (numiteractive>2)
+  if (ActiveSetSteps()>2)
   {
     if (zigzagtwo_!=null)
     {
@@ -2640,10 +2604,10 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
   
   // output of active set status to screen
   if (Comm().MyPID()==0 && activesetconv_==false)
-    cout << "ACTIVE SET ITERATION " << numiteractive
+    cout << "ACTIVE SET ITERATION " << ActiveSetSteps()-1
          << " NOT CONVERGED - REPEAT TIME STEP................." << endl;
   else if (Comm().MyPID()==0 && activesetconv_==true)
-    cout << "ACTIVE SET CONVERGED IN " << numiteractive
+    cout << "ACTIVE SET CONVERGED IN " << ActiveSetSteps()
          << " STEP(S)................." << endl;
     
   // update flag for global contact status
@@ -2660,6 +2624,158 @@ void CONTACT::Manager::UpdateActiveSet(int numiteractive, RCP<Epetra_Vector> dis
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Update active set and check for convergence (public)      popp 06/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
+{
+  // FIXME: Here we do not consider zig-zagging yet!
+  
+  // get input parameter ctype
+  string ctype   = scontact_.get<string>("contact type","none");
+  
+  // assume that active set has converged and check for opposite
+  activesetconv_=true;
+  
+#ifdef CONTACTCHECKHUEEBER
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    RCP<LINALG::SparseMatrix> temp1 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));;
+    RCP<LINALG::SparseMatrix> temp2 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));;
+    interface_[i]->SetState("displacement",disn);
+    interface_[i]->Evaluate();
+    interface_[i]->AssembleDMG(*temp1,*temp2,*g_);
+  }
+#endif
+  
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
+    
+    // loop over all slave nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      // get weighting factor from nodal D-map
+      double wii;
+      if ((int)((cnode->GetD()).size())==0) wii = 0.0;
+      else wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+      
+      // compute incr. normal displacement and weighted gap
+      double nincr = 0.0;
+      for (int k=0;k<3;++k)
+        nincr += wii * cnode->n()[k] * (*incrjump_)[incrjump_->Map().LID(2*gid)+k];
+      double wgap = (*g_)[g_->Map().LID(gid)];
+      
+      if (cnode->n()[2] != 0.0) dserror("ERROR: UpdateActiveSet: Not yet implemented for 3D!");
+      
+      // compute normal part of Lagrange multiplier
+      double nz = 0.0;
+      double nzold = 0.0;
+      for (int k=0;k<2;++k)
+      {
+        nz += cnode->n()[k] * cnode->lm()[k];
+        nzold += cnode->n()[k] * cnode->lmold()[k];
+      }
+      
+      // define weighting factor cn
+      // (this is necessary in semi-smooth Newton case, as the search for the
+      // active set is now part of the Newton iteration. Thus, we do not know
+      // the active / inactive status in advance and we can have a state in
+      // which both the condition znormal = 0 and wgap = 0 are violated. Here
+      // we have to weigh the two violations via cn!
+      double c = CONTACTCN;
+      
+      // check nodes of inactive set *************************************
+      if (cnode->Active()==false)
+      {
+        // check for penetration and/or tensile contact forces
+        if (nz + c*(nincr-wgap) > 0)
+        {
+          cnode->Active() = true;
+          activesetconv_ = false;
+        }
+      }
+      
+      // check nodes of active set ***************************************
+      else
+      {
+        // check for tensile contact forces and/or penetration
+        //if (nz + c*(nincr-wgap) <= 0) // no averaging of Lagrange multipliers
+        if ((0.5*nz+0.5*nzold) + c*(nincr-wgap) <= 0) // averaging of Lagrange multipliers
+        {
+          if (ctype!="meshtying")
+          {
+            cnode->Active() = false;
+            activesetconv_ = false;
+          }
+          else
+          {
+            cnode->Active() = true;   // set all nodes active for mesh tying
+            activesetconv_ = true;    // no active set loop for mesh tying
+          }
+        } 
+      } 
+    }
+  }
+
+  // broadcast convergence status among processors
+  int convcheck = 0;
+  int localcheck = activesetconv_;
+  Comm().SumAll(&localcheck,&convcheck,1);
+  
+  // active set is only converged, if converged on all procs
+  // if not, increase no. of active set steps too
+  if (convcheck!=Comm().NumProc())
+  {
+    activesetconv_=false;
+    ActiveSetSteps() += 1;
+  }
+  
+  // (re)setup active global Epetra_Maps
+  gactivenodes_ = null;
+  gactivedofs_ = null;
+  gactiven_ = null;
+  gactivet_ = null;
+  
+  // friction  
+  // reset displacement jumps (slave dofs)
+  jump_->Scale(0.0); 
+  StoreNodalQuantities("jump");
+   
+  // update active sets of all interfaces
+  // (these maps are NOT allowed to be overlapping !!!)
+  for (int i=0;i<(int)interface_.size();++i)
+  {
+    interface_[i]->BuildActiveSet();
+    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
+    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
+    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
+    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
+  }
+  
+  // output of active set status to screen
+  if (Comm().MyPID()==0 && activesetconv_==false)
+    cout << "ACTIVE SET HAS CHANGED... CHANGE No. " << ActiveSetSteps()-1 << endl;
+  
+  // update flag for global contact status
+  if (gactivenodes_->NumGlobalElements())
+    IsInContact()=true;
+  /*
+#ifdef DEBUG
+  // visualization with gmsh
+  if (activesetconv_)
+    for (int i=0;i<(int)interface_.size();++i)
+      interface_[i]->VisualizeGmsh(interface_[i]->CSegs());
+#endif // #ifdef DEBUG
+  */
+  return;
+}
 /*----------------------------------------------------------------------*
  |  Compute contact forces (public)                           popp 02/08|
  *----------------------------------------------------------------------*/
@@ -2840,6 +2956,64 @@ void CONTACT::Manager::StoreDM(const string& state)
   else
     dserror("ERROR: StoreDM: Unknown conversion requested!");
   
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Print current active set to screen                        popp 06/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::PrintActiveSet()
+{
+  // loop over all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
+    
+    // loop over all slave nodes on the current interface
+    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+    {
+      int gid = interface_[i]->SlaveRowNodes()->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CNode* cnode = static_cast<CNode*>(node);
+      
+      // get weighting factor from nodal D-map
+      double wii;
+      if ((int)((cnode->GetD()).size())==0) wii = 0.0;
+      else wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
+      
+      // compute incr. normal displacement and weighted gap
+      double nincr = 0.0;
+      for (int k=0;k<3;++k)
+        nincr += wii * cnode->n()[k] * (*incrjump_)[incrjump_->Map().LID(2*gid)+k];
+      double wgap = (*g_)[g_->Map().LID(gid)];
+      
+      if (cnode->n()[2] != 0.0) dserror("ERROR: UpdateActiveSet: Not yet implemented for 3D!");
+      
+      // compute normal part of Lagrange multiplier
+      double nz = 0.0;
+      double nzold = 0.0;
+      for (int k=0;k<2;++k)
+      {
+        nz += cnode->n()[k] * cnode->lm()[k];
+        nzold += cnode->n()[k] * cnode->lmold()[k];
+      }
+      
+      // print nodes of inactive set *************************************
+      if (cnode->Active()==false)
+      {
+        cout << "INACTIVE: " << gid << " " << wgap << " " << nz << endl;
+      }
+      
+      // print nodes of active set ***************************************
+      else
+      {
+        cout << "ACTIVE:   " << gid << " " << nz << " " << nzold << " "
+             << 0.5*nz+0.5*nzold << " " << wgap << endl;
+      }
+    }
+  }
+
   return;
 }
 

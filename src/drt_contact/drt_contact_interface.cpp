@@ -2007,6 +2007,7 @@ bool CONTACT::Interface::InitializeActiveSet(bool initialcontact)
   // resize the temporary vectors
   mynodegids.resize(countnodes);
   mydofgids.resize(countdofs);
+  
   // communicate countnodes and countdofs among procs
   int gcountnodes, gcountdofs;
   Comm().SumAll(&countnodes,&gcountnodes,1);
@@ -2015,6 +2016,7 @@ bool CONTACT::Interface::InitializeActiveSet(bool initialcontact)
   // create active node map and active dof map
   activenodes_ = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
   activedofs_  = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
+  
   // create an empty slip node map and slip dof map 
  
   // for the first time step (t=0) all nodes are stick nodes 

@@ -208,7 +208,7 @@ void CONTACT::CNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,hasproj_);
   // active_
   ExtractfromPack(position,data,active_);
-  // active_
+  // slip_
   ExtractfromPack(position,data,slip_);
 
   

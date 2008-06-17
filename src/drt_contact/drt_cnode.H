@@ -371,13 +371,13 @@ protected:
   double          n_[3];           // nodal normal for contact methods
   double          xspatial_[3];    // current configuration
   double          u_[3];           // current displacement
-  double          lm_[3];          // current Lagrange multiplier value
-  double          lmold_[3];       // old Lagrange multiplier value (last converged mid-point)
+  double          lm_[3];          // current Lagrange multiplier value (n+1)
+  double          lmold_[3];       // old Lagrange multiplier value (last converged state n)
   double          jump_[3];        // summation of incremental jumps per time step 
   int             closestnode_;    // closest node id on the other side of interface
   bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
   bool            active_;         // true if cnode is in contact (active set strategy)
-  bool            slip_;           // true if cnode slips (contact force reachs friction bound)
+  bool            slip_;           // true if cnode slips (contact force reaches friction bound)
   
   vector<map<int,double> >      drows_;         // nodal rows of D matrix
   vector<map<int,double> >      mrows_;         // nodal rows of M matrix

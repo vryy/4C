@@ -333,13 +333,225 @@ void contact_stru_static_drt()
     // we are at t_{n} == time; the new time is t_{n+1} == time+dt
     timen = time + dt;
 
-    // iteration counters for active set and nonlinear Newton scheme
-    int numiteractive=0;
+    // iteration counter for Newton scheme
     int numiter=0;
 
-    // initialize active set convergence status
+    // initialize active set convergence status and step number
     contactmanager->ActiveSetConverged() = false;
+    contactmanager->ActiveSetSteps() = 1;
 
+    //********************************************************************
+    // OPTIONS FOR PRIMAL-DUAL ACTIVE SET STRATEGY (PDASS)
+    //********************************************************************
+    // SEMI-SMOOTH NEWTON
+    // The search for the correct active set (=contact nonlinearity) and
+    // the large deformstion linearization (=geometrical nonlinearity) are
+    // merged into one semi-smooth Newton method and solved within ONE
+    // iteration loop
+    //********************************************************************
+    // FIXED-POINT APPROACH
+    // The search for the correct active set (=contact nonlinearity) is
+    // represented by a fixed-point approach, whereas the large deformation
+    // linearization (=geimetrical nonlinearity) is treated by a standard
+    // Newton scheme. This yields TWO nested iteration loops
+    //********************************************************************
+#ifdef CONTACTSEMISMOOTH
+    //--------------------------------------------------- predicting state
+    // constant predictor : displacement in domain
+    disn->Update(1.0, *dis, 0.0);
+
+    // eval fint and stiffness matrix at current istep
+    // and apply new displacements at DBCs
+    {
+      // destroy and create new matrix
+      stiff_mat->Zero();
+      // create the parameters for the discretization
+      ParameterList params;
+      // action for elements
+      params.set("action","calc_struct_nlnstiff");
+      // other parameters needed by the elements
+      params.set("total time",timen);  // load factor (pseudo time)
+      params.set("delta time",dt);  // load factor increment (pseudo time increment)
+      // set vector values needed by elements
+      actdis->ClearState();
+      actdis->SetState("residual displacement",disi);
+      // predicted dirichlet values
+      // disn then also holds prescribed new dirichlet displacements
+      actdis->EvaluateDirichlet(params,disn,null,null,dirichtoggle);
+      actdis->SetState("displacement",disn);
+      fint->PutScalar(0.0);  // initialise internal force vector
+      actdis->Evaluate(params,stiff_mat,null,fint,null,null);
+      // predicted rhs
+      fextn->PutScalar(0.0);  // initialize external force vector (load vect)
+      actdis->EvaluateNeumann(params,*fextn); // *fext holds external force vector at current step
+
+      actdis->ClearState();
+    }
+
+    // complete stiffness matrix
+    stiff_mat->Complete();
+
+    double stiffnorm;
+    stiffnorm = stiff_mat->NormFrobenius();
+
+    // evaluate residual at current istep
+    // R{istep,numiter=0} = F_int{istep,numiter=0} - F_ext{istep}
+    fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
+
+    // blank residual at DOFs on Dirichlet BC
+    {
+      Epetra_Vector fresmcopy(*fresm);
+      fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
+    }
+    
+    //---------------------------------------------------- contact forces
+    // reset Lagrange multipliers to last converged state
+    // this resetting is necessary due to multiple active set steps
+    RCP<Epetra_Vector> z = contactmanager->LagrMult();
+    RCP<Epetra_Vector> zold = contactmanager->LagrMultOld();
+    z->Update(1.0,*zold,0.0);
+    contactmanager->StoreNodalQuantities("lmcurrent");
+    
+    // evaluate Mortar coupling matrices for contact forces
+    contactmanager->Initialize(0);
+    contactmanager->SetState("displacement",disn);
+    contactmanager->EvaluateMortar();
+    
+    // add contact forces
+    contactmanager->ContactForces(fresm);
+    RCP<Epetra_Vector> fc = contactmanager->GetContactForces();
+    Epetra_Vector fccopy(*fc);
+    fc->Multiply(1.0,*invtoggle,fccopy,0.0);
+    if (fc!=null) fresm->Update(1.0,*fc,1.0);
+    
+    //----------------------------------------------- build res/disi norm
+    double norm;
+    fresm->Norm2(&norm);
+    double disinorm = 1.0;
+
+    if (!myrank) cout << " Predictor residual forces " << norm << endl; fflush(stdout);
+
+    //remove contact forces from equilibrium again
+    if (fc!=null) fresm->Update(-1.0,*fc,1.0);
+            
+    // reset Newton iteration counter
+    numiter=0;
+    
+    //===========================================start of equilibrium loop
+    // this is a semi-smooth Newton method, as it not only includes the
+    // geometrical non-linearity but also the active set search
+    //=====================================================================
+    while (((norm > statvar->tolresid) || (disinorm > statvar->toldisp) || contactmanager->ActiveSetConverged()==false) && numiter < statvar->maxiter)
+    {
+      //----------------------- apply dirichlet BCs to system of equations
+      fresm->Scale(-1.0);     // rhs = -R = -fresm
+
+      //-------------------------make contact modifications to lhs and rhs
+      {
+        contactmanager->Initialize(numiter);
+        contactmanager->SetState("displacement",disn);
+
+        // (almost) all contact stuff is done here!
+        contactmanager->Evaluate(stiff_mat,fresm,numiter);
+      }
+
+      //----------------------- apply dirichlet BCs to system of equations
+      disi->PutScalar(0.0);   // Useful? depends on solver and more
+      LINALG::ApplyDirichlettoSystem(stiff_mat,disi,fresm,zeros,dirichtoggle);
+
+      //Do usual newton step
+      // solve for disi
+      // Solve K . IncD = -R  ===>  IncD_{n+1}
+      if (numiter==0)
+      {
+        solver.Solve(stiff_mat->EpetraMatrix(),disi,fresm,true,true);
+      }
+      else
+      {
+        solver.Solve(stiff_mat->EpetraMatrix(),disi,fresm,true,false);
+      }
+
+      //------------------------------------- recover disi and Lagr. Mult.
+      {
+        contactmanager->Recover(disi);
+      }
+
+      // update displacements
+      // D_{istep,numiter+1} := D_{istep,numiter} + IncD_{numiter}
+      disn->Update(1.0, *disi, 1.0);
+
+      // compute internal forces and stiffness at current iterate numiter
+      {
+        // zero out stiffness
+        stiff_mat->Zero();
+        // create the parameters for the discretization
+        ParameterList params;
+        // action for elements
+        params.set("action","calc_struct_nlnstiff");
+        // other parameters needed by the elements
+        params.set("total time",timen);  // load factor (pseudo time)
+        params.set("delta time",dt);  // load factor increment (pseudo time increment)
+        // set vector values needed by elements
+        actdis->ClearState();
+        actdis->SetState("residual displacement",disi);
+        actdis->SetState("displacement",disn);
+        fint->PutScalar(0.0);  // initialise internal force vector
+        actdis->Evaluate(params,stiff_mat,null,fint,null,null);
+
+        actdis->ClearState();
+      }
+      // complete stiffness matrix
+      stiff_mat->Complete();
+
+      // evaluate new residual fresm at current iterate numiter
+      // R{istep,numiter} = F_int{istep,numiter} - F_ext{istep}
+      fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
+
+      // blank residual DOFs which are on Dirichlet BC
+      {
+        Epetra_Vector fresmcopy(*fresm);
+        fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
+      }
+  
+      // add contact forces
+      contactmanager->ContactForces(fresm);
+      RCP<Epetra_Vector> fc = contactmanager->GetContactForces();
+      Epetra_Vector fccopy(*fc);
+      fc->Multiply(1.0,*invtoggle,fccopy,0.0);
+      if (fc!=null) fresm->Update(1.0,*fc,1.0);
+
+      //for (int k=0;k<fint->MyLength();++k)
+      //  cout << (*fint)[k] << " " << -(*fextn)[k] << " " << (*fc)[k] << endl;
+
+      //---------------------------------------------- build res/disi norm
+      fresm->Norm2(&norm);
+      disi->Norm2(&disinorm);
+
+      //remove contact forces from equilibrium again
+      if (fc!=null) fresm->Update(-1.0,*fc,1.0);
+
+      // a short message
+      if (!myrank)
+      {
+        printf("numiter %d res-norm %e dis-norm %e \n",numiter+1, norm, disinorm);
+        fprintf(errfile,"numiter %d res-norm %e dis-norm %e\n",numiter+1, norm, disinorm);
+        fflush(stdout);
+        fflush(errfile);
+      }
+
+      //--------------------------------- increment equilibrium loop index
+      ++numiter;
+      contactmanager->UpdateActiveSetSemiSmooth(disn);
+    } //
+    //============================================= end equilibrium loop
+
+    //-------------------------------- test whether max iterations was hit
+    if (statvar->maxiter == 1 && statvar->nstep == 1)
+      printf("computed 1 step with 1 iteration: STATIC LINEAR SOLUTION\n");
+    else if (numiter==statvar->maxiter)
+      dserror("Newton unconverged in %d iterations",numiter);
+  
+#else
     //============================================ start of active set loop
     while (contactmanager->ActiveSetConverged()==false)
     {
@@ -534,10 +746,12 @@ void contact_stru_static_drt()
       else if (numiter==statvar->maxiter)
         dserror("Newton unconverged in %d iterations",numiter);
 
-      ++numiteractive;
-      contactmanager->UpdateActiveSet(numiteractive,disn);
+      // update active set
+      contactmanager->UpdateActiveSet(disn);
     }
     //================================================ end active set loop
+#endif // #ifdef CONTACTSEMISMOOTH
+    
 
     //---------------------------- determine new end-quantities and update
     // new displacements at t_{n+1} -> t_n
@@ -560,10 +774,13 @@ void contact_stru_static_drt()
     ++istep;      // load step n := n + 1
     time += dt;   // load factor / pseudo time  t_n := t_{n+1} = t_n + Delta t
 
+    //---------------------------------------------- print contact to screen
+    contactmanager->PrintActiveSet();      
+        
     //-------------------------------- update contact Lagrange multipliers
-    RCP<Epetra_Vector> z = contactmanager->LagrMult();
-    RCP<Epetra_Vector> zold = contactmanager->LagrMultOld();
-    zold->Update(1.0,*z,0.0);
+    RCP<Epetra_Vector> stepz = contactmanager->LagrMult();
+    RCP<Epetra_Vector> stepzold = contactmanager->LagrMultOld();
+    stepzold->Update(1.0,*stepz,0.0);
     contactmanager->StoreNodalQuantities("lmold");
 
     //------------------------------------------------- write restart step
