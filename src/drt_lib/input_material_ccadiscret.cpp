@@ -651,14 +651,14 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
    {
       localmat.mattyp = m_struct_multiscale;
       localmat.m.struct_multiscale = new _STRUCT_MULTISCALE();
-      localmat.m.struct_multiscale->microdis = 1; /* currently only one
-                                                   * microscale discretization
-                                                   * is used in all Gauss
-                                                   * points */
+
       char buffer[500];
       frchar("MICROFILE", buffer, &ierr);
       if (ierr!=1) dserror("No inputfile for microstructure given!\n");
       int length = strlen(buffer);
+
+      frint("MICRODIS_NUM", &(localmat.m.struct_multiscale->microdis), &ierr);
+      if (ierr!=1) dserror("Number of microscale discretization not found");
 
       localmat.m.struct_multiscale->micro_inputfile_name =
         (char*)CCACALLOC(length+1, sizeof(char));

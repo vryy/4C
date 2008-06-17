@@ -164,7 +164,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
   reader.ReadGidSection("--XFEM GENERAL", *list);
-  
+
   reader.ReadGidSection("--FLUID SOLVER", *list);
   reader.ReadGidSection("--FLUID PRESSURE SOLVER", *list);
   reader.ReadGidSection("--STRUCT SOLVER", *list);
@@ -1014,61 +1014,67 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_macro, reader, "--STRUCTURE ELEMENTS")));
     nodereader.Read();
 
-    // read microscale fields from second inputfile
+    // read microscale fields from second, third, ... inputfile
 
-    RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(1);
-    RCP<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
-
-    string micro_inputfile_name = mat->m.struct_multiscale->micro_inputfile_name;
-
-    if (micro_inputfile_name[0]!='/')
+    for (unsigned i=0; i<material_.size(); ++i)
     {
-      string filename = reader.MyInputfileName();
-      string::size_type pos = filename.rfind('/');
-      if (pos!=string::npos)
+      if (material_[i].mattyp == m_struct_multiscale)
       {
-        string path = filename.substr(0,pos+1);
-        micro_inputfile_name.insert(micro_inputfile_name.begin(), path.begin(), path.end());
+        int microdisnum = material_[i].m.struct_multiscale->microdis;
+        RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
+        RCP<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
+
+        string micro_inputfile_name = material_[i].m.struct_multiscale->micro_inputfile_name;
+
+        if (micro_inputfile_name[0]!='/')
+        {
+          string filename = reader.MyInputfileName();
+          string::size_type pos = filename.rfind('/');
+          if (pos!=string::npos)
+          {
+            string path = filename.substr(0,pos+1);
+            micro_inputfile_name.insert(micro_inputfile_name.begin(), path.begin(), path.end());
+          }
+        }
+
+        if (!structdis_macro->Comm().MyPID())
+          cout << "input for microscale is read from        " << micro_inputfile_name << "\n";
+
+        DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
+        micro_reader.Activate();
+
+        structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
+        micro_problem->AddDis(genprob.numsf, structdis_micro);
+
+        // we are reading the solver, but currently UMFPACK is used in any
+        // case (hard coded!)
+        micro_problem->ReadParameter(micro_reader);
+
+        // read materials of microscale
+        // CAUTION: materials for microscale can not be read until
+        // micro_reader is activated, since else materials will again be
+        // read from macroscale inputfile. Besides, materials MUST be read
+        // before elements are read since elements establish a connection
+        // to the corresponding material! Thus do not change position of
+        // function calls!
+
+        micro_problem->ReadMaterial();
+
+
+        DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
+        micronodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
+        micronodereader.Read();
+
+        // read conditions of microscale
+        // -> note that no time curves and spatial functions can be read!
+
+        micro_problem->ReadConditions(micro_reader);
+
+        // At this point, everything for the microscale is read,
+        // subsequent reading is only for macroscale
+        structdis_micro->FillComplete();
       }
     }
-
-    if (!structdis_macro->Comm().MyPID())
-        cout << "input for microscale is read from        " << micro_inputfile_name << "\n";
-
-    DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
-    micro_reader.Activate();
-
-    structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
-    micro_problem->AddDis(genprob.numsf, structdis_micro);
-
-    // we are reading the solver, but currently UMFPACK is used in any
-    // case (hard coded!)
-    micro_problem->ReadParameter(micro_reader);
-
-    // read materials of microscale
-    // CAUTION: materials for microscale can not be read until
-    // micro_reader is activated, since else materials will again be
-    // read from macroscale inputfile. Besides, materials MUST be read
-    // before elements are read since elements establish a connection
-    // to the corresponding material! Thus do not change position of
-    // function calls!
-
-    micro_problem->ReadMaterial();
-
-
-    DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
-    micronodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
-    micronodereader.Read();
-
-    // read conditions of microscale
-    // -> note that no time curves and spatial functions can be read!
-
-    micro_problem->ReadConditions(micro_reader);
-
-    // At this point, everything for the microscale is read,
-    // subsequent reading is only for macroscale
-    structdis_micro->FillComplete();
-
 
     // reactivate reader of macroscale as well as macroscale material
 
