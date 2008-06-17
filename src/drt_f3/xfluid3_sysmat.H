@@ -76,7 +76,7 @@ void Sysmat(
     
     // get node coordinates of the current element
     static BlitzMat xyze(nsd, numnode);
-    DRT::UTILS::fillPositionArray<DISTYPE>(ele, xyze);
+    DRT::UTILS::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
@@ -1239,7 +1239,7 @@ void Sysmat(
         //cout << (*boundaryele) << endl;
         
         // get node coordinates
-        const BlitzMat xyze_boundary(DRT::UTILS::PositionArrayBlitz(boundaryele));
+        const BlitzMat xyze_boundary(DRT::UTILS::InitialPositionArrayBlitz(boundaryele));
 
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)

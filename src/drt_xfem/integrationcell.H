@@ -40,8 +40,8 @@ static void ComputePhysicalCoordinates(
         BlitzMat&            physicalCoordinates
         )
 {
-    const BlitzMat eleCoord(DRT::UTILS::PositionArrayBlitz(&ele));
-    //DRT::UTILS::fillPositionArray(&ele, eleCoord);
+    const BlitzMat eleCoord(DRT::UTILS::InitialPositionArrayBlitz(&ele));
+    //DRT::UTILS::fillInitialPositionArray(&ele, eleCoord);
     const BlitzMat* nodalPosXiDomain = cell.NodalPosXiDomainBlitz();
     
     const int nen_cell = DRT::UTILS::getNumberOfElementNodes(cell.Shape());

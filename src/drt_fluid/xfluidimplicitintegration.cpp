@@ -1281,7 +1281,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+        BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 
@@ -1360,7 +1360,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
 //        const DRT::Element* actele = discret_->lColElement(i);
 //        const int elegid = actele->Id();
 //
-//        BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+//        BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(actele));
 //
 //        map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
 //        //        element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(actele->Shape());
@@ -1475,7 +1475,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+        BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 
@@ -1606,7 +1606,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+        BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 
@@ -1685,7 +1685,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
             //              XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
             //                  cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);
 
-            const BlitzMat xyze_ele(DRT::UTILS::PositionArrayBlitz(actele));
+            const BlitzMat xyze_ele(DRT::UTILS::InitialPositionArrayBlitz(actele));
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                 actele->Shape(), elevalues, xyze_ele) << endl;
           }
@@ -1734,7 +1734,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+        BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 
@@ -1812,7 +1812,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
             XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
                 cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);
 
-            const BlitzMat xyze_ele(DRT::UTILS::PositionArrayBlitz(actele));
+            const BlitzMat xyze_ele(DRT::UTILS::InitialPositionArrayBlitz(actele));
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                 actele->Shape(), elevalues, xyze_ele) << endl;
           }
@@ -1862,7 +1862,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
         const DRT::Element* actele = discret_->lColElement(i);
         const int elegid = actele->Id();
 
-        BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(actele));
+        BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(actele));
 
         const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
 
@@ -1940,7 +1940,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
             XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
                 cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);
 
-            const BlitzMat xyze_ele(DRT::UTILS::PositionArrayBlitz(actele));
+            const BlitzMat xyze_ele(DRT::UTILS::InitialPositionArrayBlitz(actele));
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
                 actele->Shape(), elevalues, xyze_ele) << endl;
           }

@@ -78,8 +78,8 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   }
   const BlitzMat3x2 aabb(getXAABBofDis(dis, currentpositions));
   treeRoot_ = new TreeNode(0,aabb, this);
-  cout << "inserting new elements (" << dis.NumMyRowElements() << ")"<< endl;
-  for (int i=0; i<dis.NumMyRowElements(); ++i) {
+  cout << "inserting new elements (" << dis.NumMyColElements() << ")"<< endl;
+  for (int i=0; i<dis.NumMyColElements(); ++i) {
     insertElement(dis.lRowElement(i));
   }
   TreeInit_ = true;
@@ -293,7 +293,7 @@ int XFEM::XSearchTree::TreeNode::classifyPoint(const BlitzVec3& pointcoords) {
 
 list<int> XFEM::XSearchTree::TreeNode::classifyElement(const DRT::Element* elem) {
   list<int> octants;
-  const BlitzMat xyze(DRT::UTILS::PositionArrayBlitz(&*elem));
+  const BlitzMat xyze(DRT::UTILS::InitialPositionArrayBlitz(&*elem));
   const BlitzMat3x2 elemXAABB(XFEM::computeFastXAABB(&*elem, xyze));
   
   if (elemXAABB(0, 1) > XPlaneCoordinate_) {

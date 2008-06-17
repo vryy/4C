@@ -1186,7 +1186,7 @@ void DRT::UTILS::FindElementConditions(const DRT::Element* ele, const std::strin
 /*!
  * \brief create an often used array with 3D nodal positions (Blitz array)
  */
-blitz::Array<double,2> DRT::UTILS::PositionArrayBlitz(
+blitz::Array<double,2> DRT::UTILS::InitialPositionArrayBlitz(
         const DRT::Element* ele
         )
 {

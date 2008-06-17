@@ -181,7 +181,7 @@ static inline bool currentToVolumeElementCoordinatesT(
     static blitz::TinyVector<double,dim> dx;
     
     static blitz::TinyMatrix<double,3,DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement> xyze;
-    DRT::UTILS::fillPositionArray<DISTYPE>(element, xyze);
+    DRT::UTILS::fillInitialPositionArray<DISTYPE>(element, xyze);
     
     // initial guess
     xsi = 0.0;

@@ -46,12 +46,13 @@ Maintainer: Ursula Mayer
  |          It returns a list of intersected xfem elements              |
  |          and their integrations cells.                               |
  *----------------------------------------------------------------------*/
-void XFEM::Intersection::computeIntersection( const Teuchos::RCP<DRT::Discretization>  xfemdis,
-                                        const Teuchos::RCP<DRT::Discretization>        cutterdis,
-                                        const std::map<int,BlitzVec3>&                 currentcutterpositions,
-                                        std::map< int, DomainIntCells >&               domainintcells,
-                                        std::map< int, BoundaryIntCells >&             boundaryintcells
-                                        )
+void XFEM::Intersection::computeIntersection(
+    const Teuchos::RCP<DRT::Discretization>  xfemdis,
+    const Teuchos::RCP<DRT::Discretization>        cutterdis,
+    const std::map<int,BlitzVec3>&                 currentcutterpositions,
+    std::map< int, DomainIntCells >&               domainintcells,
+    std::map< int, BoundaryIntCells >&             boundaryintcells
+  )
 {
 
     static int timestepcounter_ = -1;
@@ -66,11 +67,11 @@ void XFEM::Intersection::computeIntersection( const Teuchos::RCP<DRT::Discretiza
 
     //debugXFEMConditions(cutterdis);
     // obtain vector of pointers to all xfem conditions of the cutter discretization
-    vector< DRT::Condition * >      xfemConditions;
-    cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
+    //vector< DRT::Condition * >      xfemConditions;
+    //cutterdis->GetCondition ("XFEMCoupling", xfemConditions);
 
-    if(xfemConditions.size()==0)
-      std::cout << "number of XFEMCoupling conditions = 0" << endl;
+    //if(xfemConditions.size()==0)
+//      std::cout << "number of XFEMCoupling conditions = 0" << endl;
 
     //  k < xfemdis->NumMyColElements()
     for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
@@ -82,24 +83,30 @@ void XFEM::Intersection::computeIntersection( const Teuchos::RCP<DRT::Discretiza
         std::set< DRT::Element* >        cutterElements;
 
         // initial positions, since the xfem element does not move
-        const BlitzMat xyze_xfemElement(DRT::UTILS::PositionArrayBlitz(xfemElement));
+        const BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(xfemElement));
         
         const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement);
 
         startPointList();
 
-        for(vector<DRT::Condition*>::const_iterator conditer = xfemConditions.begin(); conditer!=xfemConditions.end(); ++conditer)
+        for(int kk = 0; kk < cutterdis->NumMyColElements(); ++kk)
         {
-            DRT::Condition* xfemCondition = *conditer;
-            const map<int, RCP<DRT::Element > > geometryMap = xfemCondition->Geometry();
-            map<int, RCP<DRT::Element > >::const_iterator iterGeo;
-            //if(geometryMap.size()==0)   printf("geometry does not obtain elements\n");
-          	//printf("size of %d.geometry map = %d\n",i, geometryMap.size());
-
-            for(iterGeo = geometryMap.begin(); iterGeo != geometryMap.end(); ++iterGeo )
-            {
-                DRT::Element*  cutterElement = iterGeo->second.get();
-                if(cutterElement == NULL) dserror("geometry does not obtain elements");
+          DRT::Element*  cutterElement = cutterdis->lColElement(kk);
+          if(cutterElement == NULL) dserror("geometry does not obtain elements");
+          
+        
+//        for(vector<DRT::Condition*>::const_iterator conditer = xfemConditions.begin(); conditer!=xfemConditions.end(); ++conditer)
+//        {
+//            DRT::Condition* xfemCondition = *conditer;
+//            const map<int, RCP<DRT::Element > > geometryMap = xfemCondition->Geometry();
+//            map<int, RCP<DRT::Element > >::const_iterator iterGeo;
+//            //if(geometryMap.size()==0)   printf("geometry does not obtain elements\n");
+//          	//printf("size of %d.geometry map = %d\n",i, geometryMap.size());
+//
+//            for(iterGeo = geometryMap.begin(); iterGeo != geometryMap.end(); ++iterGeo )
+//            {
+//                DRT::Element*  cutterElement = iterGeo->second.get();
+//                if(cutterElement == NULL) dserror("geometry does not obtain elements");
                 
                 // fill current positions into an array
                 const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
@@ -112,8 +119,8 @@ void XFEM::Intersection::computeIntersection( const Teuchos::RCP<DRT::Discretiza
                 {
                   cutterElements.insert(cutterElement);
                 }
-            }// for-loop over all geometryMap
-		    }// for-loop over all xfemConditions
+            //}// for-loop over all geometryMap
+        }// for-loop over all xfemConditions
 
         const vector<RCP<DRT::Element> > xfemElementSurfaces = xfemElement->Surfaces();
         const vector<RCP<DRT::Element> > xfemElementLines = xfemElement->Lines();
@@ -143,7 +150,7 @@ void XFEM::Intersection::computeIntersection( const Teuchos::RCP<DRT::Discretiza
             for(int m=0; m<xfemElement->NumLine() ; m++)
             {
                 const DRT::Element* xfemElementLine = xfemElementLines[m].get();
-                const BlitzMat xyze_xfemElementLine(DRT::UTILS::PositionArrayBlitz(xfemElementLine));
+                const BlitzMat xyze_xfemElementLine(DRT::UTILS::InitialPositionArrayBlitz(xfemElementLine));
                 if(collectIntersectionPoints(   cutterElement, xyze_cutterElement,
                                                 xfemElementLine, xyze_xfemElementLine,
                                                 interfacePoints, numBoundaryPoints, 0, m, false, xfemIntersection))
@@ -157,7 +164,7 @@ void XFEM::Intersection::computeIntersection( const Teuchos::RCP<DRT::Discretiza
                 for(int p=0; p<xfemElement->NumSurface() ; p++)
                 {
                     const DRT::Element* xfemElementSurface = xfemElementSurfaces[p].get();
-                    const BlitzMat xyze_xfemElementSurface(DRT::UTILS::PositionArrayBlitz(xfemElementSurface));
+                    const BlitzMat xyze_xfemElementSurface(DRT::UTILS::InitialPositionArrayBlitz(xfemElementSurface));
                     const DRT::Element* cutterElementLine = cutterElementLines[m].get();
                     const BlitzMat xyze_cutterElementLine(getCurrentNodalPositions(cutterElementLine, currentcutterpositions));
                     if(collectIntersectionPoints(   xfemElementSurface, xyze_xfemElementSurface,
@@ -214,7 +221,7 @@ void XFEM::Intersection::initializeXFEM(
 
     numXFEMCornerNodes_  = DRT::UTILS::getNumberOfElementCornerNodes(xfemDistype);
     
-    xyze_xfemElement_    = DRT::UTILS::PositionArrayBlitz(xfemElement);
+    xyze_xfemElement_    = DRT::UTILS::InitialPositionArrayBlitz(xfemElement);
 
     eleLinesSurfaces_     = DRT::UTILS::getEleNodeNumbering_lines_surfaces(xfemDistype);
     eleNodesSurfaces_     = DRT::UTILS::getEleNodeNumbering_nodes_surfaces(xfemDistype);

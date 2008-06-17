@@ -158,7 +158,7 @@ static void Sysmat4(
     
     // get node coordinates of the current element
     static blitz::TinyMatrix<double,nsd,numnode> xyze;
-    DRT::UTILS::fillPositionArray<DISTYPE>(ele, xyze);
+    DRT::UTILS::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
@@ -1588,28 +1588,33 @@ static void Sysmat4(
         
         //TODO: get the right element
         const DRT::Element* boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
-        const int numnode_boundary = boundaryele->NumNode();
-        //const DRT::Element* boundaryele = ih->GetBoundaryEle(0);
         //cout << (*boundaryele) << endl;
+        const int numnode_boundary = boundaryele->NumNode();
+//        cout << "numnode_boundary: " << numnode_boundary << endl;
         
-        // get node coordinates
-        const BlitzMat xyze_boundary(DRT::UTILS::PositionArrayBlitz(boundaryele));
+        // get initial node coordinates
+        const BlitzMat xyze_boundary(DRT::UTILS::InitialPositionArrayBlitz(boundaryele));
+        
+        // add displacement!
+        //dserror("add displacement");
+        //TODO: add displacement
         
         // get interface velocities at the boundary element nodes
         BlitzMat vel_boundary(3,numnode_boundary);
+        vel_boundary = 0.0;
         const DRT::Node*const* nodes = boundaryele->Nodes();
-        {
-          for (int inode = 0; inode < numnode_boundary; ++inode)
-          {
-            const DRT::Node* node = nodes[inode];
-            vector<int> lm = ih->cutterdis()->Dof(node);
-            vector<double> myvel(3);
-            DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
-            vel_boundary(0,inode) = myvel[0];
-            vel_boundary(1,inode) = myvel[1];
-            vel_boundary(2,inode) = myvel[2];
-          }
-        }
+//        {
+//          for (int inode = 0; inode < numnode_boundary; ++inode)
+//          {
+//            const DRT::Node* node = nodes[inode];
+//            vector<int> lm = ih->cutterdis()->Dof(node);
+//            vector<double> myvel(3);
+//            DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
+//            vel_boundary(0,inode) = myvel[0];
+//            vel_boundary(1,inode) = myvel[1];
+//            vel_boundary(2,inode) = myvel[2];
+//          }
+//        }
         
         BlitzMat force_boundary(3,numnode_boundary);
         force_boundary = 0.0;
@@ -1621,13 +1626,23 @@ static void Sysmat4(
             static XFEM::PosEtaBoundary pos_eta_boundary;
             pos_eta_boundary(0) = intpoints.qxg[iquad][0];
             pos_eta_boundary(1) = intpoints.qxg[iquad][1];
-      
+//            cout << pos_eta_boundary << endl;
+            
             // coordinates of the current integration point in element coordinates \xi
             static XFEM::PosXiBoundary posXiBoundary;
             mapEtaBToXiB(*cell, pos_eta_boundary, posXiBoundary);
+//            cout << posXiBoundary << endl;
+            
             static XFEM::PosXiDomain posXiDomain;
             mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
+//            cout << cell->toString() << endl;
+//            cout << posXiDomain << endl;
             const double detcell = abs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
+            if (detcell <= 0.0)
+            {
+              cout << "detcel :  " << detcell << endl;
+              dserror("negative detcell! should be a bug!");
+            }
 
             // shape functions and their first derivatives
             BlitzVec funct_boundary(DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
@@ -1687,11 +1702,15 @@ static void Sysmat4(
             //const BlitzMat derxy_stress(blitz::sum(xji(i,k)*deriv_stress(k,j),k));
             
             const double detmetric = sqrt(metric(0,0)*metric(1,1) - metric(0,1)*metric(1,0));
-            const double fac = intpoints.qwgt[iquad]*detmetric*detcell;
-
-            if (detmetric < 0.0)
+            if (detmetric <= 0.0)
             {
-                dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), detmetric);
+              dserror("negative detmetric! should be a bug!");
+            }
+            
+            const double fac = intpoints.qwgt[iquad]*detmetric*detcell;
+            if (fac <= 0.0)
+            {
+              dserror("negative fac! should be a bug!");
             }
 
             // compute second global derivative

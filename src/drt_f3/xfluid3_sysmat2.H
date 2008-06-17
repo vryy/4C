@@ -157,7 +157,7 @@ void static Sysmat2(
     
     // get node coordinates of the current element
     static blitz::TinyMatrix<double,nsd,numnode> xyze;
-    DRT::UTILS::fillPositionArray<DISTYPE>(ele, xyze);
+    DRT::UTILS::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
     // dead load in element nodes
     //////////////////////////////////////////////////// , BlitzMat edeadng_(BodyForce(ele->Nodes(),time));
@@ -1497,7 +1497,7 @@ void static Sysmat2(
         //cout << (*boundaryele) << endl;
         
         // get node coordinates
-        const BlitzMat xyze_boundary(DRT::UTILS::PositionArrayBlitz(boundaryele));
+        const BlitzMat xyze_boundary(DRT::UTILS::InitialPositionArrayBlitz(boundaryele));
         
         // get interface velocities at the boundary element nodes
         BlitzMat vel_boundary(3,numnode_boundary);

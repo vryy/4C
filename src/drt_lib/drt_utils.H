@@ -178,7 +178,7 @@ namespace UTILS
    * \author a.ger
    * \date 02/08
    */
-  blitz::Array<double,2> PositionArrayBlitz(
+  blitz::Array<double,2> InitialPositionArrayBlitz(
           const DRT::Element* ele           ///< pointer to element, whose nodes we evaluate for their position
           );
 
@@ -197,7 +197,7 @@ namespace UTILS
    * \date 02/08
    */
   template <DRT::Element::DiscretizationType distype, class M>
-  void fillPositionArray(
+  void fillInitialPositionArray(
           const DRT::Element*      ele,
           M&                       xyze
           )

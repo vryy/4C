@@ -537,7 +537,7 @@ double AreaRatioT(
     
     // get node coordinates of the current element
     static blitz::TinyMatrix<double,nsd,numnode> xyze;
-    DRT::UTILS::fillPositionArray<DISTYPE>(&ele, xyze);
+    DRT::UTILS::fillInitialPositionArray<DISTYPE>(&ele, xyze);
     
     //double 
     double area_ele  = 0.0;
