@@ -35,7 +35,7 @@ public:
 
   /// construct an instance of MicroMaterial for a given Gauss point
   /// and microscale discretization
-  MicroMaterialGP(const int gp, const int ele_ID, const bool eleowner, const double time);
+  MicroMaterialGP(const int gp, const int ele_ID, const bool eleowner, const double time, const int microdisnum);
 
   /// destructor
   ~MicroMaterialGP();
@@ -60,16 +60,19 @@ public:
 
 private:
 
-  /// my Gauss point
+  /// corresponding macroscale Gauss point
   const int gp_;
 
-  /// my macroscopic element
+  /// corresponding macroscale element
   const int ele_ID_;
 
-  /// microstructure generalized alpha class
-  static RefCountPtr<MicroStatic> microstatic_;
+  /// corresponding microstructure discretization number
+  const int microdisnum_;
 
-  static int microstaticcounter_;
+  /// microstructure "time integration" classes (one for each micro-discretization)
+  static std::map<int, RefCountPtr<MicroStatic> > microstaticmap_;
+
+  static std::map<int, int> microstaticcounter_;
 
   /// microstructure discretization writer
   RefCountPtr<DiscretizationWriter> micro_output_;

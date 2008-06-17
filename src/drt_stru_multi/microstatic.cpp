@@ -700,11 +700,8 @@ void MicroStatic::DetermineToggle()
                 // creation of vectors and matrices for homogenization
                 // procedure
 
-  RefCountPtr<DRT::Discretization> dis =
-    DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
-
   vector<DRT::Condition*> conds;
-  dis->GetCondition("MicroBoundary", conds);
+  discret_->GetCondition("MicroBoundary", conds);
   for (unsigned i=0; i<conds.size(); ++i)
   {
     const vector<int>* nodeids = conds[i]->Get<vector<int> >("Node Ids");
@@ -714,10 +711,10 @@ void MicroStatic::DetermineToggle()
     for (int i=0; i<nnode; ++i)
     {
       // do only nodes in my row map
-      if (!dis->NodeRowMap()->MyGID((*nodeids)[i])) continue;
-      DRT::Node* actnode = dis->gNode((*nodeids)[i]);
+      if (!discret_->NodeRowMap()->MyGID((*nodeids)[i])) continue;
+      DRT::Node* actnode = discret_->gNode((*nodeids)[i]);
       if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
-      vector<int> dofs = dis->Dof(actnode);
+      vector<int> dofs = discret_->Dof(actnode);
       const unsigned numdf = dofs.size();
 
       for (unsigned j=0; j<numdf; ++j)
@@ -1145,6 +1142,7 @@ void MicroStatic::PrintPredictor(string convcheck, double fresmnorm)
 
 
 
+
 // after having finished all the testing, remove cmat from the input
 // parameters, since no constitutive tensor is calculated here.
 
@@ -1301,9 +1299,6 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
   // analysis of multi-phase materials, Eindhoven, 2002)
 
   // split residual forces -> we want to extract fp
-
-  RefCountPtr<DRT::Discretization> dis =
-    DRT::Problem::Instance(1)->Dis(genprob.numsf,0);
 
   Epetra_Vector fp(*pdof_);
 

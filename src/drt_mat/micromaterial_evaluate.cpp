@@ -63,7 +63,8 @@ void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
 {
   // activate microscale material
 
-  RefCountPtr<DRT::Problem> micro_problem = DRT::Problem::Instance(1);
+  int microdisnum = matdata_->m.struct_multiscale->microdis;
+  RefCountPtr<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
   micro_problem->ActivateMaterial();
 
   // avoid writing output also for ghosted elements
@@ -72,7 +73,7 @@ void MAT::MicroMaterial::Evaluate(const Epetra_SerialDenseMatrix* defgrd,
   if (gp > static_cast<int>(matgp_.size())-1)
   {
     matgp_.resize(gp+1);
-    matgp_[gp] = rcp(new MicroMaterialGP(gp, ele_ID, eleowner, time));
+    matgp_[gp] = rcp(new MicroMaterialGP(gp, ele_ID, eleowner, time, microdisnum));
   }
 
   RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
