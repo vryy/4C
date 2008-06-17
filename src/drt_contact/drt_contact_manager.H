@@ -87,6 +87,12 @@ public:
   inline DRT::Discretization& Discret() const { return discret_;};
   
   /*!
+  \brief Get contact parameter list
+
+  */
+  inline Teuchos::ParameterList Params() const { return scontact_;};
+    
+  /*!
   \brief Return global slave dof row map
   
   */

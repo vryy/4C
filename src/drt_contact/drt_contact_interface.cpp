@@ -1442,7 +1442,7 @@ void CONTACT::Interface::AssembleNT(LINALG::SparseMatrix& nglobal,
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
                                         Epetra_Vector& rglobal,
-                                        double frbound)
+                                        double frbound, double ct)
 {
   // nothing to do if no active nodes
   if (activenodes_==null)
@@ -1506,21 +1506,21 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
      	"two (hard coded)" << endl;
     }
     
-    // epk = gp/(abs(ztan + utan))
-    double temp = ztan + CONTACTCT*jumptan;
+    // epk = gp/(abs(ztan + ct*utan))
+    double temp = ztan + ct*jumptan;
     double epk = frbound/abs(temp);
     
-    // Fpk = ztan*(ztan + utan)/(gp*(abs(ztan + utan))
+    // Fpk = ztan*(ztan + ct*utan)/(gp*(abs(ztan + ct*utan))
     double Fpk = ztan*temp/(frbound*abs(temp));
     
     // Mpk = epk(1-Fpk)
     double Mpk = epk*(1-Fpk);
     
     //hpk = epk*ct*utan + ztan*epk*Fpk 
-    double hpk = epk*CONTACTCT*jumptan + ztan*epk*Fpk;
+    double hpk = epk*ct*jumptan + ztan*epk*Fpk;
     
     Epetra_SerialDenseMatrix Lnode(1,1);
-    Lnode(0,0)= Mpk/(1-Mpk)*CONTACTCT;
+    Lnode(0,0)= Mpk/(1-Mpk)*ct;
     lmcol[0] = cnode->Dofs()[1];
         
     //assemble into L matrix 

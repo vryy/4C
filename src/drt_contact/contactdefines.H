@@ -22,7 +22,6 @@ Maintainer: Alexander Popp
 #define CONTACTWNORMAL           /* flag for weighted nodal normal calc. */
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
 //#define CONTACTONEMORTARLOOP   /* flag for computation of D,M matrices */
-//#define CONTACTSEMISMOOTH        /* flag for usage of semi-smooth PDASS */
 
 /************************************************************************/
 /* Debugging options                                                    */
@@ -40,8 +39,6 @@ Maintainer: Alexander Popp
 /* Contact algorithm parameters                                         */
 /************************************************************************/
 
-#define CONTACTCN 1.0            /* weighting factor cn for semi-smooth PDASS */
-#define CONTACTCT 1.0            /* weighting factor ct for semi-smooth PDASS */
 #define CONTACTPROJTOL 0.05      /* projection tol. for overlap decision */
 #define CONTACTPROJLIM 1.0e-8    /* no problems with exact node projections */
 #define CONTACTMAXITER 10        /* max. no. iterations for local Newton */

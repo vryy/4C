@@ -93,6 +93,9 @@ void contact_stru_static_drt()
   // create contact manager to organize all contact-related things
   contactmanager = rcp(new CONTACT::Manager(*actdis));
 
+  // get information on primal-dual active set strategy
+  bool semismooth = (contactmanager->Params()).get<bool>("semismooth newton",false);
+  
   // -------------------------------------------------------------------
   // get a communicator and myrank
   // -------------------------------------------------------------------
@@ -343,19 +346,19 @@ void contact_stru_static_drt()
     //********************************************************************
     // OPTIONS FOR PRIMAL-DUAL ACTIVE SET STRATEGY (PDASS)
     //********************************************************************
-    // SEMI-SMOOTH NEWTON
+    // 1) SEMI-SMOOTH NEWTON
+    // 2) FIXED-POINT APPROACH
+    //********************************************************************
+    
+    //********************************************************************
+    // 1) SEMI-SMOOTH NEWTON
     // The search for the correct active set (=contact nonlinearity) and
     // the large deformstion linearization (=geometrical nonlinearity) are
     // merged into one semi-smooth Newton method and solved within ONE
     // iteration loop
     //********************************************************************
-    // FIXED-POINT APPROACH
-    // The search for the correct active set (=contact nonlinearity) is
-    // represented by a fixed-point approach, whereas the large deformation
-    // linearization (=geimetrical nonlinearity) is treated by a standard
-    // Newton scheme. This yields TWO nested iteration loops
-    //********************************************************************
-#ifdef CONTACTSEMISMOOTH
+  if (semismooth)
+  {
     //--------------------------------------------------- predicting state
     // constant predictor : displacement in domain
     disn->Update(1.0, *dis, 0.0);
@@ -550,8 +553,17 @@ void contact_stru_static_drt()
       printf("computed 1 step with 1 iteration: STATIC LINEAR SOLUTION\n");
     else if (numiter==statvar->maxiter)
       dserror("Newton unconverged in %d iterations",numiter);
-  
-#else
+  }
+
+    //********************************************************************
+    // 2) FIXED-POINT APPROACH
+    // The search for the correct active set (=contact nonlinearity) is
+    // represented by a fixed-point approach, whereas the large deformation
+    // linearization (=geimetrical nonlinearity) is treated by a standard
+    // Newton scheme. This yields TWO nested iteration loops
+    //********************************************************************
+  else
+  {
     //============================================ start of active set loop
     while (contactmanager->ActiveSetConverged()==false)
     {
@@ -750,9 +762,11 @@ void contact_stru_static_drt()
       contactmanager->UpdateActiveSet(disn);
     }
     //================================================ end active set loop
-#endif // #ifdef CONTACTSEMISMOOTH
-    
-
+  }
+    //********************************************************************
+    // END: options for primal-dual active set strategy (PDASS)
+    //********************************************************************
+  
     //---------------------------- determine new end-quantities and update
     // new displacements at t_{n+1} -> t_n
     // D_{n} := D_{n+1}

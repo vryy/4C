@@ -807,10 +807,8 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     ++numiter;
     
     //-------------------- update active set for semi-smooth Newton case
-#ifdef CONTACTSEMISMOOTH
-    contactmanager_->UpdateActiveSetSemiSmooth(disn_);
-#endif // #ifdef CONTACTSEMISMOOTH
-    
+    bool semismooth = (contactmanager_->Params()).get<bool>("semismooth newton",false);
+    if (semismooth) contactmanager_->UpdateActiveSetSemiSmooth(disn_); 
   }
   //=================================================================== end equilibrium loop
   print_unconv = false;
@@ -1200,7 +1198,17 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     // linearization (=geimetrical nonlinearity) is treated by a standard
     // Newton scheme. This yields TWO nested iteration loops
     //********************************************************************
-#ifdef CONTACTSEMISMOOTH
+    bool semismooth = (contactmanager_->Params()).get<bool>("semismooth newton",false);
+    
+    //********************************************************************
+    // 1) SEMI-SMOOTH NEWTON
+    // The search for the correct active set (=contact nonlinearity) and
+    // the large deformstion linearization (=geometrical nonlinearity) are
+    // merged into one semi-smooth Newton method and solved within ONE
+    // iteration loop
+    //********************************************************************
+  if (semismooth)
+  {
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
@@ -1218,8 +1226,17 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       double time = params_.get<double>("total time",0.0);
       if (time>=maxtime) break;
     }
-    
-#else
+  }
+  
+    //********************************************************************
+    // FIXED-POINT APPROACH
+    // The search for the correct active set (=contact nonlinearity) is
+    // represented by a fixed-point approach, whereas the large deformation
+    // linearization (=geimetrical nonlinearity) is treated by a standard
+    // Newton scheme. This yields TWO nested iteration loops
+    //********************************************************************
+  else
+  {
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
@@ -1244,7 +1261,10 @@ void CONTACT::ContactStruGenAlpha::Integrate()
       double time = params_.get<double>("total time",0.0);
       if (time>=maxtime) break;
     }
-#endif // #ifdef CONTACTSEMISMOOTH
+  }
+    //********************************************************************
+    // END: options for primal-dual active set strategy (PDASS)
+    //********************************************************************
   }
   
   // other types of nonlinear iteration schemes

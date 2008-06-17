@@ -521,6 +521,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter("FULL_LINEARIZATION","No","If chosen full linearization of contact is applied",
                                yesnotuple,yesnovalue,&scontact);
   
+  setStringToIntegralParameter("SEMI_SMOOTH_NEWTON","No","If chosen semi-smooth Newton concept is applied",
+                                 yesnotuple,yesnovalue,&scontact);
+  
+  DoubleParameter("SEMI_SMOOTH_CN",0.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
+  DoubleParameter("SEMI_SMOOTH_CT",0.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
+  
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 

@@ -347,6 +347,11 @@ bool CONTACT::Manager::ReadAndCheckInput()
   
   // read full linearization flag
   scontact_.set<bool> ("full linearization",Teuchos::getIntegralValue<int>(input,"FULL_LINEARIZATION"));
+  
+  // read semi-smooth Newton flag and parameters
+  scontact_.set<bool> ("semismooth newton",Teuchos::getIntegralValue<int>(input,"SEMI_SMOOTH_NEWTON"));
+  scontact_.set<double>("semismooth cn",input.get<double>("SEMI_SMOOTH_CN"));
+  scontact_.set<double>("semismooth ct",input.get<double>("SEMI_SMOOTH_CT"));
     
   // check contact input parameters
   string ctype   = scontact_.get<string>("contact type","none");
@@ -356,6 +361,7 @@ bool CONTACT::Manager::ReadAndCheckInput()
   //double frbound = scontact_.get<double>("friction bound",0.0);
   //double frcoeff = scontact_.get<double>("friction coeffiecient",0.0);
   bool fulllin   = scontact_.get<bool>("full linearization",false);
+  bool semismooth= scontact_.get<bool>("semismooth newton",false);
   
   // invalid parameter combinations
   if (ctype=="normal" && ftype !="none")
@@ -368,6 +374,8 @@ bool CONTACT::Manager::ReadAndCheckInput()
     dserror("Full linearization not yet implemented for friction");
   if (btrafo && fulllin)
     dserror("Full linearization not yet implemented for basis trafo case");
+  if (ctype=="frictional" && semismooth)
+    dserror("Semi-smooth Newton approach not yet implemented for friction");
   
   // overrule input in certain cases
   if (ctype=="meshtying" && !init)
@@ -626,6 +634,14 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
   // read tresca friction bound
   double frbound = scontact_.get<double>("friction bound",0.0);
+  
+  // read weighting factor ct
+  // (this is necessary in semi-smooth Newton case, as the search for the
+  // active set is now part of the Newton iteration. Thus, we do not know
+  // the active / inactive status in advance and we can have a state in
+  // which both firctional conditions are violated. Here we have to weigh
+  // the two violations via ct!
+  double ct = scontact_.get<double>("semismooth ct",0.0);
 
 #ifdef CONTACTCHECKHUEEBER
   if (numiter==0)
@@ -634,7 +650,7 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->AssembleNT(*nmatrix_,*tmatrix_);
-    interface_[i]->AssembleTresca(*lmatrix_,*r_,frbound); 
+    interface_[i]->AssembleTresca(*lmatrix_,*r_,frbound,ct); 
   }
   
   // FillComplete() global matrices N, T and L
@@ -2634,6 +2650,14 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
   // get input parameter ctype
   string ctype   = scontact_.get<string>("contact type","none");
   
+  // read weighting factor cn
+  // (this is necessary in semi-smooth Newton case, as the search for the
+  // active set is now part of the Newton iteration. Thus, we do not know
+  // the active / inactive status in advance and we can have a state in
+  // which both the condition znormal = 0 and wgap = 0 are violated. Here
+  // we have to weigh the two violations via cn!
+  double cn = scontact_.get<double>("semismooth cn",0.0);
+        
   // assume that active set has converged and check for opposite
   activesetconv_=true;
   
@@ -2683,19 +2707,11 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
         nzold += cnode->n()[k] * cnode->lmold()[k];
       }
       
-      // define weighting factor cn
-      // (this is necessary in semi-smooth Newton case, as the search for the
-      // active set is now part of the Newton iteration. Thus, we do not know
-      // the active / inactive status in advance and we can have a state in
-      // which both the condition znormal = 0 and wgap = 0 are violated. Here
-      // we have to weigh the two violations via cn!
-      double c = CONTACTCN;
-      
       // check nodes of inactive set *************************************
       if (cnode->Active()==false)
       {
         // check for penetration and/or tensile contact forces
-        if (nz + c*(nincr-wgap) > 0)
+        if (nz + cn*(nincr-wgap) > 0)
         {
           cnode->Active() = true;
           activesetconv_ = false;
@@ -2706,8 +2722,8 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
       else
       {
         // check for tensile contact forces and/or penetration
-        //if (nz + c*(nincr-wgap) <= 0) // no averaging of Lagrange multipliers
-        if ((0.5*nz+0.5*nzold) + c*(nincr-wgap) <= 0) // averaging of Lagrange multipliers
+        //if (nz + cn*(nincr-wgap) <= 0) // no averaging of Lagrange multipliers
+        if ((0.5*nz+0.5*nzold) + cn*(nincr-wgap) <= 0) // averaging of Lagrange multipliers
         {
           if (ctype!="meshtying")
           {
