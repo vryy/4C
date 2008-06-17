@@ -118,14 +118,15 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
   headstring.erase(headstring.end()-1);
   
   // delete very first line with comment "//"
-  headstring.erase(headstring.find("//"),headstring.find("\n")+1);//-headstring.find("//"));
+  if (headstring.find("//")== 0)
+    headstring.erase(headstring.find("//"),headstring.find("\n")+1);//-headstring.find("//"));
   
   size_t comment = headstring.find("\n//");
   while (comment != string::npos){
     headstring.erase(comment+1,headstring.find("\n",comment+1)-comment);
     comment = headstring.find("\n//",comment);
   }
-  
+
   dat<<headstring<<endl;
   return;
 }

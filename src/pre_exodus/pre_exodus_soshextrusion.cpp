@@ -30,13 +30,15 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   RCP<map<int,vector<double> > > newnodes = rcp(new map<int,vector<double> >);          // here the new nodes ar stored
   map<int,RCP<EXODUS::ElementBlock> > neweblocks;   // here the new EBlocks are stored
   map<int,EXODUS::NodeSet> newnodesets;       // here the new NS are stored
-  int highestblock = basemesh.GetNumElementBlocks();
-  int highestns = basemesh.GetNumNodeSets();
+  int highestblock = basemesh.GetNumElementBlocks(); // check whether there are ebs at all
+  int highestns = basemesh.GetNumNodeSets();// check whether there are nss at all
   map<int,RCP<EXODUS::ElementBlock> > ebs = basemesh.GetElementBlocks();
   map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
+  if (highestblock!=0) highestblock = ebs.rbegin()->first+1; // if there are ebs get the highest number, not necessarily consecutive
 
   map<int,EXODUS::NodeSet> nss = basemesh.GetNodeSets();
   map<int,EXODUS::NodeSet>::const_iterator i_nss;
+  if (highestns!=0) highestns = nss.rbegin()->first+1;// if there are nss get the highest number, not necessarily consecutive
 
   map<int,EXODUS::SideSet> sss = basemesh.GetSideSets();
   map<int,EXODUS::SideSet>::const_iterator i_sss;

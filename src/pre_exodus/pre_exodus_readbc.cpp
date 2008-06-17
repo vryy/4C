@@ -61,10 +61,14 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
   int ndp = 0; int ndl = 0; int nds = 0; int ndv = 0;
   
   // map to avoid double assignment
-  map<int,int> dp2Eid;
-  map<int,int> dl2Eid;
-  map<int,int> ds2Eid;
-  map<int,int> dv2Eid;
+  map<int,int> eb_dp2Eid;
+  map<int,int> eb_dl2Eid;
+  map<int,int> eb_ds2Eid;
+  map<int,int> eb_dv2Eid;
+  map<int,int> ns_dp2Eid;
+  map<int,int> ns_dl2Eid;
+  map<int,int> ns_ds2Eid;
+  map<int,int> ns_dv2Eid;
   
   found = allconds.find_first_of(marker);  
   while (found != string::npos){
@@ -102,42 +106,42 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
         EXODUS::cond_def cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
         switch (cdef.gtype) {
         case DRT::Condition::Point: {
-          if (dp2Eid.find(id) != dp2Eid.end())
-            E_id = dp2Eid.find(id)->second;
+          if (eb_dp2Eid.find(id) != eb_dp2Eid.end())
+            E_id = eb_dp2Eid.find(id)->second;
           else {
             ++ndp;
             E_id = ndp;
-            dp2Eid.insert(pair<int,int>(id, E_id));
+            eb_dp2Eid.insert(pair<int,int>(id, E_id));
           }
           break;
         }
         case DRT::Condition::Line: {
-          if (dl2Eid.find(id) != dl2Eid.end())
-            E_id = dl2Eid.find(id)->second;
+          if (eb_dl2Eid.find(id) != eb_dl2Eid.end())
+            E_id = eb_dl2Eid.find(id)->second;
           else {
             ++ndl;
             E_id = ndl;
-            dl2Eid.insert(pair<int,int>(id, E_id));
+            eb_dl2Eid.insert(pair<int,int>(id, E_id));
           }
           break;
         }
         case DRT::Condition::Surface: {
-          if (ds2Eid.find(id) != ds2Eid.end())
-            E_id = ds2Eid.find(id)->second;
+          if (eb_ds2Eid.find(id) != eb_ds2Eid.end())
+            E_id = eb_ds2Eid.find(id)->second;
           else {
             ++nds;
             E_id = nds;
-            ds2Eid.insert(pair<int,int>(id, E_id));
+            eb_ds2Eid.insert(pair<int,int>(id, E_id));
           }
           break;
         }
         case DRT::Condition::Volume: {
-          if (dv2Eid.find(id) != dv2Eid.end())
-            E_id = dv2Eid.find(id)->second;
+          if (eb_dv2Eid.find(id) != eb_dv2Eid.end())
+            E_id = eb_dv2Eid.find(id)->second;
           else {
             ++ndv;
             E_id = ndv;
-            dv2Eid.insert(pair<int,int>(id, E_id));
+            eb_dv2Eid.insert(pair<int,int>(id, E_id));
           }
           break;
         }
@@ -159,42 +163,42 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
       EXODUS::cond_def cdef = EXODUS::ReadCdef(mesh_entity, id, actcond);
       switch (cdef.gtype) {
       case DRT::Condition::Point: {
-        if (dp2Eid.find(id) != dp2Eid.end())
-          E_id = dp2Eid.find(id)->second;
+        if (ns_dp2Eid.find(id) != ns_dp2Eid.end())
+          E_id = ns_dp2Eid.find(id)->second;
         else {
           ++ndp;
           E_id = ndp;
-          dp2Eid.insert(pair<int,int>(id, E_id));
+          ns_dp2Eid.insert(pair<int,int>(id, E_id));
         }
         break;
       }
       case DRT::Condition::Line: {
-        if (dl2Eid.find(id) != dl2Eid.end())
-          E_id = dl2Eid.find(id)->second;
+        if (ns_dl2Eid.find(id) != ns_dl2Eid.end())
+          E_id = ns_dl2Eid.find(id)->second;
         else {
           ++ndl;
           E_id = ndl;
-          dl2Eid.insert(pair<int,int>(id, E_id));
+          ns_dl2Eid.insert(pair<int,int>(id, E_id));
         }
         break;
       }
       case DRT::Condition::Surface: {
-        if (ds2Eid.find(id) != ds2Eid.end())
-          E_id = ds2Eid.find(id)->second;
+        if (ns_ds2Eid.find(id) != ns_ds2Eid.end())
+          E_id = ns_ds2Eid.find(id)->second;
         else {
           ++nds;
           E_id = nds;
-          ds2Eid.insert(pair<int,int>(id, E_id));
+          ns_ds2Eid.insert(pair<int,int>(id, E_id));
         }
         break;
       }
       case DRT::Condition::Volume: {
-        if (dv2Eid.find(id) != dv2Eid.end())
-          E_id = dv2Eid.find(id)->second;
+        if (ns_dv2Eid.find(id) != ns_dv2Eid.end())
+          E_id = ns_dv2Eid.find(id)->second;
         else {
           ++ndv;
           E_id = ndv;
-          dv2Eid.insert(pair<int,int>(id, E_id));
+          ns_dv2Eid.insert(pair<int,int>(id, E_id));
         }
         break;
       }

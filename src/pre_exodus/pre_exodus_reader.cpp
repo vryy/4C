@@ -118,7 +118,7 @@ EXODUS::Mesh::Mesh(string exofilename)
       RCP<ElementBlock> actEleBlock = rcp(new ElementBlock(StringToShape(ele_type), eleconn, blockname));
 
       // Add this ElementBlock into Mesh map
-      elementBlocks_.insert(std::pair<int,RCP<ElementBlock> >(i,actEleBlock));
+      elementBlocks_.insert(std::pair<int,RCP<ElementBlock> >(ebids[i],actEleBlock));
     }
   } // end of element section
 
@@ -147,7 +147,7 @@ EXODUS::Mesh::Mesh(string exofilename)
       NodeSet actNodeSet(nodes_in_set,nodesetname,"none");
 
       // Add this NodeSet into Mesh map (here prelim due to pro names)
-      prelimNodeSets.insert(std::pair<int,NodeSet>(i,actNodeSet));
+      prelimNodeSets.insert(std::pair<int,NodeSet>(npropID[i],actNodeSet));
     }
 
     /* Read NodeSet property names ***********************************************
@@ -224,7 +224,7 @@ EXODUS::Mesh::Mesh(string exofilename)
       SideSet actSideSet(sides_in_set,sidesetname);
 
       // Add this SideSet into Mesh map
-      sideSets_.insert(std::pair<int,SideSet>(i,actSideSet));
+      sideSets_.insert(std::pair<int,SideSet>(spropID[i],actSideSet));
     }
   } //end of sideset section
 
