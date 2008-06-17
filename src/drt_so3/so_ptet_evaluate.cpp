@@ -165,7 +165,9 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      ptetnlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,false);
+      Epetra_SerialDenseMatrix* elemat1ptr = NULL;
+      if (elemat1.N()) elemat1ptr = &elemat1;
+      ptetnlnstiffmass(lm,mydisp,myres,elemat1ptr,NULL,&elevec1,NULL,NULL,false);
     }
     break;
 
@@ -370,7 +372,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
   FisNew_ = false;
   
   //--------------------------- Right Cauchy-Green tensor C = = F^T * F
-  LINALG::SerialDenseMatrix cauchygreen(NUMDIM_PTET,NUMDIM_PTET);
+  Epetra_SerialDenseMatrix cauchygreen(NUMDIM_PTET,NUMDIM_PTET);
   cauchygreen.Multiply('T','N',1.0,defgrd,defgrd,0.0);
   
   // --Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
@@ -437,98 +439,41 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
   }
 
   //------------------------------------------------- call material law
-#if 0 // dev stab on cauchy stresses
-  const double third = 1./3.;
-  Epetra_SerialDenseMatrix Idev(NUMSTR_PTET,NUMSTR_PTET);
-  Idev(0,0) =  2.0;  Idev(0,1) = -1.0;  Idev(0,2) = -1.0;
-  Idev(1,0) = -1.0;  Idev(1,1) =  2.0;  Idev(1,2) = -1.0;
-  Idev(2,0) = -1.0;  Idev(2,1) = -1.0;  Idev(2,2) =  2.0;
-  Idev(3,3) = 3.0;
-  Idev(4,4) = 3.0;
-  Idev(5,5) = 3.0;
-  Idev.Scale(third);
-  
-  // detF and inverse of F needed
-  Epetra_SerialDenseMatrix Finv(defgrd);
-  const double detF = LINALG::NonsymInverse3x3(Finv);
-
-  // keep only deviatoric part of strains
-  LINALG::SerialDenseVector gltmp(glstrain);
-  Idev.Multiply(false,gltmp,glstrain);
-  
-  // call material law
+#if 1 // dev stab on cauchy stresses
   Epetra_SerialDenseMatrix cmat(NUMSTR_PTET,NUMSTR_PTET);
   Epetra_SerialDenseVector stress(NUMSTR_PTET);
   double density = -999.99;
-  SelectMaterial(stress,cmat,density,glstrain,defgrd,0);
-  // do stabilization
-  stress.Scale(ALPHA_PTET);
-  cmat.Scale(ALPHA_PTET);
-
-  // keep only the deviatoric part of cauchy stresses
   {
-    // PK2 as matrix
-    LINALG::SerialDenseMatrix pkstress(NUMDIM_PTET,NUMDIM_PTET);
-    pkstress(0,0) = stress(0);
-    pkstress(0,1) = stress(3);
-    pkstress(0,2) = stress(5);
-    pkstress(1,0) = pkstress(0,1);
-    pkstress(1,1) = stress(1);
-    pkstress(1,2) = stress(4);
-    pkstress(2,0) = pkstress(0,2);
-    pkstress(2,1) = pkstress(1,2);
-    pkstress(2,2) = stress(2);
+    // do deviatoric F, C, E
+    const double J = PtetRegister::Det(defgrd);
+    Epetra_SerialDenseMatrix Cbar(cauchygreen);
+    Cbar.Scale(pow(J,-2./3.));
+    LINALG::SerialDenseVector glstrainbar(NUMSTR_PTET);
+    glstrainbar(0) = 0.5 * (Cbar(0,0) - 1.0);
+    glstrainbar(1) = 0.5 * (Cbar(1,1) - 1.0);
+    glstrainbar(2) = 0.5 * (Cbar(2,2) - 1.0);
+    glstrainbar(3) = Cbar(0,1);
+    glstrainbar(4) = Cbar(1,2);
+    glstrainbar(5) = Cbar(2,0);
+    Epetra_SerialDenseMatrix Fbar(defgrd);
+    Fbar.Scale(pow(J,-1./3.));
+    
+    SelectMaterial(stress,cmat,density,glstrainbar,Fbar,0);
 
-    // compute cauchy stresses as matrix \sigma = 1/detF * F * pkstress * F^T
-    LINALG::SerialDenseMatrix temp(NUMDIM_PTET,NUMDIM_PTET);
-    LINALG::SerialDenseMatrix cauchystress(NUMDIM_PTET,NUMDIM_PTET);
-    temp.Multiply('N','N',1.0/detF,defgrd,pkstress,0.);
-    cauchystress.Multiply('N','T',1.0,temp,defgrd,0.);
-
-    // cauchy as vector
-    Epetra_SerialDenseVector cstress(NUMSTR_PTET);
-    cstress(0) = cauchystress(0,0);
-    cstress(1) = cauchystress(1,1);
-    cstress(2) = cauchystress(2,2);
-    cstress(3) = cauchystress(0,1);
-    cstress(4) = cauchystress(1,2);
-    cstress(5) = cauchystress(0,2);
-
-    // dev. cauchy as vector
-    Epetra_SerialDenseVector cstressdev(NUMSTR_PTET);
-    Idev.Multiply(false,cstress,cstressdev);
-
-    // dev cauchy as matrix
-    cauchystress(0,0) = cstressdev(0);
-    cauchystress(0,1) = cstressdev(3);
-    cauchystress(0,2) = cstressdev(5);
-    cauchystress(1,0) = cauchystress(0,1);
-    cauchystress(1,1) = cstressdev(1);
-    cauchystress(1,2) = cstressdev(4);
-    cauchystress(2,0) = cauchystress(0,2);
-    cauchystress(2,1) = cauchystress(1,2);
-    cauchystress(2,2) = cstressdev(2);
-
-    // compute dev. PK2 = detF F^{-1} \sigma F^{-T}
-    LINALG::SerialDenseMatrix pk2dev(NUMDIM_PTET,NUMDIM_PTET);
-    temp.Multiply('N','N',detF,Finv,cauchystress,0.0);
-    pk2dev.Multiply('N','T',1.0,temp,Finv,0.0);
-    stress(0) = pk2dev(0,0);
-    stress(1) = pk2dev(1,1);
-    stress(2) = pk2dev(2,2);
-    stress(3) = pk2dev(0,1);
-    stress(4) = pk2dev(1,2);
-    stress(5) = pk2dev(0,2);
+    // define stuff we need to do the split
+    Epetra_SerialDenseMatrix cmatdev(NUMSTR_PTET,NUMSTR_PTET);
+    Epetra_SerialDenseVector stressdev(NUMSTR_PTET);
+    
+    // do just the deviatoric components
+    PtetRegister::DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
+    stress = stressdev;
+    cmat = cmatdev;
+    stress.Scale(ALPHA_PTET);
+    cmat.Scale(ALPHA_PTET);
   }
-  
-  // deviatoric part of tangent
-  LINALG::SerialDenseMatrix tmp(NUMSTR_PTET,NUMSTR_PTET);
-  tmp.Multiply('N','N',1.0,cmat,Idev,0.0);
-  cmat.Multiply('N','N',1.0,Idev,tmp,0.0);
-  
 #endif
 
-#if 1 // prev. methods
+#if 0 // prev. methods
 #if 0 // stabilization on deviatoric stresses only
   const double third = 1./3.;
   Epetra_SerialDenseMatrix Idev(NUMSTR_PTET,NUMSTR_PTET);
@@ -612,11 +557,13 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
     }
   }
   
-  if (force && stiffmatrix)
+  if (force)
   {
     // integrate internal force vector f = f + (B^T . sigma) * V_ 
     (*force).Multiply('T','N',V_,bop,stress,1.0);
-
+  }
+  if (stiffmatrix)
+  {
     // integrate elastic stiffness matrix
     // keu = keu + (B^T . C . B) * V_
     LINALG::SerialDenseMatrix cb(NUMSTR_PTET,NUMDOF_PTET);

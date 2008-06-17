@@ -138,7 +138,7 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
   bool assemblevec2 = systemvector2!=Teuchos::null;
   bool assemblevec3 = systemvector3!=Teuchos::null;
   if ( assemblevec2 ||  assemblevec3) dserror("Wrong assembly expectations");
-  if (!assemblemat1 || !assemblevec1) dserror("Wrong assembly expectations");
+  //if (!assemblemat1 || !assemblevec1) dserror("Wrong assembly expectations");
 
   // nodal stiffness and force (we don't do mass here)
   Epetra_SerialDenseMatrix stiff;
@@ -163,8 +163,10 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
   //-----------------------------------------------------------------
   // create a temporary matrix to assemble to in a baci-unusual way
   // (across-parallel-interface assembly)
-  const Epetra_Map& rmap = systemmatrix1->EpetraOperator()->OperatorRangeMap();
-  const Epetra_Map& dmap = systemmatrix1->EpetraOperator()->OperatorDomainMap();
+  //const Epetra_Map& rmap = systemmatrix1->EpetraOperator()->OperatorRangeMap();
+  const Epetra_Map& rmap = *dis.DofRowMap();
+  //const Epetra_Map& dmap = systemmatrix1->EpetraOperator()->OperatorDomainMap();
+  const Epetra_Map& dmap = rmap;
   Epetra_FECrsMatrix stifftmp(Copy,rmap,256,false);
   // create temporary vector in column map to assemble to
   Epetra_Vector forcetmp(*dis.DofColMap(),true);
@@ -408,9 +410,9 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
   Epetra_SerialDenseVector stress(NUMSTR_PTET);
 
   // right cauchy green
-  LINALG::SerialDenseMatrix cauchygreen(NUMDIM_PTET,NUMDIM_PTET);
+  Epetra_SerialDenseMatrix cauchygreen(NUMDIM_PTET,NUMDIM_PTET);
   cauchygreen.Multiply('T','N',1.0,FnodeL,FnodeL,0.0);
-  // Green-Lagrange
+  // Green-Lagrange ( 2x on offdiagonal!)
   Epetra_SerialDenseVector glstrain(NUMSTR_PTET);
   glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
   glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
@@ -450,88 +452,22 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
     cmat.Scale(1.0/VnodeL);
   }
 
-#if 0 // dev stab on cauchy stresses
+#if 1 // dev stab on cauchy stresses
   {
-    const double third = 1./3.;
-    Epetra_SerialDenseMatrix Idev(NUMSTR_PTET,NUMSTR_PTET);
-    Idev(0,0) =  2.0;  Idev(0,1) = -1.0;  Idev(0,2) = -1.0;
-    Idev(1,0) = -1.0;  Idev(1,1) =  2.0;  Idev(1,2) = -1.0;
-    Idev(2,0) = -1.0;  Idev(2,1) = -1.0;  Idev(2,2) =  2.0;
-    Idev(3,3) = 3.0;
-    Idev(4,4) = 3.0;
-    Idev(5,5) = 3.0;
-    Idev.Scale(third);
+    // define stuff we need
+    LINALG::SerialDenseMatrix cmatdev(NUMSTR_PTET,NUMSTR_PTET);
+    LINALG::SerialDenseVector stressdev(NUMSTR_PTET);
+
+    // compute deviatoric stress and tangent
+    DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
     
-    // detF and inverse of F needed
-    Epetra_SerialDenseMatrix Finv(FnodeL);
-    const double detF = LINALG::NonsymInverse3x3(Finv);
-
-    // PK2 as matrix
-    LINALG::SerialDenseMatrix pkstress(NUMDIM_PTET,NUMDIM_PTET);
-    pkstress(0,0) = stress(0);
-    pkstress(0,1) = stress(3);
-    pkstress(0,2) = stress(5);
-    pkstress(1,0) = pkstress(0,1);
-    pkstress(1,1) = stress(1);
-    pkstress(1,2) = stress(4);
-    pkstress(2,0) = pkstress(0,2);
-    pkstress(2,1) = pkstress(1,2);
-    pkstress(2,2) = stress(2);
-
-    // compute cauchy stresses as matrix
-    LINALG::SerialDenseMatrix temp(NUMDIM_PTET,NUMDIM_PTET);
-    LINALG::SerialDenseMatrix cauchystress(NUMDIM_PTET,NUMDIM_PTET);
-    temp.Multiply('N','N',1.0/detF,FnodeL,pkstress,0.);
-    cauchystress.Multiply('N','T',1.0,temp,FnodeL,0.);
-
-    // cauchy as vector
-    Epetra_SerialDenseVector cstress(NUMSTR_PTET);
-    cstress(0) = cauchystress(0,0);
-    cstress(1) = cauchystress(1,1);
-    cstress(2) = cauchystress(2,2);
-    cstress(3) = cauchystress(0,1);
-    cstress(4) = cauchystress(1,2);
-    cstress(5) = cauchystress(0,2);
-
-    // dev. cauchy as vector
-    Epetra_SerialDenseVector cstressdev(NUMSTR_PTET);
-    Idev.Multiply(false,cstress,cstressdev);
-
-    // dev cauchy as matrix
-    cauchystress(0,0) = cstressdev(0);
-    cauchystress(0,1) = cstressdev(3);
-    cauchystress(0,2) = cstressdev(5);
-    cauchystress(1,0) = cauchystress(0,1);
-    cauchystress(1,1) = cstressdev(1);
-    cauchystress(1,2) = cstressdev(4);
-    cauchystress(2,0) = cauchystress(0,2);
-    cauchystress(2,1) = cauchystress(1,2);
-    cauchystress(2,2) = cstressdev(2);
-
-    // compute dev. PK2 = detF F^{-1} \sigma F^{-T}
-    LINALG::SerialDenseMatrix pk2dev(NUMDIM_PTET,NUMDIM_PTET);
-    temp.Multiply('N','N',detF,Finv,cauchystress,0.0);
-    pk2dev.Multiply('N','T',1.0,temp,Finv,0.0);
-    Epetra_SerialDenseVector stressdev(NUMSTR_PTET);
-    stressdev(0) = pk2dev(0,0);
-    stressdev(1) = pk2dev(1,1);
-    stressdev(2) = pk2dev(2,2);
-    stressdev(3) = pk2dev(0,1);
-    stressdev(4) = pk2dev(1,2);
-    stressdev(5) = pk2dev(0,2);
-    
-    // do scaling of deviatoric components
+    // reduce deviatoric stresses
     const double* sdev = stressdev.Values();
     double*       s    = stress.Values();
     for (int i=0; i<NUMSTR_PTET; ++i) 
       s[i] -= (ALPHA_PTET * sdev[i]);
-
-    // do weighting on deviatoric part of the tangent only
-    LINALG::SerialDenseMatrix tmp(NUMSTR_PTET,NUMSTR_PTET);
-    LINALG::SerialDenseMatrix cmatdev(NUMSTR_PTET,NUMSTR_PTET);
-    tmp.Multiply('N','N',1.0,cmat,Idev,0.0);
-    cmatdev.Multiply('N','N',1.0,Idev,tmp,0.0);
-    // cmatvol = cmat - cmatdev;
+    
+    // reduce deviatoric tangent
     const double* cdev = cmatdev.A();
     double*       c    = cmat.A();
     for (int i=0; i<NUMSTR_PTET*NUMSTR_PTET; ++i) 
@@ -539,7 +475,7 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
   }
 #endif
 
-#if 1 // prev. methods
+#if 0 // prev. methods
 #if 0 // stabilization on deviatoric stresses only
   {
     const double third = 1./3.;
@@ -670,6 +606,101 @@ void DRT::ELEMENTS::PtetRegister::SelectMaterial(
   /*--------------------------------------------------------------------*/
   return;
 }  // DRT::ELEMENTS::Ptet::SelectMaterial
+
+
+/*----------------------------------------------------------------------*
+ |  compute deviatoric tangent and stresses (private/static)   gee 06/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::PtetRegister::DevStressTangent(
+                                        Epetra_SerialDenseVector& Sdev,
+                                        Epetra_SerialDenseMatrix& CCdev,
+                                        Epetra_SerialDenseMatrix& CC,
+                                        const Epetra_SerialDenseVector& S,
+                                        const Epetra_SerialDenseMatrix& C)
+{
+  
+  //---------------------------------- things that we'll definitely need
+  // inverse of C
+  Epetra_SerialDenseMatrix Cinv(C);
+  const double detC = LINALG::NonsymInverse3x3(Cinv);
+  
+  // J = det(F) = sqrt(detC)
+  const double J = sqrt(detC);
+  
+  // S as a 3x3 matrix
+  Epetra_SerialDenseMatrix Smat(NUMDIM_PTET,NUMDIM_PTET);
+  Smat(0,0) = S(0);
+  Smat(0,1) = S(3);
+  Smat(0,2) = S(5);
+  Smat(1,0) = Smat(0,1);
+  Smat(1,1) = S(1);
+  Smat(1,2) = S(4);
+  Smat(2,0) = Smat(0,2);
+  Smat(2,1) = Smat(1,2);
+  Smat(2,2) = S(2);
+  
+  //--------------------------------------------- pressure p = -1/(3J) S:C
+  double p = 0.0;
+  for (int i=0; i<3; ++i)
+    for (int j=0; j<3; ++j)
+      p += Smat(i,j)*C(i,j);
+  p *= (-1./(3.*J));
+  
+  //-------------------------------- compute volumetric PK2 Svol = -p J Cinv
+  //-------------------------------------------------------- Sdev = S - Svol
+  const double fac = -p*J;
+  Sdev(0) = Smat(0,0) - fac*Cinv(0,0);
+  Sdev(1) = Smat(1,1) - fac*Cinv(1,1);
+  Sdev(2) = Smat(2,2) - fac*Cinv(2,2);
+  Sdev(3) = Smat(0,1) - fac*Cinv(0,1);
+  Sdev(4) = Smat(1,2) - fac*Cinv(1,2);
+  Sdev(5) = Smat(0,2) - fac*Cinv(0,2);
+  
+  //======================================== volumetric tangent matrix CCvol
+  Epetra_SerialDenseMatrix CCvol(NUMSTR_PTET,NUMSTR_PTET);
+  
+  //--------------------------------------- CCvol += 2pJ (Cinv boeppel Cinv)
+  MAT::ElastSymTensor_o_Multiply(CCvol,2.0*p*J,Cinv,Cinv,0.0);
+  
+  //------------------------------------------ CCvol += 2/3 * Cinv dyad S
+  MAT::ElastSymTensorMultiply(CCvol,2.0/3.0,Cinv,Smat,1.0);
+  
+  //-------------------------------------- CCvol += 1/3 Cinv dyad ( CC : C )
+  {
+    // C as Voigt vector
+    LINALG::SerialDenseVector Cvec(NUMSTR_PTET);
+    Cvec(0) = C(0,0);         
+    Cvec(1) = C(1,1);
+    Cvec(2) = C(2,2);
+    Cvec(3) = 2.0*C(0,1);
+    Cvec(4) = 2.0*C(1,2);
+    Cvec(5) = 2.0*C(0,2);
+
+    LINALG::SerialDenseVector CCcolonC(NUMSTR_PTET);
+    CC.Multiply(false,Cvec,CCcolonC);
+
+    LINALG::SerialDenseMatrix CCcC(NUMDIM_PTET,NUMDIM_PTET);
+    CCcC(0,0) = CCcolonC(0);
+    CCcC(0,1) = CCcolonC(3);
+    CCcC(0,2) = CCcolonC(5);
+    CCcC(1,0) = CCcC(0,1);
+    CCcC(1,1) = CCcolonC(1);
+    CCcC(1,2) = CCcolonC(4);
+    CCcC(2,0) = CCcC(0,2);
+    CCcC(2,1) = CCcC(1,2);
+    CCcC(2,2) = CCcolonC(2);
+    MAT::ElastSymTensorMultiply(CCvol,1./3.,Cinv,CCcC,1.0);
+  }
+  
+  //----------------------------------------------------- CCdev = CC - CCvol
+  double*       ccdev = CCdev.A();
+  const double* cc    = CC.A();
+  const double* ccvol = CCvol.A();
+  for (int i=0; i<NUMSTR_PTET*NUMSTR_PTET; ++i) 
+    ccdev[i] = cc[i] - ccvol[i];
+  
+  return;
+}
 
 
 

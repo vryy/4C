@@ -39,7 +39,7 @@ using namespace Teuchos;
 #define NUMGPT_PTET       1    // total gauss points per element
 #define NUMDIM_PTET       3    // number of dimensions
 #define NUMCOORD_PTET     4    // number of shape function cooordinates (ksi1-ksi4)
-#define ALPHA_PTET     0.05    // stabilization parameter
+#define ALPHA_PTET      0.1    // stabilization parameter
 
 // forward declarations
 struct _MATERIAL;
@@ -193,6 +193,25 @@ private:
                       const Epetra_SerialDenseVector& glstrain,
                       const Epetra_SerialDenseMatrix& defgrd,
                       int gp);
+
+  // compute determinant of a 3x3
+  inline static double Det(Epetra_SerialDenseMatrix& A)
+  {
+   double detA = A(0,0)*A(1,1)*A(2,2) +
+                 A(0,1)*A(1,2)*A(2,0) +
+                 A(0,2)*A(1,0)*A(2,1) -
+                 A(0,2)*A(1,1)*A(2,0) -
+                 A(0,0)*A(1,2)*A(2,1) -
+                 A(0,1)*A(1,0)*A(2,2);
+    return detA;
+  }
+
+   // compute deviatoric stresses and tangent
+   static void DevStressTangent(Epetra_SerialDenseVector& Sdev,
+                                Epetra_SerialDenseMatrix& CCdev,
+                                Epetra_SerialDenseMatrix& CC,
+                                const Epetra_SerialDenseVector& S,
+                                const Epetra_SerialDenseMatrix& C);
 
 }; // class PtetRegister
 
