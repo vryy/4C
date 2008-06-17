@@ -162,7 +162,7 @@ void DRT::ELEMENTS::Condif3::Condif3SysMat(
   // dead load in element nodes
   const Epetra_SerialDenseVector bodyforce = BodyForce(time);
 
-  /*---------------------------------------------- get diffusivity ---*/
+  // get diffusivity
   if(material->mattyp != m_condif) dserror("Material law is not of type m_condif.");
   const double diffus = material->m.condif->diffusivity;
 
@@ -175,11 +175,11 @@ void DRT::ELEMENTS::Condif3::Condif3SysMat(
   Epetra_SerialDenseMatrix      derxy2(6,iel);
   static vector<double>         velint(nsd);
   double                        edeadng;
-  double                        hist; /* history data at integration point      */
+  double                        hist; // history data at integration point
   double                        tau; // stabilization parameter
 
   /*----------------------------------------------------------------------*/
-  // calculation of stabilization parameter
+  // calculation of stabilization parameter tau
   /*----------------------------------------------------------------------*/
   Caltau(tau,evel,distype,funct,deriv,xyze,derxy,xjm,velint,diffus,iel,timefac,is_stationary);
   
@@ -321,15 +321,9 @@ void DRT::ELEMENTS::Condif3::Condif3SysMat(
 
     /*-------------- perform integration for entire matrix and rhs ---*/
     if(is_stationary==false)
-    {
       Condif3CalMat(*sys_mat,*residual,velint,hist,funct,derxy,derxy2,edeadng,tau,fac,diffus,iel,timefac);
-      cout<<"calmat_instationary"<<endl;
-    }
-      else
-      {
-      cout<<"calmat_stationary"<<endl;
+    else
       Condif3CalMatStationary(*sys_mat,*residual,velint,hist,funct,derxy,derxy2,edeadng,tau,fac,diffus,iel);
-      }
 
   } // integration loop
 
@@ -1204,13 +1198,12 @@ void DRT::ELEMENTS::Condif3::Caltau(
   // use same shape functions for velocity as for unknown scalar field phi
   for (int i=0;i<3;i++)
   {
-      velint[i]=0.0;
-      for (int j=0;j<iel;j++)
-      {
-          velint[i] += funct[j]*evel[i+(3*j)];
-      }
+    velint[i]=0.0;
+    for (int j=0;j<iel;j++)
+    {
+      velint[i] += funct[j]*evel[i+(3*j)];
+    }
   } //end loop over i
-  
   
   /*------------------------------ get Jacobian matrix and determinant ---*/
   /*----------------------------- determine Jacobi Matrix at point r,s ---*/
@@ -1271,14 +1264,15 @@ void DRT::ELEMENTS::Condif3::Caltau(
     } /* end of loop over k */
 
    const double vol = wquad*det;
-   /*----------------------------------------------- get vel_norm ---*/
+   /*--------------------------------------------- get Euclidean vel_norm ---*/
    const double vel_norm = sqrt(DSQR(velint[0]) + DSQR(velint[1]) + DSQR(velint[2]));
 
-
+/*
    // there exist different definitions for 'the' characteristic element length hk:
    // 1)
-   // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
-   //const double hk = pow((6.*vol/PI),(1.0/3.0))/sqrt(3.0);
+   // get element length for tau_Mp/tau_C: volume-equival. diameter
+   //const double hk = pow((6.*vol/PI),(1.0/3.0));
+
    // 2)
    // streamlength
    // normed velocity at element centre
@@ -1305,19 +1299,18 @@ void DRT::ELEMENTS::Condif3::Caltau(
        sum += velino[j]*derxy(j,i);
      }
      val+= abs(sum);
-   }
-   const double strle = 2.0/val; 
-   cout<<"warning: is strlen correct?"<<endl;
+   } 
+   const double strle = 2.0/val; //this formula is buggy in 3D !!!!!!!
    //const double hk = strle;
-   
+   */
    // 3) use cubic root of the element volume as characteristic length
    const double hk = pow(vol,(1.0/3.0));
 
-   double epe1, xi1, xi2;
+   double epe1, epe2, xi1, xi2;
 
    if (is_stationary == false)
    {// stabilization parameters for instationary case (default)
-     dserror("condif3 - instationary formulation not yet verified.");
+
      /* parameter relating diffusive : reactive forces */
      epe1 = 2.0 * timefac * diffus / (mk * DSQR(hk));
      /* parameter relating convective : diffusive forces */
@@ -1334,15 +1327,16 @@ void DRT::ELEMENTS::Condif3::Caltau(
 
      /*------------------------------------------------------ compute tau ---*/
      /* stability parameter definition according to Franca and Valentin (2000) */
-     epe1 = mk * vel_norm * hk / diffus;      /* convective : diffusive forces */
-     xi1 = DMAX(epe1,1.0);
+     epe2 = mk * vel_norm * hk / diffus;      /* convective : diffusive forces */
+     xi2 = DMAX(epe2,1.0);
 
-     tau = (DSQR(hk)*mk)/(2.0*diffus*xi1);
+     tau = (DSQR(hk)*mk)/(2.0*diffus*xi2);
 
    }
 
 #if 0
-   cout<<"hk (volume equiv diam)            = "<<pow((6.*vol/PI),(1.0/3.0))/sqrt(3.0)<<endl;
+   // some debug output
+   cout<<"hk (volume equiv diam)            = "<<pow((6.*vol/PI),(1.0/3.0))<<endl;
    cout<<"strle                             = "<<strle<<endl;
    cout<<"hk (cubic root of element volume) = "<<pow(vol,(1.0/3.0))<<endl;
    cout<<"tau = "<<tau<<endl;
