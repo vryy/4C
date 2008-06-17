@@ -2481,9 +2481,9 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
       if (cnode->Active()==false)
       {
         // check for fulfilment of contact condition
-        // if (abs(nz) > 1e-8)
-        //  dserror("ERROR: UpdateActiveSet: Exact inactive node condition violated "
-        //          "for node ID: %i ", cnode->Id());
+        //if (abs(nz) > 1e-8)
+        //  cout << "ERROR: UpdateActiveSet: Exact inactive node condition violated "
+        //       <<  "for node ID: " << cnode->Id() << endl;
         
         // check for penetration
         if (nincr-wgap > 0)
@@ -2499,13 +2499,13 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
       else
       {
         // check for fulfilment of contact condition
-        // if (abs(nincr-wgap) > 1e-8)
-        // dserror("ERROR: UpdateActiveSet: Exact active node condition violated "
-        //         "for node ID: %i ", cnode->Id());
+        //if (abs(nincr-wgap) > 1e-8)
+        //  cout << "ERROR: UpdateActiveSet: Exact active node condition violated "
+        //       << "for node ID: " << cnode->Id() << endl;
         
         // check for tensile contact forces
-        //if (nz <= 0) // no averaging of Lagrange multipliers
-        if (0.5*nz+0.5*nzold <= 0) // averaging of Lagrange multipliers
+        if (nz <= 0) // no averaging of Lagrange multipliers
+        //if (0.5*nz+0.5*nzold <= 0) // averaging of Lagrange multipliers
         {
           if (ctype!="meshtying")
           {
@@ -2710,6 +2710,11 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
       // check nodes of inactive set *************************************
       if (cnode->Active()==false)
       {
+        // check for fulfilment of contact condition
+        //if (abs(nz) > 1e-8)
+        //  cout << "ERROR: UpdateActiveSet: Exact inactive node condition violated "
+        //       <<  "for node ID: " << cnode->Id() << endl;
+                
         // check for penetration and/or tensile contact forces
         if (nz + cn*(nincr-wgap) > 0)
         {
@@ -2721,9 +2726,14 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
       // check nodes of active set ***************************************
       else
       {
+        // check for fulfilment of contact condition
+        //if (abs(nincr-wgap) > 1e-8)
+        //  cout << "ERROR: UpdateActiveSet: Exact active node condition violated "
+        //       << "for node ID: " << cnode->Id() << endl;
+                  
         // check for tensile contact forces and/or penetration
-        //if (nz + cn*(nincr-wgap) <= 0) // no averaging of Lagrange multipliers
-        if ((0.5*nz+0.5*nzold) + cn*(nincr-wgap) <= 0) // averaging of Lagrange multipliers
+        if (nz + cn*(nincr-wgap) <= 0) // no averaging of Lagrange multipliers
+        //if ((0.5*nz+0.5*nzold) + cn*(nincr-wgap) <= 0) // averaging of Lagrange multipliers
         {
           if (ctype!="meshtying")
           {
