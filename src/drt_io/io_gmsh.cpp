@@ -70,7 +70,9 @@ std::string IO::GMSH::elementToString(const double scalar, const DRT::Element* e
   return pos_array_string.str();
 }
 
-std::string IO::GMSH::disToString(const std::string& s, const double scalar,
+std::string IO::GMSH::disToString(
+    const std::string& s,
+    const double scalar,
     const Teuchos::RCP<DRT::Discretization> dis)
 {
   stringstream gmshfilecontent;
@@ -84,7 +86,9 @@ std::string IO::GMSH::disToString(const std::string& s, const double scalar,
   return gmshfilecontent.str();
 }
 
-std::string IO::GMSH::disToString(const std::string& s, const double scalar,
+std::string IO::GMSH::disToString(
+    const std::string& s,
+    const double scalar,
     const Teuchos::RCP<DRT::Discretization> dis,
     std::map<int,blitz::TinyVector<double,3> > currentpositions)
 {
@@ -102,7 +106,9 @@ std::string IO::GMSH::disToString(const std::string& s, const double scalar,
   return gmshfilecontent.str();
 }
 
-std::string IO::GMSH::disToString(const std::string& s, const double scalar,
+std::string IO::GMSH::disToString(
+    const std::string& s,
+    const double scalar,
     const Teuchos::RCP<DRT::Discretization> dis,
     const std::map<int, XFEM::DomainIntCells >& elementDomainIntCellsMap,
     const std::map<int, XFEM::BoundaryIntCells >& elementBoundaryIntCellsMap)

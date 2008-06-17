@@ -338,7 +338,8 @@ namespace IO
         const Teuchos::RCP<DRT::Discretization> dis,
         std::map<int,blitz::TinyVector<double,3> > currentpositions);
 
-    std::string disToString(const std::string& s,
+    std::string disToString(
+        const std::string& s,
         const double scalar,
         const Teuchos::RCP<DRT::Discretization> dis,
         const std::map<int,XFEM::DomainIntCells >& elementDomainIntCellsMap,
