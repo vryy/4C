@@ -73,6 +73,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       np = 1;
     break;
     case DRT::Element::element_condif2:
+    case DRT::Element::element_condif3:
       nv = 1;
     break;
     case DRT::Element::element_ale2:
@@ -158,6 +159,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
       dimns = 3;
     break;
     case DRT::Element::element_condif2:
+    case DRT::Element::element_condif3:
       numdf = 1;
       dimns = 1;
     break;
@@ -537,7 +539,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     } // for (int i=0; i<NumMyRowNodes(); ++i)
   } // else if (ele->Type() == DRT::Element::element_fluid2)
 
-  else if (ele->Type() == DRT::Element::element_condif2)
+  else if (ele->Type() == DRT::Element::element_condif2 || ele->Type() == DRT::Element::element_condif3)
   {
     for (int i=0; i<NumMyRowNodes(); ++i)
     {
