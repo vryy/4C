@@ -550,7 +550,6 @@ static void currentToSurfaceElementCoordinatesT(
     const double residual = sqrt(b(0)*b(0)+b(1)*b(1));
     if (residual < XFEM::TOL14)
     {
-      nodeWithinElement = true; //TODO: brauchen wir das noch???
       break;
     }
     
@@ -568,9 +567,11 @@ static void currentToSurfaceElementCoordinatesT(
 
     eleCoord += dx;
   }
-
-  //printf("iter = %d\n", iter);
-  //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi[0],xsi[1],xsi[2], residual, TOL14);
+  
+//  cout << "nodeWithinElement: " << nodeWithinElement << endl;
+//  printf("iter = %d\n", iter);
+//  printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", eleCoord(0),eleCoord(1), residual, XFEM::TOL14);
+//  exit(1);
   return;
 }
 

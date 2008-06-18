@@ -3310,10 +3310,12 @@ void XFEM::Intersection::addCellsToBoundaryIntCellsMap(
     const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
     
     BlitzVec2 eleCoordBoundaryCorner;
+//    cout << *cutterElement << endl;
+//    cout << "xyze_cutterElement: " << xyze_cutterElement << endl;
     CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordCorner, eleCoordBoundaryCorner);
 
-//    std::cout << "physcood = " << physCoord << "    ";
-//    std::cout << "elecood = " << eleCoord << endl;
+//    std::cout << "physcood = " << physCoordCorner << "    ";
+//    std::cout << "elecood = " << eleCoordBoundaryCorner << endl;
 //    std::cout << "cornerIndex = " << cornerIndex << endl;
     boundaryCoord[cornerIndex][0] = eleCoordBoundaryCorner(0);
     boundaryCoord[cornerIndex][1] = eleCoordBoundaryCorner(1);
@@ -3326,33 +3328,33 @@ void XFEM::Intersection::addCellsToBoundaryIntCellsMap(
     {
         // store higher order node
         static BlitzVec3 eleCoordDomaninHO;
-	    for(int k = 0; k < 3; k++)
-	        eleCoordDomaninHO(k) = out.pointlist[globalHigherOrderIndex*3+k];
+        for(int k = 0; k < 3; k++)
+            eleCoordDomaninHO(k) = out.pointlist[globalHigherOrderIndex*3+k];
 
 
 
-	    domainCoord[cornerIndex+3][0] = eleCoordDomaninHO(0);
-	    domainCoord[cornerIndex+3][1] = eleCoordDomaninHO(1);
-	    domainCoord[cornerIndex+3][2] = eleCoordDomaninHO(2);
+        domainCoord[cornerIndex+3][0] = eleCoordDomaninHO(0);
+        domainCoord[cornerIndex+3][1] = eleCoordDomaninHO(1);
+        domainCoord[cornerIndex+3][2] = eleCoordDomaninHO(2);
 
-	    static BlitzVec3 physCoordHO;
-	    elementToCurrentCoordinates(xfemElement, xyze_xfemElement, eleCoordDomaninHO, physCoordHO);
+        static BlitzVec3 physCoordHO;
+        elementToCurrentCoordinates(xfemElement, xyze_xfemElement, eleCoordDomaninHO, physCoordHO);
 
-	    //domainCoord.push_back(trinodes);
+        //domainCoord.push_back(trinodes);
 
-	    const DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
-	    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
-	    BlitzVec2 eleCoordBoundaryHO;
-	    CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordHO, eleCoordBoundaryHO);
+        const DRT::Element* cutterElement = intersectingCutterElements_[faceMarker];
+        const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+        BlitzVec2 eleCoordBoundaryHO;
+        CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoordHO, eleCoordBoundaryHO);
 
-	//    std::cout << "physcood = " << physCoord << "    ";
-	//    std::cout << "elecood = " << eleCoord << endl;
+//        std::cout << "physcood = " << physCoordHO << "    ";
+//        std::cout << "elecood = " << eleCoordBoundaryHO << endl;
 
-	    boundaryCoord[cornerIndex+3][0] = eleCoordBoundaryHO(0);
-	    boundaryCoord[cornerIndex+3][1] = eleCoordBoundaryHO(1);
-	    boundaryCoord[cornerIndex+3][2] = 0.0;
+        boundaryCoord[cornerIndex+3][0] = eleCoordBoundaryHO(0);
+        boundaryCoord[cornerIndex+3][1] = eleCoordBoundaryHO(1);
+        boundaryCoord[cornerIndex+3][2] = 0.0;
 
-	    //boundaryCoord.push_back(trinodes);
+        //boundaryCoord.push_back(trinodes);
     }
 }
 
