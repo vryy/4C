@@ -611,7 +611,7 @@ void XFEM::CurrentToSurfaceElementCoordinates(
  *----------------------------------------------------------------------*/
 BlitzMat3x2 XFEM::computeFastXAABB( 
     const DRT::Element* element,
-    const BlitzMat      xyze)
+    const BlitzMat&     xyze)
 {
     const int nsd = 3;
     BlitzMat3x2 XAABB;

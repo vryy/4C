@@ -583,7 +583,7 @@ namespace XFEM
     */
     BlitzMat3x2 computeFastXAABB( 
             const DRT::Element*   element,
-            const BlitzMat        xyze
+            const BlitzMat&       xyze
             );
     
     
