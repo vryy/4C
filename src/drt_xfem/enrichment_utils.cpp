@@ -520,7 +520,7 @@ void XFEM::computeVectorCellNodeValues(
 
 
 /*!
-  Calculate matrix and rhs for stationary problem formulation
+  Calculate ratio between fictitious element size and normal size
   */
 template <DRT::Element::DiscretizationType DISTYPE>
 double AreaRatioT(
