@@ -275,7 +275,7 @@ void EXODUS::WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, con
     const set<int> nodes = EXODUS::GetNsFromBCEntity(acte,mymesh);
     set<int>::const_iterator i;
     for(i=nodes.begin();i!=nodes.end();++i){
-      dat << "NODE    " << *i << " " << "DNODE " << acte.e_id << endl;
+      dat << "NODE    " << *i << " " << "DVOL " << acte.e_id << endl;
     }
   }
 
@@ -358,18 +358,18 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   
   int ele = 1; // BACI-Dat eles start with 1
 
-  // print fluid elements
-  dat << "----------------------------------------------------FLUID ELEMENTS" << endl;
-  for(i_et=fluids.begin();i_et!=fluids.end();++i_et)
+  // print structure elements
+  dat << "------------------------------------------------STRUCTURE ELEMENTS" << endl;
+  for(i_et=strus.begin();i_et!=strus.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
     EXODUS::DatEles(eb,acte,ele,dat);
   }
-
-  // print structure elements
-  dat << "------------------------------------------------STRUCTURE ELEMENTS" << endl;
-  for(i_et=strus.begin();i_et!=strus.end();++i_et)
+  
+  // print fluid elements
+  dat << "----------------------------------------------------FLUID ELEMENTS" << endl;
+  for(i_et=fluids.begin();i_et!=fluids.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
