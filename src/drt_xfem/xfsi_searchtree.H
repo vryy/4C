@@ -84,7 +84,10 @@ namespace XFEM
         TreeNode* getChild(const int idx);
         
         //! insert Element
-        void insertElement(const DRT::Element* elem);	
+        void insertElement(
+            const DRT::Element* elem,
+            const map<int,BlitzVec3>& currentpositions
+            );	
         
         /*!
          \brief Gibes candidates of surface elements in order to determine the point type of x_in, 
@@ -120,7 +123,10 @@ namespace XFEM
       private:
         
         //! gives the octand(=child) of this treenode to which elem belongs (uses the XAABB of elem)
-        list<int> classifyElement(const DRT::Element* elem); 
+        list<int> classifyElement(
+            const DRT::Element* elem,
+            const map<int,BlitzVec3>& currentpositions
+            ); 
         
         //! gives the octand(=child) of this treenode to which the point belongs 
         int classifyPoint(const BlitzVec3& pointcoords);
@@ -157,7 +163,10 @@ namespace XFEM
       XFEM::XSearchTree::TreeNode* treeRoot_;
       
       //! inserts an element into the tree
-      void insertElement(const DRT::Element* elem);
+      void insertElement(
+          const DRT::Element* elem,
+          const map<int,BlitzVec3>& currentpositions
+          );
       
     public:
       XSearchTree();

@@ -68,8 +68,12 @@ int XFEM::XSearchTree::getDepth(){
   return treeRoot_->getDepth();
 }
 
-void XFEM::XSearchTree::insertElement(const DRT::Element* elem) {
-  treeRoot_->insertElement(elem);
+void XFEM::XSearchTree::insertElement(
+    const DRT::Element* elem,
+    const map<int,BlitzVec3>& currentpositions
+    )
+{
+  treeRoot_->insertElement(elem,currentpositions);
 }
 
 void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions) {
@@ -87,7 +91,7 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   cout << "inserting new elements (" << dis.NumMyColElements() << ")"<< endl;
   #endif
   for (int i=0; i<dis.NumMyColElements(); ++i) {
-    insertElement(dis.lRowElement(i));
+    insertElement(dis.lRowElement(i),currentpositions);
   }
   TreeInit_ = true;
   
@@ -182,7 +186,7 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
         bool do_refine = true;
         vector<list<int> > ElementClassification;
         for (list< const DRT::Element* >::const_iterator myIt = ElementList_.begin(); myIt != ElementList_.end(); myIt++){
-          list<int> childIdx = classifyElement(*myIt);
+          list<int> childIdx = classifyElement(*myIt,currentpositions);
           if (childIdx.size()<8)
             do_refine =true;
           ElementClassification.push_back(childIdx);
@@ -199,7 +203,7 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
           for (list< const DRT::Element* >::const_iterator myIt = ElementList_.begin(); myIt != ElementList_.end(); myIt++){
             const list<int> childIdx = ElementClassification.at(i);
             for (list<int>::const_iterator myIt2 = childIdx.begin(); myIt2 != childIdx.end(); myIt2++){
-              this->children_[*myIt2-1]->insertElement(*myIt);
+              this->children_[*myIt2-1]->insertElement(*myIt,currentpositions);
               const BlitzMat3x2 ab(this->children_[*myIt2-1]->getAABB());
               //  printf("inserted elem to AABB(%f,%f,%f,%f,%f,%f)\n", ab(0,0),ab(0,1),ab(1,0),ab(1,1),ab(2,0),ab(2,1));
             }
@@ -249,15 +253,18 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
   return ElementList_;
 }
 
-void XFEM::XSearchTree::TreeNode::insertElement(const DRT::Element* elem) {
+void XFEM::XSearchTree::TreeNode::insertElement(
+    const DRT::Element* elem,
+    const map<int,BlitzVec3>& currentpositions
+    ) {
   if ((actTreedepth_ >= XFEM::XSearchTree::MAX_TREEDEPTH) || (State_ == STATE_LEAF_NODE) ) {
     ElementList_.push_back(elem);
 //    cout << "inserted element at depth " << actTreedepth_ <<endl;
     State_ = STATE_LEAF_NODE;
   } else if(State_ == STATE_INNER_NODE) {
-    const list<int> childIdx(classifyElement(elem));
+    const list<int> childIdx(classifyElement(elem,currentpositions));
     for (list<int>::const_iterator myIt = childIdx.begin(); myIt != childIdx.end(); myIt++){
-      this->children_[*myIt-1]->insertElement(elem);
+      this->children_[*myIt-1]->insertElement(elem,currentpositions);
 //      BlitzMat3x2 ab = this->children_[*myIt-1]->getAABB();
 //      printf("inserted elem to AABB(%f,%f,%f,%f,%f,%f)\n", ab(0,0),ab(0,1),ab(1,0),ab(1,1),ab(2,0),ab(2,1));
      }
@@ -311,10 +318,13 @@ int XFEM::XSearchTree::TreeNode::classifyPoint(const BlitzVec3& pointcoords) {
   return octIdx;
 }
 
-list<int> XFEM::XSearchTree::TreeNode::classifyElement(const DRT::Element* elem) {
+list<int> XFEM::XSearchTree::TreeNode::classifyElement(
+    const DRT::Element* elem,
+    const map<int,BlitzVec3>& currentpositions
+    ) {
   list<int> octants;
-  const BlitzMat xyze(DRT::UTILS::InitialPositionArrayBlitz(&*elem));
-  const BlitzMat3x2 elemXAABB(XFEM::computeFastXAABB(&*elem, xyze));
+  const BlitzMat xyze(XFEM::getCurrentNodalPositions(elem,currentpositions));
+  const BlitzMat3x2 elemXAABB(XFEM::computeFastXAABB(elem, xyze));
   
   if (elemXAABB(0, 1) > XPlaneCoordinate_) {
     if (elemXAABB(1, 1) > YPlaneCoordinate_) {
