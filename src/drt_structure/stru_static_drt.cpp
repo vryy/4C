@@ -629,7 +629,7 @@ void stru_static_drt()
 //      DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(actdis->lColElement(i));
 //      if (!actele) dserror("cast to So_sh8* failed");
 //      // plot elements
-//      gmshfilecontent << IO::GMSH::elementToString(actele->thickdir_, actele) << endl;
+//      gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(actele->thickdir_, actele) << endl;
 //      Epetra_SerialDenseMatrix* mystresses(8,8);
 //      mystresses = actele->data_.Get<Epetra_SerialDenseMatrix>("Stresses");
 //      cout << *mystresses;

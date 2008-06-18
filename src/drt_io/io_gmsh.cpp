@@ -43,7 +43,7 @@ std::string IO::GMSH::ScalarToString(const double scalar,
   return pos_array_string.str();
 }
 
-std::string IO::GMSH::elementToString(const double scalar, const DRT::Element* ele)
+std::string IO::GMSH::elementAtInitialPositionToString(const double scalar, const DRT::Element* ele)
 {
   const DRT::Node*const* nodes = ele->Nodes();
 
@@ -81,7 +81,7 @@ std::string IO::GMSH::disToString(
   for (int i=0; i<dis->NumMyColElements(); ++i)
   {
     const DRT::Element* actele = dis->lColElement(i);
-    gmshfilecontent << IO::GMSH::elementToString(scalar, actele) << endl;
+    gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(scalar, actele) << endl;
   };
   gmshfilecontent << "};" << endl;
   return gmshfilecontent.str();
@@ -144,7 +144,7 @@ std::string IO::GMSH::disToString(
       }
     } else
     {
-      gmshfilecontent << IO::GMSH::elementToString(scalar, actele) << endl;
+      gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(scalar, actele) << endl;
     };
   };
   gmshfilecontent << "};" << endl;

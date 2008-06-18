@@ -3751,7 +3751,7 @@ void XFEM::Intersection::debugXFEMConditions(
         for(iterGeo = geometryMap.begin(); iterGeo != geometryMap.end(); iterGeo++ )
         {
             const DRT::Element*  cutterElement = iterGeo->second.get();
-            f_system << IO::GMSH::elementToString(i, cutterElement) << endl;
+            f_system << IO::GMSH::elementAtInitialPositionToString(i, cutterElement) << endl;
         }
     }
 
@@ -3767,11 +3767,11 @@ void XFEM::Intersection::debugIntersection(
   ofstream f_system("intersection.pos");
   f_system << "View \" Intersection" << " \" {" << endl;
   
-  f_system << IO::GMSH::elementToString(0, xfemElement) << endl;
+  f_system << IO::GMSH::elementAtInitialPositionToString(0, xfemElement) << endl;
   
   for (unsigned int i=0; i<cutterElements.size(); i++)
   {
-    f_system << IO::GMSH::elementToString(i+1, cutterElements[i]) << endl;
+    f_system << IO::GMSH::elementAtInitialPositionToString(i+1, cutterElements[i]) << endl;
   }
   
   f_system << "};" << endl;

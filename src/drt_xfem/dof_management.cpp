@@ -259,7 +259,7 @@ void XFEM::DofManager::toGmsh(
       for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
       {
         DRT::Element* actele = ih->xfemdis()->lColElement(i);
-        gmshfilecontent << IO::GMSH::elementToString(double(actele->Id()), actele);
+        gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(double(actele->Id()), actele);
       };
       gmshfilecontent << "};" << endl;
       f_system << gmshfilecontent.str();
@@ -278,7 +278,7 @@ void XFEM::DofManager::toGmsh(
         {
           const set<XFEM::FieldEnr> schnapp = blub->second;
           val = schnapp.size();
-          gmshfilecontent << IO::GMSH::elementToString(val, actele);
+          gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(val, actele);
         }
         
       };
@@ -440,7 +440,7 @@ void XFEM::DofManager::toGmsh(
         //          for (int i=0; i<ih->xfemdis()->NumMyColElements(); ++i)
         //          {
         //              DRT::Element* actele = ih->xfemdis()->lColElement(i);
-        //              gmshfilecontent << IO::GMSH::elementToString(double(actele->Id()), actele) << endl;
+        //              gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(double(actele->Id()), actele) << endl;
         //          };
         //          gmshfilecontent << "};" << endl;
         //          f_system << gmshfilecontent.str();
@@ -455,7 +455,7 @@ void XFEM::DofManager::toGmsh(
             //double val = 0.0;
             //std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator blub = elementalDofs_.find(ele_gid);
             const double val = actele->NumDofPerElement();
-            gmshfilecontent << IO::GMSH::elementToString(val, actele) << endl;
+            gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(val, actele) << endl;
             
           };
           gmshfilecontent << "};" << endl;

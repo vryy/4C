@@ -234,7 +234,7 @@ namespace IO
       return pos_array_string.str();
     }
 
-    std::string elementToString(
+    std::string elementAtInitialPositionToString(
         const double scalar,
         const DRT::Element* ele);
 
