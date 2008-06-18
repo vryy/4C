@@ -1772,7 +1772,6 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     dserror("Proc %d is empty. Do not use more procs for postprocessing than for calculation.",myrank_);
   int offset = epetradatamap->MinAllGID() - dis->DofRowMap()->MinAllGID();
 
-  cout<<"proc: "<<myrank_<<"  offset = "<<offset<<endl;
 
   //switch between nurbs an others
   if(field_->problem()->SpatialApproximation()=="Nurbs")
@@ -2271,7 +2270,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 	break;
       }
       default:
-	dserror("unable to visualise this as a nurbs discretisation\n");
+       dserror("unable to visualise this as a nurbs discretisation\n");
       }
     }
 
@@ -2294,15 +2293,15 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
       {
 	Write(file, static_cast<float>(solvals[i]));
       }
-    
+
       // 2 component vectors in a 3d problem require a row of zeros.
       // do we really need this?
       if (numdf==2)
       {
-	for (int inode=0; inode<numvispoints; inode++)
-	{
-	  Write<float>(file, 0.);
-	}
+        for (int inode=0; inode<numvispoints; inode++)
+        {
+          Write<float>(file, 0.);
+        }
       }
     }
   }
