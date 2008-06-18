@@ -59,7 +59,7 @@ Inv_analysis::Inv_analysis(ParameterList& params,
     measured_disp_.push_back(params.get("measured_disp2", 0.0));
 
     //  tolerance for the curve fitting
-    tol_=0.1*measured_disp_[2];
+    tol_=0.15*measured_disp_[2];
 
     p_start_.push_back(1100.0);
     p_start_.push_back(3500.0);
@@ -140,7 +140,7 @@ void Inv_analysis::evaluate()
 
 void Inv_analysis::Integrate()
 {
-  int max_itter = 100000;
+  int max_itter = 100;
   numb_run_= 0;
 
   do {
