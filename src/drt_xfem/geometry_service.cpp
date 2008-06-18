@@ -129,13 +129,14 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
     BlitzVec3 normal;
     normal(0)=0;normal(1)=0;normal(2)=0;
     DRT::Node*  node = dis.gNode(closest_node->Id());
+    const BlitzVec3 closest_node_pos = currentpositions.find(closest_node->Id())->second;
     for(int j=0; j<node->NumElement();j++)
     {
       DRT::Element* surfaceElement = node->Elements()[j];
       BlitzMat xyze_surfaceElement(getCurrentNodalPositions(surfaceElement, currentpositions));
       BlitzVec3 eleNormalAtXsi;
       BlitzVec2 xsi;
-      CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, node->X(), xsi);
+      CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, closest_node_pos, xsi);
       computeNormalToBoundaryElement(surfaceElement, xyze_surfaceElement, xsi, eleNormalAtXsi);
       normal(0) = normal(0) +  eleNormalAtXsi(0);
       normal(1) = normal(1) +  eleNormalAtXsi(1);
