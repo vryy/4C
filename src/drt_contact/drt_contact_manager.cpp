@@ -2581,6 +2581,8 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
   // version of the active set and proceeding with the next time/load step.
   // This very simple approach helps stabilizing the contact algorithm!
   // *********************************************************************
+  bool zigzagging = false;
+  
   if (ActiveSetSteps()>2)
   {
     if (zigzagtwo_!=null)
@@ -2588,7 +2590,8 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
       if (zigzagtwo_->SameAs(*gactivenodes_))
       {
         // set active set converged
-        activesetconv_=true;
+        activesetconv_ = true;
+        zigzagging = true;
         
         // output to screen
         if (Comm().MyPID()==0)
@@ -2601,7 +2604,8 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
       if (zigzagthree_->SameAs(*gactivenodes_))
       {
         // set active set converged
-        activesetconv_=true;
+        activesetconv_ = true;
+        zigzagging = true;
         
         // output to screen
         if (Comm().MyPID()==0)
@@ -2623,7 +2627,7 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
     cout << "ACTIVE SET ITERATION " << ActiveSetSteps()-1
          << " NOT CONVERGED - REPEAT TIME STEP................." << endl;
   else if (Comm().MyPID()==0 && activesetconv_==true)
-    cout << "ACTIVE SET CONVERGED IN " << ActiveSetSteps()
+    cout << "ACTIVE SET CONVERGED IN " << ActiveSetSteps()-zigzagging
          << " STEP(S)................." << endl;
     
   // update flag for global contact status
