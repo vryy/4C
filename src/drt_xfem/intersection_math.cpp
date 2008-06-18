@@ -155,7 +155,7 @@ bool XFEM::gaussEliminationEpetra(
     }
     
     //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), fabs(det) );
-    if(fabs(det) < TOL7)
+    if(fabs(det) < TOL14) //TODO: check! was TOL7
     {
         solution = false;
         //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), det );
