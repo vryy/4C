@@ -601,9 +601,9 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
   
   for (int i=0; i<xfemdis_->NumMyRowNodes(); ++i)
   {
-    const DRT::Node* actnode = xfemdis_->lRowNode(i);
-    const int gid = actnode->Id();
-    const std::vector<int> gdofs(dofset_out.Dof(actnode));
+    const DRT::Node* xfemnode = xfemdis_->lRowNode(i);
+    const int gid = xfemnode->Id();
+    const std::vector<int> gdofs(dofset_out.Dof(xfemnode));
     
     
     std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
@@ -625,7 +625,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::fillPhysicalOutputVector(
       //const std::vector<int> gdofs(xfemdis_->Dof(actnode));
       const std::set<FieldEnr> dofset = entry->second;
       
-      const BlitzVec3 actpos(toBlitzArray(actnode->X()));
+      const BlitzVec3 actpos(toBlitzArray(xfemnode->X()));
       int idof = 0;
       for(std::set<XFEM::PHYSICS::Field>::const_iterator field_out = fields_out.begin(); field_out != fields_out.end(); ++field_out)
       {
