@@ -19,6 +19,7 @@ using namespace std;
 
 XFEM::XSearchTree::XSearchTree() :
   TreeInit_(false),
+  hasExternAABB_(false),
   treeRoot_(NULL)
 {
 }
@@ -54,7 +55,6 @@ int XFEM::XSearchTree::queryPointType(const DRT::Discretization& dis,const std::
   // do excat routines
   int within = 0;
   double dist = 0;
-  list< const DRT::Element* >::const_iterator myIt = candidates.begin();
   const DRT::Element* closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, candidates, pointCoords,dist);
   if (dist<0){
     within = labelByElement_[closestEle->Id()];
@@ -76,9 +76,16 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   if (treeRoot_ != NULL){
     delete treeRoot_;
   }
-  const BlitzMat3x2 aabb(getXAABBofDis(dis, currentpositions));
-  treeRoot_ = new TreeNode(0,aabb, this);
+  if (hasExternAABB_) {
+    treeRoot_ = new TreeNode(0,AABB_, this);
+  }   
+  else {
+    const BlitzMat3x2 aabb(getXAABBofDis(dis, currentpositions));
+    treeRoot_ = new TreeNode(0,aabb, this); 
+  }  
+  #ifdef DEBUG
   cout << "inserting new elements (" << dis.NumMyColElements() << ")"<< endl;
+  #endif
   for (int i=0; i<dis.NumMyColElements(); ++i) {
     insertElement(dis.lRowElement(i));
   }
@@ -112,9 +119,7 @@ XFEM::XSearchTree::TreeNode::TreeNode(const int Depth, const BlitzMat3x2& aabb, 
 }
 
 XFEM::XSearchTree::TreeNode::~TreeNode() {
-//  cout << "destructor of treenode" << endl;
   for (int i=0; i< 8; i++){
-//    cout << "deleting child  "  << i << endl;
     if (children_[i]!=NULL) 
       delete children_[i];
   }
@@ -166,16 +171,23 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
         //      printf("actTreedepth >= MAX_TREEDEPTH\n");
         lID = labelID_;
         return ElementList_;  // just return (maybe empty) list if leaf is at max depth, 
-        // or if no candidates (==fluid)
       }
       if (ElementList_.empty()){
         //      printf("empty ");
         lID = labelID_;
-        return ElementList_;  // just return (maybe empty) list if leaf is at max depth, 
-        // or if no candidates (==fluid)
+        return ElementList_;  // just return empty list if there are no candidates (==fluid) 
       }
       if (ElementList_.size()>1) // dynamically grow tree
       {
+        bool do_refine = true;
+        vector<list<int> > ElementClassification;
+        for (list< const DRT::Element* >::const_iterator myIt = ElementList_.begin(); myIt != ElementList_.end(); myIt++){
+          list<int> childIdx = classifyElement(*myIt);
+          if (childIdx.size()<8)
+            do_refine =true;
+          ElementClassification.push_back(childIdx);
+        }
+        if (do_refine) {
         // create Octants
         for (int i=0; i<8; i++){
           const BlitzMat3x2 chldAABB(getChildOctAABB(i+1));
@@ -183,14 +195,17 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
         }
         // actual node becomes an inner tree node,
         // so we have to introduce one more tree-level
-        for (list< const DRT::Element* >::const_iterator myIt = ElementList_.begin(); myIt != ElementList_.end(); myIt++){
-          list<int> childIdx = classifyElement(*myIt);
-          for (list<int>::const_iterator myIt2 = childIdx.begin(); myIt2 != childIdx.end(); myIt2++){
-            this->children_[*myIt2-1]->insertElement(*myIt);
-            const BlitzMat3x2 ab(this->children_[*myIt2-1]->getAABB());
-            //  printf("inserted elem to AABB(%f,%f,%f,%f,%f,%f)\n", ab(0,0),ab(0,1),ab(1,0),ab(1,1),ab(2,0),ab(2,1));
-           }
-        }
+        int i=0;
+          for (list< const DRT::Element* >::const_iterator myIt = ElementList_.begin(); myIt != ElementList_.end(); myIt++){
+            const list<int> childIdx = ElementClassification.at(i);
+            for (list<int>::const_iterator myIt2 = childIdx.begin(); myIt2 != childIdx.end(); myIt2++){
+              this->children_[*myIt2-1]->insertElement(*myIt);
+              const BlitzMat3x2 ab(this->children_[*myIt2-1]->getAABB());
+              //  printf("inserted elem to AABB(%f,%f,%f,%f,%f,%f)\n", ab(0,0),ab(0,1),ab(1,0),ab(1,1),ab(2,0),ab(2,1));
+            }
+            i++;
+          }
+        
         
         // if one of the created childs is empty, check if it is fluid or solid
         for (int i=0; i< 8; i++){
@@ -220,6 +235,11 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
         // cout << "classified searchpoint to oct "<< classifyPoint(pointCoords)-1 << " , so i will search there" << endl;
         const list< const DRT::Element* > myL = children_[classifyPoint(pointCoords)-1]->queryPointType(dis, currentpositions, pointCoords, lID);
         return myL;
+        }
+        else {
+          return ElementList_;
+        }
+        
       }
       else  // if there is only one Element, just return it
         return ElementList_;

@@ -17,50 +17,6 @@ Maintainer: Ursula Mayer
 using namespace std;
 using namespace XFEM;
 
-
-
-BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis){
-  const int nsd = 3;
-  BlitzMat3x2 XAABB;
-  
-  if (dis.NumGlobalElements() == 0){ 
-    XAABB(0,0)=0;XAABB(0,1)=0;
-    XAABB(1,0)=0;XAABB(1,1)=0;
-    XAABB(2,0)=0;XAABB(2,1)=0;
-    dserror("empty discretization?");
-    return XAABB;
-    }
-  
-  // XAABB of cutterElements
-  // first node
-  const double* pos = dis.lColElement(0)->Nodes()[0]->X();
-  for(int dim=0; dim<nsd; ++dim)
-  {
-    XAABB(dim, 0) = pos[dim] - TOL7;
-    XAABB(dim, 1) = pos[dim] + TOL7;
-  }
-  for (int j=0; j< dis.NumMyColElements(); ++j) {
-    // remaining node
-    for(int i=0; i< dis.lColElement(j)->NumNode(); ++i)
-    {
-      const double* posEle = dis.lColElement(j)->Nodes()[i]->X();
-      for(int dim=0; dim<nsd; dim++)
-      {
-        XAABB(dim, 0) = std::min( XAABB(dim, 0), posEle[dim] - TOL7);
-        XAABB(dim, 1) = std::max( XAABB(dim, 1), posEle[dim] + TOL7);
-      }
-    }  
-  }
-   XAABB(0,0) = XAABB(0,0) - TOL7;
-   XAABB(0,1) = XAABB(0,1) + TOL7;
-   XAABB(1,0) = XAABB(1,0) - TOL7;
-   XAABB(1,1) = XAABB(1,1) + TOL7;
-   XAABB(2,0) = XAABB(2,0) - TOL7;
-   XAABB(2,1) = XAABB(2,1) + TOL7;
-   
-   //  cout << "_XAABB=" << XAABB(0,0) << ","<< XAABB(0,1) << "," << XAABB(1,0) << "," << XAABB(1,1) << "," << XAABB(2,0) << "," << XAABB(2,1) << endl;
-   return XAABB;
-}
   
 BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions){
   const int nsd = 3;
@@ -72,33 +28,43 @@ BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis,const std::map<in
     return XAABB;
     }
 
-  // extend XAABB to xfem elements
-  const double* pos = dis.lColElement(0)->Nodes()[0]->X();
+  // initialize XAABB as rectangle around the first point of dis 
+  const int nodeid = dis.lColElement(0)->Nodes()[0]->Id();
+  const BlitzVec3 pos = currentpositions.find(nodeid)->second;
   for(int dim=0; dim<nsd; ++dim)
   {
     XAABB(dim, 0) = pos[dim] - TOL7;
     XAABB(dim, 1) = pos[dim] + TOL7;
   }
-  for (int j=0; j< dis.NumMyColElements(); ++j) {
-    // remaining node
-    for(int i=0; i< dis.lColElement(j)->NumNode(); ++i)
-    {
-      const double* posEle = dis.lColElement(j)->Nodes()[i]->X();
-      for(int dim=0; dim<nsd; dim++)
-      {
-        XAABB(dim, 0) = std::min( XAABB(dim, 0), posEle[dim] - TOL7);
-        XAABB(dim, 1) = std::max( XAABB(dim, 1), posEle[dim] + TOL7);
-      }
-    }  
-  }
-  XAABB(0,0) = XAABB(0,0) - TOL7;
-  XAABB(0,1) = XAABB(0,1) + TOL7;
-  XAABB(1,0) = XAABB(1,0) - TOL7;
-  XAABB(1,1) = XAABB(1,1) + TOL7;
-  XAABB(2,0) = XAABB(2,0) - TOL7;
-  XAABB(2,1) = XAABB(2,1) + TOL7;
   
-  //  cout << "_XAABB=" << XAABB(0,0) << ","<< XAABB(0,1) << "," << XAABB(1,0) << "," << XAABB(1,1) << "," << XAABB(2,0) << "," << XAABB(2,1) << endl;
+  // loop over elements and merge XAABB with their eXtendedAxisAlignedBoundingBox
+  //BlitzMat curr = BlitzMat(3, currentpositions.size());
+  
+  
+  for (int j=0; j< dis.NumMyColElements(); ++j) {
+    const DRT::Element* ele = dis.lColElement(j);
+    BlitzMat curr(3, ele->NumNode());
+    for (int inode = 0; inode < ele->NumNode(); ++inode)
+    {
+      const int nodeid = ele->Nodes()[inode]->Id();
+      const BlitzVec3 pos = currentpositions.find(nodeid)->second;
+      if (currentpositions.find(nodeid) == currentpositions.end())
+      {
+        dserror("global node id not found. bug!");
+      }
+      for (int k=0; k<3; k++)
+      {
+        curr(k, inode) = pos(k);
+      }
+    }
+
+    BlitzMat3x2 xaabbEle = XFEM::computeFastXAABB(ele, curr);
+    XAABB = mergeAABB(XAABB, xaabbEle);
+  }
+  
+  #ifdef DEBUG5  
+    cout << "_XAABB=" << XAABB(0,0) << ","<< XAABB(0,1) << "," << XAABB(1,0) << "," << XAABB(1,1) << "," << XAABB(2,0) << "," << XAABB(2,1) << endl;
+  #endif
   return XAABB;
 }
 
@@ -134,7 +100,6 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
   else 
   { 
     min_ele_distance = 1.0e12;
-    //      printf("BRANCHING to node-distance ************************************************** \n");
     for (list< const DRT::Element* >::const_iterator myIt2 = ElementList.begin(); myIt2 != ElementList.end(); myIt2++) {
       double distance = 1.0e12;
       const DRT::Element* cutterele = &**myIt2;       
@@ -161,10 +126,6 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
         }
       }          
     }
-    //        if (tmp!=closest_node->Id())
-    //          printf("found nearest node with id %d (%f,%f,%f) for x_in (%f,%f,%f)", closest_node->Id(), closest_node->X()[0], closest_node->X()[1], closest_node->X()[2], x_in(0),x_in(1),x_in(2));
-    // getElements corseponding to node
-    // calculate normal at node by (vectorial) addition of element normals
     BlitzVec3 normal;
     normal(0)=0;normal(1)=0;normal(2)=0;
     DRT::Node*  node = dis.gNode(closest_node->Id());
@@ -175,35 +136,29 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
       BlitzVec3 eleNormalAtXsi;
       BlitzVec2 xsi;
       CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, node->X(), xsi);
-      //          printf("xsi (%f,%f)\n", xsi(0), xsi(1));
-      // normal vector at position xsi
       computeNormalToBoundaryElement(surfaceElement, xyze_surfaceElement, xsi, eleNormalAtXsi);
       normal(0) = normal(0) +  eleNormalAtXsi(0);
       normal(1) = normal(1) +  eleNormalAtXsi(1);
       normal(2) = normal(2) +  eleNormalAtXsi(2);
     }
-    //      double norm = sqrt(normal(0)*normal(0)+normal(1)*normal(1)+normal(2)*normal(2));
-    //        if (tmp!=closest_node->Id())
-    //          printf(", normal(%f,%f,%f)", normal(0),normal(1),normal(2));
-    
-    //        normal(0) = normal(0)/norm;
-    //        normal(1) = normal(1)/norm;
-    //        normal(2) = normal(2)/norm;
-    //        printf("normed normal at node (%f,%f,%f)\n", normal(0),normal(1),normal(2));
     closest_element=node->Elements()[0];
-    // compute distance with sign
-    //        if (tmp!=closest_node->Id())
-    //              printf(", x2N: %f,%f,%f ", vectorX2minNode(0),vectorX2minNode(1),vectorX2minNode(2));
     const double scalarproduct = vectorX2minNode(0)*normal(0) + vectorX2minNode(1)*normal(1) + vectorX2minNode(2)*normal(2);
     const double vorzeichen = scalarproduct/abs(scalarproduct);
-    //        if (tmp!=closest_node->Id())
-    //              printf(", vz: %f\n", vorzeichen);
     min_ele_distance *= vorzeichen;
     dist = min_ele_distance;
-    //        printf("end BRANCHING to node-distance ********************************************** \n");
   }
   return closest_element;
 }
 
+BlitzMat3x2 XFEM::mergeAABB(const BlitzMat3x2& A, const BlitzMat3x2& B){
+  BlitzMat3x2 MergedAABB;
+  const int nsd=3;
+  for(int dim=0; dim<nsd; dim++)
+  {
+    MergedAABB(dim, 0) = std::min( A(dim, 0),  B(dim, 0));
+    MergedAABB(dim, 1) = std::max( A(dim, 1),  B(dim, 1));
+  }
+  return MergedAABB;
+}
 
 #endif  // #ifdef CCADISCRET

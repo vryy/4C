@@ -23,12 +23,37 @@ Maintainer: Ursula Mayer
 
 namespace XFEM
 {
-  //! gives the AABB of a complete Discretization and adds TOL07, doesn't care about displacements
-  BlitzMat3x2         getXAABBofDis(const DRT::Discretization& dis);  
-  //! gives the AABB of a complete Discretization and adds TOL07, also takes into account current displacements
-  BlitzMat3x2         getXAABBofDis(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions);  
-  //! gives back the nearest Element in an List of Elements
+  /*!
+  \brief Gives the eXtendedAxisAlignedBoundingBox of a complete Discretization and adds TOL07, 
+         also takes into account current displacements
+
+  \param  dis               (in)    : discretization containing elements 
+  \param  currentpositions  (in)    : current position of elements in dis
+  \return                             AxisAlignedBoundingBox as BlitzMat3x2
+  */
+  BlitzMat3x2 getXAABBofDis(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions);  
+
+  /*!
+  \brief gives back the nearest Element in an List of Elements
+
+  \param  dis               (in)    : discretization containing elements 
+  \param  currentpositions  (in)    : current position of elements in dis
+  \param  ElementList       (in)    : list of elements to be examined
+  \param  x                 (in)    : coords of point which will be examined
+  \param  dist              (out)   : distance btw. x and nearest element
+  \return                             pointer to nearest element
+  */
   const DRT::Element* nearestNeighbourInList(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const list<const DRT::Element* >& ElementList, const BlitzVec3& x, double& dist);
+
+  /*!
+  \brief merges 2 bounding boxes
+
+  \param  A                 (in)    : bounding box A 
+  \param  B                 (in)    : bounding box B
+  \return                             merged bounding box
+  */
+  BlitzMat3x2 mergeAABB(const BlitzMat3x2& A, const BlitzMat3x2& B);
+
 }
 
 #endif
