@@ -31,21 +31,25 @@ BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis){
     return XAABB;
     }
   
+  // XAABB of cutterElements
   // first node
-  const double* pos = dis.lColNode(0)->X();
+  const double* pos = dis.lColElement(0)->Nodes()[0]->X();
   for(int dim=0; dim<nsd; ++dim)
   {
     XAABB(dim, 0) = pos[dim] - TOL7;
     XAABB(dim, 1) = pos[dim] + TOL7;
   }
-  for (int j=0; j< dis.NumMyColNodes(); ++j)
-  {
-    const double* pos = dis.lColNode(j)->X();
-    for(int dim=0; dim<nsd; dim++)
+  for (int j=0; j< dis.NumMyColElements(); ++j) {
+    // remaining node
+    for(int i=0; i< dis.lColElement(j)->NumNode(); ++i)
     {
-      XAABB(dim, 0) = std::min( XAABB(dim, 0), pos[dim] - TOL7);
-      XAABB(dim, 1) = std::max( XAABB(dim, 1), pos[dim] + TOL7);
-    }
+      const double* posEle = dis.lColElement(j)->Nodes()[i]->X();
+      for(int dim=0; dim<nsd; dim++)
+      {
+        XAABB(dim, 0) = std::min( XAABB(dim, 0), posEle[dim] - TOL7);
+        XAABB(dim, 1) = std::max( XAABB(dim, 1), posEle[dim] + TOL7);
+      }
+    }  
   }
    XAABB(0,0) = XAABB(0,0) - TOL7;
    XAABB(0,1) = XAABB(0,1) + TOL7;
@@ -68,21 +72,24 @@ BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis,const std::map<in
     return XAABB;
     }
 
-  // first node
-  const double* pos = dis.lColNode(0)->X();
+  // extend XAABB to xfem elements
+  const double* pos = dis.lColElement(0)->Nodes()[0]->X();
   for(int dim=0; dim<nsd; ++dim)
   {
     XAABB(dim, 0) = pos[dim] - TOL7;
     XAABB(dim, 1) = pos[dim] + TOL7;
   }
-  for (int j=0; j< dis.NumMyColNodes(); ++j)
-  {
-    const double* pos = dis.lColNode(j)->X();
-    for(int dim=0; dim<nsd; dim++)
+  for (int j=0; j< dis.NumMyColElements(); ++j) {
+    // remaining node
+    for(int i=0; i< dis.lColElement(j)->NumNode(); ++i)
     {
-      XAABB(dim, 0) = std::min( XAABB(dim, 0), pos[dim] - TOL7);
-      XAABB(dim, 1) = std::max( XAABB(dim, 1), pos[dim] + TOL7);
-    }
+      const double* posEle = dis.lColElement(j)->Nodes()[i]->X();
+      for(int dim=0; dim<nsd; dim++)
+      {
+        XAABB(dim, 0) = std::min( XAABB(dim, 0), posEle[dim] - TOL7);
+        XAABB(dim, 1) = std::max( XAABB(dim, 1), posEle[dim] + TOL7);
+      }
+    }  
   }
   XAABB(0,0) = XAABB(0,0) - TOL7;
   XAABB(0,1) = XAABB(0,1) + TOL7;
