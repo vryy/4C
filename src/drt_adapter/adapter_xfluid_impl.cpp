@@ -44,10 +44,10 @@ ADAPTER::XFluidImpl::XFluidImpl(
   // create node and element distribution with elements and nodes ghosted on all processors
   const Epetra_Map noderowmap = *boundarydis_->NodeRowMap();
   std::cout << "noderowmap->UniqueGIDs(): " << noderowmap.UniqueGIDs() << endl;
-  std::cout << noderowmap << endl;
+  //std::cout << noderowmap << endl;
 
   Teuchos::RCP<Epetra_Map> newnodecolmap = LINALG::AllreduceEMap(noderowmap);
-  std::cout << *newnodecolmap << endl;
+  //std::cout << *newnodecolmap << endl;
 
   DRT::UTILS::RedistributeWithNewNodalDistribution(*boundarydis_, noderowmap, *newnodecolmap);
 
