@@ -22,12 +22,19 @@ class Inv_analysis : public StruGenAlpha {
 		vector<double> measured_disp_;		// measured displacment of the experiments (target value)
 		vector<double> residual_disp_;		// final_disp_ - measured_disp
 		double mu_;
-		double mu_plus_;
-		double mu_minus_;								
+		double mu_plus_; 
+		double mu_minus_;
+		vector<double> storage_mu_;
+		double error_;
+		double error_o_;
 		float tol_;
 		vector<double> p_start_ ;			// start parameter vector
 		vector<double> p_ ;					// parameter vector
 		vector<double> p_o_;				// old parameter vector
+		vector<double> p_neg_;                          // old parameter vector
+		vector<double> p_0_storage_;
+		vector<double> p_1_storage_;
+		vector<double> p_2_storage_;
 		vector<double> delta_p_;			// change of paramter to the next step
 		double aim_function_;
 		RefCountPtr<Epetra_CrsMatrix> jacobian_;
