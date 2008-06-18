@@ -1592,31 +1592,27 @@ static void Sysmat4(
         const int numnode_boundary = boundaryele->NumNode();
 //        cout << "numnode_boundary: " << numnode_boundary << endl;
         
-        // get initial node coordinates
-        //const BlitzMat xyze_boundary(DRT::UTILS::InitialPositionArrayBlitz(boundaryele));
-        
-        // add displacement!
-        //dserror("add displacement");
-        const std::map<int,blitz::TinyVector<double,3> >* posss = ih->currentcutterpositions();
-        const BlitzMat xyze_boundary(XFEM::getCurrentNodalPositions(boundaryele, *posss));
+        // get current node coordinates
+        const std::map<int,blitz::TinyVector<double,3> >* positions = ih->currentcutterpositions();
+        const BlitzMat xyze_boundary(XFEM::getCurrentNodalPositions(boundaryele, *positions));
         //TODO: add displacement
         
         // get interface velocities at the boundary element nodes
         BlitzMat vel_boundary(3,numnode_boundary);
         vel_boundary = 0.0;
         const DRT::Node*const* nodes = boundaryele->Nodes();
-//        {
-//          for (int inode = 0; inode < numnode_boundary; ++inode)
-//          {
-//            const DRT::Node* node = nodes[inode];
-//            vector<int> lm = ih->cutterdis()->Dof(node);
-//            vector<double> myvel(3);
-//            DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
-//            vel_boundary(0,inode) = myvel[0];
-//            vel_boundary(1,inode) = myvel[1];
-//            vel_boundary(2,inode) = myvel[2];
-//          }
-//        }
+        {
+          for (int inode = 0; inode < numnode_boundary; ++inode)
+          {
+            const DRT::Node* node = nodes[inode];
+            vector<int> lm = ih->cutterdis()->Dof(node);
+            vector<double> myvel(3);
+            DRT::UTILS::ExtractMyValues(*ivelcol,myvel,lm);
+            vel_boundary(0,inode) = myvel[0];
+            vel_boundary(1,inode) = myvel[1];
+            vel_boundary(2,inode) = myvel[2];
+          }
+        }
         
         BlitzMat force_boundary(3,numnode_boundary);
         force_boundary = 0.0;

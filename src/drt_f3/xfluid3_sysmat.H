@@ -1238,8 +1238,9 @@ void Sysmat(
         //const DRT::Element* boundaryele = ih->GetBoundaryEle(0);
         //cout << (*boundaryele) << endl;
         
-        // get node coordinates
-        const BlitzMat xyze_boundary(DRT::UTILS::InitialPositionArrayBlitz(boundaryele));
+        // get current node coordinates
+        const std::map<int,blitz::TinyVector<double,3> >* positions = ih->currentcutterpositions();
+        const BlitzMat xyze_boundary(XFEM::getCurrentNodalPositions(boundaryele, *positions));
 
         // integration loop
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
