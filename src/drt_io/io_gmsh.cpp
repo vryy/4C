@@ -18,6 +18,7 @@ Maintainer: Axel Gerstenberger
 
 #include "io_gmsh.H"
 #include "../drt_xfem/integrationcell.H"
+#include "../drt_xfem/intersection_service.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_element.H"
 
@@ -97,7 +98,7 @@ std::string IO::GMSH::disToString(
   for (int i=0; i<dis->NumMyColElements(); ++i)
   {
     const DRT::Element* actele = dis->lColElement(i);
-    blitz::Array<double,2> xyze(getCurrentNodalPositions(actele,
+    blitz::Array<double,2> xyze(XFEM::getCurrentNodalPositions(actele,
         currentpositions));
     gmshfilecontent << IO::GMSH::cellWithScalarToString(actele->Shape(),
         scalar, xyze) << endl;

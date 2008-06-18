@@ -1581,7 +1581,7 @@ static void Sysmat4(
     for (XFEM::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
     {
 
-      TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - boundary");
+        TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - boundary");
       
         // gaussian points
         const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_37point);
@@ -1593,10 +1593,12 @@ static void Sysmat4(
 //        cout << "numnode_boundary: " << numnode_boundary << endl;
         
         // get initial node coordinates
-        const BlitzMat xyze_boundary(DRT::UTILS::InitialPositionArrayBlitz(boundaryele));
+        //const BlitzMat xyze_boundary(DRT::UTILS::InitialPositionArrayBlitz(boundaryele));
         
         // add displacement!
         //dserror("add displacement");
+        const std::map<int,blitz::TinyVector<double,3> >* posss = ih->currentcutterpositions();
+        const BlitzMat xyze_boundary(XFEM::getCurrentNodalPositions(boundaryele, *posss));
         //TODO: add displacement
         
         // get interface velocities at the boundary element nodes
@@ -1631,7 +1633,7 @@ static void Sysmat4(
             // coordinates of the current integration point in element coordinates \xi
             static XFEM::PosXiBoundary posXiBoundary;
             mapEtaBToXiB(*cell, pos_eta_boundary, posXiBoundary);
-//            cout << posXiBoundary << endl;
+            //cout << posXiBoundary << endl;
             
             static XFEM::PosXiDomain posXiDomain;
             mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
