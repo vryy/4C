@@ -1754,7 +1754,25 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
                                      0,
                                      datamap.Comm()));
 
+  // determine offset of dofs in case of multiple discretizations in
+  // separate files (e.g. multi-scale problems). during calculation,
+  // dofs are numbered consecutively for all discretizations. in the
+  // post-processing phase, when only one discretization is called,
+  // numbering always starts with 0, so a potential offset needs to be
+  // taken into account.
+  // NOTE 1: for the pressure result vector of FLUID calculations,
+  // this offset is 2 or 3, depending on the number of space dimensions.
+  // NOTE 2: this command is only valid, if you use NOT MORE processors 
+  //         for filtering than for computation. Otherwise we have empty procs
+  //         owning empty maps, and therefore epetradatamap->MinAllGID() 
+  //         will always return zero, resulting in a wrong offset value.
+  //         This is the only reason, why not to use more (and empty) procs. 
+  //         All other code parts of post_drt_ensight can handle that.
+  if (epetradatamap->NumMyElements()<1) 
+    dserror("Proc %d is empty. Do not use more procs for postprocessing than for calculation.",myrank_);
+  int offset = epetradatamap->MinAllGID() - dis->DofRowMap()->MinAllGID();
 
+  cout<<"proc: "<<myrank_<<"  offset = "<<offset<<endl;
 
   //switch between nurbs an others
   if(field_->problem()->SpatialApproximation()=="Nurbs")
@@ -2305,18 +2323,12 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     
     const Epetra_BlockMap& finaldatamap = proc0data->Map();
     
-    // determine offset of dofs in case of multiple discretizations in
-    // separate files (e.g. multi-scale problems). during calculation,
-    // dofs are numbered consecutively for all discretizations. in the
-    // post-processing phase, when only one discretization is called,
-    // numbering always starts with 0, so a potential offset needs to be
-    // taken into account
-    int offset = finaldatamap.MinAllGID() - dis->DofRowMap()->MinAllGID();
     
     //------------------------------------------------------------------
     // each processor provides its dof global id information for proc 0
     //------------------------------------------------------------------
     
+    // would be nice to have an Epetra_IntMultiVector, instead of casting to doubles
     RefCountPtr<Epetra_MultiVector> dofgidpernodelid = rcp(new Epetra_MultiVector(*nodemap,numdf));
     dofgidpernodelid->PutScalar(-1.0);
     
@@ -2325,16 +2337,16 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     {
       for (int inode=0; inode<mynumnp; inode++)
       {
-	DRT::Node* n = dis->lRowNode(inode);
-	const double dofgid = (double) dis->Dof(n, frompid + idf) + offset;
-	if (dofgid > -1.0)
-	{
-	  dofgidpernodelid->ReplaceMyValue(inode, idf, dofgid);
-	}
-	else
-	{
-	  dserror("Error while creating Epetra_MultiVector dofgidperlocalnodeid");
-	}
+        DRT::Node* n = dis->lRowNode(inode);
+        const double dofgid = (double) dis->Dof(n, frompid + idf) + offset;
+        if (dofgid > -1.0)
+        {
+          dofgidpernodelid->ReplaceMyValue(inode, idf, dofgid);
+        }
+        else
+        {
+          dserror("Error while creating Epetra_MultiVector dofgidperlocalnodeid");
+        }
       }
     }
 
@@ -2354,22 +2366,22 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
       double* dofgids = (dofgidpernodelid_proc0->Values()); // columnwise data storage
       for (int idf=0; idf<numdf; ++idf)
       {
-	for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
-	{
-	  // local storage position of desired dof gid
-	  const int doflid = inode + (idf*numnp);
-	  // get the dof global id
-	  const int actdofgid = (int) (dofgids[doflid]);
-	  dsassert(actdofgid>= 0, "error while getting dof global id");
-	  // get the dof local id w.r.t. the finaldatamap
-	  int lid = finaldatamap.LID(actdofgid);
-	  if (lid > -1)
-	  {
-	    Write(file, static_cast<float>((*proc0data)[lid]));
-	  }
-	  else
-          dserror("received illegal dof local id: %d", lid);
-	}
+        for (int inode=0; inode<finalnumnode; inode++) // inode == lid of node because we use proc0map_
+        {
+          // local storage position of desired dof gid
+          const int doflid = inode + (idf*numnp);
+          // get the dof global id
+          const int actdofgid = (int) (dofgids[doflid]);
+          dsassert(actdofgid>= 0, "error while getting dof global id");
+          // get the dof local id w.r.t. the finaldatamap
+          int lid = finaldatamap.LID(actdofgid);
+          if (lid > -1)
+          {
+            Write(file, static_cast<float>((*proc0data)[lid]));
+          }
+          else
+            dserror("received illegal dof local id: %d", lid);
+        }
       }// for idf
       
       // 2 component vectors in a 3d problem require a row of zeros.
