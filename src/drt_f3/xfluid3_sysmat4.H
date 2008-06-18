@@ -1595,7 +1595,6 @@ static void Sysmat4(
         // get current node coordinates
         const std::map<int,blitz::TinyVector<double,3> >* positions = ih->currentcutterpositions();
         const BlitzMat xyze_boundary(XFEM::getCurrentNodalPositions(boundaryele, *positions));
-        //TODO: add displacement
         
         // get interface velocities at the boundary element nodes
         BlitzMat vel_boundary(3,numnode_boundary);
