@@ -453,6 +453,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("ITWANT",0,"",&sdyn);
   DoubleParameter("MAXDT",0.0,"",&sdyn);
   DoubleParameter("RESULTDT",0.0,"",&sdyn);
+  // Uzawa iteration for constraint systems
   DoubleParameter("UZAWAPARAM",1.0,"Parameter for Uzawa algorithm dealing with lagrange multipliers",&sdyn);
   IntParameter("UZAWAMAXITER",50,"maximum number of iterations allowed for uzawa algorithm before failure going to next newton step",&sdyn);
   setStringToIntegralParameter("UZAWAALGO","newtonlinuzawa","",
