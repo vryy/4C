@@ -82,12 +82,13 @@ namespace MAT
                   const int gp,
                   Teuchos::ParameterList& params,
                   Epetra_SerialDenseMatrix* cmat,
-                  Epetra_SerialDenseVector* stress);
+                  Epetra_SerialDenseVector* stress, 
+                  int Id);
 
     double Density() {return matdata_->m.contchainnetw->density;}
     
     bool Initialized() const
-      { return isinit_&&(l1_!=Teuchos::null);}
+      { return isinit_&&(li_!=Teuchos::null);}
     
     RCP<vector<vector<double> > > Getli() const {return li_;}
     
@@ -98,9 +99,8 @@ namespace MAT
     
     /// unit cell dimensions per gp
     Teuchos::RCP<vector<vector<double> > > li_;
-    Teuchos::RCP<vector<double> > l1_;
-    Teuchos::RCP<vector<double> > l2_;
-    Teuchos::RCP<vector<double> > l3_;
+    /// initial unit cell dimensions per gp
+    Teuchos::RCP<vector<vector<double> > > li0_;
     
     bool isinit_;
     
