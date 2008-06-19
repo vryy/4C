@@ -52,16 +52,14 @@ class TimeAdaptivity
 
 public:
 
-  /*!
-    \brief Norm for error vector
-  */
+  //! Norm for error vector
   enum TAErrNorm
   {
-    norm_vague = 0,  // undetermined norm
-    norm_l1,  // L1/linear/average norm
-    norm_l2,   // L2/Euclidean norm
-    norm_rms,  // root mean square (RMS) norm
-    norm_inf   // Maximum/infinity norm
+    norm_vague = 0,  //!< undetermined norm
+    norm_l1,  //!< L1/linear/average norm
+    norm_l2,   //!< L2/Euclidean norm
+    norm_rms,  //!< root mean square (RMS) norm
+    norm_inf   //!< Maximum/infinity norm
   };
 
   /*!
@@ -125,14 +123,12 @@ public:
   // to offer an Integrate method for any TimeIntegrator.
   //virtual void Integrate(TimeIntegrator::TimeIntegrator& timint) = 0;
 
-  /*
-    \brief Indicate error and determine new step size
-  */
+  //! Indicate error and determine new step size
   void Indicate
   (
     bool& accepted,
     double& stpsiznew
-    );
+  );
 
   /*!
     \brief Print error norm string
@@ -163,11 +159,11 @@ protected:
   TimeAdaptivity(const TimeAdaptivity& old);
 
   // plain time integration constants
-  double timeinitial_;  // initial time: t_0
-  double timefinal_;  // final time
-  int timestepinitial_;  // initial time step index: 0 (often)
-  int timestepfinal_;  // maximum time step: n_max
-  double stepsizeinitial_;  // initial step size: dt_n
+  double timeinitial_;  //!< initial time: t_0
+  double timefinal_;  //!< final time
+  int timestepinitial_;  //!< initial time step index: 0 (often)
+  int timestepfinal_;  //!< maximum time step: n_max
+  double stepsizeinitial_;  //!< initial step size: dt_n
 
   // adaptive time integration constants
   double stepsizemax_;
@@ -184,14 +180,14 @@ protected:
   DRT::Discretization& discret_;
   LINALG::Solver& solver_;
   IO::DiscretizationWriter& output_;
-  int mypid_;  // processor ID
+  int mypid_;  //!< processor ID
 
   // more parameters
   //ParameterList* params_;
 
   // plain time integration variables
-  double time_;  // current time t_n
-  int timestep_;  // current time step n
+  double time_;  //!< current time t_n
+  int timestep_;  //!< current time step n
 
   // adaptive time integration variables
   double stepsizepre_;  // previous time step size dt_{n-1}
