@@ -124,8 +124,9 @@ namespace XFEM
         
         //! gives the octand(=child) of this treenode to which elem belongs (uses the XAABB of elem)
         list<int> classifyElement(
-            const DRT::Element* elem,
-            const map<int,BlitzVec3>& currentpositions
+            const DRT::Element*       elem,
+            const map<int,BlitzVec3>& currentpositions,
+            bool&                     do_refine
             ); 
         
         //! gives the octand(=child) of this treenode to which the point belongs 

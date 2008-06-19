@@ -183,13 +183,12 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
       }
       if (ElementList_.size()>1) // dynamically grow tree
       {
-        bool do_refine = true;
-        vector<list<int> > ElementClassification;
+//        bool[8] do_refine = {false,false,false,false,false,false,false,false};
+        bool do_refine = false;
+        map<const DRT::Element*, list<int> > ElementClassification;
         for (list< const DRT::Element* >::const_iterator myIt = ElementList_.begin(); myIt != ElementList_.end(); myIt++){
-          list<int> childIdx = classifyElement(*myIt,currentpositions);
-          if (childIdx.size()<8)
-            do_refine =true;
-          ElementClassification.push_back(childIdx);
+          list<int> childIdx = classifyElement(*myIt,currentpositions, do_refine);
+          ElementClassification[*myIt]=childIdx;
         }
         if (do_refine) {
         // create Octants
@@ -199,17 +198,14 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
         }
         // actual node becomes an inner tree node,
         // so we have to introduce one more tree-level
-        int i=0;
-          for (list< const DRT::Element* >::const_iterator myIt = ElementList_.begin(); myIt != ElementList_.end(); myIt++){
-            const list<int> childIdx = ElementClassification.at(i);
-            for (list<int>::const_iterator myIt2 = childIdx.begin(); myIt2 != childIdx.end(); myIt2++){
-              this->children_[*myIt2-1]->insertElement(*myIt,currentpositions);
-              const BlitzMat3x2 ab(this->children_[*myIt2-1]->getAABB());
-              //  printf("inserted elem to AABB(%f,%f,%f,%f,%f,%f)\n", ab(0,0),ab(0,1),ab(1,0),ab(1,1),ab(2,0),ab(2,1));
-            }
-            i++;
+        for (list< const DRT::Element* >::const_iterator myIt = ElementList_.begin(); myIt != ElementList_.end(); myIt++){
+          const list<int> childIdx = ElementClassification[*myIt];
+          for (list<int>::const_iterator myIt2 = childIdx.begin(); myIt2 != childIdx.end(); myIt2++){
+            this->children_[*myIt2-1]->insertElement(*myIt,currentpositions);
+            //const BlitzMat3x2 ab(this->children_[*myIt2-1]->getAABB());
+            //  printf("inserted elem to AABB(%f,%f,%f,%f,%f,%f)\n", ab(0,0),ab(0,1),ab(1,0),ab(1,1),ab(2,0),ab(2,1));
           }
-        
+        }
         
         // if one of the created childs is empty, check if it is fluid or solid
         for (int i=0; i< 8; i++){
@@ -262,7 +258,8 @@ void XFEM::XSearchTree::TreeNode::insertElement(
 //    cout << "inserted element at depth " << actTreedepth_ <<endl;
     State_ = STATE_LEAF_NODE;
   } else if(State_ == STATE_INNER_NODE) {
-    const list<int> childIdx(classifyElement(elem,currentpositions));
+    bool do_refine = false;
+    const list<int> childIdx(classifyElement(elem,currentpositions, do_refine));
     for (list<int>::const_iterator myIt = childIdx.begin(); myIt != childIdx.end(); myIt++){
       this->children_[*myIt-1]->insertElement(elem,currentpositions);
 //      BlitzMat3x2 ab = this->children_[*myIt-1]->getAABB();
@@ -319,39 +316,60 @@ int XFEM::XSearchTree::TreeNode::classifyPoint(const BlitzVec3& pointcoords) {
 }
 
 list<int> XFEM::XSearchTree::TreeNode::classifyElement(
-    const DRT::Element* elem,
-    const map<int,BlitzVec3>& currentpositions
+    const DRT::Element*       elem,
+    const map<int,BlitzVec3>& currentpositions,
+    bool&                      do_refine
     ) {
+//  bool isAABBbiggerThanElemXAABB;
   list<int> octants;
   const BlitzMat xyze(XFEM::getCurrentNodalPositions(elem,currentpositions));
   const BlitzMat3x2 elemXAABB(XFEM::computeFastXAABB(elem, xyze));
+  if (XFEM::maxOrthogonalExpansion(AABB_)/2 > XFEM::maxOrthogonalExpansion(elemXAABB)){
+    do_refine =true;            
+  }
   
   if (elemXAABB(0, 1) > XPlaneCoordinate_) {
     if (elemXAABB(1, 1) > YPlaneCoordinate_) {
-      if (elemXAABB(2, 1) > ZPlaneCoordinate_)
+      if (elemXAABB(2, 1) > ZPlaneCoordinate_){
         octants.push_back(8);
-      if (elemXAABB(2, 0) <= ZPlaneCoordinate_)
+//        do_refine[8] = isAABBbiggerThanElemXAABB;
+      }
+      if (elemXAABB(2, 0) <= ZPlaneCoordinate_){
         octants.push_back(7);
+//        do_refine[7] = isAABBbiggerThanElemXAABB;
+      }
     }
     if (elemXAABB(1, 0) <= YPlaneCoordinate_) {
-      if (elemXAABB(2, 1) > ZPlaneCoordinate_)
+      if (elemXAABB(2, 1) > ZPlaneCoordinate_){
         octants.push_back(6);
-      if (elemXAABB(2, 0) <= ZPlaneCoordinate_)
+//        do_refine[6] = isAABBbiggerThanElemXAABB;
+      }
+      if (elemXAABB(2, 0) <= ZPlaneCoordinate_){
         octants.push_back(5);
+//        do_refine[5] = isAABBbiggerThanElemXAABB;
+      }
     }
   }
   if (elemXAABB(0, 0) <= XPlaneCoordinate_) {
     if (elemXAABB(1, 1) > YPlaneCoordinate_) {
-      if (elemXAABB(2, 1) > ZPlaneCoordinate_)
+      if (elemXAABB(2, 1) > ZPlaneCoordinate_){
         octants.push_back(4);
-      if (elemXAABB(2, 0) <= ZPlaneCoordinate_)
+//        do_refine[4] = isAABBbiggerThanElemXAABB;
+      }
+      if (elemXAABB(2, 0) <= ZPlaneCoordinate_){
         octants.push_back(3);
+//        do_refine[3] = isAABBbiggerThanElemXAABB;
+      }
     }
     if (elemXAABB(1, 0) <= YPlaneCoordinate_) {
-      if (elemXAABB(2, 1) > ZPlaneCoordinate_)
+      if (elemXAABB(2, 1) > ZPlaneCoordinate_){
         octants.push_back(2);
-      if (elemXAABB(2, 0) <= ZPlaneCoordinate_)
+//        do_refine[2] = isAABBbiggerThanElemXAABB;
+      }
+      if (elemXAABB(2, 0) <= ZPlaneCoordinate_){
         octants.push_back(1);
+//        do_refine[1] = isAABBbiggerThanElemXAABB;
+      }
     }
     
   }

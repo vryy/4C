@@ -53,6 +53,9 @@ namespace XFEM
   \return                             merged bounding box
   */
   BlitzMat3x2 mergeAABB(const BlitzMat3x2& A, const BlitzMat3x2& B);
+  
+  //! gives maximal expansion of the an axisalinged Bounding box in an axis direction (x,y,z)
+  double maxOrthogonalExpansion(const BlitzMat3x2& AABB);
 
 }
 

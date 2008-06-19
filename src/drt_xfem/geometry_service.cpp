@@ -162,4 +162,14 @@ BlitzMat3x2 XFEM::mergeAABB(const BlitzMat3x2& A, const BlitzMat3x2& B){
   return MergedAABB;
 }
 
+double XFEM::maxOrthogonalExpansion(const BlitzMat3x2& AABB){
+  const int nsd=3;
+  double dist = 0;
+  for(int dim=0; dim<nsd; dim++)
+  {
+    dist = std::max(dist,  AABB(dim, 1)-AABB(dim,0));
+  }
+  return dist;
+}
+
 #endif  // #ifdef CCADISCRET
