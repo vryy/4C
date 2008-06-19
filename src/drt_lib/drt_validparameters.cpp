@@ -371,8 +371,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter("DYNAMICTYP","Gen_Alfa",
                                "type of time integration control",
-                               tuple<std::string>("Centr_Diff","Gen_EMM","Gen_Alfa"),
-                               tuple<int>(STRUCT_DYNAMIC::centr_diff,STRUCT_DYNAMIC::Gen_EMM,STRUCT_DYNAMIC::gen_alfa),
+                               tuple<std::string>("Centr_Diff",
+                                                  "Gen_EMM",
+                                                  "Gen_Alfa"),
+                               tuple<int>(STRUCT_DYNAMIC::centr_diff,
+                                          STRUCT_DYNAMIC::Gen_EMM,
+                                          STRUCT_DYNAMIC::gen_alfa),
                                &sdyn);
 
   IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);
@@ -406,9 +410,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "RelRes_And_AbsDis",
                                  "RelRes_Or_RelDis",
                                  "RelRes_And_RelDis"),
-                               tuple<int>(STRUCT_DYNAMIC::absres_or_absdis,STRUCT_DYNAMIC::absres_and_absdis,
-                                          STRUCT_DYNAMIC::relres_or_absdis,STRUCT_DYNAMIC::relres_and_absdis,
-                                          STRUCT_DYNAMIC::relres_or_reldis,STRUCT_DYNAMIC::relres_and_reldis),
+                               tuple<int>(STRUCT_DYNAMIC::absres_or_absdis,
+                                          STRUCT_DYNAMIC::absres_and_absdis,
+                                          STRUCT_DYNAMIC::relres_or_absdis,
+                                          STRUCT_DYNAMIC::relres_and_absdis,
+                                          STRUCT_DYNAMIC::relres_or_reldis,
+                                          STRUCT_DYNAMIC::relres_and_reldis),
                                &sdyn);
 
   DoubleParameter("TOLDISP",1.0E-10,
@@ -482,6 +489,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("MEASURED_DISP1",0.0,"measured displacment of the tension testing",&sdyn);
   DoubleParameter("MEASURED_DISP2",0.0,"measured displacment of the tension testing",&sdyn);    
     
+  // Time adaptivity
   SetValidTimeAdaptivityParameters(sdyn);
 
   /*----------------------------------------------------------------------*/
