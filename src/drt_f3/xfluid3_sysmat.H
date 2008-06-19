@@ -1233,7 +1233,7 @@ void Sysmat(
         // gaussian points
         const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_6point);
         
-        //TODO: get the right element
+        // get the right boundary element
         const DRT::Element* boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
         //const DRT::Element* boundaryele = ih->GetBoundaryEle(0);
         //cout << (*boundaryele) << endl;
