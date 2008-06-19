@@ -20,6 +20,7 @@ Maintainer: Ursula Mayer
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
 #include "Teuchos_RefCountPtr.hpp"
+#include "Epetra_SerialDenseSolver.h"
 
 
 namespace XFEM
@@ -528,7 +529,7 @@ static void svdcmp(
             for(int i = 0 ; i < dim; i++)
                 det *= 1.0/A(i,i);
             //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), 1/A(2,2), fabs(det) );
-            if(fabs(det) < TOL7 && order == 1)
+            if(fabs(det) < TOL14 && order == 1) //TODO check was TOL7 before
             {
                 solution = false;
                 //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), 1/A(2,2), det );
@@ -550,21 +551,78 @@ static void svdcmp(
         return solution;
     }
     
-  
-   /*!
-   \brief computes a Gaussian elimination for a linear system of equations
-               with help of a Epetra_SerialDenseSolver
+    
+    /*----------------------------------------------------------------------*
+     |  ML:     solves a linear system of equation               u.may 02/08|
+     |          with help of a Gaussian Elimination provide by Epetra       |
+     *----------------------------------------------------------------------*/
+    template<int dim, class MA, class Vb, class Vx>
+      inline bool gaussEliminationEpetraT(
+            MA&   A,
+            Vb&   b,
+            Vx&   x)
+    {
+        bool solution = true;
 
-   \param A            (in)    : system matrix
-   \param b            (in)    : right-hand-side
-   \param x            (out)   : solution vector
-   \return true if matrix is not singular, false if matrix is singular
-   */
-    bool gaussEliminationEpetra(
-        BlitzMat&           A,
-        BlitzVec&           b,
-        BlitzVec2&          x
-        );
+        // view on hopefullx column major blitz arrays
+        /*Epetra_SerialDenseMatrix A_Epetra(Copy, A.data(), A.columns(), A.rows(), A.columns());
+        Epetra_SerialDenseVector b_Epetra(Copy, b.data(), b.rows());
+        Epetra_SerialDenseVector x_Epetra(dim); 
+        */
+        Epetra_SerialDenseMatrix A_Epetra(dim,dim);
+        Epetra_SerialDenseVector b_Epetra(dim);
+        Epetra_SerialDenseVector x_Epetra(dim); 
+        
+        // copy
+        for(int i = 0; i < dim; i++)
+          for(int j = 0; j < dim; j++)
+            A_Epetra(i,j) = A(i,j);
+        
+        for(int i = 0; i < dim; i++)
+          b_Epetra(i) = b(i);
+          
+        Epetra_SerialDenseSolver ge;
+        ge.SetMatrix(A_Epetra);
+        ge.SetVectors(x_Epetra, b_Epetra);
+        
+
+        // Lu factorization
+        ge.Factor();
+        Epetra_SerialDenseMatrix* FactoredMa = ge.FactoredMatrix();
+        
+        if(!ge.Factored())
+            return false;
+
+        // check if singular by computing the determinate
+        double det = 1.0;
+        for(int i = 0; i < dim; i++)
+        {
+            det = det*((*FactoredMa)(i,i) );
+            //printf("det =  %f\n", det);
+        }
+        
+        //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), fabs(det) );
+        if(fabs(det) < TOL14) //TODO: check! was TOL7
+        {
+            solution = false;
+            //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), det );
+        }
+        else    
+        {        
+            ge.Solve();
+        }
+        
+        //for(int i = 0; i < dim; i++)
+        //    printf("X = %f, x_epetra = %f\n", x(i), x_Epetra(i));
+        
+        // copy solution
+        for(int i = 0; i < dim; i++)
+          x(i) = x_Epetra(i);
+
+
+        return solution;
+    }    
+    
     
 }
 

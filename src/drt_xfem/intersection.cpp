@@ -550,7 +550,7 @@ bool computeCurveSurfaceIntersectionT(
     {
         updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
 
-        if(!XFEM::gaussElimination<true, 3, 1>(A, b, dx))
+        if(!XFEM::gaussElimination<true,3,1>(A, b, dx))
         {
             if(computeSingularCSI<surftype,linetype>(xsi, xyze_surfaceElement, xyze_lineElement))
             {
@@ -2557,7 +2557,7 @@ bool XFEM::Intersection::computeRecoveryPlane(
         {
             updateAForRCIPlane( A, xsi, plane, lineElement, xyze_lineElement, cutterElement, xyze_cutterElement);
 
-            if(!gaussElimination<true, 3, 1>(A, b, dx))
+            if(!gaussElimination<true,3,1>(A, b, dx))
             {
                 intersection = false;
                 break;
@@ -3773,10 +3773,7 @@ void XFEM::Intersection::debugIntersection(
   f_system << IO::GMSH::elementAtInitialPositionToString(0, xfemElement) << endl;
   
   for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
-  {
-    DRT::Element* cutterElement = (*i);
     f_system << IO::GMSH::elementAtInitialPositionToString(count++, (*i)) << endl;
-  }
   
   f_system << "};" << endl;
   f_system.close();

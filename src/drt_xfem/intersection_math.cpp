@@ -17,7 +17,6 @@ Maintainer: Ursula Mayer
 #include "intersection_math.H"
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_utils_local_connectivity_matrices.H"
-#include "Epetra_SerialDenseSolver.h"
 #include "Epetra_SerialDenseMatrix.h"
 #include <stdio.h>
 #include <string.h>
@@ -116,63 +115,6 @@ void XFEM::test_svdcmp(
 
 }
 
-
-/*----------------------------------------------------------------------*
- |  ML:     solves a linear system of equation               u.may 02/08|
- |          with help of a Gaussian Elimination provide by Epetra       |
- *----------------------------------------------------------------------*/
-bool XFEM::gaussEliminationEpetra(
-        BlitzMat&   A,
-        BlitzVec&   b,
-        BlitzVec2&  x)
-{
-    bool solution = true;
-    const int dim = 2;
-
-    // view on hopefullx column major blitz arrays
-    Epetra_SerialDenseMatrix A_Epetra(Copy, A.data(), A.columns(), A.rows(), A.columns());
-    Epetra_SerialDenseVector b_Epetra(Copy, b.data(), b.rows());
-    Epetra_SerialDenseVector x_Epetra(2); 
-    
-    Epetra_SerialDenseSolver ge;
-    ge.SetMatrix(A_Epetra);
-    ge.SetVectors(x_Epetra, b_Epetra);
-    
-
-    // Lu factorization
-    ge.Factor();
-    Epetra_SerialDenseMatrix* FactoredMa = ge.FactoredMatrix();
-    
-    if(!ge.Factored())
-        return false;
-
-    // check if singular by computing the determinate
-    double det = 1.0;
-    for(int i = 0; i < dim; i++)
-    {
-        det = det*((*FactoredMa)[i][i]);
-        //printf("det =  %f\n", det);
-    }
-    
-    //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), fabs(det) );
-    if(fabs(det) < TOL14) //TODO: check! was TOL7
-    {
-        solution = false;
-        //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), det );
-    }
-    else    
-    {        
-        ge.Solve();
-    }
-    
-    //for(int i = 0; i < dim; i++)
-    //    printf("X = %f, x_epetra = %f\n", x(i), x_Epetra(i));
-    
-     x(0) = x_Epetra(0);
-     x(1) = x_Epetra(1);
-
-    return solution;
-}
 
 
 
