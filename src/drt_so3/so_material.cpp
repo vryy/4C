@@ -126,9 +126,18 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
       if (!chain->Initialized())
         chain->Initialize(NUMGPT_SOH8);
-      chain->Evaluate(glstrain,gp,params,cmat,stress);
+      chain->Evaluate(glstrain,gp,params,cmat,stress,this->Id());
       *density = chain->Density();
-
+      
+      if ((this->Id()==14) && (gp==0)){
+        ofstream outfile;
+        outfile.open("remodeling.txt",ios_base::app);
+        for (int i=0;i<3;++i) outfile << params.get("total time",-1.0) << "," << (chain->Getli()->at(0))[i] << ",";
+        outfile << endl;
+        
+        outfile.close();
+      }
+      
       break;
     }
     case m_struct_multiscale: /*------------------- multiscale approach */
