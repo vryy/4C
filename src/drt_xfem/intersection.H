@@ -1202,8 +1202,8 @@ class Intersection
        	) const;
 
        void debugIntersection(
-       		    const DRT::Element*	     xfemElement,
-       		    vector<DRT::Element*>    cutterElements
+       		    const DRT::Element*	       xfemElement,
+       		    set<DRT::Element*>         cutterElements
        		    ) const;
 
        void debugXAABBs(

@@ -125,6 +125,8 @@ void XFEM::Intersection::computeIntersection(
         const vector<RCP<DRT::Element> > xfemElementSurfaces = xfemElement->Surfaces();
         const vector<RCP<DRT::Element> > xfemElementLines = xfemElement->Lines();
 
+        //debugIntersection(xfemElement, cutterElements);
+        
         for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
         {
             DRT::Element* cutterElement = (*i);
@@ -3762,16 +3764,18 @@ void XFEM::Intersection::debugXFEMConditions(
 
 void XFEM::Intersection::debugIntersection(
     const DRT::Element* xfemElement,
-    vector<DRT::Element*> cutterElements) const
+    set<DRT::Element*> cutterElements) const
 {
+  int count = 0;
   ofstream f_system("intersection.pos");
   f_system << "View \" Intersection" << " \" {" << endl;
   
   f_system << IO::GMSH::elementAtInitialPositionToString(0, xfemElement) << endl;
   
-  for (unsigned int i=0; i<cutterElements.size(); i++)
+  for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
   {
-    f_system << IO::GMSH::elementAtInitialPositionToString(i+1, cutterElements[i]) << endl;
+    DRT::Element* cutterElement = (*i);
+    f_system << IO::GMSH::elementAtInitialPositionToString(count++, (*i)) << endl;
   }
   
   f_system << "};" << endl;
