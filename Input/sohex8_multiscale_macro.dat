@@ -665,7 +665,7 @@ NODE           27     COORD 1.000000000000000e+00     1.000000000000000e+00     
 ------------------------------------------------------ALE ELEMENTS
 --------------------------------------------------THERMAL ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_Struct_Multiscale MICROFILE sohex8_multiscale_micro.dat
+MAT       1 MAT_Struct_Multiscale MICROFILE sohex8_multiscale_micro.dat MICRODIS_NUM 1
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES
