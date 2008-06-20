@@ -291,6 +291,7 @@ protected:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
+    update_gl,
     calc_struct_update_genalpha_imrlike
   };
 
@@ -328,6 +329,13 @@ protected:
   double                                                   V_;
   //! vector of partial derivatives in material frame
   vector<Epetra_SerialDenseMatrix>                         nxyz_;
+
+  //! green lagrange strains storage needed for prestressing structures
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  virtual inline Teuchos::RCP<Epetra_SerialDenseMatrix>& PreStrains()
+  { return glprestrain_; }
+  RCP<Epetra_SerialDenseMatrix>                    glprestrain_;
+#endif
 
   // internal calculation methods
 

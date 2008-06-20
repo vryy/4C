@@ -78,6 +78,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
   else if (action=="calc_struct_fsiload")       act = So_tet4::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = So_tet4::calc_struct_update_istep;
   else if (action=="calc_struct_update_genalpha_imrlike") act = So_tet4::calc_struct_update_genalpha_imrlike;
+#ifdef PRESTRESS
+  else if (action=="calc_struct_prestress_update_green_lagrange") act = So_tet4::update_gl;
+#endif
   else dserror("Unknown type of action for So_tet4");
 
   // get the material law
@@ -149,6 +152,21 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       if (iostrain!="euler_almansi") so_tet4_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,actmat,cauchy);
       else    dserror("requested option not yet implemented for tet4");
       AddtoPack(*stressdata, stress);
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+      {
+        RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
+        if (gl==null)
+          dserror("Cannot output prestrains");
+        if (gl->M() != strain.M() || gl->N() != strain.N())
+          dserror("Mismatch in dimension");
+        // the element outputs 0.5* strains[3-5], but we have the computational quantity here
+        Epetra_SerialDenseMatrix tmp(*gl);
+        for (int i=0; i<NUMGPT_SOTET4; ++i)
+          for (int j=3; j<6; ++j)
+            tmp(i,j) *= 0.5;
+        strain += tmp;
+      }
+#endif
       AddtoPack(*straindata, strain);
     }
     break;
@@ -251,6 +269,32 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
       }
     }
     break;
+
+#ifdef PRESTRESS
+    // in case of prestressing, make a snapshot of the current green-Lagrange strains and add them to
+    // the previously stored GL strains in an incremental manner
+    case update_gl:
+    {
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get displacement state");
+      vector<double> mydisp(lm.size());
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      Epetra_SerialDenseMatrix strain(NUMGPT_SOTET4,NUMSTR_SOTET4);
+      so_tet4_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&strain,actmat,false);
+      // the element outputs 0.5* strains[3-5], but we want the computational quantity here
+      for (int i=0; i<NUMGPT_SOTET4; ++i)
+        for (int j=3; j<6; ++j) strain(i,j) *= 2.0;
+      RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
+      if (gl==null) dserror("Prestress array not initialized");
+      if (gl->M() != strain.M() || gl->N() != strain.N())
+        dserror("Prestress arrauy not initialized");
+      (*gl) += strain;
+    }
+    break;
+#endif
 
     case calc_struct_eleload:
       dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
@@ -554,6 +598,18 @@ void DRT::ELEMENTS::So_tet4::so_tet4_nlnstiffmass(
       for (int i = 3; i < 6; ++i)
         (*elestrain)(gp,i) = 0.5 * glstrain(i);
     }
+
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+    {
+      // note: must be AFTER strains are output above!
+      RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
+      if (gl==null) dserror("Prestress array not initialized");
+      if (gl->M() != NUMGPT_SOTET4 || gl->N() != NUMSTR_SOTET4)
+        dserror("Prestress array not initialized");
+      for (int i=0; i<6; ++i)
+        glstrain(i) += (*gl)(gp,i);
+    }
+#endif
 
     /*----------------------------------------------------------------------*
       the B-operator used is equivalent to the one used in hex8, this needs

@@ -34,6 +34,9 @@ data_(),
 V_(-1.0)
 {
   ngp_[0] = ngp_[1] = ngp_[2] = 0;  //whatis ngp_ ???????
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  glprestrain_ = rcp(new Epetra_SerialDenseMatrix(NUMGPT_SOTET4,NUMSTR_SOTET4));
+#endif
   return;
 }
 
@@ -48,6 +51,9 @@ data_(old.data_),
 V_(old.V_)
 {
   for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  glprestrain_ = rcp(new Epetra_SerialDenseMatrix(*(old.glprestrain_)));
+#endif
   return;
 }
 
@@ -101,6 +107,11 @@ void DRT::ELEMENTS::So_tet4::Pack(vector<char>& data) const
   // V_
   AddtoPack(data,V_);
 
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  // glprestrain_
+  AddtoPack(data,*glprestrain_);
+#endif
+
   return;
 }
 
@@ -134,6 +145,11 @@ void DRT::ELEMENTS::So_tet4::Unpack(const vector<char>& data)
   data_.Unpack(tmp);
   // V_
   ExtractfromPack(position,data,V_);
+
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  // glprestrain_
+  ExtractfromPack(position,data,*glprestrain_);
+#endif
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
