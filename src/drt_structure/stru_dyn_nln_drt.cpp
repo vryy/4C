@@ -66,7 +66,7 @@ extern struct _SOLVAR  *solv;
 extern "C"
 void caldyn_drt()
 {
-  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
   switch (Teuchos::getIntegralValue<int>(sdyn,"DYNAMICTYP"))
   {
@@ -88,6 +88,10 @@ void caldyn_drt()
     break;
   case STRUCT_DYNAMIC::Gen_EMM:
     dserror("GEMM not supported");
+    break;
+  case STRUCT_DYNAMIC::genalpha:
+    cout << "Some coding is needed, isn't it?" << endl;
+    exit(0);
     break;
   default:
     dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());

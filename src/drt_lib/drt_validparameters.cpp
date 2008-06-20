@@ -373,10 +373,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "type of time integration control",
                                tuple<std::string>("Centr_Diff",
                                                   "Gen_EMM",
-                                                  "Gen_Alfa"),
+                                                  "Gen_Alfa",
+                                                  "GenAlpha"),
                                tuple<int>(STRUCT_DYNAMIC::centr_diff,
                                           STRUCT_DYNAMIC::Gen_EMM,
-                                          STRUCT_DYNAMIC::gen_alfa),
+                                          STRUCT_DYNAMIC::gen_alfa,
+                                          STRUCT_DYNAMIC::genalpha),
                                &sdyn);
   // Output type
   IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);

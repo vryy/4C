@@ -65,9 +65,11 @@ typedef struct _STRUCT_DYNAMIC
 {
 enum
    {
-    gen_alfa,                   /* generalised alpha-time integrator */
+    gen_alfa,                   /* generalised-alpha time integrator */
     centr_diff,                 /* central differences (explicit) */
-    Gen_EMM                     /* generalised energy-momentum method */
+    Gen_EMM,                    /* generalised energy-momentum method */
+    genalpha                    /* generalised-alpha time integrator, 
+                                 * new style */
    }               Typ;         /* type of time integration algorithm */
 enum _nlnSolvTyp
    {
