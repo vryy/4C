@@ -372,7 +372,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       Epetra_SerialDenseMatrix strain(NUMGPT_SOH8,NUMSTR_SOH8);
-      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&strain,time,false);
+      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&strain,params,false,false);
       // the element outputs 0.5* strains[3-5], but we want the computational quantity here
       for (int i=0; i<NUMGPT_SOH8; ++i)
         for (int j=3; j<6; ++j) strain(i,j) *= 2.0;
