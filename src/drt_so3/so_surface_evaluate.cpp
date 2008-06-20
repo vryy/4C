@@ -99,11 +99,12 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   break;
   case config_spatial:
   {
+    xc.LightShape(numnode,3);
     RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
     if (disp==null) dserror("Cannot get state vector 'displacement'");
     vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-    SpatialConfiguration(x,mydisp);
+    SpatialConfiguration(xc,mydisp);
   }
   break;
   case config_both:
@@ -165,7 +166,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       if (!ortho_value) dserror("no orthopressure value given!");
       vector<double> normal(3);
       double detA;
-      SurfaceIntegration(detA,normal,x,deriv);
+      SurfaceIntegration(detA,normal,xc,deriv);
       const double fac = intpoints.qwgt[gp] * curvefac * ortho_value;
       for (int node=0; node < numnode; ++node)
         for(int dim=0 ; dim<3; dim++)
