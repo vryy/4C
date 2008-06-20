@@ -529,7 +529,7 @@ static void svdcmp(
             for(int i = 0 ; i < dim; i++)
                 det *= 1.0/A(i,i);
             //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), 1/A(2,2), fabs(det) );
-            if(fabs(det) < TOL14 && order == 1) //TODO check was TOL7 before
+            if(fabs(det) < TOL14 && order == 1)
             {
                 solution = false;
                 //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), 1/A(2,2), det );

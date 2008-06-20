@@ -144,9 +144,9 @@ class Intersection
 
         //! list of face markers numbered in the order of the intersected surface elments
         vector<int>                        faceMarker_;
-
-        EleGeoType                         xfemGeoType_;
         
+        EleGeoType                         xfemGeoType_;
+           
         EleGeoType                         cutterGeoType_;
         
         /*!
@@ -222,7 +222,8 @@ class Intersection
             const int                       surfaceId,
             const int                       lineId,
             const bool                      lines,
-            bool&                           xfemIntersection
+            bool&                           xfemIntersection,
+            const bool                      doSVD
             ) const;
 
 
@@ -251,7 +252,8 @@ class Intersection
             const BlitzVec3&                upLimit,
             const BlitzVec3&                loLimit,
             std::vector<InterfacePoint>&    interfacePoints,
-            const bool                      lines
+            const bool                      lines,
+            const bool                      doSVD
             ) const;
 
 
@@ -268,13 +270,14 @@ class Intersection
         return true if an intersection point was found, otherwise false
         */
         bool computeCurveSurfaceIntersection(
-            const DRT::Element*               surfaceElement,
-            const BlitzMat&                   xyze_surfaceElement,
-            const DRT::Element*               lineElement,
-            const BlitzMat&                   xyze_lineElement,
-            const BlitzVec3&  upLimit,
-            const BlitzVec3&  loLimit,
-            BlitzVec3&        xsi
+            const DRT::Element*                 surfaceElement,
+            const BlitzMat&                     xyze_surfaceElement,
+            const DRT::Element*                 lineElement,
+            const BlitzMat&                     xyze_lineElement,
+            const BlitzVec3&                    upLimit,
+            const BlitzVec3&                    loLimit,
+            BlitzVec3&                          xsi,
+            const bool                          doSVD
             ) const;
 
 
@@ -293,17 +296,18 @@ class Intersection
 	  	\return number of interface points
 	  	*/
         int addIntersectionPoint(
-            const DRT::Element*               surfaceElement,
-            const BlitzMat&                   xyze_surfaceElement,
-            const DRT::Element*               lineElement,
-            const BlitzMat&                   xyze_lineElement,
-            const BlitzVec3&                xsi,
-            const BlitzVec3&                upLimit,
-            const BlitzVec3&                loLimit,
+            const DRT::Element*                 surfaceElement,
+            const BlitzMat&                     xyze_surfaceElement,
+            const DRT::Element*                 lineElement,
+            const BlitzMat&                     xyze_lineElement,
+            const BlitzVec3&                    xsi,
+            const BlitzVec3&                    upLimit,
+            const BlitzVec3&                    loLimit,
             std::vector<InterfacePoint>& 	interfacePoints,
             const int                      	surfaceId,
-            const int                       lineId,
-            const bool 					    lines
+            const int                           lineId,
+            const bool                          lines,
+            const bool                          doSVD
             ) const;
 
 
@@ -1215,6 +1219,12 @@ class Intersection
        	const BlitzMat&                     cutterXAABB,
        	const BlitzMat&                     xfemXAABB
        	) const;
+       
+       
+       bool decideSVD(
+           const EleGeoType surfaceGeoType,
+           const EleGeoType lineGeoType
+           );
 
 };
 

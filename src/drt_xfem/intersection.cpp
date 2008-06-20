@@ -57,10 +57,8 @@ void XFEM::Intersection::computeIntersection(
 
     static int timestepcounter_ = -1;
     timestepcounter_++;
-
     bool xfemIntersection;
     
-
     countMissedPoints_ = 0;
 
     const double t_start = ds_cputime();
@@ -84,9 +82,7 @@ void XFEM::Intersection::computeIntersection(
 
         // initial positions, since the xfem element does not move
         const BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(xfemElement));
-        
         checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType_);
-
         const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType_);
 
         startPointList();
@@ -112,8 +108,8 @@ void XFEM::Intersection::computeIntersection(
                 
                 // fill current positions into an array
                 const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
-                
-                const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement, HIGHERORDER));
+                checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType_);
+                const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement, cutterGeoType_));
 
                 const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
 
@@ -123,11 +119,11 @@ void XFEM::Intersection::computeIntersection(
                 }
             //}// for-loop over all geometryMap
         }// for-loop over all xfemConditions
-
+        
         const vector<RCP<DRT::Element> > xfemElementSurfaces = xfemElement->Surfaces();
         const vector<RCP<DRT::Element> > xfemElementLines = xfemElement->Lines();
 
-        //debugIntersection(xfemElement, cutterElements);
+        debugIntersection(xfemElement, cutterElements);
         
         for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
         {
@@ -153,11 +149,13 @@ void XFEM::Intersection::computeIntersection(
             // collect intersection points
             for(int m=0; m<xfemElement->NumLine() ; m++)
             {
+                const bool doSVD = decideSVD(cutterGeoType_, xfemGeoType_);
                 const DRT::Element* xfemElementLine = xfemElementLines[m].get();
                 const BlitzMat xyze_xfemElementLine(DRT::UTILS::InitialPositionArrayBlitz(xfemElementLine));
                 if(collectIntersectionPoints(   cutterElement, xyze_cutterElement,
                                                 xfemElementLine, xyze_xfemElementLine,
-                                                interfacePoints, numBoundaryPoints, 0, m, false, xfemIntersection))
+                                                interfacePoints, numBoundaryPoints, 0, m, 
+                                                false, xfemIntersection, doSVD))
                 {
                     storeIntersectedCutterElement(cutterElement);
                 }
@@ -167,6 +165,7 @@ void XFEM::Intersection::computeIntersection(
             {
                 for(int p=0; p<xfemElement->NumSurface() ; p++)
                 {
+                    const bool doSVD = decideSVD(xfemGeoType_, cutterGeoType_);
                     const DRT::Element* xfemElementSurface = xfemElementSurfaces[p].get();
                     const BlitzMat xyze_xfemElementSurface(DRT::UTILS::InitialPositionArrayBlitz(xfemElementSurface));
                     const DRT::Element* cutterElementLine = cutterElementLines[m].get();
@@ -174,7 +173,7 @@ void XFEM::Intersection::computeIntersection(
                     if(collectIntersectionPoints(   xfemElementSurface, xyze_xfemElementSurface,
                                                     cutterElementLine, xyze_cutterElementLine,
                                                     interfacePoints, numBoundaryPoints,
-                                                    p, m, true, xfemIntersection))
+                                                    p, m, true, xfemIntersection, doSVD))
                     {
                         storeIntersectedCutterElement(cutterElement);
                     }
@@ -354,7 +353,8 @@ bool XFEM::Intersection::collectIntersectionPoints(
     const int                       surfaceId,
     const int                       lineId,
     const bool                      lines,
-    bool&                           xfemIntersection
+    bool&                           xfemIntersection,
+    const bool                      doSVD
     ) const
 {
     static BlitzVec3 xsi;
@@ -367,11 +367,11 @@ bool XFEM::Intersection::collectIntersectionPoints(
     upLimit  =  1.0;
     loLimit  = -1.0;
 
-    const bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, upLimit, loLimit, xsi);
+    const bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, upLimit, loLimit, xsi, doSVD);
 
     if(intersected)
         addIntersectionPoint( surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit,
-                              interfacePoints, surfaceId, lineId, lines);
+                              interfacePoints, surfaceId, lineId, lines, doSVD);
 
 
     // in this case a node of this line lies on the facet of the xfem element
@@ -487,7 +487,7 @@ bool computeSingularCSI(
         const BlitzMat&             xyze_lineElement
         )
 {
-    bool singular = false;
+    bool singular = true;
     int iter = 0;
     const int maxiter = 5;
     double residual = 1.0;
@@ -532,12 +532,14 @@ bool computeCurveSurfaceIntersectionT(
     const BlitzMat&                   xyze_lineElement,
     BlitzVec3&                        xsi,
     const BlitzVec3&                  upLimit,
-    const BlitzVec3&                  loLimit
+    const BlitzVec3&                  loLimit,
+    const bool                        doSVD
     )
 {
     if (surfaceElement->Shape() != surftype) dserror("bug in template instantiation");
     if (lineElement->Shape() != linetype) dserror("bug in template instantiation");
   
+    bool singular = false;
     bool intersection = true;
     int iter = 0;
     const int maxiter = 30;
@@ -552,18 +554,24 @@ bool computeCurveSurfaceIntersectionT(
     {
         updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
 
-        if(!XFEM::gaussElimination<true,3,1>(A, b, dx))
+        singular = !XFEM::gaussElimination<true,3,1>(A, b, dx);
+        if(singular && !doSVD)
+        {
+          intersection = false;
+          break;
+        }
+        else if(singular && doSVD)
         {
             if(computeSingularCSI<surftype,linetype>(xsi, xyze_surfaceElement, xyze_lineElement))
             {
-                intersection = false;
-                break;
-            }
+              intersection = false;
+              iter = maxiter + 1;
+            }          
             dx = 0.0;
-            iter++;
-            //cout << "SINGULAR << endl;;
+            //printf("finish implementation\n");
         }
-
+         
+        //cout << "SINGULAR << endl;
         xsi += dx;
         updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
         residual = XFEM::Norm2(b);
@@ -598,7 +606,8 @@ bool XFEM::Intersection::computeCurveSurfaceIntersection(
     const BlitzMat&                   xyze_lineElement,
     const BlitzVec3&                  upLimit,
     const BlitzVec3&                  loLimit,
-    BlitzVec3&                        xsi
+    BlitzVec3&                        xsi,
+    const bool                        doSVD
     ) const
 {
     if (lineElement->Shape() == DRT::Element::line2)
@@ -606,15 +615,15 @@ bool XFEM::Intersection::computeCurveSurfaceIntersection(
         switch (surfaceElement->Shape())
         {
         case DRT::Element::quad4:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
         case DRT::Element::quad8:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
         case DRT::Element::quad9:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
         case DRT::Element::tri3:
-            return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
         case DRT::Element::tri6:
-            return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
         default:
             dserror("template not instatiated yet");
             return false;
@@ -625,15 +634,15 @@ bool XFEM::Intersection::computeCurveSurfaceIntersection(
         switch (surfaceElement->Shape())
         {
         case DRT::Element::quad4:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
         case DRT::Element::quad8:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
         case DRT::Element::quad9:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
         case DRT::Element::tri3:
-            return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
         case DRT::Element::tri6:
-            return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit);
+            return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
         default:
             dserror("template not instatiated yet");
             return false;
@@ -641,16 +650,6 @@ bool XFEM::Intersection::computeCurveSurfaceIntersection(
     }
     return true;
 }
-
-
-
-
-
-
-
-
-
-
 
 /*----------------------------------------------------------------------*
  |  CLI:    computes a new starting point for the            u.may 06/07|
@@ -668,7 +667,8 @@ int XFEM::Intersection::computeNewStartingPoint(
     const BlitzVec3&                   upLimit,
     const BlitzVec3&                   loLimit,
     std::vector<InterfacePoint>&       interfacePoints,
-    const bool                         lines
+    const bool                         lines,
+    const bool                         doSVD
     ) const
 {
     bool interval = true;
@@ -686,14 +686,14 @@ int XFEM::Intersection::computeNewStartingPoint(
     xsi += loLimit;
     xsi *= 0.5;
 
-	bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, upLimit, loLimit, xsi);
+	bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, upLimit, loLimit, xsi, doSVD);
 
     if( comparePoints<3>(xsi, xsiOld))
         intersected = false;
 
 	if(intersected && interval)
-   		numInterfacePoints = addIntersectionPoint(	surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit,
-   													interfacePoints, surfaceId, lineId, lines);
+   		numInterfacePoints = addIntersectionPoint( surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit,
+   													interfacePoints, surfaceId, lineId, lines, doSVD);
 
    	//printf("number of intersection points = %d\n", numInterfacePoints );
    	return numInterfacePoints;
@@ -716,7 +716,8 @@ int XFEM::Intersection::addIntersectionPoint(
     std::vector<InterfacePoint>& 	interfacePoints,
     const int                       surfaceId,
     const int                       lineId,
-    const bool 					    lines
+    const bool                      lines,
+    const bool                      doSVD
     ) const
 {
 
@@ -766,7 +767,7 @@ int XFEM::Intersection::addIntersectionPoint(
         for(int i = 0; i < 8; i++)
             numInterfacePoints += computeNewStartingPoint(
                                         surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, surfaceId, lineId, xsi,
-                                        upperLimits[i], lowerLimits[i], interfacePoints, lines);
+                                        upperLimits[i], lowerLimits[i], interfacePoints, lines, doSVD);
 
     }
 	return numInterfacePoints;
@@ -3887,6 +3888,20 @@ void XFEM::Intersection::debugXAABBs(
   
   f_system << "};" << endl;
   f_system.close();
+}
+
+
+bool XFEM::Intersection::decideSVD(
+    const EleGeoType surfaceGeoType,
+    const EleGeoType lineGeoType
+    )
+{
+  bool doSVD = true;
+  
+  if(surfaceGeoType == CARTESIAN &&  lineGeoType != HIGHERORDER)
+    doSVD = false;
+  
+  return doSVD;
 }
 
 #endif  // #ifdef CCADISCRET

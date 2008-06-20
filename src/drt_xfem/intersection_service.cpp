@@ -784,9 +784,9 @@ void XFEM::checkGeoType(
 {
   bool cartesian = true;
   int CartesianCount = 0;
-  const int dim = 3;
+  const int dimCoord = 3;
   const DRT::Element::DiscretizationType distype = element->Shape();
-  const vector< vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+  const int eleDim = DRT::UTILS::getDimension(distype);
   
   if(DRT::UTILS::getOrder(distype) ==1)
     eleGeoType = LINEAR;
@@ -798,33 +798,56 @@ void XFEM::checkGeoType(
   // check if cartesian
   if(eleGeoType == LINEAR)
   {
-    vector< RCP<DRT::Element> >surfaces = element->Surfaces();
-    for(int i = 0; i < element->NumSurface(); i++)
-    {      
-      CartesianCount = 0;
-      const DRT::Element* surfaceP = surfaces[i].get();
-  
-      for(int k = 0; k < dim; k++)
-      { 
-        int nodeId = eleNodeNumbering[i][0];
-        const double nodalcoord =  xyze_element(k,nodeId);
-        for(int j = 1; j < surfaceP->NumNode(); j++)
+    if(eleDim == 3)
+    {
+      const vector< vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+      vector< RCP<DRT::Element> >surfaces = element->Surfaces();
+      for(int i = 0; i < element->NumSurface(); i++)
+      {      
+        CartesianCount = 0;
+        const DRT::Element* surfaceP = surfaces[i].get();
+    
+        for(int k = 0; k < dimCoord; k++)
+        { 
+          int nodeId = eleNodeNumbering[i][0];
+          const double nodalcoord =  xyze_element(k,nodeId);
+          for(int j = 1; j < surfaceP->NumNode(); j++)
+          {
+            nodeId = eleNodeNumbering[i][j];
+            if(fabs(nodalcoord - xyze_element(k,nodeId)) > TOL7)
+            {
+              CartesianCount++;
+              break;
+            } 
+          }
+        }
+        if(CartesianCount > 2)  
         {
-          nodeId = eleNodeNumbering[i][j];
-          if(fabs(nodalcoord - xyze_element(k,nodeId)) > TOL7)
+          cartesian = false;
+          break;
+        }
+      } // for xfem surfaces
+    } // if eleDim == 3
+    else if(eleDim == 2)
+    {
+      CartesianCount = 0;
+      for(int k = 0; k < dimCoord; k++)
+      { 
+        const double nodalcoord =  xyze_element(k,0);
+        for(int j = 1; j < element->NumNode(); j++)
+        {
+          if(fabs(nodalcoord - xyze_element(k,j)) > TOL7)
           {
             CartesianCount++;
             break;
           } 
         }
       }
-      if(CartesianCount > 2)  
-      {
-        cartesian = false;
-        break;
-      }
-    } // for xfem surfaces
-  } // if
+    }
+    else
+      dserror("dimension of element is not correct");
+  }// if linear
+  
   
   if(cartesian)
     eleGeoType = CARTESIAN;
