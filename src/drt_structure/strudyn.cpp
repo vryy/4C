@@ -1,17 +1,21 @@
-/*!----------------------------------------------------------------------
-\file
-\brief
+/*----------------------------------------------------------------------*/
+/*!
+\file strudyn.cpp
+\brief Structural time integration
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+Maintainer: Burkhard Bornemann
+            bornemann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15237
 </pre>
+*/
 
-*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+/*----------------------------------------------------------------------*/
+/* headers */
 #include <ctime>
 #include <cstdlib>
 #include <iostream>
@@ -31,7 +35,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 #include "stru_resulttest.H"
-
 #include "../drt_inv_analysis/inv_analysis.H"
 
 
@@ -40,7 +43,7 @@ Maintainer: Michael Gee
  | general problem data                                                 |
  | global variable GENPROB genprob is defined in global_control.c       |
  *----------------------------------------------------------------------*/
-extern struct _GENPROB     genprob;
+extern GENPROB genprob;
 
 /*!----------------------------------------------------------------------
 \brief file pointers
@@ -51,7 +54,7 @@ and the type is in standardtypes.h
 It holds all file pointers and some variables needed for the FRSYSTEM
 </pre>
 *----------------------------------------------------------------------*/
-extern struct _FILES  allfiles;
+extern FILES allfiles;
 
 /*----------------------------------------------------------------------*
  | global variable *solv, vector of lenght numfld of structures SOLVAR  |
@@ -59,90 +62,52 @@ extern struct _FILES  allfiles;
  |                                                                      |
  |                                                       m.gee 11/00    |
  *----------------------------------------------------------------------*/
-extern struct _SOLVAR  *solv;
+extern SOLVAR* solv;
 
 
 /*----------------------------------------------------------------------*
+ | structural nonlinear dynamics (gen-alpha)               bborn 06/08  |
  *----------------------------------------------------------------------*/
-extern "C"
-void caldyn_drt()
+void strudyn()
 {
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
-  switch (Teuchos::getIntegralValue<int>(sdyn,"DYNAMICTYP"))
-  {
-  case STRUCT_DYNAMIC::centr_diff:
-    dserror("no central differences in DRT");
-    break;
-  case STRUCT_DYNAMIC::gen_alfa:
-    switch (Teuchos::getIntegralValue<int>(sdyn,"TA_KIND"))
-    {
-    case TIMADA_DYNAMIC::timada_kind_none:
-      dyn_nlnstructural_drt();
-      break;
-    case TIMADA_DYNAMIC::timada_kind_zienxie:
-      stru_genalpha_zienxie_drt();
-      break;
-    default:
-      dserror("unknown time adaption scheme '%s'", sdyn.get<std::string>("TA_KIND").c_str());
-    }
-    break;
-  case STRUCT_DYNAMIC::Gen_EMM:
-    dserror("GEMM not supported");
-    break;
-  case STRUCT_DYNAMIC::genalpha:
-    strudyn();
-    break;
-  default:
-    dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
-  }
-}
-
-
-/*----------------------------------------------------------------------*
-  | structural nonlinear dynamics (gen-alpha)              m.gee 12/06  |
- *----------------------------------------------------------------------*/
-void dyn_nlnstructural_drt()
-{
-  // -------------------------------------------------------------------
   // access the discretization
-  // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numsf,0);
+  actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
 
   // set degrees of freedom in the discretization
-  if (!actdis->Filled()) actdis->FillComplete();
+  if (!actdis->Filled())
+  {
+    actdis->FillComplete();
+  }
 
-  // -------------------------------------------------------------------
   // context for output and restart
-  // -------------------------------------------------------------------
   IO::DiscretizationWriter output(actdis);
 
-  // -------------------------------------------------------------------
   // set some pointers and variables
-  // -------------------------------------------------------------------
-  SOLVAR*         actsolv  = &solv[0];
+  SOLVAR* actsolv  = &solv[0];
 
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
+  const Teuchos::ParameterList& probtype 
+    = DRT::Problem::Instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& ioflags
+    = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& sdyn
+    = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& scontact 
+    = DRT::Problem::Instance()->StructuralContactParams();
 
-  if (actdis->Comm().MyPID()==0)
+  if (actdis->Comm().MyPID() == 0)
+  {
     DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
+  }
 
-  // -------------------------------------------------------------------
   // create a solver
-  // -------------------------------------------------------------------
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  LINALG::Solver solver(solveparams,actdis->Comm(),allfiles.out_err);
-  solver.TranslateSolverParameters(*solveparams,actsolv);
+  LINALG::Solver solver(solveparams, actdis->Comm(), allfiles.out_err);
+  solver.TranslateSolverParameters(*solveparams, actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
-  // -------------------------------------------------------------------
   // create a generalized alpha time integrator
-  // -------------------------------------------------------------------
-  switch (Teuchos::getIntegralValue<int>(sdyn,"DYNAMICTYP"))
+  switch (Teuchos::getIntegralValue<int>(sdyn, "DYNAMICTYP"))
   {
     //==================================================================
     // Generalized alpha time integration
@@ -292,8 +257,10 @@ void dyn_nlnstructural_drt()
       // create the time integrator
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator;
-      if (!contact && !inv_analysis)
+      if ((not contact) and (not inv_analysis))
+      {
         tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
+      }
       else
       {
         if (!inv_analysis)
@@ -332,6 +299,15 @@ void dyn_nlnstructural_drt()
     case STRUCT_DYNAMIC::Gen_EMM :
     {
       dserror("Not yet impl.");
+    }
+    break;
+    //==================================================================
+    // Generalised-alpha time integration
+    //==================================================================
+    case STRUCT_DYNAMIC::genalpha :
+    {
+      cout << "Welcome to the show." << endl;
+      exit(0);
     }
     break;
     //==================================================================
