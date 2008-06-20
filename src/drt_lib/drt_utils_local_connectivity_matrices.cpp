@@ -911,4 +911,36 @@ int DRT::UTILS::getDimension(const DRT::Element::DiscretizationType distype)
 }
 
 
+/*----------------------------------------------------------------------*
+ |  returns the order of the element-shape                   u.may 06/08|
+ *----------------------------------------------------------------------*/
+int DRT::UTILS::getOrder(const DRT::Element::DiscretizationType distype)
+{
+    int order = 0;
+
+    switch(distype)
+    {
+        case DRT::Element::line2  : order = getOrder<DRT::Element::line2>(); break;
+        case DRT::Element::line3  : order = getOrder<DRT::Element::line3>(); break;
+        case DRT::Element::nurbs2 : order = getOrder<DRT::Element::nurbs2>(); break;
+        case DRT::Element::nurbs3 : order = getOrder<DRT::Element::nurbs3>(); break;
+        case DRT::Element::quad4  : order = getOrder<DRT::Element::quad4>(); break;
+        case DRT::Element::quad8  : order = getOrder<DRT::Element::quad8>(); break;
+        case DRT::Element::quad9  : order = getOrder<DRT::Element::quad9>(); break;
+        case DRT::Element::tri3   : order = getOrder<DRT::Element::tri3>(); break;
+        case DRT::Element::tri6   : order = getOrder<DRT::Element::tri6>(); break;
+        case DRT::Element::nurbs4 : order = getOrder<DRT::Element::nurbs4>(); break;
+        case DRT::Element::nurbs9 : order = getOrder<DRT::Element::nurbs9>(); break;
+        case DRT::Element::hex8 :   order = getOrder<DRT::Element::hex8>(); break;
+        case DRT::Element::hex20 :  order = getOrder<DRT::Element::hex20>(); break;
+        case DRT::Element::hex27 :  order = getOrder<DRT::Element::hex27>(); break;
+        case DRT::Element::tet4 :   order = getOrder<DRT::Element::tet4>(); break;
+        case DRT::Element::tet10 :  order = getOrder<DRT::Element::tet10>(); break;
+        default:
+            dserror("discretization type is not yet implemented");
+    }
+    return order;
+}
+
+
 #endif  // #ifdef CCADISCRET

@@ -323,7 +323,7 @@ list<int> XFEM::XSearchTree::TreeNode::classifyElement(
 //  bool isAABBbiggerThanElemXAABB;
   list<int> octants;
   const BlitzMat xyze(XFEM::getCurrentNodalPositions(elem,currentpositions));
-  const BlitzMat3x2 elemXAABB(XFEM::computeFastXAABB(elem, xyze));
+  const BlitzMat3x2 elemXAABB(XFEM::computeFastXAABB(elem, xyze, HIGHERORDER));
   if (XFEM::maxOrthogonalExpansion(AABB_)/2 > XFEM::maxOrthogonalExpansion(elemXAABB)){
     do_refine =true;            
   }

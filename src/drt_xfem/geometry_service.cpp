@@ -58,7 +58,7 @@ BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis,const std::map<in
       }
     }
 
-    BlitzMat3x2 xaabbEle = XFEM::computeFastXAABB(ele, curr);
+    BlitzMat3x2 xaabbEle = XFEM::computeFastXAABB(ele, curr, HIGHERORDER);
     XAABB = mergeAABB(XAABB, xaabbEle);
   }
   

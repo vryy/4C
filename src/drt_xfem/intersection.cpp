@@ -85,7 +85,9 @@ void XFEM::Intersection::computeIntersection(
         // initial positions, since the xfem element does not move
         const BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(xfemElement));
         
-        const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement);
+        checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType_);
+
+        const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType_);
 
         startPointList();
 
@@ -111,7 +113,7 @@ void XFEM::Intersection::computeIntersection(
                 // fill current positions into an array
                 const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
                 
-                const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement));
+                const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement, HIGHERORDER));
 
                 const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
 
@@ -3886,6 +3888,5 @@ void XFEM::Intersection::debugXAABBs(
   f_system << "};" << endl;
   f_system.close();
 }
-
 
 #endif  // #ifdef CCADISCRET

@@ -611,7 +611,8 @@ void XFEM::CurrentToSurfaceElementCoordinates(
  *----------------------------------------------------------------------*/
 BlitzMat3x2 XFEM::computeFastXAABB( 
     const DRT::Element* element,
-    const BlitzMat&     xyze)
+    const BlitzMat&     xyze,
+    const EleGeoType    eleGeoType)
 {
     const int nsd = 3;
     BlitzMat3x2 XAABB;
@@ -622,7 +623,7 @@ BlitzMat3x2 XFEM::computeFastXAABB(
         XAABB(dim, 0) = xyze(dim, 0) - TOL7;
         XAABB(dim, 1) = xyze(dim, 0) + TOL7;
     }
-    // remaining node
+    // remaining nodes
     for(int i=1; i<element->NumNode(); ++i)
     {
         for(int dim=0; dim<nsd; dim++)
@@ -632,19 +633,21 @@ BlitzMat3x2 XFEM::computeFastXAABB(
         }
     }
     
-    double maxDistance = fabs(XAABB(0,1) - XAABB(0,0));
-    for(int dim=1; dim<nsd; ++dim)
-       maxDistance = std::max(maxDistance, fabs(XAABB(dim,1)-XAABB(dim,0)) );
-    
-    // subtracts half of the maximal distance to minX, minY, minZ
-    // adds half of the maximal distance to maxX, maxY, maxZ 
-    const double halfMaxDistance = 0.5*maxDistance;
-    for(int dim=0; dim<nsd; ++dim)
+    if(eleGeoType == HIGHERORDER)
     {
-        XAABB(dim, 0) -= halfMaxDistance;
-        XAABB(dim, 1) += halfMaxDistance;
-    }   
+      double maxDistance = fabs(XAABB(0,1) - XAABB(0,0));
+      for(int dim=1; dim<nsd; ++dim)
+        maxDistance = std::max(maxDistance, fabs(XAABB(dim,1)-XAABB(dim,0)) );
     
+      // subtracts half of the maximal distance to minX, minY, minZ
+      // adds half of the maximal distance to maxX, maxY, maxZ 
+      const double halfMaxDistance = 0.5*maxDistance;
+      for(int dim=0; dim<nsd; ++dim)
+      {
+          XAABB(dim, 0) -= halfMaxDistance;
+          XAABB(dim, 1) += halfMaxDistance;
+      }   
+    }
     /*
     printf("\n");
     printf("axis-aligned bounding box:\n minX = %f\n minY = %f\n minZ = %f\n maxX = %f\n maxY = %f\n maxZ = %f\n", 
@@ -770,6 +773,61 @@ bool XFEM::intersectionOfXAABB(
         }
     }
     return intersection;
+}
+
+
+
+void XFEM::checkGeoType(
+           DRT::Element*                element,
+           const BlitzMat               xyze_element,
+           EleGeoType&                  eleGeoType)
+{
+  bool cartesian = true;
+  int CartesianCount = 0;
+  const int dim = 3;
+  const DRT::Element::DiscretizationType distype = element->Shape();
+  const vector< vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+  
+  if(DRT::UTILS::getOrder(distype) ==1)
+    eleGeoType = LINEAR;
+  else if(DRT::UTILS::getOrder(distype)==2)
+    eleGeoType = HIGHERORDER;
+  else
+    dserror("order of element shapefuntion is not correct");
+  
+  // check if cartesian
+  if(eleGeoType == LINEAR)
+  {
+    vector< RCP<DRT::Element> >surfaces = element->Surfaces();
+    for(int i = 0; i < element->NumSurface(); i++)
+    {      
+      CartesianCount = 0;
+      const DRT::Element* surfaceP = surfaces[i].get();
+  
+      for(int k = 0; k < dim; k++)
+      { 
+        int nodeId = eleNodeNumbering[i][0];
+        const double nodalcoord =  xyze_element(k,nodeId);
+        for(int j = 1; j < surfaceP->NumNode(); j++)
+        {
+          nodeId = eleNodeNumbering[i][j];
+          if(fabs(nodalcoord - xyze_element(k,nodeId)) > TOL7)
+          {
+            CartesianCount++;
+            break;
+          } 
+        }
+      }
+      if(CartesianCount > 2)  
+      {
+        cartesian = false;
+        break;
+      }
+    } // for xfem surfaces
+  } // if
+  
+  if(cartesian)
+    eleGeoType = CARTESIAN;
 }
 
 

@@ -27,6 +27,8 @@ Maintainer: Ursula Mayer
 namespace XFEM
 {
 
+enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER };
+
     //! tolerance 1e-14 used for residuals in all Newton-methods
     const double                 TOL14 = 1e-14;
 
@@ -583,7 +585,8 @@ namespace XFEM
     */
     BlitzMat3x2 computeFastXAABB( 
             const DRT::Element*   element,
-            const BlitzMat&       xyze
+            const BlitzMat&       xyze,
+            const EleGeoType      eleGeoType      
             );
     
     
@@ -599,6 +602,15 @@ namespace XFEM
             const BlitzMat3x2&    xfemXAABB
             );
     
+   
+    
+    void checkGeoType(
+             DRT::Element*                element,
+             const BlitzMat               xyze_element,
+             EleGeoType&                  eleGeoType
+             );
+        
+        
 }
 
 

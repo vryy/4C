@@ -143,8 +143,12 @@ class Intersection
         vector<DRT::Element* >             intersectingCutterElements_;
 
         //! list of face markers numbered in the order of the intersected surface elments
-        vector<int>                         faceMarker_;
+        vector<int>                        faceMarker_;
 
+        EleGeoType                         xfemGeoType_;
+        
+        EleGeoType                         cutterGeoType_;
+        
         /*!
         \brief initializes the private members of the xfem element
 
