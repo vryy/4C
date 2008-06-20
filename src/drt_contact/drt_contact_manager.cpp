@@ -464,32 +464,6 @@ void CONTACT::Manager::Initialize(int numiter)
   {
 #endif // #ifdef CONTACTCHECKHUEEBER
     
-  // initialize / reset interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    interface_[i]->Initialize();
-  }
-
-  // intitialize Dold and Mold if not done already
-   if (dold_==null)
-   {
-     dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-     dold_->Zero();
-     dold_->Complete();
-   }
-   if (mold_==null)
-   {
-     mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-     mold_->Zero();
-     mold_->Complete(*gmdofrowmap_,*gsdofrowmap_);
-   }
-   
-  // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
-  dmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-  mmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-  mhatmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-  g_          = LINALG::CreateVector(*gsnoderowmap_,true);
-    
   // (re)setup global normal and tangent matrices
   nmatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
   tmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
@@ -535,20 +509,75 @@ void CONTACT::Manager::SetState(const string& statename,
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate contact Mortar matrices D,M only (public)        popp 03/08|
+ |  initialize Mortar for next Newton step (public)          popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Manager::EvaluateMortar()
-{ 
-  // call interfaces to evaluate Mortar coupling
+void CONTACT::Manager::InitializeMortar(int numiter)
+{
+#ifdef CONTACTCHECKHUEEBER
+  if (numiter==0)
+  {
+#endif // #ifdef CONTACTCHECKHUEEBER
+    
+  // initialize / reset interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->Initialize();
+  }
+
+  // intitialize Dold and Mold if not done already
+   if (dold_==null)
+   {
+     dold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+     dold_->Zero();
+     dold_->Complete();
+   }
+   if (mold_==null)
+   {
+     mold_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+     mold_->Zero();
+     mold_->Complete(*gmdofrowmap_,*gsdofrowmap_);
+   }
+   
+   // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
+   dmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+   mmatrix_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+   mhatmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+   g_          = LINALG::CreateVector(*gsnoderowmap_,true);
+   
+#ifdef CONTACTCHECKHUEEBER
+  }
+#endif // #ifdef CONTACTCHECKHUEEBER
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate Mortar matrices D,M + gap g~ only (public)       popp 06/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::EvaluateMortar(int numiter)
+{
+  /**********************************************************************/
+  /* evaluate interfaces                                                */
+  /* (nodal normals, projections, Mortar integration, Mortar assembly)  */
+  /**********************************************************************/
+  #ifdef CONTACTCHECKHUEEBER
+  if (numiter==0)
+  {
+#endif // #ifdef CONTACTCHECKHUEEBER
+
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->Evaluate();
     interface_[i]->AssembleDMG(*dmatrix_,*mmatrix_,*g_);
   }
-    
+  
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
+  
+#ifdef CONTACTCHECKHUEEBER
+  }
+#endif // #ifdef CONTACTCHECKHUEEBER
     
   return;
 }
@@ -598,26 +627,6 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   string ctype   = scontact_.get<string>("contact type","none");
   string ftype   = scontact_.get<string>("friction type","none");
   
-  /**********************************************************************/
-  /* evaluate interfaces                                                */
-  /* (nodal normals, projections, Mortar integration, Mortar assembly)  */
-  /**********************************************************************/
-#ifdef CONTACTCHECKHUEEBER
-  if (numiter==0)
-  {
-#endif // #ifdef CONTACTCHECKHUEEBER
-  for (int i=0; i<(int)interface_.size(); ++i)
-  { 
-	  interface_[i]->Evaluate();
-    interface_[i]->AssembleDMG(*dmatrix_,*mmatrix_,*g_);
-  }
-
-  // FillComplete() global Mortar matrices
-  dmatrix_->Complete();
-  mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
-#ifdef CONTACTCHECKHUEEBER
-  }
-#endif // #ifdef CONTACTCHECKHUEEBER
   // export weighted gap vector to gactiveN-map
   RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
   if (gact->GlobalLength())
@@ -1131,26 +1140,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   string ctype   = scontact_.get<string>("contact type","none");
   string ftype   = scontact_.get<string>("friction type","none");
   
-  /**********************************************************************/
-  /* evaluate interfaces                                                */
-  /* (nodal normals, projections, Mortar integration, Mortar assembly)  */
-  /**********************************************************************/
-#ifdef CONTACTCHECKHUEEBER
-  if (numiter==0)
-  {
-#endif // #ifdef CONTACTCHECKHUEEBER
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    interface_[i]->Evaluate();
-    interface_[i]->AssembleDMG(*dmatrix_,*mmatrix_,*g_);
-  }
-  
-  // FillComplete() global Mortar matrices
-  dmatrix_->Complete();
-  mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
-#ifdef CONTACTCHECKHUEEBER
-  }
-#endif // #ifdef CONTACTCHECKHUEEBER
   // export weighted gap vector to gactiveN-map
   RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
   if (gact->GlobalLength())
@@ -1635,28 +1624,6 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   string ftype   = scontact_.get<string>("friction type","none");
   bool fulllin   = scontact_.get<bool>("full linearization",false);
   
-  /**********************************************************************/
-  /* evaluate interfaces                                                */
-  /* (nodal normals, projections, Mortar integration, Mortar assembly)  */
-  /**********************************************************************/
-#ifdef CONTACTCHECKHUEEBER
-  if (numiter==0)
-  {
-#endif // #ifdef CONTACTCHECKHUEEBER
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    interface_[i]->Evaluate();
-    interface_[i]->AssembleDMG(*dmatrix_,*mmatrix_,*g_);
-  }
-  
-  // FillComplete() global Mortar matrices
-  dmatrix_->Complete();
-  mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
-  
-  
-#ifdef CONTACTCHECKHUEEBER
-  }
-#endif // #ifdef CONTACTCHECKHUEEBER
   // export weighted gap vector to gactiveN-map
   RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
   if (gact->GlobalLength())
@@ -2430,10 +2397,11 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
   activesetconv_=true;
   
 #ifdef CONTACTCHECKHUEEBER
+  Initialize(0);
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    RCP<LINALG::SparseMatrix> temp1 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));;
-    RCP<LINALG::SparseMatrix> temp2 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));;
+    RCP<LINALG::SparseMatrix> temp1 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+    RCP<LINALG::SparseMatrix> temp2 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
     interface_[i]->SetState("displacement",disn);
     interface_[i]->Evaluate();
     interface_[i]->AssembleDMG(*temp1,*temp2,*g_);
@@ -2458,10 +2426,7 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
       if ((int)((cnode->GetD()).size())==0) wii = 0.0;
       else wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
       
-      // compute incr. normal displacement and weighted gap
-      double nincr = 0.0;
-      for (int k=0;k<3;++k)
-        nincr += wii * cnode->n()[k] * (*incrjump_)[incrjump_->Map().LID(2*gid)+k];
+      // compute weighted gap
       double wgap = (*g_)[g_->Map().LID(gid)];
       
       if (cnode->n()[2] != 0.0) dserror("ERROR: UpdateActiveSet: Not yet implemented for 3D!");
@@ -2486,7 +2451,7 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
         //       <<  "for node ID: " << cnode->Id() << endl;
         
         // check for penetration
-        if (nincr-wgap > 0)
+        if (wgap < 0)
         {
           cnode->Active() = true;
           activesetconv_ = false;
@@ -2499,7 +2464,7 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
       else
       {
         // check for fulfilment of contact condition
-        //if (abs(nincr-wgap) > 1e-8)
+        //if (abs(wgap) > 1e-8)
         //  cout << "ERROR: UpdateActiveSet: Exact active node condition violated "
         //       << "for node ID: " << cnode->Id() << endl;
         
@@ -2694,10 +2659,7 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
       if ((int)((cnode->GetD()).size())==0) wii = 0.0;
       else wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
       
-      // compute incr. normal displacement and weighted gap
-      double nincr = 0.0;
-      for (int k=0;k<3;++k)
-        nincr += wii * cnode->n()[k] * (*incrjump_)[incrjump_->Map().LID(2*gid)+k];
+      // compute weighted gap
       double wgap = (*g_)[g_->Map().LID(gid)];
       
       if (cnode->n()[2] != 0.0) dserror("ERROR: UpdateActiveSet: Not yet implemented for 3D!");
@@ -2720,7 +2682,7 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
         //       <<  "for node ID: " << cnode->Id() << endl;
                 
         // check for penetration and/or tensile contact forces
-        if (nz + cn*(nincr-wgap) > 0)
+        if (nz - cn*wgap > 0)
         {
           cnode->Active() = true;
           activesetconv_ = false;
@@ -2731,13 +2693,13 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
       else
       {
         // check for fulfilment of contact condition
-        //if (abs(nincr-wgap) > 1e-8)
+        //if (abs(wgap) > 1e-8)
         //  cout << "ERROR: UpdateActiveSet: Exact active node condition violated "
         //       << "for node ID: " << cnode->Id() << endl;
                   
         // check for tensile contact forces and/or penetration
-        if (nz + cn*(nincr-wgap) <= 0) // no averaging of Lagrange multipliers
-        //if ((0.5*nz+0.5*nzold) + cn*(nincr-wgap) <= 0) // averaging of Lagrange multipliers
+        if (nz - cn*wgap <= 0) // no averaging of Lagrange multipliers
+        //if ((0.5*nz+0.5*nzold) - cn*wgap <= 0) // averaging of Lagrange multipliers
         {
           if (ctype!="meshtying")
           {
@@ -2804,6 +2766,7 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
       interface_[i]->VisualizeGmsh(interface_[i]->CSegs());
 #endif // #ifdef DEBUG
   */
+
   return;
 }
 /*----------------------------------------------------------------------*
@@ -3012,10 +2975,7 @@ void CONTACT::Manager::PrintActiveSet()
       if ((int)((cnode->GetD()).size())==0) wii = 0.0;
       else wii = (cnode->GetD()[0])[cnode->Dofs()[0]];
       
-      // compute incr. normal displacement and weighted gap
-      double nincr = 0.0;
-      for (int k=0;k<3;++k)
-        nincr += wii * cnode->n()[k] * (*incrjump_)[incrjump_->Map().LID(2*gid)+k];
+      // compute weighted gap
       double wgap = (*g_)[g_->Map().LID(gid)];
       
       if (cnode->n()[2] != 0.0) dserror("ERROR: UpdateActiveSet: Not yet implemented for 3D!");

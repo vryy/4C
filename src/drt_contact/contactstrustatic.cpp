@@ -407,26 +407,23 @@ void contact_stru_static_drt()
       fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
     }
     
-    //---------------------------------------------------- contact forces
-    // reset Lagrange multipliers to last converged state
-    // this resetting is necessary due to multiple active set steps
-    RCP<Epetra_Vector> z = contactmanager->LagrMult();
-    RCP<Epetra_Vector> zold = contactmanager->LagrMultOld();
-    z->Update(1.0,*zold,0.0);
-    contactmanager->StoreNodalQuantities("lmcurrent");
+    // keep a copy of fresm for contact forces / equilibrium check
+    RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
     
-    // evaluate Mortar coupling matrices for contact forces
-    contactmanager->Initialize(0);
+    //-------------------------- make contact modifications to lhs and rhs
+    fresm->Scale(-1.0);     // rhs = -R = -fresm
     contactmanager->SetState("displacement",disn);
-    contactmanager->EvaluateMortar();
     
-    // add contact forces
-    contactmanager->ContactForces(fresm);
-    RCP<Epetra_Vector> fc = contactmanager->GetContactForces();
-    Epetra_Vector fccopy(*fc);
-    fc->Multiply(1.0,*invtoggle,fccopy,0.0);
-    if (fc!=null) fresm->Update(1.0,*fc,1.0);
+    contactmanager->InitializeMortar(0);
+    contactmanager->EvaluateMortar(0);
     
+    contactmanager->Initialize(0);
+    contactmanager->Evaluate(stiff_mat,fresm,0);
+    
+    //---------------------------------------------------- contact forces
+    // (no resetting of LM necessary for semi-smooth Newton!)
+    contactmanager->ContactForces(fresmcopy);
+        
     //----------------------------------------------- build res/disi norm
     double norm;
     fresm->Norm2(&norm);
@@ -434,9 +431,6 @@ void contact_stru_static_drt()
 
     if (!myrank) cout << " Predictor residual forces " << norm << endl; fflush(stdout);
 
-    //remove contact forces from equilibrium again
-    if (fc!=null) fresm->Update(-1.0,*fc,1.0);
-            
     // reset Newton iteration counter
     numiter=0;
     
@@ -446,18 +440,6 @@ void contact_stru_static_drt()
     //=====================================================================
     while (((norm > statvar->tolresid) || (disinorm > statvar->toldisp) || contactmanager->ActiveSetConverged()==false) && numiter < statvar->maxiter)
     {
-      //----------------------- apply dirichlet BCs to system of equations
-      fresm->Scale(-1.0);     // rhs = -R = -fresm
-
-      //-------------------------make contact modifications to lhs and rhs
-      {
-        contactmanager->Initialize(numiter);
-        contactmanager->SetState("displacement",disn);
-
-        // (almost) all contact stuff is done here!
-        contactmanager->Evaluate(stiff_mat,fresm,numiter);
-      }
-
       //----------------------- apply dirichlet BCs to system of equations
       disi->PutScalar(0.0);   // Useful? depends on solver and more
       LINALG::ApplyDirichlettoSystem(stiff_mat,disi,fresm,zeros,dirichtoggle);
@@ -510,28 +492,37 @@ void contact_stru_static_drt()
       // R{istep,numiter} = F_int{istep,numiter} - F_ext{istep}
       fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
 
-      // blank residual DOFs which are on Dirichlet BC
+      // blank residual at DOFs on Dirichlet BC
       {
         Epetra_Vector fresmcopy(*fresm);
         fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
       }
   
-      // add contact forces
-      contactmanager->ContactForces(fresm);
-      RCP<Epetra_Vector> fc = contactmanager->GetContactForces();
-      Epetra_Vector fccopy(*fc);
-      fc->Multiply(1.0,*invtoggle,fccopy,0.0);
-      if (fc!=null) fresm->Update(1.0,*fc,1.0);
-
+      // keep a copy of fresm for contact forces / equilibrium check
+      RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
+      
+      //-------------------------make contact modifications to lhs and rhs
+      //-------------------------------------------------update active set
+      fresm->Scale(-1.0);     // rhs = -R = -fresm
+      contactmanager->SetState("displacement",disn);
+      
+      contactmanager->InitializeMortar(numiter+1);
+      contactmanager->EvaluateMortar(numiter+1);
+      
+      contactmanager->UpdateActiveSetSemiSmooth(disn);
+      
+      contactmanager->Initialize(numiter+1);
+      contactmanager->Evaluate(stiff_mat,fresm,numiter+1);
+      
+      //--------------------------------------------------- contact forces
+      contactmanager->ContactForces(fresmcopy);
+            
       //for (int k=0;k<fint->MyLength();++k)
       //  cout << (*fint)[k] << " " << -(*fextn)[k] << " " << (*fc)[k] << endl;
 
       //---------------------------------------------- build res/disi norm
       fresm->Norm2(&norm);
       disi->Norm2(&disinorm);
-
-      //remove contact forces from equilibrium again
-      if (fc!=null) fresm->Update(-1.0,*fc,1.0);
 
       // a short message
       if (!myrank)
@@ -544,7 +535,7 @@ void contact_stru_static_drt()
 
       //--------------------------------- increment equilibrium loop index
       ++numiter;
-      contactmanager->UpdateActiveSetSemiSmooth(disn);
+      
     } //
     //============================================= end equilibrium loop
 
@@ -615,6 +606,19 @@ void contact_stru_static_drt()
         fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
       }
       
+      // keep a copy of fresm for contact forces / equilibrium check
+      RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
+      
+      //-------------------------- make contact modifications to lhs and rhs
+      fresm->Scale(-1.0);     // rhs = -R = -fresm
+      contactmanager->SetState("displacement",disn);
+      
+      contactmanager->InitializeMortar(0);
+      contactmanager->EvaluateMortar(0);
+      
+      contactmanager->Initialize(0);
+      contactmanager->Evaluate(stiff_mat,fresm,0);
+      
       //---------------------------------------------------- contact forces
       // reset Lagrange multipliers to last converged state
       // this resetting is necessary due to multiple active set steps
@@ -622,19 +626,8 @@ void contact_stru_static_drt()
       RCP<Epetra_Vector> zold = contactmanager->LagrMultOld();
       z->Update(1.0,*zold,0.0);
       contactmanager->StoreNodalQuantities("lmcurrent");
-      
-      // evaluate Mortar coupling matrices for contact forces
-      contactmanager->Initialize(0);
-      contactmanager->SetState("displacement",disn);
-      contactmanager->EvaluateMortar();
-      
-      // add contact forces
-      contactmanager->ContactForces(fresm);
-      RCP<Epetra_Vector> fc = contactmanager->GetContactForces();
-      Epetra_Vector fccopy(*fc);
-      fc->Multiply(1.0,*invtoggle,fccopy,0.0);
-      if (fc!=null) fresm->Update(1.0,*fc,1.0);
-      
+      contactmanager->ContactForces(fresmcopy);
+          
       //----------------------------------------------- build res/disi norm
       double norm;
       fresm->Norm2(&norm);
@@ -642,27 +635,12 @@ void contact_stru_static_drt()
 
       if (!myrank) cout << " Predictor residual forces " << norm << endl; fflush(stdout);
 
-      //remove contact forces from equilibrium again
-      if (fc!=null) fresm->Update(-1.0,*fc,1.0);
-              
       // reset Newton iteration counter
       numiter=0;
 
       //===========================================start of equilibrium loop
       while (((norm > statvar->tolresid) || (disinorm > statvar->toldisp)) && numiter < statvar->maxiter)
       {
-        //----------------------- apply dirichlet BCs to system of equations
-        fresm->Scale(-1.0);     // rhs = -R = -fresm
-
-        //-------------------------make contact modifications to lhs and rhs
-        {
-          contactmanager->Initialize(numiter);
-          contactmanager->SetState("displacement",disn);
-
-          // (almost) all contact stuff is done here!
-          contactmanager->Evaluate(stiff_mat,fresm,numiter);
-        }
-
         //----------------------- apply dirichlet BCs to system of equations
         disi->PutScalar(0.0);   // Useful? depends on solver and more
         LINALG::ApplyDirichlettoSystem(stiff_mat,disi,fresm,zeros,dirichtoggle);
@@ -715,28 +693,34 @@ void contact_stru_static_drt()
         // R{istep,numiter} = F_int{istep,numiter} - F_ext{istep}
         fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
 
-        // blank residual DOFs which are on Dirichlet BC
+        // blank residual at DOFs on Dirichlet BC
         {
           Epetra_Vector fresmcopy(*fresm);
           fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
         }
     
-        // add contact forces
-        contactmanager->ContactForces(fresm);
-        RCP<Epetra_Vector> fc = contactmanager->GetContactForces();
-        Epetra_Vector fccopy(*fc);
-        fc->Multiply(1.0,*invtoggle,fccopy,0.0);
-        if (fc!=null) fresm->Update(1.0,*fc,1.0);
-
+        // keep a copy of fresm for contact forces / equilibrium check
+        RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
+           
+        //-------------------------make contact modifications to lhs and rhs
+        fresm->Scale(-1.0);     // rhs = -R = -fresm
+        contactmanager->SetState("displacement",disn);
+        
+        contactmanager->InitializeMortar(numiter+1);
+        contactmanager->EvaluateMortar(numiter+1);
+        
+        contactmanager->Initialize(numiter+1);
+        contactmanager->Evaluate(stiff_mat,fresm,numiter+1);
+        
+        //--------------------------------------------------- contact forces
+        contactmanager->ContactForces(fresmcopy);
+              
         //for (int k=0;k<fint->MyLength();++k)
         //  cout << (*fint)[k] << " " << -(*fextn)[k] << " " << (*fc)[k] << endl;
-
+              
         //---------------------------------------------- build res/disi norm
         fresm->Norm2(&norm);
         disi->Norm2(&disinorm);
-
-        //remove contact forces from equilibrium again
-        if (fc!=null) fresm->Update(-1.0,*fc,1.0);
 
         // a short message
         if (!myrank)

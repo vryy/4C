@@ -19,7 +19,7 @@ Maintainer: Alexander Popp
 /* Contact algorithm options                                            */
 /************************************************************************/
 
-#define CONTACTWNORMAL           /* flag for weighted nodal normal calc. */
+//#define CONTACTWNORMAL           /* flag for weighted nodal normal calc. */
 //#define CONTACTBOUNDMOD        /* flag for modification of boundary nodes */
 //#define CONTACTONEMORTARLOOP   /* flag for computation of D,M matrices */
 

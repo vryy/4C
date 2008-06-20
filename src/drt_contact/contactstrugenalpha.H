@@ -68,6 +68,11 @@ public:
   */
   void FullNewton();
 
+  /*!
+  \brief do semi-smooth full Newton iteration
+
+  */
+  void SemiSmoothNewton();
     
   /*!
     \brief update configuration and output to file/screen

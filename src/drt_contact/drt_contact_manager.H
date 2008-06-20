@@ -169,28 +169,34 @@ public:
   void ReadRestart(const RCP<Epetra_Vector> activetoggle);
   
   /*!
-  \brief Initialize contact for next Newton step
-  
-  */
-  void Initialize(int numiter);
-  
-  /*!
   \brief Set current deformation state
   
   */
   void SetState(const string& statename, const RCP<Epetra_Vector> vec);
   
   /*!
-  \brief Evaluate contact Mortar matrices D,M only
+  \brief Initialize Mortar stuff for next Newton step
+    
+  */
+  void InitializeMortar(int numiter);
+    
+  /*!
+  \brief Initialize contact for next Newton step
+  
+  */
+  void Initialize(int numiter);
+  
+  /*!
+  \brief Evaluate Mortar matrices D,M and weighted gap
     
   This is a light version of the Evaluate() method, which includes the
-  evluation of the current Mortar operators D and M only. No setup of
-  the global system is to be done here, so there is no need to pass
-  in the effective stiffness K or the effective load vector f. We need
-  this method after having restarted a simulation.
+  evluation of the current Mortar operators D and M and the weighted gap
+  vector g~ only. No setup of the global system is to be done here,
+  so there is no need to pass in the effective stiffness K or the
+  effective load vector f.
       
   */
-  void EvaluateMortar();
+  void EvaluateMortar(int numiter);
     
   /*!
   \brief Evaluate contact
