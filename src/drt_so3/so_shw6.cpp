@@ -68,6 +68,8 @@ void DRT::ELEMENTS::So_shw6::Pack(vector<char>& data) const
   AddtoPack(data,basedata);
   // eastype_
   AddtoPack(data,eastype_);
+  // neas_
+  AddtoPack(data,neas_);
 
   return;
 }
@@ -90,6 +92,8 @@ void DRT::ELEMENTS::So_shw6::Unpack(const vector<char>& data)
   DRT::ELEMENTS::So_weg6::Unpack(basedata);
   // eastype_
   ExtractfromPack(position,data,eastype_);
+  // neas_
+  ExtractfromPack(position,data,neas_);
 
   if (position != (int)data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
