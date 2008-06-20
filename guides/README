@@ -21,18 +21,19 @@
 
                titleofreport.tex
 
--> add report to appropriate part Baci guide in  Makefile.in
+-> in Makefile.in add report to appropriate part of Baci guide 
 
                src/titleofreport/titleofreport.tex
 
 
    The LaTex file "titleofreport.tex" is your main document.
    You are allowed to include files and pictures ---
-   use unique names for labels (like fsi:couple, fsi:basic_equation, ...)
-   to avoid name clashes in master document!
+   use unique names for labels (like titleofreport:couple, 
+   titleofreport:basic_equation, ...) to avoid name clashes 
+   in master document!
 
    If you are using subdirectories, the path should be 
-   specified relative to the src_doohickey directory
+   specified relative to the "titleofreport" directory
    e.g. \includegraphics{figures/convergence_diagram} to include baum.eps
    Do NOT use the \graphicspath command!
    It is already used by the configure script.
