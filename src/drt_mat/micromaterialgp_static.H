@@ -105,6 +105,12 @@ private:
   /// restart name
   string restartname_;
 
+  /// flag for modified Newton on macroscale
+  bool mod_newton_;
+
+  /// flag for build of stiffness matrix
+  bool build_stiff_;
+
 };
 }
 

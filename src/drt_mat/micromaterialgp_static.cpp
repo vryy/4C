@@ -30,6 +30,8 @@ using namespace Teuchos;
 using namespace IO;
 
 
+extern struct _SOLVAR  *solv;
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -85,7 +87,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   // if class handling microscale simulations is not yet initialized
   // -> set up
 
-  if (microstaticmap_.find(microdisnum_) == microstaticmap_.end())
+  if (microstaticmap_.find(microdisnum_) == microstaticmap_.end() or microstaticmap_[microdisnum_] == Teuchos::null)
   {
     // create "time integration" class for this microstructure
     MAT::MicroMaterialGP::SetUpMicroStatic();
@@ -189,6 +191,15 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   timen_ = 0.;
 
   dt_    = sdyn.get<double>("TIMESTEP");
+
+  // check whether we are using modified Newton as a nonlinear solver
+  // on the macroscale or not
+  if (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL")==STRUCT_DYNAMIC::modnewton)
+    mod_newton_ = true;
+  else
+    mod_newton_ = false;
+
+  build_stiff_ = true;
 }
 
 /// destructor
@@ -244,12 +255,20 @@ void MAT::MicroMaterialGP::SetUpMicroStatic()
   // create a solver
   // -------------------------------------------------------------------
   // always choose UMFPACK as microstructural solver
+//   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
+//   solveparams->set("solver","umfpack");
+//   solveparams->set("symmetric",false);
+//   RefCountPtr<LINALG::Solver> solver =
+//     rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+//   actdis->ComputeNullSpaceIfNecessary(*solveparams);
+
+  DRT::Problem::Instance(microdisnum_)->ActivateSolver();
+  SOLVAR*         actsolv  = &solv[0];
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
-  solveparams->set("solver","umfpack");
-  solveparams->set("symmetric",false);
-  RefCountPtr<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+  RefCountPtr<LINALG::Solver> solver = rcp (new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
+  solver->TranslateSolverParameters(*solveparams,actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
+  DRT::Problem::Instance()->ActivateSolver();
 
   // -------------------------------------------------------------------
   // create a static "time integrator"
@@ -357,6 +376,9 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
     microstatic->UpdateNewTimeStep(dis_, dism_, oldalpha_, lastalpha_, surf_stress_man_);
   }
 
+  if (time != timen_)
+    build_stiff_ = true;
+
   // set displacements and EAS data of last step
   microstatic->SetOldState(dis_, dism_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
 
@@ -387,12 +409,14 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(const Epetra_SerialDenseMatrix
     istep_++;
   }
 
+
+
   // set current absolute time, step number
   microstatic->SetTime(timen_, istep_);
 
   microstatic->Predictor(defgrd);
   microstatic->FullNewton();
-  microstatic->StaticHomogenization(stress, cmat, density, defgrd);
+  microstatic->StaticHomogenization(stress, cmat, density, defgrd, mod_newton_, build_stiff_);
 
   // note that it is not necessary to save displacements and EAS data
   // explicitly since we dealt with RCP's -> any update in class

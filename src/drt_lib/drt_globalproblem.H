@@ -173,7 +173,7 @@ public:
 
   /// input of knots for isogeometric analysis
   void ReadKnots(const DRT::INPUT::DatFileReader& reader);
- 
+
   //@}
 
   /// @name General query methods
@@ -184,7 +184,7 @@ public:
 
   // give string name of my basis function type (polynomial/nurbs)
   std::string SpatialApproximation() const;
-    
+
   //@}
 
   /// @name Control file
@@ -275,6 +275,12 @@ public:
     material definitions of different Problem objects.
    */
   void ActivateMaterial();
+
+  //@}
+
+  /// @name Solver
+
+  void ActivateSolver();
 
   //@}
 

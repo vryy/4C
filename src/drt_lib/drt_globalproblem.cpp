@@ -1022,7 +1022,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
       {
         int microdisnum = material_[i].m.struct_multiscale->microdis;
         RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
+#ifdef PARALLEL
+        RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
+#else
         RCP<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
+#endif
 
         string micro_inputfile_name = material_[i].m.struct_multiscale->micro_inputfile_name;
 
@@ -1049,6 +1053,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
         // we are reading the solver, but currently UMFPACK is used in any
         // case (hard coded!)
         micro_problem->ReadParameter(micro_reader);
+
+        /* input of not mesh or time based problem data  */
+        micro_problem->InputControl();
 
         // read materials of microscale
         // CAUTION: materials for microscale can not be read until
@@ -1080,6 +1087,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     reader.Activate();
     ActivateMaterial();
+    ActivateSolver();
 
     break;
   } // end of else if (genprob.probtyp==prb_struct_multi)
@@ -1121,8 +1129,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     nodereader.Read();
 
     break;
-  } // end of else if (genprob.probtyp==prb_combust)  
-  
+  } // end of else if (genprob.probtyp==prb_combust)
+
   default:
     dserror("Type of problem unknown");
   }
@@ -1212,6 +1220,14 @@ void DRT::Problem::SetDis(int fieldnum, int disnum, RCP<Discretization> dis)
 void DRT::Problem::ActivateMaterial()
 {
   mat = &material_[0];
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::Problem::ActivateSolver()
+{
+  solv = &solver_[0];
 }
 
 

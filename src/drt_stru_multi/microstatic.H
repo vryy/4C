@@ -156,7 +156,9 @@ public:
   void StaticHomogenization(Epetra_SerialDenseVector* stress,
                             Epetra_SerialDenseMatrix* cmat,
                             double *density,
-                            const Epetra_SerialDenseMatrix* defgrd);
+                            const Epetra_SerialDenseMatrix* defgrd,
+                            const bool mod_newton,
+                            bool& build_stiff);
 
   void ConvertMat(const Epetra_MultiVector& cmatpf,
                   const Epetra_SerialDenseMatrix& inv_defgrd,

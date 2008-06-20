@@ -64,7 +64,7 @@ solver_(solver)
   // -------------------------------------------------------------------
   // create empty matrices
   // -------------------------------------------------------------------
-  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,false));
+  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,true,true));
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -463,19 +463,20 @@ void MicroStatic::FullNewton()
   //============================================= end equilibrium loop
   print_unconv = false;
 
+
   //-------------------------------- test whether max iterations was hit
   if (numiter>=maxiter)
   {
      dserror("Newton unconverged in %d iterations",numiter);
   }
-  else
-  {
+//   else
+//   {
 //      if (!myrank_ && printscreen)
 //      {
 //        PrintNewton(printscreen,print_unconv,timer,numiter,maxiter,
 //                    fresmnorm,disinorm,convcheck);
 //      }
-  }
+ //  }
 
   params_->set<int>("num iterations",numiter);
 
@@ -1283,9 +1284,11 @@ void MicroStatic::Homogenization(Epetra_SerialDenseVector* stress,
 }
 
 void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
-                                             Epetra_SerialDenseMatrix* cmat,
-                                             double *density,
-                                             const Epetra_SerialDenseMatrix* defgrd)
+                                       Epetra_SerialDenseMatrix* cmat,
+                                       double *density,
+                                       const Epetra_SerialDenseMatrix* defgrd,
+                                       const bool mod_newton,
+                                       bool& build_stiff)
 {
   // determine macroscopic parameters via averaging (homogenization) of
   // microscopic features accoring to Kouznetsova, Miehe etc.
@@ -1384,57 +1387,67 @@ void MicroStatic::StaticHomogenization(Epetra_SerialDenseVector* stress,
     (*stress)[i]=S[i];
   }
 
-  // The calculation of the consistent macroscopic constitutive tensor
-  // follows
-  //
-  // C. Miehe, Computational micro-to-macro transitions for
-  // discretized micro-structures of heterogeneous materials at finite
-  // strains based on a minimization of averaged incremental energy.
-  // Computer Methods in Applied Mechanics and Engineering 192: 559-591, 2003.
-
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  Epetra_MultiVector cmatpf(D_->Map(), 9);
-
-  Epetra_Vector x(*dofrowmap);
-  Epetra_Vector y(*dofrowmap);
-
-  // make a copy
-  stiff_dirich_ = Teuchos::rcp(new LINALG::SparseMatrix(*stiff_));
-
-  stiff_->ApplyDirichlet(dirichtoggle_);
-
-  Epetra_LinearProblem linprob(&(*stiff_->EpetraMatrix()), &x, &y);
-  int error=linprob.CheckInput();
-  if (error)
-    dserror("Input for linear problem inconsistent");
-  Amesos_Klu solver(linprob);
-  err = solver.NumericFactorization();   // LU decomposition of stiff_ only once
-  if (err)
-    dserror("Numeric factorization of stiff_ for homogenization failed");
-
-  for (int i=0;i<9;++i)
+  if (build_stiff)
   {
-    x.PutScalar(0.0);
-    y.Update(1.0, *((*rhs_)(i)), 0.0);
-    solver.Solve();
+    // The calculation of the consistent macroscopic constitutive tensor
+    // follows
+    //
+    // C. Miehe, Computational micro-to-macro transitions for
+    // discretized micro-structures of heterogeneous materials at finite
+    // strains based on a minimization of averaged incremental energy.
+    // Computer Methods in Applied Mechanics and Engineering 192: 559-591, 2003.
 
-    Epetra_Vector f(*dofrowmap);
-    stiff_dirich_->Multiply(false, x, f);
-    Epetra_Vector fexp(*pdof_);
-    int err = fexp.Import(f, *importp_, Insert);
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    Epetra_MultiVector cmatpf(D_->Map(), 9);
+
+    Epetra_Vector x(*dofrowmap);
+    Epetra_Vector y(*dofrowmap);
+
+    // make a copy
+    stiff_dirich_ = Teuchos::rcp(new LINALG::SparseMatrix(*stiff_));
+
+    stiff_->ApplyDirichlet(dirichtoggle_);
+
+    Epetra_LinearProblem linprob(&(*stiff_->EpetraMatrix()), &x, &y);
+    int error=linprob.CheckInput();
+    if (error)
+      dserror("Input for linear problem inconsistent");
+    Amesos_Umfpack solver(linprob);
+    err = solver.NumericFactorization();   // LU decomposition of stiff_ only once
     if (err)
-      dserror("Export of boundary 'forces' failed with err=%d", err);
+      dserror("Numeric factorization of stiff_ for homogenization failed");
 
-    (cmatpf(i))->Multiply('N', 'N', 1.0/V0_, *D_, fexp, 0.0);
+    for (int i=0;i<9;++i)
+    {
+      x.PutScalar(0.0);
+      y.Update(1.0, *((*rhs_)(i)), 0.0);
+      solver.Solve();
+
+      Epetra_Vector f(*dofrowmap);
+      stiff_dirich_->Multiply(false, x, f);
+      Epetra_Vector fexp(*pdof_);
+      int err = fexp.Import(f, *importp_, Insert);
+      if (err)
+        dserror("Export of boundary 'forces' failed with err=%d", err);
+
+      (cmatpf(i))->Multiply('N', 'N', 1.0/V0_, *D_, fexp, 0.0);
+    }
+
+    // We now have to transform the calculated constitutive tensor
+    // relating first Piola-Kirchhoff stresses to the deformation
+    // gradient into a constitutive tensor relating second
+    // Piola-Kirchhoff stresses to Green-Lagrange strains.
+
+    ConvertMat(cmatpf, F_inv, *stress, *cmat);
+
+    // after having constructed the stiffness matrix, this need not be
+    // done in case of modified Newton as nonlinear solver of the
+    // macroscale until the next update of macroscopic time step, when
+    // build_stiff is set to true in the micromaterialgp again!
+
+    if (mod_newton == true)
+      build_stiff = false;
   }
-
-  // We now have to transform the calculated constitutive tensor
-  // relating first Piola-Kirchhoff stresses to the deformation
-  // gradient into a constitutive tensor relating second
-  // Piola-Kirchhoff stresses to Green-Lagrange strains.
-
-  ConvertMat(cmatpf, F_inv, *stress, *cmat);
-
   // homogenized density was already determined in the constructor
 
   *density = density_;
