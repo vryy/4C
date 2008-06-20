@@ -378,26 +378,29 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           STRUCT_DYNAMIC::Gen_EMM,
                                           STRUCT_DYNAMIC::gen_alfa),
                                &sdyn);
-
+  // Output type
   IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);
   IntParameter("RESEVRYDISP",1,"save displacements and contact forces every RESEVRYDISP steps",&sdyn);
   IntParameter("RESEVRYSTRS",1,"save stresses every RESEVRYSTRS steps",&sdyn);
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&sdyn);
+  // Time loop control
   DoubleParameter("TIMESTEP",0.05,"time step size",&sdyn);
   IntParameter("NUMSTEP",200,"maximum number of steps",&sdyn);
   DoubleParameter("MAXTIME",5.0,"maximum time",&sdyn);
+  // Generalised-alpha parameters
   DoubleParameter("BETA",0.25,"generalized alpha factors, also used by explicit time integration",&sdyn);
-  DoubleParameter("DELTA",0.25,"generalized-generalized-alpha factors",&sdyn);
+  DoubleParameter("DELTA",0.25,"generalized alpha factors",&sdyn);
   DoubleParameter("GAMMA",0.5,"generalized alpha factors, also used by explicit time integration",&sdyn);
   DoubleParameter("ALPHA_M",0.5,"generalized alpha factors",&sdyn);
   DoubleParameter("ALPHA_F",0.5,"generalized alpha factors",&sdyn);
+  // Rayleigh damping
   setStringToIntegralParameter("DAMPING","No",
                                "build raleigh damping matrix and use it from M_DAMP x M + K_DAMP x K",
                                yesnotuple,yesnovalue,
                                &sdyn);
   DoubleParameter("M_DAMP",0.5,"",&sdyn);
   DoubleParameter("K_DAMP",0.5,"",&sdyn);
-
+  // Iteration
   setStringToIntegralParameter("ITERATION","full","unused",
                                tuple<std::string>("full","Full","FULL"),
                                tuple<int>(1,1,1),
@@ -491,6 +494,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     
   // Time adaptivity
   SetValidTimeAdaptivityParameters(sdyn);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& genalpha = sdyn.sublist("GENALPHA",false,"");
+  
+  DoubleParameter("BETA",0.25,"Generalised-alpha factor in (0,1/2]",&genalpha);
+  DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&genalpha);
+  DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
+  DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
+
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scontact = list->sublist("STRUCTURAL CONTACT",false,"");
