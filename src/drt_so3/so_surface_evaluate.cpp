@@ -166,10 +166,10 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       vector<double> normal(3);
       double detA;
       SurfaceIntegration(detA,normal,x,deriv);
-      const double fac = intpoints.qwgt[gp] * curvefac * ortho_value * (-1.0);
+      const double fac = intpoints.qwgt[gp] * curvefac * ortho_value;
       for (int node=0; node < numnode; ++node)
         for(int dim=0 ; dim<3; dim++)
-          elevec1[node*numdf+dim]+= funct[node] * normal[dim] * fac;
+          elevec1[node*numdf+dim] += funct[node] * normal[dim] * fac;
     }
     break;
     default:
