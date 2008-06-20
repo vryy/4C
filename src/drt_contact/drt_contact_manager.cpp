@@ -455,46 +455,6 @@ void CONTACT::Manager::ReadRestart(const RCP<Epetra_Vector> activetoggle)
 }
 
 /*----------------------------------------------------------------------*
- |  initialize contact for next Newton step (public)          popp 01/08|
- *----------------------------------------------------------------------*/
-void CONTACT::Manager::Initialize(int numiter)
-{
-#ifdef CONTACTCHECKHUEEBER
-  if (numiter==0)
-  {
-#endif // #ifdef CONTACTCHECKHUEEBER
-    
-  // (re)setup global normal and tangent matrices
-  nmatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
-  tmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
-  
-  // (re)setup global Tresca friction matrix L and vector R
-  string ftype   = scontact_.get<string>("friction type","none");
-  if (ftype=="tresca")
-  {
-	// FIXME: at the moment we do NOT seperate stick and slip mode
-	// for Tresca friction. This is pure slip! Later we have to split
-	// the active set into stick and split set!
-	lmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,10));
-	r_       = LINALG::CreateVector(*gactivet_,true);
-  }
-  
-  // (re)setup global matrices containing derivatives
-  smatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
-  pmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
-  
-  // (re)setup global matrices containing fc derivatives
-  lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
-  linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  
-  
-#ifdef CONTACTCHECKHUEEBER
-  }
-#endif // #ifdef CONTACTCHECKHUEEBER
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  set current deformation state (public)                    popp 11/07|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::SetState(const string& statename,
@@ -509,7 +469,7 @@ void CONTACT::Manager::SetState(const string& statename,
 }
 
 /*----------------------------------------------------------------------*
- |  initialize Mortar for next Newton step (public)          popp 06/08|
+ |  initialize Mortar stuff for next Newton step (public)     popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::InitializeMortar(int numiter)
 {
@@ -544,6 +504,10 @@ void CONTACT::Manager::InitializeMortar(int numiter)
    mhatmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
    g_          = LINALG::CreateVector(*gsnoderowmap_,true);
    
+   // (re)setup global matrices containing fc derivatives
+   lindmatrix_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));
+   linmmatrix_ = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
+       
 #ifdef CONTACTCHECKHUEEBER
   }
 #endif // #ifdef CONTACTCHECKHUEEBER
@@ -552,7 +516,44 @@ void CONTACT::Manager::InitializeMortar(int numiter)
 }
 
 /*----------------------------------------------------------------------*
- |  evaluate Mortar matrices D,M + gap g~ only (public)       popp 06/08|
+ |  initialize contact for next Newton step (public)          popp 01/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::Manager::Initialize(int numiter)
+{
+#ifdef CONTACTCHECKHUEEBER
+  if (numiter==0)
+  {
+#endif // #ifdef CONTACTCHECKHUEEBER
+    
+  // (re)setup global normal and tangent matrices
+  nmatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
+  tmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
+  
+  // (re)setup global Tresca friction matrix L and vector R
+  string ftype   = scontact_.get<string>("friction type","none");
+  if (ftype=="tresca")
+  {
+	// FIXME: at the moment we do NOT seperate stick and slip mode
+	// for Tresca friction. This is pure slip! Later we have to split
+	// the active set into stick and split set!
+	lmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,10));
+	r_       = LINALG::CreateVector(*gactivet_,true);
+  }
+  
+  // (re)setup global matrices containing derivatives
+  smatrix_ = rcp(new LINALG::SparseMatrix(*gactiven_,3));
+  pmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,3));
+  
+#ifdef CONTACTCHECKHUEEBER
+  }
+#endif // #ifdef CONTACTCHECKHUEEBER
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate Mortar matrices D,M & gap g~ only (public)       popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::EvaluateMortar(int numiter)
 {
@@ -627,7 +628,9 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   string ctype   = scontact_.get<string>("contact type","none");
   string ftype   = scontact_.get<string>("friction type","none");
   
-  // export weighted gap vector to gactiveN-map
+  /**********************************************************************/
+  /* export weighted gap vector to gactiveN-map                         */
+  /**********************************************************************/
   RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
   if (gact->GlobalLength())
   {
@@ -1140,7 +1143,9 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   string ctype   = scontact_.get<string>("contact type","none");
   string ftype   = scontact_.get<string>("friction type","none");
   
-  // export weighted gap vector to gactiveN-map
+  /**********************************************************************/
+  /* export weighted gap vector to gactiveN-map                         */
+  /**********************************************************************/
   RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
   if (gact->GlobalLength())
   {
@@ -1624,7 +1629,9 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   string ftype   = scontact_.get<string>("friction type","none");
   bool fulllin   = scontact_.get<bool>("full linearization",false);
   
-  // export weighted gap vector to gactiveN-map
+  /**********************************************************************/
+  /* export weighted gap vector to gactiveN-map                         */
+  /**********************************************************************/
   RCP<Epetra_Vector> gact = LINALG::CreateVector(*gactivenodes_,true);
   if (gact->GlobalLength())
   {
@@ -2631,6 +2638,7 @@ void CONTACT::Manager::UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn)
   activesetconv_=true;
   
 #ifdef CONTACTCHECKHUEEBER
+  Initialize(0);
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     RCP<LINALG::SparseMatrix> temp1 = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100));;
@@ -2927,7 +2935,7 @@ void CONTACT::Manager::StoreNodalQuantities(const string& state)
 }
 
 /*----------------------------------------------------------------------*
- |  Store D and M last coverged step <-> current step        popp 06/08|
+ |  Store D and M last coverged step <-> current step         popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::StoreDM(const string& state)
 {

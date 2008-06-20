@@ -153,29 +153,60 @@ public:
   /*!
   \brief Read and check contact input parameters
   
+  All specified contact-related input parameters are read from the
+  DRT::Problem::Instance() and stored into a class variable of
+  type Teuchos::ParameterList. Invalid parameter combinations are
+  sorted out and throw a dserror.
+  
   */
   bool ReadAndCheckInput();
   
   /*!
   \brief Write restart information for contact
-    
+  
+  The additionally necessary restart information in the contact
+  case is mainly the current active set status of each slave node.
+  This information is stored into a toggle vector and returned.
+
   */
   RCP<Epetra_Vector> WriteRestart();
     
   /*!
   \brief Read restart information for contact
   
+  This method has the inverse functionality of WriteRestart, as
+  it reads the activetoggle vector and stores the restart status
+  into each slave node. Moreover, all global maps concerning the
+  active set are rebuilt based on the restart information.
+  
+  \param activetoggle (in): A toggle vector with active node information
+                           for restart (0=inactive, 1=active)
+                            
   */
   void ReadRestart(const RCP<Epetra_Vector> activetoggle);
   
   /*!
   \brief Set current deformation state
   
+  All interfaces are called to set the current deformation state
+  (u, xspatial) in their nodes. Additionally, the new contact
+  element areas are computed.
+  
+  \param statename (in): string defining which quantity to set (e.g. displacement)
+  \param vec (in): current global state of the quantity defined by statename
+  
   */
   void SetState(const string& statename, const RCP<Epetra_Vector> vec);
   
   /*!
   \brief Initialize Mortar stuff for next Newton step
+  
+  This method calls Initialize() on all contact interfaces, which
+  resets all kind of nodal quantities like normal vector, weighted
+  gap or Mortar and linearization maps. It also resets the global
+  Mortar matrices D and M and the global gap vector g.
+  
+  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
     
   */
   void InitializeMortar(int numiter);
@@ -183,29 +214,54 @@ public:
   /*!
   \brief Initialize contact for next Newton step
   
+  This method initializes all global quantities that have to do with
+  contact directly, or to be more precise with the active set. This
+  includes the global normal / tangent matrices N and T, the global
+  derivative matrices S and P and Tresca friction matrix L + vector r.
+  
+  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
+  
   */
   void Initialize(int numiter);
   
   /*!
   \brief Evaluate Mortar matrices D,M and weighted gap
-    
-  This is a light version of the Evaluate() method, which includes the
-  evluation of the current Mortar operators D and M and the weighted gap
-  vector g~ only. No setup of the global system is to be done here,
-  so there is no need to pass in the effective stiffness K or the
-  effective load vector f.
+  
+  This method does all the geometric contact stuff that has not
+  yet to do with the active / inactive node sets. Concretely it
+  calls Evaluate() on all interfaces, which does the nodal normal
+  calculations, contact search, projection and overlap detection,
+  integration of the Mortar terms D+M and of the weighted gap plus
+  the setup of all linearizations of geometrical quantities (delta_n,
+  delta_t, delta_D, delta_M). The nodal D, M and g values are then
+  assembled into global matrices and vectors respectively. No setup of
+  the global system is to be done here yet, so there is no need to pass
+  in the effective stiffness K or the effective load vector f.
+  
+  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
       
   */
   void EvaluateMortar(int numiter);
     
   /*!
   \brief Evaluate contact
+  
+  This is just a tiny control routine, deciding which Evaluate-routine
+  of those listed below is to be called (based on input-file information)
+  
+  \param kteff (in/out): effective stiffness matrix (without -> with contact)
+  \param feff (in/out): effective residual / force vector (without -> with contact)
+  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
         
   */
   void Evaluate(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
   
   /*!
   \brief Evaluate Tresca friction (with basis transformation)
+  
+  \param kteff (in/out): effective stiffness matrix (without -> with contact)
+  \param feff (in/out): effective residual / force vector (without -> with contact)
+  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
     
   */
   void EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
@@ -214,24 +270,47 @@ public:
   \brief Evaluate contact (with basis transformation)
   
   This is the main routine of our contact algorithms on a global level.
-  It includes the evaluation of the current Mortar operators D and M
-  as well as the setup of the global linear system including contact.
+  It contains the setup of the global linear system including contact.
   This makes modifications to the effective stiffness K and the effective
   load vector f necessary. As these modifications are usually applied
-  to groups of dofs (slave, master, etc.) some matrix and vector
+  to groups of dofs (slave, master, active etc.) some matrix and vector
   splitting and a lot of matrix-vector calculation is done! 
-   
+  A basis transformation is applied to the displacement variables: 
+  [delta_d] := delta_d_slave - inv(D) * M * delta_d_master !
+  
+  \param kteff (in/out): effective stiffness matrix (without -> with contact)
+  \param feff (in/out): effective residual / force vector (without -> with contact)
+  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
+  
   */
   void EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
   
   /*!
   \brief Evaluate contact (without basis transformation)
-      
+  
+  This is the main routine of our contact algorithms on a global level.
+  It contains the setup of the global linear system including contact.
+  This makes modifications to the effective stiffness K and the effective
+  load vector f necessary. As these modifications are usually applied
+  to groups of dofs (slave, master, active etc.) some matrix and vector
+  splitting and a lot of matrix-vector calculation is done!
+  No basis transformation is applied to the displacement variables:
+  delta_d_slave and delta_d_master are used directly as unknowns !
+  
+  \param kteff (in/out): effective stiffness matrix (without -> with contact)
+  \param feff (in/out): effective residual / force vector (without -> with contact)
+  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
+       
   */
   void EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
     
   /*!
   \brief Recovery method (for displacements and Lagrange multipliers)
+  
+  Again, this is just a tiny control routine, deciding which Recover-routine
+  of those listed below is to be called (based on input-file information)
+  
+  \param disi (in/out): displacement increment of current Newton step solution
   
   */
   void Recover(RCP<Epetra_Vector> disi);
@@ -247,15 +326,19 @@ public:
   Moreover we recover the Lagrange multipliers here, which had been
   statically condensated during the setup of the global problem!
   
+  \param disi (in/out): displacement increment of current Newton step solution
+  
   */
   void RecoverBasisTrafo(RCP<Epetra_Vector> disi);
   
   /*!
   \brief Recovery method (without basis transformation)
   
-  Since  no basis transformation has been applied, we only recover
+  Since no basis transformation has been applied, we only recover
   the Lagrange multipliers here, which had been statically condensated
   during the setup of the global problem!
+  
+  \param disi (in): displacement increment of current Newton step solution
   
   */
   void RecoverNoBasisTrafo(RCP<Epetra_Vector> disi);
@@ -267,7 +350,14 @@ public:
   slave nodes to check, whether the assumption of them being active
   or inactive respectively has been correct. If a single node changes
   state, the active set is adapted accordingly and the convegence
-  flag is kept on false -> another full Newton iteration!
+  flag is kept on false. Here we have the "standard" case of two
+  nested iteration loops, and as a consequence this method is
+  called AFTER convergence of the inner Newton iteration. If there
+  is a change in the active set, another full Newton iteration has
+  to be performed for the current time / load step.
+  
+  \param disn (in): new displacement state n+1 of current Newton step
+                   Note that we only pass in disn for debugging purposes!
   
   */
   void UpdateActiveSet(RCP<Epetra_Vector> disn);
@@ -279,27 +369,44 @@ public:
   slave nodes to check, whether the assumption of them being active
   or inactive respectively has been correct. If a single node changes
   state, the active set is adapted accordingly and the convegence
-  flag is kept on false -> another Newton step!
+  flag is kept on false. Here we have the semi-smooth Newton case
+  with one combined iteration loop for active set search and large
+  deformations. As a consequence this method is called AFTER each
+  (not yet converged) Newton step. If there is a change in the active
+  set or the residual and disp norm are still above their limits,
+  another Newton step has to be performed.
   
+  \param disn (in): new displacement state n+1 of current Newton step
+                   Note that we only pass in disn for debugging purposes!
+                   
   */
   void UpdateActiveSetSemiSmooth(RCP<Epetra_Vector> disn);
   
   /*!
   \brief Compute contact force vector
-    
+  
+  Compute current contact forces at n+1-alphaf using current Lagrange
+  multiplier values and current Mortar matrices D and M at n+1. When
+  doing dynamics with alpha_f > 0, this also uses the old LM and Mortar
+  matrices of the last converged time / load step n (TR-like interpolation).
+  
+  \param fresm (in): residual / force vector at state n+1 of current Newton step
+                    Note that we only pass in fresm for debugging purposes!
+  
   */
   void ContactForces(RCP<Epetra_Vector> fresm);
   
   /*!
-  \brief Store Lagrange multipliers and sum of incremental jumps per time step into CNodes
+  \brief Get some nodal quantity globally and store into CNodes
   
-  The string input parameter defines, what is
-  to be updated (lagrange multipliers or sum of incremental jumps).
-  Currently only the possibilities "lmold", "lmcurrent" and "jump"
-  exist, with "lmold" meaning the converged value LM_n of the last time
-  / load step.  The string "lmcurrent" adresses the current (not
-  necessarily converged) value of the LM_n+1 and "jump" the current value (not
-  necessarily converged) of d_nt1-d_n
+  The string input parameter defines, which quantity is be updated
+  (lagrange multipliers or sum of incremental jumps). Currently only the
+  possibilities "lmold", "lmcurrent" and "jump" exist, with "lmold" meaning
+  the converged value LM_n of the last time / load step.  The string
+  "lmcurrent" adresses the current (not necessarily converged) value of the
+  LM_n+1 and "jump" the current (not necessarily converged) value of d_n+1-d_n
+  
+  \param state (in): string defining which quantity to store into CNodes
   
   */
   void StoreNodalQuantities(const string& state);
@@ -315,6 +422,8 @@ public:
   current Mortar matrices, which when called will be reset to the last
   converged values D_n and M_n (this happens in the predictor step when
   the active set has not yet converged!).
+  
+  \param state (in): string defining in which direction to convert D and M
   
   */
   void StoreDM(const string& state);
@@ -377,7 +486,7 @@ protected:
   RCP<Epetra_Vector>                 incrjump_;       // incremental displacement jump (slave dofs)
   RCP<Epetra_Vector>                 jump_;           // displacement jump (slave dofs)
   RCP<Epetra_Vector>                 fc_;             // vector of current contact forces
-  bool                               isincontact_;    // flag indicatoing global contact status
+  bool                               isincontact_;    // flag indicating global contact status
   
   RCP<Epetra_Vector>                 fs_;             // slave side effective forces (needed for LM)
   RCP<LINALG::SparseMatrix>          invd_;           // inverse of Mortar matrix D (needed for LM)
