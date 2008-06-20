@@ -154,6 +154,9 @@ Input/xf3_beltrami_tet4_drt.dat                         -        -        -     
 Input/xf3_ew_Q1_27x_drt.dat                             x        -        -        -        -        -
 Input/xf3_hit_the_corner.dat                            x        -        -        -        -        -
 Input/xf3_multibody_with_multilabel.dat                 x        -        -        -        -        -
+Input/xf3_pure_shear_forces.dat                         x        -        -        -        -        -
+Input/xfsi_fluid_pusher_one_step_theta.dat              x        -        -        -        -        -
+Input/xfsi_fluid_pusher_bdf2.dat                        x        -        -        -        -        -
 Input/sohex8_disp_patchtest.dat                         x        x        -        -        -        -
 Input/sohex8_easfull_patchtest.dat                      x        x        -        -        -        -
 Input/sohex8_incompr_block.dat                          x        x        -        -        -        -
