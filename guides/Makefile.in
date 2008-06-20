@@ -30,3 +30,4 @@ src/beam3/beam3.tex
 src/boundaryconditions/boundaryconditions.tex
 src/struct_mat/struct_mat.tex
 src/postprocessing/postprocessing.tex
+src/emacsgoodies/emacsgoodies.tex
