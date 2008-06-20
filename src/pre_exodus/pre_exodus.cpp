@@ -60,6 +60,7 @@ int main(
     int soshnumlayer = 1;
     int soshseedid = 0;
     int soshgmsh = -1;
+    int concat2loose = 0;
 
     Teuchos::CommandLineProcessor My_CLP;
     My_CLP.setDocString("Preprocessor Exodus2Baci \n");
@@ -73,6 +74,7 @@ int main(
     My_CLP.setOption("numlayer",&soshnumlayer,"number of layers of generated solid-shell body");
     My_CLP.setOption("seedid",&soshseedid,"id where to start extrusion, default is first");
     My_CLP.setOption("gmsh",&soshgmsh,"gmsh output of xxx elements, default off, 0 all eles");
+    My_CLP.setOption("concf",&concat2loose,"concatenate extruded volume with base, however loose every xxx'th node, default 0=off=fsi");
     
     CommandLineProcessor::EParseCommandLineReturn
       parseReturn = My_CLP.parse(argc,argv);
@@ -117,7 +119,7 @@ int main(
     // generate solid shell extrusion based on exodus file
     if (soshthickness!=0.0){
       if (exofile=="") dserror("no exofile specified for extrusion");
-      EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer, soshseedid, soshgmsh);
+      EXODUS::Mesh mysosh = EXODUS::SolidShellExtrusion(mymesh, soshthickness, soshnumlayer, soshseedid, soshgmsh, concat2loose);
       mysosh.WriteMesh("extr_" + exofile);
       exit(0);
     }

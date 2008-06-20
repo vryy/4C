@@ -23,7 +23,7 @@ using namespace Teuchos;
 
 
 /* Method to extrude a surface to become a volumetric body */
-EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid, int gmsh)
+EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thickness, int layers, int seedid, int gmsh, int concat2loose)
 {
   int highestnid = basemesh.GetNumNodes() +1;
   //map<int,vector<double> > newnodes;
@@ -50,6 +50,9 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   int extrusioncounter = 0;
   map<int,ExtrusionType> extrusion_types;
   map<int,ExtrusionType>::const_iterator i_exty;
+  
+  // counter for concatenated nodes during extrusion
+  int concat_counter = 0;
   
   map<int,vector<int> > node_pair; // stores new node id with base node id
 
@@ -150,13 +153,25 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     vector<vector<int> > layer_nodes(layers+1);
     
     for (i_node=actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
-      newid = highestnid; ++ highestnid; // here just raise for each basenode
       
       // place new node at new position
       vector<double> actcoords = basemesh.GetNodeExo(*i_node); //curr position
       // new base position equals actele (matching mesh!)
       const vector<double> newcoords = actcoords;
-      int newExoNid = ExoToStore(newid);
+      
+      // concatenating or node-merging feature
+      int newExoNid = *i_node;
+      newid = *i_node;
+      concat_counter++;
+      
+      // create new node = loose concatenating
+      if(concat_counter>=concat2loose){
+        newid = highestnid; // here just raise for each basenode
+        newExoNid = ExoToStore(newid);
+        highestnid++;
+        concat_counter = 0;
+      }
+      
       // put new coords into newnode map
       newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
       
@@ -267,13 +282,24 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
           
           // check if new node already exists
           if (node_pair.find(thirdnode)==node_pair.end()){
-            // lets create a new node
-            newid = highestnid; ++ highestnid;
-            // place new node at new position
+            // place node at new position
             vector<double> actcoords = basemesh.GetNodeExo(thirdnode); //curr position
             // new base position equals actele (matching mesh!)
             const vector<double> newcoords = actcoords;
-            int newExoNid = ExoToStore(newid);
+            
+            // concatenating or node-merging feature
+            int newExoNid = thirdnode;
+            newid = thirdnode;
+            concat_counter++;
+            
+            // create new node = loose concatenating
+            if(concat_counter>=concat2loose){
+              newid = highestnid; // here just raise for each basenode
+              newExoNid = ExoToStore(newid);
+              highestnid++;
+              concat_counter = 0;
+            }
+            
             // put new coords into newnode map
             newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
             
@@ -321,14 +347,25 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
             
             // check if new node already exists
             if (node_pair.find(fourthnode)==node_pair.end()){
-              // lets create a new node
-              newid = highestnid; ++ highestnid;
               // place new node at new position
               vector<double> actcoords = basemesh.GetNodeExo(fourthnode); //curr position
               // new base position equals actele (matching mesh!)
               const vector<double> newcoords = actcoords;
-              int newExoNid = ExoToStore(newid);
-              // put new coords into newnode map
+              
+              // concatenating or node-merging feature
+              int newExoNid = fourthnode;
+              newid = fourthnode;
+              concat_counter++;
+              
+              // create new node = loose concatenating
+              if(concat_counter>=concat2loose){
+                newid = highestnid; // here just raise for each basenode
+                newExoNid = ExoToStore(newid);
+                highestnid++;
+                concat_counter = 0;
+              }
+              
+             // put new coords into newnode map
               newnodes->insert(pair<int,vector<double> >(newExoNid,newcoords));
               
               // put new node into map of OldNodeToNewNode

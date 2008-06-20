@@ -278,7 +278,7 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   for(i_node = extNodes->begin(); i_node != extNodes->end(); ++i_node){
     pair< map<int,vector<double> >::iterator, bool > check;
     check = baseNodes->insert(pair<int,vector<double> >(i_node->first,i_node->second));
-    if (check.second == false) dserror("Extension node already exists!");
+    if (check.second == false) cout << "Extension node already exists!" << endl;
   }
   nodes_ = baseNodes;
   
