@@ -144,7 +144,7 @@ int main(
       
       int sum = mymesh.GetNumElementBlocks() + mymesh.GetNumNodeSets() + mymesh.GetNumSideSets();
       int test = eledefs.size() + condefs.size();
-      if (test != sum) cout << "Your " << test << " definitions do not match the " << sum << " entities in your mesh!" <<endl; 
+      if (test != sum) cout << "Your " << test << " definitions do not match the " << sum << " entities in your mesh!" <<endl << "(This is OK, if more than one BC is applied to an entity, e.g in FSI simulations)" << endl; 
     }
 
     /**************************************************************************
