@@ -492,11 +492,13 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     for (i_nss = nss.begin(); i_nss != nss.end(); ++i_nss ){
       EXODUS::NodeSet existing_ns = i_nss->second;
       const set<int> extruded_nodes = FindExtrudedNodes(free_edge_nodes,node_pair,existing_ns.GetNodeSet());
-      std::ostringstream nodesetname;
-      nodesetname << "ext" << existing_ns.GetName() << i_nss->first;
-      EXODUS::NodeSet newnodeset(extruded_nodes,nodesetname.str(),nodesetname.str());
-      newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,newnodeset));
-      highestns ++;
+      if (extruded_nodes.size()!=0){
+        std::ostringstream nodesetname;
+        nodesetname << "ext" << existing_ns.GetName() << i_nss->first;
+        EXODUS::NodeSet newnodeset(extruded_nodes,nodesetname.str(),nodesetname.str());
+        newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,newnodeset));
+        highestns ++;
+      }
     }
     
 
@@ -504,7 +506,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     // additionally create new NodeSet with ALL nodes at newly created "free" faces
     // this is the sum of above, but could be handy for applying just one BC
     set<int> free_nodes = FreeFaceNodes(free_edge_nodes,node_pair);
-    string nodesetname = "extruded_surface";
+    string nodesetname = "extruded_free_boundary";
     EXODUS::NodeSet newnodeset(free_nodes,nodesetname,nodesetname);
     newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,newnodeset));
     highestns ++;
@@ -512,21 +514,59 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   } // end of extruding 
   
   /* In case extrusion is based on SideSet
-     transfer nodeIds from initial SideSet Ids to new EleBlock Ids
+     transfer nodeIds from initial SideSet Ids to new NodeSets
      to apply boundary conditions e.g. pressure
    */
-  set<int> nodes_extrusion_base;
-  set<int>::iterator it;
-  for(it=nodes_from_sideset.begin(); it!=nodes_from_sideset.end(); ++it)
-    nodes_extrusion_base.insert(node_pair.find(*it)->second.front());
   if (nodes_from_sideset.size() != 0){
+    set<int> nodes_extrusion_base;
+    set<int> nodes_extrusion_roof;
+    set<int>::iterator it;
+    for(it=nodes_from_sideset.begin(); it!=nodes_from_sideset.end(); ++it){
+      nodes_extrusion_base.insert(node_pair.find(*it)->second.front());
+      nodes_extrusion_roof.insert(node_pair.find(*it)->second.back());
+    }
     std::ostringstream nodesetname;
-    nodesetname << "nodes";//sideset.GetName() << "nodes";
+    nodesetname << "base_nodes";//sideset.GetName() << "nodes";
     string propname = "";
     EXODUS::NodeSet nodeset_extrusion_base(nodes_extrusion_base,nodesetname.str(),propname);
     newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_base));
     highestns ++;
+    
+    std::ostringstream nodesetnamer;
+    nodesetnamer << "roof_nodes";//sideset.GetName() << "nodes";
+    EXODUS::NodeSet nodeset_extrusion_roof(nodes_extrusion_roof,nodesetnamer.str(),propname);
+    newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_roof));
+    highestns ++;
   }
+  
+  // extrude NodeSets which transfers a marked NodeSet to its extrudes base- and roof-NodeSet
+  // loop through all NodeSets to check for extrusion ones
+  for (i_nss = nss.begin(); i_nss != nss.end(); ++i_nss ){
+    bool toextrude = CheckExtrusion(i_nss->second);
+    if (toextrude){
+      set<int> nodes_from_nodeset = (i_nss->second).GetNodeSet();
+      set<int> nodes_extrusion_base;
+      set<int> nodes_extrusion_roof;
+      set<int>::iterator it;
+      for(it=nodes_from_nodeset.begin(); it!=nodes_from_nodeset.end(); ++it){
+        nodes_extrusion_base.insert(node_pair.find(*it)->second.front());
+        nodes_extrusion_roof.insert(node_pair.find(*it)->second.back());
+      }
+      std::ostringstream nodesetname;
+      string propname = "";
+      nodesetname << "base_" << (i_nss->second).GetName();
+      EXODUS::NodeSet nodeset_extrusion_base(nodes_extrusion_base,nodesetname.str(),propname);
+      newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_base));
+      highestns ++;
+      
+      std::ostringstream nodesetnamer;
+      nodesetnamer << "roof_" << (i_nss->second).GetName();
+      EXODUS::NodeSet nodeset_extrusion_roof(nodes_extrusion_roof,nodesetnamer.str(),propname);
+      newnodesets.insert(pair<int,EXODUS::NodeSet>(highestns,nodeset_extrusion_roof));
+      highestns ++;
+    }
+  }
+  
 
   
   string newtitle = "extrusion";
@@ -544,7 +584,7 @@ bool EXODUS::CheckExtrusion(const EXODUS::ElementBlock eblock)
 {
   const EXODUS::ElementBlock::Shape myshape = eblock.GetShape();
   const string myname = eblock.GetName();
-  if (myname.compare(0,7,"extrude") == 0)
+  if (myname.find("extrude") != string::npos)
     if ((myshape == EXODUS::ElementBlock::shell4)
     || (myshape == EXODUS::ElementBlock::tri3)) return true;
   return false;
@@ -555,6 +595,13 @@ bool EXODUS::CheckExtrusion(const EXODUS::SideSet sideset)
   //if (myname.compare(0,7,"extrude") == 0)
     return true;
   //return false;
+}
+bool EXODUS::CheckExtrusion(const EXODUS::NodeSet nodeset)
+{
+  const string myname = nodeset.GetName();
+  if (myname.find("extrude") != string::npos)
+    return true;
+  return false;
 }
 
 

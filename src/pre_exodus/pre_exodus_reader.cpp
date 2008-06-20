@@ -824,7 +824,7 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   map<int,NodeSet>::const_iterator ins;
   const map<int,NodeSet> nss = GetNodeSets();
   for (ins=nss.begin(); ins != nss.end(); ++ins){
-    const int nsID = ins->first + 1;   // exodus starts with 1
+    const int nsID = ins->first;
     const NodeSet ns = ins->second;
     const int num_nodes_in_set = ns.GetNumNodes();
     const string name = ns.GetName();
@@ -848,7 +848,7 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   map<int,RCP<ElementBlock> >::const_iterator iebs;
   const map<int,RCP<ElementBlock> > ebs = GetElementBlocks();
   for (iebs=ebs.begin(); iebs != ebs.end(); iebs++){
-    const int blockID = iebs->first + 1;  // exodus starts with 1
+    const int blockID = iebs->first;
     const ElementBlock eb = (*iebs->second);
     const ElementBlock::Shape shape = eb.GetShape();
     const string shapestring = ShapeToString(shape);
@@ -879,7 +879,7 @@ void EXODUS::Mesh::WriteMesh(string newexofilename)
   map<int,SideSet>::const_iterator iss;
   const map<int,SideSet> sss = GetSideSets();
   for (iss=sss.begin(); iss != sss.end(); ++iss){
-    const int ssID = iss->first + 1;   // exodus starts with 1
+    const int ssID = iss->first;   
     const SideSet ss = iss->second;
     const int num_side_in_set = ss.GetNumSides();
     const string name = ss.GetName();
