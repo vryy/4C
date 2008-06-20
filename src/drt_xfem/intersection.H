@@ -144,11 +144,7 @@ class Intersection
 
         //! list of face markers numbered in the order of the intersected surface elments
         vector<int>                        faceMarker_;
-        
-        EleGeoType                         xfemGeoType_;
-           
-        EleGeoType                         cutterGeoType_;
-        
+  
         /*!
         \brief initializes the private members of the xfem element
 
@@ -1214,6 +1210,12 @@ class Intersection
        		    set<DRT::Element*>         cutterElements
        		    ) const;
 
+       void debugIntersectionOfSingleElements(
+           const DRT::Element*                         xfemElement,
+           const DRT::Element*                         cutterElement,
+           const std::map<int,BlitzVec3>&              currentcutterpositions
+           ) const;
+       
        void debugXAABBs(
         const int							id,
        	const BlitzMat&                     cutterXAABB,

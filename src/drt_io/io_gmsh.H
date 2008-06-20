@@ -237,6 +237,12 @@ namespace IO
     std::string elementAtInitialPositionToString(
         const double scalar,
         const DRT::Element* ele);
+    
+    
+    std::string elementAtCurrentPositionToString(
+        const double scalar, 
+        const DRT::Element* ele,
+        const map<int,BlitzVec3>&      currentelepositions);
 
     template<class M> std::string cellWithScalarToString(
         const DRT::Element::DiscretizationType distype,

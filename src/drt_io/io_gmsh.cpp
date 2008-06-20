@@ -71,6 +71,24 @@ std::string IO::GMSH::elementAtInitialPositionToString(const double scalar, cons
   return pos_array_string.str();
 }
 
+
+std::string IO::GMSH::elementAtCurrentPositionToString(
+    const double scalar, 
+    const DRT::Element* ele,
+    const map<int,BlitzVec3>&      currentelepositions)
+{
+
+  const DRT::Element::DiscretizationType distype = ele->Shape();
+  stringstream gmshfilecontent;
+  
+  blitz::Array<double,2> xyze(XFEM::getCurrentNodalPositions(ele,currentelepositions));
+  gmshfilecontent << IO::GMSH::cellWithScalarToString(distype, scalar, xyze) << endl;
+ 
+  return gmshfilecontent.str();
+}
+
+
+
 std::string IO::GMSH::disToString(
     const std::string& s,
     const double scalar,

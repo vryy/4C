@@ -74,7 +74,10 @@ void XFEM::Intersection::computeIntersection(
     //  k < xfemdis->NumMyColElements()
     for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
     {
+        //printf("element = %d\n", k);
         xfemIntersection = false;
+        EleGeoType xfemGeoType = HIGHERORDER;
+        EleGeoType cutterGeoType = HIGHERORDER;
         DRT::Element* xfemElement = xfemdis->lColElement(k);
         initializeXFEM(k, xfemElement);
 
@@ -82,8 +85,8 @@ void XFEM::Intersection::computeIntersection(
 
         // initial positions, since the xfem element does not move
         const BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(xfemElement));
-        checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType_);
-        const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType_);
+        checkGeoType(xfemElement, xyze_xfemElement, xfemGeoType);
+        const BlitzMat3x2 xfemXAABB = computeFastXAABB(xfemElement, xyze_xfemElement, xfemGeoType);
 
         startPointList();
 
@@ -107,9 +110,10 @@ void XFEM::Intersection::computeIntersection(
 //                if(cutterElement == NULL) dserror("geometry does not obtain elements");
                 
                 // fill current positions into an array
+          
                 const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
-                checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType_);
-                const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement, cutterGeoType_));
+                checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
+                const BlitzMat3x2    cutterXAABB(computeFastXAABB(cutterElement, xyze_cutterElement, cutterGeoType));
 
                 const bool intersected = intersectionOfXAABB(cutterXAABB, xfemXAABB);
 
@@ -122,17 +126,17 @@ void XFEM::Intersection::computeIntersection(
         
         const vector<RCP<DRT::Element> > xfemElementSurfaces = xfemElement->Surfaces();
         const vector<RCP<DRT::Element> > xfemElementLines = xfemElement->Lines();
-
-        debugIntersection(xfemElement, cutterElements);
         
         for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
         {
             DRT::Element* cutterElement = (*i);
             if(cutterElement == NULL) dserror("cutter element is null\n");
             const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+            checkGeoType(cutterElement, xyze_cutterElement, cutterGeoType);
             const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
             const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
 
+            //debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
             // number of internal points
             int numInternalPoints = 0;
             // number of surface points
@@ -149,7 +153,7 @@ void XFEM::Intersection::computeIntersection(
             // collect intersection points
             for(int m=0; m<xfemElement->NumLine() ; m++)
             {
-                const bool doSVD = decideSVD(cutterGeoType_, xfemGeoType_);
+                const bool doSVD = decideSVD(cutterGeoType, xfemGeoType);
                 const DRT::Element* xfemElementLine = xfemElementLines[m].get();
                 const BlitzMat xyze_xfemElementLine(DRT::UTILS::InitialPositionArrayBlitz(xfemElementLine));
                 if(collectIntersectionPoints(   cutterElement, xyze_cutterElement,
@@ -165,7 +169,7 @@ void XFEM::Intersection::computeIntersection(
             {
                 for(int p=0; p<xfemElement->NumSurface() ; p++)
                 {
-                    const bool doSVD = decideSVD(xfemGeoType_, cutterGeoType_);
+                    const bool doSVD = decideSVD(xfemGeoType, cutterGeoType);
                     const DRT::Element* xfemElementSurface = xfemElementSurfaces[p].get();
                     const BlitzMat xyze_xfemElementSurface(DRT::UTILS::InitialPositionArrayBlitz(xfemElementSurface));
                     const DRT::Element* cutterElementLine = cutterElementLines[m].get();
@@ -195,6 +199,7 @@ void XFEM::Intersection::computeIntersection(
         {
             //debugTetgenDataStructure(xfemElement);
             computeCDT(xfemElement, xyze_xfemElement, currentcutterpositions, domainintcells, boundaryintcells, timestepcounter_);
+            //printf("ele %d intersected\n", k);
         }
 
     }// for-loop over all  actdis->NumMyColElements()
@@ -1213,8 +1218,8 @@ void XFEM::Intersection::computeCDT(
         in.facetmarkerlist[i] = faceMarker_[i] + facetMarkerOffset_;
 
 
-    //in.save_nodes("tetin");
-    //in.save_poly("tetin");
+    in.save_nodes("tetin");
+    in.save_poly("tetin");
     //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
     //  do quality mesh generation (q) with a specified quality bound
     //  (1.414), and apply a maximum volume constraint (a0.1)
@@ -3777,6 +3782,24 @@ void XFEM::Intersection::debugIntersection(
   
   for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
     f_system << IO::GMSH::elementAtInitialPositionToString(count++, (*i)) << endl;
+  
+  f_system << "};" << endl;
+  f_system.close();
+}
+
+
+
+void XFEM::Intersection::debugIntersectionOfSingleElements(
+    const DRT::Element*                         xfemElement,
+    const DRT::Element*                         cutterElement,
+    const std::map<int,BlitzVec3>&              currentcutterpositions) const
+{
+  int count = 0;
+  ofstream f_system("intersectionOfSingleElements.pos");
+  f_system << "View \" IntersectionOfSingleElements" << " \" {" << endl;
+  
+  f_system << IO::GMSH::elementAtInitialPositionToString(0, xfemElement) << endl;
+  f_system << IO::GMSH::elementAtCurrentPositionToString(1, cutterElement, currentcutterpositions) << endl;
   
   f_system << "};" << endl;
   f_system.close();
