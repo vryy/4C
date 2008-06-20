@@ -25,7 +25,7 @@ Maintainer: Michael Gee
 #include "stru_dyn_nln_drt.H"
 #include "stru_genalpha_zienxie_drt.H"
 #include "strugenalpha.H"
-#include "strudyn.H"
+#include "strudyn_direct.H"
 #include "../drt_contact/contactstrugenalpha.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -91,7 +91,8 @@ void caldyn_drt()
     dserror("GEMM not supported");
     break;
   case STRUCT_DYNAMIC::genalpha:
-    strudyn();
+    // direct time integration
+    strudyn_direct();
     break;
   default:
     dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());

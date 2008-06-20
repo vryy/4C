@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strudyn.cpp
+\file strudyn_direct.cpp
 \brief Structural time integration
 
 <pre>
@@ -29,7 +29,7 @@ Maintainer: Burkhard Bornemann
 #include "stru_dyn_nln_drt.H"
 #include "stru_genalpha_zienxie_drt.H"
 #include "strugenalpha.H"
-#include "strudyn.H"
+#include "strudyn_direct.H"
 #include "../drt_contact/contactstrugenalpha.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -66,9 +66,9 @@ extern SOLVAR* solv;
 
 
 /*----------------------------------------------------------------------*
- | structural nonlinear dynamics (gen-alpha)               bborn 06/08  |
+ | structural non-linear dynamics                          bborn 06/08  |
  *----------------------------------------------------------------------*/
-void strudyn()
+void strudyn_direct()
 {
   // access the discretization
   RefCountPtr<DRT::Discretization> actdis = null;

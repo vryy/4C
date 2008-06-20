@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strudyn.H
+\file strudyn_direct.H
 \brief
 
 <pre>
@@ -14,8 +14,8 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef STRUDYN_H
-#define STRUDYN_H
+#ifndef STRUDYN_DIRECT_H
+#define STRUDYN_DIRECT_H
 
 
 #ifdef __cplusplus /* stuff which is c++ specific */
@@ -48,7 +48,14 @@ extern "C"
 {
 #endif
 
-void strudyn();
+/*----------------------------------------------------------------------*/
+/*!
+\brief Direct time integration of temporally (and spatially) discretised
+       structure
+\author bborn
+\date 06/08
+*/
+void strudyn_direct();
 
 #ifdef __cplusplus
 }
@@ -59,5 +66,5 @@ void strudyn();
 
 
 
-#endif  /* #ifndef STRUDYN_H */
+#endif  /* #ifndef STRUDYN_DIRECT_H */
 #endif  /* #ifdef CCADISCRET */
