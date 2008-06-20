@@ -1063,21 +1063,21 @@ static void Sysmat4(
                 
 
                 
-                const double newfac = 1.0/3.0;
-                assembler.template Matrix<Sigmaxx,Sigmaxx>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
-                assembler.template Matrix<Sigmayy,Sigmaxx>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
-                assembler.template Matrix<Sigmazz,Sigmaxx>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
-                assembler.template Matrix<Sigmaxx,Sigmayy>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
-                assembler.template Matrix<Sigmayy,Sigmayy>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
-                assembler.template Matrix<Sigmazz,Sigmayy>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
-                assembler.template Matrix<Sigmaxx,Sigmazz>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
-                assembler.template Matrix<Sigmayy,Sigmazz>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
-                assembler.template Matrix<Sigmazz,Sigmazz>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
-                
-                assembler.template Vector<Sigmaxx>(shp_tau, newfac*1.0/(2.0*visc)*timefacfac*(tau(0,0) + tau(1,1) + tau(2,2)));
-                assembler.template Vector<Sigmayy>(shp_tau, newfac*1.0/(2.0*visc)*timefacfac*(tau(0,0) + tau(1,1) + tau(2,2)));
-                assembler.template Vector<Sigmazz>(shp_tau, newfac*1.0/(2.0*visc)*timefacfac*(tau(0,0) + tau(1,1) + tau(2,2)));
-                
+//                const double newfac = 1.0/3.0;
+//                assembler.template Matrix<Sigmaxx,Sigmaxx>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
+//                assembler.template Matrix<Sigmayy,Sigmaxx>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
+//                assembler.template Matrix<Sigmazz,Sigmaxx>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
+//                assembler.template Matrix<Sigmaxx,Sigmayy>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
+//                assembler.template Matrix<Sigmayy,Sigmayy>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
+//                assembler.template Matrix<Sigmazz,Sigmayy>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
+//                assembler.template Matrix<Sigmaxx,Sigmazz>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
+//                assembler.template Matrix<Sigmayy,Sigmazz>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
+//                assembler.template Matrix<Sigmazz,Sigmazz>(shp_tau, - newfac*1.0/(2.0*visc)*timefacfac, shp_tau);
+//                
+//                assembler.template Vector<Sigmaxx>(shp_tau, newfac*1.0/(2.0*visc)*timefacfac*(tau(0,0) + tau(1,1) + tau(2,2)));
+//                assembler.template Vector<Sigmayy>(shp_tau, newfac*1.0/(2.0*visc)*timefacfac*(tau(0,0) + tau(1,1) + tau(2,2)));
+//                assembler.template Vector<Sigmazz>(shp_tau, newfac*1.0/(2.0*visc)*timefacfac*(tau(0,0) + tau(1,1) + tau(2,2)));
+//                
                 
 //                const double div_factor = -1.0/3.0;
 //                assembler.template Matrix<Sigmaxx,Velx>(shp_tau,   - timefacfac*div_factor, shp_dx);
@@ -1150,13 +1150,13 @@ static void Sysmat4(
                               |                      |
                                \                    /
                 */
-                assembler.template Matrix<Sigmaxx,Pres>(shp_tau, -presfac*1.0/(visc)*timefacfac, shp);
-                assembler.template Matrix<Sigmayy,Pres>(shp_tau, -presfac*1.0/(visc)*timefacfac, shp);
-                assembler.template Matrix<Sigmazz,Pres>(shp_tau, -presfac*1.0/(visc)*timefacfac, shp);
+                assembler.template Matrix<Sigmaxx,Pres>(shp_tau, -presfac*1.0/(2.0*visc)*timefacfac, shp);
+                assembler.template Matrix<Sigmayy,Pres>(shp_tau, -presfac*1.0/(2.0*visc)*timefacfac, shp);
+                assembler.template Matrix<Sigmazz,Pres>(shp_tau, -presfac*1.0/(2.0*visc)*timefacfac, shp);
                 
-                assembler.template Vector<Sigmaxx>(shp_tau, presfac*1.0/(visc)*timefacfac*pres);
-                assembler.template Vector<Sigmayy>(shp_tau, presfac*1.0/(visc)*timefacfac*pres);
-                assembler.template Vector<Sigmazz>(shp_tau, presfac*1.0/(visc)*timefacfac*pres);
+                assembler.template Vector<Sigmaxx>(shp_tau, presfac*1.0/(2.0*visc)*timefacfac*pres);
+                assembler.template Vector<Sigmayy>(shp_tau, presfac*1.0/(2.0*visc)*timefacfac*pres);
+                assembler.template Vector<Sigmazz>(shp_tau, presfac*1.0/(2.0*visc)*timefacfac*pres);
                 
             }
             
