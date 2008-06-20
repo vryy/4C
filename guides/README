@@ -13,15 +13,20 @@
 2) How to add a tech report
 
 -> add a new subdirectory to src/
-   it must be named like
+   it can be named like
 
-               src_example
+               titleofreport
 
--> create file named 
+-> create file named in this new directory.
 
-               src_example.tex
+               titleofreport.tex
 
-   in this new directory. This file is your main document.
+-> add report to appropriate part Baci guide in  Makefile.in
+
+               src/titleofreport/titleofreport.tex
+
+
+   The LaTex file "titleofreport.tex" is your main document.
    You are allowed to include files and pictures ---
    use unique names for labels (like fsi:couple, fsi:basic_equation, ...)
    to avoid name clashes in master document!
