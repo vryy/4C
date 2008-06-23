@@ -19,6 +19,13 @@ Maintainer: Moritz Frenzel
 #include <Teuchos_RefCountPtr.hpp>
 #include <Teuchos_ParameterList.hpp>
 
+#include "../drt_lib/drt_discret.H"
+#include "../drt_so3/so_hex8.H"
+#include "../drt_so3/so_sh8.H"
+#include "../drt_io/io_gmsh.H"
+extern struct _FILES  allfiles;
+
+
 using namespace Teuchos;
 
 namespace MAT
@@ -91,6 +98,11 @@ namespace MAT
       { return isinit_&&(li_!=Teuchos::null);}
     
     RCP<vector<vector<double> > > Getli() const {return li_;}
+    RCP<vector<vector<double> > > Getli0() const {return li0_;}
+    
+    RCP<vector<Epetra_SerialDenseMatrix> >Getni0() const {return ni0_;}
+    
+    //void OutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis, const double time, const int iter);
     
   private:
 
@@ -99,12 +111,17 @@ namespace MAT
     
     /// unit cell dimensions per gp
     Teuchos::RCP<vector<vector<double> > > li_;
+    /// unit cell basis in undeformed config. per gp
+    Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > ni0_;
     /// initial unit cell dimensions per gp
     Teuchos::RCP<vector<vector<double> > > li0_;
     
     bool isinit_;
     
   };
+  
+  void ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis, const double time, const int iter);
+  const vector<double> MatPointCoords(const DRT::Element* actele,const vector<double>& mydisp, int gp=-1);
 }
 
 #endif /*CCADISCRET*/
