@@ -1940,7 +1940,7 @@ static void Sysmat4(
         }
         
         
-    } // end loop over boundary integration cells
+      } // end loop over boundary integration cells
     }
     } // if (ASSTYPE == XFEM::xfem_assembly)
     return;
