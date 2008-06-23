@@ -17,7 +17,13 @@ Maintainer: Axel Gerstenberger
 #include "adapter_xfluid_impl.H"
 
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_io/io_gmsh.H"
 
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+}
+extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -30,7 +36,6 @@ ADAPTER::XFluidImpl::XFluidImpl(
         bool isale)
   : fluid_(dis, *solver, *params, *output, isale),
     dis_(dis),
-    soliddis_(soliddis),
     solver_(solver),
     params_(params),
     output_(output)
@@ -211,6 +216,64 @@ void ADAPTER::XFluidImpl::Update()
 void ADAPTER::XFluidImpl::Output()
 {
   fluid_.Output();
+  
+  static int step_counter = 1;
+  
+  
+  std::stringstream filename;
+  filename << allfiles.outputfile_kenner << "_solution_interfaceforce_" << std::setw(5) << setfill('0') << step_counter << ".pos";
+  std::cout << "writing '"<<filename.str()<<"'...";
+  std::ofstream f_system(filename.str().c_str());
+
+  {
+    stringstream gmshfilecontent;
+    gmshfilecontent << "View \" " << "Interface Force \" {" << endl;
+    for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
+    {
+      const DRT::Element* actele = boundarydis_->lColElement(i);
+//      cout << *actele << endl;
+      vector<int> lm;
+      vector<int> lmowner;
+      actele->LocationVector(*boundarydis_, lm, lmowner);
+
+      // extract local values from the global vector
+      vector<double> myvelnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*itruerescol_, myvelnp, lm);
+      
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*idispcol_, mydisp, lm);
+
+      const int nsd = 3;
+      const int numnode = actele->NumNode();
+      BlitzMat elementvalues(nsd,numnode);
+      BlitzMat elementpositions(nsd,numnode);
+      int counter = 0;
+      for (int iparam=0; iparam<numnode; ++iparam)
+      {
+        const DRT::Node* node = actele->Nodes()[iparam];
+//        cout << *node << endl;
+        const double* pos = node->X(); 
+        for (int isd = 0; isd < nsd; ++isd)
+        {
+          elementvalues(isd,iparam) = myvelnp[counter];
+          elementpositions(isd,iparam) = pos[isd] + mydisp[counter];
+          counter++;
+        }
+      }
+//      cout << elementpositions << endl;
+//      exit(1);
+      
+      gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
+            actele->Shape(), elementvalues, elementpositions) << endl;
+    }
+    gmshfilecontent << "};" << endl;
+    f_system << gmshfilecontent.str();
+  }
+  f_system.close();
+  std::cout << " done" << endl;
+  
+  step_counter++;
+  
 }
 
 
@@ -221,6 +284,7 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
 
   cout << "XFluidImpl::NonlinearSolve()" << endl;
   fluid_.NonlinearSolve(boundarydis_,idispcol_,ivelcol_,itruerescol_);
+  LINALG::Export(*itruerescol_,*itrueres_);
 }
 
 
@@ -358,7 +422,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceFluidVelocity()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
-  cout << "applying interface velocity" << endl;
+//  cout << "applying interface velocity" << endl;
 
   interface_.InsertCondVector(ivel,ivel_);
   LINALG::Export(*ivel_,*ivelcol_);

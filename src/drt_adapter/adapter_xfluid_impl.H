@@ -173,7 +173,6 @@ namespace ADAPTER {
 
     //! @name local copies of input parameters
     Teuchos::RCP<DRT::Discretization>      dis_;
-    Teuchos::RCP<DRT::Discretization>      soliddis_; ///< the solid discretization will go away,once we can determine inside and outside of the structure without volume elements
     Teuchos::RCP<DRT::Discretization>      boundarydis_;
     Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;

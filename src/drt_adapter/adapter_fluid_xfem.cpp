@@ -89,15 +89,18 @@ double ADAPTER::FluidXFEM::ReadRestart(int step)
 void ADAPTER::FluidXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                         Teuchos::RCP<Epetra_Vector> ivel)
 {
+#ifdef DEBUG
   std::cout << "ADAPTER::FluidXFEM::NonlinearSolve" << endl;
-
+#endif
   if (idisp!=Teuchos::null)
   {
     // if we have values at the interface we need to apply them
     FluidField().ApplyMeshDisplacement(idisp);
     FluidField().ApplyInterfaceVelocities(ivel);
   }
+#ifdef DEBUG
   std::cout << "applied interface displacement and velocity" << endl;
+#endif
 
   //if (FluidField().FreeSurface().Relevant())
   //{
