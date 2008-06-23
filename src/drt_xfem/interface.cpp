@@ -20,6 +20,12 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_gmsh.H"
 #include "integrationcell.H"
 
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+}
+extern struct _FILES  allfiles;
+
 /*----------------------------------------------------------------------*
  |  ctor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
@@ -112,7 +118,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   {
     // debug: write both meshes to file in Gmsh format
     std::stringstream filename;
-    filename << "elements_coupled_system_" << std::setw(5) << setfill('0') << step << ".pos";
+    filename << allfiles.outputfile_kenner << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step << ".pos";
     std::cout << "writing '"<<filename.str()<<"'...";
     std::ofstream f_system(filename.str().c_str());
     f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
@@ -126,12 +132,12 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   {
     // debug: write information about which structure we are in
     std::stringstream filenameP;
-    filenameP << "points_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenameP << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step << ".pos";
     cout << "writing '"<<filenameP.str()<<"...";
     std::ofstream f_systemP(filenameP.str().c_str());
     
     std::stringstream filename;
-    filename << "domains_" << std::setw(5) << setfill('0') << step << ".pos";
+    filename << allfiles.outputfile_kenner << "_domains_" << std::setw(5) << setfill('0') << step << ".pos";
     cout << "writing '"<<filename.str()<<"...";
 
     std::ofstream f_system(filename.str().c_str());
@@ -176,7 +182,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     f_system.close();
     f_systemP.close();
     cout << " done" << endl;
-    xTree_->printTree(step);
+    //xTree_->printTree(step);
   }
   return;
 }

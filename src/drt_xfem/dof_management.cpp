@@ -27,6 +27,11 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+}
+extern struct _FILES  allfiles;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -248,7 +253,7 @@ void XFEM::DofManager::toGmsh(
   {
     cout << "XFEM::DofManager::toGmsh()" << endl;
     std::stringstream filename;
-    filename << "numdof_coupled_system_" << std::setw(5) << setfill('0') << step << ".pos";
+    filename << allfiles.outputfile_kenner << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step << ".pos";
     std::ofstream f_system(filename.str().c_str());
     //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
     f_system << IO::GMSH::disToString("Solid", 1.0, ih->cutterdis(), *ih->currentcutterpositions());
@@ -427,7 +432,7 @@ void XFEM::DofManager::toGmsh(
     {
       // debug info: print ele dofmanager information
       std::stringstream filename;
-      filename << "eledofman_check_" << std::setw(5) << setfill('0') << step << ".pos";
+      filename << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step << ".pos";
       std::cout << "writing '"<<filename.str()<<"'...";
       {
         std::ofstream f_system(filename.str().c_str());

@@ -39,6 +39,12 @@ Maintainer: Axel Gerstenberger
 #include "../drt_io/io_gmsh.H"
 
 
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+}
+extern struct _FILES  allfiles;
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1271,7 +1277,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
     cout << "XFluidImplicitTimeInt::OutputToGmsh()" << endl;
 
     std::stringstream filename;
-    filename << "solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filename << allfiles.outputfile_kenner << "_solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
     std::cout << "writing '"<<filename.str()<<"'...";
     std::ofstream f_system(filename.str().c_str());
 
@@ -1349,7 +1355,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
 //  if (gmshdebugout)
 //  {
 //    std::stringstream filename;
-//    filename << "solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
+//    filename << allfiles.outputfile_kenner << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
 //    << ".pos";
 //    std::cout << "writing '"<<filename.str()<<"'...";
 //    std::ofstream f_system(filename.str().c_str());
@@ -1432,7 +1438,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
 //    f_system.close();
 //    std::cout << " done" << endl;
 //  }
-
+#ifdef DEBUG_PRINT_STRESS_IN_GMSH
   if (gmshdebugout)
   {
     //std::stringstream filename;
@@ -1443,12 +1449,12 @@ void XFluidImplicitTimeInt::OutputToGmsh()
     std::stringstream filenamexz;
     std::stringstream filenameyz;
     //filename   << "solution_tau_disc_"   << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexx << "solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenameyy << "solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamezz << "solution_tauzz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexy << "solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenamexz << "solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    filenameyz << "solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexx << allfiles.outputfile_kenner << "_solution_tauxx_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenameyy << allfiles.outputfile_kenner << "_solution_tauyy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamezz << allfiles.outputfile_kenner << "_solution_tauzz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexy << allfiles.outputfile_kenner << "_solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamexz << allfiles.outputfile_kenner << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenameyz << allfiles.outputfile_kenner << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
     std::cout << "writing stress ...";
     //std::ofstream f_system(  filename.str().c_str());
     std::ofstream f_systemxx(filenamexx.str().c_str());
@@ -1589,14 +1595,14 @@ void XFluidImplicitTimeInt::OutputToGmsh()
     }
     std::cout << " done" << endl;
   }
-
+#endif
 
   if (gmshdebugout)
   {
 
     bool ele_to_textfile = false;
     std::stringstream filename;
-    filename << "solution_velocity_" << std::setw(5) << setfill('0') << step_
+    filename << allfiles.outputfile_kenner << "_solution_velocity_" << std::setw(5) << setfill('0') << step_
     << ".pos";
     std::cout << "writing '"<<filename.str()<<"'...";
     std::ofstream f_system(filename.str().c_str());
@@ -1725,7 +1731,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
 //    bool ele_to_textfile = false;
 //    bool ele_to_textfile2 = false;
 //    std::stringstream filename;
-//    filename << "solution_acceleration_" << std::setw(5) << setfill('0') << step_
+//    filename << allfiles.outputfile_kenner << "_solution_acceleration_" << std::setw(5) << setfill('0') << step_
 //    << ".pos";
 //    std::cout << "writing '"<<filename.str()<<"'...";
 //    std::ofstream f_system(filename.str().c_str());
