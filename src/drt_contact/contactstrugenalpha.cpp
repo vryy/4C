@@ -312,6 +312,12 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   contactmanager_->Initialize(0);
   contactmanager_->Evaluate(stiff_,fresm_,0);
   
+  // blank residual DOFs that are on Dirichlet BC
+  {
+    Epetra_Vector fresmdbc(*fresm_);
+    fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+  }
+      
   //---------------------------------------------------- contact forces
   // reset Lagrange multipliers to last converged state
   // this resetting is necessary due to multiple active set steps
@@ -533,6 +539,12 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   contactmanager_->Initialize(0);
   contactmanager_->Evaluate(stiff_,fresm_,0);
   
+  // blank residual DOFs that are on Dirichlet BC
+  {
+    Epetra_Vector fresmdbc(*fresm_);
+    fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+  }
+      
   //---------------------------------------------------- contact forces
   // reset Lagrange multipliers to last converged state
   // this resetting is necessary due to multiple active set steps
@@ -820,6 +832,12 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
             
       contactmanager_->Initialize(numiter+1);
       contactmanager_->Evaluate(stiff_,fresm_,numiter+1);
+    }
+    
+    // blank residual DOFs that are on Dirichlet BC
+    {
+      Epetra_Vector fresmdbc(*fresm_);
+      fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
     }
     
     //--------------------------------------------------- contact forces
@@ -1135,6 +1153,12 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       contactmanager_->Evaluate(stiff_,fresm_,numiter+1);
     }
     
+    // blank residual DOFs that are on Dirichlet BC
+    {
+      Epetra_Vector fresmdbc(*fresm_);
+      fresm_->Multiply(1.0,*invtoggle_,fresmdbc,0.0);
+    }
+       
     //--------------------------------------------------- contact forces
     contactmanager_->ContactForces(fresmcopy);
     

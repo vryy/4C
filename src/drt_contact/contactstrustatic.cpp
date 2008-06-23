@@ -422,6 +422,12 @@ void contact_stru_static_drt()
     contactmanager->Initialize(0);
     contactmanager->Evaluate(stiff_mat,fresm,0);
     
+    // blank residual at DOFs on Dirichlet BC
+    {
+      Epetra_Vector fresmcopy(*fresm);
+      fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
+    }
+        
     //---------------------------------------------------- contact forces
     // (no resetting of LM necessary for semi-smooth Newton, as there
     // will never be a repetition of a time / load step!)
@@ -522,6 +528,12 @@ void contact_stru_static_drt()
       contactmanager->Initialize(numiter+1);
       contactmanager->Evaluate(stiff_mat,fresm,numiter+1);
       
+      // blank residual at DOFs on Dirichlet BC
+      {
+        Epetra_Vector fresmcopy(*fresm);
+        fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
+      }
+          
       //--------------------------------------------------- contact forces
       contactmanager->ContactForces(fresmcopy);
             
@@ -627,6 +639,12 @@ void contact_stru_static_drt()
       contactmanager->Initialize(0);
       contactmanager->Evaluate(stiff_mat,fresm,0);
       
+      // blank residual at DOFs on Dirichlet BC
+      {
+        Epetra_Vector fresmcopy(*fresm);
+        fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
+      }
+          
       //---------------------------------------------------- contact forces
       // reset Lagrange multipliers to last converged state
       // this resetting is necessary due to multiple active set steps
@@ -720,6 +738,12 @@ void contact_stru_static_drt()
         contactmanager->Initialize(numiter+1);
         contactmanager->Evaluate(stiff_mat,fresm,numiter+1);
         
+        // blank residual at DOFs on Dirichlet BC
+        {
+          Epetra_Vector fresmcopy(*fresm);
+          fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
+        }
+            
         //--------------------------------------------------- contact forces
         contactmanager->ContactForces(fresmcopy);
               
