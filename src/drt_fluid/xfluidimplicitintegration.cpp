@@ -1005,7 +1005,8 @@ void XFluidImplicitTimeInt::NonlinearSolve(
     //cout << *iforcecol << endl;
   }
 
-  iforcecol->Scale(-1.0);
+  // macht der FSI algorithmus
+  //iforcecol->Scale(-1.0);
 
 
   const int nsd = 3;
@@ -1019,7 +1020,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
     for (int isd = 0; isd < nsd; ++isd)
     {
       const double val = (*iforcecol)[dofcolmap->LID(dof[isd])];
-      c(isd) += val;
+      c(isd) -= val; // minus to get correct sign of lift and drag (force acting on the body)
     }
 
   }
