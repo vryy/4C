@@ -445,6 +445,9 @@ void CONTACT::Manager::ReadRestart(const RCP<Epetra_Vector> activetoggle)
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
+    gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
+    gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
+    gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
   }
   
   // update flag for global contact status
@@ -537,7 +540,7 @@ void CONTACT::Manager::Initialize(int numiter)
 	// for Tresca friction. This is pure slip! Later we have to split
 	// the active set into stick and split set!
 	lmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,10));
-	r_       = LINALG::CreateVector(*gactivet_,true);
+	r_       = LINALG::CreateVector(*gslipt_,true);
   }
   
   // (re)setup global matrices containing derivatives
@@ -668,7 +671,7 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   // FillComplete() global matrices N, T and L
   nmatrix_->Complete(*gactivedofs_,*gactiven_);
   tmatrix_->Complete(*gactivedofs_,*gactivet_);
-  lmatrix_->Complete(*gactivet_,*gactivet_);
+  if(gslipt_->NumGlobalElements()) lmatrix_->Complete(*gslipt_,*gslipt_);
 #ifdef CONTACTCHECKHUEEBER
   }
 #endif // #ifdef CONTACTCHECKHUEEBER
@@ -907,6 +910,32 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(ksnmod,gactivedofs_,gidofs,gndofrowmap_,tempmap,kanmod,tempmtx1,kinmod,tempmtx2);
   LINALG::SplitMatrix2x2(ksmmod,gactivedofs_,gidofs,gmdofrowmap_,tempmap,kammod,tempmtx1,kimmod,tempmtx2);
   
+
+  /**********************************************************************/
+  /* Split active quantities into slip / stick                          */
+  /**********************************************************************/
+
+  // we want to split kaamod into 2 groups sl,st = 4 blocks
+  RCP<LINALG::SparseMatrix> kslslmod, kslstmod, kstslmod, kststmod;
+  
+  // we want to split kanmod / kammod / kaimod into 2 groups sl,st = 2 blocks
+  RCP<LINALG::SparseMatrix> kslnmod, kstnmod, kslmmod, kstmmod, kslimod, kstimod; 
+ 
+  // some temporary RCPs
+  RCP<Epetra_Map> temp1map;
+  RCP<LINALG::SparseMatrix> temp1mtx1;
+  RCP<LINALG::SparseMatrix> temp1mtx2;
+  RCP<LINALG::SparseMatrix> temp1mtx3;
+  
+  // we will get the stick rowmap as a by-product
+  RCP<Epetra_Map> gstdofs;
+   
+  // do the splitting
+  LINALG::SplitMatrix2x2(kaamod,gslipdofs_,gstdofs,gslipdofs_,gstdofs,kslslmod,kslstmod,kstslmod,kststmod);
+  LINALG::SplitMatrix2x2(kanmod,gslipdofs_,gstdofs,gndofrowmap_,temp1map,kslnmod,temp1mtx1,kstnmod,temp1mtx2);
+  LINALG::SplitMatrix2x2(kammod,gslipdofs_,gstdofs,gmdofrowmap_,temp1map,kslmmod,temp1mtx1,kstmmod,temp1mtx2);
+  LINALG::SplitMatrix2x2(kaimod,gslipdofs_,gstdofs,gidofs,temp1map,kslimod,temp1mtx1,kstimod,temp1mtx2);
+  
   // output for checking everything
 #ifdef CONTACTDIMOUTPUT
   if(Comm().MyPID()==0)
@@ -970,11 +999,13 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
 #endif // #ifdef CONTACTDIMOUTPUT
   
   /**********************************************************************/
-  /* Isolate active part from invd and dold                             */
+  /* Isolate active and slip part from invd and dold                              */
   /**********************************************************************/
-  RCP<LINALG::SparseMatrix> invda;
+  RCP<LINALG::SparseMatrix> invda, invdsl;
   LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
+  LINALG::SplitMatrix2x2(invd_,gslipdofs_,gstdofs,gslipdofs_,gstdofs,invdsl,tempmtx1,tempmtx2,tempmtx3);
   invda->Scale(1/(1-alphaf_));
+  invdsl->Scale(1/(1-alphaf_));
   
   RCP<LINALG::SparseMatrix> dolda, doldi;
   LINALG::SplitMatrix2x2(dold_,gactivedofs_,gidofs,gactivedofs_,gidofs,dolda,tempmtx1,tempmtx2,doldi);
@@ -1001,48 +1032,127 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
     dolda->Multiply(false,*mod,*tempvec);
     famod->Update(-alphaf_,*tempvec,1.0);
   }
-     
-  // do the multiplications with t matrix
-  RCP<LINALG::SparseMatrix> tkanmod, tkammod, tkaimod, tkaamod, tlmatrix;
-  RCP<Epetra_Vector> tfamod;
   
+  // we want to split famod into 2 groups sl,st
+  RCP<Epetra_Vector> fslmod, fstmod;
+  
+  // do the vector splitting a -> sl+st
   if(gactivedofs_->NumGlobalElements())
+  {	
+    if (!gstdofs->NumGlobalElements())
+      fslmod = rcp(new Epetra_Vector(*famod));
+    else if (!gslipdofs_->NumGlobalElements())
+      fstmod = rcp(new Epetra_Vector(*famod));
+    else
+    {
+  	  LINALG::SplitVector(*famod,*gslipdofs_,fslmod,*gstdofs,fstmod);
+    }
+  }
+  // we will get the stickt rowmap as a by-product
+  RCP<Epetra_Map> gstickt;
+  
+  // temporary RCPs
+  RCP<Epetra_Map> tmap;
+  
+  // temporary RCPs
+  RCP<LINALG::SparseMatrix> tm1, tm2;
+  
+  // we want to split the tmatrix_ into 2 groups
+  RCP<LINALG::SparseMatrix> tslmatrix, tstmatrix;
+  LINALG::SplitMatrix2x2(tmatrix_,gslipt_,gstickt,gslipdofs_,tmap,tslmatrix,tm1,tm2,tstmatrix); 
+  
+  
+//  // do the multiplications with t matrix
+//  RCP<LINALG::SparseMatrix> tkanmod, tkammod, tkaimod, tkaamod, tlmatrix;
+//  RCP<Epetra_Vector> tfamod;
+//  
+//  if(gactivedofs_->NumGlobalElements())
+//  {
+//  	// kanmod: multiply with tmatrix
+//  	tkanmod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+//  	tkanmod = LINALG::Multiply(*tkanmod,false,*kanmod,false,true);
+//  	
+//  	// kammod: multiply with tmatrix
+//  	tkammod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+//  	tkammod = LINALG::Multiply(*tkammod,false,*kammod,false,true);
+//  	  	
+//  	// friction
+//  	// lmatrix: multiply with tmatrix 
+//  	tlmatrix = LINALG::Multiply(*lmatrix_,false,*tmatrix_,false,true);
+//  	 	
+//  	// kaamod: multiply with tmatrix
+//  	tkaamod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+//  	tkaamod = LINALG::Multiply(*tkaamod,false,*kaamod,false,false);
+//  	
+//  	// add tlmatirx to tkaamod
+//  	tkaamod->Add(*tlmatrix,false,1.0,1.0);
+//  	tkaamod->Complete(kaamod->DomainMap(),kaamod->RowMap());
+//  	
+//  	if (gidofs->NumGlobalElements())
+//    {
+//      //kaimod: multiply with tmatrix
+//    	tkaimod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+//    	tkaimod = LINALG::Multiply(*tkaimod,false,*kaimod,false,true);
+//    }	  		
+//    
+//    // famod: multiply with tmatrix    
+//    tfamod = rcp(new Epetra_Vector(*gactivet_));
+//    RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
+//    temp->Multiply(false,*famod,*tfamod); 
+//    
+//    // friction
+//    // add r to famod
+//    tfamod->Update(1.0,*r_,1.0);
+//  }
+   
+  // do the multiplications with t matrix
+  RCP<LINALG::SparseMatrix> tkslnmod, tkslmmod, tkslimod, tkslslmod, tlmatrix, tkslstmod;
+  RCP<Epetra_Vector> tfslmod;
+  
+  if(gslipdofs_->NumGlobalElements())
   {
-  	// kanmod: multiply with tmatrix
-  	tkanmod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
-  	tkanmod = LINALG::Multiply(*tkanmod,false,*kanmod,false,true);
-  	
-  	// kammod: multiply with tmatrix
-  	tkammod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
-  	tkammod = LINALG::Multiply(*tkammod,false,*kammod,false,true);
-  	  	
+  	// kslnmod: multiply with tslmatrix
+  	tkslnmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
+  	tkslnmod = LINALG::Multiply(*tkslnmod,false,*kslnmod,false,true);
+    	
+  	// kammod: multiply with tslmatrix
+  	tkslmmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
+  	tkslmmod = LINALG::Multiply(*tkslmmod,false,*kslmmod,false,true);
+      
   	// friction
-  	// lmatrix: multiply with tmatrix 
-  	tlmatrix = LINALG::Multiply(*lmatrix_,false,*tmatrix_,false,true);
-  	 	
-  	// kaamod: multiply with tmatrix
-  	tkaamod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
-  	tkaamod = LINALG::Multiply(*tkaamod,false,*kaamod,false,false);
+  	// lmatrix: multiply with tslmatrix 
+  	tlmatrix = LINALG::Multiply(*lmatrix_,false,*tslmatrix,false,true);
   	
-  	// add tlmatirx to tkaamod
-  	tkaamod->Add(*tlmatrix,false,1.0,1.0);
-  	tkaamod->Complete(kaamod->DomainMap(),kaamod->RowMap());
+  	// kslslmod: multiply with tslmatrix
+  	tkslslmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
+  	tkslslmod = LINALG::Multiply(*tkslslmod,false,*kslslmod,false,false);
+    	
+  	// add tlmatirx to tkslslmod
+  	tkslslmod->Add(*tlmatrix,false,1.0,1.0);
+  	tkslslmod->Complete(kslslmod->DomainMap(),kslslmod->RowMap());
   	
   	if (gidofs->NumGlobalElements())
     {
-      //kaimod: multiply with tmatrix
-    	tkaimod = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
-    	tkaimod = LINALG::Multiply(*tkaimod,false,*kaimod,false,true);
+      //kslimod: multiply with tslmatrix
+    	tkslimod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
+    	tkslimod = LINALG::Multiply(*tkslimod,false,*kslimod,false,true);
     }	  		
-    
-    // famod: multiply with tmatrix    
-    tfamod = rcp(new Epetra_Vector(*gactivet_));
-    RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*tmatrix_,false,*invda,false,true);
-    temp->Multiply(false,*famod,*tfamod); 
+      
+   	if (gstdofs->NumGlobalElements())
+  	{
+  	  //kslstmod: multiply with tslmatrix
+  		tkslstmod = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
+  		tkslstmod = LINALG::Multiply(*tkslstmod,false,*kslstmod,false,true);
+  	}	  		
+    	    
+  	// fslmod: multiply with tmatrix    
+    tfslmod = rcp(new Epetra_Vector(*gslipt_));
+    RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*tslmatrix,false,*invdsl,false,true);
+    temp->Multiply(false,*fslmod,*tfslmod); 
     
     // friction
     // add r to famod
-    tfamod->Update(1.0,*r_,1.0);
+    tfslmod->Update(1.0,*r_,1.0);
   }
   
   // output for checking everything
@@ -1089,14 +1199,16 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
   // add matrix of normals to kteffnew
   kteffnew->Add(*nmatrix_,false,1.0,1.0);
-
- 
-  // add submatrices with tangents to kteffnew, if existing
-  if (tkanmod!=null) kteffnew->Add(*tkanmod,false,1.0,1.0);
-  if (tkammod!=null) kteffnew->Add(*tkammod,false,1.0,1.0);
-  if (tkaimod!=null) kteffnew->Add(*tkaimod,false,1.0,1.0);
-  if (tkaamod!=null) kteffnew->Add(*tkaamod,false,1.0,1.0);
+  // add matrix of tangents of sticky nodes to kteffnew
+  if(tstmatrix!=null) kteffnew->Add(*tstmatrix,false,1.0,1.0);
   
+  // add submatrices with tangents to kteffnew, if existing
+  if (tkslnmod!=null) kteffnew->Add(*tkslnmod,false,1.0,1.0);
+  if (tkslmmod!=null) kteffnew->Add(*tkslmmod,false,1.0,1.0);
+  if (tkslimod!=null) kteffnew->Add(*tkslimod,false,1.0,1.0);
+  if (tkslslmod!=null) kteffnew->Add(*tkslslmod,false,1.0,1.0);
+  if (tkslstmod!=null) kteffnew->Add(*tkslstmod,false,1.0,1.0);
+    
   // FillComplete kteffnew (square)
   kteffnew->Complete();
   
@@ -1109,10 +1221,16 @@ void CONTACT::Manager::EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
   // add i / ta subvectors to feffnew, if existing
   RCP<Epetra_Vector> fimodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
-  RCP<Epetra_Vector> tfamodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  RCP<Epetra_Vector> fstmodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  RCP<Epetra_Vector> tfslmodexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
+  
   if (fimod!=null) LINALG::Export(*fimod,*fimodexp);
-  if (tfamod!=null) LINALG::Export(*tfamod,*tfamodexp);
-  feffnew->Update(1.0,*fimodexp,1.0,*tfamodexp,1.0);
+  //if (fstmod!=null) LINALG::Export(*fstmod,*fstmodexp);
+  if (tfslmod!=null) LINALG::Export(*tfslmod,*tfslmodexp);
+  
+    
+  feffnew->Update(1.0,*fimodexp,1.0);
+  feffnew->Update(1.0,*tfslmodexp,1.0);
   
   // add weighted gap vector to feffnew, if existing
   RCP<Epetra_Vector> gexp = rcp(new Epetra_Vector(*(discret_.DofRowMap())));
@@ -1403,7 +1521,6 @@ void CONTACT::Manager::EvaluateBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   LINALG::SplitMatrix2x2(kssmod,gactivedofs_,gidofs,gactivedofs_,gidofs,kaamod,kaimod,kiamod,kiimod);
   LINALG::SplitMatrix2x2(ksnmod,gactivedofs_,gidofs,gndofrowmap_,tempmap,kanmod,tempmtx1,kinmod,tempmtx2);
   LINALG::SplitMatrix2x2(ksmmod,gactivedofs_,gidofs,gmdofrowmap_,tempmap,kammod,tempmtx1,kimmod,tempmtx2);
-  
   // output for checking everything
 #ifdef CONTACTDIMOUTPUT
   if(Comm().MyPID()==0)
@@ -2399,6 +2516,7 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
 {
   // get input parameter ctype
   string ctype   = scontact_.get<string>("contact type","none");
+  string ftype   = scontact_.get<string>("friction type","none");
   
   // assume that active set has converged and check for opposite
   activesetconv_=true;
@@ -2447,6 +2565,26 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
         nzold += cnode->n()[k] * cnode->lmold()[k];
       }
       
+      // friction
+      double tz;
+      double tjump;
+      
+      if(ftype=="tresca")
+      {	
+        // friction
+        // get tangent of contact node
+        double tangent[3];
+        tangent[0] = -cnode->n()[1];
+        tangent[1] =  cnode->n()[0];
+        tangent[2] =  0.0;
+        
+        // compute tangential part of Lagrange multiplier
+        tz = tangent[0]*cnode->lm()[0] + tangent[1]*cnode->lm()[1];
+        
+        // compute tangential part of Lagrange multiplier
+        tjump = tangent[0]*cnode->jump()[0] + tangent[1]*cnode->jump()[1];
+      }  
+      
       // check nodes of inactive set *************************************
       // (by definition they fulfill the condition z_j = 0)
       // (thus we only have to check ncr.disp. jump and weighted gap)
@@ -2482,6 +2620,12 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
           if (ctype!="meshtying")
           {
             cnode->Active() = false;
+            
+            // friction
+            if(ftype=="tresca")
+            {
+            	cnode->Slip() = false;    
+            }
             activesetconv_ = false;
           }
           else
@@ -2490,10 +2634,45 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
             activesetconv_ = true;    // no active set loop for mesh tying
           }
         }
+        // friction
+        else
+        {
+          if(ftype=="tresca")
+        	{
+          	double frbound = scontact_.get<double>("friction bound",0.0);
+          	double ct = scontact_.get<double>("semismooth ct",0.0);
+        		
+          	if(cnode->Slip() == false)	
+          	{
+          		// check (tz+ct*tjump)-frbound <= 0
+          		if(abs(tz+ct*tjump)-frbound <= 0)
+          		{
+          			
+          		}
+          		else
+          		{
+          			 cnode->Slip() = true;
+          			 activesetconv_ = false;
+          		}
+           	}
+          	else
+          	{
+         		   // check (tz+ct*tjump)-frbound > 0
+          		 if(abs(tz+ct*tjump)-frbound > 0)
+          		 {
+          			 
+          		 }
+          		 else
+          		 {
+          			 cnode->Slip() = false;
+          			 activesetconv_ = false;
+          		 }
+          	}
+        	}
+        }	
       }
     }
   }
-
   // broadcast convergence status among processors
   int convcheck = 0;
   int localcheck = activesetconv_;
@@ -2517,12 +2696,10 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
   gactivedofs_ = null;
   gactiven_ = null;
   gactivet_ = null;
-
-  // friction  
-  // reset displacement jumps (slave dofs)
-   jump_->Scale(0.0); 
-   StoreNodalQuantities("jump");
-      
+  gslipnodes_ = null;
+  gslipdofs_ = null;
+  gslipt_ = null;
+  
   // update active sets of all interfaces
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
@@ -2532,7 +2709,15 @@ void CONTACT::Manager::UpdateActiveSet(RCP<Epetra_Vector> disn)
     gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
     gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
     gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
+    gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
+    gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
+    gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
   }
+
+  // friction  
+  // reset displacement jumps (slave dofs)
+  jump_->Scale(0.0); 
+  StoreNodalQuantities("jump"); 
   
   // CHECK FOR ZIG-ZAGGING / JAMMING OF THE ACTIVE SET
   // *********************************************************************

@@ -1445,13 +1445,13 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
                                         double frbound, double ct)
 {
   // nothing to do if no active nodes
-  if (activenodes_==null)
+  if (slipnodes_==null)
   return;
   
   // loop over all active slave nodes of the interface
-  for (int i=0;i<activenodes_->NumMyElements();++i)
+  for (int i=0;i<slipnodes_->NumMyElements();++i)
   {
-    int gid = activenodes_->GID(i);
+    int gid = slipnodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CNode* cnode = static_cast<CNode*>(node);
@@ -1465,7 +1465,7 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     vector<int> lmrowownerT(1);
     vector<int> lmcol(colsize);
 
-    lmrowT[0] = activet_->GID(i);
+    lmrowT[0] = slipt_->GID(i);
     lmrowownerT[0] = cnode->Owner();
 
     if (colsize==3)
@@ -2016,17 +2016,12 @@ bool CONTACT::Interface::InitializeActiveSet(bool initialcontact)
   // create active node map and active dof map
   activenodes_ = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
   activedofs_  = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
-  
+    
   // create an empty slip node map and slip dof map 
- 
   // for the first time step (t=0) all nodes are stick nodes 
   slipnodes_   = rcp(new Epetra_Map(0,0,Comm()));
   slipdofs_    = rcp(new Epetra_Map(0,0,Comm()));
   
-  //FiXGIT: Only for develobing: Initializing slipnodes_ to activenodes_
-  slipnodes_ = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
-  slipdofs_  = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
-   
   // split active dofs into Ndofs, Tdofs and slipTdofs 
   SplitActiveDofs();
 
@@ -2043,7 +2038,13 @@ bool CONTACT::Interface::BuildActiveSet()
   int countdofs = 0;
   vector<int> mynodegids(snoderowmap_->NumMyElements());
   vector<int> mydofgids(sdofrowmap_->NumMyElements());
-
+  
+  // define local variables
+  int countslipnodes = 0;
+  int countslipdofs = 0;
+  vector<int> myslipnodegids(snoderowmap_->NumMyElements());
+  vector<int> myslipdofgids(sdofrowmap_->NumMyElements());
+  
   // loop over all slave nodes
   for (int i=0;i<snoderowmap_->NumMyElements();++i)
   {
@@ -2065,22 +2066,41 @@ bool CONTACT::Interface::BuildActiveSet()
         ++countdofs;
       }
     }
-  }
+    
+    // add node / dofs to temporary map IF slip
+    if (cnode->Slip())
+    {
+      myslipnodegids[countslipnodes] = cnode->Id();
+      ++countslipnodes;
+
+      for (int j=0;j<numdof;++j)
+      {
+        myslipdofgids[countslipdofs] = cnode->Dofs()[j];
+        ++countslipdofs;
+       }
+     }
+  }  
 
   // resize the temporary vectors
   mynodegids.resize(countnodes);
   mydofgids.resize(countdofs);
-
-  // communicate countnodes and countdofs among procs
-  int gcountnodes, gcountdofs;
+  myslipnodegids.resize(countslipnodes);
+  myslipdofgids.resize(countslipdofs);
+  
+  // communicate countnodes, countdofs, countslipnodes and countslipdofs among procs
+  int gcountnodes, gcountdofs, gcountslipnodes,gcountslipdofs;
   Comm().SumAll(&countnodes,&gcountnodes,1);
   Comm().SumAll(&countdofs,&gcountdofs,1);
-
+  Comm().SumAll(&countslipnodes,&gcountslipnodes,1);
+  Comm().SumAll(&countslipdofs,&gcountslipdofs,1);
+  
   // create active node map and active dof map
   activenodes_ = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
   activedofs_  = rcp(new Epetra_Map(gcountdofs,countdofs,&mydofgids[0],0,Comm()));
-
-  // split active dofs into Ndofs and Tdofs
+  slipnodes_ = rcp(new Epetra_Map(gcountslipnodes,countslipnodes,&myslipnodegids[0],0,Comm()));
+  slipdofs_  = rcp(new Epetra_Map(gcountslipdofs,countslipdofs,&myslipdofgids[0],0,Comm()));
+  
+  // split active dofs into Ndofs and Tdofs and slip dofs in Tslipdofs
   SplitActiveDofs();
 
   return true;
@@ -2096,6 +2116,7 @@ bool CONTACT::Interface::SplitActiveDofs()
   {
     activen_ = rcp(new Epetra_Map(0,0,Comm()));
     activet_ = rcp(new Epetra_Map(0,0,Comm()));
+    slipt_ = rcp(new Epetra_Map(0,0,Comm()));
     return true;
   }
 
@@ -2103,6 +2124,7 @@ bool CONTACT::Interface::SplitActiveDofs()
   {
     activen_ = rcp(new Epetra_Map(0,0,Comm()));
     activet_ = rcp(new Epetra_Map(0,0,Comm()));
+    slipt_ = rcp(new Epetra_Map(0,0,Comm()));
     return true;
   }
 
@@ -2155,25 +2177,23 @@ bool CONTACT::Interface::SplitActiveDofs()
   activen_ = rcp(new Epetra_Map(gcountN,countN,&myNgids[0],0,Comm()));
   activet_ = rcp(new Epetra_Map(gcountT,countT,&myTgids[0],0,Comm()));
 
-   
   // *******************************************************************
   // EXTRACTING TANGENTIAL DOFS FROM SLIP DOFS 
   // *******************************************************************
 
   // get out of here if slip set is empty
-   
   if (slipnodes_==null)
   {
-    slipt_ = rcp(new Epetra_Map(0,0,Comm()));
-    return true;
+  	slipt_ = rcp(new Epetra_Map(0,0,Comm()));
+  	return true;
   }
-
-  else if (slipnodes_->NumGlobalElements()==0)
+  
+  if (slipnodes_->NumGlobalElements()==0)
   {
-    slipt_ = rcp(new Epetra_Map(0,0,Comm()));
-    return true;
+  	slipt_ = rcp(new Epetra_Map(0,0,Comm()));
+  	return true;
   }
-
+  
   // define local variables
   int countslipT=0;
   vector<int> myslipTgids(slipnodes_->NumMyElements());
