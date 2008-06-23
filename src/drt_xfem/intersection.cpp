@@ -29,6 +29,9 @@ Maintainer: Ursula Mayer
 
 #ifdef CCADISCRET
 
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_Time.hpp>
+
 #include "intersection.H"
 
 #include "../drt_lib/drt_utils_fem_shapefunctions.H"
@@ -55,6 +58,8 @@ void XFEM::Intersection::computeIntersection(
   )
 {
 
+    TEUCHOS_FUNC_TIME_MONITOR(" XFEM::Intersection");
+  
     static int timestepcounter_ = -1;
     timestepcounter_++;
     bool xfemIntersection;
@@ -210,8 +215,8 @@ void XFEM::Intersection::computeIntersection(
     if(countMissedPoints_ > 0)
     	cout << "Number of missed points during the recovery copy = " << countMissedPoints_ << endl;
 
-    std::cout << "Intersection computed sucessfully in " << t_end  <<  " secs";
-    std::cout << endl << endl;
+    std::cout << "XFEM::Intersection: Success (" << t_end  <<  " secs), intersected elements: " << domainintcells.size();
+    std::cout << endl;
 }
 
 
@@ -1105,7 +1110,7 @@ void XFEM::Intersection::computeCDT(
         const DRT::Element*                     xfemElement,
         const BlitzMat&                         xyze_xfemElement,
         const map<int,BlitzVec3>&               currentcutterpositions,
-        map< int, DomainIntCells >&	            domainintcells,
+        map< int, DomainIntCells >&             domainintcells,
         map< int, BoundaryIntCells >&           boundaryintcells,
         int                                     timestepcounter_)
 {
@@ -1114,7 +1119,7 @@ void XFEM::Intersection::computeCDT(
     int nsurfPoints = 0;
     tetgenio in;
     tetgenio out;
-    char switches[] = "pnnQ";    //o2 Y
+    char switches[] = "pnnQY";    //o2 Y
     tetgenio::facet *f;
     tetgenio::polygon *p;
 
@@ -1221,8 +1226,8 @@ void XFEM::Intersection::computeCDT(
         in.facetmarkerlist[i] = faceMarker_[i] + facetMarkerOffset_;
 
 
-    in.save_nodes("tetin");
-    in.save_poly("tetin");
+//    in.save_nodes("tetin");
+//    in.save_poly("tetin");
     //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
     //  do quality mesh generation (q) with a specified quality bound
     //  (1.414), and apply a maximum volume constraint (a0.1)

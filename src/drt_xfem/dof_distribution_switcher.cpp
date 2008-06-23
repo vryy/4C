@@ -49,7 +49,9 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
     
     if (vector == null)
     {
+#ifdef DEBUG
       std::cout << "created new vector with all zeros" << endl;
+#endif
     }
     else
     {
@@ -165,10 +167,12 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
             }
         }
         
+#ifdef DEBUG
         if (completely_unchanged)
           cout << "completely unchanged vector" << endl;
         else
           cout << "modified vector" << endl;
+#endif
     }
     
     

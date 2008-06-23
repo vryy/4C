@@ -59,10 +59,12 @@ XFEM::InterfaceHandle::InterfaceHandle(
   XFEM::Intersection is;
   is.computeIntersection(xfemdis, cutterdis, currentcutterpositions_,elementalDomainIntCells_, elementalBoundaryIntCells_);
   
-  std::cout << " numcuttedelements = " << elementalDomainIntCells_.size() << endl;
 //  std::cout << "numcuttedelements (elementalDomainIntCells_)   = " << elementalDomainIntCells_.size() << endl;
 //  std::cout << "numcuttedelements (elementalBoundaryIntCells_) = " << elementalBoundaryIntCells_.size() << endl;
-  dsassert(elementalDomainIntCells_.size() == elementalBoundaryIntCells_.size(), "mismatch in cutted elements maps!");
+  if (elementalDomainIntCells_.size() != elementalBoundaryIntCells_.size())
+  {
+    dserror("mismatch in cutted elements maps!");  
+  }
   
   // sanity check, whether, we realy have integration cells in the map
   for (std::map<int,DomainIntCells>::const_iterator 
@@ -114,6 +116,8 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (xfemparams.get<std::string>("GMSH_DEBUG_OUT") == "Yes");
   
+  const bool gmsh_tree_output = false;
+  
   if (gmshdebugout)
   {
     // debug: write both meshes to file in Gmsh format
@@ -130,12 +134,6 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   
   if (gmshdebugout)
   {
-    // debug: write information about which structure we are in
-    std::stringstream filenameP;
-    filenameP << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step << ".pos";
-    cout << "writing '"<<filenameP.str()<<"...";
-    std::ofstream f_systemP(filenameP.str().c_str());
-    
     std::stringstream filename;
     filename << allfiles.outputfile_kenner << "_domains_" << std::setw(5) << setfill('0') << step << ".pos";
     cout << "writing '"<<filename.str()<<"...";
@@ -147,9 +145,6 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
       // stringstream for domains
       stringstream gmshfilecontent;
       gmshfilecontent << "View \" " << "Domains using CellCenter of Elements and Integration Cells \" {" << endl;
-      // stringstream for cellcenter points
-      stringstream gmshfilecontentP;
-      gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
       
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
@@ -170,19 +165,56 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           point(0,0)=cellcenterpos(0);
           point(1,0)=cellcenterpos(1);
           point(2,0)=cellcenterpos(2);
-          gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, 1, point) << endl;              
+             
         };
       };
       gmshfilecontent << "};" << endl;
       f_system << gmshfilecontent.str();
+    }
+    //f_system << IO::GMSH::getConfigString(3);
+    f_system.close();
+    cout << " done" << endl;
+  }
+  if (gmsh_tree_output)
+  {
+    // debug: write information about which structure we are in
+    std::stringstream filenameP;
+    filenameP << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step << ".pos";
+    cout << "writing '"<<filenameP.str()<<"...";
+    std::ofstream f_systemP(filenameP.str().c_str());
+    {
+      // stringstream for cellcenter points
+      stringstream gmshfilecontentP;
+      gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
+      
+      for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
+      {
+        DRT::Element* actele = xfemdis_->lColElement(i);
+        const XFEM::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele->Id(), actele->Shape());
+        XFEM::DomainIntCells::const_iterator cell;
+        for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
+        {
+          
+          BlitzMat cellpos(3,cell->NumNode()); 
+          cell->NodalPosXYZ(*actele, cellpos);
+          const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
+          
+          const int domain_id = PositionWithinCondition(cellcenterpos, *this);
+          
+          BlitzMat point(3,1);
+          point(0,0)=cellcenterpos(0);
+          point(1,0)=cellcenterpos(1);
+          point(2,0)=cellcenterpos(2);
+          gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, 1, point) << endl;              
+        };
+      };
       gmshfilecontentP << "};" << endl;
       f_systemP << gmshfilecontentP.str();
     }
     //f_system << IO::GMSH::getConfigString(3);
-    f_system.close();
     f_systemP.close();
     cout << " done" << endl;
-    //xTree_->printTree(step);
+    xTree_->printTree(step);
   }
   return;
 }

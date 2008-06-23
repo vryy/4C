@@ -15,6 +15,12 @@ Maintainer: Ursula Mayer
 #include "intersection_service.H"
 #include "../drt_io/io_gmsh.H"
 
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+}
+extern struct _FILES  allfiles;
+
 using namespace std;
 
 XFEM::XSearchTree::XSearchTree() :
@@ -184,7 +190,7 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
       if (ElementList_.size()>1) // dynamically grow tree
       {
 //        bool[8] do_refine = {false,false,false,false,false,false,false,false};
-        bool do_refine = false;
+        bool do_refine = true;
         map<const DRT::Element*, list<int> > ElementClassification;
         for (list< const DRT::Element* >::const_iterator myIt = ElementList_.begin(); myIt != ElementList_.end(); myIt++){
           list<int> childIdx = classifyElement(*myIt,currentpositions, do_refine);
@@ -412,7 +418,7 @@ void XFEM::XSearchTree::printTree(const int step) const{
     }
   std::stringstream filename;
   std::stringstream fc;
-  filename << "tree" << std::setw(5) << setfill('0') << step << ".pos";
+  filename << allfiles.outputfile_kenner << "_tree" << std::setw(5) << setfill('0') << step << ".pos";
   cout << " "<<filename.str()<<" ...";
   fc << "View \" " << "fsiOctree \" {" << endl;
   treeRoot_->printTree(fc);
