@@ -34,7 +34,7 @@ fsisurface_(NULL)
 {
 #ifdef PRESTRESS
 #ifdef POTSTRESS
-  dserror("Cannot use PRESTRESS && POSTSTRESS");
+  dserror("Cannot use PRESTRESS && POTSTRESS");
 #endif
 #ifdef STRUGENALPHA_BE
   dserror("Cannot use STRUGENALPHA_BE with prestressing");
