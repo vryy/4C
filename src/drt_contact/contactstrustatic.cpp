@@ -403,12 +403,6 @@ void contact_stru_static_drt()
     // R{istep,numiter=0} = F_int{istep,numiter=0} - F_ext{istep}
     fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
 
-    // blank residual at DOFs on Dirichlet BC
-    {
-      Epetra_Vector fresmcopy(*fresm);
-      fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
-    }
-    
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
     
@@ -502,12 +496,6 @@ void contact_stru_static_drt()
       // R{istep,numiter} = F_int{istep,numiter} - F_ext{istep}
       fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
 
-      // blank residual at DOFs on Dirichlet BC
-      {
-        Epetra_Vector fresmcopy(*fresm);
-        fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
-      }
-  
       // keep a copy of fresm for contact forces / equilibrium check
       RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
       
@@ -620,12 +608,6 @@ void contact_stru_static_drt()
       // R{istep,numiter=0} = F_int{istep,numiter=0} - F_ext{istep}
       fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
 
-      // blank residual at DOFs on Dirichlet BC
-      {
-        Epetra_Vector fresmcopy(*fresm);
-        fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
-      }
-      
       // keep a copy of fresm for contact forces / equilibrium check
       RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
       
@@ -719,12 +701,6 @@ void contact_stru_static_drt()
         // R{istep,numiter} = F_int{istep,numiter} - F_ext{istep}
         fresm->Update(1.0,*fint,-1.0,*fextn,0.0);
 
-        // blank residual at DOFs on Dirichlet BC
-        {
-          Epetra_Vector fresmcopy(*fresm);
-          fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
-        }
-    
         // keep a copy of fresm for contact forces / equilibrium check
         RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
            

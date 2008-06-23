@@ -276,12 +276,6 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
 
-  // blank residual at DOFs on Dirichlet BC
-  {
-    Epetra_Vector fresmcopy(*fresm_);
-    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-  }
-
   // keep a copy of fresm for contact forces / equilibrium check
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
   
@@ -502,12 +496,6 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
 #else
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
-
-  // blank residual at DOFs on Dirichlet BC
-  {
-    Epetra_Vector fresmcopy(*fresm_);
-    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-  }
 
   // keep a copy of fresm for contact forces / equilibrium check
   RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
@@ -796,12 +784,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
 #endif
-    // blank residual DOFs that are on Dirichlet BC
-    {
-      Epetra_Vector fresmcopy(*fresm_);
-      fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-    }
-
+    
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
     
@@ -1108,12 +1091,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
 #endif
-    // blank residual DOFs that are on Dirichlet BC
-    {
-      Epetra_Vector fresmcopy(*fresm_);
-      fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-    }
-
+    
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm_));
     
