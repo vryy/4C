@@ -69,7 +69,7 @@ extern struct _STATIC_VAR  *statvar;
 namespace CONTACT
 {
 /*----------------------------------------------------------------------*
-  | structural nonlinear static with contact                popp 03/08  |
+ | structural nonlinear statics with contact                 popp 03/08 |
  *----------------------------------------------------------------------*/
 void contact_stru_static_drt()
 {
@@ -202,6 +202,8 @@ void contact_stru_static_drt()
     RCP<Epetra_Vector> activetoggle =rcp(new Epetra_Vector(*(contactmanager->SlaveRowNodes())));
     reader.ReadVector(zold,"lagrmultold");
     reader.ReadVector(activetoggle,"activetoggle");
+    
+    // set old Lagrange multipliers for contact restart
     *(contactmanager->LagrMultOld())=*zold;
     contactmanager->StoreNodalQuantities("lmold");
     contactmanager->ReadRestart(activetoggle);
@@ -353,7 +355,7 @@ void contact_stru_static_drt()
     //********************************************************************
     // 1) SEMI-SMOOTH NEWTON
     // The search for the correct active set (=contact nonlinearity) and
-    // the large deformstion linearization (=geometrical nonlinearity) are
+    // the large deformation linearization (=geometrical nonlinearity) are
     // merged into one semi-smooth Newton method and solved within ONE
     // iteration loop
     //********************************************************************
@@ -421,7 +423,8 @@ void contact_stru_static_drt()
     contactmanager->Evaluate(stiff_mat,fresm,0);
     
     //---------------------------------------------------- contact forces
-    // (no resetting of LM necessary for semi-smooth Newton!)
+    // (no resetting of LM necessary for semi-smooth Newton, as there
+    // will never be a repetition of a time / load step!)
     contactmanager->ContactForces(fresmcopy);
         
     //----------------------------------------------- build res/disi norm
@@ -436,9 +439,10 @@ void contact_stru_static_drt()
     
     //===========================================start of equilibrium loop
     // this is a semi-smooth Newton method, as it not only includes the
-    // geometrical non-linearity but also the active set search
+    // geometrical nonlinearity but also the active set search
     //=====================================================================
-    while (((norm > statvar->tolresid) || (disinorm > statvar->toldisp) || contactmanager->ActiveSetConverged()==false) && numiter < statvar->maxiter)
+    while (((norm > statvar->tolresid) || (disinorm > statvar->toldisp)
+            || contactmanager->ActiveSetConverged()==false) && numiter < statvar->maxiter)
     {
       //----------------------- apply dirichlet BCs to system of equations
       disi->PutScalar(0.0);   // Useful? depends on solver and more
@@ -509,6 +513,10 @@ void contact_stru_static_drt()
       contactmanager->InitializeMortar(numiter+1);
       contactmanager->EvaluateMortar(numiter+1);
       
+      // this is the correct place to update the active set!!!
+      // (on the one hand we need the new weighted gap vector g, which is
+      // computed in EvaluateMortar() above and on the other hand we want to
+      // run the Evaluate()routine below with the NEW active set already)
       contactmanager->UpdateActiveSetSemiSmooth(disn);
       
       contactmanager->Initialize(numiter+1);
@@ -743,6 +751,8 @@ void contact_stru_static_drt()
         dserror("Newton unconverged in %d iterations",numiter);
 
       // update active set
+      // (in the fixed-point-approach this is done only after convergence
+      // of the Newton loop representing the geometrical nonlinearity)
       contactmanager->UpdateActiveSet(disn);
     }
     //================================================ end active set loop
@@ -768,11 +778,11 @@ void contact_stru_static_drt()
       actdis->Evaluate(params,null,null,null,null,null);
     }
 
-    //------------------------------------------ increment time/load step
+    //------------------------------------------- increment time/load step
     ++istep;      // load step n := n + 1
     time += dt;   // load factor / pseudo time  t_n := t_{n+1} = t_n + Delta t
 
-    //---------------------------------------------- print contact to screen
+    //-------------------------------------------- print contact to screen
     contactmanager->PrintActiveSet();      
         
     //-------------------------------- update contact Lagrange multipliers

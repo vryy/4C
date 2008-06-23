@@ -37,6 +37,8 @@ StruGenAlpha(params,dis,solver,output)
     vector<DRT::Condition*> contactconditions(0);
     discret_.GetCondition("Contact",contactconditions);
     if (!contactconditions.size()) dserror("No contact boundary conditions present");
+    
+    // store integration parameter alphaf into cmanager as well
     double alphaf = params_.get<double>("alpha f",0.459);
     contactmanager_ = rcp(new CONTACT::Manager(discret_,alphaf));
   }
@@ -241,17 +243,18 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 
-  //-------------------------------------------- compute residual forces
+  //-------------------------------------------- compute dynamic equilibrium
   // Res = M . A_{n+1-alpha_m}
   //     + C . V_{n+1-alpha_f}
   //     + F_int(D_{n+1-alpha_f})
   //     + F_c(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
   
-  // FIXME: Strictly speaking we have to include the contact forces
-  // here as well, but it does not matter for the following calculations,
-  // so maybe we could just remove it and don't care about the wrong
-  // predictor res-norm...?
+  // Please note that due to the contact modifications to the l.h.s. and to
+  // the r.h.s below, this dynamic equilibrium duoes NOT play the role of
+  // the residual here, as it does in structural dynamics without contact.
+  // Of course it is part of the contact residual, but the normal and
+  // tangential contact conditions have to be considered as well.
   
   // add mid-inertial force
   mass_->Multiply(false,*accm_,*finert_);
@@ -284,6 +287,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
+  // (still without contact, this is just Gen-alpha stuff here)
 #ifdef STRUGENALPHA_BE
   stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
 #else
@@ -299,7 +303,7 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   }
   stiff_->Complete();
   
-  //-------------------------- make contact modifications to lhs and rhs
+  //------------------------- make contact modifications to lhs and rhs
   contactmanager_->SetState("displacement",disn_);
   
   contactmanager_->InitializeMortar(0);
@@ -461,17 +465,18 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 
-  //-------------------------------------------- compute residual forces
+  //-------------------------------------------- compute dynamic equilibrium
   // Res = M . A_{n+1-alpha_m}
   //     + C . V_{n+1-alpha_f}
   //     + F_int(D_{n+1-alpha_f})
   //     + F_c(D_{n+1-alpha_f})
   //     - F_{ext;n+1-alpha_f}
   
-  // FIXME: Strictly speaking we have to include the contact forces
-  // here as well, but it does not matter for the following calculations,
-  // so maybe we could just remove it and don't care about the wrong
-  // predictor res-norm...?
+  // Please note that due to the contact modifications to the l.h.s. and to
+  // the r.h.s below, this dynamic equilibrium duoes NOT play the role of
+  // the residual here, as it does in structural dynamics without contact.
+  // Of course it is part of the contact residual, but the normal and
+  // tangential contact conditions have to be considered as well.
   
   // add mid-inertial force
   mass_->Multiply(false,*accm_,*finert_);
@@ -503,6 +508,7 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
+  // (still without contact, this is just Gen-alpha stuff here)
 #ifdef STRUGENALPHA_BE
   stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
 #else
@@ -594,6 +600,8 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 
   // check whether we have a stiffness matrix that is filled
   // and whether mass and damping are present
+  // (here you can note the procedural change compared to standard
+  // Gen-alpha, where stiff_ must NOT be filled at this point)
   if (!stiff_->Filled()) dserror("stiffness must be filled here");
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
@@ -751,11 +759,11 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
       }
     }
 
-    //------------------------------------------ compute residual forces
+    //------------------------------------------ compute dynamic equilibrium
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
     //     + F_int(D_{n+1-alpha_f})
-    //      + F_c(D_{n+1-alpha_f})
+    //     + F_c(D_{n+1-alpha_f})
     //     - F_{ext;n+1-alpha_f}
     
     // add inertia mid-forces
@@ -787,6 +795,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
     
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
+    // (again without contact, this is just Gen-alpha stuff here)
   #ifdef STRUGENALPHA_BE
     stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
   #else
@@ -860,7 +869,7 @@ void CONTACT::ContactStruGenAlpha::FullNewton()
 
 
 /*----------------------------------------------------------------------*
- |  do semi-smmoth Newton iteration (public)                  popp 06/08|
+ |  do semi-smooth Newton iteration (public)                  popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 {
@@ -893,6 +902,8 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
 
   // check whether we have a stiffness matrix that is filled
   // and whether mass and damping are present
+  // (here you can note the procedural change compared to standard
+  // Gen-alpha, where stiff_ must NOT be filled at this point)
   if (!stiff_->Filled()) dserror("stiffness must be filled here");
   if (!mass_->Filled()) dserror("mass matrix must be filled here");
   if (damping)
@@ -907,6 +918,9 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
   timer.ResetStartTime();
   bool print_unconv = true;
 
+  // active set search and geometrical nonlinearity are merged into
+  // ONE Newton loop, thus we have to check for convergence of the
+  // active set here, too!
   while ((!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) ||
           !contactmanager_->ActiveSetConverged()) && numiter<=maxiter)
   {   
@@ -1051,7 +1065,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       }
     }
 
-    //------------------------------------------ compute residual forces
+    //------------------------------------------ compute dynamic equilibrium
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
     //     + F_int(D_{n+1-alpha_f})
@@ -1087,6 +1101,7 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
     
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
+    // (again without contact, this is just Gen-alpha stuff here)
   #ifdef STRUGENALPHA_BE
     stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
   #else
@@ -1110,6 +1125,10 @@ void CONTACT::ContactStruGenAlpha::SemiSmoothNewton()
       contactmanager_->InitializeMortar(numiter+1);
       contactmanager_->EvaluateMortar(numiter+1);
       
+      // this is the correct place to update the active set!!!
+      // (on the one hand we need the new weighted gap vector g, which is
+      // computed in EvaluateMortar() above and on the other hand we want to
+      // run the Evaluate()routine below with the NEW active set already)
       contactmanager_->UpdateActiveSetSemiSmooth(disn_); 
       
       contactmanager_->Initialize(numiter+1);
@@ -1226,6 +1245,7 @@ void CONTACT::ContactStruGenAlpha::Update()
   contactmanager_->PrintActiveSet();
     
   //---------------------------------- store Lagrange multipliers, D and M
+  // (we need this for interpolation of the next generalized mid-point)
   RCP<Epetra_Vector> z = contactmanager_->LagrMult();
   RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
   zold->Update(1.0,*z,0.0);
@@ -1537,6 +1557,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
+      // initialize convergence status and step no. for active set
       contactmanager_->ActiveSetConverged() = false;
       contactmanager_->ActiveSetSteps() = 1;
 
@@ -1565,6 +1586,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
+      // initialize convergence status and step no. for active set
       contactmanager_->ActiveSetConverged() = false;
       contactmanager_->ActiveSetSteps() = 1;
 
@@ -1578,7 +1600,7 @@ void CONTACT::ContactStruGenAlpha::Integrate()
         // LOOP3: nonlinear iteration (Newton)
         FullNewton();
 
-        // update of active set
+        // update of active set (fixed-point)
         contactmanager_->UpdateActiveSet(disn_);
       }
       

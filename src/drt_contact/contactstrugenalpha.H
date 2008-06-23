@@ -65,17 +65,29 @@ public:
   /*!
   \brief do full Newton iteration
 
+  PRIMAL-DUAL ACTIVE SET STRATEGY is interpreted as a fixed-point
+  method: The search for the correct active set (=contact nonlinearity)
+  is represented by a fixed-point approach, whereas the large deformation
+  linearization (=geimetrical nonlinearity) is treated by a standard
+  Newton scheme. This yields TWO nested iteration loops!
+
   */
   void FullNewton();
 
   /*!
   \brief do semi-smooth full Newton iteration
 
+  PRIMAL-DUAL ACTIVE SET STRATEGY is interpreted as a semi-smooth Newton
+  method: The search for the correct active set (=contact nonlinearity)
+  and the large deformstion linearization (=geometrical nonlinearity) are
+  merged into one semi-smooth Newton method and can therefore besolved
+  within ONE iteration loop!
+  
   */
   void SemiSmoothNewton();
     
   /*!
-    \brief update configuration and output to file/screen
+  \brief update configuration and output to file/screen
 
   */
   virtual void UpdateandOutput();
