@@ -252,27 +252,6 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  /* the following is not necessary */
-  // make temporary copy of system vectors
-  //Teuchos::RCP<Epetra_Vector> systemvectoraux = Teuchos::null;  // auxiliar system vector
-  //if (systemvector != null)
-  //  systemvectoraux = systemvector;
-  //else if (systemvectord != null)
-  //  systemvectoraux = systemvectord;
-  //else if (systemvectordd != null)
-  //  systemvectoraux = systemvectordd;
-  //else
-  //  dserror("At least one system vector has to be unequal Null");
-  //
-  //Epetra_Vector backup((*systemvectoraux));
-  //if (systemvector != null)
-  //  backup = Epetra_Vector((*systemvector));  // system vector (vel. in fluids, displ. in solids)
-  //Epetra_Vector backupd((*systemvectoraux));
-  //if (systemvectord != null)
-  //  backupd = Epetra_Vector((*systemvectord));  // 1st derivative
-  //Epetra_Vector backupdd((*systemvectoraux));
-  //if (systemvectordd != null)
-  //  backupdd = Epetra_Vector((*systemvectordd));  // 2nd derivative
 
   multimap<string,RefCountPtr<Condition> >::iterator fool;
   //--------------------------------------------------------
@@ -322,30 +301,6 @@ void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
                          systemvector,systemvectord,systemvectordd,toggle);
   }
 
-  /* the following is not necessary */
-  // copy all values not marked as Dirichlet in toggle from
-  // temporary copy back to systemvector
-  //if (systemvector != null)
-  //{
-  //  const int mylength = (*systemvector).MyLength();
-  //  for (int i=0; i<mylength; ++i)
-  //    if ((*toggle)[i]==0.0)
-  //      (*systemvector)[i] = backup[i];
-  //}
-  //if (systemvectord != null)
-  //{
-  //  const int mylength = (*systemvectord).MyLength();
-  //  for (int i=0; i<mylength; ++i)
-  //    if ((*toggle)[i]==0.0)
-  //      (*systemvectord)[i] = backupd[i];
-  //}
-  //if (systemvectordd != null)
-  //{
-  //  const int mylength = (*systemvectordd).MyLength();
-  //  for (int i=0; i<mylength; ++i)
-  //    if ((*toggle)[i]==0.0)
-  //      (*systemvectordd)[i] = backupdd[i];
-  //}
 
   return;
 }
