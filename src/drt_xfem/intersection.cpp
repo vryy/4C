@@ -725,10 +725,10 @@ int XFEM::Intersection::addIntersectionPoint(
     const bool                      doSVD
     ) const
 {
-
-	int numInterfacePoints = 0;
-
- 	InterfacePoint ip;
+  
+  int numInterfacePoints = 0;
+  InterfacePoint ip;
+  
     if(lines)
     {
         ip.nsurf = 1;
@@ -769,13 +769,15 @@ int XFEM::Intersection::addIntersectionPoint(
         numInterfacePoints++;
 
         // recursive call
-        for(int i = 0; i < 8; i++)
+        // for linear lines and Cartesian surfaces no more than one intersection point can be expected
+        if(doSVD)
+          for(int i = 0; i < 8; i++)
             numInterfacePoints += computeNewStartingPoint(
                                         surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, surfaceId, lineId, xsi,
                                         upperLimits[i], lowerLimits[i], interfacePoints, lines, doSVD);
 
     }
-	return numInterfacePoints;
+    return numInterfacePoints;
 }
 
 

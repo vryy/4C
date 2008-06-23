@@ -843,6 +843,8 @@ void XFEM::checkGeoType(
           } 
         }
       }
+      if(CartesianCount > 2)  
+        cartesian = false;
     }
     else
       dserror("dimension of element is not correct");
