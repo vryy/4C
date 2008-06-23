@@ -424,8 +424,8 @@ void contact_stru_static_drt()
     
     // blank residual at DOFs on Dirichlet BC
     {
-      Epetra_Vector fresmcopy(*fresm);
-      fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
+      Epetra_Vector fresmdbc(*fresm);
+      fresm->Multiply(1.0,*invtoggle,fresmdbc,0.0);
     }
         
     //---------------------------------------------------- contact forces
@@ -530,8 +530,8 @@ void contact_stru_static_drt()
       
       // blank residual at DOFs on Dirichlet BC
       {
-        Epetra_Vector fresmcopy(*fresm);
-        fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
+        Epetra_Vector fresmdbc(*fresm);
+        fresm->Multiply(1.0,*invtoggle,fresmdbc,0.0);
       }
           
       //--------------------------------------------------- contact forces
@@ -641,8 +641,8 @@ void contact_stru_static_drt()
       
       // blank residual at DOFs on Dirichlet BC
       {
-        Epetra_Vector fresmcopy(*fresm);
-        fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
+        Epetra_Vector fresmdbc(*fresm);
+        fresm->Multiply(1.0,*invtoggle,fresmdbc,0.0);
       }
           
       //---------------------------------------------------- contact forces
@@ -740,8 +740,8 @@ void contact_stru_static_drt()
         
         // blank residual at DOFs on Dirichlet BC
         {
-          Epetra_Vector fresmcopy(*fresm);
-          fresm->Multiply(1.0,*invtoggle,fresmcopy,0.0);
+          Epetra_Vector fresmdbc(*fresm);
+          fresm->Multiply(1.0,*invtoggle,fresmdbc,0.0);
         }
             
         //--------------------------------------------------- contact forces
