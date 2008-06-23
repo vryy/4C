@@ -504,8 +504,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&genalpha);
   DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
   DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
-
-
+  setStringToIntegralParameter("GENAVG","ImrLike",
+                               "mid-average type of internal forces",
+                               tuple<std::string>("Vague",
+                                                  "ImrLike",
+                                                  "TrLike"),
+                               tuple<int>(STRUCT_DYNAMIC::genavg_vague,
+                                          STRUCT_DYNAMIC::genavg_imrlike,
+                                          STRUCT_DYNAMIC::genavg_trlike),
+                               &genalpha);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scontact = list->sublist("STRUCTURAL CONTACT",false,"");

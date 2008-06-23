@@ -144,7 +144,6 @@ void strudyn_direct()
       // create time integrator
       sti = rcp(new StruTimIntGenAlpha(sdyn, genalphaparams,
                                        *actdis, solver, output));
-
     }
     break;
     //==================================================================

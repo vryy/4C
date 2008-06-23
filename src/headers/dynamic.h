@@ -71,6 +71,18 @@ enum
     genalpha                    /* generalised-alpha time integrator, 
                                  * new style */
    }               Typ;         /* type of time integration algorithm */
+enum _genavgtype
+   {
+    genavg_vague,               /* undefined mid-averaging type */
+    genavg_imrlike,             /* alphaf-mid-averaging is done IMR-like, i.e.
+                                 *    F_{int,m} = F_{int}(D_m)
+                                 *              = F_{int}( (1-alpha_f)*D_{n+1} + alpha_f*D_n )
+                                 * (IMR means implicit mid-point rule.) */
+    genavg_trlike               /* alphaf-mid-averaging is done TR-like, i.e.
+                                 *    F_{int,m} = (1-alpha_f)*F_{int,n+1} + alpha_f*F_{int,n}
+                                 *              = (1-alpha_f)*F_{int}(D_{n+1}) + alpha_f*F_{int}(D_n)
+                                 * (TR means trapezoidal rule.) */
+   }               genavgtype;  /*  alphaf-mid-average type for generalised-alpha time integration */
 enum _nlnSolvTyp
    {
     fullnewton,                 /* full Newton-Raphson */
@@ -85,7 +97,7 @@ enum _PredType
      pred_constdis,             /* constant displacements */
      pred_constdisvelacc        /* constant displacements, velocities and accelerations */
    }               predtype;    /* predictor type */
-enum
+enum _convcheck
    {
      absres_or_absdis,          /* absolute norms of residual forces
                                  * OR iterative displacement increments */
@@ -99,11 +111,11 @@ enum
                                  * displacement increments */
      relres_or_reldis,          /* relative norms of residual forces
                                  * OR iterative displacement increments */
-     relres_and_reldis,          /* relative norms of residual forces
+     relres_and_reldis,         /* relative norms of residual forces
                                  * AND iterative displacement increments */
-     linuzawa,
-     nonlinuzawa
-   }               convcheck;
+     linuzawa,                  /* linear Uzawa for constraint system */
+     nonlinuzawa                /* non-linear Uzawa for constraint system */
+   }               convcheck;   /* convergence check of solution technique */
 INT                updevry_disp;/* write result very updevry step */
 INT                updevry_stress;/* write result very updevry step */
 INT                res_write_evry;/* write restart every res_write_evry step */
