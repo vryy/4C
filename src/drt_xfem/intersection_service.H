@@ -29,8 +29,11 @@ namespace XFEM
 
 enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER };
 
-    //! tolerance 1e-14 used for residuals in all Newton-methods
+    //! tolerance 1e-14 used for residuals in Newton-methods
     const double                 TOL14 = 1e-14;
+    
+    //! tolerance 1e-13 used for residuals in Newton-methods
+    const double                 TOL13 = 1e-13;
 
     //! tolerance 1e-7 
     const double                 TOL7 = 1e-7;
@@ -102,6 +105,17 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER };
     {
         v /= Norm2(v);
         return;
+    }
+    
+    /*!
+    \brief sum up the absulte value of all entries of a vector
+    \return sum
+    */   
+    inline double SumOfFabsEntries(
+        BlitzVec3&     v  ///< vector 
+        )
+    {
+        return abs(v(0)) + abs(v(1)) + abs(v(2));
     }
     
     

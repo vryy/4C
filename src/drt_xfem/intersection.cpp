@@ -74,7 +74,6 @@ void XFEM::Intersection::computeIntersection(
     //  k < xfemdis->NumMyColElements()
     for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
     {
-        //printf("element = %d\n", k);
         xfemIntersection = false;
         EleGeoType xfemGeoType = HIGHERORDER;
         EleGeoType cutterGeoType = HIGHERORDER;
@@ -124,6 +123,7 @@ void XFEM::Intersection::computeIntersection(
             //}// for-loop over all geometryMap
         }// for-loop over all xfemConditions
         
+        //debugIntersection(xfemElement, cutterElements);
         const vector<RCP<DRT::Element> > xfemElementSurfaces = xfemElement->Surfaces();
         const vector<RCP<DRT::Element> > xfemElementLines = xfemElement->Lines();
         
@@ -136,7 +136,7 @@ void XFEM::Intersection::computeIntersection(
             const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
             const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
 
-            //debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
+            // debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
             // number of internal points
             int numInternalPoints = 0;
             // number of surface points
@@ -372,12 +372,13 @@ bool XFEM::Intersection::collectIntersectionPoints(
     upLimit  =  1.0;
     loLimit  = -1.0;
 
+   
     const bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, upLimit, loLimit, xsi, doSVD);
-
+    
     if(intersected)
         addIntersectionPoint( surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit,
                               interfacePoints, surfaceId, lineId, lines, doSVD);
-
+  
 
     // in this case a node of this line lies on the facet of the xfem element
     // but there is no intersection within the element
@@ -547,7 +548,7 @@ bool computeCurveSurfaceIntersectionT(
     bool singular = false;
     bool intersection = true;
     int iter = 0;
-    const int maxiter = 30;
+    const int maxiter = 20;
     double residual = 1.0;
     static BlitzMat3x3 A;
     static BlitzVec3   b;
@@ -555,7 +556,7 @@ bool computeCurveSurfaceIntersectionT(
 
     updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
 
-    while(residual > XFEM::TOL14)
+    while(residual > XFEM::TOL13)
     {
         updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
 
@@ -573,7 +574,6 @@ bool computeCurveSurfaceIntersectionT(
               iter = maxiter + 1;
             }          
             dx = 0.0;
-            //printf("finish implementation\n");
         }
          
         //cout << "SINGULAR << endl;
@@ -582,13 +582,15 @@ bool computeCurveSurfaceIntersectionT(
         residual = XFEM::Norm2(b);
         iter++;
 
-        if(iter >= maxiter )
+        //printf("xsi = %20.16f   %20.16f   %20.16f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
+        if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > 10000)
         {
             intersection = false;
             break;
         }
     }
 
+    //printf("xsi = %f   %f   %f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
     if(intersection)
     {
         if( (xsi(0) > (upLimit(0)+XFEM::TOL7)) || (xsi(1) > (upLimit(1)+XFEM::TOL7)) || (xsi(2) > (upLimit(2)+XFEM::TOL7))  ||
@@ -873,8 +875,7 @@ void XFEM::Intersection::computeConvexHull(
     vector<double>              vertex(3,0);
     vector< vector<double> >    vertices;
     InterfacePoint              midpoint;
-
-
+    
     if(interfacePoints.size() > 2)
     {
         midpoint = computeMidpoint(interfacePoints);
@@ -3796,7 +3797,6 @@ void XFEM::Intersection::debugIntersectionOfSingleElements(
     const DRT::Element*                         cutterElement,
     const std::map<int,BlitzVec3>&              currentcutterpositions) const
 {
-  int count = 0;
   ofstream f_system("intersectionOfSingleElements.pos");
   f_system << "View \" IntersectionOfSingleElements" << " \" {" << endl;
   
