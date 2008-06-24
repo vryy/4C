@@ -22,6 +22,7 @@ Maintainer: Moritz Frenzel
 extern struct _MATERIAL *mat;
 
 
+
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         06/08|
  *----------------------------------------------------------------------*/
@@ -33,7 +34,8 @@ MAT::ContChainNetw::ContChainNetw()
   li_ = rcp(new vector<vector<double> >);
   li0_ = rcp(new vector<vector<double> >);
   lambda_ = rcp(new vector<vector<double> >);
-  ni0_ = rcp(new vector<Epetra_SerialDenseMatrix>);
+  ni_ = rcp(new vector<Epetra_SerialDenseMatrix>);
+  stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
 }
 
 
@@ -73,7 +75,7 @@ void MAT::ContChainNetw::Pack(vector<char>& data) const
   {
     AddtoPack(data,li_->at(var));
     AddtoPack(data,li0_->at(var));
-    AddtoPack(data,ni0_->at(var));
+    AddtoPack(data,ni_->at(var));
   }
   
   return;
@@ -104,7 +106,7 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
   if (histsize == 0) isinit_=false;
   li_ = rcp(new vector<vector<double> >);
   li0_ = rcp(new vector<vector<double> >);
-  ni0_ = rcp(new vector<Epetra_SerialDenseMatrix>);
+  ni_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   for (int var = 0; var < histsize; ++var) {
     vector<double> li;
     vector<double> li0;
@@ -114,7 +116,7 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,tmp);
     li_->push_back(li);
     li0_->push_back(li);
-    ni0_->push_back(tmp);
+    ni_->push_back(tmp);
   }
 
   if (position != (int)data.size())
@@ -135,10 +137,12 @@ void MAT::ContChainNetw::Initialize(const int numgp)
   li0_ = rcp(new vector<vector<double> > (numgp));
   li_ = rcp(new vector<vector<double> > (numgp));
   lambda_ = rcp(new vector<vector<double> > (numgp));
-  ni0_ = rcp(new vector<Epetra_SerialDenseMatrix>);
+  ni_ = rcp(new vector<Epetra_SerialDenseMatrix>);
+  stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   // initial basis is identity
   Epetra_SerialDenseMatrix id(3,3);
   for (int i=0; i<3; ++i) id(i,i) = 1.0;
+  Epetra_SerialDenseMatrix initstress(3,3);
   
   // initialize cell dimensions
   for(int gp=0; gp<numgp; ++gp){
@@ -155,7 +159,8 @@ void MAT::ContChainNetw::Initialize(const int numgp)
       li_->at(gp)[i] = li0_->at(gp)[i];
       lambda_->at(gp)[i] = 0.0;
     }
-    ni0_->push_back(id);
+    ni_->push_back(id);
+    stresses_->push_back(initstress);
   }
 
   mytime_ = 0.0;
@@ -233,16 +238,10 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // Elasticity = lambda (Cinv x Cinv) + 2(mue - lambda ln(J))(Cinv o Cinv) 
   Epetra_SerialDenseVector Siso1(Cinv);
   Siso1.Scale(lambda*lJ-mue);
-//  if (gp==0){
-//    cout << "before isotrop" << endl <<(*stress);
-//  }
   *stress += Siso1;
   Siso1 = Id;
   Siso1.Scale(mue);
   *stress += Siso1;
-//  if (gp==0){
-//    cout << "after isotrop" << endl <<(*stress);
-//  }
   
   AddtoCmatHolzapfelProduct((*cmat),Cinv,2*(mue-lambda*lJ));
   for (int i = 0; i < 6; ++i) {
@@ -256,178 +255,189 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // the chain stiffness factor
   const double chn_stiffact = boltzmann * abstemp * nchain / (4.0*A);
   
-  const double time = params.get("total time",-1.0);
-  double rem_time = time;
-  const double kappa = matdata_->m.contchainnetw->relax; // relaxation time for remodeling
-  const double decay = exp(-kappa*rem_time);
-
-  // initial cell dimensions (isotropy)
+  // initial cell dimensions
   vector<double> li0sq(dim);
   for (int i=0; i<dim; ++i) li0sq[i] = li0_->at(gp)[i]*li0_->at(gp)[i];
   r0 = sqrt(li0sq[0] + li0sq[1] + li0sq[2]);
-
   // scalar to arrive at stressfree reference conf
   const double stressfree = - chn_stiffact * ( 1.0/L + 1.0/(4.0*r0*(1.0-r0/L)*(1.0-r0/L)) - 1.0/(4.0*r0) );
 
   // structural tensors Ni0
-  vector<LINALG::SerialDenseMatrix> Ni0(dim);
-  for (int k=0; k<dim; ++k){
-    LINALG::SerialDenseMatrix N0(3,3);
-    for (int i=0; i<dim; ++i)
-      for (int j=0; j<dim; ++j)
-        N0(i,j) = (ni0_->at(gp)(i,k)) * (ni0_->at(gp)(j,k));
-    Ni0.at(k) = N0;
-  }
+  vector<Epetra_SerialDenseMatrix> Ni = EvaluateStructTensors(gp);
   // 'non-standard' invariants representing stretch^2 in n0_i direction
-  vector<double> I(dim,0);
-  for (int i=0; i<dim; ++i){
-    LINALG::SerialDenseMatrix CNi0(3,3);
-    CNi0.Multiply('N','N',1.0,CG,Ni0.at(i),0.0);
-    I[i] = CNi0(0,0) + CNi0(1,1) + CNi0(2,2); // trace(C:Ni0)
-  }
-//  for(int j=0; j<8; ++j){
-//    for (int i=0; i<3; ++i){
-//      cout << li_->at(j)[i] << ",";
-//    }
-//    cout << "; gp="<<j<<endl;
-//  }
-
-  // trial S to compute eigenvalues *******************************************
-  Epetra_SerialDenseMatrix trial(dim,dim);
+  vector<double> I = EvaluateInvariants(CG,Ni);
+  // current cell dimensions
   vector<double> lisq(dim);
   for (int i = 0; i < dim; ++i) lisq[i] = li_->at(gp)[i] * li_->at(gp)[i]; 
-  
-  // current chain length
   double r = sqrt(I[0]*lisq[0] + I[1]*lisq[1] + I[2]*lisq[2]);
-  
   double s_chn = chn_stiffact*(4.0/L + 1.0/(r*(1.0-r/L)*(1.0-r/L)) - 1.0/r);
   
-  for (int i = 0; i < dim; ++i) trial(i,i) = (*stress)(i);// + lisq[i]*s_chn + lisq[i]/I[i]*4*stressfree;
-  trial(0,1) = (*stress)(3); trial(1,0) = (*stress)(3);
-  trial(1,2) = (*stress)(4); trial(2,1) = (*stress)(4);
-  trial(0,2) = (*stress)(5); trial(2,0) = (*stress)(5);
+  // evaluate current stress (including isotropic and anisotropic part)
+  Epetra_SerialDenseMatrix S = EvaluateStress(MAT::StressVoigt2Mat(stress),Ni,lisq,I,s_chn,stressfree);
   
-  for (int i=0; i<dim; ++i){
-    Epetra_SerialDenseMatrix temp(Ni0.at(i));
-    temp.Scale(lisq[i]*s_chn);
-    trial += temp;
-    temp = Ni0.at(i);
-    temp.Scale(lisq[i]/I[i] * 4*stressfree);
-    trial += temp;
-  }
-  
-  
-  Epetra_SerialDenseVector eig_sp(dim);  // lambda^(sigma+)
-//  if (trial.NormOne() > 1.0E-13)
-////    if (gp==0) cout << Strial;
-//    //LINALG::SymmetricEigenValues(trial,eig_sp);
-//    LINALG::SymmetricEigenProblem(trial,eig_sp);
-//    if (gp==0){
-////      cout << eig_sp;
-////      cout << trial;
-//    }
-////  if ((params.get("total time",-1.0)>=0) && (eleId==0) && (gp==0)){
-////    cout << "rem_time: " << rem_time; //params.get("total time",-1.0);
-////    cout << ",eigvs: " << eig_sp(0) << "," << eig_sp(1) << "," << eig_sp(2) << endl;
-////  }
-//  
-//  for (int i = 0; i < dim; ++i) {
-////    if (eig_sort[i] > 1.0E-13) eig_sp(i) = 1.0;
-////    else eig_sp(i) = 0.0;
-//    lambda_->at(gp)[i] = eig_sp(i);
-//    if (eig_sp(i) > 1.0E-12) eig_sp(i) = 1.0;
-//    else eig_sp(i) = 0.0;
-//  }
-  // end of trial S to compute eigenvalues ************************************
-  
-  // update cell dimensions (remodeling!)
-  if (rem_time > mytime_){
-    mytime_ = rem_time;
-    if (trial.NormOne() > 1.0E-13) LINALG::SymmetricEigenProblem(trial,eig_sp);
-    for (int i = 0; i < dim; ++i) {
-      lambda_->at(gp)[i] = eig_sp(i);
-      if (eig_sp(i) > 1.0E-12) eig_sp(i) = 1.0;
-      else eig_sp(i) = 0.0;
+  // do remodeling only if we are at a new time step and based on last stress
+  const double kappa = matdata_->m.contchainnetw->relax; // relaxation time for remodeling
+  const double time = params.get("total time",-1.0);
+  const double lambda_tol = 1.0E-12;
+  if ( (kappa > 0.0) ){ // && (time > mytime_) ){
+    mytime_ = time;
+    double rem_time = time;
+    const double decay = exp(-kappa*rem_time);
+    
+    // evaluate eigenproblem
+    Epetra_SerialDenseVector lambda(dim);
+    Epetra_SerialDenseMatrix Phi = stresses_->at(gp);
+    LINALG::SymmetricEigenProblem(Phi,lambda);
+    vector<double> rem_toggle(3,0.0);
+    
+    // decide on remodeling
+    for (int i=0; i<3; ++i){
+      if (lambda(i) > lambda_tol) rem_toggle[i] = 1.0;
     }
-    for (int i = 0; i < dim; ++i){
-//      if (gp==0) cout << li_->at(gp)[i] << "->";
-      li_->at(gp)[i] = (eig_sp(i) - li0_->at(gp)[i]/r0)*(1-decay)*r0 + li0_->at(gp)[i];
-      ni0_->at(gp) = trial;
-//      if (gp==0) cout << li_->at(gp)[i] << endl;
-      lisq[i] = li_->at(gp)[i] * li_->at(gp)[i]; 
-    }
-    // structural tensors Ni0
-    for (int k=0; k<dim; ++k){
-      LINALG::SerialDenseMatrix N0(3,3);
-      for (int i=0; i<dim; ++i)
-        for (int j=0; j<dim; ++j)
-          N0(i,j) = (ni0_->at(gp)(i,k)) * (ni0_->at(gp)(j,k));
-      Ni0.at(k) = N0;
-    }
-  }
+    
+    // Update cell dimensions and history
+    Update(Phi,lambda,rem_toggle,gp,r0,decay);
+    
+    // reevaluate stress with 'remodeled' parameters
+    Ni = EvaluateStructTensors(gp);
+    I = EvaluateInvariants(CG,Ni);
+    for (int i = 0; i < dim; ++i) lisq[i] = li_->at(gp)[i] * li_->at(gp)[i]; 
+    double r = sqrt(I[0]*lisq[0] + I[1]*lisq[1] + I[2]*lisq[2]);
+    double s_chn = chn_stiffact*(4.0/L + 1.0/(r*(1.0-r/L)*(1.0-r/L)) - 1.0/r);
+    S = EvaluateStress(MAT::StressVoigt2Mat(stress),Ni,lisq,I,s_chn,stressfree);
+ }
+   
+  // remember current stress
+  stresses_->at(gp) = S;
   
-//  if (gp==0){
-//    cout << "isotrop" << endl <<(*stress);
-//    for (int i = 0; i < dim; ++i) cout << lisq[i] << "," << I[i] << ";";
-//    cout << endl;
-//  }
-  
-  // evaluate chain stress and add to isotropic stress
-  r = sqrt(I[0]*lisq[0] + I[1]*lisq[1] + I[2]*lisq[2]);
-  s_chn = chn_stiffact*(4.0/L + 1.0/(r*(1.0-r/L)*(1.0-r/L)) - 1.0/r);
-//  for (int i = 0; i < dim; ++i){
-//    (*stress)(i) += lisq[i]*s_chn + lisq[i]/I[i]*4*stressfree;
-////    if (gp==0){
-////      cout << "lisq=" << lisq[i] << " I=" << I[i] << "; " << lisq[i]*s_chn << " zu " << lisq[i]/I[i]*4*stressfree << endl;
-////    }
-//  }
-  
-  // stress based on remodeled parameters
-  Epetra_SerialDenseMatrix rem_stress(dim,dim);
-  for (int i=0; i<dim; ++i){
-    Epetra_SerialDenseMatrix temp(Ni0.at(i));
-    temp.Scale(lisq[i]*s_chn);
-    rem_stress += temp;
-    temp = Ni0.at(i);
-    temp.Scale(lisq[i]/I[i] * 4*stressfree);
-    rem_stress += temp;
-  }
-  for (int i = 0; i < dim; ++i) (*stress)(i) += rem_stress(i,i);
-  (*stress)(3) += rem_stress(0,1);
-  (*stress)(4) += rem_stress(1,2);
-  (*stress)(5) += rem_stress(0,2);
-  
-  if (gp==0){
-//    cout << "anisotrop" << endl << (*glstrain) <<(*stress) << endl;
-  }
-  
-  //evaluate chain tangent and add to isotropic cmat
-//  if (gp==0){
-//    cout << "isotrop" << endl <<(*cmat);
-//  }
+  // return stress
+  (*stress) = StressMat2Voigt(S);
+
+  // chain stiffness factor
   double c_chn = chn_stiffact/(r*r*r) * (1.0 - 1.0/((1.0-r/L)*(1.0-r/L)) + 2.0*r/(L*(1.0-r/L)*(1.0-r/L)*(1.0-r/L)) );
-//  // chain part only affects upper left block of cmat (no shear)
-//  for (int i = 0; i < dim; ++i) {
-//    for (int j = 0; j < dim; ++j) (*cmat)(i,j) += c_chn * lisq[i] * lisq[j];
-//    (*cmat)(i,i) +=  - 8.0*stressfree*lisq[i]/(I[i]*I[i]);
-//  }
+  EvaluateCmat((*cmat),Ni,lisq,I,c_chn,stressfree);
   
-  Epetra_SerialDenseMatrix sumN0i(3,3);
-  for (int k=0; k<dim; ++k)
-    for (int i = 0; i < dim; ++i)
-      for (int j = 0; j < dim; ++j) sumN0i(i,j) += lisq[i] * (Ni0.at(k))(i,j);
+#if DEBUG
+  cout << "glstrain" << endl << (*glstrain);
+  cout << "stress" << endl << (*stress);
+  cout << "cmat" << endl << (*cmat);
+#endif
   
-  ElastSymTensorMultiply((*cmat),c_chn,sumN0i,sumN0i,1.0);  // fac sumN0i x sumN0i
-  
-  for (int i=0; i<dim; ++i)
-    ElastSymTensorMultiply((*cmat),-8.0*stressfree*lisq[i]/(I[i]*I[i]),Ni0[i],Ni0[i],1.0);
-  
-  
-//  if (gp==0){
-//    cout << "anisotrop" << endl <<(*cmat) << endl;
-//  }
   
   return;
+}
+
+Epetra_SerialDenseMatrix MAT::ContChainNetw::EvaluateStress(
+    const Epetra_SerialDenseMatrix& isostress,
+    const vector<Epetra_SerialDenseMatrix>& Ni,
+    const vector<double>& cell_li,
+    const vector<double>& cell_Inv,
+    const double s_chn_scalar,
+    const double stressfree)
+{
+#if DEBUG
+  if ((cell_li.size()!=3)||(cell_Inv.size()!=3)||(Ni.size()!=3)||(isostress.M()!=3)||(isostress.N()!=3))
+    dserror("Wrong dimensions in stress eval");
+#endif
+  Epetra_SerialDenseMatrix stress(isostress);
+  for (int i_fib=0; i_fib<3; ++i_fib){
+    double f1 = cell_li[i_fib] * s_chn_scalar;
+    double f2 = 4 * stressfree * cell_li[i_fib] / cell_Inv[i_fib];
+    for (int i=0; i<3; ++i){
+      for (int j=0; j<3; ++j){
+        stress(i,j) += f1 * Ni[i_fib](i,j);
+        stress(i,j) += f2 * Ni[i_fib](i,j);
+      }
+    }
+  }
+  return stress;
+}
+
+void MAT::ContChainNetw::EvaluateCmat(Epetra_SerialDenseMatrix& cmat,
+    const vector<Epetra_SerialDenseMatrix>& Ni,
+    const vector<double>& cell_li,
+    const vector<double>& cell_Inv,
+    const double c_chn_scalar,
+    const double stressfree)
+{
+  Epetra_SerialDenseMatrix sumN0i(3,3);
+  for (int i_fib=0; i_fib<3; ++i_fib)
+    for (int i = 0; i < 3; ++i)
+      for (int j = 0; j < 3; ++j) sumN0i(i,j) += cell_li[i_fib] * Ni[i_fib](i,j);
+  
+  ElastSymTensorMultiply(cmat,c_chn_scalar,sumN0i,sumN0i,1.0);  // fac sumN0i x sumN0i
+  
+  for (int i_fib=0; i_fib<3; ++i_fib){
+    double f = -8.0*stressfree*cell_li[i_fib] / (cell_Inv[i_fib] * cell_Inv[i_fib]);
+    ElastSymTensorMultiply(cmat,f,Ni[i_fib],Ni[i_fib],1.0);
+  }
+  return; 
+}
+
+vector<Epetra_SerialDenseMatrix> MAT::ContChainNetw::EvaluateStructTensors(const int gp)
+{
+  vector<Epetra_SerialDenseMatrix> Ni;
+  for (int i_fib=0; i_fib<3; ++i_fib){
+    Epetra_SerialDenseMatrix N0(3,3);
+    for (int i=0; i<3; ++i)
+      for (int j=0; j<3; ++j)
+        N0(i,j) = (ni_->at(gp)(i,i_fib)) * (ni_->at(gp)(j,i_fib));
+    Ni.push_back(N0);
+  }
+  return Ni;
+}
+
+vector<double> MAT::ContChainNetw::EvaluateInvariants(
+    const Epetra_SerialDenseMatrix& CG,
+    const vector<Epetra_SerialDenseMatrix>& Ni)
+{
+  vector<double> Inv(3);
+  for (int i_fib=0; i_fib<3; ++i_fib){
+    LINALG::SerialDenseMatrix CNi0(3,3);
+    CNi0.Multiply('N','N',1.0,CG,Ni.at(i_fib),0.0);
+    Inv[i_fib] = CNi0(0,0) + CNi0(1,1) + CNi0(2,2); // trace(C:Ni0)
+  }
+  return Inv;
+}
+
+void MAT::ContChainNetw::Update(const Epetra_SerialDenseMatrix& Phi,
+    const Epetra_SerialDenseVector& lambda,
+    const vector<double> rem_toggle,
+    const int gp, const double r0, const double decay)
+{
+  for (int i = 0; i < 3; ++i){
+    lambda_->at(gp)[i] = lambda(i);
+    li_->at(gp)[i] = (rem_toggle[i] - li0_->at(gp)[i]/r0)*(1.0-decay)*r0 + li0_->at(gp)[i];
+  }
+  ni_->at(gp) = Phi;
+}
+
+
+
+Epetra_SerialDenseMatrix MAT::StressVoigt2Mat(Epetra_SerialDenseVector* stress)
+{
+#if DEBUG
+  if ( ((*stress).M() != 6) || ((*stress).N()!=1) )
+    dserror("Wrong dimensions");
+#endif
+  Epetra_SerialDenseMatrix mat(3,3);
+  for (int i = 0; i < 3; ++i) mat(i,i) = (*stress)(i);
+  mat(0,1) = (*stress)(3); mat(1,0) = (*stress)(3);
+  mat(1,2) = (*stress)(4); mat(2,1) = (*stress)(4);
+  mat(0,2) = (*stress)(5); mat(2,0) = (*stress)(5);
+  return mat;
+}
+
+Epetra_SerialDenseVector MAT::StressMat2Voigt(Epetra_SerialDenseMatrix& stressmat)
+{
+#if DEBUG
+  if ( (stressmat.M() != 3) || (stressmat.N()!=3) )
+    dserror("Wrong dimensions");
+#endif
+  Epetra_SerialDenseVector s(6);
+  for (int i = 0; i < 3; ++i) s(i) = stressmat(i,i);
+  s(3) = stressmat(0,1); s(4) = stressmat(1,2); s(5) = stressmat(0,2);
+  return s;
 }
 
 

@@ -129,10 +129,18 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       chain->Evaluate(glstrain,gp,params,cmat,stress,this->Id());
       *density = chain->Density();
       
-      if ((this->Id()==14) && (gp==0)){
+      if ((this->Id()==0) && (gp==0)){
         ofstream outfile;
         outfile.open("remodeling.txt",ios_base::app);
-        for (int i=0;i<3;++i) outfile << params.get("total time",-1.0) << "," << (chain->Getli()->at(0))[i] << ",";
+        outfile << params.get("total time",-1.0) << ",";
+        vector<double> li = chain->Getli()->at(0);
+        vector<double> lamb = chain->Getlambdas()->at(0);
+        Epetra_SerialDenseMatrix ni0 = chain->Getni0()->at(0);
+        for (int i=0;i<3;++i) outfile << li[i] << ",";
+        for (int i=0;i<3;++i)
+          for (int j=0;j<3;++j)
+            outfile << ni0(j,i) << ",";
+        for (int i=0;i<3;++i) outfile << lamb[i] << ",";
         outfile << endl;
         
         outfile.close();

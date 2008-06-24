@@ -102,10 +102,34 @@ namespace MAT
     RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
     
     
-    RCP<vector<Epetra_SerialDenseMatrix> >Getni0() const {return ni0_;}
+    RCP<vector<Epetra_SerialDenseMatrix> >Getni0() const {return ni_;}
     
-    //void OutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis, const double time, const int iter);
+    Epetra_SerialDenseMatrix EvaluateStress(
+        const Epetra_SerialDenseMatrix& isostress,
+        const vector<Epetra_SerialDenseMatrix>& Ni,
+        const vector<double>& cell_li,
+        const vector<double>& cell_Inv,
+        const double s_chn_scalar,
+        const double stressfree);
+
+    void EvaluateCmat(Epetra_SerialDenseMatrix& cmat,
+        const vector<Epetra_SerialDenseMatrix>& Ni,
+        const vector<double>& cell_li,
+        const vector<double>& cell_Inv,
+        const double c_chn_scalar,
+        const double stressfree);
+
+    vector<Epetra_SerialDenseMatrix> EvaluateStructTensors(const int gp);
     
+    vector<double> EvaluateInvariants(
+        const Epetra_SerialDenseMatrix& CG,
+        const vector<Epetra_SerialDenseMatrix>& Ni);
+
+    void Update(const Epetra_SerialDenseMatrix& Phi,
+        const Epetra_SerialDenseVector& lambda,
+        const vector<double> rem_toggle,
+        const int gp, const double r0, const double decay);
+
   private:
 
     /// my material parameters
@@ -114,11 +138,13 @@ namespace MAT
     /// unit cell dimensions per gp
     Teuchos::RCP<vector<vector<double> > > li_;
     /// unit cell basis in undeformed config. per gp
-    Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > ni0_;
+    Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > ni_;
     /// initial unit cell dimensions per gp
     Teuchos::RCP<vector<vector<double> > > li0_;
     /// eigenvalues per gp
     Teuchos::RCP<vector<vector<double> > > lambda_;
+    /// current stress
+    Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > stresses_;
     
     // remember time
     double mytime_;
@@ -126,7 +152,9 @@ namespace MAT
     bool isinit_;
     
   };
-  
+
+  Epetra_SerialDenseMatrix StressVoigt2Mat(Epetra_SerialDenseVector* stress);
+  Epetra_SerialDenseVector StressMat2Voigt(Epetra_SerialDenseMatrix& stressmat);
   void ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis, const double time, const int iter);
   const vector<double> MatPointCoords(const DRT::Element* actele,const vector<double>& mydisp, int gp=-1);
 }
