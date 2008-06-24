@@ -494,7 +494,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // Measured displacment during the experiments
   DoubleParameter("MEASURED_DISP0",0.0,"measured displacment of the tension testing",&sdyn);
   DoubleParameter("MEASURED_DISP1",0.0,"measured displacment of the tension testing",&sdyn);
-  DoubleParameter("MEASURED_DISP2",0.0,"measured displacment of the tension testing",&sdyn);    
+  DoubleParameter("MEASURED_DISP2",0.0,"measured displacment of the tension testing",&sdyn);
+  
+  // mu for inv_analysis
+  DoubleParameter("MU_MINUS",1.0,"parameter for inverse analysis",&sdyn);
+  DoubleParameter("MU_PLUS",1.0,"parameter for inverse analysis",&sdyn);  
+  
+  // tolerance for inv_analysis
+  DoubleParameter("INV_ANA_TOL",1.0,"tolerance for inverse analysis",&sdyn);  
     
   // Time adaptivity
   SetValidTimeAdaptivityParameters(sdyn);

@@ -82,6 +82,9 @@ INV_ANALYSIS Yes
 MEASURED_DISP0 0.003
 MEASURED_DISP1 0.01
 MEASURED_DISP2 0.03
+MU_MINUS       1
+MU_PLUS	       1
+INV_ANA_TOL    0.5
 -------------------------------------------------------SSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.05

@@ -232,7 +232,10 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("measured_disp0",sdyn.get<double>("MEASURED_DISP0"));      
       genalphaparams.set<double>("measured_disp1",sdyn.get<double>("MEASURED_DISP1")); 
       genalphaparams.set<double>("measured_disp2",sdyn.get<double>("MEASURED_DISP2")); 
-
+      genalphaparams.set<double>("mu_minus",sdyn.get<double>("MU_MINUS")); 
+      genalphaparams.set<double>("mu_plus",sdyn.get<double>("MU_PLUS")); 
+      genalphaparams.set<double>("inv_ana_tol",sdyn.get<double>("INV_ANA_TOL")); 
+      
       switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
       {
         case STRUCT_DYNAMIC::fullnewton:
