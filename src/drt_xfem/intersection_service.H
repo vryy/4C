@@ -38,6 +38,9 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER };
     //! tolerance 1e-7 
     const double                 TOL7 = 1e-7;
     
+    //! tolerance 1e15 
+    const double                 TOLPLUS15 = 1e15;
+    
     /*!
      * \brief calculate a*a
      * \param a

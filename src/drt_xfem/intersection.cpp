@@ -588,7 +588,7 @@ bool computeCurveSurfaceIntersectionT(
         iter++;
 
         //printf("xsi = %20.16f   %20.16f   %20.16f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
-        if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > 10000)
+        if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > XFEM::TOLPLUS15)
         {
             intersection = false;
             break;
@@ -1119,7 +1119,7 @@ void XFEM::Intersection::computeCDT(
     int nsurfPoints = 0;
     tetgenio in;
     tetgenio out;
-    char switches[] = "pnnQY";    //o2 Y
+    char switches[] = "pnnQ";    //o2 Y
     tetgenio::facet *f;
     tetgenio::polygon *p;
 
@@ -1226,8 +1226,8 @@ void XFEM::Intersection::computeCDT(
         in.facetmarkerlist[i] = faceMarker_[i] + facetMarkerOffset_;
 
 
-//    in.save_nodes("tetin");
-//    in.save_poly("tetin");
+    in.save_nodes("tetin");
+    in.save_poly("tetin");
     //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
     //  do quality mesh generation (q) with a specified quality bound
     //  (1.414), and apply a maximum volume constraint (a0.1)
@@ -1248,14 +1248,14 @@ void XFEM::Intersection::computeCDT(
 
     if(higherorder)
     {
-      std::cout << "lifting of Stinerpoints" << endl;
+      std::cout << "lifting of Steinerpoints" << endl;
       dserror("hu");
-    	recoverCurvedInterface(xfemElement, xyze_xfemElement, currentcutterpositions, boundaryintcells, out, recovery);
+      recoverCurvedInterface(xfemElement, xyze_xfemElement, currentcutterpositions, boundaryintcells, out, recovery);
     }
-   	else
-   	{
-   		storeIntCells(xfemElement, xyze_xfemElement, currentcutterpositions, boundaryintcells, out);
-   	}
+    else
+    {
+      storeIntCells(xfemElement, xyze_xfemElement, currentcutterpositions, boundaryintcells, out);
+    }
     // store boundaryIntCells integration cells
 
     //if(element->Id()==388)
