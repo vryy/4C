@@ -141,6 +141,14 @@ public:
   */
   virtual void FullNewton();
 
+  /*!
+  \brief do full Newton with parabolic line search
+
+  Newton with line search if residual reduction fails.
+  This implementation is from C.T.Kelly:Itertiave Methods for Linear and Nonlin. Eqs.,
+  pages 138ff
+  */
+  virtual void LineSearchNewton();
 
 
   /*!
@@ -386,6 +394,19 @@ protected:
   // don't want = operator and cctor
   StruGenAlpha operator = (const StruGenAlpha& old);
   StruGenAlpha(const StruGenAlpha& old);
+
+  // methods for Newton with line search
+  void LineSearchUpdateMidConfiguration(double lambda,
+                                        RCP<Epetra_Vector> disi,
+                                        RCP<Epetra_Vector> disno,
+                                        RCP<Epetra_Vector> dismo,
+                                        RCP<Epetra_Vector> velmo,
+                                        RCP<Epetra_Vector> accmo,
+                                        double dt,
+                                        double alphaf,
+                                        double alpham,
+                                        double beta,
+                                        double gamma);
 
   //! @name (very) general purpose algorithm parameters
 
