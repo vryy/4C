@@ -149,6 +149,7 @@ OBJS_DRT      = \
 OBJS_DRT_STRUCTURE      = \
                 src/drt_structure/stru_dyn_nln_drt.o \
                 src/drt_structure/strugenalpha.o \
+                src/drt_structure/strugenalpha_lsnewton.o \
                 src/drt_structure/stru_genalpha_zienxie_drt.o \
 		src/drt_structure/strutimint_impl.o \
 		src/drt_structure/strutimint_genalpha.o \
