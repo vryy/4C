@@ -55,6 +55,8 @@ EnsightWriter::EnsightWriter(PostField* field,
   distype2ensightstring_[DRT::Element::hex20] = "hexa20";
   distype2ensightstring_[DRT::Element::tet4] = "tetra4";
   distype2ensightstring_[DRT::Element::tet10] = "tetra10";
+  distype2ensightstring_[DRT::Element::nurbs8] = "hexa8";
+  distype2ensightstring_[DRT::Element::nurbs27] = "hexa8";
   distype2ensightstring_[DRT::Element::nurbs4] = "quad4";
   distype2ensightstring_[DRT::Element::nurbs9] = "quad4";
   distype2ensightstring_[DRT::Element::quad4] = "quad4";
@@ -393,7 +395,6 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
     {
       DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
       DRT::Node**   nodes = actele->Nodes();
-
 	
       // get gid, location in the patch
       int gid = actele->Id();
@@ -423,13 +424,13 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
       // get shapefunctions, compute all visualisation point positions
       blitz::Array<double,1> nurbs_shape_funct(numnp);
 
-      // element local point position
-      blitz::Array<double,1> uv(2);    
-      
       switch (actele->Shape())
       {
       case DRT::Element::nurbs4:
       {
+	// element local point position
+	blitz::Array<double,1> uv(2);    
+      
 	// standard
 
 	// 3           4
@@ -531,6 +532,9 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
       }
       case DRT::Element::nurbs9:
       {
+	// element local point position
+	blitz::Array<double,1> uv(2);    
+      
 	{
 	  // standard
 
@@ -797,6 +801,909 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
 	}
 	break;
       }
+      case DRT::Element::nurbs27:
+      {
+	// element local point position
+	blitz::Array<double,1> uv(3);   
+
+	int idu;
+	int idv;
+	int idw;
+
+	{
+	  // standard
+
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | /         / |         
+	  //   /         /  |       
+	  //  +---------+   |     
+	  //  | A----A  |   |     
+	  //  |/|   /|  |   +      
+	  //  A----A |  |  /       
+	  //  | A--|-A  | /       
+	  //  |/   |/   |/         
+	  //  A----A----+ ----->u    
+	  //       
+	  // append 8 points
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)= -1.0;
+	  uv(1)= -1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+
+	  // point 2
+	  uv(0)=  0.0;
+	  uv(1)= -1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 3
+	  uv(0)= -1.0;
+	  uv(1)=  0.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 4
+	  uv(0)=  0.0;
+	  uv(1)=  0.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 5
+	  uv(0)= -1.0;
+	  uv(1)= -1.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 6
+	  uv(0)=  0.0;
+	  uv(1)= -1.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 7
+	  uv(0)= -1.0;
+	  uv(1)=  0.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 8
+	  uv(0)=  0.0;
+	  uv(1)=  0.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+	}
+
+	if(ele_cart_id[0]+1==nele_x_mele_x_lele[0])
+	{
+
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | /         / |         
+	  //   /         /  |       
+	  //  +---------+   |     
+	  //  | X----X--|-A |     
+	  //  |/|   /|  |/| +      
+	  //  X----X----A |/       
+	  //  | X--|-X--|-A       
+	  //  |/   |/   |/         
+	  //  X----X----A ----->u    
+	  //            
+	  // append 4 additional points
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)=  1.0;
+	  uv(1)= -1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+
+	  // point 2
+	  uv(0)=  1.0;
+	  uv(1)=  0.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 3
+	  uv(0)=  1.0;
+	  uv(1)= -1.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 4
+	  uv(0)=  1.0;
+	  uv(1)=  0.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+	}
+
+	if(ele_cart_id[1]+1==nele_x_mele_x_lele[1])
+	{
+
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | /         / |         
+	  //   /  A----A /  |       
+	  //  +---------+   |     
+	  //  | X----X ||   |     
+	  //  |/| A-/|-A|   +      
+	  //  X----X |/ |  /       
+	  //  | X--|-X  | /       
+	  //  |/   |/   |/         
+	  //  X----X----+ ----->u    
+	  //       
+	  // append 4 additional points
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)= -1.0;
+	  uv(1)=  1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+
+	  // point 2
+	  uv(0)=  0.0;
+	  uv(1)=  1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 3
+	  uv(0)= -1.0;
+	  uv(1)=  1.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 4
+	  uv(0)=  0.0;
+	  uv(1)=  1.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+	}
+
+	if(ele_cart_id[0]+1==nele_x_mele_x_lele[0]
+	   && 
+	   ele_cart_id[1]+1==nele_x_mele_x_lele[1])
+	{
+
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | /         / |         
+	  //   /  X----X-/--A       
+	  //  +---------+  /|     
+	  //  | X----X--|-X |     
+	  //  |/| X-/|-X|/|-A      
+	  //  X----X----X |/       
+	  //  | X--|-X--|-X       
+	  //  |/   |/   |/         
+	  //  X----X----X ----->u    
+	  //       
+	  // append 2 additional points
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)=  1.0;
+	  uv(1)=  1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 2
+	  uv(0)=  1.0;
+	  uv(1)=  1.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+	}
+
+
+	if(ele_cart_id[2]+1==nele_x_mele_x_lele[2])
+	{
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | A----A    / |         
+	  //   /    /|   /  |       
+	  //  A----A----+   |     
+	  //  | X--|-X  |   |     
+	  //  |/|  |/|  |   +      
+	  //  X----X |  |  /       
+	  //  | X--|-X  | /       
+	  //  |/   |/   |/         
+	  //  X----X----+ ----->u    
+	  //     
+	  //
+	  // append 4 additional points
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)= -1.0;
+	  uv(1)= -1.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+
+	  // point 2
+	  uv(0)=  0.0;
+	  uv(1)= -1.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 3
+	  uv(0)= -1.0;
+	  uv(1)=  0.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 4
+	  uv(0)=  0.0;
+	  uv(1)=  0.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	}
+
+
+	if(ele_cart_id[2]+1==nele_x_mele_x_lele[2]
+	   &&
+	   ele_cart_id[1]+1==nele_x_mele_x_lele[1]
+	  )
+	{
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   A----A----+      
+	  //  |  /|   /|   /|        
+	  //  | X----X |  / |         
+	  //   /| X /| X /  |       
+	  //  X----X----+   |     
+	  //  | X--|-X ||   |     
+	  //  |/|  |/| X|   +      
+	  //  X----X |/ |  /       
+	  //  | X--|-X  | /       
+	  //  |/   |/   |/         
+	  //  X----X----+ ----->u    
+	  //     
+	  //
+	  // append 2 additional points
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)= -1.0;
+	  uv(1)=  1.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 2
+	  uv(0)=  0.0;
+	  uv(1)=  1.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	}
+
+	if(ele_cart_id[2]+1==nele_x_mele_x_lele[2]
+	   &&
+	   ele_cart_id[0]+1==nele_x_mele_x_lele[0]
+	  )
+	{
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | X----X----A |         
+	  //   /    /|   /| |       
+	  //  X----X----A | |     
+	  //  | X--|-X--|-X |     
+	  //  |/|  |/|  |/| +      
+	  //  X----X----X |/       
+	  //  | X--|-X--|-X       
+	  //  |/   |/   |/         
+	  //  X----X----X ----->u    
+	  //     
+	  //
+	  // append 2 additional points
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)=  1.0;
+	  uv(1)= -1.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+
+	  // point 2
+	  uv(0)=  1.0;
+	  uv(1)=  0.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+	}
+
+	if(ele_cart_id[2]+1==nele_x_mele_x_lele[2]
+	   &&
+	   ele_cart_id[1]+1==nele_x_mele_x_lele[1]
+	   &&
+	   ele_cart_id[0]+1==nele_x_mele_x_lele[0]
+	  )
+	{
+
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   X----X----A      
+	  //  |  /|   /    /|        
+	  //  | X----X----X |         
+	  //   /| X-/|-X-/|-X       
+	  //  X----X----X |/|     
+	  //  | X--|-X--|-X |     
+	  //  |/| X|/|-X|/|-X      
+	  //  X----X----X |/       
+	  //  | X--|-X--|-X       
+	  //  |/   |/   |/         
+	  //  X----X----X ----->u    
+	  //       
+	  // append 1 additional point
+
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  local_vis_point_ids.push_back(idu+idv+idw);
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)=  1.0;
+	  uv(1)=  1.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  local_vis_point_x.push_back(x);
+	}
+
+	break;
+      }
       default:
 	dserror("Unknown distype for nurbs element output\n");
       }      
@@ -804,7 +1711,12 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
     
     // construct map for visualisation points. Store it in 
     // class variable for access in data interpolation
-    int numvispoints = (2*nele_x_mele_x_lele[0]+1)*(2*nele_x_mele_x_lele[1]+1);
+    int numvispoints = 1;
+
+    for(unsigned rr=0;rr<nele_x_mele_x_lele.size();++rr)
+    {
+      numvispoints*=2*nele_x_mele_x_lele[rr]+1;
+    }
 
     vispointmap_ = Teuchos::rcp(new Epetra_Map(numvispoints,
 					       local_vis_point_ids.size(),
@@ -1097,6 +2009,753 @@ void EnsightWriter::WriteCells(
 	  }
 	  break;
 	}
+	case DRT::Element::nurbs27:
+	{
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   X----X----A      
+	  //  |  /|   /    /|        
+	  //  | X----X----X |         
+	  //   /| X-/|-X-/|-X       
+	  //  X----X----X |/|     
+	  //  | X--|-X--|-X |     
+	  //  |/| X|/|-X|/|-X      
+	  //  X----X----X |/       
+	  //  | X--|-X--|-X       
+	  //  |/   |/   |/         
+	  //  X----X----X ----->u    
+	  //       
+	  // cast dis to NurbsDiscretisation
+	  DRT::NURBS::NurbsDiscretization* nurbsdis 
+	    = 
+	    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
+	  
+	  if(nurbsdis==NULL)
+	  {
+	    dserror("This probably isn't a NurbsDiscretization\n");
+	  }
+    
+	  // number of visualisation points in u direction
+	  int nvpu=2*(nurbsdis->Return_nele_x_mele_x_lele())[0]+1;
+
+	  // number of visualisation points in v direction
+	  int nvpv=2*(nurbsdis->Return_nele_x_mele_x_lele())[1]+1;
+
+	  // get the knotvector itself 
+	  RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+
+	  // determine type of element 
+	  
+	  // get gid, location in the patch
+	  int gid = actele->Id();
+	  
+	  vector<int> ele_cart_id=knots->ConvertEleGidToKnotIds(gid);
+
+	  if (myrank_==0) // proc0 can write its elements immediately
+	  {
+	    int i;
+
+	    // bottom, left front
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    // bottom, right front
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    // bottom, left rear  
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    // bottom, right rear
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    //-------------------------------------------------------------------------------
+
+	    // top, left front
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    // top, right front
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    // top, left rear  
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    // top, right rear
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    Write(geofile, proc0map->LID(i)+1);
+
+	  }
+	  else // elements on other procs have to store their global node ids
+	  {
+
+	    int i;
+
+	    // bottom, left front
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    // bottom, right front
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    // bottom, left rear  
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    // bottom, right rear
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]  )*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    //-------------------------------------------------------------------------------
+
+	    // top, left front
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    // top, right front
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]  )*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    // top, left rear  
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]  );
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    // top, right rear
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+1)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+1)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+2);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	    i  = (2*ele_cart_id[0]+1);
+	    i += (2*ele_cart_id[1]+2)*nvpu;
+	    i += (2*ele_cart_id[2]+2)*nvpu*nvpv;
+	    
+	    nodevector.push_back(i);
+	  }
+	}
+	break;
         default:
           dserror("don't know, how to write this element type as a cell");
         }
@@ -1280,6 +2939,9 @@ int EnsightWriter::GetNumEleOutput(
   switch (distype)
   {
   case DRT::Element::hex27:
+    numeleout = 8*numele;
+    break;
+  case DRT::Element::nurbs27:
     numeleout = 8*numele;
     break;
   case DRT::Element::quad9:
@@ -1792,8 +3454,16 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     // get nurbs dis' element numbers
     vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele());
 
+    // assuming that dimension of the manifold is 
+    // equal to spatial dimension
+    int dim = (int)nele_x_mele_x_lele.size();
+
     // the number of vizualisation points
-    int numvispoints = (2*nele_x_mele_x_lele[0]+1)*(2*nele_x_mele_x_lele[1]+1);
+    int numvispoints = 1;
+    for(int rr=0;rr<dim;++rr)
+    {
+      numvispoints*=(2*nele_x_mele_x_lele[rr]+1);
+    }
 
     // get the knotvector itself 
     RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
@@ -1805,7 +3475,6 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
     // all elements (the critical ones are the ones at the
     // processor boundary)
     // loop all available elements
-
     std::set<int> coldofset;
     for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
     {
@@ -1823,12 +3492,14 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 	
 	if(name == "velocity")
 	{
-	  coldofset.insert(lm[inode*3  ]);
-	  coldofset.insert(lm[inode*3+1]);
+	  for(int rr=0;rr<dim;++rr)
+	  {	  
+	    coldofset.insert(lm[inode*dim+rr]);
+	  }
 	}
 	else if(name == "pressure")
 	{
-	  coldofset.insert(lm[inode*3+2]);
+	  coldofset.insert(lm[inode*dim+dim]);
 	}
 	else
 	{
@@ -1877,7 +3548,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
       const int numnp = actele->NumNode();
 
       // access elements knot span
-      std::vector<blitz::Array<double,1> > eleknots(2);
+      std::vector<blitz::Array<double,1> > eleknots(dim);
       knots->GetEleKnots(eleknots,actele->Id());
 
       // aquire weights from nodes
@@ -1893,7 +3564,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
       blitz::Array<double,1> nurbs_shape_funct(numnp);
 
       // element local visualisation point position
-      blitz::Array<double,1> uv(2);    
+      blitz::Array<double,1> uv(dim);    
 	
 
       // extract local values from the global vectors
@@ -1905,13 +3576,14 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
       vector<double> my_data(lm.size());
       if(name == "velocity")
       {
-	my_data.resize(2*numnp);
+	my_data.resize(dim*numnp);
 	
 	for (int inode=0; inode<numnp; ++inode)
 	{
-	  my_data[2*inode  ]=(*coldata)[(*coldata).Map().LID(lm[inode*3  ])];
-	  my_data[2*inode+1]=(*coldata)[(*coldata).Map().LID(lm[inode*3+1])];
-	  
+	  for(int rr=0;rr<dim;++rr)
+	  {
+	    my_data[dim*inode+rr]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+rr])];
+	  }	  
 	}
       }
       else if(name == "pressure")
@@ -1920,7 +3592,7 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 	
 	for (int inode=0; inode<numnp; ++inode)
 	{
-	  my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*3+2])];
+	  my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+dim])];
 	}
       }
       else
@@ -2267,6 +3939,901 @@ void EnsightWriter::WriteDofResultStep(ofstream& file,
 	    (idata)->ReplaceMyValue(lid,isd,val);
 	  }
 	}
+	break;
+      }
+      case DRT::Element::nurbs27:
+      {
+	// element local point position
+	blitz::Array<double,1> uv(3);   
+
+	int idu;
+	int idv;
+	int idw;
+
+	{
+	  // standard
+
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | /         / |         
+	  //   /         /  |       
+	  //  +---------+   |     
+	  //  | A----A  |   |     
+	  //  |/|   /|  |   +      
+	  //  A----A |  |  /       
+	  //  | A--|-A  | /       
+	  //  |/   |/   |/         
+	  //  A----A----+ ----->u    
+	  //       
+	  // append 8 points
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)= -1.0;
+	  uv(1)= -1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 2
+	  uv(0)=  0.0;
+	  uv(1)= -1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 3
+	  uv(0)= -1.0;
+	  uv(1)=  0.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 4
+	  uv(0)=  0.0;
+	  uv(1)=  0.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 5
+	  uv(0)= -1.0;
+	  uv(1)= -1.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 6
+	  uv(0)=  0.0;
+	  uv(1)= -1.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 7
+	  uv(0)= -1.0;
+	  uv(1)=  0.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 8
+	  uv(0)=  0.0;
+	  uv(1)=  0.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+	}
+
+	if(ele_cart_id[0]+1==nele_x_mele_x_lele[0])
+	{
+
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | /         / |         
+	  //   /         /  |       
+	  //  +---------+   |     
+	  //  | X----X--|-A |     
+	  //  |/|   /|  |/| +      
+	  //  X----X----A |/       
+	  //  | X--|-X--|-A       
+	  //  |/   |/   |/         
+	  //  X----X----A ----->u    
+	  //            
+	  // append 4 additional points
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)=  1.0;
+	  uv(1)= -1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 2
+	  uv(0)=  1.0;
+	  uv(1)=  0.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 3
+	  uv(0)=  1.0;
+	  uv(1)= -1.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 4
+	  uv(0)=  1.0;
+	  uv(1)=  0.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+	}
+
+	if(ele_cart_id[1]+1==nele_x_mele_x_lele[1])
+	{
+
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | /         / |         
+	  //   /  A----A /  |       
+	  //  +---------+   |     
+	  //  | X----X ||   |     
+	  //  |/| A-/|-A|   +      
+	  //  X----X |/ |  /       
+	  //  | X--|-X  | /       
+	  //  |/   |/   |/         
+	  //  X----X----+ ----->u    
+	  //       
+	  // append 4 additional points
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)= -1.0;
+	  uv(1)=  1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+
+	  // point 2
+	  uv(0)=  0.0;
+	  uv(1)=  1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 3
+	  uv(0)= -1.0;
+	  uv(1)=  1.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 4
+	  uv(0)=  0.0;
+	  uv(1)=  1.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	}
+
+	if(ele_cart_id[0]+1==nele_x_mele_x_lele[0]
+	   && 
+	   ele_cart_id[1]+1==nele_x_mele_x_lele[1])
+	{
+
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | /         / |         
+	  //   /  X----X-/--A       
+	  //  +---------+  /|     
+	  //  | X----X--|-X |     
+	  //  |/| X-/|-X|/|-A      
+	  //  X----X----X |/       
+	  //  | X--|-X--|-X       
+	  //  |/   |/   |/         
+	  //  X----X----X ----->u    
+	  //       
+	  // append 2 additional points
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)=  1.0;
+	  uv(1)=  1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]  )*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 2
+	  uv(0)=  1.0;
+	  uv(1)=  1.0;
+	  uv(2)=  0.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+1)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+	}
+
+
+	if(ele_cart_id[2]+1==nele_x_mele_x_lele[2])
+	{
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | A----A    / |         
+	  //   /    /|   /  |       
+	  //  A----A----+   |     
+	  //  | X--|-X  |   |     
+	  //  |/|  |/|  |   +      
+	  //  X----X |  |  /       
+	  //  | X--|-X  | /       
+	  //  |/   |/   |/         
+	  //  X----X----+ ----->u    
+	  //     
+	  //
+	  // append 4 additional points
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)= -1.0;
+	  uv(1)= -1.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 2
+	  uv(0)=  0.0;
+	  uv(1)= -1.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 3
+	  uv(0)= -1.0;
+	  uv(1)=  0.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 4
+	  uv(0)=  0.0;
+	  uv(1)=  0.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+	}
+
+
+	if(ele_cart_id[2]+1==nele_x_mele_x_lele[2]
+	   &&
+	   ele_cart_id[1]+1==nele_x_mele_x_lele[1]
+	  )
+	{
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   A----A----+      
+	  //  |  /|   /|   /|        
+	  //  | X----X |  / |         
+	  //   /| X /| X /  |       
+	  //  X----X----+   |     
+	  //  | X--|-X ||   |     
+	  //  |/|  |/| X|   +      
+	  //  X----X |/ |  /       
+	  //  | X--|-X  | /       
+	  //  |/   |/   |/         
+	  //  X----X----+ ----->u    
+	  //     
+	  //
+	  // append 2 additional points
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)= -1.0;
+	  uv(1)=  1.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]  );
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 2
+	  uv(0)=  0.0;
+	  uv(1)=  1.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+1);
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	}
+
+	if(ele_cart_id[2]+1==nele_x_mele_x_lele[2]
+	   &&
+	   ele_cart_id[0]+1==nele_x_mele_x_lele[0]
+	  )
+	{
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | X----X----A |         
+	  //   /    /|   /| |       
+	  //  X----X----A | |     
+	  //  | X--|-X--|-X |     
+	  //  |/|  |/|  |/| +      
+	  //  X----X----X |/       
+	  //  | X--|-X--|-X       
+	  //  |/   |/   |/         
+	  //  X----X----X ----->u    
+	  //     
+	  //
+	  // append 2 additional points
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)=  1.0;
+	  uv(1)= -1.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]  )*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	  // point 2
+	  uv(0)=  1.0;
+	  uv(1)=  0.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+	}
+
+	if(ele_cart_id[2]+1==nele_x_mele_x_lele[2]
+	   &&
+	   ele_cart_id[1]+1==nele_x_mele_x_lele[1]
+	   &&
+	   ele_cart_id[0]+1==nele_x_mele_x_lele[0]
+	  )
+	{
+
+	  //               v
+	  //              /
+          //  w          /       
+	  //  ^   X----X----A      
+	  //  |  /|   /    /|        
+	  //  | X----X----X |         
+	  //   /| X-/|-X-/|-X       
+	  //  X----X----X |/|     
+	  //  | X--|-X--|-X |     
+	  //  |/| X|/|-X|/|-X      
+	  //  X----X----X |/       
+	  //  | X--|-X--|-X       
+	  //  |/   |/   |/         
+	  //  X----X----X ----->u    
+	  //       
+	  // append 1 additional point
+
+	  // temporary x vector
+	  std::vector<double> x(3);
+	  
+	  // point 1
+	  uv(0)=  1.0;
+	  uv(1)=  1.0;
+	  uv(2)=  1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						eleknots            ,
+						weights          ,
+						actele->Shape()  );
+
+	  idu=(2*ele_cart_id[0]+2);
+	  idv=(2*ele_cart_id[1]+2)*(2*nele_x_mele_x_lele[0]+1);
+	  idw=(2*ele_cart_id[2]+2)*(2*nele_x_mele_x_lele[1]+1)*(2*nele_x_mele_x_lele[0]+1);
+
+	  for (int isd=0; isd<numdf; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=my_data[numdf*inode+isd]*nurbs_shape_funct(inode);
+	    }
+	    int lid = (*vispointmap_).LID(idu+idv+idw);
+	    (idata)->ReplaceMyValue(lid,isd,val);
+	  }
+
+	}
+
 	break;
       }
       default:
