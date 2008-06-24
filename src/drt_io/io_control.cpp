@@ -264,6 +264,7 @@ void IO::OutputControl::NewResultFile(int numb_run)
                << "# using code revision " CHANGEDREVISION " from " CHANGEDDATE " \n\n"
                << "input_file = \"" << inputfile_ << "\"\n"
                << "problem_type = \"" << problemtype_ << "\"\n"
+               << "spatial_approximation = \"" << "Polynomial" << "\"\n"
                << "ndim = " << ndim_ << "\n"
                << "\n";
 
