@@ -63,7 +63,7 @@ void XFEM::Intersection::computeIntersection(
     static int timestepcounter_ = -1;
     timestepcounter_++;
     bool xfemIntersection;
-    
+    bool intersectionOnBoundary;
     countMissedPoints_ = 0;
 
     const double t_start = ds_cputime();
@@ -80,6 +80,7 @@ void XFEM::Intersection::computeIntersection(
     for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
     {
         xfemIntersection = false;
+        intersectionOnBoundary = false;
         EleGeoType xfemGeoType = HIGHERORDER;
         EleGeoType cutterGeoType = HIGHERORDER;
         DRT::Element* xfemElement = xfemdis->lColElement(k);
@@ -141,7 +142,7 @@ void XFEM::Intersection::computeIntersection(
             const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
             const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
 
-            // debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
+            //debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
             // number of internal points
             int numInternalPoints = 0;
             // number of surface points
@@ -192,6 +193,8 @@ void XFEM::Intersection::computeIntersection(
             // order interface points
             if( interfacePoints.size() > 0)
             {
+                intersectionOnBoundary = checkIfIntersectionOnXFEMBoundary( xfemElement, xyze_xfemElement, 
+                                                                            cutterElement, xyze_cutterElement, interfacePoints);
 #ifdef QHULL
                 computeConvexHull( xfemElement, xyze_xfemElement, cutterElement, xyze_cutterElement, interfacePoints, numInternalPoints, numBoundaryPoints);
 #else
@@ -238,6 +241,7 @@ void XFEM::Intersection::initializeXFEM(
 
     eleLinesSurfaces_     = DRT::UTILS::getEleNodeNumbering_lines_surfaces(xfemDistype);
     eleNodesSurfaces_     = DRT::UTILS::getEleNodeNumbering_nodes_surfaces(xfemDistype);
+    eleNumberingLines_    = DRT::UTILS::getEleNodeNumberingLines(xfemDistype);
     eleNumberingSurfaces_ = DRT::UTILS::getEleNodeNumberingSurfaces(xfemDistype);
     eleRefCoordinates_    = DRT::UTILS::getEleNodeNumbering_nodes_reference(xfemDistype);
 
@@ -725,7 +729,7 @@ int XFEM::Intersection::addIntersectionPoint(
     const BlitzVec3&                xsi,
     const BlitzVec3&                upLimit,
     const BlitzVec3&                loLimit,
-    std::vector<InterfacePoint>& 	interfacePoints,
+    std::vector<InterfacePoint>&    interfacePoints,
     const int                       surfaceId,
     const int                       lineId,
     const bool                      lines,
@@ -736,35 +740,61 @@ int XFEM::Intersection::addIntersectionPoint(
   int numInterfacePoints = 0;
   InterfacePoint ip;
   
+    // cutter line with xfem surface
     if(lines)
     {
         ip.nsurf = 1;
         ip.surfaces[0] = surfaceId;
 
         DRT::UTILS::getLineCoordinates(lineId, xsi(2), ip.coord, surfaceElement->Shape());
+        ip.coord[2] = 0.0;
+        ip.pType = INTERSECTION;
     }
+    // xfem line with cutter surface
     else
     {
+      // check if point lies on a node of the xfem line element and therefore also on
+      // the xfem element
+      int lineNodeId = -1;
+      if(fabs(xsi(2) + 1) < XFEM::TOL7)
+        lineNodeId = 0;
+      if(fabs(xsi(2) - 1) < XFEM::TOL7)
+        lineNodeId = 1;
+        
+      if(lineNodeId > -1)
+      {
+        const int nodeId = eleNumberingLines_[lineId][lineNodeId];
+        ip.nsurf = 3;
+        ip.surfaces[0] = eleNodesSurfaces_[nodeId][0];
+        ip.surfaces[1] = eleNodesSurfaces_[nodeId][1];
+        ip.surfaces[2] = eleNodesSurfaces_[nodeId][2];
+        ip.coord[0] = xsi(0);
+        ip.coord[1] = xsi(1);
+        ip.coord[2] = 0.0;
+        ip.pType = XFEMNODE;
+      }
+      else
+      {
         ip.nsurf = 2;
         ip.surfaces[0] = eleLinesSurfaces_[lineId][0];
         ip.surfaces[1] = eleLinesSurfaces_[lineId][1];
         ip.coord[0] = xsi(0);
         ip.coord[1] = xsi(1);
+        ip.coord[2] = 0.0;
+        ip.pType = INTERSECTION;
+      }
     }
 
-    ip.coord[2] = 0.0;
-    ip.pType = INTERSECTION;
 
     vector<InterfacePoint>::iterator it;
     bool alreadyInList = false;
     for(it = interfacePoints.begin(); it != interfacePoints.end(); it++ )
-        if(comparePoints<3>(ip.coord, it->coord))
-        {
-            //printf("alreadyinlist = true\n");
-            alreadyInList = true;
-            break;
-
-        }
+      if(comparePoints<3>(ip.coord, it->coord))
+      {
+        //printf("alreadyinlist = true\n");
+        alreadyInList = true;
+        break;
+      }
 
     if(!alreadyInList)
     {
@@ -857,6 +887,104 @@ void XFEM::Intersection::createNewLimits(
     upperLimits[7](2) = upLimit(2);     lowerLimits[7](2) = xsi(2);
 }
 
+
+bool XFEM::Intersection::checkIfIntersectionOnXFEMBoundary(
+    const DRT::Element*             xfemElement,
+    const BlitzMat&                 xyze_xfemElement,
+    const DRT::Element*             cutterElement,
+    const BlitzMat&                 xyze_cutterElement,
+    vector<InterfacePoint>& interfacePoints)
+{
+ 
+  bool intersectionOnBoundary = true;
+  
+  // 1. test: check, if all points are XFEM NODES
+  for(unsigned int i = 0; i < interfacePoints.size(); i++)
+    if(interfacePoints[i].pType != XFEMNODE)
+    {
+      intersectionOnBoundary = false;
+      break;
+    }
+  
+  // 2.test check if all nodes belong to the same xfem surfaces
+  if(intersectionOnBoundary)
+  {
+    intersectionOnBoundary = false;
+    const int numNodes = (int) interfacePoints.size(); 
+    const int numSurfaces = interfacePoints[0].nsurf; 
+    
+    for(int i = 0; i < numSurfaces; i++)
+    {     
+      bool surfEqual = false;
+      int countSurfaces = 0;
+      int surfID = interfacePoints[0].surfaces[i];
+      for(int j = 1; j < numNodes; j++)
+      {  
+        for(int k = 0; k < numSurfaces; k++)
+        {
+          if(surfID == interfacePoints[j].surfaces[k])
+          {
+            countSurfaces++;
+            surfEqual = true;
+          }
+        }
+        if(!surfEqual)
+          break;
+        
+        surfEqual = false;
+      }
+      if(countSurfaces == numNodes)
+      {       
+        intersectionOnBoundary = true;
+        break;
+      }
+    }  
+  }
+  
+  
+  // 3. check if xfem element is within the fluid or solid domain
+  if(intersectionOnBoundary)
+  {
+    BlitzVec3 physCoord;
+    physCoord = 0.0;
+    BlitzVec3 centerCoord;
+    physCoord = 0.0;
+    BlitzVec2 xsi;
+    xsi = 0.0;
+    // transforms xfem element center to current coordinates
+    elementToCurrentCoordinates(xfemElement, xyze_xfemElement, centerCoord, physCoord);
+    
+    CurrentToSurfaceElementCoordinates(cutterElement, xyze_cutterElement, physCoord, xsi);      
+    const bool pointWithinElement = checkPositionWithinElementParameterSpace(xsi, cutterElement->Shape());
+    if(pointWithinElement)
+      dserror("elemenetcenter cannot find a normal on the cutter element");
+    // normal vector at position xsi
+    static BlitzVec3 eleNormalAtXsi;
+    computeNormalToBoundaryElement(cutterElement, xyze_cutterElement, xsi, eleNormalAtXsi);
+         
+    BlitzVec3 x_surface_phys;
+    elementToCurrentCoordinates(cutterElement, xyze_cutterElement, xsi, x_surface_phys);
+    // normal pointing away from the surface towards physCoord
+    BlitzVec3 normal;
+    normal(0) = physCoord(0) - x_surface_phys(0);
+    normal(1) = physCoord(1) - x_surface_phys(1);
+    normal(2) = physCoord(2) - x_surface_phys(2);
+    // absolute distance between point and surface
+    double distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
+    // compute distance with sign
+    const double scalarproduct = eleNormalAtXsi(0)*normal(0) + eleNormalAtXsi(1)*normal(1) + eleNormalAtXsi(2)*normal(2);
+    const double teiler = Norm2(eleNormalAtXsi) * Norm2(normal);
+    const double cosphi = scalarproduct / teiler;
+    const double vorzeichen = cosphi/abs(cosphi);
+    distance *= vorzeichen;
+   
+    if(distance < 0.0)
+      intersectionOnBoundary = false;
+      
+  }
+  
+  return intersectionOnBoundary;
+}
 
 
 /*----------------------------------------------------------------------*

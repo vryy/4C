@@ -46,7 +46,7 @@ namespace XFEM
 {
 
 
-enum pointType {INTERNAL, SURFACE, LINE, NODE, INTERSECTION };
+enum pointType {INTERNAL, SURFACE, LINE, NODE, INTERSECTION, XFEMNODE};
 
 
 //! a point class used in the xfem intersection process
@@ -117,6 +117,9 @@ class Intersection
 
          //! vector of nodes for each surface of a single element
         vector<vector<int> >              eleNumberingSurfaces_;
+        
+        //! vector of nodes for each line of a single element
+        vector<vector<int> >              eleNumberingLines_;
 
         //! vector of adjacent surfaces for each node of a single element
         vector<vector<int> >              eleNodesSurfaces_;
@@ -324,6 +327,21 @@ class Intersection
             vector<BlitzVec3>&      lowerLimits
             ) const;
 
+        /*!
+        \brief  checks if an intersection lies on a xfem boundary
+
+        \param xfemElement              (in)        : xfem element
+        \param cutterElement            (in)        : cutter element
+        \param interfacePoints          (in)        : vector of interface points
+        \param intersectionOnBoundary   (out)       : true if intersection XFEM boundary
+        */
+        bool checkIfIntersectionOnXFEMBoundary(
+            const DRT::Element*                 xfemElement,
+            const BlitzMat&                     xyze_xfemElement,
+            const DRT::Element*                 cutterElement,
+            const BlitzMat&                     xyze_cutterElement,
+            vector<InterfacePoint>&             interfacePoints
+            );
 
         /*!
         \brief  computes the convex hull of a set of points
