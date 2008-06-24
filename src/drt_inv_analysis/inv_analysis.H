@@ -35,7 +35,7 @@ class Inv_analysis : public StruGenAlpha {
 		vector<double> p_neg_;                          // old parameter vector
 		vector<double> p_0_storage_;
 		vector<double> p_1_storage_;
-		vector<double> p_2_storage_;
+		vector<double> p_2_storage_; 
 		vector<double> delta_p_;			// change of paramter to the next step
 		double aim_function_;
 		RefCountPtr<Epetra_CrsMatrix> jacobian_;
