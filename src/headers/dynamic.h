@@ -86,6 +86,7 @@ enum _genavgtype
 enum _nlnSolvTyp
    {
     fullnewton,                 /* full Newton-Raphson */
+    lsnewton,                   /* line search Newton-Raphson */
     modnewton,                  /* modified Newton */
     matfreenewton,              /* matrix-free Newton iteration */
     nlncg,                      /* nonlinear CG iteration using Nox */
