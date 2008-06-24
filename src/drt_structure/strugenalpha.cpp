@@ -1276,7 +1276,7 @@ void StruGenAlpha::FullNewton()
     ++numiter;
 
   }
-  //=================================================================== end equilibrium loop
+  //=============================================== end equilibrium loop
   print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
