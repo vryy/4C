@@ -29,8 +29,10 @@ MAT::ContChainNetw::ContChainNetw()
   : matdata_(NULL)
 {
   isinit_=false;
+  mytime_=0.0;
   li_ = rcp(new vector<vector<double> >);
   li0_ = rcp(new vector<vector<double> >);
+  lambda_ = rcp(new vector<vector<double> >);
   ni0_ = rcp(new vector<Epetra_SerialDenseMatrix>);
 }
 
@@ -132,6 +134,7 @@ void MAT::ContChainNetw::Initialize(const int numgp)
 
   li0_ = rcp(new vector<vector<double> > (numgp));
   li_ = rcp(new vector<vector<double> > (numgp));
+  lambda_ = rcp(new vector<vector<double> > (numgp));
   ni0_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   // initial basis is identity
   Epetra_SerialDenseMatrix id(3,3);
@@ -141,16 +144,21 @@ void MAT::ContChainNetw::Initialize(const int numgp)
   for(int gp=0; gp<numgp; ++gp){
     li0_->at(gp).resize(3);
     li_->at(gp).resize(3);
+    lambda_->at(gp).resize(3);
 //    for (int i = 0; i < 3; ++i) {
 //      li0_->at(gp)[i] = ( (double)rand() / ((double)(RAND_MAX)+(double)(1)) );
 //    }
     li0_->at(gp)[0] = isotropy;
     li0_->at(gp)[1] = isotropy;
     li0_->at(gp)[2] = isotropy;
-    for (int i = 0; i < 3; ++i) li_->at(gp)[i] = li0_->at(gp)[i];
+    for (int i = 0; i < 3; ++i){
+      li_->at(gp)[i] = li0_->at(gp)[i];
+      lambda_->at(gp)[i] = 0.0;
+    }
     ni0_->push_back(id);
   }
 
+  mytime_ = 0.0;
   isinit_ = true;
   
   return ;
@@ -249,7 +257,7 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   const double chn_stiffact = boltzmann * abstemp * nchain / (4.0*A);
   
   const double time = params.get("total time",-1.0);
-  double rem_time = time-1.0;
+  double rem_time = time;
   const double kappa = matdata_->m.contchainnetw->relax; // relaxation time for remodeling
   const double decay = exp(-kappa*rem_time);
 
@@ -308,30 +316,39 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
     trial += temp;
   }
   
-  Epetra_SerialDenseVector eig_sp(dim);  // lambda^(sigma+)
-  if (trial.NormOne() > 1.0E-13)
-//    if (gp==0) cout << Strial;
-    //LINALG::SymmetricEigenValues(trial,eig_sp);
-    LINALG::SymmetricEigenProblem(trial,eig_sp);
-    if (gp==0){
-//      cout << eig_sp;
-//      cout << trial;
-    }
-//  if ((params.get("total time",-1.0)>=0) && (eleId==0) && (gp==0)){
-//    cout << "rem_time: " << rem_time; //params.get("total time",-1.0);
-//    cout << ",eigvs: " << eig_sp(0) << "," << eig_sp(1) << "," << eig_sp(2) << endl;
-//  }
   
-  for (int i = 0; i < dim; ++i) {
-//    if (eig_sort[i] > 1.0E-13) eig_sp(i) = 1.0;
+  Epetra_SerialDenseVector eig_sp(dim);  // lambda^(sigma+)
+//  if (trial.NormOne() > 1.0E-13)
+////    if (gp==0) cout << Strial;
+//    //LINALG::SymmetricEigenValues(trial,eig_sp);
+//    LINALG::SymmetricEigenProblem(trial,eig_sp);
+//    if (gp==0){
+////      cout << eig_sp;
+////      cout << trial;
+//    }
+////  if ((params.get("total time",-1.0)>=0) && (eleId==0) && (gp==0)){
+////    cout << "rem_time: " << rem_time; //params.get("total time",-1.0);
+////    cout << ",eigvs: " << eig_sp(0) << "," << eig_sp(1) << "," << eig_sp(2) << endl;
+////  }
+//  
+//  for (int i = 0; i < dim; ++i) {
+////    if (eig_sort[i] > 1.0E-13) eig_sp(i) = 1.0;
+////    else eig_sp(i) = 0.0;
+//    lambda_->at(gp)[i] = eig_sp(i);
+//    if (eig_sp(i) > 1.0E-12) eig_sp(i) = 1.0;
 //    else eig_sp(i) = 0.0;
-    if (eig_sp(i) > 1.0E-12) eig_sp(i) = 1.0;
-    else eig_sp(i) = 0.0;
-  }
+//  }
   // end of trial S to compute eigenvalues ************************************
   
   // update cell dimensions (remodeling!)
-  if (rem_time > 0.0){
+  if (rem_time > mytime_){
+    mytime_ = rem_time;
+    if (trial.NormOne() > 1.0E-13) LINALG::SymmetricEigenProblem(trial,eig_sp);
+    for (int i = 0; i < dim; ++i) {
+      lambda_->at(gp)[i] = eig_sp(i);
+      if (eig_sp(i) > 1.0E-12) eig_sp(i) = 1.0;
+      else eig_sp(i) = 0.0;
+    }
     for (int i = 0; i < dim; ++i){
 //      if (gp==0) cout << li_->at(gp)[i] << "->";
       li_->at(gp)[i] = (eig_sp(i) - li0_->at(gp)[i]/r0)*(1-decay)*r0 + li0_->at(gp)[i];
@@ -451,6 +468,7 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     RefCountPtr<MAT::Material> mat = actele->Material();
     MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
     Epetra_SerialDenseMatrix ni0 = chain->Getni0()->at(0);
+    vector<double> lamb0 = chain->Getlambdas()->at(0);
     
 //    // material plot at element center
 //    const int dim=3;
@@ -458,33 +476,48 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 //      gmshfilecontent << "VP(" << scientific << elecenter[0] << ",";
 //      gmshfilecontent << scientific << elecenter[1] << ",";
 //      gmshfilecontent << scientific << elecenter[2] << ")";
-//      gmshfilecontent << "{" << scientific << ni0(0,k)
-//      << "," << ni0(1,k) << "," << ni0(2,k) << "};" << endl;
+//      gmshfilecontent << "{" << scientific << 
+//      ni0(0,k) * lamb0[k]
+//      << "," << ni0(1,k) * lamb0[k] << "," << ni0(2,k) * lamb0[k] << "};" << endl;
 //    }
     
     // material plot at gauss points
     int ngp = chain->Getni0()->size();
     for (int gp = 0; gp < ngp; ++gp){
       vector<double> point = MAT::MatPointCoords(actele,mydisp,gp);
-      for (int k=0; k<1; ++k){
-//        // draw eigenvectors
-//        gmshfilecontent << "VP(" << scientific << point[0] << ",";
-//        gmshfilecontent << scientific << point[1] << ",";
-//        gmshfilecontent << scientific << point[2] << ")";
-//        gmshfilecontent << "{" << scientific
-//        << ((chain->Getni0())->at(gp))(0,k)
-//        << "," << ((chain->Getni0())->at(gp))(1,k)
-//        << "," << ((chain->Getni0())->at(gp))(2,k) << "};" << endl;
-        
-        // draw fiber cell vectors
+      double scalar = 1;
+      vector<double> length(3);
+      vector<double> gpli =  chain->Getli()->at(gp); 
+      vector<double> gpli0 = chain->Getli0()->at(gp);
+//      length[0] = scalar * gpli[0]/gpli0[0];
+//      length[1] = scalar * gpli[1]/gpli0[1];
+//      length[2] = scalar * gpli[2]/gpli0[2];
+      length[0] = scalar * chain->Getlambdas()->at(gp)[0];
+      length[1] = scalar * chain->Getlambdas()->at(gp)[1];
+      length[2] = scalar * chain->Getlambdas()->at(gp)[2];
+//      for (int i=0; i<3; ++i){
+//        cout << gpli[i] << ":" << gpli0[i] << endl;
+//      }
+      
+      for (int k=0; k<3; ++k){
+        // draw eigenvectors
         gmshfilecontent << "VP(" << scientific << point[0] << ",";
         gmshfilecontent << scientific << point[1] << ",";
         gmshfilecontent << scientific << point[2] << ")";
         gmshfilecontent << "{" << scientific
-        <<        ((chain->Getni0())->at(gp))(0,k) * ((chain->Getli())->at(gp))[k]//((chain->Getli0())->at(gp))[k]
-        << "," << ((chain->Getni0())->at(gp))(1,k) * ((chain->Getli())->at(gp))[k]//((chain->Getli0())->at(gp))[k]
-        << "," << ((chain->Getni0())->at(gp))(2,k) * ((chain->Getli())->at(gp))[k]//((chain->Getli0())->at(gp))[k]
-        << "};" << endl;
+        << ((chain->Getni0())->at(gp))(0,k)
+        << "," << ((chain->Getni0())->at(gp))(1,k)
+        << "," << ((chain->Getni0())->at(gp))(2,k) << "};" << endl;
+        
+//        // draw fiber cell vectors
+//        gmshfilecontent << "VP(" << scientific << point[0] << ",";
+//        gmshfilecontent << scientific << point[1] << ",";
+//        gmshfilecontent << scientific << point[2] << ")";
+//        gmshfilecontent << "{" << scientific
+//        <<        ((chain->Getni0())->at(gp))(0,k) * length[k] 
+//        << "," << ((chain->Getni0())->at(gp))(1,k) * length[k] 
+//        << "," << ((chain->Getni0())->at(gp))(2,k) * length[k] 
+//        << "};" << endl;
       }
     }
   }

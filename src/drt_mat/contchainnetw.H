@@ -99,6 +99,8 @@ namespace MAT
     
     RCP<vector<vector<double> > > Getli() const {return li_;}
     RCP<vector<vector<double> > > Getli0() const {return li0_;}
+    RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
+    
     
     RCP<vector<Epetra_SerialDenseMatrix> >Getni0() const {return ni0_;}
     
@@ -115,6 +117,11 @@ namespace MAT
     Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > ni0_;
     /// initial unit cell dimensions per gp
     Teuchos::RCP<vector<vector<double> > > li0_;
+    /// eigenvalues per gp
+    Teuchos::RCP<vector<vector<double> > > lambda_;
+    
+    // remember time
+    double mytime_;
     
     bool isinit_;
     
