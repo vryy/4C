@@ -86,6 +86,10 @@ int EXODUS::CountMat(const string& headfile){
   const char *headfilechar;
   headfilechar = headfile.c_str();
   ifstream header(headfilechar, ifstream::in);
+  if (not header.good()){
+    cout << endl << "Unable to open file: " << headfilechar << endl;
+    dserror("Unable to open head-file");
+  }
   while (header.good()) head << (char) header.get();
   //while (!header.eof()) head << (char) header.get();
   header.close();
@@ -106,6 +110,10 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
   const char *headfilechar;
   headfilechar = headfile.c_str();
   ifstream header(headfilechar, ifstream::in);
+  if (not header.good()){
+    cout << endl << "Unable to open file: " << headfilechar << endl;
+    dserror("Unable to open head-file");
+  }
   while (header.good()) head << (char) header.get();
   //while (!header.eof()) head << (char) header.get();
   header.close();
