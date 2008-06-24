@@ -439,11 +439,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter("NLNSOL","fullnewton","",
                                tuple<std::string>(
                                  "fullnewton",
+                                 "lsnewton",
                                  "modnewton",
                                  "nlncg",
                                  "ptc"),
                                tuple<int>(
                                  STRUCT_DYNAMIC::fullnewton,
+                                 STRUCT_DYNAMIC::lsnewton,
                                  STRUCT_DYNAMIC::modnewton,
                                  STRUCT_DYNAMIC::nlncg,
                                  STRUCT_DYNAMIC::ptc),
