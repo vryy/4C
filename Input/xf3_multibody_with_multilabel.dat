@@ -30336,9 +30336,9 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 10000.0 NUE 0.0 DENS 0.0 THEXPAN
 -----------------------------------------------------------LOCSYS4
 -----------------------------------------------------------LOCSYS5
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 1103 POSITION velx     NAME velx     VALUE 9.332904920e-01 TOLERANCE 1e-6
-FLUID DIS 1 NODE 1103 POSITION vely     NAME vely     VALUE 2.870863690e-02 TOLERANCE 1e-6
+FLUID DIS 1 NODE 1103 POSITION velx     NAME velx     VALUE 9.332325534e-01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 1103 POSITION vely     NAME vely     VALUE 2.864719351e-02 TOLERANCE 1e-6
 FLUID DIS 1 NODE 1103 POSITION velz     NAME velz     VALUE 2.213675704e-11 TOLERANCE 1e-6
-FLUID DIS 1 NODE 1103 POSITION pressure NAME pressure VALUE 2.566176116e+01 TOLERANCE 1e-6
+FLUID DIS 1 NODE 1103 POSITION pressure NAME pressure VALUE 2.551746566e+01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
