@@ -102,7 +102,7 @@ namespace MAT
     RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
     
     
-    RCP<vector<Epetra_SerialDenseMatrix> >Getni0() const {return ni_;}
+    RCP<vector<Epetra_SerialDenseMatrix> >Getni() const {return ni_;}
     
     Epetra_SerialDenseMatrix EvaluateStress(
         const Epetra_SerialDenseMatrix& isostress,
@@ -130,6 +130,15 @@ namespace MAT
         const vector<double> rem_toggle,
         const int gp, const double r0, const double decay);
 
+    std::string PrintStructTens(const vector<Epetra_SerialDenseMatrix>& Ni);
+    
+    std::string PrintAnisoCmat(const Epetra_SerialDenseMatrix& cmat,
+        const vector<Epetra_SerialDenseMatrix>& Ni,
+        const vector<double>& cell_li,
+        const vector<double>& cell_Inv,
+        const double c_chn_scalar,
+        const double stressfree);
+    
   private:
 
     /// my material parameters
@@ -156,6 +165,7 @@ namespace MAT
   Epetra_SerialDenseMatrix StressVoigt2Mat(Epetra_SerialDenseVector* stress);
   Epetra_SerialDenseVector StressMat2Voigt(Epetra_SerialDenseMatrix& stressmat);
   void ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis, const double time, const int iter);
+  void ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis, const double time, const int iter);
   const vector<double> MatPointCoords(const DRT::Element* actele,const vector<double>& mydisp, int gp=-1);
 }
 

@@ -315,13 +315,14 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
 
   // chain stiffness factor
   double c_chn = chn_stiffact/(r*r*r) * (1.0 - 1.0/((1.0-r/L)*(1.0-r/L)) + 2.0*r/(L*(1.0-r/L)*(1.0-r/L)*(1.0-r/L)) );
-  EvaluateCmat((*cmat),Ni,lisq,I,c_chn,stressfree);
-  
 #if DEBUG
   cout << "glstrain" << endl << (*glstrain);
   cout << "stress" << endl << (*stress);
-  cout << "cmat" << endl << (*cmat);
+  cout << PrintStructTens(Ni) << endl << PrintAnisoCmat((*cmat),Ni,lisq,I,c_chn,stressfree) << endl;
 #endif
+  EvaluateCmat((*cmat),Ni,lisq,I,c_chn,stressfree);
+  cout << *cmat;
+  
   
   
   return;
@@ -412,6 +413,44 @@ void MAT::ContChainNetw::Update(const Epetra_SerialDenseMatrix& Phi,
   ni_->at(gp) = Phi;
 }
 
+std::string MAT::ContChainNetw::PrintStructTens(const vector<Epetra_SerialDenseMatrix>& Ni)
+{
+  std::stringstream out;
+  for (int i=0;i<3;++i){
+    for (int i_fib=0; i_fib<3; ++i_fib){
+      for (int j=0;j<3;++j){
+        out << Ni[i_fib](i,j) << " ";
+      }
+      out << "| ";
+    }
+    out << endl;
+  }
+  return out.str();
+}
+
+std::string MAT::ContChainNetw::PrintAnisoCmat(const Epetra_SerialDenseMatrix& cmat,
+    const vector<Epetra_SerialDenseMatrix>& Ni,
+    const vector<double>& cell_li,
+    const vector<double>& cell_Inv,
+    const double c_chn_scalar,
+    const double stressfree)
+{
+  std::stringstream out;
+  Epetra_SerialDenseMatrix newCmat(6,6);
+  EvaluateCmat(newCmat,Ni,cell_li,cell_Inv,c_chn_scalar,stressfree);
+  for (int i=0;i<3;++i){
+    for (int j=0;j<3;++j){
+      out << cmat(i,j) << " ";
+    }
+    out << "| ";
+    for (int j=0;j<3;++j){
+      out << newCmat(i,j) << " ";
+    }
+    out << endl;
+  }
+  return out.str();
+}
+
 
 
 Epetra_SerialDenseMatrix MAT::StressVoigt2Mat(Epetra_SerialDenseVector* stress)
@@ -439,6 +478,52 @@ Epetra_SerialDenseVector MAT::StressMat2Voigt(Epetra_SerialDenseMatrix& stressma
   s(3) = stressmat(0,1); s(4) = stressmat(1,2); s(5) = stressmat(0,2);
   return s;
 }
+
+void MAT::ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
+    const double time,
+    const int iter)
+{
+    std::stringstream filename;
+    filename << allfiles.outputfile_kenner << "_rem" << ".txt";
+    ofstream outfile;
+    outfile.open(filename.str().c_str(),ios_base::app);
+    int nele = dis->NumMyColElements();
+    int endele = 1;
+    int endgp = 1;
+    for (int iele=0; iele<endele; ++iele)
+    {
+      const DRT::Element* actele = dis->lColElement(iele);
+      RefCountPtr<MAT::Material> mat = actele->Material();
+      MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
+      int ngp = chain->Getni()->size();
+      for (int gp = 0; gp < endgp; ++gp){
+        vector<double> li = chain->Getli()->at(gp);
+        vector<double> lamb = chain->Getlambdas()->at(gp);
+        Epetra_SerialDenseMatrix ni0 = chain->Getni()->at(gp);
+        
+        // time
+        outfile << time << ",";
+        // iter
+        outfile << iter << ",";
+        // eleId
+        outfile << iele << ",";
+        // gp
+        outfile << gp << ",";
+        // cell dimensions
+        for (int i=0;i<3;++i) outfile << li[i] << ",";
+        // eigenvalues
+        for (int i=0;i<3;++i) outfile << lamb[i] << ",";
+        // eigenvectors/cell basis
+        for (int i=0;i<3;++i)
+          for (int j=0;j<3;++j)
+            outfile << ni0(j,i) << ",";
+        // end
+        outfile << endl;
+      }
+    }
+    outfile.close();
+}
+
 
 
 void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
@@ -477,7 +562,7 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     vector<double> elecenter = MAT::MatPointCoords(actele,mydisp);
     RefCountPtr<MAT::Material> mat = actele->Material();
     MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
-    Epetra_SerialDenseMatrix ni0 = chain->Getni0()->at(0);
+    Epetra_SerialDenseMatrix ni0 = chain->Getni()->at(0);
     vector<double> lamb0 = chain->Getlambdas()->at(0);
     
 //    // material plot at element center
@@ -492,7 +577,7 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 //    }
     
     // material plot at gauss points
-    int ngp = chain->Getni0()->size();
+    int ngp = chain->Getni()->size();
     for (int gp = 0; gp < ngp; ++gp){
       vector<double> point = MAT::MatPointCoords(actele,mydisp,gp);
       double scalar = 1;
@@ -515,9 +600,9 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
         gmshfilecontent << scientific << point[1] << ",";
         gmshfilecontent << scientific << point[2] << ")";
         gmshfilecontent << "{" << scientific
-        << ((chain->Getni0())->at(gp))(0,k)
-        << "," << ((chain->Getni0())->at(gp))(1,k)
-        << "," << ((chain->Getni0())->at(gp))(2,k) << "};" << endl;
+        << ((chain->Getni())->at(gp))(0,k)
+        << "," << ((chain->Getni())->at(gp))(1,k)
+        << "," << ((chain->Getni())->at(gp))(2,k) << "};" << endl;
         
 //        // draw fiber cell vectors
 //        gmshfilecontent << "VP(" << scientific << point[0] << ",";
