@@ -406,6 +406,12 @@ void contact_stru_static_drt()
     // keep a copy of fresm for contact forces / equilibrium check
     RCP<Epetra_Vector> fresmcopy= rcp(new Epetra_Vector(*fresm));
     
+    // friction  
+    // reset displacement jumps (slave dofs)
+    RCP<Epetra_Vector> jump = contactmanager->Jump();
+    jump->Scale(0.0); 
+    contactmanager->StoreNodalQuantities("jump");
+    
     //-------------------------- make contact modifications to lhs and rhs
     fresm->Scale(-1.0);     // rhs = -R = -fresm
     contactmanager->SetState("displacement",disn);

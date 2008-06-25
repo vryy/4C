@@ -297,6 +297,12 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   }
   stiff_->Complete();
   
+  // friction  
+  // reset displacement jumps (slave dofs)
+  RCP<Epetra_Vector> jump = contactmanager_->Jump();
+  jump->Scale(0.0); 
+  contactmanager_->StoreNodalQuantities("jump");
+  
   //------------------------- make contact modifications to lhs and rhs
   contactmanager_->SetState("displacement",disn_);
   
@@ -518,6 +524,12 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   }
   stiff_->Complete();
   
+  // friction  
+  // reset displacement jumps (slave dofs)
+  RCP<Epetra_Vector> jump = contactmanager_->Jump();
+  jump->Scale(0.0); 
+  contactmanager_->StoreNodalQuantities("jump");
+
   //-------------------------- make contact modifications to lhs and rhs
   contactmanager_->SetState("displacement",disn_);
   
@@ -1253,6 +1265,13 @@ void CONTACT::ContactStruGenAlpha::Update()
   zold->Update(1.0,*z,0.0);
   contactmanager_->StoreNodalQuantities("lmold");
   contactmanager_->StoreDM("old");
+
+  // friction  
+  // reset displacement jumps (slave dofs)
+  //RCP<Epetra_Vector> jump = contactmanager_->Jump();
+  //jump->Scale(0.0); 
+  //contactmanager_->StoreNodalQuantities("jump");
+    
 
 #ifdef PRESTRESS
   //----------- save the current green-lagrange strains in the material

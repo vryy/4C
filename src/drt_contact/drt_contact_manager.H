@@ -265,6 +265,16 @@ public:
     
   */
   void EvaluateTrescaBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
+  
+  /*!
+  \brief Evaluate Tresca friction (without basis transformation)
+  
+  \param kteff (in/out): effective stiffness matrix (without -> with contact)
+  \param feff (in/out): effective residual / force vector (without -> with contact)
+  \param numiter (in): only for debugging purposes (CONTACTCHECKHUEEBER)
+      
+  */
+  void EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff, RCP<Epetra_Vector> feff, int numiter);
    
   /*!
   \brief Evaluate contact (with basis transformation)
@@ -497,6 +507,13 @@ protected:
   RCP<Epetra_Map>                    zigzagone_;      // active node set of last active set try
   RCP<Epetra_Map>                    zigzagtwo_;      // active node set of second-last active set try
   RCP<Epetra_Map>                    zigzagthree_;    // active node set of third-last active set try
+  
+  RCP<Epetra_Map>                    zigzagslipone_;      // slip node set of last slip set try
+  RCP<Epetra_Map>                    zigzagsliptwo_;      // slip node set of second-last slip set try
+  RCP<Epetra_Map>                    zigzagslipthree_;    // slip node set of third-last slip set try
+    
+  
+  
 
   RCP<LINALG::SparseMatrix>          lmatrix_;        // global matrix L for Tresca friction slip nodes
   RCP<Epetra_Vector>                 r_;              // r.h.s vector for Tresca friction slip nodes
