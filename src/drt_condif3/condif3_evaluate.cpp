@@ -23,6 +23,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_utils_local_connectivity_matrices.H" // for CalculateFlux()
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -42,6 +43,8 @@ DRT::ELEMENTS::Condif3::ActionType DRT::ELEMENTS::Condif3::convertStringToAction
   DRT::ELEMENTS::Condif3::ActionType act = Condif3::none;
   if (action == "calc_condif_systemmat_and_residual")
     act = Condif3::calc_condif_systemmat_and_residual;
+  else if (action == "calc_condif_flux")
+    act = Condif3::calc_condif_flux;
   else
     dserror("Unknown type of action for Condif3");
   return act;
@@ -116,7 +119,39 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     if (fssgd != "No") dserror("fssgd not yet implemented!");
 
     // calculate element coefficient matrix and rhs
-    Condif3SysMat(myhist,&elemat1,&elemat2,&elevec1,elevec2,actmat,time,timefac,evel,fssgd,is_stationary);
+    Condif3SysMat(myhist,&elemat1,&elemat2,&elevec1,elevec2,actmat,time,timefac,evel,is_stationary);
+  }
+  break;
+  // calculate flux
+  case calc_condif_flux:
+  {
+    // get velocity values at the nodes
+    // compare also with DRT::UTILS::ExtractMyValues()
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    const int iel = NumNode();
+    const int nsd=3;
+    Epetra_SerialDenseVector evel(nsd*iel);
+    ExtractMyNodeBasedValues(evel,velocity);
+    
+    // need current values of transported scalar
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==null)
+      dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from the global vectors
+    vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+    Epetra_SerialDenseMatrix eflux = CalculateFlux(myphinp,actmat,evel);
+
+    for (int k=0;k<iel;k++)
+    { // form arithmetic mean of assembled nodal flux vectors
+      // => factor is the number of adjacent elements for each node
+      double factor = (Nodes()[k])->NumElement();
+      elevec1[k]+=eflux(0,k)/factor;
+      elevec2[k]+=eflux(1,k)/factor;
+      elevec3[k]+=eflux(2,k)/factor;
+    }
   }
   break;
   default:
@@ -140,7 +175,6 @@ void DRT::ELEMENTS::Condif3::Condif3SysMat(
     double                    time,
     double                    timefac,
     Epetra_SerialDenseVector& evel,
-    string                    fssgd,
     bool                      is_stationary)
 {
 
@@ -434,6 +468,7 @@ const Epetra_SerialDenseVector DRT::ELEMENTS::Condif3::BodyForce(const double ti
 void DRT::ELEMENTS::Condif3::ExtractMyNodeBasedValues(Epetra_SerialDenseVector& local,
      const RCP<Epetra_MultiVector>& global)
 {
+  if (global==null) dserror("received a TEUCHOS::null pointer");
   const int nsd = global->NumVectors(); // get dimension
   const int iel = NumNode(); // number of nodes
   if (local.Length()!=(iel*nsd)) dserror("vector size mismatch.");
@@ -1204,7 +1239,21 @@ void DRT::ELEMENTS::Condif3::Caltau(
       velint[i] += funct[j]*evel[i+(3*j)];
     }
   } //end loop over i
-  
+
+#if 0
+  // get coordinate of element center
+  vector<double> centercoord(3);
+  for (int i=0;i<3;i++)
+  {
+    centercoord[i]=0.0;
+    for (int j=0;j<iel;j++)
+    {
+      centercoord[i] += funct[j]*xyze(i,j);
+    }
+  } //end loop over i
+  cout<<"element center: "<<endl<<centercoord[0]<<endl<<centercoord[1]<<endl<<centercoord[2]<<endl;
+#endif
+
   /*------------------------------ get Jacobian matrix and determinant ---*/
   /*----------------------------- determine Jacobi Matrix at point r,s ---*/
   double dum;
@@ -1264,45 +1313,45 @@ void DRT::ELEMENTS::Condif3::Caltau(
     } /* end of loop over k */
 
    const double vol = wquad*det;
-   /*--------------------------------------------- get Euclidean vel_norm ---*/
-   const double vel_norm = sqrt(DSQR(velint[0]) + DSQR(velint[1]) + DSQR(velint[2]));
 
-/*
    // there exist different definitions for 'the' characteristic element length hk:
    // 1)
    // get element length for tau_Mp/tau_C: volume-equival. diameter
-   //const double hk = pow((6.*vol/PI),(1.0/3.0));
+   // const double hk = pow((6.*vol/PI),(1.0/3.0));
 
    // 2)
-   // streamlength
-   // normed velocity at element centre
-   vector<double> velino(3);
-   if (vel_norm>=1e-6)
+   // streamlength (based on velocity vector at element centre)
+   
+   // get Euclidean norm of velocity at element center
+   const double vel_norm = sqrt(DSQR(velint[0]) + DSQR(velint[1]) + DSQR(velint[2]));
+
+   double strle = 0.0;
+   if (vel_norm>1e-6)
    {
-     velino[0] = velint[0]/vel_norm;
-     velino[1] = velint[1]/vel_norm;
-     velino[2] = velint[2]/vel_norm;
+     double val = 0;
+     for (int i=0;i<iel;++i)
+     {
+       double sum = 0;
+       for (int j=0;j<3;++j)
+       {
+         sum += velint[j]*derxy(j,i);
+       }
+       val+= abs(sum);
+     } 
+     strle = 2.0*vel_norm/val; //this formula is not working in 3D in case of HEX8 elements!!
    }
    else
-   {
-     velino[0] = 1.0;
-     velino[1] = 0.0;
-     velino[2] = 0.0;
-   }
-   // get streamlength
-   double val = 0;
-   for (int i=0;i<iel;++i)
-   {
-     double sum = 0;
-     for (int j=0;j<3;++j)
+   {//case: 'zero' velocity vector => tau will be very small in diffusion dominated regions
+     // => usage of arbitrary vector velint = (1 0 0)^T in the formula above is possible.
+     double val = 0;
+     for (int i=0;i<iel;++i)
      {
-       sum += velino[j]*derxy(j,i);
+       val+=abs(derxy(0,i));
      }
-     val+= abs(sum);
-   } 
-   const double strle = 2.0/val; //this formula is buggy in 3D !!!!!!!
+     strle = 2.0/val;
+   }
    //const double hk = strle;
-   */
+
    // 3) use cubic root of the element volume as characteristic length
    const double hk = pow(vol,(1.0/3.0));
 
@@ -1320,7 +1369,6 @@ void DRT::ELEMENTS::Condif3::Caltau(
 
      /*--------------------------------------------------- compute tau ---*/
      tau = DSQR(hk)/((DSQR(hk)*xi1)/timefac + (2.0*diffus/mk)*xi2);
-
    }
    else
    {// stabilization parameters for stationary case
@@ -1331,7 +1379,6 @@ void DRT::ELEMENTS::Condif3::Caltau(
      xi2 = DMAX(epe2,1.0);
 
      tau = (DSQR(hk)*mk)/(2.0*diffus*xi2);
-
    }
 
 #if 0
@@ -1344,6 +1391,160 @@ void DRT::ELEMENTS::Condif3::Caltau(
 
   return;
 } //Condif3::Caltau
+
+
+/*----------------------------------------------------------------------*
+ |  calculate mass flux                              (private) gjb 06/08|
+ *----------------------------------------------------------------------*/
+Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
+    vector<double>&           ephinp,
+    struct _MATERIAL*         material,
+    Epetra_SerialDenseVector& evel
+)
+{
+  /*------------------------------------------------- set element data */
+  const int iel = NumNode();
+  const DiscretizationType distype = Shape();
+  const int nsd = 3;
+
+  Epetra_SerialDenseMatrix xyze(nsd,iel);
+  Epetra_SerialDenseMatrix flux(3,iel);
+
+  // get node coordinates
+  for (int i=0;i<iel;i++)
+  {
+    xyze(0,i)=Nodes()[i]->X()[0];
+    xyze(1,i)=Nodes()[i]->X()[1];
+    xyze(2,i)=Nodes()[i]->X()[2];
+  }
+
+  // get diffusivity
+  if(material->mattyp != m_condif) dserror("Material law is not of type m_condif.");
+  const double diffus = material->m.condif->diffusivity;
+
+  /*----------------------------------------- declaration of variables ---*/
+  Epetra_SerialDenseVector        funct(iel);
+  Epetra_SerialDenseMatrix        deriv(nsd,iel);
+  static Epetra_SerialDenseMatrix xjm(nsd,nsd);
+  Epetra_SerialDenseMatrix        derxy(nsd,iel);
+
+  vector< vector<double> > nodecoords;
+  nodecoords = DRT::UTILS::getEleNodeNumbering_nodes_reference(distype);
+
+  if ((int) nodecoords.size() != iel) dserror("number of nodes does not match");
+
+  // loop over all nodes
+  for (int iquad=0; iquad<iel; ++iquad)
+  {
+    // coordiantes of the current integration point
+    const double e1 = nodecoords[iquad][0];
+    const double e2 = nodecoords[iquad][1];
+    const double e3 = nodecoords[iquad][2];
+
+    // shape functions and their derivatives
+    DRT::UTILS::shape_function_3D(funct,e1,e2,e3,distype);
+    DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+
+    /*----------------------------------------- compute Jacobian matrix */
+
+    // get Jacobian matrix and determinant
+    // actually compute its transpose....
+    /*
+    +-            -+ T      +-            -+
+    | dx   dx   dx |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dr   dr   dr |
+    |              |        |              |
+    | dy   dy   dy |        | dx   dy   dz |
+    | --   --   -- |   =    | --   --   -- |
+    | dr   ds   dt |        | ds   ds   ds |
+    |              |        |              |
+    | dz   dz   dz |        | dx   dy   dz |
+    | --   --   -- |        | --   --   -- |
+    | dr   ds   dt |        | dt   dt   dt |
+    +-            -+        +-            -+
+     */
+    double dum;
+    /*-------------------------------- determine jacobian at point r,s ---*/
+    for (int i=0; i<nsd; i++)
+    {
+      for (int j=0; j<nsd; j++)
+      {
+        dum=0.0;
+        for (int l=0; l<iel; l++)
+        {
+          dum += deriv(i,l)*xyze(j,l);
+        }
+        xjm(i,j)=dum;
+      } /* end of loop j */
+    } /* end of loop i */
+    // ---------------------------------------- calculate determinant
+    const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
+    xjm(0,1)*xjm(1,2)*xjm(2,0)+
+    xjm(0,2)*xjm(1,0)*xjm(2,1)-
+    xjm(0,2)*xjm(1,1)*xjm(2,0)-
+    xjm(0,0)*xjm(1,2)*xjm(2,1)-
+    xjm(0,1)*xjm(1,0)*xjm(2,2);
+
+    if (det < 0.0)
+      dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", Id(), det);
+    if (abs(det) < 1E-16)
+      dserror("GLOBAL ELEMENT NO.%i\nZERO JACOBIAN DETERMINANT: %f", Id(), det);
+
+    /*------------------------------------------------------------------*/
+    /*                                         compute global derivates */
+    /*------------------------------------------------------------------*/
+
+    /*------------------------------------------------- initialization */
+    for(int k=0;k<iel;k++)
+    {
+      derxy(0,k)=0.0;
+      derxy(1,k)=0.0;
+      derxy(2,k)=0.0;
+    } /* end of loop over k */
+
+    // ---------------------------------------inverse of transposed jacobian
+    static Epetra_SerialDenseMatrix       xij(nsd,nsd);
+    double idet = 1./det;
+    xij(0,0) = (  xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2))*idet;
+    xij(1,0) = (- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2))*idet;
+    xij(2,0) = (  xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1))*idet;
+    xij(0,1) = (- xjm(0,1)*xjm(2,2) + xjm(2,1)*xjm(0,2))*idet;
+    xij(1,1) = (  xjm(0,0)*xjm(2,2) - xjm(2,0)*xjm(0,2))*idet;
+    xij(2,1) = (- xjm(0,0)*xjm(2,1) + xjm(2,0)*xjm(0,1))*idet;
+    xij(0,2) = (  xjm(0,1)*xjm(1,2) - xjm(1,1)*xjm(0,2))*idet;
+    xij(1,2) = (- xjm(0,0)*xjm(1,2) + xjm(1,0)*xjm(0,2))*idet;
+    xij(2,2) = (  xjm(0,0)*xjm(1,1) - xjm(1,0)*xjm(0,1))*idet;
+    /*---------------------------------------- calculate global derivatives */
+    for (int k=0;k<iel;k++)
+    {
+      derxy(0,k) +=   xij(0,0) * deriv(0,k) + xij(0,1) * deriv(1,k) + xij(0,2) * deriv(2,k);
+      derxy(1,k) +=   xij(1,0) * deriv(0,k) + xij(1,1) * deriv(1,k) + xij(1,2) * deriv(2,k);
+      derxy(2,k) +=   xij(2,0) * deriv(0,k) + xij(2,1) * deriv(1,k) + xij(2,2) * deriv(2,k);
+    } /* end of loop over k */
+
+    //compute diffusive flux
+    for (int k=0;k<iel;k++)
+    {
+      flux(0,iquad)+=-diffus*derxy(0,k)*ephinp[k];
+      flux(1,iquad)+=-diffus*derxy(1,k)*ephinp[k];
+      flux(2,iquad)+=-diffus*derxy(2,k)*ephinp[k];
+    }
+
+    /*
+    //additional terms for total flux (add convective flux terms)
+    for (int k=0;k<iel;k++)
+    {
+      flux(0,iquad)+=evel[k*nsd]*ephinp[k];
+      flux(1,iquad)+=evel[1+k*nsd]*ephinp[k];;
+      flux(2,iquad)+=evel[2+k*nsd]*ephinp[k];;
+     }
+     */
+  } // loop over corner nodes
+
+  return flux;
+} // Condif3::CalculateFlux
+
 
 //=======================================================================
 //=======================================================================

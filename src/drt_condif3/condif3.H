@@ -314,7 +314,8 @@ private:
   enum ActionType
   {
     none,
-    calc_condif_systemmat_and_residual
+    calc_condif_systemmat_and_residual,
+    calc_condif_flux
   };
 
 
@@ -341,7 +342,6 @@ private:
                    double                    time,
                    double                    timefac,
                    Epetra_SerialDenseVector& vel,
-                   string                    fssgd,
                    bool                      is_stationary
                    );
 
@@ -443,6 +443,14 @@ private:
       const int&                iel
       );
 
+  /*!
+   * \brief calculate flux vector for actual solution
+   */
+  Epetra_SerialDenseMatrix CalculateFlux(
+      vector<double>&           phinp,
+      struct _MATERIAL*         material,
+      Epetra_SerialDenseVector& evel
+      );
 }; // class Condif3
 
 
@@ -766,7 +774,8 @@ private:
   //! action parameters recognized by Condif3Surface
   enum ActionType
   {
-    none
+    none,
+    calc_condif_flux
   };
 
   // don't want = operator

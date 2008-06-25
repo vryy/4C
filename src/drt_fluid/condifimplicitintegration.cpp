@@ -27,6 +27,18 @@ Maintainer: Volker Gravemeier
 #include "vm3_solver.H"
 #include "../drt_lib/drt_function.H"
 
+#include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/adapter_utils.H"
+#include "../drt_lib/drt_condition_utils.H"
+#include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
+/*----------------------------------------------------------------------*
+  |                                                       m.gee 06/01    |
+  | general problem data                                                 |
+  | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -770,7 +782,6 @@ void CondifImplicitTimeInt::Update()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void CondifImplicitTimeInt::Output()
 {
-
   //-------------------------------------------- output of solution
   //increase counters
   restartstep_ += 1;
@@ -784,6 +795,9 @@ void CondifImplicitTimeInt::Output()
       output_.WriteVector("phinp", phinp_);
       output_.WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
       //output_.WriteVector("residual", residual_);
+
+      RCP<Epetra_MultiVector> flux = CalcFlux();
+      output_.WriteVector("flux", flux, IO::DiscretizationWriter::nodevector);
 
       // write domain decomposition for visualization (only once!)
       if (step_==upres_)
@@ -1151,6 +1165,64 @@ void CondifImplicitTimeInt::SetInitialField(int init, int startfuncno)
   return;
 } // CondifImplicitTimeInt::SetInitialField
 
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |  calculate mass / heat flux vector                        gjb   04/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+Teuchos::RCP<Epetra_MultiVector> CondifImplicitTimeInt::CalcFlux()
+{
+  string condstring("FluxCalculation");
+
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  // get the noderowmap
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+
+  // empty vector for (normal) mass or heat fluxes
+  Teuchos::RCP<Epetra_MultiVector> flux = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+
+  // we have only 1 dof per node, so we have to treat each spatial direction separately
+  Teuchos::RCP<Epetra_Vector> fluxx = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP<Epetra_Vector> fluxy = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP<Epetra_Vector> fluxz = LINALG::CreateVector(*dofrowmap,true);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("phinp",phinp_);
+  // set action for elements
+  ParameterList eleparams;
+  eleparams.set("action","calc_condif_flux");
+  //provide velocity field (export to column map necessary for parallel evaluation)
+  const Epetra_Map* nodecolmap = discret_->NodeColMap();
+  RefCountPtr<Epetra_MultiVector> vel = rcp(new Epetra_MultiVector(*nodecolmap,3));
+  LINALG::Export(*convel_,*vel);
+  eleparams.set("velocity field",vel);
+
+  // evaluate fluxes in the whole computational domain
+  //discret_->Evaluate(eleparams,null,null,null,null,null);
+
+  // evaluate fluxes on surface condition only
+  discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz,condstring);
+  discret_->ClearState();
+
+  // insert values into final flux vector for visualization
+  for (int i = 0;i<flux->MyLength();++i)
+  {
+    flux->ReplaceMyValue(i,0,(*fluxx)[i]);
+    flux->ReplaceMyValue(i,1,(*fluxy)[i]);
+    flux->ReplaceMyValue(i,2,(*fluxz)[i]);
+  }
+
+  return flux;
+} // CondifImplicitTimeInt::CalcNormalFlux
 
 /*----------------------------------------------------------------------*
  | Destructor dtor (public)                                     vg 05/07|

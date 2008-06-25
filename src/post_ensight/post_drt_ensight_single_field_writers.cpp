@@ -86,6 +86,8 @@ void ConDifEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("phinp", "phi", dofbased, 1);
   // write velocity field (always 3D)
   EnsightWriter::WriteResult("convec_velocity", "velocity", nodebased, 3);
+  // write flux vectors (always 3D)
+  EnsightWriter::WriteResult("flux", "flux", nodebased, 3);
   WriteElementResults(field);
 }
 

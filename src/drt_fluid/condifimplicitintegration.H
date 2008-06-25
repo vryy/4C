@@ -153,6 +153,12 @@ public:
 
   */
   void SetInitialField(int init,int startfuncno);
+  
+  /*!
+  \brief routine to calculate mass/heat flux vectors
+
+  */
+  Teuchos::RCP<Epetra_MultiVector> CalcFlux();
 
 protected:
 
