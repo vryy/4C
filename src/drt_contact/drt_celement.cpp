@@ -329,48 +329,81 @@ void CONTACT::CElement::DerivNormalAtXi(double* xi, Epetra_SerialDenseMatrix& el
   else ncol=0;
         
   // create directional derivative
+  map<int,double>& derivnx = derivn[0];
+  map<int,double>& derivny = derivn[1];
+  
+  //**********************************************************************
+  // For the weighted normal case, the element lengths enter the nodal
+  // normal formulation. They have to be linearized as well, which is an
+  // element operation only. Thus, we can compute this part of th nodal
+  // normal derivative before looping over the element nodes!
+  //**********************************************************************
+#ifdef CONTACTWNORMAL
+  // add directional derivative of element area
+  typedef map<int,double>::const_iterator CI;
+  map<int,double> derivarea;
+  DerivArea(derivarea);
+  
+  // case1: weighted nodal normal (1 adjacent element)
+  if (elens.N()==1)
+  {
+    for (CI p=derivarea.begin();p!=derivarea.end();++p)
+    {
+      derivnx[p->first] += elens(0,col)*(p->second);
+      derivny[p->first] += elens(1,col)*(p->second);
+    }
+  }
+  // case2: weighted nodal normal (2 adjacent elements)
+  else if (elens.N()==2)
+  {
+    for (CI p=derivarea.begin();p!=derivarea.end();++p)
+    {
+      derivnx[p->first] += elens(4,ncol)*elens(0,col)*(p->second);
+      derivny[p->first] += elens(4,ncol)*elens(1,col)*(p->second);
+    }
+  } 
+#endif // #ifdef CONTACTWNORMAL
+  
+  // loop over all nodes for directional derivative
+  // (this is the part we in both the weighted and unweighted normal case)
   for (int i=0;i<nnodes;++i)
   {
     CNode* mycnode = static_cast<CNode*> (mynodes[i]);
     if (!mycnode) dserror("ERROR: ComputeNormalAtXi: Null pointer!");
     
-    map<int,double>& derivnx = derivn[0];
-    map<int,double>& derivny = derivn[1];
-    
-    // case1: weighted nodal normal
 #ifdef CONTACTWNORMAL
-    derivnx[mycnode->Dofs()[0]] +=  0;
-    derivnx[mycnode->Dofs()[1]] +=  deriv[i];
-    derivny[mycnode->Dofs()[0]] += -deriv[i];
-    derivny[mycnode->Dofs()[1]] +=  0;
-#else
-    // case2: unweighted nodal normal (1 adjacent element)
+    // case1: weighted nodal normal (1 adjacent element)
     if (elens.N()==1)
     {
-      derivnx[mycnode->Dofs()[0]] +=  0;
-      derivnx[mycnode->Dofs()[1]] +=  deriv[i];
-      derivny[mycnode->Dofs()[0]] += -deriv[i];
-      derivny[mycnode->Dofs()[1]] +=  0;
+      derivnx[mycnode->Dofs()[0]] += 0;
+      derivnx[mycnode->Dofs()[1]] += elens(5,col)*deriv[i];
+      derivny[mycnode->Dofs()[0]] -= elens(5,col)*deriv[i];
+      derivny[mycnode->Dofs()[1]] += 0;
     }
-    // case3: unweighted nodal normal (2 adjacent elements)
+    // case2: weighted nodal normal (2 adjacent elements)
     else if (elens.N()==2)
     {
-      double lcol = 0.0;
-      double lncol = 0.0;
-     
-      for (int dim=0;dim<3;++dim)
-      {
-        lcol  += elens(dim,col)*elens(dim,col);
-        lncol += elens(dim,ncol)*elens(dim,ncol);
-      }
-      
-      lcol  = sqrt(lcol);
-      lncol = sqrt(lncol);
-      
-      derivnx[mycnode->Dofs()[0]] += -(elens(0,ncol)*elens(1,col)/lcol)*deriv[i];
-      derivnx[mycnode->Dofs()[1]] +=  (elens(0,col)*elens(0,ncol)/lcol+lncol)*deriv[i];
-      derivny[mycnode->Dofs()[0]] += -(elens(1,col)*elens(1,ncol)/lcol+lncol)*deriv[i];
-      derivny[mycnode->Dofs()[1]] +=  (elens(0,col)*elens(1,ncol)/lcol)*deriv[i];
+      derivnx[mycnode->Dofs()[0]] -= (elens(0,ncol)*elens(1,col)*elens(5,ncol)/elens(4,col))*deriv[i];
+      derivnx[mycnode->Dofs()[1]] += (elens(0,col)*elens(0,ncol)*elens(5,ncol)/elens(4,col)+elens(4,ncol)*elens(5,col))*deriv[i];
+      derivny[mycnode->Dofs()[0]] -= (elens(1,col)*elens(1,ncol)*elens(5,ncol)/elens(4,col)+elens(4,ncol)*elens(5,col))*deriv[i];
+      derivny[mycnode->Dofs()[1]] += (elens(0,col)*elens(1,ncol)*elens(5,ncol)/elens(4,col))*deriv[i];
+    }
+#else
+    // case3: unweighted nodal normal (1 adjacent element)
+    if (elens.N()==1)
+    {
+      derivnx[mycnode->Dofs()[0]] += 0;
+      derivnx[mycnode->Dofs()[1]] += deriv[i];
+      derivny[mycnode->Dofs()[0]] -= deriv[i];
+      derivny[mycnode->Dofs()[1]] += 0;
+    }
+    // case4: unweighted nodal normal (2 adjacent elements)
+    else if (elens.N()==2)
+    {
+      derivnx[mycnode->Dofs()[0]] -= (elens(0,ncol)*elens(1,col)/elens(4,col))*deriv[i];
+      derivnx[mycnode->Dofs()[1]] += (elens(0,col)*elens(0,ncol)/elens(4,col)+elens(4,ncol))*deriv[i];
+      derivny[mycnode->Dofs()[0]] -= (elens(1,col)*elens(1,ncol)/elens(4,col)+elens(4,ncol))*deriv[i];
+      derivny[mycnode->Dofs()[1]] += (elens(0,col)*elens(1,ncol)/elens(4,col))*deriv[i];
     }
     else
       dserror("ERROR: ComputeNormalAtXi: A 2D CNode can only have 1 or 2 adjacent CElements");
@@ -512,9 +545,9 @@ void CONTACT::CElement::DerivJacobian1D(const vector<double>& val,
   // *********************************************************************
   // (loop over all nodes and over all nodal dofs to capture all
   // potential dependencies of the Jacobian. Note that here we only
-  // need to compute a SIMPLIFIED version of Lin(J), as the current
-  // GP coordinate does not change! Later when linearizing M this
-  // will not be true anymore and Lin(J) will become more complex!)
+  // need to compute the DIRECT derivative of Lin(J), as the current
+  // GP coordinate does not change! The derivative DJacDXi is done in
+  // a special function (see above)!
   // *********************************************************************
   for (int i=0;i<nnodes;++i)
   {
@@ -584,6 +617,70 @@ double CONTACT::CElement::ComputeArea()
     dserror("ERROR: Area computation not implemented for this type of CElement");
   
   return area;
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute length/area linearization of the element          popp 06/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CElement::DerivArea(map<int,double>& derivarea)
+{
+  // 2D linear case (2noded line element)
+  if (Shape()==line2)
+  {
+    // no integration necessary (constant Jacobian)
+    int nnodes = NumNode();
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    coord = GetNodalCoords();
+    vector<double> val(nnodes);
+    vector<double> deriv(nnodes);
+        
+    // build val, deriv etc. at xi=0.0 (arbitrary)
+    double xi[2] = {0.0, 0.0};
+    EvaluateShape1D(xi,val,deriv,nnodes);
+    
+    // get Jacobian derivative
+    DerivJacobian1D(val,deriv,coord,derivarea);
+    
+    // multiply all entries with factor 2
+    typedef map<int,double>::const_iterator CI;
+    for (CI p=derivarea.begin();p!=derivarea.end();++p)
+      derivarea[p->first] = 2*(p->second);
+  }
+  
+  // 2D quadratic case (3noded line element)
+  else if (Shape()==line3)
+  {
+    // Gauss quadrature
+    CONTACT::Integrator integrator(CONTACTNGP,true);
+    int nnodes = NumNode();
+    LINALG::SerialDenseMatrix coord(3,nnodes);
+    coord = GetNodalCoords();
+    vector<double> val(nnodes);
+    vector<double> deriv(nnodes);
+    
+    // loop over all Gauss points, build Jacobian derivative
+    for (int j=0;j<integrator.nGP();++j)
+    {
+      double wgt = integrator.Weight(j);
+      double gpc[2] = {integrator.Coordinate(j), 0.0};
+      EvaluateShape1D(gpc, val, deriv, nnodes);
+      
+      // get Jacobian derivative
+      map<int,double> derivjac;
+      DerivJacobian1D(val,deriv,coord,derivjac);
+      
+      // add current GP to Area derivative map
+      typedef map<int,double>::const_iterator CI;
+      for (CI p=derivjac.begin();p!=derivjac.end();++p)
+        derivarea[p->first] += wgt*(p->second);
+    }  
+  }
+  
+  // other cases (3D) not implemented yet
+  else
+    dserror("ERROR: Area derivative not implemented for this type of CElement");
+    
+  return;
 }
 
 /*----------------------------------------------------------------------*

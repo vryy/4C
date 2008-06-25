@@ -349,6 +349,11 @@ public:
   virtual double ComputeArea();
   
   /*!
+  \brief Compute length (in 3D area) derivative of the element
+  */
+  virtual void DerivArea(map<int,double>& derivarea);
+    
+  /*!
   \brief A repository for all kinds of 1D/2D shape functions
   */
   virtual void ShapeFunctions(CElement::ShapeType shape,

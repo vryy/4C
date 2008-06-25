@@ -325,8 +325,16 @@ void CONTACT::CNode::BuildAveragedNormal()
   int nseg = NumElement();
   DRT::Element** adjeles = Elements();
   
-  // we need to store adjacent element ids, normals and their length
-  Epetra_SerialDenseMatrix elens(5,nseg);
+  // we need to store some stuff here
+  //**********************************************************************
+  // elens(0,i): x-coord of element normal
+  // elens(1,i): y-coord of element normal
+  // elens(2,i): z-coord of element normal
+  // elens(3,i): id of adjacent element i
+  // elens(4,i): length of element normal
+  // elens(5,i): length of element itself
+  //**********************************************************************
+  Epetra_SerialDenseMatrix elens(6,nseg);
   
   // loop over all adjacent elements
   for (int i=0;i<nseg;++i)
@@ -351,9 +359,10 @@ void CONTACT::CNode::BuildAveragedNormal()
 #endif // #ifdef CONTACTWNORMAL
     }
     
-    // store some element info for normal derivation
+    // store some element info for normal linearization
     elens(3,i) = adjcele->Id();
     elens(4,i) = elenlength;
+    elens(5,i) = wgt;
   }
   
   // create unit normal vector
@@ -368,21 +377,13 @@ void CONTACT::CNode::BuildAveragedNormal()
   
   //**********************************************************************
   // Redefine length for directional derivative
-  // (this stpe is necessary due to the fact that the unnormalized
-  // nodal normal is sclaed for making its linearization easier.
-  // In the weighted case, this includes the assumption that the
-  // element Jacobian is CONSTANT, which is exact for linear elements
-  // but an approximation for quadratic elements! Results suggest that
-  // the approximation error is neglectable.
-  // In the unweighted case there is no assumption involved!
+  // (this step is necessary due to the fact that the unnormalized
+  // nodal normal is scaled for making its linearization easier.
+  // In both weighted and unweighted case this is done by muliplying
+  // with the lengths of all adjacent elements!
   //**********************************************************************
-  
-#ifdef CONTACTWNORMAL
-  length /= 2;
-#else
   for (int i=0;i<nseg;++i)
     length *= elens(4,i);
-#endif // #ifdef CONTACTWNORMAL
   
   // build directional derivative of averaged nodal normal
   DerivAveragedNormal(elens,length);
@@ -412,7 +413,11 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
     adjcele->DerivNormalAtNode(Id(),elens,GetDerivN());
   }
   
+  // computation of directional derivative of unnormalized nodal
+  // normal is finished here...!!!
+  
   // normalize directional derivative
+  // (length differs for weighted/unweighted case bot not the procedure!)
   // (be careful with refernce / copy of derivative maps!)
   typedef map<int,double>::const_iterator CI;
   map<int,double>& derivnx = GetDerivN()[0];
@@ -450,29 +455,6 @@ void CONTACT::CNode::DerivAveragedNormal(Epetra_SerialDenseMatrix& elens,
   for (CI p=derivnx.begin();p!=derivnx.end();++p)
     derivty[p->first] = (p->second);
   
-  /*
-#ifdef DEBUG
-  cout << endl << "Node: " << Id() << "  Owner: " << Owner() << endl;
-  
-  cout << "Normal: " << n()[0] << " " << n()[1] << endl;
-  cout << "Deriv: " << endl;
-  cout << "Row dof id: " << Dofs()[0] << endl;;
-  for (CI p=derivnx.begin();p!=derivnx.end();++p)
-    cout << p->first << '\t' << p->second << endl;       
-  cout << "Row dof id: " << Dofs()[1] << endl;
-  for (CI p=derivny.begin();p!=derivny.end();++p)
-    cout << p->first << '\t' << p->second << endl;
-    
-  cout << "Tangent: " << -n()[1] << " " << n()[0] << endl;
-  cout << "Deriv: " << endl;
-  cout << "Row dof id: " << Dofs()[0] << endl;;
-  for (CI p=derivtx.begin();p!=derivtx.end();++p)
-    cout << p->first << '\t' << p->second << endl;    
-  cout << "Row dof id: " << Dofs()[1] << endl;
-  for (CI p=derivty.begin();p!=derivty.end();++p)
-    cout << p->first << '\t' << p->second << endl;
-#endif // #ifdef DEBUG
-  */
   return;
 }
 
