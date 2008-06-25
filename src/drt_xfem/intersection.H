@@ -46,7 +46,9 @@ namespace XFEM
 {
 
 
-enum pointType {INTERNAL, SURFACE, LINE, NODE, INTERSECTION, XFEMNODE};
+enum pointType {INTERNAL, SURFACE, LINE, NODE, INTERSECTION, XFEMNODE, XFEMMIDPOINT};
+
+enum boundaryType {NONE, ONFLUID, ONSOLID};
 
 
 //! a point class used in the xfem intersection process
@@ -327,6 +329,7 @@ class Intersection
             vector<BlitzVec3>&      lowerLimits
             ) const;
 
+        
         /*!
         \brief  checks if an intersection lies on a xfem boundary
 
@@ -335,7 +338,7 @@ class Intersection
         \param interfacePoints          (in)        : vector of interface points
         \param intersectionOnBoundary   (out)       : true if intersection XFEM boundary
         */
-        bool checkIfIntersectionOnXFEMBoundary(
+        XFEM::boundaryType checkIfIntersectionOnXFEMBoundary(
             const DRT::Element*                 xfemElement,
             const BlitzMat&                     xyze_xfemElement,
             const DRT::Element*                 cutterElement,
@@ -343,13 +346,14 @@ class Intersection
             vector<InterfacePoint>&             interfacePoints
             );
 
+        
         /*!
         \brief  computes the convex hull of a set of points
 
         \param surfaceElement           (in)        : surface element
         \param interfacePoints          (in)        : list of interface points
         */
-        void computeConvexHull(
+        XFEM::boundaryType computeConvexHull(
             const DRT::Element*         xfemElement,
             const BlitzMat&             xyze_xfemElement,
             const DRT::Element*         cutterElement,
@@ -425,6 +429,18 @@ class Intersection
         void storeSurfacePoints(
             const vector<InterfacePoint>&     interfacePoints
             );
+        
+        
+        /*!
+        \brief  stores the midpoint in a list of surface points for the case that
+                all interface points are XFEMNODES
+
+        \param interfacePoints      (in)        :   midpoint
+
+        */
+        void storeMidPointOnBoundary(
+            XFEM::InterfacePoint&              midpoint
+            );
 
 
         /*!
@@ -438,6 +454,21 @@ class Intersection
             ) const;
 
 
+        /*!
+        \brief  computes the midpoint of a collection of points for the special
+                case that alle points are XFEMNODES and are lying on the same surface 
+                element of the xfem element
+                adds it at the end of the interfaces point list
+
+        \param surfId                     (in)        : surface id 
+        \param interfacePoints            (in)        : vector of interface points
+        */
+        void computeMidpointOnBoundary(
+            const int               surfId, 
+            vector<InterfacePoint>& interfacePoints
+            );
+        
+        
         /*!
         \brief  stores a segment in a segment list for the
                 Constrained Delaunay Tetrahedralization (CDT) with Tetgen
