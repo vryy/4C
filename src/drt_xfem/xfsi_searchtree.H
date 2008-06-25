@@ -32,9 +32,12 @@ namespace XFEM
       static const int STATE_LEAF_NODE = 1;
       //! nodes in tree can be leaf nodes or inner nodes
       static const int STATE_INNER_NODE = 0;
-      
+
       //! is either STATE_LEAF_NODE or STATE_INNER_NODE
       int State_;
+      
+      //! will be set if this node should not be refined any more.
+      bool dont_refine_;
       
       //! if treenode is completly FLUID or SOLID it stores the label of the XFEM condition or 0 for fluid
       int labelID_;
@@ -49,7 +52,7 @@ namespace XFEM
       XSearchTree* tree_; 
       
       //! axis aligned bounding box of this treeNode
-      BlitzMat3x2 AABB_;
+      const BlitzMat3x2 AABB_;
       
       //! x-coord of the center of this treenode
       double XPlaneCoordinate_;
@@ -80,6 +83,9 @@ namespace XFEM
         //! gives actTreedepth_
         int getDepth();
         
+        //! gives number of nodes
+        int getNodesInTree(int type);
+
         //! get child with index idx
         TreeNode* getChild(const int idx);
         
@@ -120,13 +126,15 @@ namespace XFEM
         //! gives a gmsh string to visualize the tree
         void printTree(stringstream& fc) const;
         
+        //! get memory usage
+        int getMemoryUsage() const;
+        
       private:
         
         //! gives the octand(=child) of this treenode to which elem belongs (uses the XAABB of elem)
         list<int> classifyElement(
             const DRT::Element*       elem,
-            const map<int,BlitzVec3>& currentpositions,
-            bool&                     do_refine
+            const map<int,BlitzVec3>& currentpositions
             ); 
         
         //! gives the octand(=child) of this treenode to which the point belongs 
@@ -145,6 +153,12 @@ namespace XFEM
       //! maximum search depth
       static const int MAX_TREEDEPTH = 8;
       
+      //! if overlap of XXAABs of 2 elements is more than this percentage of the treenodes volume, tree wont refine
+      double MAX_OVERLAP_ALLOWED_;
+
+      //! if only this number of elements is in a node they will be checked for overlaps with the treenode
+      unsigned int ELEMENTS_USED_FOR_OVERLAP_CHECK_;
+      
       //! true if tree has to be (re)initialized 
       bool TreeInit_;
       
@@ -154,8 +168,14 @@ namespace XFEM
       //! count nbr. of requests to the tree
       int searchRequests_;
       
+      //! count nbr. of candidates
+      int Candidates_;
+      
       //! how deep did we have to search to answer a request
-      int MeanSearchLength_;
+      int SearchLength_;
+      
+      //! whats the minimal searchpath we had to search to answer a request
+      int MinSearchLength_;
       
       //! map with all label gids indexed by their element ids
       std::map<int, int> labelByElement_;
@@ -175,7 +195,7 @@ namespace XFEM
       
       int getDepth();
       int getTotalRequests();
-      int getMeanSearchlength();
+      double getMeanSearchlength();
       
       //! searches for the nearest neigbour to pointcoords (NOT YET IMPLEMENTED)
       void queryNearestNeighbour(const BlitzVec& pointCoords);
@@ -193,17 +213,31 @@ namespace XFEM
       //! destroys and rebuilds the whole tree
       void rebuild(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions);
       
+      void setMaxOverlap(double maxO);
+      double getMaxOverlap();
+      
+      void setElementsForOverlapCheck(int maxO){
+        ELEMENTS_USED_FOR_OVERLAP_CHECK_ = maxO;
+      }
+      int getElementsForOverlapCheck(){
+        return ELEMENTS_USED_FOR_OVERLAP_CHECK_;
+      }
+
+      void printTreeMetrics(const int step) const;
+      
+      
       //! if the flag is set by this method, rebuild will be called within the next search request
       void setRebuildFlag();
       
       //! dumps a visualization of the tree in a gmsh file (tree0000<step>.pos)
       void printTree(const int step) const;
       
+      //! get memory usage
+      int getMemoryUsage() const;
+     
       //! the XFEM-Coupling-Condition-Label of a element by its gid
       int getLabelByElementID(const int gid);
   }; 
-  //! a static object is created. (will disappear)
-  //static STree; 
   
 } // namespace XFEM
 

@@ -54,9 +54,16 @@ namespace XFEM
   */
   BlitzMat3x2 mergeAABB(const BlitzMat3x2& A, const BlitzMat3x2& B);
   
-  //! gives maximal expansion of the an axisalinged Bounding box in an axis direction (x,y,z)
-  double maxOrthogonalExpansion(const BlitzMat3x2& AABB);
-
+  //! gives overlap-area of 2 AABB
+  double getOverlapArea(const BlitzMat3x2& A, const BlitzMat3x2& B, const BlitzMat3x2& C);
+ 
+  //! gives overlap-area of 2 AABB
+  double getOverlapArea(const list<BlitzMat3x2 > AABBs);
+  
+  //! gives of an AABB
+  double getArea(const BlitzMat3x2& AABB);
+  
+  
 }
 
 #endif

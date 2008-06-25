@@ -27,7 +27,7 @@ Maintainer: Ursula Mayer
 namespace XFEM
 {
 
-enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER };
+enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
 
     //! tolerance 1e-14 used for residuals in Newton-methods
     const double                 TOL14 = 1e-14;

@@ -79,6 +79,7 @@ void XFEM::Intersection::computeIntersection(
     //  k < xfemdis->NumMyColElements()
     for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
     {
+        //printf("eleid = %d\n", k);
         xfemIntersection = false;
         EleGeoType xfemGeoType = HIGHERORDER;
         EleGeoType cutterGeoType = HIGHERORDER;

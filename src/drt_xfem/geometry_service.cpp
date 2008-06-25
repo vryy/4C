@@ -162,14 +162,51 @@ BlitzMat3x2 XFEM::mergeAABB(const BlitzMat3x2& A, const BlitzMat3x2& B){
   return MergedAABB;
 }
 
-double XFEM::maxOrthogonalExpansion(const BlitzMat3x2& AABB){
+double XFEM::getOverlapArea(const BlitzMat3x2& A, const BlitzMat3x2& B, const BlitzMat3x2& C){
   const int nsd=3;
-  double dist = 0;
+  double Area = 1;
+  double edge = 0;
   for(int dim=0; dim<nsd; dim++)
   {
-    dist = std::max(dist,  AABB(dim, 1)-AABB(dim,0));
+    edge = std::min( A(dim, 1), std::min( B(dim, 1), C(dim,1) ) )-std::max( A(dim, 0), std::max( B(dim, 0),C(dim,0) ) );
+    if (edge<=0)
+      return 0;
+    Area = Area * edge;
   }
-  return dist;
+  return Area;
+}
+
+double XFEM::getOverlapArea(const list<BlitzMat3x2 > AABBs){
+  const int nsd=3;
+  double Area = 1;
+  double edge = 0;
+  for(int dim=0; dim<nsd; dim++)
+  {
+    list<double> maxCoords;
+    maxCoords.clear();
+    list<double> minCoords;
+    minCoords.clear();
+    for(list<BlitzMat3x2 >::const_iterator myIt= AABBs.begin(); myIt != AABBs.end(); myIt++){
+      maxCoords.push_back( (*myIt)(dim, 1) );
+      minCoords.push_back( (*myIt)(dim, 0) );
+    }
+    edge = *min_element(maxCoords.begin(),maxCoords.end()) -*max_element(minCoords.begin(),minCoords.end());
+    if (edge<=0)
+      return 0;
+    Area = Area * edge;
+  }
+  return Area;  
+}
+
+
+double XFEM::getArea(const BlitzMat3x2& AABB){
+  const int nsd=3;
+  double A=1;
+  for(int dim=0; dim<nsd; dim++)
+  {
+    A = A*(AABB(dim, 1)-AABB(dim,0));
+  }
+  return A;
 }
 
 #endif  // #ifdef CCADISCRET
