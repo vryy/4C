@@ -296,10 +296,10 @@ void DatFileReader::ReadKnots(
   std::vector<string>                              & knotvectortype,
   std::vector<Teuchos::RCP<std::vector<double> > > & knots    ) const
 {
-  
+
   // open input file --- this is done on all procs
   ifstream file;
-  
+
   file.open(filename_.c_str());
 
   // temporary strings
@@ -311,29 +311,29 @@ void DatFileReader::ReadKnots(
 
   // index for u/v/w
   int direction=0;
-  
+
   int filecount=0;
 
   // start to read something when read is true
   bool read=false;
-  
+
   // loop lines in file
   for (; file; ++filecount)
   {
     file >> tmp ;
-    
+
     if(!(tmp[0]=='-'&&tmp[1]=='-'))
     {
       // this is a standard line --- not a new section
-      
+
       // if read is true, we are in the coordinate section of a knotvector
       // --- just read it
       if(read)
       {
         char* endptr = NULL;
-        
+
         double dv = strtod(tmp.c_str(), &endptr);
-        
+
         (*(knots[direction])).push_back(dv);
       }
     }
@@ -345,16 +345,16 @@ void DatFileReader::ReadKnots(
 
       // reset read on each new section
       read=false;
-      
+
       string::size_type loc = tmp.rfind("KNOT");
       if (loc != string::npos)
       {
-        // if this is true, we are at the beginning of a knot section 
-        
+        // if this is true, we are at the beginning of a knot section
+
         file >> dummy >> dir;
-        
+
         tmp = tmp.substr(loc,string::npos);
-        
+
         if(dir[0]=='U' || dir[0]=='V' || dir[0]=='W')
         {
           // get the direction
@@ -374,13 +374,13 @@ void DatFileReader::ReadKnots(
               dserror("cowardly refusing to read a third knotvector in 2d-problems\n");
             }
           }
-          
+
           // make sure no dirt is left on knots
           (*(knots[direction])).clear();
-          
+
           // activate read for the following coordinate section
           read = true;
-          
+
           // get number of knots in this direction
           string numknots;
           file >> dummy >> numknots;
@@ -404,11 +404,11 @@ void DatFileReader::ReadKnots(
       } // knotvector section
     } // if this is the beginning of a section
   } // end loop through file
-  
+
   return;
 }
 
-  
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::ParameterList& DatFileReader::FindSublist(string name, Teuchos::ParameterList& list)
@@ -1074,16 +1074,17 @@ NodeReader::NodeReader(const DRT::INPUT::DatFileReader& reader, string sectionna
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> NodeReader::FindDisNode(int nodeid)
+std::vector<Teuchos::RCP<DRT::Discretization> > NodeReader::FindDisNode(int nodeid)
 {
+  std::vector<Teuchos::RCP<DRT::Discretization> > v;
   for (unsigned i=0; i<ereader_.size(); ++i)
   {
     if (ereader_[i]->HasNode(nodeid))
     {
-      return ereader_[i]->MyDis();
+      v.push_back(ereader_[i]->MyDis());
     }
   }
-  return null;
+  return v;
 }
 
 
@@ -1142,16 +1143,18 @@ void NodeReader::Read()
           int nodeid;
           file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
           nodeid--;
-          Teuchos::RCP<DRT::Discretization> dis = FindDisNode(nodeid);
-          if (dis==null)
-            continue;
           if (nodeid != filecount)
             dserror("Reading of nodes failed: Nodes must be numbered consecutive!!");
           if (tmp!="COORD")
             dserror("failed to read node %d",nodeid);
-          // create node and add to discretization
-          Teuchos::RCP<DRT::Node> node = rcp(new DRT::Node(nodeid,coords,myrank));
-          dis->AddNode(node);
+          std::vector<Teuchos::RCP<DRT::Discretization> > diss = FindDisNode(nodeid);
+          for (unsigned i=0; i<diss.size(); ++i)
+          {
+            Teuchos::RCP<DRT::Discretization> dis = diss[i];
+            // create node and add to discretization
+            Teuchos::RCP<DRT::Node> node = rcp(new DRT::Node(nodeid,coords,myrank));
+            dis->AddNode(node);
+          }
           ++bcount;
           if (block != nblock-1) // last block takes all the rest
             if (bcount==bsize)   // block is full
@@ -1169,16 +1172,18 @@ void NodeReader::Read()
           int cpid;
           file >> cpid >> tmp >> coords[0] >> coords[1] >> coords[2] >> weight;
           cpid--;
-          Teuchos::RCP<DRT::Discretization> dis = FindDisNode(cpid);
-          if (dis==null)
-            continue;
           if (cpid != filecount)
             dserror("Reading of control points failed: They must be numbered consecutive!!");
           if (tmp!="COORD")
             dserror("failed to read control point %d",cpid);
-          // create node/control point and add to discretization
-          Teuchos::RCP<DRT::NURBS::ControlPoint> node = rcp(new DRT::NURBS::ControlPoint(cpid,coords,weight,myrank));
-          dis->AddNode(node);
+          std::vector<Teuchos::RCP<DRT::Discretization> > diss = FindDisNode(cpid);
+          for (unsigned i=0; i<diss.size(); ++i)
+          {
+            Teuchos::RCP<DRT::Discretization> dis = diss[i];
+            // create node/control point and add to discretization
+            Teuchos::RCP<DRT::NURBS::ControlPoint> node = rcp(new DRT::NURBS::ControlPoint(cpid,coords,weight,myrank));
+            dis->AddNode(node);
+          }
           ++bcount;
           if (block != nblock-1) // last block takes all the rest
             if (bcount==bsize)   // block is full

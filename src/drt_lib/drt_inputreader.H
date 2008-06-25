@@ -130,12 +130,12 @@ public:
 
   /*!
     \brief read a knotvector section (for isogeometric analysis)
-      
-    \param  degree         (out): degrees of the bsplines used in this discretisation 
+
+    \param  degree         (out): degrees of the bsplines used in this discretisation
     \param  size           (out): knotvector sizes n_x_m_x_l
     \param  knotvectortype (out): string for interpolated or periodic knotvector
     \param  knots          (out): node vector coordinates
-    
+
   */
   void ReadKnots(std::vector<int>                                 & degree        ,
                  std::vector<int>                                 & size          ,
@@ -337,7 +337,7 @@ public:
 private:
 
   /// find the discretization that contains the given node
-  RefCountPtr<DRT::Discretization> FindDisNode(int nodeid);
+  vector<RCP<DRT::Discretization> > FindDisNode(int nodeid);
 
   /// the main dat file reader
   const DatFileReader& reader_;
