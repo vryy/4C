@@ -121,6 +121,7 @@ namespace XFLUID
       }
   }
   
+  
 /*!
   Calculate matrix and rhs for stationary problem formulation
   */
@@ -745,8 +746,9 @@ static void Sysmat3(
             static BlitzVec3 rhsint;
             static BlitzVec3 bodyforce;
             bodyforce = 0.0;
+            //bodyforce(0) = 1.0;
             for (int isd = 0; isd < nsd; ++isd)
-                rhsint(isd) = histvec(isd); //+ bodyforce(isd)*timefac;
+                rhsint(isd) = histvec(isd) + bodyforce(isd)*timefac;
 
             /*----------------- get numerical representation of single operators ---*/
 
@@ -814,7 +816,9 @@ static void Sysmat3(
             enr_viscs2_(2,2,_) = 0.5 * (shp_dxdx + shp_dydy + 2.0 * shp_dzdz);
 
 
-            /*--------------------------------- now build single stiffness terms ---*/
+            //////////////////////////////////////
+            // now build single stiffness terms //
+            //////////////////////////////////////
 
             //----------------------------------------------------------------------
             //                            GALERKIN PART
@@ -989,8 +993,7 @@ static void Sysmat3(
                               - |  virt tau , eps(Dtau)  |
                                  \                     */
               
-                const double area_ratio = 0.00000001;
-                const double factor = area_ratio;
+                const double factor = 1.0;
                 assembler.template Matrix<Tauxx,Tauxx>(shp_tau, -    factor/(2.0*visc)*timefacfac, shp_tau);
                 assembler.template Matrix<Tauxy,Tauxy>(shp_tau, -    factor/(2.0*visc)*timefacfac, shp_tau);
                 assembler.template Matrix<Tauxz,Tauxz>(shp_tau, -    factor/(2.0*visc)*timefacfac, shp_tau);
@@ -1015,7 +1018,7 @@ static void Sysmat3(
                 //            | virt tau , eps(Du) |
                 //             \                  /
                 
-                const double rect_factor = area_ratio;
+                const double rect_factor = 1.0;
                 assembler.template Matrix<Tauxx,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
                 assembler.template Matrix<Tauxx,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
                 assembler.template Matrix<Tauxy,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dy);
@@ -1194,14 +1197,14 @@ static void Sysmat3(
 //                           |                        |
 //                            \                      /
 //                  */
-//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dx, ttimetauMp/10.0, shp_dx);
-//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dy, ttimetauMp/10.0, shp_dy);
-//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dz, ttimetauMp/10.0, shp_dz);
+//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dx, ttimetauMp, shp_dx);
+//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dy, ttimetauMp, shp_dy);
+//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dz, ttimetauMp, shp_dz);
 //                  
 //                  // pressure stabilization
-//                  assembler.template Vector<DiscPres>(shp_discpres_dx, -timetauMp/10.0*gradp(0));
-//                  assembler.template Vector<DiscPres>(shp_discpres_dy, -timetauMp/10.0*gradp(1));
-//                  assembler.template Vector<DiscPres>(shp_discpres_dz, -timetauMp/10.0*gradp(2));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dx, -timetauMp*gradp(0));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dy, -timetauMp*gradp(1));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dz, -timetauMp*gradp(2));
 //                  
 //                  /* pressure stabilisation: pressure( L_pres_p) */
 //                  /*
@@ -1211,14 +1214,14 @@ static void Sysmat3(
 //                           |                          |
 //                            \                        /
 //                  */
-//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dx, ttimetauMp/10.0, shp_discpres_dx);
-//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dy, ttimetauMp/10.0, shp_discpres_dy);
-//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dz, ttimetauMp/10.0, shp_discpres_dz);
+//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dx, ttimetauMp, shp_discpres_dx);
+//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dy, ttimetauMp, shp_discpres_dy);
+//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dz, ttimetauMp, shp_discpres_dz);
 //                  
 //                  // pressure stabilization
-//                  assembler.template Vector<DiscPres>(shp_discpres_dx, -timetauMp/10.0*graddiscp(0));
-//                  assembler.template Vector<DiscPres>(shp_discpres_dy, -timetauMp/10.0*graddiscp(1));
-//                  assembler.template Vector<DiscPres>(shp_discpres_dz, -timetauMp/10.0*graddiscp(2));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dx, -timetauMp*graddiscp(0));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dy, -timetauMp*graddiscp(1));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dz, -timetauMp*graddiscp(2));
 //                }
                 
                 
@@ -1467,63 +1470,20 @@ static void Sysmat3(
     const XFEM::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
     
     
-#if 0
-    bool printcell = true;
-    
-    if (printcell)
-    {
-        printcell = false;
-        std::ofstream f_system("example.pos");
-        
-        
-        {
-            // draw elements with associated gid
-            std::stringstream gmshfilecontent;
-            gmshfilecontent << "View \" " << "DomainIntegrationCells \" {" << endl;
-            XFEM::DomainIntCells::const_iterator cell;
-            for (cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
-            {
-                //gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXYZ(*ele), 0.0, cell->Shape()) << endl;
-                gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXiDomainBlitz(), 0.0, cell->Shape()) << endl;
-            };
-            gmshfilecontent << "};" << endl;
-            f_system << gmshfilecontent.str();
-        }
-        {
-            // draw elements with associated gid
-            std::stringstream gmshfilecontent;
-            gmshfilecontent << "View \" " << "BoundaryIntegrationCells \" {" << endl;
-            XFEM::BoundaryIntCells::const_iterator cell;
-            for (cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
-            {
-                //gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXYZ(*ele), 0.0, cell->Shape()) << endl;
-                gmshfilecontent << IO::GMSH::cellToString(cell->NodalPosXiDomainBlitz(), 0.0, cell->Shape()) << endl;
-            };
-            gmshfilecontent << "};" << endl;
-            f_system << gmshfilecontent.str();
-        }
-        f_system.close();
-
-    }
-#endif
-    
-    
-    
-    
     // loop over boundary integration cells
     for (XFEM::BoundaryIntCells::const_iterator cell = boundaryIntCells.begin(); cell != boundaryIntCells.end(); ++cell)
     {
 
-      TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - boundary");
+        TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat3 - boundary");
       
         // gaussian points
         const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_37point);
         
         // get the right boundary element
         const DRT::Element* boundaryele = ih->GetBoundaryEle(cell->GetSurfaceEleGid());
-        const int numnode_boundary = boundaryele->NumNode();
-        //const DRT::Element* boundaryele = ih->GetBoundaryEle(0);
         //cout << (*boundaryele) << endl;
+        const int numnode_boundary = boundaryele->NumNode();
+//        cout << "numnode_boundary: " << numnode_boundary << endl;
         
         // get current node coordinates
         const std::map<int,blitz::TinyVector<double,3> >* positions = ih->currentcutterpositions();
@@ -1531,6 +1491,7 @@ static void Sysmat3(
         
         // get interface velocities at the boundary element nodes
         BlitzMat vel_boundary(3,numnode_boundary);
+        vel_boundary = 0.0;
         const DRT::Node*const* nodes = boundaryele->Nodes();
         {
           for (int inode = 0; inode < numnode_boundary; ++inode)
@@ -1555,13 +1516,23 @@ static void Sysmat3(
             static XFEM::PosEtaBoundary pos_eta_boundary;
             pos_eta_boundary(0) = intpoints.qxg[iquad][0];
             pos_eta_boundary(1) = intpoints.qxg[iquad][1];
-      
+//            cout << pos_eta_boundary << endl;
+            
             // coordinates of the current integration point in element coordinates \xi
             static XFEM::PosXiBoundary posXiBoundary;
             mapEtaBToXiB(*cell, pos_eta_boundary, posXiBoundary);
+            //cout << posXiBoundary << endl;
+            
             static XFEM::PosXiDomain posXiDomain;
             mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
+//            cout << cell->toString() << endl;
+//            cout << posXiDomain << endl;
             const double detcell = abs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
+            if (detcell <= 0.0)
+            {
+              cout << "detcel :  " << detcell << endl;
+              dserror("negative detcell! should be a bug!");
+            }
 
             // shape functions and their first derivatives
             BlitzVec funct_boundary(DRT::UTILS::getNumberOfElementNodes(boundaryele->Shape()));
@@ -1621,11 +1592,15 @@ static void Sysmat3(
             //const BlitzMat derxy_stress(blitz::sum(xji(i,k)*deriv_stress(k,j),k));
             
             const double detmetric = sqrt(metric(0,0)*metric(1,1) - metric(0,1)*metric(1,0));
-            const double fac = intpoints.qwgt[iquad]*detmetric*detcell;
-
-            if (detmetric < 0.0)
+            if (detmetric <= 0.0)
             {
-                dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), detmetric);
+              dserror("negative detmetric! should be a bug!");
+            }
+            
+            const double fac = intpoints.qwgt[iquad]*detmetric*detcell;
+            if (fac <= 0.0)
+            {
+              dserror("negative fac! should be a bug!");
             }
 
             // compute second global derivative
@@ -1714,6 +1689,8 @@ static void Sysmat3(
 //            cout << "normalvec " << normalvec << ", " << endl;
             static BlitzVec3 normalvec_fluid;
             normalvec_fluid = -normalvec_solid;
+//            cout << "normalvec : ";
+//            cout << normalvec_fluid << endl;
       
             // get velocities (n+g,i) at integration point
 //            static BlitzVec velint(3);
@@ -1862,9 +1839,9 @@ static void Sysmat3(
             // hence, we can't use the local assembler here
             for (int inode = 0; inode < numnode_boundary; ++inode)
             {
-              force_boundary(0,inode) += funct_boundary(inode) * (- discpres*normalvec_fluid(0) + disctau_times_n(0));
-              force_boundary(1,inode) += funct_boundary(inode) * (- discpres*normalvec_fluid(1) + disctau_times_n(1));
-              force_boundary(2,inode) += funct_boundary(inode) * (- discpres*normalvec_fluid(2) + disctau_times_n(2));
+              force_boundary(0,inode) += funct_boundary(inode) * ((- discpres*normalvec_fluid(0) + disctau_times_n(0)) * timefacfac);
+              force_boundary(1,inode) += funct_boundary(inode) * ((- discpres*normalvec_fluid(1) + disctau_times_n(1)) * timefacfac);
+              force_boundary(2,inode) += funct_boundary(inode) * ((- discpres*normalvec_fluid(2) + disctau_times_n(2)) * timefacfac);
             }
             
             
@@ -1886,7 +1863,7 @@ static void Sysmat3(
         }
         
         
-    } // end loop over boundary integration cells
+      } // end loop over boundary integration cells
     }
     } // if (ASSTYPE == XFEM::xfem_assembly)
     return;
@@ -1937,11 +1914,11 @@ void callSysmat3(
                         ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
                         material, time, timefac, newton, pstab, supg, cstab, instationary);
                 break;
-//            case DRT::Element::tet4:
-//                Sysmat3<DRT::Element::tet4,XFEM::standard_assembly>(
-//                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-//                        material, time, timefac, newton, pstab, supg, cstab, instationary);
-//                break;
+            case DRT::Element::tet4:
+                Sysmat3<DRT::Element::tet4,XFEM::standard_assembly>(
+                        ele, ih, eleDofManager, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+                        material, time, timefac, newton, pstab, supg, cstab, instationary);
+                break;
             default:
                 dserror("Sysmat not templated yet");
         };
