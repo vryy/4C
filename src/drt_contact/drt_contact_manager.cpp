@@ -364,6 +364,8 @@ bool CONTACT::Manager::ReadAndCheckInput()
   bool semismooth= scontact_.get<bool>("semismooth newton",false);
   
   // invalid parameter combinations
+  if (btrafo)
+    dserror("Basis transformed versions are not up to date");
   if (ctype=="normal" && ftype !="none")
     dserror("Friction law supplied for normal contact");
   if (ctype=="frictional" && ftype=="none")
@@ -600,7 +602,7 @@ void CONTACT::Manager::Evaluate(RCP<LINALG::SparseMatrix> kteff,
   if (ftype=="tresca")
   {
 	  if (btrafo)
-	  	 dserror("ERROR: Evaluate Tresca with Basis Trafo not up to date");
+	    EvaluateTrescaBasisTrafo(kteff,feff,numiter);
 	  else
 	  	EvaluateTrescaNoBasisTrafo(kteff,feff,numiter);
   }
