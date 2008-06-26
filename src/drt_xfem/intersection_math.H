@@ -420,11 +420,12 @@ static void svdcmp(
     \tparam order    (in)    : ???
     \return true if matrix is not singular , false if matrix is singular
     */
-    template<bool do_piv, int dim, int order, class M, class V1, class V2>
+    template<bool do_piv, int dim, class M, class V1, class V2>
     inline bool gaussElimination(
             M&                    A,  ///< (in)    : system matrix
             V1&                   b,  ///< (in)    : right-hand-side
-            V2&                   x   ///< (out)   : solution vector
+            V2&                   x,  ///< (out)   : solution vector
+            const double          tol
             )
     {
         bool solution = true;
@@ -529,7 +530,9 @@ static void svdcmp(
             for(int i = 0 ; i < dim; i++)
                 det *= 1.0/A(i,i);
             //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), 1/A(2,2), fabs(det) );
-            if(fabs(det) < TOL14 && order == 1)
+            //printf("det = %f\n ", fabs(det) );
+            
+            if(fabs(det) < tol)
             {
                 solution = false;
                 //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), 1/A(2,2), det );
@@ -538,7 +541,7 @@ static void svdcmp(
         }
         else
         {
-            if( fabs(A(0,0)) < TOL7)
+            if( fabs(A(0,0)) < tol)
             {
                 printf("singular \n");
                 solution = false;
@@ -560,7 +563,8 @@ static void svdcmp(
       inline bool gaussEliminationEpetraT(
             MA&   A,
             Vb&   b,
-            Vx&   x)
+            Vx&   x,
+            const double tol)
     {
         bool solution = true;
 
@@ -602,7 +606,7 @@ static void svdcmp(
         }
         
         //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), fabs(det) );
-        if(fabs(det) < TOL14) //TODO: check! was TOL7
+        if(fabs(det) < tol) //TODO: check! was TOL7
         {
             solution = false;
             //printf("matrix is singular A1 = %f, A2 = %f, A3 = %f, det = %f\n ", 1/A(0,0), 1/A(1,1), det );

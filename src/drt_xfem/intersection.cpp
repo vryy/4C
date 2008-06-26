@@ -133,8 +133,10 @@ void XFEM::Intersection::computeIntersection(
         const vector<RCP<DRT::Element> > xfemElementSurfaces = xfemElement->Surfaces();
         const vector<RCP<DRT::Element> > xfemElementLines = xfemElement->Lines();
         
+        int countCutter = -1;
         for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
         {
+            countCutter++;
             boundaryIntersectionType = NONE;
             DRT::Element* cutterElement = (*i);
             if(cutterElement == NULL) dserror("cutter element is null\n");
@@ -160,6 +162,7 @@ void XFEM::Intersection::computeIntersection(
             // collect intersection points
             for(int m=0; m<xfemElement->NumLine() ; m++)
             {
+                //printf("cutsurf = %d\t xfemline = %d\n", countCutter, m);
                 const bool doSVD = decideSVD(cutterGeoType, xfemGeoType);
                 const DRT::Element* xfemElementLine = xfemElementLines[m].get();
                 const BlitzMat xyze_xfemElementLine(DRT::UTILS::InitialPositionArrayBlitz(xfemElementLine));
@@ -176,6 +179,7 @@ void XFEM::Intersection::computeIntersection(
             {
                 for(int p=0; p<xfemElement->NumSurface() ; p++)
                 {
+                    //printf("cutline = %d\t xfemsurf = %d\n", m , p);
                     const bool doSVD = decideSVD(xfemGeoType, cutterGeoType);
                     const DRT::Element* xfemElementSurface = xfemElementSurfaces[p].get();
                     const BlitzMat xyze_xfemElementSurface(DRT::UTILS::InitialPositionArrayBlitz(xfemElementSurface));
@@ -386,11 +390,13 @@ bool XFEM::Intersection::collectIntersectionPoints(
    
     const bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, upLimit, loLimit, xsi, doSVD);
     
+    
     if(intersected)
+    {
         addIntersectionPoint( surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit,
                               interfacePoints, surfaceId, lineId, lines, doSVD);
   
-
+    }
     // in this case a node of this line lies on the facet of the xfem element
     // but there is no intersection within the element
     if(!((int) interfacePoints.size() == numBoundaryPoints))
@@ -571,7 +577,8 @@ bool computeCurveSurfaceIntersectionT(
     {
         updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
 
-        singular = !XFEM::gaussElimination<true,3,1>(A, b, dx);
+        singular = !XFEM::gaussElimination<true,3>(A, b, dx, XFEM::TOL7);
+        
         if(singular && !doSVD)
         {
           intersection = false;
@@ -1030,6 +1037,7 @@ XFEM::boundaryType XFEM::Intersection::computeConvexHull(
     vector< vector<double> >    vertices;
     InterfacePoint              midpoint;
     boundaryType                boundaryIntersectionType = NONE;
+    
     
     // check if all nodes are XFEMNODES
     if(interfacePoints.size() > 2)
@@ -2804,7 +2812,7 @@ bool XFEM::Intersection::computeRecoveryPlane(
         {
             updateAForRCIPlane( A, xsi, plane, lineElement, xyze_lineElement, cutterElement, xyze_cutterElement);
 
-            if(!gaussElimination<true,3,1>(A, b, dx))
+            if(!gaussElimination<true,3>(A, b, dx, XFEM::TOL7))
             {
                 intersection = false;
                 break;

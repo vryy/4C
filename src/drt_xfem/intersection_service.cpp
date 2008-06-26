@@ -193,7 +193,7 @@ static inline bool currentToVolumeElementCoordinatesT(
     {   
         updateAForNWE<DISTYPE,dim>( A, xsi, xyze);
    
-        if(!XFEM::gaussElimination<true,3,1>(A, b, dx))
+        if(!XFEM::gaussElimination<true,3>(A, b, dx, XFEM::TOL14))
         {
             nodeWithinElement = false;
             break;
@@ -559,7 +559,7 @@ static void currentToSurfaceElementCoordinatesT(
 
     static BlitzVec2 dx;
     dx = 0.0;
-    if(!XFEM::gaussElimination<true,2,1>(A, b, dx))
+    if(!XFEM::gaussElimination<true,2>(A, b, dx, XFEM::TOL14))
     {
       nodeWithinElement = false;
       break;
