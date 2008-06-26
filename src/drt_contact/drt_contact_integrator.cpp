@@ -392,6 +392,10 @@ RCP<Epetra_SerialDenseMatrix> CONTACT::Integrator::IntegrateM(CONTACT::CElement&
 
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of M                       popp 05/08|
+ |  IMPORTANT NOTE:                                                     |
+ |  If CONTACTONEMORTARLOOP is defined then this method also computes   |
+ |  the contribution of a 1D slave element part to the D-derivative     |
+ |  map of the adjacent slave nodes                                     |
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
                                  double sxia, double sxib,
@@ -602,7 +606,68 @@ void CONTACT::Integrator::DerivM(CONTACT::CElement& sele,
           dmmap_jk[p->first] += fac*(p->second);
       }
     }
-        
+    
+    //********************************************************************
+    // Compute directional derivative of D
+    //********************************************************************
+    // In the case with separate loops for D and M, this is done by the
+    // method DerivD() above. But in the CONTACTONEMORTARLOOP case we
+    // want to combine the linearization of D and M, just as we combine
+    // the computation of D and M itself.
+    // Of course, this measn we get additional terms for the linearization
+    // of D because the slave segment end coordinates can now vary. In
+    // the case with separate D and M loops we simply could integrate on
+    // the full slave element from xi=-1 to xi=1, now we have to consider
+    // the coordinates sxia,sxib and their linearizations!
+    //********************************************************************
+#ifdef CONTACTONEMORTARLOOP
+    // contributions to DerivD_jj
+    for (int j=0;j<nrow;++j)
+    {
+      CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[j]);
+      if (!mycnode) dserror("ERROR: DerivM: Null pointer!");
+      double fac = 0.0;
+      
+      // get the D-map as a reference
+      map<int,double>& ddmap_jj = mycnode->GetDerivD();
+      
+      // (1) Lin(Phi) - dual shape functions
+      for (int k=0;k<nrow;++k)
+      {
+        fac = wgt*sval[j]*sval[k]*dsxideta*dxdsxi;
+        for (CI p=dualmap[j][k].begin();p!=dualmap[j][k].end();++p)
+          ddmap_jj[p->first] += fac*(p->second);
+      }
+      
+      // (2) Lin(Phi) - slave GP coordinates
+      fac = wgt*dualderiv[j]*sval[j]*dsxideta*dxdsxi;
+      for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+        ddmap_jj[p->first] += fac*(p->second);
+      
+      // (3) Lin(NSlave) - slave GP coordinates
+      fac = wgt*dualval[j]*sderiv[j]*dsxideta*dxdsxi;
+      for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+        ddmap_jj[p->first] += fac*(p->second);
+      
+      // (4) Lin(dsxideta) - segment end coordinates
+      fac = wgt*dualval[j]*sval[j]*dxdsxi;
+      for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
+        ddmap_jj[p->first] -= 0.5*fac*(p->second);
+      for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
+        ddmap_jj[p->first] += 0.5*fac*(p->second);
+      
+      // (5) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*dualval[j]*sval[j]*dsxideta;
+      for (CI p=testmap.begin();p!=testmap.end();++p)
+        ddmap_jj[p->first] += fac*(p->second);
+      
+      // (6) Lin(dxdsxi) - slave GP coordinates
+      fac = wgt*dualval[j]*sval[j]*dsxideta*dxdsxidsxi;
+      for (CI p=dsxigp.begin();p!=dsxigp.end();++p)
+        ddmap_jj[p->first] += fac*(p->second);
+    }
+#endif // #ifdef CONTACTONEMORTARLOOP
+    
   } // for (int gp=0;gp<nGP();++gp)
   
   return;

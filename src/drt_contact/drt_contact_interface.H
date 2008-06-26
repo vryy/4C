@@ -228,6 +228,28 @@ public:
   }
 
   /*!
+  \brief Get column map of slave dofs (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> SlaveColDofs() const 
+  { 
+    if (Filled()) return sdofcolmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+    
+  /*!
+  \brief Get fully overlapping column map of slave dofs (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> SlaveFullDofs() const 
+  { 
+    if (Filled()) return sdoffullmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+    
+  /*!
   \brief Get row map of master dofs (Filled()==true is prerequisite)
   
   */
@@ -238,6 +260,28 @@ public:
     exit(EXIT_FAILURE); // calm down the compiler
   }
   
+  /*!
+  \brief Get column map of master dofs (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> MasterColDofs() const 
+  { 
+    if (Filled()) return mdofcolmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+      
+  /*!
+  \brief Get fully overlapping column map of master dofs (Filled()==true is prerequisite)
+
+  */
+  virtual const RCP<Epetra_Map> MasterFullDofs() const 
+  { 
+    if (Filled()) return mdoffullmap_;
+    else dserror("CONTACT::Interface::FillComplete was not called");
+    exit(EXIT_FAILURE); // calm down the compiler
+  }
+    
   /*!
   \brief Get row map of active nodes (Filled()==true is prerequisite)
     
@@ -583,7 +627,11 @@ protected:
   RCP<Epetra_Map>             melefullmap_;   // fully overlapping column map of all master elements
   
   RCP<Epetra_Map>             sdofrowmap_;    // row map of all slave dofs
+  RCP<Epetra_Map>             sdofcolmap_;    // column map of all slave dofs
+  RCP<Epetra_Map>             sdoffullmap_;    // fully overlapping column map of all slave dofs
   RCP<Epetra_Map>             mdofrowmap_;    // row map of all master dofs
+  RCP<Epetra_Map>             mdofcolmap_;    // column map of all master dofs
+  RCP<Epetra_Map>             mdoffullmap_;    // fully overlapping column map of all master dofs
   
   RCP<Epetra_Map>             snodecolmapbound_;    // col map of slave nodes (+ boundary nodes)
   RCP<Epetra_Map>             snodefullmapbound_;   // full map of slave nodes (+ boundary nodes)

@@ -1560,8 +1560,13 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   
     // modification of kai, kaa
     // (this has to be done first as they are needed below)
+    // (note, that kai, kaa have to be UNcompleted again first!!!)
+    kai->UnComplete();
+    kaa->UnComplete();
     kai->Add(*lindai,false,1.0-alphaf_,1.0);
     kaa->Add(*lindaa,false,1.0-alphaf_,1.0);
+    kai->UnComplete();
+    kaa->UnComplete();
   }  
   
   /**********************************************************************/
@@ -2593,8 +2598,13 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   
     // modification of kai, kaa
     // (this has to be done first as they are needed below)
+    // (note, that kai, kaa have to be UNcompleted again first!!!)
+    kai->UnComplete();
+    kaa->UnComplete();
     kai->Add(*lindai,false,1.0-alphaf_,1.0);
     kaa->Add(*lindaa,false,1.0-alphaf_,1.0);
+    kai->Complete(*gidofs,*gactivedofs_);
+    kaa->Complete();
   }  
   
   /**********************************************************************/

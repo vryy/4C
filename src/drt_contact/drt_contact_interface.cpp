@@ -269,22 +269,47 @@ void CONTACT::Interface::FillComplete()
     melecolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
 
-  // do part of the same business for dofs
-  // (get row map of slave and master dofs seperately)
+  // do the same business for dofs
+  // (get row and column maps of slave and master dofs seperately)
   {
     const Epetra_Map* noderowmap = Discret().NodeRowMap();
-
+    const Epetra_Map* nodecolmap = Discret().NodeColMap();
+    
+    vector<int> sc;          // slave column map
     vector<int> sr;          // slave row map
+    vector<int> scfull;      // slave full map
+    vector<int> mc;          // master column map
     vector<int> mr;          // master row map
+    vector<int> mcfull;      // master full map
 
-    for (int i=0; i<noderowmap->NumMyElements();++i)
+    for (int i=0; i<nodecolmap->NumMyElements();++i)
     {
-      int gid = noderowmap->GID(i);
+      int gid = nodecolmap->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CNode* cnode = static_cast<CNode*>(node);
-
-      if (cnode->IsSlave())
+      bool isslave = cnode->IsSlave();
+      
+      if (oldnodecolmap->MyGID(gid))
+      {
+        if (isslave)
+          for (int j=0;j<cnode->NumDof();++j)
+            sc.push_back(cnode->Dofs()[j]);
+        else
+          for (int j=0;j<cnode->NumDof();++j)
+            mc.push_back(cnode->Dofs()[j]);
+      }
+      
+      if (isslave)
+        for (int j=0;j<cnode->NumDof();++j)
+          scfull.push_back(cnode->Dofs()[j]);
+      else
+        for (int j=0;j<cnode->NumDof();++j)
+          mcfull.push_back(cnode->Dofs()[j]);
+      
+      if (!noderowmap->MyGID(gid)) continue;
+      
+      if (isslave)
         for (int j=0;j<cnode->NumDof();++j)
           sr.push_back(cnode->Dofs()[j]);
       else
@@ -293,7 +318,11 @@ void CONTACT::Interface::FillComplete()
     }
 
     sdofrowmap_ = rcp(new Epetra_Map(-1,(int)sr.size(),&sr[0],0,Comm()));
+    sdoffullmap_ = rcp(new Epetra_Map(-1,(int)scfull.size(),&scfull[0],0,Comm()));
+    sdofcolmap_ = rcp(new Epetra_Map(-1,(int)sc.size(),&sc[0],0,Comm()));
     mdofrowmap_ = rcp(new Epetra_Map(-1,(int)mr.size(),&mr[0],0,Comm()));
+    mdoffullmap_ = rcp(new Epetra_Map(-1,(int)mcfull.size(),&mcfull[0],0,Comm()));
+    mdofcolmap_ = rcp(new Epetra_Map(-1,(int)mc.size(),&mc[0],0,Comm()));
   }
 
   return;
@@ -460,12 +489,19 @@ void CONTACT::Interface::Evaluate()
     DRT::Element* ele1 = idiscret_->gElement(gid1);
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     CElement* selement = static_cast<CElement*>(ele1);
-
+    
+    //********************************************************************
+    // 1) integrate Mortar matrix D (lives on slave side only!)
+    // 2) compute directional derivative of D and store into nodes
+    //********************************************************************
+    // we only do this on a slave element basis in the case with
+    // two separate Mortar loops for D and M. If CONTACTONEMORTARLOOP
+    // is applied, we combine the construction of D with the construction
+    // of M in the method Integrator::AssembleM() and linearization of D
+    // with the linearization of M in the method Integrator::DerivM()! 
+    //********************************************************************
 #ifndef CONTACTONEMORTARLOOP
-    // integrate Mortar matrix D (lives on slave side only!)
     IntegrateSlave2D(*selement);
-#else
-    cout << "***WARNING***: Full linearization not yet implemented for 1 Mortar loop case\n";
 #endif // #ifndef CONTACTONEMORTARLOOP
 
     // loop over the contact candidate master elements
@@ -618,7 +654,7 @@ bool CONTACT::Interface::IntegrateSlave2D(CONTACT::CElement& sele)
   // do the integration
   RCP<Epetra_SerialDenseMatrix> dseg = integrator.IntegrateD(sele,sxia,sxib);
   
-  // compute directional derivative of D and store into nodes
+  // do the linearization of D
   integrator.DerivD(sele,sxia,sxib);
   
   // do the assembly into the slave nodes
@@ -1119,6 +1155,7 @@ bool CONTACT::Interface::IntegrateOverlap2D(CONTACT::CElement& sele,
   RCP<Epetra_SerialDenseVector> gseg = integrator.IntegrateG(sele,sxia,sxib,mele,mxia,mxib);
 
   // compute directional derivative of M and store into nodes
+  // if CONTACTONEMORTARLOOP defined, then DerivM does linearization of M AND D matrices !!!
   integrator.DerivM(sele,sxia,sxib,mele,mxia,mxib);
     
   // do the two assemblies into the slave nodes
@@ -1823,7 +1860,19 @@ void CONTACT::Interface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
         int col = colcurr->first;
         double val = lm[j] * (colcurr->second);
         //cout << "Assemble LinD: " << row << " " << col << " " << val << endl;
-        if (abs(val)>1.0e-12) lindglobal.Assemble(val,row,col);
+        
+        // check entries for the one mortar loop case
+        // (due to tolerances and round-off errors, we might get spurious entries)
+        bool assemble = true;
+#ifdef CONTACTONEMORTARLOOP
+        if (sdoffullmap_->LID(col) < 0)
+        {
+          assemble=false;
+          if(abs(val)>1.0e-6) dserror("ERROR: AssembleLinDM: Invalid non-zero master entry in LinD");
+        }
+#endif // #ifdef CONTACTONEMORTARLOOP
+        
+        if (assemble && abs(val)>1.0e-12) lindglobal.Assemble(val,row,col);
       }
     }
   }
