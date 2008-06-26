@@ -1016,7 +1016,7 @@ static void Sysmat4(
                 //             /                  \
                 //            | virt tau , eps(Du) |
                 //             \                  /
-                //cout << vderxy(0, 1) << endl;
+                
                 const double rect_factor = 1.0;
                 assembler.template Matrix<Sigmaxx,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
                 assembler.template Matrix<Sigmaxx,Velx>(shp_tau,     timefacfac*0.5*rect_factor, shp_dx);
