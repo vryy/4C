@@ -520,7 +520,7 @@ bool computeSingularCSI(
 
     updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
 
-    while(residual > XFEM::TOL14)
+    while(residual > XFEM::TOL13)
     {
         updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
 
@@ -577,7 +577,7 @@ bool computeCurveSurfaceIntersectionT(
     {
         updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
 
-        singular = !XFEM::gaussElimination<true,3>(A, b, dx, XFEM::TOL7);
+        singular = !XFEM::gaussElimination<true,3>(A, b, dx, XFEM::TOL10);
         
         if(singular && !doSVD)
         {

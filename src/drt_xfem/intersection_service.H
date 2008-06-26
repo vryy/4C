@@ -34,6 +34,9 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
     
     //! tolerance 1e-13 used for residuals in Newton-methods
     const double                 TOL13 = 1e-13;
+    
+    //! tolerance 1e-13 used for residuals in Newton-methods
+    const double                 TOL10 = 1e-10;
 
     //! tolerance 1e-7 
     const double                 TOL7 = 1e-7;
