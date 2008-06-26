@@ -40,6 +40,7 @@ ConDifResultTest::ConDifResultTest(CondifImplicitTimeInt& condif)
 {
   condifdis_=condif.discret_;
   mysol_   =condif.phinp_ ;
+  myflux_ = condif.CalcFlux();
 }
 
 
@@ -49,6 +50,7 @@ ConDifResultTest::ConDifResultTest(CondifGenAlphaIntegration& condif)
 {
   condifdis_=condif.discret_;
   mysol_   =condif.phinp_ ;
+  dserror("flux calculation method missing for GenAlpha-Result test");
 }
 
 
@@ -71,14 +73,20 @@ void ConDifResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_cou
       return;
 
     double result = 0.;
-
     const Epetra_BlockMap& phinpmap = mysol_->Map();
-
     string position = res->position;
+
     if (position=="phi")
     {
       result = (*mysol_)[phinpmap.LID(condifdis_->Dof(actnode,0))];
     }
+    // we rely on the fact, that we have 
+    else if (position=="fluxx")
+      result = (*myflux_)[0][phinpmap.LID(condifdis_->Dof(actnode,0))];
+    else if (position=="fluxy")
+      result = (*myflux_)[1][phinpmap.LID(condifdis_->Dof(actnode,0))];
+    else if (position=="fluxz")
+      result = (*myflux_)[2][phinpmap.LID(condifdis_->Dof(actnode,0))];
     else
     {
       dserror("position '%s' not supported in condif testing", position.c_str());

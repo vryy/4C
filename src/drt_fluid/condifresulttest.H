@@ -54,6 +54,7 @@ private:
 
   RefCountPtr<DRT::Discretization> condifdis_;
   RefCountPtr<Epetra_Vector>       mysol_;
+  RefCountPtr<Epetra_MultiVector>  myflux_;
 };
 
 
