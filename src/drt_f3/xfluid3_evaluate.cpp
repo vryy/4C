@@ -20,9 +20,8 @@ Maintainer: Axel Gerstenberger
 
 #include "xfluid3.H"
 //#include "xfluid3_sysmat2.H"
-//#include "xfluid3_sysmat3.H"
+#include "xfluid3_sysmat3.H"
 #include "xfluid3_sysmat4.H"
-//#include "xfluid3_sysmat5.H"
 #include "xfluid3_interpolation.H"
 
 #include "../drt_lib/drt_discret.H"

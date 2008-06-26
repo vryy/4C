@@ -248,7 +248,7 @@ void XFEM::DofManager::toGmsh(
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1);
-#ifdef DEBUG
+#if 1
   if (gmshdebugout)
   {
     cout << "XFEM::DofManager::toGmsh()" << endl;

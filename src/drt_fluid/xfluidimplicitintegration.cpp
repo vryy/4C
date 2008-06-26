@@ -733,9 +733,16 @@ void XFluidImplicitTimeInt::NonlinearSolve(
 
       // action for elements
       if (timealgo_==timeint_stationary)
+      {
         eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
+      }
       else
+      {
+        cout << "******************************************************" << endl;
+        cout << "* Warning! Does not work for moving boundaries, yet! *" << endl;
+        cout << "******************************************************" << endl;
         eleparams.set("action","calc_fluid_systemmat_and_residual");
+      }
 
       // other parameters that might be needed by the elements
       eleparams.set("total time",time_);
@@ -1006,7 +1013,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
   }
 
   // macht der FSI algorithmus
-  //iforcecol->Scale(-1.0);
+  iforcecol->Scale(-1.0);
 
 
   const int nsd = 3;
@@ -1026,7 +1033,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
   }
   const double u_m = 0.2;  // mean velocity 0.3 u_max for parabolic inflow
   const double d_cyl = 0.1; // diameter 
-  const double h = 0.02;  // cylinder thickness in z direction
+  const double h = 0.005;  // cylinder thickness in z direction
   const double factor = 2.0 / (1.0 * u_m*u_m * d_cyl * h);
   c *= factor; // scale forces to get lift and drag
   
@@ -1352,94 +1359,82 @@ void XFluidImplicitTimeInt::OutputToGmsh()
     f_system.close();
     std::cout << " done" << endl;
   }
+#if 0
+  if (gmshdebugout)
+  {
+    std::stringstream filename;
+    filename << allfiles.outputfile_kenner << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
+    << ".pos";
+    std::cout << "writing '"<<filename.str()<<"'...";
+    std::ofstream f_system(filename.str().c_str());
 
-//  if (gmshdebugout)
-//  {
-//    std::stringstream filename;
-//    filename << allfiles.outputfile_kenner << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
-//    << ".pos";
-//    std::cout << "writing '"<<filename.str()<<"'...";
-//    std::ofstream f_system(filename.str().c_str());
-//
-//    const XFEM::PHYSICS::Field field = XFEM::PHYSICS::DiscPres;
-//
-//    {
-//      stringstream gmshfilecontent;
-//      gmshfilecontent << "View \" " << "Discontinous Pressure Solution (Physical) \" {"
-//      << endl;
-//      for (int i=0; i<discret_->NumMyColElements(); ++i)
-//      {
-//
-//        const DRT::Element* actele = discret_->lColElement(i);
-//        const int elegid = actele->Id();
-//
-//        BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(actele));
-//
-//        map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
-//        //        element_ansatz[XFEM::PHYSICS::Tauxx] = XFLUID::getStressInterpolationType3D(actele->Shape());
-//        //        element_ansatz[XFEM::PHYSICS::Tauyy] = XFLUID::getStressInterpolationType3D(actele->Shape());
-//        //        element_ansatz[XFEM::PHYSICS::Tauzz] = XFLUID::getStressInterpolationType3D(actele->Shape());
-//        //        element_ansatz[XFEM::PHYSICS::Tauxy] = XFLUID::getStressInterpolationType3D(actele->Shape());
-//        //        element_ansatz[XFEM::PHYSICS::Tauxz] = XFLUID::getStressInterpolationType3D(actele->Shape());
-//        //        element_ansatz[XFEM::PHYSICS::Tauyz] = XFLUID::getStressInterpolationType3D(actele->Shape());
-//        //        element_ansatz[XFEM::PHYSICS::DiscPres] = XFLUID::getDiscPressureInterpolationType3D(actele->Shape());
-//                element_ansatz[XFEM::PHYSICS::Sigmaxx] = XFLUID::getStressInterpolationType3D(actele->Shape());
-//                element_ansatz[XFEM::PHYSICS::Sigmayy] = XFLUID::getStressInterpolationType3D(actele->Shape());
-//                element_ansatz[XFEM::PHYSICS::Sigmazz] = XFLUID::getStressInterpolationType3D(actele->Shape());
-//                element_ansatz[XFEM::PHYSICS::Sigmaxy] = XFLUID::getStressInterpolationType3D(actele->Shape());
-//                element_ansatz[XFEM::PHYSICS::Sigmaxz] = XFLUID::getStressInterpolationType3D(actele->Shape());
-//                element_ansatz[XFEM::PHYSICS::Sigmayz] = XFLUID::getStressInterpolationType3D(actele->Shape());
-//
-//        // create local copy of information about dofs
-//        const XFEM::ElementDofManager eledofman =
-//          dofmanagerForOutput_->constructElementDofManager(*actele,
-//              element_ansatz);
-//
-//        vector<int> lm;
-//        vector<int> lmowner;
-//        actele->LocationVector(*(discret_), lm, lmowner);
-//
-//        // extract local values from the global vector
-//        vector<double> myvelnp(lm.size());
-//        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
-//
-//        const int numparam = eledofman.NumDofPerField(field);
-//        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
-//
-//        BlitzVec elementvalues(numparam);
-//        for (int iparam=0; iparam<numparam; ++iparam)
-//          elementvalues(iparam) = myvelnp[dofpos[iparam]];
-//        if(elementvalues.size() != 0)
-//        {
-//          //cout << "eleval DiscPres" << endl;
-//          //cout << elementvalues << endl;
-//        }
-//        const XFEM::DomainIntCells& domainintcells =
-//          ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
-//        for (XFEM::DomainIntCells::const_iterator cell =
-//          domainintcells.begin(); cell != domainintcells.end(); ++cell)
-//        {
-//          BlitzVec cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-//          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman,
-//              *cell, field, elementvalues, cellvalues);
-//          BlitzMat xyze_cell(3, cell->NumNode());
-//          cell->NodalPosXYZ(*actele, xyze_cell);
-//          if(elementvalues.size() != 0)
-//          {
-//            //cout << "cellvalues DiscPres" << endl;
-//            //cout << cellvalues << endl;
-//          }
-//          gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
-//              cell->Shape(), cellvalues, xyze_cell) << endl;
-//        }
-//      }
-//      gmshfilecontent << "};" << endl;
-//      f_system << gmshfilecontent.str();
-//    }
-//    f_system.close();
-//    std::cout << " done" << endl;
-//  }
-#ifdef DEBUG_PRINT_STRESS_IN_GMSH
+    const XFEM::PHYSICS::Field field = XFEM::PHYSICS::DiscPres;
+
+    {
+      stringstream gmshfilecontent;
+      gmshfilecontent << "View \" " << "Discontinous Pressure Solution (Physical) \" {"
+      << endl;
+      for (int i=0; i<discret_->NumMyColElements(); ++i)
+      {
+
+        const DRT::Element* actele = discret_->lColElement(i);
+        const int elegid = actele->Id();
+
+        BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(actele));
+
+        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
+
+        // create local copy of information about dofs
+        const XFEM::ElementDofManager eledofman =
+          dofmanagerForOutput_->constructElementDofManager(*actele,
+              element_ansatz);
+
+        vector<int> lm;
+        vector<int> lmowner;
+        actele->LocationVector(*(discret_), lm, lmowner);
+
+        // extract local values from the global vector
+        vector<double> myvelnp(lm.size());
+        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+
+        const int numparam = eledofman.NumDofPerField(field);
+        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
+
+        BlitzVec elementvalues(numparam);
+        for (int iparam=0; iparam<numparam; ++iparam)
+          elementvalues(iparam) = myvelnp[dofpos[iparam]];
+        if(elementvalues.size() != 0)
+        {
+          //cout << "eleval DiscPres" << endl;
+          //cout << elementvalues << endl;
+        }
+        const XFEM::DomainIntCells& domainintcells =
+          ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
+        for (XFEM::DomainIntCells::const_iterator cell =
+          domainintcells.begin(); cell != domainintcells.end(); ++cell)
+        {
+          BlitzVec cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+          XFEM::computeScalarCellNodeValuesFromElementUnknowns(*actele, ihForOutput_, eledofman,
+              *cell, field, elementvalues, cellvalues);
+          BlitzMat xyze_cell(3, cell->NumNode());
+          cell->NodalPosXYZ(*actele, xyze_cell);
+          if(elementvalues.size() != 0)
+          {
+            //cout << "cellvalues DiscPres" << endl;
+            //cout << cellvalues << endl;
+          }
+          gmshfilecontent << IO::GMSH::cellWithScalarFieldToString(
+              cell->Shape(), cellvalues, xyze_cell) << endl;
+        }
+      }
+      gmshfilecontent << "};" << endl;
+      f_system << gmshfilecontent.str();
+    }
+    f_system.close();
+    std::cout << " done" << endl;
+  }
+#endif
+#if 1
   if (gmshdebugout)
   {
     //std::stringstream filename;
@@ -1726,151 +1721,6 @@ void XFluidImplicitTimeInt::OutputToGmsh()
     f_system.close();
     std::cout << " done" << endl;
   }
-//  if (gmshdebugout)
-//  {
-//
-//    bool ele_to_textfile = false;
-//    bool ele_to_textfile2 = false;
-//    std::stringstream filename;
-//    filename << allfiles.outputfile_kenner << "_solution_acceleration_" << std::setw(5) << setfill('0') << step_
-//    << ".pos";
-//    std::cout << "writing '"<<filename.str()<<"'...";
-//    std::ofstream f_system(filename.str().c_str());
-//
-//    {
-//      stringstream gmshfilecontent;
-//      gmshfilecontent << "View \" " << "Acceleration Solution (Physical) \" {"
-//      << endl;
-//      for (int i=0; i<discret_->NumMyColElements(); ++i)
-//      {
-//        const DRT::Element* actele = discret_->lColElement(i);
-//        const int elegid = actele->Id();
-//
-//        BlitzMat xyze_xfemElement(DRT::UTILS::InitialPositionArrayBlitz(actele));
-//
-//        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(actele->Shape()));
-//
-//        // create local copy of information about dofs
-//        const XFEM::ElementDofManager eledofman =
-//          dofmanagerForOutput_->constructElementDofManager(*actele,
-//              element_ansatz);
-//
-//        vector<int> lm;
-//        vector<int> lmowner;
-//        actele->LocationVector(*(discret_), lm, lmowner);
-//
-//        // extract local values from the global vector
-//        vector<double> myvelnp(lm.size());
-//        DRT::UTILS::ExtractMyValues(*state_.accn_, myvelnp, lm);
-//
-//
-//        const vector<int>& dofposvelx =
-//          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
-//        const vector<int>& dofposvely =
-//          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
-//        const vector<int>& dofposvelz =
-//          eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
-//
-//        const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
-//        blitz::Array<double,2> elementvalues(3, numparam);
-//        for (int iparam=0; iparam<numparam; ++iparam)
-//        {
-//          elementvalues(0, iparam) = myvelnp[dofposvelx[iparam]];
-//          elementvalues(1, iparam) = myvelnp[dofposvely[iparam]];
-//          elementvalues(2, iparam) = myvelnp[dofposvelz[iparam]];
-//        }
-//
-//        if (!ihForOutput_->ElementIntersected(elegid))
-//        {
-//          const XFEM::DomainIntCells& domainintcells =
-//            ihForOutput_->GetDomainIntCells(elegid, actele->Shape());
-//          for (XFEM::DomainIntCells::const_iterator cell =
-//            domainintcells.begin(); cell != domainintcells.end(); ++cell)
-//          {
-//            BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-//            //std::cout << cellvalues << endl;
-//            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
-//                *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-//            BlitzMat xyze_cell(3, cell->NumNode());
-//            cell->NodalPosXYZ(*actele, xyze_cell);
-//            gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-//                cell->Shape(), cellvalues, xyze_cell) << endl;
-//          }
-//        }
-//        else
-//        {
-//          const XFEM::BoundaryIntCells& boundaryintcells =
-//            ihForOutput_->GetBoundaryIntCells(elegid);
-//          // draw boundary integration cells with values
-//          for (XFEM::BoundaryIntCells::const_iterator cell =
-//            boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
-//          {
-//            {
-//              BlitzMat cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-//              //std::cout << cellvalues << endl;
-//              XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
-//                  *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-//              BlitzMat xyze_cell(3, cell->NumNode());
-//              cell->NodalPosXYZ(*actele, xyze_cell);
-//              gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-//                  cell->Shape(), cellvalues, xyze_cell) << endl;
-//            }
-//          }
-//
-//          // draw uncutted element
-//          {
-//            BlitzMat elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()));
-//            const XFEM::DomainIntCell cell(actele->Shape());
-//            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
-//                cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);
-//
-//            const BlitzMat xyze_ele(DRT::UTILS::InitialPositionArrayBlitz(actele));
-//            gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-//                actele->Shape(), elevalues, xyze_ele) << endl;
-//          }
-//
-//        }
-//        //if (ihForOutput_->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
-//        if (elegid == 1 and elementvalues.size() > 0)
-//        {
-//          ele_to_textfile = true;
-//          //std::cout << elementvalues << std::endl;
-//          std::ofstream f;
-//          if (step_ <= 1)
-//            f.open("outflowacc.txt",std::fstream::trunc);
-//          else
-//            f.open("outflowacc.txt",std::fstream::ate | std::fstream::app);
-//
-//          //f << step_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
-//          f << step_ << "  " << elementvalues(0,0) << endl;
-//
-//          f.close();
-//        }
-//
-//        //          if (ihForOutput_->ElementIntersected(elegid) and not ele_to_textfile2)
-//        //          //if (elegid == 1)
-//        //          {
-//        //            ele_to_textfile2 = true;
-//        //            //std::cout << elementvalues << std::endl;
-//        //            std::ofstream f;
-//        //            if (step_ <= 1)
-//        //              f.open("outflow2vel.txt",std::fstream::trunc);
-//        //            else
-//        //              f.open("outflow2vel.txt",std::fstream::ate | std::fstream::app);
-//        //
-//        //            //f << step_ << " " << (-1.5*std::sin(0.1*2.0*time_* PI) * PI*0.1) << "  " << elementvalues(0,0) << endl;
-//        //            f << step_ << "  " << elementvalues(0,0) << endl;
-//        //
-//        //            f.close();
-//        //          }
-//
-//      }
-//      gmshfilecontent << "};" << endl;
-//      f_system << gmshfilecontent.str();
-//    }
-//    f_system.close();
-//    std::cout << " done" << endl;
-//  }
 }
 
 
