@@ -374,7 +374,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>("Centr_Diff",
                                                   "Gen_EMM",
                                                   "Gen_Alfa",
-                                                  "GenAlpha"
+                                                  "GenAlpha",
                                                   "OneStepTheta"),
                                tuple<int>(STRUCT_DYNAMIC::centr_diff,
                                           STRUCT_DYNAMIC::Gen_EMM,
