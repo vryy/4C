@@ -17,7 +17,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <strstream>
+#include <sstream>
 
 #include "strutimint.H"
 #include "strutimint_impl.H"
@@ -190,7 +190,7 @@ StruTimIntImpl::StruTimIntImpl
     myrank_(actdis.Comm().MyPID()),
     dofrowmap_(actdis.Filled() ? actdis.DofRowMap() : NULL),
     solver_(solver),
-    solveradapttol_(sdynparams.get<bool>("ADAPTCONV")),
+    solveradapttol_((bool) Teuchos::getIntegralValue<int>(sdynparams,"ADAPTCONV")==1),
     solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
     pred_(MapPredictorStringToEnum(sdynparams.get<string>("PREDICT"))),
     output_(output),
@@ -199,7 +199,7 @@ StruTimIntImpl::StruTimIntImpl
     printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
     printiter_(true),  // ADD INPUT PARAMETER
     writerestartevery_(sdynparams.get<int>("RESTARTEVRY")),
-    writestate_(ioparams.get<bool>("STRUCT_DISP")),
+    writestate_((bool) Teuchos::getIntegralValue<int>(ioparams,"STRUCT_DISP")),
     writestateevery_(sdynparams.get<int>("RESEVRYDISP")),
     writestrevery_(sdynparams.get<int>("RESEVRYSTRS")),
     writestress_(MapStressStringToEnum(ioparams.get<string>("STRUCT_STRESS"))),
@@ -208,7 +208,7 @@ StruTimIntImpl::StruTimIntImpl
     uzawasolv_(Teuchos::null),
     surfstressman_(Teuchos::null),
     potman_(Teuchos::null),
-    damping_(Teuchos::getIntegralValue<bool>(sdynparams,"DAMPING")),
+    damping_((bool) Teuchos::getIntegralValue<int>(sdynparams,"DAMPING")),
     dampk_(sdynparams.get<double>("K_DAMP")),
     dampm_(sdynparams.get<double>("M_DAMP")),
     time_(0.0),  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
@@ -328,19 +328,23 @@ StruTimIntImpl::StruTimIntImpl
   dofrowmap_ = discret_.DofRowMap();
 
   // Check for surface stress conditions due to interfacial phenomena
-  vector<DRT::Condition*> surfstresscond(0);
-  discret_.GetCondition("SurfaceStress",surfstresscond);
-  if (surfstresscond.size())
   {
-    surfstressman_ = rcp(new DRT::SurfStressManager(discret_));
+    vector<DRT::Condition*> surfstresscond(0);
+    discret_.GetCondition("SurfaceStress",surfstresscond);
+    if (surfstresscond.size())
+    {
+      surfstressman_ = rcp(new DRT::SurfStressManager(discret_));
+    }
   }
   
   // Check for potential conditions 
-  vector<DRT::Condition*> potentialcond(0);
-  discret_.GetCondition("Potential",potentialcond);
-  if (potentialcond.size())
   {
-    potman_ = rcp(new DRT::PotentialManager(discret_));
+    vector<DRT::Condition*> potentialcond(0);
+    discret_.GetCondition("Potential",potentialcond);
+    if (potentialcond.size())
+    {
+      potman_ = rcp(new DRT::PotentialManager(discret_));
+    }
   }
 
   // determine mass, damping and initial accelerations
@@ -980,7 +984,7 @@ void StruTimIntImpl::PrintNewtonConv()
   }
 
   // open outstringstream
-  std::ostrstream oss;
+  std::ostringstream oss;
 
   // enter converged state etc
   oss << "Newton iteration converged:"
@@ -1024,7 +1028,7 @@ void StruTimIntImpl::PrintNewtonConv()
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  printf("%s\n", oss.str());
+  printf("%s\n", oss.str().c_str());
 
   // somebody did the door
   return;
