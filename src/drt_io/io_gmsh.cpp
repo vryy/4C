@@ -140,7 +140,8 @@ std::string IO::GMSH::disToString(
   {
     const DRT::Element* actele = dis->lColElement(i);
     const int id = actele->Id();
-    if (elementDomainIntCellsMap.count(id))
+    // print integration cells, if available
+    if (elementDomainIntCellsMap.count(id) > 0)
     {
       const XFEM::DomainIntCells cells = elementDomainIntCellsMap.find(id)->second;
       for (XFEM::DomainIntCells::const_iterator cell = cells.begin(); cell
@@ -160,10 +161,9 @@ std::string IO::GMSH::disToString(
         gmshfilecontent << IO::GMSH::cellWithScalarToString(bcell->Shape(),
             scalar, bxyz_ele) << endl;
       }
-    } else
-    {
-      gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(scalar, actele) << endl;
-    };
+    }
+    // print element
+    gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(scalar, actele) << endl;
   };
   gmshfilecontent << "};" << endl;
   return gmshfilecontent.str();
