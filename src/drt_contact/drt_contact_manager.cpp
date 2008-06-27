@@ -1274,10 +1274,14 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   smatrix_->Complete(*gsmdofs,*gactiven_);
   
   // FillComplete() global matrix P
-  pmatrix_->Complete(*gsdofrowmap_,*gactivet_);
+  // (actually gsdofrowmap_ is in general sufficient as domain map,
+  // but in the edge node modification case, master entries occur!)
+  pmatrix_->Complete(*gsmdofs,*gactivet_);
   
   // FillComplete() global matrices LinD, LinM
-  lindmatrix_->Complete();
+  // (again for linD gsdofrowmap_ is sufficient as domain map,
+  // but in the edge node modification case, master entries occur!)
+  lindmatrix_->Complete(*gsmdofs,*gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofs,*gmdofrowmap_);
   
    
@@ -1545,8 +1549,8 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   /**********************************************************************/
   /* Split LinD and LinM into blocks                                    */
   /**********************************************************************/
-  // we want to split lindmatrix_ into 2 groups a,i = 4 blocks
-  RCP<LINALG::SparseMatrix> lindai, lindaa;
+  // we want to split lindmatrix_ into 3 groups a,i,m = 3 blocks
+  RCP<LINALG::SparseMatrix> lindai, lindaa, lindam, lindas;
   
   // we want to split linmmatrix_ into 3 groups a,i,m = 3 blocks
   RCP<LINALG::SparseMatrix> linmmi, linmma, linmmm, linmms;
@@ -1554,20 +1558,24 @@ void CONTACT::Manager::EvaluateTrescaNoBasisTrafo(RCP<LINALG::SparseMatrix> ktef
   if (fulllin)
   {
     // do the splitting
-    LINALG::SplitMatrix2x2(lindmatrix_,gactivedofs_,gidofs,gactivedofs_,gidofs,lindaa,lindai,tempmtx1,tempmtx2);
+    LINALG::SplitMatrix2x2(lindmatrix_,gactivedofs_,gidofs,gmdofrowmap_,gsdofrowmap_,lindam,lindas,tempmtx1,tempmtx2);
+    LINALG::SplitMatrix2x2(lindas,gactivedofs_,tempmap,gactivedofs_,gidofs,lindaa,lindai,tempmtx1,tempmtx2);
     LINALG::SplitMatrix2x2(linmmatrix_,gmdofrowmap_,tempmap,gmdofrowmap_,gsdofrowmap_,linmmm,linmms,tempmtx1,tempmtx2);
     LINALG::SplitMatrix2x2(linmms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,linmma,linmmi,tempmtx1,tempmtx2);
   
-    // modification of kai, kaa
+    // modification of kai, kaa, kam
     // (this has to be done first as they are needed below)
-    // (note, that kai, kaa have to be UNcompleted again first!!!)
+    // (note, that kai, kaa, kam have to be UNcompleted again first!!!)
     kai->UnComplete();
     kaa->UnComplete();
+    kam->UnComplete();
     kai->Add(*lindai,false,1.0-alphaf_,1.0);
     kaa->Add(*lindaa,false,1.0-alphaf_,1.0);
-    kai->UnComplete();
-    kaa->UnComplete();
-  }  
+    kam->Add(*lindam,false,1.0-alphaf_,1.0);
+    kai->Complete(*gidofs,*gactivedofs_);
+    kaa->Complete();
+    kam->Complete(*gmdofrowmap_,*gactivedofs_);
+  }
   
   /**********************************************************************/
   /* Build the final K and f blocks                                     */
@@ -2357,10 +2365,14 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   smatrix_->Complete(*gsmdofs,*gactiven_);
   
   // FillComplete() global matrix P
-  pmatrix_->Complete(*gsdofrowmap_,*gactivet_);
+  // (actually gsdofrowmap_ is in general sufficient as domain map,
+  // but in the edge node modification case, master entries occur!)
+  pmatrix_->Complete(*gsmdofs,*gactivet_);
   
   // FillComplete() global matrices LinD, LinM
-  lindmatrix_->Complete();
+  // (again for linD gsdofrowmap_ is sufficient as domain map,
+  // but in the edge node modification case, master entries occur!)
+  lindmatrix_->Complete(*gsmdofs,*gsdofrowmap_);
   linmmatrix_->Complete(*gsmdofs,*gmdofrowmap_);
   
 #ifdef CONTACTCHECKHUEEBER
@@ -2583,8 +2595,8 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   /**********************************************************************/
   /* Split LinD and LinM into blocks                                    */
   /**********************************************************************/
-  // we want to split lindmatrix_ into 2 groups a,i = 4 blocks
-  RCP<LINALG::SparseMatrix> lindai, lindaa;
+  // we want to split lindmatrix_ into 3 groups a,i,m = 3 blocks
+  RCP<LINALG::SparseMatrix> lindai, lindaa, lindam, lindas;
   
   // we want to split linmmatrix_ into 3 groups a,i,m = 3 blocks
   RCP<LINALG::SparseMatrix> linmmi, linmma, linmmm, linmms;
@@ -2592,20 +2604,24 @@ void CONTACT::Manager::EvaluateNoBasisTrafo(RCP<LINALG::SparseMatrix> kteff,
   if (fulllin)
   {
     // do the splitting
-    LINALG::SplitMatrix2x2(lindmatrix_,gactivedofs_,gidofs,gactivedofs_,gidofs,lindaa,lindai,tempmtx1,tempmtx2);
+    LINALG::SplitMatrix2x2(lindmatrix_,gactivedofs_,gidofs,gmdofrowmap_,gsdofrowmap_,lindam,lindas,tempmtx1,tempmtx2);
+    LINALG::SplitMatrix2x2(lindas,gactivedofs_,tempmap,gactivedofs_,gidofs,lindaa,lindai,tempmtx1,tempmtx2);
     LINALG::SplitMatrix2x2(linmmatrix_,gmdofrowmap_,tempmap,gmdofrowmap_,gsdofrowmap_,linmmm,linmms,tempmtx1,tempmtx2);
     LINALG::SplitMatrix2x2(linmms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,linmma,linmmi,tempmtx1,tempmtx2);
   
-    // modification of kai, kaa
+    // modification of kai, kaa, kam
     // (this has to be done first as they are needed below)
-    // (note, that kai, kaa have to be UNcompleted again first!!!)
+    // (note, that kai, kaa, kam have to be UNcompleted again first!!!)
     kai->UnComplete();
     kaa->UnComplete();
+    kam->UnComplete();
     kai->Add(*lindai,false,1.0-alphaf_,1.0);
     kaa->Add(*lindaa,false,1.0-alphaf_,1.0);
+    kam->Add(*lindam,false,1.0-alphaf_,1.0);
     kai->Complete(*gidofs,*gactivedofs_);
     kaa->Complete();
-  }  
+    kam->Complete(*gmdofrowmap_,*gactivedofs_);
+  }
   
   /**********************************************************************/
   /* Build the final K and f blocks                                     */

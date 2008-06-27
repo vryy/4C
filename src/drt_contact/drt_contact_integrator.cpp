@@ -242,12 +242,43 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
     {
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[i]);
       if (!mycnode) dserror("ERROR: Integrate1D: Null pointer!");
+      bool bound = mycnode->IsOnBound();
       map<int,double>& nodemap = mycnode->GetDerivD();
       
-      // contribution of current element / current GP
-      double fac = wgt*val[i]*dualval[i]*dsxideta;
-      for (CI p=testmap.begin();p!=testmap.end();++p)
-        nodemap[p->first] += fac*(p->second);
+      //******************************************************************
+      // standard case (no edge node modification)
+      //******************************************************************
+      if (!bound)
+      {
+        // contribution of current element / current GP
+        double fac = wgt*val[i]*dualval[i]*dsxideta;
+        for (CI p=testmap.begin();p!=testmap.end();++p)
+          nodemap[p->first] += fac*(p->second);
+      }
+      
+      //******************************************************************
+      // edge node modification case
+      //******************************************************************
+      else
+      {
+        // get gid of current boundary node
+        int bgid = mycnode->Id();
+        
+        // loop over other nodes (interior nodes)
+        for (int k=0;k<nrow;++k)
+        {
+          CONTACT::CNode* mycnode2 = static_cast<CONTACT::CNode*>(mynodes[k]);
+          if (!mycnode2) dserror("ERROR: Integrate1D: Null pointer!");
+          bool bound2 = mycnode2->IsOnBound();
+          if (bound2) continue;
+          map<int,double>& nodemmap = mycnode2->GetDerivM()[bgid];
+          
+          // contribution to DerivM of current element / current GP
+          double fac = wgt*val[i]*dualval[k]*dsxideta;
+          for (CI p=testmap.begin();p!=testmap.end();++p)
+            nodemmap[p->first] -= fac*(p->second);
+        }
+      }
     }
     
     // compute contribution of dual shape fct. to nodal D-derivative-maps
@@ -255,15 +286,28 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
     {
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[i]);
       if (!mycnode) dserror("ERROR: Integrate1D: Null pointer!");
+      bool bound = mycnode->IsOnBound();
       map<int,double>& nodemap = mycnode->GetDerivD();
       
-      // contribution of current element / current GP
-      for (int j=0;j<nrow;++j)
+      //******************************************************************
+      // standard case (no edge node modification)
+      //******************************************************************
+      if (!bound)
       {
-        double fac = wgt*val[i]*val[j]*dsxideta*dxdsxi;
-        for (CI p=dualmap[i][j].begin();p!=dualmap[i][j].end();++p)
-          nodemap[p->first] += fac*(p->second);
+        // contribution of current element / current GP
+        for (int j=0;j<nrow;++j)
+        {
+          double fac = wgt*val[i]*val[j]*dsxideta*dxdsxi;
+          for (CI p=dualmap[i][j].begin();p!=dualmap[i][j].end();++p)
+            nodemap[p->first] += fac*(p->second);
+        }
       }
+      
+      //******************************************************************
+      // edge node modification case
+      //******************************************************************
+      else
+        dserror("ERROR: Edge node modification not yet linearized for quad. shape");
     }
     
   } // for (int gp=0;gp<nGP();++gp)
@@ -1646,6 +1690,9 @@ bool CONTACT::Integrator::AssembleM(CONTACT::Interface& inter,
 #ifdef CONTACTONEMORTARLOOP
       // we know that D(snode) = sum_mnode (M(mnode,snode))
       snode->AddDValue(sdof,sdofs[sdof],msum);
+  #ifdef CONTACTBOUNDMOD
+      dserror("ERROR: Combination 1 mortar loop <-> boundary modification not yet impl.");
+  #endif // #ifdef CONTACTBOUNDMOD
 #endif // #ifdef CONTACTONEMORTARLOOP
     }
     /*
