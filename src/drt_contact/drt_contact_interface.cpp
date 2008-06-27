@@ -1560,7 +1560,7 @@ void CONTACT::Interface::AssembleTresca(LINALG::SparseMatrix& lglobal,
     Lnode(0,0)= Mpk/(1-Mpk)*ct;
     lmcol[0] = cnode->Dofs()[1];
         
-    //assemble into L matrix 
+    //assemble into L matrix
     lglobal.Assemble(-1,Lnode,lmrowT,lmrowownerT,lmcol); 
     
     Epetra_SerialDenseVector Rnode(1);

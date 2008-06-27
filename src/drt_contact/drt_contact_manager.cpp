@@ -538,10 +538,7 @@ void CONTACT::Manager::Initialize(int numiter)
   string ftype   = scontact_.get<string>("friction type","none");
   if (ftype=="tresca")
   {
-	// FIXME: at the moment we do NOT seperate stick and slip mode
-	// for Tresca friction. This is pure slip! Later we have to split
-	// the active set into stick and split set!
-	lmatrix_ = rcp(new LINALG::SparseMatrix(*gactivet_,10));
+	lmatrix_ = rcp(new LINALG::SparseMatrix(*gslipt_,10));
 	r_       = LINALG::CreateVector(*gslipt_,true);
   }
   
