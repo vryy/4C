@@ -68,8 +68,9 @@ enum
     gen_alfa,                   /* generalised-alpha time integrator */
     centr_diff,                 /* central differences (explicit) */
     Gen_EMM,                    /* generalised energy-momentum method */
-    genalpha                    /* generalised-alpha time integrator, 
+    genalpha,                   /* generalised-alpha time integrator, 
                                  * new style */
+    onesteptheta                /* one-step-theta time integrator */
    }               Typ;         /* type of time integration algorithm */
 enum _genavgtype
    {
@@ -90,7 +91,7 @@ enum _nlnSolvTyp
     modnewton,                  /* modified Newton */
     matfreenewton,              /* matrix-free Newton iteration */
     nlncg,                      /* nonlinear CG iteration using Nox */
-    ptc                         /* pseudo transient continuation nonlinear iteration */
+    ptc                        /* pseudo transient continuation nonlinear iteration */
    }               nlnSolvTyp;  /* type of nonlinear solver to be used */
 enum _PredType
    {

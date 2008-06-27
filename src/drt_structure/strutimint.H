@@ -17,6 +17,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include <iostream>
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -27,7 +28,9 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/drt_validparameters.H"
 #include "../drt_io/io.H"
 #include "../drt_constraint/constraint_manager.H"
+#include "../drt_constraint/uzawasolver.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
+#include "../drt_surfstress/drt_potential_manager.H"
 #include "../drt_contact/drt_contact_manager.H"
 
 #include "Epetra_Vector.h"
@@ -46,6 +49,7 @@ Maintainer: Burkhard Bornemann
 /*!
 \brief Front-end for structural dynamics by structure time integration. 
 \author bborn
+\date 06/08
 */
 class StruTimInt
 {
@@ -56,10 +60,19 @@ public:
   friend class StruResultTest;
 
   //! Constructor
-  StruTimInt() { }
+  StruTimInt()
+  { 
+    std::cout << " Welcome to Structural Time Integration  " << std::endl;
+    std::cout << "                                       _ " << std::endl;
+    std::cout << " _ __       _       _      _ __    _  / |" << std::endl;
+    std::cout << "| '_ \\     | |_____\\ \\    | '_ \\ _| |_| |" << std::endl;
+    std::cout << "| | | |    |  _____   )   | | | |_   _| |" << std::endl;
+    std::cout << "|_| |_|    |_|     /_/    |_| |_| |_| |_|" << std::endl;
+    std::cout << std::endl;
+  };
 
   //! Destructor
-  virtual ~StruTimInt() { }
+  virtual ~StruTimInt() { };
 
   //! Do time integration of multiple steps
   virtual void Integrate() = 0;

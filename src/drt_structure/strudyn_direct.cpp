@@ -40,6 +40,7 @@ Maintainer: Burkhard Bornemann
 #include "strutimint.H"
 #include "strutimint_impl.H"
 #include "strutimint_genalpha.H"
+#include "strutimint_ost.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -90,19 +91,24 @@ void strudyn_direct()
   SOLVAR* actsolv  = &solv[0];
 
   // get input parameter lists
-  const Teuchos::ParameterList& probtype 
-    = DRT::Problem::Instance()->ProblemTypeParams();
+  //const Teuchos::ParameterList& probtype 
+  //  = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags
     = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& sdyn
+  const Teuchos::ParameterList sdyn
     = DRT::Problem::Instance()->StructuralDynamicParams();
-  const Teuchos::ParameterList& scontact 
-    = DRT::Problem::Instance()->StructuralContactParams();
+  //const Teuchos::ParameterList& scontact 
+  //  = DRT::Problem::Instance()->StructuralContactParams();
 
+  // show default parameters
   if (actdis->Comm().MyPID() == 0)
   {
     DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
   }
+
+  // add extra parameters (a kind of work-around)
+  Teuchos::ParameterList xparams;
+  xparams.set<FILE*>("err file", allfiles.out_err);
 
   // create a solver
   RefCountPtr<ParameterList> solveparams = rcp(new ParameterList());
@@ -129,6 +135,7 @@ void strudyn_direct()
     //==================================================================
     case STRUCT_DYNAMIC::Gen_EMM :
     {
+      dserror("You should not turn up here.");
       dserror("Not yet impl.");
     }
     break;
@@ -138,12 +145,24 @@ void strudyn_direct()
     case STRUCT_DYNAMIC::genalpha :
     {
       // get generalised-alpha specific parameter list
-      const Teuchos::ParameterList& genalphaparams 
-        = sdyn.sublist("GENALPHA");
+      const Teuchos::ParameterList& gap = sdyn.sublist("GENALPHA");
 
       // create time integrator
-      sti = rcp(new StruTimIntGenAlpha(sdyn, genalphaparams,
+      sti = rcp(new StruTimIntGenAlpha(ioflags, sdyn, xparams, gap,
                                        *actdis, solver, output));
+    }
+    break;
+    //==================================================================
+    // One-step-theta (OST) time integration
+    //==================================================================
+    case STRUCT_DYNAMIC::onesteptheta :
+    {
+      // get one-step-theta specific parameter list
+      const Teuchos::ParameterList& ostp = sdyn.sublist("ONESTEPTHETA");
+
+      // create time integrator
+      sti = rcp(new StruTimIntOneStepTheta(ioflags, sdyn, xparams, ostp,
+                                           *actdis, solver, output));
     }
     break;
     //==================================================================
@@ -159,7 +178,7 @@ void strudyn_direct()
   // integrate in time
   sti->Integrate();
 
-  // EMERGENCY EXIT 
+  // EMERGENCY EXIT // REMOVE THIS EVENTUALLY
   exit(0);
 
 

@@ -91,6 +91,7 @@ void caldyn_drt()
     dserror("GEMM not supported");
     break;
   case STRUCT_DYNAMIC::genalpha:
+  case STRUCT_DYNAMIC::onesteptheta:
     // direct time integration
     strudyn_direct();
     break;

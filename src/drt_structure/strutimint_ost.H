@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint_genalpha.H
+\file strutimint_ost.H
 
 <pre>
 Maintainer: Burkhard Bornemann
@@ -12,8 +12,8 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-#ifndef STRUTIMINT_GENALPHA_H
-#define STRUTIMINT_GENALPHA_H
+#ifndef STRUTIMINT_OST_H
+#define STRUTIMINT_OST_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -22,44 +22,22 @@ Maintainer: Burkhard Bornemann
 
 /*======================================================================*/
 /*!
-\brief Generalised-alpha time integration
+\brief One-step-theta time integration
 \author bborn
 \date 06/08
 */
-class StruTimIntGenAlpha : public StruTimIntImpl
+class StruTimIntOneStepTheta : public StruTimIntImpl
 {
 
 public:
 
-  //! Mid-average type of internal forces
-  enum MidAverageEnum
-  {
-    midavg_vague = 0,  //!< undefined mid-averaging type
-    midavg_imrlike,  //!< alphaf-mid-averaging is done IMR-like, i.e. 
-                     //!< \f$F_{int,m}\f$ 
-                     //!< \f$= F_{int}(D_m)\f$
-                     //!< \f$= F_{int}( (1-\alpha_f)*D_{n+1} + \alpha_f*D_n )\f$
-                     //!< (IMR means implicit mid-point rule.)
-    midavg_trlike    //!< alphaf-mid-averaging is done TR-like, i.e.
-                     //!< \f$F_{int,m}\f$
-                     //!< \f$= (1-\alpha_f)*F_{int,n+1} + \alpha_f*F_{int,n}\f$
-                     //!<  \f$= (1-\alpha_f)*F_{int}(D_{n+1}) + \alpha_f*F_{int}(D_n)\f$
-                     //!<  (TR means trapezoidal rule.)
-  };
-
-  //! convert input string to enum for mid-average type
-  enum MidAverageEnum MapMidAvgStringToEnum
-  (
-    const std::string name  //!< input string
-  );
-
   //! Constructor
-  StruTimIntGenAlpha
+  StruTimIntOneStepTheta
   (
     const Teuchos::ParameterList& ioparams,  //!< ioflags
     const Teuchos::ParameterList& sdynparams,  //!< input parameters
     const Teuchos::ParameterList& xparams,  //!< extra flags
-    const Teuchos::ParameterList& genalphaparams,  //!< genalpha flags
+    const Teuchos::ParameterList& onestepthetaparams,  //!< onesteptheta flags
     DRT::Discretization& actis,  //!< current discretisation
     LINALG::Solver& solver,  //!< the solver
     IO::DiscretizationWriter& output  //!< the output
@@ -105,38 +83,14 @@ public:
 protected:
 
   //! equal operator is NOT wanted
-  StruTimIntGenAlpha operator=(const StruTimIntGenAlpha& old);
+  StruTimIntOneStepTheta operator=(const StruTimIntOneStepTheta& old);
 
   //! copy constructor is NOT wanted
-  StruTimIntGenAlpha(const StruTimIntGenAlpha& old);
-
-  //! @name set-up
-  //@{
-  enum MidAverageEnum midavg_;  //!< mid-average type more at #MidAverageEnum
-  //@}
+  StruTimIntOneStepTheta(const StruTimIntOneStepTheta& old);
 
   //! @name Key coefficients
-  //! Please note, to obtain a second-order accurate scheme, you need
-  //! to follow the following formulas in which \f$\rho_\infty\f$ is the
-  //! spectral radius.
-  //! \f[ \alpha_m = (2*\rho_\infty - 1)/(\rho_\infty + 1) \f]
-  //! \f[ \alpha_f = \rho_\infty/(\rho_\infty + 1) \f]
-  //! \f[ \beta = 1/4*(1 - \alpha_m + \alpha_f)^2 \mbox{(max. damp. of high-freq. modes)} \f]
-  //! \f[ \gamma = 1/2 - \alpha_m + \alpha_f \f]
-  //! The spectral radius is responsible for the magnitude of 
-  //! numerical dissipation introduced. 
-  //! For instance
-  //! Without numerical dissipation at \f$\rho_\infty=1\f$
-  //! \f[ \beta=0.25, \gamma=0.5, \alpha_m=0.5, \alpha_f=0.5 \f]
-  //! Medium dissipation at \f$\rho_\infty=0.8\f$
-  //! \f[ \beta=25/81, \gamma=11/18, \alpha_m=1/3, \alpha_f=4/9  \f]
-  //! Strong numerical dissipation at \f$\rho_\infty=0.5\f$
-  //! \f[ \beta=4/9, \gamma=10/12, \alpha_m=0, \alpha_f=1/3 \f]
   //@{
-  double beta_;  //!< factor (0,1/2]
-  double gamma_;  //!< factor (0,1]
-  double alphaf_;  //!< factor [0,1)
-  double alpham_;  //!< factor [0,1)
+  double theta_;  //!< factor (0,1]
   //@}
 
   //! @name Global mid-state vectors
@@ -166,8 +120,8 @@ protected:
   Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin force due to FSI
   //@}
 
-};  // end class StruTimIntGenAlpha
+};  // end class StruTimIntOneStepTheta
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef STRUTIMINT_GENALPHA_H
+#endif  // #ifndef STRUTIMINT_OST_H
 #endif  // #ifdef CCADISCRET

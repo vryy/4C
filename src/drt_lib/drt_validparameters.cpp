@@ -374,11 +374,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>("Centr_Diff",
                                                   "Gen_EMM",
                                                   "Gen_Alfa",
-                                                  "GenAlpha"),
+                                                  "GenAlpha"
+                                                  "OneStepTheta"),
                                tuple<int>(STRUCT_DYNAMIC::centr_diff,
                                           STRUCT_DYNAMIC::Gen_EMM,
                                           STRUCT_DYNAMIC::gen_alfa,
-                                          STRUCT_DYNAMIC::genalpha),
+                                          STRUCT_DYNAMIC::genalpha,
+                                          STRUCT_DYNAMIC::onesteptheta),
                                &sdyn);
   // Output type
   IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);
@@ -508,11 +510,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& genalpha = sdyn.sublist("GENALPHA",false,"");
-  
-  DoubleParameter("BETA",0.25,"Generalised-alpha factor in (0,1/2]",&genalpha);
-  DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&genalpha);
-  DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
-  DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
+
   setStringToIntegralParameter("GENAVG","ImrLike",
                                "mid-average type of internal forces",
                                tuple<std::string>("Vague",
@@ -522,6 +520,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           STRUCT_DYNAMIC::genavg_imrlike,
                                           STRUCT_DYNAMIC::genavg_trlike),
                                &genalpha);
+  DoubleParameter("BETA",0.25,"Generalised-alpha factor in (0,1/2]",&genalpha);
+  DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&genalpha);
+  DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
+  DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& onesteptheta = sdyn.sublist("ONESTEPTHETA",false,"");
+  
+  DoubleParameter("THETA",0.5,"One-step-theta factor in (0,1]",&onesteptheta);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scontact = list->sublist("STRUCTURAL CONTACT",false,"");
