@@ -614,13 +614,13 @@ for (int vi=0; vi<iel; ++vi)
     /* Stabilization terms: */
     /* 1) transient stabilization (USFEM assumed here, sign change necessary for GLS) */
     /* transient term */
-    /*estif(vi, ui) += -taufac*funct_(vi)*funct_(ui) ;*/
+    //estif(vi, ui) += -taufac*funct[vi]*funct[ui] ;
 
     /* convective term */
-    /*estif(vi, ui) += -timetaufac*funct_(vi)*conv_(ui) ;*/
+    //estif(vi, ui) += -timetaufac*funct[vi]*conv[ui] ;
 
     /* diffusive term */
-    /*estif(vi, ui) += timetaufac*funct_(vi)*diff_(ui) ;*/
+    //estif(vi, ui) += timetaufac*funct[vi]*diff[ui] ;
 
     /* 2) convective stabilization */
     /* transient term */
@@ -651,7 +651,7 @@ for (int vi=0; vi<iel; ++vi)
   eforce[vi] += fac*funct[vi]*rhsint ;
 
   /* transient stabilization of RHS source term */
-  /*eforce[vi] += -taufac*funct[vi]*rhsint ;*/
+  //eforce[vi] += -taufac*funct[vi]*rhsint ;
 
   /* convective stabilization of RHS source term */
   eforce[vi] += taufac*conv[vi]*rhsint ;
