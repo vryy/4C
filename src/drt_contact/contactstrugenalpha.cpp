@@ -297,6 +297,13 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   }
   stiff_->Complete();
   
+  // reset Lagrange multipliers to last converged state
+  // this resetting is necessary due to multiple active set steps
+  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
+  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
+  z->Update(1.0,*zold,0.0);
+  contactmanager_->StoreNodalQuantities("lmcurrent");
+    
   // friction  
   // reset displacement jumps (slave dofs)
   RCP<Epetra_Vector> jump = contactmanager_->Jump();
@@ -319,12 +326,6 @@ void CONTACT::ContactStruGenAlpha::ConsistentPredictor()
   }
       
   //---------------------------------------------------- contact forces
-  // reset Lagrange multipliers to last converged state
-  // this resetting is necessary due to multiple active set steps
-  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
-  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
-  z->Update(1.0,*zold,0.0);
-  contactmanager_->StoreNodalQuantities("lmcurrent");
   contactmanager_->ContactForces(fresmcopy);
   
   //------------------------------------------------ build residual norm
@@ -524,6 +525,13 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   }
   stiff_->Complete();
   
+  // reset Lagrange multipliers to last converged state
+  // this resetting is necessary due to multiple active set steps
+  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
+  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
+  z->Update(1.0,*zold,0.0);
+  contactmanager_->StoreNodalQuantities("lmcurrent");
+    
   // friction  
   // reset displacement jumps (slave dofs)
   RCP<Epetra_Vector> jump = contactmanager_->Jump();
@@ -546,12 +554,6 @@ void CONTACT::ContactStruGenAlpha::ConstantPredictor()
   }
       
   //---------------------------------------------------- contact forces
-  // reset Lagrange multipliers to last converged state
-  // this resetting is necessary due to multiple active set steps
-  RCP<Epetra_Vector> z = contactmanager_->LagrMult();
-  RCP<Epetra_Vector> zold = contactmanager_->LagrMultOld();
-  z->Update(1.0,*zold,0.0);
-  contactmanager_->StoreNodalQuantities("lmcurrent");
   contactmanager_->ContactForces(fresmcopy);
   
   //------------------------------------------------ build residual norm
