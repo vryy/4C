@@ -142,7 +142,22 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
-    Epetra_SerialDenseMatrix eflux = CalculateFlux(myphinp,actmat,evel);
+    // assure, that the values are in the same order as the element nodes
+    for(int k=0;k<iel;++k)
+    {
+      Node* node = (Nodes())[k];
+      vector<int> dof = discretization.Dof(node);
+        // up to now, there's only one dof per node
+      if (dof[0]!=lm[k])
+        { cout<<"dof[0]= "<<dof[0]<<"  lm[j]="<<lm[k]<<endl;
+          dserror("Dofs are not in the same order as the element nodes. Implement some resorting!");
+        }
+    }
+
+    // access control parameter
+    Condif3::FluxType fluxtype=params.get<Condif3::FluxType>("fluxtxpe",Condif3::noflux);
+
+    Epetra_SerialDenseMatrix eflux = CalculateFlux(myphinp,actmat,evel,fluxtype);
 
     for (int k=0;k<iel;k++)
     { // form arithmetic mean of assembled nodal flux vectors
@@ -1399,7 +1414,8 @@ void DRT::ELEMENTS::Condif3::Caltau(
 Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
     vector<double>&           ephinp,
     struct _MATERIAL*         material,
-    Epetra_SerialDenseVector& evel
+    Epetra_SerialDenseVector& evel,
+    Condif3::FluxType         fluxtype
 )
 {
   /*------------------------------------------------- set element data */
@@ -1523,23 +1539,30 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
       derxy(2,k) +=   xij(2,0) * deriv(0,k) + xij(2,1) * deriv(1,k) + xij(2,2) * deriv(2,k);
     } /* end of loop over k */
 
-    //compute diffusive flux
-    for (int k=0;k<iel;k++)
+    // add different flux contributions as specified by user input
+    switch (fluxtype)
     {
-      flux(0,iquad)+=-diffus*derxy(0,k)*ephinp[k];
-      flux(1,iquad)+=-diffus*derxy(1,k)*ephinp[k];
-      flux(2,iquad)+=-diffus*derxy(2,k)*ephinp[k];
-    }
+    case Condif3::totalflux:
+      //convective flux terms
+      for (int k=0;k<iel;k++)
+      {
+        flux(0,iquad)+=evel[k*nsd]*ephinp[k];
+        flux(1,iquad)+=evel[1+k*nsd]*ephinp[k];;
+        flux(2,iquad)+=evel[2+k*nsd]*ephinp[k];;
+      }
+    case Condif3::diffusiveflux:
+      //diffusive flux terms
+      for (int k=0;k<iel;k++)
+      {
+        flux(0,iquad)+=-diffus*derxy(0,k)*ephinp[k];
+        flux(1,iquad)+=-diffus*derxy(1,k)*ephinp[k];
+        flux(2,iquad)+=-diffus*derxy(2,k)*ephinp[k];
+      }
+      break;
+    case Condif3::noflux:
+      dserror("received noflux flag inside CONDIF3 flux evaluation");
+    };
 
-    /*
-    //additional terms for total flux (add convective flux terms)
-    for (int k=0;k<iel;k++)
-    {
-      flux(0,iquad)+=evel[k*nsd]*ephinp[k];
-      flux(1,iquad)+=evel[1+k*nsd]*ephinp[k];;
-      flux(2,iquad)+=evel[2+k*nsd]*ephinp[k];;
-     }
-     */
   } // loop over corner nodes
 
   return flux;

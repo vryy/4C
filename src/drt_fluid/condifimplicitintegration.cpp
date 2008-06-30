@@ -1177,8 +1177,6 @@ void CondifImplicitTimeInt::SetInitialField(int init, int startfuncno)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 Teuchos::RCP<Epetra_MultiVector> CondifImplicitTimeInt::CalcFlux()
 {
-  string condstring("FluxCalculation");
-
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
   //                 local <-> global dof numbering
@@ -1200,19 +1198,37 @@ Teuchos::RCP<Epetra_MultiVector> CondifImplicitTimeInt::CalcFlux()
   // set action for elements
   ParameterList eleparams;
   eleparams.set("action","calc_condif_flux");
+
   //provide velocity field (export to column map necessary for parallel evaluation)
   const Epetra_Map* nodecolmap = discret_->NodeColMap();
   RefCountPtr<Epetra_MultiVector> vel = rcp(new Epetra_MultiVector(*nodecolmap,3));
   LINALG::Export(*convel_,*vel);
   eleparams.set("velocity field",vel);
 
-  // evaluate fluxes in the whole computational domain
-  //discret_->Evaluate(eleparams,null,null,null,null,null);
+  string fluxcomputation("domain"); // domain/condition
+  string fluxtype("total"); // calculate total/diffusive/convective flux vectors
 
-  // evaluate fluxes on surface condition only
-  discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz,condstring);
+  // visualization of total flux vector is default at the moment
+  eleparams.set("fluxtype",0); // noflux = 0; totalflux = 1 ; diffusive flux = 2;
+
+  if (fluxcomputation=="domain")
+  {
+    // evaluate fluxes in the whole computational domain (e.g., for visualization of particle path-lines)
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz);
+  }
+  else if (fluxcomputation=="condition")
+  {
+    // evaluate fluxes on surface condition only
+    // if restriction to normal(!) fluxes is needed put it here
+    string condstring("FluxCalculation");
+    discret_->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,fluxx,fluxy,fluxz,condstring);
+  }
+  else
+    dserror("Unknown parameter for flux calculation.");
+
+  // clean up
   discret_->ClearState();
-
+  
   // insert values into final flux vector for visualization
   for (int i = 0;i<flux->MyLength();++i)
   {

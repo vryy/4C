@@ -318,6 +318,13 @@ private:
     calc_condif_flux
   };
 
+  //! flux parameters recognized by condif3
+  enum FluxType
+  {
+    noflux,
+    totalflux,
+    diffusiveflux
+  };
 
   //! Gaussrule
   DRT::UTILS::GaussRule3D                         gaussrule_;
@@ -449,7 +456,8 @@ private:
   Epetra_SerialDenseMatrix CalculateFlux(
       vector<double>&           phinp,
       struct _MATERIAL*         material,
-      Epetra_SerialDenseVector& evel
+      Epetra_SerialDenseVector& evel,
+      Condif3::FluxType         fluxtype
       );
 }; // class Condif3
 

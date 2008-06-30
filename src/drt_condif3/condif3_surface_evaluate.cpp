@@ -47,7 +47,6 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     act = Condif3Surface::calc_condif_flux;
   else dserror("Unknown type of action for Condif3_Surface");
 
-
   // get the material
   RefCountPtr<MAT::Material> mat = parent_->Material();
   if (mat->MaterialType() != m_condif)
@@ -84,7 +83,7 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     // extract local values from the global vector for the parent(!) element 
     vector<double> myphinp(lmparent.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
-    
+
     // assure, that the values are in the same order as the parent element nodes
     for(int k=0;k<ielparent;++k)
     {
@@ -97,8 +96,11 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
         }
     }
 
+    // access control parameter
+    Condif3::FluxType fluxtype=params.get<Condif3::FluxType>("fluxtxpe",Condif3::noflux);
+
     // compute fluxes on each node of the parent element
-    Epetra_SerialDenseMatrix eflux = parent_->CalculateFlux(myphinp,actmat,evel);
+    Epetra_SerialDenseMatrix eflux = parent_->CalculateFlux(myphinp,actmat,evel,fluxtype);
 
     // handle the result dofs in the right order (compare lm with lmparent)
     int dofcount = 0;
