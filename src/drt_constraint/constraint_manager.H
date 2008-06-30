@@ -27,7 +27,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/drt_utils.H"
-
+#include "constraint.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -284,16 +284,6 @@ private:
         Teuchos::RCP<Epetra_Vector>    systemvector3, //< distributed vector that may be filled by aasembly of element contributions
         vector<DRT::Condition*>& constrcond);  //< conditions determing where to assemble vector into rectangular matrix
     
-    //! Evaluate conditions and assemble to a rectangular matrix
-    void EvaluateCondition( 
-        RCP<DRT::Discretization> disc,  ///< discretization to evaluate
-        Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector1, //< distributed vector that may be filled by aasembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector2, //< distributed vector that may be filled by aasembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector3, //< distributed vector that may be filled by aasembly of element contributions
-        vector<DRT::Condition*>& constrcond);  //< conditions determing where to assemble vector into rectangular matrix
     //@}
 
 private:
@@ -325,15 +315,15 @@ private:
     RCP<Epetra_Vector> lagrMultVec_;
     RCP<LINALG::SparseMatrix> constrMatrix_;
     bool haveconstraint_;
-    bool havevolconstr_;
-    bool haveareaconstr3D_;
-    bool haveareaconstr2D_;
     bool havenodeconstraint_;
     bool havemonitor_;
-    bool haveareamonitor3D_;
-    bool haveareamonitor2D_;
-    bool havevolmonitor_;
     double uzawaparam_;
+    RCP<Constraint> volconstr3d_;
+    RCP<Constraint> areaconstr3d_;
+    RCP<Constraint> areaconstr2d_;
+    RCP<Constraint> volmonitor3d_;
+    RCP<Constraint> areamonitor3d_;
+    RCP<Constraint> areamonitor2d_;
     //@}
 
 

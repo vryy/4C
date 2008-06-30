@@ -160,6 +160,7 @@ OBJS_DRT_STRUCTURE      = \
 #-------------------------------------------------------constraint drivers
 OBJS_DRT_CONSTRAINT      = \
                 src/drt_constraint/constraint_manager.o \
+                src/drt_constraint/constraint.o \
                 src/drt_constraint/mpcdofset.o \
                 src/drt_constraint/uzawasolver.o
 #-------------------------------------------------------constraint elements

@@ -31,47 +31,18 @@ actdisc_(discr)
 {
   //Check, what kind of constraining boundary conditions there are
   numConstrID_=0;
-  haveareaconstr3D_=false;
-  haveareaconstr2D_=false;
-  havevolconstr_=false;
-  havenodeconstraint_=false;
-  //Check for volume constraints
-  vector<DRT::Condition*> constrcond(0);
-  actdisc_->GetCondition("VolumeConstraint_3D",constrcond);
+
   // Keep ParameterList p alive during initialization, so global information
   // over IDs as well as element results stored here can be used after all
   // constraints are evaluated
   ParameterList p;
-  //Deal with volume constraints
-  if (constrcond.size())
-  {
-    p.set("action","calc_struct_constrvol");
-    actdisc_->SetState("displacement",disp);
-//    actdisc_->EvaluateCondition(p,"VolumeConstraint_3D");
-    EvaluateCondition(actdisc_,p,null,null,null,null,null,constrcond);
-    havevolconstr_=true;
-  }
-  // Check for Area Constraints in 3D
-  actdisc_->GetCondition("AreaConstraint_3D",constrcond);
-  //Deal with area constraints in 3D
-  if (constrcond.size())
-  {
-    p.set("action","calc_struct_constrarea");
-    actdisc_->SetState("displacement",disp);
-    EvaluateCondition(actdisc_,p,null,null,null,null,null,constrcond);
-    haveareaconstr3D_=true;
-  }
-  // Check for Area Constraints in 2D
-  actdisc_->GetCondition("AreaConstraint_2D",constrcond);
-  //Deal with area constraints
-  if (constrcond.size())
-  {
-    p.set("action","calc_struct_constrarea");
-    actdisc_->SetState("displacement",disp);
-    EvaluateCondition(actdisc_,p,null,null,null,null,null,constrcond);
-    haveareaconstr2D_=true;
-  }
+  actdisc_->SetState("displacement",disp);
+  volconstr3d_=rcp(new Constraint(actdisc_,"VolumeConstraint_3D",p));
+  areaconstr3d_=rcp(new Constraint(actdisc_,"AreaConstraint_3D",p));
+  areaconstr2d_=rcp(new Constraint(actdisc_,"AreaConstraint_2D",p));
   // Check for Multi Point Constraint Node on planes in 3D
+  vector<DRT::Condition*> constrcond(0);
+  havenodeconstraint_=false;
   actdisc_->GetCondition("MPC_NodeOnLine_2D",constrcond);
   if (!constrcond.size())
   {
@@ -103,13 +74,14 @@ actdisc_(discr)
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
-  haveconstraint_= haveareaconstr3D_||havevolconstr_||haveareaconstr2D_||havenodeconstraint_;
+  haveconstraint_= (areaconstr3d_->HaveConstraint())||(volconstr3d_->HaveConstraint())||
+        (areaconstr2d_->HaveConstraint())||havenodeconstraint_;
   if (haveconstraint_)
   {
     uzawaparam_=params.get<double>("uzawa parameter",1);
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
     ManageIDs(p,minConstrID_,maxConstrID_,numConstrID_,MPCcondIDs);
-    //initialize constraint Matrix
+    //initialize constrMatrix
     constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
     //build domainmap of constrMatrix
     constrmap_=rcp(new Epetra_Map(numConstrID_,0,actdisc_->Comm()));
@@ -131,45 +103,17 @@ actdisc_(discr)
     lagrMultVec_->Scale(0.0);
     fact_=rcp(new Epetra_Vector(*constrmap_));
   }
-  //-----------------------------Monitor Conditions!
-  havevolmonitor_=false;
-  haveareamonitor3D_=false;
-  haveareamonitor2D_=false;
-  vector<DRT::Condition*> monitcond(0);
-  //Check for Volume Monitors
-  actdisc_->GetCondition("VolumeMonitor_3D",monitcond);
+  //----------------------------------------------------------------------------
+  //---------------------------------------------------------Monitor Conditions!
   ParameterList p1;
-  if (monitcond.size())
-  {
-    p1.set("action","calc_struct_constrvol");
-    actdisc_->SetState("displacement",disp);
-    EvaluateCondition(actdisc_,p1,null,null,null,null,null,monitcond);
-    havevolmonitor_=true;
-  }
-  // Check for Area Monitor in 3D
-  actdisc_->GetCondition("AreaMonitor_3D",monitcond);
-  //Deal with area Monitors
-  if (monitcond.size())
-  {
-    p1.set("action","calc_struct_monitarea");
-    actdisc_->SetState("displacement",disp);
-    EvaluateCondition(actdisc_,p1,null,null,null,null,null,monitcond);
-    haveareamonitor3D_=true;
-  }
-  // Check for Area Monitor in 2D
-  actdisc_->GetCondition("AreaMonitor_2D",monitcond);
-  //Deal with area Monitors
-  if (monitcond.size())
-  {
-    p1.set("action","calc_struct_constrarea");
-    actdisc_->SetState("displacement",disp);
-    EvaluateCondition(actdisc_,p1,null,null,null,null,null,monitcond);
-    haveareamonitor2D_=true;
-  }
+  actdisc_->SetState("displacement",disp);
+  volmonitor3d_=rcp(new Constraint(actdisc_,"VolumeMonitor_3D",p1));
+  areamonitor3d_=rcp(new Constraint(actdisc_,"AreaMonitor_3D",p1));
+  areamonitor2d_=rcp(new Constraint(actdisc_,"AreaMonitor_2D",p1));
   //----------------------------------------------------
   //--------------include possible further monitors here
   //----------------------------------------------------
-  havemonitor_= haveareamonitor3D_||havevolmonitor_||haveareamonitor2D_;
+  havemonitor_= (areamonitor3d_->HaveConstraint())||(volmonitor3d_->HaveConstraint())||(areamonitor2d_->HaveConstraint());
   if (havemonitor_)
   {
     ManageIDs(p1,minMonitorID_,maxMonitorID_,numMonitorID_);
@@ -201,75 +145,28 @@ void ConstrManager::StiffnessAndInternalForces(
   actvalues_->Scale(0.0);
   constrMatrix_->PutScalar(0.0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
-  //Deal with volume constraints
-  if (havevolconstr_)
-  {
-    //Evaluate volume at predicted ENDpoint D_{n+1}
-    // action for elements
-    p.set("action","calc_struct_volconstrstiff");
-    // other parameters that might be needed by the elements
-    p.set("total time",time);
-    p.set("MinID",minConstrID_);
-    p.set("MaxID",maxConstrID_);
-    p.set("NumberofID",numConstrID_);
-    // Convert Epetra_Vector constaining lagrange multipliers to an completely
-    // redundant Epetra_vector since every element with the constraint condition needs them
-    RCP<Epetra_Map> reducedmap = LINALG::AllreduceEMap(*constrmap_);
-    RCP<Epetra_Vector> lagrMultVecDense = rcp(new Epetra_Vector(*reducedmap));
-    LINALG::Export(*lagrMultVec_,*lagrMultVecDense);
-    p.set("LagrMultVector",lagrMultVecDense);
-    actdisc_->ClearState();
-    actdisc_->SetState("displacement",disp);
-    actdisc_->GetCondition("VolumeConstraint_3D",constrcond);
-    EvaluateCondition(actdisc_,p,stiff,constrMatrix_,fint,null,null,constrcond);
-    SynchronizeSumConstraint(p,actvalues_,"computed volume",numConstrID_,minConstrID_);
-  }
-  //Deal with area constraints in 3D
-  if (haveareaconstr3D_)
-  {
-    //Evaluate volume at predicted ENDpoint D_{n+1}
-    // action for elements
-    p.set("action","calc_struct_areaconstrstiff");
-    // other parameters that might be needed by the elements
-    p.set("total time",time);
-    p.set("MinID",minConstrID_);
-    p.set("MaxID",maxConstrID_);
-    p.set("NumberofID",numConstrID_);
-    // Convert Epetra_Vector constaining lagrange multipliers to an completely
-    // redundant Epetra_vector since every element with the constraint condition needs them
-    RCP<Epetra_Map> reducedmap = LINALG::AllreduceEMap(*constrmap_);
-    RCP<Epetra_Vector> lagrMultVecDense = rcp(new Epetra_Vector(*reducedmap));
-    LINALG::Export(*lagrMultVec_,*lagrMultVecDense);
-    p.set("LagrMultVector",lagrMultVecDense);
-    actdisc_->ClearState();
-    actdisc_->SetState("displacement",disp);
-    actdisc_->GetCondition("AreaConstraint_3D",constrcond);
-    EvaluateCondition(actdisc_,p,stiff,constrMatrix_,fint,null,null,constrcond);
-    SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
-  }
-  //Deal with area constraints in 2D
-  if (haveareaconstr2D_)
-  {
-    //Evaluate volume at predicted ENDpoint D_{n+1}
-    // action for elements
-    p.set("action","calc_struct_areaconstrstiff");
-    // other parameters that might be needed by the elements
-    p.set("total time",time);
-    p.set("MinID",minConstrID_);
-    p.set("MaxID",maxConstrID_);
-    p.set("NumberofID",numConstrID_);
-    // Convert Epetra_Vector constaining lagrange multipliers to an completely
-    // redundant Epetra_vector since every element with the constraint condition needs them
-    RCP<Epetra_Map> reducedmap = LINALG::AllreduceEMap(*constrmap_);
-    RCP<Epetra_Vector> lagrMultVecDense = rcp(new Epetra_Vector(*reducedmap));
-    LINALG::Export(*lagrMultVec_,*lagrMultVecDense);
-    p.set("LagrMultVector",lagrMultVecDense);
-    actdisc_->ClearState();
-    actdisc_->SetState("displacement",disp);
-    actdisc_->GetCondition("AreaConstraint_2D",constrcond);
-    EvaluateCondition(actdisc_,p,stiff,constrMatrix_,fint,null,null,constrcond);
-    SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
-  }
+  
+  // other parameters that might be needed by the elements
+  p.set("total time",time);
+  p.set("MinID",minConstrID_);
+  p.set("MaxID",maxConstrID_);
+  p.set("NumberofID",numConstrID_);
+  // Convert Epetra_Vector constaining lagrange multipliers to an completely
+  // redundant Epetra_vector since every element with the constraint condition needs them
+  RCP<Epetra_Map> reducedmap = LINALG::AllreduceEMap(*constrmap_);
+  RCP<Epetra_Vector> lagrMultVecDense = rcp(new Epetra_Vector(*reducedmap));
+  LINALG::Export(*lagrMultVec_,*lagrMultVecDense);
+  p.set("LagrMultVector",lagrMultVecDense);
+  actdisc_->ClearState();
+  actdisc_->SetState("displacement",disp);
+  actdisc_->GetCondition("VolumeConstraint_3D",constrcond);
+  
+  volconstr3d_->EvaluateConstraint(p,stiff,constrMatrix_,fint,null,null);
+  SynchronizeSumConstraint(p,actvalues_,"computed volume",numConstrID_,minConstrID_);
+  areaconstr3d_->EvaluateConstraint(p,stiff,constrMatrix_,fint,null,null);
+  areaconstr2d_->EvaluateConstraint(p,stiff,constrMatrix_,fint,null,null);
+  SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
+  
   //Deal with MPC
   if (havenodeconstraint_)
   {
@@ -323,27 +220,13 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
     ParameterList p;
     p.set("total time",time);
     actdisc_->SetState("displacement",disp);
-    if(havevolconstr_)
-    {
-        p.set("action","calc_struct_constrvol");
-        actdisc_->GetCondition("VolumeConstraint_3D",constrcond);
-        EvaluateCondition(actdisc_,p,null,null,null,null,null,constrcond);
-        SynchronizeSumConstraint(p, actvalues_,"computed volume",numConstrID_,minConstrID_);
-    }
-    if(haveareaconstr3D_)
-    {
-        p.set("action","calc_struct_constrarea");
-        actdisc_->GetCondition("AreaConstraint_3D",constrcond);
-        EvaluateCondition(actdisc_,p,null,null,null,null,null,constrcond);
-        SynchronizeSumConstraint(p, actvalues_,"computed area",numConstrID_,minConstrID_);
-    }
-    if(haveareaconstr2D_)
-    {
-      p.set("action","calc_struct_constrarea");
-      actdisc_->GetCondition("AreaConstraint_2D",constrcond);
-      EvaluateCondition(actdisc_,p,null,null,null,null,null,constrcond);
-      SynchronizeSumConstraint(p, actvalues_,"computed area",numConstrID_,minConstrID_);
-    }
+    
+    volconstr3d_->EvaluateConstraint(p,null,null,null,null,null);
+    SynchronizeSumConstraint(p,actvalues_,"computed volume",numConstrID_,minConstrID_);
+    areaconstr3d_->EvaluateConstraint(p,null,null,null,null,null);
+    areaconstr2d_->EvaluateConstraint(p,null,null,null,null,null);
+    SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
+
     if(havenodeconstraint_)
     {
       p.set("action","calc_MPC_stiff");
@@ -390,27 +273,13 @@ void ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
   monitorvalues_->Scale(0.0);
   ParameterList p;
   actdisc_->SetState("displacement",disp);
-  if(havevolmonitor_)
-  {
-    p.set("action","calc_struct_constrvol");
-    actdisc_->GetCondition("VolumeConstraint_3D",monitcond);
-    EvaluateCondition(actdisc_,p,null,null,null,null,null,monitcond);
-    SynchronizeSumConstraint(p, monitorvalues_,"computed volume",numMonitorID_,minMonitorID_);
-  }
-  if(haveareamonitor3D_)
-  {
-    p.set("action","calc_struct_monitarea");
-    actdisc_->GetCondition("AreaMonitor_3D",monitcond);
-    EvaluateCondition(actdisc_,p,null,null,null,null,null,monitcond);
-    SynchronizeSumConstraint(p, monitorvalues_,"computed area",numMonitorID_,minMonitorID_);
-  }
-  if(haveareamonitor2D_)
-  {
-    p.set("action","calc_struct_constrarea");
-    actdisc_->GetCondition("AreaMonitor_2D",monitcond);
-    EvaluateCondition(actdisc_,p,null,null,null,null,null,monitcond);
-    SynchronizeSumConstraint(p, monitorvalues_,"computed area",numMonitorID_,minMonitorID_);
-  }
+ 
+  volmonitor3d_->EvaluateConstraint(p,null,null,null,null,null);
+  SynchronizeSumConstraint(p, monitorvalues_,"computed volume",numMonitorID_,minMonitorID_);
+  areamonitor3d_->EvaluateConstraint(p,null,null,null,null,null);
+  areamonitor2d_->EvaluateConstraint(p,null,null,null,null,null);
+  SynchronizeSumConstraint(p, monitorvalues_,"computed area",numMonitorID_,minMonitorID_);
+  
   return;
 }
 
@@ -817,110 +686,5 @@ void ConstrManager::Evaluate( RCP<DRT::Discretization> disc,
 
   return;
 }
-
-/*----------------------------------------------------------------------*
- |(private)                                                   tk 04/08  |
- |Evaluate method, calling element evaluates of a condition and         |
- |assembing results based on this conditions                            |
- *----------------------------------------------------------------------*/
-void ConstrManager::EvaluateCondition(RCP<DRT::Discretization> disc,
-    ParameterList&        params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<Epetra_Vector>    systemvector1,
-    RCP<Epetra_Vector>    systemvector2,
-    RCP<Epetra_Vector>    systemvector3,
-    vector<DRT::Condition*>& constrcond)
-{
-  if (!(disc->Filled())) dserror("FillComplete() was not called");
-  if (!disc->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
-  // get the current time
-  bool usetime = true;
-  const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
-
-  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
-  const bool assemblemat2 = systemmatrix2!=Teuchos::null;
-  const bool assemblevec1 = systemvector1!=Teuchos::null;
-  const bool assemblevec2 = systemvector2!=Teuchos::null;
-  const bool assemblevec3 = systemvector3!=Teuchos::null;
-
-  //----------------------------------------------------------------------
-  // loop through conditions and evaluate them if they match the criterion
-  //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < constrcond.size(); ++i)
-  {
-      DRT::Condition& cond = *(constrcond[i]);
-
-      // Evaluate Loadcurve if defined. Put current load factor in parameterlist
-      const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-      int curvenum = -1;
-      if (curve) curvenum = (*curve)[0];
-      double curvefac = 1.0;
-      if (curvenum>=0 && usetime)
-        curvefac = DRT::UTILS::TimeCurveManager::Instance().Curve(curvenum).f(time);
-
-      // Get ConditionID of current condition if defined and write value in parameterlist
-
-      const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
-      int condID=(*CondIDVec)[0];
-      params.set("ConditionID",condID);
-      char factorname[30];
-      sprintf(factorname,"LoadCurveFactor %d",condID);
-      params.set(factorname,curvefac);
-
-      params.set<RefCountPtr<DRT::Condition> >("condition", rcp(&cond,false));
-
-      // define element matrices and vectors
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
-
-      map<int,RefCountPtr<DRT::Element> >& geom = cond.Geometry();
-      // if (geom.empty()) dserror("evaluation of condition with empty geometry");
-      // no check for empty geometry here since in parallel computations
-      // can exist processors which do not own a portion of the elements belonging
-      // to the condition geometry
-      map<int,RefCountPtr<DRT::Element> >::iterator curr;
-      for (curr=geom.begin(); curr!=geom.end(); ++curr)
-      {
-        // get element location vector and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        curr->second->LocationVector(*disc,lm,lmowner);
-
-        // get dimension of element matrices and vectors
-        // Reshape element matrices and vectors and init to zero
-        const int eledim = (int)lm.size();
-        elematrix1.Shape(eledim,eledim);
-        elematrix2.Shape(eledim,eledim);
-        elevector1.Size(eledim);
-        elevector2.Size(eledim);
-        elevector3.Size(eledim);
-
-        // call the element specific evaluate method
-        int err = curr->second->Evaluate(params,*disc,lm,elematrix1,elematrix2,
-                                         elevector1,elevector2,elevector3);
-        if (err) dserror("error while evaluating elements");
-
-        // assembly
-        int eid = curr->second->Id();
-        if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
-        if (assemblemat2)
-        {
-          int minID=params.get("MinID",0);
-          vector<int> colvec(1);
-          colvec[0]=condID-minID;
-          systemmatrix2->Assemble(eid,elevector2,lm,lmowner,colvec);
-        }
-        if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
-        if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
-        if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
-      }
-  }
-  return;
-} // end of EvaluateCondition
 
 #endif
