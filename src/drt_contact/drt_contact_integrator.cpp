@@ -282,6 +282,7 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
     }
     
     // compute contribution of dual shape fct. to nodal D-derivative-maps
+    if (sele.Shape()!=CElement::line3) continue;
     for (int i=0;i<nrow;++i)
     {
       CONTACT::CNode* mycnode = static_cast<CONTACT::CNode*>(mynodes[i]);
@@ -307,7 +308,33 @@ void CONTACT::Integrator::DerivD(CONTACT::CElement& sele,
       // edge node modification case
       //******************************************************************
       else
-        dserror("ERROR: Edge node modification not yet linearized for quad. shape");
+      {
+        dserror("ERROR: edge node modification + quad elements + full lin not yet working");
+        // get gid of current boundary node
+        int bgid = mycnode->Id();
+        
+        // loop over other nodes (interior nodes)
+        for (int k=0;k<nrow;++k)
+        {
+          CONTACT::CNode* mycnode2 = static_cast<CONTACT::CNode*>(mynodes[k]);
+          if (!mycnode2) dserror("ERROR: Integrate1D: Null pointer!");
+          bool bound2 = mycnode2->IsOnBound();
+          if (bound2) continue;
+          map<int,double>& nodemmap = mycnode2->GetDerivM()[bgid];
+          
+          // contribution of current element / current GP
+          for (int j=0;j<nrow;++j)
+          {
+            vector<double> vallin(nrow-1);
+            vector<double> derivlin(nrow-1);
+            if (i==0) sele.ShapeFunctions(CElement::dual1D_base_for_edge0,sxi,vallin,derivlin);
+            else if (i==1) sele.ShapeFunctions(CElement::dual1D_base_for_edge1,sxi,vallin,derivlin);
+            double fac = wgt*val[i]*vallin[j]*dsxideta*dxdsxi;
+            for (CI p=dualmap[k][j].begin();p!=dualmap[k][j].end();++p)
+              nodemmap[p->first] -= fac*(p->second);
+          }
+        }
+      }
     }
     
   } // for (int gp=0;gp<nGP();++gp)
