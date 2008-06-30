@@ -89,6 +89,9 @@ actdisc_(discr)
     initialvalues_=rcp(new Epetra_Vector(*constrmap_));
     initialvalues_->Scale(0.0);
     //Set initial values to computed volumes and areas and to amplitudes of MPC
+    volconstr3d_->EvaluateConstraint(p,null,null,null,null,null);
+    areaconstr3d_->EvaluateConstraint(p,null,null,null,null,null);
+    areaconstr2d_->EvaluateConstraint(p,null,null,null,null,null);
     SynchronizeSumConstraint(p,initialvalues_,"computed volume",numConstrID_,minConstrID_);
     SynchronizeSumConstraint(p,initialvalues_,"computed area",numConstrID_,minConstrID_);
 

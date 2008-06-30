@@ -247,7 +247,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_constrarea")       act = Wall1Line::calc_struct_constrarea;
   else if (action=="calc_struct_areaconstrstiff")  act= Wall1Line::calc_struct_areaconstrstiff;
-  else dserror("Unknown type of action for Soh8Surface");
+  else dserror("Unknown type of action for Wall1_Line");
   //create communicator
   const Epetra_Comm& Comm = discretization.Comm();
   // what the element has to do
@@ -285,20 +285,6 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
         // get RIGHT area out of parameterlist and maximum ConditionID
         char areaname[30];
         const int ID =params.get("ConditionID",-1);
-        const int maxID=params.get("MaxID",0);
-        const int minID=params.get("MinID",1000000);
-        if (ID<0)
-        {
-          dserror("Condition ID for area constraint missing!");
-        }
-        if (maxID<ID)
-        {
-          params.set("MaxID",ID);
-        }
-        if (minID>ID)
-        {
-          params.set("MinID",ID);
-        }
         sprintf(areaname,"computed area %d",ID);
         double areacondval = params.get(areaname,0.0);
         //update volume in parameter list

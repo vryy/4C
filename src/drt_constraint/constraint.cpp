@@ -33,31 +33,18 @@ actdisc_(discr)
   if (constrcond_.size())
   {
     constrtype_=GetConstrType(conditionname);
-    switch (constrtype_)
+    int min=100000;
+    int max=0;
+    for (unsigned int i=0; i<constrcond_.size();i++)
     {
-      case volconstr3d: 
-        params.set("action","calc_struct_constrvol");
-      break;
-      case areaconstr3d:
-        params.set("action","calc_struct_constrarea");
-      break;
-      case areaconstr2d:
-        params.set("action","calc_struct_constrarea");
-      break;
-      case volmonitor3d:
-        params.set("action","calc_struct_constrvol");
-      break;
-      case areamonitor3d:
-        params.set("action","calc_struct_constrarea");
-      break;
-      case areamonitor2d:
-        params.set("action","calc_struct_constrarea");
-      break;
-      case none:
-        dserror("ConstrType 'none' encountered. Why?");
+      int condID=(*(constrcond_[i]->Get<vector<int> >("ConditionID")))[0];
+      if (condID>max)
+        max=condID;
+      if (condID<min)
+        min=condID;
     }
-    Evaluate(actdisc_,params,null,null,null,null,null);
-
+    params.set("MaxID",max);
+    params.set("MinID",min);
   }
   else
   {

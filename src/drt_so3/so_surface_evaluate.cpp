@@ -271,20 +271,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
           // get RIGHT volume out of parameterlist and maximum ConditionID
           char volname[30];
           const int ID =params.get("ConditionID",-1);
-          const int maxID=params.get("MaxID",0);
-          const int minID=params.get("MinID",1000000);
-          if (ID<0)
-          {
-            dserror("Condition ID for volume constraint missing!");
-          }
-          if (maxID<ID)
-          {
-            params.set("MaxID",ID);
-          }
-          if (minID>ID)
-          {
-            params.set("MinID",ID);
-          }
           sprintf(volname,"computed volume %d",ID);
           double volumecond = params.get(volname,0.0);
           //update volume in parameter list
@@ -618,20 +604,6 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
           // get RIGHT volume out of parameterlist and maximum ConditionID
           char areaname[30];
           const int ID =params.get("ConditionID",-1);
-          const int maxID=params.get("MaxID",0);
-          const int minID=params.get("MinID",1000000);
-          if (ID<0)
-          {
-            dserror("Condition ID for area constraint missing!");
-          }
-          if (maxID<ID)
-          {
-            params.set("MaxID",ID);
-          }
-          if (minID>ID)
-          {
-            params.set("MinID",ID);
-          }
           sprintf(areaname,"computed area %d",ID);
           double areacond = params.get(areaname,0.0);
           //update area in parameter list
