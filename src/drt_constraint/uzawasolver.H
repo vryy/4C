@@ -48,9 +48,6 @@ public:
 
     /*!
     \brief Constructor
-
-    \param disc (in): Discretization
-    \param disp (in): current displacement to compute initial constraints
     */
 
     UzawaSolver(
