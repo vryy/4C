@@ -68,6 +68,9 @@ Maintainer: Peter Gamnitzer
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_nurbs_discret.H"
+#include "../drt_lib/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_lib/drt_control_point.H"
 #include "../drt_lib/linalg_utils.H"
 
 #include "../drt_mat/newtonianfluid.H"

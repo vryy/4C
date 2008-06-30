@@ -41,41 +41,6 @@ TurbulenceStatistics::TurbulenceStatistics(
   // up to now, there are no records written
   countrecord_ = 0;
 
-  //----------------------------------------------------------------------
-  // allocate some (toggle) vectors
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  meanvelnp_    = LINALG::CreateVector(*dofrowmap,true);
-
-  toggleu_      = LINALG::CreateVector(*dofrowmap,true);
-  togglev_      = LINALG::CreateVector(*dofrowmap,true);
-  togglew_      = LINALG::CreateVector(*dofrowmap,true);
-  togglep_      = LINALG::CreateVector(*dofrowmap,true);
-
-  // allocate array for bounding box
-  //
-  //          |  x  |  y  |  z
-  //    ------+-----+-----+-----
-  //      min |     |     |
-  //    ------+-----+-----+-----
-  //      max |     |     |
-  //
-  //
-  boundingbox_ = rcp(new Epetra_SerialDenseMatrix(2,3));
-  for (int row = 0;row<3;++row)
-  {
-    (*boundingbox_)(0,row) = +10e+19;
-    (*boundingbox_)(1,row) = -10e+19;
-  }
-  //----------------------------------------------------------------------
-  // create set of available homogeneous planes. The normal direction
-  // is read from the parameter list
-  //----------------------------------------------------------------------
-  planecoordinates_ = rcp(new vector<double> );
-
-  // the criterion allows differences in coordinates by 1e-9
-  set<double,PlaneSortCriterion> availablecoords;
-
   // get the plane normal direction from the parameterlist
   {
     string planestring = params_.sublist("TURBULENCE MODEL").get<string>("CHANNEL_HOMPLANE","xz");
@@ -98,161 +63,481 @@ TurbulenceStatistics::TurbulenceStatistics(
     }
   }
 
-  // get fluid viscosity from material definition
+  //----------------------------------------------------------------------
+  // allocate some (toggle) vectors
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  meanvelnp_    = LINALG::CreateVector(*dofrowmap,true);
+
+  toggleu_      = LINALG::CreateVector(*dofrowmap,true);
+  togglev_      = LINALG::CreateVector(*dofrowmap,true);
+  togglew_      = LINALG::CreateVector(*dofrowmap,true);
+  togglep_      = LINALG::CreateVector(*dofrowmap,true);
+
+
+
+  // available planes of element nodes (polynomial)/corners 
+  // (Nurbs) of elements
+  nodeplanes_ = rcp(new vector<double> );
+
+
+  // available homogeneous (sampling) planes --- there are 
+  // numsubdivisions layers per element layer between two 
+  // nodes (Polynomial)/per element layer (Nurbs)
+  planecoordinates_ = rcp(new vector<double> );
+
+  const int numsubdivisions=5;
+
+
+  // try to cast discretisation to nurbs variant 
+  // this tells you what kind of computation of 
+  // samples is required
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+    =
+    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*actdis));
+  
+  // allocate array for bounding box
+  //
+  //          |  x  |  y  |  z
+  //    ------+-----+-----+-----
+  //      min |     |     |
+  //    ------+-----+-----+-----
+  //      max |     |     |
+  //
+  //
+  boundingbox_ = rcp(new Epetra_SerialDenseMatrix(2,3));
+  for (int row = 0;row<3;++row)
+  {
+    (*boundingbox_)(0,row) = +10e+19;
+    (*boundingbox_)(1,row) = -10e+19;
+  }
+
+    
+  // get fluid viscosity from material definition --- for computation 
+  // of ltau
   visc_ = mat->m.fluid->viscosity;
 
-  // loop nodes, build set of planes accessible on this proc and
-  // calculate bounding box
-  for (int i=0; i<discret_->NumMyRowNodes(); ++i)
+  if(nurbsdis == NULL)
   {
-    DRT::Node* node = discret_->lRowNode(i);
-    availablecoords.insert(node->X()[dim_]);
-
+    //----------------------------------------------------------------------
+    // create set of available homogeneous planes. The normal direction
+    // is read from the parameter list
+    //----------------------------------------------------------------------
+    planecoordinates_ = rcp(new vector<double> );
+    
+    // the criterion allows differences in coordinates by 1e-9
+    set<double,PlaneSortCriterion> availablecoords;
+    
+    // loop nodes, build set of planes accessible on this proc and
+    // calculate bounding box
+    for (int i=0; i<discret_->NumMyRowNodes(); ++i)
+    {
+      DRT::Node* node = discret_->lRowNode(i);
+      availablecoords.insert(node->X()[dim_]);
+      
+      for (int row = 0;row<3;++row)
+      {
+	if ((*boundingbox_)(0,row)>node->X()[row])
+	{
+	  (*boundingbox_)(0,row)=node->X()[row];
+	}
+	if ((*boundingbox_)(1,row)<node->X()[row])
+	{
+	  (*boundingbox_)(1,row)=node->X()[row];
+	}
+      }
+    }
+    
+    // communicate mins
     for (int row = 0;row<3;++row)
     {
-      if ((*boundingbox_)(0,row)>node->X()[row])
-      {
-        (*boundingbox_)(0,row)=node->X()[row];
-      }
-      if ((*boundingbox_)(1,row)<node->X()[row])
-      {
-        (*boundingbox_)(1,row)=node->X()[row];
-      }
+      double min;
+      
+      discret_->Comm().MinAll(&((*boundingbox_)(0,row)),&min,1);
+      (*boundingbox_)(0,row)=min;
     }
-  }
-
-  // communicate mins
-  for (int row = 0;row<3;++row)
-  {
-    double min;
-
-    discret_->Comm().MinAll(&((*boundingbox_)(0,row)),&min,1);
-    (*boundingbox_)(0,row)=min;
-  }
-
-  // communicate maxs
-  for (int row = 0;row<3;++row)
-  {
-    double max;
-
-    discret_->Comm().MaxAll(&((*boundingbox_)(1,row)),&max,1);
-    (*boundingbox_)(1,row)=max;
-  }
-
-  //--------------------------------------------------------------------
-  // round robin loop to communicate coordinates to all procs
-  //--------------------------------------------------------------------
-  {
-#ifdef PARALLEL
-    int myrank  =discret_->Comm().MyPID();
-#endif
-    int numprocs=discret_->Comm().NumProc();
-
-    vector<char> sblock;
-    vector<char> rblock;
-
-
-#ifdef PARALLEL
-    // create an exporter for point to point comunication
-    DRT::Exporter exporter(discret_->Comm());
-#endif
-
-    for (int np=0;np<numprocs;++np)
+    
+    // communicate maxs
+    for (int row = 0;row<3;++row)
     {
-      // export set to sendbuffer
-      sblock.clear();
-
-      for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
-           plane!=availablecoords.end();
-           ++plane)
-      {
-        DRT::ParObject::AddtoPack(sblock,*plane);
-      }
+      double max;
+      
+      discret_->Comm().MaxAll(&((*boundingbox_)(1,row)),&max,1);
+      (*boundingbox_)(1,row)=max;
+    }
+    
+    //--------------------------------------------------------------------
+    // round robin loop to communicate coordinates to all procs
+    //--------------------------------------------------------------------
+    {
 #ifdef PARALLEL
-      MPI_Request request;
-      int         tag    =myrank;
-
-      int         frompid=myrank;
-      int         topid  =(myrank+1)%numprocs;
-
-      int         length=sblock.size();
-
-      exporter.ISend(frompid,topid,
-                     &(sblock[0]),sblock.size(),
-                     tag,request);
-
-      rblock.clear();
-
-      // receive from predecessor
-      frompid=(myrank+numprocs-1)%numprocs;
-      exporter.ReceiveAny(frompid,tag,rblock,length);
-
-      if(tag!=(myrank+numprocs-1)%numprocs)
+      int myrank  =discret_->Comm().MyPID();
+#endif
+      int numprocs=discret_->Comm().NumProc();
+      
+      vector<char> sblock;
+      vector<char> rblock;
+      
+      
+#ifdef PARALLEL
+      // create an exporter for point to point comunication
+      DRT::Exporter exporter(discret_->Comm());
+#endif
+      
+      for (int np=0;np<numprocs;++np)
       {
-        dserror("received wrong message (ReceiveAny)");
-      }
-
-      exporter.Wait(request);
-
-      {
-        // for safety
-        exporter.Comm().Barrier();
-      }
+	// export set to sendbuffer
+	sblock.clear();
+	
+	for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
+	     plane!=availablecoords.end();
+	     ++plane)
+	{
+	  DRT::ParObject::AddtoPack(sblock,*plane);
+	}
+#ifdef PARALLEL
+	MPI_Request request;
+	int         tag    =myrank;
+	
+	int         frompid=myrank;
+	int         topid  =(myrank+1)%numprocs;
+	
+	int         length=sblock.size();
+	
+	exporter.ISend(frompid,topid,
+		       &(sblock[0]),sblock.size(),
+		       tag,request);
+	
+	rblock.clear();
+	
+	// receive from predecessor
+	frompid=(myrank+numprocs-1)%numprocs;
+	exporter.ReceiveAny(frompid,tag,rblock,length);
+	
+	if(tag!=(myrank+numprocs-1)%numprocs)
+	{
+	  dserror("received wrong message (ReceiveAny)");
+	}
+	
+	exporter.Wait(request);
+	
+	{
+	  // for safety
+	  exporter.Comm().Barrier();
+	}
 #else
-      // dummy communication
-      rblock.clear();
-      rblock=sblock;
+	// dummy communication
+	rblock.clear();
+	rblock=sblock;
 #endif
-
-      //--------------------------------------------------
-      // Unpack received block into set of all planes.
-      {
-        vector<double> coordsvec;
-
-        coordsvec.clear();
-
-        int index = 0;
-        while (index < (int)rblock.size())
-        {
-          double onecoord;
-          DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
-          availablecoords.insert(onecoord);
-        }
+	
+	//--------------------------------------------------
+	// Unpack received block into set of all planes.
+	{
+	  vector<double> coordsvec;
+	  
+	  coordsvec.clear();
+	  
+	  int index = 0;
+	  while (index < (int)rblock.size())
+	  {
+	    double onecoord;
+	    DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
+	    availablecoords.insert(onecoord);
+	  }
+	}
       }
     }
+    
+    //----------------------------------------------------------------------
+    // push coordinates of planes in a vector
+    //----------------------------------------------------------------------
+    {
+      nodeplanes_ = rcp(new vector<double> );
+      
+      
+      for(set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
+	  coord!=availablecoords.end();
+	  ++coord)
+      {
+	nodeplanes_->push_back(*coord);
+      }
+      
+      //----------------------------------------------------------------------
+      // insert additional sampling planes (to show influence of quadratic
+      // shape functions)
+      //----------------------------------------------------------------------
+      
+      for(unsigned rr =0; rr < nodeplanes_->size()-1; ++rr)
+      {
+	double delta = ((*nodeplanes_)[rr+1]-(*nodeplanes_)[rr])/((double) numsubdivisions);
+	
+	for (int mm =0; mm < numsubdivisions; ++mm)
+	{
+	  planecoordinates_->push_back((*nodeplanes_)[rr]+delta*mm);
+	}
+      }
+      planecoordinates_->push_back((*nodeplanes_)[(*nodeplanes_).size()-1]);
+    }
   }
-
-  //----------------------------------------------------------------------
-  // push coordinates of planes in a vector
-  //----------------------------------------------------------------------
+  else
   {
-    nodeplanes_ = rcp(new vector<double> );
 
+    // pointwise sampling does not make any sense for Nurbs
+    // discretisations since shape functions are not interpolating
+    
 
-    for(set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
-        coord!=availablecoords.end();
-        ++coord)
+    // planecoordinates are determined by the element (cartesian) number  
+    // in y direction and the number of sampling planes in between
+    // and nodeplanes are kept as the corners of elements
+    // (to be able to visualise stuff on the element center later on)
+
+    // for nurbs discretisations, all vector sizes are already determined 
+    // by the knotvector size 
+    if(dim_!=1)
     {
-      nodeplanes_->push_back(*coord);
+      dserror("For the nurbs stuff, we require that xz is the hom. plane\n");
     }
 
-    //----------------------------------------------------------------------
-    // insert additional sampling planes (to show influence of quadratic
-    // shape functions)
-    //----------------------------------------------------------------------
-    const int numsubdivisions=5;
+    // get nurbs dis' knotvector sizes
+    vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l());
 
-    for(unsigned rr =0; rr < nodeplanes_->size()-1; ++rr)
+    // get nurbs dis' element numbers
+    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele());
+
+    // get the knotvector itself 
+    RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+
+    // resize and initialise to 0
     {
-      double delta = ((*nodeplanes_)[rr+1]-(*nodeplanes_)[rr])/((double) numsubdivisions);
+      (*nodeplanes_      ).resize(nele_x_mele_x_lele[1]+1);
+      (*planecoordinates_).resize(nele_x_mele_x_lele[1]*(numsubdivisions-1)+1);
 
-      for (int mm =0; mm < numsubdivisions; ++mm)
+      vector<double>::iterator coord;
+
+      for (coord  = (*nodeplanes_).begin();
+	   coord != (*nodeplanes_).end()  ;
+	   ++coord)
       {
-        planecoordinates_->push_back((*nodeplanes_)[rr]+delta*mm);
+	*coord=0;
+      }
+      for (coord  = planecoordinates_->begin();
+	   coord != planecoordinates_->end()  ;
+	   ++coord)
+      {
+	*coord=0;
       }
     }
-    planecoordinates_->push_back((*nodeplanes_)[(*nodeplanes_).size()-1]);
+
+    // get element map
+    const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
+  
+    // loop all available elements
+    for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
+    {
+      DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
+      DRT::Node**   nodes = actele->Nodes();
+	
+      // get gid, location in the patch
+      int gid = actele->Id();
+	
+      vector<int> ele_cart_id=knots->ConvertEleGidToKnotIds(gid);
+      
+      // want to loop all control points of the element, 
+      // so get the number of points
+      const int numnp = actele->NumNode();
+      
+	// access elements knot span
+      std::vector<blitz::Array<double,1> > knots(3);
+      (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots,actele->Id());
+      
+      // aquire weights from nodes
+      blitz::Array<double,1> weights(numnp);
+      
+      for (int inode=0; inode<numnp; ++inode)
+      {
+	DRT::NURBS::ControlPoint* cp 
+	  = 
+	  dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+	
+	weights(inode) = cp->W();
+      }
+	
+      // get shapefunctions, compute all visualisation point positions
+      blitz::Array<double,1> nurbs_shape_funct(numnp);
+
+      switch (actele->Shape())
+      {
+      case DRT::Element::nurbs8:
+      case DRT::Element::nurbs27:
+      {
+	// element local point position
+	blitz::Array<double,1> uv(3);   
+
+	{
+	  // standard
+
+	  //               v
+	  //              /
+          //  w  7       /   8   
+	  //  ^   +---------+      
+	  //  |  /         /|        
+	  //  | /         / |         
+	  // 5|/        6/  |       
+	  //  +---------+   |     
+	  //  |         |   |     
+	  //  |         |   +      
+	  //  |         |  / 4     
+	  //  |         | /       
+	  //  |         |/         
+	  //  +---------+ ----->u    
+	  // 1           2
+	  // use v-coordinate of point 1 and 8
+	  // temporary x vector
+	  std::vector<double> x(3);
+
+	  // point 1
+	  uv(0)= -1.0;
+	  uv(1)= -1.0;
+	  uv(2)= -1.0;
+	  DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						uv               ,
+						knots            ,
+						weights          ,
+						actele->Shape()  );
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    double val = 0;
+	    for (int inode=0; inode<numnp; ++inode)
+	    {
+	      val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	    }
+	    x[isd]=val;
+	  }
+	  
+	  (*nodeplanes_      )[ele_cart_id[1]]                    +=x[1];
+	  (*planecoordinates_)[ele_cart_id[1]*(numsubdivisions-1)]+=x[1];
+
+	  for (int isd=0; isd<3; ++isd)
+	  {
+	    if ((*boundingbox_)(0,isd)>x[isd])
+	    {
+	      (*boundingbox_)(0,isd)=x[isd];
+	    }
+	    if ((*boundingbox_)(1,isd)<x[isd])
+	    {
+	      (*boundingbox_)(1,isd)=x[isd];
+	    }
+	  }
+
+	  for(int rr=1;rr<numsubdivisions-1;++rr)
+	  {
+	    uv(1) += 2.0/(numsubdivisions-1);
+
+	    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						  uv               ,
+						  knots            ,
+						  weights          ,
+						  actele->Shape()  );
+	    for (int isd=0; isd<3; ++isd)
+	    {
+	      double val = 0;
+	      for (int inode=0; inode<numnp; ++inode)
+	      {
+		val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	      }
+	      x[isd]=val;
+	    }
+	    (*planecoordinates_)[ele_cart_id[1]*(numsubdivisions-1)+rr]+=x[1];
+	  }
+
+
+	  // set upper point of element, too (only for last layer)
+	  if(ele_cart_id[1]+1 == nele_x_mele_x_lele[1])
+	  {
+	    // point 8
+	    uv(0)=  1.0;
+	    uv(1)=  1.0;
+	    uv(2)=  1.0;
+	    DRT::NURBS::UTILS::nurbs_get_3D_funct(nurbs_shape_funct,
+						  uv               ,
+						  knots            ,
+						  weights          ,
+						  actele->Shape()  );
+	    for (int isd=0; isd<3; ++isd)
+	    {
+	      double val = 0;
+	      for (int inode=0; inode<numnp; ++inode)
+	      {
+		val+=(((nodes[inode])->X())[isd])*nurbs_shape_funct(inode);
+	      }
+	      x[isd]=val;
+	    }
+	  
+	    (*nodeplanes_)      [ele_cart_id[1]                   +1]+=x[1];
+	    (*planecoordinates_)[(ele_cart_id[1]+1)*(numsubdivisions-1)]+=x[1];
+	  }
+
+	}
+	break;
+      }
+      default: 
+	dserror("Unknown element shape for a nurbs element or nurbs type not valid for turbulence calculation\n");
+      }
+    }
+
+
+    //----------------------------------------------------------------------
+    // add contributions from all processors, normalize
+    //----------------------------------------------------------------------
+    vector<double> lnodeplanes      (*nodeplanes_      );
+    vector<double> lplanecoordinates(*planecoordinates_);
+
+    discret_->Comm().SumAll(&(lnodeplanes[0]      ),&((*nodeplanes_      )[0]),nodeplanes_->size()      );
+    discret_->Comm().SumAll(&(lplanecoordinates[0]),&((*planecoordinates_)[0]),planecoordinates_->size());
+
+    {
+      (*nodeplanes_      ).resize(nele_x_mele_x_lele[1]+1);
+      (*planecoordinates_).resize(nele_x_mele_x_lele[1]*(numsubdivisions-1)+1);
+
+      vector<double>::iterator coord;
+
+      int nelelayer = (nele_x_mele_x_lele[0])*(nele_x_mele_x_lele[2]);
+
+      for (coord  = (*nodeplanes_).begin();
+	   coord != (*nodeplanes_).end()  ;
+	   ++coord)
+      {
+	*coord/=(double)(nelelayer);
+      }
+      for (coord  = planecoordinates_->begin();
+	   coord != planecoordinates_->end()  ;
+	   ++coord)
+      {
+	*coord/=(double)(nelelayer);
+      }
+    }
+
+    // communicate mins
+    for (int row = 0;row<3;++row)
+    {
+      double min;
+      
+      discret_->Comm().MinAll(&((*boundingbox_)(0,row)),&min,1);
+      (*boundingbox_)(0,row)=min;
+    }
+    
+    // communicate maxs
+    for (int row = 0;row<3;++row)
+    {
+      double max;
+      
+      discret_->Comm().MaxAll(&((*boundingbox_)(1,row)),&max,1);
+      (*boundingbox_)(1,row)=max;
+    }
+    
   }
+
   //----------------------------------------------------------------------
   // allocate arrays for sums of in plane mean values
   //----------------------------------------------------------------------
@@ -328,8 +613,6 @@ TurbulenceStatistics::TurbulenceStatistics(
 
   pointsumsqp_ =  rcp(new vector<double> );
   pointsumsqp_->resize(size,0.0);
-
-
 
   //----------------------------------------------------------------------
   // arrays for averaging of Smagorinsky constant etc.
@@ -477,7 +760,6 @@ void TurbulenceStatistics::DoTimeSample(
   //----------------------------------------------------------------------
   this->EvaluateIntegralMeanValuesInPlanes();
   
-
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
@@ -485,8 +767,17 @@ void TurbulenceStatistics::DoTimeSample(
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
-  this->EvaluatePointwiseMeanValuesInPlanes();
+  // try to cast discretisation to nurbs variant 
+  // this tells you whether pointwise computation of 
+  // samples is allowed
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+    =
+    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
 
+  if(nurbsdis == NULL)
+  {
+    this->EvaluatePointwiseMeanValuesInPlanes();
+  }
 
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
@@ -728,8 +1019,21 @@ void TurbulenceStatistics::EvaluateIntegralMeanValuesInPlanes()
   // the sums are divided by the number of elements to get the area
   // average
   //----------------------------------------------------------------------
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+    =
+    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
 
-  discret_->Comm().SumAll(&locprocessedeles,&numele_,1);
+  if(nurbsdis == NULL)
+  {
+    discret_->Comm().SumAll(&locprocessedeles,&numele_,1);
+  }
+  else
+  {
+    // get nurbs dis' element numbers
+    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele());
+
+    numele_ = nele_x_mele_x_lele[0]*nele_x_mele_x_lele[2];
+  }
 
 
   for(unsigned i=0; i<planecoordinates_->size(); ++i)
@@ -905,19 +1209,29 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     (*sumsqv_)[i] /=aux;
     (*sumsqw_)[i] /=aux;
     (*sumsqp_)[i] /=aux;
+  }
 
-    // the pointwise values have already been normalised by
-    // "countnodesinplaneonallprocs", so we just divide by
-    // the number of time samples
-    (*pointsumu_)[i]   /=numsamp_;
-    (*pointsumv_)[i]   /=numsamp_;
-    (*pointsumw_)[i]   /=numsamp_;
-    (*pointsump_)[i]   /=numsamp_;
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+    =
+    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
 
-    (*pointsumsqu_)[i] /=numsamp_;
-    (*pointsumsqv_)[i] /=numsamp_;
-    (*pointsumsqw_)[i] /=numsamp_;
-    (*pointsumsqp_)[i] /=numsamp_;
+  if(nurbsdis == NULL)
+  {
+    for(unsigned i=0; i<planecoordinates_->size(); ++i)
+    {
+      // the pointwise values have already been normalised by
+      // "countnodesinplaneonallprocs", so we just divide by
+      // the number of time samples
+      (*pointsumu_)[i]   /=numsamp_;
+      (*pointsumv_)[i]   /=numsamp_;
+      (*pointsumw_)[i]   /=numsamp_;
+      (*pointsump_)[i]   /=numsamp_;
+      
+      (*pointsumsqu_)[i] /=numsamp_;
+      (*pointsumsqv_)[i] /=numsamp_;
+      (*pointsumsqw_)[i] /=numsamp_;
+      (*pointsumsqp_)[i] /=numsamp_;
+    }
   }
 
   sumforceu_/=numsamp_;

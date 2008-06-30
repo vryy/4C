@@ -406,7 +406,7 @@ RefCountPtr<Epetra_Map> EnsightWriter::WriteCoordinates(
       const int numnp = actele->NumNode();
       
 	// access elements knot span
-      std::vector<blitz::Array<double,1> > knots(2);
+      std::vector<blitz::Array<double,1> > knots(NSD);
       (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots,actele->Id());
       
       // aquire weights from nodes

@@ -545,6 +545,7 @@ private:
    */
 
   void f3_calc_means(
+    DRT::Discretization&      discretization,
     vector<double>&           vel  ,
     ParameterList& 	      params
     );

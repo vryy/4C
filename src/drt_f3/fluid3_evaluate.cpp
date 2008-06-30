@@ -832,7 +832,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           DRT::UTILS::ExtractMyValues(*velnp,mysol,lm);
 
           // integrate mean values
-          f3_calc_means(mysol,params);
+          f3_calc_means(discretization,mysol,params);
 
         }
       }
@@ -1790,9 +1790,25 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           if(planecoords==null)
             dserror("planecoords is null, but need channel_flow_of_height_2\n");
 
-          // --------------------------------------------------
+
+	  // --------------------------------------------------
+	  // Now do the nurbs specific stuff
+	  std::vector<blitz::Array<double,1> > myknots(3);
+	
+	  // for isogeometric elements
+	  if(this->Shape()==nurbs8 || this->Shape()==nurbs27)
+	  {
+	    DRT::NURBS::NurbsDiscretization* nurbsdis
+	      =
+	      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+	    
+	    (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+	  }
+	  
+	  // --------------------------------------------------
           // calculate element coefficient matrix
           DRT::ELEMENTS::Fluid3GenalphaResVMM::Impl(this)->CalcRes(this,
+								   myknots,
                                                                    edispnp,
                                                                    egridvelaf,
                                                                    evelnp,
@@ -2436,6 +2452,7 @@ void DRT::ELEMENTS::Fluid3::f3_int_beltrami_err(
  |
  *---------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3::f3_calc_means(
+  DRT::Discretization&      discretization,
   vector<double>&           sol  ,
   ParameterList& 	    params
   )
@@ -2469,253 +2486,425 @@ void DRT::ELEMENTS::Fluid3::f3_calc_means(
   RefCountPtr<vector<double> > sumsqp = params.get<RefCountPtr<vector<double> > >("mean value p^2");
 
 
+
+  if(distype == DRT::Element::hex8 
+     || 
+     distype == DRT::Element::hex27 
+     || 
+     distype == DRT::Element::hex20)
+  {
   // get node coordinates of element
-  Epetra_SerialDenseMatrix xyze(3,iel);
-  for(int inode=0;inode<iel;inode++)
-  {
-    xyze(0,inode)=Nodes()[inode]->X()[0];
-    xyze(1,inode)=Nodes()[inode]->X()[1];
-    xyze(2,inode)=Nodes()[inode]->X()[2];
-  }
-
-  double min = xyze(normdirect,0);
-  double max = xyze(normdirect,0);
-
-  // set maximum and minimum value in wall normal direction
-  for(int inode=0;inode<iel;inode++)
-  {
-    if(min > xyze(normdirect,inode))
+    Epetra_SerialDenseMatrix xyze(3,iel);
+    for(int inode=0;inode<iel;inode++)
     {
-      min=xyze(normdirect,inode);
+      xyze(0,inode)=Nodes()[inode]->X()[0];
+      xyze(1,inode)=Nodes()[inode]->X()[1];
+      xyze(2,inode)=Nodes()[inode]->X()[2];
     }
-    if(max < xyze(normdirect,inode))
-    {
-      max=xyze(normdirect,inode);
-    }
-  }
+    
+    double min = xyze(normdirect,0);
+    double max = xyze(normdirect,0);
 
-  // determine the ids of the homogeneous planes intersecting this element
-  set<int> planesinele;
-  for(unsigned nplane=0;nplane<planes->size();++nplane)
-  {
+    // set maximum and minimum value in wall normal direction
+    for(int inode=0;inode<iel;inode++)
+    {
+      if(min > xyze(normdirect,inode))
+      {
+	min=xyze(normdirect,inode);
+      }
+      if(max < xyze(normdirect,inode))
+      {
+	max=xyze(normdirect,inode);
+      }
+    }
+    
+    // determine the ids of the homogeneous planes intersecting this element
+    set<int> planesinele;
+    for(unsigned nplane=0;nplane<planes->size();++nplane)
+    {
     // get all available wall normal coordinates
-    for(int nn=0;nn<iel;++nn)
-    {
-      if (min-2e-9 < (*planes)[nplane] && max+2e-9 > (*planes)[nplane])
+      for(int nn=0;nn<iel;++nn)
       {
-        planesinele.insert(nplane);
+	if (min-2e-9 < (*planes)[nplane] && max+2e-9 > (*planes)[nplane])
+	{
+	  planesinele.insert(nplane);
+	}
       }
     }
+    
+    // remove lowest layer from planesinele to avoid double calculations. This is not done
+    // for the first level (index 0) --- if deleted, shift the first integration point in
+    // wall normal direction
+    // the shift depends on the number of sampling planes in the element
+    double shift=0;
+    
+    // set the number of planes which cut the element
+    const int numplanesinele = planesinele.size();
+    
+    if(*planesinele.begin() != 0)
+    {
+      // this is not an element of the lowest element layer
+      planesinele.erase(planesinele.begin());
+      
+      shift=2.0/((double) numplanesinele - 1.0);
+    }
+    else
+    {
+      // this is an element of the lowest element layer. Increase the counter
+      // in order to compute the total number of elements in one layer
+      int* count = params.get<int*>("count processed elements");
+      
+      (*count)++;
+    }
+    
+    // determine the orientation of the rst system compared to the xyz system
+    int elenormdirect=-1;
+    bool upsidedown =false;
+    // the only thing of interest is how normdirect is oriented in the
+    // element coordinate system
+    if(xyze(normdirect,4)-xyze(normdirect,0)>2e-9)
+    {
+      // t aligned
+      elenormdirect =2;
+      cout << "upsidedown false" <<&endl;
+    }
+    else if (xyze(normdirect,3)-xyze(normdirect,0)>2e-9)
+    {
+      // s aligned
+      elenormdirect =1;
+    }
+    else if (xyze(normdirect,1)-xyze(normdirect,0)>2e-9)
+    {
+      // r aligned
+      elenormdirect =0;
+    }
+    else if(xyze(normdirect,4)-xyze(normdirect,0)<-2e-9)
+    {
+      cout << xyze(normdirect,4)-xyze(normdirect,0) << &endl;
+      // -t aligned
+      elenormdirect =2;
+      upsidedown =true;
+      cout << "upsidedown true" <<&endl;
+    }
+    else if (xyze(normdirect,3)-xyze(normdirect,0)<-2e-9)
+    {
+      // -s aligned
+      elenormdirect =1;
+      upsidedown =true;
+    }
+    else if (xyze(normdirect,1)-xyze(normdirect,0)<-2e-9)
+    {
+      // -r aligned
+      elenormdirect =0;
+      upsidedown =true;
+    }
+    else
+    {
+      dserror("cannot determine orientation of plane normal in local coordinate system of element");
+    }
+    vector<int> inplanedirect;
+    {
+      set <int> inplanedirectset;
+      for(int i=0;i<3;++i)
+      {
+	inplanedirectset.insert(i);
+      }
+      inplanedirectset.erase(elenormdirect);
+      
+      for(set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
+      {
+	inplanedirect.push_back(*id);
+      }
+    }
+    
+    // allocate vector for shapefunctions
+    Epetra_SerialDenseVector  funct(iel);
+    
+    // get the quad9 gaussrule for the in plane integration
+    const IntegrationPoints2D  intpoints = getIntegrationPoints2D(intrule_quad_9point);
+    
+    // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
+    // (now we allow even more)
+    double layershift=0;
+    
+    // loop all levels in element
+    for(set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
+    {
+      // reset temporary values
+      double ubar=0;
+      double vbar=0;
+      double wbar=0;
+      double pbar=0;
+
+      double usqbar=0;
+      double vsqbar=0;
+      double wsqbar=0;
+      double uvbar =0;
+      double uwbar =0;
+      double vwbar =0;
+      double psqbar=0;
+      
+      // get the intgration point in wall normal direction
+      double e[3];
+      
+      e[elenormdirect]=-1.0+shift+layershift;
+      if(upsidedown)
+      {
+	e[elenormdirect]*=-1;
+      }
+      
+      // start loop over integration points in layer
+      for (int iquad=0;iquad<intpoints.nquad;iquad++)
+      {
+	// get the other gauss point coordinates
+	for(int i=0;i<2;++i)
+	{
+	  e[inplanedirect[i]]=intpoints.qxg[iquad][i];
+	}
+	
+	// compute the shape function values
+	shape_function_3D(funct,e[0],e[1],e[2],distype);
+	
+	// check whether this gausspoint is really inside the desired plane
+	{
+	  double x[3];
+	  x[0]=0;
+	  x[1]=0;
+	  x[2]=0;
+	  for(int inode=0;inode<iel;inode++)
+	  {
+	    x[0]+=funct[inode]*xyze(0,inode);
+	    x[1]+=funct[inode]*xyze(1,inode);
+	    x[2]+=funct[inode]*xyze(2,inode);
+	  }
+	  
+	  if(abs(x[normdirect]-(*planes)[*id])>2e-9)
+	  {
+	    dserror("Mixing up element cut planes during integration");
+	  }
+	}
+	
+	//interpolated values at gausspoints
+	double ugp=0;
+	double vgp=0;
+	double wgp=0;
+	double pgp=0;
+
+	// we assume that every 2d element we are integrating here is of
+	// rectangular shape and every element is of the same size.
+	// 1/4 is necessary since we use a reference element of size 2x2
+	// the factor fac is omitting the element area up to now
+	double fac=0.25*intpoints.qwgt[iquad];
+	
+	for(int inode=0;inode<iel;inode++)
+	{
+	  ugp += funct[inode]*sol[inode*4  ];
+	  vgp += funct[inode]*sol[inode*4+1];
+	  wgp += funct[inode]*sol[inode*4+2];
+	  pgp += funct[inode]*sol[inode*4+3];
+	}
+
+	// add contribution to integral
+	ubar   += ugp*fac;
+	vbar   += vgp*fac;
+	wbar   += wgp*fac;
+	pbar   += pgp*fac;
+	
+	usqbar += ugp*ugp*fac;
+	vsqbar += vgp*vgp*fac;
+	wsqbar += wgp*wgp*fac;
+	uvbar  += ugp*vgp*fac;
+	uwbar  += ugp*wgp*fac;
+	vwbar  += vgp*wgp*fac;
+	psqbar += pgp*pgp*fac;
+      } // end loop integration points
+
+      // add increments from this layer to processor local vectors
+      (*sumu  )[*id] += ubar;
+      (*sumv  )[*id] += vbar;
+      (*sumw  )[*id] += wbar;
+      (*sump  )[*id] += pbar;
+      
+      (*sumsqu)[*id] += usqbar;
+      (*sumsqv)[*id] += vsqbar;
+      (*sumsqw)[*id] += wsqbar;
+      (*sumuv) [*id] += uvbar;
+      (*sumuw) [*id] += uwbar;
+      (*sumvw) [*id] += vwbar;
+      (*sumsqp)[*id] += psqbar;
+
+      // jump to the next layer in the element.
+      // in case of an hex8 element, the two coordinates are -1 and 1(+2)
+      // for quadratic elements with three sample planes, we have -1,0(+1),1(+2)
+
+      layershift+=2.0/((double) numplanesinele - 1.0);
+    }
   }
-
-  // remove lowest layer from planesinele to avoid double calculations. This is not done
-  // for the first level (index 0) --- if deleted, shift the first integration point in
-  // wall normal direction
-  // the shift depends on the number of sampling planes in the element
-  double shift=0;
-
-  // set the number of planes which cut the element
-  const int numplanesinele = planesinele.size();
-
-  if(*planesinele.begin() != 0)
+  else if(distype == DRT::Element::nurbs8 || distype == DRT::Element::nurbs27)
   {
-    // this is not an element of the lowest element layer
-    planesinele.erase(planesinele.begin());
+    // get size of planecoords
+    int size = planes->size();
+    
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+    
+    if(nurbsdis == NULL)
+    {
+      dserror("we need a nurbs discretisation for nurbs elements\n");
+    }
 
-    shift=2.0/((double) numplanesinele - 1.0);
+    // get nurbs dis' knotvector sizes
+    vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l());
+
+    // get nurbs dis' element numbers
+    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele());
+
+    // use size of planes and mele to determine number of layers
+    int numsublayers=(size-1)/nele_x_mele_x_lele[1];
+
+    // get the knotvector itself 
+    RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+
+    DRT::Node**   nodes = Nodes();
+	
+    // get gid, location in the patch
+    int gid = Id();
+	
+    vector<int> ele_cart_id=knots->ConvertEleGidToKnotIds(gid);
+      
+    // want to loop all control points of the element, 
+    // so get the number of points
+    const int numnp = NumNode();
+      
+    // access elements knot span
+    std::vector<blitz::Array<double,1> > eleknots(3);
+    knots->GetEleKnots(eleknots,gid);
+      
+    // aquire weights from nodes
+    blitz::Array<double,1> weights(numnp);
+      
+    for (int inode=0; inode<numnp; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp 
+	= 
+	dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+      
+      weights(inode) = cp->W();
+    }
+    
+    // get shapefunctions, compute all visualisation point positions
+    blitz::Array<double,1> nurbs_shape_funct(numnp);
+    
+    // there's one additional plane for the last element layer
+    int endlayer=0;
+    if(ele_cart_id[1]!=nele_x_mele_x_lele[1]-1)
+    {
+      endlayer=numsublayers;
+    }
+    else
+    {
+      endlayer=numsublayers+1;
+    }
+
+    // loop layers in element
+    for(int rr=0;rr<endlayer;++rr)
+    {
+      // set gauss point coordinates
+      blitz::Array<double, 1> gp(3);
+
+      gp(1)=-1.0+rr*2.0/((double)numsublayers);
+    
+      // get the quad9 gaussrule for the in plane integration
+      const IntegrationPoints2D  intpoints = getIntegrationPoints2D(intrule_quad_9point);
+
+      // reset temporary values
+      double ubar=0;
+      double vbar=0;
+      double wbar=0;
+      double pbar=0;
+
+      double usqbar=0;
+      double vsqbar=0;
+      double wsqbar=0;
+      double uvbar =0;
+      double uwbar =0;
+      double vwbar =0;
+      double psqbar=0;
+
+      
+      // start loop over integration points in layer
+      for (int iquad=0;iquad<intpoints.nquad;iquad++)
+      {
+
+	// get the other gauss point coordinates
+	gp(0)=intpoints.qxg[iquad][0];
+	gp(2)=intpoints.qxg[iquad][1];
+	
+	// compute the shape function values
+	DRT::NURBS::UTILS::nurbs_get_3D_funct
+	  (nurbs_shape_funct,
+	   gp               ,
+	   eleknots         ,
+	   weights          ,
+	   distype          );
+	
+	//interpolated values at gausspoints
+	double ugp=0;
+	double vgp=0;
+	double wgp=0;
+	double pgp=0;
+
+	// we assume that every 2d element we are integrating here is of
+	// rectangular shape and every element is of the same size.
+	// 1/4 is necessary since we use a reference element of size 2x2
+	// the factor fac is omitting the element area up to now
+	double fac=0.25*intpoints.qwgt[iquad];
+	
+	for(int inode=0;inode<iel;inode++)
+	{
+	  ugp += nurbs_shape_funct(inode)*sol[inode*4  ];
+	  vgp += nurbs_shape_funct(inode)*sol[inode*4+1];
+	  wgp += nurbs_shape_funct(inode)*sol[inode*4+2];
+	  pgp += nurbs_shape_funct(inode)*sol[inode*4+3];
+	}
+
+	// add contribution to integral
+	ubar   += ugp*fac;
+	vbar   += vgp*fac;
+	wbar   += wgp*fac;
+	pbar   += pgp*fac;
+	
+	usqbar += ugp*ugp*fac;
+	vsqbar += vgp*vgp*fac;
+	wsqbar += wgp*wgp*fac;
+	uvbar  += ugp*vgp*fac;
+	uwbar  += ugp*wgp*fac;
+	vwbar  += vgp*wgp*fac;
+	psqbar += pgp*pgp*fac;
+      } // end loop integration points
+
+      
+      // add increments from this layer to processor local vectors
+      (*sumu  )[ele_cart_id[1]*numsublayers+rr] += ubar;
+      (*sumv  )[ele_cart_id[1]*numsublayers+rr] += vbar;
+      (*sumw  )[ele_cart_id[1]*numsublayers+rr] += wbar;
+      (*sump  )[ele_cart_id[1]*numsublayers+rr] += pbar;
+      
+      (*sumsqu)[ele_cart_id[1]*numsublayers+rr] += usqbar;
+      (*sumsqv)[ele_cart_id[1]*numsublayers+rr] += vsqbar;
+      (*sumsqw)[ele_cart_id[1]*numsublayers+rr] += wsqbar;
+      (*sumuv) [ele_cart_id[1]*numsublayers+rr] += uvbar;
+      (*sumuw) [ele_cart_id[1]*numsublayers+rr] += uwbar;
+      (*sumvw) [ele_cart_id[1]*numsublayers+rr] += vwbar;
+      (*sumsqp)[ele_cart_id[1]*numsublayers+rr] += psqbar;
+    }
+    
   }
   else
   {
-    // this is an element of the lowest element layer. Increase the counter
-    // in order to compute the total number of elements in one layer
-    int* count = params.get<int*>("count processed elements");
-
-    (*count)++;
+    dserror("Unknown element type\n");
   }
-
-  // determine the orientation of the rst system compared to the xyz system
-  int elenormdirect=-1;
-  bool upsidedown =false;
-  // the only thing of interest is how normdirect is oriented in the
-  // element coordinate system
-  if(xyze(normdirect,4)-xyze(normdirect,0)>2e-9)
-  {
-    // t aligned
-    elenormdirect =2;
-    cout << "upsidedown false" <<&endl;
-  }
-  else if (xyze(normdirect,3)-xyze(normdirect,0)>2e-9)
-  {
-    // s aligned
-    elenormdirect =1;
-  }
-  else if (xyze(normdirect,1)-xyze(normdirect,0)>2e-9)
-  {
-    // r aligned
-    elenormdirect =0;
-  }
-  else if(xyze(normdirect,4)-xyze(normdirect,0)<-2e-9)
-  {
-    cout << xyze(normdirect,4)-xyze(normdirect,0) << &endl;
-    // -t aligned
-    elenormdirect =2;
-    upsidedown =true;
-    cout << "upsidedown true" <<&endl;
-  }
-  else if (xyze(normdirect,3)-xyze(normdirect,0)<-2e-9)
-  {
-    // -s aligned
-    elenormdirect =1;
-    upsidedown =true;
-  }
-  else if (xyze(normdirect,1)-xyze(normdirect,0)<-2e-9)
-  {
-    // -r aligned
-    elenormdirect =0;
-    upsidedown =true;
-  }
-  else
-  {
-    dserror("cannot determine orientation of plane normal in local coordinate system of element");
-  }
-  vector<int> inplanedirect;
-  {
-    set <int> inplanedirectset;
-    for(int i=0;i<3;++i)
-    {
-      inplanedirectset.insert(i);
-    }
-    inplanedirectset.erase(elenormdirect);
-
-    for(set<int>::iterator id = inplanedirectset.begin();id!=inplanedirectset.end() ;++id)
-    {
-      inplanedirect.push_back(*id);
-    }
-  }
-
-  // allocate vector for shapefunctions
-  Epetra_SerialDenseVector  funct(iel);
-
-  // get the quad9 gaussrule for the in plane integration
-  const IntegrationPoints2D  intpoints = getIntegrationPoints2D(intrule_quad_9point);
-
-  // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
-  // (now we allow even more)
-  double layershift=0;
-
-  // loop all levels in element
-  for(set<int>::const_iterator id = planesinele.begin();id!=planesinele.end() ;++id)
-  {
-    // reset temporary values
-    double ubar=0;
-    double vbar=0;
-    double wbar=0;
-    double pbar=0;
-
-    double usqbar=0;
-    double vsqbar=0;
-    double wsqbar=0;
-    double uvbar =0;
-    double uwbar =0;
-    double vwbar =0;
-    double psqbar=0;
-
-    // get the intgration point in wall normal direction
-    double e[3];
-
-    e[elenormdirect]=-1.0+shift+layershift;
-    if(upsidedown)
-    {
-      e[elenormdirect]*=-1;
-    }
-
-    // start loop over integration points in layer
-    for (int iquad=0;iquad<intpoints.nquad;iquad++)
-    {
-      // get the other gauss point coordinates
-      for(int i=0;i<2;++i)
-      {
-        e[inplanedirect[i]]=intpoints.qxg[iquad][i];
-      }
-
-      // compute the shape function values
-      shape_function_3D(funct,e[0],e[1],e[2],distype);
-
-      // check whether this gausspoint is really inside the desired plane
-      {
-        double x[3];
-        x[0]=0;
-        x[1]=0;
-        x[2]=0;
-        for(int inode=0;inode<iel;inode++)
-        {
-          x[0]+=funct[inode]*xyze(0,inode);
-          x[1]+=funct[inode]*xyze(1,inode);
-          x[2]+=funct[inode]*xyze(2,inode);
-        }
-
-        if(abs(x[normdirect]-(*planes)[*id])>2e-9)
-        {
-          dserror("Mixing up element cut planes during integration");
-        }
-      }
-
-      //interpolated values at gausspoints
-      double ugp=0;
-      double vgp=0;
-      double wgp=0;
-      double pgp=0;
-
-      // we assume that every 2d element we are integrating here is of
-      // rectangular shape and every element is of the same size.
-      // 1/4 is necessary since we use a reference element of size 2x2
-      // the factor fac is omitting the element area up to now
-      double fac=0.25*intpoints.qwgt[iquad];
-
-      for(int inode=0;inode<iel;inode++)
-      {
-        ugp += funct[inode]*sol[inode*4  ];
-        vgp += funct[inode]*sol[inode*4+1];
-        wgp += funct[inode]*sol[inode*4+2];
-        pgp += funct[inode]*sol[inode*4+3];
-      }
-
-      // add contribution to integral
-      ubar   += ugp*fac;
-      vbar   += vgp*fac;
-      wbar   += wgp*fac;
-      pbar   += pgp*fac;
-
-      usqbar += ugp*ugp*fac;
-      vsqbar += vgp*vgp*fac;
-      wsqbar += wgp*wgp*fac;
-      uvbar  += ugp*vgp*fac;
-      uwbar  += ugp*wgp*fac;
-      vwbar  += vgp*wgp*fac;
-      psqbar += pgp*pgp*fac;
-    } // end loop integration points
-
-    // add increments from this layer to processor local vectors
-    (*sumu  )[*id] += ubar;
-    (*sumv  )[*id] += vbar;
-    (*sumw  )[*id] += wbar;
-    (*sump  )[*id] += pbar;
-
-    (*sumsqu)[*id] += usqbar;
-    (*sumsqv)[*id] += vsqbar;
-    (*sumsqw)[*id] += wsqbar;
-    (*sumuv) [*id] += uvbar;
-    (*sumuw) [*id] += uwbar;
-    (*sumvw) [*id] += vwbar;
-    (*sumsqp)[*id] += psqbar;
-
-    // jump to the next layer in the element.
-    // in case of an hex8 element, the two coordinates are -1 and 1(+2)
-    // for quadratic elements with three sample planes, we have -1,0(+1),1(+2)
-
-    layershift+=2.0/((double) numplanesinele - 1.0);
-  }
-
 
   return;
 } // DRT::ELEMENTS::Fluid3::f3_calc_means

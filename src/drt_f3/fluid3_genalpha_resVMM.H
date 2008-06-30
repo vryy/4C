@@ -277,6 +277,7 @@ namespace DRT
    *         accelerations to study their influence
   */
       void CalcRes(Fluid3*                                 ele,
+		   std::vector<blitz::Array<double,1> >&   myknots,
                    const blitz::Array<double,2>&           edispnp,
                    const blitz::Array<double,2>&           egridvaf,
                    const blitz::Array<double,2>&           evelnp,
