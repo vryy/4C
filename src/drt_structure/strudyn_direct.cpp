@@ -178,12 +178,16 @@ void strudyn_direct()
   // integrate in time
   sti->Integrate();
 
-  // EMERGENCY EXIT // REMOVE THIS EVENTUALLY
-  exit(0);
+  // test results
+  {
+    DRT::ResultTestManager testmanager(actdis->Comm());
+    testmanager.AddFieldTest(rcp(new StruResultTest(*sti)));
+    testmanager.TestAll();
+  }
 
-
+  // done
   return;
-} // end of dyn_nlnstructural_drt()
+} // end strudyn_direct()
 
 
 

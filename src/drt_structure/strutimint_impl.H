@@ -88,13 +88,6 @@ public:
     vectornorm_inf  //!< Maximum/infinity norm
   };
 
-  //! return norm of vector according to requested norm
-  static double EvaluateNorm
-  (
-    const enum VectorNormEnum norm,  //!< requested norm
-    const Teuchos::RCP<Epetra_Vector> vect  //!< input vector
-  );
-
   //! Type of predictor
   enum PredEnum
   {
@@ -216,17 +209,17 @@ public:
     const double time,  //!< evaluation time
     const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
     const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
-    Teuchos::RCP<Epetra_Vector>& fint,  //!< internal force
-    Teuchos::RCP<LINALG::SparseMatrix>& stiff  //!< stiffness matrix
+    Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
+    Teuchos::RCP<LINALG::SparseMatrix> stiff  //!< stiffness matrix
   );
 
   //! Evaluate forces due to constraints
   void ApplyForceStiffConstraint
   (
-    const double time,
-    const Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<Epetra_Vector>& fint,
-    Teuchos::RCP<LINALG::SparseMatrix>& stiff
+    const double time,  //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector> dis,  //!< evalaution displacements
+    Teuchos::RCP<Epetra_Vector>& fint,  //!< forces are added onto
+    Teuchos::RCP<LINALG::SparseMatrix>& stiff  //!< stiffness is added onto
   );
 
   //! Evaluate _certain_ surface stresses and stiffness
@@ -315,7 +308,7 @@ public:
   //! This handles the iterative update of the current 
   //! displacements \f$D_{n+1}\f$ with the residual dispplacements
   //! The velocities and accelerations follow on par.
-  virtual void UpdateIteration() = 0;
+  virtual void UpdateIter() = 0;
 
   //@}
 
@@ -405,10 +398,31 @@ public:
 
   //! @name Attribute access functions
   //@{
+
+  //! Return dicretisation
   Teuchos::RCP<DRT::Discretization> Discretization() 
   { 
     return Teuchos::rcp(&discret_, false); 
   }
+
+  //! Return displacements
+  Teuchos::RCP<Epetra_Vector> Disp()
+  {
+    return dis_;
+  }
+
+  //! Return velocities
+  Teuchos::RCP<Epetra_Vector> Vel()
+  {
+    return vel_;
+  }
+
+  //! Return accelerations
+  Teuchos::RCP<Epetra_Vector> Acc()
+  {
+    return acc_;
+  }
+  
   //@}
 
 protected:
@@ -424,8 +438,8 @@ protected:
   DRT::Discretization& discret_;  //!< attached discretisation
   int myrank_;  //!< ID of actual processor in parallel
   const Epetra_Map* dofrowmap_;  //!< vector layout from the discretization 
-                           //!< to construct matching
-                           //!< vectors and matrices
+                                 //!< to construct matching
+                                 //!< vectors and matrices
   LINALG::Solver& solver_;  //!< linear algebraic solver
   bool solveradapttol_;  //!< adapt solver tolerance
   double solveradaptolbetter_;  //!< tolerance to which is adapated ????
@@ -440,7 +454,7 @@ protected:
   bool printerrfile_;  //!< print infos to error file #errfile_
   bool printiter_;  //!< print intermediate iterations during solution
   int writerestartevery_;  //!< write restart every given step;
-                      //!< if 0, restart is not written
+                           //!< if 0, restart is not written
   bool writestate_;  //!< write state on/off
   int writestateevery_;  //!< write state every given step
   int writestrevery_;  //!< write stress/strain every given step
@@ -535,15 +549,6 @@ protected:
   
   //! @name Various global forces
   //@{
-  //Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force vector
-  //                           //!< \f${f}_\text{int;n}\f$
-  //                            //!< at \f$t_{n}\f$
-  //Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal forces at \f$t_{n+1}\f$
-  //Teuchos::RCP<Epetra_Vector> finert_;  //!< inertial forces
-  //Teuchos::RCP<Epetra_Vector> fvisc_;  //!< viscous Rayleigh forces
-  //Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_{n+1}\f$
-  //Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_n\f$
-  //Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin forces due to I-DON'T-KNOW-WHAT
   Teuchos::RCP<Epetra_Vector> fres_;  //!< force residual used for solution
   //@}
 

@@ -62,8 +62,7 @@ public:
   //! Constructor
   StruTimInt()
   { 
-    std::cout << " Welcome to Structural Time Integration  " << std::endl;
-    std::cout << "                                       _ " << std::endl;
+    std::cout << "Welcome to Structural Time Integration _ " << std::endl;
     std::cout << " _ __       _       _      _ __    _  / |" << std::endl;
     std::cout << "| '_ \\     | |_____\\ \\    | '_ \\ _| |_| |" << std::endl;
     std::cout << "| | | |    |  _____   )   | | | |_   _| |" << std::endl;
@@ -79,6 +78,18 @@ public:
 
   //! Do time integration of single step
   virtual void IntegrateStep() = 0;
+
+  //! Access Dicretisation
+  virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+
+  //! Displacements
+  virtual Teuchos::RCP<Epetra_Vector> Disp() = 0;
+
+  //! Velocities
+  virtual Teuchos::RCP<Epetra_Vector> Vel() = 0;
+
+  //!  Accelerations
+  virtual Teuchos::RCP<Epetra_Vector> Acc() = 0;
 
 };
 

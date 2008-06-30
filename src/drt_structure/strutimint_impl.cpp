@@ -190,7 +190,7 @@ StruTimIntImpl::StruTimIntImpl
     myrank_(actdis.Comm().MyPID()),
     dofrowmap_(actdis.Filled() ? actdis.DofRowMap() : NULL),
     solver_(solver),
-    solveradapttol_((bool) Teuchos::getIntegralValue<int>(sdynparams,"ADAPTCONV")==1),
+    solveradapttol_(Teuchos::getIntegralValue<int>(sdynparams,"ADAPTCONV")==1),
     solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
     pred_(MapPredictorStringToEnum(sdynparams.get<string>("PREDICT"))),
     output_(output),
@@ -271,6 +271,9 @@ StruTimIntImpl::StruTimIntImpl
       new LINALG::SparseMatrix(*dofrowmap_, 81, true, false)
     );
   }
+
+  // create empty residual force vector
+  fres_ = LINALG::CreateVector(*dofrowmap_, false);
 
   // a zero vector of full length
   zeros_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -456,6 +459,9 @@ void StruTimIntImpl::Integrate()
     // write output
     Output();
   }
+
+  // that's it
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -504,8 +510,10 @@ void StruTimIntImpl::Predict()
   // determine characteristic norms
   // we set the minumum of CalcRefNormForce() and #tolfres_, because
   // we want to prevent the case of a zero characteristic fnorm
-  normcharforce_ = min(tolfres_, CalcRefNormForce());
-  normchardis_ = min(toldisi_, CalcRefNormDisplacement());
+  normcharforce_ = CalcRefNormForce();
+  if (normcharforce_ == 0.0) normcharforce_ = tolfres_;
+  normchardis_ = CalcRefNormDisplacement();
+  if (normchardis_ == 0.0) normchardis_ = toldisi_;
 
   // output
   PrintPredictor();
@@ -589,8 +597,8 @@ void StruTimIntImpl::ApplyForceStiffInternal
   const double time,
   const Teuchos::RCP<Epetra_Vector> dis,  // displacement state
   const Teuchos::RCP<Epetra_Vector> disi,  // residual displacements
-  Teuchos::RCP<Epetra_Vector>& fint,  // internal force
-  Teuchos::RCP<LINALG::SparseMatrix>& stiff  // stiffness matrix
+  Teuchos::RCP<Epetra_Vector> fint,  // internal force
+  Teuchos::RCP<LINALG::SparseMatrix> stiff  // stiffness matrix
 )
 {
   // create the parameters for the discretization
@@ -729,7 +737,7 @@ bool StruTimIntImpl::Converged()
   if (normchardis_ <= 0.0)
   {
     dserror("Characteristic displacement norm %g must strictly larger than 0",
-            normcharforce_);
+            normchardis_);
   }
 
   // check force and displacement residuals
@@ -811,8 +819,8 @@ void StruTimIntImpl::NewtonFull()
 
   // initialise equilibrium loop
   iter_ = 0;
-  double normfres_ = CalcRefNormForce();
-  double normdisi_ = 1.0e6;  // this is strictly >0,toldisi_
+  normfres_ = CalcRefNormForce();
+  normdisi_ = 1.0e6;  // this is strictly >0,toldisi_
   timer_.ResetStartTime();
   //bool print_unconv = true;
 
@@ -836,23 +844,23 @@ void StruTimIntImpl::NewtonFull()
     solver_.ResetTolerance();
 
     // update end-point displacements etc
-    UpdateIteration();
+    UpdateIter();
 
-    // compute residual forces fres_ and stiffness stiff_
+    // compute residual forces #fres_ and stiffness #stiff_
     EvaluateForceStiffResidual();
 
     // build residual force norm
-    normfres_ = CalcRefNormForce();
+    normfres_ = CalculateNorm(iternorm_, fres_);
     // build residual displacement norm
-    normdisi_ = CalcRefNormDisplacement();
+    normdisi_ = CalculateNorm(iternorm_, disi_);
 
     // a short message
-    if ( (myrank_ == 0) and printscreen_ )
-    {
-      std::cout << "ForceResidualNorm=" << normfres_
-                << " DisplacementResidualNorm=" << normdisi_
-                << std::endl;
-    }
+    //if ( (myrank_ == 0) and printscreen_)
+    //{
+    //  std::cout << "ForResNorm= " << normfres_
+    //            << " DisResNorm= " << normdisi_
+    //            << std::endl;
+    //}
 
     // print stuff
     PrintNewtonIter();

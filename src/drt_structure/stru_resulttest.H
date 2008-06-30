@@ -20,6 +20,7 @@ Maintainer: Moritz Frenzel
 
 #include "stru_static_drt.H"
 #include "strugenalpha.H"
+#include "strutimint.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
@@ -43,6 +44,10 @@ public:
 
   //! constructor to use when timeintegrator is generalized alpha!
   StruResultTest(StruGenAlpha& tintegrator);
+
+  //! Constructor for time integrators of general kind
+  //! \author bborn \date 06/08
+  StruResultTest(StruTimInt& tintegrator);
 
   //! \brief structure version of nodal value tests
   //!

@@ -87,7 +87,7 @@ public:
   double CalcRefNormForce();
 
   //! Update iteration
-  void UpdateIteration();
+  void UpdateIter();
 
   //! Update step
   void UpdateStep();
@@ -113,6 +113,11 @@ protected:
   //! @name set-up
   //@{
   enum MidAverageEnum midavg_;  //!< mid-average type more at #MidAverageEnum
+  bool iterupditer_;  //!< kind of update method in iteration,
+                      //!< which is 'iteratively', if this variable
+                      //!< is true. Otherwise an 'incrementally'
+                      //!< update prcedure is utilised, see #UpdateIter
+                      //!< HINT: this is linked to the predictor
   //@}
 
   //! @name Key coefficients

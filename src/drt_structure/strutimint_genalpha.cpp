@@ -66,6 +66,7 @@ StruTimIntGenAlpha::StruTimIntGenAlpha
     output
   ),
   midavg_(MapMidAvgStringToEnum(genalphaparams.get<string>("GENAVG"))),
+  iterupditer_(false),
   beta_(genalphaparams.get<double>("BETA")),
   gamma_(genalphaparams.get<double>("GAMMA")),
   alphaf_(genalphaparams.get<double>("ALPHA_F")),
@@ -83,6 +84,17 @@ StruTimIntGenAlpha::StruTimIntGenAlpha
   fviscm_(Teuchos::null),
   frobin_(Teuchos::null)
 {
+  // info to user : OST --- your oriental scheme
+  if (myrank_ == 0)
+  {
+    std::cout << "with generalised-alpha ("
+              << "beta=" << beta_
+              << ", gamma=" << gamma_
+              << ", alpha_f=" << alphaf_
+              << ", alpha_m=" << alpham_
+              << ")" << std::endl << std::endl;
+  }
+
   // create state vectors
   
   // mid-displacements
@@ -101,6 +113,8 @@ StruTimIntGenAlpha::StruTimIntGenAlpha
     fint_ = LINALG::CreateVector(*dofrowmap_, true);
     // internal force vector F_{int;n+1} at new time
     fintn_ = LINALG::CreateVector(*dofrowmap_, true);
+    // set initial internal force vector
+    ApplyForceStiffInternal(time_, dis_, zeros_, fint_, Teuchos::null);
   } 
   else if (midavg_ == midavg_imrlike)
   {
@@ -114,7 +128,6 @@ StruTimIntGenAlpha::StruTimIntGenAlpha
   fextm_ = LINALG::CreateVector(*dofrowmap_, true);
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
-
   // set initial external force vector
   ApplyForceExternal(time_, dis_, fext_);
 
@@ -168,15 +181,28 @@ void StruTimIntGenAlpha::PredictConstDisConsistVelAcc()
  * with respect to end-point displacements \f$D_{n+1}\f$ */
 void StruTimIntGenAlpha::EvaluateForceStiffResidual()
 {
+  // build by last converged state and predicted target state
+  // the predicted mid-state
   EvaluateMidState();
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  ApplyForceExternal(timen_, disn_, fextn_);
+  ApplyForceExternal(timen_, dis_, fextn_);
+
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
   //                         + alpha_f * F_{ext;n}
-  fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_,0.0);
+  fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_, 0.0);
+
+  // initialise internal forces
+  if (midavg_ == midavg_trlike)
+  {
+    fintn_->PutScalar(0.0);
+  } 
+  else if (midavg_ == midavg_imrlike)
+  {
+    fintm_->PutScalar(0.0);
+  }
 
   // initialise stiffness matrix to zero
   stiff_->Zero();
@@ -188,6 +214,7 @@ void StruTimIntGenAlpha::EvaluateForceStiffResidual()
   } 
   else if (midavg_ == midavg_imrlike)
   {
+    disi_->Scale(1.-alphaf_);
     ApplyForceStiffInternal(timen_, dism_, disi_,  fintm_, stiff_);
   }
 
@@ -211,9 +238,6 @@ void StruTimIntGenAlpha::EvaluateForceStiffResidual()
     ApplyForceStiffPotential(dism_, fintm_, stiff_);
   }
 
-  // close stiffness matrix
-  stiff_->Complete();
-
   // inertial forces #finertm_
   mass_->Multiply(false, *accm_, *finertm_);
 
@@ -223,11 +247,11 @@ void StruTimIntGenAlpha::EvaluateForceStiffResidual()
     damp_->Multiply(false, *velm_, *fviscm_);
   }
 
-
-  // build negative residual  Res = -( M . A_{n+1-alpha_m}
-  //                                   + C . V_{n+1-alpha_f}
-  //                                   + F_{int;m}
-  //                                   - F_{ext;n+1-alpha_f} )
+  // build negative residual
+  //    Res = -( M . A_{n+1-alpha_m}
+  //             + C . V_{n+1-alpha_f}
+  //             + F_{int;m}
+  //             - F_{ext;n+1-alpha_f} )
   fres_->Update(1.0, *fextm_, 0.0);
   if (midavg_ == midavg_trlike)
   {
@@ -242,6 +266,17 @@ void StruTimIntGenAlpha::EvaluateForceStiffResidual()
     fres_->Update(-1.0, *fviscm_, 1.0);
   }
   fres_->Update(-1.0, *finertm_, 1.0);
+  
+  // build tangent matrix : effective dynamic stiffness matrix
+  //    K_{Teffdyn} = (1 - alpha_m)/(beta*dt^2) M
+  //                + (1 - alpha_f)*y/(beta*dt) C     
+  //                + (1 - alpha_f) K_{T}
+  stiff_->Add(*mass_, false, (1.-alpham_)/(beta_*dt_*dt_), 1.-alphaf_);
+  if (damping_)
+  {
+    stiff_->Add(*damp_, false, (1.-alphaf_)*gamma_/(beta_*dt_), 1.0);
+  }
+  stiff_->Complete();  // close stiffness matrix
 
   // hallelujah
   return;
@@ -322,23 +357,46 @@ double StruTimIntGenAlpha::CalcRefNormForce()
     fviscm_->Norm2(&fviscnorm);
   }
 
-  // return worst value
+  // determine worst value ==> charactersitic norm
   return max(fviscnorm, max(finertnorm, max(fintnorm, fextnorm)));
 }
 
 /*----------------------------------------------------------------------*/
-/* iterative update of state */
-void StruTimIntGenAlpha::UpdateIteration()
+/* iteration update of state */
+void StruTimIntGenAlpha::UpdateIter()
 {
-  // new end-point displacements
-  // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
-  disn_->Update(1.0, *disi_, 1.0);
+  // iterative update method
+  if (iterupditer_)
+  {
+    // new end-point displacements
+    // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
+    disn_->Update(1.0, *disi_, 1.0);
+    
+    // new end-point velocities
+    veln_->Update(gamma_/(beta_*dt_), *disi_, 1.0);
+    
+    // new end-point accelerations
+    accn_->Update(1.0/(beta_*dt_*dt_), *disi_, 1.0);
+  }
+  // incremental update method;
+  else
+  {
+    // new end-point displacements
+    // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
+    disn_->Update(1.0, *disi_, 1.0);
 
-  // new end-point velocities
-  veln_->Update(gamma_/(dt_*beta_), *disi_, 1.0);
-
-  // new end-point accelerations
-  accn_->Update(1.0/(dt_*dt_*beta_), *disi_, 1.0);
+    // new end-point velocities
+    veln_->Update(1.0, *disn_, -1.0, *dis_, 0.0);
+    veln_->Update((beta_-gamma_)/beta_, *vel_,
+                  (2.0*beta_-gamma_)*dt_/(2.0*beta_), *acc_,
+                  gamma_/(beta_*dt_));
+    
+    // new end-point accelerations
+    accn_->Update(1.0, *disn_, -1.0, *dis_, 0.0);
+    accn_->Update(-1.0/(beta_*dt_), *vel_,
+                  (2.0*beta_-1.0)/(2.0*beta_), *acc_,
+                  1.0/(beta_*dt_*dt_));
+  }
 
   // bye
   return;

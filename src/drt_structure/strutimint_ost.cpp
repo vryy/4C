@@ -41,27 +41,34 @@ StruTimIntOneStepTheta::StruTimIntOneStepTheta
     output
   ),
   theta_(onestepthetaparams.get<double>("THETA")),
-  dism_(Teuchos::null),
-  velm_(Teuchos::null),
-  accm_(Teuchos::null),
+  dist_(Teuchos::null),
+  velt_(Teuchos::null),
+  acct_(Teuchos::null),
   fint_(Teuchos::null),
-  fintm_(Teuchos::null),
+  fintt_(Teuchos::null),
   fintn_(Teuchos::null),
   fext_(Teuchos::null),
-  fextm_(Teuchos::null),
+  fextt_(Teuchos::null),
   fextn_(Teuchos::null),
-  finertm_(Teuchos::null),
-  fviscm_(Teuchos::null),
+  finertt_(Teuchos::null),
+  fvisct_(Teuchos::null),
   frobin_(Teuchos::null)
 {
+  // info to user
+  if (myrank_ == 0)
+  {
+    std::cout << "with one-step-theta (theta=" 
+              << theta_ << ")" << std::endl << std::endl;
+  }
+
   // create state vectors
   
   // mid-displacements
-  dism_ = LINALG::CreateVector(*dofrowmap_, true);
+  dist_ = LINALG::CreateVector(*dofrowmap_, true);
   // mid-velocities
-  velm_ = LINALG::CreateVector(*dofrowmap_, true);
+  velt_ = LINALG::CreateVector(*dofrowmap_, true);
   // mid-accelerations
-  accm_ = LINALG::CreateVector(*dofrowmap_, true);
+  acct_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // create force vectors
 
@@ -74,7 +81,7 @@ StruTimIntOneStepTheta::StruTimIntOneStepTheta
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
   // external mid-force vector F_{ext;n+1-alpha_f}
-  fextm_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextt_ = LINALG::CreateVector(*dofrowmap_, true);
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
 
@@ -82,9 +89,9 @@ StruTimIntOneStepTheta::StruTimIntOneStepTheta
   ApplyForceExternal(time_, dis_, fext_);
 
   // inertial mid-point force vector F_inert
-  finertm_ = LINALG::CreateVector(*dofrowmap_, true);
+  finertt_ = LINALG::CreateVector(*dofrowmap_, true);
   // viscous mid-point force vector F_visc
-  fviscm_ = LINALG::CreateVector(*dofrowmap_, true);
+  fvisct_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // external pseudo force due to RobinBC
   frobin_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -110,6 +117,9 @@ void StruTimIntOneStepTheta::PredictConstDisConsistVelAcc()
   ApplyDirichletBC(timen_, disn_, Teuchos::null, Teuchos::null);
   */
 
+  // PULL EMERGENCY BREAK
+  dserror("Code this before use");
+
   // consistent velocities
   veln_->Update(1.0, *disn_, -1.0, *dis_, 0.0);
   veln_->Update((theta_-theta_)/theta_, *vel_,
@@ -131,6 +141,7 @@ void StruTimIntOneStepTheta::PredictConstDisConsistVelAcc()
  * with respect to end-point displacements \f$D_{n+1}\f$ */
 void StruTimIntOneStepTheta::EvaluateForceStiffResidual()
 {
+  // theta-interpolate state vectors
   EvaluateMidState();
 
   // build new external forces
@@ -139,7 +150,10 @@ void StruTimIntOneStepTheta::EvaluateForceStiffResidual()
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
   //                         + alpha_f * F_{ext;n}
-  fextm_->Update(1.-theta_, *fextn_, theta_, *fext_,0.0);
+  fextt_->Update(theta_, *fextn_, 1.0-theta_, *fext_,0.0);
+
+  // initialise internal forces
+  fintn_->PutScalar(0.0);
 
   // initialise stiffness matrix to zero
   stiff_->Zero();
@@ -156,47 +170,58 @@ void StruTimIntOneStepTheta::EvaluateForceStiffResidual()
   // close stiffness matrix
   stiff_->Complete();
 
-  // inertial forces #finertm_
-  mass_->Multiply(false, *accm_, *finertm_);
+  // inertial forces #finertt_
+  mass_->Multiply(false, *acct_, *finertt_);
 
   // viscous forces due Rayleigh damping
   if (damping_)
   {
-    damp_->Multiply(false, *velm_, *fviscm_);
+    damp_->Multiply(false, *velt_, *fvisct_);
   }
 
 
-  // build negative residual  Res = -( M . A_{n+1-alpha_m}
-  //                                   + C . V_{n+1-alpha_f}
-  //                                   + F_{int;m}
-  //                                   - F_{ext;n+1-alpha_f} )
-  fres_->Update(1.0, *fextm_, 0.0);
-  fres_->Update(-(1.-theta_), *fintn_, -theta_, *fint_, 1.0);
+  // build negative residual  Res = -( M . A_{n+theta}
+  //                                   + C . V_{n+theta}
+  //                                   + F_{int;n+theta}
+  //                                   - F_{ext;n+theta} )
+  fres_->Update(1.0, *fextt_, 0.0);
+  fres_->Update(-theta_, *fintn_, -(1.0-theta_), *fint_, 1.0);
   if (damping_)
   {
-    fres_->Update(-1.0, *fviscm_, 1.0);
+    fres_->Update(-1.0, *fvisct_, 1.0);
   }
-  fres_->Update(-1.0, *finertm_, 1.0);
+  fres_->Update(-1.0, *finertt_, 1.0);
+
+  // build tangent matrix : effective dynamic stiffness matrix
+  //    K_{Teffdyn} = 1/(theta*dt^2) M
+  //                + 1/dt C     
+  //                + theta K_{T}
+  stiff_->Add(*mass_, false, 1.0/(theta_*dt_*dt_), theta_);
+  if (damping_)
+  {
+    stiff_->Add(*damp_, false, 1.0/dt_, 1.0);
+  }
+  stiff_->Complete();  // close stiffness matrix
 
   // hallelujah
   return;
 }
 
 /*----------------------------------------------------------------------*/
-/* evaluate mid-state vectors by averaging end-point vectors */
+/* evaluate theta-state vectors by averaging end-point vectors */
 void StruTimIntOneStepTheta::EvaluateMidState()
 {
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
-  dism_->Update(1.-theta_, *disn_, theta_, *dis_, 0.0);
+  dist_->Update(theta_, *disn_, 1.0-theta_, *dis_, 0.0);
   
   // mid-velocities V_{n+1-alpha_f} (velm)
   //    V_{n+1-alpha_f} := (1.-alphaf) * V_{n+1} + alpha_f * V_{n}
-  velm_->Update(1.-theta_, *veln_, theta_, *vel_, 0.0);
+  velt_->Update(theta_, *veln_, 1.0-theta_, *vel_, 0.0);
   
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
-  accm_->Update(1.-theta_, *accn_, theta_, *acc_, 0.0);
+  acct_->Update(theta_, *accn_, 1.0-theta_, *acc_, 0.0);
 
   // jump
   return;
@@ -237,36 +262,46 @@ double StruTimIntOneStepTheta::CalcRefNormForce()
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextm_->Norm2(&fextnorm);
+  fextt_->Norm2(&fextnorm);
 
   // norm of the inertial forces
   double finertnorm = 0.0;
-  finertm_->Norm2(&finertnorm);
+  finertt_->Norm2(&finertnorm);
 
   // norm of viscous forces
   double fviscnorm = 0.0;
   if (damping_)
   {
-    fviscm_->Norm2(&fviscnorm);
+    fvisct_->Norm2(&fviscnorm);
   }
 
-  // return worst value
+  // return char norm
   return max(fviscnorm, max(finertnorm, max(fintnorm, fextnorm)));
 }
 
 /*----------------------------------------------------------------------*/
 /* iterative update of state */
-void StruTimIntOneStepTheta::UpdateIteration()
+void StruTimIntOneStepTheta::UpdateIter()
 {
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
   disn_->Update(1.0, *disi_, 1.0);
 
   // new end-point velocities
-  veln_->Update(theta_/(dt_*theta_), *disi_, 1.0);
+  //veln_->Update(1.0/dt_, *disi_, 1.0);
+  veln_->Update(1.0/(theta_*dt_), *disn_,
+                -1.0/(theta_*dt_), *dis_, 
+                0.0);
+  veln_->Update((theta_-1.0)/theta_, *vel_, 1.0);
 
   // new end-point accelerations
-  accn_->Update(1.0/(dt_*dt_*theta_), *disi_, 1.0);
+  //accn_->Update(1.0/(dt_*dt_*theta_), *disi_, 1.0);
+  accn_->Update(1.0/(theta_*theta_*dt_*dt_), *disn_, 
+                -1.0/(theta_*theta_*dt_*dt_), *dis_, 
+                0.0);
+  accn_->Update(-1.0/(theta_*theta_*dt_), *vel_, 
+                (theta_-1.0)/theta_, *acc_,
+                1.0);
 
   // bye
   return;
