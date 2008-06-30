@@ -17,6 +17,8 @@ Maintainer: Thomas Kloeppel
 #include "iostream"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
+#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
 /*----------------------------------------------------------------------*
@@ -36,7 +38,27 @@ invtoggle_(&(*invtoggle),false)
   toldisp_        = params.get<double>("tolerance displacements", 1.0e-07);
   tolres_         = params.get<double>("tolerance residual", 1.0e-07);
   tolconstr_      = params.get<double>("tolerance constraint"     ,1.0e-07);
-  isadapttol_     = params.get<bool>("ADAPTCONV",true);
+  // this exception handler is not the nicest thing, 
+  // but the original (and verified) input 
+  // parameter list is copied to another parameter list in case of 
+  // the StruGenAlpha time integrator object (and apparently other time 
+  // integrators). This is actually done in dyn_nlnstructural_drt(). 
+  // The approach in StruTimIntImpl (and thus StruTimIntGenAlpha)
+  // is not to change the parameter list after input nor to copy
+  // them to new lists. This copy mechanism does not improve the
+  // data. 
+  // Thus we need this exception handler to getting along.
+  try
+  {
+    // for StruGenAlpha
+    isadapttol_   = params.get<bool>("ADAPTCONV",true);
+  }
+  catch (const Teuchos::Exceptions::InvalidParameterType)
+  {
+    // for StruTimIntImpl
+    isadapttol_   = true;
+    isadapttol_   = (Teuchos::getIntegralValue<int>(params,"ADAPTCONV") == 1);
+  }
   adaptolbetter_  = params.get<double>("ADAPTCONV_BETTER",0.01);
   maxIter_        = params.get<int>   ("uzawa maxiter"         ,50);
   uzawaParam_     = params.get<double>("uzawa parameter",1);
