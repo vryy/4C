@@ -434,6 +434,13 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
       }
     }
     
+    // cout linearization of Ae
+    //cout << "Analytical A-derivative of Element: " << Id() << endl;
+    //for (int i=0;i<nnodes;++i)
+    //  for (int j=0;j<nnodes;++j)
+    //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
+    //      cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+        
     /*
 #ifdef DEBUG
     // *******************************************************************
@@ -608,7 +615,93 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
         }
       }
     }
+    
+    // cout linearization of Ae
+    //cout << "Analytical A-derivative of Element: " << Id() << endl;
+    //for (int i=1;i<nnodes;++i)
+    //  for (int j=1;j<nnodes;++j)
+    //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
+    //      cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+    /*
+#ifdef DEBUG
+    // *******************************************************************
+    // FINITE DIFFERENCE check of Lin(Ae)
+    // *******************************************************************
+    
+    cout << "FD Check for A-derivative of Element: " << Id() << endl;
+    Epetra_SerialDenseMatrix aeref(ae);
+    double delta = 1e-8;
+    
+    for (int dim=0;dim<2;++dim)
+    {
+      for (int node=0;node<nnodes;++node)
+      {
+        // apply FD
+        coord(dim,node)+=delta;
         
+        // empty shape function vals + derivs
+        vector<double> valquad1(nnodes);
+        vector<double> derivquad1(nnodes);
+        vector<double> vallin1(nnodes-1);
+        vector<double> derivlin1(nnodes-1);
+        vector<double> valtemp1(nnodes);
+        vector<double> derivtemp1(nnodes);
+        Epetra_SerialDenseMatrix me1(nnodes-1,nnodes-1);
+        Epetra_SerialDenseMatrix de1(nnodes-1,nnodes-1);
+        
+        // build me, de
+        for (int i=0;i<integrator.nGP();++i)
+        {
+          double gpc1[2] = {integrator.Coordinate(i), 0.0};
+          ShapeFunctions(CElement::quad1D,gpc1,valquad1,derivquad1);
+          ShapeFunctions(CElement::dual1D_base_for_edge0,gpc1,vallin1,derivlin1);
+          detg = Jacobian1D(valquad1,derivquad1,coord);
+          
+          for (int j=1;j<nnodes;++j)
+            for (int k=1;k<nnodes;++k)
+            {
+              double facme1 = integrator.Weight(i)*vallin1[j-1]*valquad1[k];
+              double facde1 = (j==k)*integrator.Weight(i)*valquad1[k];
+                        
+              me1(j-1,k-1)+=facme1*detg;
+              de1(j-1,k-1)+=facde1*detg;
+            }  
+        }
+        
+        // invert bi-ortho matrix me1
+        double detme1 = me1(0,0)*me1(1,1)-me1(0,1)*me1(1,0);
+        Epetra_SerialDenseMatrix meold(nnodes-1,nnodes-1);
+        meold=me1;
+        me1(0,0) =  1/detme1*meold(1,1);
+        me1(0,1) = -1/detme1*meold(0,1);
+        me1(1,0) = -1/detme1*meold(1,0);
+        me1(1,1) =  1/detme1*meold(0,0);
+            
+        // get solution matrix ae with dual parameters
+        Epetra_SerialDenseMatrix ae1(nnodes-1,nnodes-1);
+        ae1.Multiply('N','N',1.0,de1,me1,0.0);
+        
+        DRT::Node** mynodes = Nodes();
+        CNode* mycnode = static_cast<CNode*> (mynodes[node]);
+        int col= mycnode->Dofs()[dim];
+        
+        cout << "A-Derivative: " << col << endl;
+        
+        // FD solution
+        for (int i=1;i<nnodes;++i)
+          for (int j=1;j<nnodes;++j)
+          {
+            double val = (ae1(i-1,j-1)-aeref(i-1,j-1))/delta;
+            cout << "A" << i << j << " " << val << endl;
+          }
+        
+        // undo FD
+        coord(dim,node)-=delta;
+      }
+    }
+    // *******************************************************************
+#endif // #ifdef DEBUG
+    */   
     break;
   }
   // *********************************************************************
@@ -715,6 +808,92 @@ void CONTACT::CElement::ShapeFunctionLinearizations(CElement::ShapeType shape,
       }
     }
     
+    // cout linearization of Ae
+    //cout << "Analytical A-derivative of Element: " << Id() << endl;
+    //for (int i=0;i<nnodes-1;++i)
+    //  for (int j=0;j<nnodes-1;++j)
+    //    for (CI p=derivdual[i][j].begin();p!=derivdual[i][j].end();++p)
+    //      cout << "A" << i << j << " " << p->first << " " << p->second << endl;
+    /*
+#ifdef DEBUG
+    // *******************************************************************
+    // FINITE DIFFERENCE check of Lin(Ae)
+    // *******************************************************************
+    
+    cout << "FD Check for A-derivative of Element: " << Id() << endl;
+    Epetra_SerialDenseMatrix aeref(ae);
+    double delta = 1e-8;
+    
+    for (int dim=0;dim<2;++dim)
+    {
+      for (int node=0;node<nnodes;++node)
+      {
+        // apply FD
+        coord(dim,node)+=delta;
+        
+        // empty shape function vals + derivs
+        vector<double> valquad1(nnodes);
+        vector<double> derivquad1(nnodes);
+        vector<double> vallin1(nnodes-1);
+        vector<double> derivlin1(nnodes-1);
+        vector<double> valtemp1(nnodes);
+        vector<double> derivtemp1(nnodes);
+        Epetra_SerialDenseMatrix me1(nnodes-1,nnodes-1);
+        Epetra_SerialDenseMatrix de1(nnodes-1,nnodes-1);
+        
+        // build me, de
+        for (int i=0;i<integrator.nGP();++i)
+        {
+          double gpc1[2] = {integrator.Coordinate(i), 0.0};
+          ShapeFunctions(CElement::quad1D,gpc1,valquad1,derivquad1);
+          ShapeFunctions(CElement::dual1D_base_for_edge1,gpc1,vallin1,derivlin1);
+          detg = Jacobian1D(valquad1,derivquad1,coord);
+          
+          for (int j=0;j<nnodes-1;++j)
+            for (int k=0;k<nnodes-1;++k)
+            {
+              double facme1 = integrator.Weight(i)*vallin1[j]*valquad1[2*k];
+              double facde1 = (j==k)*integrator.Weight(i)*valquad1[2*k];
+                        
+              me1(j,k)+=facme1*detg;
+              de1(j,k)+=facde1*detg;
+            }  
+        }
+        
+        // invert bi-ortho matrix me1
+        double detme1 = me1(0,0)*me1(1,1)-me1(0,1)*me1(1,0);
+        Epetra_SerialDenseMatrix meold(nnodes-1,nnodes-1);
+        meold=me1;
+        me1(0,0) =  1/detme1*meold(1,1);
+        me1(0,1) = -1/detme1*meold(0,1);
+        me1(1,0) = -1/detme1*meold(1,0);
+        me1(1,1) =  1/detme1*meold(0,0);
+            
+        // get solution matrix ae with dual parameters
+        Epetra_SerialDenseMatrix ae1(nnodes-1,nnodes-1);
+        ae1.Multiply('N','N',1.0,de1,me1,0.0);
+        
+        DRT::Node** mynodes = Nodes();
+        CNode* mycnode = static_cast<CNode*> (mynodes[node]);
+        int col= mycnode->Dofs()[dim];
+        
+        cout << "A-Derivative: " << col << endl;
+        
+        // FD solution
+        for (int i=0;i<nnodes-1;++i)
+          for (int j=0;j<nnodes-1;++j)
+          {
+            double val = (ae1(i,j)-aeref(i,j))/delta;
+            cout << "A" << i << j << " " << val << endl;
+          }
+        
+        // undo FD
+        coord(dim,node)-=delta;
+      }
+    }
+    // *******************************************************************
+#endif // #ifdef DEBUG
+    */    
     break;
   }
   // *********************************************************************
