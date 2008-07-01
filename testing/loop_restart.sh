@@ -69,6 +69,7 @@ for file in $liste; do
     cat $file_ohne.make.log > /dev/stderr
 
     fail1=`expr $fail1 + 1`
+    fail1files=$fail1files" "$file
     continue
   fi
 
@@ -126,6 +127,7 @@ for file in $liste; do
     echo '    OK'
   else
     fail2=`expr $fail2 + 1`
+    fail2files=$fail2files" "$file
     echo '    Failed!!'
     # copy screen output to $file_ohne.scr
     mv test.tmp $file_ohne.scr
@@ -194,6 +196,7 @@ for file in $liste; do
   else
     echo '    Failed!!'
     fail2=`expr $fail2 + 1`
+    fail2files=$fail2files" "$file_ohne
     # copy screen output to $file_ohne.scr
     mv test2.tmp $file_ohne.scr_res
     cat $file_ohne.scr_res > /dev/stderr

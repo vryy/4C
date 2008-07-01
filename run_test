@@ -30,8 +30,10 @@ SRC=`dirname $0`
 DEST=.
 
 # initialize some counters
+fail1files=""
 fail1=0
 pass1=0
+fail2files=""
 fail2=0
 pass2=0
 total=0
@@ -144,7 +146,6 @@ else
   exit 1
 fi
 
-
 # count files in list
 for file in $liste; do
   total=`expr $total + 1`
@@ -223,6 +224,7 @@ echo
 
 
 # write table with result to the screen
+echo 'Summary'
 echo '-----------------------------'
 printf '| '
 printf $total' files    '
@@ -252,6 +254,28 @@ fi
 printf $fail2'  |\n'
 echo '-----------------------------'
 echo
+
+# write input files which failed to build
+if [ $fail1 -ge 1 ] && [ -n $fail1files ]
+then
+    echo "Compilation failed for $fail1 file(s):"
+    for file in $fail1files
+    do
+      echo "    "`basename $file`
+    done
+    echo ""
+fi
+
+# write input files which failed to run
+if [ $fail2 -ge 1 ] && [ -n $fail2files ]
+then
+    echo "Running failed for $fail2 file(s):"
+    for file in $fail2files
+    do
+      echo "    "`basename $file`
+    done
+    echo ""
+fi
 
 # We are done. Clean up and remove the exit trap.
 cleanup

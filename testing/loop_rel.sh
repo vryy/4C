@@ -116,6 +116,7 @@ for file in $liste; do
   else
     echo '    Failed!!'
     fail2=`expr $fail2 + 1`
+    fail2files=$fail2files" "$file
     # copy screen output to $file_ohne.scr
     mv test.tmp $file_ohne.scr
     cat $file_ohne.scr > /dev/stderr
