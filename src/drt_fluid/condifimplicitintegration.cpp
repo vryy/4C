@@ -796,8 +796,8 @@ void CondifImplicitTimeInt::Output()
       output_.WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
       //output_.WriteVector("residual", residual_);
 
-      RCP<Epetra_MultiVector> flux = CalcFlux();
-      output_.WriteVector("flux", flux, IO::DiscretizationWriter::nodevector);
+      //RCP<Epetra_MultiVector> flux = CalcFlux();
+      //output_.WriteVector("flux", flux, IO::DiscretizationWriter::nodevector);
 
       // write domain decomposition for visualization (only once!)
       if (step_==upres_)
@@ -1205,11 +1205,12 @@ Teuchos::RCP<Epetra_MultiVector> CondifImplicitTimeInt::CalcFlux()
   LINALG::Export(*convel_,*vel);
   eleparams.set("velocity field",vel);
 
+  // control parameters (not yet connected to input file)
   string fluxcomputation("domain"); // domain/condition
-  string fluxtype("total"); // calculate total/diffusive/convective flux vectors
+  string fluxtype("totalflux"); // calculate total/diffusive/convective flux vectors
 
   // visualization of total flux vector is default at the moment
-  eleparams.set("fluxtype",0); // noflux = 0; totalflux = 1 ; diffusive flux = 2;
+  eleparams.set("fluxtype",fluxtype); // noflux / totalflux / diffusiveflux
 
   if (fluxcomputation=="domain")
   {

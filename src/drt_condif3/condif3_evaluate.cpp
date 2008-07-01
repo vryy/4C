@@ -155,7 +155,14 @@ int DRT::ELEMENTS::Condif3::Evaluate(ParameterList& params,
     }
 
     // access control parameter
-    Condif3::FluxType fluxtype=params.get<Condif3::FluxType>("fluxtxpe",Condif3::noflux);
+    Condif3::FluxType fluxtype;
+    string fluxtypestring = params.get<string>("fluxtype","noflux");
+    if (fluxtypestring == "totalflux")
+      fluxtype = Condif3::totalflux;
+    else if (fluxtypestring == "diffusiveflux")
+      fluxtype = Condif3::diffusiveflux;
+    else
+      fluxtype=Condif3::noflux;  //default value
 
     Epetra_SerialDenseMatrix eflux = CalculateFlux(myphinp,actmat,evel,fluxtype);
 

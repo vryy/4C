@@ -97,7 +97,14 @@ int DRT::ELEMENTS::Condif3Surface::Evaluate(ParameterList&            params,
     }
 
     // access control parameter
-    Condif3::FluxType fluxtype=params.get<Condif3::FluxType>("fluxtxpe",Condif3::noflux);
+    Condif3::FluxType fluxtype;
+    string fluxtypestring = params.get<string>("fluxtype","noflux");
+    if (fluxtypestring == "totalflux")
+      fluxtype = Condif3::totalflux;
+    else if (fluxtypestring == "diffusiveflux")
+      fluxtype = Condif3::diffusiveflux;
+    else
+      fluxtype=Condif3::noflux;  //default value
 
     // compute fluxes on each node of the parent element
     Epetra_SerialDenseMatrix eflux = parent_->CalculateFlux(myphinp,actmat,evel,fluxtype);
