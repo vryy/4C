@@ -30,7 +30,7 @@ MAT::ContChainNetw::ContChainNetw()
   : matdata_(NULL)
 {
   isinit_=false;
-  mytime_=0.0;
+  //mytime_=0.0;
   li_ = rcp(new vector<vector<double> >);
   li0_ = rcp(new vector<vector<double> >);
   lambda_ = rcp(new vector<vector<double> >);
@@ -152,18 +152,19 @@ void MAT::ContChainNetw::Initialize(const int numgp)
 //    for (int i = 0; i < 3; ++i) {
 //      li0_->at(gp)[i] = ( (double)rand() / ((double)(RAND_MAX)+(double)(1)) );
 //    }
-    li0_->at(gp)[0] = isotropy;
-    li0_->at(gp)[1] = isotropy;
-    li0_->at(gp)[2] = isotropy;
+    li0_->at(gp)[0] = 1.0*isotropy;
+    li0_->at(gp)[1] = 1.0*isotropy;  // 2nd dir off! check update!
+    li0_->at(gp)[2] = 1.0*isotropy;
     for (int i = 0; i < 3; ++i){
       li_->at(gp)[i] = li0_->at(gp)[i];
       lambda_->at(gp)[i] = 0.0;
     }
     ni_->push_back(id);
     stresses_->push_back(initstress);
+    mytime_.push_back(1.0);
   }
 
-  mytime_ = 0.0;
+  //mytime_ = 1.0;  // carefull!
   isinit_ = true;
   
   return ;
@@ -278,21 +279,22 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   // do remodeling only if we are at a new time step and based on last stress
   const double kappa = matdata_->m.contchainnetw->relax; // relaxation time for remodeling
   const double time = params.get("total time",-1.0);
-  const double lambda_tol = 1.0E-12;
-  if ( (kappa > 0.0) ){ // && (time > mytime_) ){
-    mytime_ = time;
+  const double lambda_tol = 0.0001; //1.0E-12;
+  if ( (kappa >= 0.0)  && (time > mytime_.at(gp)) ){
+    mytime_.at(gp) = time;
     double rem_time = time;
     const double decay = exp(-kappa*rem_time);
     
     // evaluate eigenproblem
     Epetra_SerialDenseVector lambda(dim);
     Epetra_SerialDenseMatrix Phi = stresses_->at(gp);
+    //Epetra_SerialDenseMatrix Phi = S;
     LINALG::SymmetricEigenProblem(Phi,lambda);
     vector<double> rem_toggle(3,0.0);
     
     // decide on remodeling
     for (int i=0; i<3; ++i){
-      if (lambda(i) > lambda_tol) rem_toggle[i] = 1.0;
+      if (lambda(i)/lambda(2) > lambda_tol) rem_toggle[i] = 1.0;
     }
     
     // Update cell dimensions and history
@@ -321,7 +323,10 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   cout << PrintStructTens(Ni) << endl << PrintAnisoCmat((*cmat),Ni,lisq,I,c_chn,stressfree) << endl;
 #endif
   EvaluateCmat((*cmat),Ni,lisq,I,c_chn,stressfree);
-  cout << *cmat;
+  
+#if DEBUG
+  //cout << *cmat;
+#endif
   
   
   
@@ -410,6 +415,7 @@ void MAT::ContChainNetw::Update(const Epetra_SerialDenseMatrix& Phi,
     lambda_->at(gp)[i] = lambda(i);
     li_->at(gp)[i] = (rem_toggle[i] - li0_->at(gp)[i]/r0)*(1.0-decay)*r0 + li0_->at(gp)[i];
   }
+  //li_->at(gp)[1] = 0.0;  // 2nd dir off!
   ni_->at(gp) = Phi;
 }
 
@@ -488,14 +494,15 @@ void MAT::ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     ofstream outfile;
     outfile.open(filename.str().c_str(),ios_base::app);
     int nele = dis->NumMyColElements();
-    int endele = 1;
-    int endgp = 1;
-    for (int iele=0; iele<endele; ++iele)
+    int endele = nele;
+    for (int iele=0; iele<endele; iele+=10) //++iele)
     {
       const DRT::Element* actele = dis->lColElement(iele);
       RefCountPtr<MAT::Material> mat = actele->Material();
+      if (mat->MaterialType() != m_contchainnetw) return;
       MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
       int ngp = chain->Getni()->size();
+      int endgp = ngp;
       for (int gp = 0; gp < endgp; ++gp){
         vector<double> li = chain->Getli()->at(gp);
         vector<double> lamb = chain->Getlambdas()->at(gp);
@@ -522,6 +529,7 @@ void MAT::ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
       }
     }
     outfile.close();
+    return;
 }
 
 
