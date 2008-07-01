@@ -1551,12 +1551,10 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
     {
     case Condif3::totalflux:
       //convective flux terms
-      for (int k=0;k<iel;k++)
-      {
-        flux(0,iquad)+=evel[k*nsd]*ephinp[k];
-        flux(1,iquad)+=evel[1+k*nsd]*ephinp[k];;
-        flux(2,iquad)+=evel[2+k*nsd]*ephinp[k];;
-      }
+        flux(0,iquad)+=evel[iquad*nsd]*ephinp[iquad];
+        flux(1,iquad)+=evel[1+iquad*nsd]*ephinp[iquad];
+        flux(2,iquad)+=evel[2+iquad*nsd]*ephinp[iquad];
+      // no break statement here!
     case Condif3::diffusiveflux:
       //diffusive flux terms
       for (int k=0;k<iel;k++)
