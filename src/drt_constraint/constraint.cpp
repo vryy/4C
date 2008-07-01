@@ -107,7 +107,7 @@ void Constraint::EvaluateConstraint(
         params.set("action","calc_struct_constrvol");
       break;
       case areamonitor3d:
-        params.set("action","calc_struct_constrarea");
+        params.set("action","calc_struct_monitarea");
       break;
       case areamonitor2d:
         params.set("action","calc_struct_constrarea");

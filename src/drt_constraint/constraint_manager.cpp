@@ -125,6 +125,9 @@ actdisc_(discr)
     monitorvalues_=rcp(new Epetra_Vector(*monitormap_));
     initialmonvalues_=rcp(new Epetra_Vector(*monitormap_));
     initialmonvalues_->Scale(0.0);
+    volmonitor3d_->EvaluateConstraint(p,null,null,null,null,null);
+    areamonitor3d_->EvaluateConstraint(p,null,null,null,null,null);
+    areamonitor2d_->EvaluateConstraint(p,null,null,null,null,null);
     SynchronizeSumConstraint(p1,initialmonvalues_,"computed volume",numMonitorID_,minMonitorID_);
     SynchronizeSumConstraint(p1,initialmonvalues_,"computed area",numMonitorID_,minMonitorID_);
   }
