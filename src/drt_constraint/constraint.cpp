@@ -26,25 +26,22 @@ Maintainer: Thomas Kloeppel
  *----------------------------------------------------------------------*/
 Constraint::Constraint(RCP<DRT::Discretization> discr,
         const string& conditionname,
-        Teuchos::ParameterList&        params):
+        int& minID,
+        int& maxID):
 actdisc_(discr)
 {
   actdisc_->GetCondition(conditionname,constrcond_);
   if (constrcond_.size())
   {
     constrtype_=GetConstrType(conditionname);
-    int min=100000;
-    int max=0;
     for (unsigned int i=0; i<constrcond_.size();i++)
     {
       int condID=(*(constrcond_[i]->Get<vector<int> >("ConditionID")))[0];
-      if (condID>max)
-        max=condID;
-      if (condID<min)
-        min=condID;
+      if (condID>maxID)
+        maxID=condID;
+      if (condID<minID)
+        minID=condID;
     }
-    params.set("MaxID",max);
-    params.set("MinID",min);
   }
   else
   {
@@ -80,7 +77,7 @@ Constraint::ConstrType Constraint::GetConstrType(const string& name)
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void Constraint::EvaluateConstraint(
+void Constraint::Evaluate(
     ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
@@ -132,7 +129,7 @@ void Constraint::EvaluateConstraint(
     default:
       dserror("Wrong constraint/monitor type to evaluate systemvector!");
   }
-  Evaluate(actdisc_,params,systemmatrix1,systemmatrix2,systemvector1,systemvector2,systemvector3);
+  EvaluateConstraint(actdisc_,params,systemmatrix1,systemmatrix2,systemvector1,systemvector2,systemvector3);
   return;
 }
 
@@ -141,7 +138,7 @@ void Constraint::EvaluateConstraint(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void Constraint::Evaluate(RCP<DRT::Discretization> disc,
+void Constraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
     ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
@@ -181,6 +178,7 @@ void Constraint::Evaluate(RCP<DRT::Discretization> disc,
 
       const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
       int condID=(*CondIDVec)[0];
+      //cout<<condID<<endl;
       params.set("ConditionID",condID);
       char factorname[30];
       sprintf(factorname,"LoadCurveFactor %d",condID);

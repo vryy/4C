@@ -31,15 +31,16 @@ actdisc_(discr)
 {
   //Check, what kind of constraining boundary conditions there are
   numConstrID_=0;
-
   // Keep ParameterList p alive during initialization, so global information
   // over IDs as well as element results stored here can be used after all
   // constraints are evaluated
   ParameterList p;
   actdisc_->SetState("displacement",disp);
-  volconstr3d_=rcp(new Constraint(actdisc_,"VolumeConstraint_3D",p));
-  areaconstr3d_=rcp(new Constraint(actdisc_,"AreaConstraint_3D",p));
-  areaconstr2d_=rcp(new Constraint(actdisc_,"AreaConstraint_2D",p));
+  minConstrID_=10000;
+  maxConstrID_=0;
+  volconstr3d_=rcp(new Constraint(actdisc_,"VolumeConstraint_3D",minConstrID_,maxConstrID_));
+  areaconstr3d_=rcp(new Constraint(actdisc_,"AreaConstraint_3D",minConstrID_,maxConstrID_));
+  areaconstr2d_=rcp(new Constraint(actdisc_,"AreaConstraint_2D",minConstrID_,maxConstrID_));
   // Check for Multi Point Constraint Node on planes in 3D
   vector<DRT::Condition*> constrcond(0);
   havenodeconstraint_=false;
@@ -71,6 +72,7 @@ actdisc_(discr)
     SetupMPC(MPCamplitudes,MPCcondIDs,constrcond,p);
     havenodeconstraint_=true;
   }
+  numConstrID_=max(maxConstrID_-minConstrID_+1,0);
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
@@ -80,7 +82,7 @@ actdisc_(discr)
   {
     uzawaparam_=params.get<double>("uzawa parameter",1);
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
-    ManageIDs(p,minConstrID_,maxConstrID_,numConstrID_,MPCcondIDs);
+    //ManageIDs(p,minConstrID_,maxConstrID_,numConstrID_,MPCcondIDs);
     //initialize constrMatrix
     constrMatrix_=rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,true,true));
     //build domainmap of constrMatrix
@@ -89,9 +91,9 @@ actdisc_(discr)
     initialvalues_=rcp(new Epetra_Vector(*constrmap_));
     initialvalues_->Scale(0.0);
     //Set initial values to computed volumes and areas and to amplitudes of MPC
-    volconstr3d_->EvaluateConstraint(p,null,null,null,null,null);
-    areaconstr3d_->EvaluateConstraint(p,null,null,null,null,null);
-    areaconstr2d_->EvaluateConstraint(p,null,null,null,null,null);
+    volconstr3d_->Evaluate(p,null,null,null,null,null);
+    areaconstr3d_->Evaluate(p,null,null,null,null,null);
+    areaconstr2d_->Evaluate(p,null,null,null,null,null);
     SynchronizeSumConstraint(p,initialvalues_,"computed volume",numConstrID_,minConstrID_);
     SynchronizeSumConstraint(p,initialvalues_,"computed area",numConstrID_,minConstrID_);
 
@@ -110,24 +112,32 @@ actdisc_(discr)
   //---------------------------------------------------------Monitor Conditions!
   ParameterList p1;
   actdisc_->SetState("displacement",disp);
-  volmonitor3d_=rcp(new Constraint(actdisc_,"VolumeMonitor_3D",p1));
-  areamonitor3d_=rcp(new Constraint(actdisc_,"AreaMonitor_3D",p1));
-  areamonitor2d_=rcp(new Constraint(actdisc_,"AreaMonitor_2D",p1));
+  minMonitorID_=10000;
+  maxMonitorID_=0;
+  volmonitor3d_=rcp(new Constraint(actdisc_,"VolumeMonitor_3D",minMonitorID_,maxMonitorID_));
+  areamonitor3d_=rcp(new Constraint(actdisc_,"AreaMonitor_3D",minMonitorID_,maxMonitorID_));
+  areamonitor2d_=rcp(new Constraint(actdisc_,"AreaMonitor_2D",minMonitorID_,maxMonitorID_));
   //----------------------------------------------------
   //--------------include possible further monitors here
   //----------------------------------------------------
+  numMonitorID_=max(maxMonitorID_-minMonitorID_+1,0);
   havemonitor_= (areamonitor3d_->HaveConstraint())||(volmonitor3d_->HaveConstraint())||(areamonitor2d_->HaveConstraint());
   if (havemonitor_)
   {
-    ManageIDs(p1,minMonitorID_,maxMonitorID_,numMonitorID_);
-    // sum up initial values
-    monitormap_=rcp(new Epetra_Map(numMonitorID_,0,actdisc_->Comm()));
+    //monitor values are only stored on processor zero since they are needed for output
+    int nummyele=0;
+    if (!actdisc_->Comm().MyPID())
+    {
+      nummyele=numMonitorID_;
+    }
+    monitormap_=rcp(new Epetra_Map(numMonitorID_,nummyele,0,actdisc_->Comm()));
     monitorvalues_=rcp(new Epetra_Vector(*monitormap_));
     initialmonvalues_=rcp(new Epetra_Vector(*monitormap_));
     initialmonvalues_->Scale(0.0);
-    volmonitor3d_->EvaluateConstraint(p,null,null,null,null,null);
-    areamonitor3d_->EvaluateConstraint(p,null,null,null,null,null);
-    areamonitor2d_->EvaluateConstraint(p,null,null,null,null,null);
+    volmonitor3d_->Evaluate(p1,null,null,null,null,null);
+    areamonitor3d_->Evaluate(p1,null,null,null,null,null);
+    areamonitor2d_->Evaluate(p1,null,null,null,null,null);
+    //p1.get;
     SynchronizeSumConstraint(p1,initialmonvalues_,"computed volume",numMonitorID_,minMonitorID_);
     SynchronizeSumConstraint(p1,initialmonvalues_,"computed area",numMonitorID_,minMonitorID_);
   }
@@ -167,10 +177,10 @@ void ConstrManager::StiffnessAndInternalForces(
   actdisc_->SetState("displacement",disp);
   actdisc_->GetCondition("VolumeConstraint_3D",constrcond);
   
-  volconstr3d_->EvaluateConstraint(p,stiff,constrMatrix_,fint,null,null);
+  volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,null,null);
   SynchronizeSumConstraint(p,actvalues_,"computed volume",numConstrID_,minConstrID_);
-  areaconstr3d_->EvaluateConstraint(p,stiff,constrMatrix_,fint,null,null);
-  areaconstr2d_->EvaluateConstraint(p,stiff,constrMatrix_,fint,null,null);
+  areaconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,null,null);
+  areaconstr2d_->Evaluate(p,stiff,constrMatrix_,fint,null,null);
   SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
   
   //Deal with MPC
@@ -227,10 +237,10 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
     p.set("total time",time);
     actdisc_->SetState("displacement",disp);
     
-    volconstr3d_->EvaluateConstraint(p,null,null,null,null,null);
+    volconstr3d_->Evaluate(p,null,null,null,null,null);
     SynchronizeSumConstraint(p,actvalues_,"computed volume",numConstrID_,minConstrID_);
-    areaconstr3d_->EvaluateConstraint(p,null,null,null,null,null);
-    areaconstr2d_->EvaluateConstraint(p,null,null,null,null,null);
+    areaconstr3d_->Evaluate(p,null,null,null,null,null);
+    areaconstr2d_->Evaluate(p,null,null,null,null,null);
     SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
 
     if(havenodeconstraint_)
@@ -280,10 +290,10 @@ void ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
   ParameterList p;
   actdisc_->SetState("displacement",disp);
  
-  volmonitor3d_->EvaluateConstraint(p,null,null,null,null,null);
+  volmonitor3d_->Evaluate(p,null,null,null,null,null);
   SynchronizeSumConstraint(p, monitorvalues_,"computed volume",numMonitorID_,minMonitorID_);
-  areamonitor3d_->EvaluateConstraint(p,null,null,null,null,null);
-  areamonitor2d_->EvaluateConstraint(p,null,null,null,null,null);
+  areamonitor3d_->Evaluate(p,null,null,null,null,null);
+  areamonitor2d_->Evaluate(p,null,null,null,null,null);
   SynchronizeSumConstraint(p, monitorvalues_,"computed area",numMonitorID_,minMonitorID_);
   
   return;

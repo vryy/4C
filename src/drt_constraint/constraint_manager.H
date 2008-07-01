@@ -49,13 +49,11 @@ public:
     /*!
     \brief Standard Constructor
 
-    \param disc (in): Discretization
-    \param disp (in): current displacement to compute initial constraints
     */
 
-    ConstrManager(RCP<DRT::Discretization> disc,
-        RCP<Epetra_Vector> disp,
-        ParameterList param);
+    ConstrManager(RCP<DRT::Discretization> disc,  ///< standard discretization
+        RCP<Epetra_Vector> disp,  ///< current displacement
+        ParameterList param);  ///<  parameterlist from timeintegration algorithm
 
     /*!
         \brief Destructor
