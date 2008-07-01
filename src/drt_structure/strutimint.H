@@ -62,11 +62,21 @@ public:
   //! Constructor
   StruTimInt()
   { 
+    /*
     std::cout << "Welcome to Structural Time Integration _ " << std::endl;
     std::cout << " _ __       _       _      _ __    _  / |" << std::endl;
     std::cout << "| '_ \\     | |_____\\ \\    | '_ \\ _| |_| |" << std::endl;
     std::cout << "| | | |    |  _____   )   | | | |_   _| |" << std::endl;
     std::cout << "|_| |_|    |_|     /_/    |_| |_| |_| |_|" << std::endl;
+    */
+    std::cout << "Welcome to Structural Time Integration " << std::endl;
+    std::cout << "     __o__                          __o__       " << std::endl;
+    std::cout << "__  /-----\\__                  __  /-----\\__           " << std::endl;
+    std::cout << "\\ \\/       \\ \\    |       \\    \\ \\/       \\ \\          " << std::endl;
+    std::cout << " \\ |  tea  | |    |-------->    \\ |  tea  | |          " << std::endl;
+    std::cout << "  \\|       |_/    |       /      \\|       |_/          " << std::endl;
+    std::cout << "    \\_____/   ._                   \\_____/   ._ _|_ /| " << std::endl;
+    std::cout << "              | |                            | | |   | " << std::endl;
     std::cout << std::endl;
   };
 

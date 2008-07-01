@@ -66,7 +66,7 @@ StruTimIntGenAlpha::StruTimIntGenAlpha
     output
   ),
   midavg_(MapMidAvgStringToEnum(genalphaparams.get<string>("GENAVG"))),
-  iterupditer_(false),
+  /* iterupditer_(false), */
   beta_(genalphaparams.get<double>("BETA")),
   gamma_(genalphaparams.get<double>("GAMMA")),
   alphaf_(genalphaparams.get<double>("ALPHA_F")),
@@ -114,7 +114,7 @@ StruTimIntGenAlpha::StruTimIntGenAlpha
     // internal force vector F_{int;n+1} at new time
     fintn_ = LINALG::CreateVector(*dofrowmap_, true);
     // set initial internal force vector
-    ApplyForceStiffInternal(time_, dis_, zeros_, fint_, Teuchos::null);
+    ApplyForceStiffInternal(time_, dis_, zeros_, fint_, stiff_);
   } 
   else if (midavg_ == midavg_imrlike)
   {
@@ -150,15 +150,6 @@ void StruTimIntGenAlpha::PredictConstDisConsistVelAcc()
 {
   // constant predictor : displacement in domain
   disn_->Update(1.0, *dis_, 0.0);
-  /*
-  // apply Dirichlet condition onto this
-  // This is not absolutely necessary, as the DBCs are set
-  // by StruTimIntImpl::Predict. 
-  // However, here they are
-  // applied to achieve a more better guess for the remaining
-  // DOFs.
-  ApplyDirichletBC(timen_, disn_, Teuchos::null, Teuchos::null);
-  */
 
   // consistent velocities
   veln_->Update(1.0, *disn_, -1.0, *dis_, 0.0);
@@ -362,41 +353,62 @@ double StruTimIntGenAlpha::CalcRefNormForce()
 }
 
 /*----------------------------------------------------------------------*/
-/* iteration update of state */
-void StruTimIntGenAlpha::UpdateIter()
+/* incremental iteration update of state */
+void StruTimIntGenAlpha::UpdateIterIncrementally()
 {
-  // iterative update method
-  if (iterupditer_)
-  {
-    // new end-point displacements
-    // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
-    disn_->Update(1.0, *disi_, 1.0);
-    
-    // new end-point velocities
-    veln_->Update(gamma_/(beta_*dt_), *disi_, 1.0);
-    
-    // new end-point accelerations
-    accn_->Update(1.0/(beta_*dt_*dt_), *disi_, 1.0);
-  }
-  // incremental update method;
-  else
-  {
-    // new end-point displacements
-    // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
-    disn_->Update(1.0, *disi_, 1.0);
+  // auxiliar global vectors
+  Teuchos::RCP<Epetra_Vector> aux
+      = LINALG::CreateVector(*dofrowmap_, false);
+  Teuchos::RCP<Epetra_Vector> aux2
+      = LINALG::CreateVector(*dofrowmap_, false);
 
-    // new end-point velocities
-    veln_->Update(1.0, *disn_, -1.0, *dis_, 0.0);
-    veln_->Update((beta_-gamma_)/beta_, *vel_,
-                  (2.0*beta_-gamma_)*dt_/(2.0*beta_), *acc_,
-                  gamma_/(beta_*dt_));
-    
-    // new end-point accelerations
-    accn_->Update(1.0, *disn_, -1.0, *dis_, 0.0);
-    accn_->Update(-1.0/(beta_*dt_), *vel_,
-                  (2.0*beta_-1.0)/(2.0*beta_), *acc_,
-                  1.0/(beta_*dt_*dt_));
-  }
+  // new end-point displacements
+  // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
+  disn_->Update(1.0, *disi_, 1.0);
+
+  // new end-point velocities
+  aux->Update(1.0, *disn_, -1.0, *dis_, 0.0);
+  aux->Update((beta_-gamma_)/beta_, *vel_,
+              (2.0*beta_-gamma_)*dt_/(2.0*beta_), *acc_,
+              gamma_/(beta_*dt_));
+  // blank entries on DBC DOFs
+  aux2->Multiply(1.0, *invtoggle_, *aux, 0.0);
+  // blank entries on non-DBC DOFs
+  aux->Scale(1.0, *veln_);
+  veln_->Multiply(1.0, *dirichtoggle_, *aux, 0.0);
+  // add new velocities only on non-DBC/free DOFs
+  veln_->Update(1.0, *aux2, 1.0);
+  
+  // new end-point accelerations
+  aux->Update(1.0, *disn_, -1.0, *dis_, 0.0);
+  aux->Update(-1.0/(beta_*dt_), *vel_,
+              (2.0*beta_-1.0)/(2.0*beta_), *acc_,
+              1.0/(beta_*dt_*dt_));
+  // blank entries on DBC DOFs
+  aux2->Multiply(1.0, *invtoggle_, *aux, 0.0);
+  // blank entries on non-DBC DOFs
+  aux->Scale(1.0, *accn_);
+  accn_->Multiply(1.0, *dirichtoggle_, *aux, 0.0);
+  // add new accelerations only on free DOFs
+  accn_->Update(1.0, *aux2, 1.0);
+
+  // bye
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* iterative iteration update of state */
+void StruTimIntGenAlpha::UpdateIterIteratively()
+{
+  // new end-point displacements
+  // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
+  disn_->Update(1.0, *disi_, 1.0);
+  
+  // new end-point velocities
+  veln_->Update(gamma_/(beta_*dt_), *disi_, 1.0);
+  
+  // new end-point accelerations
+  accn_->Update(1.0/(beta_*dt_*dt_), *disi_, 1.0);
 
   // bye
   return;
@@ -435,7 +447,6 @@ void StruTimIntGenAlpha::UpdateStep()
     // other parameters that might be needed by the elements
     p.set("total time", timen_);
     p.set("delta time", dt_);
-    p.set("alpha f", alphaf_);
     // action for elements
     if (midavg_ == midavg_trlike) 
     {
@@ -443,6 +454,7 @@ void StruTimIntGenAlpha::UpdateStep()
     }
     else if (midavg_ == midavg_imrlike)
     {
+      p.set("alpha f", alphaf_);
       p.set("action", "calc_struct_update_genalpha_imrlike");
     }
     // go to elements

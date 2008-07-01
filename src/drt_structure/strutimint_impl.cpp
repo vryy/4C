@@ -597,8 +597,8 @@ void StruTimIntImpl::ApplyForceStiffInternal
   const double time,
   const Teuchos::RCP<Epetra_Vector> dis,  // displacement state
   const Teuchos::RCP<Epetra_Vector> disi,  // residual displacements
-  Teuchos::RCP<Epetra_Vector> fint,  // internal force
-  Teuchos::RCP<LINALG::SparseMatrix> stiff  // stiffness matrix
+  Teuchos::RCP<Epetra_Vector>& fint,  // internal force
+  Teuchos::RCP<LINALG::SparseMatrix>& stiff  // stiffness matrix
 )
 {
   // create the parameters for the discretization
@@ -818,7 +818,7 @@ void StruTimIntImpl::NewtonFull()
   }
 
   // initialise equilibrium loop
-  iter_ = 0;
+  iter_ = 1;
   normfres_ = CalcRefNormForce();
   normdisi_ = 1.0e6;  // this is strictly >0,toldisi_
   timer_.ResetStartTime();
@@ -834,17 +834,17 @@ void StruTimIntImpl::NewtonFull()
 
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
-    if (solveradapttol_ and (iter_ > 0))
+    if (solveradapttol_ and (iter_ > 1))
     {
       double worst = normfres_;
       double wanted = tolfres_;
       solver_.AdaptTolerance(wanted, worst, solveradaptolbetter_);
     }
-    solver_.Solve(stiff_->EpetraMatrix(), disi_, fres_, true, iter_==0);
+    solver_.Solve(stiff_->EpetraMatrix(), disi_, fres_, true, iter_==1);
     solver_.ResetTolerance();
 
     // update end-point displacements etc
-    UpdateIter();
+    UpdateIter(iter_);
 
     // compute residual forces #fres_ and stiffness #stiff_
     EvaluateForceStiffResidual();
@@ -870,9 +870,9 @@ void StruTimIntImpl::NewtonFull()
   }  // end equilibrium loop
 
   // test whether max iterations was hit
-  if (iter_ >= itermax_)
+  if (iter_ > itermax_)
   {
-    dserror("Newton unconverged in %d iterations", iter_);
+    dserror("Newton unconverged in %d iterations", iter_-1);
   }
   else if (Converged())
   {
@@ -881,6 +881,23 @@ void StruTimIntImpl::NewtonFull()
 
   // get out of here
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Update iteration */
+void StruTimIntImpl::UpdateIter
+(
+  const int iter  //!< iteration counter
+)
+{
+  if (iter == 0)
+  {
+    UpdateIterIncrementally();
+  }
+  else
+  {
+    UpdateIterIteratively();
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -953,7 +970,7 @@ void StruTimIntImpl::PrintNewtonIterText
             "numiter %2d"
             " scaled res-norm %10.5e"
             " scaled dis-norm %20.15E\n",
-            iter_+1, normfres_/normcharforce_, normdisi_/normchardis_);
+            iter_, normfres_/normcharforce_, normdisi_/normchardis_);
     break;
   // relative residual forces
   case convcheck_relres_and_absdis:
@@ -962,7 +979,7 @@ void StruTimIntImpl::PrintNewtonIterText
             "numiter %2d"
             " scaled res-norm %10.5e"
             " absolute dis-norm %20.15E\n",
-            iter_+1, normfres_/normcharforce_, normdisi_);
+            iter_, normfres_/normcharforce_, normdisi_);
     break;
   // absolute forces and displacements
   case convcheck_absres_and_absdis:
@@ -971,7 +988,7 @@ void StruTimIntImpl::PrintNewtonIterText
             "numiter %2d"
             " absolute res-norm %10.5e"
             " absolute dis-norm %20.15E\n",
-            iter_+1, normfres_, normdisi_);
+            iter_, normfres_, normdisi_);
     break;
   default:
     dserror("Cannot handle requested convergence check %i", itercnvchk_);

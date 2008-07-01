@@ -128,8 +128,23 @@ public:
   //! \author lw (originally)
   double CalcRefNormForce();
 
-  //! Update iteration
-  void UpdateIter();
+  //! Update iteration incrementally
+  //!
+  //! This update is carried out by computing the new #veln_ and #acc_
+  //! from scratch by using the newly updated #disn_. The method
+  //! respects the Dirichlet DOFs which are not touched.
+  //! This method is necessary for certain predictors 
+  //! (like #PredictConstDisConsistVelAcc)
+  void UpdateIterIncrementally();
+
+  //! Update iteration iteratively
+  //!
+  //! This is the ordinary update of #disn_, #veln_ and #accn_ by
+  //! incrementing these vector proportional to the residual
+  //! displacements #disi_
+  //! The Dirichlet BCs are automatically respected, because the
+  //! residual displacements #disi_ are blanked at these DOFs.
+  void UpdateIterIteratively();
 
   //! Update step
   void UpdateStep();
@@ -171,14 +186,12 @@ protected:
   //! Residual \c fres_ exists already in base class
   //@{
   Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force at \f$t_n\f$
-  Teuchos::RCP<Epetra_Vector> fintt_;  //!< internal mid-force
   Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
   Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
-  Teuchos::RCP<Epetra_Vector> fextt_;  //!< external mid-force
   Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
 
-  Teuchos::RCP<Epetra_Vector> finertt_;  //!< interial force
+  Teuchos::RCP<Epetra_Vector> finertt_;  //!< intertial force
   Teuchos::RCP<Epetra_Vector> fvisct_;  //!< viscous force
 
   Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin force due to FSI

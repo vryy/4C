@@ -209,8 +209,8 @@ public:
     const double time,  //!< evaluation time
     const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
     const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
-    Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
-    Teuchos::RCP<LINALG::SparseMatrix> stiff  //!< stiffness matrix
+    Teuchos::RCP<Epetra_Vector>& fint,  //!< internal force
+    Teuchos::RCP<LINALG::SparseMatrix>& stiff  //!< stiffness matrix
   );
 
   //! Evaluate forces due to constraints
@@ -308,7 +308,28 @@ public:
   //! This handles the iterative update of the current 
   //! displacements \f$D_{n+1}\f$ with the residual dispplacements
   //! The velocities and accelerations follow on par.
-  virtual void UpdateIter() = 0;
+  void UpdateIter
+  (
+    const int iter  //!< iteration counter
+  );
+
+  //! Update iteration incrementally
+  //!
+  //! This update is carried out by computing the new #veln_ and #acc_
+  //! from scratch by using the newly updated #disn_. The method
+  //! respects the Dirichlet DOFs which are not touched.
+  //! This method is necessary for certain predictors 
+  //! (like #PredictConstDisConsistVelAcc)
+  virtual void UpdateIterIncrementally() = 0;
+
+  //! Update iteration iteratively
+  //!
+  //! This is the ordinary update of #disn_, #veln_ and #accn_ by
+  //! incrementing these vector proportional to the residual
+  //! displacements #disi_
+  //! The Dirichlet BCs are automatically respected, because the
+  //! residual displacements #disi_ are blanked at these DOFs.
+  virtual void UpdateIterIteratively() = 0;
 
   //@}
 
