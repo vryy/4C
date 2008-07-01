@@ -152,6 +152,8 @@ void StruGenAlpha::LineSearchNewton()
       // set vector values needed by elements
       discret_.ClearState();
 #ifdef STRUGENALPHA_FINTLIKETR
+      RCP<Epetra_Vector> disim = rcp(new Epetra_Vector(*disi_));
+      disim->Scale(lambda);
 #else
       // do not touch disi_ here!
       // scale IncD_{n+1} by (1-alphaf) to obtain mid residual displacements IncD_{n+1-alphaf}
