@@ -40,7 +40,7 @@ ConDifResultTest::ConDifResultTest(CondifImplicitTimeInt& condif)
 {
   condifdis_=condif.discret_;
   mysol_   =condif.phinp_ ;
-  myflux_ = condif.CalcFlux();
+  //myflux_ = condif.CalcFlux();
 }
 
 
@@ -52,7 +52,6 @@ ConDifResultTest::ConDifResultTest(CondifGenAlphaIntegration& condif)
   mysol_   =condif.phinp_ ;
   dserror("flux calculation method missing for GenAlpha-Result test");
 }
-
 
 
 /*----------------------------------------------------------------------*/
