@@ -19,7 +19,7 @@ Input/c1_neum_geonln.dat                                x        x        x     
 Input/c1_plast_mises.dat                                x        x        x        x        -        -
 Input/c1_mat_itskov.dat                                 x        -        x        -        -        -
 Input/c1_mat_hyperpolyconvex.dat                        x        -        x        -        -        -
-Input/c1_surftension.dat            	       	 	x	 x	  x	   x        -	     -
+Input/c1_surftension.dat                                x        x        x        x        -        -
 Input/condif2_straight_convection_direct.dat            x        x        -        -        -        -
 Input/condif2_straight_convection_vm3gls.dat            -        x        -        -        -        -
 Input/condif3_straight_convection.dat                   x        -        -        -        -        -
