@@ -560,6 +560,7 @@ void StruTimIntImpl::ApplyDirichletBC
   // compute an inverse of the dirichtoggle vector
   invtoggle_->PutScalar(1.0);
   invtoggle_->Update(-1.0, *dirichtoggle_, 1.0);
+
   // ciao
   return;
 }
@@ -854,14 +855,6 @@ void StruTimIntImpl::NewtonFull()
     // build residual displacement norm
     normdisi_ = CalculateNorm(iternorm_, disi_);
 
-    // a short message
-    //if ( (myrank_ == 0) and printscreen_)
-    //{
-    //  std::cout << "ForResNorm= " << normfres_
-    //            << " DisResNorm= " << normdisi_
-    //            << std::endl;
-    //}
-
     // print stuff
     PrintNewtonIter();
 
@@ -1095,7 +1088,7 @@ void StruTimIntImpl::PrintStepText
   // print a beautiful line
   fprintf(ofile,
           "--------------------------------------------------------------"
-          "--------------------\n");
+          "------------------\n");
   // print now!
   fflush(ofile);
 
