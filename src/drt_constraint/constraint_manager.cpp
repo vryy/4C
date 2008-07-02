@@ -65,13 +65,17 @@ actdisc_(discr)
     redconstrmap_ = LINALG::AllreduceEMap(*constrmap_);
     // sum up initial values
     initialvalues_=rcp(new Epetra_Vector(*constrmap_));
-    //Set initial values to computed volumes and areas and to amplitudes of MPC
-    volconstr3d_->Evaluate(p,null,null,null,null,null);
-    areaconstr3d_->Evaluate(p,null,null,null,null,null);
-    areaconstr2d_->Evaluate(p,null,null,null,null,null);
-    SynchronizeSumConstraint(p,initialvalues_,"computed volume",numConstrID_,minConstrID_);
-    SynchronizeSumConstraint(p,initialvalues_,"computed area",numConstrID_,minConstrID_);
+    RCP<Epetra_Vector> initialredundant = rcp(new Epetra_Vector(*redconstrmap_));
+    LINALG::Export(*initialvalues_,*initialredundant);
+    //Compute initial values and assemble them to the completely redundant vector
+    //We will always use the third systemvector for this purpose
     p.set("MinID",minConstrID_);
+    volconstr3d_->Evaluate(p,null,null,null,null,initialredundant);
+    areaconstr3d_->Evaluate(p,null,null,null,null,initialredundant);
+    areaconstr2d_->Evaluate(p,null,null,null,null,initialredundant);
+    
+    ImportResults(initialvalues_,initialredundant);
+    
     mpconplane3d_->Evaluate(p,null,null,initialvalues_,null,null,true);
     mpconplane3d_->Evaluate(p,null,null,initialvalues_,null,null,true);
 
@@ -108,15 +112,21 @@ actdisc_(discr)
       nummyele=numMonitorID_;
     }
     monitormap_=rcp(new Epetra_Map(numMonitorID_,nummyele,0,actdisc_->Comm()));
+    redmonmap_ = LINALG::AllreduceEMap(*monitormap_);
     monitorvalues_=rcp(new Epetra_Vector(*monitormap_));
     initialmonvalues_=rcp(new Epetra_Vector(*monitormap_));
     initialmonvalues_->Scale(0.0);
-    volmonitor3d_->Evaluate(p1,null,null,null,null,null);
-    areamonitor3d_->Evaluate(p1,null,null,null,null,null);
-    areamonitor2d_->Evaluate(p1,null,null,null,null,null);
+    
+    RCP<Epetra_Vector> initialmonredundant = rcp(new Epetra_Vector(*redmonmap_));
+    LINALG::Export(*initialmonvalues_,*initialmonredundant);
+    p1.set("MinID",minMonitorID_);
+    
+    volmonitor3d_->Evaluate(p1,null,null,null,null,initialmonredundant);
+    areamonitor3d_->Evaluate(p1,null,null,null,null,initialmonredundant);
+    areamonitor2d_->Evaluate(p1,null,null,null,null,initialmonredundant);
 
-    SynchronizeSumConstraint(p1,initialmonvalues_,"computed volume",numMonitorID_,minMonitorID_);
-    SynchronizeSumConstraint(p1,initialmonvalues_,"computed area",numMonitorID_,minMonitorID_);
+    ImportResults(initialmonvalues_,initialmonredundant);
+    
   }
   return;
 }
@@ -152,18 +162,20 @@ void ConstrManager::StiffnessAndInternalForces(
   
   actdisc_->ClearState();
   actdisc_->SetState("displacement",disp);
-  
-  volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,null,null);
-  SynchronizeSumConstraint(p,actvalues_,"computed volume",numConstrID_,minConstrID_);
-  areaconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,null,null);
-  areaconstr2d_->Evaluate(p,stiff,constrMatrix_,fint,null,null);
-  SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
+ 
+  RCP<Epetra_Vector> actredundant = rcp(new Epetra_Vector(*redconstrmap_));
+  LINALG::Export(*actvalues_,*actredundant);
+
+  volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,null,actredundant);
+  areaconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,null,actredundant);
+  areaconstr2d_->Evaluate(p,stiff,constrMatrix_,fint,null,actredundant);
   
   mpconplane3d_->SetConstrState("displacement",disp);
-  mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,null,null);
+  mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,null,actredundant);
   mpconline2d_->SetConstrState("displacement",disp);
-  mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,null,null);
-  SynchronizeSumConstraint(p,actvalues_,"computed MPC value",numConstrID_,minConstrID_);
+  mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,null,actredundant);
+  
+  ImportResults(actvalues_,actredundant);
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
@@ -189,16 +201,20 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
     p.set("total time",time);
     actdisc_->SetState("displacement",disp);
     
-    volconstr3d_->Evaluate(p,null,null,null,null,null);
-    SynchronizeSumConstraint(p,actvalues_,"computed volume",numConstrID_,minConstrID_);
-    areaconstr3d_->Evaluate(p,null,null,null,null,null);
-    areaconstr2d_->Evaluate(p,null,null,null,null,null);
-    SynchronizeSumConstraint(p,actvalues_,"computed area",numConstrID_,minConstrID_);
-
-    mpconplane3d_->Evaluate(p,null,null,null,null,null);
-    mpconline2d_->Evaluate(p,null,null,null,null,null);
-    SynchronizeSumConstraint(p,actvalues_,"computed MPC value",numConstrID_,minConstrID_);
+    RCP<Epetra_Vector> actredundant = rcp(new Epetra_Vector(*redconstrmap_));
+    LINALG::Export(*actvalues_,*actredundant);
+    //Compute initial values and assemble them to the completely redundant vector
+    //We will always use the third systemvector for this purpose
+    p.set("MinID",minConstrID_);
+    volconstr3d_->Evaluate(p,null,null,null,null,actredundant);
+    areaconstr3d_->Evaluate(p,null,null,null,null,actredundant);
+    areaconstr2d_->Evaluate(p,null,null,null,null,actredundant);
      
+    mpconplane3d_->Evaluate(p,null,null,null,null,actredundant);
+    mpconplane3d_->Evaluate(p,null,null,null,null,actredundant);
+    
+    ImportResults(actvalues_,actredundant);
+
     constrainterr_->Update(1.0,*referencevalues_,-1.0,*actvalues_,0.0);
     return;
 }
@@ -234,12 +250,16 @@ void ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
   monitorvalues_->Scale(0.0);
   ParameterList p;
   actdisc_->SetState("displacement",disp);
- 
-  volmonitor3d_->Evaluate(p,null,null,null,null,null);
-  SynchronizeSumConstraint(p, monitorvalues_,"computed volume",numMonitorID_,minMonitorID_);
-  areamonitor3d_->Evaluate(p,null,null,null,null,null);
-  areamonitor2d_->Evaluate(p,null,null,null,null,null);
-  SynchronizeSumConstraint(p, monitorvalues_,"computed area",numMonitorID_,minMonitorID_);
+  
+  RCP<Epetra_Vector> actmonredundant = rcp(new Epetra_Vector(*redmonmap_));
+  LINALG::Export(*monitorvalues_,*actmonredundant);
+  p.set("MinID",minMonitorID_);
+  
+  volmonitor3d_->Evaluate(p,null,null,null,null,actmonredundant);
+  areamonitor3d_->Evaluate(p,null,null,null,null,actmonredundant);
+  areamonitor2d_->Evaluate(p,null,null,null,null,actmonredundant);
+  
+  ImportResults(monitorvalues_,actmonredundant);
   
   return;
 }
@@ -258,24 +278,26 @@ void ConstrManager::PrintMonitorValues()
   return;
 }
 
-
 /*----------------------------------------------------------------------*
- |(private)                                                 tk 11/07    |
+ |(private)                                                 tk 07/08    |
  |small subroutine to synchronize processors after evaluating the       |
  |constraints by summing them up                                        |
  *----------------------------------------------------------------------*/
-void ConstrManager::SynchronizeSumConstraint(ParameterList& params,
-                                RCP<Epetra_Vector>& vect,
-                                const char* resultstring, const int numID, const int minID)
+void ConstrManager::ImportResults
+(
+  RCP<Epetra_Vector>& vect_dist,
+  RCP<Epetra_Vector>& vect_redu
+)
 {
-  for (int i = 0; i < numID; ++i)
+  vector<int> gids;
+  for (int i = 0; i < (vect_redu->MyLength()); ++i)
   {
-    char valname[30];
-    sprintf(valname,"%s %d",resultstring,i+minID);
-    double currval=0.0;
-    actdisc_->Comm().SumAll(&(params.get(valname,0.0)),&(currval),1);
-    vect->SumIntoGlobalValues(1,&currval,&i);
+    gids.push_back(i);
   }
+  vector<double> currval(vect_redu->MyLength(),0);
+  actdisc_->Comm().SumAll(&((*vect_redu)[0]),&(currval[0]),vect_redu->MyLength());
+  vect_dist->SumIntoGlobalValues(vect_redu->MyLength(),&(currval[0]),&(gids[0]));
+
   return;
 }
 

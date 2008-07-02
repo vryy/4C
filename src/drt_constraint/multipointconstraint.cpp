@@ -344,7 +344,7 @@ void MPConstraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
     elematrix2.Shape(eledim,eledim);
     elevector1.Size(eledim);
     elevector2.Size(eledim);
-    elevector3.Size(eledim);
+    elevector3.Size(systemvector3->MyLength());
     DRT::Condition& cond = *(constrcond_[actele->Id()]);
     const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
     int condID=(*CondIDVec)[0];
@@ -366,8 +366,17 @@ void MPConstraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
     }
     if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
     if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
-    if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
-
+    if (assemblevec3) 
+    {
+      vector<int> constrlm;
+      vector<int> constrowner;
+      for (int i=0; i<elevector3.Length();i++)
+      {
+        constrlm.push_back(i);
+        constrowner.push_back(actele->Owner());
+      }
+      LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
+    }
     const vector<int>*    curve  = cond.Get<vector<int> >("curve");
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];

@@ -109,15 +109,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       elevec2=elevec1;
       elevec1.Scale((*lambdav)[condID-minID]);
       elemat1.Scale((*lambdav)[condID-minID]);
-      //call submethod for volume evaluation
-      if(discretization.Comm().MyPID()==Owner())
-      {
-        // write normal distance to parameter list
-        char ndistname[30];
-        sprintf(ndistname,"computed MPC value %d",condID);
-        //update volume in parameter list
-        params.set(ndistname, normaldistance);
-      }
+      elevec3[condID-minID]=normaldistance;
     }
     break;
     case calc_MPC2D_dist_stiff:
@@ -145,15 +137,7 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       elevec1.Scale(-1.0*(*lambdav)[condID-minID]);
       elemat1.Scale(-1.0*(*lambdav)[condID-minID]);
       elevec2.Scale(-1.0);
-      //call submethod for volume evaluation
-      if(discretization.Comm().MyPID()==Owner())
-      {
-        // write normal distance to parameter list
-        char ndistname[30];
-        sprintf(ndistname,"computed MPC value %d",condID);
-        //update volume in parameter list
-        params.set(ndistname, normaldistance);
-      }
+      elevec3[condID-minID]=normaldistance;
     }    
     break;
     case calc_MPC2D_angle_stiff:
@@ -182,15 +166,8 @@ int DRT::ELEMENTS::ConstraintElement::Evaluate(ParameterList& params,
       elevec1.Scale(-1*(*lambdav)[condID-minID]);
       elemat1.Scale(-1*(*lambdav)[condID-minID]);
       elevec2.Scale(-1.0);
-      //call submethod for volume evaluation
-      if(discretization.Comm().MyPID()==Owner())
-      {
-        // write normal distance to parameter list
-        char ndistname[30];
-        sprintf(ndistname,"computed MPC value %d",condID);
-        //update volume in parameter list
-        params.set(ndistname, angle);
-      }
+      elevec3[condID-minID]=angle;
+      
     }  
     break;
     default:

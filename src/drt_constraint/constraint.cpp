@@ -91,7 +91,7 @@ void Constraint::Evaluate(
 {
   
   if ((systemmatrix1==Teuchos::null)&&(systemmatrix2==Teuchos::null)&&
-      (systemvector1==Teuchos::null)&&(systemvector2==Teuchos::null)&&(systemvector3==Teuchos::null))
+      (systemvector1==Teuchos::null)&&(systemvector2==Teuchos::null))
   {
     switch (constrtype_)
     {
@@ -218,7 +218,7 @@ void Constraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
         elematrix2.Shape(eledim,eledim);
         elevector1.Size(eledim);
         elevector2.Size(eledim);
-        elevector3.Size(eledim);
+        elevector3.Size(systemvector3->MyLength());
 
         // call the element specific evaluate method
         int err = curr->second->Evaluate(params,*disc,lm,elematrix1,elematrix2,
@@ -230,6 +230,7 @@ void Constraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
         if (assemblemat1) systemmatrix1->Assemble(eid,elematrix1,lm,lmowner);
         if (assemblemat2)
         {
+          //assemble to rectangular matrix. The colum corresponds to the constraint ID
           int minID=params.get("MinID",0);
           vector<int> colvec(1);
           colvec[0]=condID-minID;
@@ -237,7 +238,17 @@ void Constraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
         }
         if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,lm,lmowner);
         if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lm,lmowner);
-        if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lm,lmowner);
+        if (assemblevec3) 
+        {
+          vector<int> constrlm;
+          vector<int> constrowner;
+          for (int i=0; i<elevector3.Length();i++)
+          {
+            constrlm.push_back(i);
+            constrowner.push_back(curr->second->Owner());
+          }
+          LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
+        }
       }
   }
   return;

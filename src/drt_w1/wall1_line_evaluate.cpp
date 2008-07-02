@@ -281,14 +281,9 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
         }
         //compute area between line and x-Axis
         double areaele =  0.5*(xscurr(0,1)+xscurr(1,1))*(xscurr(1,0)-xscurr(0,0));
-        
-        // get RIGHT area out of parameterlist and maximum ConditionID
-        char areaname[30];
-        const int ID =params.get("ConditionID",-1);
-        sprintf(areaname,"computed area %d",ID);
-        double areacondval = params.get(areaname,0.0);
-        //update volume in parameter list
-        params.set(areaname, areacondval+areaele);
+        const int ID = params.get("ConditionID",-1);
+        const int minID = params.get("MinID",-1);
+        elevector3[ID-minID] = areaele;
       }
       
     }
@@ -333,17 +328,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
       elevector1.Scale(1*(*lambdav)[ID-minID]);
       elematrix1.Scale(1*(*lambdav)[ID-minID]);
       //compute area between line and x-Axis
-      if(Comm.MyPID()==Owner())
-      {
-        double areaele =  0.5*(xscurr(0,1)+xscurr(1,1))*(xscurr(1,0)-xscurr(0,0));
-
-        // get RIGHT area out of parameterlist
-        char areaname[30];
-        sprintf(areaname,"computed area %d",ID);
-        double areacondval = params.get(areaname,0.0);
-        //update volume in parameter list
-        params.set(areaname, areacondval+areaele);
-      }
+      double areaele =  0.5*(xscurr(0,1)+xscurr(1,1))*(xscurr(1,0)-xscurr(0,0));
+      elevector3[ID-minID] = areaele;
     }
     break;
     default:
