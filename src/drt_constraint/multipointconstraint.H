@@ -68,7 +68,12 @@ public:
       return;
   };
 
-  void SetConstrState(const string& state,RCP<Epetra_Vector> V)
+  /// Set state of the underlying constraint discretization
+  void SetConstrState
+  (
+    const string& state,  ///< name of state to set
+    RCP<Epetra_Vector> V  ///< values to set
+  )
   {
     if (constrtype_!=none)
     {
@@ -81,7 +86,7 @@ public:
 
   //! @name Public Member Functions
 
-  //! Evaluate conditions and assemble to a rectangular matrix
+  //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateConstraint routine is called 
   void Evaluate
   ( 
     Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
@@ -108,24 +113,24 @@ private:
   MPConstraint(const MPConstraint& old);
 
 
-  //! name@ Private Attributes
+  //! additional discretization consisting of constraint elements
   RCP<DRT::Discretization> constraintdis_;
-  //@}
+
   
-  //! name@ Private Member Functions
+  //! @name Private Member Functions
     
   //! Return the ConstrType based on the condition name
   ConstrType GetConstrType(const string& Name);///<condition name
   
-  //! Evaluate conditions and assemble to a rectangular matrix
+  //! Evaluate constraint discretization and assemble the results
   void EvaluateConstraint( 
       RCP<DRT::Discretization> disc,  ///< discretization to evaluate
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector>    systemvector1, //< distributed vector that may be filled by aasembly of element contributions
-      Teuchos::RCP<Epetra_Vector>    systemvector2, //< distributed vector that may be filled by aasembly of element contributions
-      Teuchos::RCP<Epetra_Vector>    systemvector3); //< distributed vector that may be filled by aasembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by aasembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    systemvector2, ///< distributed vector that may be filled by aasembly of element contributions
+      Teuchos::RCP<Epetra_Vector>    systemvector3); ///< distributed vector that may be filled by aasembly of element contributions
   
   
   //! creating a new discretization based on conditions containing constraint elements

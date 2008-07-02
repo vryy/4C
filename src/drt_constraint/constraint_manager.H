@@ -52,10 +52,12 @@ public:
 
   */
 
-  ConstrManager(RCP<DRT::Discretization> disc,  ///< standard discretization
-      RCP<Epetra_Vector> disp,  ///< current displacement
-      ParameterList param);  ///<  parameterlist from timeintegration algorithm
-
+  ConstrManager
+  (
+    RCP<DRT::Discretization> disc,  ///< standard discretization
+    RCP<Epetra_Vector> disp,  ///< current displacement
+    ParameterList param  ///<  parameterlist from timeintegration algorithm
+  );
   /*!
       \brief Destructor
 
@@ -72,16 +74,14 @@ public:
     \brief Change stiffness matrix and force vector according to the constraints.
     Values of lagrange multiplier are taken from intern variable.
     Difference between current and prescribed values is calculated and stored as well.
-
-    \param time (in):      time at end of time step
-    \param disp (in):      Displacement at end of time step
-    \param fint (in/out):     Vector of internal forces
-    \param stiff (in/out):   Stiffness matrix
   */
-  void StiffnessAndInternalForces(const double time,
-        RCP<Epetra_Vector> disp,
-        RCP<Epetra_Vector> fint,
-        RCP<LINALG::SparseMatrix> stiff);
+  void StiffnessAndInternalForces
+  (
+    const double time,  ///< time at end of time step
+    RCP<Epetra_Vector> disp,  ///< displacement at end of time step
+    RCP<Epetra_Vector> fint,  ///< vector of internal forces
+    RCP<LINALG::SparseMatrix> stiff  ///< stiffness matrix
+  );
 
   /*!
    \brief Return norm of difference between actual and constraint values
@@ -130,6 +130,7 @@ public:
       return (*constrainterr_)[i];
   }
 
+  /// return vector of differences between prescribed and actual values
   RCP<Epetra_Vector> GetError()
   {
     return constrainterr_;
