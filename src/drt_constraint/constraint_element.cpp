@@ -26,6 +26,7 @@ DRT::ELEMENTS::ConstraintElement::ConstraintElement(int id, int owner) :
 DRT::Element(id,element_constraintelement,owner),
 data_()
 {
+  numdof_=0;
   return;
 }
 

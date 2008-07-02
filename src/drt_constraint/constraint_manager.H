@@ -28,6 +28,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/linalg_systemmatrix.H"
 #include "../drt_lib/drt_utils.H"
 #include "constraint.H"
+#include "multipointconstraint.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -239,49 +240,7 @@ private:
         int& numID,
         vector<int>& MPCids);
     
-    //! creating a new discretization based on conditions containing constraint elements
-    RCP<DRT::Discretization> CreateDiscretizationFromCondition(
-            vector< DRT::Condition* >      constrcond, ///< conditions as discretization basis  
-            const string&             discret_name, ///< name of new discretization
-            const string&             element_name ///< name of element type to create
-            );
-    
-    //! Reorder MPC nodes based on condition input 
-    void ReorderConstraintNodes(
-        vector<int>& nodeids,  ///< reordered node ids
-        const DRT::Condition*      condname); ///< condition to deal with
-    
-    ///replace numdofs in elements of constraint discretization
-    void ReplaceNumDof(
-            const RCP<DRT::Discretization> sourcedis,       ///< basis discretization
-            const RCP<DRT::Discretization> constraintdis    ///< discretization with elements to modify
-            ) const;
-    
-    /// find col node map so that we can evaluate the constraint elements
-    RCP<Epetra_Map> ComputeNodeColMap(
-            const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
-            const RCP<DRT::Discretization> constraintdis ///< constraint discretization prescribing ghosting
-            ) const;
-    
-    //! fill vectors with MPC Ids and amplitudes and update parameter list
-    void SetupMPC(
-        vector<double>& amplit,   ///< vector for MPC amplitudes (as given in the input file)
-        vector<int>& IDs, ///< vector for MPC IDs
-        const vector<DRT::Condition*>& constrcond, ///< conditions to deal with
-        ParameterList& param ///< parameter list given to the elements
-        );
-    
-    //! Evaluate a discretization and assemble to a rectangular matrix
-    void Evaluate( 
-        RCP<DRT::Discretization> disc,  ///< discretization to evaluate
-        Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector1, //< distributed vector that may be filled by aasembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector2, //< distributed vector that may be filled by aasembly of element contributions
-        Teuchos::RCP<Epetra_Vector>    systemvector3, //< distributed vector that may be filled by aasembly of element contributions
-        vector<DRT::Condition*>& constrcond);  //< conditions determing where to assemble vector into rectangular matrix
-    
+     
     //@}
 
 private:
@@ -294,8 +253,8 @@ private:
 
     //! name@ Private Attributes
     RCP<DRT::Discretization> actdisc_;
-    RCP<DRT::Discretization> constraintdis_;
     RCP<Epetra_Map> constrmap_;
+    RCP<Epetra_Map> redconstrmap_;
     RCP<Epetra_Map> monitormap_;
     RCP<Epetra_Vector> referencevalues_;
     RCP<Epetra_Vector> initialvalues_;
@@ -313,12 +272,15 @@ private:
     RCP<Epetra_Vector> lagrMultVec_;
     RCP<LINALG::SparseMatrix> constrMatrix_;
     bool haveconstraint_;
-    bool havenodeconstraint_;
     bool havemonitor_;
     double uzawaparam_;
+    
     RCP<Constraint> volconstr3d_;
     RCP<Constraint> areaconstr3d_;
     RCP<Constraint> areaconstr2d_;
+    RCP<MPConstraint> mpconplane3d_;
+    RCP<MPConstraint> mpconline2d_;
+    
     RCP<Constraint> volmonitor3d_;
     RCP<Constraint> areamonitor3d_;
     RCP<Constraint> areamonitor2d_;

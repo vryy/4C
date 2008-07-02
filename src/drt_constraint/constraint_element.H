@@ -252,7 +252,7 @@ private:
   //! vector of surfaces of this element (length 1)
   vector<DRT::Element*>                           surface_;
 
-  //! vector of surfaces of this element (length 1)
+  //! Number of dof per node
   int                                             numdof_;
   
   // don't want = operator

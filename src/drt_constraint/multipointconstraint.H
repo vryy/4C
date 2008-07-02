@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file constraint.H
 
-\brief Basic constraint class, dealing with constraints living on boundaries
+\brief Basic constraint class, dealing with multi point constraints 
 
 <pre>
 Maintainer: Thomas Kloeppel
@@ -12,8 +12,8 @@ Maintainer: Thomas Kloeppel
 
 *----------------------------------------------------------------------*/
 
-#ifndef CONSTRAINT_H
-#define CONSTRAINT_H
+#ifndef MPCONSTRAINT_H
+#define MPCONSTRAINT_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -35,37 +35,23 @@ using namespace Teuchos;
 
 
 /*!
-\brief Basic constraint class, dealing with constraint and monitor boundary conditions. 
-This class cannot handle multi point constraints, they will be dealt with by a derived class. 
+\brief This class can handle multi point constraints. It is derived from the basic constraint class 
+and reimplements the evaluate routine.
 
 \author Kloeppel (kloeppel@lnm.mw.tum.de)
 */
 
-class Constraint
+class MPConstraint : Constraint
 {
 public:
 
-  //! Constraint types
-  enum ConstrType
-  {
-    none,
-    volconstr3d,
-    areaconstr3d,
-    areaconstr2d,
-    volmonitor3d,
-    areamonitor3d,
-    areamonitor2d,
-    mpcnodeonplane3d,
-    mpcnodeonline2d
-  };
-  
   //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
   */
 
-  Constraint
+  MPConstraint
   (
     RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
     const string& CondName, ///< Name of condition to creat constraint from
@@ -77,69 +63,55 @@ public:
       \brief Destructor
 
    */
-  ~Constraint()
+  ~MPConstraint()
   {
       return;
   };
 
+  void SetConstrState(const string& state,RCP<Epetra_Vector> V)
+  {
+    if (constrtype_!=none)
+    {
+      constraintdis_->ClearState();
+      constraintdis_->SetState(state,V);
+    }
+  };
+    
   //@}
 
   //! @name Public Member Functions
 
-  /*!
-   \brief Return if there are constraints
-  */
-  bool HaveConstraint()
-  {
-      return constrtype_!=none;
-  };
-
-  void SetState(const string& state,RCP<Epetra_Vector> V)
-  {
-    actdisc_->SetState(state,V);
-  };
-  
   //! Evaluate conditions and assemble to a rectangular matrix
   void Evaluate
   ( 
     Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
-    Teuchos::RCP<Epetra_Vector> systemvector1, //< distributed vector that may be filled by aasembly of element contributions
-    Teuchos::RCP<Epetra_Vector> systemvector2, //< distributed vector that may be filled by aasembly of element contributions
-    Teuchos::RCP<Epetra_Vector> systemvector3  //< distributed vector that may be filled by aasembly of element contributions
+    Teuchos::RCP<Epetra_Vector> systemvector1, ///< distributed vector that may be filled by aasembly of element contributions
+    Teuchos::RCP<Epetra_Vector> systemvector2, ///< distributed vector that may be filled by aasembly of element contributions
+    Teuchos::RCP<Epetra_Vector> systemvector3,  ///< distributed vector that may be filled by aasembly of element contributions
+    bool initstep=false ///< indicates if systemvector1 is to be filled with amplitudes as given in the input file
   ); 
   
-  /*
-     \brief Compute values described by a monitor boundary condition
-  */
-  void ComputeMonitorValues
-  (
-    RCP<Epetra_Vector> disp ///< current displacement
-  );
-  
-  ConstrType Type()
+  bool HaveConstraint()
   {
-    return constrtype_;
-  }
-  
+      return constrtype_!=none;
+  };
+
   //@}
 
-protected:
-  
-   //! name@ Protected Attributes
-  RCP<DRT::Discretization> actdisc_;
-  vector<DRT::Condition*> constrcond_;
-  ConstrType constrtype_;
-  //@}
-    
 private:
-  
+    
   // don't want = operator, cctor and destructor
 
-  Constraint operator = (const Constraint& old);
-  Constraint(const Constraint& old);
+  MPConstraint operator = (const MPConstraint& old);
+  MPConstraint(const MPConstraint& old);
 
+
+  //! name@ Private Attributes
+  RCP<DRT::Discretization> constraintdis_;
+  //@}
+  
   //! name@ Private Member Functions
     
   //! Return the ConstrType based on the condition name
@@ -154,8 +126,38 @@ private:
       Teuchos::RCP<Epetra_Vector>    systemvector1, //< distributed vector that may be filled by aasembly of element contributions
       Teuchos::RCP<Epetra_Vector>    systemvector2, //< distributed vector that may be filled by aasembly of element contributions
       Teuchos::RCP<Epetra_Vector>    systemvector3); //< distributed vector that may be filled by aasembly of element contributions
+  
+  
+  //! creating a new discretization based on conditions containing constraint elements
+  RCP<DRT::Discretization> CreateDiscretizationFromCondition
+  (
+    RCP<DRT::Discretization> actdisc,
+    vector< DRT::Condition* >      constrcond, ///< conditions as discretization basis  
+    const string&             discret_name, ///< name of new discretization
+    const string&             element_name ///< name of element type to create
+  );
+   
+  //! Reorder MPC nodes based on condition input 
+  void ReorderConstraintNodes(
+       vector<int>& nodeids,  ///< reordered node ids
+       const DRT::Condition* condname); ///< condition to deal with
+   
+   ///replace numdofs in elements of constraint discretization
+   void ReplaceNumDof(
+           const RCP<DRT::Discretization> sourcedis,       ///< basis discretization
+           const RCP<DRT::Discretization> constraintdis    ///< discretization with elements to modify
+           ) const;
+   
+   /// find col node map so that we can evaluate the constraint elements
+   RCP<Epetra_Map> ComputeNodeColMap(
+           const RCP<DRT::Discretization> sourcedis,  ///< standard discretization we want to redistribute
+           const RCP<DRT::Discretization> constraintdis ///< constraint discretization prescribing ghosting
+           ) const;
+   
+   
+
   //@}
 
 }; //class
 
-#endif /*CONSTRAINT_H*/
+#endif /*MPCONSTRAINT_H*/

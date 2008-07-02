@@ -69,7 +69,11 @@ Constraint::ConstrType Constraint::GetConstrType(const string& name)
     return areamonitor3d;
   else if (name=="AreaMonitor_2D")
     return areamonitor2d;
-  else dserror("Unknown type of constraint or monitor");
+  else if (name=="MPC_NodeOnPlane_3D")
+    return mpcnodeonplane3d;
+  else if (name=="MPC_NodeOnLine_2D")
+    return mpcnodeonline2d;
+  
   return none;
 }
 
@@ -111,6 +115,8 @@ void Constraint::Evaluate(
       break;
       case none:
         return;
+      default:
+        dserror("Unknown constraint/monitor type to be evaluated in Constraint class!");
     }
   }
   else switch (constrtype_)
@@ -178,7 +184,6 @@ void Constraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
 
       const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
       int condID=(*CondIDVec)[0];
-      //cout<<condID<<endl;
       params.set("ConditionID",condID);
       char factorname[30];
       sprintf(factorname,"LoadCurveFactor %d",condID);
