@@ -42,6 +42,24 @@ for (int vi=0; vi<iel; ++vi)
   eforce_(vi*3)     += -(tau_C*derxy_(0, vi)*(vderxy_(0, 0) + vderxy_(1, 1))) ;
   eforce_(vi*3 + 1) += -(tau_C*derxy_(1, vi)*(vderxy_(0, 0) + vderxy_(1, 1))) ;
 
+
+  /* right-hand-side term */
+  eforce_(vi*3)     += fac*funct_(vi)*rhsint_(0) ;
+  eforce_(vi*3 + 1) += fac*funct_(vi)*rhsint_(1) ;
+
+  /* stabilization terms for the rhs term */
+  /* convective stabilization: */
+  eforce_(vi*3)     += tau_M*conv_c_(vi)*rhsint_(0) ;
+  eforce_(vi*3 + 1) += tau_M*conv_c_(vi)*rhsint_(1) ;
+
+  /* viscous stabilization: */
+  //eforce_(vi*3)     += tau_Mp*2.0*nu_*(rhsint_(0)*viscs2_(0, 0, vi) + rhsint_(1)*viscs2_(0, 1, vi)) ;
+  //eforce_(vi*3 + 1) += tau_Mp*2.0*nu_*(rhsint_(0)*viscs2_(0, 1, vi) + rhsint_(1)*viscs2_(1, 1, vi)) ;
+
+  /* pressure stabilization: */
+  eforce_(vi*3 + 2) += tau_Mp*(rhsint_(0)*derxy_(0, vi) + rhsint_(1)*derxy_(1, vi)) ;
+
+
   if (fssgv != "No" && fssgv != "scale_similarity")
   {
     /* viscous term */

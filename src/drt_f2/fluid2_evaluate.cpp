@@ -2038,10 +2038,8 @@ double tau_C  = tau[2]*fac;
 
 /*------------------------- evaluate rhs vector at integration point ---*/
 // no switch here at the moment w.r.t. is_ale
-double timefac = 1.0;
-
-rhsint[0] = histvec[0] + edeadng[0]*timefac;
-rhsint[1] = histvec[1] + edeadng[1]*timefac;
+rhsint[0] = histvec[0] + edeadng[0];
+rhsint[1] = histvec[1] + edeadng[1];
 
 /*----------------- get numerical representation of single operators ---*/
 /* Convective term  u_old * grad u_old: */
