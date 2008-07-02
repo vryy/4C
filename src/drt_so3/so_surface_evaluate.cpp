@@ -239,6 +239,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
   else if (action=="calc_struct_constrvol")       act = StructuralSurface::calc_struct_constrvol;
   else if (action=="calc_struct_volconstrstiff")  act = StructuralSurface::calc_struct_volconstrstiff;
   else if (action=="calc_struct_monitarea")       act = StructuralSurface::calc_struct_monitarea;
+  else if (action=="calc_struct_constrarea")       act = StructuralSurface::calc_struct_constrarea;
   else if (action=="calc_struct_areaconstrstiff") act = StructuralSurface::calc_struct_areaconstrstiff;
   else if (action=="calc_init_vol")               act = StructuralSurface::calc_init_vol;
   else if (action=="calc_surfstress_stiff")       act = StructuralSurface::calc_surfstress_stiff;
@@ -265,16 +266,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
           const int numdim = 3;
           LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
           SpatialConfiguration(xscurr,mydisp);
-          //call submethod
-          double volumeele =  ComputeConstrVols(xscurr);
-
-          // get RIGHT volume out of parameterlist and maximum ConditionID
-          char volname[30];
+          //call submethod for volume evaluation and store rseult in third systemvector
+          double volumeele = ComputeConstrVols(xscurr);
           const int ID =params.get("ConditionID",-1);
-          sprintf(volname,"computed volume %d",ID);
-          double volumecond = params.get(volname,0.0);
-          //update volume in parameter list
-          params.set(volname, volumecond+volumeele);
+          const int minID =params.get("MinID",0);
+          elevector3[ID-minID]=volumeele;
         }
 
       }
@@ -306,17 +302,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
         elevector2=elevector1;
         elevector1.Scale(1*(*lambdav)[ID-minID]);
         elematrix1.Scale(1*(*lambdav)[ID-minID]);
-        //call submethod for volume evaluation
-        if(Comm.MyPID()==Owner())
-        {
-          double volumeele = ComputeConstrVols(xscurr);
-          // get RIGHT volume out of parameterlist and maximum ConditionID
-          char volname[30];
-          sprintf(volname,"computed volume %d",ID);
-          double volumecond = params.get(volname,0.0);
-          //update volume in parameter list
-          params.set(volname, volumecond+volumeele);
-        }
+        //call submethod for volume evaluation and store rseult in third systemvector
+        double volumeele = ComputeConstrVols(xscurr);
+        elevector3[ID-minID]=volumeele;
       }
 
       break;
@@ -585,6 +573,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
           // allocate matrix for derivatives of shape functions
           LINALG::SerialDenseMatrix  deriv(2,NumNode());
 
+          //Compute area
           for (int gp=0; gp<intpoints.nquad; gp++)
           {
             const double e0 = intpoints.qxg[gp][0];
@@ -601,13 +590,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
 
           }
 
-          // get RIGHT volume out of parameterlist and maximum ConditionID
-          char areaname[30];
           const int ID =params.get("ConditionID",-1);
-          sprintf(areaname,"computed area %d",ID);
-          double areacond = params.get(areaname,0.0);
-          //update area in parameter list
-          params.set(areaname, areacond+areaele);
+          const int minID =params.get("MinID",0);
+          //store result in third systemvector
+          elevector3[ID-minID]=areaele;
         }
 
       }
