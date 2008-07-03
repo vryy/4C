@@ -125,7 +125,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     {
       MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
       if (!chain->Initialized())
-        chain->Initialize(NUMGPT_SOH8);
+        chain->Initialize(NUMGPT_SOH8, this->Id());
       chain->Evaluate(glstrain,gp,params,cmat,stress,this->Id());
       *density = chain->Density();
       

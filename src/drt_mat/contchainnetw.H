@@ -83,7 +83,7 @@ namespace MAT
     /// material type
     virtual MATERIAL_TYP MaterialType() const { return m_contchainnetw; }
     
-    void Initialize(const int numgp) ;
+    void Initialize(const int numgp, const int eleid) ;
     
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   const int gp,
@@ -100,8 +100,6 @@ namespace MAT
     RCP<vector<vector<double> > > Getli() const {return li_;}
     RCP<vector<vector<double> > > Getli0() const {return li0_;}
     RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
-    
-    
     RCP<vector<Epetra_SerialDenseMatrix> >Getni() const {return ni_;}
     
     Epetra_SerialDenseMatrix EvaluateStress(
@@ -130,7 +128,13 @@ namespace MAT
         const vector<double> rem_toggle,
         const int gp, const double r0, const double decay);
 
+    void UpdateRate(const Epetra_SerialDenseMatrix& Phi,
+        const Epetra_SerialDenseVector& lambda,
+        const vector<double> rem_toggle,
+        const int gp, const double r0, const double decay, const double kappa, const double dt);
+
     std::string PrintStructTens(const vector<Epetra_SerialDenseMatrix>& Ni);
+    std::string PrintAnisoVects(const int gp);
     
     std::string PrintAnisoCmat(const Epetra_SerialDenseMatrix& cmat,
         const vector<Epetra_SerialDenseMatrix>& Ni,
@@ -138,6 +142,7 @@ namespace MAT
         const vector<double>& cell_Inv,
         const double c_chn_scalar,
         const double stressfree);
+    std::string PrintVec(const vector<double> actvec);
     
   private:
 
@@ -164,6 +169,7 @@ namespace MAT
 
   Epetra_SerialDenseMatrix StressVoigt2Mat(Epetra_SerialDenseVector* stress);
   Epetra_SerialDenseVector StressMat2Voigt(Epetra_SerialDenseMatrix& stressmat);
+  Epetra_SerialDenseMatrix StrainVoigt2Mat(const Epetra_SerialDenseVector* strain);
   void ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis, const double time, const int iter);
   void ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis, const double time, const int iter);
   const vector<double> MatPointCoords(const DRT::Element* actele,const vector<double>& mydisp, int gp=-1);
