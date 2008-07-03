@@ -476,6 +476,18 @@ TurbulenceStatistics::TurbulenceStatistics(
 	  
 	    (*nodeplanes_)      [ele_cart_id[1]                   +1]+=x[1];
 	    (*planecoordinates_)[(ele_cart_id[1]+1)*(numsubdivisions-1)]+=x[1];
+
+            for (int isd=0; isd<3; ++isd)
+            {
+              if ((*boundingbox_)(0,isd)>x[isd])
+              {
+                (*boundingbox_)(0,isd)=x[isd];
+              }
+              if ((*boundingbox_)(1,isd)<x[isd])
+              {
+                (*boundingbox_)(1,isd)=x[isd];
+              }
+            }
 	  }
 
 	}
