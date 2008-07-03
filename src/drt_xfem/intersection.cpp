@@ -23,6 +23,9 @@
 
 <pre>
 Maintainer: Ursula Mayer
+            mayer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15257
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -4597,91 +4600,6 @@ bool XFEM::Intersection::decideSVD(
   return doSVD;
 }
 
-
-/*
-
-
-// ctor
-XFEM::InterfacePoint::InterfacePoint():
-pType_(NOTYPE),
-nnode_(0),
-nline_(0),
-nsurf_(0)
-{
-  return;
-}
-
-
-XFEM::InterfacePoint::InterfacePoint(
-  XFEM::pointType     pType,
-  int                 nodeId,
-  vector<int>         lineId,
-  vector<int>         surfId,
-  vector<double>      coordinates,
-  ):
-pType_(pType),
-nodeId_(nodeId),
-lineId_(lineId),
-surfId_(surfId),
-coord_(coordinates)
-{
-  setNodeLineSurfNumbers(pType);
-  return;
-}
-
-
-XFEM::InterfacePoint::InterfacePoint(XFEM::InterfacePoint& old) :
-pType_(old.pType_),
-nnode_(old.nnode_),
-nline_(old.nline_),
-nsurf_(old.nsurf_)
-nodeId_(old.nodeId_),
-lineId_(old.lineId_),
-surfId_(old.surfId_),
-coord_(old.coord_)
-{
-  return;
-}
-
-
-void XFEM::InterfacePoint::setNodeLineSurfNumbers(
-  const XFEM::pointType pType)
-{
-  switch(pType_)
-  {
-    case INTERNAL:
-    {
-      nnode_ = 0;
-      nline_ = 0;
-      nsurf_ = 0;
-      break;
-    }
-    case SURFACE:
-    {
-      nnode_ = 0;
-      nline_ = 0;
-      nsurf_ = 2;
-      break;
-    }
-    case LINE:
-    {
-      nnode_ = 0;
-      nline_ = 1;
-      nsurf_ = 3;
-      break;
-    }
-    case NODE:
-    {
-      nnode_ = 1;
-      nline_ = 3;
-      nsurf_ = 3;
-      break;
-    }
-    else
-      dserror("incorrect point type");
-}
-
-*/
 
 
 #endif  // #ifdef CCADISCRET

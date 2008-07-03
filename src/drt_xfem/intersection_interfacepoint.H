@@ -1,0 +1,203 @@
+/*!
+\file intersection_interfacepoint.H
+
+\brief      InterfacePoint stores and delivers all data a point lying on the 
+            intersection interface has to know 
+<pre>
+Maintainer: Ursula Mayer
+            mayer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15257
+</pre>
+*/
+
+#ifdef CCADISCRET
+#ifndef INTERSECTION_INTERFACEPOINT_H_
+#define INTERSECTION_INTERFACEPOINT_H_
+
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
+#include "../drt_lib/drt_dserror.H"
+#include <vector>
+using namespace std;
+
+
+namespace XFEM
+{
+
+enum pointType {NOTYPE, INTERNAL, SURFACE, LINE, NODE};
+
+
+
+class InterfacePointNew
+{
+
+  public:
+
+    /*!
+    \brief constructor
+    */
+    InterfacePointNew();
+     
+    
+    /*!
+    \brief constructor
+    \param pType                (in)        : point type
+    \param nodeId               (in)        : xfem node Ids the interface point is lying on
+    \param lineId               (in)        : xfem line Ids ids the interface point is lying on
+    \param surfId               (in)        : xfem surface Ids ids the interface point is lying on
+    \param coordinates          (in)        : coordinates of the interface points
+    */
+    InterfacePointNew(
+      XFEM::pointType     pType,
+      int                 nodeId,
+      vector<int>         lineId,
+      vector<int>         surfId,
+      vector<double>      coordinates
+      );
+    
+    
+    /*!
+    \brief copy constructor
+    */
+    InterfacePointNew(
+        const XFEM::InterfacePointNew& old
+        );
+
+    /*!
+    \brief  set number of xfem nodes lines and surfaces the interface point is lying
+
+    \param pType            (in)        : point Type of interface point
+    */
+    void setNodeLineSurfNumbers(
+      const XFEM::pointType pType
+      );
+    
+    
+    /*!
+    \brief  set xfem node Ids the interface points is lying on
+
+    \param pType            (in)        : point Type of interface point
+    */
+    void setPointType(
+      const XFEM::pointType   pType
+      );
+      
+    /*!
+    \brief  set xfem node Ids the interface points is lying on
+
+    \param nodeId            (in)        : node Id the interface point is lying on
+    */
+    void setNodeId(
+      const int    nodeId
+      ); 
+       
+    /*!
+    \brief  set xfem line Ids the interface points is lying on
+
+    \param lineId            (in)        : vector of xfem line Ids the interface point is lying on
+    */
+    void setLineId(
+      const vector<int>&    lineId
+      );  
+      
+    /*!
+    \brief  set xfem surface Ids the interface points is lying on
+
+    \param surfId            (in)        : vector of xfem surface Ids the interface point is lying on
+    */
+    void setSurfaceId(
+      const vector<int>&    surfId
+      );  
+      
+    /*!
+    \brief  set coordinates of the interface point
+
+    \param coordinates            (in)        : coordinates of interface point
+    */
+    void setCoord(
+      const vector<double>&    coordinates
+      );
+      
+    /*!
+      \brief Return number of xfem nodes the interface point is lying on
+    */
+    inline int getNumNode() const { return nnode_;}
+    
+    /*!
+      \brief Return number of xfem lines the interface point is lying on
+    */
+    inline int getNumLine() const { return nline_;}
+    
+    /*!
+      \brief Return number of xfem surface the interface point is lying on
+    */
+    inline int getNumSurface() const { return nsurf_;}
+    
+    /*!
+    \brief Return Id of xfem nodes the interface point is lying on
+    */
+    inline int getNodeId() const { return nodeId_;}
+    
+    /*!
+    \brief Return Ids of xfem lines the interface point is lying on
+     */
+    inline vector<int> getLineId() const { return lineId_;}
+    
+    /*!
+    \brief Return Ids of xfem surface the interface point is lying on
+     */
+    inline vector<int> getSurfId() const { return surfId_;}
+    
+    /*!
+      \brief Return coordinates the interface points
+     */
+    inline vector<double> getCoord() const { return coord_;}
+    
+    /*!
+    \brief Return point type the interface point ( NOTYPE INTERNAL SURFACE LINE NODE  )
+     */
+    inline XFEM::pointType getPointType() const { return pType_;}
+    
+    
+
+
+  private:
+  
+    //! pointType NOTYPE INTERNAL SURFACE LINE NODE 
+    XFEM::pointType       pType_;
+        
+    //! number of xfem nodes the point is lying on
+    int             nnode_;
+    
+    //! number of xfem lines the point is lying on
+    int             nline_;
+    
+    //! number of xfem surfaces the point is lying on
+    int             nsurf_;
+  
+    //! ids of xfem nodes the point is lying on
+    int             nodeId_;
+  
+    //! ids of xfem lines the point is lying on
+    vector<int>     lineId_;
+    
+    //! ids of xfem surfaces the point is lying on
+    vector<int>     surfId_;
+    
+    //! coordinates of interface points
+    vector<double>  coord_;
+    
+    
+};
+
+
+}
+
+
+#endif /*INTERSECTION_INTERFACEPOINT_H_*/
+#endif  // #ifdef CCADISCRET
+

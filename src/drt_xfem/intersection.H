@@ -5,6 +5,9 @@
 
 <pre>
 Maintainer: Ursula Mayer
+            mayer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15257
 </pre>
 */
 
@@ -13,6 +16,7 @@ Maintainer: Ursula Mayer
 #define INTERSECTION_H
 
 
+#include "../drt_xfem/intersection_interfacepoint.H"
 #include "../drt_xfem/intersection_service.H"
 #include "../drt_xfem/intersection_math.H"
 #include "../drt_xfem/integrationcell.H"
@@ -44,9 +48,6 @@ extern "C"
 
 namespace XFEM
 {
-
-
-enum pointType {NOTYPE, INTERNAL, SURFACE, LINE, NODE};
 
 enum boundaryType {NONE, ONFLUID, ONSOLID};
 
@@ -1469,87 +1470,6 @@ class Intersection
            );
 
 };
-
-
-/*
-class InterfacePoint
-{
-
-  public:
-
-    // constructur
-
-     
-    // copy constructur
-    
-    // destructor
-
-    void setPointType(
-      const XFEM::pointType   pType
-      );
-      
-    void setNodeId(
-      const int    nodeId
-      ); 
-       
-    void setLineId(
-      const vector<int>&    lineId
-      );  
-      
-    void setSurfaceId(
-      const vector<int>&    surfId
-      );  
-      
-    void setCoord(
-      const vector<double>&    coordinates
-      );
-      
-    inline int getNumNode() const { return nnode_;}
-    
-    inline int getNumLine() const { return nline_;}
-    
-    inline int getNumSurface() const { return nsurf_;}
-    
-    inline int getNodeId() const { return nodeId_;}
-    
-    inline vector<int> getLineId() const { return lineId_;}
-    
-    inline vector<int> getSurfId() const { return surfId_;}
-    
-    inline vector<double> getCoord() const { return coord_;}
-    
-    inline XFEM::pointType getPointType() const { return pType_;}
-    
-    
-
-
-  private:
-  
-    //! number of xfem nodes the point is lying on
-    int             nnode_;
-    
-    //! number of xfem lines the point is lying on
-    int             nline_;
-    
-    //! number of xfem surfaces the point is lying on
-    int             nsurf_;
-  
-    //! ids of xfem nodes the point is lying on
-    int             nodeId_;
-  
-    //! ids of xfem lines the point is lying on
-    vector<int>     lineId_;
-    
-    //! ids of xfem surfaces the point is lying on
-    vector<int>     surfId_;
-    
-    //! coordinates of interface points
-    vector<double>  coord_;
-    
-    //! pointType INTERNAL SURFACE LINE NODE 
-    XFEM::pointType       pType_;
-}
-*/
 }
 
 #endif  // #ifndef INTERSECTION_H
