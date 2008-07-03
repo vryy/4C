@@ -72,6 +72,69 @@ PeriodicBoundaryConditions::PeriodicBoundaryConditions
     timepbcmakeghostmap_= TimeMonitor::getNewTimer("6)      +build rowmap and temporary colmap"           );
     timepbcghost_       = TimeMonitor::getNewTimer("7)      +repair ghosting"                             );
     timepbcrenumdofs_   = TimeMonitor::getNewTimer("8)      +call discret->Redistribute"                  );
+
+
+    #if 1
+    {
+      // create nodal graph of problem, according to old RowNodeMap
+      RefCountPtr<Epetra_CrsGraph> nodegraph = discret_->BuildNodeGraph();
+
+      // get a node row map
+      const Epetra_BlockMap& noderowmap = nodegraph->RowMap();
+
+      // repartition the nodal graph using metis
+
+      // adjust weights according to boundary nodes
+      Epetra_Vector weights(noderowmap,false);
+      weights.PutScalar(1.0);
+
+
+      for(int nn=0;nn<noderowmap.NumMyElements();++nn)
+      {
+        int gid = noderowmap.GID(nn);
+        const DRT::Node* actnode = discret_->gNode(gid);
+
+        // check whether we have a pbc condition on this node
+        vector<DRT::Condition*> mypbc;
+
+        actnode->GetCondition("SurfacePeriodic",mypbc);
+
+        // check whether a periodic boundary condition is active on this node
+        if (mypbc.size()>0)
+        {
+
+          for (unsigned numcond=0;numcond<mypbc.size();++numcond)
+          {
+                const string* mymasterslavetoggle
+                  = mypbc[numcond]->Get<string>("Is slave periodic boundary condition");
+
+                if(*mymasterslavetoggle=="Master")
+                {
+                  weights[nn]+=0.05;
+                }
+                else
+                {
+                  weights[nn]=0.95;
+                }
+          }
+        }
+      }
+
+            RefCountPtr<Epetra_CrsGraph> newnodegraph =
+              DRT::UTILS::PartGraphUsingMetis(*nodegraph,weights);
+
+            // the rowmap will become the new distribution of nodes
+            const Epetra_BlockMap rntmp = newnodegraph->RowMap();
+            Epetra_Map newnoderowmap(-1,rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,discret_->Comm());
+
+            // the column map will become the new ghosted distribution of nodes
+            const Epetra_BlockMap Mcntmp = newnodegraph->ColMap();
+            Epetra_Map newnodecolmap(-1,Mcntmp.NumMyElements(),Mcntmp.MyGlobalElements(),0,discret_->Comm());
+
+            // do the redistribution
+            discret_->Redistribute(newnoderowmap,newnodecolmap);
+    }
+    #endif
   }
 
 
