@@ -46,7 +46,7 @@ namespace XFEM
 {
 
 
-enum pointType {INTERNAL, SURFACE, LINE, NODE, INTERSECTION, XFEMNODE, XFEMMIDPOINT};
+enum pointType {NOTYPE, INTERNAL, SURFACE, LINE, NODE};
 
 enum boundaryType {NONE, ONFLUID, ONSOLID};
 
@@ -55,7 +55,11 @@ enum boundaryType {NONE, ONFLUID, ONSOLID};
 struct InterfacePoint
 {
   int           nsurf;
-  int           surfaces[3];    /*!< adjacent surfaces */
+  int           nline;
+  int           nnode;
+  int           surfaces[3];    /*!< adjacent surfaces if NODE LINE or SURFACES */
+  int           lines[3];       /*!< adjacent lines if NODE or LINE */
+  int           node[1];        /*!< node */
   double        coord[3];       /*!< point coordinates */
   pointType     pType;          /*!< point type */
 };
@@ -65,142 +69,158 @@ struct InterfacePoint
 class Intersection
 {
 
-    public:
+  public:
+
+  /*!
+  \brief  computes the intersection of two discretizations.
+
+  This methods localizes the interface of the
+  cutter discretization within the xfem discretization. Each intersected xfem element
+  is tetrahedralized with help of a Constrained Delaunay Tetrahedralization.
+  The output consists of a list of qadratic tetrahedral volume integration cells and
+  a list of quadratic triangular boundary integration cells
+  representing the curved interface.
+  */
+  void computeIntersection(
+      const RCP<DRT::Discretization>         xfemdis,                 ///< xfem discretization
+      const RCP<DRT::Discretization>         cutterdis,               ///< cutter discretization
+      const std::map<int,BlitzVec3>&         currentcutterpositions,  ///< current positions of all cutter nodes
+      map< int, DomainIntCells >&			       domainintcells,          ///< domainintegrationcells for each intersected element
+      map< int, BoundaryIntCells >& 		     boundaryintcells         ///< boundaryintegrationcells for each intersected element
+      );
 
 
-        /*!
-        \brief  computes the intersection of two discretizations.
 
-        This methods localizes the interface of the
-        cutter discretization within the xfem discretization. Each intersected xfem element
-        is tetrahedralized with help of a Constrained Delaunay Tetrahedralization.
-        The output consists of a list of qadratic tetrahedral volume integration cells and
-        a list of quadratic triangular boundary integration cells
-        representing the curved interface.
-        */
-        void computeIntersection(
-            const RCP<DRT::Discretization>         xfemdis,                 ///< xfem discretization
-            const RCP<DRT::Discretization>         cutterdis,               ///< cutter discretization
-            const std::map<int,BlitzVec3>&         currentcutterpositions,  ///< current positions of all cutter nodes
-            map< int, DomainIntCells >&			   domainintcells,          ///< domainintegrationcells for each intersected element
-            map< int, BoundaryIntCells >& 		   boundaryintcells         ///< boundaryintegrationcells for each intersected element
-            );
+  private:
 
+  //! offset in facet marker list
+  static const int                      facetMarkerOffset_ = 11;
 
+  //! discretization type of the xfem element
+  DRT::Element::DiscretizationType     xfemDistype_;
 
-    private:
+  //! discretization type of the cutter element
+  DRT::Element::DiscretizationType     cutterDistype_;
 
-        //! offset in facet marker list
-        static const int                    facetMarkerOffset_ = 11;
+  //! number of surfaces of the xfem element
+  int                                   numXFEMSurfaces_;
 
-//        //! discretization type of the xfem element
-//        DRT::Element::DiscretizationType    xfemDistype_;
-//
-//        //! discretization type of the previously handled xfem element
-//        DRT::Element::DiscretizationType    xfemOldDistype_;
-//
-//        //! discretization type of the cutter element
-//        DRT::Element::DiscretizationType    cutterDistype_;
+  //! number of corner nodes of the xfem element
+  int                                   numXFEMCornerNodes_;
 
-        //! number of surfaces of the xfem element
-        int                                 numXFEMSurfaces_;
+  //! current nodal coordinates of the XFEM element
+  BlitzMat                              xyze_xfemElement_;
+    
+  //! counts missed points during the recovery
+  int                                   countMissedPoints_;
 
-//        //! number of lines of the xfem element
-//        int                                 numXFEMLines_;
+  //! vector of nodes for each surface of a single element
+  vector<vector<int> >                  eleNumberingSurfaces_;
+    
+  //! vector of nodes for each line of a single element
+  vector<vector<int> >                  eleNumberingLines_;
 
-        //! number of corner nodes of the xfem element
-        int                                 numXFEMCornerNodes_;
-
-        //! current nodal coordinates of the XFEM element
-        BlitzMat                            xyze_xfemElement_;
-        
-        //! counts missed points during the recovery
-        int                                 countMissedPoints_;
-
-         //! vector of nodes for each surface of a single element
-        vector<vector<int> >              eleNumberingSurfaces_;
-        
-        //! vector of nodes for each line of a single element
-        vector<vector<int> >              eleNumberingLines_;
-
-        //! vector of adjacent surfaces for each node of a single element
-        vector<vector<int> >              eleNodesSurfaces_;
-
-        //! vector of adjacent surfaces for each line of a single element
-        vector<vector<int> >              eleLinesSurfaces_;
-
-        //! nodal element coordinate
-        vector<vector<double> >           eleRefCoordinates_;
-
-        //! list of interface points to be stored in the Tetgen data structure
-        vector<InterfacePoint >            pointList_;
-
-        //! list of segments to be stored in the Tetgen data structure
-        vector<vector<int> >               segmentList_;
-
-        //! list of single points on a xfem surface to be stored in the Tetgen data structure
-        vector<vector<int> >               surfacePointList_;
-
-        //! list of triangles to be stored in the Tetgen data structure
-        vector<vector<int> >               triangleList_;
-
-        //! list of intersecting cutter elements
-        vector<DRT::Element* >             intersectingCutterElements_;
-
-        //! list of face markers numbered in the order of the intersected surface elments
-        vector<int>                        faceMarker_;
+  //! vector of adjacent surfaces for each node of a single element
+  vector<vector<int> >                  eleNodesSurfaces_;
   
-        /*!
-        \brief initializes the private members of the xfem element
+  //! vector of adjacent surfaces for each node of a single element
+  vector<vector<int> >                  eleNodesLines_;
 
-        \param xfemId        (in) : id of the current xfem element
-        \param xfemElement   (in) : xfem element
-        */
-        void initializeXFEM(
-            const int             xfemId,
-            const DRT::Element*   xfemElement
-            );
+  //! vector of adjacent surfaces for each line of a single element
+  vector<vector<int> >                  eleLinesSurfaces_;
+
+  //! nodal element coordinate
+  vector<vector<double> >               eleRefCoordinates_;
+
+  //! list of interface points to be stored in the Tetgen data structure
+  vector<InterfacePoint >               pointList_;
+
+  //! list of segments to be stored in the Tetgen data structure
+  vector<vector<int> >                  segmentList_;
+
+  //! list of single points on a xfem surface to be stored in the Tetgen data structure
+  vector<vector<int> >                  isolatedPointList_;
+
+  //! list of triangles to be stored in the Tetgen data structure
+  vector<vector<int> >                  triangleList_;
+
+  //! list of triangles lying on a xfem surface to be stored in the Tetgen data structure
+  map< int, vector<vector<int> > >       surfaceTriangleList_;
+  
+  //! list of intersecting cutter elements
+  vector<DRT::Element* >                intersectingCutterElements_;
+
+  //! list of face markers numbered in the order of the intersected surface elments
+  vector<int>                           faceMarker_;
+  
+  /*!
+  \brief initializes the private members of the xfem element
+  
+  \param xfemId        (in) : id of the current xfem element
+  \param xfemElement   (in) : xfem element
+  */
+  void initializeXFEM(
+      const int             xfemId,
+      const DRT::Element*   xfemElement
+      );
 
         
+  /*!
+  \brief collects points belonging to an interface lying inside xfem elements
+         The nonlinear system of equation is solved with help of the Newton-method.
+
+  \param xfemElement          (in)        : xfem element
+  \param cutterElement        (in)        : cutter element
+  \param node                 (in)        : node in current coordinates (Debug)
+  \param interfacePoints      (in/out)    : vector of interface points
+  \param elemId               (in)        : xfem element id  (Debug)
+  \param nodeId               (in)        : node id
+  \return true if the node lies within the xfemElement, false otherwise
+  */
+  bool collectInternalPoints(
+      const DRT::Element*             xfemElement,             
+      DRT::Element*                   cutterElement,           
+      const BlitzMat&                 xyze_cutterElement,      
+      const DRT::Node*                cutterNode,              
+      const map<int,BlitzVec3>&       currentcutterpositions,  
+      std::vector<InterfacePoint>&    interfacePoints,
+      int&                            numTotalInterfacePoints,
+      const int                       elemId,
+      const int                       nodeId
+      );
+
+
         /*!
-        \brief collects points belonging to an interface lying inside xfem elements
-               The nonlinear system of equation is solved with help of the Newton-method.
-
-        \param xfemElement          (in)        : xfem element
-        \param cutterElement        (in)        : cutter element
-        \param node                 (in)        : node in current coordinates (Debug)
-        \param interfacePoints      (in/out)    : vector of interface points
-        \param elemId               (in)        : xfem element id  (Debug)
-        \param nodeId               (in)        : node id
-        \return true if the node lies within the xfemElement, false otherwise
-        */
-        bool collectInternalPoints(
-            const DRT::Element*             xfemElement,             ///< xfem element
-            DRT::Element*                   cutterElement,           ///< cutter element
-            const BlitzMat&                 xyze_cutterElement,      ///< nodal positions of cutter element
-            const DRT::Node*                cutterNode,              ///< cutter node
-            const map<int,BlitzVec3>&       currentcutterpositions,  ///< current positions of all cutter nodes
-            std::vector<InterfacePoint>&    interfacePoints,
-            int&                            numInternalPoints,
-            int&                            numBoundaryPoints,
-            const int                       elemId,
-            const int                       nodeId
-            );
-
-
-        /*!
-        \brief  checks if a node that lies within an element and if it
-                lies on one of its surfaces, lines or nodes          .
+        \brief  checks if an internal point
+                lies on one a xfem surface, line or node          .
 
         \param xsi                  (in)        : node in element coordinates
         \param ip                   (in)        : interface point
         \return true if the node is lying on a boundary false otherwise
         */
-        bool setInterfacePointBoundaryStatus(
+        bool setInternalPointBoundaryStatus(
                 const DRT::Element::DiscretizationType  xfemDistype, ///< shape of the volume element
                 const BlitzVec3&                        xsi,
                 InterfacePoint&                         ip
                 ) const;
+        
+        
+        /*!
+        \brief  checks if an intersection node
+                lies on a xfem surface, line or node          .
+
+        \param xsi                  (in)        : node in element coordinates
+        \param ip                   (in)        : interface point
+        \return true if the node is lying on a boundary false otherwise
+        */
+        void setIntersectionPointBoundaryStatus(
+            const DRT::Element*                     xfemElement,
+            const DRT::Element*                     surfaceElement,
+            const BlitzMat&                         xyze_surfaceElement,
+            const BlitzVec3&                        xsiSurface,
+            InterfacePoint&                         ip
+            ) const;
+
 
 
         /*!
@@ -214,19 +234,31 @@ class Intersection
         \param lines                    (in)        : if lines = true
         */
         bool collectIntersectionPoints(
+            const DRT::Element*             xfemElement,
             const DRT::Element*             surfaceElement,
             const BlitzMat&                 xyze_surfaceElement,
             const DRT::Element*             lineElement,
             const BlitzMat&                 xyze_lineElement,
             std::vector<InterfacePoint>&    interfacePoints,
-            const int                       numBoundaryPoints,
+            int&                            numTotalInterfacePoints,
             const int                       surfaceId,
             const int                       lineId,
             const bool                      lines,
-            bool&                           xfemIntersection,
             const bool                      doSVD
             ) const;
 
+        
+        /*!
+        \brief checks is a line lies on a Cartesian surface element
+
+        \param surfaceElement           (in)        : surface element
+        \param lineElement              (in)        : line element
+        */
+        bool checkIfLineInSurface(
+            const DRT::Element*             surfaceElement,
+            const BlitzMat&                 xyze_surfaceElement,
+            const BlitzMat&                 xyze_lineElement
+            )const;
 
         /*!
         \brief computes a new starting points for the Newton method recursively
@@ -243,6 +275,7 @@ class Intersection
         \return number of interface points
         */
         int computeNewStartingPoint(
+            const DRT::Element*             xfemElement,
             const DRT::Element*             surfaceElement,
             const BlitzMat&                 xyze_surfaceElement,
             const DRT::Element*             lineElement,
@@ -297,6 +330,7 @@ class Intersection
 	  	\return number of interface points
 	  	*/
         int addIntersectionPoint(
+            const DRT::Element*                 xfemElement,
             const DRT::Element*                 surfaceElement,
             const BlitzMat&                     xyze_surfaceElement,
             const DRT::Element*                 lineElement,
@@ -304,8 +338,8 @@ class Intersection
             const BlitzVec3&                    xsi,
             const BlitzVec3&                    upLimit,
             const BlitzVec3&                    loLimit,
-            std::vector<InterfacePoint>& 	interfacePoints,
-            const int                      	surfaceId,
+            std::vector<InterfacePoint>& 	      interfacePoints,
+            const int                      	    surfaceId,
             const int                           lineId,
             const bool                          lines,
             const bool                          doSVD
@@ -331,6 +365,17 @@ class Intersection
 
         
         /*!
+        \brief  finds th id of the an xfem surface common to all interafce points.
+                Returns -1 , if no common surface exists or the surface id
+
+        \param interfacePoints          (in)        : vector of interface points
+        \return                                       returns -1 or the surface id
+        */
+        int findCommonSurfaceID(
+            vector<InterfacePoint>&         interfacePoints
+            );
+        
+        /*!
         \brief  checks if an intersection lies on a xfem boundary
 
         \param xfemElement              (in)        : xfem element
@@ -339,32 +384,79 @@ class Intersection
         \param intersectionOnBoundary   (out)       : true if intersection XFEM boundary
         */
         XFEM::boundaryType checkIfIntersectionOnXFEMBoundary(
-            const DRT::Element*                 xfemElement,
-            const BlitzMat&                     xyze_xfemElement,
-            const DRT::Element*                 cutterElement,
-            const BlitzMat&                     xyze_cutterElement,
-            vector<InterfacePoint>&             interfacePoints
+            const DRT::Element*             xfemElement,
+            const BlitzMat&                 xyze_xfemElement,
+            const DRT::Element*             cutterElement,
+            const BlitzMat&                 xyze_cutterElement,
+            const vector<InterfacePoint>&   interfacePoints,
+            const int                       surfId
             );
 
         
         /*!
-        \brief  computes the convex hull of a set of points
+        \brief  prepares a part of the piecewise linear complex for 
+                a xfem and a cutter element
 
+        \param xfemElement              (in)        : xfem element
         \param surfaceElement           (in)        : surface element
         \param interfacePoints          (in)        : list of interface points
         */
-        XFEM::boundaryType computeConvexHull(
+        void preparePLC(
             const DRT::Element*         xfemElement,
             const BlitzMat&             xyze_xfemElement,
             const DRT::Element*         cutterElement,
             const BlitzMat&             xyze_cutterElement,
             vector<InterfacePoint>&     interfacePoints,
-            const int                   numInternalPoints,
-            const int                   numBoundaryPoints
+            XFEM::boundaryType&         boundaryIntersectionType 
             );
 
+        
+        /*!
+        \brief  computes the convex hull of a set of points
+                points ordered according to the convex hull are stored in vertices
 
-  		/*!
+        \param xfemElement              (in)        : xfem element
+        \param surfaceElement           (in)        : surface element
+        \param interfacePoints          (in)        : list of interface points
+        \param vertices                 (in)        : ordered interface points
+        */
+        void computeConvexHull(
+            const DRT::Element*           xfemElement,
+            const DRT::Element*           cutterElement,
+            const BlitzMat&               xyze_cutterElement,
+            vector<InterfacePoint>&       interfacePoints,
+            vector< vector<double> >&     vertices,
+            InterfacePoint&               midpoint
+            );   
+        
+        
+        /*!
+        \brief  stores a part of the piecewise linear complex for 
+                a xfem and a cutter element
+
+        \param surfId                   (in)        : id of xfem element surface
+        \param interfacePoints          (in)        : list of interface points
+        \param vertices                 (in)        : vertices
+        */
+        void storePLC(
+            const DRT::Element*             xfemElement,
+            const DRT::Element*             cutterElement,
+            const BlitzMat&                 xyze_cutterElement,
+            const int                       surfId,
+            const vector<InterfacePoint>&   interfacePoints,
+            vector< vector<double> >&       vertices,
+            InterfacePoint&                 midpoint
+            ); 
+        
+        /*!
+        \brief  completes the PLC
+
+        */
+        void completePLC(
+            );
+        
+        
+        /*!
         \brief finds the next segment of a convex hull in clockwise order
 
         \param vertices         (in)        : vector of facet vertices
@@ -376,7 +468,17 @@ class Intersection
             vector<double>&             searchPoint
             ) const;
 
+        /*!
+        \brief checks if a CDT has to be computed for the current xfem element
 
+        \param vertices         (in)        : total number of interface points for the curretn xfem element
+    
+        */
+        bool checkIfCDT(
+            const int             numTotalInterfacePoints,
+            const boundaryType    boundaryIntersectionType
+            );
+        
         /*!
         \brief  computes the Constrained Delaunay Tetrahedralization CDT
                 of an intersected xfem element
@@ -418,7 +520,12 @@ class Intersection
             vector<int>&                positions
             );
 
-
+        
+        void storeMidPoint(
+            const InterfacePoint&             midPoint,
+            vector<int>&                      positions
+            );
+        
         /*!
         \brief  stores a single point in a list of surface points if no
                 segment lies in that surface
@@ -430,19 +537,19 @@ class Intersection
             const vector<InterfacePoint>&     interfacePoints
             );
         
-        
         /*!
-        \brief  stores the midpoint in a list of surface points for the case that
-                all interface points are XFEMNODES
+        \brief  stores a single point in a list of surface points if no
+                segment lies in that surface
 
-        \param interfacePoints      (in)        :   midpoint
+        \param interfacePoints      (in)        :   list of interface points
+        \param positions            (in)        :   list of interface point positions
 
         */
-        void storeMidPointOnBoundary(
-            XFEM::InterfacePoint&              midpoint
+        void storeIsolatedPoints(
+            const vector<InterfacePoint>&     interfacePoints,
+            const vector<int>&                positions
             );
-
-
+        
         /*!
         \brief  computes the midpoint of a collection of points
 
@@ -452,21 +559,18 @@ class Intersection
         InterfacePoint computeMidpoint(
             const vector<InterfacePoint>&     interfacePoints
             ) const;
-
-
+        
+        
         /*!
-        \brief  computes the midpoint of a collection of points for the special
-                case that alle points are XFEMNODES and are lying on the same surface 
-                element of the xfem element
-                adds it at the end of the interfaces point list
+        \brief  classifies the midpoint 
 
-        \param surfId                     (in)        : surface id 
         \param interfacePoints            (in)        : vector of interface points
+        \return returns the midpoint (type InterfacePoint)
         */
-        void computeMidpointOnBoundary(
-            const int               surfId, 
-            vector<InterfacePoint>& interfacePoints
-            );
+        void classifyMidpoint(
+            const int         surfId,
+            InterfacePoint&   midpoint
+            ) const;
         
         
         /*!
@@ -478,8 +582,41 @@ class Intersection
         void storeSegments(
             const vector<int>&              positions
             );
+        
+        /*!
+        \brief  store all segments for cutter elements lying with more than two
+                intersection points on an xfem surface
 
+        \param positions            (in)        :   positions
+        */
+        void storeSurfaceSegments(
+            const vector<int>&              positions
+            );
 
+        
+        /*!
+        \brief  store all segments for cutter elements lying with more than two
+                intersection points on an xfem surface
+
+        \param pos1            (in)        :   position of 1. point in pointList_
+        \param pos2            (in)        :   position of 2. point in pointList_
+        */
+        void storeSingleSegment(
+            const int pos1,
+            const int pos2
+            );
+        
+        /*!
+        \brief checks if two segment points are lying on the same xfemline
+
+        \param position1            (in)        :   position of 1. point in pointList_
+        \param position2            (in)        :   position of 2. point in pointList_
+        */
+        bool checkIfSegmentPointsOnSameXfemLine(
+            const int position1,
+            const int position2
+            );
+        
         /*!
         \brief  stores a triangle facet in a triangle list for the
                 Constrained Delaunay Tetrahedralization (CDT) with Tetgen
@@ -487,6 +624,19 @@ class Intersection
         \param positions            (in)        :   positions
         */
         void storeTriangles(
+            const vector<int>               positions
+            );
+        
+        
+        /*!
+        \brief  stores a triangle facet in a triangle list for the
+                Constrained Delaunay Tetrahedralization (CDT) with Tetgen
+
+        \param surfID               (in)        :   id of xfem surface
+        \param positions            (in)        :   positions
+        */
+        void storeSurfaceTriangles(
+            const int                       surfId,
             const vector<int>               positions
             );
 
@@ -525,14 +675,29 @@ class Intersection
         \param xfemElement              (in)        :   xfem element
         \param out                  (in/out)    :   output data structure of TetGen
         */
-    	void storeIntCells(
-    			      const DRT::Element*             xfemElement,
-    			      const BlitzMat&                 xyze_xfemElement,
-    			      const map<int,BlitzVec3>&       currentcutterpositions,  ///< current positions of all cutter nodes
-                map< int, BoundaryIntCells >&   boundaryintcells,
-                tetgenio&                       out
-                );
+        void storeIntCells(
+			      const DRT::Element*             xfemElement,
+			      const BlitzMat&                 xyze_xfemElement,
+			      const map<int,BlitzVec3>&       currentcutterpositions,  ///< current positions of all cutter nodes
+            map< int, BoundaryIntCells >&   boundaryintcells,
+            tetgenio&                       out
+            );
 
+        /*!
+        \brief  stores linear boundary cells
+
+        \param xfemElement              (in)        :   xfem element
+        \param out                  (in/out)    :   output data structure of TetGen
+        */
+      	void storeSurfaceIntCells(
+      	    const bool                      higherorder,
+      	    const DRT::Element*             xfemElement,
+      	    const BlitzMat&                 xyze_xfemElement,
+      	    const map<int,BlitzVec3>&       currentcutterpositions,
+      	    BoundaryIntCells&               listBoundaryICPerElement
+      	    );
+    	
+    	
         /*!
         \brief  checks if Steiner points are inserted additionally. They are lifted up such they
                 are lying in a cutter element.
@@ -1125,7 +1290,33 @@ class Intersection
 		    const tetgenio&                			out
             ) const;
 
+        
+        /*!
+        \brief  stores boundary integration cells
 
+        \param trifaceIndex             (in)        :   index of the triangular face
+        \param cornerIndex              (in)        :   global index of corner node of an triangle edge
+        \param globalHigherOrderIndex   (in)        :   global higher-order index the midpoint of an triangle edge
+        \param faceMarker         (in)        :   id of cutter element
+        \param domainCoord              (out)       :   point coordinates of the triangular face in xfem configuration
+        \param boundaryCoord            (out)       :   point coordinates of the triangular face in cutter configuration
+        \param xfemElement        (in)    : xfem element
+        \param out                      (in)        :   tetgenio output data structure
+        */
+        void addXFEMSurfaceCellsToBoundaryIntCellsMap(
+            const bool                            higherorder,
+            const int                             cornerIndex,
+            const int                             index1,
+            const int                             index2,
+            const int                             cutterPos,
+            const map<int,BlitzVec3>&             currentcutterpositions,
+            vector<vector<double> >&              domainCoord,
+            vector<vector<double> >&              boundaryCoord,
+            const DRT::Element*                   xfemElement,
+            const BlitzMat&                       xyze_xfemElement
+            ) const;
+
+        
         /*!
         \brief Debugging the intersection of XAABB's (DEBUG ONLY)
 
@@ -1280,8 +1471,87 @@ class Intersection
 };
 
 
-}
+/*
+class InterfacePoint
+{
 
+  public:
+
+    // constructur
+
+     
+    // copy constructur
+    
+    // destructor
+
+    void setPointType(
+      const XFEM::pointType   pType
+      );
+      
+    void setNodeId(
+      const int    nodeId
+      ); 
+       
+    void setLineId(
+      const vector<int>&    lineId
+      );  
+      
+    void setSurfaceId(
+      const vector<int>&    surfId
+      );  
+      
+    void setCoord(
+      const vector<double>&    coordinates
+      );
+      
+    inline int getNumNode() const { return nnode_;}
+    
+    inline int getNumLine() const { return nline_;}
+    
+    inline int getNumSurface() const { return nsurf_;}
+    
+    inline int getNodeId() const { return nodeId_;}
+    
+    inline vector<int> getLineId() const { return lineId_;}
+    
+    inline vector<int> getSurfId() const { return surfId_;}
+    
+    inline vector<double> getCoord() const { return coord_;}
+    
+    inline XFEM::pointType getPointType() const { return pType_;}
+    
+    
+
+
+  private:
+  
+    //! number of xfem nodes the point is lying on
+    int             nnode_;
+    
+    //! number of xfem lines the point is lying on
+    int             nline_;
+    
+    //! number of xfem surfaces the point is lying on
+    int             nsurf_;
+  
+    //! ids of xfem nodes the point is lying on
+    int             nodeId_;
+  
+    //! ids of xfem lines the point is lying on
+    vector<int>     lineId_;
+    
+    //! ids of xfem surfaces the point is lying on
+    vector<int>     surfId_;
+    
+    //! coordinates of interface points
+    vector<double>  coord_;
+    
+    //! pointType INTERNAL SURFACE LINE NODE 
+    XFEM::pointType       pType_;
+}
+*/
+}
 
 #endif  // #ifndef INTERSECTION_H
 #endif  // #ifdef CCADISCRET
+

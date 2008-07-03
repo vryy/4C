@@ -513,6 +513,40 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
 
 
 
+
+/*----------------------------------------------------------------------*
+ |  Fills a vector< vector<int> > with all lines for         u.may 08/08|
+ |  every node for each discretization type                             |
+ *----------------------------------------------------------------------*/
+vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_lines(
+    const DRT::Element::DiscretizationType      distype)
+{
+    const int nCornerNode = getNumberOfElementCornerNodes(distype);
+    int nLine;
+
+    vector< vector<int> >   map;
+
+    if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
+    {
+        nLine = 3;
+        vector<int> submap(nLine, 0);
+        for(int i = 0; i < nCornerNode; i++)
+        {
+            map.push_back(submap);
+            for(int j = 0; j < nLine; j++)
+                map[i][j] = eleNodeNumbering_hex27_nodes_lines[i][j];
+        }
+    }
+    else
+        dserror("discretizationtype not yet implemented");
+
+    return map;
+}
+                                                
+                                                
+                                                
+                                                
+
 /*----------------------------------------------------------------------*
  |  Fills a vector< vector<int> > with all surfaces for      u.may 08/07|
  |  every node for each discretization type                             |
@@ -622,6 +656,7 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
 }
 
 
+
 /*----------------------------------------------------------------------*
  |  Fills an array with surface ID s a point is lying on     u.may 08/07|
  |  for each discretization type                                        |
@@ -657,6 +692,75 @@ int DRT::UTILS::getSurfaces(
 
     return countSurf;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  Fills an array with surface ID s a point is lying on     u.may 07/08|
+ |  for each discretization type                                        |
+ *----------------------------------------------------------------------*/
+int DRT::UTILS::getLines(
+    const blitz::TinyVector<double,3>&          rst,
+    int*                                        lines,
+    const DRT::Element::DiscretizationType      distype)
+{
+
+    int countLines = 0;
+    const double TOL = 1e-7;
+
+    if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
+    {
+        if(fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines[countLines++] = 0;  // -s -t 
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines[countLines++] = 1;  // +r -t 
+        if(fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines[countLines++] = 2;  // +s -t 
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines[countLines++] = 3;  // -r -t 
+        
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL)      lines[countLines++] = 4;  // -r -s
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL)      lines[countLines++] = 5;  // +r -s
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL)      lines[countLines++] = 6;  // +r +s
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL)      lines[countLines++] = 7;  // -r +s
+        
+        if(fabs(rst(1)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines[countLines++] = 8;  // -s +t
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines[countLines++] = 9;  // +r +t
+        if(fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines[countLines++] = 10; // +s +t
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines[countLines++] = 11; // -r +t
+    }
+    else
+        dserror("discretization type not yet implemented");
+
+    return countLines;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  Fills an array with surface ID s a point is lying on     u.may 07/08|
+ |  for each discretization type                                        |
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::getNode(
+    const blitz::TinyVector<double,3>&          rst,
+    int*                                        node,
+    const DRT::Element::DiscretizationType      distype)
+{
+    const double TOL = 1e-7;
+
+    if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
+    {
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node[0] = 0;  // -r -s -t 
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node[0] = 1;  // +r -s -t 
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node[0] = 2;  // +r +s -t 
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node[0] = 3;  // -r +s -t 
+        
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node[0] = 4;  // -r -s +t
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node[0] = 5;  // +r -s +t
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node[0] = 6;  // +r +s +t
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node[0] = 7 ; // -r +s +t
+        
+    }
+    else
+        dserror("discretization type not yet implemented");
+}
+
+
 
 
 /*----------------------------------------------------------------------*

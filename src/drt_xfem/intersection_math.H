@@ -323,7 +323,7 @@ static void svdcmp(
      
     /*!
     \brief  Solves a linear system of equations with help of
-            a singular value decomposition. The system mytrix
+            a singular value decomposition. The system matrix
             may be singular !!
                    
     \tparam dim  (in)            : dimension of the square system matrix
@@ -332,7 +332,8 @@ static void svdcmp(
     inline bool solveLinearSystemWithSVD(
         blitz::TinyMatrix<double,dim,dim>&    U,  ///< (in/out)        : system matrix / matrix U
         const blitz::TinyVector<double,dim>&  b,  ///< (in)            : right-hand-side
-        blitz::TinyVector<double,dim>&        x   ///< (out)           : solution vector
+        blitz::TinyVector<double,dim>&        x,  ///< (out)           : solution vector
+        const double                          tol ///< (in)            : tolerance
         )
     {
         static blitz::TinyMatrix<double,dim,dim> V;
@@ -357,7 +358,7 @@ static void svdcmp(
                 double svdtemp = 0.0;
                 for(int  j = 0; j < dim; j++ )
                 {
-                    if( fabs(W(j)) > 1e-7 )
+                    if( fabs(W(j)) > tol )
                         svdtemp += V(i,j)*U(k,j) / W(j);
                 }
                 x(i) += svdtemp * b(k);
@@ -366,7 +367,7 @@ static void svdcmp(
         
         bool nonsingular = true;
         for(int  j = 0; j < dim; j++ )
-            if( fabs(W(j)) <= 1e-7 )
+            if( fabs(W(j)) <= tol )
             {
                  nonsingular = false;
                  break;

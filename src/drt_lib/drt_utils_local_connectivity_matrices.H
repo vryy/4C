@@ -207,6 +207,17 @@ namespace UTILS
                                                              {1,  2,  5},
                                                              {2,  3,  5},
                                                              {3,  4,  5}};
+  
+  
+  //! for each of the 8 corner nodes, tell me the 3 neighbouring lines
+  const int eleNodeNumbering_hex27_nodes_lines[8][3] = { {0,  3,  4},
+                                                         {0,  1,  5},
+                                                         {1,  2,  6},
+                                                         {2,  3,  7},
+                                                         {4,  8,  11},
+                                                         {5,  8,  9},
+                                                         {6,  9,  10},
+                                                         {7,  10, 11}};
 
 
    //! for each of the 4 corner nodes, tell me the 3 neighbouring faces
@@ -388,6 +399,16 @@ namespace UTILS
     );
 
   /*!
+  \brief Fills a vector< vector<int> > with all lines for every node
+         for each discretization type
+
+  \return map with all lines adjacent to each node
+  */
+  vector< vector<int> > getEleNodeNumbering_nodes_lines(
+      const DRT::Element::DiscretizationType      distype
+      );
+  
+  /*!
   \brief Fills a vector< vector<int> > with all surfaces for every node
          for each discretization type
 
@@ -416,6 +437,28 @@ namespace UTILS
     int*                                        surfaces,   ///< surfaces the point is lying on
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
+  
+  
+  /*!
+   \brief Fills an array with the line ID s a point in 3d reference coordinates
+   \      is lying on for each discretization type
+   */
+  int getLines(
+      const blitz::TinyVector<double,3>&          rst,      ///< point in reference coordinates
+      int*                                        lines,    ///< lines the point is lying on
+      const DRT::Element::DiscretizationType      distype   ///< discretization type
+      );
+  
+   /*!
+   \brief Fills an array with the node ID s a point in 3d reference coordinates
+   \      is lying on for each discretization type
+   */
+  void getNode(
+      const blitz::TinyVector<double,3>&          rst,      ///< point in reference coordinates
+      int*                                        node,     ///< node the point is lying on
+      const DRT::Element::DiscretizationType      distype   ///< discretization type
+      );
+    
 
   /*!
   \brief Fills an array with coordinates in reference system of the cutter element
