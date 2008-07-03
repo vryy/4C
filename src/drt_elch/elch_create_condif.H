@@ -19,9 +19,8 @@ Maintainer: Georg Bauer
 
 namespace ELCH
 {
-/*----------------------------------------------------------------------*/
-// create a condif discretization matching to the fluid
-/*----------------------------------------------------------------------*/
+/// automatically create a matching convection-diffusion discretization 
+/// from the fluid discretization
 void CreateConDifDiscretization(int disnumff,int disnumcdf);
 
 }

@@ -222,6 +222,7 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
     // conditions. But here we rename it. So we have nice dirichlet
     // conditions at the condif discretization.
     condifdis->SetCondition("Dirichlet", rcp(new DRT::Condition(*cond[i])));
+    if (myrank == 0)
     cout<<"...transferred ConDif Dirichlet condition no. "<<i+1<<endl;
   }
 
@@ -233,7 +234,8 @@ void CreateConDifDiscretization(int disnumff,int disnumcdf)
     // We use the same nodal ids and therefore we can just copy the
     // conditions. But here we rename it. So we have nice dirichlet
     // conditions at the condif.
-    condifdis->SetCondition("InitialField", rcp(new DRT::Condition(*cond[i])));
+    //condifdis->SetCondition("InitialField", rcp(new DRT::Condition(*cond[i])));
+    condifdis->SetCondition("FluxCalculation", rcp(new DRT::Condition(*cond[i])));
   }
 
 #endif

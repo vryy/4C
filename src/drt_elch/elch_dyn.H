@@ -20,9 +20,11 @@ Maintainer: Georg Bauer
 extern "C"
 {
 #endif
-
 /* headers and prototypes of functions also accessible from c */
+
+/*! entry point for the solution of electrochemistry problems */
 void elch_dyn();
+/*! prints the BACI electrochemistry-module logo on the screen */
 void printlogo();
 
 #ifdef __cplusplus
