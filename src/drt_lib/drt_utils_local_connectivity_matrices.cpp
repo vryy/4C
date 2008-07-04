@@ -658,121 +658,121 @@ vector< vector<double> > DRT::UTILS::getEleNodeNumbering_nodes_reference(
 
 
 /*----------------------------------------------------------------------*
- |  Fills an array with surface ID s a point is lying on     u.may 08/07|
+ |  Returns a vector with surface ID s a point is lying on   u.may 08/07|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
-int DRT::UTILS::getSurfaces(
+vector<int> DRT::UTILS::getSurfaces(
     const blitz::TinyVector<double,3>&          rst,
-    int*                                        surfaces,
     const DRT::Element::DiscretizationType      distype)
 {
-
-    int countSurf = 0;
     const double TOL = 1e-7;
-
+    vector<int> surfaces;
+    
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
-        if(fabs(rst(0)-1.0) < TOL)      surfaces[countSurf++] = 2;
-        if(fabs(rst(0)+1.0) < TOL)      surfaces[countSurf++] = 4;
-        if(fabs(rst(1)-1.0) < TOL)      surfaces[countSurf++] = 3;
-        if(fabs(rst(1)+1.0) < TOL)      surfaces[countSurf++] = 1;
-        if(fabs(rst(2)-1.0) < TOL)      surfaces[countSurf++] = 5;
-        if(fabs(rst(2)+1.0) < TOL)      surfaces[countSurf++] = 0;
+        if(fabs(rst(0)-1.0) < TOL)      surfaces.push_back(2);
+        if(fabs(rst(0)+1.0) < TOL)      surfaces.push_back(4);
+        if(fabs(rst(1)-1.0) < TOL)      surfaces.push_back(3);
+        if(fabs(rst(1)+1.0) < TOL)      surfaces.push_back(1);
+        if(fabs(rst(2)-1.0) < TOL)      surfaces.push_back(5);
+        if(fabs(rst(2)+1.0) < TOL)      surfaces.push_back(0);
     }
     else if(distype == DRT::Element::tet4 ||  distype == DRT::Element::tet10 )
     {
         const double tetcoord = rst(0)+rst(1)+rst(2);
-        if(fabs(rst(1))         < TOL)  surfaces[countSurf++] = 0;
-        if(fabs(tetcoord-1.0)   < TOL)  surfaces[countSurf++] = 1;
-        if(fabs(rst(0))         < TOL)  surfaces[countSurf++] = 2;
-        if(fabs(rst(2))         < TOL)  surfaces[countSurf++] = 3;
+        if(fabs(rst(1))         < TOL)  surfaces.push_back(0);
+        if(fabs(tetcoord-1.0)   < TOL)  surfaces.push_back(1);
+        if(fabs(rst(0))         < TOL)  surfaces.push_back(2);
+        if(fabs(rst(2))         < TOL)  surfaces.push_back(3);
     }
     else
         dserror("discretization type not yet implemented");
 
-    return countSurf;
+    return surfaces;
 }
 
 
 /*----------------------------------------------------------------------*
- |  Fills an array with surface ID s a point is lying on     u.may 07/08|
+ |  Returns a vector with surface ID s a point is lying on     u.may 07/08|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
-int DRT::UTILS::getLines(
+vector<int> DRT::UTILS::getLines(
     const blitz::TinyVector<double,3>&          rst,
-    int*                                        lines,
     const DRT::Element::DiscretizationType      distype)
 {
 
-    int countLines = 0;
     const double TOL = 1e-7;
+    vector<int> lines;
 
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
-        if(fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines[countLines++] = 0;  // -s -t 
-        if(fabs(rst(0)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines[countLines++] = 1;  // +r -t 
-        if(fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines[countLines++] = 2;  // +s -t 
-        if(fabs(rst(0)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines[countLines++] = 3;  // -r -t 
+        if(fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines.push_back(0);  // -s -t 
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines.push_back(1);  // +r -t 
+        if(fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines.push_back(2);  // +s -t 
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      lines.push_back(3);  // -r -t 
         
-        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL)      lines[countLines++] = 4;  // -r -s
-        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL)      lines[countLines++] = 5;  // +r -s
-        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL)      lines[countLines++] = 6;  // +r +s
-        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL)      lines[countLines++] = 7;  // -r +s
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL)      lines.push_back(4);  // -r -s
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL)      lines.push_back(5);  // +r -s
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL)      lines.push_back(6);  // +r +s
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL)      lines.push_back(7);  // -r +s
         
-        if(fabs(rst(1)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines[countLines++] = 8;  // -s +t
-        if(fabs(rst(0)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines[countLines++] = 9;  // +r +t
-        if(fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines[countLines++] = 10; // +s +t
-        if(fabs(rst(0)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines[countLines++] = 11; // -r +t
+        if(fabs(rst(1)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines.push_back(8);  // -s +t
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines.push_back(9);  // +r +t
+        if(fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines.push_back(10); // +s +t
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      lines.push_back(11); // -r +t
     }
     else
         dserror("discretization type not yet implemented");
 
-    return countLines;
+    return lines;
 }
 
 
 
 /*----------------------------------------------------------------------*
- |  Fills an array with surface ID s a point is lying on     u.may 07/08|
+ |  Retruns the node ID a point is lying on                  u.may 07/08|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
-void DRT::UTILS::getNode(
+int DRT::UTILS::getNode(
     const blitz::TinyVector<double,3>&          rst,
-    int*                                        node,
     const DRT::Element::DiscretizationType      distype)
 {
     const double TOL = 1e-7;
-
+    int node = -1;
+    
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
-        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node[0] = 0;  // -r -s -t 
-        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node[0] = 1;  // +r -s -t 
-        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node[0] = 2;  // +r +s -t 
-        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node[0] = 3;  // -r +s -t 
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node = 0;  // -r -s -t 
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node = 1;  // +r -s -t 
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node = 2;  // +r +s -t 
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)+1.0) < TOL)      node = 3;  // -r +s -t 
         
-        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node[0] = 4;  // -r -s +t
-        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node[0] = 5;  // +r -s +t
-        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node[0] = 6;  // +r +s +t
-        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node[0] = 7 ; // -r +s +t
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node = 4;  // -r -s +t
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)+1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node = 5;  // +r -s +t
+        if(fabs(rst(0)-1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node = 6;  // +r +s +t
+        if(fabs(rst(0)+1.0) < TOL && fabs(rst(1)-1.0) < TOL && fabs(rst(2)-1.0) < TOL)      node = 7 ; // -r +s +t
         
     }
     else
         dserror("discretization type not yet implemented");
+    
+    return node;
 }
 
 
 
 
 /*----------------------------------------------------------------------*
- |  Fills an array with coordinates in the reference         u.may 08/07|
+ |  Returns a vector with coordinates in the reference       u.may 08/07|
  |  system of the cutter element                                        |
  |  according to the node ID for each discretization type               |
  *----------------------------------------------------------------------*/
-void DRT::UTILS::getNodeCoordinates(    const int                                   nodeId,
-                                        double*                                     coord,
-                                        const DRT::Element::DiscretizationType      distype)
+vector<double> DRT::UTILS::getNodeCoordinates(  const int                                   nodeId,
+                                                const DRT::Element::DiscretizationType      distype)
 {
 
+    vector<double> coord(3,0.0);
+    
     if(distype == DRT::Element::quad4 ||  distype == DRT::Element::quad8 || distype == DRT::Element::quad9)
     {
         switch(nodeId)
@@ -834,88 +834,91 @@ void DRT::UTILS::getNodeCoordinates(    const int                               
         coord[2] = 0.0;
     }
     else dserror("discretizationtype is not yet implemented");
+    
+    return coord;
 }
 
 
 
 /*----------------------------------------------------------------------*
- |  Fills an array with coordinates in the reference         u.may 08/07|
+ |  Returns a vector with coordinates in the reference       u.may 08/07|
  |  system of the cutter element                                        |
  |  according to the line ID for each discretization type               |
  *----------------------------------------------------------------------*/
-void DRT::UTILS::getLineCoordinates(
+vector<double> DRT::UTILS::getLineCoordinates(
     const int                                   lineId,
     const double                                lineCoord,
-    double*                                     coord,
     const DRT::Element::DiscretizationType      distype)
 {
 
-    if(distype == DRT::Element::quad4 ||  distype == DRT::Element::quad8 || distype == DRT::Element::quad9)
+  vector<double> coord(3,0.0);
+  if(distype == DRT::Element::quad4 ||  distype == DRT::Element::quad8 || distype == DRT::Element::quad9)
+  {
+    // change minus sign if you change the line numbering
+    switch(lineId)
     {
-        // change minus sign if you change the line numbering
-        switch(lineId)
-        {
-            case 0:
-            {
-                coord[0] = lineCoord;
-                coord[1] = -1.0;
-                break;
-            }
-            case 1:
-            {
-                coord[0] = 1.0;
-                coord[1] = lineCoord;
-                break;
-            }
-            case 2:
-            {
-                coord[0] =  -lineCoord;
-                coord[1] =  1.0;
-                break;
-            }
-            case 3:
-            {
-                coord[0] = -1.0;
-                coord[1] = -lineCoord;
-                break;
-            }
-            default:
-                dserror("node number not correct");
-
-        }
-        coord[2] =  0.0;
+      case 0:
+      {
+        coord[0] = lineCoord;
+        coord[1] = -1.0;
+        break;
+      }
+      case 1:
+      {
+        coord[0] = 1.0;
+        coord[1] = lineCoord;
+        break;
+      }
+      case 2:
+      {
+        coord[0] =  -lineCoord;
+        coord[1] =  1.0;
+        break;
+      }
+      case 3:
+      {
+        coord[0] = -1.0;
+        coord[1] = -lineCoord;
+        break;
+      }
+      default:
+          dserror("node number not correct");
     }
-    else if(distype == DRT::Element::tri3 ||  distype == DRT::Element::tri6)
+    coord[2] =  0.0;
+  }
+  else if(distype == DRT::Element::tri3 ||  distype == DRT::Element::tri6)
+  {
+    // change minus sign if you change the line numbering
+    switch(lineId)
     {
-        // change minus sign if you change the line numbering
-        switch(lineId)
-        {
-            case 0:
-            {
-                coord[0] = (lineCoord+1)*0.5;
-                coord[1] = 0.0;
-                break;
-            }
-            case 1:
-            {
-                coord[0] = 1.0;
-                coord[1] = (lineCoord+1)*0.5;
-                break;
-            }
-            case 2:
-            {
-                coord[0] =  1.0 - (lineCoord+1)*0.5;
-                coord[1] =  (lineCoord+1)*0.5;
-                break;
-            }
-            default:
-                dserror("node number not correct");
+      case 0:
+      {
+        coord[0] = (lineCoord+1)*0.5;
+        coord[1] = 0.0;
+        break;
+      }
+      case 1:
+      {
+        coord[0] = 1.0;
+        coord[1] = (lineCoord+1)*0.5;
+        break;
+      }
+      case 2:
+      {
+        coord[0] =  1.0 - (lineCoord+1)*0.5;
+        coord[1] =  (lineCoord+1)*0.5;
+        break;
+      }
+      default:
+        dserror("node number not correct");
 
-        }
-        coord[2] =  0.0;
-    }
-    else
-        dserror("discretization type not yet implemented");
+      }
+      coord[2] =  0.0;
+  }
+  else
+    dserror("discretization type not yet implemented");
+  
+  return coord;
 }
 
 

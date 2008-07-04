@@ -429,55 +429,50 @@ namespace UTILS
     );
 
   /*!
-  \brief Fills an array with the surface ID s a point in 3d reference coordinates
+  \brief Returns a vector with the surface ID s a point in 3d reference coordinates
   \      is lying on for each discretization type
   */
-  int getSurfaces(
+  vector<int> getSurfaces(
     const blitz::TinyVector<double,3>&          rst,        ///< point in reference coordinates
-    int*                                        surfaces,   ///< surfaces the point is lying on
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
   
   
   /*!
-   \brief Fills an array with the line ID s a point in 3d reference coordinates
+   \brief Returns a vector with the line ID s a point in 3d reference coordinates
    \      is lying on for each discretization type
    */
-  int getLines(
+  vector<int> getLines(
       const blitz::TinyVector<double,3>&          rst,      ///< point in reference coordinates
-      int*                                        lines,    ///< lines the point is lying on
       const DRT::Element::DiscretizationType      distype   ///< discretization type
       );
   
    /*!
-   \brief Fills an array with the node ID s a point in 3d reference coordinates
+   \brief Returns the node ID s a point in 3d reference coordinates
    \      is lying on for each discretization type
    */
-  void getNode(
+  int getNode(
       const blitz::TinyVector<double,3>&          rst,      ///< point in reference coordinates
-      int*                                        node,     ///< node the point is lying on
       const DRT::Element::DiscretizationType      distype   ///< discretization type
       );
     
 
   /*!
-  \brief Fills an array with coordinates in reference system of the cutter element
+  \brief Returns a vector with coordinates in reference system of the cutter element
   \      according to the node Id for each discretization type
   */
-  void getNodeCoordinates(
-    const int                                   nodeId,     ///< node ID
-    double*                                     coord,      ///< coordinates
+  vector<double> getNodeCoordinates(
+    const int                                   nodeId,     ///< node Id
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
   /*!
-  \brief Fills an array with coordinates in reference system of the cutter element
+  \brief Returns a with coordinates in reference system of the cutter element
   \      according to the line Id for each discretization type
   */
-  void getLineCoordinates(
+  vector<double> getLineCoordinates(
     const int                                   lineId,     ///< line ID
     const double                                lineCoord,  ///< line coordinate
-    double*                                     coord,      ///< coordinates
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 

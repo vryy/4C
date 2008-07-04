@@ -28,7 +28,7 @@ Maintainer: Ursula Mayer
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            u.may 07/08|
  *----------------------------------------------------------------------*/
-XFEM::InterfacePointNew::InterfacePointNew():
+XFEM::InterfacePoint::InterfacePoint():
 pType_(NOTYPE),
 nnode_(0),
 nline_(0),
@@ -41,7 +41,7 @@ nsurf_(0)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            u.may 07/08|
  *----------------------------------------------------------------------*/
-XFEM::InterfacePointNew::InterfacePointNew(
+XFEM::InterfacePoint::InterfacePoint(
   XFEM::pointType     pType,
   int                 nodeId,
   vector<int>         lineId,
@@ -62,8 +62,8 @@ coord_(coordinates)
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            u.may 07/08|
  *----------------------------------------------------------------------*/
-XFEM::InterfacePointNew::InterfacePointNew(
-    const XFEM::InterfacePointNew& old) :
+XFEM::InterfacePoint::InterfacePoint(
+    const XFEM::InterfacePoint& old) :
 pType_(old.pType_),
 nnode_(old.nnode_),
 nline_(old.nline_),
@@ -82,7 +82,7 @@ coord_(old.coord_)
  |  set xfem number of nodes, lines, surfaces the interface  u.may 07/08|
  |  point is lying on according to point type                           |                                          
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePointNew::setNodeLineSurfNumbers(
+void XFEM::InterfacePoint::setNodeLineSurfNumbers(
   const XFEM::pointType pType)
 {
   switch(pType)
@@ -124,7 +124,7 @@ void XFEM::InterfacePointNew::setNodeLineSurfNumbers(
 /*----------------------------------------------------------------------*
  |  set point type the interface point                       u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePointNew::setPointType(
+void XFEM::InterfacePoint::setPointType(
       const XFEM::pointType   pType
       )
 {
@@ -136,12 +136,12 @@ void XFEM::InterfacePointNew::setPointType(
 /*----------------------------------------------------------------------*
  |  set xfem node ids the interface point is lying on        u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePointNew::setNodeId(
+void XFEM::InterfacePoint::setNodeId(
       const int    nodeId
       )
 {
   if(nnode_ != 1)
-    dserror("point type is not correct");
+    dserror("point type is not correct (nodeId)");
   
   nodeId_ = nodeId;
 }
@@ -150,12 +150,12 @@ void XFEM::InterfacePointNew::setNodeId(
 /*----------------------------------------------------------------------*
  |  set xfem line ids the interface point is lying on        u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePointNew::setLineId(
+void XFEM::InterfacePoint::setLineId(
       const vector<int>&    lineId
       )
 {
   if(nline_ != (int) lineId.size())
-    dserror("point type is not correct");
+    dserror("point type is not correct (lineId)");
   
   if(!lineId_.empty()) 
     lineId_.clear();
@@ -167,12 +167,12 @@ void XFEM::InterfacePointNew::setLineId(
 /*----------------------------------------------------------------------*
  |  set xfem surface ids the interface point is lying on     u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePointNew::setSurfaceId(
+void XFEM::InterfacePoint::setSurfaceId(
       const vector<int>&    surfId
       )
 {
   if(nsurf_ != (int) surfId.size())
-    dserror("point type is not correct");
+    dserror("point type is not correct (surfId)");
     
   if(!surfId_.empty()) 
       surfId_.clear();
@@ -184,7 +184,7 @@ void XFEM::InterfacePointNew::setSurfaceId(
 /*----------------------------------------------------------------------*
  |  set coordinates of the interface point                   u.may 07/08|                                         
  *----------------------------------------------------------------------*/
-void XFEM::InterfacePointNew::setCoord(
+void XFEM::InterfacePoint::setCoord(
       const vector<double>&    coordinates
       )
 {

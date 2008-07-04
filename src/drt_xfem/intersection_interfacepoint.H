@@ -32,7 +32,7 @@ enum pointType {NOTYPE, INTERNAL, SURFACE, LINE, NODE};
 
 
 
-class InterfacePointNew
+class InterfacePoint
 {
 
   public:
@@ -40,7 +40,7 @@ class InterfacePointNew
     /*!
     \brief constructor
     */
-    InterfacePointNew();
+    InterfacePoint();
      
     
     /*!
@@ -51,7 +51,7 @@ class InterfacePointNew
     \param surfId               (in)        : xfem surface Ids ids the interface point is lying on
     \param coordinates          (in)        : coordinates of the interface points
     */
-    InterfacePointNew(
+    InterfacePoint(
       XFEM::pointType     pType,
       int                 nodeId,
       vector<int>         lineId,
@@ -63,8 +63,8 @@ class InterfacePointNew
     /*!
     \brief copy constructor
     */
-    InterfacePointNew(
-        const XFEM::InterfacePointNew& old
+    InterfacePoint(
+        const XFEM::InterfacePoint& old
         );
 
     /*!

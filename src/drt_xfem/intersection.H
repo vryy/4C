@@ -53,19 +53,20 @@ enum boundaryType {NONE, ONFLUID, ONSOLID};
 
 
 //! a point class used in the xfem intersection process
+/*
 struct InterfacePoint
 {
   int           nsurf;
   int           nline;
   int           nnode;
-  int           surfaces[3];    /*!< adjacent surfaces if NODE LINE or SURFACES */
-  int           lines[3];       /*!< adjacent lines if NODE or LINE */
-  int           node[1];        /*!< node */
-  double        coord[3];       /*!< point coordinates */
-  pointType     pType;          /*!< point type */
+  int           surfaces[3];    
+  int           lines[3];      
+  int           node[1];       
+  double        coord[3];       
+  pointType     pType;         
 };
 
-
+*/
 
 class Intersection
 {
