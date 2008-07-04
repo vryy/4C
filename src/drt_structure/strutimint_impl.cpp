@@ -436,7 +436,7 @@ void StruTimIntImpl::Integrate()
   stepn_ = step_ + 1;
 
   // time loop
-  while ( (timen_ <= timemax_) and (stepn_ <= stepmax_) )
+  while ( (timen_ <= timemax_) and (step_ <= stepmax_) )
   {
     // integrate time step
     // after this step we hold disn_, etc
@@ -731,13 +731,13 @@ bool StruTimIntImpl::Converged()
   // verify: #normcharforce_ has been delivered strictly larger than zero
   if (normcharforce_ <= 0.0)
   {
-    dserror("Characteristic force norm %g must strictly larger than 0",
+    dserror("Characteristic force norm %g must be strictly larger than 0",
             normcharforce_);
   }
   // verify: #normchardis_ has been delivered strictly larger than zero
   if (normchardis_ <= 0.0)
   {
-    dserror("Characteristic displacement norm %g must strictly larger than 0",
+    dserror("Characteristic displacement norm %g must be strictly larger than 0",
             normchardis_);
   }
 
@@ -1085,11 +1085,11 @@ void StruTimIntImpl::PrintStepText
           " | dt %-14.8E"
           " | numiter %3d\n",
           step_, stepmax_, time_, dt_, iter_);
-  // print a beautiful line
+  // print a beautiful line made exactly of 80 dashes
   fprintf(ofile,
           "--------------------------------------------------------------"
           "------------------\n");
-  // print now!
+  // do it, print now!
   fflush(ofile);
 
   // fall asleep
@@ -1102,12 +1102,13 @@ void StruTimIntImpl::PrintStepText
  * originally by mwgee 03/07 */
 void StruTimIntImpl::Output()
 {
-  // (do not) make restart output first 
+  // this flag is passed
   bool datawritten = false;
 
+  // output restart (try this first)
   OutputRestart(datawritten);
 
-  // output results
+  // output results (not necessary if restart in same step)
   OutputState(datawritten);
 
   // output stress & strain
