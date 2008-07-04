@@ -470,31 +470,7 @@ protected:
                                       //!< \f$\Delta{D}^{<k>}_{n+1}\f$
   Epetra_Time timer_;  //!< timer for solution technique
   //@}
- 
 
-
-  //! @name Global state vectors
-  //! (Allright, accelerations are not truely state vectors.
-  //! Moreover, the state is also constituted by the elementwise stored 
-  //! hybrid/mixed quantities.)
-  //@{
-  Teuchos::RCP<Epetra_Vector> dis_;  //!< global displacements
-                                     //!< \f${D}_{n}\f$  at \f$t_n\f$
-  Teuchos::RCP<Epetra_Vector> vel_;  //!< global velocities
-                                     //!< \f${V}_{n}\f$ at \f$t_n\f$
-  Teuchos::RCP<Epetra_Vector> acc_;  //!< global accelerations
-                                     //!< \f${A}_{n}\f$ at \f$t_n\f$
-  Teuchos::RCP<Epetra_Vector> disn_;  //!< global displacements
-                                      //!< \f${D}_{n+1}\f$  
-                                      //!< at \f$t_{n+1}\f$
-  Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
-                                      //!< \f${V}_{n+1}\f$  
-                                      //!< at \f$t_{n+1}\f$
-  Teuchos::RCP<Epetra_Vector> accn_;  //!< global accelerations
-                                      //!< \f${A}_{n+1}\f$  
-                                      //!< at \f$t_{n+1}\f$
-  //@}
-  
   //! @name Various global forces
   //@{
   Teuchos::RCP<Epetra_Vector> fres_;  //!< force residual used for solution

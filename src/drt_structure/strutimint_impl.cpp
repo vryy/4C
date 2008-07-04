@@ -131,44 +131,38 @@ StruTimIntImpl::StruTimIntImpl
   LINALG::Solver& solver,
   IO::DiscretizationWriter& output
 )
-  : StruTimInt
-    (
-      ioparams,
-      sdynparams,
-      xparams,
-      actdis,
-      solver,
-      output
-    ),
-    pred_(MapPredictorStringToEnum(sdynparams.get<string>("PREDICT"))),
-    constrman_(Teuchos::null),
-    uzawasolv_(Teuchos::null),
-    surfstressman_(Teuchos::null),
-    potman_(Teuchos::null),
-    itertype_(MapSolTechStringToEnum(sdynparams.get<string>("NLNSOL"))),
-    itercnvchk_(MapConvCheckStringToEnum(sdynparams.get<string>("CONV_CHECK"))),
-    iternorm_(vectornorm_l2),  // ADD INPUT FEATURE
-    itermax_(sdynparams.get<int>("MAXITER")),
-    toldisi_(sdynparams.get<double>("TOLDISP")),
-    tolfres_(sdynparams.get<double>("TOLRES")),
-    tolcon_(sdynparams.get<double>("TOLCONSTR")),
-    iter_(-1),
-    normcharforce_(0.0),
-    normchardis_(0.0),
-    normfres_(0.0),
-    normdisi_(0.0),
-    disi_(Teuchos::null),
-    timer_(actdis.Comm()),
-    dis_(Teuchos::null),
-    vel_(Teuchos::null),
-    acc_(Teuchos::null),
-    disn_(Teuchos::null),
-    veln_(Teuchos::null),
-    accn_(Teuchos::null),
-    fres_(Teuchos::null),
-    stiff_(Teuchos::null),
-    mass_(Teuchos::null),
-    damp_(Teuchos::null)
+: StruTimInt
+  (
+    ioparams,
+    sdynparams,
+    xparams,
+    actdis,
+    solver,
+    output
+  ),
+  pred_(MapPredictorStringToEnum(sdynparams.get<string>("PREDICT"))),
+  constrman_(Teuchos::null),
+  uzawasolv_(Teuchos::null),
+  surfstressman_(Teuchos::null),
+  potman_(Teuchos::null),
+  itertype_(MapSolTechStringToEnum(sdynparams.get<string>("NLNSOL"))),
+  itercnvchk_(MapConvCheckStringToEnum(sdynparams.get<string>("CONV_CHECK"))),
+  iternorm_(vectornorm_l2),  // ADD INPUT FEATURE
+  itermax_(sdynparams.get<int>("MAXITER")),
+  toldisi_(sdynparams.get<double>("TOLDISP")),
+  tolfres_(sdynparams.get<double>("TOLRES")),
+  tolcon_(sdynparams.get<double>("TOLCONSTR")),
+  iter_(-1),
+  normcharforce_(0.0),
+  normchardis_(0.0),
+  normfres_(0.0),
+  normdisi_(0.0),
+  disi_(Teuchos::null),
+  timer_(actdis.Comm()),
+  fres_(Teuchos::null),
+  stiff_(Teuchos::null),
+  mass_(Teuchos::null),
+  damp_(Teuchos::null)
 {
   // create empty matrices
   stiff_ = Teuchos::rcp(
@@ -186,21 +180,6 @@ StruTimIntImpl::StruTimIntImpl
 
   // create empty residual force vector
   fres_ = LINALG::CreateVector(*dofrowmap_, false);
-//  cout << "At StruTimIntImpl   " << *fres_ << endl;
-
-  // displacements D_{n} at last time
-  dis_ = LINALG::CreateVector(*dofrowmap_, true);
-  // velocities V_{n} at last time
-  vel_ = LINALG::CreateVector(*dofrowmap_, true);
-  // accelerations A_{n} at last time
-  acc_ = LINALG::CreateVector(*dofrowmap_, true);
-
-  // displacements D_{n+1} at new time
-  disn_ = LINALG::CreateVector(*dofrowmap_, true);
-  // velocities V_{n+1} at new time
-  veln_ = LINALG::CreateVector(*dofrowmap_, true);
-  // accelerations A_{n+1} at new time
-  accn_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements

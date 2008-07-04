@@ -83,38 +83,38 @@ StruTimInt::StruTimInt
   LINALG::Solver& solver,
   IO::DiscretizationWriter& output
 )
-  : discret_(actdis),
-    myrank_(actdis.Comm().MyPID()),
-    dofrowmap_(actdis.Filled() ? actdis.DofRowMap() : NULL),
-    solver_(solver),
-    solveradapttol_(Teuchos::getIntegralValue<int>(sdynparams,"ADAPTCONV")==1),
-    solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
-    output_(output),
-    printscreen_(true),  // ADD INPUT PARAMETER
-    errfile_(xparams.get<FILE*>("err file")), 
-    printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
-    printiter_(true),  // ADD INPUT PARAMETER
-    writerestartevery_(sdynparams.get<int>("RESTARTEVRY")),
-    writestate_((bool) Teuchos::getIntegralValue<int>(ioparams,"STRUCT_DISP")),
-    writestateevery_(sdynparams.get<int>("RESEVRYDISP")),
-    writestrevery_(sdynparams.get<int>("RESEVRYSTRS")),
-    writestress_(MapStressStringToEnum(ioparams.get<string>("STRUCT_STRESS"))),
-    writestrain_(MapStrainStringToEnum(ioparams.get<string>("STRUCT_STRAIN"))),
-    damping_((bool) Teuchos::getIntegralValue<int>(sdynparams,"DAMPING")),
-    dampk_(sdynparams.get<double>("K_DAMP")),
-    dampm_(sdynparams.get<double>("M_DAMP")),
-    time_(0.0),  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
-    timen_(0.0),
-    dt_(sdynparams.get<double>("TIMESTEP")),
-    timemax_(sdynparams.get<double>("MAXTIME")),
-    stepmax_(sdynparams.get<int>("NUMSTEP")),
-    step_(0),
-    stepn_(0),
-    dirichtoggle_(Teuchos::null),
-    invtoggle_(Teuchos::null),
-    zeros_(Teuchos::null),
-    state_(Teuchos::null),
-    staten_(Teuchos::null)
+: discret_(actdis),
+  myrank_(actdis.Comm().MyPID()),
+  dofrowmap_(actdis.Filled() ? actdis.DofRowMap() : NULL),
+  solver_(solver),
+  solveradapttol_(Teuchos::getIntegralValue<int>(sdynparams,"ADAPTCONV")==1),
+  solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
+  output_(output),
+  printscreen_(true),  // ADD INPUT PARAMETER
+  errfile_(xparams.get<FILE*>("err file")), 
+  printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
+  printiter_(true),  // ADD INPUT PARAMETER
+  writerestartevery_(sdynparams.get<int>("RESTARTEVRY")),
+  writestate_((bool) Teuchos::getIntegralValue<int>(ioparams,"STRUCT_DISP")),
+  writestateevery_(sdynparams.get<int>("RESEVRYDISP")),
+  writestrevery_(sdynparams.get<int>("RESEVRYSTRS")),
+  writestress_(MapStressStringToEnum(ioparams.get<string>("STRUCT_STRESS"))),
+  writestrain_(MapStrainStringToEnum(ioparams.get<string>("STRUCT_STRAIN"))),
+  damping_((bool) Teuchos::getIntegralValue<int>(sdynparams,"DAMPING")),
+  dampk_(sdynparams.get<double>("K_DAMP")),
+  dampm_(sdynparams.get<double>("M_DAMP")),
+  time_(0.0),  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
+  timen_(0.0),
+  dt_(sdynparams.get<double>("TIMESTEP")),
+  timemax_(sdynparams.get<double>("MAXTIME")),
+  stepmax_(sdynparams.get<int>("NUMSTEP")),
+  step_(0),
+  stepn_(0),
+  dirichtoggle_(Teuchos::null),
+  invtoggle_(Teuchos::null),
+  zeros_(Teuchos::null),
+  state_(Teuchos::null),
+  staten_(Teuchos::null)
 {
   // welcome user
   if (myrank_ == 0)
@@ -172,6 +172,20 @@ StruTimInt::StruTimInt
   // compute an inverse of the dirichtoggle vector
   invtoggle_->PutScalar(1.0);
   invtoggle_->Update(-1.0, *dirichtoggle_, 1.0);
+
+  // create 1 state vector for last step at t_n
+  state_ = Teuchos::rcp(new StruTimIntState(0,0,dofrowmap_,true));
+  // associate convenience pointers
+  dis_ = state_->Dis(0);
+  vel_ = state_->Vel(0);
+  acc_ = state_->Acc(0);
+
+  // create 1 state vector for last step at t_{n+1}
+  staten_ = Teuchos::rcp(new StruTimIntState(1,1,dofrowmap_,true));
+  // associate convenience pointers
+  disn_ = staten_->Dis(1);
+  veln_ = staten_->Vel(1);
+  accn_ = staten_->Acc(1);
 
   // go away
   return;

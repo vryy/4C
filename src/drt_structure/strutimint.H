@@ -229,12 +229,32 @@ protected:
   Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
   //@}
 
-
   //! @name Phase states
   //@{
   Teuchos::RCP<StruTimIntState> state_;  //!< converged states 
                                          //!< at t_{n}, t_{n-1}, ...
   Teuchos::RCP<StruTimIntState> staten_;  //!< current state at t_{n+1}
+  //@}
+
+  //! @name Global state vectors
+  //! Convenience pointers to states. These are stored in #state_
+  //! and #staten_
+  //@{
+  Teuchos::RCP<Epetra_Vector> dis_;  //!< global displacements
+                                     //!< \f${D}_{n}\f$  at \f$t_n\f$
+  Teuchos::RCP<Epetra_Vector> vel_;  //!< global velocities
+                                     //!< \f${V}_{n}\f$ at \f$t_n\f$
+  Teuchos::RCP<Epetra_Vector> acc_;  //!< global accelerations
+                                     //!< \f${A}_{n}\f$ at \f$t_n\f$
+  Teuchos::RCP<Epetra_Vector> disn_;  //!< global displacements
+                                      //!< \f${D}_{n+1}\f$  
+                                      //!< at \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
+                                      //!< \f${V}_{n+1}\f$  
+                                      //!< at \f$t_{n+1}\f$
+  Teuchos::RCP<Epetra_Vector> accn_;  //!< global accelerations
+                                      //!< \f${A}_{n+1}\f$  
+                                      //!< at \f$t_{n+1}\f$
   //@}
 
 };
