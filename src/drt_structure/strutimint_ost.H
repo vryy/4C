@@ -113,6 +113,12 @@ public:
   //! @name Pure virtual methods which have to be implemented
   //@{
 
+  //! Return name
+  enum NameEnum Name() { return name_onesteptheta; }
+
+  //! Provide number of steps, a single-step method returns 1
+  int MethodSteps() { return 1; }
+
   //! Consistent predictor with constant displacements
   //! and consistent velocities and displacements
   void PredictConstDisConsistVelAcc();

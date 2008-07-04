@@ -121,60 +121,6 @@ enum StruTimIntImpl::ConvCheckEnum StruTimIntImpl::MapConvCheckStringToEnum
 }
 
 /*----------------------------------------------------------------------*/
-/* Map stress input string to enum */
-enum StruTimIntImpl::StressEnum StruTimIntImpl::MapStressStringToEnum
-(
-  const std::string name  //!< identifier
-)
-{
-  if ( (name == "cauchy") or (name == "Cauchy") )
-  {
-    return stress_cauchy;
-  }
-  else if ( (name == "2pk") or (name == "2PK")
-            or (name == "Yes") or (name == "yes") or (name == "YES") )
-  {
-    return stress_pk2;
-  }
-  else if ( (name == "No") or (name == "NO") or (name == "No") )
-  {
-    return stress_none;
-  }
-  else
-  {
-    dserror("Cannot handle (output) stress type %s", name.c_str());
-    return stress_none;
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/* Map strain input string to enum */
-enum StruTimIntImpl::StrainEnum StruTimIntImpl::MapStrainStringToEnum
-(
-  const std::string name  //!< identifier
-)
-{
-  if ( (name == "ea") or (name == "EA") )
-  {
-    return strain_ea;
-  }
-  else if ( (name == "gl") or (name == "GL")
-            or (name == "Yes") or (name == "yes") or (name == "YES") )
-  {
-    return strain_gl;
-  }
-  else if ( (name == "No") or (name == "NO") or (name == "No") )
-  {
-    return strain_none;
-  }
-  else
-  {
-    dserror("Cannot handle (output) strain type %s", name.c_str());
-    return strain_none;
-  }
-}
-
-/*----------------------------------------------------------------------*/
 /* constructor */
 StruTimIntImpl::StruTimIntImpl
 (
@@ -185,39 +131,20 @@ StruTimIntImpl::StruTimIntImpl
   LINALG::Solver& solver,
   IO::DiscretizationWriter& output
 )
-  : StruTimInt(),
-    discret_(actdis),
-    myrank_(actdis.Comm().MyPID()),
-    dofrowmap_(actdis.Filled() ? actdis.DofRowMap() : NULL),
-    solver_(solver),
-    solveradapttol_(Teuchos::getIntegralValue<int>(sdynparams,"ADAPTCONV")==1),
-    solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
+  : StruTimInt
+    (
+      ioparams,
+      sdynparams,
+      xparams,
+      actdis,
+      solver,
+      output
+    ),
     pred_(MapPredictorStringToEnum(sdynparams.get<string>("PREDICT"))),
-    output_(output),
-    printscreen_(true),  // ADD INPUT PARAMETER
-    errfile_(xparams.get<FILE*>("err file")), 
-    printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
-    printiter_(true),  // ADD INPUT PARAMETER
-    writerestartevery_(sdynparams.get<int>("RESTARTEVRY")),
-    writestate_((bool) Teuchos::getIntegralValue<int>(ioparams,"STRUCT_DISP")),
-    writestateevery_(sdynparams.get<int>("RESEVRYDISP")),
-    writestrevery_(sdynparams.get<int>("RESEVRYSTRS")),
-    writestress_(MapStressStringToEnum(ioparams.get<string>("STRUCT_STRESS"))),
-    writestrain_(MapStrainStringToEnum(ioparams.get<string>("STRUCT_STRAIN"))),
     constrman_(Teuchos::null),
     uzawasolv_(Teuchos::null),
     surfstressman_(Teuchos::null),
     potman_(Teuchos::null),
-    damping_((bool) Teuchos::getIntegralValue<int>(sdynparams,"DAMPING")),
-    dampk_(sdynparams.get<double>("K_DAMP")),
-    dampm_(sdynparams.get<double>("M_DAMP")),
-    time_(0.0),  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
-    timen_(0.0),
-    dt_(sdynparams.get<double>("TIMESTEP")),
-    timemax_(sdynparams.get<double>("MAXTIME")),
-    stepmax_(sdynparams.get<int>("NUMSTEP")),
-    step_(0),
-    stepn_(0),
     itertype_(MapSolTechStringToEnum(sdynparams.get<string>("NLNSOL"))),
     itercnvchk_(MapConvCheckStringToEnum(sdynparams.get<string>("CONV_CHECK"))),
     iternorm_(vectornorm_l2),  // ADD INPUT FEATURE
@@ -232,9 +159,6 @@ StruTimIntImpl::StruTimIntImpl
     normdisi_(0.0),
     disi_(Teuchos::null),
     timer_(actdis.Comm()),
-    dirichtoggle_(Teuchos::null),
-    invtoggle_(Teuchos::null),
-    zeros_(Teuchos::null),
     dis_(Teuchos::null),
     vel_(Teuchos::null),
     acc_(Teuchos::null),
@@ -246,18 +170,6 @@ StruTimIntImpl::StruTimIntImpl
     mass_(Teuchos::null),
     damp_(Teuchos::null)
 {
-  // state 
-  timen_ = time_;  // set target time to initial time
-  step_ = 0;  // time step
-
-  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //if (not discret_.Filled())
-  //{
-  //  discret_.FillComplete();
-  //}
-  //dofrowmap_ = discret_.DofRowMap();
-
   // create empty matrices
   stiff_ = Teuchos::rcp(
     new LINALG::SparseMatrix(*dofrowmap_, 81, true, false)
@@ -274,33 +186,7 @@ StruTimIntImpl::StruTimIntImpl
 
   // create empty residual force vector
   fres_ = LINALG::CreateVector(*dofrowmap_, false);
-
-  // a zero vector of full length
-  zeros_ = LINALG::CreateVector(*dofrowmap_, true);
-
-  // Dirichlet vector
-  // vector of full length; for each component
-  //                /  1   i-th DOF is supported, ie Dirichlet BC
-  //    vector_i =  <
-  //                \  0   i-th DOF is free
-  dirichtoggle_ = LINALG::CreateVector(*dofrowmap_, false);
-  // set Dirichlet toggle vector
-  {
-    ParameterList p;
-    p.set("total time", timen_);
-    discret_.EvaluateDirichlet(p, zeros_, null, null, dirichtoggle_);
-    zeros_->PutScalar(0.0); // just in case of change
-  }
-  // opposite of dirichtoggle vector, ie for each component
-  //                /  0   i-th DOF is supported, ie Dirichlet BC
-  //    vector_i =  <
-  //                \  1   i-th DOF is free
-  invtoggle_ = LINALG::CreateVector(*dofrowmap_, false);
-  // compute an inverse of the dirichtoggle vector
-  invtoggle_->PutScalar(1.0);
-  invtoggle_->Update(-1.0, *dirichtoggle_, 1.0);
-
-  // create empty vectors
+//  cout << "At StruTimIntImpl   " << *fres_ << endl;
 
   // displacements D_{n} at last time
   dis_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -427,42 +313,7 @@ void StruTimIntImpl::DetermineMassDampConsistAccel()
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* integrate */
-void StruTimIntImpl::Integrate()
-{
-  // set target time and step
-  timen_ = time_ + dt_;
-  stepn_ = step_ + 1;
 
-  // time loop
-  while ( (timen_ <= timemax_) and (step_ <= stepmax_) )
-  {
-    // integrate time step
-    // after this step we hold disn_, etc
-    IntegrateStep();
-
-    // update displacements, velocities, accelerations
-    // after this call we will have disn_==dis_, etc
-    UpdateStep();
-
-    // update time and step
-    time_ = timen_;
-    step_ = stepn_;
-    // 
-    timen_ += dt_;
-    stepn_ += 1;
-
-    // print info about finished time step
-    PrintStep();
-
-    // write output
-    Output();
-  }
-
-  // that's it
-  return;
-}
 
 /*----------------------------------------------------------------------*/
 /* integrate step */

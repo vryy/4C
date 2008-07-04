@@ -57,41 +57,91 @@ class StruTimInt
 
 public:
 
-  //! Structural result test is a befriended class
-  friend class StruResultTest;
-
-  //! Constructor
-  StruTimInt()
-  { 
-    /*
-    std::cout << "Welcome to Structural Time Integration _ " << std::endl;
-    std::cout << " _ __       _       _      _ __    _  / |" << std::endl;
-    std::cout << "| '_ \\     | |_____\\ \\    | '_ \\ _| |_| |" << std::endl;
-    std::cout << "| | | |    |  _____   )   | | | |_   _| |" << std::endl;
-    std::cout << "|_| |_|    |_|     /_/    |_| |_| |_| |_|" << std::endl;
-    */
-    std::cout << "Welcome to Structural Time Integration " << std::endl;
-    std::cout << "     __o__                          __o__       " << std::endl;
-    std::cout << "__  /-----\\__                  __  /-----\\__           " << std::endl;
-    std::cout << "\\ \\/       \\ \\    |       \\    \\ \\/       \\ \\          " << std::endl;
-    std::cout << " \\ |  tea  | |    |-------->    \\ |  tea  | |          " << std::endl;
-    std::cout << "  \\|       |_/    |       /      \\|       |_/          " << std::endl;
-    std::cout << "    \\_____/   ._                   \\_____/   ._ _|_ /| " << std::endl;
-    std::cout << "              | |                            | | |   | " << std::endl;
-    std::cout << std::endl;
+  //! Type of stress
+  enum StressEnum
+  {
+    stress_none,  //!< undetermined
+    stress_cauchy,  //!< Cauchy stress
+    stress_pk1,  //!< 1st Piola-Kirchhoff stress
+    stress_pk2  //! 2nd Piola-Kirchhoff stress
   };
 
+  //! Map stress input string to enum
+  static enum StressEnum MapStressStringToEnum
+  (
+    const std::string name  //!< identifier
+  );
+
+  //! Type of strain
+  enum StrainEnum
+  {
+    strain_none,  //!< undetermined
+    strain_ea,  //!< Euler-Almansi strain
+    strain_gl  //!< Green-Lagrange strain
+  };
+
+  //! Map strain input string to enum
+  static enum StrainEnum MapStrainStringToEnum
+  (
+    const std::string name  //!< identifier
+  );
+
+  //! List of all available time integration schemes
+  enum NameEnum
+  {
+    name_genalpha,  //!< generalised-alpha
+    name_onesteptheta,  //!< one-step-theta
+    name_ab2  //!< Adams-Bashforth 2nd order
+  };
+
+  //! Constructor
+  StruTimInt
+  (
+    const Teuchos::ParameterList& ioparams,  //!< ioflags
+    const Teuchos::ParameterList& sdynparams,  //!< input parameters
+    const Teuchos::ParameterList& xparams,  //!< extra flags
+    DRT::Discretization& actdis,  //!< current discretisation
+    LINALG::Solver& solver,  //!< the solver
+    IO::DiscretizationWriter& output  //!< the output
+  );
+
   //! Destructor
-  virtual ~StruTimInt() { };
+  virtual ~StruTimInt() { ; }
+
+  //! @name Actions
+  //@{
 
   //! Do time integration of multiple steps
-  virtual void Integrate() = 0;
+  void Integrate();
 
   //! Do time integration of single step
   virtual void IntegrateStep() = 0;
 
+  //@}
+
+  //! @name Attributes
+  //@{
+
+  //! Provide Name
+  virtual enum NameEnum Name() = 0;
+
+  //! Return true, if time integrator is implicit
+  virtual bool Implicit() = 0;
+
+  //! Return true, if time integrator is explicit
+  bool Explicit() { return (not Implicit()); }
+
+  //! Provide number of steps, e.g. a single-step method returns 1,
+  //! a m-multistep method returns m
+  virtual int MethodSteps() = 0;
+
   //! Access Dicretisation
   virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+
+  //@}
+
+  //! @name Phase state
+  //@{
 
   //! Displacements
   virtual Teuchos::RCP<Epetra_Vector> Disp() = 0;
@@ -101,6 +151,79 @@ public:
 
   //!  Accelerations
   virtual Teuchos::RCP<Epetra_Vector> Acc() = 0;
+
+  //@}
+
+protected:
+
+  //! @name General purpose algorithm parameters
+  //@{
+  DRT::Discretization& discret_;  //!< attached discretisation
+  int myrank_;  //!< ID of actual processor in parallel
+  const Epetra_Map* dofrowmap_;  //!< vector layout from the discretization 
+                                 //!< to construct matching
+                                 //!< vectors and matrices
+  LINALG::Solver& solver_;  //!< linear algebraic solver
+  bool solveradapttol_;  //!< adapt solver tolerance
+  double solveradaptolbetter_;  //!< tolerance to which is adapated ????
+  //@}
+
+  //! @name Printing and output
+  //@{
+  IO::DiscretizationWriter& output_;  //!< binary output
+  bool printscreen_;  //!< print infos to standard out
+  FILE* errfile_;  //!< error file handle
+  bool printerrfile_;  //!< print infos to error file #errfile_
+  bool printiter_;  //!< print intermediate iterations during solution
+  int writerestartevery_;  //!< write restart every given step;
+                           //!< if 0, restart is not written
+  bool writestate_;  //!< write state on/off
+  int writestateevery_;  //!< write state every given step
+  int writestrevery_;  //!< write stress/strain every given step
+  enum StressEnum writestress_;  //!< stress output type
+  enum StrainEnum writestrain_;  //!< strain output type
+  //@}
+
+  //! @name Rayleigh damping
+  //!       \f${C} = c_\text{K} {K} + c_\text{M} {M}\f$
+  //@{
+  bool damping_;  //!< damping active/inactive
+  double dampk_;  //!< damping factor for stiffness \f$c_\text{K}\f$
+  double dampm_;  //!< damping factor for mass \f$c_\text{M}\f$
+  //@}
+
+  //! @name General control parameters
+  //@{
+  double time_;  //!< time \f$t_{n}\f$ of last converged step
+  double timen_;  //!< target time \f$t_{n+1}\f$
+  double dt_;  //!< time step size \f$\Delta t\f$
+  double timemax_;  //!< final time \f$t_\text{fin}\f$
+  int stepmax_;  //!< final step \f$N\f$
+  int step_;  //!< time step index \f$n\f$
+  int stepn_;  //!< time step index \f$n+1\f$
+  //@}
+
+  //! @name Global vectors
+  //@{
+  Teuchos::RCP<Epetra_Vector> dirichtoggle_;  //!< At a free DOF this vector
+                                     //!< holds a 0; at a supported DOF
+                                     //!< it is a 1.
+  Teuchos::RCP<Epetra_Vector> invtoggle_;  //!< Opposite of 
+                                           //!< #dirichtoggle_ vector:
+                                           //!< i.e.\ for each component 
+                                           //!< a 0 indicates a supported 
+                                           //!< corresponding DOF; a 1 indicates
+                                           //!< a free/unsupported DOF.
+  Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
+  //@}
+
+
+  //! @name Phase states
+  //@{
+  Teuchos::RCP<StruTimIntState> state_;  //!< converged states 
+                                         //!< at t_{n}, t_{n-1}, ...
+  Teuchos::RCP<StruTimIntState> staten_;  //!< current state at t_{n+1}
+  //@}
 
 };
 

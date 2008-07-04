@@ -21,8 +21,7 @@ Maintainer: Burkhard Bornemann
 
 /*======================================================================*/
 /*!
-\brief Front-end for structural dynamics 
-       by implicit structure time integration. 
+\brief Front-end for structural dynamics with implicit time integration
 \author bborn
 \date 06/08
 */
@@ -103,56 +102,24 @@ public:
     const std::string name  //!< identifier
   );
 
-  //! Type of stress
-  enum StressEnum
-  {
-    stress_none,  //!< undetermined
-    stress_cauchy,  //!< Cauchy stress
-    stress_pk1,  //!< 1st Piola-Kirchhoff stress
-    stress_pk2  //! 2nd Piola-Kirchhoff stress
-  };
-
-  //! Map stress input string to enum
-  static enum StressEnum MapStressStringToEnum
-  (
-    const std::string name  //!< identifier
-  );
-
-  //! Type of strain
-  enum StrainEnum
-  {
-    strain_none,  //!< undetermined
-    strain_ea,  //!< Euler-Almansi strain
-    strain_gl  //!< Green-Lagrange strain
-  };
-
-  //! Map strain input string to enum
-  static enum StrainEnum MapStrainStringToEnum
-  (
-    const std::string name  //!< identifier
-  );
-
   //! Constructor
   StruTimIntImpl
   (
     const Teuchos::ParameterList& ioparams,  //!< ioflags
     const Teuchos::ParameterList& sdynparams,  //!< input parameters
     const Teuchos::ParameterList& xparams,  //!< extra flags
-    DRT::Discretization& actis,  //!< current discretisation
+    DRT::Discretization& actdis,  //!< current discretisation
     LINALG::Solver& solver,  //!< the solver
     IO::DiscretizationWriter& output  //!< the output
   );
 
   //! Destructor
-  ~StruTimIntImpl() { ; }
+  virtual ~StruTimIntImpl() { ; }
 
   //! Equilibrate the initial state by identifying the consistent 
   //! initial accelerations and (if applicable) internal variables
   //! Make damping and mass matrix
   void DetermineMassDampConsistAccel();
-
-  //! Do time integration of multiple steps
-  void Integrate();
 
   //! Do time integration of single step
   void IntegrateStep();
@@ -202,7 +169,7 @@ public:
     const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
     Teuchos::RCP<Epetra_Vector>& fext  //!< external force
   );
-
+<
   //! Evaluate ordinary internal force, its stiffness at state
   void ApplyForceStiffInternal
   (
@@ -420,11 +387,26 @@ public:
   //! @name Attribute access functions
   //@{
 
+  //! Return time integrator name
+  virtual enum NameEnum Name() = 0;
+
+  //! These time integrators are all implicit (mark their name)
+  bool Implicit() { return true; }
+
+  //! Provide number of steps, e.g. a single-step method returns 1,
+  //! a m-multistep method returns m
+  virtual int MethodSteps() = 0;
+
   //! Return dicretisation
   Teuchos::RCP<DRT::Discretization> Discretization() 
   { 
     return Teuchos::rcp(&discret_, false); 
   }
+
+  //@}
+
+  //! @name Phase state
+  //@{
 
   //! Return displacements
   Teuchos::RCP<Epetra_Vector> Disp()
@@ -456,31 +438,7 @@ protected:
 
   //! @name General purpose algorithm parameters
   //@{
-  DRT::Discretization& discret_;  //!< attached discretisation
-  int myrank_;  //!< ID of actual processor in parallel
-  const Epetra_Map* dofrowmap_;  //!< vector layout from the discretization 
-                                 //!< to construct matching
-                                 //!< vectors and matrices
-  LINALG::Solver& solver_;  //!< linear algebraic solver
-  bool solveradapttol_;  //!< adapt solver tolerance
-  double solveradaptolbetter_;  //!< tolerance to which is adapated ????
   enum PredEnum pred_;  //!< predictor
-  //@}
-
-  //! @name Printing and output
-  //@{
-  IO::DiscretizationWriter& output_;  //!< binary output
-  bool printscreen_;  //!< print infos to standard out
-  FILE* errfile_;  //!< error file handle
-  bool printerrfile_;  //!< print infos to error file #errfile_
-  bool printiter_;  //!< print intermediate iterations during solution
-  int writerestartevery_;  //!< write restart every given step;
-                           //!< if 0, restart is not written
-  bool writestate_;  //!< write state on/off
-  int writestateevery_;  //!< write state every given step
-  int writestrevery_;  //!< write stress/strain every given step
-  enum StressEnum writestress_;  //!< stress output type
-  enum StrainEnum writestrain_;  //!< strain output type
   //@}
 
   //! whatever constraints
@@ -492,25 +450,6 @@ protected:
 
   //! potential conditions
   Teuchos::RCP<DRT::PotentialManager> potman_;
-
-  //! @name Rayleigh damping
-  //!       \f${C} = c_\text{K} {K} + c_\text{M} {M}\f$
-  //@{
-  bool damping_;  //!< damping active/inactive
-  double dampk_;  //!< damping factor for stiffness \f$c_\text{K}\f$
-  double dampm_;  //!< damping factor for mass \f$c_\text{M}\f$
-  //@}
-
-  //! @name General control parameters
-  //@{
-  double time_;  //!< time \f$t_{n}\f$ of last converged step
-  double timen_;  //!< target time \f$t_{n+1}\f$
-  double dt_;  //!< time step size \f$\Delta t\f$
-  double timemax_;  //!< final time \f$t_\text{fin}\f$
-  int stepmax_;  //!< final step \f$N\f$
-  int step_;  //!< time step index \f$n\f$
-  int stepn_;  //!< time step index \f$n+1\f$
-  //@}
 
   //! @name Iterative solution technique
   //@{
@@ -532,19 +471,7 @@ protected:
   Epetra_Time timer_;  //!< timer for solution technique
   //@}
  
-  //! @name Global vectors
-  //@{
-  Teuchos::RCP<Epetra_Vector> dirichtoggle_;  //!< At a free DOF this vector
-                                     //!< holds a 0; at a supported DOF
-                                     //!< it is a 1.
-  Teuchos::RCP<Epetra_Vector> invtoggle_;  //!< Opposite of 
-                                           //!< #dirichtoggle_ vector:
-                                           //!< i.e.\ for each component 
-                                           //!< a 0 indicates a supported 
-                                           //!< corresponding DOF; a 1 indicates
-                                           //!< a free/unsupported DOF.
-  Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
-  //@}
+
 
   //! @name Global state vectors
   //! (Allright, accelerations are not truely state vectors.

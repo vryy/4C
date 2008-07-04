@@ -71,6 +71,13 @@ public:
   //! @name Pure virtual methods which have to be implemented
   //@{
 
+  //! Return name
+  enum NameEnum Name() { return name_genalpha; }
+
+  //! Provide number of steps, e.g. a single-step method returns 1,
+  //! a m-multistep method returns m
+  int MethodSteps() { return 1; }
+
   //! Consistent predictor with constant displacements
   //! and consistent velocities and displacements
   void PredictConstDisConsistVelAcc();
