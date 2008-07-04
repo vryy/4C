@@ -179,14 +179,14 @@ StruTimInt::StruTimInt
 
 /*----------------------------------------------------------------------*/
 /* integrate */
-void StruTimIntImpl::Integrate()
+void StruTimInt::Integrate()
 {
   // set target time and step
   timen_ = time_ + dt_;
   stepn_ = step_ + 1;
 
   // time loop
-  while ( (timen_ <= timemax_) and (step_ <= stepmax_) )
+  while ( (timen_ <= timemax_) and (stepn_ <= stepmax_) )
   {
     // integrate time step
     // after this step we hold disn_, etc
@@ -214,4 +214,5 @@ void StruTimIntImpl::Integrate()
   return;
 }
 
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

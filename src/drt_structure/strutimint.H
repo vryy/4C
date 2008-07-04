@@ -117,6 +117,18 @@ public:
   //! Do time integration of single step
   virtual void IntegrateStep() = 0;
 
+  //! Update configuration after time step
+  //!
+  //! Thus the 'last' converged is lost and a reset of the time step becomes
+  //! impossible. We are ready and keen awating the next time step.
+  virtual void UpdateStep() = 0;
+
+  //! print summary after step
+  virtual void PrintStep() = 0;
+
+  //! Output to file
+  virtual void Output() = 0;
+
   //@}
 
   //! @name Attributes

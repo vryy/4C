@@ -1169,4 +1169,5 @@ void StruTimIntImpl::OutputStressStrain
   return;
 }
 
+/*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

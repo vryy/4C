@@ -169,7 +169,7 @@ public:
     const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
     Teuchos::RCP<Epetra_Vector>& fext  //!< external force
   );
-<
+
   //! Evaluate ordinary internal force, its stiffness at state
   void ApplyForceStiffInternal
   (
