@@ -696,6 +696,8 @@ typedef struct _CONTCHAINNETW
      DOUBLE                    relax;
      INT                       initran;
      DOUBLE                    rembegt;
+     INT                       updrate;
+     DOUBLE                    difftol;
 } CONTCHAINNETW;
 /*----------------------------------------------------------------------*
  | Isotropic heat conduction coefficient                    bborn 03/06 |
