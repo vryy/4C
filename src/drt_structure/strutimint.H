@@ -44,6 +44,7 @@ Maintainer: Burkhard Bornemann
 #include "nlnml_linearsystem.H"
 #include "nlnml_finelevelnoxinterface.H"
 
+#include "strutimint_state.H"
 
 /*======================================================================*/
 /*!
