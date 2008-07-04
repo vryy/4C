@@ -47,6 +47,9 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
     //! tolerance 1e-3 
     const double                 TOL3 = 1e-3;
     
+    //! tolerance 1e-2 
+    const double                 TOL2 = 1e-2;
+    
     //! tolerance 1e15 
     const double                 TOLPLUS15 = 1e15;
     
@@ -267,7 +270,8 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
     */
     inline BlitzVec3 currentToVolumeElementCoordinatesExact(
             const DRT::Element*         element,
-            const BlitzVec3&            x
+            const BlitzVec3&            x,
+            const double                tol
             )
     {
         static BlitzVec3 xsi;
@@ -276,8 +280,8 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
         // rounding 1 and -1 to be exact for the CDT
         for(int j = 0; j < 3; j++)
         {
-            if( fabs((fabs(xsi(j))-1.0)) < TOL3 &&  xsi(j) < 0)    xsi(j) = -1.0;
-            if( fabs((fabs(xsi(j))-1.0)) < TOL3 &&  xsi(j) > 0)    xsi(j) =  1.0;      
+            if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) < 0)    xsi(j) = -1.0;
+            if( fabs((fabs(xsi(j))-1.0)) < tol &&  xsi(j) > 0)    xsi(j) =  1.0;      
         }
         return xsi;
     } 

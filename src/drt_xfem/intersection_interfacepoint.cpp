@@ -129,6 +129,7 @@ void XFEM::InterfacePointNew::setPointType(
       )
 {
   pType_ = pType;
+  setNodeLineSurfNumbers(pType);
 }
     
 
@@ -139,6 +140,9 @@ void XFEM::InterfacePointNew::setNodeId(
       const int    nodeId
       )
 {
+  if(nnode_ != 1)
+    dserror("point type is not correct");
+  
   nodeId_ = nodeId;
 }
        
@@ -150,6 +154,12 @@ void XFEM::InterfacePointNew::setLineId(
       const vector<int>&    lineId
       )
 {
+  if(nline_ != (int) lineId.size())
+    dserror("point type is not correct");
+  
+  if(!lineId_.empty()) 
+    lineId_.clear();
+  
   lineId_ = lineId;
 } 
   
@@ -161,6 +171,12 @@ void XFEM::InterfacePointNew::setSurfaceId(
       const vector<int>&    surfId
       )
 {
+  if(nsurf_ != (int) surfId.size())
+    dserror("point type is not correct");
+    
+  if(!surfId_.empty()) 
+      surfId_.clear();
+  
   surfId_ = surfId;
 }  
      
@@ -172,6 +188,12 @@ void XFEM::InterfacePointNew::setCoord(
       const vector<double>&    coordinates
       )
 {
+  if((int) coordinates.size() != 3)
+    dserror("dimension of coordinates is not correct");
+  
+  if(!coord_.empty()) 
+    coord_.clear();
+  
   coord_ = coordinates;
 } 
 

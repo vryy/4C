@@ -274,7 +274,7 @@ bool XFEM::Intersection::collectInternalPoints(
     const BlitzVec3 x = currentcutterpositions.find(cutterNode->Id())->second;
 
     static BlitzVec3 xsi;
-    xsi = currentToVolumeElementCoordinatesExact(xfemElement, x);
+    xsi = currentToVolumeElementCoordinatesExact(xfemElement, x, TOL3);
     const bool nodeWithinElement = checkPositionWithinElementParameterSpace(xsi, xfemElement->Shape());
     // debugNodeWithinElement(xfemElement,cutterNode, xsi, elemId ,nodeId, nodeWithinElement);
 
@@ -290,6 +290,7 @@ bool XFEM::Intersection::collectInternalPoints(
        
         // intersection coordinates in the surface
         // element element coordinate system
+        // TODO ip.setCoord(DRT::UTILS::getNodeCoordinates(nodeId, cutterElement->Shape()););
         DRT::UTILS::getNodeCoordinates(nodeId, ip.coord, cutterElement->Shape());
 
         interfacePoints.push_back(ip);
@@ -313,12 +314,16 @@ bool XFEM::Intersection::setInternalPointBoundaryStatus(
         ) const
 {
     bool onSurface = false;
+    
+    // ip.setSurfId(DRT::UTILS::getSurfaces(xsi, xfemDistype));
+    // const int count = ip.getSurfId().size();
     const int count = DRT::UTILS::getSurfaces(xsi, ip.surfaces, xfemDistype);
 
     // point lies on one surface
     if(count == 1)
     {
       onSurface = true;
+      //ip.setPointType(SURAFCE);
       ip.nnode = 0;
       ip.nline = 0;
       ip.nsurf = count;
@@ -328,6 +333,8 @@ bool XFEM::Intersection::setInternalPointBoundaryStatus(
     else if(count == 2)
     {
       onSurface = true;
+      //ip.setPointType(LINE);
+      //ip.setLineId(DRT::UTILS::getLines(xsi, xfemDistype));
       ip.nnode = 0;
       ip.nline = 1;
       ip.nsurf = count;
@@ -338,6 +345,9 @@ bool XFEM::Intersection::setInternalPointBoundaryStatus(
     else if(count == 3)
     {   
       onSurface = true;
+      //ip.setPointType(NODE);
+      //ip.setLineId(DRT::UTILS::getLines(xsi, xfemDistype));
+      //ip.setNodeId(DRT::UTILS::getNode(xsi, xfemDistype));
       ip.nnode = 1;
       ip.nline = 3;
       ip.nsurf = count;
@@ -348,6 +358,7 @@ bool XFEM::Intersection::setInternalPointBoundaryStatus(
     else
     {
       onSurface = false;
+      //ip.setPointType(INTERNAL);
       ip.nnode = 0;
       ip.nline = 0;
       ip.nsurf = 0;
@@ -379,8 +390,10 @@ void XFEM::Intersection::setIntersectionPointBoundaryStatus(
     x = 0;
     
     elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsiSurface, x);
-    xsi = currentToVolumeElementCoordinatesExact(xfemElement, x); 
+    xsi = currentToVolumeElementCoordinatesExact(xfemElement, x, TOL3); 
     const int count = DRT::UTILS::getSurfaces(xsi, ip.surfaces, xfemElement->Shape());
+    // ip.setSurfId(DRT::UTILS::getSurfaces(xsi, xfemDistype));
+    // const int count = ip.getSurfId().size();
    
     // point lies on one surface
     if(count == 1)
@@ -389,6 +402,7 @@ void XFEM::Intersection::setIntersectionPointBoundaryStatus(
       ip.nline = 0;
       ip.nsurf = count;
       ip.pType = SURFACE;
+      //ip.setPointType(SURAFCE);
     }
     // point lies on line, which has two neighbouring surfaces
     else if(count == 2)
@@ -398,6 +412,8 @@ void XFEM::Intersection::setIntersectionPointBoundaryStatus(
       ip.nline = 1;
       ip.nsurf = count;
       ip.pType = LINE;
+      //ip.setPointType(LINE);
+      //ip.setLineId(DRT::UTILS::getLines(xsi, xfemDistype));
     }
     // point lies on a node, which has three neighbouring surfaces
     else if(count == 3)
@@ -408,6 +424,9 @@ void XFEM::Intersection::setIntersectionPointBoundaryStatus(
       ip.nline = 3;
       ip.nsurf = count;
       ip.pType = NODE;
+      //ip.setPointType(NODE);
+      //ip.setLineId(DRT::UTILS::getLines(xsi, xfemDistype));
+      //ip.setNodeId(DRT::UTILS::getNode(xsi, xfemDistype));
     }
     else
       dserror("not on surface !!!");
@@ -853,6 +872,8 @@ int XFEM::Intersection::addIntersectionPoint(
     if(lines)
     {          
         setIntersectionPointBoundaryStatus( xfemElement,surfaceElement,xyze_surfaceElement,xsi, ip);
+        // ip.setCoord(DRT::UTILS::getLineCoordinates(lineId, xsi(2), cutterDistype_););
+        // don t forget the zeros
         
         DRT::UTILS::getLineCoordinates(lineId, xsi(2), ip.coord, cutterDistype_);
         ip.coord[2] = 0.0;
@@ -886,6 +907,13 @@ int XFEM::Intersection::addIntersectionPoint(
         ip.coord[1] = xsi(1);
         ip.coord[2] = 0.0;
         ip.pType = NODE;
+        
+        // point type has to be set before ids and coords are set
+        //ip.setPointType(NODE);
+        //ip.setNodeId(eleNumberingLines_[lineId][lineNodeId]);
+        //ip.setLineId(eleNodesLines_[nodeId]);
+        //ip.setSurfId(eleNodesSurfaces_[nodeId]);
+        
       }
       else
       {
@@ -899,6 +927,10 @@ int XFEM::Intersection::addIntersectionPoint(
         ip.coord[1] = xsi(1);
         ip.coord[2] = 0.0;
         ip.pType = LINE;
+        
+        //ip.setPointType(LINE);
+        //ip.setLineId(vector<int> line(1,lineId));
+        //ip.setSurfId(eleLinesSurfaces_[lineId]);
       }
     }
 
@@ -1136,7 +1168,7 @@ void XFEM::Intersection::preparePLC(
                     eleCoordSurf(j)  = ipoint->coord[j];
                 static BlitzVec3 curCoordVol;
                 elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-                const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol));
+                const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL3));
                 for(int j = 0; j < 3; j++)
                 {
                     ipoint->coord[j] = eleCoordVol(j);
@@ -1189,6 +1221,11 @@ void XFEM::Intersection::computeConvexHull(
   //compute midpoint
   if(interfacePoints.size() > 2)
   {
+    // tolerance has to be twice as small than for other points because the midpoint is 
+    // point by summing the other
+    // points and dividing by the number of points, other wise midpoint 
+    // is moved on xfem boundary even though is is still inside
+    // xfem element
     midpoint = computeMidpoint(interfacePoints);
     // transform it into current coordinates
     {
@@ -1197,7 +1234,7 @@ void XFEM::Intersection::computeConvexHull(
             eleCoordSurf(j)  = midpoint.coord[j];
         static BlitzVec3 curCoordVol;
         elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-        const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol));
+        const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL7));
         for(int j = 0; j < 3; j++)
             midpoint.coord[j] = eleCoordVol(j);
     }
@@ -1225,7 +1262,7 @@ void XFEM::Intersection::computeConvexHull(
               eleCoordSurf(j)  = ipoint->coord[j];
           static BlitzVec3 curCoordVol;
           elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-          const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol));
+          const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL3));
           for(int j = 0; j < 3; j++)
               ipoint->coord[j] = eleCoordVol(j);
       }
@@ -1254,7 +1291,7 @@ void XFEM::Intersection::computeConvexHull(
                   eleCoordSurf(m)  = vertex[m];
               static BlitzVec3 curCoordVol;
               elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-              const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol));
+              const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL3));
               for(int m = 0; m < 3; m++)
                   vertex[m] = eleCoordVol(m);
           }
@@ -3824,7 +3861,7 @@ void XFEM::Intersection::storeHigherOrderNode(
         const BlitzMat xyze_lineElement(getCurrentNodalPositions(lineele, currentcutterpositions));
         elementToCurrentCoordinates(lineele, xyze_lineElement, xsiLine, curr);
     }
-    xsi = currentToVolumeElementCoordinatesExact(xfemElement, curr);
+    xsi = currentToVolumeElementCoordinatesExact(xfemElement, curr, TOL3);
 
     //printf("xsiold0 = %20.16f\t, xsiold1 = %20.16f\t, xsiold2 = %20.16f\n", out.pointlist[index*3], out.pointlist[index*3+1], out.pointlist[index*3+2]);
 
