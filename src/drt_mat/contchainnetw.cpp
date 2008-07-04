@@ -294,7 +294,7 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   const double kappa = matdata_->m.contchainnetw->relax; // relaxation time for remodeling
   const double time = params.get("total time",-1.0);
   const double dt = params.get("delta time",-1.0);
-  const double lambda_tol = 0.0; //1.0E-12;
+  const double lambda_tol = matdata_->m.contchainnetw->difftol; //1.0E-12;
   if ( (kappa >= 0.0)  && (time > mytime_.at(gp)) ){
     double rem_time = time - matdata_->m.contchainnetw->rembegt;
     mytime_.at(gp) = time;
@@ -315,8 +315,11 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
     }
     
     // Update cell dimensions and history
-    //Update(Phi,lambda,rem_toggle,gp,r0,decay);
-    UpdateRate(Phi,lambda,rem_toggle,gp,r0,decay,kappa,dt);
+    if (matdata_->m.contchainnetw->updrate == 0)
+      Update(Phi,lambda,rem_toggle,gp,r0,decay);
+    else if (matdata_->m.contchainnetw->updrate == 1)
+      UpdateRate(Phi,lambda,rem_toggle,gp,r0,decay,kappa,dt);
+    else dserror("Unknown Update Flag");
     
     // reevaluate stress with 'remodeled' parameters
     Ni = EvaluateStructTensors(gp);
@@ -638,6 +641,13 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
     Epetra_SerialDenseMatrix ni0 = chain->Getni()->at(0);
     vector<double> lamb0 = chain->Getlambdas()->at(0);
+    RCP<vector<vector<double> > > gplis = chain->Getli();
+    RCP<vector<vector<double> > > gpli0s = chain->Getli0();
+    RCP<vector<Epetra_SerialDenseMatrix> > gpnis = chain->Getni();
+    
+    vector<double> centerli (3,0.0);
+    vector<double> centerli_0 (3,0.0);
+    Epetra_DataAccess CV = Copy;
     
 //    // material plot at element center
 //    const int dim=3;
@@ -668,25 +678,32 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 //        cout << gpli[i] << ":" << gpli0[i] << endl;
 //      }
       
+      Epetra_SerialDenseVector loc(CV,&(gplis->at(gp)[0]),3);
+      Epetra_SerialDenseVector glo(3);
+      glo.Multiply('N','N',1.0,gpnis->at(gp),loc,0.0);
+      
       for (int k=0; k<3; ++k){
-        // draw eigenvectors
-        gmshfilecontent << "VP(" << scientific << point[0] << ",";
-        gmshfilecontent << scientific << point[1] << ",";
-        gmshfilecontent << scientific << point[2] << ")";
-        gmshfilecontent << "{" << scientific
-        << ((chain->Getni())->at(gp))(0,k)
-        << "," << ((chain->Getni())->at(gp))(1,k)
-        << "," << ((chain->Getni())->at(gp))(2,k) << "};" << endl;
-        
-//        // draw fiber cell vectors
+//        // draw eigenvectors
 //        gmshfilecontent << "VP(" << scientific << point[0] << ",";
 //        gmshfilecontent << scientific << point[1] << ",";
 //        gmshfilecontent << scientific << point[2] << ")";
 //        gmshfilecontent << "{" << scientific
-//        <<        ((chain->Getni0())->at(gp))(0,k) * length[k] 
-//        << "," << ((chain->Getni0())->at(gp))(1,k) * length[k] 
-//        << "," << ((chain->Getni0())->at(gp))(2,k) * length[k] 
-//        << "};" << endl;
+//        << ((chain->Getni())->at(gp))(0,k)
+//        << "," << ((chain->Getni())->at(gp))(1,k)
+//        << "," << ((chain->Getni())->at(gp))(2,k) << "};" << endl;
+        
+        // draw fiber cell vectors
+        Epetra_SerialDenseVector e(3);
+        e(k) = gpli[k];
+        glo.Multiply('N','N',1.0,gpnis->at(gp),e,0.0);
+        gmshfilecontent << "VP(" << scientific << point[0] << ",";
+        gmshfilecontent << scientific << point[1] << ",";
+        gmshfilecontent << scientific << point[2] << ")";
+        gmshfilecontent << "{" << scientific
+        <<        glo(0) 
+        << "," << glo(1) 
+        << "," << glo(2)
+        << "};" << endl;
       }
     }
   }
