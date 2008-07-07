@@ -1031,14 +1031,15 @@ void XFluidImplicitTimeInt::NonlinearSolve(
     }
 
   }
-  const double u_m = 0.2;  // mean velocity 0.3 u_max for parabolic inflow
-  const double d_cyl = 0.1; // diameter 
-  const double h = 0.005;  // cylinder thickness in z direction
-  const double factor = 2.0 / (1.0 * u_m*u_m * d_cyl * h);
-  c *= factor; // scale forces to get lift and drag
+//  const double u_m = 0.2;  // mean velocity 0.3 u_max for parabolic inflow
+//  const double d_cyl = 0.1; // diameter 
+//  const double h = 0.005;  // cylinder thickness in z direction
+//  const double factor = 2.0 / (1.0 * u_m*u_m * d_cyl * h);
+//  c *= factor; // scale forces to get lift and drag
   
-  cout << "Drag: "<< c(0) << endl;
-  cout << "Lift: "<< c(1) << endl;
+  cout << "F_x: "<< c(0) << endl;
+  cout << "F_y: "<< c(1) << endl;
+  cout << "F_z: "<< c(2) << endl;
 
 } // FluidImplicitTimeInt::NonlinearSolve
 
