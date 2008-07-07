@@ -133,6 +133,10 @@ void TIMEINT_THETA_BDF2::CalculateAcceleration(
 
     // ???
     accnm->Update(1.0,*accn,0.0);
+    if (timealgo == timeint_stationary)
+    {
+      accn->PutScalar(0.0);
+    }
 
   }
   else
@@ -181,6 +185,11 @@ void TIMEINT_THETA_BDF2::CalculateAcceleration(
             accn->Update((2.0*dta+dtp)/(dta*sum),*velnp,
                           - sum /(dta*dtp),*veln ,0.0);
             accn->Update(dta/(dtp*sum),*velnm,1.0);
+          }
+          break;
+          case timeint_stationary:
+          {
+            accn->PutScalar(0.0);
           }
           break;
           default:
