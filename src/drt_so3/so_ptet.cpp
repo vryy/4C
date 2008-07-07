@@ -113,30 +113,17 @@ void DRT::ELEMENTS::Ptet::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  extrapolation of quantities at the GPs to the nodes      lw 03/08   |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ptet::so_tet4_expol(Epetra_SerialDenseMatrix& stresses,
+void DRT::ELEMENTS::Ptet::so_ptet_expol(Epetra_SerialDenseMatrix& stresses,
                                         Epetra_SerialDenseMatrix& nodalstresses)
 {
-  static Epetra_SerialDenseMatrix expol(NUMNOD_PTET, NUMGPT_PTET);
-  static bool isfilled;
-
-  if (isfilled==true)
-  {
-    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
-  }
-  else
-  {
-    expol(0,0)=1.0;
-    expol(1,0)=1.0;
-    expol(2,0)=1.0;
-    expol(3,0)=1.0;
-
-    nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
-
-    isfilled=true;
-  }
+  Epetra_SerialDenseMatrix expol(NUMNOD_PTET, NUMGPT_PTET);
+  expol(0,0)=1.0;
+  expol(1,0)=1.0;
+  expol(2,0)=1.0;
+  expol(3,0)=1.0;
+  nodalstresses.Multiply('N','N',1.0,expol,stresses,0.0);
+  return;
 }
-
-
 
 
 /*----------------------------------------------------------------------*

@@ -51,8 +51,8 @@ int DRT::ELEMENTS::PtetRegister::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::Ptet* actele = dynamic_cast<DRT::ELEMENTS::Ptet*>(dis.lColElement(i));
     if (!actele) dserror("cast to Ptet* failed");
 
-    // init the element
-    actele->InitElement();
+    // init the element (also set pointer to this register class)
+    actele->InitElement(this);
 
     // register element in list of column Ptet elements
     elecids_[actele->Id()] = actele;
@@ -126,23 +126,25 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
 {
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates)
-  {
-    string& action = p.get<string>("action","none");
-    if (action != "calc_struct_nlnstiffmass" && 
-        action != "calc_struct_nlnstiff") return;
-  }
+  string& action = p.get<string>("action","none");
+  if (action != "calc_struct_nlnstiffmass" && 
+      action != "calc_struct_nlnstiff"     &&
+      action != "calc_struct_stress") return;
+      
+  // These get filled in here, so remove old stuff
+  nodestress_.clear();
+  nodestrain_.clear();
   
   // see what we have for input
   bool assemblemat1 = systemmatrix1!=Teuchos::null;
   bool assemblevec1 = systemvector1!=Teuchos::null;
   bool assemblevec2 = systemvector2!=Teuchos::null;
   bool assemblevec3 = systemvector3!=Teuchos::null;
-  if ( assemblevec2 ||  assemblevec3) dserror("Wrong assembly expectations");
-  //if (!assemblemat1 || !assemblevec1) dserror("Wrong assembly expectations");
+  if (assemblevec2 || assemblevec3) dserror("Wrong assembly expectations");
 
   // nodal stiffness and force (we don't do mass here)
   Epetra_SerialDenseMatrix stiff;
-  Epetra_SerialDenseVector force;
+  Epetra_SerialDenseVector force1;
 
   //-------------------------------------- construct F for each Ptet
   // current displacement
@@ -163,13 +165,11 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
   //-----------------------------------------------------------------
   // create a temporary matrix to assemble to in a baci-unusual way
   // (across-parallel-interface assembly)
-  //const Epetra_Map& rmap = systemmatrix1->EpetraOperator()->OperatorRangeMap();
   const Epetra_Map& rmap = *dis.DofRowMap();
-  //const Epetra_Map& dmap = systemmatrix1->EpetraOperator()->OperatorDomainMap();
   const Epetra_Map& dmap = rmap;
   Epetra_FECrsMatrix stifftmp(Copy,rmap,256,false);
   // create temporary vector in column map to assemble to
-  Epetra_Vector forcetmp(*dis.DofColMap(),true);
+  Epetra_Vector forcetmp1(*dis.DofColMap(),true);
   
   //-------------------------------------------------do nodal stiffness
   std::map<int,DRT::Node*>::iterator node;
@@ -225,10 +225,25 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
     vector<int>& lm      = adjlm_[nodeLid];
 #endif
     
-    // do nodal integration of stiffness and internal force
-    stiff.Shape(ndofperpatch,ndofperpatch);
-    force.Size(ndofperpatch);
-    NodalIntegration(stiff,force,nodepatch,adjele);
+    if (action != "calc_struct_stress")
+    {
+      // do nodal integration of stiffness and internal force
+      stiff.Shape(ndofperpatch,ndofperpatch);
+      force1.Size(ndofperpatch);
+      NodalIntegration(&stiff,&force1,nodepatch,adjele,NULL,NULL,false,false);
+    }
+    else
+    {
+      bool cauchy     = p.get<bool>("cauchy",false);
+      string iostrain = p.get<string>("iostrain","none");
+      bool ea         = (iostrain=="euler_almansi");
+      vector<double> nodalstress(6);
+      vector<double> nodalstrain(6);
+      NodalIntegration(NULL,NULL,nodepatch,adjele,&nodalstress,&nodalstrain,cauchy,ea);
+      nodestress_[nodeLid] = nodalstress;
+      nodestrain_[nodeLid] = nodalstrain;
+    }
+    
     
     //---------------------- do assembly of stiffness and internal force
     // (note: this is non-standard-baci assembly and therefore a do it all yourself version!)
@@ -256,9 +271,9 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
       for (int i=0; i<ndofperpatch; ++i)
       {
         const int rgid = lm[i];
-        const int lid = forcetmp.Map().LID(rgid);
+        const int lid = forcetmp1.Map().LID(rgid);
         if (lid<0) dserror("global row %d does not exist in column map",rgid);
-        forcetmp[lid] += force[i];
+        forcetmp1[lid] += force1[i];
       }
     }
 
@@ -273,17 +288,14 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
   if (assemblevec1)
   {
     Epetra_Vector tmp(systemvector1->Map(),false);
-    Epetra_Export exporter(forcetmp.Map(),tmp.Map());
-    int err = tmp.Export(forcetmp,exporter,Add);
+    Epetra_Export exporter(forcetmp1.Map(),tmp.Map());
+    int err = tmp.Export(forcetmp1,exporter,Add);
     if (err) dserror("Export using exporter returned err=%d",err);
-    //LINALG::Export(forcetmp,tmp);
     systemvector1->Update(1.0,tmp,1.0);
   }
   if (assemblemat1)
   {
     int err = stifftmp.GlobalAssemble(dmap,rmap,false);
-    //cout << stifftmp; 
-    //exit(0);
     if (err) dserror("Epetra_FECrsMatrix::GlobalAssemble returned err=%d",err);
     for (int lrow=0; lrow<stifftmp.NumMyRows(); ++lrow)
     {
@@ -298,20 +310,35 @@ void DRT::ELEMENTS::PtetRegister::PreEvaluate(DRT::Discretization& dis,
     }
   }
   
+  if (action == "calc_struct_stress")
+  {
+    // we have to export the nodal stresses and strains to column map
+    // so they can be written by the elements
+    DRT::Exporter exporter(*dis.NodeRowMap(),*dis.NodeColMap(),dis.Comm());
+    exporter.Export<double>(nodestress_);
+    exporter.Export<double>(nodestrain_);
+  }
+  
+  
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  do nodal integration (public)                              gee 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&       stiff,
-                                                   Epetra_SerialDenseVector&       force,
-                                                   map<int,DRT::Node*>&            nodepatch,
-                                                   vector<DRT::ELEMENTS::Ptet*>&   adjele)
+void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix*     stiff,
+                                                   Epetra_SerialDenseVector*     force,
+                                                   map<int,DRT::Node*>&          nodepatch,
+                                                   vector<DRT::ELEMENTS::Ptet*>& adjele,
+                                                   vector<double>*               nodalstress,
+                                                   vector<double>*               nodalstrain,
+                                                   bool                          cauchy,
+                                                   bool                          ea)
 {
   const int nnodeinpatch = (int)nodepatch.size();
   const int ndofinpatch  = nnodeinpatch*3;
   const int neleinpatch  = (int)adjele.size();
+
   //------------------------------ see whether materials in patch are equal
   bool matequal = true;
   {
@@ -421,6 +448,45 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
   glstrain(4) = cauchygreen(1,2);
   glstrain(5) = cauchygreen(2,0);
 
+  if (nodalstrain)
+  {
+    if (!ea)
+    {
+      for (int i = 0; i < 3; ++i) (*nodalstrain)[i] = glstrain(i);
+      for (int i = 3; i < 6; ++i) (*nodalstrain)[i] = 0.5 * glstrain(i);
+    }
+    else
+    {
+      // rewriting Green-Lagrange strains in matrix format
+      LINALG::SerialDenseMatrix gl(3,3);
+      gl(0,0) = glstrain(0);
+      gl(0,1) = 0.5*glstrain(3);
+      gl(0,2) = 0.5*glstrain(5);
+      gl(1,0) = gl(0,1);
+      gl(1,1) = glstrain(1);
+      gl(1,2) = 0.5*glstrain(4);
+      gl(2,0) = gl(0,2);
+      gl(2,1) = gl(1,2);
+      gl(2,2) = glstrain(2);
+
+      // inverse of deformation gradient
+      Epetra_SerialDenseMatrix invdefgrd(FnodeL);
+      LINALG::NonsymInverse3x3(invdefgrd);
+
+      LINALG::SerialDenseMatrix temp(3,3);
+      LINALG::SerialDenseMatrix euler_almansi(3,3);
+      temp.Multiply('N','N',1.0,gl,invdefgrd,0.);
+      euler_almansi.Multiply('T','N',1.0,invdefgrd,temp,0.);
+
+      (*nodalstrain)[0] = euler_almansi(0,0);
+      (*nodalstrain)[1] = euler_almansi(1,1);
+      (*nodalstrain)[2] = euler_almansi(2,2);
+      (*nodalstrain)[3] = euler_almansi(0,1);
+      (*nodalstrain)[4] = euler_almansi(1,2);
+      (*nodalstrain)[5] = euler_almansi(0,2);
+    }
+  }
+
   // material law and stresses
   if (matequal) // element patch has single material
   {
@@ -451,6 +517,39 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
     stress.Scale(1.0/VnodeL);
     cmat.Scale(1.0/VnodeL);
   }
+  
+  if (nodalstress)
+  {
+    if (!cauchy)
+      for (int i = 0; i < NUMSTR_PTET; ++i) (*nodalstress)[i] = stress(i);
+    else
+    {
+      double detF = DRT::ELEMENTS::PtetRegister::Det(FnodeL);
+      
+      LINALG::SerialDenseMatrix pkstress(3,3);
+      pkstress(0,0) = stress(0);
+      pkstress(0,1) = stress(3);
+      pkstress(0,2) = stress(5);
+      pkstress(1,0) = pkstress(0,1);
+      pkstress(1,1) = stress(1);
+      pkstress(1,2) = stress(4);
+      pkstress(2,0) = pkstress(0,2);
+      pkstress(2,1) = pkstress(1,2);
+      pkstress(2,2) = stress(2);
+      
+      LINALG::SerialDenseMatrix temp(3,3);
+      LINALG::SerialDenseMatrix cauchystress(3,3);
+      temp.Multiply('N','N',1.0/detF,FnodeL,pkstress,0.);
+      cauchystress.Multiply('N','T',1.0,temp,FnodeL,0.);
+
+      (*nodalstress)[0] = cauchystress(0,0);
+      (*nodalstress)[1] = cauchystress(1,1);
+      (*nodalstress)[2] = cauchystress(2,2);
+      (*nodalstress)[3] = cauchystress(0,1);
+      (*nodalstress)[4] = cauchystress(1,2);
+      (*nodalstress)[5] = cauchystress(0,2);
+    }
+  }
 
 #if 1 // dev stab on cauchy stresses
   {
@@ -475,54 +574,24 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
   }
 #endif
 
-#if 0 // prev. methods
-#if 0 // stabilization on deviatoric stresses only
-  {
-    const double third = 1./3.;
-    Epetra_SerialDenseMatrix Idev(NUMSTR_PTET,NUMSTR_PTET);
-    Idev(0,0) =  2.0;  Idev(0,1) = -1.0;  Idev(0,2) = -1.0;
-    Idev(1,0) = -1.0;  Idev(1,1) =  2.0;  Idev(1,2) = -1.0;
-    Idev(2,0) = -1.0;  Idev(2,1) = -1.0;  Idev(2,2) =  2.0;
-    Idev(3,3) = 3.0;
-    Idev(4,4) = 3.0;
-    Idev(5,5) = 3.0;
-    Idev.Scale(third);
-
-    // do not weight the pressure part of the stress
-    Epetra_SerialDenseVector stressdev(NUMSTR_PTET);
-    Idev.Multiply(false,stress,stressdev);
-
-    const double* sdev = stressdev.Values();
-    double*       s    = stress.Values();
-    for (int i=0; i<NUMSTR_PTET; ++i) 
-      s[i] -= (ALPHA_PTET * sdev[i]);
-    
-    // do weighting on deviatoric part of the tangent only
-    LINALG::SerialDenseMatrix tmp(NUMSTR_PTET,NUMSTR_PTET);
-    LINALG::SerialDenseMatrix cmatdev(NUMSTR_PTET,NUMSTR_PTET);
-    tmp.Multiply('N','N',1.0,cmat,Idev,0.0);
-    cmatdev.Multiply('N','N',1.0,Idev,tmp,0.0);
-    // cmatvol = cmat - cmatdev;
-    const double* cdev = cmatdev.A();
-    double*       c    = cmat.A();
-    for (int i=0; i<NUMSTR_PTET*NUMSTR_PTET; ++i) 
-      c[i] -= (ALPHA_PTET*cdev[i]);
-  }
-#else // stab. on all stresses (Puso-style)
+#if 0 // orig. puso tet
     stress.Scale(1.0-ALPHA_PTET);
     cmat.Scale(1.0-ALPHA_PTET);
 #endif
-#endif
   
   //----------------------------------------------------- internal forces
-  force.Multiply('T','N',VnodeL,bop,stress,0.0);
+  if (force) force->Multiply('T','N',VnodeL,bop,stress,0.0);
 
   //--------------------------------------------------- elastic stiffness
-  LINALG::SerialDenseMatrix cb(NUMSTR_PTET,ndofinpatch);
-  cb.Multiply('N','N',1.0,cmat,bop,0.0);
-  stiff.Multiply('T','N',VnodeL,bop,cb,0.0);
+  if (stiff)
+  {
+    LINALG::SerialDenseMatrix cb(NUMSTR_PTET,ndofinpatch);
+    cb.Multiply('N','N',1.0,cmat,bop,0.0);
+    stiff->Multiply('T','N',VnodeL,bop,cb,0.0);
+  }
   
   //----------------------------------------------------- geom. stiffness
+  if (stiff)
   {
     // loop elements in patch
     for (int ele=0; ele<neleinpatch; ++ele)
@@ -551,9 +620,9 @@ void DRT::ELEMENTS::PtetRegister::NodalIntegration(Epetra_SerialDenseMatrix&    
           double bopstrbop = 0.0;
           for (int dim=0; dim<NUMDIM_PTET; ++dim)
             bopstrbop += nxyz(j,dim) * SmBL[dim];
-          stiff(NUMDIM_PTET*ipos+0,NUMDIM_PTET*jpos+0) += bopstrbop;
-          stiff(NUMDIM_PTET*ipos+1,NUMDIM_PTET*jpos+1) += bopstrbop;
-          stiff(NUMDIM_PTET*ipos+2,NUMDIM_PTET*jpos+2) += bopstrbop;
+          (*stiff)(NUMDIM_PTET*ipos+0,NUMDIM_PTET*jpos+0) += bopstrbop;
+          (*stiff)(NUMDIM_PTET*ipos+1,NUMDIM_PTET*jpos+1) += bopstrbop;
+          (*stiff)(NUMDIM_PTET*ipos+2,NUMDIM_PTET*jpos+2) += bopstrbop;
         }
       } // for (int i=0; i<actele->NumNode(); ++i)
     } // for (int ele=0; ele<neleinpatch; ++ele)

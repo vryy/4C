@@ -161,9 +161,13 @@ public:
 private:
 
   // map of row nodes adjacent to Ptet elements
-  std::map<int,DRT::Node*>                    noderids_;
+  map<int,DRT::Node*>                    noderids_;
   // map of column Ptet elements
-  std::map<int,DRT::ELEMENTS::Ptet*>          elecids_;
+  map<int,DRT::ELEMENTS::Ptet*>          elecids_;
+  // map of nodal stresses
+  map<int,vector<double> >               nodestress_;
+  // map of nodal stresses
+  map<int,vector<double> >               nodestrain_;
 
 #if 1 // efficiency at the price of memory
 
@@ -176,14 +180,14 @@ private:
 
 #endif
 
-  void NodalIntegration(//DRT::Node& nodeL,
-                        //const Epetra_SerialDenseMatrix& FnodeL,
-                        //const double                    VnodeL,
-                        //const vector<int>&              lm,
-                        Epetra_SerialDenseMatrix&       stiff,
-                        Epetra_SerialDenseVector&       force,
+  void NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
+                        Epetra_SerialDenseVector*       force,
                         map<int,DRT::Node*>&            nodepatch,
-                        vector<DRT::ELEMENTS::Ptet*>&   adjele);
+                        vector<DRT::ELEMENTS::Ptet*>&   adjele,
+                        vector<double>*                 nodalstress,
+                        vector<double>*                 nodalstrain,
+                        bool                            cauchy,
+                        bool                            ea);
 
 
   void SelectMaterial(RCP<MAT::Material> mat,
@@ -467,6 +471,8 @@ protected:
   //! element's def-gradient
   bool                                                     FisNew_;
   Epetra_SerialDenseMatrix                                 F_;
+  //! ptr to this element's register class
+  DRT::ELEMENTS::PtetRegister*                             myregister_;
 
   // internal calculation methods
 
@@ -475,7 +481,7 @@ protected:
   
   // init the inverse of the jacobian and its determinant
   // in the material configuration
-  virtual void InitElement();
+  virtual void InitElement(DRT::ELEMENTS::PtetRegister* myregister);
 
   // return volume of element
   virtual inline double Volume() { return V_; }
@@ -513,15 +519,12 @@ protected:
                                 vector<double>&           residual,
                                 Epetra_SerialDenseMatrix* stiffmatrix,
                                 Epetra_SerialDenseMatrix* massmatrix,
-                                Epetra_SerialDenseVector* force,
-                                Epetra_SerialDenseMatrix* stresses,
-                                Epetra_SerialDenseMatrix* elestrain,
-                                bool                      cauchy = false);
+                                Epetra_SerialDenseVector* force);
 
   void DeformationGradient(vector<double>& disp);
 
 
-  void so_tet4_expol(Epetra_SerialDenseMatrix& stresses,
+  void so_ptet_expol(Epetra_SerialDenseMatrix& stresses,
                      Epetra_SerialDenseMatrix& nodalstresses);
 
 

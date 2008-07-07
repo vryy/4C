@@ -39,8 +39,10 @@ using namespace std;
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ptet::InitElement()
+void DRT::ELEMENTS::Ptet::InitElement(DRT::ELEMENTS::PtetRegister* myregister)
 {
+  myregister_ = myregister;
+  
   LINALG::SerialDenseMatrix xrefe(NUMNOD_PTET,NUMDIM_PTET);
   LINALG::SerialDenseMatrix J(NUMNOD_PTET,NUMDIM_PTET+1);
   {
@@ -140,7 +142,6 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
     // nonlinear stiffness, internal force vector, and consistent mass matrix
     case calc_struct_nlnstiffmass: 
     {
-      //cout << "calc_struct_nlnstiffmass\n";
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -149,14 +150,13 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      ptetnlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,false);
+      ptetnlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1);
     }
     break;
 
     // nonlinear stiffness and internal force vector
     case calc_struct_nlnstiff: 
     {
-      //cout << "calc_struct_nlnstiff\n";
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -167,32 +167,38 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       Epetra_SerialDenseMatrix* elemat1ptr = NULL;
       if (elemat1.N()) elemat1ptr = &elemat1;
-      ptetnlnstiffmass(lm,mydisp,myres,elemat1ptr,NULL,&elevec1,NULL,NULL,false);
+      ptetnlnstiffmass(lm,mydisp,myres,elemat1ptr,NULL,&elevec1);
     }
     break;
 
     // evaluate stresses and strains at gauss points
     case calc_struct_stress: 
     {
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      // The element does not calc stresses, it just takes the nodal 
+      // stresses/strains that have been computed by the register class
       RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
       RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
-      if (disp==null) dserror("Cannot get state vectors 'displacement'");
       if (stressdata==null) dserror("Cannot get stress 'data'");
       if (straindata==null) dserror("Cannot get strain 'data'");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      Epetra_SerialDenseMatrix stress(NUMGPT_PTET,NUMSTR_PTET);
-      Epetra_SerialDenseMatrix strain(NUMGPT_PTET,NUMSTR_PTET);
-      bool cauchy = params.get<bool>("cauchy", false);
-      string iostrain = params.get<string>("iostrain", "none");
-      if (iostrain!="euler_almansi") 
-        ptetnlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,cauchy);
-      else
-       dserror("requested option euler_almansi not yet implemented for ptet");
+      Epetra_SerialDenseMatrix stress(NUMNOD_PTET,NUMSTR_PTET);
+      Epetra_SerialDenseMatrix strain(NUMNOD_PTET,NUMSTR_PTET);
+      map<int,vector<double> >& nodestress = myregister_->nodestress_;
+      map<int,vector<double> >& nodestrain = myregister_->nodestrain_;
+      for (int i=0; i<NumNode(); ++i)
+      {
+        int gid = Nodes()[i]->Id();
+        map<int,vector<double> >::iterator foolstress = nodestress.find(gid);
+        map<int,vector<double> >::iterator foolstrain = nodestrain.find(gid);
+        if (foolstress==nodestress.end() || foolstrain==nodestrain.end())
+          dserror("Cannot find marching nodal stresses/strains");
+        vector<double>& nstress = foolstress->second;
+        vector<double>& nstrain = foolstrain->second;
+        for (int j=0; j<6; ++j) 
+        {
+          stress(i,j) = nstress[j];
+          strain(i,j) = nstrain[j];
+        }
+      }
       AddtoPack(*stressdata, stress);
       AddtoPack(*straindata, strain);
     }
@@ -205,105 +211,30 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
       if (gpstressmap==null)
         dserror("no gp stress/strain map available for postprocessing");
       string stresstype = params.get<string>("stresstype","ndxyz");
       int gid = Id();
-      RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
-
+      Epetra_SerialDenseMatrix& gpstress = (*(*gpstressmap)[gid]);
       if (stresstype=="ndxyz") 
       {
-        // extrapolate stresses/strains at Gauss points to nodes
-        Epetra_SerialDenseMatrix nodalstresses(NUMNOD_PTET,NUMSTR_PTET);
-        so_tet4_expol(*gpstress,nodalstresses);
-
-        // average nodal stresses/strains between elements
-        // -> divide by number of adjacent elements
-        vector<int> numadjele(NUMNOD_PTET);
-
         for (int i=0;i<NUMNOD_PTET;++i)
         {
-          DRT::Node* node=Nodes()[i];
-          numadjele[i]=node->NumElement();
-        }
-
-        for (int i=0;i<NUMNOD_PTET;++i)
-        {
-          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
-          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+          elevec1(3*i)=gpstress(i,0);
+          elevec1(3*i+1)=gpstress(i,1);
+          elevec1(3*i+2)=gpstress(i,2);
         }
         for (int i=0;i<NUMNOD_PTET;++i)
         {
-          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
-          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
-          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+          elevec2(3*i)=gpstress(i,3);
+          elevec2(3*i+1)=gpstress(i,4);
+          elevec2(3*i+2)=gpstress(i,5);
         }
       }
-      else if (stresstype=="cxyz") 
-      {
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
-          dserror("No element stress/strain vector available");
-        const Epetra_BlockMap elemap = elestress->Map();
-        int lid = elemap.LID(Id());
-        if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_PTET; ++i) 
-          {
-            (*((*elestress)(i)))[lid] = 0.;
-            for (int j = 0; j < NUMGPT_PTET; ++j) 
-            {
-              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_PTET * (*gpstress)(j,i);
-            }
-          }
-        }
-      }
-      else if (stresstype=="cxyz_ndxyz") 
-      {
-        // extrapolate stresses/strains at Gauss points to nodes
-        Epetra_SerialDenseMatrix nodalstresses(NUMNOD_PTET,NUMSTR_PTET);
-        so_tet4_expol(*gpstress,nodalstresses);
-
-        // average nodal stresses/strains between elements
-        // -> divide by number of adjacent elements
-        vector<int> numadjele(NUMNOD_PTET);
-
-        for (int i=0;i<NUMNOD_PTET;++i)
-        {
-          DRT::Node* node=Nodes()[i];
-          numadjele[i]=node->NumElement();
-        }
-
-        for (int i=0;i<NUMNOD_PTET;++i)
-        {
-          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
-          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
-        }
-        for (int i=0;i<NUMNOD_PTET;++i)
-        {
-          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
-          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
-          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
-        }
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
-          dserror("No element stress/strain vector available");
-        const Epetra_BlockMap elemap = elestress->Map();
-        int lid = elemap.LID(Id());
-        if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_PTET; ++i) 
-          {
-            (*((*elestress)(i)))[lid] = 0.;
-            for (int j = 0; j < NUMGPT_PTET; ++j) 
-            {
-              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_PTET * (*gpstress)(j,i);
-            }
-          }
-        }
-      }
+      else if (stresstype=="cxyz" || stresstype=="cxyz_ndxyz") 
+        dserror("The Ptet does not do element stresses, nodal only (ndxyz), because its a nodal tet!");
       else 
         dserror("unknown type of stress/strain output on element level");
     }
@@ -360,10 +291,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
       vector<double>&           residual,       // current residuum
       Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
-      Epetra_SerialDenseVector* force,          // element internal force vector
-      Epetra_SerialDenseMatrix* elestress,      // stresses at GP
-      Epetra_SerialDenseMatrix* elestrain,      // strains at GP
-      const bool                cauchy)         // stress output options
+      Epetra_SerialDenseVector* force)         // stress output options
 {
   //--------------------------------------------------- geometry update
   if (!FisNew_) DeformationGradient(disp);
@@ -384,13 +312,6 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
   glstrain(3) = cauchygreen(0,1);
   glstrain(4) = cauchygreen(1,2);
   glstrain(5) = cauchygreen(2,0);
-  
-  //----------------------- output strains if desired for visualization
-  if (elestrain)
-  {
-    for (int i = 0; i < 3; ++i) (*elestrain)(0,i) = glstrain(i);
-    for (int i = 3; i < 6; ++i) (*elestrain)(0,i) = 0.5 * glstrain(i);
-  }
   
   //------------------------------------ B=operator ( same as in hex8 !)
   /*
@@ -473,40 +394,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
   }
 #endif
 
-#if 0 // prev. methods
-#if 0 // stabilization on deviatoric stresses only
-  const double third = 1./3.;
-  Epetra_SerialDenseMatrix Idev(NUMSTR_PTET,NUMSTR_PTET);
-  Idev(0,0) =  2.0;  Idev(0,1) = -1.0;  Idev(0,2) = -1.0;
-  Idev(1,0) = -1.0;  Idev(1,1) =  2.0;  Idev(1,2) = -1.0;
-  Idev(2,0) = -1.0;  Idev(2,1) = -1.0;  Idev(2,2) =  2.0;
-  Idev(3,3) = 3.0;
-  Idev(4,4) = 3.0;
-  Idev(5,5) = 3.0;
-  Idev.Scale(third);
-  
-  // keep only deviatoric part of strains
-  LINALG::SerialDenseVector gltmp(glstrain);
-  Idev.Multiply(false,gltmp,glstrain);
-  
-
-  Epetra_SerialDenseMatrix cmat(NUMSTR_PTET,NUMSTR_PTET);
-  Epetra_SerialDenseVector stress(NUMSTR_PTET);
-  double density = -999.99;
-  SelectMaterial(stress,cmat,density,glstrain,defgrd,0);
-  stress.Scale(ALPHA_PTET);
-  cmat.Scale(ALPHA_PTET);
-
-  // keep only the deviatoric part of stresses
-  Epetra_SerialDenseVector stresstmp(stress);
-  Idev.Multiply(false,stresstmp,stress);
-
-  // deviatoric part of tangent
-  LINALG::SerialDenseMatrix tmp(NUMSTR_PTET,NUMSTR_PTET);
-  tmp.Multiply('N','N',1.0,cmat,Idev,0.0);
-  cmat.Multiply('N','N',1.0,Idev,tmp,0.0);
-
-#else // stab. on all stresses (Puso-style)
+#if 0 // original puso tet
   Epetra_SerialDenseMatrix cmat(NUMSTR_PTET,NUMSTR_PTET);
   Epetra_SerialDenseVector stress(NUMSTR_PTET);
   double density = -999.99;
@@ -514,49 +402,7 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
   stress.Scale(ALPHA_PTET);
   cmat.Scale(ALPHA_PTET);
 #endif
-#endif
-   
-  //------------------------- return stresses desired for visualization
-  if (elestress)
-  {
-    // return 2nd Piola-Kirchhoff stresses
-    if (!cauchy)
-      for (int i = 0; i < NUMSTR_PTET; ++i) (*elestress)(0,i) = (1./ALPHA_PTET)*stress(i);
-    // Cauchy stresses
-    else
-    {
-        const double detF = defgrd(0,0)*defgrd(1,1)*defgrd(2,2) +
-                            defgrd(0,1)*defgrd(1,2)*defgrd(2,0) +
-                            defgrd(0,2)*defgrd(1,0)*defgrd(2,1) -
-                            defgrd(0,2)*defgrd(1,1)*defgrd(2,0) -
-                            defgrd(0,0)*defgrd(1,2)*defgrd(2,1) -
-                            defgrd(0,1)*defgrd(1,0)*defgrd(2,2);
-        LINALG::SerialDenseMatrix pkstress(NUMDIM_PTET,NUMDIM_PTET);
-        pkstress(0,0) = stress(0);
-        pkstress(0,1) = stress(3);
-        pkstress(0,2) = stress(5);
-        pkstress(1,0) = pkstress(0,1);
-        pkstress(1,1) = stress(1);
-        pkstress(1,2) = stress(4);
-        pkstress(2,0) = pkstress(0,2);
-        pkstress(2,1) = pkstress(1,2);
-        pkstress(2,2) = stress(2);
-        pkstress.Scale(1./ALPHA_PTET);
-
-        LINALG::SerialDenseMatrix temp(NUMDIM_PTET,NUMDIM_PTET);
-        LINALG::SerialDenseMatrix cauchystress(NUMDIM_PTET,NUMDIM_PTET);
-        temp.Multiply('N','N',1.0/detF,defgrd,pkstress,0.);
-        cauchystress.Multiply('N','T',1.0,temp,defgrd,0.);
-        (*elestress)(0,0) = cauchystress(0,0);
-        (*elestress)(0,1) = cauchystress(1,1);
-        (*elestress)(0,2) = cauchystress(2,2);
-        (*elestress)(0,3) = cauchystress(0,1);
-        (*elestress)(0,4) = cauchystress(1,2);
-        (*elestress)(0,5) = cauchystress(0,2);
-      
-    }
-  }
-  
+     
   if (force)
   {
     // integrate internal force vector f = f + (B^T . sigma) * V_ 
