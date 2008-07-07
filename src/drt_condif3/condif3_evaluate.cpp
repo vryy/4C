@@ -1568,7 +1568,7 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Condif3::CalculateFlux(
       dserror("received noflux flag inside CONDIF3 flux evaluation");
     };
 
-  } // loop over corner nodes
+  } // loop over nodes
 
   return flux;
 } // Condif3::CalculateFlux

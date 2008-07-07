@@ -635,14 +635,14 @@ OBJS_WALL1    = src/wall1/w1_bop.o \
 OBJS_DRT_F2_LIB = src/drt_f2/fluid2_evaluate.o \
                 src/drt_f2/fluid2_input.o \
                 src/drt_f2/fluid2_line_evaluate.o \
-                src/drt_f2/condif2_evaluate.o \
-                src/drt_f2/condif2_input.o \
-                src/drt_f2/condif2_line_evaluate.o \
+                src/drt_condif2/condif2_evaluate.o \
+                src/drt_condif2/condif2_input.o \
+                src/drt_condif2/condif2_line_evaluate.o \
                 src/drt_f2/fluid2.o \
                 src/drt_f2/fluid2_nurbs.o \
                 src/drt_f2/fluid2_line.o \
-                src/drt_f2/condif2.o \
-                src/drt_f2/condif2_line.o\
+                src/drt_condif2/condif2.o \
+                src/drt_condif2/condif2_line.o\
                 src/drt_f2/fluid2_genalpha_resVMM.o
 OBJS_DRT_F2 = 
 #------------------------------------------------- fluid2

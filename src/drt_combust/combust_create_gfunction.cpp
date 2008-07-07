@@ -35,7 +35,7 @@ Maintainer: Florian Henke
  *----------------------------------------------------------------------*/
 #include "../drt_f2/fluid2.H"
 #include "../drt_f3/fluid3.H"
-#include "../drt_f2/condif2.H"
+#include "../drt_condif2/condif2.H"
 #include "../drt_condif3/condif3.H"
 
 namespace COMBUST
