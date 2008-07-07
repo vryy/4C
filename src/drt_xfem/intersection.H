@@ -376,11 +376,11 @@ class Intersection
   \brief  finds th id of the an xfem surface common to all interafce points.
           Returns -1 , if no common surface exists or the surface id
 
-  \param interfacePoints          (in)        : vector of interface points
-  \return                                       returns -1 or the surface id
+  \param positions          (in)        : positions of points in pointList_
+  \return                                 returns -1 or the surface id
   */
   int findCommonSurfaceID(
-    vector<InterfacePoint>&         interfacePoints
+      const vector<int>&          positions
     );
         
   
@@ -454,8 +454,7 @@ class Intersection
   \param cutterElement            (in)      : cutter element
   \param xyze_cutterElement       (in)      : nodal coordinates of cutter element
   \param surfId                   (in)      : id of xfem element surface
-  \param interfacePoints          (in)      : list of interface points
-  \param vertices                 (in)      : vertices
+  \param vertices                 (in)      : position of points
   \param midpoint                 (in)      : midpoint
   
   */
@@ -464,8 +463,7 @@ class Intersection
   const DRT::Element*             cutterElement,
   const BlitzMat&                 xyze_cutterElement,
   const int                       surfId,
-  const vector<InterfacePoint>&   interfacePoints,
-  vector< vector<double> >&       vertices,
+  vector<int>&                    positions,
   InterfacePoint&                 midpoint
   ); 
        
@@ -531,6 +529,22 @@ class Intersection
   void startPointList();
 
 
+  /*!
+  \brief  stores aLL interface point of a curve-surface intersection 
+          in a point list for the
+          Constrained Delaunay Tetrahedralization (CDT) with Tetgen
+
+  \param vertices         (in)        :   coordinates of the point to be stored
+  \param interfacePoints  (in/out)    :   positions vector of interface points
+  \param positions        (in/out)    :   vector of interface points
+  */
+  void storePointList(
+    vector< vector<double> >&       vertices,
+    vector<int>&                    positions,
+    const vector<InterfacePoint>&   interfacePoints
+    );
+  
+  
   /*!
   \brief  stores an interface point in a point list for the
           Constrained Delaunay Tetrahedralization (CDT) with Tetgen

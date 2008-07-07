@@ -49,6 +49,9 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
     //! tolerance 1e-2 
     const double                 TOL2 = 1e-2;
     
+    //! tolerance 1e8
+    const double                 TOLPLUS8 = 1e8;
+    
     //! tolerance 1e15 
     const double                 TOLPLUS15 = 1e15;
     

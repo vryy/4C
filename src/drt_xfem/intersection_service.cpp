@@ -209,7 +209,7 @@ static inline bool currentToVolumeElementCoordinatesT(
         residual = XFEM::Norm2(b);
         iter++; 
         
-        if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > XFEM::TOLPLUS15)
+        if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > XFEM::TOLPLUS8)
         {   
             nodeWithinElement = false;
             break;

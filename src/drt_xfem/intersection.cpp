@@ -375,7 +375,6 @@ void XFEM::Intersection::setIntersectionPointBoundaryStatus(
   vector<int> surfaces = DRT::UTILS::getSurfaces(xsi, xfemElement->Shape());
   const int count = surfaces.size();
   
- 
   // point lies on one surface
   if(count == 1)
   {
@@ -631,6 +630,7 @@ bool computeSingularCSI(
 }
 
 
+
 template<DRT::Element::DiscretizationType surftype,
          DRT::Element::DiscretizationType linetype>
 bool computeCurveSurfaceIntersectionT(
@@ -687,7 +687,7 @@ bool computeCurveSurfaceIntersectionT(
         iter++;
 
         //printf("xsi = %20.16f   %20.16f   %20.16f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
-        if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > XFEM::TOLPLUS15)
+        if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > XFEM::TOLPLUS8)
         {
             intersection = false;
             break;
@@ -704,6 +704,7 @@ bool computeCurveSurfaceIntersectionT(
 
     return intersection;
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -761,6 +762,8 @@ bool XFEM::Intersection::computeCurveSurfaceIntersection(
     }
     return true;
 }
+
+
 
 /*----------------------------------------------------------------------*
  |  CLI:    computes a new starting point for the            u.may 06/07|
@@ -884,7 +887,6 @@ int XFEM::Intersection::addIntersectionPoint(
       }
     }
 
-
     vector<InterfacePoint>::iterator it;
     bool alreadyInList = false;
     for(it = interfacePoints.begin(); it != interfacePoints.end(); it++ )
@@ -897,25 +899,26 @@ int XFEM::Intersection::addIntersectionPoint(
 
     if(!alreadyInList)
     {
-        vector< BlitzVec3 >  upperLimits(8, BlitzVec3(0.0));
-        vector< BlitzVec3 >  lowerLimits(8, BlitzVec3(0.0));
-        createNewLimits(xsi, upLimit, loLimit, upperLimits, lowerLimits);
+      vector< BlitzVec3 >  upperLimits(8, BlitzVec3(0.0));
+      vector< BlitzVec3 >  lowerLimits(8, BlitzVec3(0.0));
+      createNewLimits(xsi, upLimit, loLimit, upperLimits, lowerLimits);
 
-        interfacePoints.push_back(ip);
-        numInterfacePoints++;
-        
-        // recursive call
-        // for linear lines and Cartesian surfaces no more than one intersection point can be expected
-        if(doSVD)
-          for(int i = 0; i < 8; i++)
-            numInterfacePoints += computeNewStartingPoint(xfemElement,
-                                        surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, 
-                                        surfaceId, lineId, xsi,
-                                        upperLimits[i], lowerLimits[i], interfacePoints, lines, doSVD);
+      interfacePoints.push_back(ip);
+      numInterfacePoints++;
+      
+      // recursive call
+      // for linear lines and Cartesian surfaces no more than one intersection point can be expected
+      if(doSVD)
+        for(int i = 0; i < 8; i++)
+          numInterfacePoints += computeNewStartingPoint(xfemElement,
+                                      surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, 
+                                      surfaceId, lineId, xsi,
+                                      upperLimits[i], lowerLimits[i], interfacePoints, lines, doSVD);
 
     }
     return numInterfacePoints;
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -988,78 +991,52 @@ void XFEM::Intersection::createNewLimits(
 }
 
 
+
 /*----------------------------------------------------------------------*
  |  CLI:    determines the surface Id of an xfem surface, if u.may 06/08|
  |          all interface points are lying on this surface              |
  *----------------------------------------------------------------------*/
 int XFEM::Intersection::findCommonSurfaceID(
-    vector<InterfacePoint>&         interfacePoints)
+    const vector<int>&          positions)
 {
-    int surfID = -1;
+    int surfId = -1;
     //int numSurfaces = interfacePoints[0].nsurf; 
-    const int numPoints = (int) interfacePoints.size(); 
-    int numSurfaces = interfacePoints[0].getNumSurface();
+    const int numPoints = (int) positions.size(); 
+    //int numSurfaces = interfacePoints[0].getNumSurface();
     
     vector<int>  xfemSurfIds(numXFEMSurfaces_, -1);
+    
     vector<vector<int> > xfemSurfPoints;
     xfemSurfPoints.resize(numXFEMSurfaces_);
+     
+    vector<vector<int> > positionsOnXfemSurfaces; 
+    positionsOnXfemSurfaces.resize(numXFEMSurfaces_);
     
-/*  
-     vector<vector<int> > positionsOnXfemSurfaces(); 
     // fill data structure store all point position lying on a certain xfem surface
-    for(int i = 0; i < positions.size(); i++)
+    for(unsigned int i = 0; i < positions.size(); i++)
       for(int j = 0; j < pointList_[positions[i]].getNumSurface(); j++)
       {
-        const int surf_id = pointList_[positions[i]].getSurfId()[j];
-        xfemSurfPoints[surf_id ].push_back(positions[i]);
+        const int surface = pointList_[positions[i]].getSurfId()[j];
+        xfemSurfPoints[surface].push_back(positions[i]);
       }
       
     // check if more than 2 points are lying on one xfem surface
     for(int i = 0; i < numXFEMSurfaces_; i++)
     {
-      if(xfemSurfPoints[i].size() == 3 &&  xfemSurfPoints[i].size() !=  positions.size())
-      
+      if(xfemSurfPoints[i].size() > 2  &&  xfemSurfPoints[i].size() !=  positions.size())
+      {
+        dserror("scenario not yet implemented");
+      }
       else if(xfemSurfPoints[i].size() > 2 &&  xfemSurfPoints[i].size() ==  positions.size())
       {
-        xfemSurfIds[i] = type;
+          surfId = i;
       }
-      else 
-        dserror("scenario not yet implemented or not correct");
     }
-      
-  */  
-    for(int i = 0; i < numSurfaces; i++)
-    {     
-      bool surfEqual = false;
-      int countSurfaces = 1;
-      surfID = interfacePoints[0].getSurfId()[i];
-      //surfID = interfacePoints[0].surfaces[i];
-      for(int j = 1; j < numPoints; j++)
-      {  
-        //numSurfaces = interfacePoints[j].nsurf; 
-        numSurfaces = interfacePoints[j].getNumSurface();
-        for(int k = 0; k < numSurfaces; k++)
-        {
-          // check if common surfaces are found
-          if(surfID == interfacePoints[j].getSurfId()[k])
-          //if(surfID == interfacePoints[j].surfaces[k])
-          {
-            countSurfaces++;
-            surfEqual = true;
-          }
-        }
-        if(!surfEqual)
-          break;
-        
-        surfEqual = false;
-      }
-      if(countSurfaces == numPoints)
-        break;
-      else 
-        surfID = -1;
-    }  
-    return surfID;
+    
+    return surfId;
 }
+
+
 
 /*----------------------------------------------------------------------*
  |  CLI:    checks if intersection lies exactly on an        u.may 07/08|
@@ -1140,33 +1117,37 @@ void XFEM::Intersection::preparePLC(
     // for 1 or 2 interface points (line segment or isolated point)
     else if(interfacePoints.size() <= 2 && interfacePoints.size() > 0) 
     {
-        for(vector<InterfacePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint)
+      for(vector<InterfacePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint)
+      {
+        vector<double> vertex(3,0);
+        // transform interface points into current coordinates and store in structure vertices
         {
-            vector<double> vertex(3,0);
-            // transform interface points into current coordinates and store in structure vertices
-            {
-                static BlitzVec2  eleCoordSurf;
-                for(int j = 0; j < 2; j++)
-                    eleCoordSurf(j)  = ipoint->getCoord()[j];
-                static BlitzVec3 curCoordVol;
-                elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-                const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL3));
-                for(int j = 0; j < 3; j++)
-                {
-                    vertex[j] = eleCoordVol(j);
-                }
-                ipoint->setCoord(vertex);
-            }
-            vertices.push_back(vertex);
+          static BlitzVec2  eleCoordSurf;
+          for(int j = 0; j < 2; j++)
+              eleCoordSurf(j)  = ipoint->getCoord()[j];
+          static BlitzVec3 curCoordVol;
+          elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
+          const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL3));
+          for(int j = 0; j < 3; j++)
+          {
+              vertex[j] = eleCoordVol(j);
+          }
+          ipoint->setCoord(vertex);
         }
+        vertices.push_back(vertex);
+      }
     }
     else
       dserror("collection of interface points is empty");
   
     
+    // store pointList_
+    vector<int> positions;
+    storePointList(vertices, positions, interfacePoints);
+    
     // find common surfID, if surfUd != -1 all interface points are lying on one
     // xfem surface and have to be store in the surfaceTriangleList_ accordingly
-    const int surfId = findCommonSurfaceID(interfacePoints);
+    const int surfId = findCommonSurfaceID(positions);
     
     // check if all nodes are XFEMNODES
     if(surfId != -1)
@@ -1175,7 +1156,7 @@ void XFEM::Intersection::preparePLC(
                                                                     interfacePoints, surfId);
     
     // store part of PLC
-    storePLC(xfemElement, cutterElement, xyze_cutterElement, surfId, interfacePoints, vertices, midpoint);
+    storePLC(xfemElement, cutterElement, xyze_cutterElement, surfId, positions, midpoint);
     
     //storePLC(xfemElement, cutterElement, xyze_cutterElement, surfId, surfaceInterfacePoints, vertices, midpoint);
  
@@ -1211,16 +1192,16 @@ void XFEM::Intersection::computeConvexHull(
     midpoint = computeMidpoint(interfacePoints);
     // transform it into current coordinates
     {
-        static BlitzVec2    eleCoordSurf;
-        for(int j = 0; j < 2; j++)
-            eleCoordSurf(j)  = midpoint.getCoord()[j];
-        static BlitzVec3 curCoordVol;
-        elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-        const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL7));
-        for(int j = 0; j < 3; j++)
-            coord[j] = eleCoordVol(j);
-        
-        midpoint.setCoord(coord);
+      static BlitzVec2    eleCoordSurf;
+      for(int j = 0; j < 2; j++)
+          eleCoordSurf(j)  = midpoint.getCoord()[j];
+      static BlitzVec3 curCoordVol;
+      elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
+      const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL7));
+      for(int j = 0; j < 3; j++)
+          coord[j] = eleCoordVol(j);
+      
+      midpoint.setCoord(coord);
     }
   }
       
@@ -1233,24 +1214,24 @@ void XFEM::Intersection::computeConvexHull(
   int fill = 0;
   for(vector<InterfacePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint)
   {
+    for(int j = 0; j < 2; j++)
+    {
+      coordinates[fill++] = ipoint->getCoord()[j];
+     // printf("coord = %f\t", ipoint->coord[j]);
+    }
+    // transform interface points into current coordinates
+    {
+      static BlitzVec2  eleCoordSurf;
       for(int j = 0; j < 2; j++)
-      {
-          coordinates[fill++] = ipoint->getCoord()[j];
-         // printf("coord = %f\t", ipoint->coord[j]);
-      }
-      // transform interface points into current coordinates
-      {
-          static BlitzVec2  eleCoordSurf;
-          for(int j = 0; j < 2; j++)
-              eleCoordSurf(j)  = ipoint->getCoord()[j];
-          static BlitzVec3 curCoordVol;
-          elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-          const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL3));
-          for(int j = 0; j < 3; j++)
-              coord[j] = eleCoordVol(j);
-          
-          ipoint->setCoord(coord);
-      }
+          eleCoordSurf(j)  = ipoint->getCoord()[j];
+      static BlitzVec3 curCoordVol;
+      elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
+      const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL3));
+      for(int j = 0; j < 3; j++)
+          coord[j] = eleCoordVol(j);
+      
+      ipoint->setCoord(coord);
+    }
   }
 
   // compute convex hull - exitcode = 0 no error
@@ -1264,26 +1245,26 @@ void XFEM::Intersection::computeConvexHull(
   facetT* facet = qh facet_list;
   for(int i = 0; i< qh num_facets; i++)
   {
-      for(int j = 0; j < 2; j++)
+    for(int j = 0; j < 2; j++)
+    {
+      vector<double> vertex(3,0);
+      double* point  = SETelemt_(facet->vertices, j, vertexT)->point;
+      for(int k = 0; k < 2; k++)
+          vertex[k] = point[k];
       {
-          vector<double> vertex(3,0);
-          double* point  = SETelemt_(facet->vertices, j, vertexT)->point;
-          for(int k = 0; k < 2; k++)
-              vertex[k] = point[k];
-          {
-              static BlitzVec2  eleCoordSurf;
-              for(int m = 0; m < 2; m++)
-                  eleCoordSurf(m)  = vertex[m];
-              static BlitzVec3 curCoordVol;
-              elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-              const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL3));
-              for(int m = 0; m < 3; m++)
-                  vertex[m] = eleCoordVol(m);
-          }
-
-          vertices.push_back(vertex);
+        static BlitzVec2  eleCoordSurf;
+        for(int m = 0; m < 2; m++)
+            eleCoordSurf(m)  = vertex[m];
+        static BlitzVec3 curCoordVol;
+        elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
+        const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL3));
+        for(int m = 0; m < 3; m++)
+            vertex[m] = eleCoordVol(m);
       }
-      facet = facet->next;
+
+      vertices.push_back(vertex);
+    }
+    facet = facet->next;
   }
 
   // free memory and clear vector of interface points
@@ -1308,49 +1289,27 @@ void XFEM::Intersection::storePLC(
     const DRT::Element*             cutterElement,
     const BlitzMat&                 xyze_cutterElement,
     const int                       surfId,
-    const vector<InterfacePoint>&   interfacePoints,
-    vector< vector<double> >&       vertices,
+    vector<int>&                    positions,
     InterfacePoint&                 midpoint)   
-{  
+{ 
   
-    vector<int>                 positions;
-    vector<double>              searchPoint(3,0);
-    
-    // store interface points in pointList_
-    storePoint(vertices[0], interfacePoints, positions);
-    vertices.erase(vertices.begin());
-
-    if(interfacePoints.size() > 1)
-    {
-        // store points, segments and triangles for the computation of the
-        // Constrained Delaunay Tetrahedralization with Tetgen
-        searchPoint = vertices[0];
-        storePoint(vertices[0], interfacePoints, positions );
-        vertices.erase(vertices.begin());
-    } 
-    while(vertices.size()>2)
-    {
-        findNextSegment(vertices, searchPoint);
-        storePoint(searchPoint, interfacePoints, positions);
-    }
-    
     // NOTE: postion is filled in the order points appear in vertices to
     // keep the order which was determined by the convex hull computation
-        
+    const int numPoints = (int) positions.size(); 
     // store segments 
     // cutter element lies on the surface of an xfem element
     if(surfId > -1)
     {
-      if(interfacePoints.size() == 1)
+      if(numPoints == 1)
         storeIsolatedPoints(positions);
       
-      if(interfacePoints.size() > 1)
+      if(numPoints > 1)
       {
           // store outer triangle segments
           // possible midpoint not added to position list and point list
           storeSegments(positions);
       }
-      if(interfacePoints.size() > 2 && !checkIfTrianglesDegenerate(positions))
+      if(numPoints > 2 && !checkIfTrianglesDegenerate(positions))
       {
         // tell midpoint on which xfem surface it lies
         classifyMidpoint(surfId, midpoint);
@@ -1363,12 +1322,12 @@ void XFEM::Intersection::storePLC(
     }
     else if(surfId == -1)
     {
-      if(interfacePoints.size() > 1)
+      if(numPoints > 1)
       {
           // possible midpoint not added to position list and point list
           storeSegments( positions );
       }
-      if(interfacePoints.size() > 2 && !checkIfTrianglesDegenerate(positions))
+      if(numPoints > 2 && !checkIfTrianglesDegenerate(positions))
       {        
         storeMidPoint(midpoint, positions);
         storeTriangles(positions);
@@ -1439,23 +1398,23 @@ void XFEM::Intersection::findNextSegment(
 
     for(it = vertices.begin(); it != vertices.end(); it=it+2 )
     {
-        if(comparePoints<3>(searchPoint, *it))
-        {
-            pointfound = true;
-            searchPoint = *(it+1);
-            vertices.erase(it);
-            vertices.erase(it); // remove it+ 1
-            break;
-        }
+      if(comparePoints<3>(searchPoint, *it))
+      {
+        pointfound = true;
+        searchPoint = *(it+1);
+        vertices.erase(it);
+        vertices.erase(it); // remove it+ 1
+        break;
+      }
 
-        if(comparePoints<3>(searchPoint, *(it+1)))
-        {
-            pointfound = true;
-            searchPoint = *(it);
-            vertices.erase(it);
-            vertices.erase(it); // remove it+ 1
-            break;
-        }
+      if(comparePoints<3>(searchPoint, *(it+1)))
+      {
+        pointfound = true;
+        searchPoint = *(it);
+        vertices.erase(it);
+        vertices.erase(it); // remove it+ 1
+        break;
+      }
     }
     if(!pointfound) dserror("no point found");
 }
@@ -1684,24 +1643,56 @@ void XFEM::Intersection::computeCDT(
 void XFEM::Intersection::startPointList(
     )
 {
-    InterfacePoint ip;
+  InterfacePoint ip;
 
-    pointList_.clear();
+  pointList_.clear();
 
-    for(int i = 0; i < numXFEMCornerNodes_; i++)
-    {
-        ip.setPointType(NODE);
-        ip.setNodeId(i);
-        ip.setLineId(eleNodesLines_[i]);
-        ip.setSurfaceId(eleNodesSurfaces_[i]);
-        ip.setCoord(eleRefCoordinates_[i]);
-        pointList_.push_back(ip);
-    }
+  for(int i = 0; i < numXFEMCornerNodes_; i++)
+  {
+    ip.setPointType(NODE);
+    ip.setNodeId(i);
+    ip.setLineId(eleNodesLines_[i]);
+    ip.setSurfaceId(eleNodesSurfaces_[i]);
+    ip.setCoord(eleRefCoordinates_[i]);
+    pointList_.push_back(ip);
+  }
 
-    for(int i = 0; i < numXFEMSurfaces_; i++)
-        faceMarker_.push_back(-1);
+  for(int i = 0; i < numXFEMSurfaces_; i++)
+    faceMarker_.push_back(-1);
 }
 
+
+/*----------------------------------------------------------------------*
+ |  CDT:    fills the point list with the points             u.may 06/08|
+ |          in element coordinates of the xfem element                  |
+ |          for an intersection between a single cutter and xfem element|
+ *----------------------------------------------------------------------*/
+void XFEM::Intersection::storePointList(
+    vector< vector<double> >&       vertices,
+    vector<int>&                    positions,
+    const vector<InterfacePoint>&   interfacePoints
+    )
+{  
+  vector<double>              searchPoint(3,0);
+  
+  // store interface points in pointList_
+  storePoint(vertices[0], interfacePoints, positions);
+  vertices.erase(vertices.begin());
+
+  if(interfacePoints.size() > 1)
+  {
+      // store points, segments and triangles for the computation of the
+      // Constrained Delaunay Tetrahedralization with Tetgen
+      searchPoint = vertices[0];
+      storePoint(vertices[0], interfacePoints, positions );
+      vertices.erase(vertices.begin());
+  } 
+  while(vertices.size()>2)
+  {
+      findNextSegment(vertices, searchPoint);
+      storePoint(searchPoint, interfacePoints, positions);
+  }
+}
 
 
 /*----------------------------------------------------------------------*
