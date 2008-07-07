@@ -18,7 +18,6 @@ Maintainer: Ulrich Kuettler
 #include "adapter_coupling_mortar.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
 
 #include <map>
 #include <set>

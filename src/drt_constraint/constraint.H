@@ -26,7 +26,6 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/linalg_solver.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_systemmatrix.H"
-#include "../drt_lib/drt_utils.H"
 
 
 using namespace std;

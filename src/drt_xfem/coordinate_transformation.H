@@ -24,7 +24,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/xfem.H"
 #include "../drt_xfem/integrationcell.H"
 #include "../drt_xfem/blitz_tiny_operation.H"
-#include "../drt_lib/drt_utils.H"
 
 
 namespace XFEM

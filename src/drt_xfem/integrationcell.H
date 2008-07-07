@@ -201,7 +201,7 @@ public:
      */
     void NodalPosXYZ(const DRT::Element& ele, BlitzMat& xyz_cell) const
     {
-        ComputePhysicalCoordinates<DomainIntCell>(ele, (*this), xyz_cell);
+        ComputePhysicalCoordinates(ele, (*this), xyz_cell);
         return;
     };
     
@@ -297,7 +297,7 @@ public:
             BlitzMat&           xyz_cell
             ) const
     {
-        ComputePhysicalCoordinates<BoundaryIntCell>(ele, (*this), xyz_cell);
+        ComputePhysicalCoordinates(ele, (*this), xyz_cell);
         return;
     };
     

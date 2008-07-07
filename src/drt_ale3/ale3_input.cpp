@@ -22,7 +22,6 @@ extern "C"
 }
 
 #include "ale3.H"
-//#include "../drt_lib/drt_utils.H"
 
 using namespace DRT::UTILS;
 

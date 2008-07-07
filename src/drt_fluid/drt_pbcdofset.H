@@ -36,7 +36,6 @@ using namespace std;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
 
 #include "../drt_lib/linalg_utils.H"
 

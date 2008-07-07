@@ -13,7 +13,6 @@ Maintainer: Alexander Popp
 #ifdef CCADISCRET
 
 #include "drt_celement.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/linalg_utils.H"
 #include "drt_contact_integrator.H"
 #include "contactdefines.H"

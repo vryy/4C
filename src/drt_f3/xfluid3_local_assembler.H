@@ -20,7 +20,6 @@ Maintainer: Axel Gerstenberger
 
 #include <blitz/array.h>
 #include "../drt_xfem/xfem.H"
-#include "../drt_lib/drt_utils.H"
 //#include "xfluid3_shapefunction_handle.H"
 
 

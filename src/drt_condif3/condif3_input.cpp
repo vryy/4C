@@ -24,7 +24,6 @@ extern "C"
 #include "../headers/standardtypes.h"
 }
 #include "condif3.H"
-#include "../drt_lib/drt_utils.H"
 
 using namespace DRT::UTILS;
 

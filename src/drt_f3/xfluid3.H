@@ -32,7 +32,6 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_xfem/dof_management.H"
 #include "xfluid3_interpolation.H"
 

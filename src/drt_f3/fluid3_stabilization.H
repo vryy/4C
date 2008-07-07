@@ -20,7 +20,6 @@
 #define XFLUID3_STABILIZATION_H
 
 #include <blitz/array.h>
-#include "../drt_lib/drt_utils.H"
 #include "../drt_xfem/xfem.H"
 
 
