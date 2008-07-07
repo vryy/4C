@@ -105,8 +105,15 @@ void StruTimIntAB2::IntegrateStep()
   stiff_->Zero();
 
   // ordinary internal force and stiffness
-  ApplyForceStiffInternal(timen_, dt, disn_, zeros_,
-                          fintn_, Teuchos::null);
+  {
+    // displacement increment in step
+    Epetra_Vector disinc = Epetra_Vector(*disn_);
+    disinc.Update(-1.0, *dis_, 1.0);
+    // internal force
+    ApplyForceStiffInternal(timen_, dt,
+                            disn_, zeros_, //Teuchos::rcp(&disinc,false),
+                            fintn_, stiff_);
+  }
 
   // viscous forces due Rayleigh damping
   if (damping_)
@@ -124,6 +131,7 @@ void StruTimIntAB2::IntegrateStep()
 
   // obtain new accelerations \f$A_{n+1}\f$
   {
+    dsassert(mass_->Filled(), "Mass matrix has to be completed");
     // blank linear momentum zero on DOFs subjected to DBCs
     Epetra_Vector rhscopy = Epetra_Vector(*frimpn_);
     frimpn_->Multiply(1.0, *invtoggle_, rhscopy, 0.0);

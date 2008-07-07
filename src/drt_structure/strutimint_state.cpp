@@ -92,6 +92,7 @@ void StruTimIntState::Resize
                   LINALG::CreateVector(*dofrowmap_, inittozero));
     }
     steppast_ = steppast;
+    steps_ = stepfuture_ - steppast_ + 1;
   }
 
   // farewell
