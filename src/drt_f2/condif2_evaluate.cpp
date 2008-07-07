@@ -48,7 +48,9 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList& params,
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action == "calc_condif_systemmat_and_residual")
-  	act = Condif2::calc_condif_systemmat_and_residual;
+    act = Condif2::calc_condif_systemmat_and_residual;
+  else if (action == "calc_condif_flux")
+    act = Condif2::calc_condif_flux;
   else dserror("Unknown type of action for Condif2: %s", action.c_str());
 
   // get the material
@@ -110,6 +112,10 @@ int DRT::ELEMENTS::Condif2::Evaluate(ParameterList& params,
       condif2_sys_mat(lm,myhist,&elemat1,&elemat2,&elevec1,elevec2,actmat,time,timefac,evel,fssgd,is_stationary);
 
     }
+    break;
+    case calc_condif_flux:
+      // do nothing here instead of throwing a dserror 
+      // this keeps the result test on fluxes alive
     break;
     default:
       dserror("Unknown type of action for Condif2");

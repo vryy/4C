@@ -269,7 +269,8 @@ private:
   enum ActionType
   {
     none,
-    calc_condif_systemmat_and_residual
+    calc_condif_systemmat_and_residual,
+    calc_condif_flux
   };
 
   bool is_higher_order_element(const DRT::Element::DiscretizationType  distype) const;
@@ -666,8 +667,7 @@ private:
   enum ActionType
   {
      none,
-     integrate_Shapefunction,
-     calc_normal_flux
+     calc_condif_flux
   };
 
   // don't want = operator
@@ -680,8 +680,8 @@ private:
 
   // compute infintesimal line element dr for integration along the line
   double  condif2_substitution(const Epetra_SerialDenseMatrix  xyze,
-		               const Epetra_SerialDenseMatrix  deriv,
-		               const int iel);
+                               const Epetra_SerialDenseMatrix  deriv,
+                               const int iel);
 
   // Get Rule for Gaussintegration according to DRT::UTIL
   DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);
@@ -696,12 +696,8 @@ private:
 }; // class Condif2Line
 
 
-
-
 } // namespace ELEMENTS
 } // namespace DRT
-
-
 
 
 #endif  // #ifndef FLUID2_H

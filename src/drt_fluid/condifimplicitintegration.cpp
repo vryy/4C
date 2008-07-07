@@ -796,8 +796,8 @@ void CondifImplicitTimeInt::Output()
       output_.WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
       //output_.WriteVector("residual", residual_);
 
-      //RCP<Epetra_MultiVector> flux = CalcFlux();
-      //output_.WriteVector("flux", flux, IO::DiscretizationWriter::nodevector);
+      RCP<Epetra_MultiVector> flux = CalcFlux();
+      output_.WriteVector("flux", flux, IO::DiscretizationWriter::nodevector);
 
       // write domain decomposition for visualization (only once!)
       if (step_==upres_)

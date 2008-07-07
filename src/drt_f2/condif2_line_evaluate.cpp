@@ -37,15 +37,15 @@ int DRT::ELEMENTS::Condif2Line::Evaluate(       ParameterList&            params
     DRT::ELEMENTS::Condif2Line::ActionType act = Condif2Line::none;
     string action = params.get<string>("action","none");
     if (action == "none") dserror("No action supplied");
-    else if (action == "integrate_Shapefunction")
-        act = Condif2Line::integrate_Shapefunction;	
-    else dserror("Unknown type of action for Condif2_Surface");
+    else if (action == "condif_calc_flux")
+        act = Condif2Line::calc_condif_flux;	
+    else dserror("Unknown type of action for Condif2Line");
     
     switch(act)
     {
-    case integrate_Shapefunction:
+    case calc_condif_flux:
     {
-        dserror("No implementation yet for convection-diffusion problems");
+        dserror("No implementation of flux evaluation for condif2line elements.");
         break;
     }
     default:
