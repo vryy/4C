@@ -291,7 +291,6 @@ bool XFEM::Intersection::collectInternalPoints(
     // intersection coordinates in the surface
     // element element coordinate system
     ip.setCoord(DRT::UTILS::getNodeCoordinates(nodeId, cutterElement->Shape()));
-    //DRT::UTILS::getNodeCoordinates(nodeId, ip.coord, cutterElement->Shape());
 
     interfacePoints.push_back(ip);
     storeIntersectedCutterElement(cutterElement);
@@ -316,7 +315,6 @@ bool XFEM::Intersection::setInternalPointBoundaryStatus(
   
   vector<int> surfaces = DRT::UTILS::getSurfaces(xsi, xfemDistype);
   const int count = surfaces.size();
-  // const int count = DRT::UTILS::getSurfaces(xsi, ip.surfaces, xfemDistype);
 
   // point lies on one surface
   if(count == 1)
@@ -324,11 +322,6 @@ bool XFEM::Intersection::setInternalPointBoundaryStatus(
     onSurface = true;
     ip.setPointType(SURFACE);
     ip.setSurfaceId(surfaces);
-    /*ip.nnode = 0;
-    ip.nline = 0;
-    ip.nsurf = count;
-    ip.pType = SURFACE;
-    */
   }
   // point lies on line, which has two neighbouring surfaces
   else if(count == 2)
@@ -337,12 +330,6 @@ bool XFEM::Intersection::setInternalPointBoundaryStatus(
     ip.setPointType(LINE);
     ip.setLineId(DRT::UTILS::getLines(xsi, xfemDistype));
     ip.setSurfaceId(surfaces);
-    /*ip.nnode = 0;
-    ip.nline = 1;
-    ip.nsurf = count;
-    ip.pType = LINE;
-    DRT::UTILS::getLines(xsi, ip.lines, xfemDistype);
-    */
   }
   // point lies on a node, which has three neighbouring surfaces
   else if(count == 3)
@@ -352,24 +339,11 @@ bool XFEM::Intersection::setInternalPointBoundaryStatus(
     ip.setNodeId(DRT::UTILS::getNode(xsi, xfemDistype));
     ip.setLineId(DRT::UTILS::getLines(xsi, xfemDistype));
     ip.setSurfaceId(surfaces);
-    
-    /*ip.nnode = 1;
-    ip.nline = 3;
-    ip.nsurf = count;
-    ip.pType = NODE;
-    DRT::UTILS::getLines(xsi, ip.lines, xfemDistype);
-    DRT::UTILS::getNode(xsi, ip.node, xfemDistype);
-    */
   }
   else
   {
     onSurface = false;
     ip.setPointType(INTERNAL);
-    /*ip.nnode = 0;
-    ip.nline = 0;
-    ip.nsurf = 0;
-    ip.pType = INTERNAL;
-    */
   }
   return onSurface;
 }
@@ -395,34 +369,22 @@ void XFEM::Intersection::setIntersectionPointBoundaryStatus(
   BlitzVec3 x;
   x = 0;
     
+  // surface element is an xfem surface
   elementToCurrentCoordinates(surfaceElement, xyze_surfaceElement, xsiSurface, x);
   xsi = currentToVolumeElementCoordinatesExact(xfemElement, x, TOL3); 
-  // const int count = DRT::UTILS::getSurfaces(xsi, ip.surfaces, xfemElement->Shape());
   vector<int> surfaces = DRT::UTILS::getSurfaces(xsi, xfemElement->Shape());
   const int count = surfaces.size();
-  //ip.setSurfaceId(DRT::UTILS::getSurfaces(xsi, xfemElement->Shape()));
-  //const int count = ip.getSurfId().size();
+  
  
   // point lies on one surface
   if(count == 1)
   {
-    /*ip.nnode = 0;
-    ip.nline = 0;
-    ip.nsurf = count;
-    ip.pType = SURFACE;
-    */
     ip.setPointType(SURFACE);
     ip.setSurfaceId(surfaces);
   }
   // point lies on line, which has two neighbouring surfaces
   else if(count == 2)
   {
-    /*DRT::UTILS::getLines(xsi, ip.lines, xfemElement->Shape());
-    ip.nnode = 0;
-    ip.nline = 1;
-    ip.nsurf = count;
-    ip.pType = LINE;
-    */
     ip.setPointType(LINE);
     ip.setLineId(DRT::UTILS::getLines(xsi, xfemElement->Shape()));
     ip.setSurfaceId(surfaces);
@@ -430,13 +392,6 @@ void XFEM::Intersection::setIntersectionPointBoundaryStatus(
   // point lies on a node, which has three neighbouring surfaces
   else if(count == 3)
   {
-    /*DRT::UTILS::getLines(xsi, ip.lines, xfemElement->Shape());
-    DRT::UTILS::getNode(xsi, ip.node, xfemElement->Shape());
-    ip.nnode = 1;
-    ip.nline = 3;
-    ip.nsurf = count;
-    ip.pType = NODE;
-    */
     ip.setPointType(NODE);
     ip.setLineId(DRT::UTILS::getLines(xsi, xfemElement->Shape()));
     ip.setNodeId(DRT::UTILS::getNode(xsi, xfemElement->Shape()));
@@ -888,9 +843,6 @@ int XFEM::Intersection::addIntersectionPoint(
     {          
         setIntersectionPointBoundaryStatus( xfemElement,surfaceElement,xyze_surfaceElement,xsi, ip);
         ip.setCoord(DRT::UTILS::getLineCoordinates(lineId, xsi(2), cutterDistype_));
-       
-        //DRT::UTILS::getLineCoordinates(lineId, xsi(2), coord, cutterDistype_);
-        //ip.coord[2] = 0.0;
     }
     // xfem line with cutter surface
     else
@@ -907,21 +859,6 @@ int XFEM::Intersection::addIntersectionPoint(
       if(lineNodeId > -1)
       {
         const int nodeId = eleNumberingLines_[lineId][lineNodeId];
-        /*ip.nnode = 1;
-        ip.node[0] = nodeId;
-        ip.nline = 3;
-        ip.lines[0] = eleNodesLines_[nodeId][0];
-        ip.lines[1] = eleNodesLines_[nodeId][1];
-        ip.lines[2] = eleNodesLines_[nodeId][2];
-        ip.nsurf = 3;
-        ip.surfaces[0] = eleNodesSurfaces_[nodeId][0];
-        ip.surfaces[1] = eleNodesSurfaces_[nodeId][1];
-        ip.surfaces[2] = eleNodesSurfaces_[nodeId][2];
-        ip.coord[0] = xsi(0);
-        ip.coord[1] = xsi(1);
-        ip.coord[2] = 0.0;
-        ip.pType = NODE;
-        */
         // point type has to be set before ids and coords are set
         ip.setPointType(NODE);
         ip.setNodeId(nodeId);
@@ -935,18 +872,6 @@ int XFEM::Intersection::addIntersectionPoint(
       }
       else
       {
-        /*ip.nnode = 0;
-        ip.nline = 1;
-        ip.lines[0] = lineId;
-        ip.nsurf = 2;
-        ip.surfaces[0] = eleLinesSurfaces_[lineId][0];
-        ip.surfaces[1] = eleLinesSurfaces_[lineId][1];
-        ip.coord[0] = xsi(0);
-        ip.coord[1] = xsi(1);
-        ip.coord[2] = 0.0;
-        ip.pType = LINE;
-        */
-        
         ip.setPointType(LINE);
         vector<int> lineVec(1,lineId);
         ip.setLineId(lineVec);
@@ -963,7 +888,6 @@ int XFEM::Intersection::addIntersectionPoint(
     vector<InterfacePoint>::iterator it;
     bool alreadyInList = false;
     for(it = interfacePoints.begin(); it != interfacePoints.end(); it++ )
-      //if(comparePoints<3>(ip.coord, it->coord))
       if(comparePoints<3>(ip.getCoord(), it->getCoord()))
       {
         //printf("alreadyinlist = true\n");
@@ -1127,7 +1051,6 @@ XFEM::boundaryType XFEM::Intersection::checkIfIntersectionOnXFEMBoundary(
  
   // 1. test: check, if all points are XFEM NODES
   for(unsigned int i = 0; i < interfacePoints.size(); i++)
-    //if(interfacePoints[i].pType != NODE)
     if(interfacePoints[i].getPointType() != NODE)
     {
       intersectionOnBoundary = false;
@@ -1202,7 +1125,6 @@ void XFEM::Intersection::preparePLC(
                 const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL3));
                 for(int j = 0; j < 3; j++)
                 {
-                    //ipoint->coord[j] = eleCoordVol(j);
                     vertex[j] = eleCoordVol(j);
                 }
                 ipoint->setCoord(vertex);
@@ -1286,10 +1208,8 @@ void XFEM::Intersection::computeConvexHull(
       for(int j = 0; j < 2; j++)
       {
           coordinates[fill++] = ipoint->getCoord()[j];
-          //coordinates[fill++] = ipoint->coord[j];
          // printf("coord = %f\t", ipoint->coord[j]);
       }
-
       // transform interface points into current coordinates
       {
           static BlitzVec2  eleCoordSurf;
@@ -1388,14 +1308,13 @@ void XFEM::Intersection::storePLC(
     
     // NOTE: postion is filled in the order points appear in vertices to
     // keep the order which was determined by the convex hull computation
-    
-    
+        
     // store segments 
     // cutter element lies on the surface of an xfem element
     if(surfId > -1)
     {
       if(interfacePoints.size() == 1)
-        storeIsolatedPoints(interfacePoints, positions);
+        storeIsolatedPoints(positions);
       
       if(interfacePoints.size() > 1)
       {
@@ -1403,15 +1322,15 @@ void XFEM::Intersection::storePLC(
           // possible midpoint not added to position list and point list
           storeSegments(positions);
       }
-      if(interfacePoints.size() > 2)
+      if(interfacePoints.size() > 2 && !checkIfTrianglesDegenerate(positions))
       {
-          // tell midpoint on which xfem surface it lies
-          classifyMidpoint(surfId, midpoint);
-          storeMidPoint(midpoint, positions);
-          // store inner segments: mipoint to outer point
-          storeSurfaceSegments( positions );
-          // store boundary cells immediately after
-          storeSurfaceTriangles(surfId, positions);
+        // tell midpoint on which xfem surface it lies
+        classifyMidpoint(surfId, midpoint);
+        storeMidPoint(midpoint, positions);
+        // store inner segments: mipoint to outer point
+        storeSurfaceSegments(positions);
+        // store boundary cells immediately after
+        storeSurfaceTriangles(surfId, positions);
       }     
     }
     else if(surfId == -1)
@@ -1421,15 +1340,15 @@ void XFEM::Intersection::storePLC(
           // possible midpoint not added to position list and point list
           storeSegments( positions );
       }
-      if(interfacePoints.size() > 2)
-      {
-          storeMidPoint(midpoint, positions);
-          storeTriangles(positions);
+      if(interfacePoints.size() > 2 && !checkIfTrianglesDegenerate(positions))
+      {        
+        storeMidPoint(midpoint, positions);
+        storeTriangles(positions);
       } 
       
       // this method should to be called after store segments !!!!
       // so time is saved in fillPLC
-      storeIsolatedPoints(interfacePoints, positions);
+      storeIsolatedPoints(positions);
     }
     else
       dserror("surface Id is not correct");
@@ -1743,22 +1662,6 @@ void XFEM::Intersection::startPointList(
 
     for(int i = 0; i < numXFEMCornerNodes_; i++)
     {
-      /*
-        ip.nnode = 1;
-        ip.nline = 3;
-        ip.nsurf = 3;
-        ip.node[0] = i;
-        
-        
-        // change for other element types
-        for(int j = 0; j < 3; j++)
-        {
-           ip.coord[j]      =   eleRefCoordinates_[i][j];
-           ip.lines[j]      =   eleNodesLines_[i][j];
-           ip.surfaces[j]   =   eleNodesSurfaces_[i][j];
-           ip.pType         =   NODE;
-        }
-        */
         ip.setPointType(NODE);
         ip.setNodeId(i);
         ip.setLineId(eleNodesLines_[i]);
@@ -1788,7 +1691,6 @@ void XFEM::Intersection::storePoint(
 
     for(vector<InterfacePoint>::const_iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint )
     {
-        //if(comparePoints<3>(point, ipoint->coord))
         if(comparePoints<3>(point, ipoint->getCoord()))
         {
             alreadyInList = false;
@@ -1796,7 +1698,6 @@ void XFEM::Intersection::storePoint(
             for(vector<InterfacePoint>::const_iterator it = pointList_.begin(); it != pointList_.end(); ++it )
             {
                 count++;
-                //if(comparePoints<3>(point, it->coord))
                 if(comparePoints<3>(point, it->getCoord()))
                 {
                     alreadyInList = true;
@@ -1835,7 +1736,6 @@ void XFEM::Intersection::storeMidPoint(
   for(vector<InterfacePoint>::const_iterator it = pointList_.begin(); it != pointList_.end(); ++it )
   {
       count++;
-      //if(comparePoints<3>(midPoint.coord, it->coord))
       if(comparePoints<3>(midPoint.getCoord(), it->getCoord()))
       {
           alreadyInList = true;
@@ -1868,23 +1768,13 @@ XFEM::InterfacePoint XFEM::Intersection::computeMidpoint(
      int n = interfacePoints.size();
      InterfacePoint ip;
      
-     /*ip.nnode = 0;
-     ip.nline = 0;
-     ip.nsurf = 0;
-     ip.pType = INTERNAL;
-     */
      vector<double> coord(3,0.0);
-     
-  //   for(int i = 0; i < 3 ; i++)
-  //      ip.coord[i] = 0.0;
 
      for(int i = 0; i < n ; i++)
         for(int j = 0; j < 3 ; j++)
-         //ip.coord[j] += interfacePoints[i].coord[j];
           coord[j] += interfacePoints[i].getCoord()[j];
 
      for(int i = 0; i < 3 ; i++)
-       //ip.coord[i] = ip.coord[i]/(double)n;
        coord[i] = coord[i]/(double)n;
      
      ip.setPointType(INTERNAL);
@@ -1904,12 +1794,6 @@ void XFEM::Intersection::classifyMidpoint(
     InterfacePoint&   midpoint
     ) const
 {
-  /*midpoint.nnode = 0;
-  midpoint.nline = 0;
-  midpoint.nsurf = 1;
-  midpoint.surfaces[0] = surfId;
-  midpoint.pType = SURFACE;
-  */
   midpoint.setPointType(SURFACE);
   vector<int> surfaces(1, surfId);
   midpoint.setSurfaceId(surfaces);
@@ -1922,7 +1806,6 @@ void XFEM::Intersection::classifyMidpoint(
  |          xfem element, if it is not a segment point                  |
  *----------------------------------------------------------------------*/
 void XFEM::Intersection::storeIsolatedPoints(
-    const vector<InterfacePoint>&     interfacePoints,
     const vector<int>&                positions)
 {
 
@@ -1935,7 +1818,6 @@ void XFEM::Intersection::storeIsolatedPoints(
     noIsolatedPoint = false;
     const InterfacePoint ip = pointList_[positions[i]];
     
-    //if(ip.pType == LINE || ip.pType == SURFACE)
     if(ip.getPointType() == LINE || ip.getPointType() == SURFACE)
     {
       int countEnd = 0;
@@ -1971,9 +1853,7 @@ void XFEM::Intersection::storeIsolatedPoints(
           
       }
       // store only on one surface even if the point lies on a line
-      //if(countEnd == ip.nsurf )
       if(countEnd == ip.getNumSurface())
-      //  isolatedPointList_[ip.surfaces[0]].push_back(positions[i]);
         isolatedPointList_[ip.getSurfId()[0]].push_back(positions[i]);
      } 
   }
@@ -1987,51 +1867,6 @@ void XFEM::Intersection::storeIsolatedPoints(
  |          for the computation of the                                  |
  |          Constrained Delauney Triangulation                          |
  *----------------------------------------------------------------------*/
-/*
-void XFEM::Intersection::storeSingleSegment(
-    const int pos1,
-    const int pos2)
-{
-  if(!checkIfSegmentPointsOnSameXfemLine(pos1, pos2) && pos1 != pos2)
-  {   
-    // loops over all NODE LINE and SURFACE type points
-    for(int j = 0; j < pointList_[pos1].nsurf; j++ )
-    {
-      for(int k = 0; k < pointList_[pos2].nsurf; k++ )
-      {
-        const int surf1 = pointList_[pos1].surfaces[j];
-        const int surf2 = pointList_[pos2].surfaces[k];
-
-        if( (surf1 == surf2) )
-        {
-          bool alreadyInList = false;
-
-          for(unsigned int is = 0 ; is < segmentList_[surf1].size() ; is = is + 2)
-          {
-              if( (segmentList_[surf1][is] == pos1  &&  segmentList_[surf1][is+1] == pos2)  ||
-                  (segmentList_[surf1][is] == pos2  &&  segmentList_[surf1][is+1] == pos1) )
-              {
-                  alreadyInList = true;
-                  break;
-              }
-          }
-
-          if(!alreadyInList)
-          {
-              segmentList_[surf1].push_back(pos1);
-              segmentList_[surf1].push_back(pos2);
-          }
-        }
-      }
-    }
-  }
-}
-
-*/
-
-
-
-
 void XFEM::Intersection::storeSingleSegment(
     const int pos1,
     const int pos2)
@@ -2164,6 +1999,38 @@ bool XFEM::Intersection::checkIfSegmentPointsOnSameXfemLine(
 
 
 /*----------------------------------------------------------------------*
+ |  CDT:    check if a triangle lies completely on an        u.may 07/08|
+ |          xfem line due to rounding                                   |  
+ *----------------------------------------------------------------------*/
+bool XFEM::Intersection::checkIfTrianglesDegenerate(
+    vector<int>&              positions
+    )
+{
+  bool degenerate = false;
+  int length = (int) positions.size()/2; //  
+  vector<int> removePoints;
+  
+  for(int i = 0; i < length; i++)
+    for(unsigned int j = i+1; j < positions.size(); j++)
+      if(positions[i] == positions[j])
+      {
+        removePoints.push_back(i);
+        break;
+      }
+  
+  for(int i = removePoints.size()-1; i >= 0; i--)
+    positions.erase(positions.begin()+removePoints[i]);
+  
+  // only if called before midpoint is added otherwise is has to be < 4
+  if(positions.size()<3)
+    degenerate = true;
+  
+  return degenerate;
+}
+
+
+
+/*----------------------------------------------------------------------*
  |  CDT:    stores a triangle within a list of trianles      u.may 06/07|
  |          which is to be copy to the tetgen data structure            |
  |          for the computation of the                                  |
@@ -2216,7 +2083,7 @@ void XFEM::Intersection::storeSurfaceTriangles(
         triangle[1] = positions[i+1];
         triangle[2] = positions[positions.size()-1];      // add midpoint
 
-        triangleList.push_back(triangle);
+        triangleList.push_back(triangle); 
     }
 
     // last point to first point

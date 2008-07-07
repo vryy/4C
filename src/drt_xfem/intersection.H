@@ -162,325 +162,366 @@ class Intersection
   \param xfemElement   (in) : xfem element
   */
   void initializeXFEM(
-      const int             xfemId,
-      const DRT::Element*   xfemElement
-      );
+    const int             xfemId,
+    const DRT::Element*   xfemElement
+    );
 
         
   /*!
   \brief collects points belonging to an interface lying inside xfem elements
          The nonlinear system of equation is solved with help of the Newton-method.
 
-  \param xfemElement          (in)        : xfem element
-  \param cutterElement        (in)        : cutter element
-  \param node                 (in)        : node in current coordinates (Debug)
-  \param interfacePoints      (in/out)    : vector of interface points
-  \param elemId               (in)        : xfem element id  (Debug)
-  \param nodeId               (in)        : node id
+  \param xfemElement              (in)        : xfem element
+  \param cutterElement            (in)        : cutter element
+  \param xyze_cutterElement       (in)        : nodal coordinates of the cutter element
+  \param cutterNode               (in)        : cutter node
+  \param currentcutterpositions   (in)        : current nodal positions of the cutter element
+  \param interfacePoints          (in/out)    : vector of interface points
+  \param numTotalInterfacePoints  (in)        : total number of interface points
+  \param elemId                   (in)        : xfem element id  (Debug)
+  \param nodeId                   (in)        : node id
   \return true if the node lies within the xfemElement, false otherwise
   */
   bool collectInternalPoints(
-      const DRT::Element*             xfemElement,             
-      DRT::Element*                   cutterElement,           
-      const BlitzMat&                 xyze_cutterElement,      
-      const DRT::Node*                cutterNode,              
-      const map<int,BlitzVec3>&       currentcutterpositions,  
+    const DRT::Element*             xfemElement,             
+    DRT::Element*                   cutterElement,           
+    const BlitzMat&                 xyze_cutterElement,      
+    const DRT::Node*                cutterNode,              
+    const map<int,BlitzVec3>&       currentcutterpositions,  
+    std::vector<InterfacePoint>&    interfacePoints,
+    int&                            numTotalInterfacePoints,
+    const int                       elemId,
+    const int                       nodeId
+    );
+
+
+  /*!
+  \brief  checks if an internal point
+          lies on one a xfem surface, line or node or internally          .
+
+  \param xfemDistype          (in)        : discretization type of xfem element
+  \param xsi                  (in)        : node in element coordinates
+  \param ip                   (in)        : interface point
+  \return true if the node is lying on a boundary false otherwise
+  */
+  bool setInternalPointBoundaryStatus(
+    const DRT::Element::DiscretizationType  xfemDistype, 
+    const BlitzVec3&                        xsi,
+    InterfacePoint&                         ip
+    ) const;
+        
+        
+  /*!
+  \brief  checks if an intersection node
+          lies on a xfem surface, line or node          .
+
+  \param xfemElement          (in)        : xfem element
+  \param surfaceElement       (in)        : xfem surface element
+  \param xyze_surfaceElement  (in)        : nodal coordinates of the surface element
+  \param xsi                  (in)        : node in element coordinates
+  \param ip                   (in)        : interface point
+  \return true if the node is lying on a boundary false otherwise
+  */
+  void setIntersectionPointBoundaryStatus(
+    const DRT::Element*                     xfemElement,
+    const DRT::Element*                     surfaceElement,
+    const BlitzMat&                         xyze_surfaceElement,
+    const BlitzVec3&                        xsiSurface,
+    InterfacePoint&                         ip
+    ) const;
+
+
+  /*!
+  \brief collects all intersection points between a line and a surface
+
+  \param xfemElement              (in)        : xfem element
+  \param surfaceElement           (in)        : surface element
+  \param xyze_surfaceElement      (in)        : nodal coordinates of surface element
+  \param lineElement              (in)        : line element
+  \param interfacePointList       (out)       : nodal coordinates of line element
+  \param numTotalInterfacePoints  (in)        : total number of interface points per xfem element
+  \param surfaceId                (in)        : surface element id
+  \param lineId                   (in)        : line element id
+  \param lines                    (in)        : if lines = true intersection of cutter line with xfem element
+  \param doSVD                    (in)        : compute SVD if not Cartesian surface element and linear line elments present
+  */
+  bool collectIntersectionPoints(
+    const DRT::Element*             xfemElement,
+    const DRT::Element*             surfaceElement,
+    const BlitzMat&                 xyze_surfaceElement,
+    const DRT::Element*             lineElement,
+    const BlitzMat&                 xyze_lineElement,
+    std::vector<InterfacePoint>&    interfacePoints,
+    int&                            numTotalInterfacePoints,
+    const int                       surfaceId,
+    const int                       lineId,
+    const bool                      lines,
+    const bool                      doSVD
+    ) const;
+
+        
+  /*!
+  \brief checks if a linear line lies in the plane of a Cartesian surface element
+
+  \param surfaceElement           (in)        : surface element
+  \param xyze_surfaceElement      (in)        : nodal coordinates of surface element
+  \param lineElement              (in)        : line element
+  */
+  bool checkIfLineInSurface(
+    const DRT::Element*             surfaceElement,
+    const BlitzMat&                 xyze_surfaceElement,
+    const BlitzMat&                 xyze_lineElement
+    )const;
+
+  
+  /*!
+  \brief computes a new starting points for the Newton method recursively
+         in order to find all intersection points
+
+  \param xfemElement              (in)    : xfem element
+  \param surfaceElement           (in)    : surface element
+  \param xyze_surfaceElement      (in)    : nodal coordinates of surface element
+  \param lineElement              (in)    : line element
+  \param xyze_lineElement         (in)    : nodal coordinates of line element
+  \param surfaceId                (in)    : surface element id
+  \param lineId                   (in)    : line element id
+  \param upLimit                  (in)    : old stating vector
+  \param upLimit                  (in)    : upper limit of the search interval
+  \param loLimit                  (in)    : lower limit of the search interval
+  \param interfacePointList       (out)   : vector of interface points
+  \param lines                    (in)    : if lines = true
+  \param doSVD                    (in)    : compute SVD if not Cartesian surface element and linear line elments present
+  \return number of interface points
+  */
+  int computeNewStartingPoint(
+      const DRT::Element*             xfemElement,
+      const DRT::Element*             surfaceElement,
+      const BlitzMat&                 xyze_surfaceElement,
+      const DRT::Element*             lineElement,
+      const BlitzMat&                 xyze_lineElement,
+      const int                       surfaceId,
+      const int                       lineId,
+      const BlitzVec3&                xsiOld,
+      const BlitzVec3&                upLimit,
+      const BlitzVec3&                loLimit,
       std::vector<InterfacePoint>&    interfacePoints,
-      int&                            numTotalInterfacePoints,
-      const int                       elemId,
-      const int                       nodeId
+      const bool                      lines,
+      const bool                      doSVD
+      ) const;
+
+
+  /*!
+  \brief computes an interseticon point between a curve and a surface
+
+      The nonlinear system of equation is solved with help of the Newton-method.
+
+  \param surfaceElement           (in)    : surface element
+  \param xyze_surfaceElement      (in)    : nodal coordinates of surface element
+  \param lineElement              (in)    : line element
+  \param xyze_lineElement         (in)    : nodal coordinates of line element
+  \param xsi                      (in/out): starting value/vector of element coordinates
+  \param upLimit                  (in)    : upper search interval boundary
+  \param loLimit                  (in)    : lower search interval boundary
+  \param doSVD                    (in)    : compute SVD if not Cartesian surface element and linear line elments present
+  return true if an intersection point was found, otherwise false
+  */
+  bool computeCurveSurfaceIntersection(
+      const DRT::Element*                 surfaceElement,
+      const BlitzMat&                     xyze_surfaceElement,
+      const DRT::Element*                 lineElement,
+      const BlitzMat&                     xyze_lineElement,
+      const BlitzVec3&                    upLimit,
+      const BlitzVec3&                    loLimit,
+      BlitzVec3&                          xsi,
+      const bool                          doSVD
+      ) const;
+
+
+	/*!
+	\brief adds an intersection point to the list of interface points
+
+  \param surfaceElement           (in)    : surface element
+  \param xyze_surfaceElement      (in)    : nodal coordinates of surface element
+  \param lineElement              (in)    : line element
+  \param xyze_lineElement         (in)    : nodal coordinates of line element
+	\param xsi           			      (in)    : surface element
+	\param upLimit                  (in)	  : upper limit of the search interval
+	\param loLimit                  (in)	  : lower limit of the search interval
+	\param interfacePointList       (out)   : vector of interface points
+	\param surfaceId                (in)   	: surface element id
+  \param lineId                   (in)   	: line element id
+  \param lines                    (in)    : if lines = true
+  \param doSVD                    (in)    : compute SVD if not Cartesian surface element and linear line elments present
+	\return number of interface points
+	*/
+  int addIntersectionPoint(
+      const DRT::Element*                 xfemElement,
+      const DRT::Element*                 surfaceElement,
+      const BlitzMat&                     xyze_surfaceElement,
+      const DRT::Element*                 lineElement,
+      const BlitzMat&                     xyze_lineElement,
+      const BlitzVec3&                    xsi,
+      const BlitzVec3&                    upLimit,
+      const BlitzVec3&                    loLimit,
+      std::vector<InterfacePoint>& 	      interfacePoints,
+      const int                      	    surfaceId,
+      const int                           lineId,
+      const bool                          lines,
+      const bool                          doSVD
+      ) const;
+
+
+  /*!
+  \brief  creates new limits for the recursive intersection computation
+
+  \param xsi              (in)        : intersection point
+  \param upLimit          (in)        : upper limits
+  \param loLimit          (in)        : lower limits
+  \param upperLimits      (out)       : list of upper limits of new ranges
+  \param lowerLimits      (out)       : list of lower limits of new ranges
+  */
+  void createNewLimits(
+      const BlitzVec3&        xsi,
+      const BlitzVec3&        upLimit,
+      const BlitzVec3&        loLimit,
+      vector<BlitzVec3>&      upperLimits,
+      vector<BlitzVec3>&      lowerLimits
+      ) const;
+
+        
+  /*!
+  \brief  finds th id of the an xfem surface common to all interafce points.
+          Returns -1 , if no common surface exists or the surface id
+
+  \param interfacePoints          (in)        : vector of interface points
+  \return                                       returns -1 or the surface id
+  */
+  int findCommonSurfaceID(
+      vector<InterfacePoint>&         interfacePoints
+      );
+        
+  
+  /*!
+  \brief  checks if an intersection lies on a xfem boundary
+
+  \param xfemElement              (in)    : xfem element
+  \param xyze_xfemElement         (in)    : nodal coordinates of xfem element
+  \param cutterElement            (in)    : cutter element
+  \param xyze_cutterElement       (in)    : nodal coordinates of cutter element
+  \param interfacePoints          (in)    : vector of interface points
+  \param surfId                   (in)    : Id of common surface
+  */
+  XFEM::boundaryType checkIfIntersectionOnXFEMBoundary(
+      const DRT::Element*             xfemElement,
+      const BlitzMat&                 xyze_xfemElement,
+      const DRT::Element*             cutterElement,
+      const BlitzMat&                 xyze_cutterElement,
+      const vector<InterfacePoint>&   interfacePoints,
+      const int                       surfId
       );
 
-
-        /*!
-        \brief  checks if an internal point
-                lies on one a xfem surface, line or node          .
-
-        \param xsi                  (in)        : node in element coordinates
-        \param ip                   (in)        : interface point
-        \return true if the node is lying on a boundary false otherwise
-        */
-        bool setInternalPointBoundaryStatus(
-                const DRT::Element::DiscretizationType  xfemDistype, ///< shape of the volume element
-                const BlitzVec3&                        xsi,
-                InterfacePoint&                         ip
-                ) const;
         
-        
-        /*!
-        \brief  checks if an intersection node
-                lies on a xfem surface, line or node          .
+  /*!
+  \brief  prepares a part of the piecewise linear complex for 
+          a xfem and a cutter element
 
-        \param xsi                  (in)        : node in element coordinates
-        \param ip                   (in)        : interface point
-        \return true if the node is lying on a boundary false otherwise
-        */
-        void setIntersectionPointBoundaryStatus(
-            const DRT::Element*                     xfemElement,
-            const DRT::Element*                     surfaceElement,
-            const BlitzMat&                         xyze_surfaceElement,
-            const BlitzVec3&                        xsiSurface,
-            InterfacePoint&                         ip
-            ) const;
-
-
-
-        /*!
-        \brief collects all intersection points between a line and a surface
-
-        \param surfaceElement           (in)        : surface element
-        \param lineElement              (in)        : line element
-        \param interfacePointList       (out)       : vector of interface points
-        \param surfaceId                (in)        : surface element id
-        \param lineId                   (in)        : line element id
-        \param lines                    (in)        : if lines = true
-        */
-        bool collectIntersectionPoints(
-            const DRT::Element*             xfemElement,
-            const DRT::Element*             surfaceElement,
-            const BlitzMat&                 xyze_surfaceElement,
-            const DRT::Element*             lineElement,
-            const BlitzMat&                 xyze_lineElement,
-            std::vector<InterfacePoint>&    interfacePoints,
-            int&                            numTotalInterfacePoints,
-            const int                       surfaceId,
-            const int                       lineId,
-            const bool                      lines,
-            const bool                      doSVD
-            ) const;
+  \param xfemElement              (in)    : xfem element
+  \param xyze_xfemElement         (in)    : nodal coordinates of xfem element
+  \param cutterElement            (in)    : cutter element
+  \param xyze_cutterElement       (in)    : nodal coordinates of cutter element
+  \param interfacePoints          (in)    : list of interface points
+  \param boundaryIntersectionType (in)    : boundary intersection type
+  */
+  void preparePLC(
+      const DRT::Element*         xfemElement,
+      const BlitzMat&             xyze_xfemElement,
+      const DRT::Element*         cutterElement,
+      const BlitzMat&             xyze_cutterElement,
+      vector<InterfacePoint>&     interfacePoints,
+      XFEM::boundaryType&         boundaryIntersectionType 
+      );
 
         
-        /*!
-        \brief checks is a line lies on a Cartesian surface element
+  /*!
+  \brief  computes the convex hull of a set of points
+          points ordered according to the convex hull are stored in vertices
 
-        \param surfaceElement           (in)        : surface element
-        \param lineElement              (in)        : line element
-        */
-        bool checkIfLineInSurface(
-            const DRT::Element*             surfaceElement,
-            const BlitzMat&                 xyze_surfaceElement,
-            const BlitzMat&                 xyze_lineElement
-            )const;
-
-        /*!
-        \brief computes a new starting points for the Newton method recursively
-               in order to find all intersection points
-
-        \param surfaceElement           (in)    : surface element
-        \param lineElement              (in)    : line element
-        \param surfaceId                (in)    : surface element id
-        \param lineId                   (in)    : line element id
-        \param upLimit                  (in)    : upper limit of the search interval
-        \param loLimit                  (in)    : lower limit of the search interval
-        \param interfacePointList       (out)   : vector of interface points
-        \param lines                    (in)    : if lines = true
-        \return number of interface points
-        */
-        int computeNewStartingPoint(
-            const DRT::Element*             xfemElement,
-            const DRT::Element*             surfaceElement,
-            const BlitzMat&                 xyze_surfaceElement,
-            const DRT::Element*             lineElement,
-            const BlitzMat&                 xyze_lineElement,
-            const int                       surfaceId,
-            const int                       lineId,
-            const BlitzVec3&                xsiOld,
-            const BlitzVec3&                upLimit,
-            const BlitzVec3&                loLimit,
-            std::vector<InterfacePoint>&    interfacePoints,
-            const bool                      lines,
-            const bool                      doSVD
-            ) const;
-
-
-        /*!
-        \brief computes an interseticon point between a curve and a surface
-
-            The nonlinear system of equation is solved with help of the Newton-method.
-
-        \param surfaceElement   (in)        : surface element
-        \param lineElement      (in)        : line element
-        \param xsi              (in/out)    : starting value/vector of element coordinates
-        \param upLimit          (in)        : upper search interval boundary
-        \param loLimit          (in)        : lower search interval boundary
-        return true if an intersection point was found, otherwise false
-        */
-        bool computeCurveSurfaceIntersection(
-            const DRT::Element*                 surfaceElement,
-            const BlitzMat&                     xyze_surfaceElement,
-            const DRT::Element*                 lineElement,
-            const BlitzMat&                     xyze_lineElement,
-            const BlitzVec3&                    upLimit,
-            const BlitzVec3&                    loLimit,
-            BlitzVec3&                          xsi,
-            const bool                          doSVD
-            ) const;
-
-
-  		/*!
-	  	\brief adds an intersection point to the list of interface points
-
-		\param surfaceElement           (in)    : surface element
-	  	\param lineElement              (in)    : line element
-	  	\param xsi           			(in)    : surface element
-	  	\param upLimit                  (in)	: upper limit of the search interval
-	  	\param loLimit                  (in)	: lower limit of the search interval
-	  	\param interfacePointList       (out)   : vector of interface points
-	  	\param surfaceId                (in)   	: surface element id
-        \param lineId                   (in)   	: line element id
-		\param lines                    (in)  	: if lines = true
-	  	\return number of interface points
-	  	*/
-        int addIntersectionPoint(
-            const DRT::Element*                 xfemElement,
-            const DRT::Element*                 surfaceElement,
-            const BlitzMat&                     xyze_surfaceElement,
-            const DRT::Element*                 lineElement,
-            const BlitzMat&                     xyze_lineElement,
-            const BlitzVec3&                    xsi,
-            const BlitzVec3&                    upLimit,
-            const BlitzVec3&                    loLimit,
-            std::vector<InterfacePoint>& 	      interfacePoints,
-            const int                      	    surfaceId,
-            const int                           lineId,
-            const bool                          lines,
-            const bool                          doSVD
-            ) const;
-
-
-        /*!
-        \brief  creates new limits for the recursive intersection computation
-
-        \param xsi              (in)        : intersection point
-        \param upLimit          (in)        : upper limits
-        \param loLimit          (in)        : lower limits
-        \param upperLimits      (out)       : list of upper limits of new ranges
-        \param lowerLimits      (out)       : list of lower limits of new ranges
-        */
-        void createNewLimits(
-            const BlitzVec3&        xsi,
-            const BlitzVec3&        upLimit,
-            const BlitzVec3&        loLimit,
-            vector<BlitzVec3>&      upperLimits,
-            vector<BlitzVec3>&      lowerLimits
-            ) const;
-
-        
-        /*!
-        \brief  finds th id of the an xfem surface common to all interafce points.
-                Returns -1 , if no common surface exists or the surface id
-
-        \param interfacePoints          (in)        : vector of interface points
-        \return                                       returns -1 or the surface id
-        */
-        int findCommonSurfaceID(
-            vector<InterfacePoint>&         interfacePoints
-            );
-        
-        /*!
-        \brief  checks if an intersection lies on a xfem boundary
-
-        \param xfemElement              (in)        : xfem element
-        \param cutterElement            (in)        : cutter element
-        \param interfacePoints          (in)        : vector of interface points
-        \param intersectionOnBoundary   (out)       : true if intersection XFEM boundary
-        */
-        XFEM::boundaryType checkIfIntersectionOnXFEMBoundary(
-            const DRT::Element*             xfemElement,
-            const BlitzMat&                 xyze_xfemElement,
-            const DRT::Element*             cutterElement,
-            const BlitzMat&                 xyze_cutterElement,
-            const vector<InterfacePoint>&   interfacePoints,
-            const int                       surfId
-            );
-
-        
-        /*!
-        \brief  prepares a part of the piecewise linear complex for 
-                a xfem and a cutter element
-
-        \param xfemElement              (in)        : xfem element
-        \param surfaceElement           (in)        : surface element
-        \param interfacePoints          (in)        : list of interface points
-        */
-        void preparePLC(
-            const DRT::Element*         xfemElement,
-            const BlitzMat&             xyze_xfemElement,
-            const DRT::Element*         cutterElement,
-            const BlitzMat&             xyze_cutterElement,
-            vector<InterfacePoint>&     interfacePoints,
-            XFEM::boundaryType&         boundaryIntersectionType 
-            );
-
-        
-        /*!
-        \brief  computes the convex hull of a set of points
-                points ordered according to the convex hull are stored in vertices
-
-        \param xfemElement              (in)        : xfem element
-        \param surfaceElement           (in)        : surface element
-        \param interfacePoints          (in)        : list of interface points
-        \param vertices                 (in)        : ordered interface points
-        */
-        void computeConvexHull(
-            const DRT::Element*           xfemElement,
-            const DRT::Element*           cutterElement,
-            const BlitzMat&               xyze_cutterElement,
-            vector<InterfacePoint>&       interfacePoints,
-            vector< vector<double> >&     vertices,
-            InterfacePoint&               midpoint
-            );   
+  \param xfemElement              (in)      : xfem element
+  \param cutterElement            (in)      : cutter element
+  \param xyze_cutterElement       (in)      : nodal coordinates of cutter element
+  \param interfacePoints          (in)      : list of interface points
+  \param vertices                 (in/out)  : ordered interface points
+  \param midpoint                 (in/out)  : midpoint
+  */
+  void computeConvexHull(
+      const DRT::Element*           xfemElement,
+      const DRT::Element*           cutterElement,
+      const BlitzMat&               xyze_cutterElement,
+      vector<InterfacePoint>&       interfacePoints,
+      vector< vector<double> >&     vertices,
+      InterfacePoint&               midpoint
+      );   
         
         
-        /*!
-        \brief  stores a part of the piecewise linear complex for 
-                a xfem and a cutter element
+  /*!
+  \brief  stores a part of the piecewise linear complex for 
+          a xfem and a cutter element
 
-        \param surfId                   (in)        : id of xfem element surface
-        \param interfacePoints          (in)        : list of interface points
-        \param vertices                 (in)        : vertices
-        */
-        void storePLC(
-            const DRT::Element*             xfemElement,
-            const DRT::Element*             cutterElement,
-            const BlitzMat&                 xyze_cutterElement,
-            const int                       surfId,
-            const vector<InterfacePoint>&   interfacePoints,
-            vector< vector<double> >&       vertices,
-            InterfacePoint&                 midpoint
-            ); 
+  \param xfemElement              (in)      : xfem element
+  \param cutterElement            (in)      : cutter element
+  \param xyze_cutterElement       (in)      : nodal coordinates of cutter element
+  \param surfId                   (in)      : id of xfem element surface
+  \param interfacePoints          (in)      : list of interface points
+  \param vertices                 (in)      : vertices
+  \param midpoint                 (in)      : midpoint
+  
+  */
+  void storePLC(
+    const DRT::Element*             xfemElement,
+    const DRT::Element*             cutterElement,
+    const BlitzMat&                 xyze_cutterElement,
+    const int                       surfId,
+    const vector<InterfacePoint>&   interfacePoints,
+    vector< vector<double> >&       vertices,
+    InterfacePoint&                 midpoint
+    ); 
+       
+  
+  /*!
+  \brief  completes the PLC
+
+  */
+  void completePLC(
+      );
         
-        /*!
-        \brief  completes the PLC
-
-        */
-        void completePLC(
-            );
         
+  /*!
+  \brief finds the next segment of a convex hull in clockwise order
+
+  \param vertices         (in)        : vector of facet vertices
+  \param searchPoint      (in/out)    : common point of the previous and next
+                                        facet/the new point of the next facet
+  */
+  void findNextSegment(
+    vector< vector<double> >&   vertices,
+    vector<double>&             searchPoint
+    ) const;
+
+  
+  /*!
+  \brief checks if a CDT has to be computed for the current xfem element
+
+  \param numTotalInterfacePoints  (in)        : total number of interface points for the current xfem element
+  \param boundaryIntersectionType (in)        : boundary intersection type
+  */
+  bool checkIfCDT(
+      const int             numTotalInterfacePoints,
+      const boundaryType    boundaryIntersectionType
+      );
         
-        /*!
-        \brief finds the next segment of a convex hull in clockwise order
-
-        \param vertices         (in)        : vector of facet vertices
-        \param searchPoint      (in/out)    : common point of the previous and next
-                                              facet/the new point of the next facet
-        */
-        void findNextSegment(
-            vector< vector<double> >&   vertices,
-            vector<double>&             searchPoint
-            ) const;
-
-        /*!
-        \brief checks if a CDT has to be computed for the current xfem element
-
-        \param vertices         (in)        : total number of interface points for the curretn xfem element
-    
-        */
-        bool checkIfCDT(
-            const int             numTotalInterfacePoints,
-            const boundaryType    boundaryIntersectionType
-            );
-        
+  
+  
+  
         /*!
         \brief  computes the Constrained Delaunay Tetrahedralization CDT
                 of an intersected xfem element
@@ -543,12 +584,10 @@ class Intersection
         \brief  stores a single point in a list of surface points if no
                 segment lies in that surface
 
-        \param interfacePoints      (in)        :   list of interface points
         \param positions            (in)        :   list of interface point positions
 
         */
         void storeIsolatedPoints(
-            const vector<InterfacePoint>&     interfacePoints,
             const vector<int>&                positions
             );
         
@@ -617,6 +656,15 @@ class Intersection
         bool checkIfSegmentPointsOnSameXfemLine(
             const int position1,
             const int position2
+            );
+        
+        
+        /*!
+        \brief checks if triangles have two identical points these triangles are removed from point list
+        \param positions           (in)        :   point positions
+        */
+        bool checkIfTrianglesDegenerate(
+            vector<int>&              positions
             );
         
         /*!
