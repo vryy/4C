@@ -24,11 +24,7 @@
  */
 #ifdef CCADISCRET
 
-#include "drt_element.H"
-#include "drt_discret.H"
 #include "drt_utils_local_connectivity_matrices.H"
-#include "drt_utils_integration.H"
-#include "drt_utils_fem_shapefunctions.H"
 #include "drt_dserror.H"
 
 /*----------------------------------------------------------------------*
