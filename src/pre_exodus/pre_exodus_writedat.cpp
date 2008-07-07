@@ -404,7 +404,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
 
   // print transport elements
   dat << "------------------------------------------------TRANSPORT ELEMENTS" << endl;
-  for(i_et=levels.begin();i_et!=levels.end();++i_et)
+  for(i_et=transport.begin();i_et!=transport.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
