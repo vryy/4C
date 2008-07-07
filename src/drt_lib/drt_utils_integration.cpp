@@ -12,8 +12,6 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "drt_utils_integration.H"
-#include "drt_discret.H"
-#include "drt_utils.H"
 #include "drt_dserror.H"
 
 
