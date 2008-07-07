@@ -48,6 +48,10 @@ public:
     const bool inittozero  //!< initialse to zero, if true
   );
 
+  //! Update states
+  //! ... state_{n-1} := state_{n}, state_{n} := state_{n+1}, etc
+  void UpdateStep();
+
   //! @name Access state vectors by index
   //@{
 
@@ -98,10 +102,10 @@ protected:
   bool IndexExists
   (
     const int index //!< inquired index
-    )
-    {
-      return ( (index >= 0) and (index < (int) dis_.size()) );
-    }
+  )
+  {
+    return ( (index >= 0) and (index < (int) dis_.size()) );
+  }
 
   //! Map step number to vector index
   int StepByIndex
