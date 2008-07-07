@@ -79,9 +79,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
 //  const double dt = params.get("delta time",-1.0);
 
   // what should the element do
-  switch(act) {
+  switch(act) 
+  {
     // linear stiffness
-    case calc_struct_linstiff: {
+    case calc_struct_linstiff: 
+    {
       // need current displacement and residual forces
       vector<double> mydisp(lm.size());
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
@@ -92,7 +94,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     break;
 
     // nonlinear stiffness and internal force vector
-    case calc_struct_nlnstiff: {
+    case calc_struct_nlnstiff: 
+    {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -101,7 +104,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params);
+      Epetra_SerialDenseMatrix* matptr = NULL;
+      if (elemat1.N()) matptr = &elemat1;
+      soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params);
     }
     break;
 
@@ -116,7 +121,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     break;
 
     // nonlinear stiffness, internal force vector, and consistent mass matrix
-    case calc_struct_nlnstiffmass: {
+    case calc_struct_nlnstiffmass: 
+    {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -130,7 +136,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     break;
 
     // evaluate stresses and strains at gauss points
-    case calc_struct_stress:{
+    case calc_struct_stress:
+    {
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
@@ -146,8 +153,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       Epetra_SerialDenseMatrix strain(NUMGPT_SOH8,NUMSTR_SOH8);
       bool cauchy = params.get<bool>("cauchy", false);
       string iostrain = params.get<string>("iostrain", "none");
-      if (iostrain == "euler_almansi") soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,true);
-      else soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,false);
+      bool ea = (iostrain == "euler_almansi");
+      soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,ea);
       AddtoPack(*stressdata, stress);
 #if defined(PRESTRESS) || defined(POSTSTRESS)
       {
@@ -173,17 +180,66 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // note that in the following, quantities are always referred to as
     // "stresses" etc. although they might also apply to strains
     // (depending on what this routine is called for from the post filter)
-    case postprocess_stress:{
-
-      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+    case postprocess_stress:
+    {
+      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
       if (gpstressmap==null)
         dserror("no gp stress/strain map available for postprocessing");
       string stresstype = params.get<string>("stresstype","ndxyz");
       int gid = Id();
       RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
 
-      if (stresstype=="ndxyz") {
+      if (stresstype=="ndxyz") 
+      {
+        // extrapolate stresses/strains at Gauss points to nodes
+        Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOH8,NUMSTR_SOH8);
+        soh8_expol(*gpstress,nodalstresses);
+
+        // average nodal stresses/strains between elements
+        // -> divide by number of adjacent elements
+        vector<int> numadjele(NUMNOD_SOH8);
+
+        for (int i=0;i<NUMNOD_SOH8;++i)
+        {
+          DRT::Node* node=Nodes()[i];
+          numadjele[i]=node->NumElement();
+        }
+
+        for (int i=0;i<NUMNOD_SOH8;++i)
+        {
+          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
+          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
+          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
+        }
+        for (int i=0;i<NUMNOD_SOH8;++i)
+        {
+          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
+          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
+          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
+        }
+      }
+      else if (stresstype=="cxyz") 
+      {
+        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
+        if (elestress==null)
+          dserror("No element stress/strain vector available");
+        const Epetra_BlockMap& elemap = elestress->Map();
+        int lid = elemap.LID(Id());
+        if (lid!=-1) 
+        {
+          for (int i = 0; i < NUMSTR_SOH8; ++i) 
+          {
+            (*((*elestress)(i)))[lid] = 0.;
+            for (int j = 0; j < NUMGPT_SOH8; ++j) 
+            {
+              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOH8 * (*gpstress)(j,i);
+            }
+          }
+        }
+      }
+      else if (stresstype=="cxyz_ndxyz") 
+      {
         // extrapolate stresses/strains at Gauss points to nodes
         Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOH8,NUMSTR_SOH8);
         soh8_expol(*gpstress,nodalstresses);
@@ -207,63 +263,24 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
           elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
           elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
         }
-      }
-      else if (stresstype=="cxyz") {
         RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
         if (elestress==null)
           dserror("No element stress/strain vector available");
         const Epetra_BlockMap elemap = elestress->Map();
         int lid = elemap.LID(Id());
         if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_SOH8; ++i) {
+          for (int i = 0; i < NUMSTR_SOH8; ++i) 
+          {
             (*((*elestress)(i)))[lid] = 0.;
-            for (int j = 0; j < NUMGPT_SOH8; ++j) {
-              //(*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
+            for (int j = 0; j < NUMGPT_SOH8; ++j) 
+            {
               (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOH8 * (*gpstress)(j,i);
             }
           }
         }
       }
-      else if (stresstype=="cxyz_ndxyz") {
-        // extrapolate stresses/strains at Gauss points to nodes
-        Epetra_SerialDenseMatrix nodalstresses(NUMNOD_SOH8,NUMSTR_SOH8);
-        soh8_expol(*gpstress,nodalstresses);
-
-        // average nodal stresses/strains between elements
-        // -> divide by number of adjacent elements
-        vector<int> numadjele(NUMNOD_SOH8);
-
-        for (int i=0;i<NUMNOD_SOH8;++i){
-          DRT::Node* node=Nodes()[i];
-          numadjele[i]=node->NumElement();
-        }
-
-        for (int i=0;i<NUMNOD_SOH8;++i){
-          elevec1(3*i)=nodalstresses(i,0)/numadjele[i];
-          elevec1(3*i+1)=nodalstresses(i,1)/numadjele[i];
-          elevec1(3*i+2)=nodalstresses(i,2)/numadjele[i];
-        }
-        for (int i=0;i<NUMNOD_SOH8;++i){
-          elevec2(3*i)=nodalstresses(i,3)/numadjele[i];
-          elevec2(3*i+1)=nodalstresses(i,4)/numadjele[i];
-          elevec2(3*i+2)=nodalstresses(i,5)/numadjele[i];
-        }
-        RCP<Epetra_MultiVector> elestress=params.get<RCP<Epetra_MultiVector> >("elestress",null);
-        if (elestress==null)
-          dserror("No element stress/strain vector available");
-        const Epetra_BlockMap elemap = elestress->Map();
-        int lid = elemap.LID(Id());
-        if (lid!=-1) {
-          for (int i = 0; i < NUMSTR_SOH8; ++i) {
-            (*((*elestress)(i)))[lid] = 0.;
-            for (int j = 0; j < NUMGPT_SOH8; ++j) {
-              //(*((*elestress)(i)))[lid] += 0.125 * (*gpstress)(j,i);
-              (*((*elestress)(i)))[lid] += 1.0/NUMGPT_SOH8 * (*gpstress)(j,i);
-            }
-          }
-        }
-      }
-      else {
+      else 
+      {
         dserror("unknown type of stress/strain output on element level");
       }
     }
@@ -277,9 +294,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       dserror("Case not yet implemented");
     break;
 
-    case calc_struct_update_istep: {
+    case calc_struct_update_istep: 
+    {
       // do something with internal EAS, etc parameters
-      if (eastype_ != soh8_easnone) {
+      if (eastype_ != soh8_easnone) 
+      {
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         Epetra_BLAS::Epetra_BLAS blas;
@@ -287,18 +306,21 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       }
       // Update of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
-      if (mat->MaterialType() == m_visconeohooke){
+      if (mat->MaterialType() == m_visconeohooke)
+      {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
         visco->Update();
       }
     }
     break;
 
-    case calc_struct_update_genalpha_imrlike: {
+    case calc_struct_update_genalpha_imrlike: 
+    {
       // do something with internal EAS, etc parameters
       // this depends on the applied solution technique (static, generalised-alpha,
       // or other time integrators)
-      if (eastype_ != soh8_easnone) {
+      if (eastype_ != soh8_easnone) 
+      {
         double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
         Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1-alphaf}
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
@@ -309,14 +331,16 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
       }
       // Update of history for visco material
       RefCountPtr<MAT::Material> mat = Material();
-      if (mat->MaterialType() == m_visconeohooke){
+      if (mat->MaterialType() == m_visconeohooke)
+      {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
         visco->Update();
       }
     }
     break;
 
-    case calc_homog_stressdens: {
+    case calc_homog_stressdens: 
+    {
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
@@ -332,8 +356,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // have to be stored in every macroscopic Gauss point
     // allocation and initializiation of these data arrays can only be
     // done in the elements that know the number of EAS parameters
-    case eas_init_multi: {
-      if (eastype_ != soh8_easnone) {
+    case eas_init_multi: 
+    {
+      if (eastype_ != soh8_easnone) 
+      {
         soh8_eas_init_multi(params);
       }
     }
@@ -343,15 +369,18 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
     // have to be stored in every macroscopic Gauss point
     // before any microscale simulation, EAS internal data has to be
     // set accordingly
-    case eas_set_multi: {
-      if (eastype_ != soh8_easnone) {
+    case eas_set_multi: 
+    {
+      if (eastype_ != soh8_easnone) 
+      {
         soh8_set_eas_multi(params);
       }
     }
     break;
 
     // read restart of microscale
-    case multi_readrestart: {
+    case multi_readrestart: 
+    {
       RefCountPtr<MAT::Material> mat = Material();
 
       if (mat->MaterialType()==m_struct_multiscale)
@@ -647,7 +676,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
           (*elestrain)(gp,i) = 0.5 * glstrain(i);
         }
       }
-      else{
+      else
+      {
         // rewriting Green-Lagrange strains in matrix format
         LINALG::SerialDenseMatrix gl(NUMDIM_SOH8,NUMDIM_SOH8);
         gl(0,0) = glstrain(0);
