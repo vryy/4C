@@ -375,12 +375,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                   "Gen_EMM",
                                                   "Gen_Alfa",
                                                   "GenAlpha",
-                                                  "OneStepTheta"),
+                                                  "OneStepTheta",
+                                                  "AdamsBashforth2"),
                                tuple<int>(STRUCT_DYNAMIC::centr_diff,
                                           STRUCT_DYNAMIC::Gen_EMM,
                                           STRUCT_DYNAMIC::gen_alfa,
                                           STRUCT_DYNAMIC::genalpha,
-                                          STRUCT_DYNAMIC::onesteptheta),
+                                          STRUCT_DYNAMIC::onesteptheta,
+                                          STRUCT_DYNAMIC::ab2),
                                &sdyn);
   // Output type
   IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);

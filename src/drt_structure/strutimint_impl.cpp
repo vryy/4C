@@ -159,24 +159,8 @@ StruTimIntImpl::StruTimIntImpl
   normdisi_(0.0),
   disi_(Teuchos::null),
   timer_(actdis.Comm()),
-  fres_(Teuchos::null),
-  stiff_(Teuchos::null),
-  mass_(Teuchos::null),
-  damp_(Teuchos::null)
+  fres_(Teuchos::null)
 {
-  // create empty matrices
-  stiff_ = Teuchos::rcp(
-    new LINALG::SparseMatrix(*dofrowmap_, 81, true, false)
-  );
-  mass_ = Teuchos::rcp(
-    new LINALG::SparseMatrix(*dofrowmap_, 81, true, false)
-  );
-  if (damping_)
-  {
-    damp_ = Teuchos::rcp(
-      new LINALG::SparseMatrix(*dofrowmap_, 81, true, false)
-    );
-  }
 
   // create empty residual force vector
   fres_ = LINALG::CreateVector(*dofrowmap_, false);
@@ -215,84 +199,9 @@ StruTimIntImpl::StruTimIntImpl
     }
   }
 
-  // determine mass, damping and initial accelerations
-  DetermineMassDampConsistAccel();
-
   // done so far
   return;
 }
-
-/*----------------------------------------------------------------------*/
-/* equilibrate system at initial state
- * and identify consistent accelerations */
-void StruTimIntImpl::DetermineMassDampConsistAccel()
-{
-  // temporary force vectors in this routine
-  Teuchos::RCP<Epetra_Vector> fext 
-    = LINALG::CreateVector(*dofrowmap_, true); // external force
-  Teuchos::RCP<Epetra_Vector> fint 
-    = LINALG::CreateVector(*dofrowmap_, true); // internal force
-
-  // overwrite initial state vectors with DirichletBCs
-  ApplyDirichletBC(time_, dis_, vel_, acc_);
-
-  // get external force
-  ApplyForceExternal(time_, dis_, fext);
-  
-  // get initial internal force and stiffness and mass
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action", "calc_struct_nlnstiffmass");
-    // other parameters that might be needed by the elements
-    p.set("total time", time_);
-    p.set("delta time", dt_);
-    // set vector values needed by elements
-    discret_.ClearState();
-    discret_.SetState("residual displacement", zeros_);
-    discret_.SetState("displacement", dis_);
-    //discret_.SetState("velocity",vel_); // not used at the moment
-    discret_.Evaluate(p, stiff_, mass_, fint, null, null);
-    discret_.ClearState();
-  }
-
-  // finish mass matrix
-  mass_->Complete();
-
-  // close stiffness matrix
-  stiff_->Complete();
-
-  // build Rayleigh damping matrix if desired
-  if (damping_)
-  {
-    damp_->Add(*stiff_, false, dampk_, 0.0);
-    damp_->Add(*mass_, false, dampm_, 1.0);
-    damp_->Complete();
-  }
-
-  // calculate consistent initial accelerations
-  // WE MISS:
-  //   - surface stress forces
-  //   - potential forces
-  {
-    Teuchos::RCP<Epetra_Vector> rhs 
-      = LINALG::CreateVector(*dofrowmap_, true);
-    if (damping_)
-    {
-      damp_->Multiply(false, *vel_, *rhs);
-    }
-    rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
-    Epetra_Vector rhscopy = Epetra_Vector(*rhs);
-    rhs->Multiply(1.0, *invtoggle_, rhscopy, 0.0);
-    solver_.Solve(mass_->EpetraMatrix(), acc_, rhs, true, true);
-  }
-
-  // leave this
-  return;
-}
-
-
 
 /*----------------------------------------------------------------------*/
 /* integrate step */
@@ -363,93 +272,6 @@ void StruTimIntImpl::PredictConstDisVelAcc()
   accn_->Update(1.0, *acc_, 0.0);  
   
   // see you next time step
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/* evaluate Dirichlet BC at t_{n+1} */
-void StruTimIntImpl::ApplyDirichletBC
-(
-  const double time,
-  Teuchos::RCP<Epetra_Vector>& dis,
-  Teuchos::RCP<Epetra_Vector>& vel,
-  Teuchos::RCP<Epetra_Vector>& acc
-)
-{
-  // apply DBCs
-  // needed parameters
-  ParameterList p;
-  p.set("total time", time);  // target time
-  
-  // predicted Dirichlet values
-  // \c dis then also holds prescribed new Dirichlet displacements
-  discret_.ClearState();
-  discret_.EvaluateDirichlet(p, dis, vel, acc, dirichtoggle_);
-  discret_.ClearState();
-
-  // compute an inverse of the dirichtoggle vector
-  invtoggle_->PutScalar(1.0);
-  invtoggle_->Update(-1.0, *dirichtoggle_, 1.0);
-
-  // ciao
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/* evaluate external forces at t_{n+1} */
-void StruTimIntImpl::ApplyForceExternal
-(
-  const double time,  //!< evaluation time
-  const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-  Teuchos::RCP<Epetra_Vector>& fext  //!< external force
-)
-{
-  ParameterList p;
-  // action for elements
-  p.set("action", "calc_struct_eleload");
-  // other parameters needed by the elements
-  p.set("total time", time);
-
-  // set vector values needed by elements
-  discret_.ClearState();
-  discret_.SetState("displacement", dis);
-  // get load vector
-  discret_.EvaluateNeumann(p, *fext);
-  discret_.ClearState();
-
-  // go away
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/* evaluate ordinary internal force, its stiffness at state */
-void StruTimIntImpl::ApplyForceStiffInternal
-(
-  const double time,
-  const Teuchos::RCP<Epetra_Vector> dis,  // displacement state
-  const Teuchos::RCP<Epetra_Vector> disi,  // residual displacements
-  Teuchos::RCP<Epetra_Vector>& fint,  // internal force
-  Teuchos::RCP<LINALG::SparseMatrix>& stiff  // stiffness matrix
-)
-{
-  // create the parameters for the discretization
-  ParameterList p;
-  // action for elements
-  const std::string action = "calc_struct_nlnstiff";
-  p.set("action", action);
-  // other parameters that might be needed by the elements
-  p.set("total time", time);
-  p.set("delta time", dt_);
-  // set vector values needed by elements
-  discret_.ClearState();
-  discret_.SetState("residual displacement", disi);
-  discret_.SetState("displacement", dis);
-  //discret_.SetState("velocity", veln_); // not used at the moment
-  //fintn_->PutScalar(0.0);  // initialise internal force vector
-  discret_.Evaluate(p, stiff, null, fint, null, null);
-  discret_.ClearState();
-  
-  // that's it
   return;
 }
 
@@ -925,7 +747,6 @@ void StruTimIntImpl::PrintStepText
   // fall asleep
   return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /* output to file

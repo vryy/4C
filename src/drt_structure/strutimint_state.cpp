@@ -43,7 +43,7 @@ StruTimIntState::StruTimIntState
   acc_()
 {
   // verify a positive #length_
-  dsassert(steps_>0, "Past step must be smaller or equal to future step");
+  dsassert(steps_>0, "Past step must be lower or equal to future step");
 
   // allocate place for displacement, velocitiy, etc vectors
   dis_.resize(steps_);
@@ -59,6 +59,42 @@ StruTimIntState::StruTimIntState
   }
   
   // good bye
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Resize */
+void StruTimIntState::Resize
+(
+  const int steppast,
+  const int stepfuture,
+  const bool inittozero
+)
+{
+  // check this
+  dsassert(steppast <= stepfuture, 
+           "Past step must be lower than future step");
+  
+  // verify this
+  dsassert(stepfuture == stepfuture_,
+           "Future step cannot be changed");
+
+  // add states for steps in past
+  if (steppast < steppast_)
+  {
+    for (int past=steppast_; past>steppast; --past)
+    {
+      dis_.insert(dis_.begin(),
+                  LINALG::CreateVector(*dofrowmap_, inittozero));
+      vel_.insert(vel_.begin(),
+                  LINALG::CreateVector(*dofrowmap_, inittozero));
+      acc_.insert(acc_.begin(),
+                  LINALG::CreateVector(*dofrowmap_, inittozero));
+    }
+    steppast_ = steppast;
+  }
+
+  // farewell
   return;
 }
 

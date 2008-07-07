@@ -75,7 +75,7 @@ StruTimIntOneStepTheta::StruTimIntOneStepTheta
   // internal force vector F_{int;n+1} at new time
   fintn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial internal force vector
-  ApplyForceStiffInternal(time_, dis_, zeros_, fint_, stiff_);
+  ApplyForceStiffInternal(time_, dt_, dis_, zeros_, fint_, stiff_);
 
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -142,7 +142,7 @@ void StruTimIntOneStepTheta::EvaluateForceStiffResidual()
   stiff_->Zero();
 
   // ordinary internal force and stiffness
-  ApplyForceStiffInternal(timen_, disn_, disi_,  fintn_, stiff_);
+  ApplyForceStiffInternal(timen_, dt_, disn_, disi_,  fintn_, stiff_);
 
   // surface stress force
   ApplyForceStiffSurfstress(disn_, fintn_, stiff_);

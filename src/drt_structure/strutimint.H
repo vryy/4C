@@ -111,6 +111,23 @@ public:
   //! @name Actions
   //@{
 
+  //! Equilibrate the initial state by identifying the consistent 
+  //! initial accelerations and (if applicable) internal variables
+  //! Make damping and mass matrix
+  void DetermineMassDampConsistAccel();
+
+  //! Apply Dirichlet boundary conditions on provided state vectors
+  void ApplyDirichletBC
+  (  
+    const double time,  //!< at time
+    Teuchos::RCP<Epetra_Vector> dis,  //!< displacements
+                                      //!< (may be Teuchos::null) 
+    Teuchos::RCP<Epetra_Vector> vel,  //!< velocities 
+                                      //!< (may be Teuchos::null) 
+    Teuchos::RCP<Epetra_Vector> acc  //!< accelerations 
+                                     //!< (may be Teuchos::null)
+  );  
+
   //! Do time integration of multiple steps
   void Integrate();
 
@@ -119,8 +136,8 @@ public:
 
   //! Update configuration after time step
   //!
-  //! Thus the 'last' converged is lost and a reset of the time step becomes
-  //! impossible. We are ready and keen awating the next time step.
+  //! Thus the 'last' converged is lost and a reset of the time step 
+  //! becomes impossible. We are ready and keen awating the next time step.
   virtual void UpdateStep() = 0;
 
   //! print summary after step
@@ -131,17 +148,41 @@ public:
 
   //@}
 
+  //! @name Forces and Stiffnesses
+  //@{
+
+  //! Apply external force
+  void ApplyForceExternal
+  (
+    const double time,  //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+    Teuchos::RCP<Epetra_Vector>& fext  //!< external force
+  );
+
+  //! Evaluate ordinary internal force, its stiffness at state
+  void ApplyForceStiffInternal
+  (
+    const double time,  //!< evaluation time
+    const double dt,  //!< step size
+    const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+    const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
+    Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
+    Teuchos::RCP<LINALG::SparseMatrix> stiff  //!< stiffness matrix
+  );
+
+  //@}
+
   //! @name Attributes
   //@{
 
   //! Provide Name
-  virtual enum NameEnum Name() = 0;
+  virtual enum NameEnum MethodName() = 0;
 
   //! Return true, if time integrator is implicit
-  virtual bool Implicit() = 0;
+  virtual bool MethodImplicit() = 0;
 
   //! Return true, if time integrator is explicit
-  bool Explicit() { return (not Implicit()); }
+  bool MethodExplicit() { return (not MethodImplicit()); }
 
   //! Provide number of steps, e.g. a single-step method returns 1,
   //! a m-multistep method returns m
@@ -159,7 +200,8 @@ public:
     // to the ConstrManager and kept there as a RefCountPointer.
     // The object #discret_ is gone, when ConstrManager tries
     // to kill it. We achieve a nice segmentation fault.
-    return Teuchos::rcp(&discret_, false); 
+    // The 'false' prevents ConstrManager of trying to kill it.
+    return Teuchos::rcp(&discret_, false);
   }
 
   //@}
@@ -292,6 +334,13 @@ protected:
   Teuchos::RCP<Epetra_Vector> accn_;  //!< global accelerations
                                       //!< \f${A}_{n+1}\f$  
                                       //!< at \f$t_{n+1}\f$
+  //@}
+
+  //! @name System matrices
+  //@{
+  Teuchos::RCP<LINALG::SparseMatrix> stiff_;  //!< holds eventually effective stiffness
+  Teuchos::RCP<LINALG::SparseMatrix> mass_;  //!< mass matrix (constant)
+  Teuchos::RCP<LINALG::SparseMatrix> damp_;  //!< Rayleigh damping matrix (constant)
   //@}
 
 };

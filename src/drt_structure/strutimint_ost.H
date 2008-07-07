@@ -114,7 +114,7 @@ public:
   //@{
 
   //! Return name
-  enum NameEnum Name() { return name_onesteptheta; }
+  enum NameEnum MethodName() { return name_onesteptheta; }
 
   //! Provide number of steps, a single-step method returns 1
   int MethodSteps() { return 1; }

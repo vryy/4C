@@ -69,8 +69,9 @@ enum
     centr_diff,                 /* central differences (explicit) */
     Gen_EMM,                    /* generalised energy-momentum method */
     genalpha,                   /* generalised-alpha time integrator, 
-                                 * new style */
-    onesteptheta                /* one-step-theta time integrator */
+                                 * new style (implicit) */
+    onesteptheta,               /* one-step-theta time integrator (implicit) */
+    ab2                         /* Adams-Bashforth 2nd order (explicit) */
    }               Typ;         /* type of time integration algorithm */
 enum _genavgtype
    {

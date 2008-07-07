@@ -72,7 +72,7 @@ public:
   //@{
 
   //! Return name
-  enum NameEnum Name() { return name_genalpha; }
+  enum NameEnum MethodName() { return name_genalpha; }
 
   //! Provide number of steps, e.g. a single-step method returns 1,
   //! a m-multistep method returns m

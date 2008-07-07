@@ -92,6 +92,7 @@ void caldyn_drt()
     break;
   case STRUCT_DYNAMIC::genalpha:
   case STRUCT_DYNAMIC::onesteptheta:
+  case STRUCT_DYNAMIC::ab2:
     // direct time integration
     strudyn_direct();
     break;

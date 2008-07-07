@@ -116,11 +116,6 @@ public:
   //! Destructor
   virtual ~StruTimIntImpl() { ; }
 
-  //! Equilibrate the initial state by identifying the consistent 
-  //! initial accelerations and (if applicable) internal variables
-  //! Make damping and mass matrix
-  void DetermineMassDampConsistAccel();
-
   //! Do time integration of single step
   void IntegrateStep();
 
@@ -145,15 +140,6 @@ public:
 
   //@}
 
-  //! Apply Dirichlet boundary conditions on provided state vectors
-  void ApplyDirichletBC
-  (  
-    const double time,  //!< at time
-    Teuchos::RCP<Epetra_Vector>& dis,  //!< displacements (may be Teuchos::null) 
-    Teuchos::RCP<Epetra_Vector>& vel,  //!< velocities (may be Teuchos::null) 
-    Teuchos::RCP<Epetra_Vector>& acc  //!< accelerations (may be Teuchos::null)
-  );
-
   //! @name Forces and stiffnesses
   //@{
 
@@ -161,24 +147,6 @@ public:
   //!
   //! The residual #fres_ is determined readily negative
   virtual void EvaluateForceStiffResidual() = 0;
-
-  //! Apply external force
-  void ApplyForceExternal
-  (
-    const double time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-    Teuchos::RCP<Epetra_Vector>& fext  //!< external force
-  );
-
-  //! Evaluate ordinary internal force, its stiffness at state
-  void ApplyForceStiffInternal
-  (
-    const double time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
-    const Teuchos::RCP<Epetra_Vector> disi,  //!< residual displacements
-    Teuchos::RCP<Epetra_Vector>& fint,  //!< internal force
-    Teuchos::RCP<LINALG::SparseMatrix>& stiff  //!< stiffness matrix
-  );
 
   //! Evaluate forces due to constraints
   void ApplyForceStiffConstraint
@@ -388,10 +356,10 @@ public:
   //@{
 
   //! Return time integrator name
-  virtual enum NameEnum Name() = 0;
+  virtual enum NameEnum MethodName() = 0;
 
   //! These time integrators are all implicit (mark their name)
-  bool Implicit() { return true; }
+  bool MethodImplicit() { return true; }
 
   //! Provide number of steps, e.g. a single-step method returns 1,
   //! a m-multistep method returns m
@@ -443,13 +411,6 @@ protected:
   //! @name Various global forces
   //@{
   Teuchos::RCP<Epetra_Vector> fres_;  //!< force residual used for solution
-  //@}
-
-  //! @name System matrices
-  //@{
-  Teuchos::RCP<LINALG::SparseMatrix> stiff_;  //!< holds eventually effective stiffness
-  Teuchos::RCP<LINALG::SparseMatrix> mass_;  //!< mass matrix (constant)
-  Teuchos::RCP<LINALG::SparseMatrix> damp_;  //!< Rayleigh damping matrix (constant)
   //@}
 
 };

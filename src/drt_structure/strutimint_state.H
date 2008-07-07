@@ -39,12 +39,20 @@ class StruTimIntState
 
 public:
 
-  //! constructor
+  //! Constructor
   StruTimIntState
   (
     const int indexlow,  //!< lower index bound
     const int indexhigh,  //!< higher index bound, >= lower bound
     const Epetra_Map* dofrowmap,  //!< vector layout from discretization
+    const bool inittozero  //!< initialse to zero, if true
+  );
+
+  //! Resize
+  void Resize
+  (
+    const int indexlow,  //!< lower index bound
+    const int indexhigh,  //!< higher index bound, >= lower bound
     const bool inittozero  //!< initialse to zero, if true
   );
 

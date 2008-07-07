@@ -39,8 +39,10 @@ Maintainer: Burkhard Bornemann
 
 #include "strutimint.H"
 #include "strutimint_impl.H"
+#include "strutimint_expl.H"
 #include "strutimint_genalpha.H"
 #include "strutimint_ost.H"
+#include "strutimint_ab2.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -122,26 +124,22 @@ void strudyn_direct()
   // associate specific time integrator
   switch (Teuchos::getIntegralValue<int>(sdyn, "DYNAMICTYP"))
   {
-    //==================================================================
     // Generalized alpha time integration
-    //==================================================================
     case STRUCT_DYNAMIC::gen_alfa :
     {
       dserror("You should not turn up here.");
     }
     break;
-    //==================================================================
+
     // Generalized Energy Momentum Method
-    //==================================================================
     case STRUCT_DYNAMIC::Gen_EMM :
     {
       dserror("You should not turn up here.");
       dserror("Not yet impl.");
     }
     break;
-    //==================================================================
+
     // Generalised-alpha time integration
-    //==================================================================
     case STRUCT_DYNAMIC::genalpha :
     {
       // get generalised-alpha specific parameter list
@@ -152,9 +150,8 @@ void strudyn_direct()
                                        *actdis, solver, output));
     }
     break;
-    //==================================================================
+
     // One-step-theta (OST) time integration
-    //==================================================================
     case STRUCT_DYNAMIC::onesteptheta :
     {
       // get one-step-theta specific parameter list
@@ -165,9 +162,20 @@ void strudyn_direct()
                                            *actdis, solver, output));
     }
     break;
-    //==================================================================
+
+    // Adams-Bashforth 2nd order (AB2) time integration
+    case STRUCT_DYNAMIC::ab2 :
+    {
+      // get AB2 specific parameter list
+      //const Teuchos::ParameterList& ab2p = sdyn.sublist("ADAMSBASHFORTH2");
+
+      // create time integrator
+      sti = rcp(new StruTimIntAB2(ioflags, sdyn, xparams, //ab2p,
+                                  *actdis, solver, output));
+    }
+    break;
+
     // Everything else
-    //==================================================================
     default :
     {
       dserror("Time integration scheme is not available");

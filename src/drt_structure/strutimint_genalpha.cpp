@@ -114,7 +114,7 @@ StruTimIntGenAlpha::StruTimIntGenAlpha
     // internal force vector F_{int;n+1} at new time
     fintn_ = LINALG::CreateVector(*dofrowmap_, true);
     // set initial internal force vector
-    ApplyForceStiffInternal(time_, dis_, zeros_, fint_, stiff_);
+    ApplyForceStiffInternal(time_, dt_, dis_, zeros_, fint_, stiff_);
   } 
   else if (midavg_ == midavg_imrlike)
   {
@@ -201,12 +201,12 @@ void StruTimIntGenAlpha::EvaluateForceStiffResidual()
   // ordinary internal force and stiffness
   if (midavg_ == midavg_trlike)
   {
-    ApplyForceStiffInternal(timen_, disn_, disi_,  fintn_, stiff_);
+    ApplyForceStiffInternal(timen_, dt_, disn_, disi_,  fintn_, stiff_);
   } 
   else if (midavg_ == midavg_imrlike)
   {
     disi_->Scale(1.-alphaf_);
-    ApplyForceStiffInternal(timen_, dism_, disi_,  fintm_, stiff_);
+    ApplyForceStiffInternal(timen_, dt_, dism_, disi_,  fintm_, stiff_);
   }
 
   // surface stress force
@@ -472,7 +472,6 @@ void StruTimIntGenAlpha::UpdateStep()
   // look out
   return;
 }
-
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET
