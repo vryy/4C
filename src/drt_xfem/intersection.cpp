@@ -465,27 +465,27 @@ bool XFEM::Intersection::checkIfLineInSurface(
     const BlitzMat&                 xyze_lineElement
     ) const
 {
-    bool        inSurface = true;
-    double      distance = 1000.0;
-    BlitzVec3   physCoord;
-    BlitzVec3   normal;
-    BlitzVec2   xsi; 
-    normal = 0.0;
-    xsi = 0.0;
-    
-    for(int i = 0; i < 2; i++)
+  bool        inSurface = true;
+  double      distance = 1000.0;
+  BlitzVec3   physCoord;
+  BlitzVec3   normal;
+  BlitzVec2   xsi; 
+  normal = 0.0;
+  xsi = 0.0;
+  
+  for(int i = 0; i < 2; i++)
+  {
+    for(int j = 0; j < 3; j++)
+      physCoord(j) = xyze_lineElement(j,i);
+       
+    searchForNearestPointOnSurface(surfaceElement, xyze_surfaceElement, physCoord, xsi, normal, distance);
+    if(fabs(distance) > XFEM::TOL7)
     {
-      for(int j = 0; j < 3; j++)
-        physCoord(j) = xyze_lineElement(j,i);
-         
-      searchForNearestPointOnSurface(surfaceElement, xyze_surfaceElement, physCoord, xsi, normal, distance);
-      if(fabs(distance) > XFEM::TOL7)
-      {
-        inSurface = false;
-        break;
-      }
+      inSurface = false;
+      break;
     }
-    return inSurface;
+  }
+  return inSurface;
 }
 
     
@@ -508,31 +508,31 @@ void updateAForCSI(
         const BlitzMat&                   xyze_lineElement
         )
 {
-    const int numNodesSurface = DRT::UTILS::getNumberOfElementNodes<surftype>();
-    const int numNodesLine = DRT::UTILS::getNumberOfElementNodes<linetype>();
+  const int numNodesSurface = DRT::UTILS::getNumberOfElementNodes<surftype>();
+  const int numNodesLine = DRT::UTILS::getNumberOfElementNodes<linetype>();
 
-    A = 0.0;
+  A = 0.0;
 
-    BlitzMat surfaceDeriv1(2, numNodesSurface);
-    DRT::UTILS::shape_function_2D_deriv1(surfaceDeriv1, xsi(0), xsi(1), surftype);
-    for(int inode=0; inode<numNodesSurface; inode++)
+  BlitzMat surfaceDeriv1(2, numNodesSurface);
+  DRT::UTILS::shape_function_2D_deriv1(surfaceDeriv1, xsi(0), xsi(1), surftype);
+  for(int inode=0; inode<numNodesSurface; inode++)
+  {
+    for(int isd=0; isd<3; isd++)
     {
-        for(int isd=0; isd<3; isd++)
-        {
-            A(isd,0) += xyze_surfaceElement(isd,inode) * surfaceDeriv1(0,inode);
-            A(isd,1) += xyze_surfaceElement(isd,inode) * surfaceDeriv1(1,inode);
-        }
+      A(isd,0) += xyze_surfaceElement(isd,inode) * surfaceDeriv1(0,inode);
+      A(isd,1) += xyze_surfaceElement(isd,inode) * surfaceDeriv1(1,inode);
     }
+  }
 
-    static BlitzMat lineDeriv1(2, numNodesLine);
-    DRT::UTILS::shape_function_1D_deriv1(lineDeriv1, xsi(2), linetype);
-    for(int inode=0; inode<numNodesLine; inode++)
+  static BlitzMat lineDeriv1(2, numNodesLine);
+  DRT::UTILS::shape_function_1D_deriv1(lineDeriv1, xsi(2), linetype);
+  for(int inode=0; inode<numNodesLine; inode++)
+  {
+    for(int isd=0; isd<3; isd++)
     {
-        for(int isd=0; isd<3; isd++)
-        {
-            A(isd,2) -= xyze_lineElement(isd,inode) * lineDeriv1(0,inode);
-        }
+      A(isd,2) -= xyze_lineElement(isd,inode) * lineDeriv1(0,inode);
     }
+  }
 }
 
 
@@ -555,26 +555,26 @@ void updateRHSForCSI(
         const BlitzMat&                   xyze_lineElement
         )
 {
-    const int numNodesSurface = DRT::UTILS::getNumberOfElementNodes<surftype>();
-    const int numNodesLine = DRT::UTILS::getNumberOfElementNodes<linetype>();
+  const int numNodesSurface = DRT::UTILS::getNumberOfElementNodes<surftype>();
+  const int numNodesLine = DRT::UTILS::getNumberOfElementNodes<linetype>();
 
-    b = 0.0;
+  b = 0.0;
 
-    static BlitzVec surfaceFunct(numNodesSurface);
-    DRT::UTILS::shape_function_2D(surfaceFunct, xsi(0), xsi(1), surftype);
-    for(int i=0; i<numNodesSurface; i++)
-    {
-        for(int dim=0; dim<3; dim++)
-            b(dim) -= xyze_surfaceElement(dim,i) * surfaceFunct(i);
-    }
+  static BlitzVec surfaceFunct(numNodesSurface);
+  DRT::UTILS::shape_function_2D(surfaceFunct, xsi(0), xsi(1), surftype);
+  for(int i=0; i<numNodesSurface; i++)
+  {
+    for(int dim=0; dim<3; dim++)
+      b(dim) -= xyze_surfaceElement(dim,i) * surfaceFunct(i);
+  }
 
-    static BlitzVec lineFunct(numNodesLine);
-    DRT::UTILS::shape_function_1D(lineFunct, xsi(2), linetype);
-    for(int i=0; i<numNodesLine; i++)
-    {
-       for(int dim=0; dim<3; dim++)
-            b(dim) += xyze_lineElement(dim,i) * lineFunct(i);
-    }
+  static BlitzVec lineFunct(numNodesLine);
+  DRT::UTILS::shape_function_1D(lineFunct, xsi(2), linetype);
+  for(int i=0; i<numNodesLine; i++)
+  {
+    for(int dim=0; dim<3; dim++)
+      b(dim) += xyze_lineElement(dim,i) * lineFunct(i);
+  }
 }
 
 
@@ -594,39 +594,39 @@ bool computeSingularCSI(
         const BlitzMat&             xyze_lineElement
         )
 {
-    bool singular = true;
-    int iter = 0;
-    const int maxiter = 5;
-    double residual = 1.0;
-    static BlitzMat3x3 A;
-    static BlitzVec3   b;
-    static BlitzVec3   dx;
+  bool singular = true;
+  int iter = 0;
+  const int maxiter = 5;
+  double residual = 1.0;
+  static BlitzMat3x3 A;
+  static BlitzVec3   b;
+  static BlitzVec3   dx;
 
-    updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
+  updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
 
-    while(residual > XFEM::TOL13)
+  while(residual > XFEM::TOL13)
+  {
+    updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
+
+    if(XFEM::solveLinearSystemWithSVD<3>(A, b, dx, XFEM::TOL14))
     {
-        updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
-
-        if(XFEM::solveLinearSystemWithSVD<3>(A, b, dx, XFEM::TOL14))
-        {
-            singular = false;
-            xsi += dx;
-            break;
-        }
-
-        xsi += dx;
-        updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
-        residual = XFEM::Norm2(b);
-        iter++;
-
-        if(iter >= maxiter )
-        {
-            singular = true;
-            break;
-        }
+      singular = false;
+      xsi += dx;
+      break;
     }
-    return singular;
+
+    xsi += dx;
+    updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
+    residual = XFEM::Norm2(b);
+    iter++;
+
+    if(iter >= maxiter )
+    {
+      singular = true;
+      break;
+    }
+  }
+  return singular;
 }
 
 
@@ -644,65 +644,64 @@ bool computeCurveSurfaceIntersectionT(
     const bool                        doSVD
     )
 {
-    if (surfaceElement->Shape() != surftype) dserror("bug in template instantiation");
-    if (lineElement->Shape() != linetype) dserror("bug in template instantiation");
+  if (surfaceElement->Shape() != surftype) dserror("bug in template instantiation");
+  if (lineElement->Shape() != linetype) dserror("bug in template instantiation");
+
+  bool singular = false;
+  bool intersection = true;
+  int iter = 0;
+  const int maxiter = 20;
+  double residual = 1.0;
+  static BlitzMat3x3 A;
+  static BlitzVec3   b;
+  static BlitzVec3   dx;
   
-    bool singular = false;
-    bool intersection = true;
-    int iter = 0;
-    const int maxiter = 20;
-    double residual = 1.0;
-    static BlitzMat3x3 A;
-    static BlitzVec3   b;
-    static BlitzVec3   dx;
+
+  updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
+
+  while(residual > XFEM::TOL13 && !singular)
+  {
+    updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
+    singular = !XFEM::gaussElimination<true,3>(A, b, dx, XFEM::TOL14);
     
-
+    if(singular && !doSVD)
+    {
+      intersection = false;
+      break;
+    }
+    else if(singular && doSVD)
+    {
+      if(computeSingularCSI<surftype,linetype>(xsi, xyze_surfaceElement, xyze_lineElement))
+      {
+        intersection = false;
+        iter = maxiter + 1;
+      }          
+      dx = 0.0;
+    }
+     
+    //cout << "SINGULAR << endl;
+    xsi += dx;
     updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
+    residual = XFEM::Norm2(b);
+    iter++;
 
-    while(residual > XFEM::TOL13 && !singular)
+    //printf("xsi = %20.16f   %20.16f   %20.16f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
+    if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > XFEM::TOLPLUS8)
     {
-        updateAForCSI<surftype,linetype>( A, xsi, xyze_surfaceElement, xyze_lineElement);
+        intersection = false;
+        break;
+    }
+  }
 
-        singular = !XFEM::gaussElimination<true,3>(A, b, dx, XFEM::TOL14);
-        
-        if(singular && !doSVD)
-        {
-          intersection = false;
-          break;
-        }
-        else if(singular && doSVD)
-        {
-            if(computeSingularCSI<surftype,linetype>(xsi, xyze_surfaceElement, xyze_lineElement))
-            {
-              intersection = false;
-              iter = maxiter + 1;
-            }          
-            dx = 0.0;
-        }
-         
-        //cout << "SINGULAR << endl;
-        xsi += dx;
-        updateRHSForCSI<surftype,linetype>( b, xsi, xyze_surfaceElement, xyze_lineElement);
-        residual = XFEM::Norm2(b);
-        iter++;
-
-        //printf("xsi = %20.16f   %20.16f   %20.16f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
-        if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > XFEM::TOLPLUS8)
-        {
+  //printf("xsi = %f   %f   %f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
+  if(intersection)
+  {
+    if( (xsi(0) > (upLimit(0)+XFEM::TOL7)) || (xsi(1) > (upLimit(1)+XFEM::TOL7)) || (xsi(2) > (upLimit(2)+XFEM::TOL7))  ||
+        (xsi(0) < (loLimit(0)-XFEM::TOL7)) || (xsi(1) < (loLimit(1)-XFEM::TOL7)) || (xsi(2) < (loLimit(2)-XFEM::TOL7)))
             intersection = false;
-            break;
-        }
-    }
+  }
 
-    //printf("xsi = %f   %f   %f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
-    if(intersection)
-    {
-        if( (xsi(0) > (upLimit(0)+XFEM::TOL7)) || (xsi(1) > (upLimit(1)+XFEM::TOL7)) || (xsi(2) > (upLimit(2)+XFEM::TOL7))  ||
-            (xsi(0) < (loLimit(0)-XFEM::TOL7)) || (xsi(1) < (loLimit(1)-XFEM::TOL7)) || (xsi(2) < (loLimit(2)-XFEM::TOL7)))
-                intersection = false;
-    }
-
-    return intersection;
+  return intersection;
 }
 
 
@@ -724,41 +723,41 @@ bool XFEM::Intersection::computeCurveSurfaceIntersection(
 {
     if (lineElement->Shape() == DRT::Element::line2)
     {
-        switch (surfaceElement->Shape())
-        {
-        case DRT::Element::quad4:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
-        case DRT::Element::quad8:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
-        case DRT::Element::quad9:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
-        case DRT::Element::tri3:
-            return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
-        case DRT::Element::tri6:
-            return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
-        default:
-            dserror("template not instatiated yet");
-            return false;
-        };
+      switch (surfaceElement->Shape())
+      {
+      case DRT::Element::quad4:
+          return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+      case DRT::Element::quad8:
+          return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+      case DRT::Element::quad9:
+          return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+      case DRT::Element::tri3:
+          return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+      case DRT::Element::tri6:
+          return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+      default:
+          dserror("template not instatiated yet");
+          return false;
+      };
     }
     else if (lineElement->Shape() == DRT::Element::line3)
     {
-        switch (surfaceElement->Shape())
-        {
-        case DRT::Element::quad4:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
-        case DRT::Element::quad8:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
-        case DRT::Element::quad9:
-            return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
-        case DRT::Element::tri3:
-            return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
-        case DRT::Element::tri6:
-            return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
-        default:
-            dserror("template not instatiated yet");
-            return false;
-        };
+      switch (surfaceElement->Shape())
+      {
+      case DRT::Element::quad4:
+          return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+      case DRT::Element::quad8:
+          return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+      case DRT::Element::quad9:
+          return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+      case DRT::Element::tri3:
+          return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+      case DRT::Element::tri6:
+          return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+      default:
+          dserror("template not instatiated yet");
+          return false;
+      };
     }
     return true;
 }
@@ -786,32 +785,32 @@ int XFEM::Intersection::computeNewStartingPoint(
     const bool                         doSVD
     ) const
 {
-    bool interval = true;
-    int numInterfacePoints = 0;
-    static BlitzVec3 xsi;
+  bool interval = true;
+  int numInterfacePoints = 0;
+  static BlitzVec3 xsi;
 
-    //printf("xsi = %f   %f   %f\n", fabs(xsi(0)), fabs(xsi(1)), fabs(xsi(2)) );
-    //printf("lolimit = %f   %f   %f\n", fabs(loLimit(0)), fabs(loLimit(1)), fabs(loLimit(2)) );
-    //printf("uplimit = %f   %f   %f\n", fabs(upLimit(0)), fabs(upLimit(1)), fabs(upLimit(2)) );
+  //printf("xsi = %f   %f   %f\n", fabs(xsi(0)), fabs(xsi(1)), fabs(xsi(2)) );
+  //printf("lolimit = %f   %f   %f\n", fabs(loLimit(0)), fabs(loLimit(1)), fabs(loLimit(2)) );
+  //printf("uplimit = %f   %f   %f\n", fabs(upLimit(0)), fabs(upLimit(1)), fabs(upLimit(2)) );
 
-    if(comparePoints<3>(upLimit, loLimit))
-        interval = false;
+  if(comparePoints<3>(upLimit, loLimit))
+      interval = false;
 
-    xsi = upLimit;
-    xsi += loLimit;
-    xsi *= 0.5;
+  xsi = upLimit;
+  xsi += loLimit;
+  xsi *= 0.5;
 
 	bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, upLimit, loLimit, xsi, doSVD);
 
-    if( comparePoints<3>(xsi, xsiOld))
-        intersected = false;
+	if( comparePoints<3>(xsi, xsiOld))
+	  intersected = false;
 
 	if(intersected && interval)
-   		numInterfacePoints = addIntersectionPoint( xfemElement, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit,
+	  numInterfacePoints = addIntersectionPoint( xfemElement, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit,
    													interfacePoints, surfaceId, lineId, lines, doSVD);
 
-   	//printf("number of intersection points = %d\n", numInterfacePoints );
-   	return numInterfacePoints;
+	//printf("number of intersection points = %d\n", numInterfacePoints );
+	return numInterfacePoints;
 }
 
 
@@ -841,82 +840,82 @@ int XFEM::Intersection::addIntersectionPoint(
   InterfacePoint ip;
   vector<double> coord(3,0.0);
   
-    // cutter line with xfem surface
-    if(lines)
-    {          
-        setIntersectionPointBoundaryStatus( xfemElement,surfaceElement,xyze_surfaceElement,xsi, ip);
-        ip.setCoord(DRT::UTILS::getLineCoordinates(lineId, xsi(2), cutterDistype_));
+  // cutter line with xfem surface
+  if(lines)
+  {          
+    setIntersectionPointBoundaryStatus( xfemElement,surfaceElement,xyze_surfaceElement,xsi, ip);
+    ip.setCoord(DRT::UTILS::getLineCoordinates(lineId, xsi(2), cutterDistype_));
+  }
+  // xfem line with cutter surface
+  else
+  {
+    // check if point lies on a node of the xfem line element and therefore also on
+    // the xfem element
+    int lineNodeId = -1;
+    if(fabs(xsi(2) + 1) < XFEM::TOL7)
+      lineNodeId = 0;
+    
+    if(fabs(xsi(2) - 1) < XFEM::TOL7)
+      lineNodeId = 1; 
+    
+    if(lineNodeId > -1)
+    {
+      const int nodeId = eleNumberingLines_[lineId][lineNodeId];
+      // point type has to be set before ids and coords are set
+      ip.setPointType(NODE);
+      ip.setNodeId(nodeId);
+      ip.setLineId(eleNodesLines_[nodeId]);
+      ip.setSurfaceId(eleNodesSurfaces_[nodeId]);
+      coord[0] = xsi(0);
+      coord[1] = xsi(1);
+      coord[2] = 0.0;
+      ip.setCoord(coord);
+      
     }
-    // xfem line with cutter surface
     else
     {
-      // check if point lies on a node of the xfem line element and therefore also on
-      // the xfem element
-      int lineNodeId = -1;
-      if(fabs(xsi(2) + 1) < XFEM::TOL7)
-        lineNodeId = 0;
-      
-      if(fabs(xsi(2) - 1) < XFEM::TOL7)
-        lineNodeId = 1; 
-      
-      if(lineNodeId > -1)
-      {
-        const int nodeId = eleNumberingLines_[lineId][lineNodeId];
-        // point type has to be set before ids and coords are set
-        ip.setPointType(NODE);
-        ip.setNodeId(nodeId);
-        ip.setLineId(eleNodesLines_[nodeId]);
-        ip.setSurfaceId(eleNodesSurfaces_[nodeId]);
-        coord[0] = xsi(0);
-        coord[1] = xsi(1);
-        coord[2] = 0.0;
-        ip.setCoord(coord);
-        
-      }
-      else
-      {
-        ip.setPointType(LINE);
-        vector<int> lineVec(1,lineId);
-        ip.setLineId(lineVec);
-        ip.setSurfaceId(eleLinesSurfaces_[lineId]);
-        coord[0] = xsi(0);
-        coord[1] = xsi(1);
-        coord[2] = 0.0;
-        ip.setCoord(coord);
-       
-      }
+      ip.setPointType(LINE);
+      vector<int> lineVec(1,lineId);
+      ip.setLineId(lineVec);
+      ip.setSurfaceId(eleLinesSurfaces_[lineId]);
+      coord[0] = xsi(0);
+      coord[1] = xsi(1);
+      coord[2] = 0.0;
+      ip.setCoord(coord);
+     
     }
+  }
 
-    vector<InterfacePoint>::iterator it;
-    bool alreadyInList = false;
-    for(it = interfacePoints.begin(); it != interfacePoints.end(); it++ )
-      if(comparePoints<3>(ip.getCoord(), it->getCoord()))
-      {
-        //printf("alreadyinlist = true\n");
-        alreadyInList = true;
-        break;
-      }
-
-    if(!alreadyInList)
+  vector<InterfacePoint>::iterator it;
+  bool alreadyInList = false;
+  for(it = interfacePoints.begin(); it != interfacePoints.end(); it++ )
+    if(comparePoints<3>(ip.getCoord(), it->getCoord()))
     {
-      vector< BlitzVec3 >  upperLimits(8, BlitzVec3(0.0));
-      vector< BlitzVec3 >  lowerLimits(8, BlitzVec3(0.0));
-      createNewLimits(xsi, upLimit, loLimit, upperLimits, lowerLimits);
-
-      interfacePoints.push_back(ip);
-      numInterfacePoints++;
-      
-      // recursive call
-      // for linear lines and Cartesian surfaces no more than one intersection point can be expected
-      if(doSVD)
-        for(int i = 0; i < 8; i++)
-          numInterfacePoints += computeNewStartingPoint(xfemElement,
-                                      surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, 
-                                      surfaceId, lineId, xsi,
-                                      upperLimits[i], lowerLimits[i], interfacePoints, lines, doSVD);
-
+      //printf("alreadyinlist = true\n");
+      alreadyInList = true;
+      break;
     }
-    return numInterfacePoints;
+
+  if(!alreadyInList)
+  {
+    vector< BlitzVec3 >  upperLimits(8, BlitzVec3(0.0));
+    vector< BlitzVec3 >  lowerLimits(8, BlitzVec3(0.0));
+    createNewLimits(xsi, upLimit, loLimit, upperLimits, lowerLimits);
+
+    interfacePoints.push_back(ip);
+    numInterfacePoints++;
+    
+    // recursive call
+    // for linear lines and Cartesian surfaces no more than one intersection point can be expected
+    if(doSVD)
+      for(int i = 0; i < 8; i++)
+        numInterfacePoints += computeNewStartingPoint(xfemElement,
+                                    surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, 
+                                    surfaceId, lineId, xsi,
+                                    upperLimits[i], lowerLimits[i], interfacePoints, lines, doSVD);
+
+  }
+  return numInterfacePoints;
 }
 
 
@@ -949,45 +948,45 @@ void XFEM::Intersection::createNewLimits(
  *        (-1,-1)                (1,-1)
  */
 
-    // upper left corner of surface with lower part of line
-    upperLimits[0](0) = xsi(0);         lowerLimits[0](0) = loLimit(0);
-    upperLimits[0](1) = upLimit(1);     lowerLimits[0](1) = xsi(1);
-    upperLimits[0](2) = xsi(2);         lowerLimits[0](2) = loLimit(2);
+  // upper left corner of surface with lower part of line
+  upperLimits[0](0) = xsi(0);         lowerLimits[0](0) = loLimit(0);
+  upperLimits[0](1) = upLimit(1);     lowerLimits[0](1) = xsi(1);
+  upperLimits[0](2) = xsi(2);         lowerLimits[0](2) = loLimit(2);
 
-    // upper left corner of surface with upper part of line
-    upperLimits[1](0) = xsi(0);         lowerLimits[1](0) = loLimit(0);
-    upperLimits[1](1) = upLimit(1);     lowerLimits[1](1) = xsi(1);
-    upperLimits[1](2) = upLimit(2);     lowerLimits[1](2) = xsi(2);
+  // upper left corner of surface with upper part of line
+  upperLimits[1](0) = xsi(0);         lowerLimits[1](0) = loLimit(0);
+  upperLimits[1](1) = upLimit(1);     lowerLimits[1](1) = xsi(1);
+  upperLimits[1](2) = upLimit(2);     lowerLimits[1](2) = xsi(2);
 
-    // upper right corner of surface with lower part of line
-    upperLimits[2](0) = upLimit(0);     lowerLimits[2](0) = xsi(0);
-    upperLimits[2](1) = upLimit(1);     lowerLimits[2](1) = xsi(1);
-    upperLimits[2](2) = xsi(2);         lowerLimits[2](2) = loLimit(2);
+  // upper right corner of surface with lower part of line
+  upperLimits[2](0) = upLimit(0);     lowerLimits[2](0) = xsi(0);
+  upperLimits[2](1) = upLimit(1);     lowerLimits[2](1) = xsi(1);
+  upperLimits[2](2) = xsi(2);         lowerLimits[2](2) = loLimit(2);
 
-    // upper right corner of surface with upper part of line
-    upperLimits[3](0) = upLimit(0);     lowerLimits[3](0) = xsi(0);
-    upperLimits[3](1) = upLimit(1);     lowerLimits[3](1) = xsi(1);
-    upperLimits[3](2) = upLimit(2);     lowerLimits[3](2) = xsi(2);
+  // upper right corner of surface with upper part of line
+  upperLimits[3](0) = upLimit(0);     lowerLimits[3](0) = xsi(0);
+  upperLimits[3](1) = upLimit(1);     lowerLimits[3](1) = xsi(1);
+  upperLimits[3](2) = upLimit(2);     lowerLimits[3](2) = xsi(2);
 
-    // lower right corner of surface with lower part of line
-    upperLimits[4](0) = upLimit(0);     lowerLimits[4](0) = xsi(0);
-    upperLimits[4](1) = xsi(1);         lowerLimits[4](1) = loLimit(1);
-    upperLimits[4](2) = xsi(2);         lowerLimits[4](2) = loLimit(2);
+  // lower right corner of surface with lower part of line
+  upperLimits[4](0) = upLimit(0);     lowerLimits[4](0) = xsi(0);
+  upperLimits[4](1) = xsi(1);         lowerLimits[4](1) = loLimit(1);
+  upperLimits[4](2) = xsi(2);         lowerLimits[4](2) = loLimit(2);
 
-    // lower right corner of surface with upper part of line
-    upperLimits[5](0) = upLimit(0);     lowerLimits[5](0) = xsi(0);
-    upperLimits[5](1) = xsi(1);         lowerLimits[5](1) = loLimit(1);
-    upperLimits[5](2) = upLimit(2);     lowerLimits[5](2) = xsi(2);
+  // lower right corner of surface with upper part of line
+  upperLimits[5](0) = upLimit(0);     lowerLimits[5](0) = xsi(0);
+  upperLimits[5](1) = xsi(1);         lowerLimits[5](1) = loLimit(1);
+  upperLimits[5](2) = upLimit(2);     lowerLimits[5](2) = xsi(2);
 
-    // lower left corner of surface with lower part of line
-    upperLimits[6](0) = xsi(0);         lowerLimits[6](0) = loLimit(0);
-    upperLimits[6](1) = xsi(1);         lowerLimits[6](1) = loLimit(1);
-    upperLimits[6](2) = xsi(2);         lowerLimits[6](2) = loLimit(2);
+  // lower left corner of surface with lower part of line
+  upperLimits[6](0) = xsi(0);         lowerLimits[6](0) = loLimit(0);
+  upperLimits[6](1) = xsi(1);         lowerLimits[6](1) = loLimit(1);
+  upperLimits[6](2) = xsi(2);         lowerLimits[6](2) = loLimit(2);
 
-    // lower left corner of surface with upper part of line
-    upperLimits[7](0) = xsi(0);         lowerLimits[7](0) = loLimit(0);
-    upperLimits[7](1) = xsi(1);         lowerLimits[7](1) = loLimit(1);
-    upperLimits[7](2) = upLimit(2);     lowerLimits[7](2) = xsi(2);
+  // lower left corner of surface with upper part of line
+  upperLimits[7](0) = xsi(0);         lowerLimits[7](0) = loLimit(0);
+  upperLimits[7](1) = xsi(1);         lowerLimits[7](1) = loLimit(1);
+  upperLimits[7](2) = upLimit(2);     lowerLimits[7](2) = xsi(2);
 }
 
 
@@ -1004,9 +1003,6 @@ int XFEM::Intersection::findCommonSurfaceID(
     const vector<int>&      positions)
 {
     int surfId = -1;
-    //int numSurfaces = interfacePoints[0].nsurf; 
-    const int numPoints = (int) positions.size(); 
-    //int numSurfaces = interfacePoints[0].getNumSurface();
     
     vector<int>  xfemSurfIds(numXFEMSurfaces_, -1);
     
@@ -1038,8 +1034,7 @@ int XFEM::Intersection::findCommonSurfaceID(
           if(onSurface)
             surfId = i;
       }
-    }
-    
+    }   
     return surfId;
 }
 
@@ -1443,33 +1438,33 @@ void XFEM::Intersection::findNextSegment(
     vector< vector<double> >&   vertices,
     vector<double>&             searchPoint) const
 {
-    vector< vector<double> >::iterator it;
-    bool pointfound = false;
+  vector< vector<double> >::iterator it;
+  bool pointfound = false;
 
-    if(vertices.size()==0 || searchPoint.size()==0)
-        dserror("one or both vectors are empty");
+  if(vertices.size()==0 || searchPoint.size()==0)
+      dserror("one or both vectors are empty");
 
-    for(it = vertices.begin(); it != vertices.end(); it=it+2 )
+  for(it = vertices.begin(); it != vertices.end(); it=it+2 )
+  {
+    if(comparePoints<3>(searchPoint, *it))
     {
-      if(comparePoints<3>(searchPoint, *it))
-      {
-        pointfound = true;
-        searchPoint = *(it+1);
-        vertices.erase(it);
-        vertices.erase(it); // remove it+ 1
-        break;
-      }
-
-      if(comparePoints<3>(searchPoint, *(it+1)))
-      {
-        pointfound = true;
-        searchPoint = *(it);
-        vertices.erase(it);
-        vertices.erase(it); // remove it+ 1
-        break;
-      }
+      pointfound = true;
+      searchPoint = *(it+1);
+      vertices.erase(it);
+      vertices.erase(it); // remove it+ 1
+      break;
     }
-    if(!pointfound) dserror("no point found");
+
+    if(comparePoints<3>(searchPoint, *(it+1)))
+    {
+      pointfound = true;
+      searchPoint = *(it);
+      vertices.erase(it);
+      vertices.erase(it); // remove it+ 1
+      break;
+    }
+  }
+  if(!pointfound) dserror("no point found");
 }
 
 
@@ -1533,158 +1528,157 @@ void XFEM::Intersection::computeCDT(
         map< int, BoundaryIntCells >&           boundaryintcells,
         int                                     timestepcounter_)
 {
-    const int dim = 3; 
-    tetgenio in;
-    tetgenio out;
-    char switches[] = "pnnQ";    //o2 Y
-    tetgenio::facet *f;
-    tetgenio::polygon *p;
+  const int dim = 3; 
+  tetgenio in;
+  tetgenio out;
+  char switches[] = "pnnQ";    //o2 Y
+  tetgenio::facet *f;
+  tetgenio::polygon *p;
 
 
-    // allocate pointlist
-    in.numberofpoints = pointList_.size();
-    in.pointlist = new REAL[in.numberofpoints * dim];
+  // allocate pointlist
+  in.numberofpoints = pointList_.size();
+  in.pointlist = new REAL[in.numberofpoints * dim];
 
-    // fill point list
-    int fill = 0;
-    for(int i = 0; i <  in.numberofpoints; i++)
-        for(int j = 0; j < dim; j++)
-        {
-            in.pointlist[fill] = (REAL) pointList_[i].getCoord()[j];
-            fill++;
-        }
+  // fill point list
+  int fill = 0;
+  for(int i = 0; i <  in.numberofpoints; i++)
+    for(int j = 0; j < dim; j++)
+    {
+      in.pointlist[fill] = (REAL) pointList_[i].getCoord()[j];
+      fill++;
+    }
 
 
-    in.pointmarkerlist = new int[in.numberofpoints];
-    for(int i = 0; i < numXFEMCornerNodes_; i++)
-        in.pointmarkerlist[i] = 3;    // 3 : point lying on the xfem element (corner nodes)
+  in.pointmarkerlist = new int[in.numberofpoints];
+  for(int i = 0; i < numXFEMCornerNodes_; i++)
+    in.pointmarkerlist[i] = 3;    // 3 : point lying on the xfem element (corner nodes)
 
-    for(int i = numXFEMCornerNodes_; i < in.numberofpoints; i++)
-        in.pointmarkerlist[i] = 2;    // 2 : point not lying on the xfem element
-                                      // changed to 3 if necessary later in the loop over
-                                      // xfem surfaces for simplicity
+  for(int i = numXFEMCornerNodes_; i < in.numberofpoints; i++)
+    in.pointmarkerlist[i] = 2;    // 2 : point not lying on the xfem element
+                                    // changed to 3 if necessary later in the loop over
+                                    // xfem surfaces for simplicity
 
-    in.numberoffacets = numXFEMSurfaces_ + triangleList_.size();
+  in.numberoffacets = numXFEMSurfaces_ + triangleList_.size();
 
-    in.facetlist = new tetgenio::facet[in.numberoffacets];
-    in.facetmarkerlist = new int[in.numberoffacets];
+  in.facetlist = new tetgenio::facet[in.numberoffacets];
+  in.facetmarkerlist = new int[in.numberoffacets];
 
  
     // loop over all xfem element surfaces
-    for(int i = 0; i < numXFEMSurfaces_; i++)
+  for(int i = 0; i < numXFEMSurfaces_; i++)
+  {
+    f = &in.facetlist[i];
+    const int nsegments = (int) (segmentList_[i].size()/2);
+    const int nisoPoints = isolatedPointList_[i].size();
+ 
+    f->numberofpolygons = 1 + nsegments + nisoPoints;
+    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
+    f->numberofholes = 0;
+    f->holelist = NULL;
+    p = &f->polygonlist[0];
+    const int numnodequad4 = 4;
+    p->numberofvertices = numnodequad4;
+    p->vertexlist = new int[p->numberofvertices];
+    for(int ivertex = 0; ivertex < numnodequad4; ivertex ++)
+        p->vertexlist[ivertex] = eleNumberingSurfaces_[i][ivertex];
+
+    // store segments
+    int count = 0;
+    for(int j = 1; j < 1 + nsegments; j ++)
     {
-        f = &in.facetlist[i];
-        const int nsegments = (int) (segmentList_[i].size()/2);
-        const int nisoPoints = isolatedPointList_[i].size();
-     
-        f->numberofpolygons = 1 + nsegments + nisoPoints;
-        f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-        f->numberofholes = 0;
-        f->holelist = NULL;
-        p = &f->polygonlist[0];
-        const int numnodequad4 = 4;
-        p->numberofvertices = numnodequad4;
+      if(segmentList_[i].size() > 0)
+      {
+        p = &f->polygonlist[j];
+        p->numberofvertices = 2;
         p->vertexlist = new int[p->numberofvertices];
-        for(int ivertex = 0; ivertex < numnodequad4; ivertex ++)
-            p->vertexlist[ivertex] = eleNumberingSurfaces_[i][ivertex];
 
-
-        // store segments
-        int count = 0;
-        for(int j = 1; j < 1 + nsegments; j ++)
+        for(int k = 0; k < 2; k++)
         {
-            if(segmentList_[i].size() > 0)
-            {
-                p = &f->polygonlist[j];
-                p->numberofvertices = 2;
-                p->vertexlist = new int[p->numberofvertices];
-
-                for(int k = 0; k < 2; k++)
-                {
-                   p->vertexlist[k] = segmentList_[i][count];
-                   in.pointmarkerlist[segmentList_[i][count]] = 3;  // 3: point lying on the xfem boundary
-                   count++;
-                }
-            }
+           p->vertexlist[k] = segmentList_[i][count];
+           in.pointmarkerlist[segmentList_[i][count]] = 3;  // 3: point lying on the xfem boundary
+           count++;
         }
-
-        // store isolated points lying on xfem surfaces
-        count = 0;
-        for(int j = 1 + nsegments; j < f->numberofpolygons; j++)
-        {
-            if(isolatedPointList_[i].size() > 0)
-            {
-                p = &f->polygonlist[j];
-                p->numberofvertices = 1;
-                p->vertexlist = new int[p->numberofvertices];
-
-                p->vertexlist[0] = isolatedPointList_[i][count];
-                in.pointmarkerlist[isolatedPointList_[i][count]] = 3;  // 3: point lying on the xfem boundary
-                count++;
-            }
-        }
+      }
     }
 
-    // store triangles (tri3)
-    for(int i = numXFEMSurfaces_; i < in.numberoffacets; i++)
+    // store isolated points lying on xfem surfaces
+    count = 0;
+    for(int j = 1 + nsegments; j < f->numberofpolygons; j++)
     {
-        f = &in.facetlist[i];
-        f->numberofpolygons = 1;
-        f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
-        f->numberofholes = 0;
-        f->holelist = NULL;
-        p = &f->polygonlist[0];
-        p->numberofvertices = 3;
+      if(isolatedPointList_[i].size() > 0)
+      {
+        p = &f->polygonlist[j];
+        p->numberofvertices = 1;
         p->vertexlist = new int[p->numberofvertices];
-        for(int j = 0; j < p->numberofvertices; j ++)
-            p->vertexlist[j] = triangleList_[i - xfemElement->NumSurface()][j];
+
+        p->vertexlist[0] = isolatedPointList_[i][count];
+        in.pointmarkerlist[isolatedPointList_[i][count]] = 3;  // 3: point lying on the xfem boundary
+        count++;
+      }
     }
+  }
+
+  // store triangles (tri3)
+  for(int i = numXFEMSurfaces_; i < in.numberoffacets; i++)
+  {
+    f = &in.facetlist[i];
+    f->numberofpolygons = 1;
+    f->polygonlist = new tetgenio::polygon[f->numberofpolygons];
+    f->numberofholes = 0;
+    f->holelist = NULL;
+    p = &f->polygonlist[0];
+    p->numberofvertices = 3;
+    p->vertexlist = new int[p->numberofvertices];
+    for(int j = 0; j < p->numberofvertices; j ++)
+      p->vertexlist[j] = triangleList_[i - xfemElement->NumSurface()][j];
+  }
 
 
-    // set facetmarkers
-    for(int i = 0; i < in.numberoffacets; i ++)
-        in.facetmarkerlist[i] = faceMarker_[i] + facetMarkerOffset_;
+  // set facetmarkers
+  for(int i = 0; i < in.numberoffacets; i ++)
+      in.facetmarkerlist[i] = faceMarker_[i] + facetMarkerOffset_;
 
 
-    in.save_nodes("tetin");
-    in.save_poly("tetin");
-    //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
-    //  do quality mesh generation (q) with a specified quality bound
-    //  (1.414), and apply a maximum volume constraint (a0.1)
-    //printf("tetgen start\n");
-    tetrahedralize(switches, &in, &out);
-    //printf("tetgen end\n");
-  
-    //Debug
-    //vector<int> elementIds;
-    //for(int i = 3; i<4; i++)
-    //   elementIds.push_back(xfemElement->Id());
+  in.save_nodes("tetin");
+  in.save_poly("tetin");
+  //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
+  //  do quality mesh generation (q) with a specified quality bound
+  //  (1.414), and apply a maximum volume constraint (a0.1)
+  //printf("tetgen start\n");
+  tetrahedralize(switches, &in, &out);
+  //printf("tetgen end\n");
 
-    //debugTetgenOutput(in, out, xfemElement, elementIds, timestepcounter_);
-    //printTetViewOutputPLC( element, element->Id(), in);
+  //Debug
+  //vector<int> elementIds;
+  //for(int i = 3; i<4; i++)
+  //   elementIds.push_back(xfemElement->Id());
 
-    // store interface triangles (+ recovery of higher order meshes)
-    const bool higherorder = false;
-    const bool recovery = false;
+  //debugTetgenOutput(in, out, xfemElement, elementIds, timestepcounter_);
+  //printTetViewOutputPLC( element, element->Id(), in);
 
-    if(higherorder)
-    {
-      std::cout << "lifting of Steinerpoints" << endl;
-      dserror("hu");
-      recoverCurvedInterface(xfemElement, xyze_xfemElement, currentcutterpositions, boundaryintcells, out, recovery);
-    }
-    else
-    {
-      storeIntCells(xfemElement, xyze_xfemElement, currentcutterpositions, boundaryintcells, out);
-    }
-    // store boundaryIntCells integration cells
+  // store interface triangles (+ recovery of higher order meshes)
+  const bool higherorder = false;
+  const bool recovery = false;
 
-    //if(element->Id()==388)
-    //	debugFaceMarker(element->Id(), out);
+  if(higherorder)
+  {
+    std::cout << "lifting of Steinerpoints" << endl;
+    dserror("hu");
+    recoverCurvedInterface(xfemElement, xyze_xfemElement, currentcutterpositions, boundaryintcells, out, recovery);
+  }
+  else
+  {
+    storeIntCells(xfemElement, xyze_xfemElement, currentcutterpositions, boundaryintcells, out);
+  }
+  // store boundaryIntCells integration cells
 
-    //printTetViewOutput(element->Id(), out);
-    // store domain integration cells
-    addCellsToDomainIntCellsMap(xfemElement, domainintcells, out, higherorder);
+  //if(element->Id()==388)
+  //	debugFaceMarker(element->Id(), out);
+
+  //printTetViewOutput(element->Id(), out);
+  // store domain integration cells
+  addCellsToDomainIntCellsMap(xfemElement, domainintcells, out, higherorder);
 }
 
 
@@ -1747,6 +1741,7 @@ void XFEM::Intersection::storePointList(
 }
 
 
+
 /*----------------------------------------------------------------------*
  |  CDT:    stores a point within a list of points           u.may 06/07|
  |          which is to be copy to the tetgen data structure            |
@@ -1758,36 +1753,36 @@ void XFEM::Intersection::storePoint(
     const vector<InterfacePoint>&     interfacePoints,
     vector<int>&                      positions)
 {
-    bool alreadyInList = false;
+  bool alreadyInList = false;
 
-    for(vector<InterfacePoint>::const_iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint )
+  for(vector<InterfacePoint>::const_iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint )
+  {
+    if(comparePoints<3>(point, ipoint->getCoord()))
     {
-        if(comparePoints<3>(point, ipoint->getCoord()))
+      alreadyInList = false;
+      int count = -1;
+      for(vector<InterfacePoint>::const_iterator it = pointList_.begin(); it != pointList_.end(); ++it )
+      {
+        count++;
+        if(comparePoints<3>(point, it->getCoord()))
         {
-            alreadyInList = false;
-            int count = -1;
-            for(vector<InterfacePoint>::const_iterator it = pointList_.begin(); it != pointList_.end(); ++it )
-            {
-                count++;
-                if(comparePoints<3>(point, it->getCoord()))
-                {
-                    alreadyInList = true;
-                    break;
-                }
-            }
-
-            if(!alreadyInList)
-            {
-                pointList_.push_back(*ipoint);
-                positions.push_back(pointList_.size()-1);
-            }
-            else
-            {
-                positions.push_back(count);
-            }
+            alreadyInList = true;
             break;
         }
+      }
+
+      if(!alreadyInList)
+      {
+        pointList_.push_back(*ipoint);
+        positions.push_back(pointList_.size()-1);
+      }
+      else
+      {
+        positions.push_back(count);
+      }
+      break;
     }
+  }
 }
 
 

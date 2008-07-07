@@ -504,6 +504,7 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
       return;
     }
     
+    
     //! calculate element normal in gausspoint (r,s)
     inline void computeNormalToBoundaryElement(
         const DRT::Element*      surfaceElement,    ///< surface element
@@ -636,6 +637,14 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
     
    
     
+    /*!
+    \brief checks an element is Cartesian, linear or higherorder
+
+    \param element        (in)         : XAABB of the cutting element
+    \param xyze_element   (in)         : XAABB of the xfem element
+    \param eleGeoType     (in)         : element geometric type CARTESIAN LINEAR or HIGHERORDER
+    \return true if the XAABB's intersect or false otherwise
+    */
     void checkGeoType(
              DRT::Element*                element,
              const BlitzMat               xyze_element,

@@ -807,47 +807,23 @@ void XFEM::checkGeoType(
     dserror("order of element shapefuntion is not correct");
   
   // check if cartesian
-  if(eleGeoType == LINEAR)
+  if(eleDim == 3)
   {
-    if(eleDim == 3)
-    {
-      const vector< vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-      vector< RCP<DRT::Element> >surfaces = element->Surfaces();
-      for(int i = 0; i < element->NumSurface(); i++)
-      {      
-        CartesianCount = 0;
-        const DRT::Element* surfaceP = surfaces[i].get();
-    
-        for(int k = 0; k < dimCoord; k++)
-        { 
-          int nodeId = eleNodeNumbering[i][0];
-          const double nodalcoord =  xyze_element(k,nodeId);
-          for(int j = 1; j < surfaceP->NumNode(); j++)
-          {
-            nodeId = eleNodeNumbering[i][j];
-            if(fabs(nodalcoord - xyze_element(k,nodeId)) > TOL7)
-            {
-              CartesianCount++;
-              break;
-            } 
-          }
-        }
-        if(CartesianCount > 2)  
-        {
-          cartesian = false;
-          break;
-        }
-      } // for xfem surfaces
-    } // if eleDim == 3
-    else if(eleDim == 2)
-    {
+    const vector< vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+    vector< RCP<DRT::Element> >surfaces = element->Surfaces();
+    for(int i = 0; i < element->NumSurface(); i++)
+    {      
       CartesianCount = 0;
+      const DRT::Element* surfaceP = surfaces[i].get();
+  
       for(int k = 0; k < dimCoord; k++)
       { 
-        const double nodalcoord =  xyze_element(k,0);
-        for(int j = 1; j < element->NumNode(); j++)
+        int nodeId = eleNodeNumbering[i][0];
+        const double nodalcoord =  xyze_element(k,nodeId);
+        for(int j = 1; j < surfaceP->NumNode(); j++)
         {
-          if(fabs(nodalcoord - xyze_element(k,j)) > TOL7)
+          nodeId = eleNodeNumbering[i][j];
+          if(fabs(nodalcoord - xyze_element(k,nodeId)) > TOL7)
           {
             CartesianCount++;
             break;
@@ -855,11 +831,33 @@ void XFEM::checkGeoType(
         }
       }
       if(CartesianCount > 2)  
+      {
         cartesian = false;
+        break;
+      }
+    } // for xfem surfaces
+  } // if eleDim == 3
+  else if(eleDim == 2)
+  {
+    CartesianCount = 0;
+    for(int k = 0; k < dimCoord; k++)
+    { 
+      const double nodalcoord =  xyze_element(k,0);
+      for(int j = 1; j < element->NumNode(); j++)
+      {
+        if(fabs(nodalcoord - xyze_element(k,j)) > TOL7)
+        {
+          CartesianCount++;
+          break;
+        } 
+      }
     }
-    else
-      dserror("dimension of element is not correct");
-  }// if linear
+    if(CartesianCount > 2)  
+      cartesian = false;
+  }
+  else
+    dserror("dimension of element is not correct");
+
   
   
   if(cartesian)
