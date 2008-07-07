@@ -286,6 +286,7 @@ protected:
     calc_struct_internalforce,
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,
     calc_struct_stress,
     postprocess_stress,
     calc_struct_eleload,
@@ -356,6 +357,9 @@ protected:
                                  Epetra_SerialDenseMatrix* elestrain,
                                  struct _MATERIAL*         material,
                                  bool                      cauchy = false);
+
+  //! lump mass matrix (bborn 07/08)
+  void so_tet4_lumpmass(Epetra_SerialDenseMatrix* emass);  //!< element mass matrix
 
 
   void so_tet4_expol(Epetra_SerialDenseMatrix& stresses,

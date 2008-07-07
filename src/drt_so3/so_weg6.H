@@ -270,6 +270,7 @@ protected:
     calc_struct_internalforce,
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
@@ -335,6 +336,9 @@ protected:
   void sow6_shapederiv(Epetra_SerialDenseMatrix** shapefct,
                        Epetra_SerialDenseMatrix** deriv,
                        Epetra_SerialDenseVector** weights);
+
+  //! lump mass matrix (bborn 07/08)
+  void sow6_lumpmass(Epetra_SerialDenseMatrix* emass);
 
   void soweg6_expol(Epetra_SerialDenseMatrix& stresses,
                     Epetra_SerialDenseMatrix& nodalstresses);

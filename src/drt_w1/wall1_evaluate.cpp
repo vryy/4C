@@ -65,6 +65,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
   else if (action=="calc_struct_internalforce") act = Wall1::calc_struct_internalforce;
   else if (action=="calc_struct_linstiffmass")  act = Wall1::calc_struct_linstiffmass;
   else if (action=="calc_struct_nlnstiffmass")  act = Wall1::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass") act = Wall1::calc_struct_nlnstifflmass;
   else if (action=="calc_struct_stress")        act = Wall1::calc_struct_stress;
   else if (action=="calc_struct_eleload")       act = Wall1::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Wall1::calc_struct_fsiload;
@@ -87,6 +88,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
     }
     break;
     case Wall1::calc_struct_nlnstiffmass:
+    case Wall1::calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -97,6 +99,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       w1_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
+      if (act==calc_struct_nlnstifflmass) w1_lumpmass(&elemat2);
     }
     break;
     // NULL-pointer for mass matrix in case of calculating only stiff matrix 
@@ -1616,9 +1619,28 @@ void DRT::ELEMENTS::Wall1::w1_fint_eas(Epetra_SerialDenseMatrix W0,
 /* DRT::ELEMENTS::Wall1::w1_fint_eas */
 
 
+/*-----------------------------------------------------------------------------*
+| lump mass matrix                                                  bborn 07/08|
+*-----------------------------------------------------------------------------*/
 
-
-
+void DRT::ELEMENTS::Wall1::w1_lumpmass(Epetra_SerialDenseMatrix* emass)
+{
+  // lump mass matrix
+  if (emass != NULL)
+  {
+    // we assume #elemat2 is a square matrix
+    for (int c=0; c<(*emass).N(); ++c)  // parse columns
+    {
+      double d = 0.0;  
+      for (int r=0; r<(*emass).M(); ++r)  // parse rows
+      {
+        d += (*emass)(r,c);  // accumulate row entries
+        (*emass)(r,c) = 0.0;
+      }
+      (*emass)(c,c) = d;  // apply sum of row entries on diagonal
+    }
+  }
+}
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WALL1

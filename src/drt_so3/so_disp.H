@@ -279,6 +279,7 @@ protected:
     calc_struct_internalforce,
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,

@@ -704,6 +704,28 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
 }  // of sow6_shapederiv
 
 /*----------------------------------------------------------------------*
+ |  lump mass matrix                                         bborn 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_weg6::sow6_lumpmass(Epetra_SerialDenseMatrix* emass)
+{
+  // lump mass matrix
+  if (emass != NULL)
+  {
+    // we assume #elemat2 is a square matrix
+    for (int c=0; c<(*emass).N(); ++c)  // parse columns
+    {
+      double d = 0.0;  
+      for (int r=0; r<(*emass).M(); ++r)  // parse rows
+      {
+        d += (*emass)(r,c);  // accumulate row entries
+        (*emass)(r,c) = 0.0;
+      }
+      (*emass)(c,c) = d;  // apply sum of row entries on diagonal
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)

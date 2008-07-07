@@ -128,6 +128,7 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
   else if (action=="calc_struct_internalforce")           act = Ptet::calc_struct_internalforce;
   else if (action=="calc_struct_linstiffmass")            act = Ptet::calc_struct_linstiffmass;
   else if (action=="calc_struct_nlnstiffmass")            act = Ptet::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass")           act = Ptet::calc_struct_nlnstifflmass;
   else if (action=="calc_struct_stress")                  act = Ptet::calc_struct_stress;
   else if (action=="postprocess_stress")                  act = Ptet::postprocess_stress;
   else if (action=="calc_struct_eleload")                 act = Ptet::calc_struct_eleload;
@@ -140,7 +141,8 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
   switch(act) 
   {
     // nonlinear stiffness, internal force vector, and consistent mass matrix
-    case calc_struct_nlnstiffmass: 
+    case calc_struct_nlnstiffmass:
+    case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -151,6 +153,7 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       ptetnlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1);
+      if (act==calc_struct_nlnstifflmass) ptetlumpmass(elemat2);
     }
     break;
 
@@ -469,6 +472,27 @@ void DRT::ELEMENTS::Ptet::ptetnlnstiffmass(
 } // DRT::ELEMENTS::Ptet::ptetnlnstiffmass
 
 
+/*----------------------------------------------------------------------*
+ |  lump mass matrix                                         bborn 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ptet::ptetlumpmass(Epetra_SerialDenseMatrix& emass)
+{
+  // lump mass matrix
+  if (emass != NULL)
+  {
+    // we assume #elemat2 is a square matrix
+    for (int c=0; c<emass.N(); ++c)  // parse columns
+    {
+      double d = 0.0;  
+      for (int r=0; r<emass.M(); ++r)  // parse rows
+      {
+        d += emass(r,c);  // accumulate row entries
+        emass(r,c) = 0.0;
+      }
+      emass(c,c) = d;  // apply sum of row entries on diagonal
+    }
+  }
+}
 
 
 /*----------------------------------------------------------------------*

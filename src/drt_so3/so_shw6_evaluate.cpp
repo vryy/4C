@@ -57,6 +57,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
   else if (action=="calc_struct_internalforce") act = So_weg6::calc_struct_internalforce;
   else if (action=="calc_struct_linstiffmass")  act = So_weg6::calc_struct_linstiffmass;
   else if (action=="calc_struct_nlnstiffmass")  act = So_weg6::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass") act = So_weg6::calc_struct_nlnstifflmass;
   else if (action=="calc_struct_stress")        act = So_weg6::calc_struct_stress;
   else if (action=="calc_struct_eleload")       act = So_weg6::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = So_weg6::calc_struct_fsiload;
@@ -103,7 +104,9 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
     break;
 
     // nonlinear stiffness, internal force vector, and consistent mass matrix
-    case calc_struct_nlnstiffmass: {
+    case calc_struct_nlnstiffmass:
+    case calc_struct_nlnstifflmass:
+    {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -113,6 +116,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       soshw6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
+      if (act==calc_struct_nlnstifflmass) sow6_lumpmass(&elemat2);
     }
     break;
 

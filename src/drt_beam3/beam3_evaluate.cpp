@@ -51,6 +51,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
   else if (action=="calc_struct_internalforce") act = Beam3::calc_struct_internalforce;
   else if (action=="calc_struct_linstiffmass")  act = Beam3::calc_struct_linstiffmass;
   else if (action=="calc_struct_nlnstiffmass")  act = Beam3::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass") act = Beam3::calc_struct_nlnstifflmass;
   else if (action=="calc_struct_stress")        act = Beam3::calc_struct_stress;
   else if (action=="calc_struct_eleload")       act = Beam3::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Beam3::calc_struct_fsiload;
@@ -73,6 +74,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
     //nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
     case Beam3::calc_struct_nlnstiffmass:
     case Beam3::calc_struct_nlnstiff:
+    case Beam3::calc_struct_nlnstifflmass:
     {    
       // need current global displacement and residual forces and get them from discretization
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -100,7 +102,9 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
       }
         
       b3_nlnstiffmass(mydisp,elemat1,elemat2,elevec1);
-      
+
+      // lump mass matrix (bborn 07/08)
+      if (act==calc_struct_nlnstifflmass) b3_lumpmass(&elemat2);
 
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
       //correctly or not: the function b3_nlnstiff_approx(mydisp) calculated the stiffness matrix approximated by
@@ -626,6 +630,25 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam3::b3_nlnstiff_approx(vector<double>
 	return stiff_approx;	
 }
 
+// lump mass matrix
+void  DRT::ELEMENTS::Beam3::b3_lumpmass(Epetra_SerialDenseMatrix* emass)
+{
+  // lump mass matrix
+  if (emass != NULL)
+  {
+    // we assume #elemat2 is a square matrix
+    for (int c=0; c<(*emass).N(); ++c)  // parse columns
+    {
+      double d = 0.0;  
+      for (int r=0; r<(*emass).M(); ++r)  // parse rows
+      {
+        d += (*emass)(r,c);  // accumulate row entries
+        (*emass)(r,c) = 0.0;
+      }
+      (*emass)(c,c) = d;  // apply sum of row entries on diagonal
+    }
+  }
+}
 
 void DRT::ELEMENTS::Beam3::Arbeit(double& AN,double& AM,double& AQ, double& xv)
   {

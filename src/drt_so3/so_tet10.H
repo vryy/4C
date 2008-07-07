@@ -286,6 +286,7 @@ protected:
     calc_struct_internalforce,
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
@@ -342,6 +343,9 @@ protected:
                                  Epetra_SerialDenseMatrix* elestrain,
                                  struct _MATERIAL*         material,
                                  bool cauchy = false);
+
+  //! lump mass matrix (bborn 07/08)
+  void so_tet10_lumpmass(Epetra_SerialDenseMatrix* emass);
 
   void so_tet10_expol(Epetra_SerialDenseMatrix& stresses,
                       Epetra_SerialDenseMatrix& nodalstresses);

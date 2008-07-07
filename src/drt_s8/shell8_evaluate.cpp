@@ -59,6 +59,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_internalforce") act = Shell8::calc_struct_internalforce;
   else if (action=="calc_struct_linstiffmass")  act = Shell8::calc_struct_linstiffmass;
   else if (action=="calc_struct_nlnstiffmass")  act = Shell8::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass") act = Shell8::calc_struct_nlnstifflmass;
   else if (action=="calc_struct_stress")        act = Shell8::calc_struct_stress;
   else if (action=="calc_struct_eleload")       act = Shell8::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Shell8::calc_struct_fsiload;
@@ -100,6 +101,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
       dserror("Case not yet implemented");
     break;
     case calc_struct_nlnstiffmass: // do mass, stiffness and internal forces
+    case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -110,6 +112,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       s8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
+      if (act==calc_struct_nlnstifflmass) s8_lumpmass(&elemat2);
     }
     break;
     case calc_struct_stress:
@@ -1254,6 +1257,28 @@ fflush(stdout);
 
   return;
 } // DRT::ELEMENTS::Shell8::s8_nlnstiffmass
+
+/*----------------------------------------------------------------------*
+ |  lump mass matrix (private)                               bborn 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Shell8::s8_lumpmass(Epetra_SerialDenseMatrix* emass)
+{
+  // lump mass matrix
+  if (emass != NULL)
+  {
+    // we assume #elemat2 is a square matrix
+    for (int c=0; c<(*emass).N(); ++c)  // parse columns
+    {
+      double d = 0.0;  
+      for (int r=0; r<(*emass).M(); ++r)  // parse rows
+      {
+        d += (*emass)(r,c);  // accumulate row entries
+        (*emass)(r,c) = 0.0;
+      }
+      (*emass)(c,c) = d;  // apply sum of row entries on diagonal
+    }
+  }
+}
 
 
 /*----------------------------------------------------------------------*

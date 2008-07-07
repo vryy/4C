@@ -52,6 +52,7 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
   else if (action=="calc_struct_internalforce") act = Beam2::calc_struct_internalforce;
   else if (action=="calc_struct_linstiffmass")  act = Beam2::calc_struct_linstiffmass;
   else if (action=="calc_struct_nlnstiffmass")  act = Beam2::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass") act = Beam2::calc_struct_nlnstifflmass;
   else if (action=="calc_struct_stress")        act = Beam2::calc_struct_stress;
   else if (action=="calc_struct_eleload")       act = Beam2::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Beam2::calc_struct_fsiload;
@@ -74,6 +75,7 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
     //nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
     case Beam2::calc_struct_nlnstiffmass:
     case Beam2::calc_struct_nlnstiff:
+    case Beam2::calc_struct_nlnstifflmass:
     {
       // need current global displacement and residual forces and get them from discretization
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -89,6 +91,8 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
       
       b2_nlnstiffmass(mydisp,elemat1,elemat2,elevec1);
       
+      // lump mass matrix
+      if (act==calc_struct_nlnstifflmass) b2_lumpmass(&elemat2);
 
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
       //correctly or not: the function b2_nlnstiff_approx(mydisp) calculated the stiffness matrix approximated by
@@ -580,6 +584,26 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam2::b2_nlnstiff_approx(vector<double>
 			stiff_approx(line,col) = (force_disp_delta[line] - force_disp[line])/h_rel;		
 	} 
 	return stiff_approx;	
+}
+
+// lump mass matrix
+void DRT::ELEMENTS::Beam2::b2_lumpmass(Epetra_SerialDenseMatrix* emass)
+{
+  // lump mass matrix
+  if (emass != NULL)
+  {
+    // we assume #elemat2 is a square matrix
+    for (int c=0; c<(*emass).N(); ++c)  // parse columns
+    {
+      double d = 0.0;  
+      for (int r=0; r<(*emass).M(); ++r)  // parse rows
+      {
+        d += (*emass)(r,c);  // accumulate row entries
+        (*emass)(r,c) = 0.0;
+      }
+      (*emass)(c,c) = d;  // apply sum of row entries on diagonal
+    }
+  }
 }
 
 

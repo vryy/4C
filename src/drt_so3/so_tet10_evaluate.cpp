@@ -71,6 +71,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
   else if (action=="calc_struct_internalforce") act = So_tet10::calc_struct_internalforce;
   else if (action=="calc_struct_linstiffmass")  act = So_tet10::calc_struct_linstiffmass;
   else if (action=="calc_struct_nlnstiffmass")  act = So_tet10::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass") act = So_tet10::calc_struct_nlnstifflmass;
   else if (action=="calc_struct_stress")        act = So_tet10::calc_struct_stress;
   else if (action=="calc_struct_eleload")       act = So_tet10::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = So_tet10::calc_struct_fsiload;
@@ -122,7 +123,9 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
     break;
 
     // nonlinear stiffness, internal force vector, and consistent mass matrix
-    case calc_struct_nlnstiffmass: {
+    case calc_struct_nlnstiffmass: 
+    case calc_struct_nlnstifflmass: 
+    {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -133,6 +136,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       so_tet10_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat);
+
+      if (act==calc_struct_nlnstifflmass) so_tet10_lumpmass(&elemat2);
     }
     break;
 
@@ -796,6 +801,28 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
   #endif //VERBOSE_OUTPUT
   return;
 } // DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass
+
+/*----------------------------------------------------------------------*
+ |  lump mass matrix                                         bborn 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_tet10::so_tet10_lumpmass(Epetra_SerialDenseMatrix* emass)
+{
+  // lump mass matrix
+  if (emass != NULL)
+  {
+    // we assume #elemat2 is a square matrix
+    for (int c=0; c<(*emass).N(); ++c)  // parse columns
+    {
+      double d = 0.0;  
+      for (int r=0; r<(*emass).M(); ++r)  // parse rows
+      {
+        d += (*emass)(r,c);  // accumulate row entries
+        (*emass)(r,c) = 0.0;
+      }
+      (*emass)(c,c) = d;  // apply sum of row entries on diagonal
+    }
+  }
+}
 
 
 int DRT::ELEMENTS::Sotet10Register::Initialize(DRT::Discretization& dis)

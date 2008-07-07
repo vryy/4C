@@ -266,8 +266,6 @@ public:
 
   //@}
 
-
-
 private:
 
   //! action parameters recognized by wall1
@@ -279,6 +277,7 @@ private:
     calc_struct_internalforce,
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
@@ -466,7 +465,8 @@ private:
                    Epetra_SerialDenseVector& feas,
                    double fac);
 
-
+  //! lump mass matrix
+  void w1_lumpmass(Epetra_SerialDenseMatrix* emass);
 
   // don't want = operator
   Wall1& operator = (const Wall1& old);

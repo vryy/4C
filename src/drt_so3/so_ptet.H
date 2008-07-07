@@ -438,6 +438,7 @@ protected:
     calc_struct_internalforce,
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,
     calc_struct_stress,
     postprocess_stress,
     calc_struct_eleload,
@@ -520,6 +521,9 @@ protected:
                                 Epetra_SerialDenseMatrix* stiffmatrix,
                                 Epetra_SerialDenseMatrix* massmatrix,
                                 Epetra_SerialDenseVector* force);
+
+  //! lump mass matrix (bborn 07/08)
+  void ptetlumpmass(Epetra_SerialDenseMatrix& emass);
 
   void DeformationGradient(vector<double>& disp);
 

@@ -344,6 +344,7 @@ protected:
     calc_struct_internalforce,
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
@@ -447,6 +448,9 @@ protected:
       ParameterList&            params,         ///< algorithmic parameters e.g. time
       const bool                cauchy=false,   ///< stress output option
       const bool                euler_almansi=false);  ///< strain output option
+
+  //! Lump mass matrix (bborn 07/08)
+  void soh8_lumpmass(Epetra_SerialDenseMatrix* emass);
 
   //! Extrapolate Gauss-point values (e.g. stresses) to nodes
   void soh8_expol(Epetra_SerialDenseMatrix& stresses,

@@ -263,6 +263,7 @@ private:
     calc_struct_internalforce,
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
@@ -332,6 +333,9 @@ private:
   //be activated only for bug fixing
 
   Epetra_SerialDenseMatrix b2_nlnstiff_approx(vector<double>& disp, double h_rel);
+
+  //! lump mass matrix (bborn 07/08)
+  void b2_lumpmass(Epetra_SerialDenseMatrix* emass);
 
 
   // don't want = operator

@@ -295,6 +295,7 @@ protected:
     calc_struct_internalforce,
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
@@ -362,6 +363,9 @@ protected:
                                  Epetra_SerialDenseMatrix* elestrain,
                                  struct _MATERIAL*         material,
                                  bool                      cauchy = false);
+
+  //! lump mass matrix
+  void so_ctet10_lumpmass(Epetra_SerialDenseMatrix* emass);  //!< element mass matrix
 
   void so_ctet10_expol(Epetra_SerialDenseMatrix& stresses,
                   Epetra_SerialDenseMatrix& nodalstresses);

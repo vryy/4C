@@ -320,6 +320,7 @@ private:
     calc_struct_internalforce,
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
@@ -368,6 +369,9 @@ private:
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force,
                        struct _MATERIAL*         material);
+
+  //! lump mass matrix (bborn 07/08)
+  void s8_lumpmass(Epetra_SerialDenseMatrix* emass);  //!< element mass matrix
 
   void s8stress(struct _MATERIAL* material, vector<double>& mydisp);
 
