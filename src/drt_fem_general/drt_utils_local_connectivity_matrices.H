@@ -30,7 +30,7 @@
 
 #include <blitz/array.h>
 
-#include "drt_element.H"
+#include "../drt_lib/drt_element.H"
 
 namespace DRT
 {

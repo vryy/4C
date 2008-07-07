@@ -20,7 +20,7 @@ is handed to a c++ object mesh.
 #include "Epetra_SerialComm.h"
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
-#include "../drt_lib/drt_utils_local_connectivity_matrices.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 #ifdef PARALLEL
 #include <mpi.h>

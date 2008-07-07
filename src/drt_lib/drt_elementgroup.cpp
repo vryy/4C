@@ -6,7 +6,6 @@
 #include "drt_element.H"
 #include "drt_elementgroup.H"
 #include "drt_discret.H"
-#include "drt_utils_local_connectivity_matrices.H"
 
 
 /*----------------------------------------------------------------------*
