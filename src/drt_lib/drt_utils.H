@@ -15,7 +15,7 @@ Maintainer: Michael Gee
 #define UTILS_H
 
 
-#include <blitz/array.h>
+//#include <blitz/array.h>
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
 #include "Epetra_CrsGraph.h"
@@ -26,9 +26,6 @@ Maintainer: Michael Gee
 #include "drt_parobject.H"
 #include "drt_element.H"
 #include "drt_node.H"
-#include "drt_utils_fem_shapefunctions.H"
-#include "drt_utils_dgfem_basisfunctions.H"
-#include "drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 using namespace std;

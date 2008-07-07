@@ -18,7 +18,7 @@ Maintainer: Moritz Frenzel
 #include "mpi.h"
 #endif
 #include "so_hex8.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 using namespace std; // cout etc.
 
 

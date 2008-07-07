@@ -18,7 +18,7 @@ Maintainer: Ursula Mayer
 
 #include "intersection_service.H"
 #include "intersection_math.H"
-#include "../drt_lib/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "Epetra_SerialDenseMatrix.h"
 #include <stdio.h>

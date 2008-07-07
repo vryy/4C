@@ -27,8 +27,8 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
-#include "../drt_lib/drt_utils_integration.H"
-#include "../drt_lib/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
 
 using namespace std; // cout etc.

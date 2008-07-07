@@ -27,6 +27,8 @@ Maintainer: Peter Gamnitzer
 #include "fluid3_genalpha_resVMM.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include <Epetra_SerialDenseSolver.h>
 #include <Epetra_LAPACK.h>

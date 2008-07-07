@@ -20,7 +20,7 @@ Maintainer: Ursula Mayer
 #include "intersection_math.H"
 #include "xfem_condition.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
 

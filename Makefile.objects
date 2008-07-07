@@ -105,9 +105,9 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_condition_utils.o \
                 src/drt_lib/drt_conditiondefinition.o \
                 src/drt_lib/drt_dofset.o \
-                src/drt_lib/drt_utils_integration.o \
-                src/drt_lib/drt_utils_dgfem_basisfunctions.o \
-                src/drt_lib/drt_utils_fem_shapefunctions.o \
+                src/drt_fem_general/drt_utils_integration.o \
+                src/drt_fem_general/drt_utils_dgfem_basisfunctions.o \
+                src/drt_fem_general/drt_utils_fem_shapefunctions.o \
                 src/drt_lib/drt_utils_nurbs_shapefunctions.o \
                 src/drt_lib/drt_utils_bspline.o \
                 src/drt_lib/drt_nurbs_discret.o \

@@ -14,7 +14,7 @@ Maintainer: Axel Gerstenberger
 #ifndef UTILS_INTEGRATION_H
 #define UTILS_INTEGRATION_H
 
-#include "drt_element.H"
+#include "../drt_lib/drt_element.H"
 
 namespace DRT
 {

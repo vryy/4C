@@ -12,7 +12,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "drt_utils_integration.H"
-#include "drt_dserror.H"
+#include "../drt_lib/drt_dserror.H"
 
 
 DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule)

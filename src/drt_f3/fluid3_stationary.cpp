@@ -19,6 +19,8 @@ Maintainer: Georg Bauer
 #include "fluid3_stationary.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include <Epetra_SerialDenseSolver.h>
 

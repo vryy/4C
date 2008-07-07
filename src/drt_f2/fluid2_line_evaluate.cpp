@@ -15,7 +15,6 @@ Maintainer: Peter Gmanitzer
 
 #include "fluid2.H"
 #include "../drt_lib/linalg_utils.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_nurbs_discret.H"
 #include "../drt_lib/drt_control_point.H"
@@ -23,6 +22,7 @@ Maintainer: Peter Gmanitzer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/modpowerlaw.H"

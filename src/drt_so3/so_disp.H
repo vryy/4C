@@ -26,7 +26,7 @@ using namespace Teuchos;
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 #include "../drt_mat/material.H"
 

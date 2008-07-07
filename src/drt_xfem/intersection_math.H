@@ -19,7 +19,7 @@ Maintainer: Ursula Mayer
 #include "intersection_service.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_lib/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_element.H"
 #include "Teuchos_RefCountPtr.hpp"

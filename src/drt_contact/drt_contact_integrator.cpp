@@ -17,7 +17,7 @@ Maintainer: Alexander Popp
 #include "drt_celement.H"
 #include "drt_contact_projector.H"
 #include "contactdefines.H"
-#include "../drt_lib/drt_utils.H"
+#include "../drt_fem_general/drt_utils_integration.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/08|

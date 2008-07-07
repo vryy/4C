@@ -28,8 +28,8 @@ written by: Alexander Volf
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_serialdensematrix.H"
 #include "../drt_lib/linalg_serialdensevector.H"
-#include "../drt_lib/drt_utils_integration.H"
-#include "../drt_lib/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 /*----------------------------------------------------------------------*
  | destructor for the Discrete_integrator class               volf 09/07|
