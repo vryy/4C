@@ -379,12 +379,19 @@ bool XFEM::searchForNearestPointOnSurface(
   normal(2) = physCoord(2) - x_surface_phys(2);
   // absolute distance between point and surface
   distance = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));
-  // compute distance with sign
-  const double scalarproduct = eleNormalAtXsi(0)*normal(0) + eleNormalAtXsi(1)*normal(1) + eleNormalAtXsi(2)*normal(2);
-  const double teiler = Norm2(eleNormalAtXsi) * Norm2(normal);
-  const double cosphi = scalarproduct / teiler;
-  const double vorzeichen = cosphi/abs(cosphi);
-  distance *= vorzeichen;
+  
+  // because normal may equal zero !!!
+  if(fabs(distance) > XFEM::TOL7)
+  {
+    // compute distance with sign
+    const double scalarproduct = eleNormalAtXsi(0)*normal(0) + eleNormalAtXsi(1)*normal(1) + eleNormalAtXsi(2)*normal(2);
+    const double teiler = Norm2(eleNormalAtXsi) * Norm2(normal);
+    const double cosphi = scalarproduct / teiler;
+    const double vorzeichen = cosphi/abs(cosphi);
+    distance *= vorzeichen;
+  }
+  else
+    distance = 0.0;
   
   return pointWithinElement;
 }

@@ -376,13 +376,41 @@ class Intersection
   \brief  finds th id of the an xfem surface common to all interafce points.
           Returns -1 , if no common surface exists or the surface id
 
-  \param positions          (in)        : positions of points in pointList_
+  \param xfemElement              (in)    : xfem element
+  \param xyze_xfemElement         (in)    : nodal coordinates of xfem element
+  \param cutterElement            (in)    : cutter element
+  \param xyze_cutterElement       (in)    : nodal coordinates of cutter element
+  \param postions                 (in)    : vector of interface point positions in pointList_
   \return                                 returns -1 or the surface id
   */
   int findCommonSurfaceID(
-      const vector<int>&          positions
+    const DRT::Element*     xfemElement,
+    const BlitzMat&         xyze_xfemElement,
+    const DRT::Element*     cutterElement,
+    const BlitzMat&         xyze_cutterElement,
+    const vector<int>&      positions
     );
-        
+      
+  
+  /*!
+  \brief  finds th id of the an xfem surface common to all interafce points.
+          Returns -1 , if no common surface exists or the surface id
+
+  \param xfemElement              (in)    : xfem element
+  \param xyze_xfemElement         (in)    : nodal coordinates of xfem element
+  \param cutterElement            (in)    : cutter element
+  \param xyze_cutterElement       (in)    : nodal coordinates of cutter element
+  \param postions                 (in)    : vector of interface point positions in pointList_
+  \return                                 returns true if on surface
+  */
+  bool checkIfCutterOnXFEMSurface(
+    const DRT::Element*             xfemElement,
+    const BlitzMat&                 xyze_xfemElement,
+    const DRT::Element*             cutterElement,
+    const BlitzMat&                 xyze_cutterElement,
+    const vector<int>&              positions
+    ); 
+  
   
   /*!
   \brief  checks if an intersection lies on a xfem boundary
@@ -530,7 +558,7 @@ class Intersection
 
 
   /*!
-  \brief  stores aLL interface point of a curve-surface intersection 
+  \brief  stores all interface point of a curve-surface intersection 
           in a point list for the
           Constrained Delaunay Tetrahedralization (CDT) with Tetgen
 
@@ -607,7 +635,19 @@ class Intersection
     const vector<InterfacePoint>&     interfacePoints
     ) const;
         
-        
+  
+  /*!
+  \brief  computes the midpoint of a collection of points determined by 
+          a pointlist position vector
+
+  \param positions           (in)        : vector of positions
+  \return returns the midpoint (type InterfacePoint)
+  */
+  XFEM::InterfacePoint computeMidpoint(
+      const vector<int>&  positions
+      ) const;
+     
+  
   /*!
   \brief  classifies the midpoint 
 

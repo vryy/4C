@@ -997,7 +997,11 @@ void XFEM::Intersection::createNewLimits(
  |          all interface points are lying on this surface              |
  *----------------------------------------------------------------------*/
 int XFEM::Intersection::findCommonSurfaceID(
-    const vector<int>&          positions)
+    const DRT::Element*     xfemElement,
+    const BlitzMat&         xyze_xfemElement,
+    const DRT::Element*     cutterElement,
+    const BlitzMat&         xyze_cutterElement,
+    const vector<int>&      positions)
 {
     int surfId = -1;
     //int numSurfaces = interfacePoints[0].nsurf; 
@@ -1029,11 +1033,59 @@ int XFEM::Intersection::findCommonSurfaceID(
       }
       else if(xfemSurfPoints[i].size() > 2 &&  xfemSurfPoints[i].size() ==  positions.size())
       {
-          surfId = i;
+          const bool onSurface = checkIfCutterOnXFEMSurface(xfemElement, xyze_xfemElement, 
+                                 cutterElement, xyze_cutterElement, positions);
+          if(onSurface)
+            surfId = i;
       }
     }
     
     return surfId;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  CLI:    checks if the part of a cutter element           u.may 07/08|
+ |          spezified by position lies on a xfem surface                |                      
+ |          by checking if the cutter midpoint lies on the              |
+ |          xfem surface                                                |
+ *----------------------------------------------------------------------*/
+bool XFEM::Intersection::checkIfCutterOnXFEMSurface(
+    const DRT::Element*             xfemElement,
+    const BlitzMat&                 xyze_xfemElement,
+    const DRT::Element*             cutterElement,
+    const BlitzMat&                 xyze_cutterElement,
+    const vector<int>&              positions) 
+{
+  bool onSurface = false;
+  
+  BlitzVec3 xsi;
+  xsi = 0;
+  BlitzVec3 x_phys;
+  x_phys = 0;
+  
+  // midpoint is computed in element coordinates of the xfem element
+  InterfacePoint midpoint = computeMidpoint(positions);
+ 
+  // transform to physical coordinates
+  for(int i = 0; i < 3; i++)
+    xsi(i) = midpoint.getCoord()[i];
+  
+  elementToCurrentCoordinates(xfemElement, xyze_xfemElement, xsi, x_phys);
+  
+  // check if midpoint lies on cutter element
+  BlitzVec2 xsiCut;
+  xsiCut = 0;
+  BlitzVec3 normal;
+  normal = 0;
+  double distance = 0.0;
+  searchForNearestPointOnSurface(cutterElement, xyze_cutterElement, x_phys, xsiCut, normal, distance);
+
+  if(fabs(distance) < XFEM::TOL7)
+    onSurface = true;
+  
+  return onSurface;
 }
 
 
@@ -1120,7 +1172,7 @@ void XFEM::Intersection::preparePLC(
       for(vector<InterfacePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint)
       {
         vector<double> vertex(3,0);
-        // transform interface points into current coordinates and store in structure vertices
+        // transform interface points into xfem element coordinates and store in structure vertices
         {
           static BlitzVec2  eleCoordSurf;
           for(int j = 0; j < 2; j++)
@@ -1147,7 +1199,8 @@ void XFEM::Intersection::preparePLC(
     
     // find common surfID, if surfUd != -1 all interface points are lying on one
     // xfem surface and have to be store in the surfaceTriangleList_ accordingly
-    const int surfId = findCommonSurfaceID(positions);
+    const int surfId = findCommonSurfaceID( xfemElement, xyze_xfemElement, 
+                                            cutterElement, xyze_cutterElement,  positions);
     
     // check if all nodes are XFEMNODES
     if(surfId != -1)
@@ -1644,7 +1697,6 @@ void XFEM::Intersection::startPointList(
     )
 {
   InterfacePoint ip;
-
   pointList_.clear();
 
   for(int i = 0; i < numXFEMCornerNodes_; i++)
@@ -1782,24 +1834,49 @@ void XFEM::Intersection::storeMidPoint(
 XFEM::InterfacePoint XFEM::Intersection::computeMidpoint(
     const vector<InterfacePoint>& interfacePoints
     ) const
+{ 
+   InterfacePoint ip;
+   vector<double> coord(3,0.0);
+
+   for(unsigned int i = 0; i < interfacePoints.size(); i++)
+      for(int j = 0; j < 3 ; j++)
+        coord[j] += interfacePoints[i].getCoord()[j];
+
+   for(int i = 0; i < 3 ; i++)
+     coord[i] = coord[i]/((double)interfacePoints.size());
+   
+   ip.setPointType(INTERNAL);
+   ip.setCoord(coord);
+
+   return ip;
+}
+
+
+
+
+/*----------------------------------------------------------------------*
+ |  CDT:    computes the midpoint of a collection of         u.may 07/08|
+ |          interface points determined by a position vector            |
+ |          please note: point set is default to INTERNAL               |
+ *----------------------------------------------------------------------*/
+XFEM::InterfacePoint XFEM::Intersection::computeMidpoint(
+    const vector<int>&  positions
+    ) const
 {
+   InterfacePoint ip;
+   vector<double> coord(3,0.0);
 
-     int n = interfacePoints.size();
-     InterfacePoint ip;
-     
-     vector<double> coord(3,0.0);
+   for(unsigned int i = 0; i < positions.size() ; i++)
+      for(int j = 0; j < 3 ; j++)
+        coord[j] += pointList_[positions[i]].getCoord()[j];
 
-     for(int i = 0; i < n ; i++)
-        for(int j = 0; j < 3 ; j++)
-          coord[j] += interfacePoints[i].getCoord()[j];
+   for(int i = 0; i < 3 ; i++)
+     coord[i] = coord[i]/((double) positions.size());
+   
+   ip.setPointType(INTERNAL);
+   ip.setCoord(coord);
 
-     for(int i = 0; i < 3 ; i++)
-       coord[i] = coord[i]/(double)n;
-     
-     ip.setPointType(INTERNAL);
-     ip.setCoord(coord);
-
-     return ip;
+   return ip;
 }
 
 
@@ -2029,7 +2106,10 @@ bool XFEM::Intersection::checkIfTrianglesDegenerate(
   bool degenerate = false;
   vector<int> removePoints;
   
-  for(int i = 0; i < positions.size()-1; i++)
+  if((int) positions.size() == 0)
+    dserror("position vector equals zero");
+  
+  for(int i = 0; i < (int) positions.size()-1; i++)
     for(unsigned int j = i+1; j < positions.size(); j++)
       if(positions[i] == positions[j])
       {
