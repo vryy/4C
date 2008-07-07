@@ -999,7 +999,35 @@ int XFEM::Intersection::findCommonSurfaceID(
     //int numSurfaces = interfacePoints[0].nsurf; 
     const int numPoints = (int) interfacePoints.size(); 
     int numSurfaces = interfacePoints[0].getNumSurface();
-  
+    
+    vector<int>  xfemSurfIds(numXFEMSurfaces_, -1);
+    vector<vector<int> > xfemSurfPoints;
+    xfemSurfPoints.resize(numXFEMSurfaces_);
+    
+/*  
+     vector<vector<int> > positionsOnXfemSurfaces(); 
+    // fill data structure store all point position lying on a certain xfem surface
+    for(int i = 0; i < positions.size(); i++)
+      for(int j = 0; j < pointList_[positions[i]].getNumSurface(); j++)
+      {
+        const int surf_id = pointList_[positions[i]].getSurfId()[j];
+        xfemSurfPoints[surf_id ].push_back(positions[i]);
+      }
+      
+    // check if more than 2 points are lying on one xfem surface
+    for(int i = 0; i < numXFEMSurfaces_; i++)
+    {
+      if(xfemSurfPoints[i].size() == 3 &&  xfemSurfPoints[i].size() !=  positions.size())
+      
+      else if(xfemSurfPoints[i].size() > 2 &&  xfemSurfPoints[i].size() ==  positions.size())
+      {
+        xfemSurfIds[i] = type;
+      }
+      else 
+        dserror("scenario not yet implemented or not correct");
+    }
+      
+  */  
     for(int i = 0; i < numSurfaces; i++)
     {     
       bool surfEqual = false;
@@ -1907,6 +1935,7 @@ void XFEM::Intersection::storeSingleSegment(
 }
 
 
+
 /*----------------------------------------------------------------------*
  |  CDT:    stores segments within a list of segments       u.may 06/07|
  |          which is to be copied to the tetgen data structure          |
@@ -2007,10 +2036,9 @@ bool XFEM::Intersection::checkIfTrianglesDegenerate(
     )
 {
   bool degenerate = false;
-  int length = (int) positions.size()/2; //  
   vector<int> removePoints;
   
-  for(int i = 0; i < length; i++)
+  for(int i = 0; i < positions.size()-1; i++)
     for(unsigned int j = i+1; j < positions.size(); j++)
       if(positions[i] == positions[j])
       {
@@ -2060,6 +2088,7 @@ void XFEM::Intersection::storeTriangles(
     triangleList_.push_back(triangle);
     faceMarker_.push_back(intersectingCutterElements_.size()-1);
 }
+
 
 
 /*----------------------------------------------------------------------*

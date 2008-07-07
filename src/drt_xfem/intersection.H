@@ -52,22 +52,6 @@ namespace XFEM
 enum boundaryType {NONE, ONFLUID, ONSOLID};
 
 
-//! a point class used in the xfem intersection process
-/*
-struct InterfacePoint
-{
-  int           nsurf;
-  int           nline;
-  int           nnode;
-  int           surfaces[3];    
-  int           lines[3];      
-  int           node[1];       
-  double        coord[3];       
-  pointType     pType;         
-};
-
-*/
-
 class Intersection
 {
 
@@ -96,7 +80,7 @@ class Intersection
   private:
 
   //! offset in facet marker list
-  static const int                      facetMarkerOffset_ = 11;
+  static const int                    facetMarkerOffset_ = 11;
 
   //! discretization type of the xfem element
   DRT::Element::DiscretizationType     xfemDistype_;
@@ -294,20 +278,20 @@ class Intersection
   \return number of interface points
   */
   int computeNewStartingPoint(
-      const DRT::Element*             xfemElement,
-      const DRT::Element*             surfaceElement,
-      const BlitzMat&                 xyze_surfaceElement,
-      const DRT::Element*             lineElement,
-      const BlitzMat&                 xyze_lineElement,
-      const int                       surfaceId,
-      const int                       lineId,
-      const BlitzVec3&                xsiOld,
-      const BlitzVec3&                upLimit,
-      const BlitzVec3&                loLimit,
-      std::vector<InterfacePoint>&    interfacePoints,
-      const bool                      lines,
-      const bool                      doSVD
-      ) const;
+    const DRT::Element*             xfemElement,
+    const DRT::Element*             surfaceElement,
+    const BlitzMat&                 xyze_surfaceElement,
+    const DRT::Element*             lineElement,
+    const BlitzMat&                 xyze_lineElement,
+    const int                       surfaceId,
+    const int                       lineId,
+    const BlitzVec3&                xsiOld,
+    const BlitzVec3&                upLimit,
+    const BlitzVec3&                loLimit,
+    std::vector<InterfacePoint>&    interfacePoints,
+    const bool                      lines,
+    const bool                      doSVD
+    ) const;
 
 
   /*!
@@ -326,15 +310,15 @@ class Intersection
   return true if an intersection point was found, otherwise false
   */
   bool computeCurveSurfaceIntersection(
-      const DRT::Element*                 surfaceElement,
-      const BlitzMat&                     xyze_surfaceElement,
-      const DRT::Element*                 lineElement,
-      const BlitzMat&                     xyze_lineElement,
-      const BlitzVec3&                    upLimit,
-      const BlitzVec3&                    loLimit,
-      BlitzVec3&                          xsi,
-      const bool                          doSVD
-      ) const;
+    const DRT::Element*                 surfaceElement,
+    const BlitzMat&                     xyze_surfaceElement,
+    const DRT::Element*                 lineElement,
+    const BlitzMat&                     xyze_lineElement,
+    const BlitzVec3&                    upLimit,
+    const BlitzVec3&                    loLimit,
+    BlitzVec3&                          xsi,
+    const bool                          doSVD
+    ) const;
 
 
 	/*!
@@ -355,20 +339,20 @@ class Intersection
 	\return number of interface points
 	*/
   int addIntersectionPoint(
-      const DRT::Element*                 xfemElement,
-      const DRT::Element*                 surfaceElement,
-      const BlitzMat&                     xyze_surfaceElement,
-      const DRT::Element*                 lineElement,
-      const BlitzMat&                     xyze_lineElement,
-      const BlitzVec3&                    xsi,
-      const BlitzVec3&                    upLimit,
-      const BlitzVec3&                    loLimit,
-      std::vector<InterfacePoint>& 	      interfacePoints,
-      const int                      	    surfaceId,
-      const int                           lineId,
-      const bool                          lines,
-      const bool                          doSVD
-      ) const;
+    const DRT::Element*                 xfemElement,
+    const DRT::Element*                 surfaceElement,
+    const BlitzMat&                     xyze_surfaceElement,
+    const DRT::Element*                 lineElement,
+    const BlitzMat&                     xyze_lineElement,
+    const BlitzVec3&                    xsi,
+    const BlitzVec3&                    upLimit,
+    const BlitzVec3&                    loLimit,
+    std::vector<InterfacePoint>& 	      interfacePoints,
+    const int                      	    surfaceId,
+    const int                           lineId,
+    const bool                          lines,
+    const bool                          doSVD
+    ) const;
 
 
   /*!
@@ -381,12 +365,12 @@ class Intersection
   \param lowerLimits      (out)       : list of lower limits of new ranges
   */
   void createNewLimits(
-      const BlitzVec3&        xsi,
-      const BlitzVec3&        upLimit,
-      const BlitzVec3&        loLimit,
-      vector<BlitzVec3>&      upperLimits,
-      vector<BlitzVec3>&      lowerLimits
-      ) const;
+    const BlitzVec3&        xsi,
+    const BlitzVec3&        upLimit,
+    const BlitzVec3&        loLimit,
+    vector<BlitzVec3>&      upperLimits,
+    vector<BlitzVec3>&      lowerLimits
+    ) const;
 
         
   /*!
@@ -397,8 +381,8 @@ class Intersection
   \return                                       returns -1 or the surface id
   */
   int findCommonSurfaceID(
-      vector<InterfacePoint>&         interfacePoints
-      );
+    vector<InterfacePoint>&         interfacePoints
+    );
         
   
   /*!
@@ -412,13 +396,13 @@ class Intersection
   \param surfId                   (in)    : Id of common surface
   */
   XFEM::boundaryType checkIfIntersectionOnXFEMBoundary(
-      const DRT::Element*             xfemElement,
-      const BlitzMat&                 xyze_xfemElement,
-      const DRT::Element*             cutterElement,
-      const BlitzMat&                 xyze_cutterElement,
-      const vector<InterfacePoint>&   interfacePoints,
-      const int                       surfId
-      );
+    const DRT::Element*             xfemElement,
+    const BlitzMat&                 xyze_xfemElement,
+    const DRT::Element*             cutterElement,
+    const BlitzMat&                 xyze_cutterElement,
+    const vector<InterfacePoint>&   interfacePoints,
+    const int                       surfId
+    );
 
         
   /*!
@@ -433,13 +417,13 @@ class Intersection
   \param boundaryIntersectionType (in)    : boundary intersection type
   */
   void preparePLC(
-      const DRT::Element*         xfemElement,
-      const BlitzMat&             xyze_xfemElement,
-      const DRT::Element*         cutterElement,
-      const BlitzMat&             xyze_cutterElement,
-      vector<InterfacePoint>&     interfacePoints,
-      XFEM::boundaryType&         boundaryIntersectionType 
-      );
+    const DRT::Element*         xfemElement,
+    const BlitzMat&             xyze_xfemElement,
+    const DRT::Element*         cutterElement,
+    const BlitzMat&             xyze_cutterElement,
+    vector<InterfacePoint>&     interfacePoints,
+    XFEM::boundaryType&         boundaryIntersectionType 
+    );
 
         
   /*!
@@ -454,13 +438,13 @@ class Intersection
   \param midpoint                 (in/out)  : midpoint
   */
   void computeConvexHull(
-      const DRT::Element*           xfemElement,
-      const DRT::Element*           cutterElement,
-      const BlitzMat&               xyze_cutterElement,
-      vector<InterfacePoint>&       interfacePoints,
-      vector< vector<double> >&     vertices,
-      InterfacePoint&               midpoint
-      );   
+    const DRT::Element*           xfemElement,
+    const DRT::Element*           cutterElement,
+    const BlitzMat&               xyze_cutterElement,
+    vector<InterfacePoint>&       interfacePoints,
+    vector< vector<double> >&     vertices,
+    InterfacePoint&               midpoint
+    );   
         
         
   /*!
@@ -477,14 +461,14 @@ class Intersection
   
   */
   void storePLC(
-    const DRT::Element*             xfemElement,
-    const DRT::Element*             cutterElement,
-    const BlitzMat&                 xyze_cutterElement,
-    const int                       surfId,
-    const vector<InterfacePoint>&   interfacePoints,
-    vector< vector<double> >&       vertices,
-    InterfacePoint&                 midpoint
-    ); 
+  const DRT::Element*             xfemElement,
+  const DRT::Element*             cutterElement,
+  const BlitzMat&                 xyze_cutterElement,
+  const int                       surfId,
+  const vector<InterfacePoint>&   interfacePoints,
+  vector< vector<double> >&       vertices,
+  InterfacePoint&                 midpoint
+  ); 
        
   
   /*!
@@ -515,209 +499,224 @@ class Intersection
   \param boundaryIntersectionType (in)        : boundary intersection type
   */
   bool checkIfCDT(
-      const int             numTotalInterfacePoints,
-      const boundaryType    boundaryIntersectionType
-      );
+    const int             numTotalInterfacePoints,
+    const boundaryType    boundaryIntersectionType
+    );
+    
+  
+  /*!
+  \brief  computes the Constrained Delaunay Tetrahedralization CDT
+          of an intersected xfem element
+
+  \param element                  (in)    : xfem element
+  \param xyze_xfemElement         (in)    : nodal coordinates of xfem element
+  \param currentcutterpositions   (in)    : current cutter node positions
+  \param domainintcells           (out)   : list of domainintegrationcells for each intersected element
+  \param boundaryintcells         (out)   : list of boundaryintegrationcells for each intersected element
+  \param timestepcounter_         (out)   : time step counter
+  */
+  void computeCDT(
+    const DRT::Element*                     xfemElement,
+    const BlitzMat&                         xyze_xfemElement,
+    const map<int,BlitzVec3>&               currentcutterpositions,  ///< current positions of all cutter nodes
+    map< int, DomainIntCells >&             domainintcells,
+    map< int, BoundaryIntCells >&           boundaryintcells,
+    int                                     timestepcounter_
+    );
+
+
+  /*!
+  \brief  adds the corner nodes of an xfem element to the pointlist
+
+  */
+  void startPointList();
+
+
+  /*!
+  \brief  stores an interface point in a point list for the
+          Constrained Delaunay Tetrahedralization (CDT) with Tetgen
+
+  \param point            (in)        :   coordinates of the point to be stored
+  \param interfacePoints  (in/out)    :   vector of interface points
+  \param positions        (in/out)    :   positions
+  */
+  void storePoint(
+    const vector<double>&             point,
+    const vector<InterfacePoint>&     interfacePoints,
+    vector<int>&                      positions
+    );
+
+  
+  /*!
+  \brief  stores an interface point in a point list for the
+          Constrained Delaunay Tetrahedralization (CDT) with Tetgen
+
+  \param midPoint            (in)     :   coordinates of the point to be stored
+  \param positions        (in/out)    :   positions
+  */ 
+  void storeMidPoint(
+    const InterfacePoint&             midPoint,
+    vector<int>&                      positions
+    );
+       
+  
+  /*!
+  \brief  stores a single point in a list of surface points if no
+          segment lies in that surface
+
+  \param interfacePoints      (in)        :   list of interface points
+
+  */
+  void storeSurfacePoints(
+    const vector<InterfacePoint>&     interfacePoints
+    );
         
+  
+  /*!
+  \brief  stores a single point in a list of surface points if no
+          segment lies in that surface
+
+  \param positions            (in)        :   list of interface point positions
+
+  */
+  void storeIsolatedPoints(
+    const vector<int>&                positions
+    );
+    
+  
+  /*!
+  \brief  computes the midpoint of a collection of points
+
+  \param interfacePoints            (in)        : vector of interface points
+  \return returns the midpoint (type InterfacePoint)
+  */
+  InterfacePoint computeMidpoint(
+    const vector<InterfacePoint>&     interfacePoints
+    ) const;
+        
+        
+  /*!
+  \brief  classifies the midpoint 
+
+  \param surfId                     (in)        : surface Id of common surface
+  \param interfacePoints            (in)        : vector of interface points
+  \return returns the midpoint (type InterfacePoint)
+  */
+  void classifyMidpoint(
+      const int         surfId,
+      InterfacePoint&   midpoint
+      ) const;
+        
+        
+  /*!
+  \brief  stores a segment in a segment list for the
+          Constrained Delaunay Tetrahedralization (CDT) with Tetgen
+
+  \param positions            (in)        :   positions
+  */
+  void storeSegments(
+    const vector<int>&              positions
+    );
+        
+  
+  /*!
+  \brief  store all segments for cutter elements lying with more than two
+          intersection points on an xfem surface
+
+  \param positions            (in)        :   positions
+  */
+  void storeSurfaceSegments(
+    const vector<int>&              positions
+    );
+
+        
+  /*!
+  \brief  store all segments for cutter elements lying with more than two
+          intersection points on an xfem surface
+
+  \param pos1            (in)        :   position of 1. point in pointList_
+  \param pos2            (in)        :   position of 2. point in pointList_
+  */
+  void storeSingleSegment(
+    const int pos1,
+    const int pos2
+    );
+        
+  
+  /*!
+  \brief checks if two segment points are lying on the same xfemline
+
+  \param position1            (in)        :   position of 1. point in pointList_
+  \param position2            (in)        :   position of 2. point in pointList_
+  */
+  bool checkIfSegmentPointsOnSameXfemLine(const int position1,
+    const int position2);
+        
+        
+  /*!
+  \brief checks if triangles have two identical points these triangles are removed from point list
+  \param positions           (in)        :   point positions
+  */
+  bool checkIfTrianglesDegenerate(
+    vector<int>&              positions
+    );
+      
+  
+  /*!
+  \brief  stores a triangle facet in a triangle list for the
+          Constrained Delaunay Tetrahedralization (CDT) with Tetgen
+
+  \param positions            (in)        :   positions
+  */
+  void storeTriangles(
+    const vector<int>               positions
+    );
+        
+        
+  /*!
+  \brief  stores a triangle facet in a triangle list for the
+          Constrained Delaunay Tetrahedralization (CDT) with Tetgen
+
+  \param surfID               (in)        :   id of xfem surface
+  \param positions            (in)        :   positions
+  */
+  void storeSurfaceTriangles(
+    const int                       surfId,
+    const vector<int>               positions
+    );
+
+
+  /*!
+  \brief  stores the cutter element intersecting
+          with an xfem element in a list
+
+  \param surfaceElement   (in)    :   surface element
+  */
+  void storeIntersectedCutterElement(
+    DRT::Element* cutterElement
+    );
+
+
   
   
   
-        /*!
-        \brief  computes the Constrained Delaunay Tetrahedralization CDT
-                of an intersected xfem element
+  
+    /*!
+    \brief  computes the recovery of the curved interface
+            for one xfem element after a Contrained Delaunay
+            Tetrahedralization
 
-        \param element              (in)    : xfem element
-        \param cutterElement        (in)    : cutter element
-        \param domainintcells       (out)   : list of domainintegrationcells for each intersected element
-        \param boundaryintcells     (out)   : list of boundaryintegrationcells for each intersected element
-        */
-        void computeCDT(
-            const DRT::Element*                     xfemElement,
-            const BlitzMat&                         xyze_xfemElement,
-            const map<int,BlitzVec3>&               currentcutterpositions,  ///< current positions of all cutter nodes
-            map< int, DomainIntCells >&             domainintcells,
-            map< int, BoundaryIntCells >&           boundaryintcells,
-            int                                     timestepcounter_
+    \param xfemElement              (in)        :   xfem element
+    \param out                  (in/out)    :   output data structure of TetGen
+    */
+    void recoverCurvedInterface(
+            const DRT::Element*             xfemElement,
+            const BlitzMat&                 xyze_xfemElement,
+            const map<int,BlitzVec3>&       currentcutterpositions,  ///< current positions of all cutter nodes
+            map< int, BoundaryIntCells >&   boundaryintcells,
+            tetgenio&                       out,
+            bool 							recovery
             );
-
-
-        /*!
-        \brief  adds the corner nodes of an xfem element to the pointlist
-
-        */
-        void startPointList();
-
-
-        /*!
-        \brief  stores an interface point in a point list for the
-                Constrained Delaunay Tetrahedralization (CDT) with Tetgen
-
-        \param point            (in)        :   coordinates of the point to be stored
-        \param interfacePoints  (in/out)    :   vector of interface points
-        \param positions        (in/out)    :   positions
-
-        */
-        void storePoint(
-            const vector<double>&       point,
-            const vector<InterfacePoint>&     interfacePoints,
-            vector<int>&                positions
-            );
-
-        
-        void storeMidPoint(
-            const InterfacePoint&             midPoint,
-            vector<int>&                      positions
-            );
-        
-        /*!
-        \brief  stores a single point in a list of surface points if no
-                segment lies in that surface
-
-        \param interfacePoints      (in)        :   list of interface points
-
-        */
-        void storeSurfacePoints(
-            const vector<InterfacePoint>&     interfacePoints
-            );
-        
-        /*!
-        \brief  stores a single point in a list of surface points if no
-                segment lies in that surface
-
-        \param positions            (in)        :   list of interface point positions
-
-        */
-        void storeIsolatedPoints(
-            const vector<int>&                positions
-            );
-        
-        /*!
-        \brief  computes the midpoint of a collection of points
-
-        \param interfacePoints            (in)        : vector of interface points
-        \return returns the midpoint (type InterfacePoint)
-        */
-        InterfacePoint computeMidpoint(
-            const vector<InterfacePoint>&     interfacePoints
-            ) const;
-        
-        
-        /*!
-        \brief  classifies the midpoint 
-
-        \param interfacePoints            (in)        : vector of interface points
-        \return returns the midpoint (type InterfacePoint)
-        */
-        void classifyMidpoint(
-            const int         surfId,
-            InterfacePoint&   midpoint
-            ) const;
-        
-        
-        /*!
-        \brief  stores a segment in a segment list for the
-                Constrained Delaunay Tetrahedralization (CDT) with Tetgen
-
-        \param positions            (in)        :   positions
-        */
-        void storeSegments(
-            const vector<int>&              positions
-            );
-        
-        /*!
-        \brief  store all segments for cutter elements lying with more than two
-                intersection points on an xfem surface
-
-        \param positions            (in)        :   positions
-        */
-        void storeSurfaceSegments(
-            const vector<int>&              positions
-            );
-
-        
-        /*!
-        \brief  store all segments for cutter elements lying with more than two
-                intersection points on an xfem surface
-
-        \param pos1            (in)        :   position of 1. point in pointList_
-        \param pos2            (in)        :   position of 2. point in pointList_
-        */
-        void storeSingleSegment(
-            const int pos1,
-            const int pos2
-            );
-        
-        /*!
-        \brief checks if two segment points are lying on the same xfemline
-
-        \param position1            (in)        :   position of 1. point in pointList_
-        \param position2            (in)        :   position of 2. point in pointList_
-        */
-        bool checkIfSegmentPointsOnSameXfemLine(
-            const int position1,
-            const int position2
-            );
-        
-        
-        /*!
-        \brief checks if triangles have two identical points these triangles are removed from point list
-        \param positions           (in)        :   point positions
-        */
-        bool checkIfTrianglesDegenerate(
-            vector<int>&              positions
-            );
-        
-        /*!
-        \brief  stores a triangle facet in a triangle list for the
-                Constrained Delaunay Tetrahedralization (CDT) with Tetgen
-
-        \param positions            (in)        :   positions
-        */
-        void storeTriangles(
-            const vector<int>               positions
-            );
-        
-        
-        /*!
-        \brief  stores a triangle facet in a triangle list for the
-                Constrained Delaunay Tetrahedralization (CDT) with Tetgen
-
-        \param surfID               (in)        :   id of xfem surface
-        \param positions            (in)        :   positions
-        */
-        void storeSurfaceTriangles(
-            const int                       surfId,
-            const vector<int>               positions
-            );
-
-
-        /*!
-        \brief  stores the cutter element intersecting
-                with an xfem element in a list
-
-        \param surfaceElement   (in)    :   surface element
-        */
-        void storeIntersectedCutterElement(
-                DRT::Element* cutterElement
-                );
-
-
-        /*!
-        \brief  computes the recovery of the curved interface
-                for one xfem element after a Contrained Delaunay
-                Tetrahedralization
-
-        \param xfemElement              (in)        :   xfem element
-        \param out                  (in/out)    :   output data structure of TetGen
-        */
-        void recoverCurvedInterface(
-                const DRT::Element*             xfemElement,
-                const BlitzMat&                 xyze_xfemElement,
-                const map<int,BlitzVec3>&       currentcutterpositions,  ///< current positions of all cutter nodes
-                map< int, BoundaryIntCells >&   boundaryintcells,
-                tetgenio&                       out,
-                bool 							recovery
-                );
 
        	/*!
         \brief  stores linear boundary cells
