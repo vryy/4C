@@ -10,6 +10,7 @@ DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(
   )
 :
   myknotvector_(local_knotvector),
+  bspline_     (degree+1)        ,
   degree_      (degree)
 {
   return;
@@ -749,7 +750,8 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
 #endif
     
   // define the vector of values at x of all initial polynomials 
-  vector<double> bspline(degree_+1);
+//  vector<double> bspline(degree_+1);
+//  double bspline[10];
     
   // The nonzero initial bspline polynomial and the intervals
   // that define the compact support of the bspline number lid
@@ -814,9 +816,9 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
 
   for(int rr=0;rr<degree_+1;rr++)
   {
-    bspline[rr]=0;
+    bspline_[rr]=0;
   }
-  bspline[degree_-ldofid]=1;
+  bspline_[degree_-ldofid]=1;
 
   //        |        |        |        |
   //        | rr==0  | rr==1  | rr==2  |
@@ -867,13 +869,10 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   //
   //
   // memory is reused on the first level. For the last
-  // step, we have additional memory tobe able to access
+  // step, we have additional memory to be able to access
   // N(0,3) twice
   //
 
-  // temps 
-  double fact1;
-  double fact2;
 
   // loop all rows in the upper table up to the last 
   // but one. Both arguments are still required to compute
@@ -899,39 +898,40 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
       //
       //        |        |           |            |
       //        +--------+           +------------+
-      //           fact1                  fact2
+      //         fact_[0]               fact_[1]
       //
 
       // the first part of the if statement allows to 
       // enforce interpolation using multiple nodes
       // the second part is a part of the bspline recursion
-      if(fabs(myknotvector_(i+p+1)-myknotvector_(i))<10e-9)
+      double dx = myknotvector_(i+p+1)-myknotvector_(i);
+
+      if(fabs(dx)<10e-9)
       {
-	fact1=0;
+	fact_[0]=0;
       }
       else
       {
-	fact1 =(x-myknotvector_(i));
-	fact1/=(myknotvector_(i+p+1)-myknotvector_(i));
+	fact_[0] =(x-myknotvector_(i))/dx;
       }
 
+      dx = myknotvector_(i+p+2)-myknotvector_(i+1);
       // the first part of the if statement allows to 
       // enforce interpolation using multiple nodes
       // the second part is a part of the bspline recursion
-      if(fabs(myknotvector_(i+p+2)-myknotvector_(i+1))<10e-9)
+      if(fabs(dx)<10e-9)
       {
-	fact2=0;
+	fact_[1]=0;
       }
       else
       {
-	fact2 =(myknotvector_(i+p+2)-x);
-	fact2/=(myknotvector_(i+p+2)-myknotvector_(i+1));
+	fact_[1] =(myknotvector_(i+p+2)-x)/dx;
       }
       // do the actual bspline recursion --- memory is reused!
-      bspline[rr]=
-	fact1*bspline[rr]
+      bspline_[rr]=
+	fact_[0]*bspline_[rr]
 	+
-	fact2*bspline[rr+1];
+	fact_[1]*bspline_[rr+1];
     }
   }
 
@@ -943,14 +943,45 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   // do computation of both bspline derivatives  
   // from the p-1 level 
 
-  blitz::Array<double,1> pmo_deriv(2);
-
   if(degree_>1)
   {
     for(int rr=0;rr<2;++rr)
     {
       // id of first bspline function of this combination
       int  i = ldofid+rr;
+      
+      // the first part of the if statement allows to 
+      // enforce interpolation using multiple nodes
+      // the second part computes fact_[0] in the equation
+      // above
+
+      const double dxi  = myknotvector_(i+degree_-1)-myknotvector_(i);
+      if(fabs(dxi)<10e-9)
+      {
+	fact_[2]=0;
+	fact_[0]=0;
+      }
+      else
+      {
+	fact_[2] = (degree_-1)/dxi;
+	fact_[0] = (x-myknotvector_(i))/dxi;
+      }
+      
+      const double dxip = myknotvector_(i+degree_)-myknotvector_(i+1);
+      // the first part of the if statement allows to 
+      // enforce interpolation using multiple nodes
+      // the second part is a part of the bspline recursion
+      // see above
+      if(fabs(dxip)<10e-9)
+      {
+	fact_[3]=0;
+	fact_[1]=0;
+      }
+      else
+      {
+	fact_[3] = (degree_-1)/dxip;
+	fact_[1] = (myknotvector_(i+degree_)-x)/dxip;
+      }
 
       //
       //                            
@@ -961,148 +992,45 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
       //              i+p-1   i              i+p   i+1          
       //             |        |           |            |
       //             +--------+           +------------+
-      //                fact1                  fact2
-      
-      // the first part of the if statement allows to 
-      // enforce interpolation using multiple nodes
-      // the second part computes fact1 in the equation
-      // above
-      if(fabs(myknotvector_(i+degree_-1)-myknotvector_(i))<10e-9)
-      {
-	fact1=0;
-      }
-      else
-      {
-	fact1 =degree_-1;
-	fact1/=(myknotvector_(i+degree_-1)-myknotvector_(i));
-      }
-      
-      // the first part of the if statement allows to 
-      // enforce interpolation using multiple nodes
-      // the second part is a part of the bspline recursion
-      // see above
-      if(fabs(myknotvector_(i+degree_)-myknotvector_(i+1))<10e-9)
-      {
-	fact2=0;
-      }
-      else
-      {
-	fact2 =degree_-1;
-	fact2/=(myknotvector_(i+degree_)-myknotvector_(i+1));
-      }
+      //              fact_[2]               fact_[3]
       
       // compute the actual bspline derivative formula
-      pmo_deriv(rr)=
-	fact1*bspline[rr]
+      pmo_deriv_[rr]=
+	fact_[2]*bspline_[rr]
 	-
-	fact2*bspline[rr+1];
-    }
-
-    // do computation of bspline values of degree-1,
-    
-    for(int rr=0;rr<2;++rr)
-    {
-      // id of first bspline function of this combination
-      int  i = ldofid+rr;
+	fact_[3]*bspline_[rr+1];
+      //----------------------------------------------
+      // bspline[rr] for this level will be destroyed 
+      // NOW and is replaced by the next levels value!
+      //----------------------------------------------
       
       // recursion for the computation of the basis 
       // function
       //
-      //          x - x                x     - x            
-      //  p            i     p-1        i+p+1         p-1     
-      // N (x) = -------- * N   (x) + ------------ * N   (x)  
-      //  i      x   - x     i        x     - x       i+1     
-      //          i+p   i              i+p+1   i+1          
+      //            x - x                  x   - x            
+      //  p-1            i       p-2        i+p           p-2     
+      // N   (x) = ---------- * N   (x) + ------------ * N   (x)  
+      //  i        x     - x     i         x   - x       i+1     
+      //            i+p-1   i               i+p   i+1          
       //
-      //        |        |           |            |
-      //        +--------+           +------------+
-      //           fact1                  fact2
+      //           |        |            |            |
+      //           +--------+            +------------+
+      //            fact_[0]                fact_[1]
       //
-      
-      // the first part of the if statement allows to 
-      // enforce interpolation using multiple nodes
-      // the second part is a part of the bspline recursion
-      if(fabs(myknotvector_(i+degree_-1)-myknotvector_(i))<10e-9)
-      {
-	fact1=0;
-      }
-      else
-      {
-	fact1 =(x-myknotvector_(i));
-	fact1/=(myknotvector_(i+degree_-1)-myknotvector_(i));
-      }
-      
-      // the first part of the if statement allows to 
-      // enforce interpolation using multiple nodes
-      // the second part is a part of the bspline recursion
-      if(fabs(myknotvector_(i+degree_)-myknotvector_(i+1))<10e-9)
-      {
-	fact2=0;
-      }
-      else
-      {
-	fact2 =(myknotvector_(i+degree_)-x);
-	fact2/=(myknotvector_(i+degree_)-myknotvector_(i+1));
-      }
+
       // do the actual bspline recursion --- memory is reused!
-      bspline[rr]=
-	fact1*bspline[rr]
+      bspline_[rr]=
+	fact_[0]*bspline_[rr]
 	+
-	fact2*bspline[rr+1];
+	fact_[1]*bspline_[rr+1];
     }
   }
   else
   {
     // piecewise constants get 0 derivatives 
-    pmo_deriv=0;
+    pmo_deriv_[0]=0;
+    pmo_deriv_[1]=0;
   }
-
-
-  //---------------------------------------------------
-  // evaluate the second derivatives
-
-  //   p          p        p-1           p         p-1     
-  // N'' (x) = -------- * N'  (x) - ----------- * N'  (x)  
-  //   i       x   - x     i        x     - x      i+1     
-  //            i+p   i              i+p+1   i+1          
-  //
-  //          |        |           |            |
-  //          +--------+           +------------+
-  //             fact1                  fact2
-  
-  // the first part of the if statement allows to 
-  // enforce interpolation using multiple nodes
-  // the second part computes fact1 in the equation
-  // above
-  if(fabs(myknotvector_(ldofid+degree_)-myknotvector_(ldofid))<10e-9)
-  {
-    fact1=0;
-  }
-  else
-  {
-    fact1 =degree_;
-    fact1/=(myknotvector_(ldofid+degree_)-myknotvector_(ldofid));
-  }
-    
-  // the first part of the if statement allows to 
-  // enforce interpolation using multiple nodes
-  // the second part is a part of the bspline recursion
-  // see above
-  if(fabs(myknotvector_(ldofid+degree_+1)-myknotvector_(ldofid+1))<10e-9)
-  {
-    fact2=0;
-  }
-  else
-  {
-    fact2 =degree_;
-    fact2/=(myknotvector_(ldofid+degree_+1)-myknotvector_(ldofid+1));
-  }
-    
-  // compute the actual bspline derivative formula
-  bsplineder2=
-    fact1*pmo_deriv(0)
-    -
-    fact2*pmo_deriv(1);
 
   //
   // ====================================================
@@ -1114,33 +1042,56 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   // the first part of the if statement allows to 
   // enforce interpolation using multiple nodes
   // the second part is a part of the bspline recursion
-  if(fabs(myknotvector_(ldofid+degree_)-myknotvector_(ldofid))<10e-9)
+  const double dxilast=myknotvector_(ldofid+degree_)-myknotvector_(ldofid);
+
+  if(fabs(dxilast)<10e-9)
   {
-    fact1=0;
+    fact_[0]=0;
+    fact_[2]=0;
   }
   else
   {
-    fact1 =(x-myknotvector_(ldofid));
-    fact1/=(myknotvector_(ldofid+degree_)-myknotvector_(ldofid));
+    fact_[0] =(x-myknotvector_(ldofid))/dxilast;
+    fact_[2] = degree_/dxilast;
   }
   
   // the first part of the if statement allows to 
   // enforce interpolation using multiple nodes
   // the second part is a part of the bspline recursion
-  if(fabs(myknotvector_(ldofid+degree_+1)-myknotvector_(ldofid+1))<10e-9)
+  const double dxiplast=myknotvector_(ldofid+degree_+1)-myknotvector_(ldofid+1);
+
+  if(fabs(dxiplast)<10e-9)
   {
-    fact2=0;
+    fact_[1]=0;
+    fact_[3]=0;
   }
   else
   {
-    fact2 =(myknotvector_(ldofid+degree_+1)-x);
-    fact2/=(myknotvector_(ldofid+degree_+1)-myknotvector_(ldofid+1));
+    fact_[1] =(myknotvector_(ldofid+degree_+1)-x)/dxiplast;
+    fact_[3] =degree_/dxiplast;
   }
   // do the actual bspline recursion --- memory is reused!
   bsplineval=
-    fact1*bspline[0]
+    fact_[0]*bspline_[0]
     +
-    fact2*bspline[1];
+    fact_[1]*bspline_[1];
+
+  //---------------------------------------------------
+  // evaluate the second derivatives
+
+  //   p          p        p-1           p         p-1     
+  // N'' (x) = -------- * N'  (x) - ----------- * N'  (x)  
+  //   i       x   - x     i        x     - x      i+1     
+  //            i+p   i              i+p+1   i+1          
+  //
+  //          |        |           |            |
+  //          +--------+           +------------+
+  //           fact_[2]               fact_[3]
+ 
+  bsplineder2=
+    fact_[2]*pmo_deriv_[0]
+    -
+    fact_[3]*pmo_deriv_[1];
 
   //---------------------------------------------------
   // do computation of bspline derivatives from the 
@@ -1158,41 +1109,13 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
     //
     //          |        |           |            |
     //          +--------+           +------------+
-    //             fact1                  fact2
-    
-    // the first part of the if statement allows to 
-    // enforce interpolation using multiple nodes
-    // the second part computes fact1 in the equation
-    // above
-    if(fabs(myknotvector_(ldofid+degree_)-myknotvector_(ldofid))<10e-9)
-    {
-      fact1=0;
-    }
-    else
-    {
-      fact1 =degree_;
-      fact1/=(myknotvector_(ldofid+degree_)-myknotvector_(ldofid));
-    }
-    
-    // the first part of the if statement allows to 
-    // enforce interpolation using multiple nodes
-    // the second part is a part of the bspline recursion
-    // see above
-    if(fabs(myknotvector_(ldofid+degree_+1)-myknotvector_(ldofid+1))<10e-9)
-    {
-      fact2=0;
-    }
-    else
-    {
-      fact2 =degree_;
-      fact2/=(myknotvector_(ldofid+degree_+1)-myknotvector_(ldofid+1));
-    }
-    
+    //           fact_[2]               fact_[3]
+
     // compute the actual bspline derivative formula
     bsplineder=
-      fact1*bspline[0]
+      fact_[2]*bspline_[0]
       -
-      fact2*bspline[1];
+      fact_[3]*bspline_[1];
   }
   else
   {

@@ -887,10 +887,11 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
   
   // alloc temporary doubles, initialise to zero
   double                 sum_funct_weight;
-  blitz::Array<double,1> sum_deriv_weight(2);
+  double                 sum_deriv_weight[2];
   
   sum_funct_weight=0;
-  sum_deriv_weight=0;
+  sum_deriv_weight[0]=0;
+  sum_deriv_weight[1]=0;
   
   /*loop all control points, compute sums
       
@@ -914,7 +915,7 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
     
     for(int mm=0;mm<2;++mm)
     {
-      sum_deriv_weight(mm)+=weights(rr)*bezier_shape_deriv(mm,rr);
+      sum_deriv_weight[mm]+=weights(rr)*bezier_shape_deriv(mm,rr);
     }
   }
   
@@ -961,7 +962,7 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
 	=
 	bezier_shape_deriv(mm,rr)*sum_funct_weight
 	-
-	bezier_shape_funct(rr)*sum_deriv_weight(mm);
+	bezier_shape_funct(rr)*sum_deriv_weight[mm];
       
       nurbs_shape_deriv(mm,rr)*=weights(rr)/(sum_funct_weight*sum_funct_weight);
     }
@@ -1232,12 +1233,15 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
   
   // alloc temporary doubles, initialise to zero
   double                 sum_funct_weight    ;
-  blitz::Array<double,1> sum_deriv_weight (2);
-  blitz::Array<double,1> sum_deriv2_weight(3);
+  double                 sum_deriv_weight [2];
+  double                 sum_deriv2_weight[3];
   
-  sum_funct_weight =0;
-  sum_deriv_weight =0;
-  sum_deriv2_weight=0;
+  sum_funct_weight    =0;
+  sum_deriv_weight [0]=0;
+  sum_deriv_weight [1]=0;
+  sum_deriv2_weight[0]=0;
+  sum_deriv2_weight[1]=0;
+  sum_deriv2_weight[2]=0;
 
   /*loop all control points, compute sums
       
@@ -1288,10 +1292,10 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
     
     for(int mm=0;mm<2;++mm)
     {
-      sum_deriv_weight(mm)+=weights(rr)*bezier_shape_deriv(mm,rr);
-      sum_deriv2_weight(mm)+=weights(rr)*bezier_shape_deriv2(mm,rr);
+      sum_deriv_weight [mm]+=weights(rr)*bezier_shape_deriv(mm,rr);
+      sum_deriv2_weight[mm]+=weights(rr)*bezier_shape_deriv2(mm,rr);
     }
-    sum_deriv2_weight(2)+=weights(rr)*bezier_shape_deriv2(2,rr);
+    sum_deriv2_weight[2]+=weights(rr)*bezier_shape_deriv2(2,rr);
   }
   
   /* Compute Nurbs basis functions
@@ -1419,36 +1423,36 @@ void DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv_deriv2(
 	=
 	bezier_shape_deriv(mm,rr)*sum_funct_weight
 	-
-	bezier_shape_funct(rr)*sum_deriv_weight(mm);
+	bezier_shape_funct(rr)*sum_deriv_weight[mm];
       
       nurbs_shape_deriv(mm,rr)*=weights(rr)/(sum_funct_weight*sum_funct_weight);
     }
 
     // we apply a Horner-type scheme for the 
     // multiplication with sum_funct_weight
-    nurbs_shape_deriv2(0,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight(0)*sum_deriv_weight(0);
+    nurbs_shape_deriv2(0,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight[0]*sum_deriv_weight[0];
     nurbs_shape_deriv2(0,rr)/=sum_funct_weight;
-    nurbs_shape_deriv2(0,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight(0);
-    nurbs_shape_deriv2(0,rr)-=bezier_shape_deriv(0,rr)*sum_deriv_weight(0);
-    nurbs_shape_deriv2(0,rr)-=bezier_shape_deriv(0,rr)*sum_deriv_weight(0);
+    nurbs_shape_deriv2(0,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight[0];
+    nurbs_shape_deriv2(0,rr)-=bezier_shape_deriv(0,rr)*sum_deriv_weight[0];
+    nurbs_shape_deriv2(0,rr)-=bezier_shape_deriv(0,rr)*sum_deriv_weight[0];
     nurbs_shape_deriv2(0,rr)/=sum_funct_weight;
     nurbs_shape_deriv2(0,rr)+=bezier_shape_deriv2(0,rr);
     nurbs_shape_deriv2(0,rr)*=weights(rr)/sum_funct_weight;
 
-    nurbs_shape_deriv2(1,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight(1)*sum_deriv_weight(1);
+    nurbs_shape_deriv2(1,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight[1]*sum_deriv_weight[1];
     nurbs_shape_deriv2(1,rr)/=sum_funct_weight;
-    nurbs_shape_deriv2(1,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight(1);
-    nurbs_shape_deriv2(1,rr)-=bezier_shape_deriv(1,rr)*sum_deriv_weight(1);
-    nurbs_shape_deriv2(1,rr)-=bezier_shape_deriv(1,rr)*sum_deriv_weight(1);
+    nurbs_shape_deriv2(1,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight[1];
+    nurbs_shape_deriv2(1,rr)-=bezier_shape_deriv(1,rr)*sum_deriv_weight[1];
+    nurbs_shape_deriv2(1,rr)-=bezier_shape_deriv(1,rr)*sum_deriv_weight[1];
     nurbs_shape_deriv2(1,rr)/=sum_funct_weight;
     nurbs_shape_deriv2(1,rr)+=bezier_shape_deriv2(1,rr);
     nurbs_shape_deriv2(1,rr)*=weights(rr)/sum_funct_weight;
 
-    nurbs_shape_deriv2(2,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight(0)*sum_deriv_weight(1);
+    nurbs_shape_deriv2(2,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight[0]*sum_deriv_weight[1];
     nurbs_shape_deriv2(2,rr)/=sum_funct_weight;
-    nurbs_shape_deriv2(2,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight(2);
-    nurbs_shape_deriv2(2,rr)-=bezier_shape_deriv(0,rr)*sum_deriv_weight(1);
-    nurbs_shape_deriv2(2,rr)-=bezier_shape_deriv(1,rr)*sum_deriv_weight(0);
+    nurbs_shape_deriv2(2,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight[2];
+    nurbs_shape_deriv2(2,rr)-=bezier_shape_deriv(0,rr)*sum_deriv_weight[1];
+    nurbs_shape_deriv2(2,rr)-=bezier_shape_deriv(1,rr)*sum_deriv_weight[0];
     nurbs_shape_deriv2(2,rr)/=sum_funct_weight;
     nurbs_shape_deriv2(2,rr)+=bezier_shape_deriv2(2,rr);
     nurbs_shape_deriv2(2,rr)*=weights(rr)/sum_funct_weight;
@@ -2192,9 +2196,11 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
   }
   }
   
+  const int degreep =degree+1;
+
   // size is the number of control points/basis 
   // functions of this element
-  const int size   = (degree+1)*(degree+1)*(degree+1);
+  const int size   = degreep*degreep*degreep;
 
   // Gausspoint is in [-1:1]x[-1:1]x[-1:1]
   //
@@ -2290,9 +2296,9 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
   //                                                  |
   //                                                  Jw
 
-  double du = (knots[0])(degree+1)-(knots[0])(degree);
-  double dv = (knots[1])(degree+1)-(knots[1])(degree);
-  double dw = (knots[2])(degree+1)-(knots[2])(degree);
+  double du = (knots[0])(degreep)-(knots[0])(degree);
+  double dv = (knots[1])(degreep)-(knots[1])(degree);
+  double dw = (knots[2])(degreep)-(knots[2])(degree);
 
   double Ju =du/2.0;
   double Jv =dv/2.0;
@@ -2334,7 +2340,6 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
   // define temporary int variable to compute the 
   // number of the basis function from i,j,k
   int id;
-  
 
   /*
        Bezier basis function 
@@ -2399,61 +2404,72 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
     
   // loop all basis functions (corresponding to 
   // control points)
-  for(int rr=0;rr<degree+1;++rr)
+
+
+  for(int nn=0;nn<degreep;++nn)
   {
-    // in first direction:
+    // in third direction:
     
     // get bsplinevalue and derivative
-    bspline_xi.EvaluateBsplineFirstAndSecondDeriv(
-      bspline_xi_value,
-      bspline_xi_derivative,
-      bspline_xi_deriv2,
-      xi,
-      rr);
-    
-    for(int mm=0;mm<degree+1;++mm)
+    bspline_nu.EvaluateBsplineFirstAndSecondDeriv(
+      bspline_nu_value,
+      bspline_nu_derivative,
+      bspline_nu_deriv2,
+      nu,
+      nn);
+
+    for(int mm=0;mm<degreep;++mm)
     {
       // in second direction:
       
       // get bsplinevalue and derivative
       bspline_eta.EvaluateBsplineFirstAndSecondDeriv(
-	bspline_eta_value,
-	bspline_eta_derivative,
-	bspline_eta_deriv2,
-	eta,
-	mm);
+ 	bspline_eta_value,
+ 	bspline_eta_derivative,
+ 	bspline_eta_deriv2,
+ 	eta,
+ 	mm);
 
-      for(int nn=0;nn<degree+1;++nn)
+      const double M_eta_L_nu  =bspline_eta_value     *bspline_nu_value     ;
+      const double M_eta_dL_nu =bspline_eta_value     *bspline_nu_derivative;
+      const double dM_eta_L_nu =bspline_eta_derivative*bspline_nu_value     ;
+      const double dM_eta_dL_nu=bspline_eta_derivative*bspline_nu_derivative;
+      const double M_eta_ddL_nu=bspline_eta_value     *bspline_nu_deriv2    ;
+      const double ddM_eta_L_nu=bspline_eta_deriv2    *bspline_nu_value     ;
+      
+      const int layerid=(degreep)*(mm+nn*(degreep));
+
+      for(int rr=0;rr<degreep;++rr)
       {
-	// in third direction:
-            
+	// in first direction:
+	
 	// get bsplinevalue and derivative
-	bspline_nu.EvaluateBsplineFirstAndSecondDeriv(
-	  bspline_nu_value,
-	  bspline_nu_derivative,
-	  bspline_nu_deriv2,
-	  nu,
-	  nn);
+	bspline_xi.EvaluateBsplineFirstAndSecondDeriv(
+	  bspline_xi_value,
+	  bspline_xi_derivative,
+	  bspline_xi_deriv2,
+	  xi,
+	  rr);
+
 
 	// get the number of the basis function
-	id = rr+(degree+1)*(mm+nn*(degree+1));
+	id = rr+layerid;
       
 	// set value to bezier_shape_funct
-	bezier_shape_funct(id)=bspline_xi_value*bspline_eta_value*bspline_nu_value;
+	bezier_shape_funct(id)=bspline_xi_value*M_eta_L_nu;
       
 	// set values to bezier_shape_deriv
-	bezier_shape_deriv(0,id)=bspline_xi_derivative*bspline_eta_value*bspline_nu_value;
-	bezier_shape_deriv(1,id)=bspline_xi_value*bspline_eta_derivative*bspline_nu_value;
-	bezier_shape_deriv(2,id)=bspline_xi_value*bspline_eta_value*bspline_nu_derivative;
+	bezier_shape_deriv(0,id)=bspline_xi_derivative*M_eta_L_nu;
+	bezier_shape_deriv(1,id)=bspline_xi_value     *dM_eta_L_nu;
+	bezier_shape_deriv(2,id)=bspline_xi_value     *M_eta_dL_nu;
 
 	// set values to bezier_shape_deriv2
-	bezier_shape_deriv2(0,id)=bspline_xi_deriv2    *bspline_eta_value     *bspline_nu_value     ;
-	bezier_shape_deriv2(1,id)=bspline_xi_value     *bspline_eta_deriv2    *bspline_nu_value     ;
-	bezier_shape_deriv2(2,id)=bspline_xi_value     *bspline_eta_value     *bspline_nu_deriv2    ;
-	bezier_shape_deriv2(3,id)=bspline_xi_derivative*bspline_eta_derivative*bspline_nu_value     ;
-	bezier_shape_deriv2(4,id)=bspline_xi_derivative*bspline_eta_value     *bspline_nu_derivative;
-	bezier_shape_deriv2(5,id)=bspline_xi_value     *bspline_eta_derivative*bspline_nu_derivative;
-
+	bezier_shape_deriv2(0,id)=bspline_xi_deriv2    *M_eta_L_nu  ;
+	bezier_shape_deriv2(1,id)=bspline_xi_value     *ddM_eta_L_nu;
+	bezier_shape_deriv2(2,id)=bspline_xi_value     *M_eta_ddL_nu;
+	bezier_shape_deriv2(3,id)=bspline_xi_derivative*dM_eta_L_nu ;
+	bezier_shape_deriv2(4,id)=bspline_xi_derivative*M_eta_dL_nu ;
+	bezier_shape_deriv2(5,id)=bspline_xi_value     *dM_eta_dL_nu;
       }
     }
   }
@@ -2464,12 +2480,19 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
   
   // alloc temporary doubles, initialise to zero
   double                 sum_funct_weight    ;
-  blitz::Array<double,1> sum_deriv_weight (3);
-  blitz::Array<double,1> sum_deriv2_weight(6);
+  double                 sum_deriv_weight [3];
+  double                 sum_deriv2_weight[6];
   
-  sum_funct_weight =0;
-  sum_deriv_weight =0;
-  sum_deriv2_weight=0;
+  sum_funct_weight    =0;
+  sum_deriv_weight [0]=0;
+  sum_deriv_weight [1]=0;
+  sum_deriv_weight [2]=0;
+  sum_deriv2_weight[0]=0;
+  sum_deriv2_weight[1]=0;
+  sum_deriv2_weight[2]=0;
+  sum_deriv2_weight[3]=0;
+  sum_deriv2_weight[4]=0;
+  sum_deriv2_weight[5]=0;
 
   /*loop all control points, compute sums
       
@@ -2544,19 +2567,23 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
     
     for(int mm=0;mm<3;++mm)
     {
-      sum_deriv_weight(mm)+=weights(rr)*bezier_shape_deriv(mm,rr);
+      sum_deriv_weight[mm]+=weights(rr)*bezier_shape_deriv(mm,rr);
     }
 
 
     for(int mm=0;mm<6;++mm)
     {
-      sum_deriv2_weight(mm)+=weights(rr)*bezier_shape_deriv2(mm,rr);
+      sum_deriv2_weight[mm]+=weights(rr)*bezier_shape_deriv2(mm,rr);
     }
   }
   
+  const double fact=2.0/sum_funct_weight;
+
   // loop all basis functions
   for(int rr=0;rr<size;++rr)
   {    
+
+    const double normed_weight=weights(rr)/sum_funct_weight;
 
     /* Compute Nurbs basis functions
       
@@ -2571,7 +2598,7 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
       		   +----+				
       		    r,s,t                           
     */
-    nurbs_shape_funct(rr)=weights(rr)*bezier_shape_funct(rr)/sum_funct_weight;
+    nurbs_shape_funct(rr)=bezier_shape_funct(rr)*normed_weight;
 
     /* Nurbs derivatives are defined by the chain rule
     
@@ -2594,14 +2621,12 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
     {
       nurbs_shape_deriv(mm,rr)
 	=
-	bezier_shape_deriv(mm,rr)*sum_funct_weight
+	bezier_shape_deriv(mm,rr)
 	-
-	bezier_shape_funct(rr)*sum_deriv_weight(mm);
+	bezier_shape_funct(rr)*sum_deriv_weight[mm]/sum_funct_weight;
       
-      nurbs_shape_deriv(mm,rr)*=weights(rr)/(sum_funct_weight*sum_funct_weight);
+      nurbs_shape_deriv(mm,rr)*=normed_weight;
     }
-
-
 
     /* Nurbs second derivatives are calculated by a 
        second application of the chain rule
@@ -2681,61 +2706,54 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
                                        +-  r,s,t                                 -+                                       -+
     */
 
+    const double fact_bezier_shape_funct_rr=fact*bezier_shape_funct(rr);
+
     // we apply a Horner-type scheme for the 
     // multiplication with sum_funct_weight
-    nurbs_shape_deriv2(0,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight(0)*sum_deriv_weight(0);
-    nurbs_shape_deriv2(0,rr)/=sum_funct_weight;
-    nurbs_shape_deriv2(0,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight(0);
-    nurbs_shape_deriv2(0,rr)-=bezier_shape_deriv(0,rr)*sum_deriv_weight (0);
-    nurbs_shape_deriv2(0,rr)-=bezier_shape_deriv(0,rr)*sum_deriv_weight (0);
+    nurbs_shape_deriv2(0,rr) =fact_bezier_shape_funct_rr*sum_deriv_weight [0]*sum_deriv_weight[0];
+    nurbs_shape_deriv2(0,rr)-=bezier_shape_funct(rr)    *sum_deriv2_weight[0];
+    nurbs_shape_deriv2(0,rr)-=2*bezier_shape_deriv(0,rr)*sum_deriv_weight [0];
     nurbs_shape_deriv2(0,rr)/=sum_funct_weight;
     nurbs_shape_deriv2(0,rr)+=bezier_shape_deriv2(0,rr);
-    nurbs_shape_deriv2(0,rr)*=weights(rr)/sum_funct_weight;
+    nurbs_shape_deriv2(0,rr)*=normed_weight;
 
-    nurbs_shape_deriv2(1,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight(1)*sum_deriv_weight(1);
-    nurbs_shape_deriv2(1,rr)/=sum_funct_weight;
-    nurbs_shape_deriv2(1,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight(1);
-    nurbs_shape_deriv2(1,rr)-=bezier_shape_deriv(1,rr)*sum_deriv_weight (1);
-    nurbs_shape_deriv2(1,rr)-=bezier_shape_deriv(1,rr)*sum_deriv_weight (1);
+    nurbs_shape_deriv2(1,rr) =fact_bezier_shape_funct_rr*sum_deriv_weight [1]*sum_deriv_weight[1];
+    nurbs_shape_deriv2(1,rr)-=bezier_shape_funct(rr)    *sum_deriv2_weight[1];
+    nurbs_shape_deriv2(1,rr)-=2*bezier_shape_deriv(1,rr)*sum_deriv_weight [1];
     nurbs_shape_deriv2(1,rr)/=sum_funct_weight;
     nurbs_shape_deriv2(1,rr)+=bezier_shape_deriv2(1,rr);
-    nurbs_shape_deriv2(1,rr)*=weights(rr)/sum_funct_weight;
+    nurbs_shape_deriv2(1,rr)*=normed_weight;
 
-    nurbs_shape_deriv2(2,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight(2)*sum_deriv_weight(2);
-    nurbs_shape_deriv2(2,rr)/=sum_funct_weight;
-    nurbs_shape_deriv2(2,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight(2);
-    nurbs_shape_deriv2(2,rr)-=bezier_shape_deriv(2,rr)*sum_deriv_weight (2);
-    nurbs_shape_deriv2(2,rr)-=bezier_shape_deriv(2,rr)*sum_deriv_weight (2);
+    nurbs_shape_deriv2(2,rr) =fact_bezier_shape_funct_rr*sum_deriv_weight [2]*sum_deriv_weight[2];
+    nurbs_shape_deriv2(2,rr)-=  bezier_shape_funct(rr)  *sum_deriv2_weight[2];
+    nurbs_shape_deriv2(2,rr)-=2*bezier_shape_deriv(2,rr)*sum_deriv_weight [2];
     nurbs_shape_deriv2(2,rr)/=sum_funct_weight;
     nurbs_shape_deriv2(2,rr)+=bezier_shape_deriv2(2,rr);
-    nurbs_shape_deriv2(2,rr)*=weights(rr)/sum_funct_weight;
+    nurbs_shape_deriv2(2,rr)*=normed_weight;
 
-    nurbs_shape_deriv2(3,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight(0)*sum_deriv_weight(1);
-    nurbs_shape_deriv2(3,rr)/=sum_funct_weight;
-    nurbs_shape_deriv2(3,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight(3);
-    nurbs_shape_deriv2(3,rr)-=bezier_shape_deriv(0,rr)*sum_deriv_weight (1);
-    nurbs_shape_deriv2(3,rr)-=bezier_shape_deriv(1,rr)*sum_deriv_weight (0);
+    nurbs_shape_deriv2(3,rr) =fact_bezier_shape_funct_rr*sum_deriv_weight [0]*sum_deriv_weight[1];
+    nurbs_shape_deriv2(3,rr)-=bezier_shape_funct(rr)    *sum_deriv2_weight[3];
+    nurbs_shape_deriv2(3,rr)-=bezier_shape_deriv(0,rr)  *sum_deriv_weight [1];
+    nurbs_shape_deriv2(3,rr)-=bezier_shape_deriv(1,rr)  *sum_deriv_weight [0];
     nurbs_shape_deriv2(3,rr)/=sum_funct_weight;
     nurbs_shape_deriv2(3,rr)+=bezier_shape_deriv2(3,rr);
-    nurbs_shape_deriv2(3,rr)*=weights(rr)/sum_funct_weight;
+    nurbs_shape_deriv2(3,rr)*=normed_weight;
 
-    nurbs_shape_deriv2(4,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight(0)*sum_deriv_weight(2);
-    nurbs_shape_deriv2(4,rr)/=sum_funct_weight;
-    nurbs_shape_deriv2(4,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight(4);
-    nurbs_shape_deriv2(4,rr)-=bezier_shape_deriv(0,rr)*sum_deriv_weight (2);
-    nurbs_shape_deriv2(4,rr)-=bezier_shape_deriv(2,rr)*sum_deriv_weight (0);
+    nurbs_shape_deriv2(4,rr) =fact_bezier_shape_funct_rr*sum_deriv_weight[0]*sum_deriv_weight[2];
+    nurbs_shape_deriv2(4,rr)-=bezier_shape_funct(rr)    *sum_deriv2_weight[4];
+    nurbs_shape_deriv2(4,rr)-=bezier_shape_deriv(0,rr)  *sum_deriv_weight [2];
+    nurbs_shape_deriv2(4,rr)-=bezier_shape_deriv(2,rr)  *sum_deriv_weight [0];
     nurbs_shape_deriv2(4,rr)/=sum_funct_weight;
     nurbs_shape_deriv2(4,rr)+=bezier_shape_deriv2(4,rr);
-    nurbs_shape_deriv2(4,rr)*=weights(rr)/sum_funct_weight;
+    nurbs_shape_deriv2(4,rr)*=normed_weight;
 
-    nurbs_shape_deriv2(5,rr) =2*bezier_shape_funct(rr)*sum_deriv_weight(1)*sum_deriv_weight(2);
-    nurbs_shape_deriv2(5,rr)/=sum_funct_weight;
-    nurbs_shape_deriv2(5,rr)-=bezier_shape_funct(rr)  *sum_deriv2_weight(5);
-    nurbs_shape_deriv2(5,rr)-=bezier_shape_deriv(1,rr)*sum_deriv_weight (2);
-    nurbs_shape_deriv2(5,rr)-=bezier_shape_deriv(2,rr)*sum_deriv_weight (1);
+    nurbs_shape_deriv2(5,rr) =fact_bezier_shape_funct_rr*sum_deriv_weight[1]*sum_deriv_weight[2];
+    nurbs_shape_deriv2(5,rr)-=bezier_shape_funct(rr)    *sum_deriv2_weight[5];
+    nurbs_shape_deriv2(5,rr)-=bezier_shape_deriv(1,rr)  *sum_deriv_weight [2];
+    nurbs_shape_deriv2(5,rr)-=bezier_shape_deriv(2,rr)  *sum_deriv_weight [1];
     nurbs_shape_deriv2(5,rr)/=sum_funct_weight;
     nurbs_shape_deriv2(5,rr)+=bezier_shape_deriv2(5,rr);
-    nurbs_shape_deriv2(5,rr)*=weights(rr)/sum_funct_weight;
+    nurbs_shape_deriv2(5,rr)*=normed_weight;
   }
 
 
@@ -2761,6 +2779,14 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
   //
   // we will obtain the derivatives with respect to  
   // u,v,w just by multiplication  
+
+  const double JuJu=Ju*Ju;
+  const double JvJv=Jv*Jv;
+  const double JwJw=Jw*Jw;
+  const double JuJv=Ju*Jv;
+  const double JuJw=Ju*Jw;
+  const double JvJw=Jv*Jw;
+
   
   // loop all basis function derivatives
   for(int rr=0;rr<size;++rr)
@@ -2769,12 +2795,12 @@ void DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
     nurbs_shape_deriv(1,rr)*=Jv;
     nurbs_shape_deriv(2,rr)*=Jw;
 
-    nurbs_shape_deriv2(0,rr)*=Ju*Ju;
-    nurbs_shape_deriv2(1,rr)*=Jv*Jv;
-    nurbs_shape_deriv2(2,rr)*=Jw*Jw;
-    nurbs_shape_deriv2(3,rr)*=Ju*Jv;
-    nurbs_shape_deriv2(4,rr)*=Ju*Jw;
-    nurbs_shape_deriv2(5,rr)*=Jv*Jw;
+    nurbs_shape_deriv2(0,rr)*=JuJu;
+    nurbs_shape_deriv2(1,rr)*=JvJv;
+    nurbs_shape_deriv2(2,rr)*=JwJw;
+    nurbs_shape_deriv2(3,rr)*=JuJv;
+    nurbs_shape_deriv2(4,rr)*=JuJw;
+    nurbs_shape_deriv2(5,rr)*=JvJw;
   }    
 
   return;

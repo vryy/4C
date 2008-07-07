@@ -517,9 +517,18 @@ private:
   //! polynomials of the center-interval are non-zero
   blitz::Array<double,1> myknotvector_;
 
+  //! a working array for the construction of bsplines
+  vector<double>         bspline_;
+
   //! the degree of the bspline-polynomial under 
   //! consideration
   int                    degree_;
+
+  //! temporary doubles
+  double                 fact_[4];
+
+  //! both bspline derivatives from the p-1 level
+  double                 pmo_deriv_[2];
 
   //--------------------------------------------------
   //! \brief throw an errormessage
