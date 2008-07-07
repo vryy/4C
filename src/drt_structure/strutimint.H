@@ -147,22 +147,56 @@ public:
   //! a m-multistep method returns m
   virtual int MethodSteps() = 0;
 
-  //! Access Dicretisation
-  virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
+  //! Access dicretisation
+  Teuchos::RCP<DRT::Discretization> Discretization()
+  { 
+    // Here a 'false' must be used. This is due to
+    // the fact that StruTimInt possesses a references
+    // on the discretisation #discret_ and not
+    // a Teuchos::RefCountPointer. Eventually, StruTimInt
+    // will be destroyed and it will immediately destroy
+    // its #discret_ member. However, #discret_ is handed down
+    // to the ConstrManager and kept there as a RefCountPointer.
+    // The object #discret_ is gone, when ConstrManager tries
+    // to kill it. We achieve a nice segmentation fault.
+    return Teuchos::rcp(&discret_, false); 
+  }
 
   //@}
 
-  //! @name Phase state
+  //! @name Phase states
   //@{
 
-  //! Displacements
-  virtual Teuchos::RCP<Epetra_Vector> Disp() = 0;
+  //! Old states at \f$t_n, t_{n-1}, ...\f$ stored on #state_
+  Teuchos::RCP<StruTimIntState> State()
+  {
+    return state_;
+  }
 
-  //! Velocities
-  virtual Teuchos::RCP<Epetra_Vector> Vel() = 0;
+  //! Current (potentially unconverged) state at \f$t_{n+1}\f$ 
+  //! stored on #staten_
+  Teuchos::RCP<StruTimIntState> StateN()
+  {
+    return staten_;
+  }
 
-  //!  Accelerations
-  virtual Teuchos::RCP<Epetra_Vector> Acc() = 0;
+  //! Return displacements \f$D_{n}\f$
+  Teuchos::RCP<Epetra_Vector> Disp()
+  {
+    return dis_;
+  }
+
+  //! Return velocities \f$V_{n}\f$
+  Teuchos::RCP<Epetra_Vector> Vel()
+  {
+    return vel_;
+  }
+
+  //! Return accelerations \f$A_{n}\f$
+  Teuchos::RCP<Epetra_Vector> Acc()
+  {
+    return acc_;
+  }
 
   //@}
 
@@ -217,14 +251,16 @@ protected:
 
   //! @name Global vectors
   //@{
-  Teuchos::RCP<Epetra_Vector> dirichtoggle_;  //!< At a free DOF this vector
-                                     //!< holds a 0; at a supported DOF
-                                     //!< it is a 1.
+  Teuchos::RCP<Epetra_Vector> dirichtoggle_;  //!< At a free DOF this 
+                                              //!< vector holds a 0; 
+                                              //!< at a supported DOF
+                                              //!< it is a 1.
   Teuchos::RCP<Epetra_Vector> invtoggle_;  //!< Opposite of 
                                            //!< #dirichtoggle_ vector:
                                            //!< i.e.\ for each component 
                                            //!< a 0 indicates a supported 
-                                           //!< corresponding DOF; a 1 indicates
+                                           //!< corresponding DOF;
+                                           //!< a 1 indicates
                                            //!< a free/unsupported DOF.
   Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
   //@}
@@ -232,8 +268,9 @@ protected:
   //! @name Phase states
   //@{
   Teuchos::RCP<StruTimIntState> state_;  //!< converged states 
-                                         //!< at t_{n}, t_{n-1}, ...
-  Teuchos::RCP<StruTimIntState> staten_;  //!< current state at t_{n+1}
+                                         //!< at \f$t_{n}, t_{n-1}, ...\f$
+  Teuchos::RCP<StruTimIntState> staten_;  //!< current state 
+                                          //!< at \f$t_{n+1}\f$
   //@}
 
   //! @name Global state vectors

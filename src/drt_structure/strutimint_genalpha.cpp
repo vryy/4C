@@ -418,7 +418,9 @@ void StruTimIntGenAlpha::UpdateIterIteratively()
 /* update after time step */
 void StruTimIntGenAlpha::UpdateStep()
 {
-  // update state
+  // update all old state at t_{n-1} etc
+  // important for step size adaptivity
+  state_->UpdateStep();
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}
   dis_->Update(1.0, *disn_, 0.0);

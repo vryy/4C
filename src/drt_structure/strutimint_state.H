@@ -127,10 +127,10 @@ protected:
     return (unsigned) index;
   }
 
-  //! Lowest index
-  int steppast_;
-  int stepfuture_;
-  int steps_;
+  //! Steps
+  int steppast_;  //!< lowest number
+  int stepfuture_;  //!< highest number
+  int steps_;  //!< total
 
   //! vector layout from discretization
   const Epetra_Map* dofrowmap_;

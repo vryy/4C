@@ -68,10 +68,9 @@ void StruTimIntState::UpdateStep()
 {
   for (int ind=0; ind<steps_-1; ++ind)
   {
-    const int indn = ind + 1;
-    dis_[ind]->Update(1.0, *(dis_[indn]), 0.0);
-    vel_[ind]->Update(1.0, *(vel_[indn]), 0.0);
-    acc_[ind]->Update(1.0, *(acc_[indn]), 0.0);
+    dis_[ind]->Update(1.0, *(dis_[ind+1]), 0.0);
+    vel_[ind]->Update(1.0, *(vel_[ind+1]), 0.0);
+    acc_[ind]->Update(1.0, *(acc_[ind+1]), 0.0);
   }
 
   // ciao

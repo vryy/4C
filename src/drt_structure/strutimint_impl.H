@@ -397,37 +397,6 @@ public:
   //! a m-multistep method returns m
   virtual int MethodSteps() = 0;
 
-  //! Return dicretisation
-  Teuchos::RCP<DRT::Discretization> Discretization() 
-  { 
-    return Teuchos::rcp(&discret_, false); 
-  }
-
-  //@}
-
-  //! @name Phase state
-  //@{
-
-  //! Return displacements
-  Teuchos::RCP<Epetra_Vector> Disp()
-  {
-    return dis_;
-  }
-
-  //! Return velocities
-  Teuchos::RCP<Epetra_Vector> Vel()
-  {
-    return vel_;
-  }
-
-  //! Return accelerations
-  Teuchos::RCP<Epetra_Vector> Acc()
-  {
-    return acc_;
-  }
-  
-  //@}
-
 protected:
 
   //! equal operator is NOT wanted
