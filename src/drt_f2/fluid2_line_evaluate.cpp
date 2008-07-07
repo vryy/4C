@@ -18,7 +18,7 @@ Maintainer: Peter Gmanitzer
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_nurbs_discret.H"
 #include "../drt_lib/drt_control_point.H"
-#include "../drt_lib/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"

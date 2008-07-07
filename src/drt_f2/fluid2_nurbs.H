@@ -16,7 +16,7 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid2.H"
 #include "../drt_lib/drt_control_point.H"
-#include "../drt_lib/drt_utils_bspline.H"
+#include "../drt_fem_general/drt_utils_bspline.H"
 
 
 /*!

@@ -21,7 +21,7 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid2.H"
 #include "fluid2_nurbs.H"
-#include "../drt_lib/drt_utils_nurbs_shapefunctions.H" 
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
 #include <blitz/array.h>
 
 namespace DRT

@@ -20,7 +20,7 @@ Maintainer: Peter Gamnitzer
 #include <blitz/array.h>
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_utils_bspline.H"
+#include "../drt_fem_general/drt_utils_bspline.H"
 
 
 namespace DRT

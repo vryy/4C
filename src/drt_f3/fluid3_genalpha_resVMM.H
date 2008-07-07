@@ -21,7 +21,7 @@ Maintainer: Peter Gamnitzer
 
 #include "fluid3.H"
 #include "fluid3_nurbs.H"
-#include "../drt_lib/drt_utils_nurbs_shapefunctions.H" 
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H" 
 #include <blitz/array.h>
 
 #ifdef PERF
