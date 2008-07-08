@@ -409,7 +409,6 @@ void StruGenAlpha::ConstantPredictor()
       fresm_->Update(1.0,*fvisc_,1.0);
     }
   }
-    
   // add static mid-balance
 #ifdef STRUGENALPHA_FINTLIKETR
   fresm_->Update(1.0,*fextm_,-1.0);
@@ -686,7 +685,6 @@ void StruGenAlpha::ConsistentPredictor()
       fresm_->Update(1.0,*fvisc_,1.0);
     }
   }
-    
   // add static mid-balance
 #ifdef STRUGENALPHA_FINTLIKETR
   fresm_->Update(1.0,*fextm_,-1.0);
