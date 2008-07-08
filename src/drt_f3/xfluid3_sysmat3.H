@@ -1491,7 +1491,6 @@ static void Sysmat3(
         
         // get interface velocities at the boundary element nodes
         BlitzMat vel_boundary(3,numnode_boundary);
-        vel_boundary = 0.0;
         const DRT::Node*const* nodes = boundaryele->Nodes();
         {
           for (int inode = 0; inode < numnode_boundary; ++inode)

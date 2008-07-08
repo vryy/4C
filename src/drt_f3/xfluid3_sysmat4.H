@@ -67,7 +67,6 @@ namespace XFLUID
       // put one here to create arrays of size 1, since they are not needed anyway
       // in the xfem assembly, the numparam is determined by the dofmanager
       const int numparamtauxx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 1);
-      //const int numparamdiscpres = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 1);
       
       const vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
       const vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
@@ -112,12 +111,6 @@ namespace XFLUID
           for (int iparam=0; iparam<numparamtauxz; ++iparam)   etau(4,iparam) = locval[tauxzdof[iparam]];
           for (int iparam=0; iparam<numparamtauyz; ++iparam)   etau(5,iparam) = locval[tauyzdof[iparam]];
       }
-//      const bool discpres_unknowns_present = (getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 0) > 0);
-//      if (discpres_unknowns_present)
-//      {
-//          const vector<int>& discpresdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::DiscPres>());
-//          for (int iparam=0; iparam<numparamdiscpres; ++iparam)   ediscprenp(iparam) = locval[discpresdof[iparam]];
-//      }
   }
   
   
@@ -179,13 +172,9 @@ static void Sysmat4(
     const blitz::Range _  = blitz::Range::all();
     
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
-    //const DRT::Element::DiscretizationType discpresdistype = XFLUID::DiscPressureInterpolation3D<DISTYPE>::distype;
     
     // figure out whether we have stress unknowns at all
     const bool tauele_unknowns_present = (getNumParam<ASSTYPE>(dofman, Sigmaxx, 0) > 0);
-    //const bool discpres_unknowns_present = (getNumParam<ASSTYPE>(dofman, DiscPres, 0) > 0);
-    //if (tauele_unknowns_present != discpres_unknowns_present) dserror("you need disc. pressure unknowns, if you use stress unknowns");
-    //cout << "discpres_unknowns_present: " << discpres_unknowns_present << endl;
 //    const bool velocity_unknowns_present = (getNumParam<ASSTYPE>(dofman, Velx, 1) > 0);
 //    const bool pressure_unknowns_present = (getNumParam<ASSTYPE>(dofman, Pres, 1) > 0);
 //    cout << endl;
@@ -207,11 +196,9 @@ static void Sysmat4(
     // put one here to create arrays of size 1, since they are not needed anyway
     // in the xfem assembly, the numparam is determined by the dofmanager
     const int numparamtauxx = getNumParam<ASSTYPE>(dofman, Sigmaxx, 1);
-    //const int numparamdiscpres = getNumParam<ASSTYPE>(dofman, DiscPres, 1);
     
     // split velocity and pressure (and stress)
     BlitzVec eprenp(numparampres);
-    //BlitzVec ediscprenp(numparamdiscpres);
     BlitzMat evelnp(3,numparamvelx,blitz::ColumnMajorArray<2>());
     BlitzMat evelnp_hist(3,numparamvelx,blitz::ColumnMajorArray<2>());
     BlitzMat etau(6,numparamtauxx,blitz::ColumnMajorArray<2>());
@@ -281,22 +268,6 @@ static void Sysmat4(
                 deriv_stress = 0.0;
               }
             }
-            // discontinouos pressure shape functions
-//            static BlitzVec funct_discpres(DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement);
-//            static BlitzMat deriv_discpres(3, DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
-//            if (ASSTYPE == XFEM::xfem_assembly)
-//            {
-//              if (discpres_unknowns_present)
-//              {
-//                DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
-//                DRT::UTILS::shape_function_3D_deriv1(deriv_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
-//              }
-//              else
-//              {
-//                funct_discpres = 0.0;
-//                deriv_discpres = 0.0;
-//              }
-//            }
 
             // position of the gausspoint in physical coordinates
             static BlitzVec3 gauss_pos_xyz;
@@ -378,9 +349,6 @@ static void Sysmat4(
             BlitzVec enr_funct_stress(numparamtauxx);
             //BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
             
-            //BlitzVec enr_funct_discpres(numparamdiscpres);
-            //BlitzMat enr_derxy_discpres(3,numparamdiscpres,blitz::ColumnMajorArray<2>());
-            
             if (ASSTYPE == XFEM::xfem_assembly)
             {
                 std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
@@ -419,35 +387,6 @@ static void Sysmat4(
                 {
                   enr_funct_stress = 0.0;
                 }
-                
-//                if (discpres_unknowns_present)
-//                {
-//                  // shape functions for element dofs
-//                  XFEM::ComputeEnrichedElementShapefunction(
-//                          *ele,
-//                          ih,
-//                          dofman,
-//                          DiscPres,
-//                          enrvals,
-//                          funct_discpres,
-//                          enr_funct_discpres);
-////                  // shape functions for element dofs
-////                    XFEM::ComputeEnrichedElementShapefunction(
-////                            *ele,
-////                            ih,
-////                            dofman,
-////                            DiscPres,
-////                            gauss_pos_xyz,
-////                            XFEM::Enrichment::approachUnknown,
-////                            funct_discpres,
-////                            derxy_discpres,
-////                            enr_funct_discpres,
-////                            enr_derxy_discpres);
-//                }
-//                else
-//                {
-//                  enr_funct_discpres = 0.0;
-//                }
             }
             else
             {
@@ -457,9 +396,6 @@ static void Sysmat4(
           
                 enr_funct_stress.reference(funct_stress);
                 //enr_derxy_stress.reference(derxy_stress);
-                
-                //enr_funct_discpres.reference(funct_discpres);
-                //enr_derxy_discpres.reference(derxy_discpres);
             }
       
             // create views on the shape function arrays for easy handling in the assembly process
@@ -476,11 +412,6 @@ static void Sysmat4(
             //const BlitzVec shp_tau_dy(enr_derxy_stress(1,_));
             //const BlitzVec shp_tau_dz(enr_derxy_stress(2,_));
             
-            //const BlitzVec shp_discpres(enr_funct_discpres);
-            //const BlitzVec shp_discpres_dx(enr_derxy_discpres(0,_));
-            //const BlitzVec shp_discpres_dy(enr_derxy_discpres(1,_));
-            //const BlitzVec shp_discpres_dz(enr_derxy_discpres(2,_));
-      
             // get velocities (n+g,i) at integration point
             static BlitzVec3 velint;
             //velint = blitz::sum(enr_funct(j)*evelnp(i,j),j);
@@ -566,12 +497,6 @@ static void Sysmat4(
             for (int iparam = 0; iparam < numparampres; ++iparam)
               pres += shp(iparam)*eprenp(iparam);
             
-            // get discontinous pressure
-            //const double discpres(blitz::sum(shp_discpres*ediscprenp));
-//            double discpres = 0.0;
-//            for (int iparam = 0; iparam < numparamdiscpres; ++iparam)
-//              discpres += shp_discpres(iparam)*ediscprenp(iparam);
-    
             // get viscous stress unknowns
             static BlitzMat3x3 tau;
             if (tauele_unknowns_present)
@@ -1261,14 +1186,14 @@ static void Sysmat4(
 //                           |                        |
 //                            \                      /
 //                  */
-//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dx, ttimetauMp/10.0, shp_dx);
-//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dy, ttimetauMp/10.0, shp_dy);
-//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dz, ttimetauMp/10.0, shp_dz);
+//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dx, ttimetauMp, shp_dx);
+//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dy, ttimetauMp, shp_dy);
+//                  assembler.template Matrix<DiscPres,Pres>(shp_discpres_dz, ttimetauMp, shp_dz);
 //                  
 //                  // pressure stabilization
-//                  assembler.template Vector<DiscPres>(shp_discpres_dx, -timetauMp/10.0*gradp(0));
-//                  assembler.template Vector<DiscPres>(shp_discpres_dy, -timetauMp/10.0*gradp(1));
-//                  assembler.template Vector<DiscPres>(shp_discpres_dz, -timetauMp/10.0*gradp(2));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dx, -timetauMp*gradp(0));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dy, -timetauMp*gradp(1));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dz, -timetauMp*gradp(2));
 //                  
 //                  /* pressure stabilisation: pressure( L_pres_p) */
 //                  /*
@@ -1278,14 +1203,14 @@ static void Sysmat4(
 //                           |                          |
 //                            \                        /
 //                  */
-//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dx, ttimetauMp/10.0, shp_discpres_dx);
-//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dy, ttimetauMp/10.0, shp_discpres_dy);
-//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dz, ttimetauMp/10.0, shp_discpres_dz);
+//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dx, ttimetauMp, shp_discpres_dx);
+//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dy, ttimetauMp, shp_discpres_dy);
+//                  assembler.template Matrix<DiscPres,DiscPres>(shp_discpres_dz, ttimetauMp, shp_discpres_dz);
 //                  
 //                  // pressure stabilization
-//                  assembler.template Vector<DiscPres>(shp_discpres_dx, -timetauMp/10.0*graddiscp(0));
-//                  assembler.template Vector<DiscPres>(shp_discpres_dy, -timetauMp/10.0*graddiscp(1));
-//                  assembler.template Vector<DiscPres>(shp_discpres_dz, -timetauMp/10.0*graddiscp(2));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dx, -timetauMp*graddiscp(0));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dy, -timetauMp*graddiscp(1));
+//                  assembler.template Vector<DiscPres>(shp_discpres_dz, -timetauMp*graddiscp(2));
 //                }
                 
                 
@@ -1555,7 +1480,6 @@ static void Sysmat4(
         
         // get interface velocities at the boundary element nodes
         BlitzMat vel_boundary(3,numnode_boundary);
-        vel_boundary = 0.0;
         const DRT::Node*const* nodes = boundaryele->Nodes();
         {
           for (int inode = 0; inode < numnode_boundary; ++inode)
@@ -1611,12 +1535,6 @@ static void Sysmat4(
             // stress shape function
             static BlitzVec funct_stress(DRT::UTILS::_switchDisType<stressdistype>::numNodePerElement);
             DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
-
-            // discontinouos pressure shape functions
-            //static BlitzVec funct_discpres(DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement);
-            //const BlitzMat deriv_discpres(3, DRT::UTILS::getNumberOfElementNodes(discpresdistype),blitz::ColumnMajorArray<2>());
-            //DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
-            //DRT::UTILS::shape_function_3D_deriv1(deriv_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
             
             // position of the gausspoint in physical coordinates
 //            gauss_pos_xyz = blitz::sum(funct_boundary(j)*xyze_boundary(i,j),j);
@@ -1685,9 +1603,6 @@ static void Sysmat4(
             BlitzVec enr_funct_stress(numparamtauxx);
             //BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
             
-            //BlitzVec enr_funct_discpres(numparamdiscpres);
-            //BlitzMat enr_derxy_discpres(3,numparamdiscpres,blitz::ColumnMajorArray<2>());
-            
             std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
                   ih,
                   dofman.getUniqueEnrichments(),
@@ -1728,15 +1643,6 @@ static void Sysmat4(
                     enrvals,
                     funct_stress,
                     enr_funct_stress);
-            // shape functions for element pressure dofs
-//            XFEM::ComputeEnrichedElementShapefunction(
-//                    *ele,
-//                    ih,
-//                    dofman,
-//                    DiscPres,
-//                    enrvals,
-//                    funct_discpres,
-//                    enr_funct_discpres);
                 
             // perform integration for entire matrix and rhs
             // create vievs on the shape function arrays for easy handling in the assembly process
@@ -1745,7 +1651,6 @@ static void Sysmat4(
 //            const BlitzVec shp_dy(enr_derxy(1,_));
 //            const BlitzVec shp_dz(enr_derxy(2,_));
             const BlitzVec shp_tau(enr_funct_stress);
-            //const BlitzVec shp_discpres(enr_funct_discpres);
             
             // get normal vector (in x coordinates) to surface element at integration point
             static BlitzVec3 normalvec_solid;
@@ -1778,12 +1683,6 @@ static void Sysmat4(
                     interface_velint(isd) += vel_boundary(isd,inode)*funct_boundary(inode);
                 }
             }
-            
-            // get discontinous pressure
-            //const double discpres(blitz::sum(shp_discpres*ediscprenp));
-//            double discpres = 0.0;
-//            for (int iparam = 0; iparam < numparamdiscpres; ++iparam)
-//              discpres += shp_discpres(iparam)*ediscprenp(iparam);
             
             // get pressure
             //const double press(blitz::sum(shp*eprenp));
