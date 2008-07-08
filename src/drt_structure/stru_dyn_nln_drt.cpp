@@ -155,6 +155,8 @@ void dyn_nlnstructural_drt()
       ParameterList genalphaparams;
       StruGenAlpha::SetDefaults(genalphaparams);
 
+      genalphaparams.set<string>("DYNKIND",sdyn.get<string>("DYNKIND"));
+
       genalphaparams.set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
       genalphaparams.set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
       genalphaparams.set<double>("damping factor M",sdyn.get<double>("M_DAMP"));

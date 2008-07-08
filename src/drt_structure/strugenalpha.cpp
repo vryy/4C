@@ -56,10 +56,23 @@ fsisurface_(NULL)
   double kdamp   = params_.get<double>("damping factor K",0.0);
   double mdamp   = params_.get<double>("damping factor M",0.0);
   double alphaf  = params_.get<double>("alpha f"         ,0.459);
+  double alpham  = params_.get<double>("alpha m");
   int step       = params_.get<int>   ("step"            ,0);
   bool outerr    = params_.get<bool>  ("print to err"    ,false);
   FILE* errfile  = params_.get<FILE*> ("err file"        ,NULL);
   if (!errfile) outerr = false;
+
+  // -------------------------------------------------------------------
+  // check sanity of static analysis set-up
+  // -------------------------------------------------------------------
+  bool dynkindstat = ( params_.get<string>("DYNKIND") == "Static" );
+  if (dynkindstat)
+  {
+    if ( (alphaf != 0.0) or (alpham != 0.0) )
+      dserror("It's static: alphas must be 0 (in words: zero).");
+    if (damping)
+      dserror("Sorry dude, no damping in statics.");
+  }
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -234,6 +247,12 @@ fsisurface_(NULL)
     solver.Solve(mass_->EpetraMatrix(),acc_,rhs,true,true);
   }
 
+  //-------------------------------------- it's static, ie accels are zero
+  if (dynkindstat)
+  {
+    acc_->PutScalar(0.0);
+  }
+
   //------------------------------------------------------ time step index
   step = 0;
   params_.set<int>("step",step);
@@ -258,6 +277,7 @@ void StruGenAlpha::ConstantPredictor()
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
+  bool   dynkindstat = (params_.get<string>("DYNKIND") == "Static");
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
@@ -364,21 +384,32 @@ void StruGenAlpha::ConstantPredictor()
   }
 
   //-------------------------------------------- compute residual forces
-  // Res = M . A_{n+1-alpha_m}
-  //     + C . V_{n+1-alpha_f}
-  //     + F_int(D_{n+1-alpha_f})
-  //     - F_{ext;n+1-alpha_f}
-  // add mid-inertial force
-  mass_->Multiply(false,*accm_,*finert_);
-  fresm_->Update(1.0,*finert_,0.0);
-  // add mid-viscous damping force
-  if (damping)
+  // build residual
+  if (dynkindstat)
   {
-    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-    damp_->Multiply(false,*velm_,*fvisc_);
-    fresm_->Update(1.0,*fvisc_,1.0);
+    // static residual
+    // Res = F_int - F_ext
+     fresm_->PutScalar(0.0);
   }
-
+  else
+  {
+    // dynamic residual
+    // Res = M . A_{n+1-alpha_m}
+    //     + C . V_{n+1-alpha_f}
+    //     + F_int(D_{n+1-alpha_f})
+    //     - F_{ext;n+1-alpha_f}
+    // add mid-inertial force
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
+    // add mid-viscous damping force
+    if (damping)
+    {
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
+    }
+  }
+    
   // add static mid-balance
 #ifdef STRUGENALPHA_FINTLIKETR
   fresm_->Update(1.0,*fextm_,-1.0);
@@ -386,12 +417,13 @@ void StruGenAlpha::ConstantPredictor()
 #else
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
-
+    
   // blank residual at DOFs on Dirichlet BC
   {
     Epetra_Vector fresmcopy(*fresm_);
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
   }
+
 
   //------------------------------------------------ build residual norm
   double fresmnorm = 1.0;
@@ -439,6 +471,7 @@ void StruGenAlpha::ConsistentPredictor()
   double gamma       = params_.get<double>("gamma"          ,0.581);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
+  bool   dynkindstat = (params_.get<string>("DYNKIND") == "Static");
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
@@ -518,6 +551,9 @@ void StruGenAlpha::ConsistentPredictor()
   }
 #endif
 
+  // velocity=0 in statics
+  if (dynkindstat) veln_->PutScalar(0.0);
+
   //cout << *veln_ << endl;
 
   // predicting accelerations A_{n+1} (accn)
@@ -553,6 +589,9 @@ void StruGenAlpha::ConsistentPredictor()
     discret_.ClearState();
   }
 #endif
+
+  // velocity=0 in statics
+  if (dynkindstat) accn_->PutScalar(0.0);
 
   //cout << *accn_ << endl;
 
@@ -622,21 +661,32 @@ void StruGenAlpha::ConsistentPredictor()
   }
 
   //-------------------------------------------- compute residual forces
-  // Res = M . A_{n+1-alpha_m}
-  //     + C . V_{n+1-alpha_f}
-  //     + F_int(D_{n+1-alpha_f})
-  //     - F_{ext;n+1-alpha_f}
-  // add mid-inertial force
-  mass_->Multiply(false,*accm_,*finert_);
-  fresm_->Update(1.0,*finert_,0.0);
-  // add mid-viscous damping force
-  if (damping)
+  // build residual
+  if (dynkindstat)
   {
-    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-    damp_->Multiply(false,*velm_,*fvisc_);
-    fresm_->Update(1.0,*fvisc_,1.0);
+    // static residual
+    // Res = F_int - F_ext
+    fresm_->PutScalar(0.0);
   }
-
+  else
+  {
+    // dynamic residual
+    // Res = M . A_{n+1-alpha_m}
+    //     + C . V_{n+1-alpha_f}
+    //     + F_int(D_{n+1-alpha_f})
+    //     - F_{ext;n+1-alpha_f}
+    // add mid-inertial force
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
+    // add mid-viscous damping force
+    if (damping)
+    {
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
+    }
+  }
+    
   // add static mid-balance
 #ifdef STRUGENALPHA_FINTLIKETR
   fresm_->Update(1.0,*fextm_,-1.0);
@@ -697,6 +747,8 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   bool structrobin   = params_.get<bool>  ("structrobin", false);
+  bool   dynkindstat = (params_.get<string>("DYNKIND") == "Static");
+  if (dynkindstat) dserror("Static case is not implemented");
 
   // increment time and step
   double timen = time + dt;
@@ -1050,6 +1102,7 @@ void StruGenAlpha::FullNewton()
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
+  bool dynkindstat = (params_.get<string>("DYNKIND") == "Static");
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -1075,18 +1128,25 @@ void StruGenAlpha::FullNewton()
     //------------------------------------------- effective rhs is fresm
     //---------------------------------------------- build effective lhs
     // (using matrix stiff_ as effective matrix)
-#ifdef STRUGENALPHA_BE
-    stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
-#else
-    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-#endif
-    if (damping)
+    if (dynkindstat)
+    {
+      // do nothing, we have the ordinary stiffness matrix ready
+    }
+    else
     {
 #ifdef STRUGENALPHA_BE
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+      stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
 #else
-      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+      stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
 #endif
+      if (damping)
+      {
+#ifdef STRUGENALPHA_BE
+        stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
+        stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
+      }
     }
     stiff_->Complete();
 
@@ -1152,6 +1212,13 @@ void StruGenAlpha::FullNewton()
                   (1.-alpham)/((1.-alphaf)*beta*dt*dt));
 #endif
 #endif
+
+    // zerofy velocity and acceleration in case of statics
+    if (dynkindstat)
+    {
+      velm_->PutScalar(0.0);
+      accm_->PutScalar(0.0);
+    }
 
     //---------------------------- compute internal forces and stiffness
     {
@@ -1232,19 +1299,29 @@ void StruGenAlpha::FullNewton()
     }
 
     //------------------------------------------ compute residual forces
-    // Res = M . A_{n+1-alpha_m}
-    //     + C . V_{n+1-alpha_f}
-    //     + F_int(D_{n+1-alpha_f})
-    //     - F_{ext;n+1-alpha_f}
-    // add inertia mid-forces
-    mass_->Multiply(false,*accm_,*finert_);
-    fresm_->Update(1.0,*finert_,0.0);
-    // add viscous mid-forces
-    if (damping)
+    if (dynkindstat)
     {
-      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,false);
-      damp_->Multiply(false,*velm_,*fvisc_);
-      fresm_->Update(1.0,*fvisc_,1.0);
+      // static residual
+      // Res = F_int - F_ext
+      fresm_->PutScalar(0.0);
+    }
+    else
+    {
+      // dynamic residual
+      // Res = M . A_{n+1-alpha_m}
+      //     + C . V_{n+1-alpha_f}
+      //     + F_int(D_{n+1-alpha_f})
+      //     - F_{ext;n+1-alpha_f}
+      // add mid-inertial force
+      mass_->Multiply(false,*accm_,*finert_);
+      fresm_->Update(1.0,*finert_,0.0);
+      // add mid-viscous damping force
+      if (damping)
+      {
+        //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+        damp_->Multiply(false,*velm_,*fvisc_);
+        fresm_->Update(1.0,*fvisc_,1.0);
+      }
     }
     // add static mid-balance
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -1252,7 +1329,6 @@ void StruGenAlpha::FullNewton()
     fresm_->Update(-(1.0-alphaf),*fintn_,-alphaf,*fint_,1.0);
 #else
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
-
 #endif
     // blank residual DOFs that are on Dirichlet BC
     {
@@ -2903,10 +2979,13 @@ void StruGenAlpha::Integrate()
         double time = params_.get<double>("total time",0.0);
         double dt   = params_.get<double>("delta time",0.01);
         // what algorithm is used?
-        // - "newtonlinuzawa": 			Potential is linearized wrt displacements and Lagrange multipliers
-        //					   			Linear problem is solved with Uzawa algorithm
-        // - "augmentedlagrange":		Potential is linearized wrt displacements keeping Lagrange multiplier fixed
-        //								Until convergence Lagrange multiplier increased by Uzawa_param*(Vol_err)
+        // - "newtonlinuzawa": Potential is linearized wrt displacements 
+        //                     and Lagrange multipliers
+        //                     Linear problem is solved with Uzawa algorithm
+        // - "augmentedlagrange": Potential is linearized wrt displacements 
+        //                        keeping Lagrange multiplier fixed
+        //                        Until convergence Lagrange multiplier 
+        //                        increased by Uzawa_param*(Vol_err)
         if (algo=="newtonlinuzawa")
         {
           FullNewtonLinearUzawa();

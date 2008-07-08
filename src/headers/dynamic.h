@@ -119,6 +119,14 @@ enum _convcheck
      linuzawa,                  /* linear Uzawa for constraint system */
      nonlinuzawa                /* non-linear Uzawa for constraint system */
    }               convcheck;   /* convergence check of solution technique */
+enum _dynkind
+   {
+     dynkind_deprecated,        /* see over left */
+     dynkind_direct,            /* direct TIS */
+     dynkind_directadaptive,    /* direct TIS with adaptivity */
+     dynkind_invanalysis,       /* inverse analysis */
+     dynkind_static             /* static analysis */
+   }               dynkind;     /* kind of dynamic analysis */
 INT                updevry_disp;/* write result very updevry step */
 INT                updevry_stress;/* write result very updevry step */
 INT                res_write_evry;/* write restart every res_write_evry step */
