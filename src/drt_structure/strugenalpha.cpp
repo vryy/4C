@@ -3117,6 +3117,7 @@ void StruGenAlpha::IntegrateStep()
  *----------------------------------------------------------------------*/
 void StruGenAlpha::SetDefaults(ParameterList& params)
 {
+  params.set<string>("DYNKIND"                ,"Gen_Alfa");
   params.set<bool>  ("print to screen"        ,true);
   params.set<bool>  ("print to err"           ,false);
   params.set<FILE*> ("err file"               ,NULL);
