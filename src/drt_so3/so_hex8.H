@@ -349,7 +349,7 @@ protected:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
-    calc_struct_update_genalpha_imrlike,
+    calc_struct_update_imrlike,
     calc_homog_stressdens,
     eas_init_multi,
     eas_set_multi,

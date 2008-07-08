@@ -124,6 +124,11 @@ void StruTimIntAB2::IntegrateStep()
   // determine time derivative of linear momentum vector,
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
   frimpn_->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
+  double some, more, less;
+  frimpn_->Norm2(&some);
+  fextn_->Norm2(&more);
+  fintn_->Norm2(&less);
+  cout << some << " " << more << " " << less << endl;
   if (damping_)
   {
     frimpn_->Update(-1.0, *fviscn_, 1.0);
@@ -136,7 +141,11 @@ void StruTimIntAB2::IntegrateStep()
     Epetra_Vector rhscopy = Epetra_Vector(*frimpn_);
     frimpn_->Multiply(1.0, *invtoggle_, rhscopy, 0.0);
     // get accelerations 
-    solver_.Solve(mass_->EpetraMatrix(), accn_, frimpn_, true, true);
+    accn_->PutScalar(0.0);
+    // refactor==false: This is not necessary, because we always
+    // use the same constant mass matrix, which was firstly factorised
+    // in StruTimInt::DetermineMassDampConsistAccel
+    solver_.Solve(mass_->EpetraMatrix(), accn_, frimpn_, false, true);
   }
 
   // apply Dirichlet BCs on accelerations
@@ -162,6 +171,19 @@ void StruTimIntAB2::UpdateStep()
   // new accelerations at t_{n+1} -> t_n
   //    A_{n} := A_{n+1}
   acc_->Update(1.0, *accn_, 0.0);
+
+  // update anything that needs to be updated at the element level
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // other parameters that might be needed by the elements
+    p.set("total time", timen_);
+    p.set("delta time", dt_);
+    // action for elements
+    p.set("action", "calc_struct_update_istep");    
+    // go to elements
+    discret_.Evaluate(p, null, null, null, null, null);
+  }
 
   // bye
   return;

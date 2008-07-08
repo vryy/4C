@@ -457,7 +457,7 @@ void StruTimIntGenAlpha::UpdateStep()
     else if (midavg_ == midavg_imrlike)
     {
       p.set("alpha f", alphaf_);
-      p.set("action", "calc_struct_update_genalpha_imrlike");
+      p.set("action", "calc_struct_update_imrlike");
     }
     // go to elements
     discret_.Evaluate(p, null, null, null, null, null);

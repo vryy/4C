@@ -360,7 +360,7 @@ void StruTimIntOneStepTheta::UpdateStep()
     // other parameters that might be needed by the elements
     p.set("total time", timen_);
     p.set("delta time", dt_);
-    p.set("alpha f", theta_);
+    //p.set("alpha f", theta_);
     // action for elements
     p.set("action", "calc_struct_update_istep");    
     // go to elements

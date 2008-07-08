@@ -64,7 +64,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_eleload")       act = Shell8::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Shell8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Shell8::calc_struct_update_istep;
-  else if (action=="calc_struct_update_genalpha_imrlike")  act = Shell8::calc_struct_update_genalpha_imrlike;
+  else if (action=="calc_struct_update_imrlike")  act = Shell8::calc_struct_update_imrlike;
   else dserror("Unknown type of action for Shell8");
 
   // get the material law
@@ -148,7 +148,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
       }
     }
     break;
-    case calc_struct_update_genalpha_imrlike:
+    case calc_struct_update_imrlike:
     {
       // EAS
       if (nhyb_)

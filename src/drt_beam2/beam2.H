@@ -268,7 +268,7 @@ private:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
-    calc_struct_update_genalpha_imrlike
+    calc_struct_update_imrlike
   };
 
   //! container containing all kind of beam2 thisandthat

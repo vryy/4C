@@ -228,6 +228,10 @@ void StruTimInt::DetermineMassDampConsistAccel()
   // get external force
   ApplyForceExternal(time_, dis_, fext);
   
+  // initialise matrices
+  stiff_->Zero();
+  mass_->Zero();
+
   // get initial internal force and stiffness and mass
   {
     // create the parameters for the discretization

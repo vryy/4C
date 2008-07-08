@@ -293,7 +293,7 @@ protected:
     calc_struct_fsiload,
     calc_struct_update_istep,
     update_gl,
-    calc_struct_update_genalpha_imrlike
+    calc_struct_update_imrlike
   };
 
   //! kinematic types of so_tet10

@@ -63,7 +63,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_eleload")       act = So_hex8::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = So_hex8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = So_hex8::calc_struct_update_istep;
-  else if (action=="calc_struct_update_genalpha_imrlike")  act = So_hex8::calc_struct_update_genalpha_imrlike;
+  else if (action=="calc_struct_update_imrlike")  act = So_hex8::calc_struct_update_imrlike;
   else if (action=="calc_homog_stressdens")     act = So_hex8::calc_homog_stressdens;
   else if (action=="postprocess_stress")        act = So_hex8::postprocess_stress;
   else dserror("Unknown type of action for So_hex8");
@@ -115,7 +115,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
       dserror("Case 'calc_struct_linstiffmass' not yet implemented");
     break;
 
-    // nonlinear stiffness, internal force vector, and consistent mass matrix
+    // nonlinear stiffness, internal force vector, and consistent/lumped mass matrix
     case calc_struct_nlnstiffmass:
     case calc_struct_nlnstifflmass: {
       // need current displacement and residual forces
@@ -287,7 +287,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
     }
     break;
 
-    case calc_struct_update_genalpha_imrlike: {
+    case calc_struct_update_imrlike: {
       // do something with internal EAS, etc parameters
       // this depends on the applied solution technique (static, generalised-alpha,
       // or other time integrators)

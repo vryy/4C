@@ -70,7 +70,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
   else if (action=="calc_struct_eleload")       act = Wall1::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Wall1::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Wall1::calc_struct_update_istep;
-  else if (action=="calc_struct_update_genalpha_imrlike")  act = Wall1::calc_struct_update_genalpha_imrlike;
+  else if (action=="calc_struct_update_imrlike")  act = Wall1::calc_struct_update_imrlike;
   else dserror("Unknown type of action for Wall1");
 
   // get the material law
@@ -128,7 +128,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
       }
     }
     break;
-    case calc_struct_update_genalpha_imrlike:
+    case calc_struct_update_imrlike:
     {
       // do something with internal EAS, etc parameters
       // this depends on the applied solution technique (static, generalised-alpha,

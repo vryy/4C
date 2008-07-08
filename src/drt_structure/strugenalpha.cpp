@@ -2658,7 +2658,7 @@ void StruGenAlpha::Update()
     ParameterList p;
     // action for elements
     //p.set("action","calc_struct_update_istep");
-    p.set("action","calc_struct_update_genalpha_imrlike");
+    p.set("action","calc_struct_update_imrlike");
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
