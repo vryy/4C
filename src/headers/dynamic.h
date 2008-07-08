@@ -66,6 +66,7 @@ typedef struct _STRUCT_DYNAMIC
 enum
    {
     gen_alfa,                   /* generalised-alpha time integrator */
+    statics,                    /* static analysis with gen_alfa */
     centr_diff,                 /* central differences (explicit) */
     Gen_EMM,                    /* generalised energy-momentum method */
     genalpha,                   /* generalised-alpha time integrator, 
@@ -124,8 +125,7 @@ enum _dynkind
      dynkind_deprecated,        /* see over left */
      dynkind_direct,            /* direct TIS */
      dynkind_directadaptive,    /* direct TIS with adaptivity */
-     dynkind_invanalysis,       /* inverse analysis */
-     dynkind_static             /* static analysis */
+     dynkind_invanalysis        /* inverse analysis */
    }               dynkind;     /* kind of dynamic analysis */
 INT                updevry_disp;/* write result very updevry step */
 INT                updevry_stress;/* write result very updevry step */

@@ -75,6 +75,7 @@ void caldyn_drt()
     dserror("no central differences in DRT");
     break;
   case STRUCT_DYNAMIC::gen_alfa:
+  case STRUCT_DYNAMIC::statics:
     switch (Teuchos::getIntegralValue<int>(sdyn,"TA_KIND"))
     {
     case TIMADA_DYNAMIC::timada_kind_none:
@@ -151,11 +152,12 @@ void dyn_nlnstructural_drt()
     // Generalized alpha time integration
     //==================================================================
     case STRUCT_DYNAMIC::gen_alfa :
+    case STRUCT_DYNAMIC::statics :
     {
       ParameterList genalphaparams;
       StruGenAlpha::SetDefaults(genalphaparams);
 
-      genalphaparams.set<string>("DYNKIND",sdyn.get<string>("DYNKIND"));
+      genalphaparams.set<string>("DYNKIND",sdyn.get<string>("DYNAMICTYP"));
 
       genalphaparams.set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
       genalphaparams.set<double>("damping factor K",sdyn.get<double>("K_DAMP"));

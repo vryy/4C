@@ -374,31 +374,31 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>("Centr_Diff",
                                                   "Gen_EMM",
                                                   "Gen_Alfa",
+                                                  "Static",
                                                   "GenAlpha",
                                                   "OneStepTheta",
                                                   "AdamsBashforth2"),
                                tuple<int>(STRUCT_DYNAMIC::centr_diff,
                                           STRUCT_DYNAMIC::Gen_EMM,
                                           STRUCT_DYNAMIC::gen_alfa,
+                                          STRUCT_DYNAMIC::statics,
                                           STRUCT_DYNAMIC::genalpha,
                                           STRUCT_DYNAMIC::onesteptheta,
                                           STRUCT_DYNAMIC::ab2),
                                &sdyn);
 
   // kind of dynamic analysis
-  setStringToIntegralParameter("DYNKIND","Deprecated",
-                               "kind of dynamic analysis",
-                               tuple<std::string>("Deprecated",
-                                                  "Direct",
-                                                  "DirectAdaptive",
-                                                  "InvAnalysis",
-                                                  "Static"),
-                               tuple<int>(STRUCT_DYNAMIC::dynkind_deprecated,
-                                          STRUCT_DYNAMIC::dynkind_direct,
-                                          STRUCT_DYNAMIC::dynkind_directadaptive,
-                                          STRUCT_DYNAMIC::dynkind_invanalysis,
-                                          STRUCT_DYNAMIC::dynkind_static),
-                               &sdyn);
+  // setStringToIntegralParameter("DYNKIND","Deprecated",
+//                                "kind of dynamic analysis",
+//                                tuple<std::string>("Deprecated",
+//                                                   "Direct",
+//                                                   "DirectAdaptive",
+//                                                   "InvAnalysis"),
+//                                tuple<int>(STRUCT_DYNAMIC::dynkind_deprecated,
+//                                           STRUCT_DYNAMIC::dynkind_direct,
+//                                           STRUCT_DYNAMIC::dynkind_directadaptive,
+//                                           STRUCT_DYNAMIC::dynkind_invanalysis),
+//                                &sdyn);
   
   // Output type
   IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);
