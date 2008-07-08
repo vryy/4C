@@ -83,7 +83,6 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
       // need current global displacement and residual forces and get them from discretization
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (= discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       
       /*making use of the local-to-global map lm one can extract current displacemnet and residual values for
