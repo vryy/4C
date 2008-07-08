@@ -356,9 +356,9 @@ private:
                     
   //!calculation of nonlinear stiffness and mass matrix
   void b3_nlnstiffmass(vector<double>&           disp, 
-                       Epetra_SerialDenseMatrix& stiffmatrix,
-                       Epetra_SerialDenseMatrix& massmatrix,
-                       Epetra_SerialDenseVector& force);
+                       Epetra_SerialDenseMatrix* stiffmatrix,
+                       Epetra_SerialDenseMatrix* massmatrix,
+                       Epetra_SerialDenseVector* force);
   
   //calculation of nonlinear stiffness approximated by finite differences; this function should
   //be activated only for bug fixing

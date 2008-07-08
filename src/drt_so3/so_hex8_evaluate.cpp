@@ -65,7 +65,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
   else if (action=="calc_struct_eleload")                         act = So_hex8::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")                         act = So_hex8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")                    act = So_hex8::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike")         act = So_hex8::calc_struct_update_imrlike;
+  else if (action=="calc_struct_update_imrlike")                  act = So_hex8::calc_struct_update_imrlike;
   else if (action=="eas_init_multi")                              act = So_hex8::eas_init_multi;
   else if (action=="eas_set_multi")                               act = So_hex8::eas_set_multi;
   else if (action=="calc_homog_stressdens")                       act = So_hex8::calc_homog_stressdens;
@@ -113,7 +113,19 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList& params,
 
     // internal force vector only
     case calc_struct_internalforce:
-      dserror("Case 'calc_struct_internalforce' not yet implemented");
+    {
+      // need current displacement and residual forces
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      // create a dummy element matrix to apply linearised EAS-stuff onto
+      Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
+      soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
+    }
     break;
 
     // linear stiffness and consistent mass matrix

@@ -95,7 +95,19 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
 
     // internal force vector only
     case calc_struct_internalforce:
-      dserror("Case 'calc_struct_internalforce' not yet implemented");
+    {
+      // need current displacement and residual forces
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      // create a dummy element matrix to apply linearised EAS-stuff onto
+      Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
+      soshw6_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
+    }
     break;
 
     // linear stiffness and consistent mass matrix

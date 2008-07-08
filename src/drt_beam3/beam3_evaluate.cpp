@@ -73,8 +73,9 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
        
     //nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
     case Beam3::calc_struct_nlnstiffmass:
-    case Beam3::calc_struct_nlnstiff:
     case Beam3::calc_struct_nlnstifflmass:
+    case Beam3::calc_struct_nlnstiff:
+    case Beam3::calc_struct_internalforce:
     {    
       // need current global displacement and residual forces and get them from discretization
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -100,11 +101,21 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
         betaplusalphaold_  = betaplusalphanew_;
         betaminusalphaold_ = betaminusalphanew_;
       }
-        
-      b3_nlnstiffmass(mydisp,elemat1,elemat2,elevec1);
 
-      // lump mass matrix (bborn 07/08)
-      if (act==calc_struct_nlnstifflmass) b3_lumpmass(&elemat2);
+      if (act == Beam3::calc_struct_nlnstiffmass)
+        b3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
+      else if (act == Beam3::calc_struct_nlnstifflmass)
+      {
+        b3_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
+        // lump mass matrix (bborn 07/08)
+        // the mass matrix is lumped anyway, cf #b3_nlnstiffmass
+        //b3_lumpmass(&elemat2);
+      }
+      else if (act == Beam3::calc_struct_nlnstiff)
+        b3_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1);
+      else if (act == Beam3::calc_struct_internalforce)
+        b3_nlnstiffmass(mydisp,NULL,NULL,&elevec1);
+
 
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
       //correctly or not: the function b3_nlnstiff_approx(mydisp) calculated the stiffness matrix approximated by
@@ -419,9 +430,9 @@ void DRT::ELEMENTS::Beam3::computeKsig2(Epetra_SerialDenseMatrix& Ksig2, const E
  | nonlinear stiffness and mass matrix (private)                                                   cyron 01/08|
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
-                                            Epetra_SerialDenseMatrix& stiffmatrix,
-                                            Epetra_SerialDenseMatrix& massmatrix,
-                                            Epetra_SerialDenseVector& force)
+                                            Epetra_SerialDenseMatrix* stiffmatrix,
+                                            Epetra_SerialDenseMatrix* massmatrix,
+                                            Epetra_SerialDenseVector* force)
 { 
   //normal and shear strain
   Epetra_SerialDenseMatrix epsilon;
@@ -545,38 +556,44 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
   stressm.Multiply('N','N',1,Tnew_,stressm,0); 
   
   //computing global internal forces, Crisfield Vol. 2, equation (17.79)
-  force.Size(12);
-  for (int i=0; i<12; ++i)
+  if (force != NULL)
+  {
+    (*force).Size(12);
+    for (int i=0; i<12; ++i)
     {
       for (int j=0; j<3; ++j)
       {
-        force(i) += Xrot(i,j)*stressn(j,0);
+        (*force)(i) += Xrot(i,j)*stressn(j,0);
       }
       for (int j=0; j<3; ++j)
       {
-        force(i) += Xrot(i,j+3)*stressm(j,0);
+        (*force)(i) += Xrot(i,j+3)*stressm(j,0);
       }
     } 
-   
+  }
+
   //stress dependent nonlinear parts of the stiffness matrix according to Crisfield, Vol. 2 equs. (17.83) and (17.87)
   computeKsig1(Ksig1,stressn,stressm);
   computeKsig2(Ksig2,stressn,x21);
   
   //computing linear stiffness matrix
-  stiffmatrix.Shape(6,6);
-  stiffmatrix(0,0) = ym*crosssec_/lrefe_; 
-  stiffmatrix(1,1) = sm*crosssecshear_/lrefe_; 
-  stiffmatrix(2,2) = sm*crosssecshear_/lrefe_;  
-  stiffmatrix(3,3) = sm*Irr_/lrefe_; 
-  stiffmatrix(4,4) = ym*Iyy_/lrefe_; 
-  stiffmatrix(5,5) = ym*Izz_/lrefe_; 
-  XT.Multiply('N','N',1,Xrot,Tnew_,0); 
-  stiffmatrix.Multiply('N','N',1,XT,stiffmatrix,0); 
-  stiffmatrix.Multiply('N','T',1,stiffmatrix,XT,0); 
+  if (stiffmatrix != NULL)
+  {
+    (*stiffmatrix).Shape(6,6);
+    (*stiffmatrix)(0,0) = ym*crosssec_/lrefe_; 
+    (*stiffmatrix)(1,1) = sm*crosssecshear_/lrefe_; 
+    (*stiffmatrix)(2,2) = sm*crosssecshear_/lrefe_;  
+    (*stiffmatrix)(3,3) = sm*Irr_/lrefe_; 
+    (*stiffmatrix)(4,4) = ym*Iyy_/lrefe_; 
+    (*stiffmatrix)(5,5) = ym*Izz_/lrefe_; 
+    XT.Multiply('N','N',1,Xrot,Tnew_,0); 
+    (*stiffmatrix).Multiply('N','N',1,XT,(*stiffmatrix),0); 
+    (*stiffmatrix).Multiply('N','T',1,(*stiffmatrix),XT,0); 
   
-  //adding nonlinear parts to tangent stiffness matrix, Crisfield, Vol. 2, equation (17.89)
-  stiffmatrix += Ksig1;
-  stiffmatrix += Ksig2;
+    //adding nonlinear parts to tangent stiffness matrix, Crisfield, Vol. 2, equation (17.89)
+    (*stiffmatrix) += Ksig1;
+    (*stiffmatrix) += Ksig2;
+  }
    
   /*calculating mass matrix; this beam3 element includes only a lumped mass matrix where for torsion and
    * bending the same moments of inertia are assumed; for slender beams the influence of rotational moments
@@ -584,16 +601,19 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>&           disp,
    * point an LU-decomposition of the mass matrix is carried out this was avoided in the here implemented beam3
    * element and instead the above described simplification was assumed; Iyy_ = Izz_ was assumed for similar 
    * reasons */
-  massmatrix.Shape(12,12);
-  for (int i=0; i<3; ++i)
+  if (massmatrix != NULL)
   {
-    massmatrix(i,i) = 0.5*density*lrefe_*crosssec_;
-    massmatrix(i+6,i+6) = 0.5*density*lrefe_*crosssec_;
-  }
-  for (int i=3; i<6; ++i)
-  {
-    massmatrix(i,i) = 0.5*density*lrefe_*Iyy_;
-    massmatrix(i+6,i+6) = 0.5*density*lrefe_*Iyy_;
+    (*massmatrix).Shape(12,12);
+    for (int i=0; i<3; ++i)
+    {
+      (*massmatrix)(i,i) = 0.5*density*lrefe_*crosssec_;
+      (*massmatrix)(i+6,i+6) = 0.5*density*lrefe_*crosssec_;
+    }
+    for (int i=3; i<6; ++i)
+    {
+      (*massmatrix)(i,i) = 0.5*density*lrefe_*Iyy_;
+      (*massmatrix)(i+6,i+6) = 0.5*density*lrefe_*Iyy_;
+    }
   }
    
   return;

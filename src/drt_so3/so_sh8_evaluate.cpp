@@ -38,7 +38,7 @@ using namespace LINALG; // our linear algebra
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
                                     DRT::Discretization&      discretization,
                                     vector<int>&              lm,
                                     Epetra_SerialDenseMatrix& elemat1,
@@ -53,19 +53,19 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
   // get the required action
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff")      act = So_hex8::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff")      act = So_hex8::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = So_hex8::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass")  act = So_hex8::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass")  act = So_hex8::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass") act = So_hex8::calc_struct_nlnstifflmass;
-  else if (action=="calc_struct_stress")        act = So_hex8::calc_struct_stress;
-  else if (action=="calc_struct_eleload")       act = So_hex8::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload")       act = So_hex8::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep")  act = So_hex8::calc_struct_update_istep;
+  else if (action=="calc_struct_linstiff")        act = So_hex8::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff")        act = So_hex8::calc_struct_nlnstiff;
+  else if (action=="calc_struct_internalforce")   act = So_hex8::calc_struct_internalforce;
+  else if (action=="calc_struct_linstiffmass")    act = So_hex8::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass")    act = So_hex8::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass")   act = So_hex8::calc_struct_nlnstifflmass;
+  else if (action=="calc_struct_stress")          act = So_hex8::calc_struct_stress;
+  else if (action=="calc_struct_eleload")         act = So_hex8::calc_struct_eleload;
+  else if (action=="calc_struct_fsiload")         act = So_hex8::calc_struct_fsiload;
+  else if (action=="calc_struct_update_istep")    act = So_hex8::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")  act = So_hex8::calc_struct_update_imrlike;
-  else if (action=="calc_homog_stressdens")     act = So_hex8::calc_homog_stressdens;
-  else if (action=="postprocess_stress")        act = So_hex8::postprocess_stress;
+  else if (action=="calc_homog_stressdens")       act = So_hex8::calc_homog_stressdens;
+  else if (action=="postprocess_stress")          act = So_hex8::postprocess_stress;
   else dserror("Unknown type of action for So_hex8");
 
   // what should the element do
@@ -106,8 +106,24 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList& params,
     break;
 
     // internal force vector only
-    case calc_struct_internalforce:
-      dserror("Case 'calc_struct_internalforce' not yet implemented");
+    case calc_struct_internalforce: {
+      // need current displacement and residual forces
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      // create a dummy element matrix to apply linearised EAS-stuff onto
+      Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
+      // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
+      if (Type() == DRT::Element::element_sosh8) {
+        sosh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
+      } else if (Type() == DRT::Element::element_so_hex8) {
+        soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params);
+      }
+    }
     break;
 
     // linear stiffness and consistent mass matrix

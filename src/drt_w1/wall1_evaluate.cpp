@@ -115,7 +115,24 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       w1_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat);
     }
-   	break;
+    break;
+    case Wall1::calc_struct_internalforce:
+    {
+      // need current displacement and residual forces
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      // create a dummy element matrix (initialised to zero)
+      // This matrix is not utterly useless. It is used to apply EAS-stuff in a linearised manner
+      // onto the internal force vector.
+      Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
+      w1_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,actmat);
+    }
+    break;
     case calc_struct_update_istep:
     {
       // do something with internal EAS, etc parameters

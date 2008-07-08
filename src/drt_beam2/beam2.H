@@ -323,20 +323,16 @@ private:
                     const double& lcurr_,
                     const double& lrefe_);
 
-  //calculation of nonlinear stiffness and mass matrix
-  void b2_nlnstiffmass(vector<double>&           disp,
-                       Epetra_SerialDenseMatrix& stiffmatrix,
-                       Epetra_SerialDenseMatrix& massmatrix,
-                       Epetra_SerialDenseVector& force);
+  //! calculation of nonlinear stiffness and mass matrix
+  void b2_nlnstiffmass(vector<double>&           disp,  //!< element displacement vector
+                       Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+                       Epetra_SerialDenseMatrix* massmatrix,  //!< element mass matrix
+                       Epetra_SerialDenseVector* force);  //!< element internal force vector
 
   //calculation of nonlinear stiffness approximated by finite differences; this function should
   //be activated only for bug fixing
 
   Epetra_SerialDenseMatrix b2_nlnstiff_approx(vector<double>& disp, double h_rel);
-
-  //! lump mass matrix (bborn 07/08)
-  void b2_lumpmass(Epetra_SerialDenseMatrix* emass);
-
 
   // don't want = operator
   Beam2& operator = (const Beam2& old);

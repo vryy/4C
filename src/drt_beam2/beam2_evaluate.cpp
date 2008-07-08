@@ -74,12 +74,16 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
        
     //nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
     case Beam2::calc_struct_nlnstiffmass:
-    case Beam2::calc_struct_nlnstiff:
     case Beam2::calc_struct_nlnstifflmass:
+    case Beam2::calc_struct_nlnstiff:
+    case Beam2::calc_struct_internalforce:
     {
+      int lumpedmass = lumpedflag_;  // 0=consistent, 1=lumped
+      if (act==Beam2::calc_struct_nlnstifflmass) lumpedflag_ = 1;
       // need current global displacement and residual forces and get them from discretization
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (= discretization.GetState("residual displacement");
       if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
       
       /*making use of the local-to-global map lm one can extract current displacemnet and residual values for
@@ -89,10 +93,17 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       
-      b2_nlnstiffmass(mydisp,elemat1,elemat2,elevec1);
-      
-      // lump mass matrix
-      if (act==calc_struct_nlnstifflmass) b2_lumpmass(&elemat2);
+      if (act == Beam2::calc_struct_nlnstiffmass)
+        b2_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
+      else if (act == Beam2::calc_struct_nlnstifflmass)
+      {
+        b2_nlnstiffmass(mydisp,&elemat1,&elemat2,&elevec1);
+        lumpedflag_ = lumpedmass;
+      }
+      else if (act == Beam2::calc_struct_nlnstiff)
+        b2_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1);
+      else if  (act ==  calc_struct_internalforce)
+        b2_nlnstiffmass(mydisp,NULL,NULL,&elevec1);
 
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
       //correctly or not: the function b2_nlnstiff_approx(mydisp) calculated the stiffness matrix approximated by
@@ -379,37 +390,37 @@ void DRT::ELEMENTS::Beam2::b2_local_aux(LINALG::SerialDenseMatrix& Bcurr,
  | nonlinear stiffness and mass matrix (private)                                                   cyron 01/08|
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
-                                            Epetra_SerialDenseMatrix& stiffmatrix,
-                                            Epetra_SerialDenseMatrix& massmatrix,
-                                            Epetra_SerialDenseVector& force)
+                                            Epetra_SerialDenseMatrix* stiffmatrix,
+                                            Epetra_SerialDenseMatrix* massmatrix,
+                                            Epetra_SerialDenseVector* force)
 {
-const int numdf = 3;
-const int iel = NumNode();
-//coordinates in reference and current configuration of all the nodes in two dimensions stored in 3 x iel matrices
-LINALG::SerialDenseMatrix xrefe;
-LINALG::SerialDenseMatrix xcurr;
+  const int numdf = 3;
+  const int iel = NumNode();
+  //coordinates in reference and current configuration of all the nodes in two dimensions stored in 3 x iel matrices
+  LINALG::SerialDenseMatrix xrefe;
+  LINALG::SerialDenseMatrix xcurr;
 
-xrefe.Shape(3,2);
-xcurr.Shape(3,2);
+  xrefe.Shape(3,2);
+  xcurr.Shape(3,2);
 
-//current length of beam in physical space
-double lcurr = 0;
-//current angle between x-axis and beam in physical space
-double beta;
-//some geometric auxiliary variables according to Crisfield, Vol. 1
-LINALG::SerialDenseVector zcurr;
-LINALG::SerialDenseVector rcurr;
-LINALG::SerialDenseMatrix Bcurr;
-//auxiliary matrix storing the product of constitutive matrix C and Bcurr
-LINALG::SerialDenseMatrix aux_CB;
+  //current length of beam in physical space
+  double lcurr = 0;
+  //current angle between x-axis and beam in physical space
+  double beta;
+  //some geometric auxiliary variables according to Crisfield, Vol. 1
+  LINALG::SerialDenseVector zcurr;
+  LINALG::SerialDenseVector rcurr;
+  LINALG::SerialDenseMatrix Bcurr;
+  //auxiliary matrix storing the product of constitutive matrix C and Bcurr
+  LINALG::SerialDenseMatrix aux_CB;
 
-zcurr.Size(6);
-rcurr.Size(6);
-Bcurr.Shape(3,6);
-aux_CB.Shape(3,6);
+  zcurr.Size(6);
+  rcurr.Size(6);
+  Bcurr.Shape(3,6);
+  aux_CB.Shape(3,6);
 
-//calculating refenrence configuration xrefe and current configuration xcurr
-for (int k=0; k<iel; ++k)
+  //calculating refenrence configuration xrefe and current configuration xcurr
+  for (int k=0; k<iel; ++k)
   {
 
     xrefe(0,k) = Nodes()[k]->X()[0];
@@ -423,7 +434,7 @@ for (int k=0; k<iel; ++k)
 
   }
 
-x_verschiebung = disp[numdf];
+  x_verschiebung = disp[numdf];
    
     
   // calculation of local geometrically important matrices and vectors; notation according to Crisfield-------
@@ -486,72 +497,81 @@ x_verschiebung = disp[numdf];
   
 
   //calculating tangential stiffness matrix in global coordinates
-  
-  //linear elastic part including rotation
-  
-  for(int id_col=0; id_col<6; id_col++)
+  if (stiffmatrix != NULL)
   {
-	  aux_CB(0,id_col) = Bcurr(0,id_col) * (ym*crosssec_/lrefe_);
-	  aux_CB(1,id_col) = Bcurr(1,id_col) * (ym*mominer_/lrefe_);
-	  aux_CB(2,id_col) = Bcurr(2,id_col) * (sm*crosssecshear_/lrefe_);
+      
+      //linear elastic part including rotation
+      
+      for(int id_col=0; id_col<6; id_col++)
+      {
+          aux_CB(0,id_col) = Bcurr(0,id_col) * (ym*crosssec_/lrefe_);
+          aux_CB(1,id_col) = Bcurr(1,id_col) * (ym*mominer_/lrefe_);
+          aux_CB(2,id_col) = Bcurr(2,id_col) * (sm*crosssecshear_/lrefe_);
+      }
+      
+      (*stiffmatrix).Multiply('T','N',1,Bcurr,aux_CB,0);
+          
+      //adding geometric stiffness by shear force 
+      double aux_Q_fac = force_loc(2)*lrefe_ / pow(lcurr,2);
+      for(int id_lin=0; id_lin<6; id_lin++)
+          for(int id_col=0; id_col<6; id_col++)
+          {
+              (*stiffmatrix)(id_lin,id_col) -= aux_Q_fac * rcurr(id_lin) * zcurr(id_col);
+              (*stiffmatrix)(id_lin,id_col) -= aux_Q_fac * rcurr(id_col) * zcurr(id_lin);
+          }
+      
+      //adding geometric stiffness by axial force 
+      double aux_N_fac = force_loc(0)/lcurr; 
+      for(int id_lin=0; id_lin<6; id_lin++)
+          for(int id_col=0; id_col<6; id_col++)
+              (*stiffmatrix)(id_lin,id_col) += aux_N_fac * zcurr(id_lin) * zcurr(id_col);
   }
-   
-  stiffmatrix.Multiply('T','N',1,Bcurr,aux_CB,0);
-
-  //adding geometric stiffness by shear force 
-  double aux_Q_fac = force_loc(2)*lrefe_ / pow(lcurr,2);
-  for(int id_lin=0; id_lin<6; id_lin++)
-  	for(int id_col=0; id_col<6; id_col++)
-  	{
-  		stiffmatrix(id_lin,id_col) -= aux_Q_fac * rcurr(id_lin) * zcurr(id_col);
-  		stiffmatrix(id_lin,id_col) -= aux_Q_fac * rcurr(id_col) * zcurr(id_lin);
-  	}
-  
-  //adding geometric stiffness by axial force 
-  double aux_N_fac = force_loc(0)/lcurr; 
-  for(int id_lin=0; id_lin<6; id_lin++)
-  	for(int id_col=0; id_col<6; id_col++)
-  		stiffmatrix(id_lin,id_col) += aux_N_fac * zcurr(id_lin) * zcurr(id_col);  
   
   //calculation of global internal forces from force = B_transposed*force_loc 
-  force.Size(6);
-  for(int id_col=0; id_col<6; id_col++)
-	  for(int id_lin=0; id_lin<3; id_lin++)
-    	force(id_col) += Bcurr(id_lin,id_col)*force_loc(id_lin);
-  
-  //calculating mass matrix (lcoal version = global version) 
-  massmatrix.Shape(6,6);
-  
-  //if lumped_flag == 0 a consistent mass Timoshenko beam mass matrix is applied
-  if (lumpedflag_ == 0)
+  if (force != NULL)
   {
-	  //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
-	  double aux_E[3]={density*lrefe_*crosssec_/6,density*lrefe_*crosssec_/6,density*lrefe_*mominer_/6};
-	  for(int id=0; id<3; id++)
-	  {
-	  	massmatrix(id,id) = 2*aux_E[id];
-	        massmatrix(id+3,id+3) = 2*aux_E[id];
-	        massmatrix(id,id+3) = aux_E[id];
-	        massmatrix(id+3,id) = aux_E[id];
-	  }
+      (*force).Size(6);
+      for(int id_col=0; id_col<6; id_col++)
+          for(int id_lin=0; id_lin<3; id_lin++)
+              (*force)(id_col) += Bcurr(id_lin,id_col)*force_loc(id_lin);
   }
-  /*if lumped_flag == 1 a lumped mass matrix is applied where the cross sectional moment of inertia is
-   * assumed to be approximately zero so that the 3,3 and 5,5 element are both zero */
   
-  else if (lumpedflag_ == 1)
+  //calculating mass matrix (local version = global version) 
+  if (massmatrix != NULL)
   {
- 	 massmatrix.Shape(6,6);
- 	 //note: this is not an exact lumped mass matrix, but it is modified in such a way that it leads
- 	 //to a diagonal mass matrix with constant diagonal entries
- 	 massmatrix(0,0) = density*lrefe_*crosssec_/2;
- 	 massmatrix(1,1) = density*lrefe_*crosssec_/2;	 
- 	 massmatrix(2,2) = density*lrefe_*mominer_/2; 
- 	 massmatrix(3,3) = density*lrefe_*crosssec_/2;
- 	 massmatrix(4,4) = density*lrefe_*crosssec_/2; 
- 	 massmatrix(5,5) = density*lrefe_*mominer_/2;
-   }
-  else
-	  dserror("improper value of variable lumpedflag_");    
+      (*massmatrix).Shape(6,6);
+      
+      //if lumped_flag == 0 a consistent mass Timoshenko beam mass matrix is applied
+      if (lumpedflag_ == 0)
+      {
+              //assignment of massmatrix by means of auxiliary diagonal matrix aux_E stored as an array
+              double aux_E[3]={density*lrefe_*crosssec_/6,density*lrefe_*crosssec_/6,density*lrefe_*mominer_/6};
+              for(int id=0; id<3; id++)
+              {
+              	    (*massmatrix)(id,id) = 2*aux_E[id];
+                    (*massmatrix)(id+3,id+3) = 2*aux_E[id];
+                    (*massmatrix)(id,id+3) = aux_E[id];
+                    (*massmatrix)(id+3,id) = aux_E[id];
+              }
+      }
+      /*if lumped_flag == 1 a lumped mass matrix is applied where the cross sectional moment of inertia is
+       * assumed to be approximately zero so that the 3,3 and 5,5 element are both zero */
+      
+      else if (lumpedflag_ == 1)
+      {
+             (*massmatrix).Shape(6,6);
+             //note: this is not an exact lumped mass matrix, but it is modified in such a way that it leads
+             //to a diagonal mass matrix with constant diagonal entries
+             (*massmatrix)(0,0) = density*lrefe_*crosssec_/2;
+             (*massmatrix)(1,1) = density*lrefe_*crosssec_/2;	 
+             (*massmatrix)(2,2) = density*lrefe_*mominer_/2; 
+             (*massmatrix)(3,3) = density*lrefe_*crosssec_/2;
+             (*massmatrix)(4,4) = density*lrefe_*crosssec_/2; 
+             (*massmatrix)(5,5) = density*lrefe_*mominer_/2;
+       }
+      else
+              dserror("improper value of variable lumpedflag_");    
+  }
   return;
 } // DRT::ELEMENTS::Beam2::b2_nlnstiffmass
 
@@ -585,27 +605,6 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam2::b2_nlnstiff_approx(vector<double>
 	} 
 	return stiff_approx;	
 }
-
-// lump mass matrix
-void DRT::ELEMENTS::Beam2::b2_lumpmass(Epetra_SerialDenseMatrix* emass)
-{
-  // lump mass matrix
-  if (emass != NULL)
-  {
-    // we assume #elemat2 is a square matrix
-    for (int c=0; c<(*emass).N(); ++c)  // parse columns
-    {
-      double d = 0.0;  
-      for (int r=0; r<(*emass).M(); ++r)  // parse rows
-      {
-        d += (*emass)(r,c);  // accumulate row entries
-        (*emass)(r,c) = 0.0;
-      }
-      (*emass)(c,c) = d;  // apply sum of row entries on diagonal
-    }
-  }
-}
-
 
 void DRT::ELEMENTS::Beam2::Arbeit(double& AN,double& AM,double& AQ, double& xv)
   {
