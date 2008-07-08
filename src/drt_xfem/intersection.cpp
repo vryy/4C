@@ -456,6 +456,25 @@ bool XFEM::Intersection::collectIntersectionPoints(
 
 
 /*----------------------------------------------------------------------*
+ |  CLI:    checks if surface element is Cartesian and       u.may 06/08|
+ |          line element is linear                                      |
+ *----------------------------------------------------------------------*/
+bool XFEM::Intersection::decideSVD(
+    const EleGeoType surfaceGeoType,
+    const EleGeoType lineGeoType
+    )
+{
+  bool doSVD = true;
+  
+  if(surfaceGeoType == CARTESIAN &&  lineGeoType != HIGHERORDER)
+    doSVD = false;
+  
+  return doSVD;
+}
+
+
+
+/*----------------------------------------------------------------------*
  |  CLI:    checks if a line lies in a Cartesian surface     u.may 06/08|
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -1848,7 +1867,6 @@ XFEM::InterfacePoint XFEM::Intersection::computeMidpoint(
 
 
 
-
 /*----------------------------------------------------------------------*
  |  CDT:    computes the midpoint of a collection of         u.may 07/08|
  |          interface points determined by a position vector            |
@@ -2088,6 +2106,7 @@ bool XFEM::Intersection::checkIfSegmentPointsOnSameXfemLine(
   
   return onSameLine;
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -2411,7 +2430,8 @@ void XFEM::Intersection::liftAllSteinerPoints(
         // run over all Steiner points
         for(unsigned int i=0; i<adjacentFacesList.size(); i++)
         {
-            int lineIndex = -1, cutterIndex = -1;
+            int lineIndex = -1;
+            int cutterIndex = -1;
             const int  caseSteiner = decideSteinerCase(  i, lineIndex, cutterIndex, adjacentFacesList, adjacentFacemarkerList, currentcutterpositions,
                                                          edgePoint, oppositePoint, xfemElement, xyze_xfemElement, out);
             switch(caseSteiner)
@@ -2525,6 +2545,7 @@ int XFEM::Intersection::decideSteinerCase(
         x(k)   = out.pointlist[pointIndex*3 + k];
 
     static BlitzVec3    xsi;
+    // check exact TODO
     currentToVolumeElementCoordinates(xfemElement, x, xsi);
 
     InterfacePoint emptyIp;
@@ -2623,7 +2644,7 @@ void XFEM::Intersection::liftSteinerPointOnSurface(
         normals.push_back(normal);
     }
 
-    // compute average normal
+    // compute average normal TODO
     averageNormal /= ((double)length);
 
     const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
@@ -4688,20 +4709,6 @@ void XFEM::Intersection::debugXAABBs(
   
   f_system << "};" << endl;
   f_system.close();
-}
-
-
-bool XFEM::Intersection::decideSVD(
-    const EleGeoType surfaceGeoType,
-    const EleGeoType lineGeoType
-    )
-{
-  bool doSVD = true;
-  
-  if(surfaceGeoType == CARTESIAN &&  lineGeoType != HIGHERORDER)
-    doSVD = false;
-  
-  return doSVD;
 }
 
 
