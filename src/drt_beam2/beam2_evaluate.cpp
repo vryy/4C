@@ -591,14 +591,14 @@ Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam2::b2_nlnstiff_approx(vector<double>
 	stiff_approx.Shape(6,6);
 	vector<double> disp_delta;
 	
-	DRT::ELEMENTS::Beam2::b2_nlnstiffmass(disp,stiff_dummy,mass_dummy,force_disp);
+	DRT::ELEMENTS::Beam2::b2_nlnstiffmass(disp,&stiff_dummy,&mass_dummy,&force_disp);
 	
 	for(int col=0; col<6; col++)
 	{		
 		force_disp_delta.Size(6);
 		disp_delta = disp;
 		disp_delta[col] = disp_delta[col]+h_rel;
-		DRT::ELEMENTS::Beam2::b2_nlnstiffmass(disp_delta,stiff_dummy,mass_dummy,force_disp_delta);
+		DRT::ELEMENTS::Beam2::b2_nlnstiffmass(disp_delta,&stiff_dummy,&mass_dummy,&force_disp_delta);
 		for(int line=0; line<6; line++)
 			stiff_approx(line,col) = (force_disp_delta[line] - force_disp[line])/h_rel;		
 	} 
