@@ -223,7 +223,7 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
   double artscalar2;
   double scalarvisco;
   
-  if (E_f/E_s<=1E8)  // generalized Maxwell model in case stiffness ratio is not too high
+  if (E_f/E_s<=1E10)  // generalized Maxwell model in case stiffness ratio is not too high
   {
     tau=tau1;
     // evaluate "alpha" factors which distribute stress or stiffnes between parallel springs
@@ -258,8 +258,8 @@ void MAT::ViscoNeoHooke::Evaluate(const Epetra_SerialDenseVector* glstrain,
     kappa = lambda + 2.0/3.0 * mue;
     
     // evaluate sclars to compute
-    // Q^(n+1) = tau/(theta*dt) [(-dt+theta*dt) Q + S^(n+1) - S^n]
-    artscalar1=-dt+theta*dt;
+    // Q^(n+1) = tau/(theta*dt) [(-dt+theta*dt)/tau Q + S^(n+1) - S^n]
+    artscalar1=(-dt+theta*dt)/tau;
     artscalar2=tau/(theta*dt);
     
     // factor to calculate visco stiffness matrix from elastic stiffness matrix
