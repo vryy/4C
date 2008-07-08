@@ -94,7 +94,8 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
       s8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
     }
     break;
-  case calc_struct_internalforce: // do internal force
+    case calc_struct_internalforce: // do internal force
+    {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -106,6 +107,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
       s8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,actmat);
+    }
     break;
     case calc_struct_linstiffmass:
       dserror("Case not yet implemented");
