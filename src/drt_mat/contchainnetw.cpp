@@ -168,6 +168,9 @@ void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
       li0_->at(gp)[0] = 1.0*isotropy;
       li0_->at(gp)[1] = 1.0*isotropy;  // 2nd dir off! check update!
       li0_->at(gp)[2] = 1.0*isotropy;
+//      li0_->at(gp)[0] = 0.95;
+//      li0_->at(gp)[1] = 0.95;  // 2nd dir off! check update!
+//      li0_->at(gp)[2] = 0.05;
     } else dserror("Unknown remodeling initialization");
     for (int i = 0; i < 3; ++i){
       li_->at(gp)[i] = li0_->at(gp)[i];
@@ -275,7 +278,7 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   for (int i=0; i<dim; ++i) li0sq[i] = li0_->at(gp)[i]*li0_->at(gp)[i];
   r0 = sqrt(li0sq[0] + li0sq[1] + li0sq[2]);
   // scalar to arrive at stressfree reference conf
-  const double stressfree = - chn_stiffact * ( 1.0/L + 1.0/(4.0*r0*(1.0-r0/L)*(1.0-r0/L)) - 1.0/(4.0*r0) );
+  double stressfree = - chn_stiffact * ( 1.0/L + 1.0/(4.0*r0*(1.0-r0/L)*(1.0-r0/L)) - 1.0/(4.0*r0) );
 
   // structural tensors Ni0
   vector<Epetra_SerialDenseMatrix> Ni = EvaluateStructTensors(gp);
@@ -321,11 +324,24 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
       UpdateRate(Phi,lambda,rem_toggle,gp,r0,decay,kappa,dt);
     else dserror("Unknown Update Flag");
     
+#if DEBUG1
+    // update initial chain length
+    for (int i = 0; i < 3; ++i) li0_->at(gp)[i] = li_->at(gp)[i];
+    for (int i=0; i<dim; ++i) li0sq[i] = li_->at(gp)[i]*li_->at(gp)[i];
+    double r0new = sqrt(li0sq[0] + li0sq[1] + li0sq[2]);
+    
+    if (abs(r0-r0new) > 1.0E-12) dserror("r0 scaling problem");
+#endif
+
+    
     // reevaluate stress with 'remodeled' parameters
     Ni = EvaluateStructTensors(gp);
     I = EvaluateInvariants(CG,Ni);
     for (int i = 0; i < dim; ++i) lisq[i] = li_->at(gp)[i] * li_->at(gp)[i]; 
     double r = sqrt(I[0]*lisq[0] + I[1]*lisq[1] + I[2]*lisq[2]);
+    
+    stressfree = - chn_stiffact * ( 1.0/L + 1.0/(4.0*r0*(1.0-r0/L)*(1.0-r0/L)) - 1.0/(4.0*r0) );
+    
     double s_chn = chn_stiffact*(4.0/L + 1.0/(r*(1.0-r/L)*(1.0-r/L)) - 1.0/r);
     S = EvaluateStress(MAT::StressVoigt2Mat(stress),Ni,lisq,I,s_chn,stressfree);
  }
@@ -338,15 +354,16 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
 
   // chain stiffness factor
   double c_chn = chn_stiffact/(r*r*r) * (1.0 - 1.0/((1.0-r/L)*(1.0-r/L)) + 2.0*r/(L*(1.0-r/L)*(1.0-r/L)*(1.0-r/L)) );
-#if DEBUG
+#if DEBUG1
   //cout << "glstrain" << endl << (*glstrain);
   //cout << "stress" << endl << (*stress);
   cout << "li0: " << PrintVec(li0_->at(gp)) << "; li: " << PrintVec(li_->at(gp)) << endl; 
-  cout << PrintAnisoVects(gp) << endl << PrintStructTens(Ni) << endl << PrintAnisoCmat((*cmat),Ni,lisq,I,c_chn,stressfree) << endl;
+  //cout << PrintAnisoVects(gp) << endl << PrintStructTens(Ni) << endl; 
+  cout << PrintAnisoCmat((*cmat),Ni,lisq,I,c_chn,stressfree) << endl;
 #endif
   EvaluateCmat((*cmat),Ni,lisq,I,c_chn,stressfree);
   
-#if DEBUG
+#if DEBUG1
   //cout << *cmat;
 #endif
   
@@ -433,9 +450,15 @@ void MAT::ContChainNetw::Update(const Epetra_SerialDenseMatrix& Phi,
     const vector<double> rem_toggle,
     const int gp, const double r0, const double decay)
 {
+  double rescale = 0.0;
   for (int i = 0; i < 3; ++i){
     lambda_->at(gp)[i] = lambda(i);
     li_->at(gp)[i] = (rem_toggle[i] - li0_->at(gp)[i]/r0)*(1.0-decay)*r0 + li0_->at(gp)[i];
+    rescale += li_->at(gp)[i]*li_->at(gp)[i];
+  }
+  rescale = r0 / sqrt(rescale);
+  for (int i = 0; i < 3; ++i){
+    li_->at(gp)[i] = rescale * li_->at(gp)[i];
   }
   //li_->at(gp)[1] = 0.0;  // 2nd dir off!
   ni_->at(gp) = Phi;
@@ -446,9 +469,15 @@ void MAT::ContChainNetw::UpdateRate(const Epetra_SerialDenseMatrix& Phi,
     const vector<double> rem_toggle,
     const int gp, const double r0, const double decay, const double kappa, const double dt)
 {
+  double rescale = 0.0;
   for (int i = 0; i < 3; ++i){
     lambda_->at(gp)[i] = lambda(i);
     li_->at(gp)[i] = li_->at(gp)[i] + kappa*(rem_toggle[i] - li0_->at(gp)[i]/r0)*decay*r0 *dt;
+    rescale += li_->at(gp)[i]*li_->at(gp)[i];
+  }
+  rescale = r0 / sqrt(rescale);
+  for (int i = 0; i < 3; ++i){
+    li_->at(gp)[i] = rescale * li_->at(gp)[i];
   }
   ni_->at(gp) = Phi;
 }

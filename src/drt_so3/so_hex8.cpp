@@ -363,6 +363,18 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber4";
     names[fiber] = 3; // 3-dim vector
+    fiber = "l1";
+    names[fiber] = 1;
+    fiber = "l2";
+    names[fiber] = 1;
+    fiber = "l3";
+    names[fiber] = 1;
+//    fiber = "l1_0";
+//    names[fiber] = 1;
+//    fiber = "l2_0";
+//    names[fiber] = 1;
+//    fiber = "l3_0";
+//    names[fiber] = 1;
   }
 //  // element fiber direction vector
 //  if (fiberdirection_.size()!=0)
@@ -389,16 +401,36 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       data[0] = 0.0; data[1] = 0.0; data[2] = 0.0;
     } else {
       RCP<vector<vector<double> > > gplis = chain->Getli();
+      RCP<vector<vector<double> > > gpli0s = chain->Getli0();
+      RCP<vector<Epetra_SerialDenseMatrix> > gpnis = chain->Getni();
+      
       vector<double> centerli (3,0.0);
+      vector<double> centerli_0 (3,0.0);
+      Epetra_DataAccess CV = Copy;
       for (int i = 0; i < (int)gplis->size(); ++i) {
-        centerli[0] += gplis->at(i)[0];
-        centerli[1] += gplis->at(i)[1];
-        centerli[2] += gplis->at(i)[2];
+        Epetra_SerialDenseVector loc(CV,&(gplis->at(i)[0]),3);
+        Epetra_SerialDenseVector glo(3);
+        glo.Multiply('N','N',1.0,gpnis->at(i),loc,0.0);
+        centerli[0] += glo(0);
+        centerli[1] += glo(1);
+        centerli[2] += glo(2);
+
+//        centerli[0] += gplis->at(i)[0];
+//        centerli[1] += gplis->at(i)[1];
+//        centerli[2] += gplis->at(i)[2];
+//
+        centerli_0[0] += gplis->at(i)[0];
+        centerli_0[1] += gplis->at(i)[1];
+        centerli_0[2] += gplis->at(i)[2];
       }
       centerli[0] /= gplis->size();
       centerli[1] /= gplis->size();
       centerli[2] /= gplis->size();
-      
+
+      centerli_0[0] /= gplis->size();
+      centerli_0[1] /= gplis->size();
+      centerli_0[2] /= gplis->size();
+
       if (name == "Fiber1"){
         if ((int)data.size()!=3) dserror("size mismatch");
         data[0] = centerli[0]; data[1] = -centerli[1]; data[2] = -centerli[2];
@@ -408,6 +440,18 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
         data[0] = centerli[0]; data[1] = centerli[1]; data[2] = centerli[2];
       } else if (name == "Fiber4"){
         data[0] = -centerli[0]; data[1] = -centerli[1]; data[2] = centerli[2];
+      } else if (name == "l1"){
+        data[0] = centerli_0[0];
+      } else if (name == "l2"){
+        data[0] = centerli_0[1];
+      } else if (name == "l3"){
+        data[0] = centerli_0[2];
+//      } else if (name == "l1_0"){
+//        data[0] = centerli_0[0];
+//      } else if (name == "l2_0"){
+//        data[0] = centerli_0[1];
+//      } else if (name == "l3_0"){
+//        data[0] = centerli_0[2];
       } else if (name == "Owner"){
         if ((int)data.size()<1) dserror("Size mismatch");
         data[0] = Owner();

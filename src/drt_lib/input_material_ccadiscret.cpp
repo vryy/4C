@@ -563,6 +563,8 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      frdouble("RELAX"  ,&(localmat.m.contchainnetw->relax)      ,&ierr);
      frint   ("INITRAN",&(localmat.m.contchainnetw->initran)    ,&ierr);
      frdouble("REMBEGT",&(localmat.m.contchainnetw->rembegt)    ,&ierr);
+     frint   ("UPDRATE",&(localmat.m.contchainnetw->updrate)    ,&ierr);
+     frdouble("DIFFTOL",&(localmat.m.contchainnetw->difftol)    ,&ierr);
    }
    /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */
    frchk("MAT_Therm_Fourier_iso",&ierr);
