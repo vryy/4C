@@ -139,6 +139,15 @@ int PositionWithinCondition(
         const XFEM::InterfaceHandle&      ih              ///< the ubiquitious interface handle with all geometry information
     );
 
+/*!
+\brief checks if a position in current coordinates lies within a certain condition region           
+*/  
+int PositionWithinCondition(
+        const BlitzVec3&                  x,              ///< node in physical coordinates
+        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
+        int& closestElementId, 
+        double& distance
+    );
 
 /*!
 \brief checks if a position in current coordinates lies within a certain condition region           
@@ -154,7 +163,9 @@ bool PositionWithinAnyInfluencingCondition(
 */
 int PositionWithinConditionTree(
         const BlitzVec3&                  x,              ///< node in physical coordinates
-        const XFEM::InterfaceHandle&      ih              ///< the ubiquitious interface handle with all geometry information
+        const XFEM::InterfaceHandle&      ih,             ///< the ubiquitious interface handle with all geometry information
+        int& closestElementId, 
+        double& distance
     );
 
 int PositionWithinConditionBruteForce(

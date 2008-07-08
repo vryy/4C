@@ -20,6 +20,7 @@ Maintainer: Ursula Mayer
 #include "blitz_tiny_operation.H"
 #include "xfem.H"
 #include "../drt_lib/drt_discret.H"
+#include "intersection_service.H"
 
 namespace XFEM
 {
@@ -33,6 +34,16 @@ namespace XFEM
   */
   BlitzMat3x2 getXAABBofDis(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions);  
 
+  /*!
+  \brief Gives the eXtendedAxisAlignedBoundingBox of a complete Discretization and adds TOL07, 
+         also takes into account current displacements
+
+  \param  dis               (in)    : discretization containing elements 
+  \return                             AxisAlignedBoundingBox as BlitzMat3x2
+  */
+  BlitzMat3x2 getXAABBofDis(const DRT::Discretization& dis);  
+  
+  
   /*!
   \brief gives back the nearest Element in an List of Elements
 
@@ -63,7 +74,11 @@ namespace XFEM
   //! gives of an AABB
   double getArea(const BlitzMat3x2& AABB);
   
-  
+  void checkRoughGeoType(
+           DRT::Element*                element,
+           const BlitzMat               xyze_element,
+           EleGeoType&            eleGeoType
+           );
 }
 
 #endif

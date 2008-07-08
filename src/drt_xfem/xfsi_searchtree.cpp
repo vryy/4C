@@ -1,4 +1,4 @@
-/*!
+ /*!
 \file xfsi_searchtree.cpp
 
 \brief provides a class with search tree
@@ -16,6 +16,12 @@ Maintainer: Ursula Mayer
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
 
+extern "C" /* stuff which is c and is accessed from c++ */
+{
+#include "../headers/standardtypes.h"
+}
+extern struct _FILES  allfiles;
+
 using namespace std;
 
 XFEM::XSearchTree::XSearchTree() :
@@ -29,7 +35,23 @@ XFEM::XSearchTree::XSearchTree() :
   MinSearchLength_(INT_MAX),
   treeRoot_(NULL)
 {
+//  cout << " CREATING A TREE" << endl;
 }
+
+XFEM::XSearchTree::XSearchTree(const BlitzMat3x2 AABB) :
+  MAX_OVERLAP_ALLOWED_(0.875),
+  ELEMENTS_USED_FOR_OVERLAP_CHECK_(1),
+  TreeInit_(false),
+  hasExternAABB_(true),
+  AABB_(AABB),
+  searchRequests_(0),
+  Candidates_(0),
+  SearchLength_(0),
+  MinSearchLength_(INT_MAX),
+  treeRoot_(NULL)
+{
+}
+
 
 XFEM::XSearchTree::~XSearchTree() {
   delete treeRoot_;
@@ -46,7 +68,9 @@ double XFEM::XSearchTree::getMeanSearchlength(){
   return SearchLength_/searchRequests_;
 }
 
-int XFEM::XSearchTree::queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords) {
+int XFEM::XSearchTree::queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords, int& closestElementId, double& distance) {
+  //  cout << " ASKING THE TREE" << endl;
+  closestElementId = 0;
   TEUCHOS_FUNC_TIME_MONITOR("XSearchTree - queryTime"); 
   searchRequests_++;
   if (dis.NumGlobalElements() == 0){ 
@@ -55,9 +79,22 @@ int XFEM::XSearchTree::queryPointType(const DRT::Discretization& dis,const std::
   if (!TreeInit_)
     rebuild(dis, currentpositions);
   // search for candidates in tree
+  
+  BlitzMat3x2 testAABB;
+  if (hasExternAABB_)
+    testAABB = AABB_;
+  else
+    testAABB = treeRoot_->getAABB();
+  for (int i = 0; i<3;i++){
+      if ( (pointCoords(i)< testAABB(i,0)) || (pointCoords(i)>testAABB(i,1)) ){
+        dserror("Please specify a bounding box that covers all locations placing requests \non the tree(!will NOT be checked in fast mode!)");
+      }
+    }
+  
   int labID;
   const list< const DRT::Element* > candidates = treeRoot_->queryPointType(dis, currentpositions, pointCoords, labID);
   if (candidates.empty()){
+//    cout << "candidate list empty for (" << pointCoords(0) << "/" << pointCoords(1)<< "/" << pointCoords(2)<< ")" << endl;
     return labID;
   }
   // do excat routines
@@ -67,6 +104,8 @@ int XFEM::XSearchTree::queryPointType(const DRT::Discretization& dis,const std::
   int within = 0;
   double dist = 0;
   const DRT::Element* closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, candidates, pointCoords,dist);
+  closestElementId =closestEle->Id();
+  distance =dist;
   if (dist<0){
     within = labelByElement_[closestEle->Id()];
   }
@@ -98,13 +137,15 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
     const BlitzMat3x2 aabb(getXAABBofDis(dis, currentpositions));
     treeRoot_ = new TreeNode(0,aabb, this); 
   }  
-  #ifdef DEBUG
+  #ifdef DEBUG2
   cout << endl <<"inserting new elements (" << dis.NumMyColElements() << ")"<< endl;
   
   std::stringstream filename;
   std::stringstream fc;
   int step = 0;
-  filename << "xaabbs" << std::setw(5) << setfill('0') << step << ".pos";
+  
+  
+  filename << allfiles.outputfile_kenner << "_xaabbs" << std::setw(5) << setfill('0') << step << ".pos";
   cout << endl << "writing... "<<filename.str()<<" ...";
   fc << "View \" " << "XAABB of Elements \" {" << endl;
   flush(cout);
@@ -114,7 +155,7 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   for (int i=0; i<dis.NumMyColElements(); ++i) {
     insertElement(dis.lRowElement(i),currentpositions);
     
-    #ifdef DEBUG
+    #ifdef DEBUG2
     const BlitzMat xyze(XFEM::getCurrentNodalPositions(dis.lRowElement(i), currentpositions));
     const BlitzMat3x2 elemXAABB = XFEM::computeFastXAABB(dis.lRowElement(i), xyze, HIGHERORDER);
     BlitzMat XAABB(3,8);
@@ -131,7 +172,7 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
 
   }
   
-  #ifdef DEBUG
+  #ifdef DEBUG2
     fc << "};" << endl;
     std::ofstream f_system(filename.str().c_str());
     f_system << fc.str();
@@ -157,6 +198,7 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
 XFEM::XSearchTree::TreeNode::TreeNode(const int Depth, const BlitzMat3x2& aabb, XSearchTree* tree) :
   State_(STATE_LEAF_NODE),
   dont_refine_(false),
+  labelID_(-1),  
   actTreedepth_(Depth),
   tree_(tree),
   AABB_(aabb)
@@ -517,28 +559,6 @@ XFEM::XSearchTree::TreeNode* XFEM::XSearchTree::TreeNode::getChild(const int idx
   return children_[idx-1];
 }
 
-void XFEM::XSearchTree::printTree(const int step) const{
-  cout << endl << "writing... ";
-  if (!TreeInit_) {
-    cout << "nothing to write, tree not initialized yet -> done" << endl;
-    return;
-  }
-  if (treeRoot_->getElementList().empty()){ 
-    cout << "nothing to write, tree empty -> done" << endl;
-    return;
-  }
-  std::stringstream filename;
-  std::stringstream fc;
-  filename << "tree" << std::setw(5) << setfill('0') << step << ".pos";
-  cout << " "<<filename.str()<<" ...";
-  fc << "View \" " << "fsiOctree \" {" << endl;
-  treeRoot_->printTree(fc);
-  fc << "};" << endl;
-  std::ofstream f_system(filename.str().c_str());
-  f_system << fc.str();
-  f_system.close();
-  cout << " done" << endl;
-}
 
 int XFEM::XSearchTree::getMemoryUsage() const{
   int mem = treeRoot_->getMemoryUsage();
@@ -565,7 +585,47 @@ int XFEM::XSearchTree::TreeNode::getMemoryUsage() const{
   return mem;
 }
 
+void XFEM::XSearchTree::printTree(const string prefix, const int step) const{
+  cout << endl << "writing... ";
+  if (!TreeInit_) {
+    cout << "nothing to write, tree not initialized yet -> done" << endl;
+    return;
+  }
+  if (treeRoot_->getElementList().empty()){ 
+    cout << "nothing to write, tree empty -> done" << endl;
+    return;
+  }
+  std::stringstream filename;
+  std::stringstream fc;
+  filename << prefix << "_tree" << std::setw(5) << setfill('0') << step << ".pos";
+  cout << " "<<filename.str()<<" ...";
+  fc << "View \" " << "fsiOctree \" {" << endl;  
+  treeRoot_->printTree(fc);
+  fc << "};" << endl;
+  std::ofstream f_system(filename.str().c_str());
+  f_system << fc.str();
+  f_system.close();
+  cout << " done" << endl;
+}
+
+
+
 void XFEM::XSearchTree::TreeNode::printTree(stringstream& fc) const{
+  int factor = 1;
+  if (actTreedepth_==-1)
+    {
+      BlitzMat XAABB(3,8);
+      XAABB(0,0) = AABB_(0,0); XAABB(1,0) = AABB_(1,0);XAABB(2,0) = AABB_(2,0);
+      XAABB(0,1) = AABB_(0,0); XAABB(1,1) = AABB_(1,1);XAABB(2,1) = AABB_(2,0);
+      XAABB(0,2) = AABB_(0,0); XAABB(1,2) = AABB_(1,1);XAABB(2,2) = AABB_(2,1);
+      XAABB(0,3) = AABB_(0,0); XAABB(1,3) = AABB_(1,0);XAABB(2,3) = AABB_(2,1);
+      XAABB(0,4) = AABB_(0,1); XAABB(1,4) = AABB_(1,0);XAABB(2,4) = AABB_(2,0);
+      XAABB(0,5) = AABB_(0,1); XAABB(1,5) = AABB_(1,1);XAABB(2,5) = AABB_(2,0);
+      XAABB(0,6) = AABB_(0,1); XAABB(1,6) = AABB_(1,1);XAABB(2,6) = AABB_(2,1);
+      XAABB(0,7) = AABB_(0,1); XAABB(1,7) = AABB_(1,0);XAABB(2,7) = AABB_(2,1);
+      fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, 0, XAABB)<< endl;
+    }
+
   if (State_==STATE_INNER_NODE){
     for (int j=0; j<8; j++){
       if (children_[j]!=NULL)
@@ -574,6 +634,12 @@ void XFEM::XSearchTree::TreeNode::printTree(stringstream& fc) const{
   }
   else if (State_==STATE_LEAF_NODE)
   {
+    if (labelID_<0)
+      factor = 0;
+    else if (labelID_==0)
+      factor = -1;
+    else
+      factor = 1;
     BlitzMat XAABB(3,8);
     XAABB(0,0) = AABB_(0,0); XAABB(1,0) = AABB_(1,0);XAABB(2,0) = AABB_(2,0);
     XAABB(0,1) = AABB_(0,0); XAABB(1,1) = AABB_(1,1);XAABB(2,1) = AABB_(2,0);
@@ -583,7 +649,7 @@ void XFEM::XSearchTree::TreeNode::printTree(stringstream& fc) const{
     XAABB(0,5) = AABB_(0,1); XAABB(1,5) = AABB_(1,1);XAABB(2,5) = AABB_(2,0);
     XAABB(0,6) = AABB_(0,1); XAABB(1,6) = AABB_(1,1);XAABB(2,6) = AABB_(2,1);
     XAABB(0,7) = AABB_(0,1); XAABB(1,7) = AABB_(1,0);XAABB(2,7) = AABB_(2,1);
-    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, -actTreedepth_-10, XAABB)<< endl;
+    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, factor*actTreedepth_, XAABB)<< endl;
   }
   
 }

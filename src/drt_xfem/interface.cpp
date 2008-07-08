@@ -88,7 +88,10 @@ XFEM::InterfaceHandle::InterfaceHandle(
   CollectElementsByXFEMCouplingLabel(*cutterdis, elementsByLabel_);
 
   //cout << "create new xTree_ object" << endl;
-  xTree_ = rcp(new XSearchTree());
+  const BlitzMat3x2 cutterAABB = XFEM::getXAABBofDis(*cutterdis,currentcutterpositions_);
+  const BlitzMat3x2 xfemAABB = XFEM::getXAABBofDis(*xfemdis);
+  const BlitzMat3x2 AABB = XFEM::mergeAABB(cutterAABB, xfemAABB);
+  xTree_ = rcp(new XSearchTree(AABB));
 }
 		
 /*----------------------------------------------------------------------*
@@ -116,7 +119,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (xfemparams.get<std::string>("GMSH_DEBUG_OUT") == "Yes");
   
-  const bool gmsh_tree_output = false;
+  const bool gmsh_tree_output = true;
   
   if (gmshdebugout)
   {
@@ -157,10 +160,13 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           BlitzMat cellpos(3,cell->NumNode()); 
           cell->NodalPosXYZ(*actele, cellpos);
           const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
-          
-          const int domain_id = PositionWithinCondition(cellcenterpos, *this);
-          
-          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), domain_id, cellpos) << endl;
+          int closestElementId;
+          double distance;
+          const int domain_id = PositionWithinCondition(cellcenterpos, *this, closestElementId, distance);
+          stringstream text;
+          text.precision(3);
+          text << "(<"<< (actele->Id()) << "," << closestElementId << ">,\n"<< fixed << distance << ")";
+          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), domain_id*100000+(closestElementId), cellpos) << endl;
           BlitzMat point(3,1);
           point(0,0)=cellcenterpos(0);
           point(1,0)=cellcenterpos(1);
@@ -180,12 +186,19 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     // debug: write information about which structure we are in
     std::stringstream filenameP;
     filenameP << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step << ".pos";
-    cout << "writing '"<<filenameP.str()<<"...";
+    std::stringstream filenameAnnotations;
+    filenameAnnotations << allfiles.outputfile_kenner << "_annotations_" << std::setw(5) << setfill('0') << step << ".pos";
+
+    cout <<endl << "writing '"<<filenameP.str()<<"...";
     std::ofstream f_systemP(filenameP.str().c_str());
+    cout <<endl << "writing '"<<filenameAnnotations.str()<<"...";
+    std::ofstream f_systemAnnotations(filenameAnnotations.str().c_str());
     {
       // stringstream for cellcenter points
       stringstream gmshfilecontentP;
       gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
+      stringstream gmshfilecontentAnnotations;
+      gmshfilecontentAnnotations << "View \" " << "Annotations for cell centers \" {" << endl;
       
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
@@ -199,22 +212,34 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           cell->NodalPosXYZ(*actele, cellpos);
           const BlitzVec3 cellcenterpos(cell->GetPhysicalCenterPosition(*actele));
           
-          const int domain_id = PositionWithinCondition(cellcenterpos, *this);
+          int closestElementId;
+          double distance;
+ 
+          const int domain_id = PositionWithinCondition(cellcenterpos, *this, closestElementId, distance);
           
           BlitzMat point(3,1);
           point(0,0)=cellcenterpos(0);
           point(1,0)=cellcenterpos(1);
           point(2,0)=cellcenterpos(2);
-          gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, 1, point) << endl;              
+
+          stringstream text;
+          text.precision(3);
+          text << "(<"<< (actele->Id()) << "," << closestElementId << ">,\n"<< fixed << distance << ")";
+       
+          gmshfilecontentAnnotations << IO::GMSH::text3dToString(cellcenterpos, text.str(), 2) << endl;              
+          gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, (actele->Id()), point) << endl;              
         };
       };
       gmshfilecontentP << "};" << endl;
+      gmshfilecontentAnnotations << "};" << endl;
       f_systemP << gmshfilecontentP.str();
+      f_systemAnnotations << gmshfilecontentAnnotations.str();
     }
     //f_system << IO::GMSH::getConfigString(3);
     f_systemP.close();
+    f_systemAnnotations.close();
     cout << " done" << endl;
-    xTree_->printTree(step);
+    xTree_->printTree(allfiles.outputfile_kenner, step);
   }
   return;
 }
@@ -271,9 +296,23 @@ int XFEM::PositionWithinCondition(
     const XFEM::InterfaceHandle&      ih
 )
 {
-  
+  int closestElementId;
+  double distance; 
+  return PositionWithinCondition(x_in,ih,closestElementId, distance);
+}
+
+/*----------------------------------------------------------------------*
+ |  CLI:    checks if a position is within condition-enclosed region      p.ede 05/08|   
+ *----------------------------------------------------------------------*/
+int XFEM::PositionWithinCondition(
+    const BlitzVec3&                  x_in,
+    const XFEM::InterfaceHandle&      ih,
+    int& closestElementId, 
+    double& distance
+)
+{
   //PositionWithinConditionBruteForce(x_in, ih, posInCondition);
-  const int label = PositionWithinConditionTree(x_in, ih);
+  const int label = PositionWithinConditionTree(x_in, ih, closestElementId,distance);
 //  const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
 //  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
 //   {
@@ -366,26 +405,19 @@ int XFEM::PositionWithinConditionBruteForce(
  *----------------------------------------------------------------------*/
 int XFEM::PositionWithinConditionTree(
     const BlitzVec3&                  x_in,
-    const XFEM::InterfaceHandle&      ih
+    const XFEM::InterfaceHandle&      ih,
+    int& closestElementId, 
+    double& distance
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinConditionTree");
-  //posInCondition.clear();
-  //const std::map<int,set<int> >& elementsByLabel = *(ih.elementsByLabel());
-//  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
-//  {
-//    const int label = conditer->first;
-//    posInCondition[label] = false;    
-//  }
   Teuchos::RCP<XSearchTree> xt = ih.getSearchTree(); // pointer is constant, object is not!
-  int l = xt->queryPointType(*ih.cutterdis() , *ih.currentcutterpositions(), x_in);
-//  if (l>0)
-//    posInCondition[l] = true;
-  
-  // TODO: in parallel, we have to ask all processors, whether there is any match!!!!
-#ifdef PARALLEL
+  int l = xt->queryPointType(*ih.cutterdis() , *ih.currentcutterpositions(), x_in, closestElementId, distance);
+
+  #ifdef PARALLEL
   dserror("not implemented, yet");
 #endif
+
   return l;
 }
 
@@ -406,8 +438,9 @@ bool XFEM::PositionWithinAnyInfluencingCondition(
   {
     dserror("this function has to be extended to allow contact problems!");
   }
-  
-  const int label = PositionWithinCondition(x_in, ih);
+  int closestElementId; 
+  double distance;
+  const int label = PositionWithinCondition(x_in, ih,closestElementId, distance);
   bool compute = false;
   if (xlabelset.find(label) == xlabelset.end())
   {

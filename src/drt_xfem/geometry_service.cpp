@@ -68,13 +68,32 @@ BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis,const std::map<in
   return XAABB;
 }
 
+BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis){
+  std::map<int,BlitzVec3> currentpositions;
+  currentpositions.clear();
+  for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
+  {
+    const DRT::Node* node = dis.lColNode(lid);
+    static BlitzVec3 currpos;
+    currpos(0) = node->X()[0];
+    currpos(1) = node->X()[1];
+    currpos(2) = node->X()[2];
+    currentpositions[node->Id()] = currpos;
+  }
+  return getXAABBofDis(dis, currentpositions);
+}
+
+
 
 const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const list<const DRT::Element* >& ElementList, const BlitzVec3& x_in, double& dist)
 {
+  dist=1.0e12;
   bool in_element = false;
   double min_ele_distance = 1.0e12;
+  double min_node_distance =1.0e12;
   BlitzVec3 vectorX2minNode;
   const DRT::Element* closest_element;
+  const DRT::Element* closest_element_from_node;
   const DRT::Node* closest_node;
   bool foundNearSurfaceElement =false;
   
@@ -90,16 +109,16 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
     {
       closest_element = cutterele;
       min_ele_distance = distance;
-      foundNearSurfaceElement =true;
+//      foundNearSurfaceElement =true;
     }
   }
-  if (foundNearSurfaceElement)  
-  {
-    dist = min_ele_distance;
-  }
-  else 
+//  if (foundNearSurfaceElement)  
+//  {
+//    dist = min_ele_distance;
+//  }
+//  else 
   { 
-    min_ele_distance = 1.0e12;
+    min_node_distance = abs(min_ele_distance);
     for (list< const DRT::Element* >::const_iterator myIt2 = ElementList.begin(); myIt2 != ElementList.end(); myIt2++) {
       double distance = 1.0e12;
       const DRT::Element* cutterele = &**myIt2;       
@@ -119,13 +138,14 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
         // absolute distance between point and node
         distance = sqrt(vector(0)*vector(0) + vector(1)*vector(1) + vector(2)*vector(2));
         
-        if (distance < min_ele_distance) {
+        if (distance < min_node_distance) {
           closest_node = cutternode;
-          min_ele_distance = distance;
+          min_node_distance = distance;
           vectorX2minNode=vector;
         }
       }          
     }
+    if (abs(min_node_distance)<abs(min_ele_distance)) {
     BlitzVec3 normal;
     normal(0)=0;normal(1)=0;normal(2)=0;
     DRT::Node*  node = dis.gNode(closest_node->Id());
@@ -142,12 +162,22 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
       normal(1) = normal(1) +  eleNormalAtXsi(1);
       normal(2) = normal(2) +  eleNormalAtXsi(2);
     }
-    closest_element=node->Elements()[0];
+    closest_element_from_node=node->Elements()[0]; 
     const double scalarproduct = vectorX2minNode(0)*normal(0) + vectorX2minNode(1)*normal(1) + vectorX2minNode(2)*normal(2);
     const double vorzeichen = scalarproduct/abs(scalarproduct);
-    min_ele_distance *= vorzeichen;
-    dist = min_ele_distance;
+    min_node_distance *= vorzeichen;
+    }
   }
+  
+  if (abs(min_ele_distance)<=abs(min_node_distance)){
+    dist = min_ele_distance;
+    return closest_element;
+  }
+  else {
+    dist = min_node_distance;
+    return closest_element_from_node;
+  }
+  
   return closest_element;
 }
 
@@ -208,5 +238,21 @@ double XFEM::getArea(const BlitzMat3x2& AABB){
   }
   return A;
 }
+
+void XFEM::checkRoughGeoType(
+           DRT::Element*                element,
+           const BlitzMat               xyze_element,
+           EleGeoType&                  eleGeoType)
+{
+  const DRT::Element::DiscretizationType distype = element->Shape();
+  
+  if(DRT::UTILS::getOrder(distype) ==1)
+    eleGeoType = LINEAR;
+  else if(DRT::UTILS::getOrder(distype)==2)
+    eleGeoType = HIGHERORDER;
+  else
+    dserror("order of element shapefuntion is not correct");
+}
+
 
 #endif  // #ifdef CCADISCRET

@@ -128,7 +128,10 @@ namespace XFEM
         
         //! get memory usage
         int getMemoryUsage() const;
-        
+
+        //! gives the AxisAlignedBoundingBox of the treenode (which of course is the same as the "strict" BB)
+         const BlitzMat3x2& getAABB();
+       
       private:
         
         //! gives the octand(=child) of this treenode to which elem belongs (uses the XAABB of elem)
@@ -140,10 +143,7 @@ namespace XFEM
         //! gives the octand(=child) of this treenode to which the point belongs 
         int classifyPoint(const BlitzVec3& pointcoords);
         
-        //! gives the AxisAlignedBoundingBox of the treenode (which of course is the same as the "strict" BB)
-        const BlitzMat3x2& getAABB();
-        
-        //! gives the AABB of a child of this treenode
+         //! gives the AABB of a child of this treenode
         BlitzMat3x2 getChildOctAABB(const int chldIdx);
       
     }; // class TreeNode
@@ -191,6 +191,7 @@ namespace XFEM
       
     public:
       XSearchTree();
+      XSearchTree(const BlitzMat3x2 AABB);
       virtual ~XSearchTree();
       
       int getDepth();
@@ -208,7 +209,7 @@ namespace XFEM
       \param  pointCoords       (in)    : coords of point which will be examined
       \return                             0->fluid 1..n->Solid with XFEM-Coupling condition
       */
-      int queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords);
+      int queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords, int& closestElementId, double& distance);
       
       //! destroys and rebuilds the whole tree
       void rebuild(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions);
@@ -231,6 +232,10 @@ namespace XFEM
       
       //! dumps a visualization of the tree in a gmsh file (tree0000<step>.pos)
       void printTree(const int step) const;
+
+      //! dumps a visualization of the tree in a gmsh file (<prefiy>_tree0000<step>.pos)
+      void printTree(const string prefix, const int step) const;
+
       
       //! get memory usage
       int getMemoryUsage() const;
@@ -243,21 +248,3 @@ namespace XFEM
 
 #endif
 #endif
-
-//! experimental code
-//    private: class decoratedElement: public DRT::Element {
-//      const DRT::Element* Element_;
-//      
-//      public:
-//        decoratedElement(const DRT::Element* element);
-//        virtual ~decoratedElement();
-//        
-//        int getID();
-//        int getLabel();
-//        list<BlitzVec3> getNodeCoords();    
-//        
-//      private:
-//        
-//    }; // class decoratedElement
-//    
-

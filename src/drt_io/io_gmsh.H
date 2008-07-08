@@ -260,6 +260,55 @@ namespace IO
       return gmsh_ele_line.str();
     }
 
+    inline std::string text3dToString(
+        const BlitzVec3& xyz,
+        const std::string text, 
+        const int fontsize)
+    {
+         stringstream gmsh_ele_line;
+         
+         gmsh_ele_line << "T3";
+         // coordinates
+         gmsh_ele_line << "("<< scientific << xyz(0)<<",";
+         gmsh_ele_line << scientific << xyz(1)<<",";
+         gmsh_ele_line << scientific << xyz(2) <<",";             
+         gmsh_ele_line << fontsize << ")";
+         gmsh_ele_line <<"{\"" << text <<"\"};";
+         
+         return gmsh_ele_line.str();
+    }
+    
+    template<class M> std::string cellWithScalarAndTextToString(
+        const DRT::Element::DiscretizationType distype,
+        const double scalar,
+        const M& xyze,
+        const std::string& text, 
+        const int fontsize)
+    {
+         stringstream gmsh_ele_line;
+         
+         gmsh_ele_line << cellWithScalarToString(distype, scalar, xyze) << endl;
+         // header for this element
+         BlitzVec3 coords;
+         coords(0)=xyze(0, 0);
+         coords(1)=xyze(1, 0);
+         coords(2)=xyze(2, 0);
+         
+         gmsh_ele_line << text3dToString(coords, text, fontsize);
+         
+         return gmsh_ele_line.str();
+    }
+    
+    template<class M> std::string cellWithScalarAndTextToString(
+        const DRT::Element::DiscretizationType distype,
+        const double scalar,
+        const M& xyze,
+        const std::string text)
+    {
+      return cellWithScalarAndTextToString(distype, scalar, xyze, text, 0);
+    }
+    
+
     template<class V, class M> std::string cellWithScalarFieldToString(
         const DRT::Element::DiscretizationType distype,
         const V& scalarfield,
