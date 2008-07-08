@@ -1,3 +1,11 @@
+//
+// Maintainer: Georg Bauer
+//             bauer@lnm.mw.tum.de
+//             http://www.lnm.mw.tum.de
+//             089 - 289-15252
+//
+// necessary defines: D_FLUID3 CCADISCRET BINIO RESULTTEST
+//
 ==================================================================
         General Data File CCARAT
 ==================================================================
