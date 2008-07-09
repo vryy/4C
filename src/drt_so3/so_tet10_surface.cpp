@@ -51,7 +51,6 @@ DRT::Element(old),
 parent_(old.parent_),
 lsurface_(old.lsurface_)
 {
-  //DSTraceHelper dst("Sotet10Surface::Sotet10Surface");
   return;
 }
 
@@ -61,7 +60,6 @@ lsurface_(old.lsurface_)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Sotet10Surface::Clone() const
 {
-  //DSTraceHelper dst("Sotet10Surface::Clone");
   DRT::ELEMENTS::Sotet10Surface* newelement = new DRT::ELEMENTS::Sotet10Surface(*this);
   return newelement;
 }
@@ -82,7 +80,6 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Sotet10Surface::Shape() const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Sotet10Surface::Pack(vector<char>& data) const
 {
-  //DSTraceHelper dst("Sotet10Surface::Pack");
   data.resize(0);
   dserror("this Sote10Surface element does not support communication");
 
@@ -95,8 +92,6 @@ void DRT::ELEMENTS::Sotet10Surface::Pack(vector<char>& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Sotet10Surface::Unpack(const vector<char>& data)
 {
-  //DSTraceHelper dst("Sotet10Surface::Unpack");
- 
   dserror("this Sotet10Surface element does not support communication");
   return;
 }
@@ -106,7 +101,6 @@ void DRT::ELEMENTS::Sotet10Surface::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Sotet10Surface::~Sotet10Surface()
 {
-  //DSTraceHelper dst("Sotet10Surface::~Sotet10Surface");
   return;
 }
 
@@ -116,7 +110,6 @@ DRT::ELEMENTS::Sotet10Surface::~Sotet10Surface()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Sotet10Surface::Print(ostream& os) const
 {
-  //DSTraceHelper dst("Sotet10Surface::Print");
   os << "Sotet10Surface ";
   Element::Print(os);
   return;
