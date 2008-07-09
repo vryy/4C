@@ -566,7 +566,7 @@ static void Sysmat4(
             }
             double val = 0.0;
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
-                val += abs(velinoder(iparam));
+                val += fabs(velinoder(iparam));
             
             const double strle = 2.0/val;
 
@@ -1515,7 +1515,7 @@ static void Sysmat4(
             mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
 //            cout << cell->toString() << endl;
 //            cout << posXiDomain << endl;
-            const double detcell = abs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
+            const double detcell = fabs(detEtaBToXiB(*cell, pos_eta_boundary)); //TODO: check normals
             if (detcell <= 0.0)
             {
               cout << "detcel :  " << detcell << endl;
@@ -1772,9 +1772,9 @@ static void Sysmat4(
             // hence, we can't use the local assembler here
             for (int inode = 0; inode < numnode_boundary; ++inode)
             {
-              force_boundary(0,inode) += funct_boundary(inode) * (disctau_times_n(0) * timefacfac);
-              force_boundary(1,inode) += funct_boundary(inode) * (disctau_times_n(1) * timefacfac);
-              force_boundary(2,inode) += funct_boundary(inode) * (disctau_times_n(2) * timefacfac);
+              force_boundary(0,inode) += funct_boundary(inode) * (disctau_times_n(0) * fac);
+              force_boundary(1,inode) += funct_boundary(inode) * (disctau_times_n(1) * fac);
+              force_boundary(2,inode) += funct_boundary(inode) * (disctau_times_n(2) * fac);
             }
             
             

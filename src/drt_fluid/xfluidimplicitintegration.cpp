@@ -671,12 +671,6 @@ void XFluidImplicitTimeInt::NonlinearSolve(
   double dtsolve = 0.0;
   double dtele   = 0.0;
 
-//  (*ivelcol)[0] = (-1.5*std::sin(2.0*time_* PI) * PI);
-//  (*ivelcol)[4] = (-1.5*std::sin(2.0*time_* PI) * PI);
-//  (*ivelcol)[8] = (-1.5*std::sin(2.0*time_* PI) * PI);
-//  (*ivelcol)[12] = (-1.5*std::sin(2.0*time_* PI) * PI);
-
-
   if (myrank_ == 0 && ivelcol->MyLength() >= 3)
   {
     std::cout << "applying interface velocity ivelcol[0] = " << (*ivelcol)[0] << std::endl;
@@ -797,7 +791,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
 
         // How to extract the density from the fluid material?
         trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
-        iforcecol->Scale(density_/dta_/theta_);
+        iforcecol->Scale(density_);
 
         // finalize the complete matrix
         sysmat_->Complete();
