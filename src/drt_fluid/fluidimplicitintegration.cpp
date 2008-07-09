@@ -758,12 +758,6 @@ void FluidImplicitTimeInt::PrepareTimeStep()
   {
     ParameterList eleparams;
 
-    // choose what to assemble
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",true);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("delta time",dta_);
@@ -2107,20 +2101,14 @@ void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     eleparams.set("action","calc_fluid_beltrami_error");
     // actual time for elements
     eleparams.set("total time",time_);
-    // choose what to assemble --- nothing
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",false);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
+
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("u and p at time n+1 (converged)",velnp_);
 
-    // call loop over elements
-    discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+    // call loop over elements (assemble nothing)
+    discret_->Evaluate(eleparams,null,null,null,null,null);
     discret_->ClearState();
-
 
     double locvelerr = eleparams.get<double>("L2 integrated velocity error");
     double locpreerr = eleparams.get<double>("L2 integrated pressure error");
@@ -2200,12 +2188,6 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
    {
      ParameterList eleparams;
 
-     // choose what to assemble
-     eleparams.set("assemble matrix 1",false);
-     eleparams.set("assemble matrix 2",false);
-     eleparams.set("assemble vector 1",true);
-     eleparams.set("assemble vector 2",false);
-     eleparams.set("assemble vector 3",false);
      // other parameters needed by the elements
      eleparams.set("total time",time_);
      eleparams.set("delta time",origdta);

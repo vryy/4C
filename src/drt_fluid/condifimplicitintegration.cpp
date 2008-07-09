@@ -448,12 +448,7 @@ void CondifImplicitTimeInt::PrepareTimeStep()
     ParameterList eleparams;
     // action for elements
     eleparams.set("action","calc_condif_eleload");
-    // choose what to assemble
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",true);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
+
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     eleparams.set("delta time",dta_);
@@ -950,12 +945,7 @@ void CondifImplicitTimeInt::SolveStationaryProblem()
      ParameterList eleparams;
      // action for elements
      eleparams.set("action","calc_condif_eleload");
-     // choose what to assemble
-     eleparams.set("assemble matrix 1",false);
-     eleparams.set("assemble matrix 2",false);
-     eleparams.set("assemble vector 1",true);
-     eleparams.set("assemble vector 2",false);
-     eleparams.set("assemble vector 3",false);
+
      // other parameter needed by the elements
      eleparams.set("condif velocity field",cdvel_);
      eleparams.set("fs subgrid diffusivity",fssgd_);

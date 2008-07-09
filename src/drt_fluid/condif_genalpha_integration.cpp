@@ -323,12 +323,7 @@ void CondifGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   ParameterList eleparams;
   // action for elements
   eleparams.set("action","calc_condif_eleload");
-  // choose what to assemble
-  eleparams.set("assemble matrix 1",false);
-  eleparams.set("assemble matrix 2",false);
-  eleparams.set("assemble vector 1",true);
-  eleparams.set("assemble vector 2",false);
-  eleparams.set("assemble vector 3",false);
+
   // other parameters needed by the elements
   eleparams.set("total time",time_);
   eleparams.set("delta time",dt_  );
@@ -524,11 +519,6 @@ void CondifGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // action for elements
   eleparams.set("action","calc_condif_genalpha_sysmat_and_residual");
-  eleparams.set("assemble matrix 1",true);
-  eleparams.set("assemble matrix 2",false);
-  eleparams.set("assemble vector 1",true);
-  eleparams.set("assemble vector 2",false);
-  eleparams.set("assemble vector 3",false);
 
   // other parameters that might be needed by the elements
   {
