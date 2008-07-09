@@ -643,6 +643,11 @@ void XFluidImplicitTimeInt::NonlinearSolve(
   ComputeInterfaceAndSetDOFs(cutterdiscret,*idispcol);
 
   PrepareNonlinearSolve();
+  
+  if (timealgo_==timeint_stationary)
+  {
+    ivelcol->PutScalar(0.0);
+  }
 
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
