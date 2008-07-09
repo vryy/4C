@@ -542,6 +542,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(const Teuchos::ParameterLis
   RCP<ParameterList> genalphaparams = rcp(new ParameterList());
   StruGenAlpha::SetDefaults(*genalphaparams);
 
+  genalphaparams->set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
   genalphaparams->set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
   genalphaparams->set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
   genalphaparams->set<double>("damping factor M",sdyn.get<double>("M_DAMP"));

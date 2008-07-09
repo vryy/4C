@@ -65,7 +65,7 @@ fsisurface_(NULL)
   // -------------------------------------------------------------------
   // check sanity of static analysis set-up
   // -------------------------------------------------------------------
-  bool dynkindstat = ( params_.get<string>("DYNKIND") == "Static" );
+  bool dynkindstat = ( params_.get<string>("DYNAMICTYP") == "Static" );
   if (dynkindstat)
   {
     if ( (alphaf != 0.0) or (alpham != 0.0) )
@@ -277,7 +277,7 @@ void StruGenAlpha::ConstantPredictor()
   double alphaf      = params_.get<double>("alpha f"        ,0.459);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-  bool   dynkindstat = (params_.get<string>("DYNKIND") == "Static");
+  bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
@@ -470,7 +470,7 @@ void StruGenAlpha::ConsistentPredictor()
   double gamma       = params_.get<double>("gamma"          ,0.581);
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
-  bool   dynkindstat = (params_.get<string>("DYNKIND") == "Static");
+  bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces if a relative convergence
@@ -745,7 +745,7 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
   bool   printscreen = params_.get<bool>  ("print to screen",false);
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   bool structrobin   = params_.get<bool>  ("structrobin", false);
-  bool   dynkindstat = (params_.get<string>("DYNKIND") == "Static");
+  bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
   // increment time and step
   double timen = time + dt;
@@ -934,6 +934,7 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
   // On the first call in a time step we have to have
   // disp==Teuchos::null. Then we just finished one of our predictors,
@@ -1060,18 +1061,25 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   //------------------------------------------- effective rhs is fresm
   //---------------------------------------------- build effective lhs
   // (using matrix stiff_ as effective matrix)
-#ifdef STRUGENALPHA_BE
-  stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
-#else
-  stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
-#endif
-  if (damping)
+  if (dynkindstat)
+  {
+    // do nothing, we have the ordinary stiffness matrix ready
+  }
+  else
   {
 #ifdef STRUGENALPHA_BE
-    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+    stiff_->Add(*mass_,false,(1.-alpham)/(delta*dt*dt),1.-alphaf);
 #else
-    stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+    stiff_->Add(*mass_,false,(1.-alpham)/(beta*dt*dt),1.-alphaf);
 #endif
+    if (damping)
+    {
+#ifdef STRUGENALPHA_BE
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(delta*dt),1.0);
+#else
+      stiff_->Add(*damp_,false,(1.-alphaf)*gamma/(beta*dt),1.0);
+#endif
+    }
   }
   stiff_->Complete();
 
@@ -1109,7 +1117,7 @@ void StruGenAlpha::FullNewton()
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   bool structrobin = params_.get<bool>  ("structrobin"            ,false);
   if (!errfile) printerr = false;
-  bool dynkindstat = (params_.get<string>("DYNKIND") == "Static");
+  bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -3124,7 +3132,7 @@ void StruGenAlpha::IntegrateStep()
  *----------------------------------------------------------------------*/
 void StruGenAlpha::SetDefaults(ParameterList& params)
 {
-  params.set<string>("DYNKIND"                ,"Gen_Alfa");
+  params.set<string>("DYNAMICTYP"             ,"Gen_Alfa");
   params.set<bool>  ("print to screen"        ,true);
   params.set<bool>  ("print to err"           ,false);
   params.set<FILE*> ("err file"               ,NULL);
