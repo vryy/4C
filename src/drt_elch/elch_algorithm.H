@@ -94,6 +94,7 @@ namespace ELCH
     RCP<const Epetra_Vector>    velocitynp_;
 
     //! @name Time stepping variables
+
     /// step counter
     int step_;
     /// maximum number of time steps

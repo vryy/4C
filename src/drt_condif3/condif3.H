@@ -1,5 +1,5 @@
 /*!
-\file fluid3.H
+\file condif3.H
 
 \brief A C++ wrapper for the fluid3 element
 
@@ -255,6 +255,8 @@ public:
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in):         location vector of this element
   \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
                           the controling method does not epxect the element to fill
                           this matrix.
@@ -338,7 +340,7 @@ private:
   // don't want = operator
   Condif3& operator = (const Condif3& old);
   
-  // calculating system matrix and RHS
+  //! calculating system matrix and RHS
   void Condif3SysMat(
                    vector<double>&           ehist,
                    Epetra_SerialDenseMatrix* sys_mat,
@@ -725,6 +727,8 @@ public:
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in):         location vector of this element
   \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
                           the controling method does not epxect the element to fill
                           this matrix.
