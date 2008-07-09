@@ -91,20 +91,6 @@ public:
   */
   virtual ~FluidImplicitTimeInt();
 
-
-  /*!
-  \brief do explicit predictor step to start nonlinear iteration from
-         a better initial value
-
-  */
-  void ExplicitPredictor();
-
-    /*!
-  \brief Set the part of the righthandside belonging to the last
-         timestep.
-  */
-  void SetOldPartOfRighthandside();
-
   /*!
   \brief start time loop for startingalgo, normal problems and restarts
 

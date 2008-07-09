@@ -51,13 +51,13 @@ namespace TIMEINT_THETA_BDF2
                        +-                                      -+
   */
   void ExplicitPredictor(
-          RCP<Epetra_Vector>&         veln,
-          RCP<Epetra_Vector>&         velnm,
-          RCP<Epetra_Vector>&         accn,
-          const double                dta,
-          const double                dtp,
-          RCP<Epetra_Vector>&         velnp
-          );
+      const RCP<Epetra_Vector>&   veln,
+      const RCP<Epetra_Vector>&   velnm,
+      const RCP<Epetra_Vector>&   accn,
+      const double                dta,
+      const double                dtp,
+      RCP<Epetra_Vector>&         velnp
+  );
 
   /*!
   \brief Set the part of the righthandside belonging to the last
@@ -75,49 +75,32 @@ namespace TIMEINT_THETA_BDF2
                    hist_ = 4/3 veln_ - 1/3 velnm_
   */
   void SetOldPartOfRighthandside(
-          RCP<Epetra_Vector>&         veln,
-          RCP<Epetra_Vector>&         velnm,
-          RCP<Epetra_Vector>&         accn,
-          const FLUID_TIMEINTTYPE     timealgo,
-          const double                dta,
-          const double                theta,
-          RCP<Epetra_Vector>&         hist
-          );
+      const RCP<Epetra_Vector>&   veln,
+      const RCP<Epetra_Vector>&   velnm,
+      const RCP<Epetra_Vector>&   accn,
+      const FLUID_TIMEINTTYPE     timealgo,
+      const double                dta,
+      const double                theta,
+      RCP<Epetra_Vector>&         hist
+  );
 
   /*!
   \brief Update the solution after convergence of the nonlinear
          iteration.
   */
   void CalculateAcceleration(
-          RCP<Epetra_Vector>&         velnp,
-          RCP<Epetra_Vector>&         veln,
-          RCP<Epetra_Vector>&         velnm,
-          const FLUID_TIMEINTTYPE     timealgo,
-          const int                   step,
-          const double                theta,
-          const double                dta,
-          const double                dtp,
-          RCP<Epetra_Vector>&         accn,
-          RCP<Epetra_Vector>&         accnm
-          );
-
-
-  /*!
-  \brief determine grid velocity
-
-  */
-  void ComputeGridVelocity(
-          RCP<Epetra_Vector>&         dispnp,
-          RCP<Epetra_Vector>&         dispn,
-          RCP<Epetra_Vector>&         dispnm,
-          const int                   order,
-          const int                   step,
-          const double                theta,
-          const double                dta,
-          const double                dtp,
-          RCP<Epetra_Vector>&         gridv
-          );
- }
+      const RCP<Epetra_Vector>&   velnp,
+      const RCP<Epetra_Vector>&   veln,
+      const RCP<Epetra_Vector>&   velnm,
+      const FLUID_TIMEINTTYPE     timealgo,
+      const int                   step,
+      const double                theta,
+      const double                dta,
+      const double                dtp,
+      RCP<Epetra_Vector>&         accn,
+      RCP<Epetra_Vector>&         accnm
+  );
+}
 
 
 #endif  // #ifndef TIME_INTEGRATION_SCHEME_H

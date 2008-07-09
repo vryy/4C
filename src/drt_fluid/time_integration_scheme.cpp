@@ -32,14 +32,14 @@ Maintainer: Axel Gerstenberger
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
 void TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
-        RCP<Epetra_Vector>&         veln,
-        RCP<Epetra_Vector>&         velnm,
-        RCP<Epetra_Vector>&         accn,
-        const FLUID_TIMEINTTYPE     timealgo,
-        const double                dta,
-        const double                theta,
-        RCP<Epetra_Vector>&         hist
-        )
+    const RCP<Epetra_Vector>&   veln,
+    const RCP<Epetra_Vector>&   velnm,
+    const RCP<Epetra_Vector>&   accn,
+    const FLUID_TIMEINTTYPE     timealgo,
+    const double                dta,
+    const double                theta,
+    RCP<Epetra_Vector>&         hist
+)
 {
   /*
 
@@ -83,13 +83,13 @@ void TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
  |  better value                                             gammi 04/07|
  *----------------------------------------------------------------------*/
 void TIMEINT_THETA_BDF2::ExplicitPredictor(
-        RCP<Epetra_Vector>&         veln,
-        RCP<Epetra_Vector>&         velnm,
-        RCP<Epetra_Vector>&         accn,
-        const double                dta,
-        const double                dtp,
-        RCP<Epetra_Vector>&         velnp
-        )
+    const RCP<Epetra_Vector>&   veln,
+    const RCP<Epetra_Vector>&   velnm,
+    const RCP<Epetra_Vector>&   accn,
+    const double                dta,
+    const double                dtp,
+    RCP<Epetra_Vector>&         velnp
+)
 {
   const double fact1 = dta*(1.0+dta/dtp);
   const double fact2 = DSQR(dta/dtp);
@@ -108,17 +108,17 @@ void TIMEINT_THETA_BDF2::ExplicitPredictor(
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
 void TIMEINT_THETA_BDF2::CalculateAcceleration(
-        RCP<Epetra_Vector>&         velnp,
-        RCP<Epetra_Vector>&         veln,
-        RCP<Epetra_Vector>&         velnm,
-        const FLUID_TIMEINTTYPE     timealgo,
-        const int                   step,
-        const double                theta,
-        const double                dta,
-        const double                dtp,
-        RCP<Epetra_Vector>&         accn,
-        RCP<Epetra_Vector>&         accnm
-        )
+    const RCP<Epetra_Vector>&   velnp,
+    const RCP<Epetra_Vector>&   veln,
+    const RCP<Epetra_Vector>&   velnm,
+    const FLUID_TIMEINTTYPE     timealgo,
+    const int                   step,
+    const double                theta,
+    const double                dta,
+    const double                dtp,
+    RCP<Epetra_Vector>&         accn,
+    RCP<Epetra_Vector>&         accnm
+)
 {
 
   // update acceleration
@@ -199,50 +199,6 @@ void TIMEINT_THETA_BDF2::CalculateAcceleration(
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
- |                                                           chfoe 01/08|
- -----------------------------------------------------------------------*/
-void TIMEINT_THETA_BDF2::ComputeGridVelocity(
-        RCP<Epetra_Vector>&         dispnp,
-        RCP<Epetra_Vector>&         dispn,
-        RCP<Epetra_Vector>&         dispnm,
-        const int                   order,
-        const int                   step,
-        const double                theta,
-        const double                dta,
-        const double                dtp,
-        RCP<Epetra_Vector>&         gridv
-        )
-{
-  // get order of accuracy of grid velocity determination
-  // from input file data
-
-  switch (order)
-  {
-    case 1:
-      /* get gridvelocity from BE time discretisation of mesh motion:
-           -> cheap
-           -> easy
-           -> limits FSI algorithm to first order accuracy in time
-
-                  x^n+1 - x^n
-             uG = -----------
-                    Delta t                        */
-      gridv->Update(1/dta, *dispnp, -1/dta, *dispn, 0.0);
-    break;
-    case 2:
-      /* get gridvelocity from BDF2 time discretisation of mesh motion:
-           -> requires one more previous mesh position or displacemnt
-           -> somewhat more complicated
-           -> allows second order accuracy for the overall flow solution  */
-      gridv->Update(1.5/dta, *dispnp, -2.0, *dispn, 0.0);
-      gridv->Update(0.5, *dispnm, 1.0);
-    break;
-  }
-}
-
 
 
 #endif /* CCADISCRET       */

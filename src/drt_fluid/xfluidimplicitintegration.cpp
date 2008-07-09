@@ -69,9 +69,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   time_(0.0),
   step_(0),
   extrapolationpredictor_(params.get("do explicit predictor",true)),
-  restartstep_(0),
   uprestart_(params.get("write restart every", -1)),
-  writestep_(0),
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0))
 {
@@ -367,7 +365,6 @@ void XFluidImplicitTimeInt::PrepareTimeStep()
   //              set time dependent parameters
   // -------------------------------------------------------------------
   step_ += 1;
-
   time_ += dta_;
 
   // for bdf2 theta is set  by the timestepsizes, 2/3 for const. dt
@@ -659,7 +656,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
-  //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
+  const bool fluidrobin = params_.get<bool>("fluidrobin", false);
 
   int               itnum = 0;
   bool              stopnonliniter = false;
@@ -730,9 +727,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
 
       // action for elements
       if (timealgo_==timeint_stationary)
-      {
         eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-      }
       else
       {
         cout << "******************************************************" << endl;
@@ -758,11 +753,6 @@ void XFluidImplicitTimeInt::NonlinearSolve(
       discret_->SetState("velnp",state_.velnp_);
 
       discret_->SetState("hist"  ,hist_ );
-//      if (alefluid_)
-//      {
-//        discret_->SetState("dispnp", state_.dispnp_);
-//        discret_->SetState("gridv", gridv_);
-//      }
       // give interface velocity to elements
       eleparams.set("interface velocity",ivelcol);
       //cout << "interface velocity" << endl;
@@ -990,22 +980,6 @@ void XFluidImplicitTimeInt::NonlinearSolve(
     //------------------------------------------------ update (u,p) trial
     state_.velnp_->Update(1.0,*incvel_,1.0);
 
-    // free surface update
-    if (alefluid_ and freesurface_->Relevant())
-    {
-      //using namespace LINALG::ANA;
-
-      Teuchos::RefCountPtr<Epetra_Vector> fsvelnp = freesurface_->ExtractCondVector(state_.velnp_);
-//      Teuchos::RefCountPtr<Epetra_Vector> fsdisp = freesurface_->ExtractCondVector(state_.dispn_);
-      Teuchos::RefCountPtr<Epetra_Vector> fsdispnp = Teuchos::rcp(new Epetra_Vector(*freesurface_->CondMap()));
-
-      // this is first order
-      //*fsdispnp = *fsdisp + dta_*(*fsvelnp);
-//      fsdispnp->Update(1.0,*fsdisp,dta_,*fsvelnp,0.0);
-
-//      freesurface_->InsertCondVector(fsdispnp,state_.dispnp_);
-//      freesurface_->InsertCondVector(fsvelnp,gridv_);
-    }
     //cout << "*iforcecol" << endl;
     //cout << *iforcecol << endl;
   }
@@ -1029,17 +1003,13 @@ void XFluidImplicitTimeInt::NonlinearSolve(
     }
 
   }
-//  const double u_m = 0.2;  // mean velocity 0.3 u_max for parabolic inflow
-//  const double d_cyl = 0.1; // diameter 
-//  const double h = 0.005;  // cylinder thickness in z direction
-//  const double factor = 2.0 / (1.0 * u_m*u_m * d_cyl * h);
-//  c *= factor; // scale forces to get lift and drag
   
   cout << "F_x: "<< c(0) << endl;
   cout << "F_y: "<< c(1) << endl;
   cout << "F_z: "<< c(2) << endl;
 
 } // FluidImplicitTimeInt::NonlinearSolve
+
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1102,11 +1072,6 @@ void XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   discret_->ClearState();
   discret_->SetState("velnp",state_.velnp_);
   discret_->SetState("hist" ,hist_ );
-//  if (alefluid_)
-//  {
-//    discret_->SetState("dispnp", state_.dispnp_);
-//    discret_->SetState("gridv", gridv_);
-//  }
 
   // call loop over elements
   discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -1150,12 +1115,6 @@ void XFluidImplicitTimeInt::TimeUpdate()
   state_.velnm_->Update(1.0,*state_.veln_ ,0.0);
   state_.veln_ ->Update(1.0,*state_.velnp_,0.0);
 
-//  if (alefluid_)
-//  {
-//    state_.dispnm_->Update(1.0,*state_.dispn_,0.0);
-//    state_.dispn_ ->Update(1.0,*state_.dispnp_,0.0);
-//  }
-
   return;
 }// FluidImplicitTimeInt::TimeUpdate
 
@@ -1173,14 +1132,8 @@ void XFluidImplicitTimeInt::Output()
 
   //-------------------------------------------- output of solution
 
-  //increase counters
-  restartstep_ += 1;
-  writestep_ += 1;
-
-  if (writestep_ == upres_)  //write solution
+  if (step_%upres_ == 0)  //write solution
   {
-    writestep_= 0;
-
     output_.NewStep    (step_,time_);
     //output_.WriteVector("velnp", state_.velnp_);
     std::set<XFEM::PHYSICS::Field> fields_out;
@@ -1199,8 +1152,6 @@ void XFluidImplicitTimeInt::Output()
     output_.WriteVector("pressure", pressure);
 
     //output_.WriteVector("residual", trueresidual_);
-//    if (alefluid_)
-//      output_.WriteVector("dispnp", state_.dispnp_);
 
     //only perform stress calculation when output is needed
     if (writestresses_)
@@ -1214,37 +1165,20 @@ void XFluidImplicitTimeInt::Output()
     if (step_==upres_)
      output_.WriteElementData();
 
-    if (restartstep_ == uprestart_) //add restart data
+    if (step_%uprestart_ == 0) //add restart data
     {
-      restartstep_ = 0;
-
       output_.WriteVector("accn", state_.accn_);
       output_.WriteVector("veln", state_.veln_);
       output_.WriteVector("velnm", state_.velnm_);
-
-//      if (alefluid_)
-//      {
-//        output_.WriteVector("dispn", state_.dispn_);
-//        output_.WriteVector("dispnm",state_.dispnm_);
-//      }
     }
   }
 
-
   // write restart also when uprestart_ is not a integer multiple of upres_
-  if ((restartstep_ == uprestart_) && (writestep_ > 0))
+  else if (step_%uprestart_ == 0)
   {
-    restartstep_ = 0;
-
     output_.NewStep    (step_,time_);
     output_.WriteVector("velnp", state_.velnp_);
     //output_.WriteVector("residual", trueresidual_);
-//    if (alefluid_)
-//    {
-//      output_.WriteVector("dispnp", state_.dispnp_);
-//      output_.WriteVector("dispn", state_.dispn_);
-//      output_.WriteVector("dispnm",state_.dispnm_);
-//    }
 
     //only perform stress calculation when output is needed
     if (writestresses_)
@@ -1263,6 +1197,33 @@ void XFluidImplicitTimeInt::Output()
 
   return;
 } // FluidImplicitTimeInt::Output
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |                                                             kue 04/07|
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void XFluidImplicitTimeInt::ReadRestart(int step)
+{
+  dserror("check wich data was written. one might need 2 discretization writers: \n \
+           one for the output and one for the restart with changing vectors.\n \
+           Problem is, the numdofs are written during WriteMesh(). is that used for restart ore not?");
+
+  IO::DiscretizationReader reader(discret_,step);
+  time_ = reader.ReadDouble("time");
+  step_ = reader.ReadInt("step");
+
+  reader.ReadVector(state_.velnp_,"velnp");
+  reader.ReadVector(state_.veln_, "veln");
+  reader.ReadVector(state_.velnm_,"velnm");
+  reader.ReadVector(state_.accn_ ,"accn");
+
+}
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1724,62 +1685,6 @@ void XFluidImplicitTimeInt::OutputToGmsh()
 
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- |                                                             kue 04/07|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::ReadRestart(int step)
-{
-  dserror("check wich data was written. one might need 2 discretization writers: \n \
-           one for the output and one for the restart with changing vectors.\n \
-           Problem is, the numdofs are written during WriteMesh(). is that used for restart ore not?");
-
-  IO::DiscretizationReader reader(discret_,step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
-
-  reader.ReadVector(state_.velnp_,"velnp");
-  reader.ReadVector(state_.veln_, "veln");
-  reader.ReadVector(state_.velnm_,"velnm");
-  reader.ReadVector(state_.accn_ ,"accn");
-
-//  if (alefluid_)
-//  {
-//    reader.ReadVector(state_.dispnp_,"dispnp");
-//    reader.ReadVector(state_.dispn_ , "dispn");
-//    reader.ReadVector(state_.dispnm_,"dispnm");
-//  }
-}
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- |                                                           chfoe 01/08|
- -----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//void XFluidImplicitTimeInt::UpdateGridv()
-//{
-//  // get order of accuracy of grid velocity determination
-//  // from input file data
-//  const int order  = params_.get<int>("order gridvel");
-//
-//  TIMEINT_THETA_BDF2::ComputeGridVelocity(
-//      state_.dispnp_, state_.dispn_, state_.dispnm_,
-//          order, step_, theta_, dta_, dtp_,
-//          gridv_);
-//}
-
-
-
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1953,20 +1858,14 @@ void XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     eleparams.set("action","calc_fluid_beltrami_error");
     // actual time for elements
     eleparams.set("total time",time_);
-    // choose what to assemble --- nothing
-    eleparams.set("assemble matrix 1",false);
-    eleparams.set("assemble matrix 2",false);
-    eleparams.set("assemble vector 1",false);
-    eleparams.set("assemble vector 2",false);
-    eleparams.set("assemble vector 3",false);
+
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("u and p at time n+1 (converged)",state_.velnp_);
 
-    // call loop over elements
-    discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+    // call loop over elements (assemble nothing)
+    discret_->Evaluate(eleparams,null,null,null,null,null);
     discret_->ClearState();
-
 
     double locvelerr = eleparams.get<double>("L2 integrated velocity error");
     double locpreerr = eleparams.get<double>("L2 integrated pressure error");
@@ -2058,12 +1957,6 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
    {
      ParameterList eleparams;
 
-     // choose what to assemble
-     eleparams.set("assemble matrix 1",false);
-     eleparams.set("assemble matrix 2",false);
-     eleparams.set("assemble vector 1",true);
-     eleparams.set("assemble vector 2",false);
-     eleparams.set("assemble vector 3",false);
      // other parameters needed by the elements
      eleparams.set("total time",time_);
      eleparams.set("delta time",origdta);
@@ -2308,6 +2201,7 @@ void XFluidImplicitTimeInt::LiftDrag() const
           std::cout << "\n";
 	}
       }
+
     } // end: loop over L&D labels
     if (myrank_== 0)
     {
@@ -2336,10 +2230,6 @@ Teuchos::RCP<Epetra_Vector> XFluidImplicitTimeInt::IntegrateInterfaceShape(std::
 
   // call loop over elements
   discret_->ClearState();
-//  if (alefluid_)
-//  {
-//    discret_->SetState("dispnp", state_.dispnp_);
-//  }
   discret_->EvaluateCondition(eleparams,integratedshapefunc,condname);
   discret_->ClearState();
 
@@ -2351,122 +2241,28 @@ Teuchos::RCP<Epetra_Vector> XFluidImplicitTimeInt::IntegrateInterfaceShape(std::
  *----------------------------------------------------------------------*/
 void XFluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
                                           const LINALG::MultiMapExtractor& domainmaps,
-                                          const LINALG::MultiMapExtractor& rangemaps)
+                                          const LINALG::MultiMapExtractor& rangemaps,
+                                          bool splitmatrix)
 {
-#if 0
-  sysmat_ =
-    Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(domainmaps,rangemaps,108,false,true));
-#else
-  //const int numdim = params_.get<int>("number of velocity degrees of freedom");
+  dserror("not tested");
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy> > mat;
 
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy> > mat =
-    Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
-  mat->SetCondElements(condelements);
-  sysmat_ = mat;
-#endif
+  if (splitmatrix)
+  {
+    // (re)allocate system matrix
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    mat->SetCondElements(condelements);
+    sysmat_ = mat;
+  }
+
+  // if we never build the matrix nothing will be done
+  if (params_.get<bool>("mesh movement linearization"))
+  {
+    // allocate special mesh moving matrix
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    mat->SetCondElements(condelements);
+    //meshmovematrix_ = mat;
+  }
 }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void XFluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
-{
-  //
-  // This method is really stupid, but simple. We calculate the fluid
-  // elements twice here. First because we need the global matrix to
-  // do a linear solve. We do not have any RHS other than the one from
-  // the Dirichlet condition at the FSI interface.
-  //
-  // After that we recalculate the matrix so that we can get the
-  // reaction forces at the FSI interface easily.
-  //
-  // We do more work that required, but we do not need any special
-  // element code to perform the steepest descent calculation. This is
-  // quite a benefit as the special code in the old discretization was
-  // a real nightmare.
-  //
-
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  Teuchos::RCP<Epetra_Vector> griddisp = LINALG::CreateVector(*dofrowmap,false);
-
-  // set the grid displacement independent of the trial value at the
-  // interface
-  //griddisp->Update(1., *state_.dispnp_, -1., *state_.dispn_, 0.);
-
-  // dirichtoggle_ has already been set up
-
-  // zero out the stiffness matrix
-  sysmat_->Zero();
-
-  // zero out residual, no neumann bc
-  residual_->PutScalar(0.0);
-
-  ParameterList eleparams;
-  eleparams.set("action","calc_fluid_systemmat_and_residual");
-  eleparams.set("total time",time_);
-  eleparams.set("thsl",theta_*dta_);
-  eleparams.set("using stationary formulation",false);
-  eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation",false));
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  discret_->SetState("velnp",state_.velnp_);
-  discret_->SetState("hist"  ,zeros_);
-  discret_->SetState("dispnp", griddisp);
-//  discret_->SetState("gridv", gridv_);
-
-  // call loop over elements
-  discret_->Evaluate(eleparams,sysmat_,residual_);
-  discret_->ClearState();
-
-  // finalize the system matrix
-  sysmat_->Complete();
-
-  // No, we do not want to have any rhs. There cannot be any.
-  residual_->PutScalar(0.0);
-
-  //--------- Apply dirichlet boundary conditions to system of equations
-  //          residual discplacements are supposed to be zero at
-  //          boundary conditions
-  incvel_->PutScalar(0.0);
-  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,relax,dirichtoggle_);
-
-  //-------solve for residual displacements to correct incremental displacements
-  solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,true);
-
-  // and now we need the reaction forces
-
-  // zero out the stiffness matrix
-  sysmat_->Zero();
-
-  // zero out residual, no neumann bc
-  residual_->PutScalar(0.0);
-
-  eleparams.set("action","calc_fluid_systemmat_and_residual");
-  eleparams.set("thsl",theta_*dta_);
-  eleparams.set("using stationary formulation",false);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  //discret_->SetState("velnp",incvel_);
-  discret_->SetState("velnp",state_.velnp_);
-  discret_->SetState("hist"  ,zeros_);
-  discret_->SetState("dispnp", griddisp);
-//  discret_->SetState("gridv", gridv_);
-
-  // call loop over elements
-  discret_->Evaluate(eleparams,sysmat_,residual_);
-  discret_->ClearState();
-
-  density_ = eleparams.get("density", 0.0);
-
-  // finalize the system matrix
-  sysmat_->Complete();
-
-  if (sysmat_->Apply(*incvel_, *trueresidual_)!=0)
-    dserror("sysmat_->Apply() failed");
-  trueresidual_->Scale(-density_/dta_/theta_);
-}
-
 
 #endif /* CCADISCRET       */

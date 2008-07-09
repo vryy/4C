@@ -24,6 +24,7 @@ Maintainer: Peter Gamnitzer
 #include <stdio.h>
 
 #include "fluidimplicitintegration.H"
+#include "time_integration_scheme.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/linalg_ana.H"
@@ -490,6 +491,25 @@ void FluidImplicitTimeInt::TimeLoop()
   while (step_<stepmax_ and time_<maxtime_)
   {
     PrepareTimeStep();
+    // -------------------------------------------------------------------
+    //                         out to screen
+    // -------------------------------------------------------------------
+    if (myrank_==0)
+    {
+      switch (timealgo_)
+      {
+      case timeint_one_step_theta:
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta  STEP = %4d/%4d \n",
+              time_,maxtime_,dta_,step_,stepmax_);
+        break;
+      case timeint_bdf2:
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E     BDF2         STEP = %4d/%4d \n",
+               time_,maxtime_,dta_,step_,stepmax_);
+        break;
+      default:
+        dserror("parameter out of range: IOP\n");
+      } /* end of switch(timealgo) */
+    }
 
     switch (dyntype)
     {
@@ -612,70 +632,6 @@ void FluidImplicitTimeInt::TimeLoop()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | set part of the residual vector belonging to the old timestep        |
- |                                                           gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::SetOldPartOfRighthandside()
-{
-  /*
-
-  One-step-Theta:
-
-                 hist_ = veln_ + dt*(1-Theta)*accn_
-
-
-  BDF2: for constant time step:
-
-                 hist_ = 4/3 veln_ - 1/3 velnm_
-
-  */
-  switch (timealgo_)
-  {
-  case timeint_one_step_theta: /* One step Theta time integration */
-    hist_->Update(1.0, *veln_, dta_*(1.0-theta_), *accn_, 0.0);
-    break;
-
-  case timeint_bdf2:	/* 2nd order backward differencing BDF2	*/
-    hist_->Update(4./3., *veln_, -1./3., *velnm_, 0.0);
-    break;
-
-  default:
-    dserror("Time integration scheme unknown!");
-  }
-  return;
-}
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- |  do explicit predictor step to start nonlinear iteration from a      |
- |  better value                                             gammi 04/07|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::ExplicitPredictor()
-{
-  const double fact1 = dta_*(1.0+dta_/dtp_);
-  const double fact2 = DSQR(dta_/dtp_);
-
-  velnp_->Update( fact1,*accn_ ,1.0);
-  velnp_->Update(-fact2,*veln_ ,1.0);
-  velnp_->Update( fact2,*velnm_,1.0);
-
-  return;
-} // FluidImplicitTimeInt::ExplicitPredictor
-
-
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
  | setup the variables to do a new time step                 u.kue 06/07|
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -696,26 +652,6 @@ void FluidImplicitTimeInt::PrepareTimeStep()
   }
 
   // -------------------------------------------------------------------
-  //                         out to screen
-  // -------------------------------------------------------------------
-  if (myrank_==0)
-  {
-    switch (timealgo_)
-    {
-    case timeint_one_step_theta:
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E  One-Step-Theta  STEP = %4d/%4d \n",
-             time_,maxtime_,dta_,step_,stepmax_);
-      break;
-    case timeint_bdf2:
-      printf("TIME: %11.4E/%11.4E  DT = %11.4E     BDF2         STEP = %4d/%4d \n",
-             time_,maxtime_,dta_,step_,stepmax_);
-      break;
-    default:
-      dserror("parameter out of range: IOP\n");
-    } /* end of switch(timealgo) */
-  }
-
-  // -------------------------------------------------------------------
   // set part of the rhs vector belonging to the old timestep
   //
   //
@@ -729,7 +665,10 @@ void FluidImplicitTimeInt::PrepareTimeStep()
   //                   hist_ = 4/3 veln_ - 1/3 velnm_
   //
   // -------------------------------------------------------------------
-  SetOldPartOfRighthandside();
+  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
+      veln_, velnm_, accn_,
+      timealgo_, dta_, theta_,
+      hist_);
 
   // -------------------------------------------------------------------
   //                     do explicit predictor step
@@ -748,7 +687,10 @@ void FluidImplicitTimeInt::PrepareTimeStep()
   {
     if (step_>1)
     {
-      ExplicitPredictor();
+      TIMEINT_THETA_BDF2::ExplicitPredictor(
+          veln_, velnm_, accn_,
+          dta_, dtp_,
+          velnp_);
     }
   }
 
@@ -1586,71 +1528,10 @@ void FluidImplicitTimeInt::TimeUpdate()
 {
 
   // update acceleration
-  if (step_ == 1)
-  {
-    accnm_->PutScalar(0.0);
-
-    // do just a linear interpolation within the first timestep
-    accn_->Update( 1.0/dta_,*velnp_,1.0);
-
-    accn_->Update(-1.0/dta_,*veln_ ,1.0);
-
-    // ???
-    accnm_->Update(1.0,*accn_,0.0);
-
-  }
-  else
-  {
-    // prev. acceleration becomes (n-1)-accel. of next time step
-    accnm_->Update(1.0,*accn_,0.0);
-
-    /*
-
-    One-step-Theta:
-
-    acc(n+1) = (vel(n+1)-vel(n)) / (Theta * dt(n)) - (1/Theta -1) * acc(n)
-
-
-    BDF2:
-
-                   2*dt(n)+dt(n-1)		    dt(n)+dt(n-1)
-      acc(n+1) = --------------------- vel(n+1) - --------------- vel(n)
-                 dt(n)*[dt(n)+dt(n-1)]	            dt(n)*dt(n-1)
-
-                         dt(n)
-               + ----------------------- vel(n-1)
-                 dt(n-1)*[dt(n)+dt(n-1)]
-
-      */
-
-      switch (timealgo_)
-      {
-          case timeint_one_step_theta: /* One step Theta time integration */
-          {
-            const double fact1 = 1.0/(theta_*dta_);
-            const double fact2 =-1.0/theta_ +1.0;	/* = -1/Theta + 1 */
-
-            accn_->Update( fact1,*velnp_,0.0);
-            accn_->Update(-fact1,*veln_ ,1.0);
-            accn_->Update( fact2,*accnm_ ,1.0);
-
-            break;
-          }
-          case timeint_bdf2:	/* 2nd order backward differencing BDF2	*/
-          {
-            if (dta_*dtp_ < EPS15)
-              dserror("Zero time step size!!!!!");
-            const double sum = dta_ + dtp_;
-
-            accn_->Update((2.0*dta_+dtp_)/(dta_*sum),*velnp_,
-                          - sum /(dta_*dtp_),*veln_ ,0.0);
-            accn_->Update(dta_/(dtp_*sum),*velnm_,1.0);
-          }
-          break;
-          default:
-            dserror("Time integration scheme unknown for mass rhs!");
-      }
-    }
+  TIMEINT_THETA_BDF2::CalculateAcceleration(
+      velnp_, veln_, velnm_,
+      timealgo_, step_, theta_, dta_, dtp_,
+      accn_, accnm_);
 
   // solution of this step becomes most recent solution of the last step
   velnm_->Update(1.0,*veln_ ,0.0);
@@ -1768,7 +1649,7 @@ void FluidImplicitTimeInt::Output()
         turbulencestatistics_sqc_->DumpStatistics(step_);
     }
   }
-}
+} // FluidImplicitTimeInt::Output
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1808,7 +1689,7 @@ void FluidImplicitTimeInt::ReadRestart(int step)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  |                                                           chfoe 01/08|
- -----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

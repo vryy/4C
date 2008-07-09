@@ -24,9 +24,6 @@ Maintainer: Axel Gerstenberger
 #ifndef XFLUIDIMPLICITINTEGRATION_H
 #define XFLUIDIMPLICITINTEGRATION_H
 
-#include "turbulence_statistics.H"
-#include "turbulence_statistics_ldc.H"
-
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
 #else
@@ -168,7 +165,7 @@ public:
 
   */
   void SetInitialFlowField(
-          RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
+    RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
     int whichinitialfield,
     int startfuncno
     );
@@ -200,11 +197,8 @@ public:
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
   Teuchos::RCP<Epetra_Vector> Velnp() { return state_.velnp_; }
   Teuchos::RCP<Epetra_Vector> Veln() { return state_.veln_; }
-  //Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
   Teuchos::RCP<Epetra_Vector> Dirichlet() { return dirichtoggle_; }
   Teuchos::RCP<Epetra_Vector> InvDirichlet() { return invtoggle_; }
-  //Teuchos::RCP<Epetra_Vector> Dispnp() { return state_.dispnp_; }
-  //Teuchos::RCP<Epetra_Vector> Dispn() { return state_.dispn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
@@ -237,9 +231,6 @@ public:
    */
   void SetFSISurface(const LINALG::MapExtractor* fsisurface) { fsisurface_ = fsisurface; }
 
-  /// determine grid velocity
-//  void UpdateGridv();
-
   /// calculate lift&drag forces and angular momenta
   void LiftDrag() const;
 
@@ -252,15 +243,8 @@ public:
   /// switch fluid field to block matrix
   void UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
                       const LINALG::MultiMapExtractor& domainmaps,
-                      const LINALG::MultiMapExtractor& rangemaps);
-
-  /// linear solve with prescribed dirichlet conditions and without history
-  /*!
-    This is the linear solve as needed for steepest descent FSI.
-   */
-  void LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax);
-
-  //@}
+                      const LINALG::MultiMapExtractor& rangemaps,
+                      bool splitmatrix=true);
 
 protected:
 
@@ -297,9 +281,7 @@ protected:
   bool extrapolationpredictor_;
 
   //! @name restart variables
-  int restartstep_;
   int uprestart_;
-  int writestep_;
   int upres_;
   int writestresses_;
   //@}
@@ -362,15 +344,7 @@ protected:
   RCP<Epetra_Vector>    velnm_;
   //@}
 
-  //! @name displacemets at time n+1, n and n-1
-//  RCP<Epetra_Vector>    dispnp_;
-//  RCP<Epetra_Vector>    dispn_;
-//  RCP<Epetra_Vector>    dispnm_;
-  //@}
   } state_;
-
-  /// grid velocity (set from the adapter!)
-//  RCP<Epetra_Vector>    gridv_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)
@@ -379,7 +353,7 @@ protected:
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
 
-  //! Extractor used for convergence check
+  //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;
 
   /// free surface row dof map extractor
@@ -387,134 +361,6 @@ protected:
 
   /// (robin) fsi coupling row dof map extractor
   const LINALG::MapExtractor* fsisurface_;
-
-  /// velocity-pressure block matrix split strategy
-  class VelPressSplitStrategy
-  {
-  public:
-
-    /// construct with a block matrix base
-    explicit VelPressSplitStrategy(LINALG::BlockSparseMatrixBase& mat)
-      : mat_(mat), numdim_(-1) {}
-
-    /// find row block to a given row gid
-    int RowBlock(int lrow, int rgid)
-    {
-      if ((lrow%(numdim_+1))<numdim_)
-        return 0;
-      return 1;
-    }
-
-    /// find column block to a given column gid
-    int ColBlock(int rblock, int lcol, int cgid)
-    {
-      if ((lcol%(numdim_+1))<numdim_)
-        return 0;
-      return 1;
-    }
-
-    /// assemble into the given block
-    void Assemble(int eid,
-                  int myrank,
-                  const Epetra_SerialDenseMatrix& Aele,
-                  const std::vector<int>& lmrow,
-                  const std::vector<int>& lmrowowner,
-                  const std::vector<int>& lmcol)
-    {
-      const int lrowdim = (int)lmrow.size();
-      const int lcoldim = (int)lmcol.size();
-
-      // loop rows of local matrix
-      for (int lrow=0; lrow<lrowdim; ++lrow)
-      {
-
-        // check ownership of row
-        if (lmrowowner[lrow]!=myrank)
-          continue;
-
-        int rgid = lmrow[lrow];
-        int rblock = RowBlock(lrow,rgid);
-
-        for (int lcol=0; lcol<lcoldim; ++lcol)
-        {
-          double val = Aele(lrow,lcol);
-          int cgid = lmcol[lcol];
-          int cblock = ColBlock(rblock,lcol,cgid);
-
-          LINALG::SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
-          matrix.Assemble(val,rgid,cgid);
-        }
-      }
-    }
-
-    /// assemble into the given block
-    void Assemble(double val, int rgid, int cgid)
-    {
-      int rblock = RowBlock(0,rgid);
-      int cblock = ColBlock(rblock,0,cgid);
-      LINALG::SparseMatrix& matrix = mat_.Matrix(rblock,cblock);
-      matrix.Assemble(val,rgid,cgid);
-    }
-
-    /// assemble the remaining ghost entries
-    void Complete() {}
-
-    /// set number of velocity dofs
-    void SetNumdim(int numdim) { numdim_ = numdim; }
-
-  private:
-
-    /// my block matrix base
-    LINALG::BlockSparseMatrixBase& mat_;
-
-    /// number of velocity dofs
-    int numdim_;
-  };
-
-
-  /// (FSI) interface block matrix split strategy
-  class InterfaceSplitStrategy : public LINALG::DefaultBlockMatrixStrategy
-  {
-  public:
-    explicit InterfaceSplitStrategy(LINALG::BlockSparseMatrixBase& mat)
-      : LINALG::DefaultBlockMatrixStrategy(mat)
-    {}
-
-    /// assemble into the given block
-    void Assemble(int eid,
-                  int myrank,
-                  const Epetra_SerialDenseMatrix& Aele,
-                  const std::vector<int>& lmrow,
-                  const std::vector<int>& lmrowowner,
-                  const std::vector<int>& lmcol)
-    {
-      if (condelements_->find(eid)!=condelements_->end())
-      {
-        // if we have an element with conditioned nodes, we have to do the
-        // default assembling
-        LINALG::DefaultBlockMatrixStrategy::Assemble(eid,myrank,Aele,lmrow,lmrowowner,lmcol);
-      }
-      else
-      {
-        // if there are no conditioned nodes we can simply assemble to the
-        // internal matrix
-        LINALG::SparseMatrix& matrix = Mat().Matrix(0,0);
-        matrix.Assemble(eid,Aele,lmrow,lmrowowner,lmcol);
-      }
-    }
-
-    void Assemble(double val, int rgid, int cgid)
-    {
-      // forward single value assembling
-      LINALG::DefaultBlockMatrixStrategy::Assemble(val,rgid,cgid);
-    }
-
-    void SetCondElements(Teuchos::RCP<std::set<int> > condelements)
-    { condelements_ = condelements; }
-
-  private:
-    Teuchos::RCP<std::set<int> > condelements_;
-  };
 
 }; // class FluidImplicitTimeInt
 
