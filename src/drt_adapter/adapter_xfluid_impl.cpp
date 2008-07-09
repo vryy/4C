@@ -227,7 +227,7 @@ void ADAPTER::XFluidImpl::Output()
 
   {
     stringstream gmshfilecontent;
-    gmshfilecontent << "View \" " << "Interface Force \" {" << endl;
+    gmshfilecontent << "View \" " << "interface traction \" {" << endl;
     for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
     {
       const DRT::Element* actele = boundarydis_->lColElement(i);
