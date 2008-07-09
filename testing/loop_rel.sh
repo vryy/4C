@@ -25,8 +25,8 @@
   # make the executable
   echo
   echo '  Making executable ...'
-  make -j2 -f $makefile clean 2>&1 | cat > make.log
-  make -j2 -f $makefile all 2>&1 | cat >> make.log
+  make -j $numproc -f $makefile clean 2>&1 | cat > make.log
+  make -j $numproc -f $makefile $maketarget 2>&1 | cat >> make.log
 
   # get the end-time in seconds:
   h=`date +"%H"`
@@ -87,7 +87,7 @@ for file in $liste; do
     echo
     echo '  Running Input-file in parallel...'
     $MPIBOOT
-    $MPIRUN -np 2 $MPIRUNARGS ./$exe $inputfile test_out >test.tmp
+    $MPIRUN -np $numproc $MPIRUNARGS ./$exe $inputfile test_out >test.tmp
     $MPIHALT
     killall $exe >& /dev/null
   fi

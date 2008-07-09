@@ -7,17 +7,38 @@
 #                           (C) by mn 02/04
 #==========================================
 
+# defaults
+numproc=2  # number of processing elements (CPUs)
+
+# message about use of this shell script
+function helpmessage
+{
+  echo "usage: $0 [-j <number>] type config-file-name [input-file]"
+  echo "       type = all, rel, reldrt, restart, single"
+  echo "       -j <number> = number of processors (default $numproc)"
+}
+
+# option loop
+while getopts :j: OPT; do
+    case $OPT in
+	j|+j)
+	    # number of CPUs
+	    numproc=$OPTARG
+	;;*)
+	helpmessage
+	exit 2
+    esac
+done
+shift `expr $OPTIND - 1`
 
 # some usability tests
 if [ "x$1" = "x" ]; then
-  echo "usage: $0  typ config-file-name [input-file]"
-  echo "typ = all, rel, restart, single"
+  helpmessage
   exit 1
 fi
 
 if [ "x$2" = "x" ]; then
-  echo "usage: $0 typ config-file-name [input-file]"
-  echo "typ = all, rel, restart, single"
+  helpmessage
   exit 1
 fi
 
@@ -45,7 +66,23 @@ e_time=0
 makefile="$SRC/Makefile.test"
 #definefile="$SRC/config/defines.test"
 definefile="$DEST/defines.test"
-reldefinefile="$SRC/config/release_defs"
+if [ "x$1" = "xrel" ]; then
+  # this is for CCARAT exe
+  reldefinefile="$SRC/config/release_defs"
+  maketarget="all"
+elif [ "x$1" = "xreldrt" ]; then
+  # this is for BACI exe
+  reldefinefile="$SRC/config/defines.drt.rel"
+  maketarget=""
+else
+  reldefinefile=""
+fi
+if [ -n "$reldefinefile" ]; then
+  if [ ! -r $reldefinefile ]; then
+     echo "definition file $reldefinefile does not exist"
+     exit 1
+  fi
+fi
 configfile="$2"
 NODEPS=yes
 
@@ -66,7 +103,7 @@ function exittrap
     cleanup
 
     # If we exit here something went wrong.
-    # (It might have been a user interupt.)
+    # (It might have been a user interrupt.)
     exit 1
 }
 
@@ -82,7 +119,7 @@ touch "$definefile"
 
 
 
-# create the list of files for the different typs of testing
+# create the list of files for the different types of testing
 if [ "x$1" = "xall" ]; then
 
   # test all files
@@ -97,7 +134,7 @@ if [ "x$1" = "xall" ]; then
 
 elif [ "x$1" = "xrel" ]; then
 
-  # test all files using one exe
+  # test all files using one CCARAT exe
   cat $reldefinefile > $definefile
   if [ "x$PARALLEL" = "xno" ]; then
     typ=4
@@ -105,8 +142,23 @@ elif [ "x$1" = "xrel" ]; then
     typ=5
   fi
 
-  # create the list
+  # create the list; we look for 'x' or 'X' in column $typ
   liste=`awk '{ if ($'$typ' ~ /[xX]/) print "'$SRC/'"$1 }' $SRC/testing/list_of_files`
+
+elif [ "x$1" = "xreldrt" ]; then
+
+  # test all files using one BACI exe
+  cat $reldefinefile > $definefile
+  if [ "x$PARALLEL" = "xno" ]; then
+    typ=4
+  else
+    typ=5
+  fi
+
+  # create the list; we look for 'x' or 'X' in column $typ and ...
+  liste=`awk '{ if ($'$typ' ~ /[xX]/) print "'$SRC/'"$1 }' $SRC/testing/list_of_files`
+  # ... select those which have defined CCADISCRET 
+  liste=`grep -l CCADISCRET $liste`
 
 elif [ "x$1" = "xrestart" ]; then
 
@@ -140,9 +192,8 @@ elif [ "x$1" = "xsingle" ]; then
 
 else
   # unknown test typ
-  echo "ERROR: Unknown typ of testing!!"
-  echo "usage: $0  typ config-file-name [input-file]"
-  echo "typ = all, rel, restart, single"
+  echo "ERROR: Unknown type of testing!!"
+  helpmessage
   exit 1
 fi
 
@@ -175,9 +226,9 @@ if [ "x$1" = "xall" ]; then
   # test all files
   . $SRC/testing/loop_all.sh
 
-elif [ "x$1" = "xrel" ]; then
+elif [ "x$1" = "xrel" ] || [ "x$1" = "xreldrt" ]; then
 
-  # test all files using one exe
+  # test all files using one CCARAT or BACI exe
   . $SRC/testing/loop_rel.sh
 
 elif [ "x$1" = "xrestart" ]; then
@@ -192,10 +243,9 @@ elif [ "x$1" = "xsingle" ]; then
 
 else
 
-  # unknown test typ
-  echo "ERROR: Unknown typ of testing!!"
-  echo "usage: $0  typ config-file-name [input-file]"
-  echo "typ = all, rel, restart, single"
+  # unknown test type
+  echo "ERROR: Unknown type of testing!!"
+  helpmessage
   exit 1
 
 fi
@@ -256,23 +306,23 @@ echo '-----------------------------'
 echo
 
 # write input files which failed to build
-if [ $fail1 -ge 1 ] && [ -n $fail1files ]
+if [ $fail1 -ge 1 ] && [ -n "$fail1files" ]
 then
     echo "Compilation failed for $fail1 file(s):"
-    for file in $fail1files
+    for file1 in $fail1files
     do
-      echo "    "`basename $file`
+      echo "    "`basename $file1`
     done
     echo ""
 fi
 
 # write input files which failed to run
-if [ $fail2 -ge 1 ] && [ -n $fail2files ]
+if [ $fail2 -ge 1 ] && [ -n "$fail2files" ]
 then
     echo "Running failed for $fail2 file(s):"
-    for file in $fail2files
+    for file2 in $fail2files
     do
-      echo "    "`basename $file`
+      echo "    "`basename $file2`
     done
     echo ""
 fi

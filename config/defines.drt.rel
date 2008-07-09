@@ -1,0 +1,51 @@
+# List of all possible defines 
+#     NEW discretization
+# ============================
+#
+
+# Uncomment all flags you want to include in your baci build. But please do
+# not edit this file directly. Make a copy and edit the copy instead. See the
+# baci beginners guide on how to setup baci.
+
+# Always include the flag that turns on the new discretization!
+CCADISCRET           # use new baci discretization subsystem DRT
+
+# Even though we never make mistakes debugging is an option
+# DEBUG
+
+#   all possible elements
+#  =======================
+D_ALE              # ale element (2D+3D)
+D_FLUID2           # fluid2
+D_FLUID3           # fluid3
+D_SHELL8           # shell8
+D_WALL1            # wall1
+# D_THERM2           # planar thermal elment
+# D_THERM3           # spatial thermal element
+D_SOLID3           # spatial solid elements
+D_BEAM2            # two dimensional Timoshenko beam element
+D_BEAM3            # two dimensional Reissner beam element
+
+
+#   problem types
+#  ===============
+# D_TSI              # thermal structure interaction problem
+
+
+#   additional features
+#  =====================
+BINIO              # binary io
+QHULL              # needed for XFEM simulations
+# D_EXODUS           # Pre_exodus (exodusII, netcdf)
+# PRESTRESS          # prestress a structure with Neumann loads only
+# POSTSTRESS         # restart with a prestressed structure
+
+#   tools
+#  =======
+# PERF               # detailed time measurement (overhead!!!)
+
+#   fancy stuff
+#  =============
+# COLOROUTPUT        # use colored output to the terminal
+# DSERROR_DUMP       # dserror creates a core file
+# TRAP_FE            # crash ccarat if a nan of inf occurs
