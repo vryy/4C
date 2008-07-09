@@ -426,20 +426,6 @@ void ADAPTER::XFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> i
 
   interface_.InsertCondVector(ivel,ivel_);
   LINALG::Export(*ivel_,*ivelcol_);
-//
-//  for (int entry = 0; entry < ivelcol_->MyLength(); ++entry)
-//  {
-//    if (entry%3 == 0)
-//    {
-//      //(*ivelcol)[entry] = (-1.5*std::sin(2.0*time_* PI) * PI);
-//      (*ivelcol_)[entry] = -5.0;
-//    }
-//    else
-//    {
-//      (*ivelcol_)[entry] = 0.0;
-//    }
-//
-//  }
 
 }
 
@@ -458,25 +444,6 @@ void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> idis
 {
   interface_.InsertCondVector(idisp,idisp_);
   LINALG::Export(*idisp_,*idispcol_);
-
-
-//  //idispcol_->PutScalar( 0.0); // ganz schlecht
-//  //idispcol_->PutScalar( 0.049); // naja
-//  //idispcol_->PutScalar(-0.149); // works best
-//  for (int entry = 0; entry < idispcol_->MyLength(); ++entry)
-//  {
-//    if (entry%3 == 0)
-//    {
-//      //(*ivelcol)[entry] = (-1.5*std::sin(2.0*time_* PI) * PI);
-//      //(*idispcol_)[entry] = -0.149;
-//      (*idispcol_)[entry] = 0.049;
-//    }
-//    else
-//    {
-//      (*idispcol_)[entry] = 0.0;
-//    }
-//
-//  }
 
 }
 
@@ -556,7 +523,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::RelaxationSolve(Teuchos::RCP<Ep
   const Epetra_Map* dofrowmap = Discretization()->DofRowMap();
   Teuchos::RCP<Epetra_Vector> relax = LINALG::CreateVector(*dofrowmap,true);
   interface_.InsertCondVector(ivel,relax);
-  fluid_.LinearRelaxationSolve(relax);
+  //fluid_.LinearRelaxationSolve(relax);
   return ExtractInterfaceForces();
 }
 
@@ -585,6 +552,5 @@ void ADAPTER::XFluidImpl::SetInitialFlowField(int whichinitialfield,int startfun
    dserror("not implemented!");
    return;
 }
-
 
 #endif  // #ifdef CCADISCRET
