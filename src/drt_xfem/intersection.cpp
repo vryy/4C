@@ -229,8 +229,13 @@ void XFEM::Intersection::initializeXFEM(
 
   numXFEMCornerNodes_  = DRT::UTILS::getNumberOfElementCornerNodes(xfemDistype);
   
-  xyze_xfemElement_    = DRT::UTILS::InitialPositionArrayBlitz(xfemElement);
-
+  
+  blitz::TinyVector<int, 2> size; 
+  size(0) = 3;
+  size(1) = xfemElement->NumNode();
+  xyze_xfemElement_.resize(size);
+  xyze_xfemElement_ = DRT::UTILS::InitialPositionArrayBlitz(xfemElement);
+  
   eleLinesSurfaces_     = DRT::UTILS::getEleNodeNumbering_lines_surfaces(xfemDistype);
   eleNodesSurfaces_     = DRT::UTILS::getEleNodeNumbering_nodes_surfaces(xfemDistype);
   eleNodesLines_        = DRT::UTILS::getEleNodeNumbering_nodes_lines(xfemDistype);
@@ -2349,11 +2354,14 @@ void XFEM::Intersection::storeIntCells(
 	BoundaryIntCells                     			listBoundaryICPerElement;
 
 	// store cells completey lying on xfem boundaries
+	// no lifting necessayr if -Y switch is applied and/or volume element is Cartesian
 	if(!surfaceTriangleList_.empty())
-	  storeSurfaceIntCells(false,xfemElement,xyze_xfemElement, currentcutterpositions,listBoundaryICPerElement);
+	  storeSurfaceIntCells(false, xfemElement, xyze_xfemElement, currentcutterpositions,listBoundaryICPerElement);
+	
 	// lifts all corner points into the curved interface
-	//liftAllSteinerPoints(xfemElement, out);
-  for(int i=0; i<out.numberoftrifaces; i++)
+	liftAllSteinerPoints(xfemElement, xyze_xfemElement, currentcutterpositions, out);
+	
+	for(int i=0; i<out.numberoftrifaces; i++)
   {
     // run over all faces not lying in on of the xfem element planes
     const int faceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
@@ -2431,9 +2439,9 @@ void XFEM::Intersection::liftAllSteinerPoints(
     BlitzVec oppositePoint(3);  oppositePoint = 0.0;
     vector< vector<int> > adjacentFacesList;
     vector< vector<int> > adjacentFacemarkerList;
-
+    
     locateSteinerPoints(adjacentFacesList, adjacentFacemarkerList, out);
-
+   
     if(!adjacentFacesList.empty())
     {
         // run over all Steiner points
@@ -2441,27 +2449,27 @@ void XFEM::Intersection::liftAllSteinerPoints(
         {
             int lineIndex = -1;
             int cutterIndex = -1;
-            const int  caseSteiner = decideSteinerCase(  i, lineIndex, cutterIndex, adjacentFacesList, adjacentFacemarkerList, currentcutterpositions,
+            const SteinerType caseSteiner = decideSteinerCase(  i, lineIndex, cutterIndex, adjacentFacesList, adjacentFacemarkerList, currentcutterpositions,
                                                          edgePoint, oppositePoint, xfemElement, xyze_xfemElement, out);
+           
             switch(caseSteiner)
             {
-                case 1:
+                case S_SURFACE:
                 {
                     liftSteinerPointOnSurface(i, adjacentFacesList, adjacentFacemarkerList, currentcutterpositions, xfemElement, xyze_xfemElement, out);
                     break;
                 }
-                case 2:
-                {
+                case S_EDGE:
+                {   
                     liftSteinerPointOnEdge( i, lineIndex, cutterIndex, edgePoint, oppositePoint,
                                         adjacentFacesList, currentcutterpositions, xfemElement, xyze_xfemElement, out);
                     break;
                 }
-                case 3:
+                case S_BOUNDARY:
                 {
                     liftSteinerPointOnBoundary( i, adjacentFacesList, adjacentFacemarkerList, currentcutterpositions, xfemElement, xyze_xfemElement, out);
                     break;
                 }
-
                 default:
                     dserror("case of lifting Steiner point does not exist");
             }
@@ -2533,12 +2541,12 @@ void XFEM::Intersection::locateSteinerPoints(
  |  RCI:    checks if the Steiner points lies within         u.may 11/07|
  |          the cutter element or on one of its edges                   |
  *----------------------------------------------------------------------*/
-int XFEM::Intersection::decideSteinerCase(
+XFEM::SteinerType XFEM::Intersection::decideSteinerCase(
         const int                       steinerIndex,
         int&                            lineIndex,
         int&                            cutterIndex,
-        const vector< vector<int> >&   adjacentFacesList,
-        const vector< vector<int> >&   adjacentFacemarkerList,
+        const vector< vector<int> >&    adjacentFacesList,
+        const vector< vector<int> >&    adjacentFacemarkerList,
         const map<int,BlitzVec3>&       currentcutterpositions,
         BlitzVec&                       edgePoint,
         BlitzVec&                       oppositePoint,
@@ -2555,7 +2563,8 @@ int XFEM::Intersection::decideSteinerCase(
 
     static BlitzVec3    xsi;
     // check exact TODO
-    currentToVolumeElementCoordinates(xfemElement, x, xsi);
+    xsi = currentToVolumeElementCoordinatesExact(xfemElement, x, TOL7);
+    //currentToVolumeElementCoordinates(xfemElement, x, xsi);
 
     InterfacePoint emptyIp;
     if(setInternalPointBoundaryStatus(xfemElement-> Shape(), xsi, emptyIp))
@@ -2585,13 +2594,11 @@ int XFEM::Intersection::decideSteinerCase(
         if(!normalSteiner)      break;
     }
 
-    int caseSteiner = 0;
-    if(normalSteiner)
-        caseSteiner = 1;
-    else
-        caseSteiner = 2;
+    SteinerType caseSteiner = S_SURFACE;
+    if(!normalSteiner)
+        caseSteiner = S_EDGE;
     if(out.pointmarkerlist[pointIndex] == 3)
-        caseSteiner = 3;
+        caseSteiner = S_BOUNDARY;
 
     return caseSteiner;
 }
@@ -2653,7 +2660,6 @@ void XFEM::Intersection::liftSteinerPointOnSurface(
         normals.push_back(normal);
     }
 
-    // compute average normal TODO
     averageNormal /= ((double)length);
 
     const int faceMarker = adjacentFacemarkerList[steinerIndex][0];
@@ -2691,7 +2697,7 @@ void XFEM::Intersection::liftSteinerPointOnSurface(
         if(!intersected)
         {
             countMissedPoints_++;
-            printf("STEINER POINT NOT LIFTED in liftSteinerPointOnSurface()\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            printf("STEINER POINT NOT LIFTED in liftSteinerPointOnSurface()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
         }
     }
 }
@@ -2704,11 +2710,11 @@ void XFEM::Intersection::liftSteinerPointOnSurface(
  *----------------------------------------------------------------------*/
 void XFEM::Intersection::liftSteinerPointOnEdge(
     const int                         steinerIndex,
-    int                               lineIndex,     // TODO:??????????????? why is this an argument to this function?
+    int                               lineIndex,     // no const because line index is changed in computeRecoveryPlane !!
     const int                         cutterIndex,
     BlitzVec&                         edgePoint,
     BlitzVec&                         oppositePoint,
-    const vector< vector<int> >&     adjacentFacesList,
+    const vector< vector<int> >&      adjacentFacesList,
     const map<int,BlitzVec3>&         currentcutterpositions,
     const DRT::Element*               xfemElement,
     const BlitzMat&                   xyze_xfemElement,
@@ -2741,18 +2747,18 @@ void XFEM::Intersection::liftSteinerPointOnEdge(
     static BlitzVec3 xsi;
     xsi = 0.0;
     DRT::Element* cutterElement = intersectingCutterElements_[cutterIndex];
-    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));  
     const bool intersected = computeRecoveryPlane( lineIndex, currentcutterpositions, xsi, plane, cutterElement, xyze_cutterElement);
-
+   
     if(intersected)
     {
-        storeHigherOrderNode(   false, adjacentFacesList[steinerIndex][0], lineIndex, xsi,
-            cutterElement, currentcutterpositions, xfemElement, out);
+        storeHigherOrderNode( false, adjacentFacesList[steinerIndex][0], lineIndex, xsi,
+                              cutterElement, currentcutterpositions, xfemElement, out);
     }
     else
     {
         countMissedPoints_++;
-        printf("STEINER POINT NOT LIFTED in liftSteinerPointOnEdge()\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        printf("STEINER POINT NOT LIFTED in liftSteinerPointOnEdge()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
 }
 
@@ -2776,13 +2782,11 @@ void XFEM::Intersection::liftSteinerPointOnBoundary(
     int facemarkerIndex = 0;
 
     // find egde on boundary
-    bool edgeFound = false;
     for(unsigned int i = 1; i < adjacentFacesList[steinerIndex].size(); i++ )
     {
         edgeIndex = adjacentFacesList[steinerIndex][i];
         if(out.pointmarkerlist[edgeIndex] == 3)
         {
-            edgeFound = true;  // TODO:  why is this calculated?
             facemarkerIndex = (int) (i+1)/2;
             break;
         }
@@ -2820,18 +2824,20 @@ void XFEM::Intersection::liftSteinerPointOnBoundary(
         if(!oppositeFound)
             break;
     }
-
+    
+    
     // compute normal through Steiner point lying in the boundary triangle
     vector<BlitzVec> plane;
     computeIntersectionNormalC( adjacentFacesList[steinerIndex][0], edgeIndex, oppositeIndex, plane,
                                xfemElement, out);
 
+   
     // compute intersection normal on boundary
     static BlitzVec3 xsi;
     DRT::Element* cutterElement = intersectingCutterElements_[faceIndex];
-    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
+    const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));   
     const bool intersected = computeRecoveryNormal(xsi, plane, cutterElement, xyze_cutterElement, true);
-
+   
     if(intersected)
     {
         storeHigherOrderNode(   true, adjacentFacesList[steinerIndex][0], -1, xsi,
@@ -2840,7 +2846,7 @@ void XFEM::Intersection::liftSteinerPointOnBoundary(
     else
     {
         countMissedPoints_++;
-        printf("STEINER POINT NOT LIFTED in liftSteinerPointOnBoundary()\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        printf("STEINER POINT NOT LIFTED in liftSteinerPointOnBoundary()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
 
 }
@@ -2942,15 +2948,13 @@ void XFEM::Intersection::computeHigherOrderPoint(
     findAdjacentFace(  tetraCornerIndices[index1], tetraCornerIndices[index2],
                        faceMarker, adjacentFaceMarker, faceIndex, adjacentFaceIndex, out);
 
-    // TODO: something seems weird about the following if else construct, sometimes it goes through, somethimes not...
-    // suggestion: for every if, there should be an else, otherwise, values could become undefined...
 
     // edge lies within the xfem element
     if(adjacentFaceMarker  > -1)
     {
         vector<BlitzVec>        plane;
-        computeIntersectionNormalB(  tetraCornerIndices[index1], tetraCornerIndices[index2], faceIndex,
-                                    adjacentFaceIndex, globalHigherOrderIndex, plane, xfemElement, out);
+        computeIntersectionNormalB(   tetraCornerIndices[index1], tetraCornerIndices[index2], faceIndex,
+                                      adjacentFaceIndex, globalHigherOrderIndex, plane, xfemElement, out);
 
         // higher order node lies within the cutter element
         if(adjacentFaceMarker == faceMarker)
@@ -2973,14 +2977,6 @@ void XFEM::Intersection::computeHigherOrderPoint(
                 intersected = computeRecoveryPlane( lineIndex, currentcutterpositions, xsi, plane, cutterElement, xyze_cutterElement);
                 intersectionNormal = false;
             }
-            else
-            {
-                dserror("what do we do here? Implement something?");
-            }
-        }
-        else
-        {
-            dserror("should we ever arive here?");
         }
     }
     // edge lies on the surface of the xfem element
@@ -3012,15 +3008,7 @@ void XFEM::Intersection::computeHigherOrderPoint(
                 intersected = computeRecoveryPlane( lineIndex, currentcutterpositions, xsi, plane, cutterElement, xyze_cutterElement);
                 intersectionNormal = false;
             }
-            else
-            {
-                dserror("What do we do here?");
-            }
         }
-    }
-    else // (adjacentFaceMarker < -1) should be impossible
-    {
-        dserror("bug in adjacentFaceMarker numbering?");
     }
 
 
@@ -3262,75 +3250,76 @@ bool XFEM::Intersection::computeRecoveryPlane(
         const BlitzMat&                             xyze_cutterElement
         ) const
 {
-    const int     numLines = cutterElement->NumLine();
+  const int     numLines = cutterElement->NumLine();
 
-    // run over all lines (curves)
-    int     begin, end;
-    if(lineIndex == -1)
+  // run over all lines (curves)
+  int     begin, end;
+  if(lineIndex == -1)
+  {
+      begin = 0;
+      end = numLines;
+  }
+  else
+  {
+      begin = lineIndex;
+      end   = lineIndex + 1;
+  }
+
+  bool    intersection = true;
+  for(int i = begin; i < end; i++)
+  {
+    int                         iter = 0;
+    const int                   maxiter = 50;
+    double                      residual = 1.0;
+    const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
+    DRT::Element*               lineElement = (cutterElementLines[i]).get();
+    const BlitzMat xyze_lineElement(getCurrentNodalPositions(lineElement, currentcutterpositions));
+    
+    static BlitzMat3x3 A;
+    static BlitzVec3   b;
+    static BlitzVec3   dx;  dx = 0.0;
+
+    intersection = true;
+    xsi = 0.0;
+
+    updateRHSForRCIPlane( b, xsi, plane, lineElement, xyze_lineElement);
+
+    while( residual > TOL14 )
     {
-        begin = 0;
-        end = numLines;
-    }
-    else
-    {
-        begin = lineIndex;
-        end   = lineIndex + 1;
-    }
+      updateAForRCIPlane( A, xsi, plane, lineElement, xyze_lineElement, cutterElement, xyze_cutterElement);
 
-    bool    intersection = true;
-    for(int i = begin; i < end; i++)
-    {
-        int                         iter = 0;
-        const int                   maxiter = 50;
-        double                      residual = 1.0;
-        DRT::Element*               lineElement = (cutterElement->Lines()[i]).get();
-        const BlitzMat xyze_lineElement(getCurrentNodalPositions(lineElement, currentcutterpositions));
-        
-        static BlitzMat3x3 A;
-        static BlitzVec3   b;
-        static BlitzVec3   dx;  dx = 0.0;
+      if(!gaussElimination<true,3>(A, b, dx, XFEM::TOL7))
+      {
+          intersection = false;
+          break;
+      }
 
-        intersection = true;
-        xsi = 0.0;
+      if(iter >= maxiter)
+      {
+          intersection = false;
+          break;
+      }
 
-        updateRHSForRCIPlane( b, xsi, plane, lineElement, xyze_lineElement);
-
-        while( residual > TOL14 )
-        {
-            updateAForRCIPlane( A, xsi, plane, lineElement, xyze_lineElement, cutterElement, xyze_cutterElement);
-
-            if(!gaussElimination<true,3>(A, b, dx, XFEM::TOL7))
-            {
-                intersection = false;
-                break;
-            }
-
-            if(iter >= maxiter)
-            {
-                intersection = false;
-                break;
-            }
-
-            xsi += dx;
-
-            updateRHSForRCIPlane( b, xsi, plane, lineElement, xyze_lineElement);
-            residual = Norm2(b);
-            iter++;
-        }
-
-        if( (fabs(xsi(2))-1.0) > TOL7 )     // planes coordinate may be bigger than 1
-        {   printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
-            intersection = false;
-        }
-
-        if(intersection)
-        {
-            lineIndex = begin;
-            break;
-        }
+      xsi += dx;
+      
+      updateRHSForRCIPlane( b, xsi, plane, lineElement, xyze_lineElement);
+      residual = Norm2(b);
+      iter++;
     }
 
-    return intersection;
+    if( (fabs(xsi(2))-1.0) > TOL7 )     // planes coordinate may be bigger than 1
+    {   printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
+        intersection = false;
+    }
+
+    if(intersection)
+    {
+        lineIndex = begin;
+        break;
+    }
+  }
+
+  return intersection;
 }
 
 
@@ -3468,21 +3457,21 @@ void XFEM::Intersection::computeIntersectionNormalA(
     normalizeVectorInPLace(r);
 
     // computes the start point of the line
-    BlitzVec  m(3);
+    BlitzVec  midpoint(3);
 
     if(!onBoundary)
-        m = computeLineMidpoint(p2, p3);
+      midpoint = computeLineMidpoint(p2, p3);
     else
     {
         for(int i = 0; i < 3; i++)
-            m(i) = out.pointlist[globalHigherOrderIndex*3+i];
+          midpoint(i) = out.pointlist[globalHigherOrderIndex*3+i];
     }
 
     // compute nodes of the normal to the interface edge of the tetrahedron
     plane.clear();
     plane.reserve(5);
-    plane.push_back(BlitzVec(m + r));
-    plane.push_back(BlitzVec(m - r));
+    plane.push_back(BlitzVec(midpoint + r));
+    plane.push_back(BlitzVec(midpoint - r));
     plane.push_back(BlitzVec(plane[1] + n));
     plane.push_back(BlitzVec(plane[0] + n));
 
@@ -3492,8 +3481,8 @@ void XFEM::Intersection::computeIntersectionNormalA(
         for(int i = 0; i < 4; i++)
             elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, plane[i]);
 
-        elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, m);
-        plane.push_back(BlitzVec(m));
+        elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, midpoint);
+        plane.push_back(midpoint);
     }
 }
 
@@ -3568,17 +3557,17 @@ void XFEM::Intersection::computeIntersectionNormalB(
     normalizeVectorInPLace(averageNormal);
     normalizeVectorInPLace(rPlane);
 
-    BlitzVec m(3);
+    BlitzVec midpoint(3);
     for(int i = 0; i < 3; i++)
-        m(i) = out.pointlist[globalHigherOrderIndex*3+i];
+      midpoint(i) = out.pointlist[globalHigherOrderIndex*3+i];
 
-    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, m);
+    elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, midpoint);
 
     // compute nodes of the normal to the interface edge of the tetrahedron
     plane.clear();
     plane.reserve(4);
-    plane.push_back(BlitzVec(m + averageNormal));
-    plane.push_back(BlitzVec(m - averageNormal));
+    plane.push_back(BlitzVec(midpoint + averageNormal));
+    plane.push_back(BlitzVec(midpoint - averageNormal));
     plane.push_back(BlitzVec(plane[1] + rPlane));
     plane.push_back(BlitzVec(plane[0] + rPlane));
 
@@ -3640,10 +3629,11 @@ void XFEM::Intersection::computeIntersectionNormalC(
     plane.push_back(BlitzVec(plane[0] + n));
 
     for(int i = 0; i < 4; i++)
-        elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, plane[i]);
-
+      elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, plane[i]);
+    
     elementToCurrentCoordinatesInPlace(xfemElement, xyze_xfemElement_, p2);
-    plane.push_back(BlitzVec(p2));
+   
+    plane.push_back(p2);
 }
 
 
@@ -3659,7 +3649,6 @@ BlitzVec XFEM::Intersection::computeLineMidpoint(
 
     for(int i=0; i<3; i++)
         midpoint(i) = (p1(i) + p2(i))*0.5;
-//    midpoint = 0.5*(p1 + p2);
 
     return midpoint;
 }
@@ -3947,6 +3936,7 @@ void XFEM::Intersection::storeHigherOrderNode(
         BlitzVec2 xsiSurf;
         xsiSurf(0) = xsi(0);
         xsiSurf(1) = xsi(1);
+        
         const BlitzMat xyze_cutterElement(getCurrentNodalPositions(cutterElement, currentcutterpositions));
         elementToCurrentCoordinates(cutterElement, xyze_cutterElement, xsiSurf, curr);
     }
@@ -3954,13 +3944,14 @@ void XFEM::Intersection::storeHigherOrderNode(
     {
         BlitzVec1 xsiLine;
         xsiLine(0) = xsi(2);
-        const DRT::Element* lineele = cutterElement->Lines()[lineIndex].get();
+        const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
+        const DRT::Element* lineele = cutterElementLines[lineIndex].get();
         const BlitzMat xyze_lineElement(getCurrentNodalPositions(lineele, currentcutterpositions));
         elementToCurrentCoordinates(lineele, xyze_lineElement, xsiLine, curr);
     }
     xsi = currentToVolumeElementCoordinatesExact(xfemElement, curr, TOL7);
 
-    //printf("xsiold0 = %20.16f\t, xsiold1 = %20.16f\t, xsiold2 = %20.16f\n", out.pointlist[index*3], out.pointlist[index*3+1], out.pointlist[index*3+2]);
+    //printf("xsiold0 = %20.16f\t, xsiold1 = %20.16f\t, xsiold2 = %20.16f\n", out.pointlist[globalHigherOrderIndex*3], out.pointlist[globalHigherOrderIndex*3+1], out.pointlist[globalHigherOrderIndex*3+2]);
 
     for(int i = 0; i < 3; i++)
         out.pointlist[globalHigherOrderIndex*3+i]   = xsi(i);

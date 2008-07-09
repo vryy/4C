@@ -49,6 +49,7 @@ namespace XFEM
 {
 
 enum boundaryType {NONE, ONFLUID, ONSOLID};
+enum SteinerType {S_SURFACE, S_EDGE, S_BOUNDARY};
 
 
 class Intersection
@@ -866,9 +867,9 @@ class Intersection
   \param xfemElement              (in)     :   xfem element
   \param xyze_xfemElement         (in)     :   nodal coordinates of xfem element
   \param out                      (in)     :   output data structure of TetGen
-  \return true the point lies in the cutter element and false if on an edge
+  \return steiner type S_SURAFCE S_EDGE S_BOUNDARY
   */
-  int decideSteinerCase(
+  XFEM::SteinerType decideSteinerCase(
     const int                         steinerIndex,
     int&                              lineIndex,
     int&                              cutterIndex,

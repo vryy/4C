@@ -57,7 +57,7 @@ void XFEM::elementToCurrentCoordinatesInPlace(
     const int numNodes = element->NumNode();
     BlitzVec funct(numNodes);
     dsassert(eleCoord.size() == 3, "inplace coordinate transfer only in 3d!");
-    
+  
     switch(DRT::UTILS::getDimension(element->Shape()))
     {
         case 1:
@@ -83,9 +83,13 @@ void XFEM::elementToCurrentCoordinatesInPlace(
     for(int i=0; i<numNodes; i++)
     {
         for(int j=0; j<3; j++)
+        {
             eleCoord(j) += xyze(j,i) * funct(i);
+        }
     }
 }
+
+
 
 /*!
 \brief updates the system matrix at the corresponding element coordinates for the 
@@ -863,6 +867,8 @@ void XFEM::checkGeoType(
   if(cartesian)
     eleGeoType = CARTESIAN;
 }
+
+
 
 
 #endif  // #ifdef CCADISCRET
