@@ -156,6 +156,9 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres);
 
+    /// set initial flow field
+    virtual void SetInitialFlowField(int whichinitialfield,int startfuncno);
+
   private:
 
     /// the actual fluid algorithm

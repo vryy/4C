@@ -482,4 +482,12 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::ExtractVelocityPart(Teucho
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::SetInitialFlowField(int whichinitialfield,int startfuncno)
+{
+   fluid_.SetInitialFlowField(whichinitialfield,startfuncno);
+   return;
+}
+
 #endif  // #ifdef CCADISCRET

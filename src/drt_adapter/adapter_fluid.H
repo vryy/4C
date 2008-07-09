@@ -110,6 +110,9 @@ namespace ADAPTER {
 
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
+    /// set initial flow field
+    virtual void SetInitialFlowField(int whichinitialfield,int startfuncno) = 0;
+
     //@}
 
     //! @name Time step helpers

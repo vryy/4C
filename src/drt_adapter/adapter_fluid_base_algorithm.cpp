@@ -323,6 +323,19 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     dserror("Unknown time integration for fluid\n");
   }
+
+  // set initial field by given function
+  // we do this here, since we have direct access to all necessary parameters
+  if(init>0)
+  {
+    int startfuncno = fdyn.get<int>("STARTFUNCNO");
+    if (init!=2 and init!=3)
+    {
+      startfuncno=-1;
+    }
+    fluid_->SetInitialFlowField(init,startfuncno);
+  }
+
   return;
 }
 
