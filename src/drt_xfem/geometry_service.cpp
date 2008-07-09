@@ -105,7 +105,7 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
     static BlitzVec2 eleCoord;
     static BlitzVec3 normal;
     in_element = XFEM::searchForNearestPointOnSurface(cutterele,xyze_cutter,x_in,eleCoord,normal,distance);
-    if (in_element && (abs(distance) < abs(min_ele_distance)))
+    if (in_element && (fabs(distance) < fabs(min_ele_distance)))
     {
       closest_element = cutterele;
       min_ele_distance = distance;
@@ -118,7 +118,7 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
 //  }
 //  else 
   { 
-    min_node_distance = abs(min_ele_distance);
+    min_node_distance = fabs(min_ele_distance);
     for (list< const DRT::Element* >::const_iterator myIt2 = ElementList.begin(); myIt2 != ElementList.end(); myIt2++) {
       double distance = 1.0e12;
       const DRT::Element* cutterele = &**myIt2;       
@@ -145,7 +145,7 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
         }
       }          
     }
-    if (abs(min_node_distance)<abs(min_ele_distance)) {
+    if (fabs(min_node_distance)< fabs(min_ele_distance)) {
     BlitzVec3 normal;
     normal(0)=0;normal(1)=0;normal(2)=0;
     DRT::Node*  node = dis.gNode(closest_node->Id());
@@ -164,12 +164,12 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
     }
     closest_element_from_node=node->Elements()[0]; 
     const double scalarproduct = vectorX2minNode(0)*normal(0) + vectorX2minNode(1)*normal(1) + vectorX2minNode(2)*normal(2);
-    const double vorzeichen = scalarproduct/abs(scalarproduct);
+    const double vorzeichen = scalarproduct/fabs(scalarproduct);
     min_node_distance *= vorzeichen;
     }
   }
   
-  if (abs(min_ele_distance)<=abs(min_node_distance)){
+  if (fabs(min_ele_distance) <= fabs(min_node_distance)){
     dist = min_ele_distance;
     return closest_element;
   }
@@ -229,6 +229,7 @@ double XFEM::getOverlapArea(const list<BlitzMat3x2 > AABBs){
 }
 
 
+
 double XFEM::getArea(const BlitzMat3x2& AABB){
   const int nsd=3;
   double A=1;
@@ -238,6 +239,8 @@ double XFEM::getArea(const BlitzMat3x2& AABB){
   }
   return A;
 }
+
+
 
 void XFEM::checkRoughGeoType(
            DRT::Element*                element,

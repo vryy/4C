@@ -70,7 +70,6 @@ void XFEM::Intersection::computeIntersection(
 
     const double t_start = ds_cputime();
 
-
     //  k < xfemdis->NumMyColElements()
     for(int k = 0; k < xfemdis->NumMyColElements(); ++k)
     {
@@ -110,7 +109,7 @@ void XFEM::Intersection::computeIntersection(
          
         }// for-loop over all cutterdis->NumMyColElements()
         
-        //debugIntersection(xfemElement, cutterElements);
+        debugIntersection(xfemElement, cutterElements);
         const vector<RCP<DRT::Element> > xfemElementSurfaces = xfemElement->Surfaces();
         const vector<RCP<DRT::Element> > xfemElementLines = xfemElement->Lines();
         
@@ -132,7 +131,7 @@ void XFEM::Intersection::computeIntersection(
             const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
             const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
 
-            //debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
+            debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
             
             vector< InterfacePoint >  interfacePoints;
             
@@ -292,6 +291,8 @@ bool XFEM::Intersection::collectInternalPoints(
     // element element coordinate system
     ip.setCoord(DRT::UTILS::getNodeCoordinates(nodeId, cutterElement->Shape()));
 
+    //printf("internal point\n");
+    //printf("xsi = %20.16f   %20.16f   %20.16f\n", xsi(0), xsi(1), xsi(2));
     interfacePoints.push_back(ip);
     storeIntersectedCutterElement(cutterElement);
   }
@@ -444,6 +445,7 @@ bool XFEM::Intersection::collectIntersectionPoints(
   
   if(intersected)
   {
+    //printf("intersection point\n");
     //printf("xsi = %20.16f   %20.16f   %20.16f\n", xsi(0), xsi(1), xsi(2));
   
     numTotalInterfacePoints += addIntersectionPoint( xfemElement, surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit,
@@ -1042,11 +1044,17 @@ int XFEM::Intersection::findCommonSurfaceID(
     // check if more than 2 points are lying on one xfem surface
     for(int i = 0; i < numXFEMSurfaces_; i++)
     {
-      if(xfemSurfPoints[i].size() > 2  &&  xfemSurfPoints[i].size() !=  positions.size())
+      //for(unsigned int j = 0; j < xfemSurfPoints[i].size(); j++ )
+      //  cout << "xfemSurfPoints =  " <<  xfemSurfPoints[i][j] << "      " ;
+      
+      //cout << endl;
+      
+      /*if(xfemSurfPoints[i].size() > 2  &&  xfemSurfPoints[i].size() !=  positions.size())
       {
-        dserror("scenario not yet implemented");
+        //printf("scenario not yet implemented\n");
       }
-      else if(xfemSurfPoints[i].size() > 2 &&  xfemSurfPoints[i].size() ==  positions.size())
+      */
+      if(xfemSurfPoints[i].size() > 2 &&  xfemSurfPoints[i].size() ==  positions.size())
       {
           const bool onSurface = checkIfCutterOnXFEMSurface(xfemElement, xyze_xfemElement, 
                                  cutterElement, xyze_cutterElement, positions);
@@ -1249,28 +1257,27 @@ void XFEM::Intersection::computeConvexHull(
 
   vector<double>      coord(3,0.0);
   //compute midpoint
-  if(interfacePoints.size() > 2)
+  
+  // tolerance has to be twice as small than for other points because the midpoint is 
+  // point by summing the other
+  // points and dividing by the number of points, other wise midpoint 
+  // is moved on xfem boundary even though is is still inside
+  // xfem element
+  midpoint = computeMidpoint(interfacePoints);
+  // transform it into current coordinates
   {
-    // tolerance has to be twice as small than for other points because the midpoint is 
-    // point by summing the other
-    // points and dividing by the number of points, other wise midpoint 
-    // is moved on xfem boundary even though is is still inside
-    // xfem element
-    midpoint = computeMidpoint(interfacePoints);
-    // transform it into current coordinates
-    {
-      static BlitzVec2    eleCoordSurf;
-      for(int j = 0; j < 2; j++)
-          eleCoordSurf(j)  = midpoint.getCoord()[j];
-      static BlitzVec3 curCoordVol;
-      elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
-      const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL7));
-      for(int j = 0; j < 3; j++)
-          coord[j] = eleCoordVol(j);
-      
-      midpoint.setCoord(coord);
-    }
+    static BlitzVec2    eleCoordSurf;
+    for(int j = 0; j < 2; j++)
+        eleCoordSurf(j)  = midpoint.getCoord()[j];
+    static BlitzVec3 curCoordVol;
+    elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
+    const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL7));
+    for(int j = 0; j < 3; j++)
+        coord[j] = eleCoordVol(j);
+    
+    midpoint.setCoord(coord);
   }
+  
       
   // store coordinates in
   // points has numInterfacePoints*dim-dimensional components
@@ -1284,8 +1291,9 @@ void XFEM::Intersection::computeConvexHull(
     for(int j = 0; j < 2; j++)
     {
       coordinates[fill++] = ipoint->getCoord()[j];
-     // printf("coord = %f\t", ipoint->coord[j]);
+      //printf("coord = %f\t", ipoint->getCoord()[j]);
     }
+    
     // transform interface points into current coordinates
     {
       static BlitzVec2  eleCoordSurf;
@@ -1304,9 +1312,6 @@ void XFEM::Intersection::computeConvexHull(
   // compute convex hull - exitcode = 0 no error
   if (qh_new_qhull(2, interfacePoints.size(), coordinates, false, "qhull ", NULL, stderr)!=0)
       dserror(" error in the computation of the convex hull (qhull error)");
-
-  if(((int) interfacePoints.size()) != qh num_vertices)
-      dserror("resulting surface is concave - convex hull does not include all points");
 
   // copy vertices out of the facet list
   facetT* facet = qh facet_list;
@@ -1334,6 +1339,14 @@ void XFEM::Intersection::computeConvexHull(
     facet = facet->next;
   }
 
+  vector<vector <double> > additionalPoints;
+/*  if(((int) interfacePoints.size()) != qh num_vertices)
+  {
+      // collect additional points
+        printf("resulting surface is concave - convex hull does not include all points\n");
+  
+  }
+  */
   // free memory and clear vector of interface points
   qh_freeqhull(!qh_ALL);
   int curlong, totlong;           // memory remaining after qh_memfreeshort
