@@ -110,9 +110,9 @@ void StruTimIntAB2::IntegrateStep()
     Epetra_Vector disinc = Epetra_Vector(*disn_);
     disinc.Update(-1.0, *dis_, 1.0);
     // internal force
-    ApplyForceStiffInternal(timen_, dt,
-                            disn_, zeros_, //Teuchos::rcp(&disinc,false),
-                            fintn_, stiff_);
+    ApplyForceInternal(timen_, dt,
+                       disn_, Teuchos::rcp(&disinc,false),
+                       fintn_);
   }
 
   // viscous forces due Rayleigh damping
@@ -124,11 +124,11 @@ void StruTimIntAB2::IntegrateStep()
   // determine time derivative of linear momentum vector,
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
   frimpn_->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
-  double some, more, less;
-  frimpn_->Norm2(&some);
-  fextn_->Norm2(&more);
-  fintn_->Norm2(&less);
-  cout << some << " " << more << " " << less << endl;
+//   double some, more, less;
+//   frimpn_->Norm2(&some);
+//   fextn_->Norm2(&more);
+//   fintn_->Norm2(&less);
+//   cout << some << " " << more << " " << less << endl;
   if (damping_)
   {
     frimpn_->Update(-1.0, *fviscn_, 1.0);

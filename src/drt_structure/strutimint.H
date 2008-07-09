@@ -170,6 +170,26 @@ public:
     Teuchos::RCP<LINALG::SparseMatrix> stiff  //!< stiffness matrix
   );
 
+  //! Evaluate ordinary internal force
+  //!
+  //! We need incremental displacements, because the internal variables,
+  //! chiefly EAS parameters with an algebraic constraint, are treated
+  //! as well. They are not treated perfectly, ie they are not iteratively
+  //! equilibriated according to their (non-linear) constraint and 
+  //! the pre-determined displacements -- we talk explicit time integration 
+  //! here, but they are applied in linearised manner. The linearised 
+  //! manner means the static condensation is applied once with 
+  //! residual displacements replaced by the full-step displacement
+  //! increment \f$D_{n+1}-D_{n}\f$.
+  void ApplyForceInternal
+  (
+    const double time,  //!< evaluation time
+    const double dt,  //!< step size
+    const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
+    const Teuchos::RCP<Epetra_Vector> disi,  //!< incremental displacements
+    Teuchos::RCP<Epetra_Vector> fint  //!< internal force
+  );
+
   //@}
 
   //! @name Attributes

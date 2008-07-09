@@ -374,6 +374,38 @@ void StruTimInt::ApplyForceStiffInternal
 }
 
 /*----------------------------------------------------------------------*/
+/* evaluate ordinary internal force */
+void StruTimInt::ApplyForceInternal
+(
+  const double time,
+  const double dt,
+  const Teuchos::RCP<Epetra_Vector> dis,  // displacement state
+  const Teuchos::RCP<Epetra_Vector> disi,  // incremental displacements
+  Teuchos::RCP<Epetra_Vector> fint  // internal force
+)
+{
+  // create the parameters for the discretization
+  ParameterList p;
+  // action for elements
+  const std::string action = "calc_struct_internalforce";
+  p.set("action", action);
+  // other parameters that might be needed by the elements
+  p.set("total time", time);
+  p.set("delta time", dt);
+  // set vector values needed by elements
+  discret_.ClearState();
+  discret_.SetState("residual displacement", disi);  // these are incremental
+  discret_.SetState("displacement", dis);
+  //discret_.SetState("velocity", veln_); // not used at the moment
+  //fintn_->PutScalar(0.0);  // initialise internal force vector
+  discret_.Evaluate(p, null, null, fint, null, null);
+  discret_.ClearState();
+  
+  // where the fun starts
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* integrate */
 void StruTimInt::Integrate()
 {
