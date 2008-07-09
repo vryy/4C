@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15238
 // 
-// necessary defines: D_FLUID2 D_ALE RESULTTEST CCADISCRET BINIO
+// necessary defines: D_FLUID2 D_ALE CCADISCRET BINIO
 //
 ==================================================================
                         General Data File CCARAT

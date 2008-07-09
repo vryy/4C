@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15238
 // 
-// necessary defines: D_FLUID2 RESULTTEST CCADISCRET BINIO D_ALE D_WALL1
+// necessary defines: D_FLUID2 CCADISCRET BINIO D_ALE D_WALL1
 //
 // Monolithic FSI test. Both fluid and structure use
 // backward Euler time integration within generalized-alpha algorithm.

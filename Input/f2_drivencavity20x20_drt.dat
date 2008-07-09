@@ -4,7 +4,7 @@
 //             http://www.uni-stuttgart.de/ibs/members/genkinger/
 //             0711 - 685-6127
 //
-// necessary defines: D_FLUID2 RESULTTEST DEBUG CCADISCRET BINIO
+// necessary defines: D_FLUID2 DEBUG CCADISCRET BINIO
 //
 ==================================================================
                         General Data File C_CARAT
