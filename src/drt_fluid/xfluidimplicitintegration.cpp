@@ -637,15 +637,13 @@ void XFluidImplicitTimeInt::NonlinearSolve(
         )
 {
 
-  //idispcol->PutScalar(-0.3);
-  //ivelcol->PutScalar(-0.5);
-
   ComputeInterfaceAndSetDOFs(cutterdiscret,*idispcol);
 
   PrepareNonlinearSolve();
   
   if (timealgo_==timeint_stationary)
   {
+    // interface doesn't move in the stationary case, regardless, what the FSI algorithm might compute
     ivelcol->PutScalar(0.0);
   }
 
@@ -769,7 +767,8 @@ void XFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("interface velocity",ivelcol);
       //cout << "interface velocity" << endl;
       //cout << *ivelcol << endl;
-      // give interface force to elements
+      
+      // reset interface force and let the elements fill it
       iforcecol->PutScalar(0.0);
       eleparams.set("interface force",iforcecol);
 
