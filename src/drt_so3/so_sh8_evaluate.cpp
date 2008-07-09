@@ -31,6 +31,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_io/io_gmsh.H"
 #include "Epetra_Time.h"
 #include "Teuchos_TimeMonitor.hpp"
+#include "../drt_mat/visconeohooke.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -299,6 +300,13 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         Epetra_BLAS::Epetra_BLAS blas;
         blas.COPY((*alphao).M()*(*alphao).N(), (*alpha).A(), (*alphao).A());  // alphao := alpha
+      }
+      // Update of history for visco material
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == m_visconeohooke)
+      {
+        MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
+        visco->Update();
       }
     }
     break;
