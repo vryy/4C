@@ -746,7 +746,6 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
   string convcheck   = params_.get<string>("convcheck"      ,"AbsRes_Or_AbsDis");
   bool structrobin   = params_.get<bool>  ("structrobin", false);
   bool   dynkindstat = (params_.get<string>("DYNKIND") == "Static");
-  if (dynkindstat) dserror("Static case is not implemented");
 
   // increment time and step
   double timen = time + dt;
@@ -856,19 +855,29 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
   }
 
   //-------------------------------------------- compute residual forces
-  // Res = M . A_{n+1-alpha_m}
-  //     + C . V_{n+1-alpha_f}
-  //     + F_int(D_{n+1-alpha_f})
-  //     - F_{ext;n+1-alpha_f}
-  // add mid-inertial force
-  mass_->Multiply(false,*accm_,*finert_);
-  fresm_->Update(1.0,*finert_,0.0);
-  // add mid-viscous damping force
-  if (damping)
+  if (dynkindstat)
   {
-    //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-    damp_->Multiply(false,*velm_,*fvisc_);
-    fresm_->Update(1.0,*fvisc_,1.0);
+    // static residual
+    // Res = F_int - F_ext
+    fresm_->PutScalar(0.0);
+  }
+  else
+  {
+    // dynamic residual
+    // Res = M . A_{n+1-alpha_m}
+    //     + C . V_{n+1-alpha_f}
+    //     + F_int(D_{n+1-alpha_f})
+    //     - F_{ext;n+1-alpha_f}
+    // add mid-inertial force
+    mass_->Multiply(false,*accm_,*finert_);
+    fresm_->Update(1.0,*finert_,0.0);
+    // add mid-viscous damping force
+    if (damping)
+    {
+      //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_->Multiply(false,*velm_,*fvisc_);
+      fresm_->Update(1.0,*fvisc_,1.0);
+    }
   }
 
   // add static mid-balance
