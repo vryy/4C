@@ -13,8 +13,9 @@ numproc=2  # number of processing elements (CPUs)
 # message about use of this shell script
 function helpmessage
 {
-  echo "usage: $0 [-j <number>] type config-file-name [input-file]"
+  echo "usage: $0 [option] type config-file-name [input-file]"
   echo "       type = all, rel, reldrt, restart, single"
+  echo "options"
   echo "       -j <number> = number of processors (default $numproc)"
 }
 
@@ -277,35 +278,46 @@ echo
 
 # write table with result to the screen
 echo 'Summary'
-echo '-----------------------------'
+echo '+--------------+------+------+'
 printf '| '
 printf $total' files    '
 if [ $total -le 9 ]; then
+  printf '  '
+elif [ $total -le 99 ]; then
   printf ' '
 fi
 printf '| pass | fail |\n'
-echo '|-------------|------|------|'
-printf "| compilation |  "
+echo '+--------------+------+------+'
+printf "| compilation  |  "
 if [ $pass1 -le 9 ]; then
+  printf '  '
+elif [ $pass1 -le 99 ]; then
   printf ' '
 fi
-printf $pass1'  |  '
+printf $pass1' |  '
 if [ $fail1 -le 9 ]; then
+  printf '  '
+elif [ $fail1 -le 99 ]; then
   printf ' '
 fi
-printf $fail1'  |\n'
-echo '|-------------|------|------|'
-printf "| running     |  "
+printf $fail1' |\n'
+echo '+--------------+------+------+'
+printf "| running      |  "
 if [ $pass2 -le 9 ]; then
+  printf '  '
+elif [ $pass2 -le 99 ]; then
   printf ' '
 fi
-printf $pass2'  |  '
+printf $pass2' |  '
 if [ $fail2 -le 9 ]; then
+  printf '  '
+elif [ $fail2 -le 99 ]; then
   printf ' '
 fi
-printf $fail2'  |\n'
-echo '-----------------------------'
+printf $fail2' |\n'
+echo '+--------------+------+------+'
 echo
+
 
 # write input files which failed to build
 if [ $fail1 -ge 1 ] && [ -n "$fail1files" ]
