@@ -4,7 +4,7 @@
 //             http://www.lnm.mw.tum.de/Members/gitterle
 //             089 - 289-15251
 //
-// necessary defines: CCADISCRET UMFPACK D_WALL1 BINIO
+// necessary defines: CCADISCRET D_WALL1 BINIO
 //
 //
 // #define MAXNOD_WALL1     (9)
