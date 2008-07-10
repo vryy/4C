@@ -535,7 +535,7 @@ void StruTimIntImpl::UpdateIter
   const int iter  //!< iteration counter
 )
 {
-  if (iter == 0)
+  if (iter <= 1)
   {
     UpdateIterIncrementally();
   }
