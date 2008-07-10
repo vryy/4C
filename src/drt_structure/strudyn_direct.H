@@ -31,6 +31,13 @@ Maintainer: Burkhard Bornemann
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_solver.H"
 
+#include "strutimint.H"
+#include "strutimint_impl.H"
+#include "strutimint_expl.H"
+#include "strutimint_genalpha.H"
+#include "strutimint_ost.H"
+#include "strutimint_ab2.H"
+
 using namespace std;
 using namespace Teuchos;
 
@@ -49,13 +56,25 @@ extern "C"
 #endif
 
 /*----------------------------------------------------------------------*/
-/*!
-\brief Direct time integration of temporally (and spatially) discretised
-       structure
-\author bborn
-\date 06/08
-*/
+//! Direct time integration of temporally (and spatially) discretised
+//! structure
+//!
+//! \author bborn \date 06/08
 void strudyn_direct();
+
+/*----------------------------------------------------------------------*/
+//! Create time integrator convenience routine
+//!
+//! \author bborn \date 07/08 
+Teuchos::RCP<StruTimInt> strudyn_create_tis
+(
+  const Teuchos::ParameterList& ioflags,  //!< input-output-flags
+  const Teuchos::ParameterList& sdyn,  //!< structural dynamic flags
+  const Teuchos::ParameterList& xparams,  //!< extra flags
+  RefCountPtr<DRT::Discretization>& actdis,  //!< discretisation
+  LINALG::Solver&  solver,  //!< the solver
+  IO::DiscretizationWriter& output  //!< output writer
+);
 
 #ifdef __cplusplus
 }

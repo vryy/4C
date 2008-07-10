@@ -90,17 +90,19 @@ void strudyn_direct()
   IO::DiscretizationWriter output(actdis);
 
   // set some pointers and variables
-  SOLVAR* actsolv  = &solv[0];
+  SOLVAR* actsolv = &solv[0];
 
   // get input parameter lists
   //const Teuchos::ParameterList& probtype 
   //  = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& ioflags
     = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList sdyn
+  const Teuchos::ParameterList& sdyn
     = DRT::Problem::Instance()->StructuralDynamicParams();
   //const Teuchos::ParameterList& scontact 
   //  = DRT::Problem::Instance()->StructuralContactParams();
+  const Teuchos::ParameterList& tap 
+    = sdyn.sublist("TIMEADAPTIVITY");
 
   // show default parameters
   if (actdis->Comm().MyPID() == 0)
@@ -118,10 +120,43 @@ void strudyn_direct()
   solver.TranslateSolverParameters(*solveparams, actsolv);
   actdis->ComputeNullSpaceIfNecessary(*solveparams);
 
-  // general time integrator
-  RCP<StruTimInt> sti = null;
+  // create marching time integrator
+  Teuchos::RCP<StruTimInt> sti 
+    = strudyn_create_tis(ioflags, sdyn, xparams, actdis, solver, output);
 
-  // associate specific time integrator
+  // auxiliar time integrator
+  if (Teuchos::getIntegralValue<int>(tap,"KIND") == TIMADA_DYNAMIC::timada_kind_none)
+  {
+    // integrate in time
+    sti->Integrate();
+  }
+
+  // test results
+  {
+    DRT::ResultTestManager testmanager(actdis->Comm());
+    testmanager.AddFieldTest(rcp(new StruResultTest(*sti)));
+    testmanager.TestAll();
+  }
+
+  // done
+  return;
+} // end strudyn_direct()
+
+/*----------------------------------------------------------------------*/
+/* create time integrator */
+Teuchos::RCP<StruTimInt> strudyn_create_tis
+(
+  const Teuchos::ParameterList& ioflags,
+  const Teuchos::ParameterList& sdyn,
+  const Teuchos::ParameterList& xparams,
+  RefCountPtr<DRT::Discretization>& actdis,
+  LINALG::Solver&  solver,
+  IO::DiscretizationWriter& output
+)
+{
+  Teuchos::RCP<StruTimInt> sti = Teuchos::null;
+
+  // create specific time integrator
   switch (Teuchos::getIntegralValue<int>(sdyn, "DYNAMICTYP"))
   {
     // Generalized alpha time integration
@@ -183,22 +218,8 @@ void strudyn_direct()
     break;
   } // end of switch(sdyn->Typ)
 
-  // integrate in time
-  sti->Integrate();
-
-  // test results
-  {
-    DRT::ResultTestManager testmanager(actdis->Comm());
-    testmanager.AddFieldTest(rcp(new StruResultTest(*sti)));
-    testmanager.TestAll();
-  }
-
-  // done
-  return;
-} // end strudyn_direct()
-
-
-
-
+  // return the integrator
+  return sti;
+}
 
 #endif  // #ifdef CCADISCRET
