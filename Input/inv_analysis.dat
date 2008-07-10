@@ -63,7 +63,7 @@ TOLCONSTR    1.0E-04
 ADAPTCONV        yes
 ADAPTCONV_BETTER 0.1
 MAXITER      100
-UZAWAPARAM   1.0
+UZAWAPARAM   2.0
 UZAWAMAXITER 20
 UZAWAALGO    newtonlinuzawa
 --------------------------------------------------INVERSE ANALYSIS
