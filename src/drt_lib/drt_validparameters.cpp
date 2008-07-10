@@ -508,8 +508,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 
 
+  /*--------------------------------------------------------------------*/
+  Teuchos::ParameterList& tap = sdyn.sublist("TIMEADAPTIVITY",false,"");
   // Time adaptivity
-  SetValidTimeAdaptivityParameters(sdyn);
+  SetValidTimeAdaptivityParameters(tap);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& genalpha = sdyn.sublist("GENALPHA",false,"");
@@ -1483,35 +1485,39 @@ void DRT::INPUT::SetValidTimeAdaptivityParameters(Teuchos::ParameterList& list)
   using Teuchos::setStringToIntegralParameter;
 
   setStringToIntegralParameter(
-    "TA_KIND","None","",
-    tuple<std::string>("None","ZienkiewiczXie"),
+    "KIND","None","",
+    tuple<std::string>(
+      "None",
+      "ZienkiewiczXie"),
     tuple<int>(
       TIMADA_DYNAMIC::timada_kind_none,
       TIMADA_DYNAMIC::timada_kind_zienxie),
     &list);
 
-  DoubleParameter("TA_STEPSIZEMAX", 0.0, "", &list);
-  DoubleParameter("TA_STEPSIZEMIN", 0.0, "", &list);
-  DoubleParameter("TA_SIZERATIOMAX", 0.0, "", &list);
-  DoubleParameter("TA_SIZERATIOMIN", 0.0, "", &list);
-  DoubleParameter("TA_SIZERATIOSCALE", 0.0, "", &list);
+  DoubleParameter("STEPSIZEMAX", 0.0, "", &list);
+  DoubleParameter("STEPSIZEMIN", 0.0, "", &list);
+  DoubleParameter("SIZERATIOMAX", 0.0, "", &list);
+  DoubleParameter("SIZERATIOMIN", 0.0, "", &list);
+  DoubleParameter("SIZERATIOSCALE", 0.0, "", &list);
 
   setStringToIntegralParameter(
-    "TA_ERRNORM", "Vague", "",
-    tuple<std::string>("Vague",
-                       "L1",
-                       "L2",
-                       "Rms",
-                       "Inf"),
-    tuple<int>(TIMADA_DYNAMIC::timada_err_norm_vague,
-               TIMADA_DYNAMIC::timada_err_norm_l1,
-               TIMADA_DYNAMIC::timada_err_norm_l2,
-               TIMADA_DYNAMIC::timada_err_norm_rms,
-               TIMADA_DYNAMIC::timada_err_norm_inf),
+    "ERRNORM", "Vague", "",
+    tuple<std::string>(
+      "Vague",
+      "L1",
+      "L2",
+      "Rms",
+      "Inf"),
+    tuple<int>(
+      TIMADA_DYNAMIC::timada_err_norm_vague,
+      TIMADA_DYNAMIC::timada_err_norm_l1,
+      TIMADA_DYNAMIC::timada_err_norm_l2,
+      TIMADA_DYNAMIC::timada_err_norm_rms,
+      TIMADA_DYNAMIC::timada_err_norm_inf),
     &list);
 
-  DoubleParameter("TA_ERRTOL", 0.0, "", &list);
-  IntParameter("TA_ADAPTSTEPMAX", 0, "", &list);
+  DoubleParameter("ERRTOL", 0.0, "", &list);
+  IntParameter("ADAPTSTEPMAX", 0, "", &list);
 }
 
 

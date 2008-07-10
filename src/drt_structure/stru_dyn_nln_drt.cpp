@@ -67,8 +67,11 @@ extern struct _SOLVAR  *solv;
 extern "C"
 void caldyn_drt()
 {
+  // get input lists
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& tap = sdyn.sublist("TIMEADAPTIVITY");
 
+  // major switch to different time integrators
   switch (Teuchos::getIntegralValue<int>(sdyn,"DYNAMICTYP"))
   {
   case STRUCT_DYNAMIC::centr_diff:
@@ -76,7 +79,7 @@ void caldyn_drt()
     break;
   case STRUCT_DYNAMIC::gen_alfa:
   case STRUCT_DYNAMIC::statics:
-    switch (Teuchos::getIntegralValue<int>(sdyn,"TA_KIND"))
+    switch (Teuchos::getIntegralValue<int>(tap,"KIND"))
     {
     case TIMADA_DYNAMIC::timada_kind_none:
       dyn_nlnstructural_drt();

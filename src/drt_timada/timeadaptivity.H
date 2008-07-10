@@ -62,9 +62,7 @@ public:
     norm_inf   //!< Maximum/infinity norm
   };
 
-  /*!
-    \brief Ordinary Constructor with parameters
-  */
+  //! Ordinary Constructor with parameters
   explicit TimeAdaptivity
   (
     double timeinitial,
@@ -88,21 +86,14 @@ public:
     IO::DiscretizationWriter& output
   );
 
-  /*!
-    \brief Destructor
-  */
+  //! Destructor
   virtual ~TimeAdaptivity();
 
-  /*!
-    \brief Set parameter list
-  */
+  //! Set parameter list
   //void SetParaList(ParameterList& params);
 
-  /*!
-    \brief Set-up integration in time
-
-    see Integrate() underneath
-  */
+  //! Set-up integration in time
+  //! see Integrate() underneath
   //virtual void SetUpIntegration
   //(
   //   DRT::Discretization& discret,
@@ -110,12 +101,9 @@ public:
   //   IO::DiscretizationWriter& output
   //) = 0;
 
-  /*!
-    \brief Integrate in time
-
-    This is the key method here, i.e. the time integration
-    algorithm. It has to be implemented by derived classes.
-  */
+  //! Integrate in time
+  //! This is the key method here, i.e. the time integration
+  //!  algorithm. It has to be implemented by derived classes.
   // Here, a pure virtual method makes only sense, when we have a
   // base class for all time integration schemes: TimeIntegrator.
   // In this case StrGenAlpha is derived from this class.
@@ -126,48 +114,54 @@ public:
   //! Indicate error and determine new step size
   void Indicate
   (
-    bool& accepted,
-    double& stpsiznew
+    bool& accepted,  //!< true=accpeted, false=not accepted
+    double& stpsiznew  //!< step size prediction for next or
+                       //!< step repetition
   );
 
-  /*!
-    \brief Print error norm string
-  */
-  string PrintErrNorm() const;
+  //! Print error norm string
+  std::string PrintErrNorm() const;
 
-  /*!
-    \brief Print time adapting constants
-  */
-  void PrintConstants(std::ostream& str) const;
+  //! Print time adapting constants
+  void PrintConstants
+  (
+    std::ostream& str  //!< output stream
+  ) const;
 
-  /*!
-    \brief Print time adapting variables
-  */
-  void PrintVariables(std::ostream& str) const;
+  //! Print time adapting variables
+  void PrintVariables
+  (
+    std::ostream& str  //!< output stream
+  ) const;
 
-  /*!
-    \brief Print time adapting parameters:TimeIntegrator
-  */
-  void Print(std::ostream& str) const;
+  //! Print time adapting parameters:TimeIntegrator
+  void Print
+  (
+    std::ostream& str  //!< output stream
+  ) const;
 
 
 protected:
 
-  // not wanted: = operator
+  //! not wanted: = operator
   //TimeAdaptivity operator = (const TimeAdaptivity& old);
-  // not wanted: copy constructor
+
+  //! not wanted: copy constructor
   TimeAdaptivity(const TimeAdaptivity& old);
 
-  // plain time integration constants
+  //! @name Plain time integration constants
+  //@{
   double timeinitial_;  //!< initial time: t_0
   double timefinal_;  //!< final time
   int timestepinitial_;  //!< initial time step index: 0 (often)
   int timestepfinal_;  //!< maximum time step: n_max
   double stepsizeinitial_;  //!< initial step size: dt_n
+  //@}
 
-  // adaptive time integration constants
-  double stepsizemax_;
-  double stepsizemin_;
+  //! @name Adaptive time integration constants
+  //@{
+  double stepsizemax_;  //!< maximum time step size (upper limit)
+  double stepsizemin_;  //!< minimum time step size (lower limit)
   double sizeratiomax_;
   double sizeratiomin_;
   double sizeratioscale_;
@@ -175,25 +169,32 @@ protected:
   double errtol_;
   int errorder_;
   int adaptstepmax_;
+  //@}
 
-  // link to discretisation
+  //! @name Link to discretisation
+  //@{
   DRT::Discretization& discret_;
   LINALG::Solver& solver_;
   IO::DiscretizationWriter& output_;
   int mypid_;  //!< processor ID
+  //@}
 
   // more parameters
   //ParameterList* params_;
 
-  // plain time integration variables
+  //! @name plain time integration variables
+  //@{
   double time_;  //!< current time t_n
   int timestep_;  //!< current time step n
+  //@}
 
-  // adaptive time integration variables
-  double stepsizepre_;  // previous time step size dt_{n-1}
-  double stepsize_;  // current time step size dt_n
-  RefCountPtr<Epetra_Vector> locdiserrn_;  // current LDE estimation l_n
+  //! @name Adaptive time integration variables
+  //@{
+  double stepsizepre_;  //!< previous time step size dt_{n-1}
+  double stepsize_;  //!< current time step size dt_n
+  Teuchos::RCP<Epetra_Vector> locdiserrn_;  //!< current LDE estimation l_n
   int adaptstep_;
+  //@}
 
 
 }; // class TimeAdaptivity

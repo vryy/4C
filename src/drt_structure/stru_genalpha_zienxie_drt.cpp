@@ -214,9 +214,14 @@ void stru_genalpha_zienxie_drt()
   const INT disnum = 0;
   SOLVAR* actsolv = &solv[disnum];
 
-  const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& probtype
+    = DRT::Problem::Instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& ioflags
+    = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& sdyn
+    = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& tap 
+    = sdyn.sublist("TIMEADAPTIVITY");
 
   // --------------------------------------------------------------------
   // access the discretization
@@ -257,15 +262,15 @@ void stru_genalpha_zienxie_drt()
     (int) sdyn.get<int>("NUMSTEP"),
     (double) sdyn.get<double>("TIMESTEP"),
     //
-    (double) sdyn.get<double>("TA_STEPSIZEMAX"),
-    (double) sdyn.get<double>("TA_STEPSIZEMIN"),
-    (double) sdyn.get<double>("TA_SIZERATIOMAX"),
-    (double) sdyn.get<double>("TA_SIZERATIOMIN"),
-    (double) sdyn.get<double>("TA_SIZERATIOSCALE"),
-    (TimeAdaptivity::TAErrNorm) Teuchos::getIntegralValue<int>(sdyn,"TA_ERRNORM"),
-    (double) sdyn.get<double>("TA_ERRTOL"),
+    (double) tap.get<double>("STEPSIZEMAX"),
+    (double) tap.get<double>("STEPSIZEMIN"),
+    (double) tap.get<double>("SIZERATIOMAX"),
+    (double) tap.get<double>("SIZERATIOMIN"),
+    (double) tap.get<double>("SIZERATIOSCALE"),
+    (TimeAdaptivity::TAErrNorm) Teuchos::getIntegralValue<int>(tap,"ERRNORM"),
+    (double) tap.get<double>("ERRTOL"),
     3,
-    (int) sdyn.get<int>("TA_ADAPTSTEPMAX"),
+    (int) tap.get<int>("ADAPTSTEPMAX"),
     //
     *actdis,
     solver,

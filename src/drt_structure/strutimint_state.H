@@ -30,7 +30,7 @@ Maintainer: Burkhard Bornemann
        hybrid/mixed quantities.)
        The main purpose arises from time-step size adaptivity
        in which the auxiliar scheme ought to access the states
-       originallt computed by the marching method.
+       originally computed by the marching method.
 \author bborn
 \date 07/08
 */

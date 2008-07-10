@@ -90,15 +90,6 @@ RESEVRYDISP                     1
 RESEVRYSTRS                     1
 RESTARTEVRY                     1
 RESULTDT                        0
-TA_ADAPTSTEPMAX                 0
-TA_ERRNORM                      Vague
-TA_ERRTOL                       0
-TA_KIND                         None
-TA_SIZERATIOMAX                 0
-TA_SIZERATIOMIN                 0
-TA_SIZERATIOSCALE               0
-TA_STEPSIZEMAX                  0
-TA_STEPSIZEMIN                  0
 TIMEADAPT                       0
 TIMESTEP                        0.05
 TOLCONSTR                       1e-08
@@ -107,6 +98,16 @@ TOLRES                          1e-08
 UZAWAALGO                       newtonlinuzawa
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
+---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
+ADAPTSTEPMAX                    0
+ERRNORM                         Vague
+ERRTOL                          0
+KIND                            None
+SIZERATIOMAX                    0
+SIZERATIOMIN                    0
+SIZERATIOSCALE                  0
+STEPSIZEMAX                     0
+STEPSIZEMIN                     0
 -----------------------------------------------------THERMAL SOLVER
 ------------------------------------------------------------STATIC
 NONLINEAR
