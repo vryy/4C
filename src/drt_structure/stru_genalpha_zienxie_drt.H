@@ -65,6 +65,7 @@ using namespace Teuchos;
     const bool ioflags_struct_disp,
     const int updevry_disp,
     const bool ioflags_struct_stress,
+    const bool ioflags_struct_strain,
     const int updevry_stress,
     const int restart,
     const int res_write_evry,
