@@ -163,10 +163,12 @@ void dyn_nlnstructural_drt()
 
       genalphaparams.set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
 
+      // Rayleigh damping
       genalphaparams.set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
       genalphaparams.set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
       genalphaparams.set<double>("damping factor M",sdyn.get<double>("M_DAMP"));
 
+      // Generalised-alpha coefficients
       genalphaparams.set<double>("beta",sdyn.get<double>("BETA"));
 #ifdef STRUGENALPHA_BE
       genalphaparams.set<double>("delta",sdyn.get<double>("DELTA"));
@@ -238,6 +240,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<bool>  ("print to err",true);
       genalphaparams.set<FILE*> ("err file",allfiles.out_err);
 
+      // parameters for inverse analysis
       genalphaparams.set<bool>  ("inv_analysis",Teuchos::getIntegralValue<int>(iap,"INV_ANALYSIS"));
       genalphaparams.set<double>("measured_disp0",iap.get<double>("MEASURED_DISP0"));
       genalphaparams.set<double>("measured_disp1",iap.get<double>("MEASURED_DISP1"));
@@ -246,6 +249,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<double>("mu_plus",iap.get<double>("MU_PLUS"));
       genalphaparams.set<double>("inv_ana_tol",iap.get<double>("INV_ANA_TOL"));
 
+      // non-linear solution technique
       switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
       {
         case STRUCT_DYNAMIC::fullnewton:
