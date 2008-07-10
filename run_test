@@ -144,7 +144,7 @@ elif [ "x$1" = "xrel" ]; then
 
   # create the list; we look for 'x' or 'X' in column $typ and ...
   liste=`awk '{ if ($'$typ' ~ /[xX]/) print "'$SRC/'"$1 }' $SRC/testing/list_of_files`
-  # ... select those which DO NOT have defined CCADISCRET 
+  # ... select those which do NOT define CCADISCRET 
   liste=`grep -L CCADISCRET $liste`
 
 elif [ "x$1" = "xreldrt" ]; then
@@ -159,7 +159,7 @@ elif [ "x$1" = "xreldrt" ]; then
 
   # create the list; we look for 'x' or 'X' in column $typ and ...
   liste=`awk '{ if ($'$typ' ~ /[xX]/) print "'$SRC/'"$1 }' $SRC/testing/list_of_files`
-  # ... select those which have defined CCADISCRET 
+  # ... select those which define CCADISCRET 
   liste=`grep -l CCADISCRET $liste`
 
 elif [ "x$1" = "xrestart" ]; then
