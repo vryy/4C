@@ -131,6 +131,7 @@ void dyn_nlnstructural_drt()
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& sdyn     = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->StructuralContactParams();
+  const Teuchos::ParameterList& iap      = DRT::Problem::Instance()->InverseAnalysisParams();
 
   if (actdis->Comm().MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, sdyn);
@@ -234,14 +235,14 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<bool>  ("print to err",true);
       genalphaparams.set<FILE*> ("err file",allfiles.out_err);
 
-      genalphaparams.set<bool>  ("inv_analysis",Teuchos::getIntegralValue<int>(sdyn,"INV_ANALYSIS"));
-      genalphaparams.set<double>("measured_disp0",sdyn.get<double>("MEASURED_DISP0"));      
-      genalphaparams.set<double>("measured_disp1",sdyn.get<double>("MEASURED_DISP1")); 
-      genalphaparams.set<double>("measured_disp2",sdyn.get<double>("MEASURED_DISP2")); 
-      genalphaparams.set<double>("mu_minus",sdyn.get<double>("MU_MINUS")); 
-      genalphaparams.set<double>("mu_plus",sdyn.get<double>("MU_PLUS")); 
-      genalphaparams.set<double>("inv_ana_tol",sdyn.get<double>("INV_ANA_TOL")); 
-      
+      genalphaparams.set<bool>  ("inv_analysis",Teuchos::getIntegralValue<int>(iap,"INV_ANALYSIS"));
+      genalphaparams.set<double>("measured_disp0",iap.get<double>("MEASURED_DISP0"));
+      genalphaparams.set<double>("measured_disp1",iap.get<double>("MEASURED_DISP1"));
+      genalphaparams.set<double>("measured_disp2",iap.get<double>("MEASURED_DISP2"));
+      genalphaparams.set<double>("mu_minus",iap.get<double>("MU_MINUS"));
+      genalphaparams.set<double>("mu_plus",iap.get<double>("MU_PLUS"));
+      genalphaparams.set<double>("inv_ana_tol",iap.get<double>("INV_ANA_TOL"));
+
       switch (Teuchos::getIntegralValue<int>(sdyn,"NLNSOL"))
       {
         case STRUCT_DYNAMIC::fullnewton:

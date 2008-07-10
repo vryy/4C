@@ -302,7 +302,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>("Polynomial","Nurbs"),
                                tuple<int>(1,0),
                                &type);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io = list->sublist("IO",false,"");
 
@@ -399,7 +399,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 //                                           STRUCT_DYNAMIC::dynkind_directadaptive,
 //                                           STRUCT_DYNAMIC::dynkind_invanalysis),
 //                                &sdyn);
-  
+
   // Output type
   IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);
   IntParameter("RESEVRYDISP",1,"save displacements and contact forces every RESEVRYDISP steps",&sdyn);
@@ -506,23 +506,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&sdyn);
 
 
-  // Inverse Analysis
-  setStringToIntegralParameter("INV_ANALYSIS","No",
-                               "determines the material parameter for the hyperpolyconvex material",
-                               yesnotuple,yesnovalue,
-                               &sdyn);
-  // Measured displacment during the experiments
-  DoubleParameter("MEASURED_DISP0",0.0,"measured displacment of the tension testing",&sdyn);
-  DoubleParameter("MEASURED_DISP1",0.0,"measured displacment of the tension testing",&sdyn);
-  DoubleParameter("MEASURED_DISP2",0.0,"measured displacment of the tension testing",&sdyn);
-  
-  // mu for inv_analysis
-  DoubleParameter("MU_MINUS",1.0,"parameter for inverse analysis",&sdyn);
-  DoubleParameter("MU_PLUS",1.0,"parameter for inverse analysis",&sdyn);  
-  
-  // tolerance for inv_analysis
-  DoubleParameter("INV_ANA_TOL",1.0,"tolerance for inverse analysis",&sdyn);  
-    
+
+
   // Time adaptivity
   SetValidTimeAdaptivityParameters(sdyn);
 
@@ -545,8 +530,28 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& onesteptheta = sdyn.sublist("ONESTEPTHETA",false,"");
-  
+
   DoubleParameter("THETA",0.5,"One-step-theta factor in (0,1]",&onesteptheta);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");
+
+  // Inverse Analysis
+  setStringToIntegralParameter("INV_ANALYSIS","No",
+                               "determines the material parameter for the hyperpolyconvex material",
+                               yesnotuple,yesnovalue,
+                               &iap);
+  // Measured displacment during the experiments
+  DoubleParameter("MEASURED_DISP0",0.0,"measured displacment of the tension testing",&iap);
+  DoubleParameter("MEASURED_DISP1",0.0,"measured displacment of the tension testing",&iap);
+  DoubleParameter("MEASURED_DISP2",0.0,"measured displacment of the tension testing",&iap);
+
+  // mu for inv_analysis
+  DoubleParameter("MU_MINUS",1.0,"parameter for inverse analysis",&iap);
+  DoubleParameter("MU_PLUS",1.0,"parameter for inverse analysis",&iap);
+
+  // tolerance for inv_analysis
+  DoubleParameter("INV_ANA_TOL",1.0,"tolerance for inverse analysis",&iap);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scontact = list->sublist("STRUCTURAL CONTACT",false,"");
@@ -585,13 +590,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter("FULL_LINEARIZATION","No","If chosen full linearization of contact is applied",
                                yesnotuple,yesnovalue,&scontact);
-  
+
   setStringToIntegralParameter("SEMI_SMOOTH_NEWTON","No","If chosen semi-smooth Newton concept is applied",
                                  yesnotuple,yesnovalue,&scontact);
-  
+
   DoubleParameter("SEMI_SMOOTH_CN",0.0,"Weighting factor cn for semi-smooth PDASS",&scontact);
   DoubleParameter("SEMI_SMOOTH_CT",0.0,"Weighting factor ct for semi-smooth PDASS",&scontact);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC",false,"");
 
@@ -1022,8 +1027,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("DUMPING_PERIOD",1,"Period of time steps after which statistical data shall be dumped",&fdyn_turbu);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& fdyn_combust = fdyn.sublist("COMBUSTION",false,"");  
-  
+  Teuchos::ParameterList& fdyn_combust = fdyn.sublist("COMBUSTION",false,"");
+
   DoubleParameter("LAMINAR FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&fdyn_combust);
   DoubleParameter("MARKSTEIN LENGTH",0.0,"The Markstein length takes flame curvature into account",&fdyn_combust);
 

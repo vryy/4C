@@ -75,7 +75,6 @@ DAMPING                         No
 DYNAMICTYP                      Gen_Alfa
 EIGEN                           0
 GAMMA                           0.5
-INV_ANALYSIS                    No
 ITERATION                       full
 ITWANT                          0
 K_DAMP                          0.5
@@ -107,6 +106,14 @@ TOLRES                          1e-08
 UZAWAALGO                       newtonlinuzawa
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
+--------------------------------------------------INVERSE ANALYSIS
+INV_ANALYSIS   No
+MEASURED_DISP0 0
+MEASURED_DISP1 0
+MEASURED_DISP2 0
+MU_MINUS       1
+MU_PLUS        1               
+INV_ANA_TOL    1000
 -----------------------------------------------------THERMAL SOLVER
 ------------------------------------------------------------STATIC
 NONLINEAR

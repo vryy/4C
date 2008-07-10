@@ -72,7 +72,7 @@ MEASURED_DISP0 320
 MEASURED_DISP1 1060
 MEASURED_DISP2 1500
 MU_MINUS       0.1
-MU_PLUS        1E20               
+MU_PLUS        1E15               
 INV_ANA_TOL    1000
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         UMFPACK    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

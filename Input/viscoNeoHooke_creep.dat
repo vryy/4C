@@ -102,7 +102,6 @@ DELTA                           0.25
 DYNAMICTYP                      Gen_Alfa
 EIGEN                           0
 GAMMA                           1.
-INV_ANALYSIS                    No
 ITERATION                       full
 ITWANT                          0
 K_DAMP                          0.5
@@ -134,6 +133,14 @@ TOLRES                          1e-07
 UZAWAALGO                       newtonlinuzawa
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
+--------------------------------------------------INVERSE ANALYSIS
+INV_ANALYSIS   No
+MEASURED_DISP0 0
+MEASURED_DISP1 0
+MEASURED_DISP2 0
+MU_MINUS       1
+MU_PLUS        1               
+INV_ANA_TOL    1000
 -----------------------------------------------------THERMAL SOLVER
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 100.0 POISSON 0.499 DENS 0.0000000001 YOUNGS_FAST 1000000.0 RELAX 10.0 THETA 1.0
