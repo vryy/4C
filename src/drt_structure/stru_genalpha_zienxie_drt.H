@@ -16,8 +16,8 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#ifndef STRU_GENALPHA_ZIENXIE_H
-#define STRU_GENALPHA_ZIENXIE_H
+#ifndef STRU_GENALPHA_ZIENXIE_DRT_H
+#define STRU_GENALPHA_ZIENXIE_DRT_H
 
 
 /*----------------------------------------------------------------------*/
@@ -98,5 +98,5 @@ extern "C"
 
 
 
-#endif  /* #ifndef STRU_GENALPHA_ZIENXIE_H */
+#endif  /* #ifndef STRU_GENALPHA_ZIENXIE_DRT_H */
 #endif  /* #ifdef CCADISCRET */
