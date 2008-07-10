@@ -161,6 +161,9 @@ void genalpha_setparalist
   case STRUCT_DYNAMIC::fullnewton:
     equisoltech = "full newton";
     break;
+  case STRUCT_DYNAMIC::lsnewton:
+    equisoltech = "line search newton";
+    break;
   case STRUCT_DYNAMIC::modnewton:
     equisoltech = "modified newton";
     break;
