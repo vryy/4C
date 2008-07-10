@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strutimint_impl.H
+\file strutimint_expl.H
 
 <pre>
 Maintainer: Burkhard Bornemann

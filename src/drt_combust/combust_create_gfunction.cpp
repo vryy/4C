@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file combust_create_gfunction.H
+\file combust_create_gfunction.cpp
 
 \brief create G-function discretization based on fluid discretization
 

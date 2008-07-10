@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam2.cpp
+\file beam3.cpp
 \brief two dimensional nonlinear corotational Timoshenko beam element
 
 <pre>

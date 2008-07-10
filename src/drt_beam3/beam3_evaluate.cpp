@@ -1,5 +1,5 @@
 /*!-----------------------------------------------------------------------------------------------------------
-\file beam2_evaluate.cpp
+\file beam3_evaluate.cpp
 \brief
 
 Maintainer: Christian Cyron

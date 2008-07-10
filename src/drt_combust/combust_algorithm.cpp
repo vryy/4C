@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------*
-\file combust_algorithm.H
+\file combust_algorithm.cpp
 
 \brief base combustion algorithm
 

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file constraint.H
+\file multipointconstraint.H
 
 \brief Basic constraint class, dealing with multi point constraints 
 

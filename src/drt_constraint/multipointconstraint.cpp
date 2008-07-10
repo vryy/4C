@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file constraint.cpp
+\file multipointconstraint.cpp
 
 \brief Basic constraint class, dealing with constraints living on boundaries
 <pre>
