@@ -2560,7 +2560,7 @@ void XFEM::Intersection::liftAllSteinerPoints(
                 case S_EDGE:
                 {   
                     liftSteinerPointOnEdge( i, lineIndex, cutterIndex, edgePoint, oppositePoint,
-                                        adjacentFacesList, currentcutterpositions, xfemElement, xyze_xfemElement, out);
+                                            adjacentFacesList, currentcutterpositions, xfemElement, xyze_xfemElement, out);
                     break;
                 }
                 case S_BOUNDARY:
@@ -2841,7 +2841,7 @@ void XFEM::Intersection::liftSteinerPointOnEdge(
     plane.push_back(BlitzVec(Steinerpoint - n1));
     plane.push_back(BlitzVec(plane[1] + n2));
     plane.push_back(BlitzVec(plane[0] + n2));
-
+    
     static BlitzVec3 xsi;
     xsi = 0.0;
     DRT::Element* cutterElement = intersectingCutterElements_[cutterIndex];
@@ -3119,7 +3119,7 @@ void XFEM::Intersection::computeHigherOrderPoint(
     {
         countMissedPoints_++;
         std::cout << "faceMarker = " << faceMarker << endl;
-        dserror("NO INTERSECTION POINT FOUND!!!!! adjacentFaceMarker = %d\n", adjacentFaceMarker);
+        printf("NO INTERSECTION POINT FOUND!!!!! adjacentFaceMarker = %d\n", adjacentFaceMarker);
     }
 
 }
@@ -3164,7 +3164,7 @@ bool XFEM::Intersection::computeRecoveryNormal(
     bool                        intersection = true;
     int                         iter = 0;
     int                         countSingular = 0;
-    const int                   maxiter = 50;
+    const int                   maxiter = 20;
     double                      residual = 1.0;
     static BlitzMat3x3 A;
     static BlitzVec3   b;
@@ -3175,14 +3175,14 @@ bool XFEM::Intersection::computeRecoveryNormal(
     xsi = 0.0;
     updateRHSForRCINormal( b, xsi, normal, cutterElement, xyze_cutterElement, onBoundary);
 
-    while(residual > TOL14)
+    while(residual > XFEM::TOL13)
     {
         updateAForRCINormal( A, xsi, normal, cutterElement, xyze_cutterElement, onBoundary);
 
-        if(!solveLinearSystemWithSVD<3>(A, b, dx, XFEM::TOL14))
+        if(!solveLinearSystemWithSVD<3>(A, b, dx, XFEM::TOL13))
             countSingular++;
 
-        if(countSingular > 5)
+        if(countSingular > 10)
         {
             intersection = false;
             break;
@@ -3190,7 +3190,7 @@ bool XFEM::Intersection::computeRecoveryNormal(
 
         xsi += dx;
         //printf("dx0 = %20.16f\t, dx1 = %20.16f\t, dx2 = %20.16f\n", dx(0), dx(1), dx(2));
-        if(iter >= maxiter)
+        if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > XFEM::TOLPLUS8)
         {
             intersection = false;
             break;
@@ -3199,13 +3199,14 @@ bool XFEM::Intersection::computeRecoveryNormal(
         updateRHSForRCINormal( b, xsi, normal, cutterElement, xyze_cutterElement, onBoundary);
         residual = Norm2(b);
         iter++;
-
-        //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
+   
     }
 
-    if( (fabs(xsi(0))-1.0) > TOL7  || (fabs(xsi(1))-1.0) > TOL7 )    // line coordinate may be bigger than 1
+    if( (xsi(0) > ( 1.0 + TOL7))  || (xsi(1) > ( 1.0 + TOL7)) ||    // line coordinate may be bigger than 1
+        (xsi(0) < (-1.0 - TOL7))  || (xsi(1) < (-1.0 - TOL7)) ) 
     {
         //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
+        cout << "false" << endl; 
         intersection = false;
     }
 
@@ -3367,7 +3368,7 @@ bool XFEM::Intersection::computeRecoveryPlane(
   for(int i = begin; i < end; i++)
   {
     int                         iter = 0;
-    const int                   maxiter = 50;
+    const int                   maxiter = 20;
     double                      residual = 1.0;
     const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
     DRT::Element*               lineElement = (cutterElementLines[i]).get();
@@ -3382,11 +3383,11 @@ bool XFEM::Intersection::computeRecoveryPlane(
 
     updateRHSForRCIPlane( b, xsi, plane, lineElement, xyze_lineElement);
 
-    while( residual > TOL14 )
+    while(residual > XFEM::TOL13)
     {
       updateAForRCIPlane( A, xsi, plane, lineElement, xyze_lineElement, cutterElement, xyze_cutterElement);
 
-      if(!gaussElimination<true,3>(A, b, dx, XFEM::TOL7))
+      if(!gaussElimination<true,3>(A, b, dx, XFEM::TOL13))
       {
           intersection = false;
           break;
@@ -3403,10 +3404,11 @@ bool XFEM::Intersection::computeRecoveryPlane(
       updateRHSForRCIPlane( b, xsi, plane, lineElement, xyze_lineElement);
       residual = Norm2(b);
       iter++;
+      //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
     }
 
-    if( (fabs(xsi(2))-1.0) > TOL7 )     // planes coordinate may be bigger than 1
-    {   printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
+    if( (xsi(2) > ( 1.0 + TOL7))  || (xsi(2) < ( -1.0 - TOL7)) )     // planes coordinate may be bigger than 1
+    {   //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
         intersection = false;
     }
 
