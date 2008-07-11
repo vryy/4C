@@ -792,6 +792,10 @@ bool XFEM::intersectionOfXAABB(
 
 
 
+/*----------------------------------------------------------------------*
+ |  ICS:    checks if an element is CARTESIAN, LINEAR and    u.may 07/08|
+ |          HIGHERORDER                                                 |
+ *----------------------------------------------------------------------*/
 void XFEM::checkGeoType(
            DRT::Element*                element,
            const BlitzMat               xyze_element,
@@ -867,8 +871,6 @@ void XFEM::checkGeoType(
   if(cartesian)
     eleGeoType = CARTESIAN;
 }
-
-
 
 
 #endif  // #ifdef CCADISCRET

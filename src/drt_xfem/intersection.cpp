@@ -117,9 +117,9 @@ void XFEM::Intersection::computeIntersection(
         for(set< DRT::Element* >::iterator i = cutterElements.begin(); i != cutterElements.end(); ++i )
         {
             countCutter++;
-            //printf("countcutter = %d\n", countCutter);
-            //if(countCutter > 11)
-            //  break;
+            // printf("countcutter = %d\n", countCutter);
+            //if(countCutter > 27)
+            //   break;
             
             boundaryIntersectionType = NONE;
             DRT::Element* cutterElement = (*i);
@@ -185,6 +185,7 @@ void XFEM::Intersection::computeIntersection(
 #ifdef QHULL
                 preparePLC(xfemElement, xyze_xfemElement, cutterElement, xyze_cutterElement, 
                            interfacePoints, boundaryIntersectionType);
+                interfacePoints.clear();
 #else
                 dserror("Set QHULL flag to use XFEM intersections!!!");
 #endif
@@ -197,7 +198,6 @@ void XFEM::Intersection::computeIntersection(
             completePLC();
             //debugTetgenDataStructure(xfemElement);
             computeCDT(xfemElement, xyze_xfemElement, currentcutterpositions, domainintcells, boundaryintcells, timestepcounter_);
-            //printf("ele %d intersected\n", k);
         }
    
     }// for-loop over all  actdis->NumMyColElements()
@@ -279,6 +279,7 @@ bool XFEM::Intersection::collectInternalPoints(
 
   static BlitzVec3 xsi;
   xsi = currentToVolumeElementCoordinatesExact(xfemElement, x, TOL7);
+  //currentToVolumeElementCoordinates(xfemElement, x, xsi);
   const bool nodeWithinElement = checkPositionWithinElementParameterSpace(xsi, xfemElement->Shape());
   // debugNodeWithinElement(xfemElement,cutterNode, xsi, elemId ,nodeId, nodeWithinElement);
 
@@ -304,6 +305,52 @@ bool XFEM::Intersection::collectInternalPoints(
 
   return nodeWithinElement;
 }
+
+
+
+/*----------------------------------------------------------------------*
+ |  CLI:    checks if a node that lies within an element     u.may 06/07|
+ |          lies on one of its surfaces or nodes                        |
+ *----------------------------------------------------------------------*/
+void XFEM::Intersection::setBoundaryPointBoundaryStatus(
+        const DRT::Element::DiscretizationType  xfemDistype,
+        const BlitzVec3&                        xsi,
+        InterfacePoint&                         ip
+        ) const
+{
+  bool onSurface = false;
+  
+  vector<int> surfaces = DRT::UTILS::getSurfaces(xsi, xfemDistype);
+  const int count = surfaces.size();
+
+  // point lies on one surface
+  if(count == 1)
+  {
+    onSurface = true;
+    ip.setPointType(SURFACE);
+    ip.setSurfaceId(surfaces);
+  }
+  // point lies on line, which has two neighbouring surfaces
+  else if(count == 2)
+  {
+    onSurface = true;
+    ip.setPointType(LINE);
+    ip.setLineId(DRT::UTILS::getLines(xsi, xfemDistype));
+    ip.setSurfaceId(surfaces);
+  }
+  // point lies on a node, which has three neighbouring surfaces
+  else if(count == 3)
+  {   
+    onSurface = true;
+    ip.setPointType(NODE);
+    ip.setNodeId(DRT::UTILS::getNode(xsi, xfemDistype));
+    ip.setLineId(DRT::UTILS::getLines(xsi, xfemDistype));
+    ip.setSurfaceId(surfaces);
+  }
+  else
+    dserror("not on surface !!!");
+}
+
 
 
 
@@ -445,7 +492,8 @@ bool XFEM::Intersection::collectIntersectionPoints(
       intersected = false;
    
   if(intersected)
-  intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, upLimit, loLimit, xsi, doSVD);
+  intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, 
+                                                upLimit, loLimit, xsi, doSVD, XFEM::TOL7);
   
   
   if(intersected)
@@ -667,7 +715,8 @@ bool computeCurveSurfaceIntersectionT(
     BlitzVec3&                        xsi,
     const BlitzVec3&                  upLimit,
     const BlitzVec3&                  loLimit,
-    const bool                        doSVD
+    const bool                        doSVD,
+    const double                      tol
     )
 {
   if (surfaceElement->Shape() != surftype) dserror("bug in template instantiation");
@@ -712,7 +761,8 @@ bool computeCurveSurfaceIntersectionT(
     iter++;
 
     //printf("xsi = %20.16f   %20.16f   %20.16f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
-    if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > XFEM::TOLPLUS8)
+    // has to to be 8 , otherwise not a number is reached               // detect not a number according to IEEE NaN is not comparable to itself
+    if(iter >= maxiter || XFEM::SumOfFabsEntries(xsi) > XFEM::TOLPLUS8)// || !(xsi(0)==xsi(0))  || !(xsi(1)==xsi(1))  || !(xsi(2)==xsi(2))   )
     {
         intersection = false;
         break;
@@ -722,8 +772,8 @@ bool computeCurveSurfaceIntersectionT(
   //printf("xsi = %f   %f   %f  iter = %d res = %20.16f\n", xsi(0), xsi(1), xsi(2), iter, residual  );
   if(intersection)
   {
-    if( (xsi(0) > (upLimit(0)+XFEM::TOL7)) || (xsi(1) > (upLimit(1)+XFEM::TOL7)) || (xsi(2) > (upLimit(2)+XFEM::TOL7))  ||
-        (xsi(0) < (loLimit(0)-XFEM::TOL7)) || (xsi(1) < (loLimit(1)-XFEM::TOL7)) || (xsi(2) < (loLimit(2)-XFEM::TOL7)))
+    if( (xsi(0) > (upLimit(0)+tol)) || (xsi(1) > (upLimit(1)+tol)) || (xsi(2) > (upLimit(2)+tol))  ||
+        (xsi(0) < (loLimit(0)-tol)) || (xsi(1) < (loLimit(1)-tol)) || (xsi(2) < (loLimit(2)-tol)))
             intersection = false;
   }
 
@@ -744,7 +794,8 @@ bool XFEM::Intersection::computeCurveSurfaceIntersection(
     const BlitzVec3&                  upLimit,
     const BlitzVec3&                  loLimit,
     BlitzVec3&                        xsi,
-    const bool                        doSVD
+    const bool                        doSVD,
+    const double                      tol
     ) const
 {
     if (lineElement->Shape() == DRT::Element::line2)
@@ -752,15 +803,15 @@ bool XFEM::Intersection::computeCurveSurfaceIntersection(
       switch (surfaceElement->Shape())
       {
       case DRT::Element::quad4:
-          return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+          return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD, tol);
       case DRT::Element::quad8:
-          return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+          return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD, tol);
       case DRT::Element::quad9:
-          return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+          return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD, tol);
       case DRT::Element::tri3:
-          return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+          return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD, tol);
       case DRT::Element::tri6:
-          return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+          return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line2>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD, tol);
       default:
           dserror("template not instatiated yet");
           return false;
@@ -771,15 +822,15 @@ bool XFEM::Intersection::computeCurveSurfaceIntersection(
       switch (surfaceElement->Shape())
       {
       case DRT::Element::quad4:
-          return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+          return computeCurveSurfaceIntersectionT<DRT::Element::quad4,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD, tol);
       case DRT::Element::quad8:
-          return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+          return computeCurveSurfaceIntersectionT<DRT::Element::quad8,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD, tol);
       case DRT::Element::quad9:
-          return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+          return computeCurveSurfaceIntersectionT<DRT::Element::quad9,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD, tol);
       case DRT::Element::tri3:
-          return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+          return computeCurveSurfaceIntersectionT<DRT::Element::tri3 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD, tol);
       case DRT::Element::tri6:
-          return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD);
+          return computeCurveSurfaceIntersectionT<DRT::Element::tri6 ,DRT::Element::line3>(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, xsi, upLimit, loLimit, doSVD, tol);
       default:
           dserror("template not instatiated yet");
           return false;
@@ -826,7 +877,8 @@ int XFEM::Intersection::computeNewStartingPoint(
   xsi += loLimit;
   xsi *= 0.5;
 
-	bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, upLimit, loLimit, xsi, doSVD);
+	bool intersected = computeCurveSurfaceIntersection(surfaceElement, xyze_surfaceElement, lineElement, xyze_lineElement, 
+	                                                   upLimit, loLimit, xsi, doSVD, XFEM::TOL7);
 
 	if( comparePoints<3>(xsi, xsiOld))
 	  intersected = false;
@@ -1051,7 +1103,7 @@ int XFEM::Intersection::findCommonSurfaceID(
       
       if(xfemSurfPoints[i].size() > 2  &&  xfemSurfPoints[i].size() !=  positions.size())
       {
-      /*  for(unsigned int j = 0; j < xfemSurfPoints[i].size(); j++ )
+        for(unsigned int j = 0; j < xfemSurfPoints[i].size(); j++ )
         {
           for(int k = 0; k < 3; k++)
             cout << "point        " << pointList_[(int) xfemSurfPoints[i][j]].getCoord()[k];
@@ -1059,8 +1111,8 @@ int XFEM::Intersection::findCommonSurfaceID(
           cout << endl;
         }
         cout << endl;
-        */
-        dserror("scenario not yet implemented");
+        
+        printf("scenario not yet implemented\n");
       }
       else if(xfemSurfPoints[i].size() > 2 &&  xfemSurfPoints[i].size() ==  positions.size())
       {
@@ -1192,6 +1244,7 @@ void XFEM::Intersection::preparePLC(
     vector< vector<double> >    vertices;
     // for more then two interface points compute the convex hull
     // and store ordered points in vertices
+    
     if(interfacePoints.size() > 2)
     {
         computeConvexHull(xfemElement, cutterElement, xyze_cutterElement,interfacePoints, vertices, midpoint);
@@ -1219,30 +1272,30 @@ void XFEM::Intersection::preparePLC(
         vertices.push_back(vertex);
       }
     }
-    else
-      dserror("collection of interface points is empty");
-  
-    
-    // store pointList_
-    vector<int> positions;
-    storePointList(vertices, positions, interfacePoints);
-    
-    // find common surfID, if surfUd != -1 all interface points are lying on one
-    // xfem surface and have to be store in the surfaceTriangleList_ accordingly
-    const int surfId = findCommonSurfaceID( xfemElement, xyze_xfemElement, 
-                                            cutterElement, xyze_cutterElement,  positions);
-    
-    // check if all nodes are XFEMNODES
-    if(surfId != -1)
-      boundaryIntersectionType = checkIfIntersectionOnXFEMBoundary( xfemElement, xyze_xfemElement, 
-                                                                    cutterElement, xyze_cutterElement, 
-                                                                    interfacePoints, surfId);
-    
-    // store part of PLC
-    storePLC(xfemElement, cutterElement, xyze_cutterElement, surfId, positions, midpoint);
-    
-    //storePLC(xfemElement, cutterElement, xyze_cutterElement, surfId, surfaceInterfacePoints, vertices, midpoint);
+
+    if(interfacePoints.size() > 1)
+    {
+      // store pointList_
+      vector<int> positions;
+      storePointList(vertices, positions, interfacePoints);
  
+      // find common surfID, if surfUd != -1 all interface points are lying on one
+      // xfem surface and have to be store in the surfaceTriangleList_ accordingly
+     
+      const int surfId = findCommonSurfaceID( xfemElement, xyze_xfemElement, 
+                                              cutterElement, xyze_cutterElement,  positions);
+     
+      if(surfId != -1)
+        boundaryIntersectionType = checkIfIntersectionOnXFEMBoundary( xfemElement, xyze_xfemElement, 
+                                                                      cutterElement, xyze_cutterElement, 
+                                                                      interfacePoints, surfId);
+      
+      // store part of PLC
+      storePLC(xfemElement, cutterElement, xyze_cutterElement, surfId, positions, midpoint);
+      
+      //storePLC(xfemElement, cutterElement, xyze_cutterElement, surfId, surfaceInterfacePoints, vertices, midpoint);
+    }
+    
     // clear interface points
     interfacePoints.clear();
 }
@@ -1348,8 +1401,8 @@ void XFEM::Intersection::computeConvexHull(
   }
 
   // for debugging if points are lying on the convex hull intersection conzinues with out any problems
-  // if(((int) interfacePoints.size()) != qh num_vertices)
-  //    printf("resulting surface is concave - convex hull does not include all points\n");
+   if(((int) interfacePoints.size()) != qh num_vertices)
+      printf("resulting surface is concave - convex hull does not include all points\n");
   
   
   // free memory and clear vector of interface points
@@ -1587,7 +1640,7 @@ void XFEM::Intersection::computeCDT(
       fill++;
     }
 
-
+  
   in.pointmarkerlist = new int[in.numberofpoints];
   for(int i = 0; i < numXFEMCornerNodes_; i++)
     in.pointmarkerlist[i] = 3;    // 3 : point lying on the xfem element (corner nodes)
@@ -1602,6 +1655,7 @@ void XFEM::Intersection::computeCDT(
   in.facetlist = new tetgenio::facet[in.numberoffacets];
   in.facetmarkerlist = new int[in.numberoffacets];
 
+ 
  
     // loop over all xfem element surfaces
   for(int i = 0; i < numXFEMSurfaces_; i++)
@@ -1672,7 +1726,7 @@ void XFEM::Intersection::computeCDT(
       p->vertexlist[j] = triangleList_[i - xfemElement->NumSurface()][j];
   }
 
-
+  
   // set facetmarkers
   for(int i = 0; i < in.numberoffacets; i ++)
       in.facetmarkerlist[i] = faceMarker_[i] + facetMarkerOffset_;
@@ -1683,9 +1737,9 @@ void XFEM::Intersection::computeCDT(
   //  Tetrahedralize the PLC. Switches are chosen to read a PLC (p),
   //  do quality mesh generation (q) with a specified quality bound
   //  (1.414), and apply a maximum volume constraint (a0.1)
-  //printf("tetgen start\n");
+  // printf("tetgen start\n");
   tetrahedralize(switches, &in, &out);
-  //printf("tetgen end\n");
+  // printf("tetgen end\n");
 
   //Debug
   //vector<int> elementIds;
@@ -1754,7 +1808,7 @@ void XFEM::Intersection::startPointList(
 void XFEM::Intersection::storePointList(
     vector< vector<double> >&       vertices,
     vector<int>&                    positions,
-    const vector<InterfacePoint>&   interfacePoints
+    vector<InterfacePoint>&         interfacePoints
     )
 {  
   vector<double>              searchPoint(3,0);
@@ -1786,13 +1840,15 @@ void XFEM::Intersection::storePointList(
  *----------------------------------------------------------------------*/
 void XFEM::Intersection::storePoint(
     const vector<double>&             point,
-    const vector<InterfacePoint>&     interfacePoints,
+    vector<InterfacePoint>&           interfacePoints,
     vector<int>&                      positions)
 {
   bool alreadyInList = false;
 
-  for(vector<InterfacePoint>::const_iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint )
+  for(vector<InterfacePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint )
   {
+    // round to 1 or -1
+    roundPointOnXFEMBoundary((*ipoint), XFEM::TOL3);
     if(comparePoints<3>(point, ipoint->getCoord()))
     {
       alreadyInList = false;
@@ -1853,6 +1909,50 @@ void XFEM::Intersection::storeMidPoint(
   else
   {
       positions.push_back(count);
+  }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  CDT:    rounds interface point on XFEM boundary          u.may 07/08|
+ |          should be used with TOL3 to make tetgen happy               |
+ *----------------------------------------------------------------------*/
+void XFEM::Intersection::roundPointOnXFEMBoundary(
+    InterfacePoint&                   ip,
+    const double                      tol)
+{
+
+  switch(xfemDistype_)
+  {
+    case DRT::Element::hex8:  case DRT::Element::hex20: case DRT::Element::hex27:    
+    {
+      vector<double> xsi(3,0.0);
+      bool round = false;
+      for(int i = 0; i < 3; i++)
+      {
+        xsi[i] = ip.getCoord()[i];
+        if( fabs((fabs(xsi[i])-1.0)) < tol && xsi[i] < 0)    
+        {
+            xsi[i] = -1.0;
+            round = true;
+        }
+        if( fabs((fabs(xsi[i])-1.0)) < tol &&  xsi[i] > 0)
+        {
+          xsi[i] =  1.0;   
+            round = true;
+        }   
+      }
+      if(round)
+        ip.setCoord(xsi);
+      break;
+      
+    }
+    default:
+    {
+      cout << DRT::DistypeToString(xfemDistype_) << endl;
+      dserror("discretization type %s not yet implemented", (DRT::DistypeToString(xfemDistype_)).c_str());
+    }
   }
 }
 
@@ -2267,8 +2367,6 @@ void XFEM::Intersection::recoverCurvedInterface(
 
     // list of point markers , if already visited = 1 , if not = 0
     vector<int> visitedPointIndexList(out.numberofpoints,0);
-//    for(int i = 0; i<out.numberofpoints; ++i)
-//        visitedPointIndexList[i] = 0;
 
     // store triface lying completey on xfem surfaces
     if(!surfaceTriangleList_.empty())
@@ -2318,7 +2416,7 @@ void XFEM::Intersection::recoverCurvedInterface(
 
                 // store boundary integration cells
                 addCellsToBoundaryIntCellsMap(	i, index1, globalHigherOrderIndex, faceMarker, currentcutterpositions,
-                						domainCoord, boundaryCoord, xfemElement, xyze_xfemElement, out);
+                						                    domainCoord, boundaryCoord, xfemElement, xyze_xfemElement, out);
             }
 
             /*for(int ii=0; ii < 6; ii++)
@@ -2652,7 +2750,7 @@ void XFEM::Intersection::liftSteinerPointOnSurface(
         const BlitzVec n1(p1 - Steinerpoint);
         const BlitzVec n2(p2 - Steinerpoint);
 
-        BlitzVec normal(computeCrossProduct( n1, n2));
+        BlitzVec normal(computeCrossProduct(n1, n2));
         normalizeVectorInPLace(normal);
 
         averageNormal += normal;
@@ -2670,7 +2768,7 @@ void XFEM::Intersection::liftSteinerPointOnSurface(
     vector<BlitzVec> plane;
     plane.push_back(BlitzVec(Steinerpoint + averageNormal));
     plane.push_back(BlitzVec(Steinerpoint - averageNormal));
-    const bool intersected = computeRecoveryNormal( xsi, plane, cutterElement, xyze_cutterElement, false);
+    bool intersected = computeRecoveryNormal( xsi, plane, cutterElement, xyze_cutterElement, false);
     if(intersected)
     {
         storeHigherOrderNode(   true, adjacentFacesList[steinerIndex][0], -1, xsi,
@@ -2678,27 +2776,27 @@ void XFEM::Intersection::liftSteinerPointOnSurface(
     }
     else
     {
-        // loop over all individual normals
-        bool intersected = false;
-        vector<BlitzVec>::const_iterator normalptr;
-        for(normalptr = normals.begin(); normalptr != normals.end(); ++normalptr )
+      intersected = false;
+      // loop over all individual normals
+      vector<BlitzVec>::const_iterator normalptr;
+      for(normalptr = normals.begin(); normalptr != normals.end(); ++normalptr )
+      {
+        vector<BlitzVec> plane;
+        plane.push_back(BlitzVec(Steinerpoint + (*normalptr)));
+        plane.push_back(BlitzVec(Steinerpoint - (*normalptr)));
+        intersected = computeRecoveryNormal( xsi, plane, cutterElement, xyze_cutterElement, false);
+        if(intersected)
         {
-            vector<BlitzVec> plane;
-            plane.push_back(BlitzVec(Steinerpoint + (*normalptr)));
-            plane.push_back(BlitzVec(Steinerpoint - (*normalptr)));
-            intersected = computeRecoveryNormal( xsi, plane, cutterElement, xyze_cutterElement, false);
-            if(intersected)
-            {
-                storeHigherOrderNode( true, adjacentFacesList[steinerIndex][0], -1, xsi,
-                    cutterElement, currentcutterpositions, xfemElement, out);
-                break;
-            }
+          storeHigherOrderNode( true, adjacentFacesList[steinerIndex][0], -1, xsi,
+              cutterElement, currentcutterpositions, xfemElement, out);
+          break;
         }
-        if(!intersected)
-        {
-            countMissedPoints_++;
-            printf("STEINER POINT NOT LIFTED in liftSteinerPointOnSurface()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-        }
+      }
+      if(!intersected)
+      {
+          countMissedPoints_++;
+          printf("STEINER POINT NOT LIFTED in liftSteinerPointOnSurface()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+      }
     }
 }
 

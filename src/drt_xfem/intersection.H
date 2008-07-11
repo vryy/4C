@@ -180,6 +180,21 @@ class Intersection
 
 
   /*!
+  \brief  sets the boundary status of a boundary point
+          (xfem surface, line or node)          .
+
+  \param xfemDistype          (in)        : discretization type of xfem element
+  \param xsi                  (in)        : node in element coordinates
+  \param ip                   (in)        : interface point
+  */
+  void setBoundaryPointBoundaryStatus(
+    const DRT::Element::DiscretizationType  xfemDistype,
+    const BlitzVec3&                        xsi,
+    InterfacePoint&                         ip
+    ) const;
+  
+ 
+  /*!
   \brief  checks if an internal point
           lies on one a xfem surface, line or node or internally          .
 
@@ -320,6 +335,7 @@ class Intersection
   \param upLimit                  (in)    : upper search interval boundary
   \param loLimit                  (in)    : lower search interval boundary
   \param doSVD                    (in)    : compute SVD if not Cartesian surface element and linear line elments present
+  \param tol                      (in)    : tolerance
   return true if an intersection point was found, otherwise false
   */
   bool computeCurveSurfaceIntersection(
@@ -330,7 +346,8 @@ class Intersection
     const BlitzVec3&                    upLimit,
     const BlitzVec3&                    loLimit,
     BlitzVec3&                          xsi,
-    const bool                          doSVD
+    const bool                          doSVD,
+    const double                        tol
     ) const;
 
 
@@ -501,13 +518,13 @@ class Intersection
   
   */
   void storePLC(
-  const DRT::Element*             xfemElement,
-  const DRT::Element*             cutterElement,
-  const BlitzMat&                 xyze_cutterElement,
-  const int                       surfId,
-  vector<int>&                    positions,
-  InterfacePoint&                 midpoint
-  ); 
+    const DRT::Element*             xfemElement,
+    const DRT::Element*             cutterElement,
+    const BlitzMat&                 xyze_cutterElement,
+    const int                       surfId,
+    vector<int>&                    positions,
+    InterfacePoint&                 midpoint
+    ); 
        
   
   /*!
@@ -583,7 +600,7 @@ class Intersection
   void storePointList(
     vector< vector<double> >&       vertices,
     vector<int>&                    positions,
-    const vector<InterfacePoint>&   interfacePoints
+    vector<InterfacePoint>&         interfacePoints
     );
   
   
@@ -597,7 +614,7 @@ class Intersection
   */
   void storePoint(
     const vector<double>&             point,
-    const vector<InterfacePoint>&     interfacePoints,
+    vector<InterfacePoint>&           interfacePoints,
     vector<int>&                      positions
     );
 
@@ -613,7 +630,20 @@ class Intersection
     const InterfacePoint&             midPoint,
     vector<int>&                      positions
     );
-       
+  
+  
+  /*!
+  \brief  rounds interface point on xfem boundary
+          use TOL3 to make TetGen happy
+
+  \param ip            (in/out)     :   interface point
+  \param tol           (in)         :   tolerance
+  */ 
+  void roundPointOnXFEMBoundary(
+        InterfacePoint&                   ip,
+        const double                      tol
+        );
+  
   
   /*!
   \brief  stores a single point in a list of surface points if no

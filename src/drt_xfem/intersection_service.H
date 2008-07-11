@@ -45,6 +45,9 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
     const double                 TOL7 = 1e-7;
     
     //! tolerance 1e-3 
+    const double                 TOL4 = 1e-4;
+        
+    //! tolerance 1e-3 
     const double                 TOL3 = 1e-3;
     
     //! tolerance 1e-2 
@@ -355,6 +358,23 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
              }
          return true;
      }
+     
+     
+    template <int length>
+    bool comparePoints(   
+        const vector<double>& point1,
+        const vector<double>& point2,
+        const double          tol) 
+    {   
+        dsassert(point1.size() == length, "not of proper length!");
+        dsassert(point2.size() == length, "not of proper length!");
+        for(unsigned int i = 0; i < length ; ++i)
+            if(fabs(point1[i] - point2[i]) > tol)
+            {
+                return false;
+            }
+        return true;
+    }
      
      
      /*!
