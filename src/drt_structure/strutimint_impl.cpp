@@ -456,7 +456,7 @@ void StruTimIntImpl::Solve()
 }
 
 /*----------------------------------------------------------------------*/
-/* solution with ful Newton-Raphson iteration */
+/* solution with full Newton-Raphson iteration */
 void StruTimIntImpl::NewtonFull()
 {
   // we do a Newton-Raphson iteration here.
@@ -708,12 +708,13 @@ void StruTimIntImpl::PrintNewtonConv()
 /* print step summary */
 void StruTimIntImpl::PrintStep()
 {
-  // print out
+  // print out (only on master CPU)
   if ( (myrank_ == 0) and printscreen_ )
   {
     PrintStepText(stdout);
   }
 
+  // print to error file (on every CPU involved)
   if (printerrfile_)
   {
     PrintStepText(errfile_);
@@ -730,6 +731,7 @@ void StruTimIntImpl::PrintStepText
   FILE* ofile
 )
 {
+  // the text
   fprintf(ofile,
           "Finalised: step %6d"
           " | nstep %6d"
@@ -753,7 +755,9 @@ void StruTimIntImpl::PrintStepText
  * originally by mwgee 03/07 */
 void StruTimIntImpl::Output()
 {
-  // this flag is passed
+  // this flag is passed along subroutines and prevents
+  // repeated initialising of output writer, printing of
+  // state vectors, or similar
   bool datawritten = false;
 
   // output restart (try this first)
@@ -794,9 +798,12 @@ void StruTimIntImpl::OutputRestart
     // surface stress
     if (surfstressman_ != Teuchos::null)
     {
-      RCP<Epetra_Map> surfrowmap = surfstressman_->GetSurfRowmap();
-      RCP<Epetra_Vector> A = rcp(new Epetra_Vector(*surfrowmap, true));
-      RCP<Epetra_Vector> con = rcp(new Epetra_Vector(*surfrowmap, true));
+      Teuchos::RCP<Epetra_Map> surfrowmap 
+        = surfstressman_->GetSurfRowmap();
+      Teuchos::RCP<Epetra_Vector> A 
+        = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
+      Teuchos::RCP<Epetra_Vector> con 
+        = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
       surfstressman_->GetHistory(A,con);
       output_.WriteVector("Aold", A);
       output_.WriteVector("conquot", con);
@@ -805,8 +812,9 @@ void StruTimIntImpl::OutputRestart
     // potential forces
     if (potman_ != Teuchos::null)
     {
-      RCP<Epetra_Map> surfrowmap = potman_->GetSurfRowmap();
-      RCP<Epetra_Vector> A = rcp(new Epetra_Vector(*surfrowmap, true));
+      Teuchos::RCP<Epetra_Map> surfrowmap = potman_->GetSurfRowmap();
+      Teuchos::RCP<Epetra_Vector> A 
+        = Teuchos::rcp(new Epetra_Vector(*surfrowmap, true));
       potman_->GetHistory(A);
       output_.WriteVector("Aold", A);
     }
@@ -946,7 +954,8 @@ void StruTimIntImpl::OutputStressStrain
       {
         stresstext = "gauss_2PK_stresses_xyz";
       }
-      output_.WriteVector(stresstext, *stressdata, *discret_.ElementColMap());
+      output_.WriteVector(stresstext, *stressdata, 
+                          *discret_.ElementColMap());
     }
 
     // write strain
@@ -961,7 +970,8 @@ void StruTimIntImpl::OutputStressStrain
       {
         straintext = "gauss_GL_strains_xyz";
       }
-      output_.WriteVector(straintext, *straindata, *discret_.ElementColMap());
+      output_.WriteVector(straintext, *straindata,
+                          *discret_.ElementColMap());
     }
   }
 
