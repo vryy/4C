@@ -157,8 +157,7 @@ void dyn_fluid_drt()
 
   // ---------------------------------------------- nonlinear iteration
   // set linearisation scheme
-  fluidtimeparams.set<bool>("Use reaction terms for linearisation",
-                           Teuchos::getIntegralValue<int>(fdyn,"NONLINITER")==2);
+  fluidtimeparams.set<string>          ("Linearisation",fdyn.get<string>("NONLINITER"));
   // maximum number of nonlinear iteration steps
   fluidtimeparams.set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
   // stop nonlinear iteration when both incr-norms are below this bound

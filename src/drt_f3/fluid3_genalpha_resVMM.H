@@ -215,57 +215,57 @@ namespace DRT
         \param compute_elemat     (i) if false, element matrices are not computed
 
       */
-      void Sysmat(Fluid3*                                               ele,
-                  std::vector<blitz::Array<double,1> >&                 myknots,
-                  Epetra_SerialDenseMatrix&                             elemat,
-                  Epetra_SerialDenseVector&                             elevec,
-                  const blitz::Array<double,2>&                         edispnp,
-                  const blitz::Array<double,2>&                         egridvaf,
-                  const blitz::Array<double,2>&                         evelnp,
-                  const blitz::Array<double,1>&                         eprenp,
-                  const blitz::Array<double,2>&                         eaccam,
-                  const blitz::Array<double,2>&                         evelaf,
-                  const blitz::Array<double,2>&                         csevelaf,
-                  const blitz::Array<double,2>&                         fsevelaf,
-                  const blitz::Array<double,2>&                         cseconvaf,
-                  const struct _MATERIAL*                               material,
-                  const double                                          alphaM,
-                  const double                                          alphaF,
-                  const double                                          gamma,
-                  const double                                          dt,
-                  const double                                          time,
-                  const bool                                            newton,
-                  const bool                                            higher_order_ele,                  
-                  const enum Fluid3::StabilisationAction                fssgv,
-                  const enum Fluid3::StabilisationAction                tds,
-                  const enum Fluid3::StabilisationAction                inertia,
-                  const enum Fluid3::StabilisationAction                pspg,
-                  const enum Fluid3::StabilisationAction                supg,
-                  const enum Fluid3::StabilisationAction                vstab,
-                  const enum Fluid3::StabilisationAction                cstab,
-                  const enum Fluid3::StabilisationAction                cross,
-                  const enum Fluid3::StabilisationAction                reynolds,
-                  const enum Fluid3::TauType                            whichtau,
-                  const enum Fluid3::TurbModelAction                    turb_mod_action,
-                  double&                                               Cs,
-                  double&                                               Cs_delta_sq,
-                  double&                                               visceff,
-                  const double                                          l_tau,
+      void Sysmat(Fluid3*                                         ele,
+		  std::vector<blitz::Array<double,1> >&           myknots,
+                  Epetra_SerialDenseMatrix&                       elemat,
+                  Epetra_SerialDenseVector&                       elevec,
+                  double*                                         edispnp,
+                  double*                                         egridvaf,
+                  double*                                         evelnp,
+		  double*                                         eprenp,
+		  double*                                         eaccam,
+                  blitz::Array<double,2>&                         evelaf,
+                  blitz::Array<double,2>&                         csevelaf,
+                  blitz::Array<double,2>&                         fsevelaf,
+                  blitz::Array<double,2>&                         cseconvaf,
+                  struct _MATERIAL*                               material,
+                  double                                          alphaM,
+                  double                                          alphaF,
+                  double                                          gamma,
+                  double                                          dt,
+                  double                                          time,
+                  enum Fluid3::LinearisationAction                newton,
+                  bool                                            higher_order_ele,                  
+                  enum Fluid3::StabilisationAction                fssgv,
+                  enum Fluid3::StabilisationAction                tds,
+                  enum Fluid3::StabilisationAction                inertia,
+                  enum Fluid3::StabilisationAction                pspg,
+                  enum Fluid3::StabilisationAction                supg,
+                  enum Fluid3::StabilisationAction                vstab,
+                  enum Fluid3::StabilisationAction                cstab,
+                  enum Fluid3::StabilisationAction                cross,
+                  enum Fluid3::StabilisationAction                reynolds,
+                  enum Fluid3::TauType                            whichtau,
+                  enum Fluid3::TurbModelAction                    turb_mod_action,
+                  double&                                         Cs,
+                  double&                                         Cs_delta_sq,
+                  double&                                         visceff,
+                  double                                          l_tau,
 #ifdef PERF
-                  RefCountPtr<Time>                                     timeelederxy2    ,
-                  RefCountPtr<Time>                                     timeelederxy     ,
-                  RefCountPtr<Time>                                     timeeletau       ,
-                  RefCountPtr<Time>                                     timeelegalerkin  ,
-                  RefCountPtr<Time>                                     timeelepspg      ,
-                  RefCountPtr<Time>                                     timeelesupg      ,
-                  RefCountPtr<Time>                                     timeelecstab     ,
-                  RefCountPtr<Time>                                     timeelevstab     ,
-                  RefCountPtr<Time>                                     timeelecrossrey  ,
-                  RefCountPtr<Time>                                     timeeleintertogp ,
-                  RefCountPtr<Time>                                     timeeleseteledata,
-                  RefCountPtr<Time>                                     timeeletdextras  ,
+                  RefCountPtr<Time>                               timeelederxy2    ,
+                  RefCountPtr<Time>                               timeelederxy     ,
+                  RefCountPtr<Time>                               timeeletau       ,
+                  RefCountPtr<Time>                               timeelegalerkin  ,
+                  RefCountPtr<Time>                               timeelepspg      ,
+                  RefCountPtr<Time>                               timeelesupg      ,
+                  RefCountPtr<Time>                               timeelecstab     ,
+                  RefCountPtr<Time>                               timeelevstab     ,
+                  RefCountPtr<Time>                               timeelecrossrey  ,
+                  RefCountPtr<Time>                               timeeleintertogp ,
+                  RefCountPtr<Time>                               timeeleseteledata,
+                  RefCountPtr<Time>                               timeeletdextras  ,
 #endif
-                  const bool                                            compute_elemat
+                  bool                                            compute_elemat
         );
 
   /*! \brief evaluate residuals resM and resC on the element and return
@@ -354,7 +354,7 @@ namespace DRT
       //! vector of second shape function derivatives in global coordinate system
       blitz::Array<double,2> derxy2_;
       //! derivatives needed for linearisation of viscous term including 2nd derivatives
-      blitz::Array<double,3> viscs2_;
+      blitz::Array<double,2> viscs2_;
       /*
                        corresponds to the operator
 
@@ -398,14 +398,10 @@ namespace DRT
       blitz::Array<double,2> csvderxyaf_;
       //! fine-scale velocity derivatives in gausspoint, time n+af
       blitz::Array<double,2> fsvderxyaf_;
-      //! second derivatives of velocity in gausspoint, time n+af
-      blitz::Array<double,2> vderxy2af_;
       //! value of body force interpolated to the gauss point, time n+af
       blitz::Array<double,1> bodyforceaf_;
       //! linearisation of convection, convective part, time n+af
       blitz::Array<double,1> conv_c_af_;
-      //! linearisation of convection, reactive part, time n+af
-      blitz::Array<double,3> conv_r_af_;
       //! convective part introduced by grid velocity, time n+af
       blitz::Array<double,1> conv_g_af_;
 
@@ -459,6 +455,14 @@ namespace DRT
 
       //! the element volume, used to define element length
       double                  vol_;
+
+
+      // temporary working arrays
+      // ------------------------
+      //! array used for the computation of jacobian 
+      //! determinant and second derivatives
+      blitz::Array<double,2> bm_;
+
     };
   }
 }

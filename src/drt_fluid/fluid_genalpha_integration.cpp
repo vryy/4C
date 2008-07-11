@@ -211,7 +211,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   gamma_  = params_.get<double>("gamma");
 
   // parameter for linearisation scheme (fixed point like or newton like)
-  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
+  newton_ = params_.get<string>("Linearisation");
 
   // maximum number of timesteps
   endstep_  = params_.get<int>   ("max number timesteps");
@@ -1044,7 +1044,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   }
 
   // parameters for nonlinear treatment (linearisation)
-  eleparams.set("include reactive terms for linearisation"    ,newton_);
+  eleparams.set("Linearisation",newton_);
 
   // parameters for stabilisation
   {
@@ -1217,7 +1217,17 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   //----------------------------------------------------------------------
   // call loop over elements
   //----------------------------------------------------------------------
-  discret_->Evaluate(eleparams,sysmat_,residual_);
+  // do not assemble the elemetn matrix if itmax is reached
+  // in this case, only the residual is required for the convergence check
+  if (itenum_<itemax_)
+  {
+    discret_->Evaluate(eleparams,sysmat_,residual_);
+  }
+  else
+  {
+    discret_->Evaluate(eleparams,Teuchos::null,residual_);
+  }
+
   discret_->ClearState();
 
   // get density
@@ -2480,18 +2490,8 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
         cout << "\n";
 
         // linearisation
-        if(params_.get<bool>("Use reaction terms for linearisation",false)
-           ==
-           true)
-        {
-          cout << "Linearisation              : ";
-          cout << "Including reactive terms (Newton-like)" << "\n";
-        }
-        else
-        {
-          cout << "Linearisation              : ";
-          cout << "Without reactive terms (fixed-point-like)" << "\n";
-        }
+	cout << "Linearisation              : ";
+	cout << params_.get<string>("Linearisation");
         cout << endl;
       }
 

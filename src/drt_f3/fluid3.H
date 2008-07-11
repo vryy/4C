@@ -382,6 +382,15 @@ private:
     fssgv_scale_similarity
   };
 
+  //! linearisation actions recognized by fluid3 (genalpha implementation)
+  enum LinearisationAction
+  {
+    no_linearisation,
+    Newton          ,
+    fixed_point_like,
+    minimal
+  };
+
   //! possible options for the stabilisation parameter
   enum TauType
   {

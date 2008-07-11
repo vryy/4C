@@ -523,6 +523,9 @@ private:
   //! the degree of the bspline-polynomial under 
   //! consideration
   int                    degree_;
+  //! the degree of the bspline-polynomial under 
+  //! consideration plus 1
+  int                    degree_plus_one_;
 
   //! temporary doubles
   double                 fact_[4];

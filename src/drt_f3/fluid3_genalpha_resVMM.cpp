@@ -11,8 +11,6 @@
 
        Subscales are either treated as quasi-static or time dependent.
 
-       There is no ALE-ability of the element up to now.
-
 <pre>
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
@@ -102,24 +100,24 @@ DRT::ELEMENTS::Fluid3GenalphaResVMM* DRT::ELEMENTS::Fluid3GenalphaResVMM::Impl(D
 DRT::ELEMENTS::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
   : iel_        (iel),
 // fine-scale subgrid viscosity
-    vart_(),
+    vart_(0.0),
 // nodal data
 //-----------------------+------------+------------------------------------
 //                  dim  | derivative | node
-    xyze_         (  3   ,              iel_,blitz::ColumnMajorArray<2>()),
-    weights_      (                     iel_                             ),
-    edeadaf_      (  3   ,              iel_,blitz::ColumnMajorArray<2>()),
+    xyze_         (  3   ,              iel,blitz::ColumnMajorArray<2>()),
+    weights_      (                     iel                             ),
+    edeadaf_      (  3   ,              iel,blitz::ColumnMajorArray<2>()),
 //-----------------------+------------+------------------------------------
 // gausspoint data
 //------------------------------------------------------------------------
 //                  dim  | derivative | node
 //-----------------------+------------+------------------------------------
-    funct_        (                     iel_                             ),
-    deriv_        (            3      , iel_,blitz::ColumnMajorArray<2>()),
-    deriv2_       (            6      , iel_,blitz::ColumnMajorArray<2>()),
-    derxy_        (            3      , iel_,blitz::ColumnMajorArray<2>()),
-    derxy2_       (            6      , iel_,blitz::ColumnMajorArray<2>()),
-    viscs2_       (  3   ,     3      , iel_,blitz::ColumnMajorArray<3>()),
+    funct_        (                     iel                              ),
+    deriv_        (            3      , iel ,blitz::ColumnMajorArray<2>()),
+    deriv2_       (            6      , iel ,blitz::ColumnMajorArray<2>()),
+    derxy_        (            3      , iel ,blitz::ColumnMajorArray<2>()),
+    derxy2_       (            6      , iel ,blitz::ColumnMajorArray<2>()),
+    viscs2_       (            3      , iel ,blitz::ColumnMajorArray<2>()),
     xjm_          (  3   ,     3            ,blitz::ColumnMajorArray<2>()),
     xji_          (  3   ,     3            ,blitz::ColumnMajorArray<2>()),
     xder2_        (  6   ,     3            ,blitz::ColumnMajorArray<2>()),
@@ -135,11 +133,9 @@ DRT::ELEMENTS::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
     vderxyaf_     (  3   ,     3            ,blitz::ColumnMajorArray<2>()),
     csvderxyaf_   (  3   ,     3            ,blitz::ColumnMajorArray<2>()),
     fsvderxyaf_   (  3   ,     3            ,blitz::ColumnMajorArray<2>()),
-    vderxy2af_    (  3   ,     6            ,blitz::ColumnMajorArray<2>()),
     bodyforceaf_  (  3                                                   ),
-    conv_c_af_    (                     iel_                             ),
-    conv_r_af_    (  3   ,     3      , iel_,blitz::ColumnMajorArray<3>()),
-    conv_g_af_    (                     iel_                             ),
+    conv_c_af_    (                     iel                              ),
+    conv_g_af_    (                     iel                              ),
 //----------------------+------------+------------------------------------
 // element data
 //------------------------------------------------------------------------
@@ -150,9 +146,14 @@ DRT::ELEMENTS::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
     convsubaf_old_(3),
     viscaf_old_   (3),
     resM_         (3),
-    conv_resM_    (                      iel_),
-    conv_subaf_   (                      iel_)
+    conv_resM_    (                      iel                             ),
+    conv_subaf_   (                      iel                             ),
+//----------------------+------------+------------------------------------
+// temporary arrays
+//------------------------------------------------------------------------
+    bm_           (6    ,      6     ,       blitz::ColumnMajorArray<2>())
 {
+  return;
 }
 
 
@@ -161,42 +162,42 @@ DRT::ELEMENTS::Fluid3GenalphaResVMM::Fluid3GenalphaResVMM(int iel)
   |                            (public)                      gammi 06/07|
   *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
-  Fluid3*                                               ele,
-  std::vector<blitz::Array<double,1> >&                 myknots,
-  Epetra_SerialDenseMatrix&                             elemat,
-  Epetra_SerialDenseVector&                             elevec,
-  const blitz::Array<double,2>&                         edispnp,
-  const blitz::Array<double,2>&                         egridvaf,
-  const blitz::Array<double,2>&                         evelnp,
-  const blitz::Array<double,1>&                         eprenp,
-  const blitz::Array<double,2>&                         eaccam,
-  const blitz::Array<double,2>&                         evelaf,
-  const blitz::Array<double,2>&                         csevelaf,
-  const blitz::Array<double,2>&                         fsevelaf,
-  const blitz::Array<double,2>&                         cseconvaf,
-  const struct _MATERIAL*                               material,
-  const double                                          alphaM,
-  const double                                          alphaF,
-  const double                                          gamma,
-  const double                                          dt,
-  const double                                          time,
-  const bool                                            newton,
-  const bool                                            higher_order_ele,
-  const enum Fluid3::StabilisationAction                fssgv,
-  const enum Fluid3::StabilisationAction                tds,
-  const enum Fluid3::StabilisationAction                inertia,
-  const enum Fluid3::StabilisationAction                pspg,
-  const enum Fluid3::StabilisationAction                supg,
-  const enum Fluid3::StabilisationAction                vstab,
-  const enum Fluid3::StabilisationAction                cstab,
-  const enum Fluid3::StabilisationAction                cross,
-  const enum Fluid3::StabilisationAction                reynolds,
-  const enum Fluid3::TauType                            whichtau,
-  const enum Fluid3::TurbModelAction                    turb_mod_action,
-  double&                                               Cs,
-  double&                                               Cs_delta_sq,
-  double&                                               visceff,
-  const double                                          l_tau,
+  Fluid3*                                         ele,
+  std::vector<blitz::Array<double,1> >&           myknots,
+  Epetra_SerialDenseMatrix&                       elemat,
+  Epetra_SerialDenseVector&                       elevec,
+  double*                                         edispnp,
+  double*                                         egridvaf,
+  double*                                         evelnp,
+  double*                                         eprenp,
+  double*                                         eaccam,
+  blitz::Array<double,2>&                         evelaf,
+  blitz::Array<double,2>&                         csevelaf,
+  blitz::Array<double,2>&                         fsevelaf,
+  blitz::Array<double,2>&                         cseconvaf,
+  struct _MATERIAL*                               material,
+  double                                          alphaM,
+  double                                          alphaF,
+  double                                          gamma,
+  double                                          dt,
+  double                                          time,
+  enum Fluid3::LinearisationAction                newton,
+  bool                                            higher_order_ele,
+  enum Fluid3::StabilisationAction                fssgv,
+  enum Fluid3::StabilisationAction                tds,
+  enum Fluid3::StabilisationAction                inertia,
+  enum Fluid3::StabilisationAction                pspg,
+  enum Fluid3::StabilisationAction                supg,
+  enum Fluid3::StabilisationAction                vstab,
+  enum Fluid3::StabilisationAction                cstab,
+  enum Fluid3::StabilisationAction                cross,
+  enum Fluid3::StabilisationAction                reynolds,
+  enum Fluid3::TauType                            whichtau,
+  enum Fluid3::TurbModelAction                    turb_mod_action,
+  double&                                         Cs,
+  double&                                         Cs_delta_sq,
+  double&                                         visceff,
+  double                                          l_tau,
 #ifdef PERF
   RefCountPtr<Time>                                     timeelederxy2    ,
   RefCountPtr<Time>                                     timeelederxy     ,
@@ -211,7 +212,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   RefCountPtr<Time>                                     timeeleseteledata,
   RefCountPtr<Time>                                     timeeletdextras  ,
 #endif
-  const bool                                            compute_elemat
+  bool                                            compute_elemat
   )
 {
 #ifdef PERF
@@ -232,6 +233,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
   blitz::Range       _ = blitz::Range::all();
 
+
+  //------------------------------------------------------------------
+  //   We use LAPACK and BLAS libraries --- get the epetra wrappers  
+  //------------------------------------------------------------------
+  Epetra_LAPACK      solver;
+  Epetra_BLAS        blas;
+
   //------------------------------------------------------------------
   //           SET TIME INTEGRATION SCHEME RELATED DATA
   //------------------------------------------------------------------
@@ -245,15 +253,17 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   //                      SET MATERIAL DATA
   //-------------------------------------------------
   // check here, if we really have a fluid !!
-    if( material->mattyp != m_carreauyasuda
-    	&&	material->mattyp != m_modpowerlaw
-        && material->mattyp != m_fluid)
-    	  dserror("Material law is not a fluid");
+  if( material->mattyp != m_carreauyasuda
+      &&	material->mattyp != m_modpowerlaw
+      && material->mattyp != m_fluid)
+  dserror("Material law is not a fluid");
 
-    // get viscosity
-    double visc = 0.0;
-    if(material->mattyp == m_fluid)
-  	  visc = material->m.fluid->viscosity;
+  // get viscosity
+  double visc = 0.0;
+  if(material->mattyp == m_fluid)
+  {
+    visc = material->m.fluid->viscosity;
+  }
 
   //------------------------------------------------------------------
   //                      SET ELEMENT DATA
@@ -274,12 +284,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   // add displacement, when fluid nodes move in the ALE case
   if (ele->is_ale_)
   {
-    for (int inode=0; inode<iel_; inode++)
-    {
-      xyze_(0,inode) += edispnp(0,inode);
-      xyze_(1,inode) += edispnp(1,inode);
-      xyze_(2,inode) += edispnp(2,inode);
-    }
+    blas.AXPY(3*iel_,1.0,edispnp,xyze_.data(),1,1);
   }
 
   // get node weights for nurbs elements
@@ -421,17 +426,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   //                           component of
   //                          node coordinate
   //
-  for (int nn=0;nn<3;++nn)
-  {
-    for (int rr=0;rr<3;++rr)
-    {
-      xjm_(nn,rr)=deriv_(nn,0)*xyze_(rr,0);
-      for (int mm=1;mm<iel_;++mm)
-      {
-        xjm_(nn,rr)+=deriv_(nn,mm)*xyze_(rr,mm);
-      }
-    }
-  }
+  blas.GEMM('N','T',3,3,iel_,1.0,deriv_.data(),3,xyze_.data(),3,0.0,xjm_.data(),3);	
 
   const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
                      xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
@@ -499,18 +494,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
   xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
 
-  // compute global derivates
-  for (int nn=0;nn<3;++nn)
-  {
-    for (int rr=0;rr<iel_;++rr)
-    {
-      derxy_(nn,rr)=deriv_(0,rr)*xji_(nn,0);
-      for (int mm=1;mm<3;++mm)
-      {
-        derxy_(nn,rr)+=deriv_(mm,rr)*xji_(nn,mm);
-      }
-    }
-  }
+  // compute global derivates at integration point
+  //
+  //   dN    +-----  dN (xi)    dxi
+  //     i    \        i           k
+  //   --- =   +     ------- * -----
+  //   dx     /        dxi      dx
+  //     j   +-----       k       j
+  //         node k
+  //
+  // j : direction of derivative x/y/z
+  //
+  blas.GEMM('N','N',3,iel_,3,1.0,xji_.data(),3,deriv_.data(),3,0.0,derxy_.data(),3);	
 
   // get velocities (n+alpha_F,i) at integration point
   //
@@ -521,14 +516,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   //                 +-----
   //                 node j
   //
-  for (int rr=0;rr<3;++rr)
-  {
-    velintaf_(rr)=funct_(0)*evelaf(rr,0);
-    for (int mm=1;mm<iel_;++mm)
-    {
-      velintaf_(rr)+=funct_(mm)*evelaf(rr,mm);
-    }
-  }
+  blas.GEMV('N',3,iel_,1.0,evelaf.data(),3,funct_.data(),0.0,velintaf_.data(),1,1);
+  
+  // get velocities (n+1,i)  at integration point
+  //
+  //                +-----
+  //       n+1       \                  n+1
+  //    vel   (x) =   +      N (x) * vel
+  //                 /        j         j
+  //                +-----
+  //                node j
+  //
+  blas.GEMV('N',3,iel_,1.0,evelnp,3,funct_.data(),0.0,velintnp_.data(),1,1);
 
   // get velocity (n+alpha_F,i) derivatives at integration point
   //
@@ -541,48 +540,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   //
   // j : direction of derivative x/y/z
   //
-  for (int nn=0;nn<3;++nn)
-  {
-    for (int rr=0;rr<3;++rr)
-    {
-      vderxyaf_(nn,rr)=derxy_(rr,0)*evelaf(nn,0);
-      for (int mm=1;mm<iel_;++mm)
-      {
-        vderxyaf_(nn,rr)+=derxy_(rr,mm)*evelaf(nn,mm);
-      }
-    }
-  }
-
-
-  // get velocities (n+1,i)  at integration point
-  //
-  //                +-----
-  //       n+1       \                  n+1
-  //    vel   (x) =   +      N (x) * vel
-  //                 /        j         j
-  //                +-----
-  //                node j
-  //
-  for (int rr=0;rr<3;++rr)
-  {
-    velintnp_(rr)=funct_(0)*evelnp(rr,0);
-    for (int mm=1;mm<iel_;++mm)
-    {
-      velintnp_(rr)+=funct_(mm)*evelnp(rr,mm);
-    }
-  }
+  blas.GEMM('N','T',3,3,iel_,1.0,evelaf.data(),3,derxy_.data(),3,0.0,vderxyaf_.data(),3);	
 
   // get velocity norms
-  const double vel_normaf = sqrt(velintaf_(0)*velintaf_(0)
-                                 +
-                                 velintaf_(1)*velintaf_(1)
-                                 +
-                                 velintaf_(2)*velintaf_(2));
-  const double vel_normnp = sqrt(velintnp_(0)*velintnp_(0)
-                                 +
-                                 velintnp_(1)*velintnp_(1)
-                                 +
-                                 velintnp_(2)*velintnp_(2));
+  const double vel_normaf = blas.NRM2(3,velintaf_.data(),1);
+  const double vel_normnp = blas.NRM2(3,velintnp_.data(),1);
 
   /*------------------------------------------------------------------*/
   /*                                                                  */
@@ -614,8 +576,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
   // compute nonlinear viscosity according to the Carreau-Yasuda model
   if( material->mattyp != m_fluid )
+  {
     CalVisc( material, visc);
-
+  }
 
   if (turb_mod_action == Fluid3::smagorinsky_with_wall_damping
       ||
@@ -1067,18 +1030,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                   +-           -+   +-           -+   +-           -+
       */
       blitz::Array<double,2> G(3,3,blitz::ColumnMajorArray<2>());
-
-      for (int nn=0;nn<3;++nn)
-      {
-        for (int rr=0;rr<3;++rr)
-        {
-          G(nn,rr) = xji_(nn,0)*xji_(rr,0);
-          for (int mm=1;mm<3;++mm)
-          {
-            G(nn,rr) += xji_(nn,mm)*xji_(rr,mm);
-          }
-        }
-      }
+      blas.GEMM('N','T',3,3,3,1.0,xji_.data(),3,xji_.data(),3,0.0,G.data(),3);	
 
       /*          +----
                    \
@@ -1160,7 +1112,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       /*
                                 1.0
                   tau  = -----------------
-                     C           /      \
+                     C            /     \
                           tau  * | g * g |
                              M    \-   -/
       */
@@ -1419,7 +1371,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
     vart_ = Cs * Cs * hk * hk * rateofstrain;
   }
-
 #ifdef PERF
   timeeletau_ref=null;
 #endif
@@ -1511,7 +1462,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       if (higher_order_ele)
       {
         // get values of shape functions and derivatives in the gausspoint
-        DRT::UTILS::shape_function_3D_deriv2(deriv2_,gp(0),gp(1),gp(2),distype);
+        DRT::UTILS::shape_function_3D_deriv2(derxy2_,gp(0),gp(1),gp(2),distype);
       }
     }
     else
@@ -1521,7 +1472,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2
           (funct_  ,
            deriv_  ,
-           deriv2_ ,
+           derxy2_ ,
            gp      ,
            myknots ,
            weights_,
@@ -1569,24 +1520,36 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //                           component of
     //                          node coordinate
     //
-    for (int nn=0;nn<3;++nn)
-    {
-      for (int rr=0;rr<3;++rr)
-      {
-        xjm_(nn,rr)=deriv_(nn,0)*xyze_(rr,0);
-        for (int mm=1;mm<iel_;++mm)
-        {
-          xjm_(nn,rr)+=deriv_(nn,mm)*xyze_(rr,mm);
-        }
-      }
-    }
+    blas.GEMM('N','T',3,3,iel_,1.0,deriv_.data(),3,xyze_.data(),3,0.0,xjm_.data(),3);
+
+    bm_(3,3) = xjm_(0,0)*xjm_(1,1);
+    bm_(3,4) = xjm_(0,0)*xjm_(1,2);
+    bm_(3,5) = xjm_(0,1)*xjm_(1,2);
+
+    bm_(4,3) = xjm_(0,0)*xjm_(2,1);
+    bm_(4,4) = xjm_(0,0)*xjm_(2,2);
+    bm_(4,5) = xjm_(0,1)*xjm_(2,2);
+
+    bm_(5,3) = xjm_(1,0)*xjm_(2,1);
+    bm_(5,4) = xjm_(1,0)*xjm_(2,2);
+    bm_(5,5) = xjm_(1,1)*xjm_(2,2);
+   
+    const double xjm_2_1_xjm_1_2=xjm_(2,1)*xjm_(1,2);
+    const double xjm_2_0_xjm_1_2=xjm_(2,0)*xjm_(1,2);
+    const double xjm_2_0_xjm_1_1=xjm_(2,0)*xjm_(1,1);
+    const double xjm_2_1_xjm_0_2=xjm_(2,1)*xjm_(0,2);
+    const double xjm_2_0_xjm_0_2=xjm_(2,0)*xjm_(0,2);
+    const double xjm_2_0_xjm_0_1=xjm_(2,0)*xjm_(0,1);
+    const double xjm_1_1_xjm_0_2=xjm_(1,1)*xjm_(0,2);
+    const double xjm_1_0_xjm_0_2=xjm_(1,0)*xjm_(0,2);
+    const double xjm_1_0_xjm_0_1=xjm_(1,0)*xjm_(0,1);
+   
     // The determinant ist computed using Sarrus's rule
-    const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
-                       xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
-                       xjm_(0,2)*xjm_(1,0)*xjm_(2,1)-
-                       xjm_(0,2)*xjm_(1,1)*xjm_(2,0)-
-                       xjm_(0,0)*xjm_(1,2)*xjm_(2,1)-
-                       xjm_(0,1)*xjm_(1,0)*xjm_(2,2);
+    const double det = xjm_(0,0)*bm_(5,5)+
+                       xjm_(2,0)*bm_(3,5)+
+                       xjm_(0,2)*(bm_(5,3)-xjm_2_0_xjm_1_1)-
+                       xjm_(2,1)*bm_(3,4)-
+                       xjm_(0,1)*bm_(5,4);
 
     // check for degenerated elements
     if (det < 0.0)
@@ -1621,28 +1584,28 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     */
 
     // inverse of jacobian
-    xji_(0,0) = (  xjm_(1,1)*xjm_(2,2) - xjm_(2,1)*xjm_(1,2))/det;
-    xji_(1,0) = (- xjm_(1,0)*xjm_(2,2) + xjm_(2,0)*xjm_(1,2))/det;
-    xji_(2,0) = (  xjm_(1,0)*xjm_(2,1) - xjm_(2,0)*xjm_(1,1))/det;
-    xji_(0,1) = (- xjm_(0,1)*xjm_(2,2) + xjm_(2,1)*xjm_(0,2))/det;
-    xji_(1,1) = (  xjm_(0,0)*xjm_(2,2) - xjm_(2,0)*xjm_(0,2))/det;
-    xji_(2,1) = (- xjm_(0,0)*xjm_(2,1) + xjm_(2,0)*xjm_(0,1))/det;
-    xji_(0,2) = (  xjm_(0,1)*xjm_(1,2) - xjm_(1,1)*xjm_(0,2))/det;
-    xji_(1,2) = (- xjm_(0,0)*xjm_(1,2) + xjm_(1,0)*xjm_(0,2))/det;
-    xji_(2,2) = (  xjm_(0,0)*xjm_(1,1) - xjm_(1,0)*xjm_(0,1))/det;
+    xji_(0,0) = ( bm_(5,5)-xjm_2_1_xjm_1_2)/det;
+    xji_(1,0) = (-bm_(5,4)+xjm_2_0_xjm_1_2)/det;
+    xji_(2,0) = ( bm_(5,3)-xjm_2_0_xjm_1_1)/det;
+    xji_(0,1) = (-bm_(4,5)+xjm_2_1_xjm_0_2)/det;
+    xji_(1,1) = ( bm_(4,4)-xjm_2_0_xjm_0_2)/det;
+    xji_(2,1) = (-bm_(4,3)+xjm_2_0_xjm_0_1)/det;
+    xji_(0,2) = ( bm_(3,5)-xjm_1_1_xjm_0_2)/det;
+    xji_(1,2) = (-bm_(3,4)+xjm_1_0_xjm_0_2)/det;
+    xji_(2,2) = ( bm_(3,3)-xjm_1_0_xjm_0_1)/det;
 
-    // compute global derivates
-    for (int nn=0;nn<3;++nn)
-    {
-      for (int rr=0;rr<iel_;++rr)
-      {
-        derxy_(nn,rr)=deriv_(0,rr)*xji_(nn,0);
-        for (int mm=1;mm<3;++mm)
-        {
-          derxy_(nn,rr)+=deriv_(mm,rr)*xji_(nn,mm);
-        }
-      }
-    }
+    // compute global derivates at integration point
+    //
+    //   dN    +-----  dN (xi)    dxi
+    //     i    \        i           k
+    //   --- =   +     ------- * -----
+    //   dx     /        dxi      dx
+    //     j   +-----       k       j
+    //         node k
+    //
+    // j : direction of derivative x/y/z
+    //
+    blas.GEMM('N','N',3,iel_,3,1.0,xji_.data(),3,deriv_.data(),3,0.0,derxy_.data(),3);	
 
 #ifdef PERF
     timeelederxy_ref=null;
@@ -1767,51 +1730,48 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
      *----------------------------------------------------------------------*/
     if (higher_order_ele)
     {
-      // initialize and zero out everything
-      blitz::Array<double,2> bm(6,6,blitz::ColumnMajorArray<2>());
-
       // calculate elements of jacobian_bar matrix
-      bm(0,0) = xjm_(0,0)*xjm_(0,0);
-      bm(1,0) = xjm_(1,0)*xjm_(1,0);
-      bm(2,0) = xjm_(2,0)*xjm_(2,0);
-      bm(3,0) = xjm_(0,0)*xjm_(1,0);
-      bm(4,0) = xjm_(0,0)*xjm_(2,0);
-      bm(5,0) = xjm_(2,0)*xjm_(1,0);
+      bm_(0,0)  = xjm_(0,0)*xjm_(0,0);
+      bm_(1,0)  = xjm_(1,0)*xjm_(1,0);
+      bm_(2,0)  = xjm_(2,0)*xjm_(2,0);
+      bm_(3,0)  = xjm_(0,0)*xjm_(1,0);
+      bm_(4,0)  = xjm_(0,0)*xjm_(2,0);
+      bm_(5,0)  = xjm_(2,0)*xjm_(1,0);
 
-      bm(0,1) = xjm_(0,1)*xjm_(0,1);
-      bm(1,1) = xjm_(1,1)*xjm_(1,1);
-      bm(2,1) = xjm_(2,1)*xjm_(2,1);
-      bm(3,1) = xjm_(0,1)*xjm_(1,1);
-      bm(4,1) = xjm_(0,1)*xjm_(2,1);
-      bm(5,1) = xjm_(2,1)*xjm_(1,1);
+      bm_(0,1)  = xjm_(0,1)*xjm_(0,1);
+      bm_(1,1)  = xjm_(1,1)*xjm_(1,1);
+      bm_(2,1)  = xjm_(2,1)*xjm_(2,1);
+      bm_(3,1)  = xjm_(0,1)*xjm_(1,1);
+      bm_(4,1)  = xjm_(0,1)*xjm_(2,1);
+      bm_(5,1)  = xjm_(2,1)*xjm_(1,1);
 
-      bm(0,2) = xjm_(0,2)*xjm_(0,2);
-      bm(1,2) = xjm_(1,2)*xjm_(1,2);
-      bm(2,2) = xjm_(2,2)*xjm_(2,2);
-      bm(3,2) = xjm_(0,2)*xjm_(1,2);
-      bm(4,2) = xjm_(0,2)*xjm_(2,2);
-      bm(5,2) = xjm_(2,2)*xjm_(1,2);
+      bm_(0,2)  = xjm_(0,2)*xjm_(0,2);
+      bm_(1,2)  = xjm_(1,2)*xjm_(1,2);
+      bm_(2,2)  = xjm_(2,2)*xjm_(2,2);
+      bm_(3,2)  = xjm_(0,2)*xjm_(1,2);
+      bm_(4,2)  = xjm_(0,2)*xjm_(2,2);
+      bm_(5,2)  = xjm_(2,2)*xjm_(1,2);
 
-      bm(0,3) = 2.*xjm_(0,0)*xjm_(0,1);
-      bm(1,3) = 2.*xjm_(1,0)*xjm_(1,1);
-      bm(2,3) = 2.*xjm_(2,0)*xjm_(2,1);
-      bm(3,3) = xjm_(0,0)*xjm_(1,1)+xjm_(1,0)*xjm_(0,1);
-      bm(4,3) = xjm_(0,0)*xjm_(2,1)+xjm_(2,0)*xjm_(0,1);
-      bm(5,3) = xjm_(1,0)*xjm_(2,1)+xjm_(2,0)*xjm_(1,1);
+      bm_(0,3)  = 2.*xjm_(0,0)*xjm_(0,1);
+      bm_(1,3)  = 2.*xjm_(1,0)*xjm_(1,1);
+      bm_(2,3)  = 2.*xjm_(2,0)*xjm_(2,1);
+      bm_(3,3) += xjm_1_0_xjm_0_1;
+      bm_(4,3) += xjm_2_0_xjm_0_1;
+      bm_(5,3) += xjm_2_0_xjm_1_1;
 
-      bm(0,4) = 2.*xjm_(0,0)*xjm_(0,2);
-      bm(1,4) = 2.*xjm_(1,0)*xjm_(1,2);
-      bm(2,4) = 2.*xjm_(2,0)*xjm_(2,2);
-      bm(3,4) = xjm_(0,0)*xjm_(1,2)+xjm_(1,0)*xjm_(0,2);
-      bm(4,4) = xjm_(0,0)*xjm_(2,2)+xjm_(2,0)*xjm_(0,2);
-      bm(5,4) = xjm_(1,0)*xjm_(2,2)+xjm_(2,0)*xjm_(1,2);
+      bm_(0,4)  = 2.*xjm_(0,0)*xjm_(0,2);
+      bm_(1,4)  = 2.*xjm_(1,0)*xjm_(1,2);
+      bm_(2,4)  = 2.*xjm_(2,0)*xjm_(2,2);
+      bm_(3,4) += xjm_1_0_xjm_0_2;
+      bm_(4,4) += xjm_2_0_xjm_0_2;
+      bm_(5,4) += xjm_2_0_xjm_1_2;
 
-      bm(0,5) = 2.*xjm_(0,1)*xjm_(0,2);
-      bm(1,5) = 2.*xjm_(1,1)*xjm_(1,2);
-      bm(2,5) = 2.*xjm_(2,1)*xjm_(2,2);
-      bm(3,5) = xjm_(0,1)*xjm_(1,2)+xjm_(1,1)*xjm_(0,2);
-      bm(4,5) = xjm_(0,1)*xjm_(2,2)+xjm_(2,1)*xjm_(0,2);
-      bm(5,5) = xjm_(1,1)*xjm_(2,2)+xjm_(2,1)*xjm_(1,2);
+      bm_(0,5)  = 2.*xjm_(0,1)*xjm_(0,2);
+      bm_(1,5)  = 2.*xjm_(1,1)*xjm_(1,2);
+      bm_(2,5)  = 2.*xjm_(2,1)*xjm_(2,2);
+      bm_(3,5) += xjm_1_1_xjm_0_2;
+      bm_(4,5) += xjm_2_1_xjm_0_2;
+      bm_(5,5) += xjm_2_1_xjm_1_2;
 
       /*------------------ determine 2nd derivatives of coord.-functions */
       /*
@@ -1863,18 +1823,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
        |
        |
       */
-      for (int nn=0;nn<6;++nn)
-      {
-        for (int rr=0;rr<3;++rr)
-        {
-          xder2_(nn,rr)= deriv2_(nn,0)*xyze_(rr,0);
-
-          for (int mm=1;mm<iel_;++mm)
-          {
-            xder2_(nn,rr)+= deriv2_(nn,mm)*xyze_(rr,mm);
-          }
-        }
-      }
+      blas.GEMM('N','T',6,3,iel_,1.0,derxy2_.data(),6,xyze_.data(),3,0.0,xder2_.data(),6);
 
       /*
        |        0...iel-1             0 1 2
@@ -1894,18 +1843,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
        |
        |       chainrulerhs          xder2
       */
-      for (int nn=0;nn<6;++nn)
-      {
-        for (int rr=0;rr<iel_;++rr)
-        {
-          derxy2_(nn,rr)= (-1)*xder2_(nn,0)*derxy_(0,rr);
-
-          for (int mm=1;mm<3;++mm)
-          {
-            derxy2_(nn,rr)-= xder2_(nn,mm)*derxy_(mm,rr);
-          }
-        }
-      }
 
       /*
        |        0...iel-1            0...iel-1         0...iel-1
@@ -1925,14 +1862,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
        |
        |       chainrulerhs         chainrulerhs        deriv2
       */
-
-      for (int nn=0;nn<6;++nn)
-      {
-        for (int rr=0;rr<iel_;++rr)
-        {
-          derxy2_(nn,rr) += deriv2_(nn,rr);
-        }
-      }
+      blas.GEMM('N','N',6,iel_,3,-1.0,xder2_.data(),6,derxy_.data(),3,1.0,derxy2_.data(),6);
 
       /* make LU decomposition and solve system for all right hand sides
        * (i.e. the components of chainrulerhs)
@@ -1974,8 +1904,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
        |                      | | | | | 5 = dsdt
        |    	       	      +-+-+-+-+
       */
-      // Use LAPACK
-      Epetra_LAPACK          solver;
 
       // a vector specifying the pivots (reordering)
       int pivot[6];
@@ -1984,7 +1912,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       int ierr = 0;
 
       // Perform LU factorisation --- this call replaces bm with its factorisation
-      solver.GETRF(6,6,bm.data(),6,&(pivot[0]),&ierr);
+      solver.GETRF(6,6,bm_.data(),6,&(pivot[0]),&ierr);
 
       if (ierr!=0)
       {
@@ -1993,14 +1921,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
       // backward substitution. GETRS replaces the input (chainrulerhs, currently
       // stored on derxy2) with the result
-      solver.GETRS('N',6,iel_,bm.data(),6,&(pivot[0]),derxy2_.data(),6,&ierr);
+      solver.GETRS('N',6,iel_,bm_.data(),6,&(pivot[0]),derxy2_.data(),6,&ierr);
 
       if (ierr!=0)
       {
         dserror("Unable to perform backward substitution after factorisation of jacobian");
       }
     }
-
 #ifdef PERF
     timeelederxy2_ref = null;
 #endif
@@ -2024,14 +1951,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //
     // i         : space dimension u/v/w
     //
-    for (int rr=0;rr<3;++rr)
-    {
-      accintam_(rr)=funct_(0)*eaccam(rr,0);
-      for (int mm=1;mm<iel_;++mm)
-      {
-        accintam_(rr)+=funct_(mm)*eaccam(rr,mm);
-      }
-    }
+    blas.GEMV('N',3,iel_,1.0,eaccam,3,funct_.data(),0.0,accintam_.data(),1,1);
 
 
     // get velocities (n+alpha_F,i) at integration point
@@ -2043,32 +1963,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //                 +-----
     //                 node j
     //
-    for (int rr=0;rr<3;++rr)
-    {
-      velintaf_(rr)=funct_(0)*evelaf(rr,0);
-      for (int mm=1;mm<iel_;++mm)
-      {
-        velintaf_(rr)+=funct_(mm)*evelaf(rr,mm);
-      }
-    }
-
-    // get bodyforce in gausspoint, time (n+alpha_F)
-    //
-    //                 +-----
-    //       n+af       \                n+af
-    //      f    (x) =   +      N (x) * f
-    //                  /        j       j
-    //                 +-----
-    //                 node j
-    //
-    for (int rr=0;rr<3;++rr)
-    {
-      bodyforceaf_(rr)=funct_(0)*edeadaf_(rr,0);
-      for (int mm=1;mm<iel_;++mm)
-      {
-        bodyforceaf_(rr)+=funct_(mm)*edeadaf_(rr,mm);
-      }
-    }
+    blas.GEMV('N',3,iel_,1.0,evelaf.data(),3,funct_.data(),0.0,velintaf_.data(),1,1);
 
     // get velocities (n+1,i)  at integration point
     //
@@ -2079,14 +1974,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //                +-----
     //                node j
     //
-    for (int rr=0;rr<3;++rr)
-    {
-      velintnp_(rr)=funct_(0)*evelnp(rr,0);
-      for (int mm=1;mm<iel_;++mm)
-      {
-        velintnp_(rr)+=funct_(mm)*evelnp(rr,mm);
-      }
-    }
+    blas.GEMV('N',3,iel_,1.0,evelnp,3,funct_.data(),0.0,velintnp_.data(),1,1);
+
+    // get bodyforce in gausspoint, time (n+alpha_F)
+    //
+    //                 +-----
+    //       n+af       \                n+af
+    //      f    (x) =   +      N (x) * f
+    //                  /        j       j
+    //                 +-----
+    //                 node j
+    //
+    blas.GEMV('N',3,iel_,1.0,edeadaf_.data(),3,funct_.data(),0.0,bodyforceaf_.data(),1,1);
 
     // get pressure (n+1,i) at integration point
     //
@@ -2097,10 +1996,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //                +-----
     //                node i
     //
-    prenp_=funct_(0)*eprenp(0);
-    for (int mm=1;mm<iel_;++mm)
+    prenp_=0;
+    for(int mm=0;mm<iel_;++mm)
     {
-      prenp_+=funct_(mm)*eprenp(mm);
+      prenp_+=(funct_.data())[mm]*eprenp[mm];
     }
 
     // get pressure gradient (n+1,i) at integration point
@@ -2114,14 +2013,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //
     // i : direction of derivative
     //
-    for (int rr=0;rr<3;++rr)
-    {
-      pderxynp_(rr)=derxy_(rr,0)*eprenp(0);
-      for (int mm=1;mm<iel_;++mm)
-      {
-        pderxynp_(rr)+=derxy_(rr,mm)*eprenp(mm);
-      }
-    }
+    blas.GEMV('N',3,iel_,1.0,derxy_.data(),3,eprenp,0.0,pderxynp_.data(),1,1);
 
     // get velocity (n+alpha_F,i) derivatives at integration point
     //
@@ -2134,17 +2026,88 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //
     // j : direction of derivative x/y/z
     //
-    for (int nn=0;nn<3;++nn)
+    blas.GEMM('N','T',3,3,iel_,1.0,evelaf.data(),3,derxy_.data(),3,0.0,vderxyaf_.data(),3);	
+
+    // get velocity (n+1,i) derivatives at integration point
+    //
+    //       n+1      +-----  dN (x)
+    //   dvel   (x)    \        k         n+1
+    //   ---------- =   +     ------ * vel
+    //       dx        /        dx        k   
+    //         j      +-----      j
+    //                node k
+    //
+    blas.GEMM('N','T',3,3,iel_,1.0,evelnp,3,derxy_.data(),3,0.0,vderxynp_.data(),3);	
+
+    /* divergence new time step n+1 */
+    //
+    //                   +-----     n+1     
+    //          n+1       \     dvel   (x)  
+    //   div vel   (x) =   +    ----------  
+    //                    /         dx      
+    //                   +-----       j     
+    //                    dim j
+    //
+    const double divunp = (vderxynp_(0,0)+vderxynp_(1,1)+vderxynp_(2,2));
+
+    // get ale convective velocity (n+alpha_F,i) at integration point
+
+    // get velocities (n+alpha_F,i) at integration point
+    //
+    //                 +-----           +-                   -+
+    //       n+af       \               |   n+af      n+alphaF|
+    //      c    (x) =   +      N (x) * |vel     - u_G        |
+    //                  /        j      |   j         j       |
+    //                 +-----           +-                   -+
+    //                 node j
+    //
+    //
+    // where u_G is the grid velocity at the integration point,
+    // time (n+alpha_F,i)
+    //
+    //                 +-----
+    //       n+af       \                  n+af
+    //    u_G    (x) =   +      N (x) * u_G
+    //                  /        j         j
+    //                 +-----
+    //                 node j
+    //
+    blas.COPY(3,velintaf_.data(),aleconvintaf_.data());
+
+    if (ele->is_ale_)
     {
-      for (int rr=0;rr<3;++rr)
-      {
-        vderxyaf_(nn,rr)=derxy_(rr,0)*evelaf(nn,0);
-        for (int mm=1;mm<iel_;++mm)
-        {
-          vderxyaf_(nn,rr)+=derxy_(rr,mm)*evelaf(nn,mm);
-        }
-      }
+      blas.GEMV('N',3,iel_,-1.0,egridvaf,3,funct_.data(),1.0,aleconvintaf_.data(),1,1);
     }
+
+    /* Convective term  u_old * grad u_old: */
+    blas.GEMV('N',3,3,1.0,vderxyaf_.data(),3,aleconvintaf_.data(),0.0,convaf_old_.data(),1,1);
+
+    // compute residual in gausspoint --- second derivatives only
+    // exist for higher order elements, so we subtract them later  
+    // convaf_old_ is based on ale-convective velocity 
+    //
+    //   n+af         n+am       /   n+af           \     n+af     
+    //  r    (x) = acc    (x) + | vel    (x) o nabla | vel    (x) +
+    //   M                       \                  /               
+    //                      n+1    n+af
+    //             + nabla p    - f             (not higher order)
+    //                   
+
+    for (int rr=0;rr<3;++rr)
+    {
+      resM_(rr) = accintam_(rr) + convaf_old_(rr) + pderxynp_(rr) - bodyforceaf_(rr);
+    }
+
+    // get convective linearisation (n+alpha_F,i) at integration point
+    //
+    //                 +----- 
+    //       n+af       \      n+af      dN        
+    // conv_c    (x) =   +    c    (x) * --- (x) 
+    //                  /      j         dx        
+    //                 +-----              j
+    //                  dim j
+    //
+    blas.GEMV('T',3,iel_,1.0,derxy_.data(),3,aleconvintaf_.data(),0.0,conv_c_af_.data(),1,1);
 
     // get fine-scale velocity (n+alpha_F,i) derivatives at integration point
     //
@@ -2180,181 +2143,102 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       csconvintaf_ = blitz::sum(funct_(j)*cseconvaf(i,j),j);
     }
 
-    // get velocity (n+1,i) derivatives at integration point
-    //
-    //       n+1      +-----  dN (x)
-    //   dvel   (x)    \        k         n+1
-    //   ---------- =   +     ------ * vel
-    //       dx        /        dx        k
-    //         j      +-----      j
-    //                node k
-    //
-    for (int nn=0;nn<3;++nn)
-    {
-      for (int rr=0;rr<3;++rr)
-      {
-        vderxynp_(nn,rr)=derxy_(rr,0)*evelnp(nn,0);
-        for (int mm=1;mm<iel_;++mm)
-        {
-          vderxynp_(nn,rr)+=derxy_(rr,mm)*evelnp(nn,mm);
-        }
-      }
-    }
-
-    // get ale convective velocity (n+alpha_F,i) at integration point
-
-    // get velocities (n+alpha_F,i) at integration point
-    //
-    //                 +-----           +-                   -+
-    //       n+af       \               |   n+af      n+alphaF|
-    //      c    (x) =   +      N (x) * |vel     - u_G        |
-    //                  /        j      |   j         j       |
-    //                 +-----           +-                   -+
-    //                 node j
-    //
-    //
-    // where u_G is the grid velocity at the integration point,
-    // time (n+alpha_F,i)
-    //
-    //                 +-----
-    //       n+af       \                  n+af
-    //    u_G    (x) =   +      N (x) * u_G
-    //                  /        j         j
-    //                 +-----
-    //                 node j
-    //
-
-    for (int rr=0;rr<3;++rr)
-    {
-      aleconvintaf_(rr)=velintaf_(rr);
-    }
-
-    if (ele->is_ale_)
-    {
-      for (int rr=0;rr<3;++rr)
-      {
-        for (int mm=0;mm<iel_;++mm)
-        {
-          aleconvintaf_(rr)-=funct_(mm)*egridvaf(rr,mm);
-        }
-      }
-    }
-
-
-    /*--- convective part u_old * grad (funct) --------------------------*/
-    /* u_old_x * N,x  +  u_old_y * N,y + u_old_z * N,z
-       with  N .. form function matrix                                   */
-    for (int rr=0;rr<iel_;++rr)
-    {
-      conv_c_af_(rr)=aleconvintaf_(0)*derxy_(0,rr);
-      for (int mm=1;mm<3;++mm)
-      {
-        conv_c_af_(rr)+=aleconvintaf_(mm)*derxy_(mm,rr);
-      }
-    }
-
-    // calculate 2nd velocity derivatives at integration point, time(n+alpha_F)
-    //
-    //    2   n+af       +-----   dN (x)
-    //   d vel    (x)     \         k          n+af
-    //   ------------  =   +     -------- * vel
-    //    dx  dx          /      dx  dx        k
-    //      j1  j2       +-----    j1  j2
-    //                   node k
-    //
-    // j=(j1,j2) : direction of derivative x/y/z
-    if(higher_order_ele)
-    {
-      for (int nn=0;nn<3;++nn)
-      {
-        for (int rr=0;rr<6;++rr)
-        {
-          vderxy2af_(nn,rr)=derxy2_(rr,0)*evelaf(nn,0);
-          for (int mm=1;mm<iel_;++mm)
-          {
-            vderxy2af_(nn,rr)+=derxy2_(rr,mm)*evelaf(nn,mm);
-          }
-        }
-      }
-
-    }
-
     if (higher_order_ele)
     {
-      /*--- viscous term  grad * epsilon(u): ------------------------------*/
+      /*--- viscous term  2* grad * epsilon(u): --------------------------*/
       /*   /                                                \
            |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
-         1 |                                                |
-         - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
-         2 |                                                |
+           |                                                |
+           |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+           |                                                |
            |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
            \                                                /
 
            with N_x .. x-line of N
            N_y .. y-line of N                                             */
-      for (int mm=0;mm<iel_;++mm)
+
+
+      /* Viscous term  div epsilon(u_old) 
+      //
+      //              /             \
+      //             |     / n+af \  |
+      //     nabla o | eps| u      | | =
+      //             |     \      /  | 
+      //              \             / j
+      //
+      //              / +-----  / +----- dN (x)             +----- dN (x)           \ \
+      //             |   \     |   \       k         n+af    \       k         n+af  | |
+      //       1.0   |    +    |    +    ------ * vel     +   +   ------- * vel      | |
+      //     = --- * |   /     |   /     dx dx       k,i     /     dx dx       k,j   | | 
+      //       2.0   |  +----- |  +-----   i  j             +-----   i  i            | |
+      //              \ node k  \  dim i                     dim i                  / / 
+      */
+      double sum = derxy2_(0,0)+derxy2_(1,0)+derxy2_(2,0);
+
+      viscs2_(0,0) = sum + derxy2_(0,0);
+      viscs2_(1,0) = sum + derxy2_(1,0);
+      viscs2_(2,0) = sum + derxy2_(2,0);
+
+      viscaf_old_(0) =
+	    (viscs2_(0,0)*evelaf(0,0)
+	     +
+	     derxy2_(3,0)*evelaf(1,0)
+	     +
+	     derxy2_(4,0)*evelaf(2,0));
+      viscaf_old_(1) =
+	    (derxy2_(3,0)*evelaf(0,0)
+	     +
+	     viscs2_(1,0)*evelaf(1,0)
+	     +
+	     derxy2_(5,0)*evelaf(2,0));
+      viscaf_old_(2) =
+	    (derxy2_(4,0)*evelaf(0,0)
+	     +
+	     derxy2_(5,0)*evelaf(1,0)
+	     +
+	     viscs2_(2,0)*evelaf(2,0));
+
+      for (int mm=1;mm<iel_;++mm)
       {
-        viscs2_(0,1,mm) = 0.5 *  derxy2_(3,mm);
-        viscs2_(1,0,mm) = viscs2_(0,1,mm)     ;
+	sum = derxy2_(0,mm)+derxy2_(1,mm)+derxy2_(2,mm);
+
+	viscs2_(0,mm) = sum + derxy2_(0,mm);
+	viscs2_(1,mm) = sum + derxy2_(1,mm);
+	viscs2_(2,mm) = sum + derxy2_(2,mm);
+
+	viscaf_old_(0) += 
+	      (viscs2_(0,mm)*evelaf(0,mm)
+	       +
+	       derxy2_(3,mm)*evelaf(1,mm)
+	       +
+	       derxy2_(4,mm)*evelaf(2,mm));
+	viscaf_old_(1) += 
+	      (derxy2_(3,mm)*evelaf(0,mm)
+	       +
+	       viscs2_(1,mm)*evelaf(1,mm)
+	       +
+	       derxy2_(5,mm)*evelaf(2,mm));
+	viscaf_old_(2) +=
+	      (derxy2_(4,mm)*evelaf(0,mm)
+	       +
+	       derxy2_(5,mm)*evelaf(1,mm)
+	       +
+	       viscs2_(2,mm)*evelaf(2,mm));
       }
-      for (int mm=0;mm<iel_;++mm)
-      {
-        viscs2_(0,2,mm) = 0.5 *  derxy2_(4,mm);
-        viscs2_(2,0,mm) = viscs2_(0,2,mm);
-      }
-      for (int mm=0;mm<iel_;++mm)
-      {
-        viscs2_(1,2,mm) = 0.5 *  derxy2_(5,mm);
-        viscs2_(2,1,mm) = viscs2_(1,2,mm);
-      }
-      for (int mm=0;mm<iel_;++mm)
-      {
-        const double  sum = 0.5 * (derxy2_(0,mm) + derxy2_(1,mm) + derxy2_(2,mm));
-
-        viscs2_(0,0,mm) = sum + 0.5 * derxy2_(0,mm);
-        viscs2_(1,1,mm) = sum + 0.5 * derxy2_(1,mm);
-        viscs2_(2,2,mm) = sum + 0.5 * derxy2_(2,mm);
-      }
-    }
-
-    /* divergence new time step n+1 */
-    const double divunp = (vderxynp_(0,0)+vderxynp_(1,1)+vderxynp_(2,2));
-
-    /* Convective term  u_old * grad u_old: */
-    for (int rr=0;rr<3;++rr)
-    {
-      convaf_old_(rr)=vderxyaf_(rr, 0)*aleconvintaf_(0);
-      for (int mm=1;mm<3;++mm)
-      {
-        convaf_old_(rr)+=vderxyaf_(rr,mm)*aleconvintaf_(mm);
-      }
-    }
-
-    if (higher_order_ele)
-    {
-      /* Viscous term  div epsilon(u_old) */
-      viscaf_old_(0) = vderxy2af_(0,0) + 0.5 * (vderxy2af_(0,1) + vderxy2af_(1,3) + vderxy2af_(0,2) + vderxy2af_(2,4));
-      viscaf_old_(1) = vderxy2af_(1,1) + 0.5 * (vderxy2af_(1,0) + vderxy2af_(0,3) + vderxy2af_(1,2) + vderxy2af_(2,5));
-      viscaf_old_(2) = vderxy2af_(2,2) + 0.5 * (vderxy2af_(2,0) + vderxy2af_(0,4) + vderxy2af_(2,1) + vderxy2af_(1,5));
-    }
-
-    /* compute residual in gausspoint --- second derivatives only
-     * exist for higher order elements,  convaf_old_ is based on
-     * ale-convective velocity */
-    for (int rr=0;rr<3;++rr)
-    {
-      resM_(rr) = accintam_(rr) + convaf_old_(rr) + pderxynp_(rr) - bodyforceaf_(rr);
-    }
-
-    /* the residual is based on the effective viscosity! */
-
-    if (higher_order_ele)
-    {
-      const double two_visceff=2.0*visceff;
+    
+      /* the residual is based on the effective viscosity! 
+      //
+      //   n+af         n+am       /   n+af           \     n+af     
+      //  r    (x) = acc    (x) + | vel    (x) o nabla | vel    (x) +
+      //   M                       \                  /               
+      //                      n+1                     /   n+af \    n+af
+      //             + nabla p    - 2*nu nabla o eps | vel      |- f    
+      //                                              \        /
+      */
 
       for (int rr=0;rr<3;++rr)
       {
-        resM_(rr) -= two_visceff*viscaf_old_(rr);
+        resM_(rr) -= visceff*viscaf_old_(rr);
       }
     }
 
@@ -2366,17 +2250,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                   \    (i)        /
 
       required for the cross and reynolds stress calculation
-
     */
-    for (int rr=0;rr<iel_;++rr)
+    //
+    //                    +----- 
+    //          n+af       \         n+af      dN        
+    // conv_resM    (x) =   +    resM    (x) * --- (x) 
+    //                     /         j         dx        
+    //                    +-----                 j
+    //                     dim j
+    if(cross == Fluid3::cross_stress_stab)
     {
-      conv_resM_(rr)=resM_(0)*derxy_(0,rr);
-      for (int mm=1;mm<3;++mm)
-      {
-        conv_resM_(rr)+=resM_(mm)*derxy_(mm,rr);
-      }
+      blas.GEMV('T',3,iel_,1.0,derxy_.data(),3,resM_.data(),0.0,conv_resM_.data(),1,1);
     }
-
 #ifdef PERF
     timeeleintertogp_ref = null;
 #endif
@@ -2620,46 +2505,46 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
           if(higher_order_ele)
           {
-            const double fac_two_visceff_afgdt_alphaM_tauM_facMtau
+            const double fac_visceff_afgdt_alphaM_tauM_facMtau
               =
-              fac*2.0*visceff*afgdt*alphaM*tauM*facMtau;
+              fac*visceff*afgdt*alphaM*tauM*facMtau;
 
             for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
             {
-              const double fac_two_visceff_afgdt_alphaM_tauM_facMtau_funct_vi
+              const double fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi
                 =
-                fac_two_visceff_afgdt_alphaM_tauM_facMtau*funct_(vi);
+                fac_visceff_afgdt_alphaM_tauM_facMtau*funct_(vi);
 
               for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
               {
                 /* viscous term (intermediate) */
                 /*  factor:
                                                  alphaM*tauM
-                      2*nu*alphaF*gamma*dt*---------------------------
+                        nu*alphaF*gamma*dt*---------------------------
                                            alphaM*tauM+alphaF*gamma*dt
 
 
-                  /                         \
-                 |               /    \      |
-                 |  nabla o eps | Dacc | , v |
-                 |               \    /      |
-                  \                         /
+                  /                           \
+                 |                 /    \      |
+                 |  2*nabla o eps | Dacc | , v |
+                 |                 \    /      |
+                  \                           /
 
                 */
-                elemat(vi*4    , ui*4    ) += fac_two_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(0,0,ui);
-                elemat(vi*4    , ui*4 + 1) += fac_two_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(0,1,ui);
-                elemat(vi*4    , ui*4 + 2) += fac_two_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(0,2,ui);
-                elemat(vi*4 + 1, ui*4    ) += fac_two_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(0,1,ui);
-                elemat(vi*4 + 1, ui*4 + 1) += fac_two_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(1,1,ui);
-                elemat(vi*4 + 1, ui*4 + 2) += fac_two_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(1,2,ui);
-                elemat(vi*4 + 2, ui*4    ) += fac_two_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(0,2,ui);
-                elemat(vi*4 + 2, ui*4 + 1) += fac_two_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(1,2,ui);
-                elemat(vi*4 + 2, ui*4 + 2) += fac_two_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(2,2,ui);
+                elemat(vi*4    , ui*4    ) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(0,ui);
+                elemat(vi*4    , ui*4 + 1) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(3,ui);
+                elemat(vi*4    , ui*4 + 2) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(4,ui);
+                elemat(vi*4 + 1, ui*4    ) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(3,ui);
+                elemat(vi*4 + 1, ui*4 + 1) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(1,ui);
+                elemat(vi*4 + 1, ui*4 + 2) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(5,ui);
+                elemat(vi*4 + 2, ui*4    ) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(4,ui);
+                elemat(vi*4 + 2, ui*4 + 1) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(5,ui);
+                elemat(vi*4 + 2, ui*4 + 2) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(2,ui);
               } // end loop rows (test functions for matrix)
             } // end loop rows (solution for matrix, test function for vector)
           }
 
-          if (newton) // if inertia and newton
+          if (newton==Fluid3::Newton) // if inertia and newton
           {
             for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
             {
@@ -2750,7 +2635,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
 
-          if (newton) // if no inertia and newton
+          if (newton==Fluid3::Newton) // if no inertia and newton
           {
 
             for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
@@ -2937,9 +2822,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           }
           if(higher_order_ele)
           {
-            const double fac_two_visceff_afgdt_gamma_dt_tauM_facMtau
+            const double fac_visceff_afgdt_gamma_dt_tauM_facMtau
               =
-              fac*2.0*visceff*afgdt*gamma*dt*tauM*facMtau;
+              fac*visceff*afgdt*gamma*dt*tauM*facMtau;
 
             for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
             {
@@ -2949,37 +2834,37 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                 /* pressure stabilisation --- diffusion  */
 
 
-            /*
+		/*
                            gamma*dt*tau_M
-            factor:  ------------------------------ * alpha_F*gamma*dt * 2 * nu
+            factor:  ------------------------------ * alpha_F*gamma*dt * nu
                      alpha_M*tau_M+alpha_F*gamma*dt
 
 
-                    /                                \
-                   |               /    \             |
-                   |  nabla o eps | Dacc | , nabla q  |
-                   |               \    /             |
-                    \                                /
-            */
+                    /                                  \
+                   |                 /    \             |
+                   |  2*nabla o eps | Dacc | , nabla q  |
+                   |                 \    /             |
+                    \                                  /
+		*/
 
-                elemat(vi*4 + 3, ui*4    ) -= fac_two_visceff_afgdt_gamma_dt_tauM_facMtau*
-                                              (derxy_(0,vi)*viscs2_(0,0,ui)
+                elemat(vi*4 + 3, ui*4    ) -= fac_visceff_afgdt_gamma_dt_tauM_facMtau*
+                                              (derxy_(0,vi)*viscs2_(0,ui)
                                                +
-                                               derxy_(1,vi)*viscs2_(0,1,ui)
+                                               derxy_(1,vi)*derxy2_(3,ui)
                                                +
-                                               derxy_(2,vi)*viscs2_(0,2,ui)) ;
-                elemat(vi*4 + 3, ui*4 + 1) -= fac_two_visceff_afgdt_gamma_dt_tauM_facMtau*
-                                              (derxy_(0,vi)*viscs2_(0,1,ui)
+                                               derxy_(2,vi)*derxy2_(4,ui)) ;
+                elemat(vi*4 + 3, ui*4 + 1) -= fac_visceff_afgdt_gamma_dt_tauM_facMtau*
+                                              (derxy_(0,vi)*derxy2_(3,ui)
                                                +
-                                               derxy_(1,vi)*viscs2_(1,1,ui)
+                                               derxy_(1,vi)*viscs2_(1,ui)
                                                +
-                                               derxy_(2,vi)*viscs2_(1,2,ui)) ;
-                elemat(vi*4 + 3, ui*4 + 2) -= fac_two_visceff_afgdt_gamma_dt_tauM_facMtau*
-                                              (derxy_(0,vi)*viscs2_(0,2,ui)
+                                               derxy_(2,vi)*derxy2_(5,ui)) ;
+                elemat(vi*4 + 3, ui*4 + 2) -= fac_visceff_afgdt_gamma_dt_tauM_facMtau*
+                                              (derxy_(0,vi)*derxy2_(4,ui)
                                                +
-                                               derxy_(1,vi)*viscs2_(1,2,ui)
+                                               derxy_(1,vi)*derxy2_(5,ui)
                                                +
-                                               derxy_(2,vi)*viscs2_(2,2,ui)) ;
+                                               derxy_(2,vi)*viscs2_(2,ui)) ;
               }
             }
           }
@@ -3013,7 +2898,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
 
-          if (newton) // if pspg and newton
+          if (newton==Fluid3::Newton) // if pspg and newton
           {
 
             for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
@@ -3083,7 +2968,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           const double fac_alphaM_afgdt_tauM_facMtau            = fac*alphaM*afgdt*facMtau*tauM;
           const double fac_afgdt_tauM_afgdt_facMtau             = fac*afgdt*afgdt*facMtau*tauM;
           const double fac_afgdt_tauM_facMtau                   = fac*afgdt*tauM*facMtau;
-          const double fac_two_visceff_afgdt_afgdt_tauM_facMtau = fac*2.0*visceff*afgdt*afgdt*tauM*facMtau;
+          const double fac_visceff_afgdt_afgdt_tauM_facMtau = fac*visceff*afgdt*afgdt*tauM*facMtau;
 
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
@@ -3135,8 +3020,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           {
             for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
             {
-              const double fac_two_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi=
-                fac_two_visceff_afgdt_afgdt_tauM_facMtau*conv_c_af_(vi);
+              const double fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi=
+                fac_visceff_afgdt_afgdt_tauM_facMtau*conv_c_af_(vi);
 
               for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
               {
@@ -3144,25 +3029,25 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
                 factor:
                                alphaF*gamma*tauM*dt
-                  - 2 * nu  --------------------------- * alphaF * gamma * dt
+                     -  nu  --------------------------- * alphaF * gamma * dt
                             alphaM*tauM+alphaF*gamma*dt
 
 
-                    /                                            \
-                   |               /     \    / n+af        \     |
-                   |  nabla o eps | Dacc  |, | c     o nabla | v  |
-                   |               \     /    \             /     |
-                    \                                            /
+                    /                                              \
+                   |                 /     \    / n+af        \     |
+                   |  2*nabla o eps | Dacc  |, | c     o nabla | v  |
+                   |                 \     /    \             /     |
+                    \                                              /
                 */
-                elemat(vi*4, ui*4)         -= fac_two_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(0, 0, ui);
-                elemat(vi*4, ui*4 + 1)     -= fac_two_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(0, 1, ui);
-                elemat(vi*4, ui*4 + 2)     -= fac_two_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(0, 2, ui);
-                elemat(vi*4 + 1, ui*4)     -= fac_two_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(0, 1, ui);
-                elemat(vi*4 + 1, ui*4 + 1) -= fac_two_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(1, 1, ui);
-                elemat(vi*4 + 1, ui*4 + 2) -= fac_two_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(1, 2, ui);
-                elemat(vi*4 + 2, ui*4)     -= fac_two_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(0, 2, ui);
-                elemat(vi*4 + 2, ui*4 + 1) -= fac_two_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(1, 2, ui);
-                elemat(vi*4 + 2, ui*4 + 2) -= fac_two_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(2, 2, ui);
+                elemat(vi*4, ui*4)         -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(0,ui);
+                elemat(vi*4, ui*4 + 1)     -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*derxy2_(3,ui);
+                elemat(vi*4, ui*4 + 2)     -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*derxy2_(4,ui);
+                elemat(vi*4 + 1, ui*4)     -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*derxy2_(3,ui);
+                elemat(vi*4 + 1, ui*4 + 1) -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(1,ui);
+                elemat(vi*4 + 1, ui*4 + 2) -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*derxy2_(5,ui);
+                elemat(vi*4 + 2, ui*4)     -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*derxy2_(4,ui);
+                elemat(vi*4 + 2, ui*4 + 1) -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*derxy2_(5,ui);
+                elemat(vi*4 + 2, ui*4 + 2) -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(2,ui);
               }
             }
           }
@@ -3196,7 +3081,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
 
-          if (newton)
+          if (newton==Fluid3::Newton)
           {
             for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
             {
@@ -3300,20 +3185,20 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 #ifdef PERF
             RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
 #endif
-            const double fac_alphaM_two_visc_afgdt_tauM_facMtau         = vstabfac*fac*alphaM*2.0*visc*afgdt*tauM*facMtau;
-            const double fac_afgdt_two_visc_afgdt_tauM_facMtau          = vstabfac*fac*afgdt*2.0*visc*afgdt*tauM*facMtau;
-            const double fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau = vstabfac*fac*afgdt*4.0*visceff*visc*afgdt*tauM*facMtau;
-            const double fac_two_visc_afgdt_tauM_facMtau                = vstabfac*fac*2.0*visc*afgdt*tauM*facMtau;
+            const double fac_alphaM_visc_afgdt_tauM_facMtau        = vstabfac*fac*alphaM*visc*afgdt*tauM*facMtau;
+            const double fac_afgdt_visc_afgdt_tauM_facMtau         = vstabfac*fac*afgdt*visc*afgdt*tauM*facMtau;
+            const double fac_afgdt_visceff_visc_afgdt_tauM_facMtau = vstabfac*fac*afgdt*visceff*visc*afgdt*tauM*facMtau;
+            const double fac_visc_afgdt_tauM_facMtau               = vstabfac*fac*visc*afgdt*tauM*facMtau;
 
             for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
             {
-              const double fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui
+              const double fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui
                 =
-                fac_alphaM_two_visc_afgdt_tauM_facMtau*funct_(ui);
+                fac_alphaM_visc_afgdt_tauM_facMtau*funct_(ui);
 
-              const double fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui
+              const double fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui
                 =
-                fac_afgdt_two_visc_afgdt_tauM_facMtau*conv_c_af_(ui);
+                fac_afgdt_visc_afgdt_tauM_facMtau*conv_c_af_(ui);
 
               for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
               {
@@ -3322,168 +3207,169 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                 /* factor:
 
                                         alphaF*gamma*tauM*dt
-                   +(-)alphaM*2*nu* ---------------------------
+                     +(-)alphaM*nu* ---------------------------
                                     alphaM*tauM+alphaF*gamma*dt
 
-                     /                    \
-                    |                      |
-                    |  Dacc , div eps (v)  |
-                    |                      |
-                     \                    /
+                     /                      \
+                    |                        |
+                    |  Dacc , 2*div eps (v)  |
+                    |                        |
+                     \                      /
                 */
-                elemat(vi*4    , ui*4    ) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,0,vi);
-                elemat(vi*4    , ui*4 + 1) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(1,0,vi);
-                elemat(vi*4    , ui*4 + 2) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(2,0,vi);
-                elemat(vi*4 + 1, ui*4    ) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,1,vi);
-                elemat(vi*4 + 1, ui*4 + 1) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(1,1,vi);
-                elemat(vi*4 + 1, ui*4 + 2) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(2,1,vi);
-                elemat(vi*4 + 2, ui*4    ) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,2,vi);
-                elemat(vi*4 + 2, ui*4 + 1) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(1,2,vi);
-                elemat(vi*4 + 2, ui*4 + 2) += fac_alphaM_two_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(2,2,vi);
+
+                elemat(vi*4    , ui*4    ) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,vi);
+                elemat(vi*4    , ui*4 + 1) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*derxy2_(3,vi);
+                elemat(vi*4    , ui*4 + 2) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*derxy2_(4,vi);
+                elemat(vi*4 + 1, ui*4    ) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*derxy2_(3,vi);
+                elemat(vi*4 + 1, ui*4 + 1) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(1,vi);
+                elemat(vi*4 + 1, ui*4 + 2) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*derxy2_(5,vi);
+                elemat(vi*4 + 2, ui*4    ) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*derxy2_(4,vi);
+                elemat(vi*4 + 2, ui*4 + 1) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*derxy2_(5,vi);
+                elemat(vi*4 + 2, ui*4 + 2) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(2,vi);
 
                 /* viscous stabilisation --- convection */
                 /*  factor:
                                          alphaF*gamma*dt*tauM
-            +(-)alphaF*gamma*dt*2*nu* ---------------------------
+              +(-)alphaF*gamma*dt*nu* ---------------------------
                                       alphaM*tauM+alphaF*gamma*dt
 
-                       /                                  \
-                      |  / n+af       \                    |
-                      | | c    o nabla | Dacc, div eps (v) |
-                      |  \            /                    |
-                       \                                  /
+                       /                                    \
+                      |  / n+af       \                      |
+                      | | c    o nabla | Dacc, 2*div eps (v) |
+                      |  \            /                      |
+                       \                                    /
 
                 */
 
-                elemat(vi*4    , ui*4    ) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 0, vi) ;
-                elemat(vi*4    , ui*4 + 1) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(1, 0, vi) ;
-                elemat(vi*4    , ui*4 + 2) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(2, 0, vi) ;
-                elemat(vi*4 + 1, ui*4    ) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 1, vi) ;
-                elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(1, 1, vi) ;
-                elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(2, 1, vi) ;
-                elemat(vi*4 + 2, ui*4    ) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0, 2, vi) ;
-                elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(1, 2, vi) ;
-                elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_two_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(2, 2, vi) ;
+                elemat(vi*4    , ui*4    ) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0,vi) ;
+                elemat(vi*4    , ui*4 + 1) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*derxy2_(3,vi) ;
+                elemat(vi*4    , ui*4 + 2) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*derxy2_(4,vi) ;
+                elemat(vi*4 + 1, ui*4    ) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*derxy2_(3,vi) ;
+                elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(1,vi) ;
+                elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*derxy2_(5,vi) ;
+                elemat(vi*4 + 2, ui*4    ) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*derxy2_(4,vi) ;
+                elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*derxy2_(5,vi) ;
+                elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(2,vi) ;
 
                 /* viscous stabilisation --- diffusion  */
 
-              /* factor:
+		/* factor:
 
-                                           alphaF*gamma*tauM*dt
-            -(+)alphaF*gamma*dt*4*nu*nu ---------------------------
-                                        alphaM*tauM+alphaF*gamma*dt
+                                             alphaF*gamma*tauM*dt
+                -(+)alphaF*gamma*dt*nu*nu ---------------------------
+                                          alphaM*tauM+alphaF*gamma*dt
 
-                    /                                   \
-                   |               /    \                |
-                   |  nabla o eps | Dacc | , div eps (v) |
-                   |               \    /                |
-                    \                                   /
-              */
-                elemat(vi*4    , ui*4    ) -= fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0, 0, ui)*viscs2_(0, 0, vi)
+                    /                                        \
+                   |                  /    \                  |
+                   |  2* nabla o eps | Dacc | , 2*div eps (v) |
+                   |                  \    /                  |
+                    \                                        /
+		*/
+		elemat(vi*4    , ui*4    ) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
+                                              (viscs2_(0,ui)*viscs2_(0,vi)
                                                +
-                                               viscs2_(1, 0, ui)*viscs2_(1, 0, vi)
+                                               derxy2_(3,ui)*derxy2_(3,vi)
                                                +
-                                               viscs2_(2, 0, ui)*viscs2_(2, 0, vi)) ;
+                                               derxy2_(4,ui)*derxy2_(4,vi)) ;
 
-                elemat(vi*4    , ui*4 + 1) -= fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0, 0, vi)*viscs2_(0, 1, ui)
+                elemat(vi*4    , ui*4 + 1) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
+                                              (viscs2_(0,vi)*derxy2_(3,ui)
                                                +
-                                               viscs2_(1, 0, vi)*viscs2_(1, 1, ui)
+                                               derxy2_(3,vi)*viscs2_(1,ui)
                                                +
-                                               viscs2_(2, 0, vi)*viscs2_(2, 1, ui)) ;
+                                               derxy2_(4,vi)*derxy2_(5,ui)) ;
 
-                elemat(vi*4    , ui*4 + 2) -= fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0, 0, vi)*viscs2_(0, 2, ui)
+                elemat(vi*4    , ui*4 + 2) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
+                                              (viscs2_(0,vi)*derxy2_(4,ui)
                                                +
-                                               viscs2_(1, 0, vi)*viscs2_(1, 2, ui)
+                                               derxy2_(3,vi)*derxy2_(5,ui)
                                                +
-                                               viscs2_(2, 0, vi)*viscs2_(2, 2, ui)) ;
+                                               derxy2_(4,vi)*viscs2_(2,ui)) ;
 
-                elemat(vi*4 + 1, ui*4    ) -= fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0, 0, ui)*viscs2_(0, 1, vi)
+                elemat(vi*4 + 1, ui*4    ) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
+                                              (viscs2_(0,ui)*derxy2_(3,vi)
                                                +
-                                               viscs2_(1, 0, ui)*viscs2_(1, 1, vi)
+                                               derxy2_(3,ui)*viscs2_(1,vi)
                                                +
-                                               viscs2_(2, 0, ui)*viscs2_(2, 1, vi)) ;
+                                               derxy2_(4,ui)*derxy2_(5,vi)) ;
 
-                elemat(vi*4 + 1, ui*4 + 1) -= fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
+                elemat(vi*4 + 1, ui*4 + 1) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
+                                              (derxy2_(3,ui)*derxy2_(3,vi)
                                                +
-                                               viscs2_(1, 1, ui)*viscs2_(1, 1, vi)
+                                               viscs2_(1,ui)*viscs2_(1,vi)
                                                +
-                                               viscs2_(2, 1, ui)*viscs2_(2, 1, vi)) ;
+                                               derxy2_(5,ui)*derxy2_(5,vi)) ;
 
-                elemat(vi*4 + 1, ui*4 + 2) -= fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0, 1, vi)*viscs2_(0, 2, ui)
+                elemat(vi*4 + 1, ui*4 + 2) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
+                                              (derxy2_(3,vi)*derxy2_(4,ui)
                                                +
-                                               viscs2_(1, 1, vi)*viscs2_(1, 2, ui)
+                                               viscs2_(1,vi)*derxy2_(5,ui)
                                                +
-                                               viscs2_(2, 1, vi)*viscs2_(2, 2, ui)) ;
+                                               derxy2_(5,vi)*viscs2_(2,ui)) ;
 
-                elemat(vi*4 + 2, ui*4    ) -= fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0, 0, ui)*viscs2_(0, 2, vi)
+                elemat(vi*4 + 2, ui*4    ) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
+                                              (viscs2_(0,ui)*derxy2_(4,vi)
                                                +
-                                               viscs2_(1, 0, ui)*viscs2_(1, 2, vi)
+                                               derxy2_(3,ui)*derxy2_(5,vi)
                                                +
-                                               viscs2_(2, 0, ui)*viscs2_(2, 2, vi)) ;
-                elemat(vi*4 + 2, ui*4 + 1) -= fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0, 1, ui)*viscs2_(0, 2, vi)
+                                               derxy2_(4,ui)*viscs2_(2,vi)) ;
+                elemat(vi*4 + 2, ui*4 + 1) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
+                                              (derxy2_(3,ui)*derxy2_(4,vi)
                                                +
-                                               viscs2_(1, 1, ui)*viscs2_(1, 2, vi)
+                                               viscs2_(1,ui)*derxy2_(5,vi)
                                                +
-                                               viscs2_(2, 1, ui)*viscs2_(2, 2, vi)) ;
+                                               derxy2_(5,ui)*viscs2_(2,vi)) ;
 
-                elemat(vi*4 + 2, ui*4 + 2) -= fac_afgdt_four_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0, 2, ui)*viscs2_(0, 2, vi)
+                elemat(vi*4 + 2, ui*4 + 2) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
+                                              (derxy2_(4,ui)*derxy2_(4,vi)
                                                +
-                                               viscs2_(1, 2, ui)*viscs2_(1, 2, vi)
+                                               derxy2_(5,ui)*derxy2_(5,vi)
                                                +
-                                               viscs2_(2, 2, ui)*viscs2_(2, 2, vi)) ;
+                                               viscs2_(2,ui)*viscs2_(2,vi)) ;
 
                 /* viscous stabilisation --- pressure   */
 
                 /* factor:
 
                                     alphaF*gamma*tauM*dt
-                     +(-)2*nu * ---------------------------
+                       +(-)nu * ---------------------------
                                 alphaM*tauM+alphaF*gamma*dt
 
 
-                    /                        \
-                   |                          |
-                   |  nabla Dp , div eps (v)  |
-                   |                          |
-                    \                        /
+                    /                          \
+                   |                            |
+                   |  nabla Dp , 2*div eps (v)  |
+                   |                            |
+                    \                          /
                 */
-                elemat(vi*4    , ui*4 + 3) += fac_two_visc_afgdt_tauM_facMtau*
-                                              (derxy_(0,ui)*viscs2_(0,0,vi)
+                elemat(vi*4    , ui*4 + 3) += fac_visc_afgdt_tauM_facMtau*
+                                              (derxy_(0,ui)*viscs2_(0,vi)
                                                +
-                                               derxy_(1,ui)*viscs2_(1,0,vi)
+                                               derxy_(1,ui)*derxy2_(3,vi)
                                                +
-                                               derxy_(2,ui)*viscs2_(2,0,vi)) ;
-                elemat(vi*4 + 1, ui*4 + 3) += fac_two_visc_afgdt_tauM_facMtau*
-                                              (derxy_(0,ui)*viscs2_(0,1,vi)
+                                               derxy_(2,ui)*derxy2_(4,vi)) ;
+                elemat(vi*4 + 1, ui*4 + 3) += fac_visc_afgdt_tauM_facMtau*
+                                              (derxy_(0,ui)*derxy2_(3,vi)
                                                +
-                                               derxy_(1,ui)*viscs2_(1,1,vi)
+                                               derxy_(1,ui)*viscs2_(1,vi)
                                                +
-                                               derxy_(2,ui)*viscs2_(2,1,vi)) ;
-                elemat(vi*4 + 2, ui*4 + 3) += fac_two_visc_afgdt_tauM_facMtau*
-                                              (derxy_(0,ui)*viscs2_(0,2,vi)
+                                               derxy_(2,ui)*derxy2_(5,vi)) ;
+                elemat(vi*4 + 2, ui*4 + 3) += fac_visc_afgdt_tauM_facMtau*
+                                              (derxy_(0,ui)*derxy2_(4,vi)
                                                +
-                                               derxy_(1,ui)*viscs2_(1,2,vi)
+                                               derxy_(1,ui)*derxy2_(5,vi)
                                                +
-                                               derxy_(2,ui)*viscs2_(2,2,vi)) ;
+                                               derxy_(2,ui)*viscs2_(2,vi)) ;
               } // end loop rows (test functions for matrix)
             } // end loop columns (solution for matrix, test function for vector)
 
-            if (newton)
+            if (newton==Fluid3::Newton)
             {
               for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
               {
-                const double fac_afgdt_two_visc_afgdt_tauM_facMtau_funct_ui
+                const double fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui
                   =
-                  fac_afgdt_two_visc_afgdt_tauM_facMtau*funct_(ui);
+                  fac_afgdt_visc_afgdt_tauM_facMtau*funct_(ui);
 
                 for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
                 {
@@ -3491,72 +3377,71 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                   /* viscous stabilisation --- convection
                      factor:
                                          alphaF*gamma*dt*tauM
-            +(-)alphaF*gamma*dt*2*nu* ---------------------------
+              +(-)alphaF*gamma*dt*nu* ---------------------------
                                       alphaM*tauM+alphaF*gamma*dt
 
-                     /                                     \
-                    |   /            \   n+af               |
-                    |  | Dacc o nabla | u     , div eps (v) |
-                    |   \            /                      |
-                     \                                     /
+                     /                                       \
+                    |   /            \   n+af                 |
+                    |  | Dacc o nabla | u     , 2*div eps (v) |
+                    |   \            /                        |
+                     \                                       /
 
 
                   */
-
-                  elemat(vi*4     , ui*4    )+= fac_afgdt_two_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (viscs2_(0, 0, vi)*vderxyaf_(0, 0)
+                  elemat(vi*4     , ui*4    )+= fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
+                                                (viscs2_(0,vi)*vderxyaf_(0, 0)
                                                  +
-                                                 viscs2_(1, 0, vi)*vderxyaf_(1, 0)
+                                                 derxy2_(3,vi)*vderxyaf_(1, 0)
                                                  +
-                                                 viscs2_(2, 0, vi)*vderxyaf_(2, 0));
-                  elemat(vi*4     , ui*4 + 1)+= fac_afgdt_two_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (viscs2_(0, 0, vi)*vderxyaf_(0, 1)
+                                                 derxy2_(4,vi)*vderxyaf_(2, 0));
+                  elemat(vi*4     , ui*4 + 1)+= fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
+                                                (viscs2_(0,vi)*vderxyaf_(0, 1)
                                                  +
-                                                 viscs2_(1, 0, vi)*vderxyaf_(1, 1)
+                                                 derxy2_(3,vi)*vderxyaf_(1, 1)
                                                  +
-                                                 viscs2_(2, 0, vi)*vderxyaf_(2, 1));
-                  elemat(vi*4     , ui*4 + 2)+= fac_afgdt_two_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (viscs2_(0, 0, vi)*vderxyaf_(0, 2)
+                                                 derxy2_(4,vi)*vderxyaf_(2, 1));
+                  elemat(vi*4     , ui*4 + 2)+= fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
+                                                (viscs2_(0,vi)*vderxyaf_(0, 2)
                                                  +
-                                                 viscs2_(1, 0, vi)*vderxyaf_(1, 2)
+                                                 derxy2_(3,vi)*vderxyaf_(1, 2)
                                                  +
-                                                 viscs2_(2, 0, vi)*vderxyaf_(2, 2));
-                  elemat(vi*4 + 1, ui*4     )+= fac_afgdt_two_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (viscs2_(0, 1, vi)*vderxyaf_(0, 0)
+                                                 derxy2_(4,vi)*vderxyaf_(2, 2));
+                  elemat(vi*4 + 1, ui*4     )+= fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
+                                                (derxy2_(3,vi)*vderxyaf_(0, 0)
                                                  +
-                                                 viscs2_(1, 1, vi)*vderxyaf_(1, 0)
+                                                 viscs2_(1,vi)*vderxyaf_(1, 0)
                                                  +
-                                                 viscs2_(2, 1, vi)*vderxyaf_(2, 0));
-                  elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_two_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (viscs2_(0, 1, vi)*vderxyaf_(0, 1)
+                                                 derxy2_(5,vi)*vderxyaf_(2, 0));
+                  elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
+                                                (derxy2_(3,vi)*vderxyaf_(0, 1)
                                                  +
-                                                 viscs2_(1, 1, vi)*vderxyaf_(1, 1)
+                                                 viscs2_(1,vi)*vderxyaf_(1, 1)
                                                  +
-                                                 viscs2_(2, 1, vi)*vderxyaf_(2, 1)) ;
-                  elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_two_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (viscs2_(0, 1, vi)*vderxyaf_(0, 2)
+                                                 derxy2_(5,vi)*vderxyaf_(2, 1)) ;
+                  elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
+                                                (derxy2_(3,vi)*vderxyaf_(0, 2)
                                                  +
-                                                 viscs2_(1, 1, vi)*vderxyaf_(1, 2)
+                                                 viscs2_(1,vi)*vderxyaf_(1, 2)
                                                  +
-                                                 viscs2_(2, 1, vi)*vderxyaf_(2, 2));
-                  elemat(vi*4 + 2, ui*4    ) += fac_afgdt_two_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (viscs2_(0, 2, vi)*vderxyaf_(0, 0)
+                                                 derxy2_(5,vi)*vderxyaf_(2, 2));
+                  elemat(vi*4 + 2, ui*4    ) += fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
+                                                (derxy2_(4,vi)*vderxyaf_(0, 0)
                                                  +
-                                                 viscs2_(1, 2, vi)*vderxyaf_(1, 0)
+                                                 derxy2_(5,vi)*vderxyaf_(1, 0)
                                                  +
-                                                 viscs2_(2, 2, vi)*vderxyaf_(2, 0)) ;
-                  elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_two_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (viscs2_(0, 2, vi)*vderxyaf_(0, 1)
+                                                 viscs2_(2,vi)*vderxyaf_(2, 0)) ;
+                  elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
+                                                (derxy2_(4,vi)*vderxyaf_(0, 1)
                                                  +
-                                                 viscs2_(1, 2, vi)*vderxyaf_(1, 1)
+                                                 derxy2_(5,vi)*vderxyaf_(1, 1)
                                                  +
-                                                 viscs2_(2, 2, vi)*vderxyaf_(2, 1)) ;
-                  elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_two_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (viscs2_(0, 2, vi)*vderxyaf_(0, 2)
+                                                 viscs2_(2,vi)*vderxyaf_(2, 1)) ;
+                  elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
+                                                (derxy2_(4,vi)*vderxyaf_(0, 2)
                                                  +
-                                                 viscs2_(1, 2, vi)*vderxyaf_(1, 2)
+                                                 derxy2_(5,vi)*vderxyaf_(1, 2)
                                                  +
-                                                 viscs2_(2, 2, vi)*vderxyaf_(2, 2));
+                                                 viscs2_(2,vi)*vderxyaf_(2, 2));
                 } // end loop rows (test functions for matrix)
               } // end loop columns (solution for matrix, test function for vector)
 
@@ -3743,7 +3628,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
         if(higher_order_ele)
         {
-          const double fact =2.0*visceff;
+          const double fact =visceff;
 
           aux_x += fact*viscaf_old_(0);
           aux_y += fact*viscaf_old_(1);
@@ -4147,38 +4032,38 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
 #endif
 
-          const double fac_two_visc_svelaf_x = vstabfac*fac*2.0*visc*svelaf_(0);
-          const double fac_two_visc_svelaf_y = vstabfac*fac*2.0*visc*svelaf_(1);
-          const double fac_two_visc_svelaf_z = vstabfac*fac*2.0*visc*svelaf_(2);
+          const double fac_visc_svelaf_x = vstabfac*fac*visc*svelaf_(0);
+          const double fac_visc_svelaf_y = vstabfac*fac*visc*svelaf_(1);
+          const double fac_visc_svelaf_z = vstabfac*fac*visc*svelaf_(2);
 
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
 
             /*
-                 /                      \
-                |  ~n+af                 |
-                |  u      , div eps (v)  |
-                |                        |
-                 \                      /
+                 /                        \
+                |  ~n+af                   |
+                |  u      , 2*div eps (v)  |
+                |                          |
+                 \                        /
 
             */
-            elevec[ui*4    ] += fac_two_visc_svelaf_x*viscs2_(0, 0, ui)
+            elevec[ui*4    ] += fac_visc_svelaf_x*viscs2_(0,ui)
                                 +
-                                fac_two_visc_svelaf_y*viscs2_(1, 0, ui)
+                                fac_visc_svelaf_y*derxy2_(3,ui)
                                 +
-                                fac_two_visc_svelaf_z*viscs2_(2, 0, ui);
+                                fac_visc_svelaf_z*derxy2_(4,ui);
 
-            elevec[ui*4 + 1] += fac_two_visc_svelaf_x*viscs2_(0, 1, ui)
+            elevec[ui*4 + 1] += fac_visc_svelaf_x*derxy2_(3,ui)
                                 +
-                                fac_two_visc_svelaf_y*viscs2_(1, 1, ui)
+                                fac_visc_svelaf_y*viscs2_(1,ui)
                                 +
-                                fac_two_visc_svelaf_z*viscs2_(2, 1, ui);
+                                fac_visc_svelaf_z*derxy2_(5,ui);
 
-            elevec[ui*4 + 2] += fac_two_visc_svelaf_x*viscs2_(0, 2, ui)
+            elevec[ui*4 + 2] += fac_visc_svelaf_x*derxy2_(4,ui)
                                 +
-                                fac_two_visc_svelaf_y*viscs2_(1, 2, ui)
+                                fac_visc_svelaf_y*derxy2_(5,ui)
                                 +
-                                fac_two_visc_svelaf_z*viscs2_(2, 2, ui);
+                                fac_visc_svelaf_z*viscs2_(2,ui);
 
           } // end loop rows (solution for matrix, test function for vector)
 #ifdef PERF
@@ -4373,136 +4258,223 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         //             GALERKIN PART, QUASISTATIC FORMULATION
         //
         //---------------------------------------------------------------
-        {
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelegalerkin_ref = rcp(new TimeMonitor(*timeelegalerkin));
-#endif
 
-          const double fac_visceff_afgdt = fac*visceff*afgdt;
-          const double fac_gamma_dt      = fac*gamma*dt;
+	const double fac_afgdt         = fac*afgdt;
+	const double fac_visceff_afgdt = fac_afgdt*visceff;
+	const double fac_gamma_dt      = fac*gamma*dt;
+	
+	const double fac_alphaM        = fac*alphaM;
 
-          const double fac_alphaM        = fac*alphaM;
-          const double fac_afgdt         = fac*afgdt;
+	for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	{
+	  const int fui  =4*ui;
+	  const int fuip =fui+1;
+	  const int fuipp=fui+2;
 
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-          {
-            const double inertia_and_conv_ui
-              = fac_alphaM*funct_(ui)+fac_afgdt*conv_c_af_(ui);
+	  const double inertia_and_conv_ui
+	    = fac_alphaM*funct_(ui)+fac_afgdt*conv_c_af_(ui);
+	  
+	  const double fac_visceff_afgdt_derxy0_ui=fac_visceff_afgdt*derxy_(0,ui);
+	  const double fac_visceff_afgdt_derxy1_ui=fac_visceff_afgdt*derxy_(1,ui);
+	  const double fac_visceff_afgdt_derxy2_ui=fac_visceff_afgdt*derxy_(2,ui);
 
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              const double inertia_and_conv_ui_funct_vi
-                = inertia_and_conv_ui*funct_(vi);
+	  for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	  {
+	    int fvi  =4*vi;
 
+	    const double sum =
+	      inertia_and_conv_ui*funct_(vi)
+	      +
+	      fac_visceff_afgdt_derxy0_ui*derxy_(0,vi)
+		+
+	      fac_visceff_afgdt_derxy1_ui*derxy_(1,vi)
+	      +
+	      fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
+	    
+	    /*
+	      inertia term (intermediate) + convection (intermediate)
 
-              /*
-                inertia term (intermediate) + convection (intermediate)
-
-                factor:
+	      factor:
 
                           /          \                   /                          \
                          |            |                 |  / n+af       \            |
                 +alphaM *|  Dacc , v  |+alphaF*gamma*dt*| | c    o nabla | Dacc , v  |
                          |            |                 |  \            /            |
                           \          /                   \                          /
-              */
-              elemat(vi*4    , ui*4    ) += inertia_and_conv_ui_funct_vi;
-              elemat(vi*4 + 1, ui*4 + 1) += inertia_and_conv_ui_funct_vi;
-              elemat(vi*4 + 2, ui*4 + 2) += inertia_and_conv_ui_funct_vi;
+	    */
 
-            }
-          }
-
-
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-          {
-            const double fac_funct_ui = fac*funct_(ui);
-
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              /* pressure (implicit) */
-
-              /*  factor: -1
-
-                 /                \
-                |                  |
-                |  Dp , nabla o v  |
-                |                  |
-                 \                /
-              */
-
-              elemat(vi*4    , ui*4 + 3) -= fac_funct_ui*derxy_(0, vi) ;
-              elemat(vi*4 + 1, ui*4 + 3) -= fac_funct_ui*derxy_(1, vi) ;
-              elemat(vi*4 + 2, ui*4 + 3) -= fac_funct_ui*derxy_(2, vi) ;
-            }
-          }
-
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-          {
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              const double sum = derxy_(0,ui)*derxy_(0,vi)+derxy_(1,ui)*derxy_(1,vi)+derxy_(2,ui)*derxy_(2,vi);
-
-              /* viscous term (intermediate) */
-
-              /*  factor: +2*nu*alphaF*gamma*dt
+	    /* viscous term (intermediate) */
+	    
+	    /*  factor: +2*nu*alphaF*gamma*dt
 
                  /                          \
                 |       /    \         / \   |
                 |  eps | Dacc | , eps | v |  |
                 |       \    /         \ /   |
                  \                          /
-              */
+	    */
 
-              elemat(vi*4    , ui*4    ) += fac_visceff_afgdt*(sum+derxy_(0,ui)*derxy_(0,vi)) ;
-              elemat(vi*4    , ui*4 + 1) += fac_visceff_afgdt*     derxy_(0,ui)*derxy_(1,vi) ;
-              elemat(vi*4    , ui*4 + 2) += fac_visceff_afgdt*     derxy_(0,ui)*derxy_(2,vi) ;
-              elemat(vi*4 + 1, ui*4    ) += fac_visceff_afgdt*     derxy_(1,ui)*derxy_(0,vi) ;
-              elemat(vi*4 + 1, ui*4 + 1) += fac_visceff_afgdt*(sum+derxy_(1,ui)*derxy_(1,vi)) ;
-              elemat(vi*4 + 1, ui*4 + 2) += fac_visceff_afgdt*     derxy_(1,ui)*derxy_(2,vi) ;
-              elemat(vi*4 + 2, ui*4    ) += fac_visceff_afgdt*     derxy_(2,ui)*derxy_(0,vi) ;
-              elemat(vi*4 + 2, ui*4 + 1) += fac_visceff_afgdt*     derxy_(2,ui)*derxy_(1,vi) ;
-              elemat(vi*4 + 2, ui*4 + 2) += fac_visceff_afgdt*(sum+derxy_(2,ui)*derxy_(2,vi)) ;
-            }
-          }
+	    elemat(fvi  , fui  ) += sum+fac_visceff_afgdt_derxy0_ui*derxy_(0,vi);
+	    elemat(fvi  , fuip ) +=     fac_visceff_afgdt_derxy0_ui*derxy_(1,vi);
+	    elemat(fvi++, fuipp) +=     fac_visceff_afgdt_derxy0_ui*derxy_(2,vi);
+	    elemat(fvi  , fui  ) +=     fac_visceff_afgdt_derxy1_ui*derxy_(0,vi);
+	    elemat(fvi  , fuip ) += sum+fac_visceff_afgdt_derxy1_ui*derxy_(1,vi);
+	    elemat(fvi++, fuipp) +=     fac_visceff_afgdt_derxy1_ui*derxy_(2,vi);
+	    elemat(fvi  , fui  ) +=     fac_visceff_afgdt_derxy2_ui*derxy_(0,vi);
+	    elemat(fvi  , fuip ) +=     fac_visceff_afgdt_derxy2_ui*derxy_(1,vi);
+	    elemat(fvi  , fuipp) += sum+fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
+	  }
+	}
+	
+	//---------------------------------------------------------------
+	//
+	//         LEAST SQUARES CONTINUITY STABILISATION PART,
+	//                  QUASISTATIC FORMULATION
+	//
+	//---------------------------------------------------------------
+	if(cstab == Fluid3::continuity_stab_yes)
+	{
+	  const double fac_gamma_dt_tauC = fac*gamma*dt*tauC;
 
-          for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-          {
-            const double fac_gamma_dt_funct_vi =fac_gamma_dt*funct_(vi);
+	  for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	  {
+	    const int fui   =ui*4 ;
+	    const int fuip  =fui+1;
+	    const int fuipp =fui+2;
+	    const int fuippp=fui+3;
+	    
+	    const double fac_gamma_dt_tauC_derxy_x_ui = fac_gamma_dt_tauC*derxy_(0,ui);
+	    const double fac_gamma_dt_tauC_derxy_y_ui = fac_gamma_dt_tauC*derxy_(1,ui);
+	    const double fac_gamma_dt_tauC_derxy_z_ui = fac_gamma_dt_tauC*derxy_(2,ui);
+	    
+	    const double fac_funct_ui = fac*funct_(ui);
+	    
+	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	    {
+	      int fvi=4*vi;
+	      /*  factor: +gamma*dt*tauC
+		  
+                    /                          \
+                   |                            |
+                   | nabla o Dacc  , nabla o v  |
+                   |                            |
+                    \                          /
+	      */
+	      
+	      elemat(fvi  ,fui   ) += fac_gamma_dt_tauC_derxy_x_ui*derxy_(0,vi) ;
+	      elemat(fvi  ,fuip  ) += fac_gamma_dt_tauC_derxy_y_ui*derxy_(0,vi) ;
+	      elemat(fvi  ,fuipp ) += fac_gamma_dt_tauC_derxy_z_ui*derxy_(0,vi) ;
+	      elemat(fvi++,fuippp) -= fac_funct_ui*derxy_(0,vi);
+	      elemat(fvi  ,fui   ) += fac_gamma_dt_tauC_derxy_x_ui*derxy_(1,vi) ;
+	      elemat(fvi  ,fuip  ) += fac_gamma_dt_tauC_derxy_y_ui*derxy_(1,vi) ;
+	      elemat(fvi  ,fuipp ) += fac_gamma_dt_tauC_derxy_z_ui*derxy_(1,vi) ;
+	      elemat(fvi++,fuippp) -= fac_funct_ui*derxy_(1,vi);
+	      elemat(fvi  ,fui   ) += fac_gamma_dt_tauC_derxy_x_ui*derxy_(2,vi) ;
+	      elemat(fvi  ,fuip  ) += fac_gamma_dt_tauC_derxy_y_ui*derxy_(2,vi) ;
+	      elemat(fvi  ,fuipp ) += fac_gamma_dt_tauC_derxy_z_ui*derxy_(2,vi) ;
+	      elemat(fvi  ,fuippp) -= fac_funct_ui*derxy_(2,vi);
+	    } // end loop rows vi (test functions for matrix)
+	  } // end loop columns ui (solution for matrix, test function for vector)
+	} // end cstab
+	else
+	{
+	  for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	  {
+	    const int fvi    =4*vi;
+	    const int fvip   =fvi+1;
+	    const int fvipp  =fvi+2;
 
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-            {
+	    const double fac_derxy_0_vi = fac*derxy_(0,vi);
+	    const double fac_derxy_1_vi = fac*derxy_(1,vi);
+	    const double fac_derxy_2_vi = fac*derxy_(2,vi);
 
-              /* continuity equation (implicit) */
+	    for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	    {
+	      const int fuippp=4*ui+3;
+	      
+	      /* pressure (implicit) */
 
-              /*  factor: +gamma*dt
+	      /*  factor: -1
+
+                 /                \
+                |                  |
+                |  Dp , nabla o v  |
+                |                  |
+                 \                /
+	      */
+
+	      elemat(fvi  ,fuippp) -= fac_derxy_0_vi*funct_(ui);
+	      elemat(fvip ,fuippp) -= fac_derxy_1_vi*funct_(ui);
+	      elemat(fvipp,fuippp) -= fac_derxy_2_vi*funct_(ui);
+	    }
+	  }
+	} // no cstab, just large-scale pressure
+	
+	for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	{
+	  const int fui  =4*ui;
+	  const int fuip =fui+1;
+	  const int fuipp=fui+2;
+
+	  const double fac_gamma_dt_derxy_0_ui =fac_gamma_dt*derxy_(0,ui);
+	  const double fac_gamma_dt_derxy_1_ui =fac_gamma_dt*derxy_(1,ui);
+	  const double fac_gamma_dt_derxy_2_ui =fac_gamma_dt*derxy_(2,ui);
+
+	  for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	  {
+	    const int fvippp=vi*4+3;
+	    /* continuity equation (implicit) */
+
+	    /*  factor: +gamma*dt
 
                  /                  \
                 |                    |
                 | nabla o Dacc  , q  |
                 |                    |
                  \                  /
-              */
+	    */
 
-              elemat(vi*4 + 3, ui*4    ) += fac_gamma_dt_funct_vi*derxy_(0,ui) ;
-              elemat(vi*4 + 3, ui*4 + 1) += fac_gamma_dt_funct_vi*derxy_(1,ui) ;
-              elemat(vi*4 + 3, ui*4 + 2) += fac_gamma_dt_funct_vi*derxy_(2,ui) ;
+	    elemat(fvippp,fui  ) += fac_gamma_dt_derxy_0_ui*funct_(vi);
+	    elemat(fvippp,fuip ) += fac_gamma_dt_derxy_1_ui*funct_(vi);
+	    elemat(fvippp,fuipp) += fac_gamma_dt_derxy_2_ui*funct_(vi);
 
-            } // end loop rows (test functions for matrix)
-          } // end loop rows (solution for matrix, test function for vector)
+	  } // end loop rows (test functions for matrix)
+	} // end loop rows (solution for matrix, test function for vector)
 
-          if (newton)
-          {
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
+	if (newton==Fluid3::Newton)
+	{
+	  double fac_afgdt_vderxyaf_0_0_funct_ui=fac_afgdt*vderxyaf_(0,0);
+	  double fac_afgdt_vderxyaf_0_1_funct_ui=fac_afgdt*vderxyaf_(0,1);
+	  double fac_afgdt_vderxyaf_0_2_funct_ui=fac_afgdt*vderxyaf_(0,2);
+	  double fac_afgdt_vderxyaf_1_0_funct_ui=fac_afgdt*vderxyaf_(1,0);
+	  double fac_afgdt_vderxyaf_1_1_funct_ui=fac_afgdt*vderxyaf_(1,1);
+	  double fac_afgdt_vderxyaf_1_2_funct_ui=fac_afgdt*vderxyaf_(1,2);
+	  double fac_afgdt_vderxyaf_2_0_funct_ui=fac_afgdt*vderxyaf_(2,0);
+	  double fac_afgdt_vderxyaf_2_1_funct_ui=fac_afgdt*vderxyaf_(2,1);
+	  double fac_afgdt_vderxyaf_2_2_funct_ui=fac_afgdt*vderxyaf_(2,2);
 
-              const double fac_afgdt_funct_vi = fac_afgdt*funct_(vi);
+	  for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	  {
+	    const int fui  =4*ui;
+	    const int fuip =fui+1;
+	    const int fuipp=fui+2;
 
-              for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-              {
-                const double  fac_afgdt_funct_vi_funct_ui=fac_afgdt_funct_vi*funct_(ui);
+	    fac_afgdt_vderxyaf_0_0_funct_ui*=funct_(ui);
+	    fac_afgdt_vderxyaf_0_1_funct_ui*=funct_(ui);
+	    fac_afgdt_vderxyaf_0_2_funct_ui*=funct_(ui);
+	    fac_afgdt_vderxyaf_1_0_funct_ui*=funct_(ui);
+	    fac_afgdt_vderxyaf_1_1_funct_ui*=funct_(ui);
+	    fac_afgdt_vderxyaf_1_2_funct_ui*=funct_(ui);
+	    fac_afgdt_vderxyaf_2_0_funct_ui*=funct_(ui);
+	    fac_afgdt_vderxyaf_2_1_funct_ui*=funct_(ui);
+	    fac_afgdt_vderxyaf_2_2_funct_ui*=funct_(ui);
 
-                /* convection (intermediate)
+
+	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	    {
+	      int fvi  =4*vi;
+
+	      /* convection (intermediate)
 
                  factor:
 
@@ -4514,25 +4486,20 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                         | | Dacc o nabla | u      , v  |
                         |  \            /              |
                          \                            /
-                */
+	      */
 
-                elemat(vi*4    , ui*4    ) += fac_afgdt_funct_vi_funct_ui*vderxyaf_(0,0);
-                elemat(vi*4    , ui*4 + 1) += fac_afgdt_funct_vi_funct_ui*vderxyaf_(0,1);
-                elemat(vi*4    , ui*4 + 2) += fac_afgdt_funct_vi_funct_ui*vderxyaf_(0,2);
-                elemat(vi*4 + 1, ui*4    ) += fac_afgdt_funct_vi_funct_ui*vderxyaf_(1,0);
-                elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_funct_vi_funct_ui*vderxyaf_(1,1);
-                elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_funct_vi_funct_ui*vderxyaf_(1,2);
-                elemat(vi*4 + 2, ui*4    ) += fac_afgdt_funct_vi_funct_ui*vderxyaf_(2,0);
-                elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_funct_vi_funct_ui*vderxyaf_(2,1);
-                elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_funct_vi_funct_ui*vderxyaf_(2,2);
-              } // end loop rows (test functions for matrix)
-            } // end loop rows (solution for matrix, test function for vector)
-          }
-
-#ifdef PERF
-          timeelegalerkin_ref = null;
-#endif
-        }
+	      elemat(fvi  ,fui  ) += fac_afgdt_vderxyaf_0_0_funct_ui*funct_(vi);
+	      elemat(fvi  ,fuip ) += fac_afgdt_vderxyaf_0_1_funct_ui*funct_(vi);
+	      elemat(fvi++,fuipp) += fac_afgdt_vderxyaf_0_2_funct_ui*funct_(vi);
+	      elemat(fvi  ,fui  ) += fac_afgdt_vderxyaf_1_0_funct_ui*funct_(vi);
+	      elemat(fvi  ,fuip ) += fac_afgdt_vderxyaf_1_1_funct_ui*funct_(vi);
+	      elemat(fvi++,fuipp) += fac_afgdt_vderxyaf_1_2_funct_ui*funct_(vi);
+	      elemat(fvi  ,fui  ) += fac_afgdt_vderxyaf_2_0_funct_ui*funct_(vi);
+	      elemat(fvi  ,fuip ) += fac_afgdt_vderxyaf_2_1_funct_ui*funct_(vi);
+	      elemat(fvi  ,fuipp) += fac_afgdt_vderxyaf_2_2_funct_ui*funct_(vi);
+	    } // end loop rows (test functions for matrix)
+	  } // end loop rows (solution for matrix, test function for vector)
+	} // end newton
 
         //---------------------------------------------------------------
         //
@@ -4541,23 +4508,36 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         //---------------------------------------------------------------
         if(pspg == Fluid3::pstab_use_pspg)
         {
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelepspg_ref = rcp(new TimeMonitor(*timeelepspg));
-#endif
-          const double fac_afgdt_tauMp             = fac*afgdt*tauMp;
-          const double fac_tauMp                   = fac*tauMp;
+	  const double fac_tauMp                   = fac*tauMp;
+	  const double fac_alphaM_tauMp            = fac_tauMp*alphaM;
+	  const double fac_afgdt_tauMp             = fac_tauMp*afgdt;
 
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+          if (higher_order_ele && newton!=Fluid3::minimal)
           {
-            const double fac_tauMp_inertia_and_conv=fac_tauMp*(alphaM*funct_(ui)+afgdt*conv_c_af_(ui));
+            const double fac_visceff_afgdt_tauMp
+              =
+              fac*visceff*afgdt*tauMp;
 
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
+	    for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	    {
+	      const int fui  =ui*4;
+	      const int fuip =fui+1;
+	      const int fuipp=fui+2;
+	      
+	      /* pressure stabilisation --- diffusion  */
 
+	      /* factor: -nu*alphaF*gamma*dt*tauMp
 
-              /* pressure stabilisation --- inertia+convection    */
+                    /                                  \
+                   |                 /    \             |
+                   |  2*nabla o eps | Dacc | , nabla q  |
+                   |                 \    /             |
+                    \                                  /
+	      */
 
-              /* factor:
+	      /* pressure stabilisation --- inertia+convection    */
+
+	      /* factor:
 
                              /                \
                             |                  |
@@ -4569,85 +4549,89 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                   +alphaF*gamma*dt*tauMp*| | c    o nabla | Dacc , nabla q  |
                                          |  \            /                  |
                                           \                                /
-              */
+	      */
+	      const double fac_tauMp_inertia_and_conv
+		=
+		fac_alphaM_tauMp*funct_(ui)+fac_afgdt_tauMp*conv_c_af_(ui);
 
-              elemat(vi*4 + 3, ui*4    ) += fac_tauMp_inertia_and_conv*derxy_(0,vi) ;
-              elemat(vi*4 + 3, ui*4 + 1) += fac_tauMp_inertia_and_conv*derxy_(1,vi) ;
-              elemat(vi*4 + 3, ui*4 + 2) += fac_tauMp_inertia_and_conv*derxy_(2,vi) ;
+	      const double fac_visceff_afgdt_tauMp_viscs2_0_ui
+		=
+		fac_visceff_afgdt_tauMp*viscs2_(0,ui)-fac_tauMp_inertia_and_conv;
+	      const double fac_visceff_afgdt_tauMp_viscs2_1_ui
+		=
+		fac_visceff_afgdt_tauMp*viscs2_(1,ui)-fac_tauMp_inertia_and_conv;
+	      const double fac_visceff_afgdt_tauMp_viscs2_2_ui
+		=
+		fac_visceff_afgdt_tauMp*viscs2_(2,ui)-fac_tauMp_inertia_and_conv;
+
+	      const double fac_visceff_afgdt_tauMp_derxy2_3_ui=fac_visceff_afgdt_tauMp*derxy2_(3,ui);
+	      const double fac_visceff_afgdt_tauMp_derxy2_4_ui=fac_visceff_afgdt_tauMp*derxy2_(4,ui);
+	      const double fac_visceff_afgdt_tauMp_derxy2_5_ui=fac_visceff_afgdt_tauMp*derxy2_(5,ui);
+
+	      
+	      for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	      {
+		const int fvippp=vi*4+3;
+
+                elemat(fvippp,fui  ) -= 
+		  fac_visceff_afgdt_tauMp_viscs2_0_ui*derxy_(0,vi)
+		  +				                  
+                  fac_visceff_afgdt_tauMp_derxy2_3_ui*derxy_(1,vi)
+		  +				                  
+		  fac_visceff_afgdt_tauMp_derxy2_4_ui*derxy_(2,vi);
+                elemat(fvippp,fuip ) -= 	                  
+		  fac_visceff_afgdt_tauMp_derxy2_3_ui*derxy_(0,vi)
+		  +				                  
+		  fac_visceff_afgdt_tauMp_viscs2_1_ui*derxy_(1,vi)
+		  +				                  
+                  fac_visceff_afgdt_tauMp_derxy2_5_ui*derxy_(2,vi);
+                elemat(fvippp,fuipp) -=		                  
+		  fac_visceff_afgdt_tauMp_derxy2_4_ui*derxy_(0,vi)
+		  +				                  
+		  fac_visceff_afgdt_tauMp_derxy2_5_ui*derxy_(1,vi)
+		  +				                  
+		  fac_visceff_afgdt_tauMp_viscs2_2_ui*derxy_(2,vi);
+	      }
             }
           }
+	  else
+	  {
+	    for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	    {
+	      const int fui  =ui*4 ;
+	      const int fuip =fui+1;
+	      const int fuipp=fui+2;
+	      
+	      const double fac_tauMp_inertia_and_conv=fac_tauMp*(alphaM*funct_(ui)+afgdt*conv_c_af_(ui));
+	      
+	      for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	      {
+		const int fvippp=vi*4+3;
+		
+		/* pressure stabilisation --- inertia+convection    */
 
+		/* factor:
 
-          if (higher_order_ele)
-          {
-            const double fac_two_visceff_afgdt_tauMp
-              =
-              fac*2.0*visceff*afgdt*tauMp;
+                             /                \
+                            |                  |
+              +alphaM*tauMp*|  Dacc , nabla q  |+
+                            |                  |
+                             \                /
+                                          /                                \
+                                         |  / n+af       \                  |
+                  +alphaF*gamma*dt*tauMp*| | c    o nabla | Dacc , nabla q  |
+                                         |  \            /                  |
+                                          \                                /
+		*/
 
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-            {
-              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-              {
-                /* pressure stabilisation --- diffusion  */
+		elemat(fvippp,fui  ) += fac_tauMp_inertia_and_conv*derxy_(0,vi) ;
+		elemat(fvippp,fuip ) += fac_tauMp_inertia_and_conv*derxy_(1,vi) ;
+		elemat(fvippp,fuipp) += fac_tauMp_inertia_and_conv*derxy_(2,vi) ;
+	      }
+	    }
+	  }
 
-                /* factor: -2*nu*alphaF*gamma*dt*tauMp
-
-                    /                                \
-                   |               /    \             |
-                   |  nabla o eps | Dacc | , nabla q  |
-                   |               \    /             |
-                    \                                /
-                */
-
-                elemat(vi*4 + 3, ui*4    ) -= fac_two_visceff_afgdt_tauMp*
-                                              (derxy_(0,vi)*viscs2_(0,0,ui)
-                                               +
-                                               derxy_(1,vi)*viscs2_(0,1,ui)
-                                               +
-                                               derxy_(2,vi)*viscs2_(0,2,ui)) ;
-                elemat(vi*4 + 3, ui*4 + 1) -= fac_two_visceff_afgdt_tauMp*
-                                              (derxy_(0,vi)*viscs2_(0,1,ui)
-                                               +
-                                               derxy_(1,vi)*viscs2_(1,1,ui)
-                                               +
-                                               derxy_(2,vi)*viscs2_(1,2,ui)) ;
-                elemat(vi*4 + 3, ui*4 + 2) -= fac_two_visceff_afgdt_tauMp*
-                                              (derxy_(0,vi)*viscs2_(0,2,ui)
-                                               +
-                                               derxy_(1,vi)*viscs2_(1,2,ui)
-                                               +
-                                               derxy_(2,vi)*viscs2_(2,2,ui)) ;
-              }
-            }
-          }
-
-
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-          {
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              /* pressure stabilisation --- pressure   */
-
-              /* factor: +tauMp
-
-                    /                    \
-                   |                      |
-                   |  nabla Dp , nabla q  |
-                   |                      |
-                    \                    /
-              */
-
-              elemat(vi*4 + 3, ui*4 + 3) += fac_tauMp*
-                                            (derxy_(0,ui)*derxy_(0,vi)
-                                             +
-                                             derxy_(1,ui)*derxy_(1,vi)
-                                             +
-                                             derxy_(2,ui)*derxy_(2,vi)) ;
-
-            } // end loop rows (test functions for matrix)
-          } // end loop rows (solution for matrix, test function for vector)
-
-          if (newton)
+          if (newton==Fluid3::Newton)
           {
             for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
             {
@@ -4676,10 +4660,38 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                 elemat(vidx, uidx + 2) += fac_afgdt_tauMp_funct_ui*v3;
               } // end loop rows (test functions for matrix)
             } // end loop rows (solution for matrix, test function for vector)
-          }
-#ifdef PERF
-          timeelepspg_ref = null;
-#endif
+          } // end newton
+
+	  for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	  {
+	    const int fuippp=ui*4+3;
+
+	    const double fac_tauMp_derxy_0_ui=fac_tauMp*derxy_(0,ui);
+	    const double fac_tauMp_derxy_1_ui=fac_tauMp*derxy_(1,ui);
+	    const double fac_tauMp_derxy_2_ui=fac_tauMp*derxy_(2,ui);
+
+	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	    {
+	      /* pressure stabilisation --- pressure   */
+
+	      /* factor: +tauMp
+
+                    /                    \
+                   |                      |
+                   |  nabla Dp , nabla q  |
+                   |                      |
+                    \                    /
+	      */
+
+	      elemat(vi*4+3,fuippp) += 
+		fac_tauMp_derxy_0_ui*derxy_(0,vi)
+		+
+		fac_tauMp_derxy_1_ui*derxy_(1,vi)
+		+
+		fac_tauMp_derxy_2_ui*derxy_(2,vi);
+		
+	    } // end loop rows (test functions for matrix)
+	  } // end loop rows (solution for matrix, test function for vector)
         }
 
         //---------------------------------------------------------------
@@ -4689,27 +4701,22 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         //---------------------------------------------------------------
         if(supg == Fluid3::convective_stab_supg)
         {
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelesupg_ref = rcp(new TimeMonitor(*timeelesupg));
-#endif
-          const double fac_afgdt_tauM             = fac*tauM*afgdt;
-          const double fac_two_visceff_afgdt_tauM = fac*tauM*afgdt*2.0*visceff;
-          const double fac_tauM                   = fac*tauM;
+          const double fac_tauM               = fac*tauM;
+          const double fac_tauM_afgdt         = fac_tauM*afgdt;
+          const double fac_visceff_afgdt_tauM = fac_tauM_afgdt*visceff;
+          const double fac_tauM_alphaM        = fac_tauM*alphaM;
 
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+          if (higher_order_ele && newton!=Fluid3::minimal)
           {
-            const double fac_tauM_inertia_and_conv
-              = fac_tauM*(alphaM*funct_(ui)+afgdt*conv_c_af_(ui));
-
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              const double fac_tauM_inertia_and_conv_conv_c_af_vi
-                =
-                fac_tauM_inertia_and_conv*conv_c_af_(vi);
-
-              /* SUPG stabilisation --- inertia and convection */
-
-              /* factor: +alphaM*tauM
+	    for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	    {
+	      const int fui  =ui*4 ;
+	      const int fuip =fui+1;
+	      const int fuipp=fui+2;
+		
+	      /* SUPG stabilisation --- inertia and convection */
+		
+	      /* factor: +alphaM*tauM
 
                            /                           \
                           |          / n+af       \     |
@@ -4724,54 +4731,109 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                                     |    \             /          \             /     |
                                      \                                               /
 
-              */
+	      */
+	      const double fac_tauM_inertia_and_conv
+		= fac_tauM_alphaM*funct_(ui)+fac_tauM_afgdt*conv_c_af_(ui);
 
-              elemat(vi*4    , ui*4    ) += fac_tauM_inertia_and_conv_conv_c_af_vi;
-              elemat(vi*4 + 1, ui*4 + 1) += fac_tauM_inertia_and_conv_conv_c_af_vi;
-              elemat(vi*4 + 2, ui*4 + 2) += fac_tauM_inertia_and_conv_conv_c_af_vi;
-            }
-          }
-
-          if (higher_order_ele)
-          {
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              const double fac_two_visceff_afgdt_tauM_conv_c_af_vi = fac_two_visceff_afgdt_tauM*conv_c_af_(vi);
-
-              for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-              {
-                /* SUPG stabilisation --- diffusion   */
-
-                /* factor: -2*nu*alphaF*gamma*dt*tauM
+	      
+	      /* SUPG stabilisation --- diffusion   */
+	      
+	      /* factor: -nu*alphaF*gamma*dt*tauM
 
 
-                    /                                            \
-                   |               /     \    / n+af        \     |
-                   |  nabla o eps | Dacc  |, | c     o nabla | v  |
-                   |               \     /    \             /     |
-                    \                                            /
+                    /                                              \
+                   |                 /     \    / n+af        \     |
+                   |  2*nabla o eps | Dacc  |, | c     o nabla | v  |
+                   |                 \     /    \             /     |
+                    \                                              /
 
-                */
+	      */
+	      const double fac_visceff_afgdt_tauM_viscs2_0_ui=fac_visceff_afgdt_tauM*viscs2_(0,ui)
+		-
+		fac_tauM_inertia_and_conv;
+	      const double fac_visceff_afgdt_tauM_viscs2_1_ui=fac_visceff_afgdt_tauM*viscs2_(1,ui)
+		-
+		fac_tauM_inertia_and_conv;
+	      const double fac_visceff_afgdt_tauM_viscs2_2_ui=fac_visceff_afgdt_tauM*viscs2_(2,ui)
+		-
+		fac_tauM_inertia_and_conv;
+	      const double fac_visceff_afgdt_tauM_derxy2_3_ui=fac_visceff_afgdt_tauM*derxy2_(3,ui);
+	      const double fac_visceff_afgdt_tauM_derxy2_4_ui=fac_visceff_afgdt_tauM*derxy2_(4,ui);
+	      const double fac_visceff_afgdt_tauM_derxy2_5_ui=fac_visceff_afgdt_tauM*derxy2_(5,ui);
 
-                elemat(vi*4, ui*4)         -= fac_two_visceff_afgdt_tauM_conv_c_af_vi*viscs2_(0, 0, ui) ;
-                elemat(vi*4, ui*4 + 1)     -= fac_two_visceff_afgdt_tauM_conv_c_af_vi*viscs2_(0, 1, ui) ;
-                elemat(vi*4, ui*4 + 2)     -= fac_two_visceff_afgdt_tauM_conv_c_af_vi*viscs2_(0, 2, ui) ;
-                elemat(vi*4 + 1, ui*4)     -= fac_two_visceff_afgdt_tauM_conv_c_af_vi*viscs2_(0, 1, ui) ;
-                elemat(vi*4 + 1, ui*4 + 1) -= fac_two_visceff_afgdt_tauM_conv_c_af_vi*viscs2_(1, 1, ui) ;
-                elemat(vi*4 + 1, ui*4 + 2) -= fac_two_visceff_afgdt_tauM_conv_c_af_vi*viscs2_(1, 2, ui) ;
-                elemat(vi*4 + 2, ui*4)     -= fac_two_visceff_afgdt_tauM_conv_c_af_vi*viscs2_(0, 2, ui) ;
-                elemat(vi*4 + 2, ui*4 + 1) -= fac_two_visceff_afgdt_tauM_conv_c_af_vi*viscs2_(1, 2, ui) ;
-                elemat(vi*4 + 2, ui*4 + 2) -= fac_two_visceff_afgdt_tauM_conv_c_af_vi*viscs2_(2, 2, ui) ;
+	      for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	      {
+		int fvi  =vi*4 ;
+
+                elemat(fvi  ,fui  ) -= fac_visceff_afgdt_tauM_viscs2_0_ui*conv_c_af_(vi);
+		elemat(fvi  ,fuip ) -= fac_visceff_afgdt_tauM_derxy2_3_ui*conv_c_af_(vi);
+                elemat(fvi++,fuipp) -= fac_visceff_afgdt_tauM_derxy2_4_ui*conv_c_af_(vi);
+                elemat(fvi  ,fui  ) -= fac_visceff_afgdt_tauM_derxy2_3_ui*conv_c_af_(vi);
+                elemat(fvi  ,fuip ) -= fac_visceff_afgdt_tauM_viscs2_1_ui*conv_c_af_(vi);
+                elemat(fvi++,fuipp) -= fac_visceff_afgdt_tauM_derxy2_5_ui*conv_c_af_(vi);
+                elemat(fvi  ,fui  ) -= fac_visceff_afgdt_tauM_derxy2_4_ui*conv_c_af_(vi);
+                elemat(fvi  ,fuip ) -= fac_visceff_afgdt_tauM_derxy2_5_ui*conv_c_af_(vi);
+                elemat(fvi  ,fuipp) -= fac_visceff_afgdt_tauM_viscs2_2_ui*conv_c_af_(vi);
               } //end ui
             } // end vi
           }// end higher_order_ele
+	  else
+	  {
+	    for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	    {
+	      const int fui  =ui*4 ;
+	      const int fuip =fui+1;
+	      const int fuipp=fui+2;
+	      
+	      const double fac_tauM_inertia_and_conv
+		= fac_tauM_alphaM*funct_(ui)+fac_tauM_afgdt*conv_c_af_(ui);
 
-          for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-          {
-            const double fac_tauM_conv_c_af_vi = fac_tauM*conv_c_af_(vi);
+	      for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	      {
+		int fvi=4*vi;
+		
+		const double fac_tauM_inertia_and_conv_conv_c_af_vi
+		  =
+		  fac_tauM_inertia_and_conv*conv_c_af_(vi);
+		
+		/* SUPG stabilisation --- inertia and convection */
+		
+		/* factor: +alphaM*tauM
 
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-            {
+                           /                           \
+                          |          / n+af       \     |
+             +alphaM*tauM*|  Dacc , | c    o nabla | v  |+
+                          |          \            /     |
+                           \                           /
+
+
+                                     /                                               \
+                                    |    / n+af        \          / n+af        \     |
+              +alphaF*gamma*dt*tauM*|   | c     o nabla | Dacc , | c     o nabla | v  |
+                                    |    \             /          \             /     |
+                                     \                                               /
+
+		*/
+
+		elemat(fvi++,fui  ) += fac_tauM_inertia_and_conv_conv_c_af_vi;
+		elemat(fvi++,fuip ) += fac_tauM_inertia_and_conv_conv_c_af_vi;
+		elemat(fvi  ,fuipp) += fac_tauM_inertia_and_conv_conv_c_af_vi;
+	      }
+	    }
+	  } // end not higher order
+
+	  for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	  {
+	    const int fuippp=4*ui+3;
+	    
+	    const double fac_tauM_derxy_0_ui = fac_tauM*derxy_(0,ui);
+	    const double fac_tauM_derxy_1_ui = fac_tauM*derxy_(1,ui);
+	    const double fac_tauM_derxy_2_ui = fac_tauM*derxy_(2,ui);
+
+	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	    {
+	      int fvi =vi*4;
+  
               /* SUPG stabilisation --- pressure    */
 
               /* factor: +tauM
@@ -4783,85 +4845,51 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                     \                               /
               */
 
-              elemat(vi*4    , ui*4 + 3) += fac_tauM_conv_c_af_vi*derxy_(0,ui) ;
-              elemat(vi*4 + 1, ui*4 + 3) += fac_tauM_conv_c_af_vi*derxy_(1,ui) ;
-              elemat(vi*4 + 2, ui*4 + 3) += fac_tauM_conv_c_af_vi*derxy_(2,ui) ;
+              elemat(fvi++,fuippp) += fac_tauM_derxy_0_ui*conv_c_af_(vi);
+              elemat(fvi++,fuippp) += fac_tauM_derxy_1_ui*conv_c_af_(vi);
+              elemat(fvi  ,fuippp) += fac_tauM_derxy_2_ui*conv_c_af_(vi);
 
             } // end loop rows (test functions for matrix)
           } // end loop rows (solution for matrix, test function for vector)
 
-          if (newton)
+          if (newton==Fluid3::Newton)
           {
-            {
-              const double fac_afgdt_tauM_resM_x=fac_afgdt_tauM*resM_(0);
-              const double fac_afgdt_tauM_resM_y=fac_afgdt_tauM*resM_(1);
-              const double fac_afgdt_tauM_resM_z=fac_afgdt_tauM*resM_(2);
+	    double temp[3][3];
+
+	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	    {
+	      int fvi   =vi*4;
+	      int fvip  =fvi+1;
+	      int fvipp =fvi+2;
+
+	      temp[0][0]=fac_tauM_afgdt*(resM_(0)*derxy_(0,vi)+vderxyaf_(0,0)*conv_c_af_(vi));
+	      temp[0][1]=fac_tauM_afgdt*(resM_(0)*derxy_(1,vi)+vderxyaf_(0,1)*conv_c_af_(vi));
+	      temp[0][2]=fac_tauM_afgdt*(resM_(0)*derxy_(2,vi)+vderxyaf_(0,2)*conv_c_af_(vi));
+	      temp[1][0]=fac_tauM_afgdt*(resM_(1)*derxy_(0,vi)+vderxyaf_(1,0)*conv_c_af_(vi));
+	      temp[1][1]=fac_tauM_afgdt*(resM_(1)*derxy_(1,vi)+vderxyaf_(1,1)*conv_c_af_(vi));
+	      temp[1][2]=fac_tauM_afgdt*(resM_(1)*derxy_(2,vi)+vderxyaf_(1,2)*conv_c_af_(vi));
+	      temp[2][0]=fac_tauM_afgdt*(resM_(2)*derxy_(0,vi)+vderxyaf_(2,0)*conv_c_af_(vi));
+	      temp[2][1]=fac_tauM_afgdt*(resM_(2)*derxy_(1,vi)+vderxyaf_(2,1)*conv_c_af_(vi));
+	      temp[2][2]=fac_tauM_afgdt*(resM_(2)*derxy_(2,vi)+vderxyaf_(2,2)*conv_c_af_(vi));
 
               for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
               {
-                const double fac_afgdt_tauM_resM_x_funct_ui = fac_afgdt_tauM_resM_x*funct_(ui);
-                const double fac_afgdt_tauM_resM_y_funct_ui = fac_afgdt_tauM_resM_y*funct_(ui);
-                const double fac_afgdt_tauM_resM_z_funct_ui = fac_afgdt_tauM_resM_z*funct_(ui);
+		int fui=4*ui;
 
-                for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-                {
-                  /* SUPG stabilisation:
+                /* SUPG stabilisation --- convection (reactive parts)  */
 
-                                         /                               \
-                                        |     n+am     /            \     |
-                  +alphaF*gamma*dt*tauM*|  acc      , | Dacc o nabla | v  | -
-                                        |              \            /     |
-                                         \                               /
-
-                                         /                                               \
-                                        |    / n+af        \   n+af    /            \     |
-                  +alphaF*gamma*dt*tauM*|   | c     o nabla | u     , | Dacc o nabla | v  |
-                                        |    \             /           \            /     |
-                                         \                                               /
-
-                                         /                                 \
-                                        |         n+1    /            \     |
-                  +alphaF*gamma*dt*tauM*|  nabla p    , | Dacc o nabla | v  |
-                                        |                \            /     |
-                                         \                                 /
-
-                                              /                                            \
-                                             |               / n+af \    /            \     |
-                  -2*nu*alphaF*gamma*dt*tauM*|  nabla o eps | u      |, | Dacc o nabla | v  |
-                                             |               \      /    \            /     |
-                                              \                                            /
+		/* linearisation of testfunction
 
                                          /                            \
                                         |   n+af    /            \     |
-                  -tauM*alphaF*gamma*dt*|  f     , | Dacc o nabla | v  |
-                                        |           \            /     |
+                  +alphaF*gamma*dt*tauM*|  r     , | Dacc o nabla | v  | 
+                                        |   M       \            /     |
                                          \                            /
+		*/
 
-                  */
-
-                  elemat(vi*4    , ui*4    ) += fac_afgdt_tauM_resM_x_funct_ui*derxy_(0,vi) ;
-                  elemat(vi*4    , ui*4 + 1) += fac_afgdt_tauM_resM_x_funct_ui*derxy_(1,vi) ;
-                  elemat(vi*4    , ui*4 + 2) += fac_afgdt_tauM_resM_x_funct_ui*derxy_(2,vi) ;
-                  elemat(vi*4 + 1, ui*4    ) += fac_afgdt_tauM_resM_y_funct_ui*derxy_(0,vi) ;
-                  elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_tauM_resM_y_funct_ui*derxy_(1,vi) ;
-                  elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_tauM_resM_y_funct_ui*derxy_(2,vi) ;
-                  elemat(vi*4 + 2, ui*4    ) += fac_afgdt_tauM_resM_z_funct_ui*derxy_(0,vi) ;
-                  elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_tauM_resM_z_funct_ui*derxy_(1,vi) ;
-                  elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_tauM_resM_z_funct_ui*derxy_(2,vi) ;
-                }
-              }
-            }
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              const double fac_afgdt_tauM_conv_c_af_vi =fac_afgdt_tauM*conv_c_af_(vi);
-
-              for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-              {
-                const double fac_afgdt_tauM_conv_c_af_vi_funct_ui =fac_afgdt_tauM_conv_c_af_vi*funct_(ui);
-
-                /* SUPG stabilisation --- convection  */
-
-                /* factor: +alphaF*gamma*dt*tauM
+                /*  linearised convective term in residual
+		   
+		   factor: +alphaF*gamma*dt*tauM
 
                     /                                               \
                    |    /            \   n+af    / n+af        \     |
@@ -4870,21 +4898,18 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                     \                                               /
                 */
 
-                elemat(vi*4    , ui*4    ) += fac_afgdt_tauM_conv_c_af_vi_funct_ui*vderxyaf_(0,0);
-                elemat(vi*4    , ui*4 + 1) += fac_afgdt_tauM_conv_c_af_vi_funct_ui*vderxyaf_(0,1);
-                elemat(vi*4    , ui*4 + 2) += fac_afgdt_tauM_conv_c_af_vi_funct_ui*vderxyaf_(0,2);
-                elemat(vi*4 + 1, ui*4    ) += fac_afgdt_tauM_conv_c_af_vi_funct_ui*vderxyaf_(1,0);
-                elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_tauM_conv_c_af_vi_funct_ui*vderxyaf_(1,1);
-                elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_tauM_conv_c_af_vi_funct_ui*vderxyaf_(1,2);
-                elemat(vi*4 + 2, ui*4    ) += fac_afgdt_tauM_conv_c_af_vi_funct_ui*vderxyaf_(2,0);
-                elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_tauM_conv_c_af_vi_funct_ui*vderxyaf_(2,1);
-                elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_tauM_conv_c_af_vi_funct_ui*vderxyaf_(2,2);
-              }
-            }
-          }
-#ifdef PERF
-          timeelesupg_ref = null;
-#endif
+		elemat(fvi  ,fui  ) += temp[0][0]*funct_(ui);
+		elemat(fvip ,fui  ) += temp[1][0]*funct_(ui);
+		elemat(fvipp,fui++) += temp[2][0]*funct_(ui);
+		elemat(fvi  ,fui  ) += temp[0][1]*funct_(ui);
+		elemat(fvip ,fui  ) += temp[1][1]*funct_(ui);
+		elemat(fvipp,fui++) += temp[2][1]*funct_(ui);
+		elemat(fvi  ,fui  ) += temp[0][2]*funct_(ui);
+		elemat(fvip ,fui  ) += temp[1][2]*funct_(ui);
+		elemat(fvipp,fui  ) += temp[2][2]*funct_(ui);
+	      }
+	    }
+          } // end newton
         }
 
         //---------------------------------------------------------------
@@ -4896,288 +4921,244 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         {
           if((vstab == Fluid3::viscous_stab_gls || vstab == Fluid3::viscous_stab_usfem)&&higher_order_ele)
           {
-#ifdef PERF
-            RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
-#endif
-            const double fac_two_visc_tauMp             = vstabfac*fac*2.0*visc*tauMp;
-            const double fac_two_visc_afgdt_tauMp       = vstabfac*fac*2.0*visc*afgdt*tauMp;
-            const double fac_two_visc_alphaM_tauMp      = vstabfac*fac*2.0*visc*alphaM*tauMp;
-            const double fac_four_visceff_visc_afgdt_tauMp = vstabfac*fac*4.0*visceff*visc*afgdt*tauMp;
+            const double fac_visc_tauMp               = vstabfac*fac*visc*tauMp;
+            const double fac_visc_afgdt_tauMp         = vstabfac*fac*visc*afgdt*tauMp;
+            const double fac_visc_alphaM_tauMp        = vstabfac*fac*visc*alphaM*tauMp;
+            const double fac_visceff_visc_afgdt_tauMp = vstabfac*fac*visceff*visc*afgdt*tauMp;
 
             for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
             {
+	      const int fui    = ui*4;
+	      const int fuip   = fui+1;
+	      const int fuipp  = fui+2;
+	      const int fuippp = fui+3;
+
+	      const double acc_conv=(fac_visc_alphaM_tauMp*funct_(ui)
+				     +
+				     fac_visc_afgdt_tauMp*conv_c_af_(ui));
+
               for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
               {
+		const int fvi   = vi*4;
+		const int fvip  = fvi+1;
+		const int fvipp = fvi+2;
+
                 /* viscous stabilisation --- inertia     */
 
-                /* factor: +(-)alphaM*tauMp*2*nu
+                /* factor: +(-)alphaM*tauMp*nu
 
-                    /                    \
-                   |                      |
-                   |  Dacc , div eps (v)  |
-                   |                      |
-                    \                    /
+                    /                      \
+                   |                        |
+                   |  Dacc , 2*div eps (v)  |
+                   |                        |
+                    \                      /
                 */
-                elemat(vi*4    , ui*4    ) += fac_two_visc_alphaM_tauMp*funct_(ui)*viscs2_(0,0,vi);
-                elemat(vi*4    , ui*4 + 1) += fac_two_visc_alphaM_tauMp*funct_(ui)*viscs2_(0,1,vi);
-                elemat(vi*4    , ui*4 + 2) += fac_two_visc_alphaM_tauMp*funct_(ui)*viscs2_(0,2,vi);
-                elemat(vi*4 + 1, ui*4    ) += fac_two_visc_alphaM_tauMp*funct_(ui)*viscs2_(0,1,vi);
-                elemat(vi*4 + 1, ui*4 + 1) += fac_two_visc_alphaM_tauMp*funct_(ui)*viscs2_(1,1,vi);
-                elemat(vi*4 + 1, ui*4 + 2) += fac_two_visc_alphaM_tauMp*funct_(ui)*viscs2_(1,2,vi);
-                elemat(vi*4 + 2, ui*4    ) += fac_two_visc_alphaM_tauMp*funct_(ui)*viscs2_(0,2,vi);
-                elemat(vi*4 + 2, ui*4 + 1) += fac_two_visc_alphaM_tauMp*funct_(ui)*viscs2_(1,2,vi);
-                elemat(vi*4 + 2, ui*4 + 2) += fac_two_visc_alphaM_tauMp*funct_(ui)*viscs2_(2,2,vi);
-
-
                 /* viscous stabilisation --- convection */
 
-                /*  factor: +(-)2*nu*alphaF*gamma*dt*tauMp
+                /*  factor: +(-)nu*alphaF*gamma*dt*tauMp
 
-                       /                                  \
-                      |  / n+af       \                    |
-                      | | c    o nabla | Dacc, div eps (v) |
-                      |  \            /                    |
-                       \                                  /
+                       /                                    \
+                      |  / n+af       \                      |
+                      | | c    o nabla | Dacc, 2*div eps (v) |
+                      |  \            /                      |
+                       \                                    /
 
                 */
-                elemat(vi*4     , ui*4    )+= fac_two_visc_afgdt_tauMp*conv_c_af_(ui)*viscs2_(0, 0, vi) ;
-                elemat(vi*4     , ui*4 + 1)+= fac_two_visc_afgdt_tauMp*conv_c_af_(ui)*viscs2_(0, 1, vi) ;
-                elemat(vi*4     , ui*4 + 2)+= fac_two_visc_afgdt_tauMp*conv_c_af_(ui)*viscs2_(0, 2, vi) ;
-                elemat(vi*4 + 1, ui*4     )+= fac_two_visc_afgdt_tauMp*conv_c_af_(ui)*viscs2_(0, 1, vi) ;
-                elemat(vi*4 + 1, ui*4 + 1) += fac_two_visc_afgdt_tauMp*conv_c_af_(ui)*viscs2_(1, 1, vi) ;
-                elemat(vi*4 + 1, ui*4 + 2) += fac_two_visc_afgdt_tauMp*conv_c_af_(ui)*viscs2_(1, 2, vi) ;
-                elemat(vi*4 + 2, ui*4    ) += fac_two_visc_afgdt_tauMp*conv_c_af_(ui)*viscs2_(0, 2, vi) ;
-                elemat(vi*4 + 2, ui*4 + 1) += fac_two_visc_afgdt_tauMp*conv_c_af_(ui)*viscs2_(1, 2, vi) ;
-                elemat(vi*4 + 2, ui*4 + 2) += fac_two_visc_afgdt_tauMp*conv_c_af_(ui)*viscs2_(2, 2, vi) ;
+
+                elemat(fvi  ,fui  ) += acc_conv*viscs2_(0,vi);
+                elemat(fvi  ,fuip ) += acc_conv*derxy2_(3,vi);
+                elemat(fvi  ,fuipp) += acc_conv*derxy2_(4,vi);
+                elemat(fvip ,fui  ) += acc_conv*derxy2_(3,vi);
+                elemat(fvip ,fuip ) += acc_conv*viscs2_(1,vi);
+                elemat(fvip ,fuipp) += acc_conv*derxy2_(5,vi);
+                elemat(fvipp,fui  ) += acc_conv*derxy2_(4,vi);
+                elemat(fvipp,fuip ) += acc_conv*derxy2_(5,vi);
+                elemat(fvipp,fuipp) += acc_conv*viscs2_(2,vi);
 
                 /* viscous stabilisation --- diffusion  */
 
-                /* factor: -(+)4*nu*nu*alphaF*gamma*dt*tauMp
+                /* factor: -(+)nu*nu*alphaF*gamma*dt*tauMp
 
-                    /                                   \
-                   |               /    \                |
-                   |  nabla o eps | Dacc | , div eps (v) |
-                   |               \    /                |
-                    \                                   /
+                    /                                       \
+                   |                 /    \                  |
+                   |  2*nabla o eps | Dacc | , 2*div eps (v) |
+                   |                 \    /                  |
+                    \                                       /
                 */
-
-                elemat(vi*4    , ui*4    ) -= fac_four_visceff_visc_afgdt_tauMp*
-                                              (viscs2_(0, 0, ui)*viscs2_(0, 0, vi)
-                                               +
-                                               viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
-                                               +
-                                               viscs2_(0, 2, ui)*viscs2_(0, 2, vi)) ;
-                elemat(vi*4    , ui*4 + 1) -= fac_four_visceff_visc_afgdt_tauMp*
-                                              (viscs2_(0, 0, vi)*viscs2_(0, 1, ui)
-                                               +
-                                               viscs2_(0, 1, vi)*viscs2_(1, 1, ui)
-                                               +
-                                               viscs2_(0, 2, vi)*viscs2_(1, 2, ui)) ;
-                elemat(vi*4    , ui*4 + 2) -= fac_four_visceff_visc_afgdt_tauMp*
-                                              (viscs2_(0, 0, vi)*viscs2_(0, 2, ui)
-                                               +
-                                               viscs2_(0, 1, vi)*viscs2_(1, 2, ui)
-                                               +
-                                               viscs2_(0, 2, vi)*viscs2_(2, 2, ui)) ;
-                elemat(vi*4 + 1, ui*4    ) -= fac_four_visceff_visc_afgdt_tauMp*
-                                              (viscs2_(0, 0, ui)*viscs2_(0, 1, vi)
-                                               +
-                                               viscs2_(0, 1, ui)*viscs2_(1, 1, vi)
-                                               +
-                                               viscs2_(0, 2, ui)*viscs2_(1, 2, vi)) ;
-                elemat(vi*4 + 1, ui*4 + 1) -= fac_four_visceff_visc_afgdt_tauMp*
-                                              (viscs2_(0, 1, ui)*viscs2_(0, 1, vi)
-                                               +
-                                               viscs2_(1, 1, ui)*viscs2_(1, 1, vi)
-                                               +
-                                               viscs2_(1, 2, ui)*viscs2_(1, 2, vi)) ;
-                elemat(vi*4 + 1, ui*4 + 2) -= fac_four_visceff_visc_afgdt_tauMp*
-                                              (viscs2_(0, 1, vi)*viscs2_(0, 2, ui)
-                                               +
-                                               viscs2_(1, 1, vi)*viscs2_(1, 2, ui)
-                                               +
-                                               viscs2_(1, 2, vi)*viscs2_(2, 2, ui)) ;
-                elemat(vi*4 + 2, ui*4    ) -= fac_four_visceff_visc_afgdt_tauMp*
-                                              (viscs2_(0, 0, ui)*viscs2_(0, 2, vi)
-                                               +
-                                               viscs2_(0, 1, ui)*viscs2_(1, 2, vi)
-                                               +
-                                               viscs2_(0, 2, ui)*viscs2_(2, 2, vi)) ;
-                elemat(vi*4 + 2, ui*4 + 1) -= fac_four_visceff_visc_afgdt_tauMp*
-                                              (viscs2_(0, 1, ui)*viscs2_(0, 2, vi)
-                                               +
-                                               viscs2_(1, 1, ui)*viscs2_(1, 2, vi)
-                                               +
-                                               viscs2_(1, 2, ui)*viscs2_(2, 2, vi)) ;
-                elemat(vi*4 + 2, ui*4 + 2) -= fac_four_visceff_visc_afgdt_tauMp*
-                                              (viscs2_(0, 2, ui)*viscs2_(0, 2, vi)
-                                               +
-                                               viscs2_(1, 2, ui)*viscs2_(1, 2, vi)
-                                               +
-                                               viscs2_(2, 2, ui)*viscs2_(2, 2, vi)) ;
+                elemat(fvi  ,fui  ) -= fac_visceff_visc_afgdt_tauMp*
+                                    (viscs2_(0,ui)*viscs2_(0,vi)
+                                     +
+                                     derxy2_(3,ui)*derxy2_(3,vi)
+                                     +
+                                     derxy2_(4,ui)*derxy2_(4,vi)) ;
+                elemat(fvi  ,fuip ) -= fac_visceff_visc_afgdt_tauMp*
+                                    (viscs2_(0,vi)*derxy2_(3,ui)
+                                     +
+                                     derxy2_(3,vi)*viscs2_(1,ui)
+                                     +
+                                     derxy2_(4,vi)*derxy2_(5,ui)) ;
+                elemat(fvi  ,fuipp) -= fac_visceff_visc_afgdt_tauMp*
+                                    (viscs2_(0,vi)*derxy2_(4,ui)
+                                     +
+                                     derxy2_(3,vi)*derxy2_(5,ui)
+                                     +
+                                     derxy2_(4,vi)*viscs2_(2,ui)) ;
+                elemat(fvip ,fui  ) -= fac_visceff_visc_afgdt_tauMp*
+                                    (viscs2_(0,ui)*derxy2_(3,vi)
+                                     +
+                                     derxy2_(3,ui)*viscs2_(1,vi)
+                                     +
+                                     derxy2_(4,ui)*derxy2_(5,vi)) ;
+                elemat(fvip ,fuip ) -= fac_visceff_visc_afgdt_tauMp*
+                                    (derxy2_(3,ui)*derxy2_(3,vi)
+                                     +
+                                     viscs2_(1,ui)*viscs2_(1,vi)
+                                     +
+                                     derxy2_(5,ui)*derxy2_(5,vi)) ;
+                elemat(fvip ,fuipp) -= fac_visceff_visc_afgdt_tauMp*
+                                    (derxy2_(3,vi)*derxy2_(4,ui)
+                                     +
+                                     viscs2_(1,vi)*derxy2_(5,ui)
+                                     +
+                                     derxy2_(5,vi)*viscs2_(2,ui)) ;
+                elemat(fvipp,fui  ) -= fac_visceff_visc_afgdt_tauMp*
+                                    (viscs2_(0,ui)*derxy2_(4,vi)
+                                     +
+                                     derxy2_(3,ui)*derxy2_(5,vi)
+                                     +
+                                     derxy2_(4,ui)*viscs2_(2,vi)) ;
+                elemat(fvipp,fuip ) -= fac_visceff_visc_afgdt_tauMp*
+                                    (derxy2_(3,ui)*derxy2_(4,vi)
+                                     +
+                                     viscs2_(1,ui)*derxy2_(5,vi)
+                                     +
+                                     derxy2_(5,ui)*viscs2_(2,vi)) ;
+                elemat(fvipp,fuipp) -= fac_visceff_visc_afgdt_tauMp*
+                                    (derxy2_(4,ui)*derxy2_(4,vi)
+                                     +
+                                     derxy2_(5,ui)*derxy2_(5,vi)
+                                     +
+                                     viscs2_(2,ui)*viscs2_(2,vi)) ;
 
                 /* viscous stabilisation --- pressure   */
 
-                /* factor: +(-)tauMp*2*nu
+                /* factor: +(-)tauMp*nu
 
-                    /                        \
-                   |                          |
-                   |  nabla Dp , div eps (v)  |
-                   |                          |
-                    \                        /
+                    /                          \
+                   |                            |
+                   |  nabla Dp , 2*div eps (v)  |
+                   |                            |
+                    \                          /
                 */
-                elemat(vi*4    , ui*4 + 3) += fac_two_visc_tauMp*
-                                              (derxy_(0,ui)*viscs2_(0,0,vi)
-                                               +
-                                               derxy_(1,ui)*viscs2_(0,1,vi)
-                                               +
-                                               derxy_(2,ui)*viscs2_(0,2,vi)) ;
-                elemat(vi*4 + 1, ui*4 + 3) += fac_two_visc_tauMp*
-                                              (derxy_(0,ui)*viscs2_(0,1,vi)
-                                               +
-                                               derxy_(1,ui)*viscs2_(1,1,vi)
-                                               +
-                                               derxy_(2,ui)*viscs2_(1,2,vi)) ;
-                elemat(vi*4 + 2, ui*4 + 3) += fac_two_visc_tauMp*
-                                              (derxy_(0,ui)*viscs2_(0,2,vi)
-                                               +
-                                               derxy_(1,ui)*viscs2_(1,2,vi)
-                                               +
-                                               derxy_(2,ui)*viscs2_(2,2,vi)) ;
+                elemat(fvi  ,fuippp) += fac_visc_tauMp*
+                                     (derxy_(0,ui)*viscs2_(0,vi)
+                                      +
+                                      derxy_(1,ui)*derxy2_(3,vi)
+                                      +
+                                      derxy_(2,ui)*derxy2_(4,vi)) ;
+                elemat(fvip ,fuippp) += fac_visc_tauMp*
+                                     (derxy_(0,ui)*derxy2_(3,vi)
+                                      +
+                                      derxy_(1,ui)*viscs2_(1,vi)
+                                      +
+                                      derxy_(2,ui)*derxy2_(5,vi)) ;
+                elemat(fvipp,fuippp) += fac_visc_tauMp*
+                                     (derxy_(0,ui)*derxy2_(4,vi)
+                                      +
+                                      derxy_(1,ui)*derxy2_(5,vi)
+                                      +
+                                      derxy_(2,ui)*viscs2_(2,vi)) ;
 
               } // end loop rows (test functions for matrix)
             } // end loop columns (solution for matrix, test function for vector)
 
-            if (newton)
+            if (newton==Fluid3::Newton)
             {
               for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
               {
-                const double fac_two_visc_afgdt_tauMp_funct_ui=fac_two_visc_afgdt_tauMp*funct_(ui);
+		const int fui    = ui*4;
+		const int fuip   = fui+1;
+		const int fuipp  = fui+2;
+
+                const double fac_visc_afgdt_tauMp_funct_ui=fac_visc_afgdt_tauMp*funct_(ui);
 
                 for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
                 {
+		  const int fvi   = vi*4;
+		  const int fvip  = fvi+1;
+		  const int fvipp = fvi+2;
+
                   /* viscous stabilisation --- convection */
 
-                  /*  factor: +(-)2*nu*alphaF*gamma*dt*tauMp
+                  /*  factor: +(-)nu*alphaF*gamma*dt*tauMp
 
-                     /                                     \
-                    |   /            \   n+af               |
-                    |  | Dacc o nabla | u     , div eps (v) |
-                    |   \            /                      |
-                     \                                     /
+                     /                                       \
+                    |   /            \   n+af                 |
+                    |  | Dacc o nabla | u     , 2*div eps (v) |
+                    |   \            /                        |
+                     \                                       /
 
 
                   */
-                  elemat(vi*4     , ui*4    )+= fac_two_visc_afgdt_tauMp_funct_ui*
-                                                (viscs2_(0, 0, vi)*vderxyaf_(0, 0)
-                                                 +
-                                                 viscs2_(0, 1, vi)*vderxyaf_(1, 0)
-                                                 +
-                                                 viscs2_(0, 2, vi)*vderxyaf_(2, 0)) ;
-                  elemat(vi*4     , ui*4 + 1)+= fac_two_visc_afgdt_tauMp_funct_ui*
-                                                (viscs2_(0, 0, vi)*vderxyaf_(0, 1)
-                                                 +
-                                                 viscs2_(0, 1, vi)*vderxyaf_(1, 1)
-                                                 +
-                                                 viscs2_(0, 2, vi)*vderxyaf_(2, 1)) ;
-                  elemat(vi*4     , ui*4 + 2)+= fac_two_visc_afgdt_tauMp_funct_ui*
-                                                (viscs2_(0, 0, vi)*vderxyaf_(0, 2)
-                                                 +
-                                                 viscs2_(0, 1, vi)*vderxyaf_(1, 2)
-                                                 +
-                                                 viscs2_(0, 2, vi)*vderxyaf_(2, 2)) ;
-                  elemat(vi*4 + 1, ui*4     )+= fac_two_visc_afgdt_tauMp_funct_ui*
-                                                (viscs2_(0, 1, vi)*vderxyaf_(0, 0)
-                                                 +
-                                                 viscs2_(1, 1, vi)*vderxyaf_(1, 0)
-                                                 +
-                                                 viscs2_(1, 2, vi)*vderxyaf_(2, 0)) ;
-                  elemat(vi*4 + 1, ui*4 + 1) += fac_two_visc_afgdt_tauMp_funct_ui*
-                                                (viscs2_(0, 1, vi)*vderxyaf_(0, 1)
-                                                 +
-                                                 viscs2_(1, 1, vi)*vderxyaf_(1, 1)
-                                                 +
-                                                 viscs2_(1, 2, vi)*vderxyaf_(2, 1)) ;
-                  elemat(vi*4 + 1, ui*4 + 2) += fac_two_visc_afgdt_tauMp_funct_ui*
-                                                (viscs2_(0, 1, vi)*vderxyaf_(0, 2)
-                                                 +
-                                                 viscs2_(1, 1, vi)*vderxyaf_(1, 2)
-                                                 +
-                                                 viscs2_(1, 2, vi)*vderxyaf_(2, 2)) ;
-                  elemat(vi*4 + 2, ui*4    ) += fac_two_visc_afgdt_tauMp_funct_ui*
-                                                (viscs2_(0, 2, vi)*vderxyaf_(0, 0)
-                                                 +
-                                                 viscs2_(1, 2, vi)*vderxyaf_(1, 0)
-                                                 +
-                                                 viscs2_(2, 2, vi)*vderxyaf_(2, 0)) ;
-                  elemat(vi*4 + 2, ui*4 + 1) += fac_two_visc_afgdt_tauMp_funct_ui*
-                                                (viscs2_(0, 2, vi)*vderxyaf_(0, 1)
-                                                 +
-                                                 viscs2_(1, 2, vi)*vderxyaf_(1, 1)
-                                                 +
-                                                 viscs2_(2, 2, vi)*vderxyaf_(2, 1)) ;
-                  elemat(vi*4 + 2, ui*4 + 2) += fac_two_visc_afgdt_tauMp_funct_ui*
-                                                (viscs2_(0, 2, vi)*vderxyaf_(0, 2)
-                                                 +
-                                                 viscs2_(1, 2, vi)*vderxyaf_(1, 2)
-                                                 +
-                                                 viscs2_(2, 2, vi)*vderxyaf_(2, 2)) ;
+                  elemat(fvi  ,fui  ) += fac_visc_afgdt_tauMp_funct_ui*        
+                                         (viscs2_(0,vi)*vderxyaf_(0,0)
+					  +
+					  derxy2_(3,vi)*vderxyaf_(1,0)
+					  +
+					  derxy2_(4,vi)*vderxyaf_(2,0));
+                  elemat(fvi  ,fuip ) += fac_visc_afgdt_tauMp_funct_ui*
+                                         (viscs2_(0,vi)*vderxyaf_(0,1)
+					  +
+					  derxy2_(3,vi)*vderxyaf_(1,1)
+					  +
+					  derxy2_(4,vi)*vderxyaf_(2,1));
+                  elemat(fvi  ,fuipp) += fac_visc_afgdt_tauMp_funct_ui*
+                                         (viscs2_(0,vi)*vderxyaf_(0,2)
+					  +
+					  derxy2_(3,vi)*vderxyaf_(1,2)
+					  +
+					  derxy2_(4,vi)*vderxyaf_(2,2));
+                  elemat(fvip ,fui  ) += fac_visc_afgdt_tauMp_funct_ui*
+                                         (derxy2_(3,vi)*vderxyaf_(0,0)
+					  +
+					  viscs2_(1,vi)*vderxyaf_(1,0)
+					  +
+					  derxy2_(5,vi)*vderxyaf_(2,0));
+                  elemat(fvip ,fuip ) += fac_visc_afgdt_tauMp_funct_ui*
+                                         (derxy2_(3,vi)*vderxyaf_(0,1)
+					  +
+					  viscs2_(1,vi)*vderxyaf_(1,1)
+					  +
+					  derxy2_(5,vi)*vderxyaf_(2,1));
+                  elemat(fvip ,fuipp) += fac_visc_afgdt_tauMp_funct_ui*
+                                         (derxy2_(3,vi)*vderxyaf_(0,2)
+					  +
+					  viscs2_(1,vi)*vderxyaf_(1,2)
+					  +
+					  derxy2_(5,vi)*vderxyaf_(2,2));
+                  elemat(fvipp,fui  ) += fac_visc_afgdt_tauMp_funct_ui*
+                                         (derxy2_(4,vi)*vderxyaf_(0,0)
+					  +
+					  derxy2_(5,vi)*vderxyaf_(1,0)
+					  +
+					  viscs2_(2,vi)*vderxyaf_(2,0));
+                  elemat(fvipp,fuip ) += fac_visc_afgdt_tauMp_funct_ui*
+                                         (derxy2_(4,vi)*vderxyaf_(0,1)
+					  +
+					  derxy2_(5,vi)*vderxyaf_(1,1)
+					  +
+					  viscs2_(2,vi)*vderxyaf_(2,1));
+                  elemat(fvipp,fuipp) += fac_visc_afgdt_tauMp_funct_ui*
+                                         (derxy2_(4,vi)*vderxyaf_(0,2)
+					  +
+					  derxy2_(5,vi)*vderxyaf_(1,2)
+					  +
+					  viscs2_(2,vi)*vderxyaf_(2,2));
                 } // end loop rows (test functions for matrix)
               } // end loop columns (solution for matrix, test function for vector)
-            }
-#ifdef PERF
-            timeelevstab_ref = null;
-#endif
+            } // end newton
           } // endif (a)gls
         }
-
-        //---------------------------------------------------------------
-        //
-        //         LEAST SQUARES CONTINUITY STABILISATION PART,
-        //                  QUASISTATIC FORMULATION
-        //
-        //---------------------------------------------------------------
-        if(cstab == Fluid3::continuity_stab_yes)
-        {
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelecstab_ref = rcp(new TimeMonitor(*timeelecstab));
-#endif
-
-          const double fac_gamma_dt_tauC = fac*gamma*dt*tauC;
-
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-          {
-            const double fac_gamma_dt_tauC_derxy_x_ui = fac_gamma_dt_tauC*derxy_(0,ui);
-            const double fac_gamma_dt_tauC_derxy_y_ui = fac_gamma_dt_tauC*derxy_(1,ui);
-            const double fac_gamma_dt_tauC_derxy_z_ui = fac_gamma_dt_tauC*derxy_(2,ui);
-
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              /*  factor: +gamma*dt*tauC
-
-                    /                          \
-                   |                            |
-                   | nabla o Dacc  , nabla o v  |
-                   |                            |
-                    \                          /
-              */
-
-              elemat(vi*4    , ui*4    ) += fac_gamma_dt_tauC_derxy_x_ui*derxy_(0,vi) ;
-              elemat(vi*4    , ui*4 + 1) += fac_gamma_dt_tauC_derxy_y_ui*derxy_(0,vi) ;
-              elemat(vi*4    , ui*4 + 2) += fac_gamma_dt_tauC_derxy_z_ui*derxy_(0,vi) ;
-              elemat(vi*4 + 1, ui*4    ) += fac_gamma_dt_tauC_derxy_x_ui*derxy_(1,vi) ;
-              elemat(vi*4 + 1, ui*4 + 1) += fac_gamma_dt_tauC_derxy_y_ui*derxy_(1,vi) ;
-              elemat(vi*4 + 1, ui*4 + 2) += fac_gamma_dt_tauC_derxy_z_ui*derxy_(1,vi) ;
-              elemat(vi*4 + 2, ui*4    ) += fac_gamma_dt_tauC_derxy_x_ui*derxy_(2,vi) ;
-              elemat(vi*4 + 2, ui*4 + 1) += fac_gamma_dt_tauC_derxy_y_ui*derxy_(2,vi) ;
-              elemat(vi*4 + 2, ui*4 + 2) += fac_gamma_dt_tauC_derxy_z_ui*derxy_(2,vi) ;
-            } // end loop rows vi (test functions for matrix)
-          } // end loop columns ui (solution for matrix, test function for vector)
-#ifdef PERF
-          timeelecstab_ref = null;
-#endif
-        } // end cstab
-
 
         //---------------------------------------------------------------
         //
@@ -5187,16 +5168,19 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         //---------------------------------------------------------------
         if(cross == Fluid3::cross_stress_stab)
         {
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelecrossrey_ref = rcp(new TimeMonitor(*timeelecrossrey));
-#endif
           const double fac_afgdt_tauM = fac*afgdt*tauM;
+
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
+	    const int fui   =4*ui;
+	    const int fuip  =fui+1;
+	    const int fuipp =fui+2;
+
             const double fac_afgdt_tauM_conv_resM_ui = fac_afgdt_tauM*conv_resM_(ui);
 
             for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
             {
+	      int fvi =4*vi;
               const double fac_afgdt_tauM_conv_resM_ui_funct_vi = fac_afgdt_tauM_conv_resM_ui*funct_(vi);
 
               /*  factor:
@@ -5209,14 +5193,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                          |  \            /            |
                           \                          /
               */
-              elemat(vi*4    , ui*4    ) -= fac_afgdt_tauM_conv_resM_ui_funct_vi;
-              elemat(vi*4 + 1, ui*4 + 1) -= fac_afgdt_tauM_conv_resM_ui_funct_vi;
-              elemat(vi*4 + 2, ui*4 + 2) -= fac_afgdt_tauM_conv_resM_ui_funct_vi;
+              elemat(fvi++,fui  ) -= fac_afgdt_tauM_conv_resM_ui_funct_vi;
+              elemat(fvi++,fuip ) -= fac_afgdt_tauM_conv_resM_ui_funct_vi;
+              elemat(fvi  ,fuipp) -= fac_afgdt_tauM_conv_resM_ui_funct_vi;
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
-#ifdef PERF
-          timeelecrossrey_ref = null;
-#endif
         } // end cross
       } // end if compute_elemat
 
@@ -5228,22 +5209,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //---------------------------------------------------------------
       //---------------------------------------------------------------
 
-      {
-#ifdef PERF
-        RefCountPtr<TimeMonitor> timeelegalerkin_ref = rcp(new TimeMonitor(*timeelegalerkin));
-#endif
-
-        {
-          const double fac_inertia_conv_and_bodyforce_x = fac*(accintam_(0)+convaf_old_(0)-edeadaf_(0));
-          const double fac_inertia_conv_and_bodyforce_y = fac*(accintam_(1)+convaf_old_(1)-edeadaf_(1));
-          const double fac_inertia_conv_and_bodyforce_z = fac*(accintam_(2)+convaf_old_(2)-edeadaf_(2));
-
-          for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
-          {
-
-            /* inertia, convective and dead load terms */
-
-            /*
+      /* inertia, convective and dead load terms -- all tested 
+	 against shapefunctions, as well as cross terms            */
+      /*
 
                 /             \
                |     n+am      |
@@ -5263,428 +5231,291 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               +|  f     , v  |
                |             |
                 \           /
-            */
+		
+      */
 
-            elevec[ui*4    ] -= fac_inertia_conv_and_bodyforce_x*funct_(ui);
-            elevec[ui*4 + 1] -= fac_inertia_conv_and_bodyforce_y*funct_(ui);
-            elevec[ui*4 + 2] -= fac_inertia_conv_and_bodyforce_z*funct_(ui);
-          }
-        }
+      double fac_inertia_conv_and_bodyforce[3];
+      fac_inertia_conv_and_bodyforce[0] = fac*(accintam_(0)+convaf_old_(0)-edeadaf_(0));
+      fac_inertia_conv_and_bodyforce[1] = fac*(accintam_(1)+convaf_old_(1)-edeadaf_(1));
+      fac_inertia_conv_and_bodyforce[2] = fac*(accintam_(2)+convaf_old_(2)-edeadaf_(2));
+      
+      if(cross == Fluid3::cross_stress_stab_only_rhs || cross == Fluid3::cross_stress_stab)
+      {
+	const double fac_tauM = fac*tauM;
+	
+	/* factor: +tauM
+	       
+                  /                            \
+                 |                    n+af      |
+                 |  ( resM o nabla ) u    ,  v  |
+                 |                    (i)       |
+                  \                            /
+	*/
 
-        {
-          const double fac_divunp = fac*divunp;
+	blas.GEMV('N',
+		  3,3,
+		  -fac_tauM,vderxyaf_.data(),3,
+		  resM_.data(),
+		  1.0,&(fac_inertia_conv_and_bodyforce[0]),
+		  1,1);
+      }
 
-          for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
-          {
-
-            /* continuity equation */
-
-            /*  factor: +1
-
-               /                \
-              |          n+1     |
-              | nabla o u   , q  |
-              |                  |
-               \                /
-            */
-
-            elevec[ui*4 + 3] -= fac_divunp*funct_(ui);
-          }
-        }
-
-        {
-          const double fac_prenp = fac*prenp_;
-
-          for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
-          {
-            /* pressure */
-
-            /*  factor: -1
+      /*
+	pressure and viscous term combined in viscous_and_pres
+	cross and reynolds stabilisation are combined with the 
+	same testfunctions (of derivative type) 
+      */
+      
+      /*
+	factor: -1
 
                /                  \
               |   n+1              |
               |  p    , nabla o v  |
               |                    |
                \                  /
-            */
 
-            elevec[ui*4    ] += fac_prenp*derxy_(0,ui) ;
-            elevec[ui*4 + 1] += fac_prenp*derxy_(1,ui) ;
-            elevec[ui*4 + 2] += fac_prenp*derxy_(2,ui) ;
-          }
-        }
-
-
-        {
-          const double visceff_fac = visceff*fac;
-          for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
-          {
-            /* viscous term */
-
-            /*  factor: +2*nu
-
-               /                            \
-              |       / n+af \         / \   |
-              |  eps | u      | , eps | v |  |
-              |       \      /         \ /   |
-               \                            /
-            */
-
-            elevec[ui*4    ] -= visceff_fac*
-                                (derxy_(0,ui)*vderxyaf_(0,0)*2.0
-                                 +
-                                 derxy_(1,ui)*vderxyaf_(0,1)
-                                 +
-                                 derxy_(1,ui)*vderxyaf_(1,0)
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(0,2)
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(2,0)) ;
-            elevec[ui*4 + 1] -= visceff_fac*
-                                (derxy_(0,ui)*vderxyaf_(0,1)
-                                 +
-                                 derxy_(0,ui)*vderxyaf_(1,0)
-                                 +
-                                 derxy_(1,ui)*vderxyaf_(1,1)*2.0
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(1,2)
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(2,1)) ;
-            elevec[ui*4 + 2] -= visceff_fac*
-                                (derxy_(0,ui)*vderxyaf_(0,2)
-                                 +
-                                 derxy_(0,ui)*vderxyaf_(2,0)
-                                 +
-                                 derxy_(1,ui)*vderxyaf_(1,2)
-                                 +
-                                 derxy_(1,ui)*vderxyaf_(2,1)
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(2,2)*2.0) ;
-          } // end loop rows
-        }
-
-#ifdef PERF
-        timeelegalerkin_ref = null;
-#endif
-
-      }
-
-      if(pspg == Fluid3::pstab_use_pspg)
-      {
-#ifdef PERF
-        RefCountPtr<TimeMonitor> timeelepspg_ref = rcp(new TimeMonitor(*timeelepspg));
-#endif
-
-        const double fac_tauMp = fac*tauMp;
-
-        for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
-        {
-          /*
-            factor: +tauMp
-
-            pressure stabilisation --- inertia
-
-
-                  /                  \
-                 |     n+am           |
-                 |  acc    , nabla q  |
-                 |                    |
-                  \                  /
-
-            pressure stabilisation --- convection
-
-
-                  /                                   \
-                 |  / n+af       \    n+af             |
-                 | | c    o nabla |  u      , nabla q  |
-                 |  \            /                     |
-                  \                                   /
-
-
-            pressure stabilisation --- diffusion
-
-                  /                                  \
-                 |               / n+af \             |
-                 |  nabla o eps | u      | , nabla q  |
-                 |               \      /             |
-                  \                                  /
-
-            pressure stabilisation --- pressure
-
-                  /                      \
-                 |         n+1            |
-                 |  nabla p    , nabla q  |
-                 |                        |
-                  \                      /
-
-
-            pressure stabilisation --- bodyforce
-                  /                 \
-                 |    n+af           |
-                 |  f     , nabla q  |
-                 |                   |
-                  \                 /
-          */
-          elevec[ui*4 + 3] -= fac_tauMp*
-                              (derxy_(0,ui)*resM_(0)
-                               +
-                               derxy_(1,ui)*resM_(1)
-                               +
-                               derxy_(2,ui)*resM_(2));
-        } // end loop rows
-
-#ifdef PERF
-        timeelepspg_ref = null;
-#endif
-      }
-
-      if(supg == Fluid3::convective_stab_supg)
-      {
-#ifdef PERF
-        RefCountPtr<TimeMonitor> timeelesupg_ref = rcp(new TimeMonitor(*timeelesupg));
-#endif
-
-        const double fac_tauM = fac*tauM;
-
-        for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
-        {
-          const double fac_tauM_conv_c_af_ui = fac_tauM*conv_c_af_(ui);
-          /*
-            factor: +tauM
-
-            SUPG stabilisation --- inertia
-
-                  /                              \
-                 |     n+am   / n+af        \     |
-                 |  acc    , | c     o nabla | v  |
-                 |            \             /     |
-                  \                              /
-
-           SUPG stabilisation --- convection
-
-
-                  /                                                \
-                 |    / n+af        \   n+af    / n+af        \     |
-                 |   | c     o nabla | u     , | c     o nabla | v  |
-                 |    \             /           \             /     |
-                  \                                                /
-
-
-           SUPG stabilisation --- diffusion
-
-                  /                                               \
-                 |               / n+af \      / n+af        \     |
-                 |  nabla o eps | u      |  , | c     o nabla | v  |
-                 |               \      /      \             /     |
-                  \                                               /
-
-           SUPG stabilisation --- pressure
-
-                  /                                  \
-                 |         n+1    / n+af        \     |
-                 |  nabla p    , | c     o nabla | v  |
-                 |                \             /     |
-                  \                                  /
-
-           SUPG stabilisation --- bodyforce
-
-
-                  /                             \
-                 |   n+af    / n+af        \     |
-                 |  f     , | c     o nabla | v  |
-                 |           \             /     |
-                  \                             /
-          */
-
-          elevec[ui*4    ] -= fac_tauM_conv_c_af_ui*resM_(0) ;
-          elevec[ui*4 + 1] -= fac_tauM_conv_c_af_ui*resM_(1) ;
-          elevec[ui*4 + 2] -= fac_tauM_conv_c_af_ui*resM_(2) ;
-
-        } // end loop rows
-#ifdef PERF
-        timeelesupg_ref = null;
-#endif
-      }
-
-      if (higher_order_ele)
-      {
-        if(vstab != Fluid3::viscous_stab_none && higher_order_ele)
-        {
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
-#endif
-
-          const double fac_two_visc_tauMp = vstabfac * fac*2.0*visc*tauMp;
-
-          for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
-          {
-            /*
-              factor: -(+)tauMp*2*nu
-
-
-              viscous stabilisation --- inertia
-
-
-                 /                         \
-                |      n+am                 |
-                |  Dacc      , div eps (v)  |
-                |                           |
-                 \                         /
-
-            viscous stabilisation --- convection
-
-            /                                     \
-           |  / n+af       \    n+af               |
-           | | c    o nabla |  u     , div eps (v) |
-           |  \            /                       |
-            \                                     /
-
-            viscous stabilisation --- diffusion
-
-               /                                      \
-              |               /  n+af \                |
-              |  nabla o eps |  u      | , div eps (v) |
-              |               \       /                |
-               \                                      /
-
-            viscous stabilisation --- pressure
-
-                 /                           \
-                |                             |
-                |  nabla p , nabla o eps (v)  |
-                |                             |
-                 \                           /
-
-           viscous stabilisation --- bodyforce
-
-                  /                         \
-                 |    n+af                   |
-                 |  f     ,  nabla o eps (v) |
-                 |                           |
-                  \                         /
-            */
-            elevec[ui*4    ] -= fac_two_visc_tauMp*
-                                (resM_(0)*viscs2_(0, 0, ui)
-                                 +
-                                 resM_(1)*viscs2_(0, 1, ui)
-                                 +
-                                 resM_(2)*viscs2_(0, 2, ui)) ;
-            elevec[ui*4 + 1] -= fac_two_visc_tauMp*
-                                (resM_(0)*viscs2_(0, 1, ui)
-                                 +
-                                 resM_(1)*viscs2_(1, 1, ui)
-                                 +
-                                 resM_(2)*viscs2_(1, 2, ui)) ;
-            elevec[ui*4 + 2] -= fac_two_visc_tauMp*
-                                (resM_(0)*viscs2_(0, 2, ui)
-                                 +
-                                 resM_(1)*viscs2_(1, 2, ui)
-                                 +
-                                 resM_(2)*viscs2_(2, 2, ui)) ;
-          } // end loop rows ui
-#ifdef PERF
-          timeelevstab_ref = null;
-#endif
-        } // endif (a)gls
-      }
-
+      */
+      double fac_prenp   = fac*prenp_;
+      
       if(cstab == Fluid3::continuity_stab_yes)
       {
-#ifdef PERF
-        RefCountPtr<TimeMonitor> timeelecstab_ref = rcp(new TimeMonitor(*timeelecstab));
-#endif
-
-        const double fac_tauC_divunp = fac*tauC*divunp;
-        for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
-        {
-          /* factor: +tauC
+	// continuity stabilisation adds a small-scale pressure
+	
+	/* factor: +tauC
 
                   /                          \
                  |           n+1              |
                  |  nabla o u    , nabla o v  |
                  |                            |
                   \                          /
-          */
+	*/
 
-          elevec[ui*4    ] -= fac_tauC_divunp*derxy_(0,ui) ;
-          elevec[ui*4 + 1] -= fac_tauC_divunp*derxy_(1,ui) ;
-          elevec[ui*4 + 2] -= fac_tauC_divunp*derxy_(2,ui) ;
-        } // end loop rows
-
-#ifdef PERF
-        timeelecstab_ref = null;
-#endif
+	fac_prenp -= fac*tauC*divunp;
 
       } // end cstab
 
-      if(cross == Fluid3::cross_stress_stab_only_rhs || cross == Fluid3::cross_stress_stab)
-      {
-#ifdef PERF
-        RefCountPtr<TimeMonitor> timeelecrossrey_ref = rcp(new TimeMonitor(*timeelecrossrey));
-#endif
+      
+      /*
+	factor: +2*nu
 
-        const double fac_tauM = fac*tauM;
-        for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
-        {
-        const double fac_tauM_funct_ui = fac_tauM*funct_(ui);
-
-          /* factor: +tauM
-
-                  /                            \
-                 |                    n+af      |
-                 |  ( resM o nabla ) u    ,  v  |
-                 |                    (i)       |
-                  \                            /
-          */
-
-          elevec[ui*4    ] += fac_tauM_funct_ui*(resM_(0)*vderxyaf_(0,0)
-                                                 +
-                                                 resM_(1)*vderxyaf_(0,1)
-                                                 +
-                                                 resM_(2)*vderxyaf_(0,2));
-          elevec[ui*4 + 1] += fac_tauM_funct_ui*(resM_(0)*vderxyaf_(1,0)
-                                                 +
-                                                 resM_(1)*vderxyaf_(1,1)
-                                                 +
-                                        resM_(2)*vderxyaf_(1,2));
-          elevec[ui*4 + 2] += fac_tauM_funct_ui*(resM_(0)*vderxyaf_(2,0)
-                                                 +
-                                                 resM_(1)*vderxyaf_(2,1)
-                                                 +
-                                                 resM_(2)*vderxyaf_(2,2));
-
-        } // end loop rows
-#ifdef PERF
-        timeelecrossrey_ref = null;
-#endif
-      }
-
+               /                            \
+              |       / n+af \         / \   |
+              |  eps | u      | , eps | v |  |
+              |       \      /         \ /   |
+               \                            /
+      */
+	
+      const double visceff_fac = visceff*fac;
+	
+      double viscous_and_pres[9];
+      viscous_and_pres[0]=visceff_fac*vderxyaf_(0,0)*2.0-fac_prenp;
+      viscous_and_pres[1]=visceff_fac*(vderxyaf_(0,1)+vderxyaf_(1,0));
+      viscous_and_pres[2]=visceff_fac*(vderxyaf_(0,2)+vderxyaf_(2,0));
+      viscous_and_pres[3]=visceff_fac*(vderxyaf_(0,1)+vderxyaf_(1,0));
+      viscous_and_pres[4]=visceff_fac*vderxyaf_(1,1)*2.0-fac_prenp;
+      viscous_and_pres[5]=visceff_fac*(vderxyaf_(1,2)+vderxyaf_(2,1));
+      viscous_and_pres[6]=visceff_fac*(vderxyaf_(0,2)+vderxyaf_(2,0));
+      viscous_and_pres[7]=visceff_fac*(vderxyaf_(1,2)+vderxyaf_(2,1));
+      viscous_and_pres[8]=visceff_fac*vderxyaf_(2,2)*2.0-fac_prenp;
+	
       if(reynolds == Fluid3::reynolds_stress_stab_only_rhs)
       {
-#ifdef PERF
-        RefCountPtr<TimeMonitor> timeelecrossrey_ref = rcp(new TimeMonitor(*timeelecrossrey));
-#endif
-
-        const double fac_tauM_tauM = fac*tauM*tauM;
-        for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
-        {
-          const double fac_tauM_tauM_conv_resM_ui = fac_tauM_tauM*conv_resM_(ui);
-
-          /* factor: -tauM*tauM
+	  
+	/* factor: -tauM*tauM
 
                   /                             \
                  |                               |
                  |  resM   , ( resM o nabla ) v  |
                  |                               |
                   \                             /
+	*/
+	const double fac_tauM_tauM        = fac*tauM*tauM;
+	const double fac_tauM_tauM_resM_0 = fac_tauM_tauM*resM_(0);
+	const double fac_tauM_tauM_resM_1 = fac_tauM_tauM*resM_(1);
+	
+	viscous_and_pres[0]-=fac_tauM_tauM_resM_0  *resM_(0);
+	viscous_and_pres[1]-=fac_tauM_tauM_resM_0  *resM_(1);
+	viscous_and_pres[2]-=fac_tauM_tauM_resM_0  *resM_(2);
+	viscous_and_pres[3]-=fac_tauM_tauM_resM_0  *resM_(1);
+	viscous_and_pres[4]-=fac_tauM_tauM_resM_1  *resM_(1);
+	viscous_and_pres[5]-=fac_tauM_tauM_resM_1  *resM_(2);
+	viscous_and_pres[6]-=fac_tauM_tauM_resM_0  *resM_(2);
+	viscous_and_pres[7]-=fac_tauM_tauM_resM_1  *resM_(2);
+	viscous_and_pres[8]-=fac_tauM_tauM*resM_(2)*resM_(2);
+	  
+      }
+
+      /* continuity equation, factor: +1
+
+               /                \
+              |          n+1     |
+              | nabla o u   , q  |
+              |                  |
+               \                /
+      */
+      const double fac_divunp  = fac*divunp;
+
+      for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
+      {
+	int fui=4*ui;
+	/* inertia, convective and dead load, cross terms fith 
+	   funct                                              */
+	/* viscous, pressure, reynolds, cstab terms with 
+	   derxy                                              */
+
+	elevec[fui++] -= 
+	  fac_inertia_conv_and_bodyforce[0]*funct_(ui)
+	  +
+	  derxy_(0,ui)*viscous_and_pres[0]
+	  +
+	  derxy_(1,ui)*viscous_and_pres[1]
+	  +
+	  derxy_(2,ui)*viscous_and_pres[2];
+	elevec[fui++] -= 
+	  fac_inertia_conv_and_bodyforce[1]*funct_(ui)
+	  +
+	  derxy_(0,ui)*viscous_and_pres[3]
+	  +
+	  derxy_(1,ui)*viscous_and_pres[4]
+	  +
+	  derxy_(2,ui)*viscous_and_pres[5];
+	elevec[fui++] -= 
+	  fac_inertia_conv_and_bodyforce[2]*funct_(ui)
+	  +
+	  derxy_(0,ui)*viscous_and_pres[6]
+	  +
+	  derxy_(1,ui)*viscous_and_pres[7]
+	  +
+	  derxy_(2,ui)*viscous_and_pres[8];
+	  
+	/* continuity equation */
+
+	elevec[fui  ] -= fac_divunp*funct_(ui);
+      }
+
+      if(pspg == Fluid3::pstab_use_pspg)
+      {
+	/*
+            pressure stabilisation
+
+            factor: +tauMp
+
+                  /                 \
+                 |    n+af           |
+                 |  r     , nabla q  |
+                 |   M               |
+                  \                 /
+
+	*/
+        const double fac_tauMp = fac*tauMp;
+
+	blas.GEMV('T',3,iel_,-fac_tauMp,derxy_.data(),3,resM_.data(),1.0,&(elevec.Values()[3]),1,4);
+      } // end pspg
+
+      if(supg == Fluid3::convective_stab_supg)
+      {
+        const double fac_tauM = fac*tauM;
+
+        for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
+        {
+	  int fui=4*ui;
+          
+	  const double fac_tauM_conv_c_af_ui = fac_tauM*conv_c_af_(ui);
+          /*
+            factor: +tauM
+
+           SUPG stabilisation
+
+
+                  /                             \
+                 |   n+af    / n+af        \     |
+                 |  r     , | c     o nabla | v  |
+                 |   M       \             /     |
+                  \                             /
           */
-          elevec[ui*4    ] += fac_tauM_tauM_conv_resM_ui*resM_(0);
-          elevec[ui*4 + 1] += fac_tauM_tauM_conv_resM_ui*resM_(1);
-          elevec[ui*4 + 2] += fac_tauM_tauM_conv_resM_ui*resM_(2);
+
+          elevec[fui++] -= fac_tauM_conv_c_af_ui*resM_(0) ;
+          elevec[fui++] -= fac_tauM_conv_c_af_ui*resM_(1) ;
+          elevec[fui  ] -= fac_tauM_conv_c_af_ui*resM_(2) ;
+
         } // end loop rows
-#ifdef PERF
-        timeelecrossrey_ref = null;
-#endif
+      } // end supg
+
+      if (higher_order_ele)
+      {
+        if(vstab != Fluid3::viscous_stab_none && higher_order_ele)
+        {
+          const double fac_visc_tauMp = vstabfac * fac*visc*tauMp;
+
+          for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
+          {
+	    int fui=4*ui;
+            /*
+              factor: -(+)tauMp*nu
+
+
+              viscous stabilisation --- inertia
+
+
+                 /                           \
+                |      n+am                   |
+                |  Dacc      , 2*div eps (v)  |
+                |                             |
+                 \                           /
+
+            viscous stabilisation --- convection
+
+            /                                       \
+           |  / n+af       \    n+af                 |
+           | | c    o nabla |  u     , 2*div eps (v) |
+           |  \            /                         |
+            \                                       /
+
+            viscous stabilisation --- diffusion
+
+               /                                          \
+              |                 /  n+af \                  |
+              |  2*nabla o eps |  u      | , 2*div eps (v) |
+              |                 \       /                  |
+               \                                          /
+
+            viscous stabilisation --- pressure
+
+                 /                             \
+                |                               |
+                |  nabla p , 2*nabla o eps (v)  |
+                |                               |
+                 \                             /
+
+           viscous stabilisation --- bodyforce
+
+                  /                           \
+                 |    n+af                     |
+                 |  f     ,  2*nabla o eps (v) |
+                 |                             |
+                  \                           /
+            */
+            elevec[fui++] -= fac_visc_tauMp*
+                             (resM_(0)*viscs2_(0,ui)
+			      +
+			      resM_(1)*derxy2_(3,ui)
+			      +
+			      resM_(2)*derxy2_(4,ui)) ;
+            elevec[fui++] -= fac_visc_tauMp*
+                             (resM_(0)*derxy2_(3,ui)
+			      +
+			      resM_(1)*viscs2_(1,ui)
+			      +
+			      resM_(2)*derxy2_(5,ui)) ;
+            elevec[fui  ] -= fac_visc_tauMp*
+                             (resM_(0)*derxy2_(4,ui)
+                              +
+                              resM_(1)*derxy2_(5,ui)
+			      +
+			      resM_(2)*viscs2_(2,ui)) ;
+          } // end loop rows ui
+        } // endif (a)gls
       }
 
       if(fssgv == Fluid3::fssgv_scale_similarity ||
@@ -7327,31 +7158,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::CalcRes(
       }
     }
 
-    // calculate 2nd velocity derivatives at integration point, time(n+alpha_F)
-    //
-    //    2   n+af       +-----   dN (x)
-    //   d vel    (x)     \         k          n+af
-    //   ------------  =   +     -------- * vel
-    //    dx  dx          /      dx  dx        k
-    //      j1  j2       +-----    j1  j2
-    //                   node k
-    //
-    // j=(j1,j2) : direction of derivative x/y/z
-    if(higher_order_ele)
-    {
-      for (int nn=0;nn<3;++nn)
-      {
-        for (int rr=0;rr<6;++rr)
-        {
-          vderxy2af_(nn,rr)=derxy2_(rr,0)*evelaf(nn,0);
-          for (int mm=1;mm<iel_;++mm)
-          {
-            vderxy2af_(nn,rr)+=derxy2_(rr,mm)*evelaf(nn,mm);
-          }
-        }
-      }
-    }
-
     /* divergence new time step n+1 */
     const double divunp = (vderxynp_(0,0)+vderxynp_(1,1)+vderxynp_(2,2));
 
@@ -7367,10 +7173,86 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::CalcRes(
 
     if (higher_order_ele)
     {
-      /* Viscous term  div epsilon(u_old) */
-      viscaf_old_(0) = vderxy2af_(0,0) + 0.5 * (vderxy2af_(0,1) + vderxy2af_(1,3) + vderxy2af_(0,2) + vderxy2af_(2,4));
-      viscaf_old_(1) = vderxy2af_(1,1) + 0.5 * (vderxy2af_(1,0) + vderxy2af_(0,3) + vderxy2af_(1,2) + vderxy2af_(2,5));
-      viscaf_old_(2) = vderxy2af_(2,2) + 0.5 * (vderxy2af_(2,0) + vderxy2af_(0,4) + vderxy2af_(2,1) + vderxy2af_(1,5));
+      /*--- viscous term  2* grad * epsilon(u): --------------------------*/
+      /*   /                                                \
+           |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
+           |                                                |
+           |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+           |                                                |
+           |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
+           \                                                /
+
+           with N_x .. x-line of N
+           N_y .. y-line of N                                             */
+
+
+      /* Viscous term  div epsilon(u_old) 
+      //
+      //              /             \
+      //             |     / n+af \  |
+      //     nabla o | eps| u      | | =
+      //             |     \      /  | 
+      //              \             / j
+      //
+      //              / +-----  / +----- dN (x)             +----- dN (x)           \ \
+      //             |   \     |   \       k         n+af    \       k         n+af  | |
+      //       1.0   |    +    |    +    ------ * vel     +   +   ------- * vel      | |
+      //     = --- * |   /     |   /     dx dx       k,i     /     dx dx       k,j   | | 
+      //       2.0   |  +----- |  +-----   i  j             +-----   i  i            | |
+      //              \ node k  \  dim i                     dim i                  / / 
+      */
+      double sum = derxy2_(0,0)+derxy2_(1,0)+derxy2_(2,0);
+
+      viscs2_(0,0) = sum + derxy2_(0,0);
+      viscs2_(1,0) = sum + derxy2_(1,0);
+      viscs2_(2,0) = sum + derxy2_(2,0);
+
+      viscaf_old_(0) =
+	    (viscs2_(0,0)*evelaf(0,0)
+	     +
+	     derxy2_(3,0)*evelaf(1,0)
+	     +
+	     derxy2_(4,0)*evelaf(2,0));
+      viscaf_old_(1) =
+	    (derxy2_(3,0)*evelaf(0,0)
+	     +
+	     viscs2_(1,0)*evelaf(1,0)
+	     +
+	     derxy2_(5,0)*evelaf(2,0));
+      viscaf_old_(2) =
+	    (derxy2_(4,0)*evelaf(0,0)
+	     +
+	     derxy2_(5,0)*evelaf(1,0)
+	     +
+	     viscs2_(2,0)*evelaf(2,0));
+
+      for (int mm=1;mm<iel_;++mm)
+      {
+	sum = derxy2_(0,mm)+derxy2_(1,mm)+derxy2_(2,mm);
+
+	viscs2_(0,mm) = sum + derxy2_(0,mm);
+	viscs2_(1,mm) = sum + derxy2_(1,mm);
+	viscs2_(2,mm) = sum + derxy2_(2,mm);
+
+	viscaf_old_(0) += 
+	      (viscs2_(0,mm)*evelaf(0,mm)
+	       +
+	       derxy2_(3,mm)*evelaf(1,mm)
+	       +
+	       derxy2_(4,mm)*evelaf(2,mm));
+	viscaf_old_(1) += 
+	      (derxy2_(3,mm)*evelaf(0,mm)
+	       +
+	       viscs2_(1,mm)*evelaf(1,mm)
+	       +
+	       derxy2_(5,mm)*evelaf(2,mm));
+	viscaf_old_(2) +=
+	      (derxy2_(4,mm)*evelaf(0,mm)
+	       +
+	       derxy2_(5,mm)*evelaf(1,mm)
+	       +
+	       viscs2_(2,mm)*evelaf(2,mm));
+      }
     }
 
     /* compute residual in gausspoint --- second derivatives only
@@ -7385,11 +7267,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::CalcRes(
 
     if (higher_order_ele)
     {
-      const double two_visc=2.0*visc;
-
       for (int rr=0;rr<3;++rr)
       {
-        resM_(rr) -= two_visc*viscaf_old_(rr);
+        resM_(rr) -= visc*viscaf_old_(rr);
       }
     }
 
@@ -7537,11 +7417,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::GetNodalBodyForce(Fluid3* ele, const d
     const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
 
     // set this condition to the edeadng array
-    for (int jnode=0; jnode<iel_; jnode++)
+    for(int isd=0;isd<3;isd++)
     {
-      for(int isd=0;isd<3;isd++)
+      const double value=(*onoff)[isd]*(*val)[isd]*curvefac;
+
+      for (int jnode=0; jnode<iel_; jnode++)
       {
-        edeadaf_(isd,jnode) = (*onoff)[isd]*(*val)[isd]*curvefac;
+        edeadaf_(isd,jnode) = value;
       }
     }
   }

@@ -90,7 +90,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   theta_    = params_.get<double>("theta");
 
   // parameter for linearization scheme (fixed-point-like or Newton)
-  newton_ = params_.get<bool>("Use reaction terms for linearisation",false);
+  newton_ = params_.get<string>("Linearisation");
 
   // (fine-scale) subgrid viscosity?
   fssgv_ = params_.get<string>("fs subgrid viscosity","No");
@@ -868,7 +868,7 @@ void FluidImplicitTimeInt::NonlinearSolve()
       eleparams.set("thsl",theta_*dta_);
       eleparams.set("dt",dta_);
       eleparams.set("fs subgrid viscosity",fssgv_);
-      eleparams.set("include reactive terms for linearisation",newton_);
+      eleparams.set("Linearisation",newton_);
 
       // parameters for stabilization
       eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -1469,7 +1469,7 @@ void FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   eleparams.set("thsl",theta_*dta_);
   eleparams.set("dt",dta_);
   eleparams.set("fs subgrid viscosity",fssgv_);
-  eleparams.set("include reactive terms for linearisation",newton_);
+  eleparams.set("Linearisation",newton_);
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
@@ -2892,7 +2892,7 @@ void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> rel
     eleparams.set("total time",time_);
     eleparams.set("thsl",theta_*dta_);
     eleparams.set("dt",dta_);
-    eleparams.set("include reactive terms for linearisation",newton_);
+    eleparams.set("Linearisation",newton_);
 
     // parameters for stabilization
     eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");

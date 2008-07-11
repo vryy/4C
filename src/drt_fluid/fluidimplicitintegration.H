@@ -289,7 +289,7 @@ protected:
   double density_;
 
   //! use (or not) linearisation of reactive terms on the element
-  bool newton_;
+  string newton_;
 
   /// whether we do some extrapolation at the begin of each time step
   bool extrapolationpredictor_;

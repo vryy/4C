@@ -632,7 +632,7 @@ private:
   //! @name parameters for nonlinear iteration
   //
   //! parameter for linearisation
-  bool                      newton_;
+  string                    newton_;
 
   //! parameters governing the nonlinear iteration --- iteration counter
   int                       itenum_      ;

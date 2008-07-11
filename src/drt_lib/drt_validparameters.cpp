@@ -647,9 +647,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Nonlinear iteration scheme",
                                tuple<std::string>(
                                  "fixed_point_like",
-                                 "Newton"
+                                 "Newton",
+				 "minimal"
                                  ),
-                               tuple<int>(1,2),
+                               tuple<int>(1,2,3),
                                &fdyn);
 
   setStringToIntegralParameter("CONVCHECK","L_2_norm",

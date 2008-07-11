@@ -407,7 +407,17 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // get control parameter
         const double time = params.get<double>("total time",-1.0);
 
-        const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+
+        // --------------------------------------------------
+        // set parameters for nonlinear treatment
+	string newtonstr=params.get<string>("Linearisation");
+	
+        bool newton = false;
+	if(newtonstr=="Newton")
+	{
+	  newton=true;
+	}
+
 
         // set parameters for stabilization
         ParameterList& stablist = params.sublist("STABILIZATION");
@@ -1121,8 +1131,21 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
         // --------------------------------------------------
         // set parameters for nonlinear treatment
-
-        const bool newton = params.get<bool>("include reactive terms for linearisation");
+	string newtonstr=params.get<string>("Linearisation");
+	
+	Fluid3::LinearisationAction newton=Fluid3::no_linearisation;
+	if(newtonstr=="Newton")
+	{
+	  newton=Fluid3::Newton;
+	}
+	else if (newtonstr=="fixed_point_like")
+	{
+	  newton=Fluid3::fixed_point_like;
+	}
+	else if (newtonstr=="minimal")
+	{
+  	  newton=Fluid3::minimal;
+	}
 
         // get flag for fine-scale subgrid viscosity
         StabilisationAction fssgv =
@@ -1430,42 +1453,42 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // --------------------------------------------------
         // calculate element coefficient matrix
         DRT::ELEMENTS::Fluid3GenalphaResVMM::Impl(this)->Sysmat(
-	                         this,
-				 myknots,
-                                 elemat1,
-                                 elevec1,
-                                 edispnp,
-                                 egridvelaf,
-                                 evelnp,
-                                 eprenp,
-                                 eaccam,
-                                 evelaf,
-                                 csevelaf,
-                                 fsevelaf,
-                                 cseconvaf,
-                                 actmat,
-                                 alphaM,
-                                 alphaF,
-                                 gamma,
-                                 dt,
-                                 time,
-                                 newton,
-                                 higher_order_ele,
-                                 fssgv,
-                                 tds,
-                                 inertia,
-                                 pspg,
-                                 supg,
-                                 vstab,
-                                 cstab,
-                                 cross,
-                                 reynolds,
-                                 whichtau,
-                                 turb_mod_action,
-                                 Cs,
-                                 Cs_delta_sq,
-                                 visceff,
-                                 l_tau,
+	  this,
+	  myknots,
+	  elemat1,
+	  elevec1,
+	  edispnp.data(),
+	  egridvelaf.data(),
+	  evelnp.data(),
+	  eprenp.data(),
+	  eaccam.data(),
+	  evelaf,
+	  csevelaf,
+	  fsevelaf,
+	  cseconvaf,
+	  actmat,
+	  alphaM,
+	  alphaF,
+	  gamma,
+	  dt,
+	  time,
+	  newton,
+	  higher_order_ele,
+	  fssgv,
+	  tds,
+	  inertia,
+	  pspg,
+	  supg,
+	  vstab,
+	  cstab,
+	  cross,
+	  reynolds,
+	  whichtau,
+	  turb_mod_action,
+	  Cs,
+	  Cs_delta_sq,
+	  visceff,
+	  l_tau,
 #ifdef PERF
                                  timeelederxy2   ,
                                  timeelederxy    ,
@@ -1925,7 +1948,13 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           if (pseudotime < 0.0)
         	  dserror("no value for total (pseudo-)time in the parameter list");
 
-          const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+	  string newtonstr=params.get<string>("Linearisation");
+	
+	  bool newton = false;
+	  if(newtonstr=="Newton")
+	  {
+	    newton=true;
+	  }
 
           // --------------------------------------------------
           // set parameters for stabilisation
