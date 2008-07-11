@@ -222,6 +222,7 @@ public:
   const Teuchos::ParameterList& StructuralContactParams() const { return getParameterList()->sublist("STRUCTURAL CONTACT"); }
   const Teuchos::ParameterList& InverseAnalysisParams() const { return getParameterList()->sublist("INVERSE ANALYSIS"); }
   const Teuchos::ParameterList& FluidDynamicParams() const { return getParameterList()->sublist("FLUID DYNAMIC"); }
+  const Teuchos::ParameterList& ScalarTransportDynamicParams() const { return getParameterList()->sublist("SCALAR TRANSPORT DYNAMIC"); }
   const Teuchos::ParameterList& CombustionDynamicParams() const { return getParameterList()->sublist("COMBUSTION DYNAMIC"); }
   const Teuchos::ParameterList& AleDynamicParams() const { return getParameterList()->sublist("ALE DYNAMIC"); }
   const Teuchos::ParameterList& FSIDynamicParams() const { return getParameterList()->sublist("FSI DYNAMIC"); }
@@ -231,6 +232,7 @@ public:
   const Teuchos::ParameterList& FluidSolverParams() const { return getParameterList()->sublist("FLUID SOLVER"); }
   const Teuchos::ParameterList& AleSolverParams() const { return getParameterList()->sublist("ALE SOLVER"); }
   const Teuchos::ParameterList& ThermalSolverParams() const { return getParameterList()->sublist("THERMAL SOLVER"); }
+  const Teuchos::ParameterList& ScalarTransportSolverParams() const { return getParameterList()->sublist("SCALAR TRANSPORT SOLVER"); }
 
   const Teuchos::ParameterList& ConditionNamesParams() const { return getParameterList()->sublist("CONDITION NAMES"); }
 

@@ -87,12 +87,12 @@ void inp_resultdescr()
                 resultdescr[i].field = thermal;
               }
 	      else {
-                frchk("CONDIF",&ierr);
+                frchk("SCATRA",&ierr);
                 if (ierr==1) {
-                  resultdescr[i].field = condif;
+                  resultdescr[i].field = scatra;
                 }
                 else {
-                  dserror("Unknown field type");
+                  dserror("Unknown field type in section RESULT DESCRIPTION");
                 }
 	      }
             }

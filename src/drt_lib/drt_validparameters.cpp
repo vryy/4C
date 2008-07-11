@@ -605,11 +605,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter("DYNAMICTYP","Nlin_Time_Int",
                                "Nonlinear Time Integraton Scheme",
                                tuple<std::string>(
-				 "Nlin_Time_Int",
+                                 "Nlin_Time_Int",
                                  "Lin_Time_Int"
                                  ),
                                tuple<int>(
-				dyntyp_nln_time_int,
+                                dyntyp_nln_time_int,
                                 dyntyp_lin_time_int
                                 ),
                                &fdyn);
@@ -1048,9 +1048,35 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  ALE_DYNAMIC::no_quality,
                                  ALE_DYNAMIC::no_quality),
                                &adyn);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& scatradyn = list->sublist("SCALAR TRANSPORT DYNAMIC",false,"");
+  setStringToIntegralParameter("VELOCITYFIELD","zero",
+                               "type of velocity field used for scalar tranport problems",
+                               tuple<std::string>(
+                                 "zero",
+                                 "function",
+                                 "Navier_Stokes"
+                                 ),
+                               tuple<int>(0,1,2),
+                               &scatradyn);
+
+  IntParameter("VELFUNCNO",-1,"function number for scalar transport velocity field",&scatradyn);
+
+  setStringToIntegralParameter("INITIALFIELD","zero_field",
+                               "Initial Field for scalar transport problem",
+                               tuple<std::string>(
+                                 "zero_field",
+                                 "field_by_function",
+                                 "field_by_condition"),
+                               tuple<int>(0,1,2),
+                               &scatradyn);
+
+  IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&scatradyn);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustdyn = list->sublist("COMBUSTION DYNAMIC",false,"");
-  
+
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&combustdyn);
   IntParameter("NUMSTEP",1,"Total number of Timesteps",&combustdyn);
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&combustdyn);
@@ -1058,16 +1084,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&combustdyn);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&combustdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&combustdyn);
-  
+
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& combustdyn_fluid = combustdyn.sublist("FLUID",false,"");  
+  Teuchos::ParameterList& combustdyn_fluid = combustdyn.sublist("FLUID",false,"");
     
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustdyn_fluid);
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustdyn_fluid);
-  
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustdyn_gfunc = combustdyn.sublist("GFUNCTION",false,"");
-      
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fsidyn = list->sublist(
     "FSI DYNAMIC",false,
@@ -1125,7 +1151,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPUTPARAMS::fsi_DirichletRobin,
                                  INPUTPARAMS::fsi_RobinRobin
                                  ),
-			       &fsidyn);
+                               &fsidyn);
 
   DoubleParameter("ALPHA_F",-1.0,"Robin parameter fluid",&fsidyn);
   DoubleParameter("ALPHA_S",-1.0,"Robin parameter structure",&fsidyn);
@@ -1256,6 +1282,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& thermalsolver = list->sublist("THERMAL SOLVER",false,"");
   SetValidSolverParameters(thermalsolver);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& scatrasolver = list->sublist("SCALAR TRANSPORT SOLVER",false,"solver parameters for scalar transport problems");
+  SetValidSolverParameters(scatrasolver);
 
   return list;
 }

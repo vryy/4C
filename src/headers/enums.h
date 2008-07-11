@@ -32,8 +32,8 @@ typedef enum _PROBLEM_TYP
                        prb_condif,       /*  convection-diffusion problem */
                        prb_pfsi,         /*  projection fsi */
                        prb_struct_multi, /*  multi-scale problem (structure) */
-                       prb_elch,          /*  electrochemical problem */
-                       prb_combust        /*  combustion problem */
+                       prb_elch,         /*  electrochemical problem */
+                       prb_combust       /*  combustion problem */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
@@ -81,11 +81,11 @@ typedef enum _FIELDTYP
                        thermal,     /* thermal field */
                        pressure,    /* pure pressure field */
                        boundary,    /* boundary field */
-                       condif       /* convection-diffusion field */
+                       scatra       /* scalar transport field */
 } FIELDTYP;
 /* Mapping from fieldtyp numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
-#define FIELDNAMES {"none", "fluid", "ale", "structure", "thermal", "pressure", "boundary", "condif", NULL}
+#define FIELDNAMES {"none", "fluid", "ale", "structure", "thermal", "pressure", "boundary", "scatra", NULL}
 
 
 
@@ -169,11 +169,11 @@ typedef enum _ELEMENT_TYP
                        el_fluid2,      /* 2D fluid element */
                        el_fluid2_pro,  /* 2D fluid element */
                        el_fluid2_tu,   /* 2D fluid element for turbulence */
-		       el_fluid2_is,   /* 2D fluid element, inf-sup stable */
-		       el_fluid3,      /* 3D fluid element */
+                       el_fluid2_is,   /* 2D fluid element, inf-sup stable */
+                       el_fluid3,      /* 3D fluid element */
                        el_fluid3_fast,
-		       el_fluid3_pro,  /* 3D fluid element */
-		       el_fluid3_is,   /* 3D fluid element, inf-sup stable */
+                       el_fluid3_pro,  /* 3D fluid element */
+                       el_fluid3_is,   /* 3D fluid element, inf-sup stable */
                        el_ale2,        /* 2D pseudo structural ale element */
                        el_ale3,        /* 3D pseudo structural ale element */
                        el_axishell,    /* 1D axisymmetrical shell element */

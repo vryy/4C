@@ -342,11 +342,10 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
 {
   dat << "----------------------------------------------------------ELEMENTS" << endl;
   
-  // sort elements w.r.t. structure, fluid, ale, etc.
+  // sort elements w.r.t. structure, fluid, ale, scalar transport, etc.
   vector<EXODUS::elem_def> strus;
   vector<EXODUS::elem_def> fluids;
   vector<EXODUS::elem_def> ales;
-  vector<EXODUS::elem_def> levels;
   vector<EXODUS::elem_def> transport;
   vector<EXODUS::elem_def>::const_iterator i_et;
   

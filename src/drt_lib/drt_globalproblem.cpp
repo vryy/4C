@@ -168,6 +168,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--COMBUSTION DYNAMIC", *list);
   reader.ReadGidSection("--COMBUSTION DYNAMIC/FLUID", *list);
   reader.ReadGidSection("--COMBUSTION DYNAMIC/GFUNCTION", *list);
+  reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC", *list);
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
   reader.ReadGidSection("--XFEM GENERAL", *list);
@@ -177,6 +178,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--STRUCT SOLVER", *list);
   reader.ReadGidSection("--ALE SOLVER", *list);
   reader.ReadGidSection("--THERMAL SOLVER", *list);
+  reader.ReadGidSection("--SCALAR TRANSPORT SOLVER", *list);
 
   // a special section for condition names that contains a list of key-integer
   // pairs but is not validated since the keys are arbitrary.
@@ -434,7 +436,7 @@ void DRT::Problem::InputControl()
     solver_.resize(genprob.numfld);
     solv = &solver_[0];
 
-    solv[genprob.numcdf].fieldtyp = condif;
+    solv[genprob.numcdf].fieldtyp = scatra;
     InputSolverControl("FLUID SOLVER",&(solv[genprob.numcdf]));
     break;
   }
@@ -499,7 +501,7 @@ void DRT::Problem::InputControl()
     InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
 
     // solver for convection-diffusion problem (at the moment the same!!!)
-    solv[genprob.numcdf].fieldtyp = condif;
+    solv[genprob.numcdf].fieldtyp = scatra;
     InputSolverControl("FLUID SOLVER",&(solv[genprob.numcdf]));
 
     break;
@@ -517,7 +519,7 @@ void DRT::Problem::InputControl()
     InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
 
     // solver for convection-diffusion problem (at the moment the same!!!)
-    solv[genprob.numcdf].fieldtyp = condif;
+    solv[genprob.numcdf].fieldtyp = scatra;
     InputSolverControl("FLUID SOLVER",&(solv[genprob.numcdf]));
 
     break;
@@ -937,7 +939,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     // allocate and input general old stuff....
     if (genprob.numfld!=1) dserror("numfld != 1 for condif problem");
 
-    condifdis = rcp(new DRT::Discretization("condif",reader.Comm()));
+    condifdis = rcp(new DRT::Discretization("scatra",reader.Comm()));
     AddDis(genprob.numcdf, condifdis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
@@ -1109,7 +1111,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
 
-    condifdis = rcp(new DRT::Discretization("condif",reader.Comm()));
+    condifdis = rcp(new DRT::Discretization("scatra",reader.Comm()));
     AddDis(genprob.numcdf, condifdis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
@@ -1129,7 +1131,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
 
-    condifdis = rcp(new DRT::Discretization("condif",reader.Comm()));
+    condifdis = rcp(new DRT::Discretization("scatra",reader.Comm()));
     AddDis(genprob.numcdf, condifdis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
