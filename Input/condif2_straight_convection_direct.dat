@@ -1546,7 +1546,7 @@ FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 -----------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
-CONDIF DIS 1 NODE 4   POSITION phi     NAME phi     VALUE 1.200723898e+00 TOLERANCE 1e-9
-CONDIF DIS 1 NODE 272 POSITION phi     NAME phi     VALUE 1.200723898e+00 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 4   POSITION phi     NAME phi     VALUE 1.200723898e+00 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 272 POSITION phi     NAME phi     VALUE 1.200723898e+00 TOLERANCE 1e-9
 ---------------------------------------------------------------END
 // END
