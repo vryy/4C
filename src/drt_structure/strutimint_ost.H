@@ -119,6 +119,12 @@ public:
   //! Provide number of steps, a single-step method returns 1
   int MethodSteps() { return 1; }
 
+  //! Give local order of accuracy of displacement part
+  int MethodOrderOfAccuracyDis() { return (theta_ == 1./2.) ? 2 : 1; }
+
+  //! Give local order of accuracy of velocity part
+  int MethodOrderOfAccuracyVel() { return (theta_ == 1./2.) ? 2 : 1; }
+
   //! Consistent predictor with constant displacements
   //! and consistent velocities and displacements
   void PredictConstDisConsistVelAcc();

@@ -11,6 +11,7 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
+/* definitions */
 #ifdef CCADISCRET
 #ifndef STRUTIMINT_H
 #define STRUTIMINT_H
@@ -46,6 +47,7 @@ Maintainer: Burkhard Bornemann
 
 #include "strutimint_vector.H"
 #include "strutimint_state.H"
+//#include "strutimada.H"
 
 /*======================================================================*/
 /*!
@@ -55,6 +57,9 @@ Maintainer: Burkhard Bornemann
 */
 class StruTimInt
 {
+
+  //! Structural time adaptivity is friend
+  friend class StruTimAda;
 
 public:
 
@@ -146,7 +151,7 @@ public:
   virtual void PrintStep() = 0;
 
   //! Output to file
-  virtual void Output() = 0;
+  virtual void OutputStep() = 0;
 
   //@}
 
@@ -207,8 +212,14 @@ public:
   bool MethodExplicit() { return (not MethodImplicit()); }
 
   //! Provide number of steps, e.g. a single-step method returns 1,
-  //! a m-multistep method returns m
+  //! a \f$m\f$-multistep method returns \f$m\f$
   virtual int MethodSteps() = 0;
+
+  //! Give local order of accuracy of displacement part
+  virtual int MethodOrderOfAccuracyDis() = 0;
+
+  //! Give local order of accuracy of velocity part
+  virtual int MethodOrderOfAccuracyVel() = 0;
 
   //! Access dicretisation
   Teuchos::RCP<DRT::Discretization> Discretization()
@@ -224,6 +235,18 @@ public:
     // to kill it. We achieve a nice segmentation fault.
     // The 'false' prevents ConstrManager of trying to kill it.
     return Teuchos::rcp(&discret_, false);
+  }
+
+  //! Access solver
+  Teuchos::RCP<LINALG::Solver> GetSolver()
+  {
+    return Teuchos::rcp(&solver_, false);
+  }
+
+  //! Access output object
+  Teuchos::RCP<IO::DiscretizationWriter> GetDiscretizationWriter()
+  {
+    return Teuchos::rcp(&output_, false);
   }
 
   //@}
@@ -266,7 +289,7 @@ public:
 
 protected:
 
-  //! @name General purpose algorithm parameters
+  //! @name General purpose algorithm members
   //@{
   DRT::Discretization& discret_;  //!< attached discretisation
   int myrank_;  //!< ID of actual processor in parallel

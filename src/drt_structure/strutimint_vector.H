@@ -11,12 +11,15 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
+/* definitions */
 #ifdef CCADISCRET
 #ifndef STRUTIMINT_VECTOR_H
 #define STRUTIMINT_VECTOR_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
+#include <string>
+
 #include "strutimint.H"
 
 /*======================================================================*/
@@ -28,10 +31,10 @@ Maintainer: Burkhard Bornemann
 class StruTimIntVector
 {
 
-public:
-
   //! friendship with StruTimInt
   friend class StruTimInt;
+
+public:
 
   //! Kind of vector norms available for convergence check
   enum NormEnum
@@ -49,11 +52,17 @@ public:
     const std::string name  //!< name identification string
   );
 
+  //! Map enum term to string
+  static std::string MapNormEnumToString
+  (
+    const enum NormEnum norm  //!< input enum term
+  );
+
   //! Determine norm of force residual
   static double CalculateNorm
   (
-    const enum StruTimIntVector::NormEnum norm,  //!< norm to use, see #StruTimIntVector::NormEnum
-    const RCP<Epetra_Vector> vect  //!< the vector
+    const enum StruTimIntVector::NormEnum norm,  //!< norm to use
+    const Teuchos::RCP<Epetra_Vector> vect  //!< the vector
   );
 
 private:

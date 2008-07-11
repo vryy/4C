@@ -12,6 +12,7 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*/
+/* definitions */
 #ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*/
@@ -53,6 +54,43 @@ enum StruTimIntVector::NormEnum StruTimIntVector::MapNormStringToEnum
 }
 
 /*----------------------------------------------------------------------*/
+/* map enum term to string */
+std::string StruTimIntVector::MapNormEnumToString
+(
+  const enum NormEnum norm  //!< input enum term
+)
+{
+  // holds results
+  std::string str;
+
+  // select it
+  switch (norm)
+  {
+  case norm_vague:
+    str = "Vague";
+    break;
+  case norm_l1:
+    str = "L1";
+    break;
+  case norm_l2:
+    str = "L2";
+    break;
+  case norm_rms:
+    str = "Rms";
+    break;
+  case norm_inf:
+    str = "Inf";
+    break;
+  default:
+    str = "norm is undefined";
+    break;
+  }
+
+  // send to hell
+  return str;
+}
+
+/*----------------------------------------------------------------------*/
 /* Calculate vector norm */
 double StruTimIntVector::CalculateNorm
 (
@@ -91,7 +129,7 @@ double StruTimIntVector::CalculateNorm
   else
   {
     dserror("Cannot handle vector norm");
-    return -1;
+    return NaN;
   }
 }
 

@@ -69,7 +69,7 @@ void StruTimIntExpl::PrintStepText
 /*----------------------------------------------------------------------*/
 /* output to file
  * originally by mwgee 03/07 */
-void StruTimIntExpl::Output()
+void StruTimIntExpl::OutputStep()
 {
   // this flag is passed
   bool datawritten = false;

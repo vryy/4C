@@ -718,7 +718,7 @@ void StruTimIntImpl::PrintStepText
 /*----------------------------------------------------------------------*/
 /* output to file
  * originally by mwgee 03/07 */
-void StruTimIntImpl::Output()
+void StruTimIntImpl::OutputStep()
 {
   // this flag is passed along subroutines and prevents
   // repeated initialising of output writer, printing of

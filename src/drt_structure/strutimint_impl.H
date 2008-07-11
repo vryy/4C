@@ -309,7 +309,7 @@ public:
   //! \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
   //! upon object prior to writing stuff here.
   //! \author mwgee (originally) \date 03/07
-  void Output();
+  void OutputStep();
 
   //! Write restart
   //! \author mwgee (originally) \date 03/07
@@ -350,6 +350,14 @@ public:
   //! Provide number of steps, e.g. a single-step method returns 1,
   //! a m-multistep method returns m
   virtual int MethodSteps() = 0;
+
+  //! Give local order of accuracy of displacement part
+  virtual int MethodOrderOfAccuracyDis() = 0;
+
+  //! Give local order of accuracy of velocity part
+  virtual int MethodOrderOfAccuracyVel() = 0;
+
+  //@}
 
 protected:
 

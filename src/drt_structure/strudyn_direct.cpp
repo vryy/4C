@@ -44,6 +44,9 @@ Maintainer: Burkhard Bornemann
 #include "strutimint_ost.H"
 #include "strutimint_ab2.H"
 
+#include "strutimada.H"
+#include "strutimada_zienxie.H"
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -71,9 +74,8 @@ extern FILES allfiles;
 extern SOLVAR* solv;
 
 
-/*----------------------------------------------------------------------*
- | structural non-linear dynamics                          bborn 06/08  |
- *----------------------------------------------------------------------*/
+/*======================================================================*/
+/* structural non-linear dynamics */
 void strudyn_direct()
 {
   // access the discretization
@@ -122,19 +124,26 @@ void strudyn_direct()
 
   // create marching time integrator
   Teuchos::RCP<StruTimInt> sti 
-    = strudyn_create_tis(ioflags, sdyn, xparams, actdis, solver, output);
-
+    = strudyn_CreateMarching(ioflags, sdyn, xparams, actdis, solver, output);
   // auxiliar time integrator
   if (Teuchos::getIntegralValue<int>(tap,"KIND") == TIMADA_DYNAMIC::timada_kind_none)
   {
     // integrate in time
     sti->Integrate();
   }
+  // we adapt to adaptivity
+  else
+  {
+    // auxiliar time integrator object
+    Teuchos::RCP<StruTimAda> sta = strudyn_CreateAuxiliar(sdyn, tap, sti);
+    // integrate adaptively in time
+    sta->Integrate();
+  }
 
   // test results
   {
     DRT::ResultTestManager testmanager(actdis->Comm());
-    testmanager.AddFieldTest(rcp(new StruResultTest(*sti)));
+    testmanager.AddFieldTest(Teuchos::rcp(new StruResultTest(*sti)));
     testmanager.TestAll();
   }
 
@@ -142,9 +151,9 @@ void strudyn_direct()
   return;
 } // end strudyn_direct()
 
-/*----------------------------------------------------------------------*/
-/* create time integrator */
-Teuchos::RCP<StruTimInt> strudyn_create_tis
+/*======================================================================*/
+/* create marching time integrator */
+Teuchos::RCP<StruTimInt> strudyn_CreateMarching
 (
   const Teuchos::ParameterList& ioflags,
   const Teuchos::ParameterList& sdyn,
@@ -220,6 +229,41 @@ Teuchos::RCP<StruTimInt> strudyn_create_tis
 
   // return the integrator
   return sti;
+}
+
+/*======================================================================*/
+/* create auxiliar time integration scheme */
+Teuchos::RCP<StruTimAda> strudyn_CreateAuxiliar
+(
+  const Teuchos::ParameterList& sdyn,  //!< TIS input parameters
+  const Teuchos::ParameterList& tap,  //!< adaptive input flags
+  Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
+)
+{
+  Teuchos::RCP<StruTimAda> sai = Teuchos::null;
+
+  // auxiliar time integrator
+  switch (Teuchos::getIntegralValue<int>(tap,"KIND"))
+  {
+
+  case TIMADA_DYNAMIC::timada_kind_zienxie :
+    // Zienkiewivz-Xie error indicator for generalised-alpha
+    sai = Teuchos::rcp(new StruTimAdaZienXie(sdyn, tap, tis));
+    break;
+
+  case TIMADA_DYNAMIC::timada_kind_ab2 :
+    // Adams-Bashforth 2nd order
+    dserror("AB2 is not implemented, mate");
+    break;
+
+  default :
+    dserror("Auxiliar time integrator is not available.");
+    break;
+
+  }
+
+  // return the auxiliar integrator
+  return sai;
 }
 
 #endif  // #ifdef CCADISCRET

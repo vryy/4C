@@ -18,6 +18,7 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "strutimint_impl.H"
+//#include "strutimada_zienxie.H"
 
 
 /*======================================================================*/
@@ -28,6 +29,9 @@ Maintainer: Burkhard Bornemann
 */
 class StruTimIntGenAlpha : public StruTimIntImpl
 {
+
+  //! Zienkiewicz-Xie auxiliar scheme is friend
+  friend class StruTimAdaZienXie;
 
 public:
 
@@ -72,11 +76,31 @@ public:
   //@{
 
   //! Return name
-  enum NameEnum MethodName() { return name_genalpha; }
+  enum NameEnum MethodName()
+  { 
+    return name_genalpha;
+  }
 
   //! Provide number of steps, e.g. a single-step method returns 1,
   //! a m-multistep method returns m
-  int MethodSteps() { return 1; }
+  int MethodSteps()
+  { 
+    return 1;
+  }
+
+  //! Give local order of accuracy of displacement part
+  //! DEAR SIRS ANS MADAMS, PLEASE REVISE THIS FORMULA
+  int MethodOrderOfAccuracyDis()
+  { 
+    return (beta_ == 1./6.) ? 3 : 2;
+  }
+
+  //! Give local order of accuracy of velocity part
+  //! DEAR SIRS ANS MADAMS, PLEASE REVISE THIS FORMULA
+  int MethodOrderOfAccuracyVel()
+  { 
+    return (gamma_ == 1./2.) ? 2 : 1;
+  }
 
   //! Consistent predictor with constant displacements
   //! and consistent velocities and displacements

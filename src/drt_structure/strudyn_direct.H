@@ -38,6 +38,8 @@ Maintainer: Burkhard Bornemann
 #include "strutimint_ost.H"
 #include "strutimint_ab2.H"
 
+#include "strutimada.H"
+
 using namespace std;
 using namespace Teuchos;
 
@@ -63,10 +65,10 @@ extern "C"
 void strudyn_direct();
 
 /*----------------------------------------------------------------------*/
-//! Create time integrator convenience routine
+//! Create marching time integrator convenience routine
 //!
 //! \author bborn \date 07/08 
-Teuchos::RCP<StruTimInt> strudyn_create_tis
+Teuchos::RCP<StruTimInt> strudyn_CreateMarching
 (
   const Teuchos::ParameterList& ioflags,  //!< input-output-flags
   const Teuchos::ParameterList& sdyn,  //!< structural dynamic flags
@@ -76,14 +78,23 @@ Teuchos::RCP<StruTimInt> strudyn_create_tis
   IO::DiscretizationWriter& output  //!< output writer
 );
 
+/*----------------------------------------------------------------------*/
+//! Create auxiliar time integrator convenience routine
+//!
+//! \author bborn \date 07/08
+Teuchos::RCP<StruTimAda> strudyn_CreateAuxiliar
+(
+  const Teuchos::ParameterList& sdyn,  //!< TIS input parameters
+  const Teuchos::ParameterList& tap,  //!< adaptive input flags
+  Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
+);
+
 #ifdef __cplusplus
 }
 #endif
 
 
 
-
-
-
+/*----------------------------------------------------------------------*/
 #endif  /* #ifndef STRUDYN_DIRECT_H */
 #endif  /* #ifdef CCADISCRET */

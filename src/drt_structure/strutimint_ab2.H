@@ -69,6 +69,12 @@ public:
   //! a m-multistep method returns m
   int MethodSteps() { return 2; }
 
+  //! Give local order of accuracy of displacement part
+  int MethodOrderOfAccuracyDis() { return 2; }
+
+  //! Give local order of accuracy of velocity part
+  int MethodOrderOfAccuracyVel() { return 2; }
+
   //@}
 
 protected:

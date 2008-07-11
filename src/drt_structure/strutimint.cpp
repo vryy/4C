@@ -435,7 +435,7 @@ void StruTimInt::Integrate()
     PrintStep();
 
     // write output
-    Output();
+    OutputStep();
   }
 
   // that's it

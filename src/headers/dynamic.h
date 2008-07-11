@@ -32,9 +32,10 @@ typedef union _ALLDYNA
  *----------------------------------------------------------------------*/
 typedef struct _TIMADA_DYNAMIC
 {
-  enum {
+  enum _timadakindenum {
     timada_kind_none,           /* no time adaptivity */
-    timada_kind_zienxie         /* Zienkiewicz-Xie indicator */
+    timada_kind_zienxie,        /* Zienkiewicz-Xie indicator */
+    timada_kind_ab2             /* Adams-Bahsforth2 indicator */
   } kind;                       /* type of adaptivity in time */
   DOUBLE dt_max;                /* maximally permitted step size */
   DOUBLE dt_min;                /* minimally permitted step size */
