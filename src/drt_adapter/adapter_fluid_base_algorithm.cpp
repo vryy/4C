@@ -201,6 +201,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",allfiles.outputfile_kenner);
   }
+  
+  // --------------------------sublist for combustion-specific fluid parameters
+  /* This sublist COMBUSTION DYNAMIC/FLUID contains parameters for the fluid field
+   * which are only relevant for a combustion problem.                 07/08 henke */
+  if (genprob.probtyp == prb_combust)
+  {
+    fluidtimeparams->sublist("FLUID")=prbdyn.sublist("FLUID");
+  }
 
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective

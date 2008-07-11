@@ -73,6 +73,9 @@ ADAPTER::ConDifBaseAlgorithm::ConDifBaseAlgorithm(const Teuchos::ParameterList& 
   //const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
+  /* For multi-field problems this "PrintDefaultParameters" is responsible for pinting
+   * the same thing on the screen twice, once for the FluidBaseAlgorithm and once for
+   * the ConDifBaseAlgorithm. henke 06/08 */
   if (actdis->Comm().MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
 
@@ -100,22 +103,29 @@ ADAPTER::ConDifBaseAlgorithm::ConDifBaseAlgorithm(const Teuchos::ParameterList& 
 
   // -------------------------------------------------- time integration
   // the default time step size
-  condiftimeparams->set<double>           ("time step size"           ,fdyn.get<double>("TIMESTEP"));
+  condiftimeparams->set<double>           ("time step size"           ,prbdyn.get<double>("TIMESTEP"));
   // maximum simulation time
-  condiftimeparams->set<double>           ("total time"               ,fdyn.get<double>("MAXTIME"));
+  condiftimeparams->set<double>           ("total time"               ,prbdyn.get<double>("MAXTIME"));
   // maximum number of timesteps
-  condiftimeparams->set<int>              ("max number timesteps"     ,fdyn.get<int>("NUMSTEP"));
+  condiftimeparams->set<int>              ("max number timesteps"     ,prbdyn.get<int>("NUMSTEP"));
 
   // ----------------------------------------------- restart and output
   // restart
-  condiftimeparams->set                  ("write restart every"       ,fdyn.get<int>("RESTARTEVRY"));
+  condiftimeparams->set                  ("write restart every"       ,prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  condiftimeparams->set                  ("write solution every"      ,fdyn.get<int>("UPRES"));
+  condiftimeparams->set                  ("write solution every"      ,prbdyn.get<int>("UPRES"));
 
   // ---------------------------------(fine-scale) subgrid diffusivity?
   condiftimeparams->set<string>           ("fs subgrid diffusivity"   ,fdyn.get<string>("FSSUGRVISC"));
 
-
+  // --------------------------sublist for combustion-specific gfunction parameters
+  /* This sublist COMBUSTION DYNAMIC/GFUNCTION contains parameters for the gfunction field
+   * which are only relevant for a combustion problem.                         07/08 henke */
+  if (genprob.probtyp == prb_combust)
+  {
+    condiftimeparams->sublist("GFUNCTION")=prbdyn.sublist("GFUNCTION");
+  }
+    
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
   // time-integration (or stationary) scheme
