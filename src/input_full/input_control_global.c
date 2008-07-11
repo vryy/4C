@@ -800,7 +800,7 @@ for (i=0; i<genprob.numfld; i++)
    break;
    case boundary:
    break;
-   case condif:
+   case scatra:
    break;
    case structure:
      inpctr_eig_struct(alleig);
