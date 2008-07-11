@@ -65,6 +65,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_fsiload")         act = So_hex8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")    act = So_hex8::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")  act = So_hex8::calc_struct_update_imrlike;
+  else if (action=="calc_struct_reset_istep")     act = So_hex8::calc_struct_reset_istep;
   else if (action=="calc_homog_stressdens")       act = So_hex8::calc_homog_stressdens;
   else if (action=="postprocess_stress")          act = So_hex8::postprocess_stress;
   else dserror("Unknown type of action for So_hex8");
@@ -330,6 +331,24 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
         visco->Update();
+      }
+    }
+    break;
+
+    case calc_struct_reset_istep: {
+      // do something with internal EAS, etc parameters
+      if (eastype_ != soh8_easnone) {
+        Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
+        Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        Epetra_BLAS::Epetra_BLAS blas;
+        blas.COPY((*alphao).M()*(*alphao).N(), (*alphao).A(), (*alpha).A());  // alpha := alphao
+      }
+      // Update of history for visco material
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == m_visconeohooke)
+      {
+        MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
+        visco->Reset();
       }
     }
     break;

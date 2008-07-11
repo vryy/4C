@@ -82,7 +82,11 @@ namespace MAT
     
     void Initialize(const int numgp) ;
     
+    /// Update internal stress variables
     void Update();
+
+    /// Reset internal stress variables 
+    void Reset();
     
     void Evaluate(const Epetra_SerialDenseVector* glstrain,
                   const int gp,

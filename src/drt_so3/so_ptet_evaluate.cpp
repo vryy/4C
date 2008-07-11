@@ -134,7 +134,8 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
   else if (action=="calc_struct_eleload")                 act = Ptet::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")                 act = Ptet::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")            act = Ptet::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike") act = Ptet::calc_struct_update_imrlike;
+  else if (action=="calc_struct_update_imrlike")          act = Ptet::calc_struct_update_imrlike;
+  else if (action=="calc_struct_reset_istep")             act = Ptet::calc_struct_reset_istep;
   else dserror("Unknown type of action for Ptet");
 
   // what should the element do
@@ -258,6 +259,12 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
     break;
 
     case calc_struct_update_imrlike: 
+    {
+      ;// there is nothing to do here at the moment
+    }
+    break;
+
+    case calc_struct_reset_istep: 
     {
       ;// there is nothing to do here at the moment
     }

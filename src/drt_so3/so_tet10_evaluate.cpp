@@ -76,8 +76,9 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
   else if (action=="calc_struct_eleload")       act = So_tet10::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = So_tet10::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = So_tet10::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike")  act = So_tet10::calc_struct_update_imrlike;
-  else if (action=="postprocess_stress")                  act = So_tet10::postprocess_stress;
+  else if (action=="calc_struct_update_imrlike") act = So_tet10::calc_struct_update_imrlike;
+  else if (action=="calc_struct_reset_istep")   act = So_tet10::calc_struct_reset_istep;
+  else if (action=="postprocess_stress")        act = So_tet10::postprocess_stress;
   else dserror("Unknown type of action for So_tet10");
 
   // get the material law
@@ -290,6 +291,11 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
     break;
 
     case calc_struct_update_imrlike: {
+      ;// there is nothing to do here at the moment
+    }
+    break;
+
+    case calc_struct_reset_istep: {
       ;// there is nothing to do here at the moment
     }
     break;

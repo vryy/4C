@@ -79,6 +79,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
   else if (action=="calc_struct_fsiload")       act = So_tet4::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = So_tet4::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = So_tet4::calc_struct_update_imrlike;
+  else if (action=="calc_struct_reset_istep")  act = So_tet4::calc_struct_reset_istep;
 #ifdef PRESTRESS
   else if (action=="calc_struct_prestress_update_green_lagrange") act = So_tet4::update_gl;
 #endif
@@ -314,6 +315,11 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList& params,
     break;
 
     case calc_struct_update_imrlike: {
+      ;// there is nothing to do here at the moment
+    }
+    break;
+
+    case calc_struct_reset_istep: {
       ;// there is nothing to do here at the moment
     }
     break;

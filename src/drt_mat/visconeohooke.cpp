@@ -131,6 +131,7 @@ double MAT::ViscoNeoHooke::Density()
 }
 
 /*----------------------------------------------------------------------*
+ |  Initialise/allocate internal stress variables (public)         05/08|
  *----------------------------------------------------------------------*/
 void MAT::ViscoNeoHooke::Initialize(const int numgp) 
 {
@@ -155,6 +156,9 @@ void MAT::ViscoNeoHooke::Initialize(const int numgp)
   
 }
 
+/*----------------------------------------------------------------------*
+ |  Update internal stress variables              (public)         05/08|
+ *----------------------------------------------------------------------*/
 void MAT::ViscoNeoHooke::Update()
 {
   histstresslast_=histstresscurr_;
@@ -171,6 +175,17 @@ void MAT::ViscoNeoHooke::Update()
     artstresscurr_->at(j) = emptyvec;
   }
   
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Reset internal stress variables               (public)         05/08|
+ *----------------------------------------------------------------------*/
+void MAT::ViscoNeoHooke::Reset()
+{
+  // do nothing,
+  // because #histstresscurr_ and #artstresscurr_ are recomputed anyway at every iteration
+  // based upon #histstresslast_ and #artstresslast_ untouched within time step
   return;
 }  
 

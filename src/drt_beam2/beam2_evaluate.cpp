@@ -58,6 +58,7 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
   else if (action=="calc_struct_fsiload")       act = Beam2::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Beam2::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike") act = Beam2::calc_struct_update_imrlike;
+  else if (action=="calc_struct_reset_istep")   act = Beam2::calc_struct_reset_istep;
   else dserror("Unknown type of action for Beam2");
    
   switch(act)
@@ -150,6 +151,11 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
     }
     break;
     case calc_struct_update_imrlike:
+    {
+      ;// there is nothing to do here at the moment
+    }
+    break;
+    case calc_struct_reset_istep:
     {
       ;// there is nothing to do here at the moment
     }
