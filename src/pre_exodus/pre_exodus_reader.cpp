@@ -372,16 +372,28 @@ void EXODUS::Mesh::Print(ostream & os, bool verbose) const
 
 RCP<EXODUS::ElementBlock> EXODUS::Mesh::GetElementBlock(const int id) const
 {
+  if (elementBlocks_.find(id) == elementBlocks_.end()){
+    cout << "ElementBlock " << id << " not found!" << endl;
+    dserror ("ElementBlock not found");
+  }
   return (elementBlocks_.find(id))->second;
 }
 
 EXODUS::NodeSet EXODUS::Mesh::GetNodeSet(const int id) const
 {
+  if (nodeSets_.find(id) == nodeSets_.end()){
+    cout << "NodeSet " << id << " not found!" << endl;
+    dserror ("NodeSet not found");
+  }
   return (nodeSets_.find(id))->second;
 }
 
 EXODUS::SideSet EXODUS::Mesh::GetSideSet(const int id) const
 {
+  if (sideSets_.find(id) == sideSets_.end()){
+    cout << "SideSet " << id << " not found!" << endl;
+    dserror ("SideSet not found");
+  }
   return (sideSets_.find(id))->second;
 }
 
