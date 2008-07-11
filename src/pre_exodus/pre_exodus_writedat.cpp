@@ -355,7 +355,6 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
     if (acte.sec.compare("STRUCTURE")==0) strus.push_back(acte);
     else if (acte.sec.compare("FLUID")==0) fluids.push_back(acte);
     else if (acte.sec.compare("ALE")==0) ales.push_back(acte);
-    else if (acte.sec.compare("LEVELSET")==0) levels.push_back(acte);
     else if (acte.sec.compare("TRANSPORT")==0) transport.push_back(acte);
     else if (acte.sec.compare("")==0);
     else{
@@ -387,15 +386,6 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   // print ale elements
   dat << "------------------------------------------------------ALE ELEMENTS" << endl;
   for(i_et=ales.begin();i_et!=ales.end();++i_et)
-  {
-    EXODUS::elem_def acte = *i_et;
-    RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb,acte,ele,dat);
-  }
-
-  // print levelset elements
-  dat << "-------------------------------------------------LEVELSET ELEMENTS" << endl;
-  for(i_et=levels.begin();i_et!=levels.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
     RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
