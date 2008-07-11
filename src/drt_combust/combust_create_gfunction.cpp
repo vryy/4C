@@ -44,29 +44,29 @@ namespace COMBUST
 /*----------------------------------------------------------------------*
  | create a G-function discretization from the fluid        henke 06/08 |
  *----------------------------------------------------------------------*/
-void CreateGfuncDiscretization(int disnumff,int disnumcdf)
+void CreateGfuncDiscretization(int disnumff,int disnumgff)
 {
-  if (disnumff == disnumcdf) dserror("Got identical discretization ids");
+  if (disnumff == disnumgff) dserror("Got identical discretization ids");
 
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
-  RefCountPtr<DRT::Discretization> condifdis   = DRT::Problem::Instance()->Dis(disnumcdf,0);
+  RefCountPtr<DRT::Discretization> gfuncdis   = DRT::Problem::Instance()->Dis(disnumgff,0);
 
   if (!fluiddis->Filled()) fluiddis->FillComplete();
 
   // is the second discretization really empty?
-  if (condifdis->NumGlobalElements() or condifdis->NumGlobalNodes())
+  if (gfuncdis->NumGlobalElements() or gfuncdis->NumGlobalNodes())
   {
     dserror("There are %d elements and %d nodes in empty discretization. Panic.",
-            condifdis->NumGlobalElements(), condifdis->NumGlobalNodes());
+    		gfuncdis->NumGlobalElements(), gfuncdis->NumGlobalNodes());
   }
 
-  int myrank = condifdis->Comm().MyPID();
+  int myrank = gfuncdis->Comm().MyPID();
 
   vector<int> egid;
   egid.reserve(fluiddis->NumMyRowElements());
 
-  vector<string> condiftype;
-  condiftype.reserve(fluiddis->NumMyRowElements());
+  vector<string> gfunctype;
+  gfunctype.reserve(fluiddis->NumMyRowElements());
 
   set<int> rownodeset;
   set<int> colnodeset;
@@ -91,7 +91,7 @@ void CreateGfuncDiscretization(int disnumff,int disnumcdf)
     if (not found and f2!=NULL)
     {
       found = true;
-      condiftype.push_back("CONDIF2");
+      gfunctype.push_back("CONDIF2");
     }
 #endif
 
@@ -100,7 +100,7 @@ void CreateGfuncDiscretization(int disnumff,int disnumcdf)
     if (not found and f3!=NULL)
     {
       found = true;
-      condiftype.push_back("CONDIF3");
+      gfunctype.push_back("CONDIF3");
     }
 #endif
 
@@ -129,29 +129,29 @@ void CreateGfuncDiscretization(int disnumff,int disnumcdf)
     if (rownodeset.find(gid)!=rownodeset.end())
     {
       DRT::Node* fluidnode = fluiddis->lRowNode(i);
-      condifdis->AddNode(rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
+      gfuncdis->AddNode(rcp(new DRT::Node(gid, fluidnode->X(), myrank)));
     }
   }
 
   // we get the node maps almost for free
 
-  vector<int> condifnoderowvec(rownodeset.begin(), rownodeset.end());
+  vector<int> gfuncnoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
-  RefCountPtr<Epetra_Map> condifnoderowmap = rcp(new Epetra_Map(-1,
-                                                             condifnoderowvec.size(),
-                                                             &condifnoderowvec[0],
+  RefCountPtr<Epetra_Map> gfuncnoderowmap = rcp(new Epetra_Map(-1,
+                                                             gfuncnoderowvec.size(),
+                                                             &gfuncnoderowvec[0],
                                                              0,
-                                                             condifdis->Comm()));
-  condifnoderowvec.clear();
+                                                             gfuncdis->Comm()));
+  gfuncnoderowvec.clear();
 
-  vector<int> condifnodecolvec(colnodeset.begin(), colnodeset.end());
+  vector<int> gfuncnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  RefCountPtr<Epetra_Map> condifnodecolmap = rcp(new Epetra_Map(-1,
-                                                             condifnodecolvec.size(),
-                                                             &condifnodecolvec[0],
+  RefCountPtr<Epetra_Map> gfuncnodecolmap = rcp(new Epetra_Map(-1,
+                                                             gfuncnodecolvec.size(),
+                                                             &gfuncnodecolvec[0],
                                                              0,
-                                                             condifdis->Comm()));
-  condifnodecolvec.clear();
+                                                             gfuncdis->Comm()));
+  gfuncnodecolvec.clear();
 
   // now do the elements
 
@@ -184,7 +184,7 @@ void CreateGfuncDiscretization(int disnumff,int disnumcdf)
     DRT::Element* fluidele = fluiddis->gElement(egid[i]);
 
     // create the condif element with the same global element id
-    RefCountPtr<DRT::Element> condifele = DRT::UTILS::Factory(condiftype[i],
+    RefCountPtr<DRT::Element> condifele = DRT::UTILS::Factory(gfunctype[i],
                                                               "Polynomial" ,
                                                               egid[i]      ,
                                                               myrank       );
@@ -225,7 +225,7 @@ void CreateGfuncDiscretization(int disnumff,int disnumcdf)
     }
 
     // add new condif element to discretization
-    condifdis->AddElement(condifele);
+    gfuncdis->AddElement(condifele);
 
   }
 
@@ -239,9 +239,14 @@ void CreateGfuncDiscretization(int disnumff,int disnumcdf)
     // We use the same nodal ids and therefore we can just copy the
     // conditions. But here we rename it. So we have nice dirichlet
     // conditions at the condif discretization.
-    condifdis->SetCondition("Dirichlet", rcp(new DRT::Condition(*cond[i])));
-    cout<<"...transferred ConDif Dirichlet condition no. "<<i+1<<endl;
+	gfuncdis->SetCondition("Dirichlet", rcp(new DRT::Condition(*cond[i])));
+    if (myrank==0)  
+      cout<<"...transferred ConDif Dirichlet condition no. "<<i+1<<endl;
   }
+  /* Here we might have to call COMBUST::ALGORITHM::SignedDistFunc() to create the initial conditions
+   * for all nodes in the new ConDif Discretization. It would be nice to just import the surface where
+   * G=0 and then to initialize the signed distance function by running the procedure once. SignedDistFunc()
+   * would then have to be accessible from CreateGfuncDiscretization!              henke 07/08 */ 
 
 #if 0
   // a small hack !!
@@ -268,7 +273,7 @@ void CreateGfuncDiscretization(int disnumff,int disnumcdf)
 #endif
 
   // redistribute nodes to column (ghost) map
-  DRT::UTILS::RedistributeWithNewNodalDistribution(*condifdis, *condifnoderowmap, *condifnodecolmap);
+  DRT::UTILS::RedistributeWithNewNodalDistribution(*gfuncdis, *gfuncnoderowmap, *gfuncnodecolmap);
 }
 } // namespace COMBUST
 

@@ -36,4 +36,11 @@ void COMBUST::printlogo()
     std::cout<<"                           "<<std::endl;
 } // void printlogo()
 
+/*----------------------------------------------------------------------*
+ | create integration cells at discontinuity                henke 07/08 |
+ *----------------------------------------------------------------------*/
+void COMBUST::CreateIntegrationCells()
+{
+	return;
+}
 #endif  // #ifdef CCADISCRET

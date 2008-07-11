@@ -165,6 +165,9 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENCE MODEL", *list);
+  reader.ReadGidSection("--COMBUSTION DYNAMIC", *list);
+  reader.ReadGidSection("--COMBUSTION DYNAMIC/FLUID", *list);
+  reader.ReadGidSection("--COMBUSTION DYNAMIC/GFUNCTION", *list);
   reader.ReadGidSection("--ALE DYNAMIC", *list);
   reader.ReadGidSection("--FSI DYNAMIC", *list);
   reader.ReadGidSection("--XFEM GENERAL", *list);
@@ -842,6 +845,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   RCP<DRT::Discretization> aledis          = null;
   RCP<DRT::Discretization> boundarydis     = null;
   RCP<DRT::Discretization> condifdis       = null;
+  RCP<DRT::Discretization> gfuncdis        = null;
   RCP<DRT::Discretization> structdis_macro = null;
   RCP<DRT::Discretization> structdis_micro = null;
 

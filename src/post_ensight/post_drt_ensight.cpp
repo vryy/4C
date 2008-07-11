@@ -132,6 +132,19 @@ int main(
         condifwriter.WriteFiles();
         break;
     }
+    case prb_combust:
+    {
+        string basename = problem.outname();
+
+        PostField* fluidfield = problem.get_discretization(0);
+        FluidEnsightWriter fluidwriter(fluidfield, basename);
+        fluidwriter.WriteFiles();
+
+        PostField* condiffield = problem.get_discretization(1);
+        ConDifEnsightWriter condifwriter(condiffield, basename);
+        condifwriter.WriteFiles();
+        break;
+    }
     case prb_none:
     {
       // Special problem type that contains one discretization and any number

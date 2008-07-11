@@ -22,6 +22,11 @@ namespace COMBUST
  *----------------------------------------------------------------------*/
 void printlogo();
 
+/*----------------------------------------------------------------------*
+ | create integration cells at discontinuity                henke 07/08 |
+ *----------------------------------------------------------------------*/
+void CreateIntegrationCells();
+
 } //namespace COMBUST
 
 #endif  // #ifndef COMBUST_UTILS_H

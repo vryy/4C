@@ -26,5 +26,5 @@ void combust_dyn();
 }
 #endif
 
-#endif // #ifndef COMBUST_DYN_H
-#endif // #ifdef CCADISCRET
+#endif /* #ifndef COMBUST_DYN_H */
+#endif /* #ifdef CCADISCRET */

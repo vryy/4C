@@ -72,15 +72,21 @@ namespace COMBUST
 
     /// time step number
     int Step() const { return step_; }
+    
+    /// FG iteration number
+    int FGiter() const { return fgiter_; }
 
     /// tests if there are more time steps to do
-    bool NotFinished() { return ((step_ < numstep_) and (time_ <= maxtime_)); }
+    bool NotFinished() { return ((step_ < stepmax_) and (time_ <= timemax_)); }
     
     /// reinitialize G-function
     void ReinitializeGfunc();
 
+    /// build signed distance function
+    void SignedDistFunc();
+    
     /// tests if the FGI iteration has converged
-    bool NotConverged();
+    bool NotConvergedFGI();
     
     /// start a new time step
     void PrepareTimeStep();
@@ -89,16 +95,16 @@ namespace COMBUST
     void PrepareFGIteration();
     
     /// solve Navier-Stokes equations for current time step
-    void DoFluidStep();
+    void DoFluidField();
     
     /// solve G-function equation for current time step
-    void DoGfuncStep();
+    void DoGfuncField();
     
     /// update fields in FGI iteration;
-    void UpdateFGI();
+    void UpdateFGIteration();
 
     /// take current results for converged and save for next time step
-    void UpdateTime();
+    void UpdateTimeStep();
 
     /// write output
     void Output();
@@ -113,21 +119,29 @@ namespace COMBUST
 
     //! @name Time stepping variables
     int step_;
-    int numstep_;
+    int stepmax_;
     double time_;
-    double maxtime_;
+    double timemax_;
     double dt_;
     //@}
     
-    // variables for FGI iteration
-    int fgiter;
-    int maxfgiter;
-    bool notconverged;
-    // variables for Fluid iterations
-    int fiter;
-    // variables for G-function iterations
-    int giter;
-
+    //! @name FG iteration variables
+    // FG iteration counter
+    int fgiter_;
+    // maximum number of FG iterations
+    int fgitermax_;
+    // L2-norm of velocity in FG iteration
+    double fgvelnormL2_;
+    // L2-norm of g-function in FG iteration
+    double fggfuncnormL2_;
+    // ?
+    bool notconverged_;
+    //@}
+    
+    // this is a parameter that should be read from the parameter list
+    int reinitialize_action;
+    // this is a parameter that should be contained in the validparameters list as an enum.
+    int signeddistfunc;
   };
 
 } // namespace COMBUST

@@ -6,7 +6,7 @@
 	The G-function field is a convection-diffusion field. Based on 
 	the fluid discretization, the G-function discretization is 
 	created. BACI knows two discretizations.
-
+	
 <pre>
 Maintainer: Florian Henke
             henke@lnm.mw.tum.de
@@ -22,9 +22,9 @@ namespace COMBUST
 {
 
 /*----------------------------------------------------------------------*
- | create a G-function discretization from the fluid        henke 06/08 |
+ * create a G-function discretization from the fluid        henke 06/08 * 
  *----------------------------------------------------------------------*/
-void CreateGfuncDiscretization(int disnumff,int disnumcdf);
+void CreateGfuncDiscretization(int disnumff,int disnumgff);
 
 } //namespace COMBUST
 

@@ -25,6 +25,17 @@
 	o call a combustion algorithm to solve the multi-field problem
 	o check the results
 
+	remark: in this function, the notation is changed from 	"condif"-
+	style to "gfunc"-style . That is, even though we are still dealing 
+	with a convection-diffusion field using condif elements and so on,
+	for convenience the "condif" discretization is from now on named 
+	after the G-funciton: 
+	
+	disnumcdf -> disnumgff
+	condifdis -> gfuncdis
+	...
+	
+
 \author henke
 \date 06/08
 
@@ -98,39 +109,34 @@ void combust_dyn()
   // prepare the discretizations
   // -------------------------------------------------------------------
 
-//  // get discretization ids
-//  int disnumff = genprob.numff; // typically 0
-//  int disnumcdf = genprob.numcdf; // typically 1
+  // get discretization ids
+  int disnumff = genprob.numff; // discretization number fluid; typically 0
+  int disnumgff = genprob.numcdf; // discretization number G-function; typically 1
+  // remark: precisely here the convection-diffusion discretization 
+  // (genprob.numcdf) is called and named according to its meaning 
+  // in the combustion context, namely the G-function (disnumgff)
   
   // access fluid discretization
-  RCP<DRT::Discretization> fluiddis = null;
-  fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+  RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
   if (!fluiddis->Filled()) fluiddis->FillComplete();
   if (fluiddis->NumGlobalNodes()==0)
     dserror("No fluid discretization found!");
 
-// hier muss die ConDif Diskretisierung erzeugt werden
-// Georg greift auf die ConDif Disk zu, obwohl sie nicht existiert
-//    // access the (typically empty) condif discretization
-//    RefCountPtr<DRT::Discretization> condifdis = DRT::Problem::Instance()->Dis(disnumcdf,0);
-//    if (!condifdis->Filled()) condifdis->FillComplete();
-  
-  // create G-function discretization
-  RCP<DRT::Discretization> condifdis = null;
-  condifdis = DRT::Problem::Instance()->Dis(genprob.numcdf,0);
-  if (!condifdis->Filled()) condifdis->FillComplete();
+  // access G-function discretization (it should be empty)
+  RCP<DRT::Discretization> gfuncdis = DRT::Problem::Instance()->Dis(disnumgff,0);
+  if (!gfuncdis->Filled()) gfuncdis->FillComplete();
 
-  // create condif elements if the condif discretization is empty
-  if (condifdis->NumGlobalNodes()==0)
+  // create G-function discretization (fill with condif elements)
+  if (gfuncdis->NumGlobalNodes()==0)
   {
     Epetra_Time time(comm);
-    COMBUST::CreateGfuncDiscretization(genprob.numff,genprob.numcdf);
+    COMBUST::CreateGfuncDiscretization(disnumff,disnumgff);
     if (comm.MyPID()==0)
-    cout<<"Created necessary condif discretization from fluid field in...."
+    cout<<"Created G-function discretization from fluid discretization in...."
     <<time.ElapsedTime() << " secs\n\n";
   }
   else
-    dserror("Fluid AND LevelSet discretization present. This is not supported.");
+    dserror("G-function discretization is not empty. Fluid and G-function already present. This is not supported.");
 
   
 /*  const int fmyrank = fluiddis->Comm().MyPID();
@@ -148,18 +154,19 @@ void combust_dyn()
 //  if (!fluiddis->Filled()) fluiddis->FillComplete();
 //  if (!gfuncdis->Filled()) gfuncdis->FillComplete();
   
-  // create an ELCH::Algorithm instance
+  // create an COMBUST::Algorithm instance
+  /* Muss das nicht eigentlich combust_ heissen? Wegen Konvention   henke 07/08*/
     Teuchos::RCP<COMBUST::Algorithm> combust = Teuchos::rcp(new COMBUST::Algorithm(comm));
 
     if (genprob.restart)
     {
       // read the restart information, set vectors and variables
-      //elch->ReadRestart(genprob.restart);
+      //combust->ReadRestart(genprob.restart);
       dserror("restart not yet available");
       exit(1);
     }
     
-    // solve the whole electrochemistry problem
+    // solve the whole combustion problem
     combust->TimeLoop();
 
     // summarize the performance measurements

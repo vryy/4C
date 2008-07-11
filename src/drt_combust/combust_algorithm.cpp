@@ -15,14 +15,15 @@ Maintainer: Florian Henke
 #ifdef CCADISCRET
 
 #include "combust_algorithm.H"
+#include "combust_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  * constructor                                              henke 06/08 * 
  *----------------------------------------------------------------------*/
 COMBUST::Algorithm::Algorithm(Epetra_Comm& comm)
-:  FluidBaseAlgorithm(DRT::Problem::Instance()->FluidDynamicParams(),false),
-   ConDifBaseAlgorithm(DRT::Problem::Instance()->FluidDynamicParams()),
+:  FluidBaseAlgorithm(DRT::Problem::Instance()->CombustionDynamicParams(),false),
+   ConDifBaseAlgorithm(DRT::Problem::Instance()->CombustionDynamicParams()),
    comm_(comm),
    step_(0),
    time_(0.0)
@@ -36,24 +37,24 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm)
   */ 
 
   // taking time loop control parameters out of fluid dynamics section
-  const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
   // maximum simulation time
-  maxtime_=fluiddyn.get<double>("MAXTIME");
+  timemax_=combustdyn.get<double>("MAXTIME");
   // maximum number of timesteps
-  numstep_ = fluiddyn.get<int>("NUMSTEP");
+  stepmax_ = combustdyn.get<int>("NUMSTEP");
   // time step size
-  dt_ = fluiddyn.get<double>("TIMESTEP");
+  dt_ = combustdyn.get<double>("TIMESTEP");
   
   // counter FGI iterations
-  fgiter = 0;
-  maxfgiter = 1; // Dieser Parameter muss aus der Parameterliste ausgelesen werden
-  // counter Fluid iterations
-  fiter = 0;
-  // counter G-function iterations
-  giter = 0;
+  fgiter_ = 0;
+  // maximum number of Fluid - G-function iterations
+  fgitermax_ = combustdyn.get<int>("ITEMAX");
+ 
+  // set options for reinitialization; they should be read fro the parameter list
+  signeddistfunc = 1;
+  reinitialize_action = 1; // reinitialize_action = signeddistfunc;
 
-  // get RCP to actual velocity field (time n+1)
-  velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp());
+  // velocitynp_ ist nicht initialisiert!
 }
 
 /*----------------------------------------------------------------------*
@@ -77,29 +78,32 @@ void COMBUST::Algorithm::TimeLoop()
   {
     // prepare next time step
     PrepareTimeStep();
+    
+    //create integration cells
+    CreateIntegrationCells();
 
     // reinitialize G-function 
     ReinitializeGfunc();
     
     // Fluid-G-function-Interaction loop
-    while (NotConverged())
+    while (NotConvergedFGI())
     {
     	// prepare Fluid-G-function iteration
     	PrepareFGIteration();
     	
     	// solve nonlinear Navier-Stokes system
-    	DoFluidStep();
+    	DoFluidField();
 
-    	// solve G-function equation
-    	DoGfuncStep();
+    	// solve linear G-function equation
+    	DoGfuncField();
     	
     	// update field vectors
-    	UpdateFGI();
+    	UpdateFGIteration();
     	
     } // Fluid-G-function-Interaction loop
     
     // update all field solvers
-    UpdateTime();
+    UpdateTimeStep();
 
     // write output to screen and files
     Output();
@@ -114,21 +118,41 @@ return;
  *---------------------------------------------------------------------*/
 void COMBUST::Algorithm::ReinitializeGfunc()
 {
-	/* Hier soll die G-Funktion reinitialisiert werden.
-	   Dafür gibt es mehrere Möglichkeiten. Ein switch über alle Optionen 
-	   ist hier nötig.
-	   Zunächst wird einfach die signed-distance function gerufen.
-	*/
+	/* Here, the G-function is reinitialized, because we suspect that the
+	 * signed distance property has been lost due to inaccuracies. There
+	 * are various options to reinitialize the G-function.
+	 * For the time being we use an exact, but expensive, procedure to ensure
+	 * this property (SignedDistFunc()).                    henke 06/08 */
+	switch (reinitialize_action)
+	{
+		case 1:
+			SignedDistFunc();
+			break;
+		default:
+			dserror ("Unknown option to reinitialize the G-function");
+	}
+	return;
+}
+
+/*---------------------------------------------------------------------*
+ *  protected: build signed distance function              henke 06/08 *
+ *---------------------------------------------------------------------*/
+void COMBUST::Algorithm::SignedDistFunc()
+{
+	/* This member function constructs a G-function field that meets the 
+	 * signed distance property. The algorithm assigns the value of the 
+	 * distance between each node and the surface defined by G=0 as a scalar 
+	 * value to every node in the G-function discretization.*/
 	return;
 }
 
 /*----------------------------------------------------------------------*
  *  protected: FGI iteration converged?                     henke 06/08 *
  *----------------------------------------------------------------------*/
-bool COMBUST::Algorithm::NotConverged()
+bool COMBUST::Algorithm::NotConvergedFGI()
 {
 	bool notconverged = false;
-	if (fgiter <= maxfgiter and true) // (fgiter <= maxfgiter and ComputeGfuncNorm() < maxepsg and ComputeFluidNorm() < maxepsf)
+	if (fgiter_ < fgitermax_ and true) // (fgiter <= fgitermax and ComputeGfuncNorm() < maxepsg and ComputeFluidNorm() < maxepsf)
 	{
 		notconverged = true;
 	}
@@ -142,16 +166,24 @@ void COMBUST::Algorithm::PrepareTimeStep()
 {
   step_ += 1;
   time_ += dt_;
-  fgiter = 0;
+  fgiter_ = 0;
   // fgnormgfunc = large value, determined in Input file
+  fgvelnormL2_ = 1.0;
   // fgnormfluid = large value
+  fggfuncnormL2_ = 1.0;
+    
   if (Comm().MyPID()==0)
   {
-    cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
+	//cout<<"---------------------------------------  time step  ------------------------------------------\n";
+	printf("---------------------------------------  time step %2d ----------------------------------------\n",step_);
+    printf("TIME: %11.4E/%11.4E  DT = %11.4E STEP = %4d/%4d \n",time_,timemax_,dt_,step_,stepmax_);
   }
-
+  
   FluidField().PrepareTimeStep();
-  //ConDifField().PrepareTimeStep();
+  ConDifField().PrepareTimeStep();
+  
+  /* Ich wuerde hier gerne vergleichen, ob die Zeitschritte des Fluids und des ConDif
+   * identisch sind. Es existiert eine Variable time_ in jedem feld */
   return;
 }
 
@@ -160,21 +192,27 @@ void COMBUST::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void COMBUST::Algorithm::PrepareFGIteration()
 {
-	fgiter += 1;
+	fgiter_ += 1;
 	if (Comm().MyPID()==0)
 	{
-	  cout<<"\n******************\n   FGI   \n******************\n";
+	  //cout<<"\n---------------------------------------  FGI loop  -------------------------------------------\n";
+	  printf("\n---------------------------------------  FGI loop: iteration number: %2d ----------------------\n",fgiter_);
 	}	
 }
 
 /*----------------------------------------------------------------------*
  * protected: perform a fluid time integration step         henke 06/08 *
  *----------------------------------------------------------------------*/
-void COMBUST::Algorithm::DoFluidStep()
+void COMBUST::Algorithm::DoFluidField()
 {
   // determine location of flame interface
   // FlameInterface(Gfunction);	
-	
+  
+  if (Comm().MyPID()==0)
+  {
+    cout<<"\n---------------------------------------  FLUID SOLVER  ---------------------------------------\n";
+  }
+  
   // solve nonlinear Navier-Stokes system
   FluidField().NonlinearSolve();
   return;
@@ -183,37 +221,36 @@ void COMBUST::Algorithm::DoFluidStep()
 /*----------------------------------------------------------------------*
  * protected: perform a G-function time integration step    henke 06/08 *
  *----------------------------------------------------------------------*/
-void COMBUST::Algorithm::DoGfuncStep()
+void COMBUST::Algorithm::DoGfuncField()
 {
-  
   if (Comm().MyPID()==0)
   {
-    cout<<"\n****************\n G-FUNCTION SOLVER \n****************\n";
+    cout<<"\n---------------------------------------  G-FUNCTION SOLVER  ----------------------------------\n";
   }
   
   /* Hier muss eigentlich nur die Geschwindigkeit bei G=0 (Flammeninterface gelesen 
-     werden). Tatsächlich kann vorerst aber das gesamte Fluid Feld als Input
+     werden). Tatsächlich kann vorerst aber das gesamte Navier-Stokes Fluid Feld als Input
      genommen werden. Die G-function sucht sich dann an jedem Knoten die Geschwindigkeit
      als Konvektions-Diffusions Geschwindigkeit.*/
 
-  // get new velocity from Navier-Stokes solver
+  // exract new velocity from fluid field as provided by the Navier-Stokes solver
   velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp());
 
-  // prepare time step
-  ConDifField().PrepareTimeStep();
-  // transfer convective velocity
+  // assign the fluid velocity to the G-function field as convective velocity
   ConDifField().SetVelocityField(2,velocitynp_);
-  //ConDifField().SetVelocityField(1,1);
 
   // solve convection-diffusion equation
   ConDifField().Solve();
+  /* Hier muss später eine nichtlineare G-Funktion gelöst werden. Diese function existiert aber noch 
+   * nicht im condifimplicitintegration.cpp */
+  //ConDifField().NonlinearSolve();
   return;
 }
 
 /*----------------------------------------------------------------------*
  * protected: update                                        henke 06/08 *
  *----------------------------------------------------------------------*/
-void COMBUST::Algorithm::UpdateFGI()
+void COMBUST::Algorithm::UpdateFGIteration()
 {
 	// update the Fluid and the FGI vector at the end of the FGI loop
 	return;
@@ -222,7 +259,7 @@ void COMBUST::Algorithm::UpdateFGI()
 /*----------------------------------------------------------------------*
  * protected: update                                        henke 06/08 *
  *----------------------------------------------------------------------*/
-void COMBUST::Algorithm::UpdateTime()
+void COMBUST::Algorithm::UpdateTimeStep()
 {
   FluidField().Update();
   ConDifField().Update();
