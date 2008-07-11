@@ -87,7 +87,8 @@ StruTimIntGenAlpha::StruTimIntGenAlpha
   // info to user : OST --- your oriental scheme
   if (myrank_ == 0)
   {
-    std::cout << "with generalised-alpha ("
+    std::cout << "with generalised-alpha" << std::endl;
+    std::cout << "("
               << "beta=" << beta_
               << ", gamma=" << gamma_
               << ", alpha_f=" << alphaf_

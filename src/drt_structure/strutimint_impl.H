@@ -78,15 +78,6 @@ public:
     const std::string name  //!< name identification string
   );
 
-  //! kind of vector norms available for convergence check
-  enum VectorNormEnum
-  {
-    vectornorm_vague,  //!< undetermined
-    vectornorm_l1,  //!< L1/linear/average norm
-    vectornorm_l2,  //!< L2/Euclidean norm
-    vectornorm_inf  //!< Maximum/infinity norm
-  };
-
   //! Type of predictor
   enum PredEnum
   {
@@ -194,14 +185,8 @@ public:
   //! \author lw  \date 12/07
   virtual double CalcRefNormForce() = 0;
 
-  //! Determine norm of force residual
-  static double CalculateNorm
-  (
-    const enum VectorNormEnum norm,  //!< norm to use, see #VectorNormEnum
-    const RCP<Epetra_Vector> vect  //!< the vector
-  );
-
-  //! Test convergence of iterative solution technique
+  //! Is convergence reached of iterative solution technique?
+  //! Keep your fingers crossed...
   //! \author lw  \date 12/07
   bool Converged();
 
@@ -219,24 +204,24 @@ public:
   //! Do (so-called) modified Newton-Raphson iteration in which
   //! the initial tangent is kept and not adapted to the current
   //! state of the displacement solution
-  void NewtonModified() { }
+  void NewtonModified() { ; }
 
   //! Do classical augmented lagrange for volume constraint
   //! DEAR SIRS AND MADAMS, PLEASE PROVIDE REFERENCE
-  void NewtonFullUzawaNonLinear() { }
+  void NewtonFullUzawaNonLinear() { ; }
 
   //! do full Newton iteration respecting volume constraint
-  void NewtonFullUzawaLinear() { }
+  void NewtonFullUzawaLinear() { ; }
 
   //! Do non-linear CG iteration using NOX
-  void NonlinearCG() { }
+  void NonlinearCG() { ; }
 
   //! Do pseudo transient continuation non-linear iteration
   //! 
   //! Pseudo transient continuation is a variant of full newton that has a
   //! larger convergence radius than newton and is therefore more stable 
   //! and/or can do larger time steps
-  void PTC() { }
+  void PTC() { ; }
 
   //! Update iteration
   //!
@@ -272,8 +257,9 @@ public:
   //! Update configuration after time step
   //! This means, the state set
   //! \f$D_{n} := D_{n+1}\f$, \f$V_{n} := V_{n+1}\f$ and \f$A_{n} := A_{n+1}\f$
-  //! Thus the 'last' converged is lost and a reset of the time step becomes
-  //! impossible. We are ready and keen awating the next time step.
+  //! Thus the 'last' converged state is lost and a reset 
+  //! of the time step becomes impossible.
+  //! We are ready and keen awating the next time step.
   virtual void UpdateStep() = 0;
 
   //! Update step for surface stress
@@ -392,7 +378,8 @@ protected:
   //@{
   enum SolTechEnum itertype_;  //!< kind of iteration technique
   enum ConvCheckEnum itercnvchk_;  //!< convergence check
-  enum VectorNormEnum iternorm_;  //!< vector norm to check with
+  enum StruTimIntVector::NormEnum iternorm_;  //!< vector norm to 
+                                              //!< check with
   int itermax_;  //!< maximal permitted iterations
   double toldisi_;  //!< tolerance residual displacements
   double tolfres_;  //!< tolerance force residual

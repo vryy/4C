@@ -44,6 +44,7 @@ Maintainer: Burkhard Bornemann
 #include "nlnml_linearsystem.H"
 #include "nlnml_finelevelnoxinterface.H"
 
+#include "strutimint_vector.H"
 #include "strutimint_state.H"
 
 /*======================================================================*/
@@ -137,7 +138,8 @@ public:
   //! Update configuration after time step
   //!
   //! Thus the 'last' converged is lost and a reset of the time step 
-  //! becomes impossible. We are ready and keen awating the next time step.
+  //! becomes impossible. We are ready and keen awating the next
+  //! time step.
   virtual void UpdateStep() = 0;
 
   //! print summary after step

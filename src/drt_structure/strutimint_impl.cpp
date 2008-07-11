@@ -147,7 +147,7 @@ StruTimIntImpl::StruTimIntImpl
   potman_(Teuchos::null),
   itertype_(MapSolTechStringToEnum(sdynparams.get<string>("NLNSOL"))),
   itercnvchk_(MapConvCheckStringToEnum(sdynparams.get<string>("CONV_CHECK"))),
-  iternorm_(vectornorm_l2),  // ADD INPUT FEATURE
+  iternorm_(StruTimIntVector::MapNormStringToEnum("L2")),  // ADD INPUT FEATURE
   itermax_(sdynparams.get<int>("MAXITER")),
   toldisi_(sdynparams.get<double>("TOLDISP")),
   tolfres_(sdynparams.get<double>("TOLRES")),
@@ -244,7 +244,7 @@ void StruTimIntImpl::Predict()
   }
 
   // determine residual norm of predictor
-  normfres_ = CalculateNorm(iternorm_, fres_);
+  normfres_ = StruTimIntVector::CalculateNorm(iternorm_, fres_);
 
   // determine characteristic norms
   // we set the minumum of CalcRefNormForce() and #tolfres_, because
@@ -338,41 +338,6 @@ void StruTimIntImpl::ApplyForceStiffConstraint
 
   // wotcha
   return;
-}
-
-/*----------------------------------------------------------------------*/
-double StruTimIntImpl::CalculateNorm
-(
-  const enum VectorNormEnum norm,
-  const RCP<Epetra_Vector> vect
-)
-{
-  // average norm
-  if (norm == vectornorm_l1)
-  {
-    double vectnorm;
-    vect->Norm1(&vectnorm);
-    return vectnorm;
-  }
-  // quadratic norm
-  else if (norm == vectornorm_l2)
-  {
-    double vectnorm;
-    vect->Norm2(&vectnorm);
-    return vectnorm;
-  }
-  // infinity/maximum norm
-  else if (norm == vectornorm_inf)
-  {
-    double vectnorm;
-    vect->NormInf(&vectnorm);
-    return vectnorm;
-  }
-  else
-  {
-    dserror("Cannot handle vector norm");
-    return -1;
-  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -503,9 +468,9 @@ void StruTimIntImpl::NewtonFull()
     EvaluateForceStiffResidual();
 
     // build residual force norm
-    normfres_ = CalculateNorm(iternorm_, fres_);
+    normfres_ = StruTimIntVector::CalculateNorm(iternorm_, fres_);
     // build residual displacement norm
-    normdisi_ = CalculateNorm(iternorm_, disi_);
+    normdisi_ = StruTimIntVector::CalculateNorm(iternorm_, disi_);
 
     // print stuff
     PrintNewtonIter();
