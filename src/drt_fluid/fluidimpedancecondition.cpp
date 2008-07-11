@@ -491,8 +491,8 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
 
     if ( treetype_ == "artery" )
       frequencydomain[k] = ArteryImpedance(k,generation,radius,termradius,density,viscosity,zstored);
-  }
-
+  //cout<<real(frequencydomain[k])<<endl;
+}
 //   if(myrank_ == 0)
 //     for (int k=0; k<cyclesteps_; k++)
 //       cout << k*2.0*PI << "   " << abs(frequencydomain[k]) << endl;
@@ -969,21 +969,30 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
   double beta = 0.686;    // left daughter vessel ratio
   
   // some auxiliary stuff
-  complex<double> koeff, imag(0,1), cwave;
+  complex<double> imag(0,1), Z1, Z2, Z3, ZW;
   // terminal resistance is assumed zero ff
   complex<double> zterminal (0,0);
   
   double omega = 2.0*PI*k/period_;
 
   // this has to be moved!!
-  double E=0.0033;
-  //double E=0.001;
+  
 
   // build up geometry of present generation
   double area = radius*radius*PI;
   double length = lscale * radius;
-
-
+  double mu = viscosity * density;
+  
+  double h=-0.0057*radius*radius+0.2096*radius+0.0904;
+  double E=0.0033;
+  double c=343;
+  double R=8.0*mu*length/(PI*radius*radius*radius*radius);
+  double L=4.0*density/(3.0*PI*radius*radius)*length;
+  double C=PI*radius*radius/(density*c)*length;
+  double rw=h*viscosity/(2.0*PI*radius*radius*radius*length);
+  double lw=h*density/(2.0*PI*radius*length);
+  double cw=2.0*PI*radius*radius*radius*length/(h*E);
+  
   // get impedances of downward vessels ...
   //*****************************************
   generation++;  // this is the next generation
@@ -996,8 +1005,9 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
     bool terminated = false;
 
     // only if both vessels are smaller than the limit truncate
-    if (leftradius < termradius && rightradius < termradius)
-      terminated = true;
+    //if (leftradius < termradius && rightradius < termradius)
+    if (generation >= 23)  
+    terminated = true;
     else
     {
       zleft  = LungImpedance(k,generation,leftradius,termradius,density,viscosity,zparent);
@@ -1016,27 +1026,14 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
  
   // ... and compute impedance at my upstream end!
   //*************************************************************
-  
-  double h=-0.0057*radius*radius+0.2096*radius+0.0904;
-  double compliance = (3*PI*radius*radius*radius)/(2*E*h);
-  double sqrdwo = radius*radius*omega/viscosity;  // square of Womersley number
-  double wonu = sqrt(sqrdwo);                     // Womersley number itself
-
-  if (wonu > 4.0)
-    koeff = 1.0 - (2.0/wonu)/sqrt(imag);
-  else
-    koeff = 1.0 / ( 1.333333333333333333 - 8.0*imag/ (wonu*wonu) );
-
-  // wave speed of this frequency in present vessel
-  cwave=sqrt( area*koeff / (density*compliance) );
-
-  //Convenience coefficient
-  complex<double> gcoeff = compliance * cwave;
 
   // calculate impedance of this, the present vessel
-  complex<double> argument = omega*length/cwave;
-  zparent = (imag/gcoeff * sin(argument) + zdown*cos(argument) ) /
-            ( cos(argument) + imag*gcoeff*zdown*sin(argument) );
+
+  ZW=rw+1.0/(imag*omega*cw)+imag*omega*lw;
+  Z1=1.0/(imag*omega*C+1.0/ZW);
+  Z2=(R+imag*omega*L)/2.0+zdown;
+  Z3=1.0/(1.0/Z1+1.0/Z2);
+  zparent=(R+imag*omega*L)/2.0+Z3;
 
   return zparent;
 } //BioFluidImplicitTimeInt::LungImpedance
@@ -1064,13 +1061,13 @@ std::complex<double> FluidImpedanceBc::DCLungImpedance(int generation,
 								 double viscosity,
 						         std::complex<double> zparentdc)
 {
-// general data
+  //general data 
   double lscale = 5.8; // length to radius ratio
   double alpha = 0.876;   // right daughter vessel ratio
   double beta = 0.686;    // left daughter vessel ratio
 
   double mu = viscosity * density; // dynamic (physical) viscosity
-
+  generation++;
   // terminal resistance is assumed zero
   complex<double> zterminal (0,0);
 
@@ -1081,8 +1078,9 @@ std::complex<double> FluidImpedanceBc::DCLungImpedance(int generation,
     bool terminated = false;
 
     // only if both vessels are smaller than the limit truncate
-    if (leftradius < termradius && rightradius < termradius)
-      terminated = true;
+    //if (leftradius < termradius && rightradius < termradius)
+    if (generation >= 23)
+    terminated = true;
     else
     {
       zleft  = DCLungImpedance(generation,leftradius,termradius,density,viscosity,zparentdc);
