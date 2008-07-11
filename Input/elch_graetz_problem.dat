@@ -167,7 +167,8 @@ MAT       2 MAT_condif DIFFUSIVITY 0.001
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------CURVE5
 ------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION 0.75*64*(0.125-y)*(0.125+y)   //inflow velocity profile
+FUNCT1 EXPR 0 0.0 0 FUNCTION 0.75*64*(0.125-y)*(0.125+y)
+//inflow velocity profile with U_max = 0.75
 ------------------------------------------------------------FUNCT2
 FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.75*64.0*(0.125-y)*(0.125+y)
 FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 
@@ -186,17 +187,14 @@ FUNCT3 EXPR 0 0.0 0 FUNCTION 1.0    //initial concentration field
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 CONDIF DIS 1 NODE 691 POSITION fluxx   NAME fluxx    VALUE  0.000000000e+00 TOLERANCE 1e-9
-CONDIF DIS 1 NODE 691 POSITION fluxy   NAME fluxy    VALUE -1.851256447e-02 TOLERANCE 1e-9
+CONDIF DIS 1 NODE 691 POSITION fluxy   NAME fluxy    VALUE -1.852388883e-02 TOLERANCE 1e-9
 CONDIF DIS 1 NODE 691 POSITION fluxz   NAME fluxz    VALUE  0.000000000e+00 TOLERANCE 1e-9
-CONDIF DIS 1 NODE 695 POSITION phi     NAME phi      VALUE  3.426715114e-01 TOLERANCE 1e-9
-CONDIF DIS 1 NODE 121 POSITION phi     NAME phi      VALUE  8.588542883e-01 TOLERANCE 1e-9
-FLUID DIS 1 NODE 695 POSITION velx     NAME velx     VALUE  2.064749668e-01 TOLERANCE 1e-9
-FLUID DIS 1 NODE 695 POSITION vely     NAME vely     VALUE -6.386108984e-06 TOLERANCE 1e-9
+CONDIF DIS 1 NODE 695 POSITION phi     NAME phi      VALUE  3.428771995e-01 TOLERANCE 1e-9
+CONDIF DIS 1 NODE 121 POSITION phi     NAME phi      VALUE  8.592753330e-01 TOLERANCE 1e-9
+FLUID DIS 1 NODE 695 POSITION velx     NAME velx     VALUE  2.068970136e-01 TOLERANCE 1e-9
+FLUID DIS 1 NODE 695 POSITION vely     NAME vely     VALUE -2.245524594e-06 TOLERANCE 1e-9
 FLUID DIS 1 NODE 695 POSITION velz     NAME velz     VALUE  0.000000000e+00 TOLERANCE 1e-9
-FLUID DIS 1 NODE 695 POSITION pressure NAME pressure VALUE  3.847074539e-02 TOLERANCE 1e-9
-
-
-
+FLUID DIS 1 NODE 695 POSITION pressure NAME pressure VALUE  3.830121495e-02 TOLERANCE 1e-9
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
