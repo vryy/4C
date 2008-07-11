@@ -188,12 +188,6 @@ namespace ADAPTER {
     Teuchos::RCP<Epetra_Vector>            itrueres_;  ///< interface residual
     //@}
 
-    //! @name state vectors using the overlapping (col vectors) parallel distribution
-    Teuchos::RCP<Epetra_Vector>            ivelcol_;      ///< interface velocity
-    Teuchos::RCP<Epetra_Vector>            idispcol_;     ///< interface displacement
-    Teuchos::RCP<Epetra_Vector>            itruerescol_;  ///< interface residual
-    //@}
-
     /// all velocity dofs not at the interface
     Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
   };
