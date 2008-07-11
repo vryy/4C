@@ -789,10 +789,10 @@ private:
   vector<DRT::Node*> node_;
 
   //! \brief Some conditions e.g. BCs
-  multimap<string,RefCountPtr<Condition> > condition_;
+  multimap<string,RCP<Condition> > condition_;
 
   //! material object of element
-  RefCountPtr<MAT::Material> mat_;
+  RCP<MAT::Material> mat_;
 
 }; // class Element
 
