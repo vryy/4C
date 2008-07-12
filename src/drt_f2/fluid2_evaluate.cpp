@@ -417,8 +417,13 @@ int DRT::ELEMENTS::Fluid2::Evaluate(ParameterList& params,
 
       // --------------------------------------------------
       // set parameters for nonlinear treatment
-
-      const bool newton = params.get<bool>("include reactive terms for linearisation");
+      string newtonstr=params.get<string>("Linearisation");
+	
+      bool newton = false;
+      if(newtonstr=="Newton")
+      {
+        newton=true;
+      }
 
       // --------------------------------------------------
       // set parameters for stabilisation
