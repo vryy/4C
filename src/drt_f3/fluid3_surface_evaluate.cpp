@@ -622,6 +622,19 @@ void DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal(ParameterList& params,
     }
   }
 
+  //this element's normal vector
+  Epetra_SerialDenseVector   norm(numdf);
+  double length = 0.0;
+  norm[0] = (xyze(1,1)-xyze(1,0))*(xyze(2,2)-xyze(2,0))-(xyze(2,1)-xyze(2,0))*(xyze(1,2)-xyze(1,0));
+  norm[1] = (xyze(2,1)-xyze(2,0))*(xyze(0,2)-xyze(0,0))-(xyze(0,1)-xyze(0,0))*(xyze(2,2)-xyze(2,0));
+  norm[2] = (xyze(0,1)-xyze(0,0))*(xyze(1,2)-xyze(1,0))-(xyze(1,1)-xyze(1,0))*(xyze(0,2)-xyze(0,0));
+
+  length = sqrt(norm[0]*norm[0]+norm[1]*norm[1]+norm[2]*norm[2]);
+
+  norm[0] = (1.0/length)*norm[0];
+  norm[1] = (1.0/length)*norm[1];
+  norm[2] = (1.0/length)*norm[2];
+
   /*----------------------------------------------------------------------*
   |               start loop over integration points                     |
   *----------------------------------------------------------------------*/
@@ -641,26 +654,10 @@ void DRT::ELEMENTS::Fluid3Surface::ElementNodeNormal(ParameterList& params,
 
     f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
 
-    // values are multiplied by the product from inf. area element,
-    // the gauss weight and the constant
-    // belonging to the time integration algorithm (theta*dt for
-    // one step theta, 2/3 for bdf with dt const.)
+    // values are multiplied by the product from inf. area element and
+    // the gauss weight
 
-    //const double fac = intpoints.qwgt[gpid] * drs * thsl;
-    const double fac = intpoints.qwgt[gpid] * drs;
-
-    //this element's normal vector
-    Epetra_SerialDenseVector   norm(numdf);
-    double length = 0.0;
-    norm[0] = (xyze(1,1)-xyze(1,0))*(xyze(2,2)-xyze(2,0))-(xyze(2,1)-xyze(2,0))*(xyze(1,2)-xyze(1,0));
-    norm[1] = (xyze(2,1)-xyze(2,0))*(xyze(0,2)-xyze(0,0))-(xyze(0,1)-xyze(0,0))*(xyze(2,2)-xyze(2,0));
-    norm[2] = (xyze(0,1)-xyze(0,0))*(xyze(1,2)-xyze(1,0))-(xyze(1,1)-xyze(1,0))*(xyze(0,2)-xyze(0,0));
-
-    length = sqrt(norm[0]*norm[0]+norm[1]*norm[1]+norm[2]*norm[2]);
-
-    norm[0] = (1.0/length)*norm[0];
-    norm[1] = (1.0/length)*norm[1];
-    norm[2] = (1.0/length)*norm[2];
+    const double fac = drs * intpoints.qwgt[gpid];
 
     for (int node=0;node<iel;++node)
     {
@@ -1019,7 +1016,7 @@ void DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration(ParameterList& params,
 
     // Calculate infinitesimal area of element (drs)
     f3_metric_tensor_for_surface(xyze,deriv,metrictensor,&drs);
-   
+
 
     const double fac = intpoints.qwgt[gpid] * drs * thsl * pressure * invdensity;
 

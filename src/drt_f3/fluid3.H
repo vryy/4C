@@ -1066,6 +1066,14 @@ private:
                           	      Epetra_SerialDenseVector&  elevec1,
                                       const std::vector<double>& edispnp);
 
+  /*!
+    \brief Calculate node normals
+
+    This method calculates the node normals perpendicular to the surface-element.
+
+    \param elevec1 (out)      : Node normals multiplied by the elements area.
+    \param edispnp (in)       : Displacement-vector
+  */
   void ElementNodeNormal(ParameterList& 		 params,
                        DRT::Discretization&       discretization,
                        vector<int>&               lm,

@@ -781,7 +781,8 @@ private:
   {
      none,
      integrate_Shapefunction,
-     calc_node_normal
+     calc_node_normal,
+     calc_surface_tension
   };
 
   // don't want = operator
@@ -809,11 +810,27 @@ private:
                               vector<int>&               lm,
                               Epetra_SerialDenseVector&  elevec1,
                               const std::vector<double>& edispnp);
+
+  /*!
+    \brief Calculate node normals
+
+    This method calculates the node normals perpendicular to the surface-element.
+
+    \param elevec1 (out)      : Node normals multiplied by the elements length.
+    \param edispnp (in)       : Displacement-vector
+  */
   void ElementNodeNormal(ParameterList& params,
                          DRT::Discretization&       discretization,
                          vector<int>&               lm,
                          Epetra_SerialDenseVector&  elevec1,
                          const std::vector<double>& edispnp);
+  void ElementSurfaceTension(ParameterList& params,
+                             DRT::Discretization& discretization,
+                             vector<int>& lm,
+                             Epetra_SerialDenseMatrix& elemat1,
+                             Epetra_SerialDenseVector& elevec1,
+                             const std::vector<double>& edispnp,
+                             std::vector<double>& enormals);
 
 
 

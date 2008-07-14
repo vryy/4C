@@ -121,7 +121,7 @@ void DRT::ELEMENTS::Fluid2::Pack(vector<char>& data) const
   AddtoPack(data,sub_pre_.data()    ,size);
   AddtoPack(data,sub_pre_old_.data(),size);
 
-  
+
   // data_
   vector<char> tmp(0);
   data_.Pack(tmp);
@@ -177,7 +177,7 @@ void DRT::ELEMENTS::Fluid2::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,&(sub_pre_.data()[0])    ,secondim*sizeof(double));
     ExtractfromPack(position,data,&(sub_pre_old_.data()[0]),secondim*sizeof(double));
   }
-  
+
   // data_
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

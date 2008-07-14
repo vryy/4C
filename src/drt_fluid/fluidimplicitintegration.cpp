@@ -962,6 +962,43 @@ void FluidImplicitTimeInt::NonlinearSolve()
 
         discret_->ClearState();
 
+#if 0
+
+        //---------------------------surface tension update
+        if (alefluid_ and freesurface_->Relevant())
+        {
+          // select free surface elements
+          std::string condname = "FREESURFCoupling";
+
+          ParameterList eleparams;
+          // set action for elements, calc_surface_tension uses node normals
+          eleparams.set("action","calc_node_normal");
+
+          // get a vector layout from the discretization to construct matching
+          // vectors and matrices
+          //                 local <-> global dof numbering
+          const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+          //vector ndnorm0 with pressure-entries is needed for EvaluateCondition
+          Teuchos::RCP<Epetra_Vector> ndnorm0 = LINALG::CreateVector(*dofrowmap,true);
+
+          //call loop over elements, note: normal vectors do not yet have length = 1.0
+          discret_->ClearState();
+          discret_->SetState("dispnp", dispnp_);
+          discret_->EvaluateCondition(eleparams,ndnorm0,condname);
+
+          // set action for elements
+          eleparams.set("action","calc_surface_tension");
+          eleparams.set("thsl",theta_*dta_);
+          eleparams.set("dta",dta_);
+          discret_->SetState("normals", ndnorm0);
+          discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
+          discret_->ClearState();
+        }
+        //---------------------------end of surface tension update
+
+#endif
+
         density_ = eleparams.get("density", 0.0);
         if (density_ <= 0.0) dserror("recieved illegal density value");
 
