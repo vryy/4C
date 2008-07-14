@@ -481,7 +481,9 @@ void XFluidImplicitTimeInt::PrepareNonlinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
         RCP<DRT::Discretization>  cutterdiscret,
-        const Epetra_Vector&      idispcol
+        const Epetra_Vector&      idispcol,
+        RCP<Epetra_Vector>        ivelncol,
+        RCP<Epetra_Vector>        iaccncol
         )
 {
   // within this routine, no parallel re-distribution is allowed to take place
@@ -543,13 +545,31 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // switch state vectors to new dof distribution
   // --------------------------------------------
 
+  // rigid body hack - assume structure is rigid and has uniform acceleration and velocity
+  BlitzVec3 rigidveln;
+  BlitzVec3 rigidaccn;
+  
+  if (not (ivelncol == null))
+  {
+    rigidveln(0) = (*ivelncol)[0];
+    rigidveln(1) = (*ivelncol)[1];
+    rigidveln(2) = (*ivelncol)[2];
+    cout << "rigidveln " << rigidveln << endl;
+    
+    rigidaccn(0) = (*iaccncol)[0];
+    rigidaccn(1) = (*iaccncol)[1];
+    rigidaccn(2) = (*iaccncol)[2];
+    cout << "rigidaccn " << rigidaccn << endl;
+  }
+  
+  
   // accelerations at time n and n-1
-  dofswitch.mapVectorToNewDofDistribution(state_.accn_);
+  dofswitch.mapVectorToNewDofDistribution(state_.accn_, rigidaccn);
   dofswitch.mapVectorToNewDofDistribution(state_.accnm_);
 
   // velocities and pressures at time n+1, n and n-1
-  dofswitch.mapVectorToNewDofDistribution(state_.velnp_);
-  dofswitch.mapVectorToNewDofDistribution(state_.veln_);
+  dofswitch.mapVectorToNewDofDistribution(state_.velnp_, rigidveln); // use old velocity as start value
+  dofswitch.mapVectorToNewDofDistribution(state_.veln_, rigidveln);
   dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
 
 //  if (alefluid_)
@@ -630,11 +650,13 @@ void XFluidImplicitTimeInt::NonlinearSolve(
         RCP<DRT::Discretization> cutterdiscret,
         RCP<Epetra_Vector>       idispcol,
         RCP<Epetra_Vector>       ivelcol,
-        RCP<Epetra_Vector>       iforcecol
+        RCP<Epetra_Vector>       iforcecol,
+        RCP<Epetra_Vector>       ivelncol,
+        RCP<Epetra_Vector>       iaccncol
         )
 {
 
-  ComputeInterfaceAndSetDOFs(cutterdiscret,*idispcol);
+  ComputeInterfaceAndSetDOFs(cutterdiscret,*idispcol,ivelncol,iaccncol);
 
   PrepareNonlinearSolve();
   
@@ -699,6 +721,18 @@ void XFluidImplicitTimeInt::NonlinearSolve(
 
   if (myrank_ == 0)
   {
+    // action for elements
+    if (timealgo_==timeint_stationary)
+    {
+
+    }
+    else
+    {
+      cout << "******************************************************" << endl;
+      cout << "* Warning! Does not work for moving boundaries, yet! *" << endl;
+      cout << "******************************************************" << endl;
+    }
+    
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
   }
@@ -730,9 +764,6 @@ void XFluidImplicitTimeInt::NonlinearSolve(
         eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
       else
       {
-        cout << "******************************************************" << endl;
-        cout << "* Warning! Does not work for moving boundaries, yet! *" << endl;
-        cout << "******************************************************" << endl;
         eleparams.set("action","calc_fluid_systemmat_and_residual");
       }
 

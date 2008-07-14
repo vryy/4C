@@ -121,7 +121,9 @@ public:
           RCP<DRT::Discretization> cutterdiscret,     ///< surface discretization used to intersect fluid elements
           RCP<Epetra_Vector>       idispcol,          ///< interface displacement with coloumn distribution
           RCP<Epetra_Vector>       ivelcol,           ///< interface velocity with coloumn distribution
-          RCP<Epetra_Vector>       itruerescol        ///< interface residual with coloumn distribution
+          RCP<Epetra_Vector>       itruerescol,       ///< interface residual with coloumn distribution
+          RCP<Epetra_Vector>       ivelncol = null,
+          RCP<Epetra_Vector>       iaccncol = null
           );
 
   /*!
@@ -129,7 +131,9 @@ public:
   */
   void ComputeInterfaceAndSetDOFs(
           RCP<DRT::Discretization>  cutterdiscret,
-          const Epetra_Vector&      idispcol
+          const Epetra_Vector&      idispcol,
+          RCP<Epetra_Vector>        ivelncol = null,
+          RCP<Epetra_Vector>        iaccncol = null
           );
 
   /*!
