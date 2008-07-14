@@ -64,7 +64,7 @@ public:
     //! get pointer to map with all boundary integration cells on this proc
     const std::map<int,BoundaryIntCells>* elementalBoundaryIntCells() const {return &elementalBoundaryIntCells_;};
     
-    //! get pointer to map with all elements gids sorted by their interface labels
+    //! get pointer to elementsByLabel_
     const std::map<int,std::set<int> >* elementsByLabel() const {return &elementsByLabel_;};
 
     //! get pointer to map with all elements gids sorted by their interface labels
@@ -123,7 +123,7 @@ private:
     //! integration cells for boundary
     std::map<int, BoundaryIntCells > elementalBoundaryIntCells_;
     
-    //! elements grouped by the xfem condition label
+    //! for each xfem condition label there is a set of boundary elements
     std::map<int,set<int> >          elementsByLabel_;
     
     //! XSearchTree xTree_
