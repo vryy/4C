@@ -28,7 +28,8 @@ Maintainer: Michael Gee
 #include "stru_genalpha_zienxie_drt.H"
 /* #include "../drt_timada/timeadaptivity.H" */
 #include "../drt_timada/ta_zienkiewiczxie.H"
-#include "../drt_structure/strugenalpha.H"
+#include "strugenalpha.H"
+#include "stru_resulttest.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -362,6 +363,13 @@ void stru_genalpha_zienxie_drt()
 
   // integrate in time and space
   //timint.Integrate();
+
+  // test results
+  {
+    DRT::ResultTestManager testmanager(actdis->Comm());
+    testmanager.AddFieldTest(Teuchos::rcp(new StruResultTest(timint)));
+    testmanager.TestAll();
+  }
 
   return;
 
