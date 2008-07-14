@@ -99,47 +99,12 @@ namespace MAT
     
     RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
     
-    Epetra_SerialDenseMatrix EvaluateStress(
-        const Epetra_SerialDenseMatrix& isostress,
-        const vector<Epetra_SerialDenseMatrix>& Ni,
-        const vector<double>& cell_li,
-        const vector<double>& cell_Inv,
-        const double s_chn_scalar,
-        const double stressfree);
-
-    void EvaluateCmat(Epetra_SerialDenseMatrix& cmat,
-        const vector<Epetra_SerialDenseMatrix>& Ni,
-        const vector<double>& cell_li,
-        const vector<double>& cell_Inv,
-        const double c_chn_scalar,
-        const double stressfree);
-
-    vector<Epetra_SerialDenseMatrix> EvaluateStructTensors(const int gp);
-    
-    vector<double> EvaluateInvariants(
-        const Epetra_SerialDenseMatrix& CG,
-        const vector<Epetra_SerialDenseMatrix>& Ni);
 
     void Update(const Epetra_SerialDenseMatrix& Phi,
         const Epetra_SerialDenseVector& lambda,
         const vector<double> rem_toggle,
         const int gp, const double r0, const double decay);
 
-    void UpdateRate(const Epetra_SerialDenseMatrix& Phi,
-        const Epetra_SerialDenseVector& lambda,
-        const vector<double> rem_toggle,
-        const int gp, const double r0, const double decay, const double kappa, const double dt);
-
-    std::string PrintStructTens(const vector<Epetra_SerialDenseMatrix>& Ni);
-    std::string PrintAnisoVects(const int gp);
-    
-    std::string PrintAnisoCmat(const Epetra_SerialDenseMatrix& cmat,
-        const vector<Epetra_SerialDenseMatrix>& Ni,
-        const vector<double>& cell_li,
-        const vector<double>& cell_Inv,
-        const double c_chn_scalar,
-        const double stressfree);
-    std::string PrintVec(const vector<double> actvec);
     
   private:
 
