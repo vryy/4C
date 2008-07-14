@@ -2482,24 +2482,24 @@ void XFEM::Intersection::recoverCurvedInterface(
  |                               										                    |
  *----------------------------------------------------------------------*/
 void XFEM::Intersection::storeIntCells(
-		const DRT::Element*             xfemElement,
-		const BlitzMat&                 xyze_xfemElement,
-		const map<int,BlitzVec3>&       currentcutterpositions,
-		map< int, BoundaryIntCells >&   boundaryintcells,
-		tetgenio&                       out)
+    const DRT::Element*             xfemElement,
+    const BlitzMat&                 xyze_xfemElement,
+    const map<int,BlitzVec3>&       currentcutterpositions,
+    map< int, BoundaryIntCells >&   boundaryintcells,
+    tetgenio&                       out)
 {
 
-	BoundaryIntCells                     			listBoundaryICPerElement;
+  BoundaryIntCells  listBoundaryICPerElement;
 
-	// store cells completey lying on xfem boundaries
-	// no lifting necessayr if -Y switch is applied and/or volume element is Cartesian
-	if(!surfaceTriangleList_.empty())
-	  storeSurfaceIntCells(false, xfemElement, xyze_xfemElement, currentcutterpositions,listBoundaryICPerElement);
-	
-	// lifts all corner points into the curved interface
-	liftAllSteinerPoints(xfemElement, xyze_xfemElement, currentcutterpositions, out);
-	
-	for(int i=0; i<out.numberoftrifaces; i++)
+  // store cells completey lying on xfem boundaries
+  // no lifting necessayr if -Y switch is applied and/or volume element is Cartesian
+  if(!surfaceTriangleList_.empty())
+    storeSurfaceIntCells(false, xfemElement, xyze_xfemElement, currentcutterpositions,listBoundaryICPerElement);
+
+  // lifts all corner points into the curved interface
+  //liftAllSteinerPoints(xfemElement, xyze_xfemElement, currentcutterpositions, out);
+
+  for(int i=0; i<out.numberoftrifaces; i++)
   {
     // run over all faces not lying in on of the xfem element planes
     const int faceMarker = out.trifacemarkerlist[i] - facetMarkerOffset_;
