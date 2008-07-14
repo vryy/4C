@@ -15,11 +15,16 @@ Maintainer: Axel Gerstenberger
 #define XFEM_H
 
 #include <blitz/array.h>
+#include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_SerialDenseVector.h"
 
 
 //! generally usefull typedefs, when working with Blitz arrays
 typedef blitz::Array<double,1> BlitzVec; ///< a short-cut for a one-dimensional BLITZ vector
 typedef blitz::Array<double,2> BlitzMat; ///< a short-cut for a two-dimensional BLITZ matrix
+
+typedef Epetra_SerialDenseVector EpVec; ///< a short-cut for a one-dimensional Epetra vector
+typedef Epetra_SerialDenseMatrix EpMat; ///< a short-cut for a two-dimensional Epetra matrix
 
 typedef blitz::TinyVector<double,3> BlitzVec3; ///< a short-cut for a one-dimensional BLITZ vector of length 3
 typedef blitz::TinyVector<double,2> BlitzVec2; ///< a short-cut for a one-dimensional BLITZ vector of length 2
