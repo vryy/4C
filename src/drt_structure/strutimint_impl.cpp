@@ -479,10 +479,13 @@ void StruTimIntImpl::NewtonFull()
     iter_ += 1;
   }  // end equilibrium loop
 
+  // correct iteration counter
+  iter_ -= 1;
+
   // test whether max iterations was hit
-  if (iter_ > itermax_)
+  if (iter_ >= itermax_)
   {
-    dserror("Newton unconverged in %d iterations", iter_-1);
+    dserror("Newton unconverged in %d iterations", iter_);
   }
   else if (Converged())
   {

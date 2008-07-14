@@ -129,7 +129,7 @@ public:
   //! Provide the name as string
   virtual std::string MethodTitle() = 0;
 
-  //! Provide local order of accuracy
+  //! Provide local order of accuracy based upon linear test equation
   virtual int MethodOrderOfAccuracy() = 0;
 
   //@}

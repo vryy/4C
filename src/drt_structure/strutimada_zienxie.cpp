@@ -47,7 +47,8 @@ StruTimAdaZienXie::StruTimAdaZienXie
   }
   else
   {
-    genalpha_ = Teuchos::rcp(static_cast<StruTimIntGenAlpha*>(&(*tis_)));
+    genalpha_ = Teuchos::rcp(static_cast<StruTimIntGenAlpha*>(&(*tis_)),
+                             false);
   }
 
   // check compatability of marching time integrator

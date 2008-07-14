@@ -125,8 +125,24 @@ void strudyn_direct()
   // create marching time integrator
   Teuchos::RCP<StruTimInt> sti 
     = strudyn_CreateMarching(ioflags, sdyn, xparams, actdis, solver, output);
+
+  // do restart if demanded from input file
+  // note that this changes time and step in genalphaparams
+  if (genprob.restart)
+  {
+    //sti->ReadRestart(genprob.restart);
+  }
+
+  // write mesh always at beginning of calc or restart
+  {
+    const int step = 0;
+    const double time = 0.0; // PROVIDE INPUT PARAMETER IN sdyn
+    output.WriteMesh(step, time);
+  }
+
   // auxiliar time integrator
-  if (Teuchos::getIntegralValue<int>(tap,"KIND") == TIMADA_DYNAMIC::timada_kind_none)
+  if (Teuchos::getIntegralValue<int>(tap,"KIND")
+      == TIMADA_DYNAMIC::timada_kind_none)
   {
     // integrate in time
     sti->Integrate();

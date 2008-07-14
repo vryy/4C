@@ -87,7 +87,9 @@ void StruTimAda::Integrate()
     double stpsiznew;
     while ( (not accepted) and (adaptstep_ < adaptstepmax_) )
     {
+      // set current stepsize
       tis_->dt_ = stepsize_;
+      // integrate system with marching TIS and 
       tis_->IntegrateStep();
 
       // get local error vector on #locerrn_
@@ -103,7 +105,7 @@ void StruTimAda::Integrate()
         stepsize_ = stpsiznew;
       }
       adaptstep_ += 1;
-    }  // end adaptive loop
+    }
 
     // update or break
     if ( (mypid_ == 0) and (accepted) )
@@ -119,15 +121,16 @@ void StruTimAda::Integrate()
       dserror("Do not know what to do");
     }
     
-    tis_->time_ = time_;
-    tis_->step_ = timestep_;
+    tis_->time_ = time_ + stepsize_;
+    tis_->step_ = timestep_ + 1;
     tis_->dt_ = stepsize_;
 
     tis_->UpdateStep();
+    tis_->PrintStep();
     tis_->OutputStep();
 
-    timestep_ += 1;
-    time_ += stepsize_;
+    tis_->stepn_ = timestep_ += 1;
+    tis_->timen_ = time_ += stepsize_;
     stepsizepre_ = stepsize_;
     stepsize_ = stpsiznew;
     
@@ -161,6 +164,9 @@ void StruTimAda::Indicate
             << ", Accept " << accepted 
             << std::endl;
 
+  // get error order
+  errorder_ = MethodOrderOfAccuracy();
+
   // optimal size ration with respect to given tolerance
   double sizrat = pow(errtol_/norm, 1.0/(errorder_+1.0));
 
@@ -174,7 +180,8 @@ void StruTimAda::Indicate
   stpsiznew = sizrat * stepsize_;
   // redefine sizrat to be dt*_{n}/dt_{n-1}, ie true optimal ratio
   sizrat = stpsiznew/stepsizepre_;
-  // limit sizrat by maximum and minimum
+
+  // limit #sizrat by maximum and minimum
   if (sizrat > sizeratiomax_)
   {
     stpsiznew = sizeratiomax_ * stepsizepre_;
@@ -183,6 +190,7 @@ void StruTimAda::Indicate
   {
     stpsiznew = sizeratiomin_ * stepsizepre_;
   }
+
   // new step size subject to safety measurements 
   if (stpsiznew > stepsizemax_)
   {
@@ -215,8 +223,7 @@ void StruTimAda::PrintConstants
       << "   Max size ratio = " << sizeratiomax_ << std::endl
       << "   Min size ratio = " << sizeratiomin_ << std::endl
       << "   Size ratio scale = " << sizeratioscale_ << std::endl
-      << "   Error norm = " 
-      << StruTimIntVector::MapNormEnumToString(errnorm_) << std::endl
+      << "   Error norm = " << StruTimIntVector::MapNormEnumToString(errnorm_) << std::endl
       << "   Error order = " << errorder_ << std::endl
       << "   Error tolerance = " << errtol_ << std::endl
       << "   Max adaptive step = " << adaptstepmax_ << std::endl;
@@ -224,7 +231,7 @@ void StruTimAda::PrintConstants
 }
 
 /*----------------------------------------------------------------------*/
-/* Print constants */
+/* Print variables */
 void StruTimAda::PrintVariables
 (
   std::ostream& str
