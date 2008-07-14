@@ -66,7 +66,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
     dserror("mismatch in cutted elements maps!");  
   }
   
-  // sanity check, whether, we realy have integration cells in the map
+  // sanity check, whether, we really have integration cells in the map
   for (std::map<int,DomainIntCells>::const_iterator 
       tmp = elementalDomainIntCells_.begin();
       tmp != elementalDomainIntCells_.end();
@@ -75,7 +75,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
     dsassert(tmp->second.empty() == false, "this is a bug!");
   }
   
-  // sanity check, whether, we realy have integration cells in the map
+  // sanity check, whether, we really have integration cells in the map
   for (std::map<int,BoundaryIntCells>::const_iterator 
       tmp = elementalBoundaryIntCells_.begin();
       tmp != elementalBoundaryIntCells_.end();
@@ -92,14 +92,56 @@ XFEM::InterfaceHandle::InterfaceHandle(
   const BlitzMat3x2 xfemAABB = XFEM::getXAABBofDis(*xfemdis);
   const BlitzMat3x2 AABB = XFEM::mergeAABB(cutterAABB, xfemAABB);
   xTree_ = rcp(new XSearchTree(AABB));
+  
+  CleanIntersectionMaps();
+  
 }
-		
 /*----------------------------------------------------------------------*
  |  dtor                                                        ag 11/07|
  *----------------------------------------------------------------------*/
 XFEM::InterfaceHandle::~InterfaceHandle()
 {
     return;
+}
+
+/*----------------------------------------------------------------------*
+ |  clean                                                       ag 11/07|
+ *----------------------------------------------------------------------*/
+void XFEM::InterfaceHandle::CleanIntersectionMaps()
+{
+  // clean up double counted intersections
+  set<int> ele_to_delete;
+
+  std::map<int, DomainIntCells >::const_iterator entry;
+  for (entry = elementalDomainIntCells_.begin(); entry != elementalDomainIntCells_.end(); ++entry)
+  {
+    const DomainIntCells cells = entry->second;
+    DRT::Element* xfemele = xfemdis_->gElement(entry->first);
+    DomainIntCells::const_iterator cell;
+    set<int> labelset;
+    bool one_cell_is_fluid = false;
+    for (cell = cells.begin(); cell != cells.end(); ++cell)
+    {
+      const BlitzVec3 cellcenter(cell->GetPhysicalCenterPosition(*xfemele));
+      const int current_label = PositionWithinCondition(cellcenter, *this);
+      if (current_label == 0)
+      {
+        one_cell_is_fluid = true;
+      }
+      labelset.insert(current_label);
+    }
+    const bool all_cells_in_same_domain = (labelset.size() == 1);
+    if (all_cells_in_same_domain and not one_cell_is_fluid)
+    {
+      ele_to_delete.insert(xfemele->Id());
+    }
+  }
+  
+  for (set<int>::const_iterator eleid = ele_to_delete.begin(); eleid != ele_to_delete.end(); ++eleid)
+  {
+    elementalDomainIntCells_.erase(*eleid);
+    elementalBoundaryIntCells_.erase(*eleid);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -166,12 +208,9 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           stringstream text;
           text.precision(3);
           text << "(<"<< (actele->Id()) << "," << closestElementId << ">,\n"<< fixed << distance << ")";
-          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), domain_id*100000+(closestElementId), cellpos) << endl;
-          BlitzMat point(3,1);
-          point(0,0)=cellcenterpos(0);
-          point(1,0)=cellcenterpos(1);
-          point(2,0)=cellcenterpos(2);
-             
+          //const double color = domain_id*100000+(closestElementId);
+          const double color = domain_id;
+          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), color, cellpos) << endl;
         };
       };
       gmshfilecontent << "};" << endl;
@@ -433,16 +472,20 @@ bool XFEM::PositionWithinAnyInfluencingCondition(
 {
   
   TEUCHOS_FUNC_TIME_MONITOR(" - search - PositionWithinAnyInfluencingCondition");
-  
-  if (xlabelset.size() > 1)
-  {
-    dserror("this function has to be extended to allow contact problems!");
-  }
   int closestElementId; 
   double distance;
   const int label = PositionWithinCondition(x_in, ih,closestElementId, distance);
+  
   bool compute = false;
-  if (xlabelset.find(label) == xlabelset.end())
+  if (label == 0) // fluid
+  {
+    compute = true;
+  }
+  else if (xlabelset.size() > 1)
+  {
+    compute = true;
+  }
+  else if (xlabelset.find(label) == xlabelset.end())
   {
     compute = true;
   }

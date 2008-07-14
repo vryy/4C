@@ -107,6 +107,9 @@ private:
     
     //! don't want copy constructor
     explicit InterfaceHandle(const InterfaceHandle&);
+    
+    //! for difficult cases during intersection, do sanity checks and remove redundant boundary integration cells 
+    void CleanIntersectionMaps();
   
     //! intersected domain
     const RCP<DRT::Discretization> xfemdis_;
