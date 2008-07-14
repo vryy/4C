@@ -363,6 +363,12 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber4";
     names[fiber] = 3; // 3-dim vector
+    fiber = "FiberCell1";
+    names[fiber] = 3; // 3-dim vector
+    fiber = "FiberCell2";
+    names[fiber] = 3; // 3-dim vector
+    fiber = "FiberCell3";
+    names[fiber] = 3; // 3-dim vector
     fiber = "l1";
     names[fiber] = 1;
     fiber = "l2";
@@ -430,6 +436,14 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       centerli_0[0] /= gplis->size();
       centerli_0[1] /= gplis->size();
       centerli_0[2] /= gplis->size();
+      
+      // just the unit cell of the first gp
+      int gp = 0;
+//      Epetra_SerialDenseVector loc(CV,&(gplis->at(gp)[0]),3);
+//      Epetra_SerialDenseVector glo(3);
+//      glo.Multiply('N','N',1.0,gpnis->at(gp),loc,0.0);
+      Epetra_SerialDenseMatrix T(gpnis->at(gp));
+      vector<double> gpli =  chain->Getli()->at(gp); 
 
       if (name == "Fiber1"){
         if ((int)data.size()!=3) dserror("size mismatch");
@@ -440,6 +454,24 @@ void DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
         data[0] = centerli[0]; data[1] = centerli[1]; data[2] = centerli[2];
       } else if (name == "Fiber4"){
         data[0] = -centerli[0]; data[1] = -centerli[1]; data[2] = centerli[2];
+      } else if (name == "FiberCell1"){
+        Epetra_SerialDenseVector e(3);
+        e(0) = gpli[0];
+        Epetra_SerialDenseVector glo(3);
+        glo.Multiply('N','N',1.0,T,e,0.0);
+        data[0] = glo(0); data[1] = glo(1); data[2] = glo(2);
+      } else if (name == "FiberCell2"){
+        Epetra_SerialDenseVector e(3);
+        e(1) = gpli[1];
+        Epetra_SerialDenseVector glo(3);
+        glo.Multiply('N','N',1.0,T,e,0.0);
+        data[0] = glo(0); data[1] = glo(1); data[2] = glo(2);
+      } else if (name == "FiberCell3"){
+        Epetra_SerialDenseVector e(3);
+        e(2) = gpli[2];
+        Epetra_SerialDenseVector glo(3);
+        glo.Multiply('N','N',1.0,T,e,0.0);
+        data[0] = glo(0); data[1] = glo(1); data[2] = glo(2);
       } else if (name == "l1"){
         data[0] = centerli_0[0];
       } else if (name == "l2"){

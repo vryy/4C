@@ -77,6 +77,7 @@ extern "C"
 #include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/contchainnetw.H"
+#include "../drt_mat/artwallremod.H"
 #include "../drt_mat/convecdiffus.H"
 #include "../drt_mat/carreauyasuda.H"
 #include "../drt_mat/modpowerlaw.H"
@@ -528,6 +529,12 @@ DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
       MAT::ContChainNetw* chain = new MAT::ContChainNetw();
       chain->Unpack(data);
       return chain;
+    }
+    case ParObject_ArtWallRemod:
+    {
+      MAT::ArtWallRemod* remod = new MAT::ArtWallRemod();
+      remod->Unpack(data);
+      return remod;
     }
     case ParObject_MicroMaterial:
     {

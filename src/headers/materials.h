@@ -57,7 +57,8 @@ typedef struct _MATERIAL
      struct _ANISOTROPIC_BALZANI *anisotropic_balzani; /* anisotropic hyperelastic polyconvex material */
      struct _MOONEYRIVLIN     *mooneyrivlin; /* Mooney-Rivlin material */
      struct _VISCONEOHOOKE    *visconeohooke; /* Viscous NeoHookean material */
-     struct _CONTCHAINNETW    *contchainnetw; /* Viscous NeoHookean material */
+     struct _CONTCHAINNETW    *contchainnetw; /* Continuum Chain Network material law */
+     struct _ARTWALLREMOD     *artwallremod;  /* Arterial Wall Material Law with Remodeling */
      struct _TH_FOURIER_ISO   *th_fourier_iso;   /* isotropic Fourier's law of heat conduction */
      struct _TH_FOURIER_GEN   *th_fourier_gen;   /* general heat conduction matrix of Fourier's (linear) law of heat conduction */
      struct _VP_ROBINSON      *vp_robinson;  /* viscoplastic Robinson material */
@@ -699,6 +700,19 @@ typedef struct _CONTCHAINNETW
      INT                       updrate;
      DOUBLE                    difftol;
 } CONTCHAINNETW;
+/*----------------------------------------------------------------------*
+ | Arterial Wall Model with Remodeling                        maf 07/08 |
+ *----------------------------------------------------------------------*/
+typedef struct _ARTWALLREMOD
+{
+     DOUBLE                    kappa;
+     DOUBLE                    mue;
+     DOUBLE                    density;
+     DOUBLE                    k1;
+     DOUBLE                    k2;
+     INT                       initran;
+     DOUBLE                    rembegt;
+} ARTWALLREMOD;
 /*----------------------------------------------------------------------*
  | Isotropic heat conduction coefficient                    bborn 03/06 |
  | of Fourier's law of heat conduction                                  |

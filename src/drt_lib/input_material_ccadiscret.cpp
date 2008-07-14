@@ -566,6 +566,20 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
      frint   ("UPDRATE",&(localmat.m.contchainnetw->updrate)    ,&ierr);
      frdouble("DIFFTOL",&(localmat.m.contchainnetw->difftol)    ,&ierr);
    }
+   // Arterial Wall material law (Holzapfel) with remodeling (Hariton)
+   frchk("MAT_ARTWALLREMOD",&ierr);
+   if (ierr==1)
+   {
+     localmat.mattyp      = m_artwallremod;
+     localmat.m.artwallremod = new ARTWALLREMOD();
+     frdouble("KAPPA"  ,&(localmat.m.artwallremod->kappa)      ,&ierr);
+     frdouble("MUE"    ,&(localmat.m.artwallremod->mue)        ,&ierr);
+     frdouble("DENS"   ,&(localmat.m.artwallremod->density)    ,&ierr);
+     frdouble("K1"     ,&(localmat.m.artwallremod->k1)         ,&ierr);
+     frdouble("K2"     ,&(localmat.m.artwallremod->k2)         ,&ierr);
+     frint   ("INITRAN",&(localmat.m.artwallremod->initran)    ,&ierr);
+     frdouble("REMBEGT",&(localmat.m.artwallremod->rembegt)    ,&ierr);
+   }
    /* Fourier's law of isotropic heat conduction --> heat cond. coeff. */
    frchk("MAT_Therm_Fourier_iso",&ierr);
    if (ierr==1)

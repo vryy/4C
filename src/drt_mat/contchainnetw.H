@@ -161,7 +161,7 @@ namespace MAT
     Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > stresses_;
     
     // remember time
-    vector<double> mytime_;
+    Teuchos::RCP<vector<double> > mytime_;
     
     bool isinit_;
     

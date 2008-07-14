@@ -36,6 +36,7 @@ MAT::ContChainNetw::ContChainNetw()
   lambda_ = rcp(new vector<vector<double> >);
   ni_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
+  mytime_ = rcp(new vector<double>);
 }
 
 
@@ -76,6 +77,8 @@ void MAT::ContChainNetw::Pack(vector<char>& data) const
     AddtoPack(data,li_->at(var));
     AddtoPack(data,li0_->at(var));
     AddtoPack(data,ni_->at(var));
+    AddtoPack(data,stresses_->at(var));
+    AddtoPack(data,mytime_->at(var));
   }
   
   return;
@@ -107,6 +110,8 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
   li_ = rcp(new vector<vector<double> >);
   li0_ = rcp(new vector<vector<double> >);
   ni_ = rcp(new vector<Epetra_SerialDenseMatrix>);
+  stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
+  mytime_ = rcp(new vector<double>);
   for (int var = 0; var < histsize; ++var) {
     vector<double> li;
     vector<double> li0;
@@ -117,6 +122,11 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
     li_->push_back(li);
     li0_->push_back(li);
     ni_->push_back(tmp);
+    ExtractfromPack(position,data,tmp);
+    stresses_->push_back(tmp);
+    double mytime;
+    ExtractfromPack(position,data,mytime);
+    mytime_->push_back(mytime);
   }
 
   if (position != (int)data.size())
@@ -140,6 +150,7 @@ void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
   lambda_ = rcp(new vector<vector<double> > (numgp));
   ni_ = rcp(new vector<Epetra_SerialDenseMatrix>);
   stresses_ = rcp(new vector<Epetra_SerialDenseMatrix>);
+  mytime_ = rcp(new vector<double>);
   // initial basis is identity
   Epetra_SerialDenseMatrix id(3,3);
   for (int i=0; i<3; ++i) id(i,i) = 1.0;
@@ -178,7 +189,7 @@ void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
     }
     ni_->push_back(id);
     stresses_->push_back(initstress);
-    mytime_.push_back(matdata_->m.contchainnetw->rembegt);
+    mytime_->push_back(matdata_->m.contchainnetw->rembegt);
   }
 
   //mytime_ = 1.0;  // carefull!
@@ -298,9 +309,9 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
   const double time = params.get("total time",-1.0);
   const double dt = params.get("delta time",-1.0);
   const double lambda_tol = matdata_->m.contchainnetw->difftol; //1.0E-12;
-  if ( (kappa >= 0.0)  && (time > mytime_.at(gp)) ){
+  if ( (kappa >= 0.0)  && (time > mytime_->at(gp)) ){
     double rem_time = time - matdata_->m.contchainnetw->rembegt;
-    mytime_.at(gp) = time;
+    mytime_->at(gp) = time;
     const double decay = min(1.0,exp(-kappa*rem_time));
     
     // evaluate eigenproblem
@@ -310,19 +321,32 @@ void MAT::ContChainNetw::Evaluate(const Epetra_SerialDenseVector* glstrain,
     LINALG::SymmetricEigenProblem(Phi,lambda);
     //Epetra_SerialDenseMatrix strain = MAT::StrainVoigt2Mat(glstrain);
     //LINALG::SymmetricEigenProblem(strain,lambda);
+    
+    // initialise rem_toggle which means per default diminuish cell lengths
     vector<double> rem_toggle(3,0.0);
     
-    // decide on remodeling
-    for (int i=0; i<3; ++i){
-      if (lambda(i)/lambda(2) > lambda_tol) rem_toggle[i] = 1.0;
-    }
-    
-    // Update cell dimensions and history
-    if (matdata_->m.contchainnetw->updrate == 0)
+    // decide on remodeling strategy and update cell dimensions and history
+    if (matdata_->m.contchainnetw->updrate == 0){
+      for (int i=0; i<3; ++i){
+        if (lambda(i)/lambda(2) > lambda_tol) rem_toggle[i] = 1.0;
+      }
       Update(Phi,lambda,rem_toggle,gp,r0,decay);
-    else if (matdata_->m.contchainnetw->updrate == 1)
+    } else if (matdata_->m.contchainnetw->updrate == 1){
+      for (int i=0; i<3; ++i){
+        if (lambda(i)/lambda(2) > lambda_tol) rem_toggle[i] = 1.0;
+      }
       UpdateRate(Phi,lambda,rem_toggle,gp,r0,decay,kappa,dt);
-    else dserror("Unknown Update Flag");
+    } else if (matdata_->m.contchainnetw->updrate == 2){  // my new strategy
+      for (int i=0; i<3; ++i){
+        if (lambda(i)/lambda(2) > lambda_tol) rem_toggle[i] = lambda(i)/lambda(2);
+      }
+      Update(Phi,lambda,rem_toggle,gp,r0,decay);
+    } else if (matdata_->m.contchainnetw->updrate == 3){  // my new strategy
+      for (int i=0; i<3; ++i){
+        if (lambda(i)/lambda(2) > lambda_tol) rem_toggle[i] = lambda(i)/lambda(2);
+      }
+      UpdateRate(Phi,lambda,rem_toggle,gp,r0,decay,kappa,dt);
+    } else dserror("Unknown Update Flag");
     
 #if DEBUG1
     // update initial chain length
@@ -592,15 +616,15 @@ void MAT::ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     ofstream outfile;
     outfile.open(filename.str().c_str(),ios_base::app);
     int nele = dis->NumMyColElements();
-    int endele = nele;
-    for (int iele=0; iele<endele; ++iele) //++iele) iele+=10)
+    int endele = 100; //nele;
+    for (int iele=0; iele<endele; iele+=12) //++iele) iele+=10)
     {
       const DRT::Element* actele = dis->lColElement(iele);
       RefCountPtr<MAT::Material> mat = actele->Material();
       if (mat->MaterialType() != m_contchainnetw) return;
       MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
       int ngp = chain->Getni()->size();
-      int endgp = ngp;
+      int endgp = 1; //ngp;
       for (int gp = 0; gp < endgp; ++gp){
         vector<double> li = chain->Getli()->at(gp);
         vector<double> lamb = chain->Getlambdas()->at(gp);
