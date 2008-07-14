@@ -127,8 +127,8 @@ static void Sysmat4(
         const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
         const RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
         const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
-        BlitzMat&                         estif,         ///< element matrix to calculate
-        BlitzVec&                         eforce,        ///< element rhs to calculate
+        EpMat&                            estif,         ///< element matrix to calculate
+        EpVec&                            eforce,        ///< element rhs to calculate
         const struct _MATERIAL*           material,      ///< fluid material
         const double                      ,          ///< current time (pseudotime for stationary formulation)
         const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt, stationary: 1.0
@@ -140,8 +140,8 @@ static void Sysmat4(
         )
 {
     // initialize arrays
-    estif = 0.0;
-    eforce = 0.0;
+    estif.Scale(0.0);
+    eforce.Scale(0.0);
     
     // number of nodes for element
     const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
@@ -150,7 +150,7 @@ static void Sysmat4(
     const int nsd = 3;
     
     // get node coordinates of the current element
-    static blitz::TinyMatrix<double,nsd,numnode> xyze;
+    blitz::TinyMatrix<double,nsd,numnode> xyze;
     DRT::UTILS::fillInitialPositionArray<DISTYPE>(ele, xyze);
 
     // dead load in element nodes
@@ -168,8 +168,6 @@ static void Sysmat4(
     const DRT::UTILS::GaussRule3D gaussrule = getXFEMGaussrule<DISTYPE,ASSTYPE>(ih->ElementIntersected(ele->Id()));
     
     const LocalAssembler<DISTYPE, ASSTYPE> assembler(dofman, estif, eforce);
-    
-    const blitz::Range _  = blitz::Range::all();
     
     const DRT::Element::DiscretizationType stressdistype = XFLUID::StressInterpolation3D<DISTYPE>::distype;
     
@@ -236,13 +234,13 @@ static void Sysmat4(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta
-            static XFEM::PosEtaDomain pos_eta_domain;
+            XFEM::PosEtaDomain pos_eta_domain;
             pos_eta_domain(0) = intpoints.qxg[iquad][0];
             pos_eta_domain(1) = intpoints.qxg[iquad][1];
             pos_eta_domain(2) = intpoints.qxg[iquad][2];
 
             // coordinates of the current integration point in element coordinates \xi
-            static XFEM::PosXiDomain posXiDomain;
+            XFEM::PosXiDomain posXiDomain;
             XFEM::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
             const double detcell = XFEM::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
             
@@ -270,13 +268,13 @@ static void Sysmat4(
             }
 
             // position of the gausspoint in physical coordinates
-            static BlitzVec3 gauss_pos_xyz;
+            BlitzVec3 gauss_pos_xyz;
             BLITZTINY::MV_product<3,numnode>(xyze,funct,gauss_pos_xyz);
       
             // get transposed of the jacobian matrix d x / d \xi
             //BlitzMat xjm(3,3);
             //xjm = blitz::sum(deriv(i,k)*xyze(j,k),k);
-            static BlitzMat3x3 xjm;
+            BlitzMat3x3 xjm;
             BLITZTINY::MMt_product<3,3,numnode>(deriv,xyze,xjm);
 
             const double det = xjm(0,0)*xjm(1,1)*xjm(2,2)+
@@ -337,20 +335,29 @@ static void Sysmat4(
                 derxy2 = 0.;
             }
 
-//            ShapeFunction3D<DISTYPE,ASSTYPE,2> enr_shp;
-//            ShapeFunction3D<DISTYPE,ASSTYPE,0> enr_shp_stress;
-//            ShapeFunction3D<DISTYPE,ASSTYPE,0> enr_shp_discpres;
+            BlitzVec shp(numparamvelx);
+            BlitzVec shp_dx(numparamvelx);
+            BlitzVec shp_dy(numparamvelx);
+            BlitzVec shp_dz(numparamvelx);
+            BlitzVec shp_dxdx(numparamvelx);
+            BlitzVec shp_dxdy(numparamvelx);
+            BlitzVec shp_dxdz(numparamvelx);
+            BlitzVec shp_dydx(numparamvelx);
+            BlitzVec shp_dydy(numparamvelx);
+            BlitzVec shp_dydz(numparamvelx);
+            BlitzVec shp_dzdx(numparamvelx);
+            BlitzVec shp_dzdy(numparamvelx);
+            BlitzVec shp_dzdz(numparamvelx);
             
-            // temporary arrays
-            BlitzVec enr_funct(numparamvelx);
-            BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
-            BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
-
-            BlitzVec enr_funct_stress(numparamtauxx);
-            //BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
+            BlitzVec shp_tau(numparamtauxx);
             
             if (ASSTYPE == XFEM::xfem_assembly)
             {
+                // temporary arrays
+                BlitzVec enr_funct(numparamvelx);
+                BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
+                BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
+                
                 std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
                       ih,
                       dofman.getUniqueEnrichments(),
@@ -371,8 +378,29 @@ static void Sysmat4(
                         enr_derxy,
                         enr_derxy2);
           
+                for (int iparam = 0; iparam < numparamvelx; ++iparam)
+                {
+                  shp(iparam) = enr_funct(iparam);
+                  shp_dx(iparam) = enr_derxy(0,iparam);
+                  shp_dy(iparam) = enr_derxy(1,iparam);
+                  shp_dz(iparam) = enr_derxy(2,iparam);
+                  shp_dxdx(iparam) = enr_derxy2(0,iparam);
+                  shp_dxdy(iparam) = enr_derxy2(3,iparam);
+                  shp_dxdz(iparam) = enr_derxy2(4,iparam);
+                  shp_dydx(iparam) = shp_dxdy(iparam);
+                  shp_dydy(iparam) = enr_derxy2(1,iparam);
+                  shp_dydz(iparam) = enr_derxy2(5,iparam);
+                  shp_dzdx(iparam) = shp_dxdz(iparam);
+                  shp_dzdy(iparam) = shp_dydz(iparam);
+                  shp_dzdz(iparam) = enr_derxy2(2,iparam);
+                }
+                
+
+                
                 if (tauele_unknowns_present)
                 {
+                    BlitzVec enr_funct_stress(numparamtauxx);
+                  
                     // shape functions for element dofs
                     XFEM::ComputeEnrichedElementShapefunction(
                             *ele,
@@ -382,89 +410,99 @@ static void Sysmat4(
                             enrvals,
                             funct_stress,
                             enr_funct_stress);
+                    
+                    for (int iparam = 0; iparam < numparamtauxx; ++iparam)
+                    {
+                      shp_tau(iparam) = enr_funct_stress(iparam);
+                    }
                 }
                 else
                 {
-                  enr_funct_stress = 0.0;
+                  shp_tau = 0.0;
                 }
             }
             else
             {
-                enr_funct.reference(funct);
-                enr_derxy.reference(derxy);
-                enr_derxy2.reference(derxy2);
-          
-                enr_funct_stress.reference(funct_stress);
-                //enr_derxy_stress.reference(derxy_stress);
+              for (int iparam = 0; iparam < numparamvelx; ++iparam)
+              {
+                shp(iparam) = funct(iparam);
+                shp_dx(iparam) = derxy(0,iparam);
+                shp_dy(iparam) = derxy(1,iparam);
+                shp_dz(iparam) = derxy(2,iparam);
+                shp_dxdx(iparam) = derxy2(0,iparam);
+                shp_dxdy(iparam) = derxy2(3,iparam);
+                shp_dxdz(iparam) = derxy2(4,iparam);
+                shp_dydx(iparam) = shp_dxdy(iparam);
+                shp_dydy(iparam) = derxy2(1,iparam);
+                shp_dydz(iparam) = derxy2(5,iparam);
+                shp_dzdx(iparam) = shp_dxdz(iparam);
+                shp_dzdy(iparam) = shp_dydz(iparam);
+                shp_dzdz(iparam) = derxy2(2,iparam);
+              }
+              
+              if (tauele_unknowns_present)
+              {
+                for (int iparam = 0; iparam < numparamtauxx; ++iparam)
+                {
+                  shp_tau(iparam) = funct_stress(iparam);
+                }
+              }
             }
-      
-            // create views on the shape function arrays for easy handling in the assembly process
-            const BlitzVec shp(enr_funct);
-            const BlitzVec shp_dx(enr_derxy(0,_));
-            const BlitzVec shp_dy(enr_derxy(1,_));
-            const BlitzVec shp_dz(enr_derxy(2,_));
-            const BlitzVec shp_dxdx(enr_derxy2(0,_)); const BlitzVec shp_dxdy(enr_derxy2(3,_)); const BlitzVec shp_dxdz(enr_derxy2(4,_));
-            const BlitzVec shp_dydx(shp_dxdy);        const BlitzVec shp_dydy(enr_derxy2(1,_)); const BlitzVec shp_dydz(enr_derxy2(5,_));
-            const BlitzVec shp_dzdx(shp_dxdz);        const BlitzVec shp_dzdy(shp_dydz);        const BlitzVec shp_dzdz(enr_derxy2(2,_));
-            
-            const BlitzVec shp_tau(enr_funct_stress);
-            //const BlitzVec shp_tau_dx(enr_derxy_stress(0,_));
-            //const BlitzVec shp_tau_dy(enr_derxy_stress(1,_));
-            //const BlitzVec shp_tau_dz(enr_derxy_stress(2,_));
             
             // get velocities (n+g,i) at integration point
-            static BlitzVec3 velint;
+            BlitzVec3 velint;
             //velint = blitz::sum(enr_funct(j)*evelnp(i,j),j);
             for (int isd = 0; isd < nsd; ++isd)
             {
                 velint(isd) = 0.0;
                 for (int iparam = 0; iparam < numparampres; ++iparam)
-                    velint(isd) += evelnp(isd,iparam)*enr_funct(iparam);
+                    velint(isd) += evelnp(isd,iparam)*shp(iparam);
             }
 
             // get history data (n) at integration point
-            static BlitzVec3 histvec;
+            BlitzVec3 histvec;
             //histvec = blitz::sum(enr_funct(j)*evelnp_hist(i,j),j);
             for (int isd = 0; isd < nsd; ++isd)
             {
                 histvec(isd) = 0.0;
                 for (int iparam = 0; iparam < numparamvelx; ++iparam)
-                    histvec(isd) += evelnp_hist(isd,iparam)*enr_funct(iparam);
+                    histvec(isd) += evelnp_hist(isd,iparam)*shp(iparam);
             }
             
             // get velocity (np,i) derivatives at integration point
-            static BlitzMat3x3 vderxy;
+            BlitzMat3x3 vderxy;
             //vderxy = blitz::sum(enr_derxy(j,k)*evelnp(i,k),k);
-            for (int isd = 0; isd < nsd; ++isd)
+            vderxy = 0.0;
+            for (int iparam = 0; iparam < numparamvelx; ++iparam)
             {
-                for (int jsd = 0; jsd < nsd; ++jsd)
-                {
-                  vderxy(isd,jsd) = 0.0;
-                  for (int iparam = 0; iparam < numparamvelx; ++iparam)
-                  {
-                    vderxy(isd,jsd) += evelnp(isd,iparam) * enr_derxy(jsd,iparam);
-                  }
-                }
+              for (int isd = 0; isd < nsd; ++isd)
+              {
+                vderxy(isd,0) += evelnp(isd,iparam) * shp_dx(iparam);
+                vderxy(isd,1) += evelnp(isd,iparam) * shp_dy(iparam);
+                vderxy(isd,2) += evelnp(isd,iparam) * shp_dz(iparam);
+              }
             }
             
             //cout << "eps_xy" << (0.5*(vderxy(0,1)+vderxy(1,0))) << ", "<< endl;
       
             // calculate 2nd velocity derivatives at integration point
-            static blitz::TinyMatrix<double,3,6> vderxy2;
+            blitz::TinyMatrix<double,3,6> vderxy2;
             if (higher_order_ele)
             {
-                //vderxy2 = blitz::sum(enr_derxy2(j,k)*evelnp(i,k),k);
+              //vderxy2 = blitz::sum(enr_derxy2(j,k)*evelnp(i,k),k);
+              vderxy2 = 0.0;
+              for (int iparam = 0; iparam < numparamvelx; ++iparam)
+              {
                 for (int isd = 0; isd < nsd; ++isd)
                 {
-                    for (int ider = 0; ider < 6; ++ider)
-                    {
-                      vderxy2(isd,ider) = 0.0;
-                      for (int iparam = 0; iparam < numparamvelx; ++iparam)
-                      {
-                        vderxy2(isd,ider) += evelnp(isd,iparam)*enr_derxy2(ider,iparam);
-                      }
-                    }
+                  vderxy2(isd,0) += evelnp(isd,iparam)*shp_dxdx(iparam);
+                  vderxy2(isd,1) += evelnp(isd,iparam)*shp_dydy(iparam);
+                  vderxy2(isd,2) += evelnp(isd,iparam)*shp_dzdz(iparam);
+                  vderxy2(isd,3) += evelnp(isd,iparam)*shp_dxdy(iparam);
+                  vderxy2(isd,4) += evelnp(isd,iparam)*shp_dxdz(iparam);
+                  vderxy2(isd,5) += evelnp(isd,iparam)*shp_dydz(iparam);
                 }
+              }
             }
             else
             {
@@ -472,13 +510,14 @@ static void Sysmat4(
             }
 
             // get pressure gradients
-            static BlitzVec3 gradp;
+            BlitzVec3 gradp;
             //gradp = blitz::sum(enr_derxy(i,j)*eprenp(j),j);
-            for (int isd = 0; isd < nsd; ++isd)
+            gradp = 0.0;
+            for (int iparam = 0; iparam < numparampres; ++iparam)
             {
-                gradp(isd) = 0.0;
-                for (int iparam = 0; iparam < numparampres; ++iparam)
-                    gradp(isd) += enr_derxy(isd,iparam)*eprenp(iparam);
+              gradp(0) += shp_dx(iparam)*eprenp(iparam);
+              gradp(1) += shp_dy(iparam)*eprenp(iparam);
+              gradp(2) += shp_dz(iparam)*eprenp(iparam);
             }
     
 //            // get discont. pressure gradients
@@ -498,7 +537,7 @@ static void Sysmat4(
               pres += shp(iparam)*eprenp(iparam);
             
             // get viscous stress unknowns
-            static BlitzMat3x3 tau;
+            BlitzMat3x3 tau;
             if (tauele_unknowns_present)
             {
                 fill_tau(numparamtauxx, shp_tau, etau, tau);
@@ -508,7 +547,7 @@ static void Sysmat4(
               tau = 0.0;
             }
           
-//            BlitzVec nabla_dot_tau(3);
+//            BlitzVec3 nabla_dot_tau(3);
 //            if (stress_unknowns_present)
 //            {
 //                nabla_dot_tau(0) = blitz::sum(shp_tau_dx(_)*etau(0,_)) + blitz::sum(shp_tau_dy(_)*etau(3,_)) + blitz::sum(shp_tau_dz(_)*etau(4,_));
@@ -543,7 +582,7 @@ static void Sysmat4(
             const double vel_norm = sqrt(velint(0)*velint(0)+velint(1)*velint(1)+velint(2)*velint(2));
 
             // normed velocity at element centre
-            static BlitzVec3 velino;
+            BlitzVec3 velino;
             if (vel_norm>=1e-6)
             {
                 for (int isd = 0; isd < nsd; ++isd)
@@ -667,8 +706,8 @@ static void Sysmat4(
             const double timefacfac = timefac * fac;
 
             /*------------------------- evaluate rhs vector at integration point ---*/
-            static BlitzVec3 rhsint;
-            static BlitzVec3 bodyforce;
+            BlitzVec3 rhsint;
+            BlitzVec3 bodyforce;
             bodyforce = 0.0;
             //bodyforce(0) = 1.0;
             for (int isd = 0; isd < nsd; ++isd)
@@ -677,18 +716,18 @@ static void Sysmat4(
             /*----------------- get numerical representation of single operators ---*/
 
             /* Convective term  u_old * grad u_old: */
-            static BlitzVec3 conv_old;
+            BlitzVec3 conv_old;
             //conv_old = blitz::sum(vderxy(i, j)*velint(j), j);
             BLITZTINY::MV_product<3,3>(vderxy,velint,conv_old);
             
             /* Viscous term  div epsilon(u_old) */
-            static BlitzVec3 visc_old;
+            BlitzVec3 visc_old;
             visc_old(0) = vderxy2(0,0) + 0.5 * (vderxy2(0,1) + vderxy2(1,3) + vderxy2(0,2) + vderxy2(2,4));
             visc_old(1) = vderxy2(1,1) + 0.5 * (vderxy2(1,0) + vderxy2(0,3) + vderxy2(1,2) + vderxy2(2,5));
             visc_old(2) = vderxy2(2,2) + 0.5 * (vderxy2(2,0) + vderxy2(0,4) + vderxy2(2,1) + vderxy2(1,5));
             
             // evaluate residual once for all stabilisation right hand sides
-            static BlitzVec3 res_old;
+            BlitzVec3 res_old;
             //res_old = -rhsint+timefac*(conv_old+gradp-2.0*visc*visc_old);
             for (int isd = 0; isd < nsd; ++isd)
                 res_old(isd) = -rhsint(isd)+timefac*(conv_old(isd)+gradp(isd)-2.0*visc*visc_old(isd));  
@@ -704,11 +743,12 @@ static void Sysmat4(
              with  N .. form function matrix                                   */
             //const BlitzVec enr_conv_c_(blitz::sum(enr_derxy(j,i)*velint(j), j));
             BlitzVec enr_conv_c_(numparamvelx);
+            enr_conv_c_ = 0.0;
             for (int iparam = 0; iparam < numparamvelx; ++iparam)
             {
-                enr_conv_c_(iparam) = 0.0;
-                for (int isd = 0; isd < nsd; ++isd)
-                    enr_conv_c_(iparam) += enr_derxy(isd,iparam)*velint(isd);
+                enr_conv_c_(iparam) += shp_dx(iparam)*velint(0);
+                enr_conv_c_(iparam) += shp_dy(iparam)*velint(1);
+                enr_conv_c_(iparam) += shp_dz(iparam)*velint(2);
             }
             
 
@@ -728,16 +768,28 @@ static void Sysmat4(
     
                with N_x .. x-line of N
                N_y .. y-line of N                                             */
-            blitz::Array<double,3> enr_viscs2_(3,3,numparamvelx);
-            enr_viscs2_(0,0,_) = 0.5 * (2.0 * shp_dxdx + shp_dydy + shp_dzdz);
-            enr_viscs2_(0,1,_) = 0.5 *  shp_dxdy;
-            enr_viscs2_(0,2,_) = 0.5 *  shp_dxdz;
-            enr_viscs2_(1,0,_) = 0.5 *  shp_dydx;
-            enr_viscs2_(1,1,_) = 0.5 * (shp_dxdx + 2.0 * shp_dydy + shp_dzdz);
-            enr_viscs2_(1,2,_) = 0.5 *  shp_dydz;
-            enr_viscs2_(2,0,_) = 0.5 *  shp_dzdx;
-            enr_viscs2_(2,1,_) = 0.5 *  shp_dzdy;
-            enr_viscs2_(2,2,_) = 0.5 * (shp_dxdx + shp_dydy + 2.0 * shp_dzdz);
+            BlitzVec enr_viscs2_xx(numparamvelx);
+            BlitzVec enr_viscs2_xy(numparamvelx);
+            BlitzVec enr_viscs2_xz(numparamvelx);
+            BlitzVec enr_viscs2_yx(numparamvelx);
+            BlitzVec enr_viscs2_yy(numparamvelx);
+            BlitzVec enr_viscs2_yz(numparamvelx);
+            BlitzVec enr_viscs2_zx(numparamvelx);
+            BlitzVec enr_viscs2_zy(numparamvelx);
+            BlitzVec enr_viscs2_zz(numparamvelx);
+            for (int iparam = 0; iparam < numparamvelx; ++iparam)
+            {
+              enr_viscs2_xx(iparam) = 0.5 * (2.0 * shp_dxdx(iparam) + shp_dydy(iparam) + shp_dzdz(iparam));
+              enr_viscs2_xy(iparam) = 0.5 *  shp_dxdy(iparam);
+              enr_viscs2_xz(iparam) = 0.5 *  shp_dxdz(iparam);
+              enr_viscs2_yx(iparam) = 0.5 *  shp_dydx(iparam);
+              enr_viscs2_yy(iparam) = 0.5 * (shp_dxdx(iparam) + 2.0 * shp_dydy(iparam) + shp_dzdz(iparam));
+              enr_viscs2_yz(iparam) = 0.5 *  shp_dydz(iparam);
+              enr_viscs2_zx(iparam) = 0.5 *  shp_dzdx(iparam);
+              enr_viscs2_zy(iparam) = 0.5 *  shp_dzdy(iparam);
+              enr_viscs2_zz(iparam) = 0.5 * (shp_dxdx(iparam) + shp_dydy(iparam) + 2.0 * shp_dzdz(iparam));
+            }
+
 
 
             //////////////////////////////////////
@@ -1009,17 +1061,17 @@ static void Sysmat4(
                           |                         \  /  |
                            \                             /
                 */
-                assembler.template Matrix<Pres,Velx>(shp_dx, -2.0*visc*ttimetauMp, enr_viscs2_(0, 0, _));
-                assembler.template Matrix<Pres,Vely>(shp_dx, -2.0*visc*ttimetauMp, enr_viscs2_(0, 1, _));
-                assembler.template Matrix<Pres,Velz>(shp_dx, -2.0*visc*ttimetauMp, enr_viscs2_(0, 2, _));
+                assembler.template Matrix<Pres,Velx>(shp_dx, -2.0*visc*ttimetauMp, enr_viscs2_xx);
+                assembler.template Matrix<Pres,Vely>(shp_dx, -2.0*visc*ttimetauMp, enr_viscs2_xy);
+                assembler.template Matrix<Pres,Velz>(shp_dx, -2.0*visc*ttimetauMp, enr_viscs2_xz);
                 
-                assembler.template Matrix<Pres,Velx>(shp_dy, -2.0*visc*ttimetauMp, enr_viscs2_(0, 1, _));
-                assembler.template Matrix<Pres,Vely>(shp_dy, -2.0*visc*ttimetauMp, enr_viscs2_(1, 1, _));
-                assembler.template Matrix<Pres,Velz>(shp_dy, -2.0*visc*ttimetauMp, enr_viscs2_(1, 2, _));
+                assembler.template Matrix<Pres,Velx>(shp_dy, -2.0*visc*ttimetauMp, enr_viscs2_xy);
+                assembler.template Matrix<Pres,Vely>(shp_dy, -2.0*visc*ttimetauMp, enr_viscs2_yy);
+                assembler.template Matrix<Pres,Velz>(shp_dy, -2.0*visc*ttimetauMp, enr_viscs2_yz);
                 
-                assembler.template Matrix<Pres,Velx>(shp_dz, -2.0*visc*ttimetauMp, enr_viscs2_(0, 2, _));
-                assembler.template Matrix<Pres,Vely>(shp_dz, -2.0*visc*ttimetauMp, enr_viscs2_(1, 2, _));
-                assembler.template Matrix<Pres,Velz>(shp_dz, -2.0*visc*ttimetauMp, enr_viscs2_(2, 2, _));
+                assembler.template Matrix<Pres,Velx>(shp_dz, -2.0*visc*ttimetauMp, enr_viscs2_xz);
+                assembler.template Matrix<Pres,Vely>(shp_dz, -2.0*visc*ttimetauMp, enr_viscs2_yz);
+                assembler.template Matrix<Pres,Velz>(shp_dz, -2.0*visc*ttimetauMp, enr_viscs2_zz);
                       
                 /* pressure stabilisation: pressure( L_pres_p) */
                 /*
@@ -1113,17 +1165,17 @@ static void Sysmat4(
                      |               \  /    \ (i)        /     |
                       \                                        /
                 */
-                assembler.template Matrix<Velx,Velx>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(0, 0, _));
-                assembler.template Matrix<Velx,Vely>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(0, 1, _));
-                assembler.template Matrix<Velx,Velz>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(0, 2, _));
+                assembler.template Matrix<Velx,Velx>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_xx);
+                assembler.template Matrix<Velx,Vely>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_xy);
+                assembler.template Matrix<Velx,Velz>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_xz);
     
-                assembler.template Matrix<Vely,Velx>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(0, 1, _));
-                assembler.template Matrix<Vely,Vely>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(1, 1, _));
-                assembler.template Matrix<Vely,Velz>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(1, 2, _));
+                assembler.template Matrix<Vely,Velx>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_yx);
+                assembler.template Matrix<Vely,Vely>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_yy);
+                assembler.template Matrix<Vely,Velz>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_yz);
     
-                assembler.template Matrix<Velz,Velx>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(0, 2, _));
-                assembler.template Matrix<Velz,Vely>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(1, 2, _));
-                assembler.template Matrix<Velz,Velz>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_(2, 2, _));
+                assembler.template Matrix<Velz,Velx>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_zx);
+                assembler.template Matrix<Velz,Vely>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_zy);
+                assembler.template Matrix<Velz,Velz>(enr_conv_c_, -2.0*visc*ttimetauM, enr_viscs2_zz);
                 
                 if (newton)
                 {
@@ -1325,17 +1377,17 @@ static void Sysmat4(
         for (int iquad=0; iquad<intpoints.nquad; ++iquad)
         {
             // coordinates of the current integration point in cell coordinates \eta^\boundary
-            static XFEM::PosEtaBoundary pos_eta_boundary;
+            XFEM::PosEtaBoundary pos_eta_boundary;
             pos_eta_boundary(0) = intpoints.qxg[iquad][0];
             pos_eta_boundary(1) = intpoints.qxg[iquad][1];
 //            cout << pos_eta_boundary << endl;
             
             // coordinates of the current integration point in element coordinates \xi
-            static XFEM::PosXiBoundary posXiBoundary;
+            XFEM::PosXiBoundary posXiBoundary;
             mapEtaBToXiB(*cell, pos_eta_boundary, posXiBoundary);
             //cout << posXiBoundary << endl;
             
-            static XFEM::PosXiDomain posXiDomain;
+            XFEM::PosXiDomain posXiDomain;
             mapEtaBToXiD(*cell, pos_eta_boundary, posXiDomain);
 //            cout << cell->toString() << endl;
 //            cout << posXiDomain << endl;
@@ -1362,7 +1414,7 @@ static void Sysmat4(
             
             // position of the gausspoint in physical coordinates
 //            gauss_pos_xyz = blitz::sum(funct_boundary(j)*xyze_boundary(i,j),j);
-            static BlitzVec3 gauss_pos_xyz;
+            BlitzVec3 gauss_pos_xyz;
             for (int isd = 0; isd < 3; ++isd)
             {
                 gauss_pos_xyz(isd) = 0.0;
@@ -1373,7 +1425,7 @@ static void Sysmat4(
             }
       
             // get jacobian matrix d x / d \xi  (3x2)
-            static BlitzMat3x2 dxyzdrs;
+            BlitzMat3x2 dxyzdrs;
             //dxyzdrs = blitz::sum(xyze_boundary(i,k)*deriv_boundary(j,k),k);
             for (int isd = 0; isd < 3; ++isd)
             {
@@ -1388,7 +1440,7 @@ static void Sysmat4(
             }
             
             // compute covariant metric tensor G for surface element (2x2)
-            static BlitzMat2x2 metric;
+            BlitzMat2x2 metric;
             //metric = blitz::sum(dxyzdrs(k,i)*dxyzdrs(k,j),k);
             BLITZTINY::MtM_product<2,2,3>(dxyzdrs,dxyzdrs,metric);
             //const BlitzMat metric = computeMetricTensor(xyze_boundary,deriv_boundary);
@@ -1408,24 +1460,11 @@ static void Sysmat4(
             {
               dserror("negative fac! should be a bug!");
             }
-
-            // compute second global derivative
-//            static BlitzMat derxy2(6,numnode,blitz::ColumnMajorArray<2>());
-//            derxy2 = 0.;
-
-            // after this call, one should only use the enriched shape functions and derivatives!
-//            BlitzVec enr_funct(numparamvelx);
-//            BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
-//            BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
-//            BlitzVec enr_funct_stress(numparamtauxx);
             
             // temporary arrays
             BlitzVec enr_funct(numparamvelx);
-            //BlitzMat enr_derxy(3,numparamvelx,blitz::ColumnMajorArray<2>());
-            //BlitzMat enr_derxy2(6,numparamvelx,blitz::ColumnMajorArray<2>());
 
             BlitzVec enr_funct_stress(numparamtauxx);
-            //BlitzMat enr_derxy_stress(3,numparamtauxx,blitz::ColumnMajorArray<2>());
             
             std::map<XFEM::Enrichment, double> enrvals(computeEnrvalMap(
                   ih,
@@ -1470,25 +1509,29 @@ static void Sysmat4(
                 
             // perform integration for entire matrix and rhs
             // create vievs on the shape function arrays for easy handling in the assembly process
-            const BlitzVec shp(enr_funct);
-//            const BlitzVec shp_dx(enr_derxy(0,_));
-//            const BlitzVec shp_dy(enr_derxy(1,_));
-//            const BlitzVec shp_dz(enr_derxy(2,_));
-            const BlitzVec shp_tau(enr_funct_stress);
+            BlitzVec shp(numparamvelx);
+            for (int iparam = 0; iparam < numparamvelx; ++iparam)
+            {
+              shp(iparam) = enr_funct(iparam);
+            }
+            BlitzVec shp_tau(numparamtauxx);
+            for (int iparam = 0; iparam < numparamtauxx; ++iparam)
+            {
+              shp_tau(iparam) = enr_funct_stress(iparam);
+            }
             
             // get normal vector (in x coordinates) to surface element at integration point
-            static BlitzVec3 normalvec_solid;
+            BlitzVec3 normalvec_solid;
             computeNormalToBoundaryElement(boundaryele, xyze_boundary, posXiBoundary, normalvec_solid);
 //            cout << "normalvec " << normalvec << ", " << endl;
-            static BlitzVec3 normalvec_fluid;
+            BlitzVec3 normalvec_fluid;
             normalvec_fluid = -normalvec_solid;
 //            cout << "normalvec : ";
 //            cout << normalvec_fluid << endl;
       
             // get velocities (n+g,i) at integration point
-//            static BlitzVec velint(3);
 //            velint = blitz::sum(evelnp(i,j)*shp(j),j);
-            static BlitzVec3 velint;
+            BlitzVec3 velint;
             //velint = blitz::sum(enr_funct(j)*evelnp(i,j),j);
             for (int isd = 0; isd < nsd; ++isd)
             {
@@ -1498,7 +1541,7 @@ static void Sysmat4(
             }
             
             // get interface velocity
-            static BlitzVec3 interface_velint;
+            BlitzVec3 interface_velint;
             for (int isd = 0; isd < 3; ++isd)
             {
                 interface_velint(isd) = 0.0;
@@ -1577,7 +1620,7 @@ static void Sysmat4(
             assembler.template Matrix<Velz,Sigmazy>(shp, -vtaun_fac*timefacfac*normalvec_fluid(1), shp_tau);
             assembler.template Matrix<Velz,Sigmazz>(shp, -vtaun_fac*timefacfac*normalvec_fluid(2), shp_tau);
             
-            static BlitzVec3 disctau_times_n;
+            BlitzVec3 disctau_times_n;
             BLITZTINY::MV_product<3,3>(tau,normalvec_fluid,disctau_times_n);
             //cout << "sigmaijnj : " << disctau_times_n << endl;
             assembler.template Vector<Velx>(shp, vtaun_fac*timefacfac*disctau_times_n(0));
@@ -1632,8 +1675,8 @@ void callSysmat4(
         const std::vector<double>&        locval_hist,
         const RCP<Epetra_Vector>          ivelcol,
         const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
-        BlitzMat&                         estif,
-        BlitzVec&                         eforce,
+        EpMat&                         estif,
+        EpVec&                         eforce,
         const struct _MATERIAL*           material,
         const double                      time,          ///< current time (pseudotime for stationary formulation)
         const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt

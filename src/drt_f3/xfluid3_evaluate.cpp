@@ -19,7 +19,6 @@ Maintainer: Axel Gerstenberger
 #endif
 
 #include "xfluid3.H"
-//#include "xfluid3_sysmat2.H"
 #include "xfluid3_sysmat3.H"
 #include "xfluid3_sysmat4.H"
 #include "xfluid3_interpolation.H"
@@ -169,17 +168,6 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("interface force",null);
         if (iforcecol==null)
             dserror("Cannot get interface force from parameters");
-        
-        //--------------------------------------------------
-        // wrap epetra serial dense objects in blitz objects
-        //--------------------------------------------------
-        blitz::Array<double, 2> estif(elemat1.A(),
-                                      blitz::shape(elemat1.M(),elemat1.N()),
-                                      blitz::neverDeleteData,
-                                      blitz::ColumnMajorArray<2>());
-        blitz::Array<double, 1> eforce(elevec1.Values(),
-                                       blitz::shape(elevec1.Length()),
-                                       blitz::neverDeleteData);
 
         const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                 eleDofManager_, NumNode(), NodeIds());
@@ -188,7 +176,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         //--------------------------------------------------
         XFLUID::callSysmat4(assembly_type,
-                this, ih_, eleDofManager_, myvelnp, myhist, ivelcol, iforcecol, estif, eforce,
+                this, ih_, eleDofManager_, myvelnp, myhist, ivelcol, iforcecol, elemat1, elevec1,
                 actmat, time, timefac, newton, pstab, supg, cstab, true);
 
         // This is a very poor way to transport the density to the
@@ -268,16 +256,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           const bool newton = params.get<bool>("include reactive terms for linearisation",false);
           const bool pstab  = true;
           const bool supg   = true;
-          const bool cstab  = true;        
-
-          // wrap epetra serial dense objects in blitz objects
-          blitz::Array<double, 2> estif(elemat1.A(),
-                                        blitz::shape(elemat1.M(),elemat1.N()),
-                                        blitz::neverDeleteData,
-                                        blitz::ColumnMajorArray<2>());
-          blitz::Array<double, 1> eforce(elevec1.Values(),
-                                         blitz::shape(elevec1.Length()),
-                                         blitz::neverDeleteData);
+          const bool cstab  = true;
 
           const XFEM::AssemblyType assembly_type = CheckForStandardEnrichmentsOnly(
                   eleDofManager_, NumNode(), NodeIds());
@@ -348,7 +327,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           {
           // calculate element coefficient matrix and rhs
           XFLUID::callSysmat4(assembly_type,
-                  this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
+                  this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, elemat1, elevec1,
                   actmat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
           }
           // This is a very poor way to transport the density to the

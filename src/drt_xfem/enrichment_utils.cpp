@@ -97,8 +97,6 @@ void XFEM::ComputeEnrichedNodalShapefunction(
         BlitzMat&                             enr_derxy
         )
 {
-    blitz::Range _  = blitz::Range::all();
-    
     const int* nodeids = ele.NodeIds();
     
     int dofcounter = 0;
@@ -113,7 +111,10 @@ void XFEM::ComputeEnrichedNodalShapefunction(
             {
                 const double enrval = enrvals.find(enrfield->getEnrichment())->second;
                 enr_funct(dofcounter) = funct(inode) * enrval;
-                enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
+                for (int isd = 0; isd < 3; ++isd)
+                {
+                  enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
+                }
                 dofcounter += 1;
             }
         }
@@ -138,8 +139,6 @@ void XFEM::ComputeEnrichedNodalShapefunction(
         BlitzMat&                             enr_derxy2
         )
 {
-    blitz::Range _  = blitz::Range::all();
-    
     const int* nodeids = ele.NodeIds();
     
     int dofcounter = 0;
@@ -154,8 +153,14 @@ void XFEM::ComputeEnrichedNodalShapefunction(
             {
                 const double enrval = enrvals.find(enrfield->getEnrichment())->second;
                 enr_funct(dofcounter) = funct(inode) * enrval;
-                enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
-                enr_derxy2(_,dofcounter) = derxy2(_,inode) * enrval;
+                for (int isd = 0; isd < 3; ++isd)
+                {
+                  enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
+                }
+                for (int isd = 0; isd < 6; ++isd)
+                {
+                  enr_derxy2(isd,dofcounter) = derxy2(isd,inode) * enrval;
+                }
                 dofcounter += 1;
             }
         }
@@ -211,8 +216,6 @@ void XFEM::ComputeEnrichedElementShapefunction(
         BlitzMat&                             enr_derxy
         )
 {
-    blitz::Range _  = blitz::Range::all();
-    
     int dofcounter = 0;
 
     const std::set<XFEM::FieldEnr>& enrfieldset = dofman.getEnrichedFieldsPerEleField(field);
@@ -226,7 +229,10 @@ void XFEM::ComputeEnrichedElementShapefunction(
       {
         const double enrval = enrvals.find(enrfield->getEnrichment())->second;
         enr_funct(dofcounter) = funct(inode) * enrval;
-        enr_derxy(_,dofcounter) = derxy(_,inode) * enrval;
+        for (int isd = 0; isd < 3; ++isd)
+        {
+          enr_derxy(isd,dofcounter) = derxy(isd,inode) * enrval;
+        }
         dofcounter += 1;
       }
     }

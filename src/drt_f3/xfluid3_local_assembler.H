@@ -103,8 +103,8 @@ public:
     
     explicit LocalAssembler(
             const XFEM::ElementDofManager&    dofman,
-            BlitzMat& estif,
-            BlitzVec& eforce
+            EpMat& estif,
+            EpVec& eforce
             ) :
         dofman_(dofman),
         estif_(estif),
@@ -212,8 +212,8 @@ private:
     LocalAssembler(const LocalAssembler& old);
     
     const XFEM::ElementDofManager& dofman_;
-    BlitzMat& estif_;
-    BlitzVec& eforce_;
+    EpMat& estif_;
+    EpVec& eforce_;
 };
 
 template <DRT::Element::DiscretizationType DISTYPE>
@@ -223,8 +223,8 @@ public:
     
     explicit LocalAssembler(
             const XFEM::ElementDofManager&    dofman,
-            BlitzMat&                         estif,
-            BlitzVec&                         eforce
+            EpMat&                         estif,
+            EpVec&                         eforce
             ) :
         dofman_(dofman),
         estif_(estif),
@@ -281,8 +281,8 @@ private:
     LocalAssembler(const LocalAssembler& old);
     
     const XFEM::ElementDofManager& dofman_;
-    BlitzMat& estif_;
-    BlitzVec& eforce_;
+    EpMat& estif_;
+    EpVec& eforce_;
 };
 
   

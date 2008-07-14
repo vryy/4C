@@ -135,8 +135,8 @@ static void Sysmat3(
         const std::vector<double>&        locval_hist,   ///< nodal unknowns at n
         const RCP<Epetra_Vector>          ivelcol,       ///< velocity for interface nodes
         const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
-        BlitzMat&                         estif,         ///< element matrix to calculate
-        BlitzVec&                         eforce,        ///< element rhs to calculate
+        EpMat&                         estif,         ///< element matrix to calculate
+        EpVec&                         eforce,        ///< element rhs to calculate
         const struct _MATERIAL*           material,      ///< fluid material
         const double                      ,          ///< current time (pseudotime for stationary formulation)
         const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt, stationary: 1.0
@@ -148,8 +148,8 @@ static void Sysmat3(
         )
 {
     // initialize arrays
-    estif = 0.0;
-    eforce = 0.0;
+    estif.Scale(0.0);
+    eforce.Scale(0.0);
     
     // number of nodes for element
     const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
@@ -1882,8 +1882,8 @@ void callSysmat3(
         const std::vector<double>&        locval_hist,
         const RCP<Epetra_Vector>          ivelcol,
         const RCP<Epetra_Vector>          iforcecol,     ///< reaction force due to given interface velocity
-        BlitzMat&                         estif,
-        BlitzVec&                         eforce,
+        EpMat&                         estif,
+        EpVec&                         eforce,
         const struct _MATERIAL*           material,
         const double                      time,          ///< current time (pseudotime for stationary formulation)
         const double                      timefac,       ///< One-step-Theta: theta*dt, BDF2: 2/3 * dt
