@@ -65,7 +65,7 @@ fsisurface_(NULL)
   // -------------------------------------------------------------------
   // check sanity of static analysis set-up
   // -------------------------------------------------------------------
-  bool dynkindstat = ( params_.get<string>("DYNAMICTYP") == "Static" );
+  const bool dynkindstat = ( params_.get<string>("DYNAMICTYP") == "Static" );
   if (dynkindstat)
   {
     if ( (alphaf != 0.0) or (alpham != 0.0) )
@@ -227,7 +227,7 @@ fsisurface_(NULL)
 
 
   // build damping matrix if desired
-  if (damping)
+  if (damping and (!dynkindstat))
   {
     stiff_->Complete();
     damp_->Add(*stiff_,false,kdamp,0.0);
@@ -236,6 +236,7 @@ fsisurface_(NULL)
   }
 
   //--------------------------- calculate consistent initial accelerations
+  if (!dynkindstat)
   {
 
     RefCountPtr<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
@@ -250,6 +251,7 @@ fsisurface_(NULL)
   //-------------------------------------- it's static, ie accels are zero
   if (dynkindstat)
   {
+    vel_->PutScalar(0.0);
     acc_->PutScalar(0.0);
   }
 
@@ -319,6 +321,13 @@ void StruGenAlpha::ConstantPredictor()
     discret_.ClearState();
   }
 
+  // zerofy velocity and acceleration in case of statics
+  if (dynkindstat)
+  {
+    vel_->PutScalar(0.0);
+    acc_->PutScalar(0.0);
+  }
+  
   // constant predictor
   veln_->Update(1.0,*vel_,0.0);
   accn_->Update(1.0,*acc_,0.0);
@@ -335,6 +344,10 @@ void StruGenAlpha::ConstantPredictor()
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
   //                         + alpha_f * F_{ext;n}
+  if (dynkindstat)
+  {
+    fext_->PutScalar(0.0);
+  }
   fextm_->Update(1.-alphaf,*fextn_,alphaf,*fext_,0.0);
 
   //------------- eval fint at interpolated state, eval stiffness matrix
@@ -550,11 +563,6 @@ void StruGenAlpha::ConsistentPredictor()
   }
 #endif
 
-  // velocity=0 in statics
-  if (dynkindstat) veln_->PutScalar(0.0);
-
-  //cout << *veln_ << endl;
-
   // predicting accelerations A_{n+1} (accn)
   // A_{n+1} := 1./(beta*dt*dt) * (D_{n+1} - D_n)
   //          - 1./(beta*dt) * V_n
@@ -589,12 +597,6 @@ void StruGenAlpha::ConsistentPredictor()
   }
 #endif
 
-  // velocity=0 in statics
-  if (dynkindstat) accn_->PutScalar(0.0);
-
-  //cout << *accn_ << endl;
-
-
   //------------------------------ compute interpolated dis, vel and acc
   // consistent predictor
   // mid-displacements D_{n+1-alpha_f} (dism)
@@ -606,7 +608,18 @@ void StruGenAlpha::ConsistentPredictor()
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+1-alpha_m} := (1.-alpha_m) * A_{n+1} + alpha_m * A_{n}
   accm_->Update(1.-alpham,*accn_,alpham,*acc_,0.0);
-
+  
+  // zerofy velocity and acceleration in case of statics
+  if (dynkindstat)
+  {
+    velm_->PutScalar(0.0);
+    accm_->PutScalar(0.0);
+    veln_->PutScalar(0.0);
+    accn_->PutScalar(0.0);
+    vel_->PutScalar(0.0);
+    acc_->PutScalar(0.0);
+  }
+  
   //------------------------------- compute interpolated external forces
   // external mid-forces F_{ext;n+1-alpha_f} (fextm)
   //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
@@ -934,8 +947,8 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
-  bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
-
+  const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+  if (dynkindstat) dserror("Static case not implemented");
   // On the first call in a time step we have to have
   // disp==Teuchos::null. Then we just finished one of our predictors,
   // than contains the element loop, so we can fast forward and finish
@@ -1466,6 +1479,9 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   FILE* errfile    = params_.get<FILE*> ("err file",NULL);
   if (!errfile) printerr = false;
 
+  const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+  if (dynkindstat) dserror("Static case not implemented");
+  
   // check whether we have a stiffness matrix, that is not filled yet
   // and mass and damping are present
   if (stiff_->Filled()) dserror("stiffness matrix may not be filled here");
@@ -2233,6 +2249,9 @@ void StruGenAlpha::PTC()
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+  
+  const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+  if (dynkindstat) dserror("Static case not implemented");
 
   // check whether we have a stiffness matrix, that is not filled yet
   // and mass and damping are present
@@ -2468,6 +2487,8 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
     double alpham  = params_.get<double>("alpha m"   ,0.378);
     double alphaf  = params_.get<double>("alpha f"   ,0.459);
     bool   damping = params_.get<bool>  ("damping"   ,false);
+    const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+    if (dynkindstat) dserror("Static case not implemented");
     const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
     // cast away constness of x
@@ -2584,6 +2605,8 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
     double alpham  = params_.get<double>("alpha m"   ,0.378);
     double alphaf  = params_.get<double>("alpha f"   ,0.459);
     bool   damping = params_.get<bool>  ("damping"   ,false);
+    const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+    if (dynkindstat) dserror("Static case not implemented");
     const Epetra_Map* dofrowmap = discret_.DofRowMap();
 
     // cast away constness of x
@@ -2666,6 +2689,8 @@ void StruGenAlpha::Update()
 
   double alpham        = params_.get<double>("alpha m"                ,0.378);
   double alphaf        = params_.get<double>("alpha f"                ,0.459);
+  
+  const bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
   string iostress      = params_.get<string>("io structural stress"   ,"none");
   string iostrain      = params_.get<string>("io structural strain"   ,"none");
@@ -2691,9 +2716,22 @@ void StruGenAlpha::Update()
   //    A_{n} := A_{n+1} = 1./(1.-alpham) * A_{n+1-alpha_m}
   //                     - alpham/(1.-alpham) * A_n
   acc_->Update(1./(1.-alpham),*accm_,-alpham/(1.-alpham));
+  
+  // zerofy velocity and acceleration in case of statics
+  if (dynkindstat)
+  {
+    vel_->PutScalar(0.0);
+    acc_->PutScalar(0.0);
+  }
+  
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}
   fext_->Update(1.0,*fextn_,0.0);
+  // zerofy external force, such that there is no history from load step to load step
+  if (dynkindstat)
+  {
+    fext_->PutScalar(0.0);
+  }
 #ifdef STRUGENALPHA_FINTLIKETR
   // update new internal force
   //    F_{int;n} := F_{int;n+1}
@@ -2940,6 +2978,7 @@ void StruGenAlpha::ExtrapolateEndState()
   // -------------------------------------------------------------------
   double alpham        = params_.get<double>("alpha m"                ,0.378);
   double alphaf        = params_.get<double>("alpha f"                ,0.459);
+  const bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
 
   //---------------------------- determine new end-quantities and update
   // new displacements at t_{n+1} -> t_n
@@ -2958,6 +2997,13 @@ void StruGenAlpha::ExtrapolateEndState()
   //    F_{ext;n} := F_{ext;n+1}
   //fext_->Update(1.0,*fextn_,0.0);
 
+  // zerofy velocity and acceleration in case of statics
+  if (dynkindstat)
+  {
+    veln_->PutScalar(0.0);
+    accn_->PutScalar(0.0);
+  }
+  
   return;
 } // StruGenAlpha::ExtrapolateEndState
 
@@ -3670,6 +3716,8 @@ Teuchos::RCP<Epetra_Vector> StruGenAlpha::LinearRelaxationSolve(Teuchos::RCP<Epe
   double gamma     = params_.get<double>("gamma"                  ,0.581);
   double alpham    = params_.get<double>("alpha m"                ,0.378);
   double alphaf    = params_.get<double>("alpha f"                ,0.459);
+  const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+  if (dynkindstat) dserror("Static case not implemented");
 
   // we start from zero
   fextm_->Update(1.-alphaf,*relax,0.0);
