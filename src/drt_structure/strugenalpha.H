@@ -391,13 +391,13 @@ public:
 
 protected:
 
-  //! don't wanted = operator
+  //! don't want = operator
   StruGenAlpha operator = (const StruGenAlpha& old);
 
-  //!  don't wanted cctor
+  //! don't want cctor
   StruGenAlpha(const StruGenAlpha& old);
 
-  // methods for Newton with line search
+  //! methods for Newton with line search
   void LineSearchUpdateMidConfiguration(double lambda,
                                         RCP<Epetra_Vector> disi,
                                         RCP<Epetra_Vector> disno,
