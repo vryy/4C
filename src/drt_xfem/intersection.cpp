@@ -3274,7 +3274,7 @@ bool XFEM::Intersection::computeRecoveryNormal(
         (xsi(0) < (-1.0 - TOL7))  || (xsi(1) < (-1.0 - TOL7)) ) 
     {
         //printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, xsi2 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n", xsi(0), xsi(1), xsi(2), residual, TOL14);
-        cout << "false" << endl; 
+        // cout << "false" << endl; 
         intersection = false;
     }
 
