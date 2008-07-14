@@ -119,7 +119,7 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (xfemparams.get<std::string>("GMSH_DEBUG_OUT") == "Yes");
   
-  const bool gmsh_tree_output = true;
+  const bool gmsh_tree_output = false;
   
   if (gmshdebugout)
   {
