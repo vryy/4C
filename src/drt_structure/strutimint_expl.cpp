@@ -23,6 +23,37 @@ Maintainer: Burkhard Bornemann
 #include "strutimint_expl.H"
 
 /*----------------------------------------------------------------------*/
+/* constructor */
+StruTimIntExpl:: StruTimIntExpl
+(
+  const Teuchos::ParameterList& ioparams,  //!< ioflags
+  const Teuchos::ParameterList& sdynparams,  //!< input parameters
+  const Teuchos::ParameterList& xparams,  //!< extra flags
+  DRT::Discretization& actdis,  //!< current discretisation
+  LINALG::Solver& solver,  //!< the solver
+  IO::DiscretizationWriter& output  //!< the output
+)
+: StruTimInt
+  (
+    ioparams,
+    sdynparams,
+    xparams,
+    actdis,
+    solver,
+    output
+  )
+{
+  // explicit time integrators cannot handle constraints
+  if (constrman_->HaveConstraint())
+  {
+    dserror("Explicit TIS cannot handle constraints");
+  }
+
+  // get away
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* print step summary */
 void StruTimIntExpl::PrintStep()
 {

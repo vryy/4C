@@ -144,6 +144,9 @@ void StruTimIntOneStepTheta::EvaluateForceStiffResidual()
   // ordinary internal force and stiffness
   ApplyForceStiffInternal(timen_, dt_, disn_, disi_,  fintn_, stiff_);
 
+  // apply forces and stiffness due to constraints
+  ApplyForceStiffConstraint(timen_, disn_, fint_, stiff_);
+
   // surface stress force
   ApplyForceStiffSurfstress(disn_, fintn_, stiff_);
   

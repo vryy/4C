@@ -325,6 +325,21 @@ protected:
   double dampm_;  //!< damping factor for mass \f$c_\text{M}\f$
   //@}
 
+  //! @name Managed stuff
+  //@{
+
+  //! whatever constraints
+  Teuchos::RCP<ConstrManager> constrman_;  //!< constraint manager
+  Teuchos::RCP<UzawaSolver> uzawasolv_;  //!< Uzawa constraint solver
+
+  //! surface stresses
+  Teuchos::RCP<DRT::SurfStressManager> surfstressman_;
+
+  //! potential conditions
+  Teuchos::RCP<DRT::PotentialManager> potman_;
+
+  //@}
+
   //! @name General control parameters
   //@{
   double time_;  //!< time \f$t_{n}\f$ of last converged step

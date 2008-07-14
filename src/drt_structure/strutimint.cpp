@@ -103,6 +103,10 @@ StruTimInt::StruTimInt
   damping_((bool) Teuchos::getIntegralValue<int>(sdynparams,"DAMPING")),
   dampk_(sdynparams.get<double>("K_DAMP")),
   dampm_(sdynparams.get<double>("M_DAMP")),
+  constrman_(Teuchos::null),
+  uzawasolv_(Teuchos::null),
+  surfstressman_(Teuchos::null),
+  potman_(Teuchos::null),
   time_(0.0),  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
   timen_(0.0),
   dt_(sdynparams.get<double>("TIMESTEP")),
@@ -138,6 +142,7 @@ StruTimInt::StruTimInt
   {
     dserror("Discretisation is not complete!");
   }
+
 
   // time state 
   timen_ = time_;  // set target time to initial time
@@ -202,6 +207,37 @@ StruTimInt::StruTimInt
     damp_ = Teuchos::rcp(
       new LINALG::SparseMatrix(*dofrowmap_, 81, true, false)
     );
+  }
+
+  // initialize constraint manager
+  constrman_ = Teuchos::rcp(new ConstrManager(Discretization(), 
+                                              dis_, sdynparams));
+  // initialize Uzawa solver
+  uzawasolv_ = Teuchos::rcp(new UzawaSolver(Discretization(), solver_, 
+                                            dirichtoggle_, invtoggle_, 
+                                            sdynparams));
+  // fix pointer to #dofrowmap_, which has not really changed, but is
+  // located at different place
+  dofrowmap_ = discret_.DofRowMap();
+
+  // Check for surface stress conditions due to interfacial phenomena
+  {
+    vector<DRT::Condition*> surfstresscond(0);
+    discret_.GetCondition("SurfaceStress",surfstresscond);
+    if (surfstresscond.size())
+    {
+      surfstressman_ = rcp(new DRT::SurfStressManager(discret_));
+    }
+  }
+  
+  // Check for potential conditions 
+  {
+    vector<DRT::Condition*> potentialcond(0);
+    discret_.GetCondition("Potential",potentialcond);
+    if (potentialcond.size())
+    {
+      potman_ = rcp(new DRT::PotentialManager(discret_));
+    }
   }
 
   // determine mass, damping and initial accelerations

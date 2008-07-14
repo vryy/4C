@@ -387,19 +387,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           STRUCT_DYNAMIC::ab2),
                                &sdyn);
 
-  // kind of dynamic analysis
-  // setStringToIntegralParameter("DYNKIND","Deprecated",
-//                                "kind of dynamic analysis",
-//                                tuple<std::string>("Deprecated",
-//                                                   "Direct",
-//                                                   "DirectAdaptive",
-//                                                   "InvAnalysis"),
-//                                tuple<int>(STRUCT_DYNAMIC::dynkind_deprecated,
-//                                           STRUCT_DYNAMIC::dynkind_direct,
-//                                           STRUCT_DYNAMIC::dynkind_directadaptive,
-//                                           STRUCT_DYNAMIC::dynkind_invanalysis),
-//                                &sdyn);
-
   // Output type
   IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);
   IntParameter("RESEVRYDISP",1,"save displacements and contact forces every RESEVRYDISP steps",&sdyn);
@@ -458,17 +445,23 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter("NLNSOL","fullnewton","",
                                tuple<std::string>(
+                                 "vague",
                                  "fullnewton",
                                  "lsnewton",
                                  "modnewton",
                                  "nlncg",
-                                 "ptc"),
+                                 "ptc",
+                                 "newtonlinuzawa",
+                                 "augmentedlagrange"),
                                tuple<int>(
+                                 STRUCT_DYNAMIC::vague,
                                  STRUCT_DYNAMIC::fullnewton,
                                  STRUCT_DYNAMIC::lsnewton,
                                  STRUCT_DYNAMIC::modnewton,
                                  STRUCT_DYNAMIC::nlncg,
-                                 STRUCT_DYNAMIC::ptc),
+                                 STRUCT_DYNAMIC::ptc,
+                                 STRUCT_DYNAMIC::newtonlinuzawa,
+                                 STRUCT_DYNAMIC::augmentedlagrange),
                                &sdyn);
 
   setStringToIntegralParameter("PREDICT","ConstDis","",

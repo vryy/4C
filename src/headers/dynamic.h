@@ -89,12 +89,15 @@ enum _genavgtype
    }               genavgtype;  /*  alphaf-mid-average type for generalised-alpha time integration */
 enum _nlnSolvTyp
    {
+    vague,                      /* undetermined sol.tech. type */
     fullnewton,                 /* full Newton-Raphson */
     lsnewton,                   /* line search Newton-Raphson */
     modnewton,                  /* modified Newton */
     matfreenewton,              /* matrix-free Newton iteration */
     nlncg,                      /* nonlinear CG iteration using Nox */
-    ptc                        /* pseudo transient continuation nonlinear iteration */
+    ptc,                        /* pseudo transient continuation nonlinear iteration */
+    newtonlinuzawa,             /* linear Uzawa solution for constraint system */
+    augmentedlagrange           /* non-linear Uzawa solution for constraint system */
    }               nlnSolvTyp;  /* type of nonlinear solver to be used */
 enum _PredType
    {

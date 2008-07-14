@@ -40,17 +40,7 @@ public:
     DRT::Discretization& actdis,  //!< current discretisation
     LINALG::Solver& solver,  //!< the solver
     IO::DiscretizationWriter& output  //!< the output
-  )
-  : StruTimInt
-    (
-      ioparams,
-      sdynparams,
-      xparams,
-      actdis,
-      solver,
-      output
-    )
-  { ; }
+  );
 
   //! @name Actions
   //@{

@@ -39,9 +39,9 @@ public:
     soltech_vague,  //!< undefined
     soltech_newtonfull,  //!< full Newton-Raphson iteration
     soltech_newtonmod,  //!< modified Newton-Raphson iteration
-    soltech_newtonuzawalin,  //!< linear Uzawa iteration for 
+    soltech_uzawalinnewton,  //!< linear Uzawa iteration for 
                              //!< constraint system
-    soltech_newtonuzawanonlin  //!< non-linear Uzawa iteration 
+    soltech_uzawanonlinnewton  //!< non-linear Uzawa iteration 
                                //!< for constraint system
   };
 
@@ -49,6 +49,12 @@ public:
   static enum SolTechEnum MapSolTechStringToEnum
   (
     const std::string name  //!< name identification string
+  );
+
+  //! map solution technique enum term identification string
+  static std::string MapSolTechEnumToString
+  (
+    const enum SolTechEnum name  //!< identifying enum term
   );
 
   //! kind of iteration convergence checks
@@ -207,11 +213,27 @@ public:
   void NewtonModified() { ; }
 
   //! Do classical augmented lagrange for volume constraint
+  //!
+  //! Potential is linearized wrt displacements 
+  //! keeping Lagrange multiplier fixed.
+  //! Until convergence Lagrange multiplier
+  //! is increased by Uzawa_param*(Vol_err)
+  //!
+  //! \author tk (originally)
+  //!
   //! DEAR SIRS AND MADAMS, PLEASE PROVIDE REFERENCE
-  void NewtonFullUzawaNonLinear() { ; }
+  void UzawaNonLinearNewtonFull();
 
   //! do full Newton iteration respecting volume constraint
-  void NewtonFullUzawaLinear() { ; }
+  //!
+  //! Potential is linearized wrt displacements 
+  //! and Lagrange multipliers
+  //! Linear problem is solved with Uzawa algorithm.
+  //!
+  //! \author tk (originally)
+  //!
+  //! DEAR SIRS AND MADAMS, PLEASE PROVIDE REFERENCE
+  void UzawaLinearNewtonFull() { ; }
 
   //! Do non-linear CG iteration using NOX
   void NonlinearCG() { ; }
@@ -361,26 +383,13 @@ public:
 
 protected:
 
-  //! equal operator is NOT wanted
-  //StruTimIntImpl operator = (const StruTimIntImpl& old);
-
   //! copy constructor is NOT wanted
-  //StruTimIntImpl(const StruTimIntImpl& old);
+  StruTimIntImpl(const StruTimIntImpl& old);
 
   //! @name General purpose algorithm parameters
   //@{
   enum PredEnum pred_;  //!< predictor
   //@}
-
-  //! whatever constraints
-  Teuchos::RCP<ConstrManager> constrman_;  //!< constraint manager
-  Teuchos::RCP<UzawaSolver> uzawasolv_;  //!< Uzawa constraint solver
-
-  //! surface stresses
-  Teuchos::RCP<DRT::SurfStressManager> surfstressman_;
-
-  //! potential conditions
-  Teuchos::RCP<DRT::PotentialManager> potman_;
 
   //! @name Iterative solution technique
   //@{
@@ -388,9 +397,12 @@ protected:
   enum ConvCheckEnum itercnvchk_;  //!< convergence check
   enum StruTimIntVector::NormEnum iternorm_;  //!< vector norm to 
                                               //!< check with
-  int itermax_;  //!< maximal permitted iterations
+  int itermax_;  //!< maximally permitted iterations
   double toldisi_;  //!< tolerance residual displacements
   double tolfres_;  //!< tolerance force residual
+  double uzawaparam_;  //!< Parameter for Uzawa algorithm dealing 
+                       //!< with Lagrange multipliers
+  int uzawaitermax_;  //!< maximally permitted Uzawa iterations
   double tolcon_;  //!< tolerance constraint
   int iter_;  //!< iteration step
   double normcharforce_;  //!< characteristic norm for residual force

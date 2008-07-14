@@ -29,6 +29,7 @@ enum StruTimIntImpl::PredEnum StruTimIntImpl::MapPredictorStringToEnum
   const std::string name  //!< identifier
 )
 {
+  // for explanations please look at #PredEnum
   if (name == "Vague")
   {
     return pred_vague;
@@ -55,7 +56,7 @@ enum StruTimIntImpl::SolTechEnum StruTimIntImpl::MapSolTechStringToEnum
   const std::string name  //!< name identification string
 )
 {
-  if (name == "Vague")
+  if (name == "vague")
   {
     return soltech_vague;
   }
@@ -69,16 +70,46 @@ enum StruTimIntImpl::SolTechEnum StruTimIntImpl::MapSolTechStringToEnum
   }
   else if (name == "newtonlinuzawa")
   {
-    return soltech_newtonuzawalin;
+    return soltech_uzawalinnewton;
   }
   else if (name == "augmentedlagrange")
   {
-    return soltech_newtonuzawanonlin;
+    return soltech_uzawanonlinnewton;
   }
   else
   {
     dserror("Unknown type of solution technique %s", name.c_str());
     return soltech_vague;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/* map solution technique identification string to enum term */
+std::string  StruTimIntImpl::MapSolTechEnumToString
+(
+  const enum SolTechEnum name  //!< identifying enum term
+)
+{
+  switch (name)
+  {
+  case soltech_vague :
+    return "vague";
+    break;
+  case soltech_newtonfull :
+    return "fullnewton";
+    break;
+  case soltech_newtonmod :
+    return "modnewton";
+    break;
+  case soltech_uzawalinnewton :
+    return "newtonlinuzawa";
+    break;
+  case soltech_uzawanonlinnewton :
+    return "augmentedlagrange";
+    break;
+  default :
+    dserror("Unknown type of solution technique %d", name);
+    return "vague";
   }
 }
 
@@ -141,16 +172,14 @@ StruTimIntImpl::StruTimIntImpl
     output
   ),
   pred_(MapPredictorStringToEnum(sdynparams.get<string>("PREDICT"))),
-  constrman_(Teuchos::null),
-  uzawasolv_(Teuchos::null),
-  surfstressman_(Teuchos::null),
-  potman_(Teuchos::null),
   itertype_(MapSolTechStringToEnum(sdynparams.get<string>("NLNSOL"))),
   itercnvchk_(MapConvCheckStringToEnum(sdynparams.get<string>("CONV_CHECK"))),
   iternorm_(StruTimIntVector::MapNormStringToEnum("L2")),  // ADD INPUT FEATURE
   itermax_(sdynparams.get<int>("MAXITER")),
   toldisi_(sdynparams.get<double>("TOLDISP")),
   tolfres_(sdynparams.get<double>("TOLRES")),
+  uzawaparam_(sdynparams.get<double>("UZAWAPARAM")),
+  uzawaitermax_(sdynparams.get<int>("UZAWAMAXITER")),
   tolcon_(sdynparams.get<double>("TOLCONSTR")),
   iter_(-1),
   normcharforce_(0.0),
@@ -161,6 +190,14 @@ StruTimIntImpl::StruTimIntImpl
   timer_(actdis.Comm()),
   fres_(Teuchos::null)
 {
+  // verify: if system has constraints, then Uzawa-type solver is used
+  if ( constrman_->HaveConstraint()
+       and ( (itertype_ != soltech_uzawalinnewton)
+             or (itertype_ != soltech_uzawanonlinnewton) ) )
+  {
+    dserror("Chosen solution technique %s does not work constraints.",
+            MapSolTechEnumToString(itertype_).c_str());
+  }
 
   // create empty residual force vector
   fres_ = LINALG::CreateVector(*dofrowmap_, false);
@@ -168,36 +205,6 @@ StruTimIntImpl::StruTimIntImpl
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
   disi_ = LINALG::CreateVector(*dofrowmap_, true);
-
-  // initialize constraint manager
-  constrman_ = rcp(new ConstrManager(Discretization(), dis_, sdynparams));
-  // initialize Uzawa solver
-  uzawasolv_ = rcp(new UzawaSolver(Discretization(), solver_, 
-                                   dirichtoggle_, invtoggle_, 
-                                   sdynparams));
-  // fix pointer to #dofrowmap_, which has not really changed, but is
-  // located at different place
-  dofrowmap_ = discret_.DofRowMap();
-
-  // Check for surface stress conditions due to interfacial phenomena
-  {
-    vector<DRT::Condition*> surfstresscond(0);
-    discret_.GetCondition("SurfaceStress",surfstresscond);
-    if (surfstresscond.size())
-    {
-      surfstressman_ = rcp(new DRT::SurfStressManager(discret_));
-    }
-  }
-  
-  // Check for potential conditions 
-  {
-    vector<DRT::Condition*> potentialcond(0);
-    discret_.GetCondition("Potential",potentialcond);
-    if (potentialcond.size())
-    {
-      potman_ = rcp(new DRT::PotentialManager(discret_));
-    }
-  }
 
   // done so far
   return;
@@ -331,7 +338,8 @@ void StruTimIntImpl::ApplyForceStiffConstraint
   Teuchos::RCP<LINALG::SparseMatrix>& stiff
 )
 {
-  if (constrman_->HaveConstraint())
+  if ( (constrman_->HaveConstraint())
+       and (itertype_ == soltech_uzawanonlinnewton) )
   {
     constrman_->StiffnessAndInternalForces(time, dis, fint, stiff);
   }
@@ -406,14 +414,19 @@ bool StruTimIntImpl::Converged()
 void StruTimIntImpl::Solve()
 {
   // choose solution technique in accordance with user's will
-  if (itertype_ == soltech_newtonfull)
+  switch (itertype_)
   {
+  case soltech_newtonfull :
     NewtonFull();
-  }
+    break;
+  case soltech_uzawanonlinnewton :
+    UzawaNonLinearNewtonFull();
+    break;
   // catch problems
-  else
-  {
-    dserror("Solution technique %i is not available", itertype_);
+  default :
+    dserror("Solution technique %s is not implemented",
+            MapSolTechEnumToString(itertype_).c_str());
+    break;
   }
 
   // see you
@@ -495,6 +508,58 @@ void StruTimIntImpl::NewtonFull()
   // get out of here
   return;
 }
+
+/*----------------------------------------------------------------------*/
+/* do non-linear Uzawa iteration within a full NRI is called,
+ * originally by tk */
+void StruTimIntImpl::UzawaNonLinearNewtonFull()
+{
+  // do Newton-Raphson iteration, which contains here effects of
+  // constraint forces and stiffness
+  // this call ends up with new displacements etc on \f$D_{n+1}\f$ etc
+  NewtonFull();
+
+  // compute constraint error ...
+  constrman_->ComputeError(timen_, disn_);
+  // ... and its norm
+  normcon_ = constrman_->GetErrorNorm();
+  // talk to user
+  std::cout << "Constraint error for Newton solution: " << normcon_
+            << std::endl;
+
+  // Uzawa iteration loop
+  int uziter = 0;
+  while ( (normcon_ > tolcon_) and (uziter <= uzawaitermax_) )
+  {
+    // Lagrange multiplier is increased by #uzawaparam_ times ConstrError
+    constrman_->UpdateLagrMult(uzawaparam_);
+
+    // Keep new Lagrange multiplier fixed and solve for new displacements
+
+    // REALLY NECESSARY, OR EVEN COUNTERPRODUCTIVE ???
+    Predict();
+
+    // do Newton-Raphson iteration, which contains here effects of
+    // constraint forces and stiffness
+    // this call ends up with new displacements etc on \f$D_{n+1}\f$ etc
+    NewtonFull();
+
+    // compute constraint error ...
+    constrman_->ComputeError(timen_, disn_);
+    // ... and its norm
+    normcon_ = constrman_->GetErrorNorm();
+    // talk to user
+    std::cout << "Constraint error for computed displacement: " << normcon_
+              << std::endl;
+    
+    // increment loop counter
+    uziter += 1;
+  }
+
+  // SENSIBLE??? FOR OUTPUT???
+  iter_ = uziter + 1;
+}
+
 
 /*----------------------------------------------------------------------*/
 /* Update iteration */

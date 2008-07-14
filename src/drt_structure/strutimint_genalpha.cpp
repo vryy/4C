@@ -87,7 +87,8 @@ StruTimIntGenAlpha::StruTimIntGenAlpha
   // info to user : OST --- your oriental scheme
   if (myrank_ == 0)
   {
-    std::cout << "with generalised-alpha" << std::endl;
+    std::cout << "with generalised-alpha"
+              << std::endl;
     std::cout << "("
               << "beta=" << beta_
               << ", gamma=" << gamma_
@@ -209,6 +210,9 @@ void StruTimIntGenAlpha::EvaluateForceStiffResidual()
     disi_->Scale(1.-alphaf_);
     ApplyForceStiffInternal(timen_, dt_, dism_, disi_,  fintm_, stiff_);
   }
+
+  // apply forces and stiffness due to constraints
+  ApplyForceStiffConstraint(timen_, disn_, fint_, stiff_);
 
   // surface stress force
   if (midavg_ == midavg_trlike)
