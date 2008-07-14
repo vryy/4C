@@ -193,7 +193,7 @@ void XFEM::Intersection::computeIntersection(
         }// for-loop over all cutter elements
 
         
-        if(checkIfCDT(numTotalInterfacePoints, boundaryIntersectionType))
+        if(checkIfCDT(boundaryIntersectionType))
         {
             completePLC();
             //debugTetgenDataStructure(xfemElement);
@@ -1195,7 +1195,7 @@ XFEM::boundaryType XFEM::Intersection::checkIfIntersectionOnXFEMBoundary(
     }
   
   // 2. check if xfem element is within the fluid or solid domain
-  if(intersectionOnBoundary && interfacePoints.size() > 2 )
+  if(intersectionOnBoundary && interfacePoints.size() > 2)
   {
     double  distance = 0.0;
     BlitzVec3 physCoord;
@@ -1211,12 +1211,12 @@ XFEM::boundaryType XFEM::Intersection::checkIfIntersectionOnXFEMBoundary(
   
     // compute distance to cutter element
     searchForNearestPointOnSurface(cutterElement, xyze_cutterElement, physCoord, xsi, normal, distance);   
-
-    if(distance < 0.0)
-      boundaryIntersectionType = ONSOLID;
-    else
+    
+    if(distance > TOL3)
       boundaryIntersectionType = ONFLUID;
- 
+    else
+      boundaryIntersectionType = ONSOLID;
+
   }
   
   return boundaryIntersectionType;
@@ -1276,7 +1276,7 @@ void XFEM::Intersection::preparePLC(
       // store pointList_
       vector<int> positions;
       storePointList(vertices, positions, interfacePoints);
- 
+      
       // find common surfID, if surfUd != -1 all interface points are lying on one
       // xfem surface and have to be store in the surfaceTriangleList_ accordingly
      
@@ -1441,7 +1441,7 @@ void XFEM::Intersection::storePLC(
           // possible midpoint not added to position list and point list
           storeSegments(positions);
       }
-      if(numPoints > 2 && !checkIfTrianglesDegenerate(positions))
+      if(numPoints > 2)// && !checkIfTrianglesDegenerate(positions))
       {
         // tell midpoint on which xfem surface it lies
         classifyMidpoint(surfId, midpoint);
@@ -1459,7 +1459,7 @@ void XFEM::Intersection::storePLC(
           // possible midpoint not added to position list and point list
           storeSegments( positions );
       }
-      if(numPoints > 2 && !checkIfTrianglesDegenerate(positions))
+      if(numPoints > 2)// && !checkIfTrianglesDegenerate(positions))
       {        
         storeMidPoint(midpoint, positions);
         storeTriangles(positions);
@@ -1556,13 +1556,12 @@ void XFEM::Intersection::findNextSegment(
  |          for the current xfem element                                |
  *----------------------------------------------------------------------*/
 bool XFEM::Intersection::checkIfCDT(
-    const int             numTotalInterfacePoints,
     const boundaryType    boundaryIntersectionType)
 {
   bool doCDT = true;
  
   // check if interfaces points are obtained at all
-  if(numTotalInterfacePoints <= 0)
+  if((int) pointList_.size() <= numXFEMCornerNodes_)
     doCDT = false;
   
   // triangle list is empty means that there are no intersecting facets within
@@ -1824,6 +1823,8 @@ void XFEM::Intersection::storePointList(
       findNextSegment(vertices, searchPoint);
       storePoint(searchPoint, interfacePoints, positions);
   }
+  
+  removeDegenerateInterfacePoints(positions);
 }
 
 
@@ -2298,6 +2299,28 @@ bool XFEM::Intersection::checkIfTrianglesDegenerate(
     degenerate = true;
   
   return degenerate;
+}
+
+
+
+void XFEM::Intersection::removeDegenerateInterfacePoints(
+    vector<int>&              positions
+    )
+{
+  bool degenerate = false;
+  vector<int> removePoints;
+  
+  for(int i = 0; i < (int) positions.size()-1; i++)
+    for(unsigned int j = i+1; j < positions.size(); j++)
+      if(positions[i] == positions[j])
+      {
+        removePoints.push_back(i);
+        break;
+      }
+  
+  for(int i = removePoints.size()-1; i >= 0; i--)
+    positions.erase(positions.begin()+removePoints[i]);
+  
 }
 
 
@@ -4014,7 +4037,7 @@ int XFEM::Intersection::findIntersectingSurfaceEdge(
         const BlitzVec&                           edgeNode2
         ) const
 {
-    dserror("to be improved by Ursula");
+    dserror("to be improved");
     int lineIndex = -1;
     static BlitzVec3 x1;
     static BlitzVec3 x2;

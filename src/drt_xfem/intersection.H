@@ -131,7 +131,7 @@ class Intersection
   vector<vector<int> >                  triangleList_;
 
   //! list of triangles lying on a xfem surface to be stored in the Tetgen data structure
-  map< int, vector<vector<int> > >       surfaceTriangleList_;
+  map< int, vector<vector<int> > >      surfaceTriangleList_;
   
   //! list of intersecting cutter elements
   vector<DRT::Element* >                intersectingCutterElements_;
@@ -551,11 +551,9 @@ class Intersection
   /*!
   \brief checks if a CDT has to be computed for the current xfem element
 
-  \param numTotalInterfacePoints  (in)        : total number of interface points for the current xfem element
   \param boundaryIntersectionType (in)        : boundary intersection type
   */
   bool checkIfCDT(
-    const int             numTotalInterfacePoints,
     const boundaryType    boundaryIntersectionType
     );
     
@@ -771,7 +769,11 @@ class Intersection
   bool checkIfTrianglesDegenerate(
     vector<int>&              positions
     );
-      
+     
+  
+  void removeDegenerateInterfacePoints(
+    vector<int>&              positions
+    );
   
   /*!
   \brief  stores a triangle facet in a triangle list for the
