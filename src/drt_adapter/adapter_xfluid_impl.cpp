@@ -18,13 +18,14 @@ Maintainer: Axel Gerstenberger
 
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 extern "C" /* stuff which is c and is accessed from c++ */
 {
 #include "../headers/standardtypes.h"
 }
 extern struct _FILES  allfiles;
-
+extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::XFluidImpl::XFluidImpl(
@@ -56,8 +57,6 @@ ADAPTER::XFluidImpl::XFluidImpl(
 
   DRT::UTILS::RedistributeWithNewNodalDistribution(*boundarydis_, noderowmap, *newnodecolmap);
 
-
-
   UTILS::SetupNDimExtractor(*boundarydis_,"FSICoupling",interface_);
   UTILS::SetupNDimExtractor(*boundarydis_,"FREESURFCoupling",freesurface_);
 
@@ -66,6 +65,9 @@ ADAPTER::XFluidImpl::XFluidImpl(
   ivel_     = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   idisp_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   itrueres_ = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
+  
+  iveln_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
+  iaccn_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
 
   fluid_.SetFreeSurface(&freesurface_);
   std::cout << "XFluidImpl constructor done" << endl;
@@ -76,7 +78,7 @@ ADAPTER::XFluidImpl::XFluidImpl(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::InitialGuess()
 {
-    dserror("not implemented");
+  dserror("not implemented");
   return fluid_.InitialGuess();
 }
 
@@ -85,7 +87,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::InitialGuess()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::RHS()
 {
-    dserror("not implemented");
+  dserror("not implemented");
   return fluid_.Residual();
 }
 
@@ -94,7 +96,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::RHS()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Velnp()
 {
-    dserror("not implemented");
+  dserror("not implemented");
   return fluid_.Velnp();
 }
 
@@ -103,7 +105,7 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Velnp()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::Veln()
 {
-    dserror("not implemented");
+  dserror("not implemented");
   return fluid_.Veln();
 }
 
@@ -202,6 +204,15 @@ void ADAPTER::XFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 void ADAPTER::XFluidImpl::Update()
 {
   fluid_.TimeUpdate();
+  
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const double dt = fsidyn.get<double>("TIMESTEP");
+  
+  // compute acceleration at timestep n
+  iaccn_->Update(1.0/dt,*ivel_,-1.0/dt,*iveln_,0.0);
+  
+  // update velocity
+  iveln_->Update(1.0,*ivel_,0.0);
 }
 
 
@@ -295,11 +306,17 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
   Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   
+  Teuchos::RCP<Epetra_Vector> ivelncol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> iaccncol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  
   // map to fluid parallel distribution
   LINALG::Export(*ivel_,*ivelcol);
   LINALG::Export(*idisp_,*idispcol);
   
-  fluid_.NonlinearSolve(boundarydis_,idispcol,ivelcol,itruerescol);
+  LINALG::Export(*iveln_,*ivelncol);
+  LINALG::Export(*iaccn_,*iaccncol);
+  
+  fluid_.NonlinearSolve(boundarydis_,idispcol,ivelcol,itruerescol,ivelncol,iaccncol);
   
   // map back to solid parallel distribution
   LINALG::Export(*itruerescol,*itrueres_);
@@ -310,28 +327,28 @@ void ADAPTER::XFluidImpl::NonlinearSolve()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ADAPTER::XFluidImpl::InnerVelocityRowMap()
 {
-    // build inner velocity map
-    // dofs at the interface are excluded
-    // we use only velocity dofs and only those without Dirichlet constraint
+  // build inner velocity map
+  // dofs at the interface are excluded
+  // we use only velocity dofs and only those without Dirichlet constraint
 
-    Teuchos::RCP<const Epetra_Map> velmap = fluid_.VelocityRowMap(); //???
-    Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();   //???
-    Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();            //???
+  Teuchos::RCP<const Epetra_Map> velmap = fluid_.VelocityRowMap(); //???
+  Teuchos::RCP<Epetra_Vector> dirichtoggle = fluid_.Dirichlet();   //???
+  Teuchos::RCP<const Epetra_Map> fullmap = DofRowMap();            //???
 
-    const int numvelids = velmap->NumMyElements();
-    std::vector<int> velids;
-    velids.reserve(numvelids);
-    for (int i=0; i<numvelids; ++i)
+  const int numvelids = velmap->NumMyElements();
+  std::vector<int> velids;
+  velids.reserve(numvelids);
+  for (int i=0; i<numvelids; ++i)
+  {
+    int gid = velmap->GID(i);
+    // NOTE: in xfem, there are no interface dofs in the fluid field
+    if ((*dirichtoggle)[fullmap->LID(gid)]==0.)
     {
-      int gid = velmap->GID(i);
-      // NOTE: in xfem, there are no interface dofs in the fluid field
-      if ((*dirichtoggle)[fullmap->LID(gid)]==0.)
-      {
-        velids.push_back(gid);
-      }
+      velids.push_back(gid);
     }
+  }
 
-    innervelmap_ = Teuchos::rcp(new Epetra_Map(-1,velids.size(), &velids[0], 0, velmap->Comm()));
+  innervelmap_ = Teuchos::rcp(new Epetra_Map(-1,velids.size(), &velids[0], 0, velmap->Comm()));
 
   return innervelmap_;
 }
@@ -440,11 +457,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceFluidVelocity()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
-//  cout << "applying interface velocity" << endl;
-
   interface_.InsertCondVector(ivel,ivel_);
-  
-
 }
 
 
@@ -461,8 +474,6 @@ void ADAPTER::XFluidImpl::ApplyInterfaceRobinValue(Teuchos::RCP<Epetra_Vector> i
 void ADAPTER::XFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<Epetra_Vector> idisp)
 {
   interface_.InsertCondVector(idisp,idisp_);
-  
-
 }
 
 
@@ -518,7 +529,7 @@ void ADAPTER::XFluidImpl::SetItemax(int itemax)
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::IntegrateInterfaceShape()
 {
-    dserror("not implemented!");
+  dserror("not implemented!");
   return interface_.ExtractCondVector(fluid_.IntegrateInterfaceShape("FSICoupling"));
 }
 
@@ -558,8 +569,8 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::XFluidImpl::CreateFieldTest()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
 {
-    dserror("not implemented!");
-   return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
+  dserror("not implemented!");
+  return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
 }
 
 
@@ -567,8 +578,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::XFluidImpl::ExtractVelocityPart(Teuch
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidImpl::SetInitialFlowField(int whichinitialfield,int startfuncno)
 {
-   dserror("not implemented!");
-   return;
+  dserror("not implemented!");
+  return;
 }
 
 #endif  // #ifdef CCADISCRET
