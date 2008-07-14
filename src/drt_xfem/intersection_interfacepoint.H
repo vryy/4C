@@ -121,6 +121,44 @@ class InterfacePoint
     void setCoord(
       const vector<double>&    coordinates
       );
+
+    /*!
+    \brief  set X-coordinate of the interface point
+
+    \param coordX            (in)        : X-coordinate of interface point
+    */
+    void setCoordX(
+      const double    coordX
+      );
+
+    /*!
+    \brief  set Y-coordinate of the interface point
+
+    \param coordY            (in)        : Y-coordinate of interface point
+    */
+    void setCoordY(
+      const double    coordY
+      );
+
+    /*!
+    \brief  set Z-coordinate of the interface point
+
+    \param coordZ            (in)        : Z-coordinate of interface point
+    */
+    void setCoordZ(
+      const double    coordZ
+      );
+
+    /*!
+    \brief  set single coordinate of the interface point
+
+    \param index            (in)        : index in coordinate vector
+    \param coord            (in)        : coordinate of interface point
+    */
+    void setSingleCoord(
+      const int       index,
+      const double    coord
+      );
       
     /*!
       \brief Return number of xfem nodes the interface point is lying on

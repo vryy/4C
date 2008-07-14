@@ -109,7 +109,7 @@ void XFEM::Intersection::computeIntersection(
          
         }// for-loop over all cutterdis->NumMyColElements()
         
-        //debugIntersection(xfemElement, cutterElements);
+        // debugIntersection(xfemElement, cutterElements);
         const vector<RCP<DRT::Element> > xfemElementSurfaces = xfemElement->Surfaces();
         const vector<RCP<DRT::Element> > xfemElementLines = xfemElement->Lines();
         
@@ -131,7 +131,7 @@ void XFEM::Intersection::computeIntersection(
             const vector<RCP<DRT::Element> > cutterElementLines = cutterElement->Lines();
             const DRT::Node*const* cutterElementNodes = cutterElement->Nodes();
 
-            //debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
+            // debugIntersectionOfSingleElements(xfemElement, cutterElement, currentcutterpositions);
             
             vector< InterfacePoint >  interfacePoints;
             
@@ -948,7 +948,6 @@ int XFEM::Intersection::addIntersectionPoint(
       coord[1] = xsi(1);
       coord[2] = 0.0;
       ip.setCoord(coord);
-      
     }
     else
     {
@@ -960,7 +959,6 @@ int XFEM::Intersection::addIntersectionPoint(
       coord[1] = xsi(1);
       coord[2] = 0.0;
       ip.setCoord(coord);
-     
     }
   }
 
@@ -1315,8 +1313,6 @@ void XFEM::Intersection::computeConvexHull(
           vector< vector<double> >&     vertices,
           InterfacePoint&               midpoint)   
 {
-
-  vector<double>      coord(3,0.0);
   //compute midpoint
   
   // tolerance has to be twice as small than for other points because the midpoint is 
@@ -1334,9 +1330,7 @@ void XFEM::Intersection::computeConvexHull(
     elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
     const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL14));
     for(int j = 0; j < 3; j++)
-        coord[j] = eleCoordVol(j);
-    
-    midpoint.setCoord(coord);
+      midpoint.setSingleCoord(j,eleCoordVol(j));
   }
   
       
@@ -1365,9 +1359,7 @@ void XFEM::Intersection::computeConvexHull(
       elementToCurrentCoordinates(cutterElement, xyze_cutterElement, eleCoordSurf, curCoordVol);
       const BlitzVec3 eleCoordVol(currentToVolumeElementCoordinatesExact(xfemElement, curCoordVol, TOL7));
       for(int j = 0; j < 3; j++)
-          coord[j] = eleCoordVol(j);
-      
-      ipoint->setCoord(coord);
+        ipoint->setSingleCoord(j,eleCoordVol(j));
     }
   }
 
@@ -1813,6 +1805,10 @@ void XFEM::Intersection::storePointList(
 {  
   vector<double>              searchPoint(3,0);
   
+  // round points an vertices with TOL3 on xfem surface
+  roundPointsOnXFEMBoundary(interfacePoints, XFEM::TOL3);
+  roundVerticesOnXFEMBoundary(vertices, XFEM::TOL3);
+  
   // store interface points in pointList_
   storePoint(vertices[0], interfacePoints, positions);
   vertices.erase(vertices.begin());
@@ -1847,8 +1843,6 @@ void XFEM::Intersection::storePoint(
 
   for(vector<InterfacePoint>::iterator ipoint = interfacePoints.begin(); ipoint != interfacePoints.end(); ++ipoint )
   {
-    // round to 1 or -1
-    roundPointOnXFEMBoundary((*ipoint), XFEM::TOL3);
     if(comparePoints<3>(point, ipoint->getCoord()))
     {
       alreadyInList = false;
@@ -1915,38 +1909,88 @@ void XFEM::Intersection::storeMidPoint(
 
 
 /*----------------------------------------------------------------------*
- |  CDT:    rounds interface point on XFEM boundary          u.may 07/08|
+ |  CDT:    rounds interface points on XFEM boundary         u.may 07/08|
  |          should be used with TOL3 to make tetgen happy               |
  *----------------------------------------------------------------------*/
-void XFEM::Intersection::roundPointOnXFEMBoundary(
-    InterfacePoint&                   ip,
+bool XFEM::Intersection::roundPointsOnXFEMBoundary(
+    vector<InterfacePoint>&           interfacePoints,
     const double                      tol)
 {
 
+  bool round = false;
   switch(xfemDistype_)
   {
     case DRT::Element::hex8:  case DRT::Element::hex20: case DRT::Element::hex27:    
     {
-      vector<double> xsi(3,0.0);
-      bool round = false;
-      for(int i = 0; i < 3; i++)
+      for(unsigned int i = 0; i < interfacePoints.size(); i++)
       {
-        xsi[i] = ip.getCoord()[i];
-        if( fabs((fabs(xsi[i])-1.0)) < tol && xsi[i] < 0)    
+        BlitzVec3 xsi;
+        xsi = 0;
+        round = false;
+        for(int j = 0; j < 3; j++)
         {
-            xsi[i] = -1.0;
+          xsi(j) = interfacePoints[i].getCoord()[j];
+          if( fabs( fabs(xsi(j)) - 1.0 ) < tol && xsi(j) < 0.0)    
+          {
+            xsi(j) = -1.0;
             round = true;
+          }
+          if( fabs( fabs(xsi(j)) - 1.0) < tol &&  xsi(j) > 0.0)
+          {
+            xsi(j) =  1.0;   
+            round = true;
+          }   
         }
-        if( fabs((fabs(xsi[i])-1.0)) < tol &&  xsi[i] > 0)
-        {
-          xsi[i] =  1.0;   
-            round = true;
-        }   
+        if(round)
+        {  
+          setBoundaryPointBoundaryStatus(xfemDistype_, xsi, interfacePoints[i]);
+          for(int j = 0; j < 3; j++)
+          {
+            interfacePoints[i].setSingleCoord(j, xsi(j));
+          }
+        }
       }
-      if(round)
-        ip.setCoord(xsi);
       break;
+    }
+    default:
+    {
+      cout << DRT::DistypeToString(xfemDistype_) << endl;
+      dserror("discretization type %s not yet implemented", (DRT::DistypeToString(xfemDistype_)).c_str());
+    }
+  }
+  return round;
+}
+
+
+
+
+/*----------------------------------------------------------------------*
+ |  CDT:    rounds interface point on XFEM boundary          u.may 07/08|
+ |          should be used with TOL3 to make tetgen happy               |
+ *----------------------------------------------------------------------*/
+void XFEM::Intersection::roundVerticesOnXFEMBoundary(
+    vector< vector<double> >&         vertices,
+    const double                      tol)
+{
+  switch(xfemDistype_)
+  {
+    case DRT::Element::hex8:  case DRT::Element::hex20: case DRT::Element::hex27:    
+    {
+      for(unsigned int i = 0; i < vertices.size(); i++)
+        for(int j = 0; j < 3; j++)
+        {
+          double coord = vertices[i][j];
+          if( fabs( fabs(coord) - 1.0 ) < tol && coord < 0.0)    
+          {
+            vertices[i][j] = -1.0;
+          }
+          if( fabs( fabs(coord) - 1.0) < tol &&  coord > 0.0)
+          {
+            vertices[i][j] =  1.0;   
+          }   
+        }
       
+      break;
     }
     default:
     {
@@ -1955,6 +1999,7 @@ void XFEM::Intersection::roundPointOnXFEMBoundary(
     }
   }
 }
+
 
 
 
@@ -2795,7 +2840,7 @@ void XFEM::Intersection::liftSteinerPointOnSurface(
       if(!intersected)
       {
           countMissedPoints_++;
-          printf("STEINER POINT NOT LIFTED in liftSteinerPointOnSurface()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+          //printf("STEINER POINT NOT LIFTED in liftSteinerPointOnSurface()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
       }
     }
 }
@@ -2856,7 +2901,7 @@ void XFEM::Intersection::liftSteinerPointOnEdge(
     else
     {
         countMissedPoints_++;
-        printf("STEINER POINT NOT LIFTED in liftSteinerPointOnEdge()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        //printf("STEINER POINT NOT LIFTED in liftSteinerPointOnEdge()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
 }
 
@@ -2944,7 +2989,7 @@ void XFEM::Intersection::liftSteinerPointOnBoundary(
     else
     {
         countMissedPoints_++;
-        printf("STEINER POINT NOT LIFTED in liftSteinerPointOnBoundary()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        //printf("STEINER POINT NOT LIFTED in liftSteinerPointOnBoundary()!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
     }
 
 }

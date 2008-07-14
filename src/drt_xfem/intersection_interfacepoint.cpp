@@ -198,5 +198,68 @@ void XFEM::InterfacePoint::setCoord(
 } 
 
 
+
+/*----------------------------------------------------------------------*
+ |  set X-coordinates of the interface point                 u.may 07/08|                                         
+ *----------------------------------------------------------------------*/
+void XFEM::InterfacePoint::setCoordX(
+      const double    coordX
+      )
+{
+  if((int) coord_.size() != 3)
+    dserror("coordinates not yet initialized");
+  
+  coord_[0] = coordX;
+} 
+
+
+
+/*----------------------------------------------------------------------*
+ |  set Y-coordinates of the interface point                 u.may 07/08|                                         
+ *----------------------------------------------------------------------*/
+void XFEM::InterfacePoint::setCoordY(
+      const double    coordY
+      )
+{
+  if((int) coord_.size() != 3)
+    dserror("coordinates not yet initialized");
+  
+  coord_[1] = coordY;
+} 
+
+
+
+/*----------------------------------------------------------------------*
+ |  set Z-coordinates of the interface point                 u.may 07/08|                                         
+ *----------------------------------------------------------------------*/
+void XFEM::InterfacePoint::setCoordZ(
+      const double    coordZ
+      )
+{
+  if((int) coord_.size() != 3)
+    dserror("coordinates not yet initialized");
+  
+  coord_[2] = coordZ;
+} 
+
+
+/*----------------------------------------------------------------------*
+ |  set single coordinates of the interface point            u.may 07/08|                                         
+ *----------------------------------------------------------------------*/
+void XFEM::InterfacePoint::setSingleCoord(
+      const int	      index,
+      const double    coord
+      )
+{
+  if((int) coord_.size() != 3)
+    dserror("coordinates not yet initialized");
+  if(index > 2)
+    dserror("index out of range");
+
+  coord_[index] = coord;
+} 
+
+
+
 #endif  // #ifdef CCADISCRET
 

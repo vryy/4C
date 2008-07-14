@@ -633,17 +633,31 @@ class Intersection
   
   
   /*!
-  \brief  rounds interface point on xfem boundary
+  \brief  rounds interface points on xfem boundary
+          use TOL3 to make TetGen happy
+
+  \param interfacePoints            (in/out)     :   interface points
+  \param tol                        (in)         :   tolerance
+  \return true if point was rounded on xfem surface
+  */ 
+  bool roundPointsOnXFEMBoundary(
+        vector<InterfacePoint>&           interfacePoints,
+        const double                      tol
+        );
+  
+  
+  /*!
+  \brief  rounds vertices on xfem boundary
           use TOL3 to make TetGen happy
 
   \param ip            (in/out)     :   interface point
   \param tol           (in)         :   tolerance
+  \return true if point was rounded on xfem surface
   */ 
-  void roundPointOnXFEMBoundary(
-        InterfacePoint&                   ip,
-        const double                      tol
-        );
-  
+  void roundVerticesOnXFEMBoundary(
+      vector< vector<double> >&         vertices,
+      const double                      tol
+      );
   
   /*!
   \brief  stores a single point in a list of surface points if no
