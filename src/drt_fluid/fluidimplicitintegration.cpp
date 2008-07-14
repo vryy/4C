@@ -2836,6 +2836,8 @@ void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condeleme
  *----------------------------------------------------------------------*/
 void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("FluidImplicitTimeInt::LinearRelaxationSolve");
+
   //
   // Special linear solve used for steepest descent relaxation as well as
   // Jacobian-free Newton-Krylov on the FSI interface equations. The later one
