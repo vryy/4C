@@ -196,7 +196,7 @@ BlitzVec3 XFEM::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele
     this->NodalPosXYZ(ele, physcoord);
     
     // center in local coordinates
-    static BlitzVec3 localcenterpos;
+    BlitzVec3 localcenterpos;
     localcenterpos = DRT::UTILS::getLocalCenterPosition<3>(this->Shape());
 
     // shape functions
@@ -208,7 +208,7 @@ BlitzVec3 XFEM::DomainIntCell::GetPhysicalCenterPosition(const DRT::Element& ele
             this->Shape());
     
     //interpolate position to x-space
-    static BlitzVec3 x_interpol;
+    BlitzVec3 x_interpol;
     for (int isd = 0; isd < 3; ++isd)
     {
         x_interpol(isd) = 0.0;
@@ -311,7 +311,7 @@ BlitzVec3 XFEM::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& e
     this->NodalPosXYZ(ele, physcoord);
     
     // center in local coordinates
-    static BlitzVec2 localcenterpos;
+    BlitzVec2 localcenterpos;
     localcenterpos = DRT::UTILS::getLocalCenterPosition<2>(this->Shape());
 
     // shape functions
@@ -322,7 +322,7 @@ BlitzVec3 XFEM::BoundaryIntCell::GetPhysicalCenterPosition(const DRT::Element& e
             this->Shape());
     
     //interpolate position to x-space
-    static BlitzVec3 x_interpol;
+    BlitzVec3 x_interpol;
     for (int isd = 0; isd < 3; ++isd)
     {
         x_interpol(isd) = 0.0;

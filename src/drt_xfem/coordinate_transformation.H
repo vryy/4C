@@ -89,7 +89,7 @@ namespace XFEM
     static BlitzMat deriv(3,27);
     DRT::UTILS::shape_function_3D_deriv1(deriv,pos_eta(0),pos_eta(1),pos_eta(2),cell.Shape());
     // get jacobian matrix ...
-    static BlitzMat3x3 xjm;
+    BlitzMat3x3 xjm;
     for (int i = 0; i < 3; ++i)
     {
       for (int j = 0; j < 3; ++j)
@@ -189,7 +189,7 @@ namespace XFEM
     DRT::UTILS::shape_function_2D_deriv1(deriv, pos_eta(0), pos_eta(1), cell.Shape());
     
     // get jacobian matrix ...
-    static BlitzMat2x2 xjm;
+    BlitzMat2x2 xjm;
     for (int i = 0; i < 2; ++i)
     {
       for (int j = 0; j < 2; ++j)

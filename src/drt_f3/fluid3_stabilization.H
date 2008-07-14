@@ -98,18 +98,18 @@ namespace XFLUID
     const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
     
     // shape functions and derivs at element center
-    static BlitzVec3 e;
+    BlitzVec3 e;
     e(0) = intpoints.qxg[0][0];
     e(1) = intpoints.qxg[0][1];
     e(2) = intpoints.qxg[0][2];
     const double wquad = intpoints.qwgt[0];
     
-    static blitz::TinyMatrix<double,3,numnode> deriv_;
+    blitz::TinyMatrix<double,3,numnode> deriv_;
     DRT::UTILS::shape_function_deriv1<DISTYPE>(e, deriv_);
     
     // get Jacobian matrix and determinant
     //const BlitzMat xjm_(blitz::sum(deriv_(i,k)*xyze(j,k),k));
-    static BlitzMat3x3 xjm_;
+    BlitzMat3x3 xjm_;
     BLITZTINY::MMt_product<3,3,numnode>(deriv_,xyze,xjm_);
     const double det = xjm_(0,0)*xjm_(1,1)*xjm_(2,2)+
     xjm_(0,1)*xjm_(1,2)*xjm_(2,0)+
