@@ -1382,8 +1382,18 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
   //     pres      =  pres    + dpres
   //         (i+1)        (i)
   //
-  velpressplitter_.AddCondVector(preinc,velnp_);
-
+  if(numdim_==3)
+  {
+    // rescaled pressure to preserve symmetry of pressure
+    // and continuity part in matrix 
+    preinc->Scale(gamma_*dt_);
+    velpressplitter_.AddCondVector(preinc,velnp_);
+    preinc->Scale(1.0/gamma_*dt_);
+  }
+  else
+  {  
+    velpressplitter_.AddCondVector(preinc,velnp_);
+  }
   return;
 } // FluidGenAlphaIntegration::GenAlphaNonlinearUpdate
 
@@ -1413,6 +1423,13 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& badestn
 
   L2incvelnorm_= L2incaccnorm*gamma_*dt_;
 
+  // rescaling of pressure to leep symmetry of matrix
+  if(numdim_==3)
+  {
+    L2incprenorm_*=gamma_*dt_;
+  }
+
+  
   // extract velocity and pressure solutions from solution vector
   onlyvel = velpressplitter_.ExtractOtherVector(velnp_);
   onlypre = velpressplitter_.ExtractCondVector (velnp_);
