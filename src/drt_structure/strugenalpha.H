@@ -391,8 +391,10 @@ public:
 
 protected:
 
-  // don't want = operator and cctor
+  //! don't wanted = operator
   StruGenAlpha operator = (const StruGenAlpha& old);
+
+  //!  don't wanted cctor
   StruGenAlpha(const StruGenAlpha& old);
 
   // methods for Newton with line search
