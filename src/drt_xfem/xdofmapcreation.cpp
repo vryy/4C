@@ -11,7 +11,7 @@ Maintainer: Axel Gerstenberger
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
-*/
+ */
 #ifdef CCADISCRET
 
 #include <blitz/array.h>
@@ -25,10 +25,10 @@ Maintainer: Axel Gerstenberger
  |  construct dofmap                                            ag 11/07|
  *----------------------------------------------------------------------*/
 void XFEM::createDofMap(
-        const XFEM::InterfaceHandle&                   ih,
-        std::map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,
-        std::map<int, const set<XFEM::FieldEnr> >&     elementalDofsFinal
-        )
+    const XFEM::InterfaceHandle&                   ih,
+    std::map<int, const set<XFEM::FieldEnr> >&     nodalDofSetFinal,
+    std::map<int, const set<XFEM::FieldEnr> >&     elementalDofsFinal
+)
 {
   // temporary assembly
   std::map<int, set<XFEM::FieldEnr> >  nodalDofSet;
@@ -36,84 +36,85 @@ void XFEM::createDofMap(
 
   // get elements for each coupling label
   const std::map<int,set<int> >& elementsByLabel = *ih.elementsByLabel(); 
-  
+
   // invert collection
   std::map<int,int> labelPerElementId;
   XFEM::InvertElementsByLabel(elementsByLabel, labelPerElementId);
-  
+
   for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
   {
-      const int label = conditer->first;
-    
-      // for surface with label, loop my col elements and add void enrichments to each elements member nodes
-      const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
-      for (int i=0; i<ih.xfemdis()->NumMyColElements(); ++i)
-      {
-          const DRT::Element* xfemele = ih.xfemdis()->lColElement(i);
-          const int element_gid = xfemele->Id();
-          
-          if (ih.ElementIntersected(element_gid))
-          {
-            const double ratio = XFEM::AreaRatio(*xfemele,ih);
-            const bool almost_empty_element = (fabs(1.0-ratio) < 1.0e-12);
-            if ( not almost_empty_element )  
-            {
-              
-              const XFEM::BoundaryIntCells& bcells = ih.elementalBoundaryIntCells()->find(element_gid)->second;
-              
-              bool has_label = false;
-              for (BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
-              {
-                  const int surface_ele_gid = bcell->GetSurfaceEleGid();
-                  const int label_for_current_bele = labelPerElementId.find(surface_ele_gid)->second;
-                  if (label == label_for_current_bele)
-                  {
-                      has_label = true;
-                      break;
-                  }
-              }
-              
-              if (has_label)
-              {
-                const int nen = xfemele->NumNode();
-                const int* nodeidptrs = xfemele->NodeIds();
-                for (int inen = 0; inen<nen; ++inen)
-                {
-                    const int node_gid = nodeidptrs[inen];
-                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, voidenr));
-                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, voidenr));
-                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, voidenr));
-                    nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, voidenr));
-                };
-                // add discontinuous stress unknowns
-                // the number of each of these parameters will be determined later
-                // by using a discretization type and appropriate shape functions
-                const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(xfemele->Shape()));
-                
-                map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
-                for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
-                {
-                  elementalDofs[element_gid].insert(XFEM::FieldEnr(fielditer->first, voidenr));
-                }
-             };
-            }
-          }
-        };
-    };
-    
-    applyStandardEnrichment(ih, nodalDofSet, elementalDofs);
+    const int label = conditer->first;
 
-    // create const sets from standard sets, so the sets cannot be accidentily changed
-    // could be removed later, if this is a performance bottleneck
-    for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = nodalDofSet.begin(); oneset != nodalDofSet.end(); ++oneset )
+    // for surface with label, loop my col elements and add void enrichments to each elements member nodes
+    const XFEM::Enrichment voidenr(label, XFEM::Enrichment::typeVoid);
+    for (int i=0; i<ih.xfemdis()->NumMyColElements(); ++i)
     {
-        nodalDofSetFinal.insert( make_pair(oneset->first, oneset->second));
+      const DRT::Element* xfemele = ih.xfemdis()->lColElement(i);
+      const int element_gid = xfemele->Id();
+
+      if (ih.ElementIntersected(element_gid))
+      {
+        const XFEM::BoundaryIntCells& bcells = ih.elementalBoundaryIntCells()->find(element_gid)->second;
+        bool has_label = false;
+        for (BoundaryIntCells::const_iterator bcell = bcells.begin(); bcell != bcells.end(); ++bcell)
+        {
+          const int surface_ele_gid = bcell->GetSurfaceEleGid();
+          const int label_for_current_bele = labelPerElementId.find(surface_ele_gid)->second;
+          if (label == label_for_current_bele)
+          {
+            has_label = true;
+            break;
+          }
+        }
+
+        const double ratio = XFEM::AreaRatio(*xfemele,ih);
+        const bool almost_empty_element = (fabs(1.0-ratio) < 1.0e-6);
+        if (has_label)
+        {
+
+          if ( not almost_empty_element)  
+          {
+            const int nen = xfemele->NumNode();
+            const int* nodeidptrs = xfemele->NodeIds();
+            for (int inen = 0; inen<nen; ++inen)
+            {
+              const int node_gid = nodeidptrs[inen];
+              nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, voidenr));
+              nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, voidenr));
+              nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, voidenr));
+              nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, voidenr));
+            };
+          }
+
+          // add discontinuous stress unknowns
+          // the number of each of these parameters will be determined later
+          // by using a discretization type and appropriate shape functions
+          const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(XFLUID::getElementAnsatz(xfemele->Shape()));
+
+          map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
+          for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
+          {
+            elementalDofs[element_gid].insert(XFEM::FieldEnr(fielditer->first, voidenr));
+          }
+
+        }
+      }
     };
-    
-    for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator onevec = elementalDofs.begin(); onevec != elementalDofs.end(); ++onevec )
-    {
-        elementalDofsFinal.insert( make_pair(onevec->first, onevec->second));
-    };
+  };
+
+  applyStandardEnrichment(ih, nodalDofSet, elementalDofs);
+
+  // create const sets from standard sets, so the sets cannot be accidentily changed
+  // could be removed later, if this is a performance bottleneck
+  for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator oneset = nodalDofSet.begin(); oneset != nodalDofSet.end(); ++oneset )
+  {
+    nodalDofSetFinal.insert( make_pair(oneset->first, oneset->second));
+  };
+
+  for ( std::map<int, std::set<XFEM::FieldEnr> >::const_iterator onevec = elementalDofs.begin(); onevec != elementalDofs.end(); ++onevec )
+  {
+    elementalDofsFinal.insert( make_pair(onevec->first, onevec->second));
+  };
 }
 
 
@@ -121,7 +122,7 @@ void XFEM::applyStandardEnrichment(
     const XFEM::InterfaceHandle&             ih,
     std::map<int, set<XFEM::FieldEnr> >&     nodalDofSet,
     std::map<int, set<XFEM::FieldEnr> >&     elementalDofs
-    )
+)
 {
   const int standard_label = 0;
   const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
