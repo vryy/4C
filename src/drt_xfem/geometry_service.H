@@ -75,8 +75,8 @@ namespace XFEM
   double getArea(const BlitzMat3x2& AABB);
   
   void checkRoughGeoType(
-           DRT::Element*                element,
-           const BlitzMat               xyze_element,
+           DRT::Element*          element,
+           const BlitzMat&        xyze_element,
            EleGeoType&            eleGeoType
            );
 }

@@ -74,7 +74,7 @@ BlitzMat3x2 XFEM::getXAABBofDis(const DRT::Discretization& dis){
   for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
   {
     const DRT::Node* node = dis.lColNode(lid);
-    static BlitzVec3 currpos;
+    BlitzVec3 currpos;
     currpos(0) = node->X()[0];
     currpos(1) = node->X()[1];
     currpos(2) = node->X()[2];
@@ -102,8 +102,8 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
     double distance = 1.0e12;
     const DRT::Element* cutterele = &**myIt;
     const BlitzMat xyze_cutter(getCurrentNodalPositions(cutterele, currentpositions));
-    static BlitzVec2 eleCoord;
-    static BlitzVec3 normal;
+    BlitzVec2 eleCoord;
+    BlitzVec3 normal;
     in_element = XFEM::searchForNearestPointOnSurface(cutterele,xyze_cutter,x_in,eleCoord,normal,distance);
     if (in_element && (fabs(distance) < fabs(min_ele_distance)))
     {
@@ -120,7 +120,6 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
   { 
     min_node_distance = fabs(min_ele_distance);
     for (list< const DRT::Element* >::const_iterator myIt2 = ElementList.begin(); myIt2 != ElementList.end(); myIt2++) {
-      double distance = 1.0e12;
       const DRT::Element* cutterele = &**myIt2;       
       const int numnode = cutterele->NumNode();
       const DRT::Node*const* nodes = cutterele->Nodes();          
@@ -136,7 +135,7 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
         vector(1) = x_in(1) - x_node(1);
         vector(2) = x_in(2) - x_node(2);
         // absolute distance between point and node
-        distance = sqrt(vector(0)*vector(0) + vector(1)*vector(1) + vector(2)*vector(2));
+        const double distance = sqrt(vector(0)*vector(0) + vector(1)*vector(1) + vector(2)*vector(2));
         
         if (distance < min_node_distance) {
           closest_node = cutternode;
@@ -158,9 +157,9 @@ const DRT::Element* XFEM::nearestNeighbourInList(const DRT::Discretization& dis,
       BlitzVec2 xsi;
       CurrentToSurfaceElementCoordinates(surfaceElement, xyze_surfaceElement, closest_node_pos, xsi);
       computeNormalToBoundaryElement(surfaceElement, xyze_surfaceElement, xsi, eleNormalAtXsi);
-      normal(0) = normal(0) +  eleNormalAtXsi(0);
-      normal(1) = normal(1) +  eleNormalAtXsi(1);
-      normal(2) = normal(2) +  eleNormalAtXsi(2);
+      normal(0) += eleNormalAtXsi(0);
+      normal(1) += eleNormalAtXsi(1);
+      normal(2) += eleNormalAtXsi(2);
     }
     closest_element_from_node=node->Elements()[0]; 
     const double scalarproduct = vectorX2minNode(0)*normal(0) + vectorX2minNode(1)*normal(1) + vectorX2minNode(2)*normal(2);
@@ -195,13 +194,12 @@ BlitzMat3x2 XFEM::mergeAABB(const BlitzMat3x2& A, const BlitzMat3x2& B){
 double XFEM::getOverlapArea(const BlitzMat3x2& A, const BlitzMat3x2& B, const BlitzMat3x2& C){
   const int nsd=3;
   double Area = 1;
-  double edge = 0;
   for(int dim=0; dim<nsd; dim++)
   {
-    edge = std::min( A(dim, 1), std::min( B(dim, 1), C(dim,1) ) )-std::max( A(dim, 0), std::max( B(dim, 0),C(dim,0) ) );
+    const double edge = std::min( A(dim, 1), std::min( B(dim, 1), C(dim,1) ) )-std::max( A(dim, 0), std::max( B(dim, 0),C(dim,0) ) );
     if (edge<=0)
       return 0;
-    Area = Area * edge;
+    Area *= edge;
   }
   return Area;
 }
@@ -209,7 +207,6 @@ double XFEM::getOverlapArea(const BlitzMat3x2& A, const BlitzMat3x2& B, const Bl
 double XFEM::getOverlapArea(const list<BlitzMat3x2 > AABBs){
   const int nsd=3;
   double Area = 1;
-  double edge = 0;
   for(int dim=0; dim<nsd; dim++)
   {
     list<double> maxCoords;
@@ -220,10 +217,10 @@ double XFEM::getOverlapArea(const list<BlitzMat3x2 > AABBs){
       maxCoords.push_back( (*myIt)(dim, 1) );
       minCoords.push_back( (*myIt)(dim, 0) );
     }
-    edge = *min_element(maxCoords.begin(),maxCoords.end()) -*max_element(minCoords.begin(),minCoords.end());
+    const double edge = *min_element(maxCoords.begin(),maxCoords.end()) -*max_element(minCoords.begin(),minCoords.end());
     if (edge<=0)
       return 0;
-    Area = Area * edge;
+    Area *= edge;
   }
   return Area;  
 }
@@ -232,7 +229,7 @@ double XFEM::getOverlapArea(const list<BlitzMat3x2 > AABBs){
 
 double XFEM::getArea(const BlitzMat3x2& AABB){
   const int nsd=3;
-  double A=1;
+  double A=1.0;
   for(int dim=0; dim<nsd; dim++)
   {
     A = A*(AABB(dim, 1)-AABB(dim,0));
@@ -244,7 +241,7 @@ double XFEM::getArea(const BlitzMat3x2& AABB){
 
 void XFEM::checkRoughGeoType(
            DRT::Element*                element,
-           const BlitzMat               xyze_element,
+           const BlitzMat&              xyze_element,
            EleGeoType&                  eleGeoType)
 {
   const DRT::Element::DiscretizationType distype = element->Shape();
