@@ -41,7 +41,8 @@ static XFEM::Enrichment genAlternativeEnrichment(
 }
 
 void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
-        RCP<Epetra_Vector>&             vector
+        RCP<Epetra_Vector>&             vector,
+        BlitzVec3                       ivalrigid_body
         ) const
 {
     // create new vector with new number of dofs 
@@ -86,6 +87,14 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
                 //cout << newdofkey.toString() << " -> init to zero" << endl;
                 (*newVector)[newdofrowmap_.LID(newdofpos)] = 0.0;
                 completely_unchanged = false;
+                const XFEM::PHYSICS::Field field = newdofkey.getFieldEnr().getField();
+                if (field == XFEM::PHYSICS::Velx)
+                  (*newVector)[newdofrowmap_.LID(newdofpos)] = ivalrigid_body(0);
+                if (field == XFEM::PHYSICS::Vely)
+                  (*newVector)[newdofrowmap_.LID(newdofpos)] = ivalrigid_body(1);
+                if (field == XFEM::PHYSICS::Velz)
+                  (*newVector)[newdofrowmap_.LID(newdofpos)] = ivalrigid_body(2);
+                
             }
         }
 

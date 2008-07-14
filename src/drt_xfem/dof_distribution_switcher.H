@@ -65,8 +65,19 @@ public:
     
     void mapVectorToNewDofDistribution(
             RCP<Epetra_Vector>&     vector
-            ) const;
+            ) const
+    {
+      BlitzVec3 dummy;
+      dummy(0) = 0.0;
+      dummy(1) = 0.0;
+      dummy(2) = 0.0;
+      mapVectorToNewDofDistribution(vector,dummy);
+    }
     
+    void mapVectorToNewDofDistribution(
+            RCP<Epetra_Vector>&     vector,
+            BlitzVec3               ivelnrigid_body
+            ) const;
     
 private:
     //! disabled copy constructor
