@@ -44,4 +44,22 @@ void XFEM::CollectElementsByXFEMCouplingLabel(
   }
 }
 
+void XFEM::InvertElementsByLabel(
+    const std::map<int,set<int> >&   elementsByLabel,
+    std::map<int, int>&              labelByElementId)
+{
+  labelByElementId.clear();
+  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  {
+    const int xfemlabel = conditer->first;
+    for(std::set<int>::const_iterator eleiditer = conditer->second.begin(); eleiditer!=conditer->second.end(); ++eleiditer)
+    {
+      const int eleid = *eleiditer;
+      if (labelByElementId.count(eleid) == 1)
+        dserror("Assumption violation: there should be exactly ONE xfem condition per boundary element id!");
+      labelByElementId[eleid] = xfemlabel;
+    }
+  }
+}
+
 #endif  // #ifdef CCADISCRET

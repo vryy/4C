@@ -33,6 +33,14 @@ void CollectElementsByXFEMCouplingLabel(
     std::map<int,set<int> >&             elementsByLabel
     );
 
+/*! invert collection
+ *   the result is a map where for each element id we get the corresponding xfem condition label
+ */ 
+void InvertElementsByLabel(
+    const std::map<int,set<int> >&   elementsByLabel,
+    std::map<int, int>&              labelByElementId
+    );
+
 }
 
 #endif  // #ifndef INTERFACE_H
