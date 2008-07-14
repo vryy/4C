@@ -1441,7 +1441,7 @@ void XFEM::Intersection::storePLC(
           // possible midpoint not added to position list and point list
           storeSegments(positions);
       }
-      if(numPoints > 2)// && !checkIfTrianglesDegenerate(positions))
+      if(numPoints > 2)
       {
         // tell midpoint on which xfem surface it lies
         classifyMidpoint(surfId, midpoint);
@@ -1459,7 +1459,7 @@ void XFEM::Intersection::storePLC(
           // possible midpoint not added to position list and point list
           storeSegments( positions );
       }
-      if(numPoints > 2)// && !checkIfTrianglesDegenerate(positions))
+      if(numPoints > 2)
       {        
         storeMidPoint(midpoint, positions);
         storeTriangles(positions);
@@ -1567,7 +1567,7 @@ bool XFEM::Intersection::checkIfCDT(
   // triangle list is empty means that there are no intersecting facets within
   // the xfem element
   if(doCDT)
-    if(triangleList_.empty() && boundaryIntersectionType == ONSOLID )
+    if(triangleList_.empty() && surfaceTriangleList_.empty() )
       doCDT = false;
   
   return doCDT;
@@ -2271,38 +2271,10 @@ bool XFEM::Intersection::checkIfSegmentPointsOnSameXfemLine(
 }
 
 
-
 /*----------------------------------------------------------------------*
- |  CDT:    check if a triangle lies completely on an        u.may 07/08|
- |          xfem line due to rounding                                   |  
+ |  CDT:    removes equal interface points from              u.may 07/08|
+ |          positions                                                   |  
  *----------------------------------------------------------------------*/
-bool XFEM::Intersection::checkIfTrianglesDegenerate(
-    vector<int>&              positions
-    )
-{
-  bool degenerate = false;
-  vector<int> removePoints;
-  
-  for(int i = 0; i < (int) positions.size()-1; i++)
-    for(unsigned int j = i+1; j < positions.size(); j++)
-      if(positions[i] == positions[j])
-      {
-        removePoints.push_back(i);
-        break;
-      }
-  
-  for(int i = removePoints.size()-1; i >= 0; i--)
-    positions.erase(positions.begin()+removePoints[i]);
-  
-  // only if called before midpoint is added otherwise is has to be < 4
-  if(positions.size()<3)
-    degenerate = true;
-  
-  return degenerate;
-}
-
-
-
 void XFEM::Intersection::removeDegenerateInterfacePoints(
     vector<int>&              positions
     )

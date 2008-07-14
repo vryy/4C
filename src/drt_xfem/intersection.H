@@ -763,14 +763,9 @@ class Intersection
         
         
   /*!
-  \brief checks if triangles have two identical points these triangles are removed from point list
+  \brief remove equal interface points
   \param positions           (in)        :   point positions
   */
-  bool checkIfTrianglesDegenerate(
-    vector<int>&              positions
-    );
-     
-  
   void removeDegenerateInterfacePoints(
     vector<int>&              positions
     );
