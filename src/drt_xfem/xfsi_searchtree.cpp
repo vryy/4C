@@ -184,14 +184,9 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   
   std::map<int,set<int> >   elementsByLabel;
   XFEM::CollectElementsByXFEMCouplingLabel(dis, elementsByLabel);
+  
   labelByElement_.clear();
-  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
-  {
-    for(std::set<int>::const_iterator eleid = conditer->second.begin(); eleid!=conditer->second.end(); ++eleid)
-    {
-      labelByElement_[*eleid] = conditer->first;
-    }
-  }
+  XFEM::InvertElementsByLabel(elementsByLabel, labelByElement_);
   
 }
 
