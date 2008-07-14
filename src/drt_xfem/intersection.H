@@ -48,7 +48,6 @@ extern "C"
 namespace XFEM
 {
 
-enum boundaryType {NONE, ONFLUID, ONSOLID};
 enum SteinerType {S_SURFACE, S_EDGE, S_BOUNDARY};
 
 
@@ -161,7 +160,6 @@ class Intersection
   \param cutterNode               (in)        : cutter node
   \param currentcutterpositions   (in)        : current nodal positions of the cutter element
   \param interfacePoints          (in/out)    : vector of interface points
-  \param numTotalInterfacePoints  (in)        : total number of interface points
   \param elemId                   (in)        : xfem element id  (Debug)
   \param nodeId                   (in)        : node id
   \return true if the node lies within the xfemElement, false otherwise
@@ -173,7 +171,6 @@ class Intersection
     const DRT::Node*                cutterNode,              
     const map<int,BlitzVec3>&       currentcutterpositions,  
     std::vector<InterfacePoint>&    interfacePoints,
-    int&                            numTotalInterfacePoints,
     const int                       elemId,
     const int                       nodeId
     );
@@ -238,7 +235,6 @@ class Intersection
   \param xyze_surfaceElement      (in)        : nodal coordinates of surface element
   \param lineElement              (in)        : line element
   \param interfacePointList       (out)       : nodal coordinates of line element
-  \param numTotalInterfacePoints  (in)        : total number of interface points per xfem element
   \param surfaceId                (in)        : surface element id
   \param lineId                   (in)        : line element id
   \param lines                    (in)        : if lines = true intersection of cutter line with xfem element
@@ -251,7 +247,6 @@ class Intersection
     const DRT::Element*             lineElement,
     const BlitzMat&                 xyze_lineElement,
     std::vector<InterfacePoint>&    interfacePoints,
-    int&                            numTotalInterfacePoints,
     const int                       surfaceId,
     const int                       lineId,
     const bool                      lines,
@@ -444,26 +439,6 @@ class Intersection
   
   
   /*!
-  \brief  checks if an intersection lies on a xfem boundary
-
-  \param xfemElement              (in)    : xfem element
-  \param xyze_xfemElement         (in)    : nodal coordinates of xfem element
-  \param cutterElement            (in)    : cutter element
-  \param xyze_cutterElement       (in)    : nodal coordinates of cutter element
-  \param interfacePoints          (in)    : vector of interface points
-  \param surfId                   (in)    : Id of common surface
-  */
-  XFEM::boundaryType checkIfIntersectionOnXFEMBoundary(
-    const DRT::Element*             xfemElement,
-    const BlitzMat&                 xyze_xfemElement,
-    const DRT::Element*             cutterElement,
-    const BlitzMat&                 xyze_cutterElement,
-    const vector<InterfacePoint>&   interfacePoints,
-    const int                       surfId
-    );
-
-        
-  /*!
   \brief  prepares a part of the piecewise linear complex for 
           a xfem and a cutter element
 
@@ -472,15 +447,13 @@ class Intersection
   \param cutterElement            (in)    : cutter element
   \param xyze_cutterElement       (in)    : nodal coordinates of cutter element
   \param interfacePoints          (in)    : list of interface points
-  \param boundaryIntersectionType (in)    : boundary intersection type
   */
   void preparePLC(
     const DRT::Element*         xfemElement,
     const BlitzMat&             xyze_xfemElement,
     const DRT::Element*         cutterElement,
     const BlitzMat&             xyze_cutterElement,
-    vector<InterfacePoint>&     interfacePoints,
-    XFEM::boundaryType&         boundaryIntersectionType 
+    vector<InterfacePoint>&     interfacePoints
     );
 
         
@@ -551,10 +524,8 @@ class Intersection
   /*!
   \brief checks if a CDT has to be computed for the current xfem element
 
-  \param boundaryIntersectionType (in)        : boundary intersection type
   */
   bool checkIfCDT(
-    const boundaryType    boundaryIntersectionType
     );
     
   
@@ -964,7 +935,7 @@ class Intersection
   */
   void liftSteinerPointOnEdge(
     const int                         steinerIndex,
-    int                               lineIndex, // TODO: ???????  why not const, if input ????????
+    int                               lineIndex, 
     const int                         cutterIndex,
     BlitzVec&                         edgePoint,
     BlitzVec&                         oppositePoint,
