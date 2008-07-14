@@ -30,9 +30,19 @@ namespace XFEM
  * \note this is 3d fluid specific and should somehow be generalized
  */
 void createDofMap(
-        const XFEM::InterfaceHandle&                      ih,
-        std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,        ///< the map for nodal dofs
-        std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal       ///< the map for elemental dofs        
+    const XFEM::InterfaceHandle&                      ih,
+    std::map<int, const std::set<XFEM::FieldEnr> >&   nodalDofSetFinal,        ///< the map for nodal dofs
+    std::map<int, const std::set<XFEM::FieldEnr> >&   elementalDofsFinal       ///< the map for elemental dofs   
+);
+
+/*! 
+ * \brief apply standard dofs to nodes
+ * \note this is 3d fluid specific and should somehow be generalized
+ */
+void applyStandardEnrichment(
+    const XFEM::InterfaceHandle&             ih,
+    std::map<int, set<XFEM::FieldEnr> >&     nodalDofSet,
+    std::map<int, set<XFEM::FieldEnr> >&     elementalDofs
 );
 
 } // namespace XFEM
