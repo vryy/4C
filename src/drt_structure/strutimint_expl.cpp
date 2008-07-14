@@ -44,7 +44,7 @@ StruTimIntExpl:: StruTimIntExpl
   )
 {
   // explicit time integrators cannot handle constraints
-  if (constrman_->HaveConstraint())
+  if (conman_->HaveConstraint())
   {
     dserror("Explicit TIS cannot handle constraints");
   }
@@ -162,7 +162,7 @@ void StruTimIntExpl::OutputRestart
     }
 
     // constraints
-    if (constrman_->HaveConstraint())
+    if (conman_->HaveConstraint())
     {
       output_.WriteDouble("uzawaparameter",
                           uzawasolv_->GetUzawaParameter());

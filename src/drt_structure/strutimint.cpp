@@ -103,7 +103,7 @@ StruTimInt::StruTimInt
   damping_((bool) Teuchos::getIntegralValue<int>(sdynparams,"DAMPING")),
   dampk_(sdynparams.get<double>("K_DAMP")),
   dampm_(sdynparams.get<double>("M_DAMP")),
-  constrman_(Teuchos::null),
+  conman_(Teuchos::null),
   uzawasolv_(Teuchos::null),
   surfstressman_(Teuchos::null),
   potman_(Teuchos::null),
@@ -210,8 +210,8 @@ StruTimInt::StruTimInt
   }
 
   // initialize constraint manager
-  constrman_ = Teuchos::rcp(new ConstrManager(Discretization(), 
-                                              dis_, sdynparams));
+  conman_ = Teuchos::rcp(new ConstrManager(Discretization(), 
+                                           dis_, sdynparams));
   // initialize Uzawa solver
   uzawasolv_ = Teuchos::rcp(new UzawaSolver(Discretization(), solver_, 
                                             dirichtoggle_, invtoggle_, 

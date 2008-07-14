@@ -191,9 +191,9 @@ StruTimIntImpl::StruTimIntImpl
   fres_(Teuchos::null)
 {
   // verify: if system has constraints, then Uzawa-type solver is used
-  if ( constrman_->HaveConstraint()
+  if ( conman_->HaveConstraint()
        and ( (itertype_ != soltech_uzawalinnewton)
-             or (itertype_ != soltech_uzawanonlinnewton) ) )
+             and (itertype_ != soltech_uzawanonlinnewton) ) )
   {
     dserror("Chosen solution technique %s does not work constraints.",
             MapSolTechEnumToString(itertype_).c_str());
@@ -240,6 +240,13 @@ void StruTimIntImpl::Predict()
 
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, accn_);
+
+  // initialise Lagrange multiplicators to zero
+  if ( (conman_->HaveConstraint())
+       and (itertype_ == soltech_uzawalinnewton) )
+  {
+    conman_->ScaleLagrMult(0.0);
+  }
 
   // compute residual forces fres_ and stiffness stiff_
   EvaluateForceStiffResidual();
@@ -338,10 +345,9 @@ void StruTimIntImpl::ApplyForceStiffConstraint
   Teuchos::RCP<LINALG::SparseMatrix>& stiff
 )
 {
-  if ( (constrman_->HaveConstraint())
-       and (itertype_ == soltech_uzawanonlinnewton) )
+  if (conman_->HaveConstraint())
   {
-    constrman_->StiffnessAndInternalForces(time, dis, fint, stiff);
+    conman_->StiffnessAndInternalForces(time, dis, fint, stiff);
   }
 
   // wotcha
@@ -400,7 +406,7 @@ bool StruTimIntImpl::Converged()
 
   // check constraint
   bool cc = true;
-  if (constrman_->HaveConstraint())
+  if (conman_->HaveConstraint())
   {
     cc = normcon_ < tolcon_;
   }
@@ -421,6 +427,9 @@ void StruTimIntImpl::Solve()
     break;
   case soltech_uzawanonlinnewton :
     UzawaNonLinearNewtonFull();
+    break;
+  case soltech_uzawalinnewton :
+    UzawaLinearNewtonFull();
     break;
   // catch problems
   default :
@@ -480,6 +489,12 @@ void StruTimIntImpl::NewtonFull()
     // compute residual forces #fres_ and stiffness #stiff_
     EvaluateForceStiffResidual();
 
+    // blank residual at DOFs on Dirichlet BC
+    {
+      Epetra_Vector frescopy(*fres_);
+      fres_->Multiply(1.0, *invtoggle_, frescopy, 0.0);
+    }
+
     // build residual force norm
     normfres_ = StruTimIntVector::CalculateNorm(iternorm_, fres_);
     // build residual displacement norm
@@ -514,15 +529,20 @@ void StruTimIntImpl::NewtonFull()
  * originally by tk */
 void StruTimIntImpl::UzawaNonLinearNewtonFull()
 {
+  // now or never, break it
+  dserror("Sorry dude, non-linear Uzawa with full Newton-Raphson"
+          " iteration is available in source, but it has not been"
+          " tested in silico and should not be used overcredulously");
+
   // do Newton-Raphson iteration, which contains here effects of
   // constraint forces and stiffness
   // this call ends up with new displacements etc on \f$D_{n+1}\f$ etc
   NewtonFull();
 
   // compute constraint error ...
-  constrman_->ComputeError(timen_, disn_);
+  conman_->ComputeError(timen_, disn_);
   // ... and its norm
-  normcon_ = constrman_->GetErrorNorm();
+  normcon_ = conman_->GetErrorNorm();
   // talk to user
   std::cout << "Constraint error for Newton solution: " << normcon_
             << std::endl;
@@ -532,7 +552,7 @@ void StruTimIntImpl::UzawaNonLinearNewtonFull()
   while ( (normcon_ > tolcon_) and (uziter <= uzawaitermax_) )
   {
     // Lagrange multiplier is increased by #uzawaparam_ times ConstrError
-    constrman_->UpdateLagrMult(uzawaparam_);
+    conman_->UpdateLagrMult(uzawaparam_);
 
     // Keep new Lagrange multiplier fixed and solve for new displacements
 
@@ -545,9 +565,9 @@ void StruTimIntImpl::UzawaNonLinearNewtonFull()
     NewtonFull();
 
     // compute constraint error ...
-    constrman_->ComputeError(timen_, disn_);
+    conman_->ComputeError(timen_, disn_);
     // ... and its norm
-    normcon_ = constrman_->GetErrorNorm();
+    normcon_ = conman_->GetErrorNorm();
     // talk to user
     std::cout << "Constraint error for computed displacement: " << normcon_
               << std::endl;
@@ -560,6 +580,108 @@ void StruTimIntImpl::UzawaNonLinearNewtonFull()
   iter_ = uziter + 1;
 }
 
+/*----------------------------------------------------------------------*/
+/* do linearised Uzawa iterations with full NRI
+ * originally by tk 11/07 */
+void StruTimIntImpl::UzawaLinearNewtonFull()
+{
+  // allocate additional vectors and matrices
+  Teuchos::RCP<LINALG::SparseMatrix> conmatrix 
+    = Teuchos::rcp(new LINALG::SparseMatrix(*(conman_->GetConstrMatrix())));
+  Teuchos::RCP<Epetra_Vector> conrhs 
+    = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
+  
+  Teuchos::RCP<Epetra_Vector> lagrincr 
+    = Teuchos::rcp(new Epetra_Vector(*(conman_->GetConstraintMap())));
+
+  // check whether we have a sanely filled stiffness matrix
+  if (not stiff_->Filled())
+  {
+    dserror("Effective stiffness matrix must be filled here");
+  }
+
+  // initialise equilibrium loop
+  iter_ = 1;
+  normfres_ = CalcRefNormForce();
+  normdisi_ = 1.0e6;
+  normcon_ = conman_->GetErrorNorm();
+  timer_.ResetStartTime();
+  //bool print_unconv = true;
+
+  // equilibrium iteration loop
+  while ( (not Converged()) and (iter_ <= itermax_) )
+  {
+    // apply Dirichlet BCs to system of equations
+    disi_->PutScalar(0.0);  // Useful? depends on solver and more
+    LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+                                   zeros_, dirichtoggle_);
+    // prepare residual Lagrange multiplier
+    lagrincr->PutScalar(0.0);
+    // Call Uzawa algorithm to solve system with zeros on diagonal
+    uzawasolv_->Solve(stiff_, conmatrix,
+                      disi_, lagrincr, 
+                      fres_, conrhs);
+
+    // update Lagrange multiplier
+    conman_->UpdateLagrMult(lagrincr);
+    // update end-point displacements etc
+    UpdateIter(iter_);
+
+    // compute residual forces #fres_ and stiffness #stiff_
+    // which contain forces and stiffness of constraints
+    EvaluateForceStiffResidual();
+    // compute residual and stiffness of constraint equations
+    conmatrix = conman_->GetConstrMatrix();
+    conrhs = Teuchos::rcp(new Epetra_Vector(*(conman_->GetError())));
+
+    // blank residual at DOFs on Dirichlet BC
+    {
+      Epetra_Vector frescopy(*fres_);
+      fres_->Multiply(1.0, *invtoggle_, frescopy, 0.0);
+    }
+
+    // build residual force norm
+    normfres_ = StruTimIntVector::CalculateNorm(iternorm_, fres_);
+    // build residual displacement norm
+    normdisi_ = StruTimIntVector::CalculateNorm(iternorm_, disi_);
+    // build residual Lagrange multipilcator norm
+    normcon_ = conman_->GetErrorNorm();
+
+    // print stuff
+    PrintNewtonIter();
+
+    // increment equilibrium loop index
+    iter_ += 1;
+  }  // end equilibrium loop
+
+  // correct iteration counter
+  iter_ -= 1;
+
+  // test whether max iterations was hit
+  if (iter_ >= itermax_)
+  {
+     dserror("Newton unconverged in %d iterations", iter_);
+  }
+  else
+  {
+    // monitor values
+    if (conman_->HaveMonitor())
+    {
+      // WARNING: THIS WAS dism_, BUT WE DO NOT WANT THIS HERE!!!
+      //          NEED TO TALK TO TK, IF disn_ WORKS AS WELL
+      conman_->ComputeMonitorValues(disn_);
+    }
+
+    // print message
+    if (Converged())
+    {
+      PrintNewtonConv();
+    }
+  }
+
+  // good evening
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /* Update iteration */
@@ -617,6 +739,7 @@ void StruTimIntImpl::PrintNewtonIter()
   // print to standard out
   if ( (myrank_ == 0) and printscreen_ and printiter_ )
   {
+    if (conman_->HaveMonitor()) conman_->PrintMonitorValues();
     PrintNewtonIterText(stdout);
   }
 
@@ -638,40 +761,67 @@ void StruTimIntImpl::PrintNewtonIterText
   FILE* ofile
 )
 {
+  // open outstringstream
+  std::ostringstream oss;
+
+  // enter converged state etc
+  oss << " numiter " << std::setw(2) << iter_;
+
   // different style due relative or absolute error checking
   switch (itercnvchk_)
   {
   // relative residual forces AND displacements
   case convcheck_relres_and_reldis:
   case convcheck_relres_or_reldis:
-    fprintf(ofile,
-            "numiter %2d"
-            " scaled res-norm %10.5e"
-            " scaled dis-norm %20.15E\n",
-            iter_, normfres_/normcharforce_, normdisi_/normchardis_);
+    oss << " rel-res-norm " 
+        << std::setw(10) << std::setprecision(5) << std::scientific 
+        << normfres_/normcharforce_
+        << " rel-dis-norm "
+        << std::setw(10) << std::setprecision(5) << std::scientific 
+        << normdisi_/normchardis_;
     break;
   // relative residual forces
   case convcheck_relres_and_absdis:
   case convcheck_relres_or_absdis:
-    fprintf(ofile, 
-            "numiter %2d"
-            " scaled res-norm %10.5e"
-            " absolute dis-norm %20.15E\n",
-            iter_, normfres_/normcharforce_, normdisi_);
+    oss << " rel-res-norm " 
+        << std::setw(10) << std::setprecision(5) << std::scientific 
+        << normfres_/normcharforce_
+        << " abs-dis-norm " 
+        << std::setw(10) << std::setprecision(5) << std::scientific 
+        << normdisi_;
     break;
   // absolute forces and displacements
   case convcheck_absres_and_absdis:
   case convcheck_absres_or_absdis:
-    fprintf(ofile,
-            "numiter %2d"
-            " absolute res-norm %10.5e"
-            " absolute dis-norm %20.15E\n",
-            iter_, normfres_, normdisi_);
+    oss << " abs-res-norm "
+        << std::setw(10) << std::setprecision(5) << std::scientific 
+        << normfres_
+        << " abs-dis-norm " 
+        << std::setw(10) << std::setprecision(5) << std::scientific 
+        << normdisi_;
     break;
   default:
     dserror("Cannot handle requested convergence check %i", itercnvchk_);
     break;
   }  // end switch
+
+  // add constraint norm
+  if (conman_->HaveConstraint())
+  {
+    oss << " abs-constr-norm " 
+        << std::setw(10) << std::setprecision(5) << std::scientific 
+        << normcon_;
+  }
+
+  // add solution time
+  oss << " time " <<  timer_.ElapsedTime();
+
+  // finish oss
+  oss << std::ends;
+
+  // print to screen (could be done differently...)
+  fprintf(ofile, "%s\n", oss.str().c_str());
+
   // print it, now
   fflush(ofile);
 }
@@ -681,9 +831,9 @@ void StruTimIntImpl::PrintNewtonIterText
 void StruTimIntImpl::PrintNewtonConv()
 {
   // print constraint manager
-  if (constrman_->HaveMonitor())
+  if (conman_->HaveMonitor())
   {
-    constrman_->PrintMonitorValues();
+    conman_->PrintMonitorValues();
   }
 
   // open outstringstream
@@ -719,7 +869,7 @@ void StruTimIntImpl::PrintNewtonConv()
   }  // end switch
 
   // add constraint norm
-  if (constrman_->HaveConstraint())
+  if (conman_->HaveConstraint())
   {
     oss << " absolute constr_norm " << normcon_;
   }
@@ -853,7 +1003,7 @@ void StruTimIntImpl::OutputRestart
     }
 
     // constraints
-    if (constrman_->HaveConstraint())
+    if (conman_->HaveConstraint())
     {
       output_.WriteDouble("uzawaparameter",
                           uzawasolv_->GetUzawaParameter());

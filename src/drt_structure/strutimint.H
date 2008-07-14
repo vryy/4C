@@ -329,7 +329,7 @@ protected:
   //@{
 
   //! whatever constraints
-  Teuchos::RCP<ConstrManager> constrman_;  //!< constraint manager
+  Teuchos::RCP<ConstrManager> conman_;  //!< constraint manager
   Teuchos::RCP<UzawaSolver> uzawasolv_;  //!< Uzawa constraint solver
 
   //! surface stresses

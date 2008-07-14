@@ -212,7 +212,14 @@ void StruTimIntGenAlpha::EvaluateForceStiffResidual()
   }
 
   // apply forces and stiffness due to constraints
-  ApplyForceStiffConstraint(timen_, disn_, fint_, stiff_);
+  if (midavg_ == midavg_trlike)
+  {
+    ApplyForceStiffConstraint(timen_, disn_, fintn_, stiff_);
+  }
+  else if (midavg_ == midavg_imrlike)
+  {
+    ApplyForceStiffConstraint(timen_, disn_, fintm_, stiff_);
+  }
 
   // surface stress force
   if (midavg_ == midavg_trlike)

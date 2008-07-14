@@ -230,12 +230,14 @@ public:
   //! and Lagrange multipliers
   //! Linear problem is solved with Uzawa algorithm.
   //!
-  //! \author tk (originally)
+  //! \author tk (originally) \date 11/07
   //!
   //! DEAR SIRS AND MADAMS, PLEASE PROVIDE REFERENCE
-  void UzawaLinearNewtonFull() { ; }
+  void UzawaLinearNewtonFull();
 
   //! Do non-linear CG iteration using NOX
+  //!
+  //! \author mwgee (originally) \date 03/07
   void NonlinearCG() { ; }
 
   //! Do pseudo transient continuation non-linear iteration
@@ -243,6 +245,8 @@ public:
   //! Pseudo transient continuation is a variant of full newton that has a
   //! larger convergence radius than newton and is therefore more stable 
   //! and/or can do larger time steps
+  //!
+  //! \author mwgee (originally) \date 03/07
   void PTC() { ; }
 
   //! Update iteration
