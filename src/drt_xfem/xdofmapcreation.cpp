@@ -102,7 +102,7 @@ void XFEM::createDofMap(
     };
   };
 
-  applyStandardEnrichment(ih, nodalDofSet, elementalDofs);
+  applyStandardEnrichmentNodalBasedApproach(ih, nodalDofSet, elementalDofs);
 
   // create const sets from standard sets, so the sets cannot be accidentily changed
   // could be removed later, if this is a performance bottleneck
@@ -185,6 +185,59 @@ void XFEM::applyStandardEnrichment(
         //                elementalDofs[element_gid].insert(XFEM::FieldEnr(PHYSICS::Tauyz, enr_std));
       }
     }
+  };
+}
+
+void XFEM::applyStandardEnrichmentNodalBasedApproach(
+    const XFEM::InterfaceHandle&             ih,
+    std::map<int, set<XFEM::FieldEnr> >&     nodalDofSet,
+    std::map<int, set<XFEM::FieldEnr> >&     elementalDofs
+)
+{
+  const int standard_label = 0;
+  const XFEM::Enrichment enr_std(standard_label, XFEM::Enrichment::typeStandard);
+  for (int i=0; i<ih.xfemdis()->NumMyColNodes(); ++i)
+  {
+    const DRT::Node* node = ih.xfemdis()->lColNode(i);
+    const BlitzVec3 nodalpos(toBlitzArray(node->X()));
+
+    const int node_gid = node->Id();
+    bool voidenrichment_in_set = false;
+    //check for void enrichement in a given set, if such set already exists for this node_gid
+    std::map<int, std::set<FieldEnr> >::const_iterator setiter = nodalDofSet.find(node_gid);
+    if (setiter != nodalDofSet.end())
+    {
+      std::set<FieldEnr> fieldenrset = setiter->second;
+      for (std::set<FieldEnr>::const_iterator fieldenr = fieldenrset.begin(); fieldenr != fieldenrset.end(); ++fieldenr)
+      {
+        if (fieldenr->getEnrichment().Type() == Enrichment::typeVoid)
+        {
+          voidenrichment_in_set = true;
+          break;
+        }
+      }
+    }
+    if (not voidenrichment_in_set)
+    {
+      bool in_fluid = false;
+      const int label = PositionWithinCondition(nodalpos, ih);
+      if (label == 0)
+      {
+        in_fluid = true;
+      }
+      else
+      {
+        in_fluid = false;
+      }
+      if (in_fluid)
+      {
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, enr_std));
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, enr_std));
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, enr_std));
+        nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, enr_std));
+      }
+    }
+    
   };
 }
 

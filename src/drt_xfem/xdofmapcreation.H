@@ -45,6 +45,16 @@ void applyStandardEnrichment(
     std::map<int, set<XFEM::FieldEnr> >&     elementalDofs
 );
 
+/*! 
+ * \brief apply standard dofs to nodes
+ * \note this is 3d fluid specific and should somehow be generalized
+ */
+void applyStandardEnrichmentNodalBasedApproach(
+    const XFEM::InterfaceHandle&             ih,
+    std::map<int, set<XFEM::FieldEnr> >&     nodalDofSet,
+    std::map<int, set<XFEM::FieldEnr> >&     elementalDofs
+);
+
 } // namespace XFEM
 
 #endif  // #ifndef XDOFMAPCREATION_H
