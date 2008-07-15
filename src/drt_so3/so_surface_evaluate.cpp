@@ -553,18 +553,21 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList& params,
             xscurr(0,0)=0;
             xscurr(1,0)=0;
             xscurr(2,0)=0;
+            xscurr(3,0)=0;
           }
           else if (protype == xz)
           {
             xscurr(0,1)=0;
             xscurr(1,1)=0;
             xscurr(2,1)=0;
+            xscurr(3,1)=0;
           }
           else if (protype == xy)
           {
             xscurr(0,2)=0;
             xscurr(1,2)=0;
             xscurr(2,2)=0;
+            xscurr(3,2)=0;
           }
 
           double areaele=0.0;
