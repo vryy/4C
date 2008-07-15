@@ -621,7 +621,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
   if (stiffmatrix != NULL)
   {
     //setting constitutive parameters , Crisfield, Vol. 2, equation (17.76)
-    Cm(0)= ym*crosssec_/lrefe_;
+    Cm(0) = ym*crosssec_/lrefe_;
     Cm(1) = sm*crosssecshear_/lrefe_;
     Cm(2) = sm*crosssecshear_/lrefe_;
     Cb(0) = sm*Irr_/lrefe_;
@@ -656,7 +656,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
       (*massmatrix)(i+9,i+9) = 0.5*density*lrefe_*Iyy_;
     }
   }
-
+  
   return;
 } // DRT::ELEMENTS::Beam3::b3_nlnstiffmass
 

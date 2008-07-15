@@ -333,6 +333,7 @@ void DRT::ELEMENTS::Beam3Register::Print(ostream& os) const
 
 int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
 {		
+  
   //random generator for seeding only (necessary for thermal noise)
   ranlib::Normal<double> seedgenerator(0,1);
   seedgenerator.seed((unsigned int)std::time(0));
@@ -342,11 +343,11 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
   xrefe.Shape(3,2);
   
   //setting beam reference director correctly
-  for (int i=0; i<dis.NumMyColElements(); ++i)
-    {
+  for (int i=0; i<  dis.NumMyColElements(); ++i)
+    {    
       //in case that current element is not a beam3 element there is nothing to do and we go back
       //to the head of the loop
-      if (dis.lColElement(i)->Type() != DRT::Element::element_beam2) continue;
+      if (dis.lColElement(i)->Type() != DRT::Element::element_beam3) continue;
       
       //if we get so far current element is a beam3 element and  we get a pointer at it
       DRT::ELEMENTS::Beam3* currele = dynamic_cast<DRT::ELEMENTS::Beam3*>(dis.lColElement(i));
