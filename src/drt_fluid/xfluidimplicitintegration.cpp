@@ -1584,20 +1584,38 @@ void XFluidImplicitTimeInt::OutputToGmsh()
   }
 #endif
 
+  
+  PlotVectorFieldToGmsh(state_.velnp_, "_solution_velocity_","Velocity Solution (Physical) n+1",true);
+  PlotVectorFieldToGmsh(state_.veln_,  "_solution_velocity_old_step_","Velocity Solution (Physical) n",false);
+  PlotVectorFieldToGmsh(state_.velnm_, "_solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
+  PlotVectorFieldToGmsh(state_.accn_,  "_solution_acceleration_old_step_","Acceleration Solution (Physical) n",false);
+  PlotVectorFieldToGmsh(state_.accnm_, "_solution_acceleration_old2_step_","Acceleration Solution (Physical) n-1",false);
+}
+
+
+void XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
+    const RCP<Epetra_Vector>   vectorfield,
+    const string filestr,
+    const string name_in_gmsh,
+    const bool plot_to_gnuplot
+    ) const
+{
+  
+  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
+  const bool gmshdebugout = (getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1);
+  
   if (gmshdebugout)
   {
 
     bool ele_to_textfile = false;
     std::stringstream filename;
-    filename << allfiles.outputfile_kenner << "_solution_velocity_" << std::setw(5) << setfill('0') << step_
-    << ".pos";
+    filename << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << step_ << ".pos";
     std::cout << "writing '"<<filename.str()<<"'...";
     std::ofstream f_system(filename.str().c_str());
 
     {
       stringstream gmshfilecontent;
-      gmshfilecontent << "View \" " << "Velocity Solution (Physical) \" {"
-      << endl;
+      gmshfilecontent << "View \" " << name_in_gmsh << "\" {" << endl;
       for (int i=0; i<discret_->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = discret_->lColElement(i);
@@ -1618,7 +1636,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
+        DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
 
 
         const vector<int>& dofposvelx =
@@ -1689,7 +1707,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
 
         }
         //if (ihForOutput_->ElementIntersected(elegid) and not ele_to_textfile and ele_to_textfile2)
-        if (elegid == 1 and elementvalues.size() > 0)
+        if (elegid == 1 and elementvalues.size() > 0 and plot_to_gnuplot)
         {
           ele_to_textfile = true;
           //std::cout << elementvalues << std::endl;
@@ -1713,9 +1731,6 @@ void XFluidImplicitTimeInt::OutputToGmsh()
     std::cout << " done" << endl;
   }
 }
-
-
-
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

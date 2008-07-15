@@ -164,6 +164,13 @@ public:
   */
   void OutputToGmsh();
 
+  void PlotVectorFieldToGmsh(
+      const RCP<Epetra_Vector>   vectorfield,
+      const std::string filestr,
+      const std::string name_in_gmsh,
+      const bool plot_to_gnuplot
+      ) const;
+  
   /*!
   \brief set initial flow field for analytical test problems
 
