@@ -63,6 +63,22 @@ namespace XFEM
         }
       }
     }
+    //! matrix matrix product
+    template<int ni, int nj, int nk, class M1, class M2, class M3>
+    inline void MM_product(const M1& m1, const M2& m2, M3& m_out)
+    {
+      for (int i = 0; i < ni; ++i)
+      {
+        for (int j = 0; j < nj; ++j)
+        {
+          m_out(i,j) = 0.0;
+          for (int k = 0; k < nk; ++k)
+          {
+            m_out(i,j) += m1(i,k)*m2(k,j);
+          }
+        }
+      }
+    }
     //! matrix vector product
     template<int ni, int nj, class M1, class V1, class V2>
     inline void MV_product(const M1& m, const V1& v, V2& rv)
