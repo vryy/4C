@@ -40,9 +40,6 @@ StruTimIntAB2::StruTimIntAB2
     solver,
     output
   ),
-  diso_(Teuchos::null),
-  velo_(Teuchos::null),
-  acco_(Teuchos::null),
   fextn_(Teuchos::null),
   fintn_(Teuchos::null),
   fviscn_(Teuchos::null),
@@ -55,12 +52,11 @@ StruTimIntAB2::StruTimIntAB2
               << std::endl;
   }
 
-  // resize state vector
-  state_->Resize(-1, 0, true);
-  // associate conveniance pointers
-  diso_ = state_->Dis(-1);
-  velo_ = state_->Vel(-1);
-  acco_ = state_->Acc(-1);
+  // resize state vectors, AB2 is a 2-step method, thus we need two
+  // past steps at t_{n} and t_{n-1}
+  dis_ = StruTimIntState(-1, 0, dofrowmap_, true);
+  vel_ = StruTimIntState(-1, 0, dofrowmap_, true);
+  acc_ = StruTimIntState(-1, 0, dofrowmap_, true);
 
   // allocate force vectors
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -80,15 +76,15 @@ void StruTimIntAB2::IntegrateStep()
   const double dto = dt_;  // \f$\Delta t_{n-1}\f$
 
   // new displacements \f$D_{n+}\f$
-  disn_->Update(1.0, *dis_, 0.0);
-  disn_->Update((2.0*dt*dto+dt*dt)/(2.0*dto), *vel_,
-                -(dt*dt)/(2.0*dto), *velo_,
+  disn_->Update(1.0, *dis_(0), 0.0);
+  disn_->Update((2.0*dt*dto+dt*dt)/(2.0*dto), *vel_(0),
+                -(dt*dt)/(2.0*dto), *vel_(-1),
                 1.0);
 
   // new velocities \f$V_{n+1}\f$
-  veln_->Update(1.0, *vel_, 0.0);
-  veln_->Update((2.0*dt*dto+dt*dt)/(2.0*dto), *acc_,
-                -(dt*dt)/(2.0*dto), *acco_,
+  veln_->Update(1.0, *vel_(0), 0.0);
+  veln_->Update((2.0*dt*dto+dt*dt)/(2.0*dto), *acc_(0),
+                -(dt*dt)/(2.0*dto), *acc_(-1),
                 1.0);
 
   // apply Dirichlet BCs
@@ -108,7 +104,7 @@ void StruTimIntAB2::IntegrateStep()
   {
     // displacement increment in step
     Epetra_Vector disinc = Epetra_Vector(*disn_);
-    disinc.Update(-1.0, *dis_, 1.0);
+    disinc.Update(-1.0, *dis_(0), 1.0);
     // internal force
     ApplyForceInternal(timen_, dt,
                        disn_, Teuchos::rcp(&disinc,false),
@@ -159,18 +155,15 @@ void StruTimIntAB2::IntegrateStep()
 /* Update step */
 void StruTimIntAB2::UpdateStep()
 {
-  // update all old state at t_{n-1} etc
-  // important for step size adaptivity
-  state_->UpdateStep();
   // new displacements at t_{n+1} -> t_n
-  //    D_{n} := D_{n+1}
-  dis_->Update(1.0, *disn_, 0.0);
+  //    D_{n} := D_{n+1}, D_{n-1} := D_{n}
+  dis_.UpdateSteps(disn_);
   // new velocities at t_{n+1} -> t_n
-  //    V_{n} := V_{n+1}
-  vel_->Update(1.0, *veln_, 0.0);
+  //    V_{n} := V_{n+1}, V_{n-1} := V_{n}
+  vel_.UpdateSteps(veln_);
   // new accelerations at t_{n+1} -> t_n
-  //    A_{n} := A_{n+1}
-  acc_->Update(1.0, *accn_, 0.0);
+  //    A_{n} := A_{n+1}, A_{n-1} := A_{n}
+  acc_.UpdateSteps(accn_);
 
   // update anything that needs to be updated at the element level
   {

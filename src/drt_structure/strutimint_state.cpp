@@ -26,6 +26,21 @@ Maintainer: Burkhard Bornemann
 
 
 /*----------------------------------------------------------------------*/
+/* Dummy constructor */
+StruTimIntState::StruTimIntState
+(
+)
+: steppast_(0),
+  stepfuture_(0),
+  steps_(0),
+  dofrowmap_(NULL),
+  state_(Teuchos::null)
+{
+  // that's it
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 /* constructor */
 StruTimIntState::StruTimIntState
 (
@@ -38,24 +53,18 @@ StruTimIntState::StruTimIntState
   stepfuture_(stepfuture),
   steps_(stepfuture>=steppast ? stepfuture-steppast+1 : 0),
   dofrowmap_(dofrowmap),
-  dis_(),
-  vel_(),
-  acc_()
+  state_()
 {
   // verify a positive #length_
   dsassert(steps_>0, "Past step must be lower or equal to future step");
 
   // allocate place for displacement, velocitiy, etc vectors
-  dis_.resize(steps_);
-  vel_.resize(steps_);
-  acc_.resize(steps_);
+  state_.resize(steps_);
 
   // allocate the displacement vectors themselves
   for (int index=0; index<steps_; ++index)
   {
-    dis_[index] = LINALG::CreateVector(*dofrowmap_, inittozero);
-    vel_[index] = LINALG::CreateVector(*dofrowmap_, inittozero);
-    acc_[index] = LINALG::CreateVector(*dofrowmap_, inittozero);
+    state_[index] = LINALG::CreateVector(*dofrowmap_, inittozero);
   }
   
   // good bye
@@ -84,11 +93,7 @@ void StruTimIntState::Resize
   {
     for (int past=steppast_; past>steppast; --past)
     {
-      dis_.insert(dis_.begin(),
-                  LINALG::CreateVector(*dofrowmap_, inittozero));
-      vel_.insert(vel_.begin(),
-                  LINALG::CreateVector(*dofrowmap_, inittozero));
-      acc_.insert(acc_.begin(),
+      state_.insert(state_.begin(),
                   LINALG::CreateVector(*dofrowmap_, inittozero));
     }
     steppast_ = steppast;
@@ -100,15 +105,17 @@ void StruTimIntState::Resize
 }
 
 /*----------------------------------------------------------------------*/
-/* Update states */
-void StruTimIntState::UpdateStep()
+/* Update steps */
+void StruTimIntState::UpdateSteps
+(
+  const Teuchos::RCP<Epetra_Vector> disn
+)
 {
   for (int ind=0; ind<steps_-1; ++ind)
   {
-    dis_[ind]->Update(1.0, *(dis_[ind+1]), 0.0);
-    vel_[ind]->Update(1.0, *(vel_[ind+1]), 0.0);
-    acc_[ind]->Update(1.0, *(acc_[ind+1]), 0.0);
+    state_[ind]->Update(1.0, *(state_[ind+1]), 0.0);
   }
+  state_[steps_-1]->Update(1.0, *disn, 0.0);
 
   // ciao
   return;

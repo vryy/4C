@@ -135,9 +135,9 @@ void StruTimIntExpl::OutputRestart
     // write restart output, please
     output_.WriteMesh(step_, time_);
     output_.NewStep(step_, time_);
-    output_.WriteVector("displacement", dis_);
-    output_.WriteVector("velocity", vel_);
-    output_.WriteVector("acceleration", acc_);
+    output_.WriteVector("displacement", dis_());
+    output_.WriteVector("velocity", vel_());
+    output_.WriteVector("acceleration", acc_());
     //output_.WriteVector("fexternal", fext_);  // CURRENTLY NOT AVAILABLE THINK OF SCENARIO
 
 /*
@@ -205,9 +205,9 @@ void StruTimIntExpl::OutputState
 
     // write now
     output_.NewStep(step_, time_);
-    output_.WriteVector("displacement", dis_);
-    output_.WriteVector("velocity", vel_);
-    output_.WriteVector("acceleration", acc_);
+    output_.WriteVector("displacement", dis_());
+    output_.WriteVector("velocity", vel_());
+    output_.WriteVector("acceleration", acc_());
     //output_.WriteVector("fexternal",fext_);  // CURRENTLY NOT AVAILABLE
     output_.WriteElementData();
   }
@@ -226,8 +226,8 @@ void StruTimIntExpl::OutputStressStrain
 {
   // do stress calculation and output
   if ( writestrevery_
-       and ( (writestress_ != stress_none)
-             or (writestrain_ != strain_none) )
+       and ( (writestress_ != StruTimInt::stress_none)
+             or (writestrain_ != StruTimInt::strain_none) )
        and (step_%writestrevery_ == 0) )
   {
     // create the parameters for the discretization
@@ -239,7 +239,7 @@ void StruTimIntExpl::OutputStressStrain
     p.set("delta time", dt_);
     
     // stress
-    if (writestress_ == stress_cauchy)
+    if (writestress_ == StruTimInt::stress_cauchy)
     {
       // output of Cauchy stresses instead of 2PK stresses
       p.set("cauchy", true);
@@ -254,11 +254,11 @@ void StruTimIntExpl::OutputStressStrain
     p.set("stress", stressdata);
 
     // strain
-    if (writestrain_ == strain_ea)
+    if (writestrain_ == StruTimInt::strain_ea)
     {
       p.set("iostrain", "euler_almansi");
     }
-    else if (writestrain_ == strain_gl)
+    else if (writestrain_ == StruTimInt::strain_gl)
     {
       // WILL THIS CAUSE TROUBLE ????
       // THIS STRING DOES NOT EXIST IN SO3
@@ -275,7 +275,7 @@ void StruTimIntExpl::OutputStressStrain
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement", zeros_);
-    discret_.SetState("displacement", dis_);
+    discret_.SetState("displacement", dis_());
     discret_.Evaluate(p, null, null, null, null, null);
     discret_.ClearState();
 
@@ -286,14 +286,14 @@ void StruTimIntExpl::OutputStressStrain
     datawritten = true;
 
     // write stress
-    if (writestress_ != stress_none)
+    if (writestress_ != StruTimInt::stress_none)
     {
       std::string stresstext = "";
-      if (writestress_ == stress_cauchy)
+      if (writestress_ == StruTimInt::stress_cauchy)
       {
         stresstext = "gauss_cauchy_stresses_xyz";
       }
-      else if (writestress_ == stress_pk2)
+      else if (writestress_ == StruTimInt::stress_pk2)
       {
         stresstext = "gauss_2PK_stresses_xyz";
       }
@@ -301,10 +301,10 @@ void StruTimIntExpl::OutputStressStrain
     }
 
     // write strain
-    if (writestrain_ != strain_none)
+    if (writestrain_ != StruTimInt::strain_none)
     {
       std::string straintext = "";
-      if (writestrain_ == strain_ea)
+      if (writestrain_ == StruTimInt::strain_ea)
       {
         straintext = "gauss_EA_strains_xyz";
       }

@@ -75,7 +75,7 @@ void StruTimAdaZienXie::EvaluateLocalErrorVector()
   
   // provide local discretisation error vector
   locerrn_->Update(factor, *(genalpha_->accn_),
-                   -factor, *(genalpha_->acc_), 
+                   -factor, *(genalpha_->acc_()), 
                    0.0);
 
   // see you

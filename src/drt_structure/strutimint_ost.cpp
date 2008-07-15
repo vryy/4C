@@ -75,14 +75,14 @@ StruTimIntOneStepTheta::StruTimIntOneStepTheta
   // internal force vector F_{int;n+1} at new time
   fintn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial internal force vector
-  ApplyForceStiffInternal(time_, dt_, dis_, zeros_, fint_, stiff_);
+  ApplyForceStiffInternal(time_, dt_, dis_(), zeros_, fint_, stiff_);
 
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
   // set initial external force vector
-  ApplyForceExternal(time_, dis_, fext_);
+  ApplyForceExternal(time_, dis_(), fext_);
 
   // inertial mid-point force vector F_inert
   finertt_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -102,21 +102,21 @@ StruTimIntOneStepTheta::StruTimIntOneStepTheta
 void StruTimIntOneStepTheta::PredictConstDisConsistVelAcc()
 {
   // constant predictor : displacement in domain
-  disn_->Update(1.0, *dis_, 0.0);
+  disn_->Update(1.0, *dis_(), 0.0);
 
   // new end-point velocities
   veln_->Update(1.0/(theta_*dt_), *disn_,
-                -1.0/(theta_*dt_), *dis_, 
+                -1.0/(theta_*dt_), *dis_(), 
                 0.0);
-  veln_->Update(-(1.0-theta_)/theta_, *vel_,
+  veln_->Update(-(1.0-theta_)/theta_, *vel_(),
                 1.0);
 
   // new end-point accelerations
   accn_->Update(1.0/(theta_*theta_*dt_*dt_), *disn_, 
-                -1.0/(theta_*theta_*dt_*dt_), *dis_, 
+                -1.0/(theta_*theta_*dt_*dt_), *dis_(), 
                 0.0);
-  accn_->Update(-1.0/(theta_*theta_*dt_), *vel_, 
-                -(1.0-theta_)/theta_, *acc_,
+  accn_->Update(-1.0/(theta_*theta_*dt_), *vel_(), 
+                -(1.0-theta_)/theta_, *acc_(),
                 1.0);
   
   // watch out
@@ -197,15 +197,15 @@ void StruTimIntOneStepTheta::EvaluateMidState()
 {
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+theta} := theta * D_{n+1} + (1-theta) * D_{n}
-  dist_->Update(theta_, *disn_, 1.0-theta_, *dis_, 0.0);
+  dist_->Update(theta_, *disn_, 1.0-theta_, *dis_(), 0.0);
   
   // mid-velocities V_{n+1-alpha_f} (velm)
   //    V_{n+theta} := theta * V_{n+1} + (1-theta) * V_{n}
-  velt_->Update(theta_, *veln_, 1.0-theta_, *vel_, 0.0);
+  velt_->Update(theta_, *veln_, 1.0-theta_, *vel_(), 0.0);
   
   // mid-accelerations A_{n+1-alpha_m} (accm)
   //    A_{n+theta} := theta * A_{n+1} + (1-theta) * A_{n}
-  acct_->Update(theta_, *accn_, 1.0-theta_, *acc_, 0.0);
+  acct_->Update(theta_, *accn_, 1.0-theta_, *acc_(), 0.0);
 
   // jump
   return;
@@ -223,7 +223,7 @@ double StruTimIntOneStepTheta::CalcRefNormDisplacement()
   // points within the timestep (end point, generalized midpoint).
 
   double charnormdis = 0.0;
-  dis_->Norm2(&charnormdis);
+  dis_()->Norm2(&charnormdis);
 
   // rise your hat
   return charnormdis;
@@ -283,9 +283,9 @@ void StruTimIntOneStepTheta::UpdateIterIncrementally()
 
   // new end-point velocities
   aux->Update(1.0/(theta_*dt_), *disn_,
-               -1.0/(theta_*dt_), *dis_, 
+               -1.0/(theta_*dt_), *dis_(), 
                0.0);
-  aux->Update(-(1.0-theta_)/theta_, *vel_, 1.0);
+  aux->Update(-(1.0-theta_)/theta_, *vel_(), 1.0);
   // blank entries on DBC DOFs
   aux2->Multiply(1.0, *invtoggle_, *aux, 0.0);
   // blank entries on non-DBC DOFs
@@ -297,10 +297,10 @@ void StruTimIntOneStepTheta::UpdateIterIncrementally()
 
   // new end-point accelerations
   aux->Update(1.0/(theta_*theta_*dt_*dt_), *disn_, 
-              -1.0/(theta_*theta_*dt_*dt_), *dis_, 
+              -1.0/(theta_*theta_*dt_*dt_), *dis_(), 
               0.0);
-  aux->Update(-1.0/(theta_*theta_*dt_), *vel_, 
-              -(1.0-theta_)/theta_, *acc_,
+  aux->Update(-1.0/(theta_*theta_*dt_), *vel_(), 
+              -(1.0-theta_)/theta_, *acc_(),
               1.0);
   // blank entries on DBC DOFs
   aux2->Multiply(1.0, *invtoggle_, *aux, 0.0);
@@ -340,13 +340,13 @@ void StruTimIntOneStepTheta::UpdateStep()
   // update state
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}
-  dis_->Update(1.0, *disn_, 0.0);
+  dis_()->Update(1.0, *disn_, 0.0);
   // new velocities at t_{n+1} -> t_n
   //    V_{n} := V_{n+1}
-  vel_->Update(1.0, *veln_, 0.0);
+  vel_()->Update(1.0, *veln_, 0.0);
   // new accelerations at t_{n+1} -> t_n
   //    A_{n} := A_{n+1}
-  acc_->Update(1.0, *accn_, 0.0);
+  acc_()->Update(1.0, *accn_, 0.0);
 
   // update new external force
   //    F_{ext;n} := F_{ext;n+1}

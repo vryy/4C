@@ -254,35 +254,22 @@ public:
   //! @name Phase states
   //@{
 
-  //! Old states at \f$t_n, t_{n-1}, ...\f$ stored on #state_
-  Teuchos::RCP<StruTimIntState> State()
-  {
-    return state_;
-  }
-
-  //! Current (potentially unconverged) state at \f$t_{n+1}\f$ 
-  //! stored on #staten_
-  Teuchos::RCP<StruTimIntState> StateN()
-  {
-    return staten_;
-  }
-
   //! Return displacements \f$D_{n}\f$
   Teuchos::RCP<Epetra_Vector> Disp()
   {
-    return dis_;
+    return dis_();
   }
 
   //! Return velocities \f$V_{n}\f$
   Teuchos::RCP<Epetra_Vector> Vel()
   {
-    return vel_;
+    return vel_();
   }
 
   //! Return accelerations \f$A_{n}\f$
   Teuchos::RCP<Epetra_Vector> Acc()
   {
-    return acc_;
+    return acc_();
   }
 
   //@}
@@ -367,24 +354,16 @@ protected:
   Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
   //@}
 
-  //! @name Phase states
-  //@{
-  Teuchos::RCP<StruTimIntState> state_;  //!< converged states 
-                                         //!< at \f$t_{n}, t_{n-1}, ...\f$
-  Teuchos::RCP<StruTimIntState> staten_;  //!< current state 
-                                          //!< at \f$t_{n+1}\f$
-  //@}
 
   //! @name Global state vectors
-  //! Convenience pointers to states. These are stored in #state_
-  //! and #staten_
   //@{
-  Teuchos::RCP<Epetra_Vector> dis_;  //!< global displacements
-                                     //!< \f${D}_{n}\f$  at \f$t_n\f$
-  Teuchos::RCP<Epetra_Vector> vel_;  //!< global velocities
-                                     //!< \f${V}_{n}\f$ at \f$t_n\f$
-  Teuchos::RCP<Epetra_Vector> acc_;  //!< global accelerations
-                                     //!< \f${A}_{n}\f$ at \f$t_n\f$
+
+  StruTimIntState dis_;  //!< global displacements
+                         //!< \f${D}_{n}, D_{n-1}, ...\f$
+  StruTimIntState vel_;  //!< global velocities
+                         //!< \f${V}_{n}, V_{n-1}, ...\f$
+  StruTimIntState acc_;  //!< global accelerations
+                         //!< \f${A}_{n}, A_{n-1}, ...\f$
   Teuchos::RCP<Epetra_Vector> disn_;  //!< global displacements
                                       //!< \f${D}_{n+1}\f$  
                                       //!< at \f$t_{n+1}\f$
@@ -394,6 +373,7 @@ protected:
   Teuchos::RCP<Epetra_Vector> accn_;  //!< global accelerations
                                       //!< \f${A}_{n+1}\f$  
                                       //!< at \f$t_{n+1}\f$
+
   //@}
 
   //! @name System matrices

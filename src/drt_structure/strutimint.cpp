@@ -117,8 +117,12 @@ StruTimInt::StruTimInt
   dirichtoggle_(Teuchos::null),
   invtoggle_(Teuchos::null),
   zeros_(Teuchos::null),
-  state_(Teuchos::null),
-  staten_(Teuchos::null),
+  dis_(),
+  vel_(),
+  acc_(),
+  disn_(Teuchos::null),
+  veln_(Teuchos::null),
+  accn_(Teuchos::null),
   stiff_(Teuchos::null),
   mass_(Teuchos::null),
   damp_(Teuchos::null)
@@ -181,19 +185,19 @@ StruTimInt::StruTimInt
   invtoggle_->PutScalar(1.0);
   invtoggle_->Update(-1.0, *dirichtoggle_, 1.0);
 
-  // create 1 state vector for last step at t_n
-  state_ = Teuchos::rcp(new StruTimIntState(0,0,dofrowmap_,true));
-  // associate convenience pointers
-  dis_ = state_->Dis(0);
-  vel_ = state_->Vel(0);
-  acc_ = state_->Acc(0);
+  // displacements D_{n}
+  dis_ = StruTimIntState(0, 0, dofrowmap_, true);
+  // velocities V_{n}
+  vel_ = StruTimIntState(0, 0, dofrowmap_, true);
+  // accelerations A_{n}
+  acc_ = StruTimIntState(0, 0, dofrowmap_, true);
 
-  // create 1 state vector for last step at t_{n+1}
-  staten_ = Teuchos::rcp(new StruTimIntState(1,1,dofrowmap_,true));
-  // associate convenience pointers
-  disn_ = staten_->Dis(1);
-  veln_ = staten_->Vel(1);
-  accn_ = staten_->Acc(1);
+  // displacements D_{n+1} at t_{n+1}
+  disn_ = LINALG::CreateVector(*dofrowmap_, true);
+  // velocities V_{n+1} at t_{n+1}
+  veln_ = LINALG::CreateVector(*dofrowmap_, true);
+  // accelerations A_{n+1} at t_{n+1}
+  accn_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // create empty matrices
   stiff_ = Teuchos::rcp(
@@ -211,7 +215,7 @@ StruTimInt::StruTimInt
 
   // initialize constraint manager
   conman_ = Teuchos::rcp(new ConstrManager(Discretization(), 
-                                           dis_, sdynparams));
+                                           dis_(), sdynparams));
   // initialize Uzawa solver
   uzawasolv_ = Teuchos::rcp(new UzawaSolver(Discretization(), solver_, 
                                             dirichtoggle_, invtoggle_, 
@@ -259,10 +263,10 @@ void StruTimInt::DetermineMassDampConsistAccel()
     = LINALG::CreateVector(*dofrowmap_, true); // internal force
 
   // overwrite initial state vectors with DirichletBCs
-  ApplyDirichletBC(time_, dis_, vel_, acc_);
+  ApplyDirichletBC(time_, dis_(), vel_(), acc_());
 
   // get external force
-  ApplyForceExternal(time_, dis_, fext);
+  ApplyForceExternal(time_, dis_(), fext);
   
   // initialise matrices
   stiff_->Zero();
@@ -280,7 +284,7 @@ void StruTimInt::DetermineMassDampConsistAccel()
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement", zeros_);
-    discret_.SetState("displacement", dis_);
+    discret_.SetState("displacement", dis_());
     //discret_.SetState("velocity",vel_); // not used at the moment
     discret_.Evaluate(p, stiff_, mass_, fint, null, null);
     discret_.ClearState();
@@ -309,12 +313,12 @@ void StruTimInt::DetermineMassDampConsistAccel()
       = LINALG::CreateVector(*dofrowmap_, true);
     if (damping_)
     {
-      damp_->Multiply(false, *vel_, *rhs);
+      damp_->Multiply(false, *vel_(), *rhs);
     }
     rhs->Update(-1.0, *fint, 1.0, *fext, -1.0);
     Epetra_Vector rhscopy = Epetra_Vector(*rhs);
     rhs->Multiply(1.0, *invtoggle_, rhscopy, 0.0);
-    solver_.Solve(mass_->EpetraMatrix(), acc_, rhs, true, true);
+    solver_.Solve(mass_->EpetraMatrix(), acc_(), rhs, true, true);
   }
 
   // leave this

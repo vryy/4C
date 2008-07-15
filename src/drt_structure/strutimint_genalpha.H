@@ -76,9 +76,9 @@ public:
   //@{
 
   //! Return name
-  enum NameEnum MethodName()
+  enum StruTimInt::NameEnum MethodName()
   { 
-    return name_genalpha;
+    return StruTimInt::name_genalpha;
   }
 
   //! Provide number of steps, e.g. a single-step method returns 1,

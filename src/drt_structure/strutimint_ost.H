@@ -114,7 +114,10 @@ public:
   //@{
 
   //! Return name
-  enum NameEnum MethodName() { return name_onesteptheta; }
+  enum StruTimInt::NameEnum MethodName()
+  { 
+    return StruTimInt::name_onesteptheta;
+  }
 
   //! Provide number of steps, a single-step method returns 1
   int MethodSteps() { return 1; }

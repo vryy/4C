@@ -23,14 +23,15 @@ Maintainer: Burkhard Bornemann
 
 /*======================================================================*/
 /*!
-\brief Objects holds phase states, i.e. displacements, velocities and
-       accelerations, of structural time integration scheme.
+\brief Objects holds multiple displacements, velocities and
+       accelerations vectors, of structural time integration scheme.
        (Alright, accelerations do not belong truely to the phase state. 
        Moreover, the state is also constituted by the elementwise stored 
        hybrid/mixed quantities.)
        The main purpose arises from time-step size adaptivity
-       in which the auxiliar scheme ought to access the states
-       originally computed by the marching method.
+       in which the auxiliar scheme might be a multi-step scheme
+       and thus needs to access older states, which are not directly
+       needed by the -- for instance single-step -- marching method.
 \author bborn
 \date 07/08
 */
@@ -38,6 +39,9 @@ class StruTimIntState
 {
 
 public:
+
+  //! Dummy constructor
+  StruTimIntState();
 
   //! Constructor
   StruTimIntState
@@ -56,44 +60,42 @@ public:
     const bool inittozero  //!< initialse to zero, if true
   );
 
-  //! Update states
-  //! ... state_{n-1} := state_{n}, state_{n} := state_{n+1}, etc
-  void UpdateStep();
-
-  //! @name Access state vectors by index
+  //! @name Actions
   //@{
 
-  //! Displacements at index
-  Teuchos::RCP<Epetra_Vector> Dis
+  //! Update multi-step state
+  //! i.e. state_{n} := state_{n+1}, 
+  //!      state_{n-1} := state_{n},
+  //!      state_{n} := state_{n+1},
+  //!      etc.
+  void UpdateSteps
+  (
+    const Teuchos::RCP<Epetra_Vector> disn  //!< state_{n+1}
+  );
+
+  //@}
+
+  //! @name Access functions
+  //@{
+
+  //! Access state vectors by time step index
+  Teuchos::RCP<Epetra_Vector> operator()
   (
     const int step  //!< inquire step
   )
   { 
-    dsassert(StepExists(step), "Step is not admissible");
-    return dis_[IndexByStep(step)];
+    if (not StepExists(step)) dserror("Step %d is not admissible", step);
+    return state_[IndexByStep(step)];
   }
 
-  //! Velocitis at index 
-  Teuchos::RCP<Epetra_Vector> Vel
-  (
-    const int step  //!< inquire step
-  )
+  //! Access state vectors by default time step
+  Teuchos::RCP<Epetra_Vector> operator()()
   { 
-    dsassert(StepExists(step), "Step is not admissible");
-    return vel_[IndexByStep(step)]; 
-  }
-
-  //! Accelerations at index
-  Teuchos::RCP<Epetra_Vector> Acc
-  (
-    const int step  //!< inquired step
-  ) 
-  { 
-    dsassert(StepExists(step), "Step is not admissible");
-    return acc_[IndexByStep(step)];
+    return operator()(0);
   }
 
   //@}
+  
 
 protected:
 
@@ -112,7 +114,7 @@ protected:
     const int index //!< inquired index
   )
   {
-    return ( (index >= 0) and (index < (int) dis_.size()) );
+    return ( (index >= 0) and (index < (int) state_.size()) );
   }
 
   //! Map step number to vector index
@@ -143,14 +145,8 @@ protected:
   //! vector layout from discretization
   const Epetra_Map* dofrowmap_;
 
-  //! displacement states
-  std::vector<Teuchos::RCP<Epetra_Vector> > dis_;
-
-  //! velcocity states
-  std::vector<Teuchos::RCP<Epetra_Vector> > vel_;
-
-  //! acceleration states
-  std::vector<Teuchos::RCP<Epetra_Vector> > acc_;
+  //! multiple state vectors, i.e. displ., veloc., accel.
+  std::vector< Teuchos::RCP<Epetra_Vector> > state_;
 
 };
 

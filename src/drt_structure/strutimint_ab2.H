@@ -63,7 +63,7 @@ public:
   //@{
 
   //! Return time integrator name
-  enum NameEnum MethodName() { return name_ab2; }
+  enum StruTimInt::NameEnum MethodName() { return StruTimInt::name_ab2; }
 
   //! Provide number of steps, e.g. a single-step method returns 1,
   //! a m-multistep method returns m
