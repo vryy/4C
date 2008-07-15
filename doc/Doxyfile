@@ -491,6 +491,7 @@ INPUT                  = index.doc \
                          ../src/drt_constraint \
                          ../src/drt_condif3 \
                          ../src/drt_inv_analysis \
+                         ../src/drt_fem_general \
                          ../src/drt_combust
 
 # If the value of the INPUT tag contains directories, you can use the 
