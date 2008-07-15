@@ -21,25 +21,15 @@ TRILINOS_DEFINES="-DHAVE_CONFIG_H -DTRILINOS_HAVE_FORTRAN_UNDERSCORE"
 TRILINOS_LIB="\
 	-lmoertel \
 	-ltrilinoscouplings \
-	-lnoxthyra \
 	-lnoxepetra \
 	-lnox \
-	-lstratimikos \
-	-lstratimikosamesos \
-	-lstratimikosaztecoo \
-	-lstratimikosml \
-	-lstratimikosifpack \
-	-lthyraepetraext \
-	-lthyraepetra \
-	-lthyra \
 	-lifpack \
 	-laztecoo \
 	-lamesos \
 	-lml \
 	-lepetraext \
 	-lepetra \
-	-lteuchos \
-	-lrtop"
+	-lteuchos"
 TRILINOS_FILTER_LIB=$TRILINOS_LIB
 
 # aztec
