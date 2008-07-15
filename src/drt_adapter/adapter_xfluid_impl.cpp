@@ -67,7 +67,9 @@ ADAPTER::XFluidImpl::XFluidImpl(
   itrueres_ = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   
   iveln_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
+  ivelnm_   = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
   iaccn_    = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
+  iaccnm_   = LINALG::CreateVector(*fluidsurface_dofrowmap,true);
 
   fluid_.SetFreeSurface(&freesurface_);
   std::cout << "XFluidImpl constructor done" << endl;
@@ -209,7 +211,17 @@ void ADAPTER::XFluidImpl::Update()
   const double dt = fsidyn.get<double>("TIMESTEP");
   
   // compute acceleration at timestep n
-  iaccn_->Update(1.0/dt,*ivel_,-1.0/dt,*iveln_,0.0);
+  Teuchos::RCP<Epetra_Vector> iaccn = rcp(new Epetra_Vector(iaccn_->Map()));
+//  iaccn->Update(-1.0,*iaccnm_,0.0);
+//  iaccn->Update(1.0/(0.5*dt),*iveln_,-1.0/(0.5*dt),*ivelnm_,1.0);
+  iaccn->Update(1.0/(dt),*iveln_,-1.0/(dt),*ivelnm_,0.0);
+  
+  // update acceleration at timestep n-1
+  iaccnm_->Update(1.0,*iaccn_,0.0);
+  iaccn_->Update(1.0,*iaccn,0.0);
+
+  // update velocity
+  ivelnm_->Update(1.0,*iveln_,0.0);
   
   // update velocity
   iveln_->Update(1.0,*ivel_,0.0);
@@ -222,11 +234,12 @@ void ADAPTER::XFluidImpl::Output()
 {
   fluid_.Output();
   
-  static int step_counter = 1;
+  //static int step_counter = 1;
   
   // create interface DOF vectors using the fluid parallel distribution
   const Epetra_Map* fluidsurface_dofcolmap = boundarydis_->DofColMap();
   Teuchos::RCP<Epetra_Vector> ivelcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   
@@ -235,61 +248,73 @@ void ADAPTER::XFluidImpl::Output()
   LINALG::Export(*idisp_,*idispcol);
   LINALG::Export(*itrueres_,*itruerescol);
   
+  LINALG::Export(*iveln_,*ivelncol);
   
-  std::stringstream filename;
-  filename << allfiles.outputfile_kenner << "_solution_interfaceforce_" << std::setw(5) << setfill('0') << step_counter << ".pos";
-  std::cout << "writing '"<<filename.str()<<"'...";
-  std::ofstream f_system(filename.str().c_str());
+  
+  PrintInterfaceVectorField(idispcol, itruerescol, "_solution_iforce_", "interface traction");
+  PrintInterfaceVectorField(idispcol, ivelcol, "_solution_ivel_", "interface velocity n+1");
+  PrintInterfaceVectorField(idispcol, ivelncol, "_solution_iveln_", "interface velocity n");
 
+}
+
+void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
+    const RCP<Epetra_Vector>   displacementfield,
+    const RCP<Epetra_Vector>   vectorfield,
+    const string filestr,
+    const string name_in_gmsh
+    )
+{
+std::stringstream filename;
+filename << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
+std::cout << "writing '"<<filename.str()<<"'...";
+std::ofstream f_system(filename.str().c_str());
+
+{
+  stringstream gmshfilecontent;
+  gmshfilecontent << "View \" " << name_in_gmsh << " \" {" << endl;
+  for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
   {
-    stringstream gmshfilecontent;
-    gmshfilecontent << "View \" " << "interface traction \" {" << endl;
-    for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
-    {
-      const DRT::Element* actele = boundarydis_->lColElement(i);
+    const DRT::Element* actele = boundarydis_->lColElement(i);
 //      cout << *actele << endl;
-      vector<int> lm;
-      vector<int> lmowner;
-      actele->LocationVector(*boundarydis_, lm, lmowner);
+    vector<int> lm;
+    vector<int> lmowner;
+    actele->LocationVector(*boundarydis_, lm, lmowner);
 
-      // extract local values from the global vector
-      vector<double> myvelnp(lm.size());
-      DRT::UTILS::ExtractMyValues(*itruerescol, myvelnp, lm);
-      
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*idispcol, mydisp, lm);
+    // extract local values from the global vector
+    vector<double> myvelnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
+    
+    vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*displacementfield, mydisp, lm);
 
-      const int nsd = 3;
-      const int numnode = actele->NumNode();
-      BlitzMat elementvalues(nsd,numnode);
-      BlitzMat elementpositions(nsd,numnode);
-      int counter = 0;
-      for (int iparam=0; iparam<numnode; ++iparam)
-      {
-        const DRT::Node* node = actele->Nodes()[iparam];
+    const int nsd = 3;
+    const int numnode = actele->NumNode();
+    BlitzMat elementvalues(nsd,numnode);
+    BlitzMat elementpositions(nsd,numnode);
+    int counter = 0;
+    for (int iparam=0; iparam<numnode; ++iparam)
+    {
+      const DRT::Node* node = actele->Nodes()[iparam];
 //        cout << *node << endl;
-        const double* pos = node->X(); 
-        for (int isd = 0; isd < nsd; ++isd)
-        {
-          elementvalues(isd,iparam) = myvelnp[counter];
-          elementpositions(isd,iparam) = pos[isd] + mydisp[counter];
-          counter++;
-        }
+      const double* pos = node->X(); 
+      for (int isd = 0; isd < nsd; ++isd)
+      {
+        elementvalues(isd,iparam) = myvelnp[counter];
+        elementpositions(isd,iparam) = pos[isd] + mydisp[counter];
+        counter++;
       }
+    }
 //      cout << elementpositions << endl;
 //      exit(1);
-      
-      gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
-            actele->Shape(), elementvalues, elementpositions) << endl;
-    }
-    gmshfilecontent << "};" << endl;
-    f_system << gmshfilecontent.str();
+    
+    gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
+          actele->Shape(), elementvalues, elementpositions) << endl;
   }
-  f_system.close();
-  std::cout << " done" << endl;
-  
-  step_counter++;
-  
+  gmshfilecontent << "};" << endl;
+  f_system << gmshfilecontent.str();
+}
+f_system.close();
+std::cout << " done" << endl;
 }
 
 

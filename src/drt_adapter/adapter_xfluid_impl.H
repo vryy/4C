@@ -163,6 +163,13 @@ namespace ADAPTER {
 
   private:
 
+    void PrintInterfaceVectorField(
+        const RCP<Epetra_Vector>   displacementfield,
+        const RCP<Epetra_Vector>   vectorfield,
+        const string filestr,
+        const string name_in_gmsh
+        );
+    
     /// the actual fluid algorithm
     XFluidImplicitTimeInt                  fluid_;
 
@@ -187,7 +194,9 @@ namespace ADAPTER {
     Teuchos::RCP<Epetra_Vector>            idisp_;     ///< interface displacement  n+1
     Teuchos::RCP<Epetra_Vector>            itrueres_;  ///< interface residual      n+1
     Teuchos::RCP<Epetra_Vector>            iveln_;     ///< interface velocity      n
+    Teuchos::RCP<Epetra_Vector>            ivelnm_;    ///< interface velocity      n-1
     Teuchos::RCP<Epetra_Vector>            iaccn_;     ///< interface acceleration  n
+    Teuchos::RCP<Epetra_Vector>            iaccnm_;    ///< interface acceleration  n-1
     //@}
 
     /// all velocity dofs not at the interface
