@@ -38,10 +38,6 @@ lumpedflag_(0),
 thermalenergy_(0),
 halfrotations_(0),
 beta0_(0),
-Arbeit_N(0),
-Arbeit_M(0),
-Arbeit_Q(0),
-x_verschiebung(0),
 
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
@@ -64,10 +60,6 @@ lumpedflag_(old.lumpedflag_),
 thermalenergy_(old.thermalenergy_),
 halfrotations_(old.halfrotations_),
 beta0_(old.beta0_),
-Arbeit_N(old.Arbeit_N),
-Arbeit_M(old.Arbeit_M),
-Arbeit_Q(old.Arbeit_Q),
-x_verschiebung(old.x_verschiebung),
 gaussrule_(old.gaussrule_)
 
 {

@@ -245,10 +245,6 @@ public:
                               DRT::Condition&           condition,
                               vector<int>&              lm,
                               Epetra_SerialDenseVector& elevec1);
-
-  void Arbeit(double& AN,double& AM,double& AQ, double& xv);
-  void Thermik(double& kT);
-
   //@}
 
 
@@ -303,20 +299,12 @@ private:
   //! angle relative to x-axis in reference configuration
   double beta0_;
 
-  double Arbeit_N;
-  double Arbeit_M;
-  double Arbeit_Q;
-  double x_verschiebung;
-
   //! gaussrule_ will be initialized automatically to a 2 point integration rule
   DRT::UTILS::GaussRule1D gaussrule_;
 
-
-
   // internal calculation methods
 
-
-  //internal geometric calculations
+  //!internal geometric calculations
   void b2_local_aux(LINALG::SerialDenseMatrix& B_curr,
                     LINALG::SerialDenseVector& r_curr,
                     LINALG::SerialDenseVector& z_curr,
@@ -339,9 +327,7 @@ private:
   // don't want = operator
   Beam2& operator = (const Beam2& old);
 
-
 }; // class Beam2
-
 
 
 // << operator

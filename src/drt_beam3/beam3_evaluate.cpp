@@ -281,37 +281,31 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
       default:
       dserror("unknown or improper type of material law");
     }
-
+        
     //calculating diagonal entry of damping matrix  
-    double gammatrans;
-    double gammarot;
-    gammatrans = 0.5*params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_;
-    gammarot = 0.5*params.get<double>("damping factor M",0.0) * Iyy_ * density * lrefe_;
-
+    double gammatrans = params.get<double>("damping factor M",0.0) * crosssec_ * density * lrefe_ / 2;
+    double gammarot   = params.get<double>("damping factor M",0.0) * Iyy_      * density * lrefe_ / 2;
+    
+    
     //calculating standard deviation of statistical forces according to fluctuation dissipation theorem
-    double standdevtrans = pow(2 * thermalenergy_ * gammatrans / params.get<double>("delta time",0.01),0.5);
-    double standdevrot = pow(2 * thermalenergy_ * gammarot / params.get<double>("delta time",0.01),0.5);
-
+    double standdevtrans = pow(2 * thermalenergy_ * gammatrans   / params.get<double>("delta time",0.01),0.5);
+    double standdevrot   = pow(2 * thermalenergy_ * gammarot     / params.get<double>("delta time",0.01),0.5);
+    
     //creating random generator objects which create random numbers with mean = 0 and standard deviation
     //standdevtrans and standdevrot; using Blitz namespace "ranlib" for random number generation
     ranlib::Normal<double> normalGenTrans(0,standdevtrans);
     ranlib::Normal<double> normalGenRot(0,standdevrot);
-
-    /*adding statistical forces accounting for connectivity of nodes; note that adding up several random forces
-     * in the frame of the assembly would change random force's variance if not node connectivity were accounted
-     * for */
+    
+    //adding statistical forces 
     for (int i=0; i<3; ++i)
     {
-      elevec1(i) += normalGenTrans.random() / sqrt( Nodes()[0]->NumElement() );
-      elevec1(i+6) += normalGenTrans.random() / sqrt( Nodes()[1]->NumElement() );
-    }
-    for (int i=3; i<6; ++i)
-    {
-      elevec1(i) += normalGenRot.random() / sqrt( Nodes()[0]->NumElement() );
-      elevec1(i+6) += normalGenRot.random() / sqrt( Nodes()[1]->NumElement() );
-    }
+      elevec1(i)   += normalGenTrans.random();
+      elevec1(i+3) += normalGenRot.random();
+      elevec1(i+6) += normalGenTrans.random();
+      elevec1(i+9) += normalGenRot.random();
+    }           
   }
-
+  
   return 0;
 }
 
@@ -656,13 +650,10 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( vector<double>& disp,
     (*massmatrix).Shape(12,12);
     for (int i=0; i<3; ++i)
     {
-      (*massmatrix)(i,i) = 0.5*density*lrefe_*crosssec_;
+      (*massmatrix)(i  ,i  ) = 0.5*density*lrefe_*crosssec_;
+      (*massmatrix)(i+3,i+3) = 0.5*density*lrefe_*Iyy_;
       (*massmatrix)(i+6,i+6) = 0.5*density*lrefe_*crosssec_;
-    }
-    for (int i=3; i<6; ++i)
-    {
-      (*massmatrix)(i,i) = 0.5*density*lrefe_*Iyy_;
-      (*massmatrix)(i+6,i+6) = 0.5*density*lrefe_*Iyy_;
+      (*massmatrix)(i+9,i+9) = 0.5*density*lrefe_*Iyy_;
     }
   }
 

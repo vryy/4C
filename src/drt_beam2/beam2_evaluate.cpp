@@ -104,45 +104,7 @@ int DRT::ELEMENTS::Beam2::Evaluate(ParameterList& params,
         b2_nlnstiffmass(mydisp,&elemat1,NULL,&elevec1);
       else if  (act ==  calc_struct_internalforce)
         b2_nlnstiffmass(mydisp,NULL,NULL,&elevec1);
-
-      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
-      //correctly or not: the function b2_nlnstiff_approx(mydisp) calculated the stiffness matrix approximated by
-      //finite differences and prints the relative error of every single element in case that it is >1e-5; before
-      //activating this part of code also the function b2_nlnstiff_approx(mydisp) has to be activated both in beam2.H
-      //and beam2_evaluate.cpp
-      /*
       
-      Epetra_SerialDenseMatrix stiff_approx;
-      Epetra_SerialDenseMatrix stiff_relerr;
-      stiff_approx.Shape(6,6);
-      stiff_relerr.Shape(6,6);      
-      double h_rel = 1e-7;
-      int outputflag = 0;
-      stiff_approx = b2_nlnstiff_approx(mydisp, h_rel);
-      
-      for(int line=0; line<6; line++)
-      {
-	      for(int col=0; col<6; col++)
-		      {
-		      	stiff_relerr(line,col)= abs( (elemat1(line,col) - stiff_approx(line,col))/elemat1(line,col) );
-		      	if (stiff_relerr(line,col)<h_rel*100)
-		      		//suppressing small entries whose effect is only confusing
-		      		stiff_relerr(line,col)=0;
-		      	//there is no error if an entry is nan e.g. due to dirichlet boundary conditions
-		      	if ( isnan( stiff_relerr(line,col) ) )
-		      		stiff_relerr(line,col)=0;
-		      	if (stiff_relerr(line,col)>0)
-		      	   outputflag = 1;		      	
-		      }
-      }
-	if(outputflag ==1)
-	{
-	      std::cout<<"\n\n acutally calculated stiffness matrix"<< elemat1;
-	      std::cout<<"\n\n approximated stiffness matrix"<< stiff_approx;    
-	      std::cout<<"\n\n rel error stiffness matrix"<< stiff_relerr;
-	} 
-	*/
-    
     }
     break;
     case calc_struct_update_istep:
@@ -289,7 +251,7 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
 	  ranlib::Normal<double> normalGen_trans(0,stand_dev_trans);
 	  ranlib::Normal<double> normalGen_rot(0,stand_dev_rot);
 	  
-	  //adding statistical forces accounting for connectivity of nodes
+	  //adding statistical forces 
 	  elevec1[0] += normalGen_trans.random();  
 	  elevec1[1] += normalGen_trans.random();
 	  elevec1[2] += normalGen_rot.random();
@@ -299,8 +261,6 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(ParameterList& params,
   }   
   return 0;
 }
-
-
 
 /*-----------------------------------------------------------------------------------------------------------*
  | evaluate auxiliary vectors and matrices for corotational formulation                           cyron 01/08|							     
@@ -438,10 +398,7 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
     xcurr(2,k) = xrefe(2,k) + disp[k*numdf+2];
 
   }
-
-  x_verschiebung = disp[numdf];
-   
-    
+  
   // calculation of local geometrically important matrices and vectors; notation according to Crisfield-------
   //current length
   lcurr = pow( pow(xcurr(0,1)-xcurr(0,0),2) + pow(xcurr(1,1)-xcurr(1,0),2) , 0.5 );
@@ -494,12 +451,6 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
   
   //local internal shear force   
   force_loc(2) = -sm*crosssecshear_*( (xcurr(2,1)+xcurr(2,0))/2 - beta - beta0_);  
-  
-  //innere Arbeit:
-  Arbeit_N = 0.5*force_loc(0)*(lcurr*lcurr - lrefe_*lrefe_)/(lrefe_*(lcurr + lrefe_));
-  Arbeit_M = -0.5*force_loc(1)* (xcurr(2,1)-xcurr(2,0));
-  Arbeit_Q = -0.5*lrefe_*force_loc(2)* ( (xcurr(2,1)+xcurr(2,0))/2 - beta );
-  
 
   //calculating tangential stiffness matrix in global coordinates
   if (stiffmatrix != NULL)
@@ -579,51 +530,6 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
   }
   return;
 } // DRT::ELEMENTS::Beam2::b2_nlnstiffmass
-
-//the following function can be activated in order to find bugs; it calculates a finite difference
-//approximation of the nonlinear stiffness matrix; activate the follwing block for bug fixing only
-
-Epetra_SerialDenseMatrix DRT::ELEMENTS::Beam2::b2_nlnstiff_approx(vector<double>& disp, double h_rel)
-{	
-	Epetra_SerialDenseMatrix stiff_dummy;
-	stiff_dummy.Shape(6,6);
-	Epetra_SerialDenseMatrix mass_dummy;
-	mass_dummy.Shape(6,6);
-	Epetra_SerialDenseVector force_disp;
-	force_disp.Size(6);
-	Epetra_SerialDenseVector force_disp_delta;
-	force_disp_delta.Size(6);
-	Epetra_SerialDenseMatrix stiff_approx;
-	stiff_approx.Shape(6,6);
-	vector<double> disp_delta;
-	
-	DRT::ELEMENTS::Beam2::b2_nlnstiffmass(disp,&stiff_dummy,&mass_dummy,&force_disp);
-	
-	for(int col=0; col<6; col++)
-	{		
-		force_disp_delta.Size(6);
-		disp_delta = disp;
-		disp_delta[col] = disp_delta[col]+h_rel;
-		DRT::ELEMENTS::Beam2::b2_nlnstiffmass(disp_delta,&stiff_dummy,&mass_dummy,&force_disp_delta);
-		for(int line=0; line<6; line++)
-			stiff_approx(line,col) = (force_disp_delta[line] - force_disp[line])/h_rel;		
-	} 
-	return stiff_approx;	
-}
-
-void DRT::ELEMENTS::Beam2::Arbeit(double& AN,double& AM,double& AQ, double& xv)
-  {
-  	AN += Arbeit_N;
-  	AM += Arbeit_M;
-  	AQ += Arbeit_Q;
-  	xv = x_verschiebung;
-	return;
-  } 
-void DRT::ELEMENTS::Beam2::Thermik(double& kT)
-  {	
-	kT = thermalenergy_;
-	return;
-  } 
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_BEAM2
