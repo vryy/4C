@@ -36,6 +36,17 @@ using namespace Teuchos;
 #include "../drt_fem_general/drt_utils_integration.H"
 //including random number library of blitz for statistical forces
 #include <random/normal.h>
+#include <blitz/array.h>
+#include "../drt_xfem/blitz_tiny_operation.H"
+
+//! generally usefull typedefs, when working with Blitz arrays
+typedef blitz::TinyVector<double,3> BlitzVec3; ///< a short-cut for a one-dimensional BLITZ vector of length 3
+typedef blitz::TinyVector<double,6> BlitzVec6; ///< a short-cut for a one-dimensional BLITZ vector of length 6
+typedef blitz::TinyMatrix<double,3,2> BlitzMat3x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x2
+typedef blitz::TinyMatrix<double,3,3> BlitzMat3x3; ///< a short-cut for a two-dimensional BLITZ matrix of size 3x3
+typedef blitz::TinyMatrix<double,6,6> BlitzMat6x6; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x6
+typedef blitz::TinyMatrix<double,6,2> BlitzMat6x2; ///< a short-cut for a two-dimensional BLITZ matrix of size 6x2
+typedef blitz::TinyMatrix<double,12,6> BlitzMat12x6; ///< a short-cut for a two-dimensional BLITZ matrix of size 12x6
 
 
 // forward declarations
@@ -287,24 +298,25 @@ private:
   
   //! length in reference configuration
   double lrefe_;
-  
+    
   //! central triad of the beam, denoted as T in Crisfield, Vol. 2
   //Told_ is the triad at the end of the last time step
-  Epetra_SerialDenseMatrix Told_;
+  BlitzMat3x3 Told_;
   //Tnew_ is the triad at the end of the current iteration step
-  Epetra_SerialDenseMatrix Tnew_;
+  BlitzMat3x3 Tnew_;
   //!Tmid_ according to Crisfield, Vol. 2, equation (17.73)
-  Epetra_SerialDenseMatrix Tmid_;
+  BlitzMat3x3 Tmid_;
   //!curvature accroding to Crisfield, Vol. 2, equation (17.72)
-  Epetra_SerialDenseMatrix curvold_;
-  Epetra_SerialDenseMatrix curvnew_;
+  BlitzVec3 curvold_;
+  BlitzVec3 curvnew_;
   
   //!auxiliary angles due to Crisfield, Vol. 2, equation (17.70) and (17.71)
-  Epetra_SerialDenseMatrix betaplusalphaold_;
-  Epetra_SerialDenseMatrix betaplusalphanew_;
-  Epetra_SerialDenseMatrix betaminusalphaold_;
-  Epetra_SerialDenseMatrix betaminusalphanew_;
-  
+  BlitzVec3 betaplusalphaold_;
+  BlitzVec3 betaplusalphanew_;
+  BlitzVec3 betaminusalphaold_;
+  BlitzVec3 betaminusalphanew_;
+
+
   //! Tnew_ is to a point of time
   double timenew_;
   
@@ -327,34 +339,26 @@ private:
   //! thermal energy responsible for statistical forces
   double thermalenergy_;
 
-  double Arbeit_N;
-  double Arbeit_M;
-  double Arbeit_Q;
-  double x_verschiebung;
-
- 
   //! gaussrule_ will be initialized automatically to a 2 point integration rule 
   DRT::UTILS::GaussRule1D gaussrule_;
 
 
-  
   // internal calculation methods
   
-  
   //!computing spin matrix out of a rotation vector
-  void computespin(Epetra_SerialDenseMatrix& spin, Epetra_SerialDenseMatrix rotationangle, const double& spinscale);
+  void computespin(BlitzMat3x3& spin, BlitzVec3 rotationangle, const double& spinscale);
   
   //!computing rotation matrix out of a spin matrix
-  void computerotation(Epetra_SerialDenseMatrix& rotationmatrix, const Epetra_SerialDenseMatrix& spin);
+  void computerotation(BlitzMat3x3& rotationmatrix, const BlitzMat3x3& spin);
   
-  //!computing rotation matrix XT according to Crisfield, Vol. 2, equation (17.74)
-  void computeXrot(Epetra_SerialDenseMatrix& Xrot, const Epetra_SerialDenseMatrix& T_new, const Epetra_SerialDenseMatrix& x21);
+  //!computing stiffness matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
+  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const BlitzVec3& stressn, const BlitzVec3& stressm);
   
-  //!computing stiffens matrix Ksigma1 according to Crisfield, Vol. 2, equation (17.83)
-  void computeKsig1(Epetra_SerialDenseMatrix& Ksig1, const Epetra_SerialDenseMatrix& stressn, const Epetra_SerialDenseMatrix& stressm);
+  //!computing stiffness matrix Ksigma2 according to Crisfield, Vol. 2, equation (17.87)
+  void computeKsig2(Epetra_SerialDenseMatrix& Ksig1, const BlitzVec3& stressn, const BlitzVec3& x21);
   
-  //!computing stiffens matrix Ksigma2 according to Crisfield, Vol. 2, equation (17.87)
-  void computeKsig2(Epetra_SerialDenseMatrix& Ksig1, const Epetra_SerialDenseMatrix& stressn, const Epetra_SerialDenseMatrix& x21);
+  //!computing basis of stiffness matrix according to Crisfield, Vol. 2, equation (17.81)
+  void computestiffbasis(const BlitzMat3x3& Tnew_, const BlitzVec3& Cm, const BlitzVec3& Cb, const BlitzMat3x3& spinx21, Epetra_SerialDenseMatrix& stiffmatrix);
                     
   //!calculation of nonlinear stiffness and mass matrix
   void b3_nlnstiffmass(vector<double>&           disp, 

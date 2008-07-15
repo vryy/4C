@@ -35,10 +35,6 @@ Izz_(0),
 Irr_(0),
 lumpedflag_(0),
 thermalenergy_(0),
-Arbeit_N(0),
-Arbeit_M(0),
-Arbeit_Q(0),
-x_verschiebung(0),
 
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
@@ -70,11 +66,7 @@ DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  Izz_(old.Izz_),
  Irr_(old.Irr_),
  lumpedflag_(old.lumpedflag_),
- thermalenergy_(old.thermalenergy_),
- Arbeit_N(old.Arbeit_N),
- Arbeit_M(old.Arbeit_M),
- Arbeit_Q(old.Arbeit_Q),
- x_verschiebung(old.x_verschiebung),
+ thermalenergy_(0),
  gaussrule_(old.gaussrule_)
 {
   return;
@@ -367,16 +359,6 @@ int DRT::ELEMENTS::Beam3Register::Initialize(DRT::Discretization& dis)
           xrefe(1,k) = currele->Nodes()[k]->X()[1];
           xrefe(2,k) = currele->Nodes()[k]->X()[2];
         }
-      //Initializing member matrices
-      currele->Told_.Shape(3,3);
-      currele->Tnew_.Shape(3,3);
-      currele->Tmid_.Shape(3,3);
-      currele->curvold_.Shape(3,1);
-      currele->curvnew_.Shape(3,1);
-      currele->betaplusalphaold_.Shape(3,1);
-      currele->betaplusalphanew_.Shape(3,1);
-      currele->betaminusalphaold_.Shape(3,1);
-      currele->betaminusalphanew_.Shape(3,1);
       
       //length in reference configuration
       currele->lrefe_ = pow(pow(xrefe(0,1)-xrefe(0,0),2)+pow(xrefe(1,1)-xrefe(1,0),2)+pow(xrefe(2,1)-xrefe(2,0),2),0.5);  
