@@ -35,10 +35,12 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   map<int,RCP<EXODUS::ElementBlock> > ebs = basemesh.GetElementBlocks();
   map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
   if (highestblock!=0) highestblock = ebs.rbegin()->first+1; // if there are ebs get the highest number, not necessarily consecutive
+  else highestblock = 1; // case of no eblocks at all -> starts with 1 due to exodus format
 
   map<int,EXODUS::NodeSet> nss = basemesh.GetNodeSets();
   map<int,EXODUS::NodeSet>::const_iterator i_nss;
   if (highestns!=0) highestns = nss.rbegin()->first+1;// if there are nss get the highest number, not necessarily consecutive
+  else highestns = 1; // case of no nodesets at all -> starts with 1 due to exodus format
 
   map<int,EXODUS::SideSet> sss = basemesh.GetSideSets();
   map<int,EXODUS::SideSet>::const_iterator i_sss;
