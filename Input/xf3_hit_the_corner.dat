@@ -79,7 +79,7 @@ STARTINGALGO     One_Step_Theta
 NONLINITER       Newton
 ITEMAX           20
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-12
+CONVTOL          1.0E-8
 STEADYCHECK      L_2_norm
 STEADYSTEP       -1
 STEADYTOL        1.0E-8
@@ -125,8 +125,6 @@ SOLVER         UMFPACK          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol U
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         UMFPACK    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 PARTITION         Cut_Elements
--------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  No
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 26
 NDLINE  45
