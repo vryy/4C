@@ -139,6 +139,13 @@ public:
   { if (NumElement()) return &element_[0]; else return NULL; }
 
   /*!
+  \brief Return const ptr to vector of const element ptrs
+  */
+  virtual inline const DRT::Element*const* Elements() const
+  { if (NumElement()) return (const DRT::Element*const*)(&element_[0]); else return NULL; }
+  
+  
+  /*!
   \brief Print this node
   */
   virtual void Print(ostream& os) const ;
