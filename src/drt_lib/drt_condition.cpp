@@ -108,7 +108,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==VolumeMonitor_3D)            os << "Volume monitor condition";
   else if (Type()==AreaMonitor_3D)              os << "Area monitor condition";
   else if (Type()==AreaMonitor_2D)              os << "Area monitor condition";
-  else if (Type()==ImpedanceCond)				        os << "Impedance boundary condition";
+  else if (Type()==ImpedanceCond)               os << "Impedance boundary condition";
   else if (Type()==MPC_NodeOnPlane_3D)          os << "Multipoint constraint on a plane";
   else if (Type()==MPC_NodeOnLine_2D)           os << "Multipoint constraint on a line";
   else if (Type()==LJ_Potential)                os << "Lennard-Jones potential on a surface";
@@ -117,11 +117,11 @@ void DRT::Condition::Print(ostream& os) const
   Container::Print(os);
   if ((int)geometry_.size())
   {
-    cout << endl;
-    cout << "Elements of this condition:\n";
+    os << endl;
+    os << "Elements of this condition:\n";
     map<int,RefCountPtr<DRT::Element> >::const_iterator curr;
     for (curr=geometry_.begin(); curr!=geometry_.end(); ++curr)
-      cout << "      " << *(curr->second) << endl;
+      os << "      " << *(curr->second) << endl;
   }
   return;
 }
