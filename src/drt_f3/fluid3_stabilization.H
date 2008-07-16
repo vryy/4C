@@ -89,7 +89,7 @@ namespace XFLUID
       const M1&                               xyze
   )
   {
-    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
     // use one point gauss rule to calculate tau at element center
     const DRT::UTILS::GaussRule3D integrationrule_stabili = getIntegrationRuleForStabilization<DISTYPE>();

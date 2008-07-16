@@ -536,7 +536,7 @@ double AreaRatioT(
 {
     
     // number of nodes for element
-    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
     // dimension for 3d fluid element
     const int nsd = 3;

@@ -466,7 +466,7 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
             BlitzVec3&      unrm                    ///< unit normal vector at (r,s)
             )
     {
-        const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+        const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
           
         // compute dXYZ / drs
         static BlitzMat3x2 dxyzdrs;
@@ -517,7 +517,7 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
         BlitzVec3&               unitnormalvec
             )
     {
-      const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       static blitz::TinyMatrix<double,2,numnode> deriv_boundary;
       DRT::UTILS::shape_function_2D_deriv1(deriv_boundary,xsi(0),xsi(1),DISTYPE);
       

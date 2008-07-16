@@ -84,7 +84,7 @@ BlitzMat BodyForce(DRT::Node** nodes, const double pseudotime)
   dserror("not adapted to xfem (, yet)!!!");
     
   std::vector<DRT::Condition*> myneumcond;
-  const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   // check whether all nodes have a unique VolumeNeumann condition
   int nodecount = 0;
   for (int inode=0;inode<numnode;++inode)
@@ -277,7 +277,7 @@ void gder2(
         const M4& xyze,
         BlitzMat& derxy2_)
 {
-    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     // initialize and zero out everything
     static Epetra_SerialDenseMatrix bm(6,6);

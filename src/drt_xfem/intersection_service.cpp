@@ -107,7 +107,7 @@ static inline void updateAForNWE(
     const M2&                     xyze
     )                                                  
 {   
-    const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static blitz::TinyMatrix<double,dim,numNodes> deriv1;
     DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
     
@@ -145,7 +145,7 @@ static inline void updateRHSForNWE(
         const M1&    xyze)                                                  
 {
     
-    const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     blitz::TinyVector<double,numNodes> funct;
     DRT::UTILS::shape_function<DISTYPE>(xsi, funct);
     
@@ -188,7 +188,7 @@ static inline bool currentToVolumeElementCoordinatesT(
     static blitz::TinyVector<double,dim> b;
     static blitz::TinyVector<double,dim> dx;
     
-    static blitz::TinyMatrix<double,3,DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement> xyze;
+    static blitz::TinyMatrix<double,3,DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement> xyze;
     DRT::UTILS::fillInitialPositionArray<DISTYPE>(element, xyze);
     
     // initial guess
@@ -411,7 +411,7 @@ static void updateJacobianForMap3To2(
         const BlitzMat&                 xyze_surfaceElement  ///< element nodal coordinates
         )
 {
-    const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
     static blitz::TinyMatrix<double,2,numNodes> deriv1;
     DRT::UTILS::shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
@@ -449,7 +449,7 @@ static void updateFForMap3To2(
         const BlitzMat&     xyze_surfaceElement
         )                                                  
 {   
-    const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     static blitz::TinyVector<double,numNodes> funct;
     DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
@@ -488,7 +488,7 @@ static void updateAForMap3To2(
         const BlitzMat&           xyze_surfaceElement
         )                                                  
 {   
-    const int numNodes = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     static blitz::TinyMatrix<double,3,numNodes> deriv2;
     DRT::UTILS::shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), DISTYPE);
 

@@ -58,7 +58,7 @@ namespace XFLUID
           )
   {
       
-      const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
       
       // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
       const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
@@ -152,7 +152,7 @@ static void Sysmat3(
     eforce.Scale(0.0);
     
     // number of nodes for element
-    const int numnode = DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement;
+    const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
     
     // dimension for 3d fluid element
     const int nsd = 3;
@@ -267,8 +267,8 @@ static void Sysmat3(
             DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
             // discontinouos stress shape functions
-            static BlitzVec funct_stress(DRT::UTILS::_switchDisType<stressdistype>::numNodePerElement);
-            static BlitzMat deriv_stress(3, DRT::UTILS::_switchDisType<stressdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
+            static BlitzVec funct_stress(DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement);
+            static BlitzMat deriv_stress(3, DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
             if (ASSTYPE == XFEM::xfem_assembly)
             {
               if (tauele_unknowns_present)
@@ -283,8 +283,8 @@ static void Sysmat3(
               }
             }
             // discontinouos pressure shape functions
-            static BlitzVec funct_discpres(DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement);
-            static BlitzMat deriv_discpres(3, DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
+            static BlitzVec funct_discpres(DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement);
+            static BlitzMat deriv_discpres(3, DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
             if (ASSTYPE == XFEM::xfem_assembly)
             {
               if (discpres_unknowns_present)
@@ -328,8 +328,8 @@ static void Sysmat3(
 
             // compute global derivates
             static BlitzMat derxy(3, numnode);
-            //static BlitzMat derxy_stress(3, DRT::UTILS::_switchDisType<stressdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
-            //static BlitzMat derxy_discpres(3, DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
+            //static BlitzMat derxy_stress(3, DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
+            //static BlitzMat derxy_discpres(3, DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement,blitz::ColumnMajorArray<2>());
             //derxy          = blitz::sum(xji(i,k)*deriv(k,j),k);
             for (int isd = 0; isd < nsd; ++isd)
             {
@@ -344,7 +344,7 @@ static void Sysmat3(
             }
 //            for (int isd = 0; isd < nsd; ++isd)
 //            {
-//              for (int inode = 0; inode < DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement; ++inode)
+//              for (int inode = 0; inode < DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement; ++inode)
 //              {
 //                derxy_discpres(isd,inode) = 0.0;
 //                for (int jsd = 0; jsd < nsd; ++jsd)
@@ -1540,15 +1540,15 @@ static void Sysmat3(
             DRT::UTILS::shape_function_2D_deriv1(deriv_boundary, posXiBoundary(0),posXiBoundary(1),boundaryele->Shape());
             
             // shape functions and their first derivatives
-            static BlitzVec funct(DRT::UTILS::_switchDisType<DISTYPE>::numNodePerElement);
+            static BlitzVec funct(DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement);
             DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       
             // stress shape function
-            static BlitzVec funct_stress(DRT::UTILS::_switchDisType<stressdistype>::numNodePerElement);
+            static BlitzVec funct_stress(DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement);
             DRT::UTILS::shape_function_3D(funct_stress,posXiDomain(0),posXiDomain(1),posXiDomain(2),stressdistype);
 
             // discontinouos pressure shape functions
-            static BlitzVec funct_discpres(DRT::UTILS::_switchDisType<discpresdistype>::numNodePerElement);
+            static BlitzVec funct_discpres(DRT::UTILS::DisTypeToNumNodePerEle<discpresdistype>::numNodePerElement);
             //const BlitzMat deriv_discpres(3, DRT::UTILS::getNumberOfElementNodes(discpresdistype),blitz::ColumnMajorArray<2>());
             DRT::UTILS::shape_function_3D(funct_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
             //DRT::UTILS::shape_function_3D_deriv1(deriv_discpres,posXiDomain(0),posXiDomain(1),posXiDomain(2),discpresdistype);
