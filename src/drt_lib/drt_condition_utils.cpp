@@ -51,45 +51,43 @@ extern struct _GENPROB     genprob;
 
 
 
-
-void DRT::UTILS::FindInterfaceObjects(
-    const DRT::Discretization& dis,
-    map<int, DRT::Node*>& nodes,
-    map<int, RefCountPtr<DRT::Element> >& elements,
-    const string&              condname
-    )
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
+                                      map<int, DRT::Node*>& nodes,
+                                      map<int, RCP<DRT::Element> >& elements,
+                                      const string& condname,
+                                      bool doghostelements)
 {
-    int myrank = dis.Comm().MyPID();
-    vector<DRT::Condition*> conds;
-    dis.GetCondition( condname, conds );
-    for ( unsigned i = 0; i < conds.size(); ++i )
+  int myrank = dis.Comm().MyPID();
+  vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+  for (unsigned i = 0; i < conds.size(); ++i)
+  {
+    // get this condition's nodes
+    const vector<int>* n = conds[i]->Nodes();
+    for (unsigned j=0; j < n->size(); ++j)
     {
-        // get this condition's nodes
-        const vector<int>* n = conds[i]->Nodes();
-        for ( unsigned j = 0; j < n->size(); ++j )
-        {
-            const int gid = (*n)[j];
-            if ( dis.HaveGlobalNode( gid ) and dis.gNode( gid )->Owner() == myrank )
-            {
-                nodes[gid] = dis.gNode( gid );
-            }
-        }
-
-        // get this condition's elements
-        map< int, RefCountPtr< DRT::Element > > geo = conds[i]->Geometry();
-        map< int, RefCountPtr< DRT::Element > >::iterator iter, pos;
-        pos = elements.begin();
-        for ( iter = geo.begin(); iter != geo.end(); ++iter )
-        {
-            if ( iter->second->Owner() == myrank )
-            {
-                pos = elements.insert( pos, *iter );
-            }
-        }
+      const int gid = (*n)[j];
+      if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner() == myrank)
+      {
+        nodes[gid] = dis.gNode(gid);
+      }
     }
+
+    // get this condition's elements
+    map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
+    map< int, RCP< DRT::Element > >::iterator iter, pos;
+    pos = elements.begin();
+    for (iter = geo.begin(); iter != geo.end(); ++iter)
+    {
+      if (doghostelements or iter->second->Owner() == myrank)
+      {
+        pos = elements.insert(pos, *iter);
+      }
+    }
+  }
 }
-
-
 
 
 /*----------------------------------------------------------------------*/
@@ -340,22 +338,12 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
         )
 {
   RCP<Epetra_Comm> com = rcp(sourcedis->Comm().Clone());
-
   RCP<DRT::Discretization> conditiondis = rcp(new DRT::Discretization(discret_name,com));
 
-  if (!sourcedis->Filled()) sourcedis->FillComplete();
+  if (!sourcedis->Filled())
+    sourcedis->FillComplete();
 
   const int myrank = conditiondis->Comm().MyPID();
-
-  if (myrank == 0)
-  {
-      cout << "creating discretization <"<< discret_name <<"> from condition <" << condname <<">" << endl;
-  }
-
-  // vector with conditiondis ele id's
-  vector<int> egid;
-  egid.reserve(sourcedis->NumMyRowElements());
-
   const Epetra_Map* sourcenoderowmap = sourcedis->NodeRowMap();
 
   // Loop all cutter elements and find the ones that live on an ale
@@ -364,7 +352,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   // catch all nodes attached to cutter elements
   map<int, DRT::Node*>          sourcenodes;
   map<int, RCP<DRT::Element> >  sourceelements;
-  DRT::UTILS::FindInterfaceObjects(*sourcedis, sourcenodes, sourceelements, condname);
+  DRT::UTILS::FindInterfaceObjects(*sourcedis, sourcenodes, sourceelements, condname, true);
 
   // Loop all source elements
   // We need to test for all elements (including ghosted ones) to
@@ -377,8 +365,6 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   {
     const RCP<DRT::Element> sourceele = cuttereleiter->second;
 
-    egid.push_back(sourceele->Id());
-
     // copy node ids of cutterele to rownodeset but leave those that do
     // not belong to this processor
     remove_copy_if(sourceele->NodeIds(), sourceele->NodeIds()+sourceele->NumNode(),
@@ -386,7 +372,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
                    not1(DRT::UTILS::MyGID(sourcenoderowmap)));
 
     copy(sourceele->NodeIds(), sourceele->NodeIds()+sourceele->NumNode(),
-        inserter(colnodeset, colnodeset.begin()));
+         inserter(colnodeset, colnodeset.begin()));
   }
 
   // construct new nodes, which use the same global id as the source nodes
@@ -404,30 +390,35 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   vector<int> condnoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
   RCP<Epetra_Map> condnoderowmap = rcp(new Epetra_Map(-1,
-                                                             condnoderowvec.size(),
-                                                             &condnoderowvec[0],
-                                                             0,
-                                                             conditiondis->Comm()));
+                                                      condnoderowvec.size(),
+                                                      &condnoderowvec[0],
+                                                      0,
+                                                      conditiondis->Comm()));
   condnoderowvec.clear();
 
   vector<int> condnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
   RCP<Epetra_Map> condnodecolmap = rcp(new Epetra_Map(-1,
-                                                             condnodecolvec.size(),
-                                                             &condnodecolvec[0],
-                                                             0,
-                                                             conditiondis->Comm()));
+                                                      condnodecolvec.size(),
+                                                      &condnodecolvec[0],
+                                                      0,
+                                                      conditiondis->Comm()));
   condnodecolvec.clear();
 
   // construct new elements
-  // The order of the elements might be different from that of the
-  // source elements. We don't care. We assume no dofs to these elements.
-  for (unsigned i=0; i<egid.size(); ++i)
+  for (map<int, RCP<DRT::Element> >::const_iterator cuttereleiter = sourceelements.begin();
+       cuttereleiter != sourceelements.end();
+       ++cuttereleiter)
   {
-    const RCP<DRT::Element> sourceele = sourceelements[i];
+    const RCP<DRT::Element> sourceele = cuttereleiter->second;
+
+    // Do not clone ghost elements here! Those will be handled by the
+    // discretization itself.
+    if (not sourcedis->ElementRowMap()->MyGID(sourceele->Id()))
+      continue;
 
     // create an element with the same global element id
-    RCP<DRT::Element> condele = DRT::UTILS::Factory(element_name, "Polynomial", egid[i], myrank);
+    RCP<DRT::Element> condele = DRT::UTILS::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
 
     // get global node ids of fluid element
     vector<int> nids;
@@ -444,8 +435,8 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
 
   // copy selected conditions to the new discretization
   for (vector<string>::const_iterator conditername = conditions_to_copy.begin();
-          conditername != conditions_to_copy.end();
-          ++conditername)
+       conditername != conditions_to_copy.end();
+       ++conditername)
   {
     vector<DRT::Condition*> conds;
     sourcedis->GetCondition(*conditername, conds);
@@ -455,7 +446,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
       conditiondis->SetCondition(*conditername, rcp(new DRT::Condition(*conds[i])));
     }
   }
-  
+
   // redistribute nodes to column (ghost) map
   RedistributeWithNewNodalDistribution(*conditiondis, *condnoderowmap, *condnodecolmap);
 
@@ -463,6 +454,8 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::UTILS::RedistributeWithNewNodalDistribution(
     DRT::Discretization&     dis,
     const Epetra_Map&        noderowmap,
@@ -471,21 +464,21 @@ void DRT::UTILS::RedistributeWithNewNodalDistribution(
 {
   // redistribute nodes to column (ghost) map
   dis.ExportColumnNodes(nodecolmap);
-  
+
   Teuchos::RCP< Epetra_Map > elerowmap;
   Teuchos::RCP< Epetra_Map > elecolmap;
-  
+
   // now we have all elements in a linear map roweles
   // build resonable maps for elements from the
   // already valid and final node maps
   dis.BuildElementRowColumn(noderowmap, nodecolmap, elerowmap, elecolmap);
-  
+
   // we can now export elements to resonable row element distribution
   dis.ExportRowElements(*elerowmap);
-  
+
   // export to the column map / create ghosting of elements
   dis.ExportColumnElements(*elecolmap);
-  
+
   // Now we are done. :)
   dis.FillComplete();
 }
