@@ -14,9 +14,9 @@ Maintainer: Peter Gamnitzer
 /*
   Standard ctor
  */
-DRT::NURBS::ControlPoint::ControlPoint(int           id    , 
-				       const double* coords, 
-				       const double  weight, 
+DRT::NURBS::ControlPoint::ControlPoint(int           id    ,
+				       const double* coords,
+				       const double  weight,
 				       const int     owner)
 :
   DRT::Node(id,coords,owner),
@@ -27,7 +27,7 @@ DRT::NURBS::ControlPoint::ControlPoint(int           id    ,
 
 /*
   Copy Constructor
-  
+
   Makes a deep copy of a control point
 
 */
@@ -41,7 +41,7 @@ DRT::NURBS::ControlPoint::ControlPoint(const DRT::NURBS::ControlPoint& old)
 
 /*
   Deep copy the derived class and return pointer to it
-  
+
 */
 DRT::NURBS::ControlPoint* DRT::NURBS::ControlPoint::Clone() const
 {
@@ -60,9 +60,9 @@ DRT::NURBS::ControlPoint::~ControlPoint()
 
 /*
   Pack this class so it can be communicated
-  
+
   Pack and Unpack are used to communicate this control point
-  
+
 */
 void DRT::NURBS::ControlPoint::Pack(vector<char>& data) const
 {
@@ -75,7 +75,7 @@ void DRT::NURBS::ControlPoint::Pack(vector<char>& data) const
   vector<char> basedata(0);
   DRT::Node::Pack(basedata);
   DRT::Node::AddtoPack(data,basedata);
-  // add weight 
+  // add weight
   DRT::Node::AddtoPack(data,&w_,  sizeof(double));
 
   return;
@@ -83,7 +83,7 @@ void DRT::NURBS::ControlPoint::Pack(vector<char>& data) const
 
 /*
   Unpack data from a char vector into this class
-  
+
   Pack and Unpack are used to communicate this control point
 */
 void DRT::NURBS::ControlPoint::Unpack(const vector<char>& data)
@@ -110,8 +110,8 @@ void DRT::NURBS::ControlPoint::Print(ostream& os) const
 {
   os << "Control Point :";
   DRT::Node::Print(os);
-  cout << "\n+ additional weight " ;
-  cout << w_ <<"\n";
+  os << "\n+ additional weight " ;
+  os << w_ <<"\n";
   return;
 
 }
