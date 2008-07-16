@@ -126,10 +126,15 @@ void strudyn_direct()
   Teuchos::RCP<StruTimInt> sti 
     = strudyn_CreateMarching(ioflags, sdyn, xparams, actdis, solver, output);
 
+  // create auxiliar time integartor
+  Teuchos::RCP<StruTimAda> sta 
+    = strudyn_CreateAuxiliar(sdyn, tap, sti);
+
   // do restart if demanded from input file
   // note that this changes time and step in genalphaparams
   if (genprob.restart)
   {
+    dserror("Not yet implemented.");
     //sti->ReadRestart(genprob.restart);
   }
 
@@ -140,19 +145,15 @@ void strudyn_direct()
     output.WriteMesh(step, time);
   }
 
-  // auxiliar time integrator
-  if (Teuchos::getIntegralValue<int>(tap,"KIND")
-      == TIMADA_DYNAMIC::timada_kind_none)
+  // integrate in time
+  if (sta == Teuchos::null)
   {
-    // integrate in time
+    // equidistant steps
     sti->Integrate();
   }
-  // we adapt to adaptivity
   else
   {
-    // auxiliar time integrator object
-    Teuchos::RCP<StruTimAda> sta = strudyn_CreateAuxiliar(sdyn, tap, sti);
-    // integrate adaptively in time
+    //adapated step sizes
     sta->Integrate();
   }
 
@@ -261,6 +262,11 @@ Teuchos::RCP<StruTimAda> strudyn_CreateAuxiliar
   // auxiliar time integrator
   switch (Teuchos::getIntegralValue<int>(tap,"KIND"))
   {
+
+  case TIMADA_DYNAMIC::timada_kind_none :
+    // No adaptivity in time
+    sai = Teuchos::null;
+    break;
 
   case TIMADA_DYNAMIC::timada_kind_zienxie :
     // Zienkiewivz-Xie error indicator for generalised-alpha

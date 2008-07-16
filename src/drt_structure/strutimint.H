@@ -100,6 +100,30 @@ public:
     name_ab2  //!< Adams-Bashforth 2nd order
   };
 
+  //! Map name enum term to string
+  static std::string MapNameEnumToString
+  (
+    const enum NameEnum term  //!< the enum
+  )
+  {
+    switch (term)
+    {
+    case name_genalpha :
+      return "GenAlpha";
+      break;
+    case name_onesteptheta :
+      return "OneStepTheta";
+      break;
+    case name_ab2 :
+      return "AdamsBashforth2";
+      break;
+    default :
+      dserror("Cannot cope with name enum %d", term);
+      return "";
+      break;
+    }
+  }   
+
   //! Constructor
   StruTimInt
   (
@@ -204,6 +228,12 @@ public:
 
   //! Provide Name
   virtual enum NameEnum MethodName() = 0;
+
+  //! Provide title
+  std::string MethodTitle()
+  {
+    return MapNameEnumToString(MethodName());
+  }
 
   //! Return true, if time integrator is implicit
   virtual bool MethodImplicit() = 0;
