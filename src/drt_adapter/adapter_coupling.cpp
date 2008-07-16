@@ -1,6 +1,8 @@
 
 #ifdef CCADISCRET
 
+#include <algorithm>
+
 #include "adapter_coupling.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/linalg_utils.H"
@@ -221,11 +223,11 @@ void ADAPTER::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
-                                 RCP<const Epetra_Map> nodemap,
-                                 RCP<const Epetra_Map> permnodemap,
-                                 RCP<const Epetra_Map>& dofmap,
-                                 RCP<const Epetra_Map>& permdofmap,
-                                 RCP<Epetra_Export>& exporter)
+                                     RCP<const Epetra_Map> nodemap,
+                                     RCP<const Epetra_Map> permnodemap,
+                                     RCP<const Epetra_Map>& dofmap,
+                                     RCP<const Epetra_Map>& permdofmap,
+                                     RCP<Epetra_Export>& exporter)
 {
   // communicate dofs
 
@@ -239,9 +241,15 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
   {
     const DRT::Node* actnode = dis.gNode(nodes[i]);
     const vector<int> dof = dis.Dof(actnode);
+    if (genprob.ndim > static_cast<int>(dof.size()))
+      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,genprob.ndim);
     copy(&dof[0], &dof[0]+genprob.ndim, back_inserter(dofs[nodes[i]]));
     copy(&dof[0], &dof[0]+genprob.ndim, back_inserter(dofmapvec));
   }
+
+  std::vector<int>::iterator pos = std::min_element(dofmapvec.begin(), dofmapvec.end());
+  if (*pos < 0)
+    dserror("illegal dof number %d", *pos);
 
   // dof map is the original, unpermuted distribution of dofs
   dofmap = rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, dis.Comm()));
