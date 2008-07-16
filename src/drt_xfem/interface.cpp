@@ -225,20 +225,14 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
     // debug: write information about which structure we are in
     std::stringstream filenameP;
     filenameP << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step << ".pos";
-    std::stringstream filenameAnnotations;
-    filenameAnnotations << allfiles.outputfile_kenner << "_annotations_" << std::setw(5) << setfill('0') << step << ".pos";
 
-    cout <<endl << "writing '"<<filenameP.str()<<"...";
+    std::cout << "writing " << left << std::setw(50) <<filenameP.str()<<"...";
     std::ofstream f_systemP(filenameP.str().c_str());
-    cout <<endl << "writing '"<<filenameAnnotations.str()<<"...";
-    std::ofstream f_systemAnnotations(filenameAnnotations.str().c_str());
     {
       // stringstream for cellcenter points
       stringstream gmshfilecontentP;
       gmshfilecontentP << "View \" " << "CellCenter of Elements and Integration Cells \" {" << endl;
-      stringstream gmshfilecontentAnnotations;
-      gmshfilecontentAnnotations << "View \" " << "Annotations for cell centers \" {" << endl;
-      
+     
       for (int i=0; i<xfemdis_->NumMyColElements(); ++i)
       {
         DRT::Element* actele = xfemdis_->lColElement(i);
@@ -261,24 +255,17 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
           point(1,0)=cellcenterpos(1);
           point(2,0)=cellcenterpos(2);
 
-          stringstream text;
-          text.precision(3);
-          text << "(<"<< (actele->Id()) << "," << closestElementId << ">,\n"<< fixed << distance << ")";
-       
-          gmshfilecontentAnnotations << IO::GMSH::text3dToString(cellcenterpos, text.str(), 2) << endl;              
           gmshfilecontentP << IO::GMSH::cellWithScalarToString(DRT::Element::point1, (actele->Id()), point) << endl;              
         };
       };
       gmshfilecontentP << "};" << endl;
-      gmshfilecontentAnnotations << "};" << endl;
       f_systemP << gmshfilecontentP.str();
-      f_systemAnnotations << gmshfilecontentAnnotations.str();
     }
     //f_system << IO::GMSH::getConfigString(3);
     f_systemP.close();
-    f_systemAnnotations.close();
     cout << " done" << endl;
     xTree_->printTree(allfiles.outputfile_kenner, step);
+    xTree_->printTreeMetrics(step);
   }
   return;
 }
