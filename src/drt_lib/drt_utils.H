@@ -200,7 +200,7 @@ namespace UTILS
           )
   {
       dsassert(distype == ele->Shape(), "mismatch in distype");
-      const int numnode = DRT::UTILS::_switchDisType<distype>::numNodePerElement;
+      const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
       const Node*const* nodes = ele->Nodes();
       dsassert(nodes != NULL, "element has no nodal pointers, so getting a position array doesn't make sense!");
