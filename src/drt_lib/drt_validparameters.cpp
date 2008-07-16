@@ -263,7 +263,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Fluid_XFEM",
                                  "Fluid_Ale",
                                  "Fluid_Freesurface",
-                                 "Convection_Diffusion",
+                                 "Scalar_Transport",
                                  "Fluid_Structure_Interaction",
                                  "Fluid_Structure_Interaction_XFEM",
                                  "Ale",
@@ -277,7 +277,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  prb_fluid_xfem,
                                  prb_fluid_ale,
                                  prb_freesurf,
-                                 prb_condif,
+                                 prb_scatra,
                                  prb_fsi,
                                  prb_fsi_xfem,
                                  prb_ale,
@@ -641,7 +641,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "fixed_point_like",
                                  "Newton",
-				 "minimal"
+                                 "minimal"
                                  ),
                                tuple<int>(1,2,3),
                                &fdyn);
@@ -1044,7 +1044,36 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &adyn);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& scatradyn = list->sublist("SCALAR TRANSPORT DYNAMIC",false,"");
+  Teuchos::ParameterList& scatradyn = list->sublist(
+      "SCALAR TRANSPORT DYNAMIC",
+      false,
+      "control parameters for scalar transport problems\n");
+
+  setStringToIntegralParameter("TIMEINTEGR","One_Step_Theta",
+                               "Time Integration Scheme",
+                               tuple<std::string>(
+                                 "Stationary",
+                                 "One_Step_Theta",
+                                 "BDF2",
+                                 "Gen_Alpha"
+                                 ),
+                               tuple<INPUTPARAMS::ScaTraTimeIntegrationScheme>(
+                                   INPUTPARAMS::timeint_stationary,
+                                   INPUTPARAMS::timeint_one_step_theta,
+                                   INPUTPARAMS::timeint_bdf2,
+                                   INPUTPARAMS::timeint_gen_alpha
+                                 ),
+                               &scatradyn);
+
+  DoubleParameter("MAXTIME",1000.0,"Total simulation time",&scatradyn);
+  IntParameter("NUMSTEP",20,"Total number of time steps",&scatradyn);
+  DoubleParameter("TIMESTEP",0.1,"Time increment dt",&scatradyn);
+  IntParameter("ITEMAX",10,"Maximum number of nonlinear iterations",&scatradyn);
+  DoubleParameter("THETA",0.5,"Time integration factor",&scatradyn);
+  //IntParameter("WRITESOLEVRY",1,"Increment for writing solution",&scatradyn);
+  IntParameter("UPRES",1,"Increment for writing solution",&scatradyn);
+  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&scatradyn);
+
   setStringToIntegralParameter("VELOCITYFIELD","zero",
                                "type of velocity field used for scalar tranport problems",
                                tuple<std::string>(
@@ -1067,6 +1096,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &scatradyn);
 
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&scatradyn);
+
+  setStringToIntegralParameter("WRITEFLUX","No","output of diffusive/total flux vectors",
+                               tuple<std::string>(
+                                 "No",
+                                 "totalflux_domain",
+                                 "diffusiveflux_domain",
+                                 "totalflux_boundary",
+                                 "diffusiveflux_boundary"
+                                 ),
+                               tuple<int>(0,1,2,3,4),
+                               &scatradyn);
+
+  setStringToIntegralParameter("FSSUGRVISC","No","fine-scale subgrid diffusivity",
+                               tuple<std::string>(
+                                 "No",
+                                 "artificial_all",
+                                 "artificial_small"
+                                 ),
+                               tuple<int>(0,1,2),
+                               &scatradyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustdyn = list->sublist("COMBUSTION DYNAMIC",false,"");
