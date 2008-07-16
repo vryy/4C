@@ -257,7 +257,7 @@ void inpfield()
   /* convection-diffusion type of problem:
    * ----------------------
    */
-  if (genprob.probtyp==prb_condif)
+  if (genprob.probtyp==prb_scatra)
   {
     field = (FIELD*)CCACALLOC(genprob.numfld,sizeof(FIELD));
 

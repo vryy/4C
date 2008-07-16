@@ -258,8 +258,9 @@ void DRT::Problem::InputControl()
     genprob.numaf=1;
     break;
   }
-  case prb_condif:
-    genprob.numcdf=0;
+  case prb_scatra:
+    genprob.numff = 0;  /* fluid field index */
+    genprob.numscatra = 1; /* scalar transport field index */
     break;
   case prb_ale:
     genprob.numaf=0;
@@ -281,13 +282,13 @@ void DRT::Problem::InputControl()
   case prb_elch:
   {
     genprob.numff = 0;  /* fluid field index */
-    genprob.numcdf = 1; /* convection-diffusion field index */
+    genprob.numscatra = 1; /* scalar transport field index */
     break;
   }
   case prb_combust:
   {
     genprob.numff = 0;  /* fluid field index */
-    genprob.numcdf = 1; /* convection-diffusion field (=G-function) index */
+    genprob.numscatra = 1; /* scalar transport field (=G-function) index */
     break;
   }
   default:
@@ -430,14 +431,20 @@ void DRT::Problem::InputControl()
     InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
     break;
   }
-  /* for convection-diffusion */
-  case prb_condif:
+  /* for scalar transport problem (e.g. convection-diffusion) */
+  case prb_scatra:
   {
+    if (genprob.numfld!=2) dserror("numfld != 2 for scalar transport problem");
     solver_.resize(genprob.numfld);
     solv = &solver_[0];
 
-    solv[genprob.numcdf].fieldtyp = scatra;
-    InputSolverControl("FLUID SOLVER",&(solv[genprob.numcdf]));
+    // solver for fluid problem
+    solv[genprob.numff].fieldtyp = fluid;
+    InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
+
+    // solver for transport of passive scalar in the fluid velocity field
+    solv[genprob.numscatra].fieldtyp = scatra;
+    InputSolverControl("SCALAR TRANSPORT SOLVER",&(solv[genprob.numscatra]));
     break;
   }
   /* for (plain) ALE */
@@ -500,9 +507,9 @@ void DRT::Problem::InputControl()
     solv[genprob.numff].fieldtyp = fluid;
     InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
 
-    // solver for convection-diffusion problem (at the moment the same!!!)
-    solv[genprob.numcdf].fieldtyp = scatra;
-    InputSolverControl("FLUID SOLVER",&(solv[genprob.numcdf]));
+    // solver for convection-diffusion problem
+    solv[genprob.numscatra].fieldtyp = scatra;
+    InputSolverControl("SCALAR TRANSPORT SOLVER",&(solv[genprob.numscatra]));
 
     break;
   }
@@ -519,8 +526,8 @@ void DRT::Problem::InputControl()
     InputSolverControl("FLUID SOLVER",&(solv[genprob.numff]));
 
     // solver for convection-diffusion problem (at the moment the same!!!)
-    solv[genprob.numcdf].fieldtyp = scatra;
-    InputSolverControl("FLUID SOLVER",&(solv[genprob.numcdf]));
+    solv[genprob.numscatra].fieldtyp = scatra;
+    InputSolverControl("SCALAR TRANSPORT SOLVER",&(solv[genprob.numscatra]));
 
     break;
   }
@@ -846,8 +853,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   RCP<DRT::Discretization> fluiddis        = null;
   RCP<DRT::Discretization> aledis          = null;
   RCP<DRT::Discretization> boundarydis     = null;
-  RCP<DRT::Discretization> condifdis       = null;
-  RCP<DRT::Discretization> gfuncdis        = null;
+  RCP<DRT::Discretization> scatradis       = null;
   RCP<DRT::Discretization> structdis_macro = null;
   RCP<DRT::Discretization> structdis_micro = null;
 
@@ -934,16 +940,21 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     nodereader.Read();
     break;
   }
-  case prb_condif:
+  case prb_scatra:
   {
     // allocate and input general old stuff....
-    if (genprob.numfld!=1) dserror("numfld != 1 for condif problem");
+    if (genprob.numfld!=2) dserror("numfld != 2 for scalar transport problem");
 
-    condifdis = rcp(new DRT::Discretization("scatra",reader.Comm()));
-    AddDis(genprob.numcdf, condifdis);
+    // create empty discretizations
+    fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
+    AddDis(genprob.numff, fluiddis);
+
+    scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+    AddDis(genprob.numscatra, scatradis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(condifdis, reader, "--TRANSPORT ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
     nodereader.Read();
     break;
   }
@@ -1111,12 +1122,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
 
-    condifdis = rcp(new DRT::Discretization("scatra",reader.Comm()));
-    AddDis(genprob.numcdf, condifdis);
+    scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+    AddDis(genprob.numscatra, scatradis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(condifdis, reader, "--TRANSPORT ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
     nodereader.Read();
 
     break;
@@ -1131,8 +1142,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
 
-    condifdis = rcp(new DRT::Discretization("scatra",reader.Comm()));
-    AddDis(genprob.numcdf, condifdis);
+    scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
+    AddDis(genprob.numscatra, scatradis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
