@@ -73,7 +73,7 @@ void XFEM::createDofMap(
         {
 
           if ( not almost_empty_element)  
-          {
+          { // void enrichments for everybody !!!
             const int nen = xfemele->NumNode();
             const int* nodeidptrs = xfemele->NodeIds();
             for (int inen = 0; inen<nen; ++inen)
@@ -84,6 +84,33 @@ void XFEM::createDofMap(
               nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, voidenr));
               nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, voidenr));
             };
+          }
+          else
+          { // void enrichments in the fluid domain
+            const int nen = xfemele->NumNode();
+            const int* nodeidptrs = xfemele->NodeIds();
+            for (int inen = 0; inen<nen; ++inen)
+            {
+              const int node_gid = nodeidptrs[inen];
+              const BlitzVec3 nodalpos(toBlitzArray(ih.xfemdis()->gNode(node_gid)->X()));
+              const int label = PositionWithinCondition(nodalpos, ih);
+              bool in_fluid = false;
+              if (label == 0)
+              {
+                in_fluid = true;
+              }
+              else
+              {
+                in_fluid = false;
+              }
+              if (in_fluid)
+              {
+                nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velx, voidenr));
+                nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Vely, voidenr));
+                nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Velz, voidenr));
+                nodalDofSet[node_gid].insert(XFEM::FieldEnr(PHYSICS::Pres, voidenr));
+              }
+            };            
           }
 
           // add discontinuous stress unknowns
