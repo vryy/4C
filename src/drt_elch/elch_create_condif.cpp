@@ -26,12 +26,12 @@ namespace ELCH{
 /*----------------------------------------------------------------------*/
 // create condif discretization parallel to the fluid one
 /*----------------------------------------------------------------------*/
-void CreateConDifDiscretization(int disnumff,int disnumcdf)
+void CreateConDifDiscretization(int disnumff,int disnumscatra)
 {
-  if (disnumff == disnumcdf) dserror("Got identical discretization ids");
+  if (disnumff == disnumscatra) dserror("Got identical discretization ids");
 
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
-  RefCountPtr<DRT::Discretization> condifdis   = DRT::Problem::Instance()->Dis(disnumcdf,0);
+  RefCountPtr<DRT::Discretization> condifdis   = DRT::Problem::Instance()->Dis(disnumscatra,0);
 
   if (!fluiddis->Filled()) fluiddis->FillComplete();
 

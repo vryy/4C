@@ -21,7 +21,7 @@ namespace ELCH
 {
 /// automatically create a matching convection-diffusion discretization 
 /// from the fluid discretization
-void CreateConDifDiscretization(int disnumff,int disnumcdf);
+void CreateConDifDiscretization(int disnumff,int disnumscatra);
 
 }
 

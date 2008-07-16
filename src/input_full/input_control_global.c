@@ -220,7 +220,7 @@ dstrc_enter("inpctr");
       break;
    }
    /* for convection-diffusion */
-   case prb_condif:
+   case prb_scatra:
    {
       solv = (SOLVAR*)CCACALLOC(genprob.numfld,sizeof(SOLVAR));
 
@@ -367,7 +367,7 @@ while(strncmp(allfiles.actplace,"------",6)!=0)
     else if (frwordcmp("Fluid"                      ,buffer)==0) genprob.probtyp = prb_fluid;
     else if (frwordcmp("Fluid_Projection"           ,buffer)==0) genprob.probtyp = prb_fluid_pm;
     else if (frwordcmp("Fluid_XFEM"                 ,buffer)==0) genprob.probtyp = prb_fluid_xfem;
-    else if (frwordcmp("Convection_Diffusion"       ,buffer)==0) genprob.probtyp = prb_condif;
+    else if (frwordcmp("Scalar_Transport"           ,buffer)==0) genprob.probtyp = prb_scatra;
     else if (frwordcmp("Fluid_Structure_Interaction",buffer)==0) genprob.probtyp = prb_fsi;
     else if (frwordcmp("Projection_Fluid_Structure_Interaction",buffer)==0) genprob.probtyp = prb_pfsi;
     else if (frwordcmp("Structure_Structure_Interaction",buffer)==0) genprob.probtyp = prb_ssi;
@@ -447,7 +447,7 @@ case prb_fluid_xfem:
 case prb_fluid_pm:
   genprob.numff=0;
   break;
-case prb_condif:
+case prb_scatra:
   genprob.numff=0;
   break;
 case prb_ale:

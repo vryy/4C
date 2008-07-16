@@ -111,9 +111,9 @@ void combust_dyn()
 
   // get discretization ids
   int disnumff = genprob.numff; // discretization number fluid; typically 0
-  int disnumgff = genprob.numcdf; // discretization number G-function; typically 1
+  int disnumgff = genprob.numscatra; // discretization number G-function; typically 1
   // remark: precisely here the convection-diffusion discretization 
-  // (genprob.numcdf) is called and named according to its meaning 
+  // (genprob.numscatra) is called and named according to its meaning 
   // in the combustion context, namely the G-function (disnumgff)
   
   // access fluid discretization
@@ -175,7 +175,7 @@ void combust_dyn()
     // perform the result test
     DRT::ResultTestManager testmanager(comm);
     testmanager.AddFieldTest(combust->FluidField().CreateFieldTest());
-    testmanager.AddFieldTest(combust->ConDifField().CreateFieldTest());  
+    testmanager.AddFieldTest(combust->CreateScaTraFieldTest());
     testmanager.TestAll();
 
     return;

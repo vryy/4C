@@ -96,11 +96,29 @@ int main(
         writer.WriteFiles();
         break;
     }
-    case prb_condif:
+    case prb_scatra:
     {
-        PostField* field = problem.get_discretization(0);
-        ConDifEnsightWriter writer(field, problem.outname());
-        writer.WriteFiles();
+        string basename = problem.outname();
+        int numfield = problem.num_discr();
+        if(numfield==2)
+        {
+          PostField* fluidfield = problem.get_discretization(0);
+          FluidEnsightWriter fluidwriter(fluidfield, basename);
+          fluidwriter.WriteFiles();
+
+          PostField* scatrafield = problem.get_discretization(1);
+          ScaTraEnsightWriter scatrawriter(scatrafield, basename);
+          scatrawriter.WriteFiles();
+        }
+        else if (numfield==1)
+        {
+          PostField* scatrafield = problem.get_discretization(0);
+          ScaTraEnsightWriter scatrawriter(scatrafield, basename);
+          scatrawriter.WriteFiles();
+        }
+        else
+          dserror("number of fields does not match: got %d",numfield);
+
         break;
     }
     case prb_fluid_xfem: case prb_fsi_xfem:
@@ -127,9 +145,9 @@ int main(
         FluidEnsightWriter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
 
-        PostField* condiffield = problem.get_discretization(1);
-        ConDifEnsightWriter condifwriter(condiffield, basename);
-        condifwriter.WriteFiles();
+        PostField* scatrafield = problem.get_discretization(1);
+        ScaTraEnsightWriter scatrawriter(scatrafield, basename);
+        scatrawriter.WriteFiles();
         break;
     }
     case prb_combust:
@@ -140,9 +158,9 @@ int main(
         FluidEnsightWriter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
 
-        PostField* condiffield = problem.get_discretization(1);
-        ConDifEnsightWriter condifwriter(condiffield, basename);
-        condifwriter.WriteFiles();
+        PostField* scatrafield = problem.get_discretization(1);
+        ScaTraEnsightWriter scatrawriter(scatrafield, basename);
+        scatrawriter.WriteFiles();
         break;
     }
     case prb_none:

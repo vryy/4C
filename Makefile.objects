@@ -202,12 +202,9 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/fluid_dyn_nln_drt.o \
                 src/drt_fluid/xfluid_dyn_nln_drt.o \
                 src/drt_fluid/time_integration_scheme.o \
-                src/drt_fluid/condif_drt.o \
                 src/drt_fluid/fluidimplicitintegration.o \
                 src/drt_fluid/xfluidimplicitintegration.o \
                 src/drt_fluid/fluid_genalpha_integration.o \
-                src/drt_fluid/condifimplicitintegration.o \
-                src/drt_fluid/condif_genalpha_integration.o \
                 src/drt_fluid/fluidimpedancecondition.o \
                 src/drt_fluid/turbulence_statistics.o \
                 src/drt_fluid/turbulence_statistics_ldc.o \
@@ -216,7 +213,10 @@ OBJS_DRT_FLUID= src/drt_fluid/fluid_utils.o \
                 src/drt_fluid/xfluidresulttest.o \
                 src/drt_fluid/vm3_solver.o \
                 src/drt_fluid/avms_solver.o \
-                src/drt_fluid/condifresulttest.o
+# ---------------------------------------------- scalar transport problems
+OBJS_DRT_SCATRA=src/drt_scatra/scatra_dyn.o \
+                src/drt_scatra/scatra_timint_implicit.o \
+                src/drt_scatra/scatra_resulttest.o
 # ----------------------------- drt version of fluid structure interaction
 OBJS_DRT_FSI  = src/drt_fsi/fsi_dyn.o \
                 src/drt_fsi/fsi_algorithm.o \
@@ -258,9 +258,7 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_xfluid_impl.o \
                 src/drt_adapter/adapter_utils.o \
                 src/drt_adapter/adapter_ale_resulttest.o \
-                src/drt_adapter/adapter_condif.o \
-                src/drt_adapter/adapter_condif_genalpha.o \
-                src/drt_adapter/adapter_condif_base_algorithm.o \
+                src/drt_adapter/adapter_scatra_base_algorithm.o \
                 src/drt_adapter/adapter_coupling.o \
                 src/drt_adapter/adapter_coupling_mortar.o
 #                pss_full

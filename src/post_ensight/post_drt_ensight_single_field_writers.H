@@ -149,15 +149,15 @@ protected:
 
 
 /*!
- \brief Writer for convection-diffusion problems
+ \brief Writer for scalar transport problems
 
  \author gjb
  \date 12/07
 */
-class ConDifEnsightWriter : public EnsightWriter
+class ScaTraEnsightWriter : public EnsightWriter
 {
 public:
-    ConDifEnsightWriter(
+    ScaTraEnsightWriter(
             PostField* field,
             string filename) :
         EnsightWriter(field, filename)

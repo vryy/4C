@@ -78,7 +78,7 @@ void AleEnsightWriter::WriteAllResults(PostField* field)
 /*----------------------------------------------------------------------*
 |                                                           gjb 12/07   |
 \*----------------------------------------------------------------------*/
-void ConDifEnsightWriter::WriteAllResults(PostField* field)
+void ScaTraEnsightWriter::WriteAllResults(PostField* field)
 {
   //phinp is a scalar result field with ONE dof per node.
   //Therefore it is NOT possible to hand over field->problem()->num_dim()

@@ -23,7 +23,7 @@ Maintainer: Florian Henke
  *----------------------------------------------------------------------*/
 COMBUST::Algorithm::Algorithm(Epetra_Comm& comm)
 :  FluidBaseAlgorithm(DRT::Problem::Instance()->CombustionDynamicParams(),false),
-   ConDifBaseAlgorithm(DRT::Problem::Instance()->CombustionDynamicParams()),
+   ScaTraBaseAlgorithm(DRT::Problem::Instance()->CombustionDynamicParams()),
    comm_(comm),
    step_(0),
    time_(0.0)
@@ -180,7 +180,7 @@ void COMBUST::Algorithm::PrepareTimeStep()
   }
   
   FluidField().PrepareTimeStep();
-  ConDifField().PrepareTimeStep();
+  ScaTraField().PrepareTimeStep();
   
   /* Ich wuerde hier gerne vergleichen, ob die Zeitschritte des Fluids und des ConDif
    * identisch sind. Es existiert eine Variable time_ in jedem feld */
@@ -237,10 +237,10 @@ void COMBUST::Algorithm::DoGfuncField()
   velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp());
 
   // assign the fluid velocity to the G-function field as convective velocity
-  ConDifField().SetVelocityField(2,velocitynp_);
+  ScaTraField().SetVelocityField(2,velocitynp_);
 
   // solve convection-diffusion equation
-  ConDifField().Solve();
+  ScaTraField().Solve();
   /* Hier muss später eine nichtlineare G-Funktion gelöst werden. Diese function existiert aber noch 
    * nicht im condifimplicitintegration.cpp */
   //ConDifField().NonlinearSolve();
@@ -262,7 +262,7 @@ void COMBUST::Algorithm::UpdateFGIteration()
 void COMBUST::Algorithm::UpdateTimeStep()
 {
   FluidField().Update();
-  ConDifField().Update();
+  ScaTraField().Update();
   return;
 }
 
@@ -277,7 +277,7 @@ void COMBUST::Algorithm::Output()
   // Discretizations.
   FluidField().Output();
   FluidField().LiftDrag();
-  ConDifField().Output();
+  ScaTraField().Output();
 
   // debug IO
 #if 0

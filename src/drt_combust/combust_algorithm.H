@@ -27,7 +27,7 @@ Maintainer: Florian Henke
 #include <Epetra_Comm.h>
 
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
-#include "../drt_adapter/adapter_condif_base_algorithm.H"
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 
 /*!
@@ -49,7 +49,7 @@ namespace COMBUST
     \date 06/08
    */
   class Algorithm : public ADAPTER::FluidBaseAlgorithm,
-                    public ADAPTER::ConDifBaseAlgorithm
+                    public ADAPTER::ScaTraBaseAlgorithm
   {
   public:
 

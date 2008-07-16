@@ -3,24 +3,25 @@
 
 #include "elch_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
+//#include "../drt_scatra/scatra_timint_implicit.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ELCH::Algorithm::Algorithm(Epetra_Comm& comm)
-:  FluidBaseAlgorithm(DRT::Problem::Instance()->FluidDynamicParams(),false),
-   ConDifBaseAlgorithm(DRT::Problem::Instance()->FluidDynamicParams()),
+:  FluidBaseAlgorithm(DRT::Problem::Instance()->ScalarTransportDynamicParams(),false),
+   ScaTraBaseAlgorithm(DRT::Problem::Instance()->ScalarTransportDynamicParams()),
    comm_(comm),
    step_(0),
    time_(0.0)
 {
   // taking time loop control parameters out of fluid dynamics section
-  const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& elchdyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
   // maximum simulation time
-  maxtime_=fluiddyn.get<double>("MAXTIME");
+  maxtime_=elchdyn.get<double>("MAXTIME");
   // maximum number of timesteps
-  nstep_ = fluiddyn.get<int>("NUMSTEP");
+  nstep_ = elchdyn.get<int>("NUMSTEP");
   // time step size
-  dt_ = fluiddyn.get<double>("TIMESTEP");
+  dt_ = elchdyn.get<double>("TIMESTEP");
 
   // get RCP to actual velocity field (time n+1)
   velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp());
@@ -52,7 +53,7 @@ void ELCH::Algorithm::TimeLoop()
     // solve nonlinear Navier-Stokes system
     DoFluidStep();
 
-    // solve convection-diffusion equation
+    // solve transport equations for ion concentrations and electric potential
     DoTransportStep();
 
     // update all field solvers
@@ -107,13 +108,14 @@ void ELCH::Algorithm::DoTransportStep()
   velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp());
 
   // prepare time step
-  ConDifField().PrepareTimeStep();
+  ScaTraField().PrepareTimeStep();
   // transfer convective velocity
-  ConDifField().SetVelocityField(2,velocitynp_);
+  ScaTraField().SetVelocityField(2,velocitynp_);
   //ConDifField().SetVelocityField(1,1);
 
-  // solve convection-diffusion equation
-  ConDifField().Solve();
+  // solve coupled transport equations for ion concentrations and electric 
+  // potential
+  ScaTraField().Solve();
   return;
 }
 
@@ -122,7 +124,7 @@ void ELCH::Algorithm::DoTransportStep()
 void ELCH::Algorithm::Update()
 {
   FluidField().Update();
-  ConDifField().Update();
+  ScaTraField().Update();
   return;
 }
 
@@ -137,7 +139,7 @@ void ELCH::Algorithm::Output()
   // Discretizations.
   FluidField().Output();
   FluidField().LiftDrag();
-  ConDifField().Output();
+  ScaTraField().Output();
 
   // debug IO
 #if 0

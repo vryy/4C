@@ -71,7 +71,7 @@ extern struct _FIELD      *sm_field;
 #include "../drt_lib/global_inp_control2.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
 #include "../drt_fluid/xfluid_dyn_nln_drt.H"
-#include "../drt_fluid/condif_drt.H"
+#include "../drt_scatra/scatra_dyn.H"
 #include "../drt_adapter/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
 #include "../drt_elch/elch_dyn.H"
@@ -251,11 +251,11 @@ case prb_fluid_pm:
   dyn_fluid_drt();
 #endif
   break;
-case prb_condif:
+case prb_scatra:
 #ifndef CCADISCRET
-  dserror("dyn_condif without DRT not implemented");
+  dserror("dyn_scatra without DRT not implemented");
 #else
-  dyn_condif_drt();
+  scatra_dyn();
 #endif
   break;
 case prb_fluid_xfem:

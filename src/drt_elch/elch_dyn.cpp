@@ -46,7 +46,7 @@ void elch_dyn()
 
   // get discretization ids
   int disnumff = genprob.numff; // typically 0
-  int disnumcdf = genprob.numcdf; // typically 1
+  int disnumscatra = genprob.numscatra; // typically 1
   
   // access the fluid discretization
   RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(disnumff,0);
@@ -59,14 +59,14 @@ void elch_dyn()
   f_system<<IO::GMSH::disToString("Fluid",0,fluiddis);
 #endif  
   // access the (typically empty) condif discretization
-  RefCountPtr<DRT::Discretization> condifdis = DRT::Problem::Instance()->Dis(disnumcdf,0);
+  RefCountPtr<DRT::Discretization> condifdis = DRT::Problem::Instance()->Dis(disnumscatra,0);
   if (!condifdis->Filled()) condifdis->FillComplete();
 
   // create condif elements if the condif discretization is empty
   if (condifdis->NumGlobalNodes()==0)
   {
     Epetra_Time time(comm);
-    ELCH::CreateConDifDiscretization(disnumff,disnumcdf);
+    ELCH::CreateConDifDiscretization(disnumff,disnumscatra);
     if (comm.MyPID()==0)
     cout<<"Created necessary condif discretization from fluid field in...."
     <<time.ElapsedTime() << " secs\n\n";
@@ -94,7 +94,7 @@ void elch_dyn()
   // perform the result test
   DRT::ResultTestManager testmanager(comm);
   testmanager.AddFieldTest(elch->FluidField().CreateFieldTest());
-  testmanager.AddFieldTest(elch->ConDifField().CreateFieldTest());  
+  testmanager.AddFieldTest(elch->CreateScaTraFieldTest());
   testmanager.TestAll();
 
   return;

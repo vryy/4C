@@ -1,16 +1,28 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file adapter_scatra_base_algorithm.cpp
+
+\brief scalar transport field base algorithm
+
+<pre>
+Maintainer: Georg Bauer
+            bauer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "adapter_condif_base_algorithm.H"
-#include "adapter_condif_genalpha.H"
-// further includes for ConDifBaseAlgorithm:
+#include "adapter_scatra_base_algorithm.H"
+// further includes for ScaTraBaseAlgorithm:
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_validparameters.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
-
-#include "../drt_fluid/condifimplicitintegration.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -40,16 +52,16 @@ extern struct _SOLVAR  *solv;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::ConDifBaseAlgorithm::ConDifBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
+ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(const Teuchos::ParameterList& prbdyn)
 {
-  /// setup convection diffusion algorithm (overriding some fluid parameters with
-  /// values specified in given problem-dependent ParameterList)
+  /// setup scalar transport algorithm (overriding some dynamic parameters with
+  /// values specified in given problem-dependent ParameterList prbdyn)
 
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
   RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numcdf,0);
+  actdis = DRT::Problem::Instance()->Dis(genprob.numscatra,0);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization
@@ -66,22 +78,22 @@ ADAPTER::ConDifBaseAlgorithm::ConDifBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   // set some pointers and variables
   // -------------------------------------------------------------------
-  SOLVAR        *actsolv  = &solv[genprob.numcdf];
 
   //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   //const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
   //const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
-  const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
+  //const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& scatradyn     = DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
-  /* For multi-field problems this "PrintDefaultParameters" is responsible for pinting
-   * the same thing on the screen twice, once for the FluidBaseAlgorithm and once for
-   * the ConDifBaseAlgorithm. henke 06/08 */
+  // print out default parameters of scalar tranport parameter list
   if (actdis->Comm().MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
+    DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn);
 
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
+  SOLVAR *actsolv  = &solv[genprob.numscatra];
+
   RCP<ParameterList> solveparams = rcp(new ParameterList());
   RCP<LINALG::Solver> solver =
     rcp(new LINALG::Solver(solveparams,actdis->Comm(),allfiles.out_err));
@@ -91,107 +103,100 @@ ADAPTER::ConDifBaseAlgorithm::ConDifBaseAlgorithm(const Teuchos::ParameterList& 
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
-  RCP<ParameterList> condiftimeparams= rcp(new ParameterList());
+  RCP<ParameterList> scatratimeparams= rcp(new ParameterList());
 
-  // -----------------------------------------------condif initial field
-  condiftimeparams->set<int>              ("condif initial field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_INITIALFIELD"));
-  condiftimeparams->set<int>              ("condif initial field func number",fdyn.get<int>("CD_INITFUNCNO"));
+  // ----------------------------------------------------- initial field
+  scatratimeparams->set<int>("scalar initial field"     ,Teuchos::getIntegralValue<int>(scatradyn,"INITIALFIELD"));
+  scatratimeparams->set<int>("scalar initial field func number",scatradyn.get<int>("INITFUNCNO"));
   
   // -----------------------------------------------------velocity field
-  condiftimeparams->set<int>              ("condif velocity field"     ,Teuchos::getIntegralValue<int>(fdyn,"CD_VELOCITY"));
-  condiftimeparams->set<int>              ("condif velocity function number",fdyn.get<int>("CD_VELFUNCNO"));
+  scatratimeparams->set<int>("velocity field"     ,Teuchos::getIntegralValue<int>(scatradyn,"VELOCITYFIELD"));
+  scatratimeparams->set<int>("velocity function number",scatradyn.get<int>("VELFUNCNO"));
+  
+  // ---------------------------------(fine-scale) subgrid diffusivity?
+  scatratimeparams->set<string>("fs subgrid diffusivity"   ,scatradyn.get<string>("FSSUGRVISC"));
 
   // -------------------------------------------------- time integration
   // the default time step size
-  condiftimeparams->set<double>           ("time step size"           ,prbdyn.get<double>("TIMESTEP"));
+  scatratimeparams->set<double>   ("time step size"           ,prbdyn.get<double>("TIMESTEP"));
   // maximum simulation time
-  condiftimeparams->set<double>           ("total time"               ,prbdyn.get<double>("MAXTIME"));
+  scatratimeparams->set<double>   ("total time"               ,prbdyn.get<double>("MAXTIME"));
   // maximum number of timesteps
-  condiftimeparams->set<int>              ("max number timesteps"     ,prbdyn.get<int>("NUMSTEP"));
+  scatratimeparams->set<int>      ("max number timesteps"     ,prbdyn.get<int>("NUMSTEP"));
 
   // ----------------------------------------------- restart and output
   // restart
-  condiftimeparams->set                  ("write restart every"       ,prbdyn.get<int>("RESTARTEVRY"));
+  scatratimeparams->set           ("write restart every"       ,prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  condiftimeparams->set                  ("write solution every"      ,prbdyn.get<int>("UPRES"));
-
-  // ---------------------------------(fine-scale) subgrid diffusivity?
-  condiftimeparams->set<string>           ("fs subgrid diffusivity"   ,fdyn.get<string>("FSSUGRVISC"));
+  //scatratimeparams->set           ("write solution every"      ,prbdyn.get<int>("WRITESOLEVRY"));
+  scatratimeparams->set           ("write solution every"      ,prbdyn.get<int>("UPRES"));
 
   // --------------------------sublist for combustion-specific gfunction parameters
   /* This sublist COMBUSTION DYNAMIC/GFUNCTION contains parameters for the gfunction field
    * which are only relevant for a combustion problem.                         07/08 henke */
   if (genprob.probtyp == prb_combust)
   {
-    condiftimeparams->sublist("GFUNCTION")=prbdyn.sublist("GFUNCTION");
+    scatratimeparams->sublist("GFUNCTION")=prbdyn.sublist("GFUNCTION");
   }
     
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  FLUID_TIMEINTTYPE iop = Teuchos::getIntegralValue<FLUID_TIMEINTTYPE>(fdyn,"TIMEINTEGR");
-  if(iop == timeint_stationary or
-     iop == timeint_one_step_theta or
-     iop == timeint_bdf2
+  INPUTPARAMS::ScaTraTimeIntegrationScheme timintscheme = 
+    Teuchos::getIntegralValue<INPUTPARAMS::ScaTraTimeIntegrationScheme>(scatradyn,"TIMEINTEGR");
+  if(timintscheme == INPUTPARAMS::timeint_stationary or
+     timintscheme == INPUTPARAMS::timeint_one_step_theta or
+     timintscheme == INPUTPARAMS::timeint_bdf2
   )
   {
     // -----------------------------------------------------------------
     // set additional parameters in list for OST/BDF2/stationary scheme
     // -----------------------------------------------------------------
     // type of time-integration (or stationary) scheme
-    condiftimeparams->set<FLUID_TIMEINTTYPE>("time int algo",iop);
+    scatratimeparams->set<INPUTPARAMS::ScaTraTimeIntegrationScheme>("time int algo",timintscheme);
     // parameter theta for time-integration schemes
-    condiftimeparams->set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
+    scatratimeparams->set<double>           ("theta"                    ,scatradyn.get<double>("THETA"));
     // number of steps for potential start algorithm
-    condiftimeparams->set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
+    scatratimeparams->set<int>              ("number of start steps"    ,0); //hack!
     // parameter theta for potential start algorithm
-    condiftimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
+    //scatratimeparams->set<double>         ("start theta"              ,scatradyn.get<double>("START_THETA"));
 
     //------------------------------------------------------------------
     // create all vectors and variables associated with the time
     // integration (call the constructor)
     //------------------------------------------------------------------
-    condif_ = rcp(new ADAPTER::ConDifImplicit(actdis, solver, condiftimeparams, output));
+    scatra_ = rcp(new ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(actdis, solver, scatratimeparams, output));
 
-#if 0     
-    // initial field from restart
-    if (probtype.get<int>("RESTART"))
-    {
-      // read the restart information, set vectors and variables
-      condifimplicit.ReadRestart(probtype.get<int>("RESTART"));
-    }
-
-#endif
   }
-  else if (iop == timeint_gen_alpha)
+  else if (timintscheme == INPUTPARAMS::timeint_gen_alpha)
   {
-    dserror("no adapter for generalized alpha condif dynamic routine implemented.");
+    dserror("no adapter for generalized alpha scalar transport dynamic routine implemented.");
     // -------------------------------------------------------------------
     // set additional parameters in list for generalized-alpha scheme
     // -------------------------------------------------------------------
     // parameter alpha_M for for generalized-alpha scheme
-    condiftimeparams->set<double>           ("alpha_M"                  ,fdyn.get<double>("ALPHA_M"));
+    scatratimeparams->set<double>           ("alpha_M"                  ,scatradyn.get<double>("ALPHA_M"));
     // parameter alpha_F for for generalized-alpha scheme
-    condiftimeparams->set<double>           ("alpha_F"                  ,fdyn.get<double>("ALPHA_F"));
+    scatratimeparams->set<double>           ("alpha_F"                  ,scatradyn.get<double>("ALPHA_F"));
 
     //------------------------------------------------------------------
     // create all vectors and variables associated with the time
     // integration (call the constructor)
     //------------------------------------------------------------------
-    condif_ = rcp(new ADAPTER::ConDifGenAlpha(actdis, solver, condiftimeparams, output));
-    
+    scatra_ = rcp(new ScaTraImplicitTimeInt::ScaTraImplicitTimeInt(actdis, solver, scatratimeparams, output));
+
   }
   else
   {
-    dserror("Unknown solver type for convection-diffusion");
+    dserror("Unknown time integration scheme for scalar tranport problem");
   }
 
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ADAPTER::ConDifBaseAlgorithm::~ConDifBaseAlgorithm()
+ADAPTER::ScaTraBaseAlgorithm::~ScaTraBaseAlgorithm()
 {
 }
 
