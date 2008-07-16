@@ -1632,9 +1632,9 @@ static void Sysmat4(
             // hence, we can't use the local assembler here
             for (int inode = 0; inode < numnode_boundary; ++inode)
             {
-              force_boundary(0,inode) += funct_boundary(inode) * (disctau_times_n(0) * fac);
-              force_boundary(1,inode) += funct_boundary(inode) * (disctau_times_n(1) * fac);
-              force_boundary(2,inode) += funct_boundary(inode) * (disctau_times_n(2) * fac);
+              force_boundary(0,inode) += funct_boundary(inode) * (disctau_times_n(0) * timefacfac);
+              force_boundary(1,inode) += funct_boundary(inode) * (disctau_times_n(1) * timefacfac);
+              force_boundary(2,inode) += funct_boundary(inode) * (disctau_times_n(2) * timefacfac);
             }
             
         } // end loop over gauss points

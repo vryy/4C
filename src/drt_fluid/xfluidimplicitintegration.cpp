@@ -811,7 +811,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
 
         // How to extract the density from the fluid material?
         trueresidual_->Update(density_/dta_/theta_,*residual_,0.0);
-        iforcecol->Scale(density_);
+        iforcecol->Scale(density_/dta_/theta_);
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -1174,8 +1174,10 @@ void XFluidImplicitTimeInt::Output()
     fields_out.insert(XFEM::PHYSICS::Pres);
     Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->fillPhysicalOutputVector(
         *ihForOutput_,*state_.velnp_, dofset_out_, nodalDofDistributionMap_, fields_out);
-    //cout << *velnp_out << endl;
     output_.WriteVector("velnp", velnp_out);
+//    Teuchos::RCP<Epetra_Vector> accn_out = dofmanagerForOutput_->fillPhysicalOutputVector(
+//        *ihForOutput_,*state_.accn_, dofset_out_, nodalDofDistributionMap_, fields_out);
+//    output_.WriteVector("accn", accn_out);
 
     // output real pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
