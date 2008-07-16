@@ -42,7 +42,6 @@ class UzawaSolver
 {
 public:
 
-    class StruGenAlpha;
     //! @name Constructors and destructors and related methods
 
     /*!
@@ -53,7 +52,7 @@ public:
         RCP<DRT::Discretization> discr,     ///< Discretization
         LINALG::Solver& solver,             ///< Solver to solve linear subproblem in iteration
         RCP<Epetra_Vector>    dirichtoggle, ///< Vector used for ApplyDirichletToSystem
-        RCP<Epetra_Vector>    invtoggle,    ///< Vector to blank residuals of Dirichlet DOFs 
+        RCP<Epetra_Vector>    invtoggle,    ///< Vector to blank residuals of Dirichlet DOFs
         ParameterList param);               ///< parameterlist containing solver parameters
 
     /*!
@@ -69,15 +68,15 @@ public:
 
     //! @name Public Member Functions
     /*!
-      \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;      
-       
+      \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;
+
     */
     void Solve(
         RCP<LINALG::SparseMatrix> stiff,  ///< stiffness matrix
         RCP<LINALG::SparseMatrix> constr, ///< constraint matrix
         RCP<Epetra_Vector> disp_inc,      ///< displacement increment to compute
         RCP<Epetra_Vector> disp_lagr,     ///< lagrange multiplier increment to compute
-        RCP<Epetra_Vector> rhs_standard,  ///< standard rhs 
+        RCP<Epetra_Vector> rhs_standard,  ///< standard rhs
         RCP<Epetra_Vector> rhs_constr     ///< constraint errors
         );
 
@@ -88,7 +87,7 @@ public:
     {
       return uzawaParam_;
     }
-    
+
     /*!
       \brief Set uzawa parameter (used for dynamic adaptation and restart)
     */
@@ -97,10 +96,10 @@ public:
       uzawaParam_=restartval;
       counter_=1;
       return;
-    }    
- 
+    }
+
     //@}
-    
+
 private:
 
     // do not want = operator, cctor

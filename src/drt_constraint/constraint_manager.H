@@ -43,8 +43,7 @@ class ConstrManager
 {
 public:
 
-    class StruGenAlpha;
-    //! @name Constructors and destructors and related methods
+  //! @name Constructors and destructors and related methods
 
   /*!
   \brief Standard Constructor
@@ -113,9 +112,9 @@ public:
        \brief Update lagrange multiplier lambda_{n+1}=lambda_{n}+factor*(volerr)
   */
   void UpdateLagrMult(double factor);
-  
+
   void UpdateLagrMult( RCP<Epetra_Vector> vect);
-  
+
   /*!
        \brief Compute difference between current and prescribed values at a given time and a given displacement
   */
@@ -138,16 +137,16 @@ public:
        \brief Add Increment to lagrange multiplier
   */
   void UpdateLagrMult();
-  
+
   /*!
-   \brief Return EpetraMap that determined distributation of constraints and lagrange 
+   \brief Return EpetraMap that determined distributation of constraints and lagrange
    multiplier over processors
   */
   RCP<Epetra_Map> GetConstraintMap()
   {
     return constrmap_;
   };
-  
+
   RCP<LINALG::SparseMatrix> GetConstrMatrix()
   {
     return constrMatrix_;
@@ -160,10 +159,10 @@ public:
   {
     return (*lagrMultVec_)[i];
   };
-  
+
   /*!
     \brief Return lagrange multiplier vector
-  */        
+  */
   void GetLagrMultVector(RCP<Epetra_Vector> tmpmult)
   {
     LINALG::Export(*lagrMultVec_,*tmpmult);
@@ -206,15 +205,15 @@ public:
 private:
 
     //! name@ Private Member Functions
-  
-  /*! \brief Sum values of a completely redundant vector into a distributed vector of the same size 
+
+  /*! \brief Sum values of a completely redundant vector into a distributed vector of the same size
   */
   void ImportResults
   (
     RCP<Epetra_Vector>& vect_dist, ///< distributed to store values in
     RCP<Epetra_Vector>& vect_redu  ///< fully redundant and assembled vector containing element reults
   );
-  
+
   /*!
     \brief synchronize processors after evaluating constraints by minimizing values returned woith a parameterlist
     over all processors
@@ -222,25 +221,25 @@ private:
 
   void SynchronizeMinConstraint(ParameterList& params,
           RCP<Epetra_Vector>& vect,const char* resultstr);
-  
+
   /*!
-      \brief Setup number of constraint ID's by evaluating the parameterlist returned by elements 
+      \brief Setup number of constraint ID's by evaluating the parameterlist returned by elements
   */
   void ManageIDs(ParameterList& params,
-       int& minID, 
-       int& maxID, 
+       int& minID,
+       int& maxID,
        int& numID);
-  
+
   /*!
-         \brief Setup number of constraint ID's by evaluating the parameterlist returned by elements 
+         \brief Setup number of constraint ID's by evaluating the parameterlist returned by elements
   */
   void ManageIDs(ParameterList& params,
-      int& minID, 
-      int& maxID, 
+      int& minID,
+      int& maxID,
       int& numID,
       vector<int>& MPCids);
-  
-   
+
+
   //@}
 
 private:
@@ -275,13 +274,13 @@ private:
   bool haveconstraint_;
   bool havemonitor_;
   double uzawaparam_;
-  
+
   RCP<Constraint> volconstr3d_;
   RCP<Constraint> areaconstr3d_;
   RCP<Constraint> areaconstr2d_;
   RCP<MPConstraint> mpconplane3d_;
   RCP<MPConstraint> mpconline2d_;
-  
+
   RCP<Constraint> volmonitor3d_;
   RCP<Constraint> areamonitor3d_;
   RCP<Constraint> areamonitor2d_;
