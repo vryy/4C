@@ -351,6 +351,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
   // get an idea of interface displacement
   idispn_ = StructureField().ExtractInterfaceDispn();
+  iveln_ = MBFluidField().ExtractInterfaceVeln();
 
   Teuchos::Time timer("time step timer");
 
@@ -504,11 +505,12 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     // prepare field variables for new time step
     Update();
 
-    // really extract final displacement
+    // extract final displacement and velocity
     // since we did update, this is very easy to extract
     idispn_ = StructureField().ExtractInterfaceDispn();
+    iveln_ = MBFluidField().ExtractInterfaceVeln();
 
-    /* write current solution */
+    // write current solution
     Output();
   }
 }
@@ -831,11 +833,29 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::StructOp(Teuchos::RCP<Epetra_Vecto
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceVelocity(
-        const Teuchos::RCP<Epetra_Vector> idispnp) const
+    const Teuchos::RCP<Epetra_Vector> idispnp
+) const
 {
-  Teuchos::RCP<Epetra_Vector> ivel = rcp(new Epetra_Vector(*idispn_));
-  ivel->Update(1.0, *idispnp, -1.0);
-  ivel->Scale(1./Dt());
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  
+  bool secondorder;
+  if (Teuchos::getIntegralValue<int>(fsidyn,"SECONDORDER") == 1)  secondorder = true;
+  else                                                            secondorder = false;
+  
+  Teuchos::RCP<Epetra_Vector> ivel = Teuchos::null;
+  if (secondorder)
+  {
+    ivel = rcp(new Epetra_Vector(iveln_->Map()));
+    ivel->Update(-1.0, *iveln_, 0.0);
+    ivel->Update( 1.0/(0.5*Dt()), *idispnp, 1.0);
+    ivel->Update(-1.0/(0.5*Dt()), *idispn_, 1.0);
+  }
+  else
+  {
+    ivel = rcp(new Epetra_Vector(*idispn_));
+    ivel->Update(1.0, *idispnp, -1.0);
+    ivel->Scale(1./Dt());
+  }
   return ivel;
 }
 

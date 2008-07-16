@@ -107,6 +107,9 @@ namespace ADAPTER
     //@}
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity() = 0;
+    
+    /// extract old velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() = 0;
 
     //! @name Number of Newton iterations
     //! For simplified FD MFNK solve we want to temporally limit the

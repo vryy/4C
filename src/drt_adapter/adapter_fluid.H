@@ -209,6 +209,9 @@ namespace ADAPTER {
 
     /// extract fluid velocity at the interface
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity() = 0;
+    
+    /// extract fluid velocity at the interface from time step n
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() = 0;
 
     /// extract fluid forces at the interface
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;

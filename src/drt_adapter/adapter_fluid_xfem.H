@@ -60,6 +60,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceFluidVelocity();
+    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
 
     virtual int Itemax() const { return FluidField().Itemax(); }
     virtual void SetItemax(int itemax) { FluidField().SetItemax(itemax); }

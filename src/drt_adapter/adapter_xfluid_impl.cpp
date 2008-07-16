@@ -220,10 +220,10 @@ void ADAPTER::XFluidImpl::Update()
   iaccnm_->Update(1.0,*iaccn_,0.0);
   iaccn_->Update(1.0,*iaccn,0.0);
 
-  // update velocity
+  // update velocity n-1
   ivelnm_->Update(1.0,*iveln_,0.0);
   
-  // update velocity
+  // update velocity n
   iveln_->Update(1.0,*ivel_,0.0);
 }
 
@@ -475,6 +475,14 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceFluidVelocity()
 {
   dserror("no Robin coupling here");
   return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidImpl::ExtractInterfaceVeln()
+{
+  return interface_.ExtractCondVector(iveln_);
 }
 
 
