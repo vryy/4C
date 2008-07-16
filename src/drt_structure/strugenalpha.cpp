@@ -174,6 +174,7 @@ fsisurface_(NULL)
     discret_.EvaluateDirichlet(p,dis_,null,null,dirichtoggle_);
     discret_.ClearState();
     discret_.SetState("displacement",dis_);
+    discret_.SetState("velocity",vel_);
     // predicted rhs
     discret_.EvaluateNeumann(p,*fext_);
     discret_.ClearState();
@@ -199,7 +200,7 @@ fsisurface_(NULL)
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);
     discret_.SetState("displacement",dis_);
-    //discret_.SetState("velocity",vel_); // not used at the moment
+    discret_.SetState("velocity",vel_);
     discret_.Evaluate(p,stiff_,mass_,fint_,null,null);
     discret_.ClearState();
   }
@@ -311,11 +312,13 @@ void StruGenAlpha::ConstantPredictor()
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
+    discret_.SetState("velocity",veln_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
     discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
+    discret_.SetState("velocity",veln_);
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
     discret_.EvaluateNeumann(p,*fextn_);
     discret_.ClearState();
@@ -368,8 +371,10 @@ void StruGenAlpha::ConstantPredictor()
     discret_.SetState("residual displacement",disi_);
 #ifdef STRUGENALPHA_FINTLIKETR
     discret_.SetState("displacement",disn_);
+    discret_.SetState("velocity",veln_);
 #else
     discret_.SetState("displacement",dism_);
+    discret_.SetState("velocity",velm_);
 #endif
     //discret_.SetState("velocity",velm_); // not used at the moment
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -515,11 +520,13 @@ void StruGenAlpha::ConsistentPredictor()
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
+    discret_.SetState("velocity",veln_);
     // predicted dirichlet values
     // disn then also holds prescribed new dirichlet displacements
     discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
+    discret_.SetState("velocity",veln_);
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
     discret_.EvaluateNeumann(p,*fextn_);
     discret_.ClearState();
@@ -644,8 +651,10 @@ void StruGenAlpha::ConsistentPredictor()
     discret_.SetState("residual displacement",disi_);
 #ifdef STRUGENALPHA_FINTLIKETR
     discret_.SetState("displacement",disn_);
+    discret_.SetState("velocity",veln_);
 #else
     discret_.SetState("displacement",dism_);
+    discret_.SetState("velocity",velm_);
 #endif
     //discret_.SetState("velocity",velm_); // not used at the moment
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -776,6 +785,7 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
+    discret_.SetState("velocity",veln_);
     fextn_->PutScalar(0.0);  // initialize external force vector (load vect)
     discret_.EvaluateNeumann(p,*fextn_);
     discret_.ClearState();
@@ -814,8 +824,10 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
     discret_.SetState("residual displacement",disi_);
 #ifdef STRUGENALPHA_FINTLIKETR
     discret_.SetState("displacement",disn_);
+    discret_.SetState("velocity",veln_);
 #else
     discret_.SetState("displacement",dism_);
+    discret_.SetState("velocity",velm_);
 #endif
     //discret_.SetState("velocity",velm_); // not used at the moment
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -1026,8 +1038,10 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
       discret_.SetState("residual displacement",disi_);
 #ifdef STRUGENALPHA_FINTLIKETR
       discret_.SetState("displacement",disn_);
+      discret_.SetState("velocity",veln_);
 #else
       discret_.SetState("displacement",dism_);
+      discret_.SetState("velocity",velm_);
 #endif
 
       //discret_.SetState("velocity",velm_); // not used at the moment
@@ -1270,8 +1284,10 @@ void StruGenAlpha::FullNewton()
       discret_.SetState("residual displacement",disi_);
 #ifdef STRUGENALPHA_FINTLIKETR
       discret_.SetState("displacement",disn_);
+      discret_.SetState("velocity",veln_);
 #else
       discret_.SetState("displacement",dism_);
+      discret_.SetState("velocity",velm_);
 #endif
       //discret_.SetState("velocity",velm_); // not used at the moment
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -1600,7 +1616,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
 #endif
       discret_.SetState("residual displacement",disi_);
       discret_.SetState("displacement",dism_);
-      //discret_.SetState("velocity",velm_); // not used at the moment
+      discret_.SetState("velocity",velm_);
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
       discret_.ClearState();
@@ -1828,8 +1844,10 @@ void StruGenAlpha::ModifiedNewton()
       discret_.SetState("residual displacement",disi_);
 #ifdef STRUGENALPHA_FINTLIKETR
       discret_.SetState("displacement",disn_);
+      discret_.SetState("velocity",veln_);
 #else
       discret_.SetState("displacement",dism_);
+      discret_.SetState("velocity",velm_);
 #endif
       //discret_.SetState("velocity",velm_); // not used at the moment
 #ifdef STRUGENALPHA_FINTLIKETR
@@ -2371,7 +2389,7 @@ void StruGenAlpha::PTC()
 #endif
       discret_.SetState("residual displacement",disi_);
       discret_.SetState("displacement",dism_);
-      //discret_.SetState("velocity",velm_); // not used at the moment
+      discret_.SetState("velocity",velm_);
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
       discret_.ClearState();
@@ -2552,7 +2570,7 @@ void StruGenAlpha::computeF(const Epetra_Vector& x, Epetra_Vector& F)
       disi->Scale(1.-alphaf);
       discret_.SetState("residual displacement",disi);
       discret_.SetState("displacement",dism);
-      //discret_.SetState("velocity",velm); // not used at the moment
+      discret_.SetState("velocity",velm);
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,null,null,fint_,null,null);
       discret_.ClearState();
@@ -2643,6 +2661,7 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
       discret_.ClearState();
       discret_.SetState("residual displacement",disi);
       discret_.SetState("displacement",dism);
+      discret_.SetState("velocity",velm);
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,stiff_,null,null,null,null);
       discret_.ClearState();
@@ -2751,6 +2770,7 @@ void StruGenAlpha::Update()
     p.set("delta time",dt);
     p.set("alpha f",alphaf);
     discret_.SetState("displacement",dis_);
+    discret_.SetState("velocity",vel_);
     discret_.SetState("residual displacement",zeros_);
     discret_.Evaluate(p,null,null,null,null,null);
   }
@@ -2923,6 +2943,7 @@ void StruGenAlpha::Output()
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);
     discret_.SetState("displacement",dis_);
+    discret_.SetState("velocity",vel_);
     discret_.Evaluate(p,null,null,null,null,null);
     discret_.ClearState();
     if (!isdatawritten) output_.NewStep(istep, timen);
@@ -3740,6 +3761,7 @@ Teuchos::RCP<Epetra_Vector> StruGenAlpha::LinearRelaxationSolve(Teuchos::RCP<Epe
     discret_.ClearState();
     discret_.SetState("residual displacement",disi_);
     discret_.SetState("displacement",dism_);
+    discret_.SetState("displacement",velm_);
     //discret_.SetState("velocity",velm_); // not used at the moment
     fint_->PutScalar(0.0);  // initialise internal force vector
     discret_.Evaluate(p,stiff_,fint_);

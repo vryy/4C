@@ -77,16 +77,23 @@ int DRT::ELEMENTS::Beam3::Evaluate(ParameterList& params,
     case Beam3::calc_struct_internalforce:
     {
       // need current global displacement and residual forces and get them from discretization
+      // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
+      //
+      // get element displcements
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RefCountPtr<const Epetra_Vector> res = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-
-      /*making use of the local-to-global map lm one can extract current displacemnet and residual values for
-       / each degree of freedom */
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      // get residual displacements
+      RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      if (res==null) dserror("Cannot get state vectors 'residual displacement'");
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      // get element velocities
+      RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");
+      if (vel==null) dserror("Cannot get state vectors 'velocity'");
+      vector<double> myvel(lm.size());
+      DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
       /*update of central nodal triad T; in case that a time step was finished after the last call 
        * of Evaluate formerly Tnew_ becomes Told_ */
@@ -187,10 +194,18 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(ParameterList& params,
     vector<int>& lm,
     Epetra_SerialDenseVector& elevec1)
 {
+  // get element displacements
   RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+  // get element velocities (UNCOMMENT IF NEEDED)
+  /*
+  RefCountPtr<const Epetra_Vector> vel  = discretization.GetState("velocity");
+  if (vel==null) dserror("Cannot get state vectors 'velocity'");
+  vector<double> myvel(lm.size());
+  DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
+  */
 
   // find out whether we will use a time curve
   bool usetime = true;
