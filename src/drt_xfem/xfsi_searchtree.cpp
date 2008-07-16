@@ -33,7 +33,8 @@ XFEM::XSearchTree::XSearchTree() :
   Candidates_(0),
   SearchLength_(0),
   MinSearchLength_(INT_MAX),
-  treeRoot_(NULL)
+  treeRoot_(NULL),
+  nodesWithReTry_(0)
 {
 //  cout << " CREATING A TREE" << endl;
 }
@@ -48,7 +49,8 @@ XFEM::XSearchTree::XSearchTree(const BlitzMat3x2 AABB) :
   Candidates_(0),
   SearchLength_(0),
   MinSearchLength_(INT_MAX),
-  treeRoot_(NULL)
+  treeRoot_(NULL),
+  nodesWithReTry_(0)
 {
 }
 
@@ -87,31 +89,12 @@ int XFEM::XSearchTree::queryPointType(const DRT::Discretization& dis,const std::
     testAABB = treeRoot_->getAABB();
   for (int i = 0; i<3;i++){
       if ( (pointCoords(i)< testAABB(i,0)) || (pointCoords(i)>testAABB(i,1)) ){
-        dserror("Please specify a bounding box that covers all locations placing requests \non the tree(!will NOT be checked in fast mode!)");
+        dserror("Please specify a bounding box that covers all locations doing requests on the tree!");
       }
     }
   
-  int labID;
-  const list< const DRT::Element* > candidates = treeRoot_->queryPointType(dis, currentpositions, pointCoords, labID);
-  if (candidates.empty()){
-//    cout << "candidate list empty for (" << pointCoords(0) << "/" << pointCoords(1)<< "/" << pointCoords(2)<< ")" << endl;
-    return labID;
-  }
-  // do excat routines
-  #ifdef DEBUG
-  Candidates_ = Candidates_ + candidates.size(); 
-  #endif
-  int within = 0;
-  double dist = 0;
-  const DRT::Element* closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, candidates, pointCoords,dist);
-  closestElementId =closestEle->Id();
-  distance =dist;
-  if (dist<0){
-    within = labelByElement_[closestEle->Id()];
-  }
-  else
-    within = 0;
-  return within;
+  int closestElementID;
+  return treeRoot_->queryPointType(dis, currentpositions, pointCoords, closestElementID);
 }
 
 int XFEM::XSearchTree::getDepth(){
@@ -131,13 +114,13 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
     delete treeRoot_;
   }
   if (hasExternAABB_) {
-    treeRoot_ = new TreeNode(0,AABB_, this);
+    treeRoot_ = new TreeNode(0,AABB_, this, NULL);
   }   
   else {
     const BlitzMat3x2 aabb(getXAABBofDis(dis, currentpositions));
-    treeRoot_ = new TreeNode(0,aabb, this); 
+    treeRoot_ = new TreeNode(0,aabb, this, NULL); 
   }  
-  #ifdef DEBUG2
+  #ifdef DEBUG
   cout << endl <<"inserting new elements (" << dis.NumMyColElements() << ")"<< endl;
   
   std::stringstream filename;
@@ -155,7 +138,7 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   for (int i=0; i<dis.NumMyColElements(); ++i) {
     insertElement(dis.lRowElement(i),currentpositions);
     
-    #ifdef DEBUG2
+    #ifdef DEBUG
     const BlitzMat xyze(XFEM::getCurrentNodalPositions(dis.lRowElement(i), currentpositions));
     const BlitzMat3x2 elemXAABB = XFEM::computeFastXAABB(dis.lRowElement(i), xyze, HIGHERORDER);
     BlitzMat XAABB(3,8);
@@ -167,12 +150,12 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
     XAABB(0,5) = elemXAABB(0,1); XAABB(1,5) = elemXAABB(1,1);XAABB(2,5) = elemXAABB(2,0);
     XAABB(0,6) = elemXAABB(0,1); XAABB(1,6) = elemXAABB(1,1);XAABB(2,6) = elemXAABB(2,1);
     XAABB(0,7) = elemXAABB(0,1); XAABB(1,7) = elemXAABB(1,0);XAABB(2,7) = elemXAABB(2,1);
-    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, i+10, XAABB)<< endl;
+    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, dis.lRowElement(i)->Id(), XAABB)<< endl;
     #endif
 
   }
   
-  #ifdef DEBUG2
+  #ifdef DEBUG
     fc << "};" << endl;
     std::ofstream f_system(filename.str().c_str());
     f_system << fc.str();
@@ -184,18 +167,24 @@ void XFEM::XSearchTree::rebuild(const DRT::Discretization& dis,const std::map<in
   
   std::map<int,set<int> >   elementsByLabel;
   XFEM::CollectElementsByXFEMCouplingLabel(dis, elementsByLabel);
-  
   labelByElement_.clear();
-  XFEM::InvertElementsByLabel(elementsByLabel, labelByElement_);
+  for(std::map<int,set<int> >::const_iterator conditer = elementsByLabel.begin(); conditer!=elementsByLabel.end(); ++conditer)
+  {
+    for(std::set<int>::const_iterator eleid = conditer->second.begin(); eleid!=conditer->second.end(); ++eleid)
+    {
+      labelByElement_[*eleid] = conditer->first;
+    }
+  }
   
 }
 
-XFEM::XSearchTree::TreeNode::TreeNode(const int Depth, const BlitzMat3x2& aabb, XSearchTree* tree) :
+XFEM::XSearchTree::TreeNode::TreeNode(const int Depth, const BlitzMat3x2& aabb, XSearchTree* tree, TreeNode* parent) :
   State_(STATE_LEAF_NODE),
   dont_refine_(false),
   labelID_(-1),  
   actTreedepth_(Depth),
   tree_(tree),
+  parent_(parent),
   AABB_(aabb)
 {
   XPlaneCoordinate_ = aabb(0,0)+(aabb(0,1)-aabb(0,0))/2.0;
@@ -274,43 +263,37 @@ BlitzVec3 XFEM::XSearchTree::TreeNode::getCenterCoord(){
   return BlitzVec3(this->XPlaneCoordinate_, this->YPlaneCoordinate_, this->ZPlaneCoordinate_);
 }
 
-list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords, int& lID) {
+int XFEM::XSearchTree::TreeNode::queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords, int& closestElementID) {
   //  printf("AABB(%f\t%f\t%f\t%f\t%f\t%f)\t", AABB(0,0),AABB(0,1),AABB(1,0),AABB(1,1),AABB(2,0),AABB(2,1));
   //  printf("x_in(%f\t%f\t%f)\n",pointCoords(0), pointCoords(1),pointCoords(2));
   switch (State_) {
     case STATE_INNER_NODE:         // if inner node, do recursion 
       //    printf("*");
       //    printf("classified searchpoint to oct %d, so i will search there\n", classifyPoint(pointCoords)-1);
-      return children_[classifyPoint(pointCoords)-1]->queryPointType(dis, currentpositions, pointCoords ,lID);
+      return children_[classifyPoint(pointCoords)-1]->queryPointType(dis, currentpositions, pointCoords ,closestElementID);
       break;
     case STATE_LEAF_NODE:   // returns list of candidates
       //    printf("/");
-      if (actTreedepth_ >= MAX_TREEDEPTH){
-        //      printf("actTreedepth >= MAX_TREEDEPTH\n");
-        lID = labelID_;
-        #ifdef DEBUG 
-        tree_->MinSearchLength_ = std::min(tree_->MinSearchLength_, actTreedepth_);
-        tree_->SearchLength_ = tree_->SearchLength_ + actTreedepth_+1;
-        #endif
-        return ElementList_;  // just return (maybe empty) list if leaf is at max depth, 
-      }
-      
       if (ElementList_.empty()){
         //      printf("empty ");
-        lID = labelID_;
-        #ifdef DEBUG 
+        closestElementID= -1;
         tree_->MinSearchLength_ = std::min(tree_->MinSearchLength_, actTreedepth_);
         tree_->SearchLength_ = tree_->SearchLength_ + actTreedepth_+1;
-        #endif
-        return ElementList_;  // just return empty list if there are no candidates (==fluid) 
+        return labelID_;  // just return empty list if there are no candidates (==fluid) 
       }
       
-      if (dont_refine_){       //
-        #ifdef DEBUG 
+      if (actTreedepth_ >= MAX_TREEDEPTH){
+        //      printf("actTreedepth >= MAX_TREEDEPTH\n");
         tree_->MinSearchLength_ = std::min(tree_->MinSearchLength_, actTreedepth_);
         tree_->SearchLength_ = tree_->SearchLength_ + actTreedepth_+1;
-        #endif
-        return ElementList_;  // just return empty list if node was previously set not to refine any further  
+        return getXFEMLabelOfPointInTreeNode(dis, currentpositions, pointCoords); 
+      }
+           
+      if (dont_refine_){       //
+        tree_->MinSearchLength_ = std::min(tree_->MinSearchLength_, actTreedepth_);
+        tree_->SearchLength_ = tree_->SearchLength_ + actTreedepth_+1;
+        return getXFEMLabelOfPointInTreeNode(dis, currentpositions, pointCoords);
+        // just return XFEM-Label if node was previously set not to refine any further  
       }
 
       if (ElementList_.size()>1) { // dynamically grow tree
@@ -327,14 +310,12 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
             ElementClassification[*myIt]=childIdx;
           }
           const double overlap = XFEM::getOverlapArea(AABBs);
-          const double AABBcoverage = overlap/XFEM::getArea(AABB_);
+          const double AABBcoverage = overlap/XFEM::getVolume(AABB_);
            if (AABBcoverage > tree_->MAX_OVERLAP_ALLOWED_){
             dont_refine_ = true;
-            #ifdef DEBUG 
             tree_->MinSearchLength_ = std::min(tree_->MinSearchLength_, actTreedepth_);
             tree_->SearchLength_ = tree_->SearchLength_ + actTreedepth_+1;
-            #endif
-            return ElementList_;
+            return getXFEMLabelOfPointInTreeNode(dis, currentpositions, pointCoords);;
           }
         }
         else {
@@ -346,7 +327,7 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
         // create Octants
         for (int i=0; i<8; i++){
           const BlitzMat3x2 chldAABB(getChildOctAABB(i+1));
-          children_[i] = new TreeNode(actTreedepth_ + 1, chldAABB, tree_);
+          children_[i] = new TreeNode(actTreedepth_ + 1, chldAABB, tree_, this);
         }
         // actual node becomes an inner tree node,
         // so we have to introduce one more tree-level
@@ -362,17 +343,14 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
         // if one of the created childs is empty, check if it is fluid or solid
         for (int i=0; i< 8; i++){
           if ((children_[i]->getElementList()).empty()){
-            double dista=0;
-            const BlitzVec3 c(children_[i]->getCenterCoord());
-            //          printf("centerX (%f,%f,%f)\n", c(0),c(1),c(2)); 
-            const DRT::Element* closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, ElementList_, children_[i]->getCenterCoord(),dista);
-            //          printf("distance of empty octant center to next element is %f\n", dista);
-            if (dista<0) {
-              const int eleId = closestEle->Id();
-              children_[i]->setSolid(tree_->getLabelByElementID(eleId)); 
+            int XFEMLabel=-1;
+            const BlitzVec3 childNodeCenter(children_[i]->getCenterCoord());
+            XFEMLabel = getXFEMLabelOfPointInTreeNode(dis, currentpositions, childNodeCenter);
+            if (XFEMLabel>0) {
+              children_[i]->setSolid(XFEMLabel);
             }
             else {
-              //            printf("fluid octant\n");
+//              cout << "fluid octant" << endl;
               children_[i]->setFluid(0);
             }
           }
@@ -385,18 +363,71 @@ list< const DRT::Element* > XFEM::XSearchTree::TreeNode::queryPointType(const DR
         // ElementList_.clear();
         // do recursion
         // cout << "classified searchpoint to oct "<< classifyPoint(pointCoords)-1 << " , so i will search there" << endl;
-        return children_[classifyPoint(pointCoords)-1]->queryPointType(dis, currentpositions, pointCoords, lID);
+        return children_[classifyPoint(pointCoords)-1]->queryPointType(dis, currentpositions, pointCoords, closestElementID);
       }
       else  // if there is only one Element, just return it
-        #ifdef DEBUG 
         tree_->MinSearchLength_ = std::min(tree_->MinSearchLength_, actTreedepth_);
         tree_->SearchLength_ = tree_->SearchLength_ + actTreedepth_+1;
-        #endif
-        return ElementList_;
+        return getXFEMLabelOfPointInTreeNode(dis, currentpositions, pointCoords);
       break;
   }
   dserror("should not get here\n");
-  return ElementList_;
+  return -1;
+}
+
+int XFEM::XSearchTree::TreeNode::getXFEMLabelOfPointInTreeNode(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords){
+  if (ElementList_.size()==0) 
+    dserror("should not have an empty list here!");
+  double dista=0;
+  const DRT::Element* closestEle;
+  closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, ElementList_, pointCoords,dista);
+  double SearchRadius = fabs(dista);
+  TreeNode* workingNode = this;
+  double AABBradius;
+   //cout << "haha" << endl;
+  do {
+    const BlitzMat3x2 AABB =workingNode->getAABB();
+    for (int i=0;i<3;i++)
+      AABBradius =max(AABBradius, fabs(AABB(0,1)-AABB(0,0)));
+    tree_->Candidates_+=workingNode->getElementList().size();
+    closestEle = XFEM::nearestNeighbourInList(dis, currentpositions, workingNode->getElementList(), pointCoords,dista);
+    workingNode=workingNode->getParent();
+  } while (workingNode!=NULL && workingNode->hasParent() && SearchRadius>AABBradius);
+  
+  if (dista<=0) {
+    const int eleId = closestEle->Id();
+//    cout << "classified as solid: "<<tree_->getLabelByElementID(eleId)<< endl;
+    return (tree_->getLabelByElementID(eleId)); //solid
+  }
+  else {
+//    cout << "classified as fluid"<< endl;
+    return 0;  //fluid
+  }
+  dserror("should not get here");
+  return -1;
+}
+
+list< const DRT::Element* > XFEM::XSearchTree::getCandidateList(const BlitzVec3& X,const double radius){
+  BlitzMat3x2 AASearchRegion = XFEM::getAABBofSphere(X, radius);
+  return treeRoot_->getCandidateList(AASearchRegion);
+}
+
+list< const DRT::Element* > XFEM::XSearchTree::TreeNode::getCandidateList(const BlitzMat3x2& AASearchRegion){
+  if (State_ == STATE_LEAF_NODE || isContainedAinB(AASearchRegion, AABB_)){
+    return ElementList_;
+  }
+  else // means INNER_NODE
+  {  
+    list< const DRT::Element* > ElemList;
+    const list<int> childIdx(classifyAABB(AASearchRegion)); //which child nodes will be examined   
+    for (list<int>::const_iterator myIt = childIdx.begin(); myIt != childIdx.end(); myIt++){
+      list< const DRT::Element* > ElementList2Add =  children_[*myIt-1]->getCandidateList(AASearchRegion);
+      ElemList.merge(ElementList2Add);
+      ElemList.unique(compare_gId);
+    }
+    return ElemList;
+  }
+  dserror("should not get here");
 }
 
 void XFEM::XSearchTree::TreeNode::insertElement(
@@ -405,21 +436,23 @@ void XFEM::XSearchTree::TreeNode::insertElement(
     ) {
   if ((actTreedepth_ >= XFEM::XSearchTree::MAX_TREEDEPTH) || (State_ == STATE_LEAF_NODE) ) {
     ElementList_.push_back(elem);
+    ElementList_.sort(compare_gId);
 //    cout << "inserted element at depth " << actTreedepth_ <<endl;
     State_ = STATE_LEAF_NODE;
   } else if(State_ == STATE_INNER_NODE) {
+    ElementList_.push_back(elem);
     const list<int> childIdx(classifyElement(elem,currentpositions));
     for (list<int>::const_iterator myIt = childIdx.begin(); myIt != childIdx.end(); myIt++){
       this->children_[*myIt-1]->insertElement(elem,currentpositions);
 //      BlitzMat3x2 ab = this->children_[*myIt-1]->getAABB();
 //      printf("inserted elem to AABB(%f,%f,%f,%f,%f,%f)\n", ab(0,0),ab(0,1),ab(1,0),ab(1,1),ab(2,0),ab(2,1));
      }
-
+    ElementList_.sort(compare_gId);
   } 
 }
 
 list< const DRT::Element* > XFEM::XSearchTree::TreeNode::getElementList(){
-  return ElementList_;
+    return ElementList_;
 }
 
 void XFEM::XSearchTree::setMaxOverlap(double maxO){
@@ -429,7 +462,6 @@ void XFEM::XSearchTree::setMaxOverlap(double maxO){
 double XFEM::XSearchTree::getMaxOverlap(){
   return MAX_OVERLAP_ALLOWED_;
 }
-
 
 BlitzMat3x2 XFEM::XSearchTree::TreeNode::getChildOctAABB(const int i){
   BlitzMat3x2 chldAABB;
@@ -476,59 +508,68 @@ int XFEM::XSearchTree::TreeNode::classifyPoint(const BlitzVec3& pointcoords) {
 list<int> XFEM::XSearchTree::TreeNode::classifyElement(
     const DRT::Element*       elem,
     const map<int,BlitzVec3>& currentpositions
-    ) {
-//  bool isAABBbiggerThanElemXAABB;
-  list<int> octants;
+    ) 
+{
+  
   const BlitzMat xyze(XFEM::getCurrentNodalPositions(elem,currentpositions));
   const BlitzMat3x2 elemXAABB(XFEM::computeFastXAABB(elem, xyze, HIGHERORDER));
   
-  if (elemXAABB(0, 1) > XPlaneCoordinate_) {
-    if (elemXAABB(1, 1) > YPlaneCoordinate_) {
-      if (elemXAABB(2, 1) > ZPlaneCoordinate_){
+  return classifyAABB(elemXAABB);
+  
+}
+
+list<int> XFEM::XSearchTree::TreeNode::classifyAABB(
+    const BlitzMat3x2 AABB
+    ) {
+  list<int> octants;
+ 
+  if (AABB(0, 1) > XPlaneCoordinate_) {
+    if (AABB(1, 1) > YPlaneCoordinate_) {
+      if (AABB(2, 1) > ZPlaneCoordinate_){
         octants.push_back(8);
 //        do_refine[8] = isAABBbiggerThanElemXAABB;
       }
-      if (elemXAABB(2, 0) <= ZPlaneCoordinate_){
+      if (AABB(2, 0) <= ZPlaneCoordinate_){
         octants.push_back(7);
 //        do_refine[7] = isAABBbiggerThanElemXAABB;
       }
     }
-    if (elemXAABB(1, 0) <= YPlaneCoordinate_) {
-      if (elemXAABB(2, 1) > ZPlaneCoordinate_){
+    if (AABB(1, 0) <= YPlaneCoordinate_) {
+      if (AABB(2, 1) > ZPlaneCoordinate_){
         octants.push_back(6);
 //        do_refine[6] = isAABBbiggerThanElemXAABB;
       }
-      if (elemXAABB(2, 0) <= ZPlaneCoordinate_){
+      if (AABB(2, 0) <= ZPlaneCoordinate_){
         octants.push_back(5);
 //        do_refine[5] = isAABBbiggerThanElemXAABB;
       }
     }
   }
-  if (elemXAABB(0, 0) <= XPlaneCoordinate_) {
-    if (elemXAABB(1, 1) > YPlaneCoordinate_) {
-      if (elemXAABB(2, 1) > ZPlaneCoordinate_){
+  if (AABB(0, 0) <= XPlaneCoordinate_) {
+    if (AABB(1, 1) > YPlaneCoordinate_) {
+      if (AABB(2, 1) > ZPlaneCoordinate_){
         octants.push_back(4);
 //        do_refine[4] = isAABBbiggerThanElemXAABB;
       }
-      if (elemXAABB(2, 0) <= ZPlaneCoordinate_){
+      if (AABB(2, 0) <= ZPlaneCoordinate_){
         octants.push_back(3);
 //        do_refine[3] = isAABBbiggerThanElemXAABB;
       }
     }
-    if (elemXAABB(1, 0) <= YPlaneCoordinate_) {
-      if (elemXAABB(2, 1) > ZPlaneCoordinate_){
+    if (AABB(1, 0) <= YPlaneCoordinate_) {
+      if (AABB(2, 1) > ZPlaneCoordinate_){
         octants.push_back(2);
 //        do_refine[2] = isAABBbiggerThanElemXAABB;
       }
-      if (elemXAABB(2, 0) <= ZPlaneCoordinate_){
+      if (AABB(2, 0) <= ZPlaneCoordinate_){
         octants.push_back(1);
 //        do_refine[1] = isAABBbiggerThanElemXAABB;
       }
     }
     
   }
-//    printf("classifiing elem(%f,%f,%f,%f,%f,%f)", elemXAABB(0,0),elemXAABB(0,1),elemXAABB(1,0),elemXAABB(1,1),elemXAABB(2,0),elemXAABB(2,1));
-//    printf("classified element to octants: ");
+//    printf("classifiing AABB: ", elemXAABB(0,0),elemXAABB(0,1),elemXAABB(1,0),elemXAABB(1,1),elemXAABB(2,0),elemXAABB(2,1));
+//    printf("classified AABB to octants: ");
 //  for (list<int>::const_iterator myIt = octants.begin(); myIt != octants.end(); myIt++)
 //  {
 //      printf("%d ", *myIt);
@@ -537,6 +578,7 @@ list<int> XFEM::XSearchTree::TreeNode::classifyElement(
   return octants;
   
 }
+
 
 int XFEM::XSearchTree::TreeNode::getState() {
   return State_;
@@ -554,6 +596,17 @@ XFEM::XSearchTree::TreeNode* XFEM::XSearchTree::TreeNode::getChild(const int idx
   return children_[idx-1];
 }
 
+XFEM::XSearchTree::TreeNode* XFEM::XSearchTree::TreeNode::getParent(){
+  if (this->hasParent())
+    return parent_;
+  return NULL;
+}
+
+bool XFEM::XSearchTree::TreeNode::hasParent() const {
+  if (parent_!=NULL)
+    return true;
+  return false;
+}
 
 int XFEM::XSearchTree::getMemoryUsage() const{
   int mem = treeRoot_->getMemoryUsage();
@@ -603,8 +656,6 @@ void XFEM::XSearchTree::printTree(const string prefix, const int step) const{
   cout << " done" << endl;
 }
 
-
-
 void XFEM::XSearchTree::TreeNode::printTree(stringstream& fc) const{
   int factor = 1;
   if (actTreedepth_==-1)
@@ -630,11 +681,11 @@ void XFEM::XSearchTree::TreeNode::printTree(stringstream& fc) const{
   else if (State_==STATE_LEAF_NODE)
   {
     if (labelID_<0)
-      factor = 0;
+      factor = 0; // more than one candidate in this octant
     else if (labelID_==0)
-      factor = -1;
+      factor = 1; // fluid octant
     else
-      factor = 1;
+      factor = 2; // solid octant
     BlitzMat XAABB(3,8);
     XAABB(0,0) = AABB_(0,0); XAABB(1,0) = AABB_(1,0);XAABB(2,0) = AABB_(2,0);
     XAABB(0,1) = AABB_(0,0); XAABB(1,1) = AABB_(1,1);XAABB(2,1) = AABB_(2,0);
@@ -644,13 +695,12 @@ void XFEM::XSearchTree::TreeNode::printTree(stringstream& fc) const{
     XAABB(0,5) = AABB_(0,1); XAABB(1,5) = AABB_(1,1);XAABB(2,5) = AABB_(2,0);
     XAABB(0,6) = AABB_(0,1); XAABB(1,6) = AABB_(1,1);XAABB(2,6) = AABB_(2,1);
     XAABB(0,7) = AABB_(0,1); XAABB(1,7) = AABB_(1,0);XAABB(2,7) = AABB_(2,1);
-    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, factor*actTreedepth_, XAABB)<< endl;
+    fc << IO::GMSH::cellWithScalarToString(DRT::Element::hex8, factor*tree_->MAX_TREEDEPTH+actTreedepth_, XAABB)<< endl;
   }
   
 }
 
 void XFEM::XSearchTree::printTreeMetrics(const int step) const{
-#ifdef DEBUG 
   cout << "\t********************* TREE STATS ******************" << endl;
   if (!TreeInit_ ) {
     cout << "\tno stats, tree not initialized yet -> done" << endl;
@@ -671,6 +721,7 @@ void XFEM::XSearchTree::printTreeMetrics(const int step) const{
   cout << "\tnodes in tree           : " << treeRoot_->getNodesInTree(-1) << endl;
   cout << "\tleaf nodes in tree      : " << treeRoot_->getNodesInTree(1) << endl;
   cout << "\ttree depth              : " << treeRoot_->getDepth() << " (max: "<< MAX_TREEDEPTH<<")"<< endl;
+  cout << "\tretry nodes             : " << nodesWithReTry_ << endl;
   cout << "\tmem size                : " << fixed << getMemoryUsage()/1024.0 << " kb"<<endl;  
   stringstream ts;
   Teuchos::TimeMonitor::summarize(ts);
@@ -680,11 +731,15 @@ void XFEM::XSearchTree::printTreeMetrics(const int step) const{
   cout << "\toverall answer time     : " <<fixed << time << " secs" << endl;
   cout << "\tmean answer time        : " << time/(double)searchRequests_ << " secs" << endl;
   cout << "\t***************************************************" << endl;
-#else
-  cout << "\tno statistics in fast mode, please use DEBUG flag." <<endl;
-#endif
 }
 
+bool XFEM::compare_gId(const DRT::Element* A, const DRT::Element* B)
+{
+  if ( (A->Id())<(B->Id()) ) 
+    return true;
+  else 
+    return false;
+}
 
 
 #endif  // #ifdef CCADISCRET

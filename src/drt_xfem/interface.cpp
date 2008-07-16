@@ -46,7 +46,7 @@ XFEM::InterfaceHandle::InterfaceHandle(
       cutterdis->Dof(node, lm);
       vector<double> mydisp(3);
       DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
-      static BlitzVec3 currpos;
+      BlitzVec3 currpos;
       currpos(0) = node->X()[0] + mydisp[0];
       currpos(1) = node->X()[1] + mydisp[1];
       currpos(2) = node->X()[2] + mydisp[2];
@@ -395,8 +395,8 @@ int XFEM::PositionWithinConditionBruteForce(
       const DRT::Element* cutterele = ih.cutterdis()->gElement(*elegid);
       const BlitzMat xyze_cutter(getCurrentNodalPositions(cutterele, *ih.currentcutterpositions()));
       double distance = 0.0;
-      static BlitzVec2 eleCoord;
-      static BlitzVec3 normal;
+      BlitzVec2 eleCoord;
+      BlitzVec3 normal;
       in_element = searchForNearestPointOnSurface(cutterele,xyze_cutter,x_in,eleCoord,normal,distance);
       if (in_element)
       {

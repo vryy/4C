@@ -51,6 +51,9 @@ namespace XFEM
       //! pointer to the tree
       XSearchTree* tree_; 
       
+      //! pointer to the tree
+      TreeNode* parent_; 
+      
       //! axis aligned bounding box of this treeNode
       const BlitzMat3x2 AABB_;
       
@@ -74,7 +77,7 @@ namespace XFEM
         \param  aabb              : AxisAlignedBoundingBox of this TreeNode (=Octant)
         \param  tree              : Pointer to tree to which this Node belongs to
         */
-        TreeNode(const int Depth, const BlitzMat3x2& aabb, XSearchTree* tree);
+        TreeNode(const int Depth, const BlitzMat3x2& aabb, XSearchTree* tree, TreeNode* parent);
         virtual ~TreeNode();
         
         //! gives STATE_INNER_NODE or STATE_LEAF_NODE
@@ -88,6 +91,12 @@ namespace XFEM
 
         //! get child with index idx
         TreeNode* getChild(const int idx);
+
+        //! get parent node
+        TreeNode* getParent();
+
+        //! test if this node has a parent node (==treeRoot)
+        bool hasParent() const;
         
         //! insert Element
         void insertElement(
@@ -106,7 +115,7 @@ namespace XFEM
          \return                             list of elements which are candidates, gives back an 
                                              empty list if point type (fluid/solid) is definitly known
          */
-        list< const DRT::Element* > queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointcoords, int& lID);
+        int queryPointType(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointcoords, int& closestElementID);
         
         //! gives back ElementList_ 
         list< const DRT::Element* > getElementList();
@@ -131,20 +140,34 @@ namespace XFEM
 
         //! gives the AxisAlignedBoundingBox of the treenode (which of course is the same as the "strict" BB)
          const BlitzMat3x2& getAABB();
+         
+         //! gives back a List of Candidates for an axis aligned search region
+         list< const DRT::Element* > getCandidateList(const BlitzMat3x2& AASearchRegion);
+
        
       private:
         
-        //! gives the octand(=child) of this treenode to which elem belongs (uses the XAABB of elem)
+        //! gives the octant(=child) of this treenode to which elem belongs (uses the XAABB of elem)
         list<int> classifyElement(
             const DRT::Element*       elem,
             const map<int,BlitzVec3>& currentpositions
             ); 
         
+        //! gives the octant(=child-Idx) of this treenode to which AABB belongs
+        list<int> classifyAABB(
+             const BlitzMat3x2 AABB
+            );
+        
         //! gives the octand(=child) of this treenode to which the point belongs 
         int classifyPoint(const BlitzVec3& pointcoords);
+
+        //! determines the XFEM-Label of an Point. The point should be located in the TreeNode calling the function
+        int getXFEMLabelOfPointInTreeNode(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const BlitzVec3& pointCoords);
         
          //! gives the AABB of a child of this treenode
         BlitzMat3x2 getChildOctAABB(const int chldIdx);
+        
+
       
     }; // class TreeNode
     
@@ -183,6 +206,9 @@ namespace XFEM
       //! pointer to the root of the tree
       XFEM::XSearchTree::TreeNode* treeRoot_;
       
+      //! 
+      int nodesWithReTry_;
+      
       //! inserts an element into the tree
       void insertElement(
           const DRT::Element* elem,
@@ -217,6 +243,9 @@ namespace XFEM
       void setMaxOverlap(double maxO);
       double getMaxOverlap();
       
+      //! gives back a List of Candidates for an axis aligned search region
+      list< const DRT::Element* > getCandidateList(const BlitzVec3& X,const double radius);
+      
       void setElementsForOverlapCheck(int maxO){
         ELEMENTS_USED_FOR_OVERLAP_CHECK_ = maxO;
       }
@@ -235,16 +264,19 @@ namespace XFEM
 
       //! dumps a visualization of the tree in a gmsh file (<prefiy>_tree0000<step>.pos)
       void printTree(const string prefix, const int step) const;
-
-      
+     
       //! get memory usage
       int getMemoryUsage() const;
      
       //! the XFEM-Coupling-Condition-Label of a element by its gid
       int getLabelByElementID(const int gid);
+      
   }; 
   
+  bool compare_gId(const DRT::Element* A, const DRT::Element* B);
+
 } // namespace XFEM
+
 
 #endif
 #endif

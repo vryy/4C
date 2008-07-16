@@ -24,6 +24,10 @@ Maintainer: Ursula Mayer
 
 namespace XFEM
 {
+  const static int DISTANCE_TO_ELEMENT_SURFACE=1;
+  const static int DISTANCE_TO_ELEMENT_LINE=2;
+  const static int DISTANCE_TO_ELEMENT_POINT=3;
+
   /*!
   \brief Gives the eXtendedAxisAlignedBoundingBox of a complete Discretization and adds TOL07, 
          also takes into account current displacements
@@ -54,7 +58,34 @@ namespace XFEM
   \param  dist              (out)   : distance btw. x and nearest element
   \return                             pointer to nearest element
   */
-  const DRT::Element* nearestNeighbourInList(const DRT::Discretization& dis,const std::map<int,BlitzVec3>& currentpositions, const list<const DRT::Element* >& ElementList, const BlitzVec3& x, double& dist);
+  const DRT::Element* nearestNeighbourInList(
+      const DRT::Discretization& dis,
+      const std::map<int,BlitzVec3>& currentpositions, 
+      const list<const DRT::Element* >& ElementList, 
+      const BlitzVec3& x, 
+      double& dist);
+  
+  const DRT::Element* nearestNeighbourInListOld(
+      const DRT::Discretization& dis,
+      const std::map<int,BlitzVec3>& currentpositions, 
+      const list<const DRT::Element* >& ElementList, 
+      const BlitzVec3& x, 
+      double& dist);
+  
+  const DRT::Element* nearestNeighbourInListNew(
+      const DRT::Discretization& dis,
+      const std::map<int,BlitzVec3>& currentpositions, 
+      const list<const DRT::Element* >& ElementList, 
+      const BlitzVec3& x, 
+      double& distance);
+  
+  //! gives the Element of which the XAABB has the minimum maxDistance to the Point
+  const DRT::Element* nearestXAABBNeighbourInList(
+      const DRT::Discretization& dis,
+      const std::map<int,BlitzVec3>& currentpositions, 
+      const list<const DRT::Element* >& ElementList, 
+      const BlitzVec3& x, 
+      double& dist);
 
   /*!
   \brief merges 2 bounding boxes
@@ -64,21 +95,78 @@ namespace XFEM
   \return                             merged bounding box
   */
   BlitzMat3x2 mergeAABB(const BlitzMat3x2& A, const BlitzMat3x2& B);
-  
-  //! gives overlap-area of 2 AABB
+
+  //! gives overlap-percentage of 2 AABBs
+  bool isContainedAinB(const BlitzMat3x2& A, const BlitzMat3x2& B);
+    
+  //! gives overlap-area of 3 AABBs
   double getOverlapArea(const BlitzMat3x2& A, const BlitzMat3x2& B, const BlitzMat3x2& C);
  
-  //! gives overlap-area of 2 AABB
+  //! gives overlap-area of n AABBs
   double getOverlapArea(const list<BlitzMat3x2 > AABBs);
   
   //! gives of an AABB
-  double getArea(const BlitzMat3x2& AABB);
+  double getVolume(const BlitzMat3x2& AABB);
+  
+  //! gives maximum distance of a point from an AABB
+  double getMaxDistanceFromAABB(const BlitzVec3& X, const BlitzMat3x2 AABB);
+
+  //! gives AABB of an circle
+  BlitzMat3x2 getAABBofSphere(const BlitzVec3& X, const double radius);
+
   
   void checkRoughGeoType(
-           DRT::Element*          element,
-           const BlitzMat&        xyze_element,
-           EleGeoType&            eleGeoType
+           DRT::Element*                element,
+           const BlitzMat               xyze_element,
+           EleGeoType&                  eleGeoType
            );
+  
+  double getSquaredElementDistance(
+      const DRT::Element*                     surfaceElement,
+      const std::map<int,BlitzVec3>&                currentpositions,
+      const BlitzVec3&                        physCoord,
+      BlitzVec2&                              xsi,
+      BlitzVec3&                              normal,
+      int&                                    distanceTyp);
+  
+  double getSquaredElementDistance_Surface(
+      const DRT::Element*                     surfaceElement,
+      const std::map<int,BlitzVec3>&                currentpositions,
+      const BlitzVec3&                        physCoord,
+      BlitzVec2&                              xsi,
+      BlitzVec3&                              vector2minDistPoint);
+
+  double getSquaredElementDistance_Line(
+      const DRT::Element*                     surfaceElement,
+      const std::map<int,BlitzVec3>&                currentpositions,
+      const BlitzVec3&                        physCoord,
+      BlitzVec2&                              xsi,
+      BlitzVec3&                              vector2minDistPoint);
+
+  double getSquaredElementDistance_Point(    
+      const DRT::Element*                     surfaceElement,
+      const std::map<int,BlitzVec3>&                currentpositions,
+      const BlitzVec3&                        physCoord,
+      BlitzVec2&                              xsi,
+      BlitzVec3&                              vector2minDistPoint);
+  
+  BlitzVec3 getNormalAtXsi(
+      const DRT::Discretization& dis,
+      const DRT::Element* surfaceElement,
+      const std::map<int,BlitzVec3>& currentpositions, 
+      const BlitzVec2& xsi, 
+      const BlitzVec3& X,
+      const int& ElementType);
+  
+  list < const DRT::Element* > getCommonElements(const DRT::Node* A,const DRT::Node* B);
+  
+  BlitzVec3 addVectors(const list< BlitzVec3 > vectors);
+  BlitzMat2x2 getXsiBoundingBox(const DRT::Element* surfaceElement);
+  const DRT::Node* getNodeAtXsi(
+      const DRT::Element*       surfaceElement, 
+      const std::map<int,BlitzVec3>&  currentpositions,
+      const BlitzVec2&          xsi);
+  
 }
 
 #endif
