@@ -86,7 +86,7 @@ namespace INPUTPARAMS
     timeint_stationary,
     timeint_one_step_theta,
     timeint_bdf2,
-    timeint_gen_alpha,
+    timeint_gen_alpha
   };
 }
 
