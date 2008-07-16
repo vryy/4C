@@ -14,14 +14,7 @@ Maintainer: Axel Gerstenberger
 #ifndef DOF_DISTRIBUTION_SWITCHER_H
 #define DOF_DISTRIBUTION_SWITCHER_H
 
-//#include "xfem.H"
-//#include "physics.H"
-//#include "enrichment.H"
-//#include "field_enriched.H"
-//#include "dofkey.H"
-//#include "integrationcell.H"
 #include "interface.H"
-//#include "../drt_lib/drt_discret.H"
 
 
 namespace XFEM
@@ -54,6 +47,15 @@ public:
                 oldElementalDofDistrib_(oldElementalDofDistrib),
                 newElementalDofDistrib_(newElementalDofDistrib)
     {
+        // derive information for dofkeys per node
+        map<DofKey<onNode>, DofPos>::const_iterator dofkeyiter;
+        for (dofkeyiter = oldNodalDofDistrib.begin(); dofkeyiter != oldNodalDofDistrib.end(); ++dofkeyiter)
+        {
+          const DofKey<onNode> dofkey = dofkeyiter->first;
+          const int gid = dofkey.getGid();
+          const XFEM::FieldEnr fieldenr = dofkey.getFieldEnr();
+          oldDofKeysPerNode_[gid].insert(fieldenr);
+        }
         return;
     }
             
@@ -94,6 +96,7 @@ private:
     const map<DofKey<onNode>, DofPos>&   newNodalDofDistrib_;
     const map<DofKey<onElem>, DofPos>&   oldElementalDofDistrib_;
     const map<DofKey<onElem>, DofPos>&   newElementalDofDistrib_;
+    map<int,std::set<XFEM::FieldEnr> >  oldDofKeysPerNode_;
 };
 
 } // namespace XFEM
