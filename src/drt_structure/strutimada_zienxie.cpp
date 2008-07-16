@@ -40,16 +40,11 @@ StruTimAdaZienXie::StruTimAdaZienXie
   genalpha_(Teuchos::null)
 {
   // check for generalised-alpha
-  if (dynamic_cast<StruTimIntGenAlpha*>(&(*tis_)) == NULL)
+  genalpha_ = Teuchos::rcp(dynamic_cast<StruTimIntGenAlpha*>(&(*tis_)), false);
+  if (genalpha_ == Teuchos::null)
   {
     dserror("%s can only work with Generalised-alpha",
             MethodTitle().c_str());
-  }
-  else 
-  {
-    // make cast onto derived object
-    genalpha_ = Teuchos::rcp(dynamic_cast<StruTimIntGenAlpha*>(&(*tis_)),
-                             false);
   }
 
   // check compatability of marching time integrator
