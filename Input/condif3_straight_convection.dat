@@ -20,8 +20,8 @@ DIM                3
 MATERIALS          1
 NUMDF              1
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Convection_Diffusion
-NUMFIELD     1
+PROBLEMTYP   Scalar_Transport
+NUMFIELD     2
 TIMETYP      Dynamic
 ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
@@ -57,40 +57,20 @@ FRICTION         None
 FRBOUND          0.0
 FRCOEFF          0.0
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP       Nlin_Time_Int
-INITIALFIELD     zero_field
-RESSTEP          -1
-STARTFUNCNO      2
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 TIMEINTEGR       Stationary
-STARTINGALGO     One_Step_Theta
-NONLINITER       Newton
-ITEMAX           5
-CONVCHECK        L_2_norm
-CONVTOL          1.0E-6
-STEADYCHECK      L_2_norm
-STEADYSTEP       -1
-STEADYTOL        1.0E-6
-UPOUT            1
-UPPSS            1
 UPRES            1
 RESTARTEVRY      20
 NUMSTEP          1
-NUMSTASTEPS      0
 MAXTIME          1000.0
 TIMESTEP         0.05
 THETA            0.66
-START_THETA      0.67
-ALPHA_F          1.00
-ALPHA_M          1.00
-LIFTDRAG         no
-CD_VELOCITY      function
-CD_VELFUNCNO     1
-CD_INITIALFIELD  zero_field
-CD_INITFUNCNO    -1
+VELOCITYFIELD    function
+VELFUNCNO        1
+INITIALFIELD     zero_field
+INITFUNCNO       -1
 FSSUGRVISC       No
-ADAPTCONV        Yes
-ADAPTCONV_BETTER 0.1
-SIMPLER          No
+WRITEFLUX        No
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE              residual_based
 DEFINITION_TAU        Barrenechea_Franca_Valentin_Wall
@@ -119,6 +99,7 @@ DUMPING_PERIOD        0
 -------------------------------------------------------ALE DYNAMIC
 -------------------------------------------------------TSI DYNAMIC
 ------------------------------------------------------FLUID SOLVER
+-------------------------------------------SCALAR TRANSPORT SOLVER
 SOLVER         UMFPACK            // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR

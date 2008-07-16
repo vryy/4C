@@ -16,10 +16,10 @@ ELEMENTS         361
 NODES            400
 DIM                2
 MATERIALS          1
-NUMDF        3
+NUMDF              3
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Convection_Diffusion
-NUMFIELD     1
+PROBLEMTYP   Scalar_Transport
+NUMFIELD     2
 TIMETYP      Dynamic
 ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
@@ -33,29 +33,22 @@ NUMTHERMDIS  0
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
-DYNAMICTYP   Nlin_Time_Int
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 TIMEINTEGR   Stationary
-UPOUT        1
-UPPSS        1
-UPRES        1
 RESTARTEVRY  20
 MAXTIME      1.0
 NUMSTEP      10
 TIMESTEP     0.1
 THETA        0.5
-STARTINGALGO One_Step_Theta
-NUMSTASTEPS  0
-START_THETA  0.67
 INITIALFIELD zero_field
-RESSTEP      -1
-STARTFUNCNO  2
 FSSUGRVISC   No
-CD_VELOCITY  function
-CD_VELFUNCNO 1
+VELOCITYFIELD  function
+VELFUNCNO 1
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
 ------------------------------------------------------OPTIMIZATION
 ------------------------------------------------------FLUID SOLVER
+-------------------------------------------SCALAR TRANSPORT SOLVER
 SOLVER         LAPACK_nonsym
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER
