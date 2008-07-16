@@ -49,7 +49,12 @@ class Beam2Register;
 namespace ELEMENTS
 {
 /*!
-\brief two dimensional nonlinear corotational Euler-Bernoulli beam element
+\brief two dimensional nonlinear corotational Timoshenko beam element according to Crisfield, Vol.1,
+section 7.3 ("a simple corotational element using timoshenko beam theory"), p. 219 - 221; the current
+implementation sets the initial angles the theta1 and theta2 to zero, which can be done without loss
+of generality since any initial rotation cancels out in the equations (7.97) and (7.98). As a consequence
+the current nodal directors do not appear in the element, but only the values of the current director
+angles minus reference director angles, respectively 
 
 \author cyron (cyron @lnm.mw.tum.de)
 */

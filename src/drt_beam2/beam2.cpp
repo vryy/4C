@@ -360,6 +360,7 @@ int DRT::ELEMENTS::Beam2Register::Initialize(DRT::Discretization& dis)
 	  currele->halfrotations_ = -1;   
       
     } //for (int i=0; i<dis_.NumMyColElements(); ++i)
+   
   
   return 0;
 }
