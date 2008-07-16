@@ -1277,7 +1277,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
 
     std::stringstream filename;
     filename << allfiles.outputfile_kenner << "_solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    std::cout << "writing '"<<filename.str()<<"'...";
+    std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::Pres;
@@ -1356,7 +1356,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
     std::stringstream filename;
     filename << allfiles.outputfile_kenner << "_solution_pressure_disc_" << std::setw(5) << setfill('0') << step_
     << ".pos";
-    std::cout << "writing '"<<filename.str()<<"'...";
+    std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
     const XFEM::PHYSICS::Field field = XFEM::PHYSICS::DiscPres;
@@ -1442,7 +1442,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
     filenamexy << allfiles.outputfile_kenner << "_solution_tauxy_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
     filenamexz << allfiles.outputfile_kenner << "_solution_tauxz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
     filenameyz << allfiles.outputfile_kenner << "_solution_tauyz_disc_" << std::setw(5) << setfill('0') << step_ << ".pos";
-    std::cout << "writing stress ...";
+    std::cout << "writing " << std::left << std::setw(50) <<"stresses"<<"...";
     //std::ofstream f_system(  filename.str().c_str());
     std::ofstream f_systemxx(filenamexx.str().c_str());
     std::ofstream f_systemyy(filenameyy.str().c_str());
@@ -1609,8 +1609,8 @@ void XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
     bool ele_to_textfile = false;
     std::stringstream filename;
-    filename << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << step_ << ".pos";
-    std::cout << "writing '"<<filename.str()<<"'...";
+    filename << allfiles.outputfile_kenner << filestr << std::setw(5) << std::setfill('0') << step_ << ".pos";
+    std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
     {

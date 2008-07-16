@@ -251,7 +251,6 @@ void XFEM::DofManager::toGmsh(
 #if 1
   if (gmshdebugout)
   {
-    cout << "XFEM::DofManager::toGmsh()" << endl;
     std::stringstream filename;
     filename << allfiles.outputfile_kenner << "_numdof_coupled_system_" << std::setw(5) << setfill('0') << step << ".pos";
     std::ofstream f_system(filename.str().c_str());
@@ -433,7 +432,7 @@ void XFEM::DofManager::toGmsh(
       // debug info: print ele dofmanager information
       std::stringstream filename;
       filename << allfiles.outputfile_kenner << "_eledofman_check_" << std::setw(5) << setfill('0') << step << ".pos";
-      std::cout << "writing '"<<filename.str()<<"'...";
+      std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
       {
         std::ofstream f_system(filename.str().c_str());
         //f_system << IO::GMSH::disToString("Fluid", 0.0, ih->xfemdis(), ih->elementalDomainIntCells());
@@ -468,7 +467,7 @@ void XFEM::DofManager::toGmsh(
         }
         f_system.close();
       }
-      std::cout << "done" << endl;
+      std::cout << " done" << endl;
     }
     
     

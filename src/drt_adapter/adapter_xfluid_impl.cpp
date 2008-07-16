@@ -240,20 +240,28 @@ void ADAPTER::XFluidImpl::Output()
   const Epetra_Map* fluidsurface_dofcolmap = boundarydis_->DofColMap();
   Teuchos::RCP<Epetra_Vector> ivelcol     = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> ivelncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> ivelnmcol   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> iaccncol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
+  Teuchos::RCP<Epetra_Vector> iaccnmcol   = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> idispcol    = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   Teuchos::RCP<Epetra_Vector> itruerescol = LINALG::CreateVector(*fluidsurface_dofcolmap,true);
   
   // map to fluid parallel distribution
-  LINALG::Export(*ivel_,*ivelcol);
-  LINALG::Export(*idisp_,*idispcol);
+  LINALG::Export(*idisp_ ,*idispcol);
+  LINALG::Export(*ivel_  ,*ivelcol);
+  LINALG::Export(*iveln_ ,*ivelncol);
+  LINALG::Export(*ivelnm_,*ivelnmcol);
+  LINALG::Export(*iaccn_ ,*iaccncol);
+  LINALG::Export(*iaccnm_,*iaccnmcol);
+  
   LINALG::Export(*itrueres_,*itruerescol);
   
-  LINALG::Export(*iveln_,*ivelncol);
-  
-  
   PrintInterfaceVectorField(idispcol, itruerescol, "_solution_iforce_", "interface traction");
-  PrintInterfaceVectorField(idispcol, ivelcol, "_solution_ivel_", "interface velocity n+1");
-  PrintInterfaceVectorField(idispcol, ivelncol, "_solution_iveln_", "interface velocity n");
+  PrintInterfaceVectorField(idispcol, ivelcol  , "_solution_ivel_"  , "interface velocity n+1");
+  PrintInterfaceVectorField(idispcol, ivelncol , "_solution_iveln_" , "interface velocity n");
+  PrintInterfaceVectorField(idispcol, ivelnmcol, "_solution_ivelnm_", "interface velocity n-1");
+  PrintInterfaceVectorField(idispcol, iaccncol , "_solution_iaccn_" , "interface acceleration n");
+  PrintInterfaceVectorField(idispcol, iaccnmcol, "_solution_iaccnm_", "interface acceleration n-1");
 
 }
 
@@ -266,7 +274,7 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
 {
 std::stringstream filename;
 filename << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
-std::cout << "writing '"<<filename.str()<<"'...";
+std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
 std::ofstream f_system(filename.str().c_str());
 
 {
