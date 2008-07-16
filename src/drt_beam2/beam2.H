@@ -341,7 +341,6 @@ ostream& operator << (ostream& os, const DRT::Element& ele);
 
 
 
-
 //------------- class Beam2Register: -------------------------------------------
 
 /*!

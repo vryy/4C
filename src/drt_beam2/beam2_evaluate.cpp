@@ -387,7 +387,6 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
   //calculating refenrence configuration xrefe and current configuration xcurr
   for (int k=0; k<iel; ++k)
   {
-
     xrefe(0,k) = Nodes()[k]->X()[0];
     xrefe(1,k) = Nodes()[k]->X()[1];
 
@@ -395,7 +394,6 @@ void DRT::ELEMENTS::Beam2::b2_nlnstiffmass( vector<double>&           disp,
     xcurr(1,k) = xrefe(1,k) + disp[k*numdf+1];
     //note: this is actually not the current director angle, but current director angle minus reference director angle
     xcurr(2,k) = disp[k*numdf+2];
-
   }
   
   // calculation of local geometrically important matrices and vectors; notation according to Crisfield-------

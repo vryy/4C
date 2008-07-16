@@ -216,7 +216,6 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Beam2::Lines()
 
 
 
-
 //------------- class Beam2Register: -------------------------------------
 
 
