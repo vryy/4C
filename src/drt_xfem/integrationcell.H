@@ -110,24 +110,30 @@ public:
      */
     DRT::Element::DiscretizationType Shape() const {return distype_;};
     
-    //! returns a string representation of the IntegrationCell
+    /*!
+     \brief returns number of nodes
+
+     \return number of nodes
+     */
+    int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(Shape());};
+    
+    //! returns a string representation of the IntCell
     std::string toString() const;
 
-protected:
+private:
 
     //! shape
     const DRT::Element::DiscretizationType distype_;
-    
-private:
+
     //! hidden default constructor
     explicit IntCell();
 };
 
 
-/*
+/*!
  * \brief An domain integration cell is used for integrating the XFEM elements domain 
  */
-class DomainIntCell : private IntCell
+class DomainIntCell : public IntCell
 {
 
 public:
@@ -160,7 +166,7 @@ public:
      */
     DomainIntCell& operator = (const DomainIntCell& old)
     {
-        DomainIntCell cell(old.distype_, old.nodalpos_xi_domain_blitz_);
+        DomainIntCell cell(old.Shape(), old.nodalpos_xi_domain_blitz_);
         DomainIntCell& ref = cell;
         return ref;
     };
@@ -172,20 +178,6 @@ public:
      */
     DomainIntCell(
             const DomainIntCell& old);
-
-    /*!
-     \brief returns the shape of the integration cell
-
-     \return distype_
-     */
-    DRT::Element::DiscretizationType Shape() const {return distype_;};
-    
-    /*!
-     \brief returns number of nodes
-
-     \return number of nodes
-     */
-    int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(distype_);};
     
     /*!
      \brief returns the coordinates of the integration cell in domain element coordinates
@@ -231,10 +223,10 @@ typedef std::vector<XFEM::DomainIntCell > DomainIntCells;
 typedef std::set<XFEM::DomainIntCell > DomainIntCellSet;
 
 
-/*
+/*!
  * \brief An boundary integration cell is used for integrating along a discontinuity caused by XFEM enrichments 
  */
-class BoundaryIntCell : private IntCell
+class BoundaryIntCell : public IntCell
 {
 
 public:
@@ -265,27 +257,13 @@ public:
     BoundaryIntCell& operator = (const BoundaryIntCell& old)
     {
         BoundaryIntCell cell(
-                old.distype_,
+                old.Shape(),
                 old.surface_ele_gid_,
                 old.nodalpos_xi_domain_blitz_,
                 old.nodalpos_xi_boundary_blitz_);
         BoundaryIntCell& ref = cell;
         return ref;
     };
-    
-    /*!
-     \brief returns the shape of the integration cell
-
-     \return distype_
-     */
-    DRT::Element::DiscretizationType Shape() const {return distype_;};
-    
-    /*!
-     \brief returns number of nodes
-
-     \return number of nodes
-     */
-    int NumNode() const {return DRT::UTILS::getNumberOfElementNodes(distype_);};
     
     /*!
      \brief returns the coordinates of the integration cell in physical coordinates
