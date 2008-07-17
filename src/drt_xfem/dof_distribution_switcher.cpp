@@ -20,7 +20,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_lib/linalg_mapextractor.H"
 
-
+//! try to find another enrichment for this physical field
 static XFEM::Enrichment genAlternativeEnrichment(
         const int                    gnodeid,
         const XFEM::PHYSICS::Field   oldphysvar,
@@ -87,7 +87,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistribution(
               const XFEM::PHYSICS::Field field = newdofkey.getFieldEnr().getField();
               
               // if node had no dofs before, initialize from interface values
-              if (oldDofKeysPerNode_.find(newdofkey.getGid())->second.empty())
+              if (oldEnrFieldSetNode_.find(newdofkey.getGid())->second.empty())
               {
                 if (field == XFEM::PHYSICS::Velx)
                   (*newVector)[newdofrowmap_.LID(newdofpos)] = ivalrigid_body(0);

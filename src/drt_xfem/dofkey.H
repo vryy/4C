@@ -48,7 +48,7 @@ namespace XFEM
    * \brief A unique identifier for a degree of freedom (DOF)
    * 
    * Haskell-esque:
-   * type DofKey = (DofType, Gid, FieldEnr)
+   * type DofKey = (Gid, FieldEnr)
    * 
    * \tparam DofType to distinguish between element and nodal dofs, now the compiler complains
    *         when we mix them, since DofKey<onNode> is different from DofKey<onElement>
@@ -93,16 +93,19 @@ namespace XFEM
         return s.str();
       };
             
+      //! return global node or element Id
       int getGid() const
       {
         return gid_;
       };
       
+      //! return enriched field
       const FieldEnr& getFieldEnr() const
       {
         return fieldenr_;
       };
       
+      //! compare: dofkeys are ordered first by the global id and then by their enrichment
       bool operator <(const DofKey& rhs) const
       {
         if (gid_ < rhs.gid_)
@@ -118,6 +121,7 @@ namespace XFEM
         }
       }
             
+      //! test for equality: only equal, if gid and enriched field are identical
       bool operator ==(const DofKey& rhs) const
       {
         if (gid_ == rhs.gid_ and fieldenr_ == rhs.fieldenr_)
@@ -126,6 +130,7 @@ namespace XFEM
           return false;
       }
       
+      //! test for inequality: if any member differs, the objects are not equal
       bool operator !=(const DofKey& rhs) const
       {
         //        return (!(*this == rhs));
@@ -153,7 +158,7 @@ namespace XFEM
       //! specific enriched field
       const XFEM::FieldEnr  fieldenr_;
       
-  }; // class DofKey
+  };
   
   //! connects each dofkey on Node with a specific position in an solution vector
   typedef map<XFEM::DofKey<XFEM::onNode>, XFEM::DofPos > NodalDofPosMap;

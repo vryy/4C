@@ -57,6 +57,7 @@ public:
     //! return pointer to the intersecting discretization
     RCP<DRT::Discretization> cutterdis() const {return cutterdis_;};
     
+    //! returns pointer to map with (current) nodal positions per node of the cutter discretization 
     const std::map<int,BlitzVec3>* currentcutterpositions() const {return &currentcutterpositions_;};
 
     //! get pointer to map with all domain integration cells on this proc
@@ -171,6 +172,10 @@ int PositionWithinConditionTree(
         double& distance
     );
 
+/*!
+\brief checks if a position in current coordinates lies within a certain condition region: example brute force implementation
+\warning does worrk only for convex bodies in serial and it is the worst case algorithm O(n*m) - use for debuging only
+*/
 int PositionWithinConditionBruteForce(
         const BlitzVec3&                  x,              ///< node in physical coordinates
         const XFEM::InterfaceHandle&      ih              ///< the ubiquitious interface handle with all geometry information

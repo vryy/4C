@@ -48,9 +48,11 @@ extern "C"
 namespace XFEM
 {
 
+//! possible positions of a Stainer point
 enum SteinerType {S_SURFACE, S_EDGE, S_BOUNDARY};
 
 
+//! given 2 discretizations, this class intersects one mesh by the second and return interface information
 class Intersection
 {
 

@@ -28,10 +28,14 @@ using namespace std;
 namespace XFEM
 {
 
+//! possible positions of a point with respect to an element
 enum pointType {NOTYPE, INTERNAL, SURFACE, LINE, NODE};
 
 
-
+/*!
+\brief      InterfacePoint stores and delivers all data a point lying on the 
+            intersection interface has to know 
+*/
 class InterfacePoint
 {
 

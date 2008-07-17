@@ -54,7 +54,7 @@ public:
           const DofKey<onNode> dofkey = dofkeyiter->first;
           const int gid = dofkey.getGid();
           const XFEM::FieldEnr fieldenr = dofkey.getFieldEnr();
-          oldDofKeysPerNode_[gid].insert(fieldenr);
+          oldEnrFieldSetNode_[gid].insert(fieldenr);
         }
         return;
     }
@@ -65,6 +65,7 @@ public:
         return;
     }
     
+    //! switch from old to new dof distribution
     void mapVectorToNewDofDistribution(
             RCP<Epetra_Vector>&     vector
             ) const
@@ -76,6 +77,7 @@ public:
       mapVectorToNewDofDistribution(vector,dummy);
     }
     
+    //! switch from old to new dof distribution
     void mapVectorToNewDofDistribution(
             RCP<Epetra_Vector>&     vector,
             BlitzVec3               ivelnrigid_body
@@ -88,15 +90,15 @@ private:
     explicit DofDistributionSwitcher();
 
     
-    const RCP<XFEM::InterfaceHandle>     ih_;
-    const RCP<XFEM::DofManager>          dofman_;
-    const Epetra_Map                     olddofrowmap_;
-    const Epetra_Map                     newdofrowmap_;
-    const map<DofKey<onNode>, DofPos>&   oldNodalDofDistrib_;
-    const map<DofKey<onNode>, DofPos>&   newNodalDofDistrib_;
-    const map<DofKey<onElem>, DofPos>&   oldElementalDofDistrib_;
-    const map<DofKey<onElem>, DofPos>&   newElementalDofDistrib_;
-    map<int,std::set<XFEM::FieldEnr> >  oldDofKeysPerNode_;
+    const RCP<XFEM::InterfaceHandle>     ih_;                      ///< interface information
+    const RCP<XFEM::DofManager>          dofman_;                  ///< dofmanager for this proc
+    const Epetra_Map                     olddofrowmap_;            ///< dofrowmap of the old state vector
+    const Epetra_Map                     newdofrowmap_;            ///< dofrowmap of the new state vector
+    const map<DofKey<onNode>, DofPos>&   oldNodalDofDistrib_;      ///< old positions of dof in Epetra Vector per nodal dofkey
+    const map<DofKey<onNode>, DofPos>&   newNodalDofDistrib_;      ///< new positions of dof in Epetra Vector per nodal dofkey
+    const map<DofKey<onElem>, DofPos>&   oldElementalDofDistrib_;  ///< old positions of dof in Epetra Vector per element dofkey
+    const map<DofKey<onElem>, DofPos>&   newElementalDofDistrib_;  ///< new positions of dof in Epetra Vector per element dofkey
+    map<int,std::set<XFEM::FieldEnr> >   oldEnrFieldSetNode_;      ///< old enriched fields per node 
 };
 
 } // namespace XFEM

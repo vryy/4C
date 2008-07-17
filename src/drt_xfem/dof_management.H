@@ -153,16 +153,19 @@ namespace XFEM
         return xlabelset;
       }
       
+      //! access to map
       std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getDisTypePerFieldMap() const
       {
         return DisTypePerElementField_;
       }
       
+      //! access to map
       DRT::Element::DiscretizationType getDisTypePerField(XFEM::PHYSICS::Field field) const
       {
         return DisTypePerElementField_.find(field)->second;
       }
       
+      //! access to map
       const std::set<XFEM::FieldEnr>& getEnrichedFieldsPerEleField(XFEM::PHYSICS::Field field) const
       {
         return enrichedFieldperPhysField_.find(field)->second;
@@ -232,9 +235,15 @@ namespace XFEM
       //! return string representation of the dofmanager
       std::string toString() const;
       //! print a Gmsh representation of this class
-      void toGmsh(const Teuchos::RCP<XFEM::InterfaceHandle> ih, const int step) const;
+      void toGmsh(
+          const Teuchos::RCP<XFEM::InterfaceHandle> ih,  ///< interface information
+          const int step                                 ///< step for file numbering
+          ) const;
       
-      const std::set<FieldEnr> getNodeDofSet(const int gid) const
+      //! return set with enriched fields for requested node
+      const std::set<FieldEnr> getNodeDofSet(
+          const int gid      ///< global node id
+          ) const
       {
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = nodalDofSet_.find(gid);
         if (entry == nodalDofSet_.end())
@@ -244,7 +253,10 @@ namespace XFEM
         return entry->second;
       };
       
-      const std::set<XFEM::FieldEnr> getElementDofSet(const int gid) const
+      //! return set with enriched fields for requested element
+      const std::set<XFEM::FieldEnr> getElementDofSet(
+          const int gid      ///< global element id
+          ) const
       {
         std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator entry = elementalDofs_.find(gid);
         if (entry == elementalDofs_.end())
@@ -254,21 +266,25 @@ namespace XFEM
         return entry->second;
       };
       
+      //! for a given element, collect all information about Dofs for this element and return it
       XFEM::ElementDofManager constructElementDofManager(
-          const DRT::Element& ele,
-          const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz
+          const DRT::Element&                                                     ele,            ///< construct EleDofMan for this element
+          const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz  ///< information about the requested element unknowns
           ) const;
       
+      //! check whether given ElementDofManager fits the given element
       void checkForConsistency(
-          const DRT::Element& ele,
-          const XFEM::ElementDofManager& eledofman
+          const DRT::Element&            ele,        ///< element for which one wants to check the eledofmanager
+          const XFEM::ElementDofManager& eledofman   ///< eledofmanager in question
       ) const;
       
+      //! fill maps with nodal and element dof positions in EpetraVectors for all DofKeys on this proc
       void fillDofDistributionMaps(
-          NodalDofPosMap&      NodalDofDistributionMap,
-          ElementalDofPosMap&  ElementalDofDistributionMap
+          NodalDofPosMap&      NodalDofDistributionMap,        ///< nodal dofs
+          ElementalDofPosMap&  ElementalDofDistributionMap     ///< element dofs
       ) const;
       
+      //! for output XFEM is turned of and a uniform field is drawn. This method returns a vector with uniform number of unknowns per node
       Teuchos::RCP<Epetra_Vector> fillPhysicalOutputVector(
           const XFEM::InterfaceHandle&     ih,
           const Epetra_Vector&             original_vector,

@@ -58,12 +58,16 @@ class FieldEnr
     //! destructor
     ~FieldEnr() {return;}
 
+    //! return string representation
     std::string toString() const;
 
+    //! return physical field
     PHYSICS::Field getField() const {return field_;};
 
+    //! return enrichement for the field
     const Enrichment& getEnrichment() const {return enr_;};
     
+    //! order is given first by field, then by the enrichment
     bool operator <(const FieldEnr& rhs) const
     {
         if (field_ < rhs.field_)
@@ -78,7 +82,7 @@ class FieldEnr
                 return false;
         }
     }
-    //!
+    //! equality, if everything is equal
     bool operator ==(const FieldEnr& rhs) const
     {
         if (field_ == rhs.field_ and getEnrichment() == rhs.getEnrichment())
@@ -86,7 +90,7 @@ class FieldEnr
         else
             return false;
     }
-    
+    //! inequality if any member differs
     bool operator !=(const FieldEnr& rhs) const
     {
 //        return (!(*this == rhs));

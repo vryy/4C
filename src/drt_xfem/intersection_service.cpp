@@ -95,16 +95,14 @@ void XFEM::elementToCurrentCoordinatesInPlace(
 \brief updates the system matrix at the corresponding element coordinates for the 
        computation if a node in current coordinates lies within an element 
 
-\param dim               (in)       : dimension of the problem
-\param A                 (out)      : system matrix
-\param xsi               (in)       : vector of element coordinates
-\param element           (in)       : element 
+\tparam dim   dimension of the problem
+
 */  
 template <DRT::Element::DiscretizationType DISTYPE, int dim, class M1, class V, class M2>
 static inline void updateAForNWE(
-    M1&                           A,
-    const V&                      xsi,
-    const M2&                     xyze
+    M1&                           A,     ///< system matrix
+    const V&                      xsi,   ///< vector of element coordinates
+    const M2&                     xyze   ///< nodal position array (3,numNodes)
     )                                                  
 {   
     const int numNodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;

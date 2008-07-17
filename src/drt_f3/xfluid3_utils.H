@@ -574,7 +574,7 @@ bool secondDerivativesAvailable()
   return hoel;
 }
 
-
+//! decide, whether second derivatives can occur
 template <DRT::Element::DiscretizationType  DISTYPE>
 bool isHigherOrderElement()
 {

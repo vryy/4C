@@ -35,10 +35,12 @@ namespace XFLUID
    */
   template<DRT::Element::DiscretizationType veldistype>
   struct StressInterpolation3D {};
+  /// @cond
   template<> struct StressInterpolation3D<DRT::Element::tet4>  {static const DRT::Element::DiscretizationType distype = DRT::Element::point1;};
   template<> struct StressInterpolation3D<DRT::Element::hex8>  {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
   template<> struct StressInterpolation3D<DRT::Element::hex20> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
   template<> struct StressInterpolation3D<DRT::Element::hex27> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
+  /// @endcond
   
   
   /*!
@@ -49,11 +51,12 @@ namespace XFLUID
    */
   template<DRT::Element::DiscretizationType veldistype>
   struct DiscPressureInterpolation3D {};
+  /// @cond
   template<> struct DiscPressureInterpolation3D<DRT::Element::tet4>  {static const DRT::Element::DiscretizationType distype = DRT::Element::point1;};
   template<> struct DiscPressureInterpolation3D<DRT::Element::hex8>  {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
   template<> struct DiscPressureInterpolation3D<DRT::Element::hex20> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
   template<> struct DiscPressureInterpolation3D<DRT::Element::hex27> {static const DRT::Element::DiscretizationType distype = DRT::Element::hex8;};
-  
+  /// @endcond
   
   /*!
    * \brief Returns the distype for stress interpolation
@@ -113,6 +116,7 @@ namespace XFLUID
     return distype;
   }
   
+  //! for a given velocity interpolation, a map is produced which has the number of element unknowns per physical field
   inline map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> getElementAnsatz(DRT::Element::DiscretizationType eledistype)
   {
     map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;

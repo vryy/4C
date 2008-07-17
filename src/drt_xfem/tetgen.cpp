@@ -8,6 +8,8 @@ Maintainer: Ursula Mayer
 </pre>
 */
 #ifdef CCADISCRET
+// no docu on this file
+/// @cond
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // TetGen                                                                    //
@@ -34969,4 +34971,5 @@ void tetrahedralize(char *switches, tetgenio *in, tetgenio *out,
 
 #endif // not TETLIBRARY
 }
+/// @endcond
 #endif // #ifdef CCADISCRET

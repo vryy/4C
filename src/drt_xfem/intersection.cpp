@@ -556,19 +556,14 @@ bool XFEM::Intersection::checkIfLineInSurface(
 /*!
 \brief updates the systemmatrix at the corresponding element coordinates
        for the computation of curve surface intersections
-
-\param A                 (out)      : system matrix
-\param xsi               (in)       : vector of element coordinates
-\param surfaceElement    (in)       : surface element
-\param lineElement       (in)       : line element
 */
 template< DRT::Element::DiscretizationType surftype,
           DRT::Element::DiscretizationType linetype >
 void updateAForCSI(
-    BlitzMat3x3&                      A,
-    const BlitzVec3&                  xsi,
-    const BlitzMat&                   xyze_surfaceElement,
-    const BlitzMat&                   xyze_lineElement
+    BlitzMat3x3&                      A,                   ///< system matrix
+    const BlitzVec3&                  xsi,                 ///< vector of element coordinates (r,s,t)
+    const BlitzMat&                   xyze_surfaceElement, ///< nodal positions of surface element
+    const BlitzMat&                   xyze_lineElement     ///< nodal positions of line element
 )
 {
   const int numNodesSurface = DRT::UTILS::getNumberOfElementNodes<surftype>();
@@ -603,19 +598,15 @@ void updateAForCSI(
 /*!
 \brief updates the rhs at the corresponding element coordinates
        for the computation of curve surface intersections
-
-\param b                 (out)      : right-hand-side
-\param xsi               (in)       : vector of element coordinates
-\param surfaceElement    (in)       : surface element
-\param lineElement       (in)       : line element
 */
 template<DRT::Element::DiscretizationType surftype,
          DRT::Element::DiscretizationType linetype>
 void updateRHSForCSI(
-    BlitzVec3&         b,
-    const BlitzVec3&   xsi,
-    const BlitzMat&                   xyze_surfaceElement,
-    const BlitzMat&                   xyze_lineElement)
+    BlitzVec3&           b,                   ///< right-hand-side
+    const BlitzVec3&     xsi,                 ///< vector of element coordinates (r,s,t)
+    const BlitzMat&      xyze_surfaceElement, ///< nodal positions of surface element
+    const BlitzMat&      xyze_lineElement     ///< nodal positions of line element
+    )
 {
   const int numNodesSurface = DRT::UTILS::getNumberOfElementNodes<surftype>();
   const int numNodesLine = DRT::UTILS::getNumberOfElementNodes<linetype>();
@@ -643,17 +634,15 @@ void updateRHSForCSI(
 /*!
     \brief solves a singular system of equations
 
-\param xsi              (in/out)    : vector of element domain coordinates
-\param lineElement      (in)        : line element
-\param surfaceElement   (in)        : surface element
-return true if resulting system is singular , false otherwise
+  \return true if resulting system is singular , false otherwise
 */
 template<DRT::Element::DiscretizationType surftype,
          DRT::Element::DiscretizationType linetype>
 bool computeSingularCSI(
-    BlitzVec3&                  xsi,
-    const BlitzMat&             xyze_surfaceElement,
-    const BlitzMat&             xyze_lineElement)
+    BlitzVec3&           xsi,                 ///< vector of element coordinates (r,s,t)
+    const BlitzMat&      xyze_surfaceElement, ///< nodal positions of surface element
+    const BlitzMat&      xyze_lineElement     ///< nodal positions of line element
+    )
 {
   bool singular = true;
   int iter = 0;
@@ -691,7 +680,22 @@ bool computeSingularCSI(
 }
 
 
+/*!
+\brief computes an interseticon point between a curve and a surface - templated part
 
+    The nonlinear system of equation is solved with help of the Newton-method.
+
+\param surfaceElement           (in)    : surface element
+\param xyze_surfaceElement      (in)    : nodal coordinates of surface element
+\param lineElement              (in)    : line element
+\param xyze_lineElement         (in)    : nodal coordinates of line element
+\param xsi                      (in/out): starting value/vector of element coordinates
+\param upLimit                  (in)    : upper search interval boundary
+\param loLimit                  (in)    : lower search interval boundary
+\param doSVD                    (in)    : compute SVD if not Cartesian surface element and linear line elments present
+\param tol                      (in)    : tolerance
+return true if an intersection point was found, otherwise false
+*/
 template<DRT::Element::DiscretizationType surftype,
          DRT::Element::DiscretizationType linetype>
 bool computeCurveSurfaceIntersectionT(
@@ -4664,6 +4668,7 @@ void XFEM::Intersection::debugIntersectionOfSingleElements(
   f_system.close();
 }
 
+//! return Gmsh representation of a bounding box
 static std::string XAABBToString(
     const double scalar,
     const vector<vector<double> >& XAABB)

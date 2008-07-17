@@ -621,7 +621,7 @@ void XFEM::checkRoughGeoType(
     dserror("order of element shapefuntion is not correct");
 }
 
-//! gives maximum distance of a point from an AABB
+// gives maximum distance of a point from an AABB
 double XFEM::getMaxDistanceFromAABB(const BlitzVec3& X, const BlitzMat3x2 AABB){
   double maxDistance2=0.0;
   double AABB_X2=0.0;
@@ -645,7 +645,7 @@ double XFEM::getMaxDistanceFromAABB(const BlitzVec3& X, const BlitzMat3x2 AABB){
   return sqrt(maxDistance2); 
 }
 
-//! gives AABB of an circle
+// gives AABB of an circle
 BlitzMat3x2 XFEM::getAABBofSphere(const BlitzVec3& X, const double radius){
   const int nsd=3;
   BlitzMat3x2 AABB;

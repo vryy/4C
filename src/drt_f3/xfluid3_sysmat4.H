@@ -43,7 +43,7 @@ using namespace XFEM::PHYSICS;
 namespace XFLUID
 {
 
-
+  //! fill a number of arrays with unknown values from the unknown vector given by the discretization
   template <DRT::Element::DiscretizationType DISTYPE,
             XFEM::AssemblyType ASSTYPE>
   void fillElementUnknownsArrays4(

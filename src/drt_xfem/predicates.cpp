@@ -8,6 +8,8 @@ Maintainer: Ursula Mayer
 </pre>
 */
 #ifdef CCADISCRET
+// no docu on this file
+/// @cond
 /*****************************************************************************/
 /*                                                                           */
 /*  Routines for Arbitrary Precision Floating-point Arithmetic               */
@@ -4195,4 +4197,5 @@ REAL insphere(REAL *pa, REAL *pb, REAL *pc, REAL *pd, REAL *pe)
 
   return insphereadapt(pa, pb, pc, pd, pe, permanent);
 }
+/// @endcond
 #endif // #ifdef CCADISCRET

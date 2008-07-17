@@ -30,33 +30,29 @@ Maintainer: Ursula Mayer
 namespace XFEM
 {
 
-enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
+  //! based on this element property, one can speed up geometry algorithms 
+  enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
 
-    //! tolerance 1e-14 used for residuals in Newton-methods
+    //! tolerance used for residuals in Newton-methods
     const double                 TOL14 = 1e-14;
     
-    //! tolerance 1e-13 used for residuals in Newton-methods
+    //! tolerance used for residuals in Newton-methods
     const double                 TOL13 = 1e-13;
     
-    //! tolerance 1e-13 used for residuals in Newton-methods
+    //! tolerance used for residuals in Newton-methods
     const double                 TOL10 = 1e-10;
 
-    //! tolerance 1e-7 
+    //! named tolerance for easy search/grep
     const double                 TOL7 = 1e-7;
-    
-    //! tolerance 1e-3 
+    //! named tolerance for easy search/grep
     const double                 TOL4 = 1e-4;
-        
-    //! tolerance 1e-3 
+    //! named tolerance for easy search/grep
     const double                 TOL3 = 1e-3;
-    
-    //! tolerance 1e-2 
+    //! named tolerance for easy search/grep
     const double                 TOL2 = 1e-2;
-    
-    //! tolerance 1e8
+    //! named tolerance for easy search/grep
     const double                 TOLPLUS8 = 1e8;
-    
-    //! tolerance 1e15 
+    //! named tolerance for easy search/grep
     const double                 TOLPLUS15 = 1e15;
     
     /*!
@@ -187,17 +183,13 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
     /*!
     \brief transforms a point in element coordinates to a point
            in current coordinates with respect to a given element
-
-    \param element          (in)        : element
-    \param eleCoord         (in)    	: vector of element coordinates
-    \return                               vector of current coordinates
     */
     template <class V>
     void elementToCurrentCoordinates(   
-        const DRT::Element*  element, 
-        const BlitzMat&      xyze,
-        const V&             xsi,
-        BlitzVec3&           x
+        const DRT::Element*  element,  ///< element
+        const BlitzMat&      xyze,     ///< nodal positions of element
+        const V&             xsi,      ///< position in element coordinates (r), (r, s) or (r, s, t)
+        BlitzVec3&           x         ///< position in physical coordinates (x, y, z)
         )
     {
         const int numNodes = element->NumNode();
@@ -237,14 +229,11 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
     /*!
     \brief transforms a point in element coordinates to a point
            in current coordinates with respect to a given element
-
-    \param element          (in)        : element
-    \param eleCoord         (in/out)    : vector of element/current coordinates
     */
     void elementToCurrentCoordinatesInPlace(   
-        const DRT::Element*  element,
-        const BlitzMat&      xyze,
-        BlitzVec&            eleCoord
+        const DRT::Element*  element,    ///< element
+        const BlitzMat&      xyze,       ///< nodal positions of element
+        BlitzVec&            eleCoord    ///< vector of element/current coordinates
         );
 
     
@@ -255,7 +244,7 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
 
     \param element              (in)        : element 
     \param x                    (in)        : node in current coordinates (x, y, z)
-    \param xsi                  (out)       : node in element coordinates
+    \param xsi                  (out)       : node in element coordinates (r, s, t)
     \return bool, indicates, whether positions was found within element coordinates
     */  
     bool currentToVolumeElementCoordinates(
@@ -296,15 +285,14 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
     /*!
     \brief compares two points (overloaded method)
 
-    \param point1       (in)    : first point   (double*)
-    \param point2       (in)    : second point  (double*)
-    \param lenght       (in)    : length of arrays
+    \tparam lenght       (in)    : length of arrays
     \return true if both points equal each other, false otherwise
     */
     template<int length>
     bool comparePoints(
-        const double*     point1,
-        const double*     point2) 
+        const double*     point1,   ///< first point
+        const double*     point2    ///< second point
+        ) 
     {   
         for(int i = 0; i < length; i++)
             if(fabs(point1[i] - point2[i]) > TOL7)
@@ -557,41 +545,32 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
     
     /*!
     \brief  finds the nearest point for a given point on a surface element
-            the element coordinates of this point are stored in eleCoord, the normal
-            point from the given point to the nearest point on the surface,
-            distance returns the absolut length of the normal. 
-            If the computed point lies outside the element , the distance which is retuned equals -1
-            and the normal is set to zero.
-
-    \param surfaceElement       (in)       : surface element
-    \param physCoord            (out)      : physical coordinates      
-    \param eleCoord             (in)       : element coordinates
-    \param normal               (in)       : normal point from a given point to the surface point
-    \param distance             (in)       : length of the normal
+            
+        the element coordinates of this point are stored in eleCoord, the normal
+        point from the given point to the nearest point on the surface,
+        distance returns the absolut length of the normal. 
+        If the computed point lies outside the element , the distance which is retuned equals -1
+        and the normal is set to zero.
     */         
     bool searchForNearestPointOnSurface(
-            const DRT::Element*                     surfaceElement,
-            const BlitzMat&                         xyze_cutter,
-            const BlitzVec3&                        physCoord,
-            BlitzVec2&                              eleCoord,
-            BlitzVec3&                              normal,
-            double&                                 distance
+            const DRT::Element*                     surfaceElement,  ///< surface element
+            const BlitzMat&                         xyze_cutter,     ///< nodal position array (3,numnode)
+            const BlitzVec3&                        physCoord,       ///< physical coordinates
+            BlitzVec2&                              eleCoord,        ///< element coordinates
+            BlitzVec3&                              normal,          ///< normal point from a given point to the surface point
+            double&                                 distance         ///< length of the normal
             );
     
     
     /*!
        \brief checks if a position in current coordinates lies within a certain surfaceElement           
           The nonlinear system of equation is solved with help of the Newton-method.
-    
-       \param surfaceElement   (in)        : surfaceElement 
-       \param physCoord           	(in)        : node in physical coordinates (x, y, z)
-       \return									  node in element coordinates (r, s)
     */  
     void CurrentToSurfaceElementCoordinates(
-        const DRT::Element*      surfaceElement,
-        const BlitzMat&          xyze_surfaceElement,
-        const BlitzVec3&         physCoord,
-        BlitzVec2&               xsi
+        const DRT::Element*      surfaceElement,        ///< surface element
+        const BlitzMat&          xyze_surfaceElement,   ///< nodal position array (3,numnode)
+        const BlitzVec3&         physCoord,             ///< node in physical coordinates (x, y, z)
+        BlitzVec2&               xsi                    ///< node in element coordinates (r, s)
         );
     
     
@@ -634,13 +613,12 @@ enum EleGeoType {CARTESIAN, LINEAR, HIGHERORDER};
     \brief Computes a rough overestimating extended  
            axis-aligned bounding box for an element (XAABB)
 
-    \param  element          (in)      : element
     \return extended axis-aligned bounding box  (XAABB) for an element
     */
     BlitzMat3x2 computeFastXAABB( 
-            const DRT::Element*   element,
-            const BlitzMat&       xyze,
-            const EleGeoType      eleGeoType      
+            const DRT::Element*   element,    ///< element for which one wants to have a boundaing box
+            const BlitzMat&       xyze,       ///< nodal position array (3,numnode)
+            const EleGeoType      eleGeoType  ///< element geometric type CARTESIAN LINEAR or HIGHERORDER
             );
     
     
