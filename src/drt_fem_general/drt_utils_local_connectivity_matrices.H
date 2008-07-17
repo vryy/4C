@@ -539,41 +539,43 @@ namespace UTILS
   /*!
     \brief    Returns the order of an element based on its discretization-type
               Template version
-    */
-    template<DRT::Element::DiscretizationType DISTYPE>
-    struct DisTypeToOrder {};
-    template<> struct DisTypeToOrder<DRT::Element::point1>   {static const int order = 0;};
-    template<> struct DisTypeToOrder<DRT::Element::line2>    {static const int order = 1;};
-    template<> struct DisTypeToOrder<DRT::Element::line3>    {static const int order = 2;};
-    template<> struct DisTypeToOrder<DRT::Element::nurbs2>   {static const int order = 1;};
-    template<> struct DisTypeToOrder<DRT::Element::nurbs3>   {static const int order = 2;};
-    template<> struct DisTypeToOrder<DRT::Element::quad4>    {static const int order = 1;};
-    template<> struct DisTypeToOrder<DRT::Element::quad8>    {static const int order = 2;};
-    template<> struct DisTypeToOrder<DRT::Element::quad9>    {static const int order = 2;};
-    template<> struct DisTypeToOrder<DRT::Element::nurbs4>   {static const int order = 1;};
-    template<> struct DisTypeToOrder<DRT::Element::nurbs9>   {static const int order = 2;};
-    template<> struct DisTypeToOrder<DRT::Element::tri3>     {static const int order = 1;};
-    template<> struct DisTypeToOrder<DRT::Element::tri6>     {static const int order = 2;};
-    template<> struct DisTypeToOrder<DRT::Element::hex8>     {static const int order = 1;};
-    template<> struct DisTypeToOrder<DRT::Element::hex20>    {static const int order = 2;};
-    template<> struct DisTypeToOrder<DRT::Element::hex27>    {static const int order = 2;};
-    template<> struct DisTypeToOrder<DRT::Element::tet4>     {static const int order = 1;};
-    template<> struct DisTypeToOrder<DRT::Element::tet10>    {static const int order = 2;};
-    
-    /*!
-    \brief    Returns the dimension of an element based on its discretization-type
-              Template version
-    */
-    template <DRT::Element::DiscretizationType DISTYPE>
-    inline int getOrder()
-    {
-        return DisTypeToOrder<DISTYPE>::order;
-    }
-    
+   */
+  template<DRT::Element::DiscretizationType DISTYPE>
+  struct DisTypeToOrder {};
+  template<> struct DisTypeToOrder<DRT::Element::point1>   {static const int order = 0;};
+  template<> struct DisTypeToOrder<DRT::Element::line2>    {static const int order = 1;};
+  template<> struct DisTypeToOrder<DRT::Element::line3>    {static const int order = 2;};
+  template<> struct DisTypeToOrder<DRT::Element::nurbs2>   {static const int order = 1;};
+  template<> struct DisTypeToOrder<DRT::Element::nurbs3>   {static const int order = 2;};
+  template<> struct DisTypeToOrder<DRT::Element::quad4>    {static const int order = 1;};
+  template<> struct DisTypeToOrder<DRT::Element::quad8>    {static const int order = 2;};
+  template<> struct DisTypeToOrder<DRT::Element::quad9>    {static const int order = 2;};
+  template<> struct DisTypeToOrder<DRT::Element::nurbs4>   {static const int order = 1;};
+  template<> struct DisTypeToOrder<DRT::Element::nurbs9>   {static const int order = 2;};
+  template<> struct DisTypeToOrder<DRT::Element::tri3>     {static const int order = 1;};
+  template<> struct DisTypeToOrder<DRT::Element::tri6>     {static const int order = 2;};
+  template<> struct DisTypeToOrder<DRT::Element::hex8>     {static const int order = 1;};
+  template<> struct DisTypeToOrder<DRT::Element::hex20>    {static const int order = 2;};
+  template<> struct DisTypeToOrder<DRT::Element::hex27>    {static const int order = 2;};
+  template<> struct DisTypeToOrder<DRT::Element::tet4>     {static const int order = 1;};
+  template<> struct DisTypeToOrder<DRT::Element::tet10>    {static const int order = 2;};
 
-    int getOrder(
-                      const DRT::Element::DiscretizationType distype///< element-discretization type
-        );
+  /*!
+    \brief    returns the order of the element-shape
+              Template version
+   */
+  template <DRT::Element::DiscretizationType DISTYPE>
+  inline int getOrder()
+  {
+    return DisTypeToOrder<DISTYPE>::order;
+  }
+
+  /*!
+    \brief    returns the order of the element-shape
+   */
+  int getOrder(
+      const DRT::Element::DiscretizationType distype///< element-discretization type
+  );
   /*!
    * \brief    Returns the geometric center of the element in local coordinates
    */

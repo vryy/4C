@@ -204,9 +204,9 @@ inline IntegrationPoints1D getIntegrationPoints1D(
   return IntegrationPoints1D(gaussrule);
 }
 
-/*----------------------------------------------------------------------*
- |  returns the elementsize in local coordinates             a.ger 11/07|
- *----------------------------------------------------------------------*/    
+/*!
+ *  returns the elementsize in local coordinates
+ */    
 double getSizeInLocalCoordinates( 
     const DRT::Element::DiscretizationType     distype);
 
