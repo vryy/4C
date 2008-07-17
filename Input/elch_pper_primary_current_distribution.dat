@@ -80,10 +80,6 @@ START_THETA      0.67
 ALPHA_F          1.00
 ALPHA_M          1.00
 LIFTDRAG         no
-CD_VELOCITY      zero
-CD_VELFUNCNO     -1
-CD_INITIALFIELD  zero_field
-CD_INITFUNCNO    -1
 FSSUGRVISC       No
 ADAPTCONV        Yes
 ADAPTCONV_BETTER 0.1

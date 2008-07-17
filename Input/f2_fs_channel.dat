@@ -99,7 +99,6 @@ START_THETA      0.67
 ALPHA_F          1.00
 ALPHA_M          1.00
 LIFTDRAG         no
-CD_VELOCITY      Navier_Stokes
 FSSUGRVISC       No
 ADAPTCONV        Yes
 ADAPTCONV_BETTER 0.1

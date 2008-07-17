@@ -41,9 +41,13 @@ NUMSTEP      10
 TIMESTEP     0.1
 THETA        0.5
 INITIALFIELD zero_field
+INITFUNCNO   -1
 FSSUGRVISC   No
 VELOCITYFIELD  function
-VELFUNCNO 1
+VELFUNCNO    1
+ITEMAX       1
+UPRES        1
+WRITEFLUX    No
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
 ------------------------------------------------------OPTIMIZATION

@@ -78,10 +78,6 @@ ADAPTCONV_BETTER                0.1
 ALPHA_M      			0.833333333333330
 ALPHA_F      			0.666666666666660
 GAMMA        			0.666666666666667
-CD_INITFUNCNO                   -1
-CD_INITIALFIELD                 zero_field
-CD_VELFUNCNO                    -1
-CD_VELOCITY                     zero
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-06
 DYNAMICTYP                      Nlin_Time_Int
