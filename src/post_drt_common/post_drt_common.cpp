@@ -146,16 +146,15 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
     dserror("unknown problem type '%s'", type);
   }
 
-  
+
   spatial_approx_
-    = 
+    =
     map_read_string(&control_table_, "spatial_approximation");
 
-  if (strcmp(spatial_approx_.c_str(),"Nurbs")!=0 
-      && 
-      strcmp(spatial_approx_.c_str(),"Polynomial")!=0)
+  if (spatial_approx_!="Nurbs" and
+      spatial_approx_!="Polynomial")
   {
-    dserror("unknown type of spatial approximation '%s'", type);
+    dserror("unknown type of spatial approximation '%s'", spatial_approx_.c_str());
   }
 
   /*--------------------------------------------------------------------*/
@@ -478,13 +477,13 @@ void PostProblem::read_meshes()
 	  reader.ReadKnotvector(step);
 
 	RefCountPtr<DRT::NURBS::Knotvector> knots=Teuchos::rcp(new DRT::NURBS::Knotvector());
-	
+
 	knots->Unpack(*packed_knots);
 
 	knots->FinishKnots();
-	
+
 	// try a dynamic cast of the discretisation to a nurbs discretisation
-	DRT::NURBS::NurbsDiscretization* nurbsdis 
+	DRT::NURBS::NurbsDiscretization* nurbsdis
 	  =
 	  dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
 

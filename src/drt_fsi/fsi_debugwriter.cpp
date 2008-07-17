@@ -39,6 +39,8 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
   dis_ = DRT::UTILS::CreateDiscretizationFromCondition(dis,"FSICoupling","boundary","BELE3",conditions_to_copy);
   dis_->FillComplete();
 
+  dis_->Print(cout);
+
   coup_.SetupCoupling(*dis,
                       *dis_,
                       *ADAPTER::UTILS::ConditionNodeMap(*dis,"FSICoupling"),
@@ -61,7 +63,7 @@ void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
     new IO::OutputControl(
       dis_->Comm(),
       "none",                   // we do not have a problem type
-      "not specified",          // we do not have a problem type
+      "Polynomial",             // this is a FE code ... no nurbs
       "debug-output",           // no input file either
       s.str(),                  // an output file name is needed
       genprob.ndim,
