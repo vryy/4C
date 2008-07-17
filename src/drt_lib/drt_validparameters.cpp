@@ -353,13 +353,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   /*----------------------------------------------------------------------*/
   // An empty list. The actual list is arbitrary and not validated.
-  //Teuchos::ParameterList& condition =
-  list->sublist("CONDITION NAMES",false,
+  Teuchos::ParameterList& condition =
+    list->sublist("CONDITION NAMES",false,
                 "Names of conditions from exodus file.\n"
                 "This section is not validated, any variable is allowed here.\n"
                 "The names defined in this section can be used by all conditions instead of\n"
                 "a design object number. This section assigns the respective numbers to\n"
                 "the names.");
+
+  condition.disableRecursiveValidation();
 
   //ParameterList& stat = list->sublist("STATIC",false,"");
 
@@ -1100,14 +1102,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&combustdyn);
   IntParameter("NUMSTEP",1,"Total number of Timesteps",&combustdyn);
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&combustdyn);
-  IntParameter("ITEMAX",10,"Total number of FG iterations",&combustdyn); 
+  IntParameter("ITEMAX",10,"Total number of FG iterations",&combustdyn);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&combustdyn);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&combustdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&combustdyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustdyn_fluid = combustdyn.sublist("FLUID",false,"");
-    
+
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustdyn_fluid);
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustdyn_fluid);
 

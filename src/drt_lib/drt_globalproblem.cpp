@@ -183,7 +183,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   // a special section for condition names that contains a list of key-integer
   // pairs but is not validated since the keys are arbitrary.
   reader.ReadGidSection("--CONDITION NAMES", *list);
-  list->sublist("CONDITION NAMES").disableRecursiveValidation();
 
   setParameterList(list);
 }
