@@ -1,5 +1,5 @@
 /*!
-\file gmsh.cpp
+\file io_gmsh.cpp
 
 \brief simple element print library for Gmsh (debuging only)
 
@@ -25,7 +25,7 @@ Maintainer: Axel Gerstenberger
 std::string IO::GMSH::ScalarToString(const double scalar,
     const DRT::Element::DiscretizationType distype)
 {
-  stringstream pos_array_string;
+  std::stringstream pos_array_string;
 
   const int numnode = distypeToGmshNumNode(distype);
 
@@ -79,7 +79,7 @@ std::string IO::GMSH::elementAtCurrentPositionToString(
 {
 
   const DRT::Element::DiscretizationType distype = ele->Shape();
-  stringstream gmshfilecontent;
+  std::stringstream gmshfilecontent;
   
   blitz::Array<double,2> xyze(XFEM::getCurrentNodalPositions(ele,currentelepositions));
   gmshfilecontent << IO::GMSH::cellWithScalarToString(distype, scalar, xyze) << endl;
@@ -94,7 +94,7 @@ std::string IO::GMSH::disToString(
     const double scalar,
     const Teuchos::RCP<DRT::Discretization> dis)
 {
-  stringstream gmshfilecontent;
+  std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" " << s << " Elements \" {" << endl;
   for (int i=0; i<dis->NumMyColElements(); ++i)
   {
@@ -111,7 +111,7 @@ std::string IO::GMSH::disToString(
     const Teuchos::RCP<DRT::Discretization> dis,
     std::map<int,blitz::TinyVector<double,3> > currentpositions)
 {
-  stringstream gmshfilecontent;
+  std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" " << s << " Elements \" {" << endl;
   for (int i=0; i<dis->NumMyColElements(); ++i)
   {
@@ -132,7 +132,7 @@ std::string IO::GMSH::disToString(
     const std::map<int, XFEM::DomainIntCells >& elementDomainIntCellsMap,
     const std::map<int, XFEM::BoundaryIntCells >& elementBoundaryIntCellsMap)
 {
-  stringstream gmshfilecontent;
+  std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" " << s << " Elements and Integration Cells \" {"
       << endl;
   
@@ -171,7 +171,7 @@ std::string IO::GMSH::disToString(
 
 std::string IO::GMSH::getConfigString(const int numview)
 {
-  stringstream gmshfilecontent;
+  std::stringstream gmshfilecontent;
   for (int iview = 0; iview < numview; ++iview)
   {
     gmshfilecontent << "View["<<iview

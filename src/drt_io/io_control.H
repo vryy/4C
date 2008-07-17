@@ -1,3 +1,16 @@
+/*----------------------------------------------------------------------*/
+/*!
+ * \file io_control.H
+\brief output control
+
+<pre>
+Maintainer: Ulrich Kuettler
+            kuettler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/Members/kuettler
+            089 - 289-15238
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 #ifndef IO_CONTROL_H
 #define IO_CONTROL_H

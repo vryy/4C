@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file hdf_reader.cpp
+\file io_hdf.cpp
 
 \brief Helpers to read HDF5 based output.
 
