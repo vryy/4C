@@ -41,9 +41,13 @@ namespace DRT
       const DRT::Discretization& dis,
       map<int, DRT::Node*>& nodes,
       map< int, RefCountPtr<DRT::Element> >& elements,
-      const string& condname,
-      bool doghostelements=false
+      const string& condname
       );
+
+    /// collect all local nodes and elements in a condition including ghosts
+    void FindInterfaceObjects(const DRT::Discretization& dis,
+                              map<int, RCP<DRT::Element> >& elements,
+                              const string& condname);
 
     /// create ale discretization parallel to the fluid one
     void CreateAleDiscretization();

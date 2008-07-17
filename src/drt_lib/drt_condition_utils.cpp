@@ -56,8 +56,7 @@ extern struct _GENPROB     genprob;
 void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
                                       map<int, DRT::Node*>& nodes,
                                       map<int, RCP<DRT::Element> >& elements,
-                                      const string& condname,
-                                      bool doghostelements)
+                                      const string& condname)
 {
   int myrank = dis.Comm().MyPID();
   vector<DRT::Condition*> conds;
@@ -81,10 +80,33 @@ void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
     pos = elements.begin();
     for (iter = geo.begin(); iter != geo.end(); ++iter)
     {
-      if (doghostelements or iter->second->Owner() == myrank)
+      if (iter->second->Owner() == myrank)
       {
         pos = elements.insert(pos, *iter);
       }
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::FindInterfaceObjects(const DRT::Discretization& dis,
+                                      map<int, RCP<DRT::Element> >& elements,
+                                      const string& condname)
+{
+  vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+  for (unsigned i = 0; i < conds.size(); ++i)
+  {
+    // get this condition's elements
+    map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
+    map< int, RCP< DRT::Element > >::iterator iter, pos;
+    pos = elements.begin();
+    for (iter = geo.begin(); iter != geo.end(); ++iter)
+    {
+      // get all elements locally known, including ghost elements
+      pos = elements.insert(pos, *iter);
     }
   }
 }
@@ -346,33 +368,60 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   const int myrank = conditiondis->Comm().MyPID();
   const Epetra_Map* sourcenoderowmap = sourcedis->NodeRowMap();
 
-  // Loop all cutter elements and find the ones that live on an ale
-  // mesh.
   // We need to test for all elements (including ghosted ones) to
-  // catch all nodes attached to cutter elements
-  map<int, DRT::Node*>          sourcenodes;
+  // catch all nodes
   map<int, RCP<DRT::Element> >  sourceelements;
-  DRT::UTILS::FindInterfaceObjects(*sourcedis, sourcenodes, sourceelements, condname, true);
+  DRT::UTILS::FindInterfaceObjects(*sourcedis, sourceelements, condname);
 
-  // Loop all source elements
-  // We need to test for all elements (including ghosted ones) to
-  // catch all nodes attached to new elements
   set<int> rownodeset;
   set<int> colnodeset;
+
+  // construct new elements
   for (map<int, RCP<DRT::Element> >::const_iterator cuttereleiter = sourceelements.begin();
        cuttereleiter != sourceelements.end();
        ++cuttereleiter)
   {
     const RCP<DRT::Element> sourceele = cuttereleiter->second;
 
+    // get global node ids
+    vector<int> nids;
+    nids.reserve(sourceele->NumNode());
+    transform(sourceele->Nodes(), sourceele->Nodes()+sourceele->NumNode(),
+              back_inserter(nids), mem_fun(&DRT::Node::Id));
+
+    if (std::count_if(nids.begin(), nids.end(), DRT::UTILS::MyGID(sourcenoderowmap))==0)
+    {
+      dserror("no own node in element %d", sourceele->Id());
+    }
+
+    if (std::count_if(nids.begin(), nids.end(),
+                      DRT::UTILS::MyGID(sourcedis->NodeColMap())) < static_cast<int>(nids.size()))
+    {
+      dserror("element %d has remote non-ghost nodes",sourceele->Id());
+    }
+
+    copy(nids.begin(), nids.end(),
+         inserter(colnodeset, colnodeset.begin()));
+
     // copy node ids of cutterele to rownodeset but leave those that do
     // not belong to this processor
-    remove_copy_if(sourceele->NodeIds(), sourceele->NodeIds()+sourceele->NumNode(),
+    remove_copy_if(nids.begin(), nids.end(),
                    inserter(rownodeset, rownodeset.begin()),
                    not1(DRT::UTILS::MyGID(sourcenoderowmap)));
 
-    copy(sourceele->NodeIds(), sourceele->NodeIds()+sourceele->NumNode(),
-         inserter(colnodeset, colnodeset.begin()));
+    // Do not clone ghost elements here! Those will be handled by the
+    // discretization itself.
+    if (sourceele->Owner()==myrank)
+    {
+      // create an element with the same global element id
+      RCP<DRT::Element> condele = DRT::UTILS::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
+
+      // set the same global node ids to the ale element
+      condele->SetNodeIds(nids.size(), &nids[0]);
+
+      // add boundary element
+      conditiondis->AddElement(condele);
+    }
   }
 
   // construct new nodes, which use the same global id as the source nodes
@@ -404,34 +453,6 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
                                                       0,
                                                       conditiondis->Comm()));
   condnodecolvec.clear();
-
-  // construct new elements
-  for (map<int, RCP<DRT::Element> >::const_iterator cuttereleiter = sourceelements.begin();
-       cuttereleiter != sourceelements.end();
-       ++cuttereleiter)
-  {
-    const RCP<DRT::Element> sourceele = cuttereleiter->second;
-
-    // Do not clone ghost elements here! Those will be handled by the
-    // discretization itself.
-    if (not sourcedis->ElementRowMap()->MyGID(sourceele->Id()))
-      continue;
-
-    // create an element with the same global element id
-    RCP<DRT::Element> condele = DRT::UTILS::Factory(element_name, "Polynomial", sourceele->Id(), myrank);
-
-    // get global node ids of fluid element
-    vector<int> nids;
-    nids.reserve(sourceele->NumNode());
-    transform(sourceele->Nodes(), sourceele->Nodes()+sourceele->NumNode(),
-              back_inserter(nids), mem_fun(&DRT::Node::Id));
-
-    // set the same global node ids to the ale element
-    condele->SetNodeIds(nids.size(), &nids[0]);
-
-    // add boundary element
-    conditiondis->AddElement(condele);
-  }
 
   // copy selected conditions to the new discretization
   for (vector<string>::const_iterator conditername = conditions_to_copy.begin();
