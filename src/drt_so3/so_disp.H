@@ -31,9 +31,9 @@ using namespace Teuchos;
 #include "../drt_mat/material.H"
 
 // Several parameters which are fixed for Solid Wedge6
-const int NUMDIM_DISP = 3;      // number of dimensions
-const int NODDOF_DISP = 3;      // number of dofs per node
-const int NUMSTR_DISP = 6;      // number of strains/stresses
+const int NUMDIM_DISP = 3;      ///< number of dimensions
+const int NODDOF_DISP = 3;      ///< number of dofs per node
+const int NUMSTR_DISP = 6;      ///< number of strains/stresses
 
 // forward declarations
 struct _MATERIAL;

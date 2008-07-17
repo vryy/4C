@@ -35,8 +35,8 @@ using namespace Teuchos;
 // parameters which are fixed for Wall1
 const int NUMDIM_W1 = 2;
 const int NODDOF_W1 = 2;
-const int NUMSTR_W1 = 3;      // number of strains/stresses
-const int neas = 4;      // number of eas parameters
+const int NUMSTR_W1 = 3;      ///< number of strains/stresses
+const int neas = 4;      ///< number of eas parameters
 
 // forward declarations
 struct _MATERIAL;

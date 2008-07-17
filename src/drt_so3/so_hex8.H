@@ -32,12 +32,12 @@ using namespace Teuchos;
 #include "../drt_mat/material.H"
 
 // Several parameters which are fixed for Solid Hex8
-const int NUMNOD_SOH8 = 8;      // number of nodes
-const int NODDOF_SOH8 = 3;      // number of dofs per node
-const int NUMDOF_SOH8 = 24;     // total dofs per element
-const int NUMSTR_SOH8 = 6;      // number of strains/stresses
-const int NUMGPT_SOH8 = 8;      // total gauss points per element
-const int NUMDIM_SOH8 = 3;      // number of dimensions
+const int NUMNOD_SOH8 = 8;      ///< number of nodes
+const int NODDOF_SOH8 = 3;      ///< number of dofs per node
+const int NUMDOF_SOH8 = 24;     ///< total dofs per element
+const int NUMSTR_SOH8 = 6;      ///< number of strains/stresses
+const int NUMGPT_SOH8 = 8;      ///< total gauss points per element
+const int NUMDIM_SOH8 = 3;      ///< number of dimensions
 
 // forward declarations
 struct _MATERIAL;

@@ -32,14 +32,14 @@ using namespace Teuchos;
 #include "so_surface.H"
 #include "so_line.H"
 
-#define NUMNOD_PTET       4    // number of nodes
-#define NODDOF_PTET       3    // number of dofs per node
-#define NUMDOF_PTET      12    // total dofs per element
-#define NUMSTR_PTET       6    // number of strains/stresses
-#define NUMGPT_PTET       1    // total gauss points per element
-#define NUMDIM_PTET       3    // number of dimensions
-#define NUMCOORD_PTET     4    // number of shape function cooordinates (ksi1-ksi4)
-#define ALPHA_PTET      0.1    // stabilization parameter
+#define NUMNOD_PTET       4    ///< number of nodes
+#define NODDOF_PTET       3    ///< number of dofs per node
+#define NUMDOF_PTET      12    ///< total dofs per element
+#define NUMSTR_PTET       6    ///< number of strains/stresses
+#define NUMGPT_PTET       1    ///< total gauss points per element
+#define NUMDIM_PTET       3    ///< number of dimensions
+#define NUMCOORD_PTET     4    ///< number of shape function cooordinates (ksi1-ksi4)
+#define ALPHA_PTET      0.1    ///< stabilization parameter
 
 // forward declarations
 struct _MATERIAL;

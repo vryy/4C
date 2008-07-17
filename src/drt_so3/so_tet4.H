@@ -32,15 +32,15 @@ using namespace Teuchos;
 #include "so_surface.H"
 #include "so_line.H"
 
-#define NUMNOD_SOTET4       4      // number of nodes
-#define NODDOF_SOTET4       3      // number of dofs per node
-#define NUMDOF_SOTET4      12      // total dofs per element
-#define NUMSTR_SOTET4       6      // number of strains/stresses 	/****/
-#define NUMGPT_SOTET4       1      // total gauss points per element	/****/
-#define NUMDIM_SOTET4       3      // number of dimensions 			/****/
-#define NUMCOORD_SOTET4	    4 		// number of shape function cooordinates (ksi1-ksi4)
-#define NUMNOD_SOTET4_FACE  3		// number of nodes on a TET4 face (which is a TRI3)
-#define NUMGPT_SOTET4_FACE  1		// number of GP    on a TET4 face (which is a TRI3)
+#define NUMNOD_SOTET4       4      ///< number of nodes
+#define NODDOF_SOTET4       3      ///< number of dofs per node
+#define NUMDOF_SOTET4      12      ///< total dofs per element
+#define NUMSTR_SOTET4       6      ///< number of strains/stresses 	/****/
+#define NUMGPT_SOTET4       1      ///< total gauss points per element	/****/
+#define NUMDIM_SOTET4       3      ///< number of dimensions 			/****/
+#define NUMCOORD_SOTET4	    4 		///< number of shape function cooordinates (ksi1-ksi4)
+#define NUMNOD_SOTET4_FACE  3		///< number of nodes on a TET4 face (which is a TRI3)
+#define NUMGPT_SOTET4_FACE  1		///< number of GP    on a TET4 face (which is a TRI3)
 
 // forward declarations
 struct _MATERIAL;

@@ -19,12 +19,12 @@ using namespace Teuchos;
 #include "so_line.H"
 
 // Several parameters which are fixed for Solid Wedge6
-const int NUMNOD_WEG6 = 6;      // number of nodes
-const int NODDOF_WEG6 = 3;      // number of dofs per node
-const int NUMDOF_WEG6 = 18;     // total dofs per element
-const int NUMSTR_WEG6 = 6;      // number of strains/stresses
-const int NUMGPT_WEG6 = 6;      // total gauss points per element
-const int NUMDIM_WEG6 = 3;      // number of dimensions
+const int NUMNOD_WEG6 = 6;      ///< number of nodes
+const int NODDOF_WEG6 = 3;      ///< number of dofs per node
+const int NUMDOF_WEG6 = 18;     ///< total dofs per element
+const int NUMSTR_WEG6 = 6;      ///< number of strains/stresses
+const int NUMGPT_WEG6 = 6;      ///< total gauss points per element
+const int NUMDIM_WEG6 = 3;      ///< number of dimensions
 
 // forward declarations
 struct _MATERIAL;
