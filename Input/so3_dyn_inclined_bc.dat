@@ -130,7 +130,6 @@ ROUGHTNESS   1.0
 SC_COORD_X   0.0
 SC_COORD_Y   0.0
 DISC_CAPT    No
-CD_VELOCITY  Navier_Stokes
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0
 TIMESTEP     0.05
