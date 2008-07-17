@@ -22,15 +22,17 @@ Maintainer: Burkhard Bornemann
 
 #include "strutimint.H"
 
-/*======================================================================*/
-/*!
-\brief Dummy object holding vector utility functions
-\author bborn
-\date 07/08
-*/
-namespace STR  // belongs to structure namespace
+/*----------------------------------------------------------------------*/
+/* belongs to structural dynamics namespace */
+namespace STR
 {
 
+  /*====================================================================*/
+  /*!
+   * \brief Dummy object holding vector utility functions
+   * \author bborn
+   * \date 07/08
+   */
   class StruTimIntVector
   {
 
