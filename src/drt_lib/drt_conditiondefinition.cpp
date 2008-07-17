@@ -475,7 +475,7 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
 
       int dobjid = -1;
       if (conditionnames.isParameter(number))
-        dobjid = conditionnames.get<int>(number);
+        dobjid = conditionnames.get<int>(number) - 1;
       else
       {
         char* ptr;
