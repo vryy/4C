@@ -42,17 +42,19 @@ Maintainer: Burkhard Bornemann
 #include "strutimada.H"
 #include "strutimint_genalpha.H"
 
-/*======================================================================*/
-/*!
-\brief Time step size adaptivity with Zienkiewicz-Xie error indicator
-       only for generalised-alpha
-
-\author bborn
-\date 10/07
-*/
-namespace STR  // belongs to structure namespace
+/*----------------------------------------------------------------------*/
+/* belongs to structure namespace */
+namespace STR
 {
 
+  /*====================================================================*/
+  /*!
+   * \brief Time step size adaptivity with Zienkiewicz-Xie error indicator
+   *        only for generalised-alpha
+   *
+   * \author bborn
+   * \date 10/07
+   */
   class StruTimAdaZienXie : public StruTimAda
   {
 

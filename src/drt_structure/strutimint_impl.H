@@ -19,15 +19,18 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include "strutimint.H"
 
-/*======================================================================*/
-/*!
-\brief Front-end for structural dynamics with implicit time integration
-\author bborn
-\date 06/08
-*/
-namespace STR  // belongs to structure namespace
+/*----------------------------------------------------------------------*/
+/* belongs to structural dynamics namespace */
+namespace STR
 {
 
+  /*====================================================================*/
+  /*!
+   * \brief Front-end for structural dynamics
+   *        with *implicit* time integration
+   * \author bborn
+   * \date 06/08
+   */
   class StruTimIntImpl : public StruTimInt
   {
 

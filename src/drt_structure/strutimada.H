@@ -41,17 +41,18 @@ Maintainer: Burkhard Bornemann
 
 #include "strutimint.H"
 
-
-/*======================================================================*/
-/*!
-\brief Front-end for time step size adaptivity in structural dynamics
-
-\author bborn
-\date 07/08
-*/
-namespace STR  // belongs to structure namespace
+/*----------------------------------------------------------------------*/
+/* belongs to structure dynamics namespace */
+namespace STR
 {
 
+  /*====================================================================*/
+  /*!
+   * \brief Front-end for time step size adaptivity in structural dynamics
+   *
+   * \author bborn
+   * \date 07/08
+   */
   class StruTimAda
   {
 

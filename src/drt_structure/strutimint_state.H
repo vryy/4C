@@ -21,25 +21,27 @@ Maintainer: Burkhard Bornemann
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_Vector.h"
 
-/*======================================================================*/
-/*!
-\brief Object holds multiple displacements, velocities and
-       accelerations vectors (or similiar), of structural time 
-       integration scheme, as they occur due to multiple step or stage 
-       character of the scheme.
-       (Alright, accelerations do not belong truely to the phase state. 
-       Moreover, the state is also constituted by the elementwise stored 
-       hybrid/mixed quantities.)
-       The main purpose arises from time-step size adaptivity
-       in which the auxiliar scheme might be a multi-step scheme
-       and thus needs to access older states, which are not directly
-       needed by the -- for instance single-step -- marching method.
-\author bborn
-\date 07/08
-*/
-namespace STR  // belongs to structure namespace
+/*----------------------------------------------------------------------*/
+/* belongs to structural dynamics namespace */
+namespace STR
 {
 
+  /*====================================================================*/
+  /*!
+   * \brief Object holds multiple displacements, velocities and
+   *    accelerations vectors (or similiar), of structural time 
+   *        integration scheme, as they occur due to multiple step or stage 
+   *        character of the scheme.
+   *        (Alright, accelerations do not belong truely to the phase state. 
+   *        Moreover, the state is also constituted by the elementwise stored 
+   *        hybrid/mixed quantities.)
+   *        The main purpose arises from time-step size adaptivity
+   *        in which the auxiliar scheme might be a multi-step scheme
+   *        and thus needs to access older states, which are not directly
+   *        needed by the -- for instance single-step -- marching method.
+   * \author bborn
+   * \date 07/08
+   */
   class StruTimIntState
   {
 

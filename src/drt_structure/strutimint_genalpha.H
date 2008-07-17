@@ -19,14 +19,17 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include "strutimint_impl.H"
 
-/*======================================================================*/
-/*!
-\brief Generalised-alpha time integration
-\author bborn
-\date 06/08
-*/
-namespace STR  // belongs to structure namespace
+/*----------------------------------------------------------------------*/
+/* belongs to structural dynamics namespace */
+namespace STR
 {
+
+  /*====================================================================*/
+  /*!
+   * \brief Generalised-alpha time integration
+   * \author bborn
+   * \date 06/08
+   */
   class StruTimIntGenAlpha : public StruTimIntImpl
   {
 

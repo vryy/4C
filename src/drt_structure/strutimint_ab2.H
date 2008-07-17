@@ -19,15 +19,19 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include "strutimint_expl.H"
 
-/*======================================================================*/
-/*!
-\brief Front-end for structural dynamics by structure time integration. 
-\author bborn
-\date 06/08
-*/
-namespace STR  // belongs to structure namespace
+/*----------------------------------------------------------------------*/
+/* belongs to structural dynamics namespace */
+namespace STR
 {
 
+  /*====================================================================*/
+  /*!
+   * \brief Adams-Bashforth2: 2nd order accurate, 
+   *                          explicit time integrator,
+   *                          linear 2-step method
+   * \author bborn
+   * \date 06/08
+   */
   class StruTimIntAB2 : public StruTimIntExpl
   {
 

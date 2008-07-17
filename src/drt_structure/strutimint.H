@@ -49,15 +49,17 @@ Maintainer: Burkhard Bornemann
 #include "strutimint_state.H"
 //#include "strutimada.H"
 
-/*======================================================================*/
-/*!
-\brief Front-end for structural dynamics by structure time integration. 
-\author bborn
-\date 06/08
-*/
-namespace STR  // belongs to structure namespace
+/*----------------------------------------------------------------------*/
+//! Structural Dynamics
+namespace STR
 {
 
+  /*====================================================================*/
+  /*!
+   * \brief Front-end for structural dynamics by structure time integration. 
+   * \author bborn
+   * \date 06/08
+   */
   class StruTimInt
   {
 
