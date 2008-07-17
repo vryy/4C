@@ -212,9 +212,9 @@ void ADAPTER::XFluidImpl::Update()
   
   // compute acceleration at timestep n
   Teuchos::RCP<Epetra_Vector> iaccn = rcp(new Epetra_Vector(iaccn_->Map()));
-//  iaccn->Update(-1.0,*iaccnm_,0.0);
-//  iaccn->Update(1.0/(0.5*dt),*iveln_,-1.0/(0.5*dt),*ivelnm_,1.0);
-  iaccn->Update(1.0/(dt),*iveln_,-1.0/(dt),*ivelnm_,0.0);
+  iaccn->Update(-1.0,*iaccnm_,0.0);
+  iaccn->Update(1.0/(0.5*dt),*iveln_,-1.0/(0.5*dt),*ivelnm_,1.0);
+//  iaccn->Update(1.0/(dt),*iveln_,-1.0/(dt),*ivelnm_,0.0);
   
   // update acceleration at timestep n-1
   iaccnm_->Update(1.0,*iaccn_,0.0);
@@ -273,7 +273,10 @@ void ADAPTER::XFluidImpl::PrintInterfaceVectorField(
     )
 {
 std::stringstream filename;
+std::stringstream filenamedel;
 filename << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step() << ".pos";
+filenamedel << allfiles.outputfile_kenner << filestr << std::setw(5) << setfill('0') << Step()-5 << ".pos";
+std::remove(filenamedel.str().c_str());
 std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
 std::ofstream f_system(filename.str().c_str());
 

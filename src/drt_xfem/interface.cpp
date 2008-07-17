@@ -167,7 +167,10 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   {
     // debug: write both meshes to file in Gmsh format
     std::stringstream filename;
+    std::stringstream filenamedel;
     filename << allfiles.outputfile_kenner << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenamedel << allfiles.outputfile_kenner << "_elements_coupled_system_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    std::remove(filenamedel.str().c_str());
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
     f_system << IO::GMSH::disToString("Fluid", 0.0, xfemdis_, elementalDomainIntCells_, elementalBoundaryIntCells_);
@@ -180,7 +183,10 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   if (gmshdebugout)
   {
     std::stringstream filename;
+    std::stringstream filenamedel;
     filename << allfiles.outputfile_kenner << "_domains_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenamedel << allfiles.outputfile_kenner << "_domains_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    std::remove(filenamedel.str().c_str());
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
 
     std::ofstream f_system(filename.str().c_str());
@@ -224,7 +230,10 @@ void XFEM::InterfaceHandle::toGmsh(const int step) const
   {
     // debug: write information about which structure we are in
     std::stringstream filenameP;
+    std::stringstream filenamePdel;
     filenameP << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step << ".pos";
+    filenamePdel << allfiles.outputfile_kenner << "_points_" << std::setw(5) << setfill('0') << step-5 << ".pos";
+    std::remove(filenamePdel.str().c_str());
 
     std::cout << "writing " << left << std::setw(50) <<filenameP.str()<<"...";
     std::ofstream f_systemP(filenameP.str().c_str());

@@ -1278,7 +1278,10 @@ void XFluidImplicitTimeInt::OutputToGmsh()
     cout << "XFluidImplicitTimeInt::OutputToGmsh()" << endl;
 
     std::stringstream filename;
+    std::stringstream filenamedel;
     filename << allfiles.outputfile_kenner << "_solution_pressure_" << std::setw(5) << setfill('0') << step_ << ".pos";
+    filenamedel << allfiles.outputfile_kenner << "_solution_pressure_" << std::setw(5) << setfill('0') << step_-5 << ".pos";
+    std::remove(filenamedel.str().c_str());
     std::cout << "writing " << left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
@@ -1427,7 +1430,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
     std::cout << " done" << endl;
   }
 #endif
-#if 1
+#if 0
   if (gmshdebugout)
   {
     //std::stringstream filename;
@@ -1611,7 +1614,10 @@ void XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
     bool ele_to_textfile = false;
     std::stringstream filename;
+    std::stringstream filenamedel;
     filename << allfiles.outputfile_kenner << filestr << std::setw(5) << std::setfill('0') << step_ << ".pos";
+    filenamedel << allfiles.outputfile_kenner << filestr << std::setw(5) << std::setfill('0') << step_-5 << ".pos";
+    std::remove(filenamedel.str().c_str());
     std::cout << "writing " << std::left << std::setw(50) <<filename.str()<<"...";
     std::ofstream f_system(filename.str().c_str());
 
