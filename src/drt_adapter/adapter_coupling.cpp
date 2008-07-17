@@ -248,7 +248,7 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
   }
 
   std::vector<int>::iterator pos = std::min_element(dofmapvec.begin(), dofmapvec.end());
-  if (*pos < 0)
+  if (pos!=dofmapvec.end() and *pos < 0)
     dserror("illegal dof number %d", *pos);
 
   // dof map is the original, unpermuted distribution of dofs
