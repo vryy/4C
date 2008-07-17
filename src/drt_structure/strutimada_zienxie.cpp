@@ -25,7 +25,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-StruTimAdaZienXie::StruTimAdaZienXie
+STR::StruTimAdaZienXie::StruTimAdaZienXie
 (
   const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
   const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
@@ -57,7 +57,7 @@ StruTimAdaZienXie::StruTimAdaZienXie
 
 /*----------------------------------------------------------------------*/
 /* Provide local discretisation error */
-void StruTimAdaZienXie::EvaluateLocalErrorVector()
+void STR::StruTimAdaZienXie::EvaluateLocalErrorVector()
 {
   // accelerations
   //const Teuchos::RCP<Epetra_Vector> acc = genalpha->GetAcc();

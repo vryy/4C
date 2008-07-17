@@ -25,7 +25,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-StruTimAda::StruTimAda
+STR::StruTimAda::StruTimAda
 (
   const Teuchos::ParameterList& sdyn,  //!< TIS input parameters
   const Teuchos::ParameterList& tap,  //!< adaptive input flags
@@ -69,7 +69,7 @@ StruTimAda::StruTimAda
 
 /*----------------------------------------------------------------------*/
 /* Integrate adaptively in time */
-void StruTimAda::Integrate()
+void STR::StruTimAda::Integrate()
 {
   // initialise time loop
   double time_ = timeinitial_;
@@ -146,7 +146,7 @@ void StruTimAda::Integrate()
 
 /*----------------------------------------------------------------------*/
 /* Indicate error and determine new step size */
-void StruTimAda::Indicate
+void STR::StruTimAda::Indicate
 (
   bool& accepted,
   double& stpsiznew
@@ -207,7 +207,7 @@ void StruTimAda::Indicate
 
 /*----------------------------------------------------------------------*/
 /* Print constants */
-void StruTimAda::PrintConstants
+void STR::StruTimAda::PrintConstants
 (
   std::ostream& str
 ) const
@@ -232,7 +232,7 @@ void StruTimAda::PrintConstants
 
 /*----------------------------------------------------------------------*/
 /* Print variables */
-void StruTimAda::PrintVariables
+void STR::StruTimAda::PrintVariables
 (
   std::ostream& str
 ) const
@@ -248,7 +248,7 @@ void StruTimAda::PrintVariables
 
 /*----------------------------------------------------------------------*/
 /* Print */
-void StruTimAda::Print
+void STR::StruTimAda::Print
 (
   std::ostream& str
 ) const
@@ -266,7 +266,7 @@ void StruTimAda::Print
 std::ostream& operator<<
 (
   std::ostream& str, 
-  const StruTimAda::StruTimAda& ta
+  const STR::StruTimAda::StruTimAda& ta
 )
 {
   ta.Print(str);

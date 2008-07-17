@@ -24,7 +24,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-StruTimIntExpl:: StruTimIntExpl
+STR::StruTimIntExpl:: StruTimIntExpl
 (
   const Teuchos::ParameterList& ioparams,  //!< ioflags
   const Teuchos::ParameterList& sdynparams,  //!< input parameters
@@ -55,7 +55,7 @@ StruTimIntExpl:: StruTimIntExpl
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void StruTimIntExpl::PrintStep()
+void STR::StruTimIntExpl::PrintStep()
 {
   // print out
   if ( (myrank_ == 0) and printscreen_ )
@@ -74,7 +74,7 @@ void StruTimIntExpl::PrintStep()
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void StruTimIntExpl::PrintStepText
+void STR::StruTimIntExpl::PrintStepText
 (
   FILE* ofile
 )
@@ -100,7 +100,7 @@ void StruTimIntExpl::PrintStepText
 /*----------------------------------------------------------------------*/
 /* output to file
  * originally by mwgee 03/07 */
-void StruTimIntExpl::OutputStep()
+void STR::StruTimIntExpl::OutputStep()
 {
   // this flag is passed
   bool datawritten = false;
@@ -121,7 +121,7 @@ void StruTimIntExpl::OutputStep()
 /*----------------------------------------------------------------------*/
 /* write restart
  * originally mwgee 03/07 */
-void StruTimIntExpl::OutputRestart
+void STR::StruTimIntExpl::OutputRestart
 (
   bool& datawritten
 )
@@ -191,7 +191,7 @@ void StruTimIntExpl::OutputRestart
 /*----------------------------------------------------------------------*/
 /* output displacements, velocities and accelerations
  * originally mwgee 03/07 */
-void StruTimIntExpl::OutputState
+void STR::StruTimIntExpl::OutputState
 (
   bool& datawritten
 )
@@ -219,15 +219,15 @@ void StruTimIntExpl::OutputState
 /*----------------------------------------------------------------------*/
 /* stress output
  * originally by lw */
-void StruTimIntExpl::OutputStressStrain
+void STR::StruTimIntExpl::OutputStressStrain
 (
   bool& datawritten
 )
 {
   // do stress calculation and output
   if ( writestrevery_
-       and ( (writestress_ != StruTimInt::stress_none)
-             or (writestrain_ != StruTimInt::strain_none) )
+       and ( (writestress_ != stress_none)
+             or (writestrain_ != strain_none) )
        and (step_%writestrevery_ == 0) )
   {
     // create the parameters for the discretization
@@ -239,7 +239,7 @@ void StruTimIntExpl::OutputStressStrain
     p.set("delta time", dt_);
     
     // stress
-    if (writestress_ == StruTimInt::stress_cauchy)
+    if (writestress_ == stress_cauchy)
     {
       // output of Cauchy stresses instead of 2PK stresses
       p.set("cauchy", true);
@@ -254,11 +254,11 @@ void StruTimIntExpl::OutputStressStrain
     p.set("stress", stressdata);
 
     // strain
-    if (writestrain_ == StruTimInt::strain_ea)
+    if (writestrain_ == strain_ea)
     {
       p.set("iostrain", "euler_almansi");
     }
-    else if (writestrain_ == StruTimInt::strain_gl)
+    else if (writestrain_ == strain_gl)
     {
       // WILL THIS CAUSE TROUBLE ????
       // THIS STRING DOES NOT EXIST IN SO3
@@ -286,14 +286,14 @@ void StruTimIntExpl::OutputStressStrain
     datawritten = true;
 
     // write stress
-    if (writestress_ != StruTimInt::stress_none)
+    if (writestress_ != stress_none)
     {
       std::string stresstext = "";
-      if (writestress_ == StruTimInt::stress_cauchy)
+      if (writestress_ == stress_cauchy)
       {
         stresstext = "gauss_cauchy_stresses_xyz";
       }
-      else if (writestress_ == StruTimInt::stress_pk2)
+      else if (writestress_ == stress_pk2)
       {
         stresstext = "gauss_2PK_stresses_xyz";
       }
@@ -301,10 +301,10 @@ void StruTimIntExpl::OutputStressStrain
     }
 
     // write strain
-    if (writestrain_ != StruTimInt::strain_none)
+    if (writestrain_ != strain_none)
     {
       std::string straintext = "";
-      if (writestrain_ == StruTimInt::strain_ea)
+      if (writestrain_ == strain_ea)
       {
         straintext = "gauss_EA_strains_xyz";
       }

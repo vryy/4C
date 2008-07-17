@@ -21,7 +21,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-StruTimIntAB2::StruTimIntAB2
+STR::StruTimIntAB2::StruTimIntAB2
 (
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
@@ -70,7 +70,7 @@ StruTimIntAB2::StruTimIntAB2
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
-void StruTimIntAB2::IntegrateStep()
+void STR::StruTimIntAB2::IntegrateStep()
 {
   const double dt = dt_;  // \f$\Delta t_{n}\f$
   const double dto = dt_;  // \f$\Delta t_{n-1}\f$
@@ -153,7 +153,7 @@ void StruTimIntAB2::IntegrateStep()
 
 /*----------------------------------------------------------------------*/
 /* Update step */
-void StruTimIntAB2::UpdateStep()
+void STR::StruTimIntAB2::UpdateStep()
 {
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}, D_{n-1} := D_{n}

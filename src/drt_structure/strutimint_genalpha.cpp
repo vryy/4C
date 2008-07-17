@@ -21,32 +21,32 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* convert input string to enum for mid-average type */
-enum StruTimIntGenAlpha::MidAverageEnum StruTimIntGenAlpha::MapMidAvgStringToEnum
+enum STR::StruTimIntGenAlpha::MidAverageEnum STR::StruTimIntGenAlpha::MapMidAvgStringToEnum
 (
   const std::string name
 )
 {
   if (name == "Vague")
   {
-    return StruTimIntGenAlpha::midavg_vague;
+    return midavg_vague;
   }
   else if (name == "ImrLike")
   {    
-    return StruTimIntGenAlpha::midavg_imrlike;
+    return midavg_imrlike;
   }
   else if (name == "TrLike")
   {
-    return StruTimIntGenAlpha::midavg_trlike;
+    return midavg_trlike;
   }
   else
   {
-    return StruTimIntGenAlpha::midavg_vague;
+    return midavg_vague;
   }
 }
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-StruTimIntGenAlpha::StruTimIntGenAlpha
+STR::StruTimIntGenAlpha::StruTimIntGenAlpha
 (
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
@@ -109,7 +109,7 @@ StruTimIntGenAlpha::StruTimIntGenAlpha
   // create force vectors
 
   // internal forces
-  if (midavg_ == StruTimIntGenAlpha::midavg_trlike)
+  if (midavg_ == midavg_trlike)
   {
     // internal force vector F_{int;n} at last time
     fint_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -118,7 +118,7 @@ StruTimIntGenAlpha::StruTimIntGenAlpha
     // set initial internal force vector
     ApplyForceStiffInternal(time_, dt_, dis_(), zeros_, fint_, stiff_);
   } 
-  else if (midavg_ == StruTimIntGenAlpha::midavg_imrlike)
+  else if (midavg_ == midavg_imrlike)
   {
     // internal force vector F_{int;m} at mid-time
     fintm_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -148,7 +148,7 @@ StruTimIntGenAlpha::StruTimIntGenAlpha
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void StruTimIntGenAlpha::PredictConstDisConsistVelAcc()
+void STR::StruTimIntGenAlpha::PredictConstDisConsistVelAcc()
 {
   // constant predictor : displacement in domain
   disn_->Update(1.0, *dis_(), 0.0);
@@ -172,7 +172,7 @@ void StruTimIntGenAlpha::PredictConstDisConsistVelAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void StruTimIntGenAlpha::EvaluateForceStiffResidual()
+void STR::StruTimIntGenAlpha::EvaluateForceStiffResidual()
 {
   // build by last converged state and predicted target state
   // the predicted mid-state
@@ -188,11 +188,11 @@ void StruTimIntGenAlpha::EvaluateForceStiffResidual()
   fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_, 0.0);
 
   // initialise internal forces
-  if (midavg_ == StruTimIntGenAlpha::midavg_trlike)
+  if (midavg_ == midavg_trlike)
   {
     fintn_->PutScalar(0.0);
   } 
-  else if (midavg_ == StruTimIntGenAlpha::midavg_imrlike)
+  else if (midavg_ == midavg_imrlike)
   {
     fintm_->PutScalar(0.0);
   }
@@ -201,42 +201,42 @@ void StruTimIntGenAlpha::EvaluateForceStiffResidual()
   stiff_->Zero();
 
   // ordinary internal force and stiffness
-  if (midavg_ == StruTimIntGenAlpha::midavg_trlike)
+  if (midavg_ == midavg_trlike)
   {
     ApplyForceStiffInternal(timen_, dt_, disn_, disi_,  fintn_, stiff_);
   } 
-  else if (midavg_ == StruTimIntGenAlpha::midavg_imrlike)
+  else if (midavg_ == midavg_imrlike)
   {
     disi_->Scale(1.-alphaf_);
     ApplyForceStiffInternal(timen_, dt_, dism_, disi_,  fintm_, stiff_);
   }
 
   // apply forces and stiffness due to constraints
-  if (midavg_ == StruTimIntGenAlpha::midavg_trlike)
+  if (midavg_ == midavg_trlike)
   {
     ApplyForceStiffConstraint(timen_, disn_, fintn_, stiff_);
   }
-  else if (midavg_ == StruTimIntGenAlpha::midavg_imrlike)
+  else if (midavg_ == midavg_imrlike)
   {
     ApplyForceStiffConstraint(timen_, disn_, fintm_, stiff_);
   }
 
   // surface stress force
-  if (midavg_ == StruTimIntGenAlpha::midavg_trlike)
+  if (midavg_ == midavg_trlike)
   {
     ApplyForceStiffSurfstress(disn_, fintn_, stiff_);
   } 
-  else if (midavg_ == StruTimIntGenAlpha::midavg_imrlike)
+  else if (midavg_ == midavg_imrlike)
   {
     ApplyForceStiffSurfstress(dism_, fintm_, stiff_);
   }
 
   // potential forces
-  if (midavg_ == StruTimIntGenAlpha::midavg_trlike)
+  if (midavg_ == midavg_trlike)
   {
     ApplyForceStiffPotential(disn_, fintn_, stiff_);
   } 
-  else if (midavg_ == StruTimIntGenAlpha::midavg_imrlike)
+  else if (midavg_ == midavg_imrlike)
   {
     ApplyForceStiffPotential(dism_, fintm_, stiff_);
   }
@@ -256,11 +256,11 @@ void StruTimIntGenAlpha::EvaluateForceStiffResidual()
   //             + F_{int;m}
   //             - F_{ext;n+1-alpha_f} )
   fres_->Update(1.0, *fextm_, 0.0);
-  if (midavg_ == StruTimIntGenAlpha::midavg_trlike)
+  if (midavg_ == midavg_trlike)
   {
     fres_->Update(-(1.-alphaf_), *fintn_, -alphaf_, *fint_, 1.0);
   }
-  else if (midavg_ == StruTimIntGenAlpha::midavg_imrlike)
+  else if (midavg_ == midavg_imrlike)
   {
     fres_->Update(-1.0, *fintm_, 1.0);
   }
@@ -287,7 +287,7 @@ void StruTimIntGenAlpha::EvaluateForceStiffResidual()
 
 /*----------------------------------------------------------------------*/
 /* evaluate mid-state vectors by averaging end-point vectors */
-void StruTimIntGenAlpha::EvaluateMidState()
+void STR::StruTimIntGenAlpha::EvaluateMidState()
 {
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+1-alpha_f} := (1.-alphaf) * D_{n+1} + alpha_f * D_{n}
@@ -308,7 +308,7 @@ void StruTimIntGenAlpha::EvaluateMidState()
 /*----------------------------------------------------------------------*/
 /* calculate characteristic/reference norms for displacements
  * originally by lw */
-double StruTimIntGenAlpha::CalcRefNormDisplacement()
+double STR::StruTimIntGenAlpha::CalcRefNormDisplacement()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -326,7 +326,7 @@ double StruTimIntGenAlpha::CalcRefNormDisplacement()
 /*----------------------------------------------------------------------*/
 /* calculate characteristic/reference norms for forces
  * originally by lw */
-double StruTimIntGenAlpha::CalcRefNormForce()
+double STR::StruTimIntGenAlpha::CalcRefNormForce()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -336,11 +336,11 @@ double StruTimIntGenAlpha::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  if (midavg_ == StruTimIntGenAlpha::midavg_trlike)
+  if (midavg_ == midavg_trlike)
   {
     fintn_->Norm2(&fintnorm);
   }
-  else if (midavg_ == StruTimIntGenAlpha::midavg_imrlike)
+  else if (midavg_ == midavg_imrlike)
   {
     fintm_->Norm2(&fintnorm);
   }
@@ -366,7 +366,7 @@ double StruTimIntGenAlpha::CalcRefNormForce()
 
 /*----------------------------------------------------------------------*/
 /* incremental iteration update of state */
-void StruTimIntGenAlpha::UpdateIterIncrementally()
+void STR::StruTimIntGenAlpha::UpdateIterIncrementally()
 {
   // auxiliar global vectors
   Teuchos::RCP<Epetra_Vector> aux
@@ -410,7 +410,7 @@ void StruTimIntGenAlpha::UpdateIterIncrementally()
 
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
-void StruTimIntGenAlpha::UpdateIterIteratively()
+void STR::StruTimIntGenAlpha::UpdateIterIteratively()
 {
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
@@ -428,7 +428,7 @@ void StruTimIntGenAlpha::UpdateIterIteratively()
 
 /*----------------------------------------------------------------------*/
 /* update after time step */
-void StruTimIntGenAlpha::UpdateStep()
+void STR::StruTimIntGenAlpha::UpdateStep()
 {
   // update all old state at t_{n-1} etc
   // important for step size adaptivity

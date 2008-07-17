@@ -20,7 +20,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* Map stress input string to enum */
-enum StruTimInt::StressEnum StruTimInt::MapStressStringToEnum
+enum STR::StruTimInt::StressEnum STR::StruTimInt::MapStressStringToEnum
 (
   const std::string name  //!< identifier
 )
@@ -47,7 +47,7 @@ enum StruTimInt::StressEnum StruTimInt::MapStressStringToEnum
 
 /*----------------------------------------------------------------------*/
 /* Map strain input string to enum */
-enum StruTimInt::StrainEnum StruTimInt::MapStrainStringToEnum
+enum STR::StruTimInt::StrainEnum STR::StruTimInt::MapStrainStringToEnum
 (
   const std::string name  //!< identifier
 )
@@ -74,7 +74,7 @@ enum StruTimInt::StrainEnum StruTimInt::MapStrainStringToEnum
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-StruTimInt::StruTimInt
+STR::StruTimInt::StruTimInt
 (
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
@@ -254,7 +254,7 @@ StruTimInt::StruTimInt
 /*----------------------------------------------------------------------*/
 /* equilibrate system at initial state
  * and identify consistent accelerations */
-void StruTimInt::DetermineMassDampConsistAccel()
+void STR::StruTimInt::DetermineMassDampConsistAccel()
 {
   // temporary force vectors in this routine
   Teuchos::RCP<Epetra_Vector> fext 
@@ -327,7 +327,7 @@ void StruTimInt::DetermineMassDampConsistAccel()
 
 /*----------------------------------------------------------------------*/
 /* evaluate Dirichlet BC at t_{n+1} */
-void StruTimInt::ApplyDirichletBC
+void STR::StruTimInt::ApplyDirichletBC
 (
   const double time,
   Teuchos::RCP<Epetra_Vector> dis,
@@ -356,7 +356,7 @@ void StruTimInt::ApplyDirichletBC
 
 /*----------------------------------------------------------------------*/
 /* evaluate external forces at t_{n+1} */
-void StruTimInt::ApplyForceExternal
+void STR::StruTimInt::ApplyForceExternal
 (
   const double time,  //!< evaluation time
   const Teuchos::RCP<Epetra_Vector> dis,  //!< displacement state
@@ -382,7 +382,7 @@ void StruTimInt::ApplyForceExternal
 
 /*----------------------------------------------------------------------*/
 /* evaluate ordinary internal force, its stiffness at state */
-void StruTimInt::ApplyForceStiffInternal
+void STR::StruTimInt::ApplyForceStiffInternal
 (
   const double time,
   const double dt,
@@ -415,7 +415,7 @@ void StruTimInt::ApplyForceStiffInternal
 
 /*----------------------------------------------------------------------*/
 /* evaluate ordinary internal force */
-void StruTimInt::ApplyForceInternal
+void STR::StruTimInt::ApplyForceInternal
 (
   const double time,
   const double dt,
@@ -447,7 +447,7 @@ void StruTimInt::ApplyForceInternal
 
 /*----------------------------------------------------------------------*/
 /* integrate */
-void StruTimInt::Integrate()
+void STR::StruTimInt::Integrate()
 {
   // set target time and step
   timen_ = time_ + dt_;

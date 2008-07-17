@@ -90,129 +90,133 @@ in which
 \author bborn
 \date 06/08
 */
-class StruTimIntOneStepTheta : public StruTimIntImpl
+namespace STR  // belongs to structure namespace
 {
+  class StruTimIntOneStepTheta : public StruTimIntImpl
+  {
 
-public:
+  public:
 
-  //! Constructor
-  StruTimIntOneStepTheta
-  (
-    const Teuchos::ParameterList& ioparams,  //!< ioflags
-    const Teuchos::ParameterList& sdynparams,  //!< input parameters
-    const Teuchos::ParameterList& xparams,  //!< extra flags
-    const Teuchos::ParameterList& onestepthetaparams,  //!< onesteptheta flags
-    DRT::Discretization& actis,  //!< current discretisation
-    LINALG::Solver& solver,  //!< the solver
-    IO::DiscretizationWriter& output  //!< the output
-  );
+    //! Constructor
+    StruTimIntOneStepTheta
+    (
+      const Teuchos::ParameterList& ioparams,  //!< ioflags
+      const Teuchos::ParameterList& sdynparams,  //!< input parameters
+      const Teuchos::ParameterList& xparams,  //!< extra flags
+      const Teuchos::ParameterList& onestepthetaparams,  //!< onesteptheta flags
+      DRT::Discretization& actis,  //!< current discretisation
+      LINALG::Solver& solver,  //!< the solver
+      IO::DiscretizationWriter& output  //!< the output
+    );
 
-  //! Destructor
-  // ....
+    //! Destructor
+    // ....
 
-  //! @name Pure virtual methods which have to be implemented
-  //@{
+    //! @name Pure virtual methods which have to be implemented
+    //@{
 
-  //! Return name
-  enum StruTimInt::NameEnum MethodName()
-  { 
-    return StruTimInt::name_onesteptheta;
-  }
+    //! Return name
+    enum StruTimInt::NameEnum MethodName()
+    { 
+      return StruTimInt::name_onesteptheta;
+    }
 
-  //! Provide number of steps, a single-step method returns 1
-  int MethodSteps() { return 1; }
+    //! Provide number of steps, a single-step method returns 1
+    int MethodSteps() { return 1; }
 
-  //! Give local order of accuracy of displacement part
-  int MethodOrderOfAccuracyDis() { return (theta_ == 1./2.) ? 2 : 1; }
+    //! Give local order of accuracy of displacement part
+    int MethodOrderOfAccuracyDis() { return (theta_ == 1./2.) ? 2 : 1; }
 
-  //! Give local order of accuracy of velocity part
-  int MethodOrderOfAccuracyVel() { return (theta_ == 1./2.) ? 2 : 1; }
+    //! Give local order of accuracy of velocity part
+    int MethodOrderOfAccuracyVel() { return (theta_ == 1./2.) ? 2 : 1; }
 
-  //! Consistent predictor with constant displacements
-  //! and consistent velocities and displacements
-  void PredictConstDisConsistVelAcc();
+    //! Consistent predictor with constant displacements
+    //! and consistent velocities and displacements
+    void PredictConstDisConsistVelAcc();
 
-  //! Create force residual #fres_ and ist stiffness #stiff_
-  void EvaluateForceStiffResidual();
+    //! Create force residual #fres_ and ist stiffness #stiff_
+    void EvaluateForceStiffResidual();
 
-  //! Determine characteristic norm for displacements
-  //! \author lw (originally)
-  double CalcRefNormDisplacement();
+    //! Determine characteristic norm for displacements
+    //! \author lw (originally)
+    double CalcRefNormDisplacement();
 
-  //! Determine characteristic norm for force
-  //! \author lw (originally)
-  double CalcRefNormForce();
+    //! Determine characteristic norm for force
+    //! \author lw (originally)
+    double CalcRefNormForce();
 
-  //! Update iteration incrementally
-  //!
-  //! This update is carried out by computing the new #veln_ and #acc_
-  //! from scratch by using the newly updated #disn_. The method
-  //! respects the Dirichlet DOFs which are not touched.
-  //! This method is necessary for certain predictors 
-  //! (like #PredictConstDisConsistVelAcc)
-  void UpdateIterIncrementally();
+    //! Update iteration incrementally
+    //!
+    //! This update is carried out by computing the new #veln_ and #acc_
+    //! from scratch by using the newly updated #disn_. The method
+    //! respects the Dirichlet DOFs which are not touched.
+    //! This method is necessary for certain predictors 
+    //! (like #PredictConstDisConsistVelAcc)
+    void UpdateIterIncrementally();
 
-  //! Update iteration iteratively
-  //!
-  //! This is the ordinary update of #disn_, #veln_ and #accn_ by
-  //! incrementing these vector proportional to the residual
-  //! displacements #disi_
-  //! The Dirichlet BCs are automatically respected, because the
-  //! residual displacements #disi_ are blanked at these DOFs.
-  void UpdateIterIteratively();
+    //! Update iteration iteratively
+    //!
+    //! This is the ordinary update of #disn_, #veln_ and #accn_ by
+    //! incrementing these vector proportional to the residual
+    //! displacements #disi_
+    //! The Dirichlet BCs are automatically respected, because the
+    //! residual displacements #disi_ are blanked at these DOFs.
+    void UpdateIterIteratively();
 
-  //! Update step
-  void UpdateStep();
+    //! Update step
+    void UpdateStep();
 
-  //@}
+    //@}
 
-  //! @name Generalised-alpha specific methods
-  //@{
+    //! @name Generalised-alpha specific methods
+    //@{
 
-  //! Evaluate mid-state vectors by averaging end-point vectors
-  void EvaluateMidState();
+    //! Evaluate mid-state vectors by averaging end-point vectors
+    void EvaluateMidState();
 
-  //@}
+    //@}
 
-protected:
+  protected:
 
-  //! equal operator is NOT wanted
-  StruTimIntOneStepTheta operator=(const StruTimIntOneStepTheta& old);
+    //! equal operator is NOT wanted
+    StruTimIntOneStepTheta operator=(const StruTimIntOneStepTheta& old);
 
-  //! copy constructor is NOT wanted
-  StruTimIntOneStepTheta(const StruTimIntOneStepTheta& old);
+    //! copy constructor is NOT wanted
+    StruTimIntOneStepTheta(const StruTimIntOneStepTheta& old);
 
-  //! @name Key coefficients
-  //@{
-  double theta_;  //!< factor (0,1]
-  //@}
+    //! @name Key coefficients
+    //@{
+    double theta_;  //!< factor (0,1]
+    //@}
 
-  //! @name Global mid-state vectors
-  //@{
-  Teuchos::RCP<Epetra_Vector> dist_;  //!< mid-displacements
-                                      //!< \f$D_m = D_{n+\theta}\f$
-  Teuchos::RCP<Epetra_Vector> velt_;  //!< mid-velocities
-                                      //!< \f$V_m = V_{n+1-\theta}\f$
-  Teuchos::RCP<Epetra_Vector> acct_;  //!< mid-accelerations
-                                      //!< \f$A_m = A_{n+1-\theta}\f$
-  //@}
+    //! @name Global mid-state vectors
+    //@{
+    //! mid-displacements \f$D_m = D_{n+\theta}\f$
+    Teuchos::RCP<Epetra_Vector> dist_;
+    //! mid-velocities \f$V_m = V_{n+1-\theta}\f$
+    Teuchos::RCP<Epetra_Vector> velt_;
+    //! mid-accelerations \f$A_m = A_{n+1-\theta}\f$
+    Teuchos::RCP<Epetra_Vector> acct_;  
+    //@}
 
-  //! @name Global force vectors
-  //! Residual \c fres_ exists already in base class
-  //@{
-  Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force at \f$t_n\f$
-  Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
+    //! @name Global force vectors
+    //! Residual \c fres_ exists already in base class
+    //@{
+    Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-  Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
-  Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
+    Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
 
-  Teuchos::RCP<Epetra_Vector> finertt_;  //!< intertial force
-  Teuchos::RCP<Epetra_Vector> fvisct_;  //!< viscous force
+    Teuchos::RCP<Epetra_Vector> finertt_;  //!< intertial force
+    Teuchos::RCP<Epetra_Vector> fvisct_;  //!< viscous force
 
-  Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin force due to FSI
-  //@}
+    Teuchos::RCP<Epetra_Vector> frobin_;  //!< Robin force due to FSI
+    //@}
 
-};  // end class StruTimIntOneStepTheta
+  };  // class StruTimIntOneStepTheta
+
+}  // namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef STRUTIMINT_OST_H

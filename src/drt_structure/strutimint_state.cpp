@@ -27,7 +27,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* Dummy constructor */
-StruTimIntState::StruTimIntState
+STR::StruTimIntState::StruTimIntState
 (
 )
 : steppast_(0),
@@ -42,7 +42,7 @@ StruTimIntState::StruTimIntState
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-StruTimIntState::StruTimIntState
+STR::StruTimIntState::StruTimIntState
 (
   const int steppast,
   const int stepfuture,
@@ -58,10 +58,10 @@ StruTimIntState::StruTimIntState
   // verify a positive #length_
   dsassert(steps_>0, "Past step must be lower or equal to future step");
 
-  // allocate place for displacement, velocitiy, etc vectors
+  // allocate place for steps_-times state_
   state_.resize(steps_);
 
-  // allocate the displacement vectors themselves
+  // allocate the vectors themselves
   for (int index=0; index<steps_; ++index)
   {
     state_[index] = LINALG::CreateVector(*dofrowmap_, inittozero);
@@ -73,7 +73,7 @@ StruTimIntState::StruTimIntState
 
 /*----------------------------------------------------------------------*/
 /* Resize */
-void StruTimIntState::Resize
+void STR::StruTimIntState::Resize
 (
   const int steppast,
   const int stepfuture,
@@ -106,16 +106,16 @@ void StruTimIntState::Resize
 
 /*----------------------------------------------------------------------*/
 /* Update steps */
-void StruTimIntState::UpdateSteps
+void STR::StruTimIntState::UpdateSteps
 (
-  const Teuchos::RCP<Epetra_Vector> disn
+  const Teuchos::RCP<Epetra_Vector> staten
 )
 {
   for (int ind=0; ind<steps_-1; ++ind)
   {
     state_[ind]->Update(1.0, *(state_[ind+1]), 0.0);
   }
-  state_[steps_-1]->Update(1.0, *disn, 0.0);
+  state_[steps_-1]->Update(1.0, *staten, 0.0);
 
   // ciao
   return;

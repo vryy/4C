@@ -50,66 +50,70 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 10/07
 */
-class StruTimAdaZienXie : public StruTimAda
+namespace STR  // belongs to structure namespace
 {
 
-public:
-
-  //! Constructor
-  StruTimAdaZienXie
-  (
-    const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
-    const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
-    Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
-  );
-
-  //! Destructor
-  ~StruTimAdaZienXie() { ; }
-
-  //! @name Actions
-  //@{
-
-  //! Provide local discretisation error
-  void EvaluateLocalErrorVector();
-
-  //@}
-
-  //! @name Attributes
-  //@{
-
-  //! Provide the name
-  enum StruTimAda::NameEnum MethodName()
+  class StruTimAdaZienXie : public StruTimAda
   {
-    return StruTimAda::name_zienxie;
-  }
 
-  //! Provide the name as string
-  std::string MethodTitle()
-  {
-    return "ZienkiewiczXie";
-  }
+  public:
 
-  //! Provide local order of accuracy
-  int MethodOrderOfAccuracy()
-  {
-    return 3;
-  }
+    //! Constructor
+    StruTimAdaZienXie
+    (
+      const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
+      const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
+      Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
+    );
 
-  //@}
+    //! Destructor
+    ~StruTimAdaZienXie() { ; }
 
-protected:
+    //! @name Actions
+    //@{
 
-  //! not wanted: = operator
-  StruTimAdaZienXie operator = (const StruTimAdaZienXie& old);
+    //! Provide local discretisation error
+    void EvaluateLocalErrorVector();
+
+    //@}
+
+    //! @name Attributes
+    //@{
+
+    //! Provide the name
+    enum StruTimAda::NameEnum MethodName()
+    {
+      return StruTimAda::name_zienxie;
+    }
+
+    //! Provide the name as string
+    std::string MethodTitle()
+    {
+      return "ZienkiewiczXie";
+    }
+
+    //! Provide local order of accuracy
+    int MethodOrderOfAccuracy()
+    {
+      return 3;
+    }
+
+    //@}
+
+  protected:
+
+    //! not wanted: = operator
+    StruTimAdaZienXie operator = (const StruTimAdaZienXie& old);
   
-  //! not wanted: copy constructor
-  StruTimAdaZienXie(const StruTimAdaZienXie& old);
+    //! not wanted: copy constructor
+    StruTimAdaZienXie(const StruTimAdaZienXie& old);
 
-  //! Marching generalised-alpha integrator
-  Teuchos::RCP<StruTimIntGenAlpha> genalpha_;
+    //! Marching generalised-alpha integrator
+    Teuchos::RCP<StruTimIntGenAlpha> genalpha_;
 
-};
+  };
 
+}  // namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef STRUTIMADA_ZIENXIE_H

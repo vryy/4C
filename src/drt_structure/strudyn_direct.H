@@ -68,7 +68,7 @@ void strudyn_direct();
 //! Create marching time integrator convenience routine
 //!
 //! \author bborn \date 07/08 
-Teuchos::RCP<StruTimInt> strudyn_CreateMarching
+Teuchos::RCP<STR::StruTimInt> strudyn_CreateMarching
 (
   const Teuchos::ParameterList& ioflags,  //!< input-output-flags
   const Teuchos::ParameterList& sdyn,  //!< structural dynamic flags
@@ -82,11 +82,11 @@ Teuchos::RCP<StruTimInt> strudyn_CreateMarching
 //! Create auxiliar time integrator convenience routine
 //!
 //! \author bborn \date 07/08
-Teuchos::RCP<StruTimAda> strudyn_CreateAuxiliar
+Teuchos::RCP<STR::StruTimAda> strudyn_CreateAuxiliar
 (
   const Teuchos::ParameterList& sdyn,  //!< TIS input parameters
   const Teuchos::ParameterList& tap,  //!< adaptive input flags
-  Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
+  Teuchos::RCP<STR::StruTimInt> tis  //!< marching time integrator
 );
 
 #ifdef __cplusplus

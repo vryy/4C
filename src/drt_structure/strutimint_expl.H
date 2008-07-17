@@ -26,105 +26,112 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 07/08
 */
-class StruTimIntExpl : public StruTimInt
+namespace STR  // belongs to structure namespace
 {
 
-public:
+  class StruTimIntExpl : public StruTimInt
+  {
 
-  //! constructor
-  StruTimIntExpl
-  (
-    const Teuchos::ParameterList& ioparams,  //!< ioflags
-    const Teuchos::ParameterList& sdynparams,  //!< input parameters
-    const Teuchos::ParameterList& xparams,  //!< extra flags
-    DRT::Discretization& actdis,  //!< current discretisation
-    LINALG::Solver& solver,  //!< the solver
-    IO::DiscretizationWriter& output  //!< the output
-  );
+  public:
 
-  //! @name Actions
-  //@{
+    //! constructor
+    StruTimIntExpl
+    (
+      const Teuchos::ParameterList& ioparams,  //!< ioflags
+      const Teuchos::ParameterList& sdynparams,  //!< input parameters
+      const Teuchos::ParameterList& xparams,  //!< extra flags
+      DRT::Discretization& actdis,  //!< current discretisation
+      LINALG::Solver& solver,  //!< the solver
+      IO::DiscretizationWriter& output  //!< the output
+    );
 
-  //! Do time integration of single step
-  virtual void IntegrateStep() = 0;
+    //! @name Actions
+    //@{
 
-  //! Update configuration after time step
-  //!
-  //! Thus the 'last' converged is lost and a reset of the time step 
-  //! becomes impossible. We are ready and keen awating the next time step.
-  virtual void UpdateStep() = 0;
+    //! Do time integration of single step
+    virtual void IntegrateStep() = 0;
 
-  //@}
+    //! Update configuration after time step
+    //!
+    //! Thus the 'last' converged is lost and a reset of the time step 
+    //! becomes impossible. We are ready and keen awating the next time step.
+    virtual void UpdateStep() = 0;
 
-  //! @name Output
-  //@{
+    //@}
 
-  //! print summary after step
-  void PrintStep();
+    //! @name Output
+    //@{
 
-  //! The text for summary print, see #PrintStep
-  void PrintStepText
-  (
-    FILE* ofile  //!< output file handle
-  );
+    //! print summary after step
+    void PrintStep();
 
-  //! Output to file
-  //! This routine always prints the last converged state, i.e.
-  //! \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
-  //! upon object prior to writing stuff here.
-  //! \author mwgee (originally) \date 03/07
-  void OutputStep();
+    //! The text for summary print, see #PrintStep
+    void PrintStepText
+    (
+      FILE* ofile  //!< output file handle
+    );
 
-  //! Write restart
-  //! \author mwgee (originally) \date 03/07
-  void OutputRestart
-  (
-    bool& datawritten  //!< (in/out) read and append if
-                       //!< it was written at this time step
-  );
+    //! Output to file
+    //! This routine always prints the last converged state, i.e.
+    //! \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
+    //! upon object prior to writing stuff here.
+    //! \author mwgee (originally) \date 03/07
+    void OutputStep();
 
-  //! Output displacements, velocities and accelerations
-  //! \author mwgee (originally) \date 03/07
-  void OutputState
-  (
-    bool& datawritten  //!< (in/out) read and append if
-                       //!< it was written at this time step
-  );
+    //! Write restart
+    //! \author mwgee (originally) \date 03/07
+    void OutputRestart
+    (
+      bool& datawritten  //!< (in/out) read and append if
+                         //!< it was written at this time step
+    );
 
-  //! Stress & strain output
-  //! \author lw (originally)
-  void OutputStressStrain
-  (
-    bool& datawritten  //!< (in/out) read and append if
-                       //!< it was written at this time step
-  );
+    //! Output displacements, velocities and accelerations
+    //! \author mwgee (originally) \date 03/07
+    void OutputState
+    (
+      bool& datawritten  //!< (in/out) read and append if
+                         //!< it was written at this time step
+    );
 
-  //@}
+    //! Stress & strain output
+    //! \author lw (originally)
+    void OutputStressStrain
+    (
+      bool& datawritten  //!< (in/out) read and append if
+                         //!< it was written at this time step
+    );
 
-  //! @name Attribute access functions
-  //@{
+    //@}
 
-  //! Return time integrator name
-  virtual enum NameEnum MethodName() = 0;
+    //! @name Attribute access functions
+    //@{
 
-  //! These time integrators are all explicit (mark their name)
-  bool MethodImplicit() { return false; }
+    //! Return time integrator name
+    virtual enum NameEnum MethodName() = 0;
 
-  //! Provide number of steps, e.g. a single-step method returns 1,
-  //! a m-multistep method returns m
-  virtual int MethodSteps() = 0;
+    //! These time integrators are all explicit (mark their name)
+    bool MethodImplicit() { return false; }
 
-  //! Give local order of accuracy of displacement part
-  virtual int MethodOrderOfAccuracyDis() = 0;
+    //! Provide number of steps, e.g. a single-step method returns 1,
+    //! a m-multistep method returns m
+    virtual int MethodSteps() = 0;
 
-  //! Give local order of accuracy of velocity part
-  virtual int MethodOrderOfAccuracyVel() = 0;
+    //! Give local order of accuracy of displacement part
+    virtual int MethodOrderOfAccuracyDis() = 0;
 
-  //@}
+    //! Give local order of accuracy of velocity part
+    virtual int MethodOrderOfAccuracyVel() = 0;
 
-protected:
+    //@}
 
-};
+  protected:
+  
+    // currently nothing
+
+  };
+
+}  // namespace STR
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef STRUTIMINT_EXPL_H

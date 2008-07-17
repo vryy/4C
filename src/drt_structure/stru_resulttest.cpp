@@ -59,7 +59,7 @@ StruResultTest::StruResultTest(StruGenAlpha& tintegrator)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-StruResultTest::StruResultTest(StruTimInt& tintegrator)
+StruResultTest::StruResultTest(STR::StruTimInt& tintegrator)
 {
   dis_ = tintegrator.Disp();
   vel_ = tintegrator.Vel();

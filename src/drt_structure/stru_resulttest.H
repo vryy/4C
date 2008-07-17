@@ -47,7 +47,7 @@ public:
 
   //! Constructor for time integrators of general kind
   //! \author bborn \date 06/08
-  StruResultTest(StruTimInt& tintegrator);
+  StruResultTest(STR::StruTimInt& tintegrator);
 
   //! \brief structure version of nodal value tests
   //!

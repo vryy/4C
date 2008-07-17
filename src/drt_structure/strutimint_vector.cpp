@@ -21,7 +21,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* Map vector norm identifaction string to enum term */
-enum StruTimIntVector::NormEnum StruTimIntVector::MapNormStringToEnum
+enum STR::StruTimIntVector::NormEnum STR::StruTimIntVector::MapNormStringToEnum
 (
   const std::string name  //!< name identification string
 )
@@ -55,7 +55,7 @@ enum StruTimIntVector::NormEnum StruTimIntVector::MapNormStringToEnum
 
 /*----------------------------------------------------------------------*/
 /* map enum term to string */
-std::string StruTimIntVector::MapNormEnumToString
+std::string STR::StruTimIntVector::MapNormEnumToString
 (
   const enum NormEnum norm  //!< input enum term
 )
@@ -92,7 +92,7 @@ std::string StruTimIntVector::MapNormEnumToString
 
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
-double StruTimIntVector::CalculateNorm
+double STR::StruTimIntVector::CalculateNorm
 (
   const enum NormEnum norm,
   const RCP<Epetra_Vector> vect

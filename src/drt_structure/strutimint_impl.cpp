@@ -24,7 +24,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /* map enum term to input string */
-enum StruTimIntImpl::PredEnum StruTimIntImpl::MapPredictorStringToEnum
+enum STR::StruTimIntImpl::PredEnum STR::StruTimIntImpl::MapPredictorStringToEnum
 (
   const std::string name  //!< identifier
 )
@@ -51,7 +51,7 @@ enum StruTimIntImpl::PredEnum StruTimIntImpl::MapPredictorStringToEnum
 
 /*----------------------------------------------------------------------*/
 /* map solution technique identification string to enum term */
-enum StruTimIntImpl::SolTechEnum StruTimIntImpl::MapSolTechStringToEnum
+enum STR::StruTimIntImpl::SolTechEnum STR::StruTimIntImpl::MapSolTechStringToEnum
 (
   const std::string name  //!< name identification string
 )
@@ -85,7 +85,7 @@ enum StruTimIntImpl::SolTechEnum StruTimIntImpl::MapSolTechStringToEnum
 
 /*----------------------------------------------------------------------*/
 /* map solution technique identification string to enum term */
-std::string  StruTimIntImpl::MapSolTechEnumToString
+std::string  STR::StruTimIntImpl::MapSolTechEnumToString
 (
   const enum SolTechEnum name  //!< identifying enum term
 )
@@ -115,7 +115,7 @@ std::string  StruTimIntImpl::MapSolTechEnumToString
 
 /*----------------------------------------------------------------------*/
 /* map convergence check to enum term */
-enum StruTimIntImpl::ConvCheckEnum StruTimIntImpl::MapConvCheckStringToEnum
+enum STR::StruTimIntImpl::ConvCheckEnum STR::StruTimIntImpl::MapConvCheckStringToEnum
 (
   const std::string name  //!< name identification string
 )
@@ -153,7 +153,7 @@ enum StruTimIntImpl::ConvCheckEnum StruTimIntImpl::MapConvCheckStringToEnum
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-StruTimIntImpl::StruTimIntImpl
+STR::StruTimIntImpl::StruTimIntImpl
 (
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
@@ -212,7 +212,7 @@ StruTimIntImpl::StruTimIntImpl
 
 /*----------------------------------------------------------------------*/
 /* integrate step */
-void StruTimIntImpl::IntegrateStep()
+void STR::StruTimIntImpl::IntegrateStep()
 {
   Predict();
   Solve();
@@ -221,7 +221,7 @@ void StruTimIntImpl::IntegrateStep()
 
 /*----------------------------------------------------------------------*/
 /* predict solution */
-void StruTimIntImpl::Predict()
+void STR::StruTimIntImpl::Predict()
 {
 
   // choose predictor
@@ -278,7 +278,7 @@ void StruTimIntImpl::Predict()
 /*----------------------------------------------------------------------*/
 /* predict solution as constant displacements, velocities 
  * and accelerations */
-void StruTimIntImpl::PredictConstDisVelAcc()
+void STR::StruTimIntImpl::PredictConstDisVelAcc()
 {
   // constant predictor
   disn_->Update(1.0, *dis_(), 0.0);
@@ -292,7 +292,7 @@ void StruTimIntImpl::PredictConstDisVelAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate _certain_ surface stresses and stiffness
  * evaluation happens internal-force like */
-void StruTimIntImpl::ApplyForceStiffSurfstress
+void STR::StruTimIntImpl::ApplyForceStiffSurfstress
 (
   const Teuchos::RCP<Epetra_Vector> dis,
   Teuchos::RCP<Epetra_Vector>& fint,
@@ -316,7 +316,7 @@ void StruTimIntImpl::ApplyForceStiffSurfstress
 /*----------------------------------------------------------------------*/
 /* evaluate _certain_ potential forces and stiffness
  * evaluation happens internal-force like */
-void StruTimIntImpl::ApplyForceStiffPotential
+void STR::StruTimIntImpl::ApplyForceStiffPotential
 (
   const Teuchos::RCP<Epetra_Vector> dis,
   Teuchos::RCP<Epetra_Vector>& fint,
@@ -337,7 +337,7 @@ void StruTimIntImpl::ApplyForceStiffPotential
 
 /*----------------------------------------------------------------------*/
 /* evaluate forces due to constraints */
-void StruTimIntImpl::ApplyForceStiffConstraint
+void STR::StruTimIntImpl::ApplyForceStiffConstraint
 (
   const double time,
   const Teuchos::RCP<Epetra_Vector> dis,
@@ -357,7 +357,7 @@ void StruTimIntImpl::ApplyForceStiffConstraint
 /*----------------------------------------------------------------------*/
 /* check convergence
  * originally by lw 12/07 and tk 01/08 */
-bool StruTimIntImpl::Converged()
+bool STR::StruTimIntImpl::Converged()
 {
   // verify: #normcharforce_ has been delivered strictly larger than zero
   if (normcharforce_ <= 0.0)
@@ -417,7 +417,7 @@ bool StruTimIntImpl::Converged()
 
 /*----------------------------------------------------------------------*/
 /* solve equilibrium */
-void StruTimIntImpl::Solve()
+void STR::StruTimIntImpl::Solve()
 {
   // choose solution technique in accordance with user's will
   switch (itertype_)
@@ -444,7 +444,7 @@ void StruTimIntImpl::Solve()
 
 /*----------------------------------------------------------------------*/
 /* solution with full Newton-Raphson iteration */
-void StruTimIntImpl::NewtonFull()
+void STR::StruTimIntImpl::NewtonFull()
 {
   // we do a Newton-Raphson iteration here.
   // the specific time integration has set the following
@@ -527,7 +527,7 @@ void StruTimIntImpl::NewtonFull()
 /*----------------------------------------------------------------------*/
 /* do non-linear Uzawa iteration within a full NRI is called,
  * originally by tk */
-void StruTimIntImpl::UzawaNonLinearNewtonFull()
+void STR::StruTimIntImpl::UzawaNonLinearNewtonFull()
 {
   // now or never, break it
   dserror("Sorry dude, non-linear Uzawa with full Newton-Raphson"
@@ -583,7 +583,7 @@ void StruTimIntImpl::UzawaNonLinearNewtonFull()
 /*----------------------------------------------------------------------*/
 /* do linearised Uzawa iterations with full NRI
  * originally by tk 11/07 */
-void StruTimIntImpl::UzawaLinearNewtonFull()
+void STR::StruTimIntImpl::UzawaLinearNewtonFull()
 {
   // allocate additional vectors and matrices
   Teuchos::RCP<LINALG::SparseMatrix> conmatrix 
@@ -685,7 +685,7 @@ void StruTimIntImpl::UzawaLinearNewtonFull()
 
 /*----------------------------------------------------------------------*/
 /* Update iteration */
-void StruTimIntImpl::UpdateIter
+void STR::StruTimIntImpl::UpdateIter
 (
   const int iter  //!< iteration counter
 )
@@ -703,7 +703,7 @@ void StruTimIntImpl::UpdateIter
 /*----------------------------------------------------------------------*/
 /* print to screen
  * lw 12/07 */
-void StruTimIntImpl::PrintPredictor()
+void STR::StruTimIntImpl::PrintPredictor()
 {
   // only master processor
   if ( (myrank_ == 0) and printscreen_ )
@@ -734,7 +734,7 @@ void StruTimIntImpl::PrintPredictor()
 /*----------------------------------------------------------------------*/
 /* print Newton-Raphson iteration to screen and error file
  * originally by lw 12/07, tk 01/08 */
-void StruTimIntImpl::PrintNewtonIter()
+void STR::StruTimIntImpl::PrintNewtonIter()
 {
   // print to standard out
   if ( (myrank_ == 0) and printscreen_ and printiter_ )
@@ -756,7 +756,7 @@ void StruTimIntImpl::PrintNewtonIter()
 /*----------------------------------------------------------------------*/
 /* print Newton-Raphson iteration to screen
  * originally by lw 12/07, tk 01/08 */
-void StruTimIntImpl::PrintNewtonIterText
+void STR::StruTimIntImpl::PrintNewtonIterText
 (
   FILE* ofile
 )
@@ -828,7 +828,7 @@ void StruTimIntImpl::PrintNewtonIterText
 
 /*----------------------------------------------------------------------*/
 /* print statistics of converged NRI */
-void StruTimIntImpl::PrintNewtonConv()
+void STR::StruTimIntImpl::PrintNewtonConv()
 {
   // print constraint manager
   if (conman_->HaveMonitor())
@@ -889,7 +889,7 @@ void StruTimIntImpl::PrintNewtonConv()
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void StruTimIntImpl::PrintStep()
+void STR::StruTimIntImpl::PrintStep()
 {
   // print out (only on master CPU)
   if ( (myrank_ == 0) and printscreen_ )
@@ -909,7 +909,7 @@ void StruTimIntImpl::PrintStep()
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void StruTimIntImpl::PrintStepText
+void STR::StruTimIntImpl::PrintStepText
 (
   FILE* ofile
 )
@@ -936,7 +936,7 @@ void StruTimIntImpl::PrintStepText
 /*----------------------------------------------------------------------*/
 /* output to file
  * originally by mwgee 03/07 */
-void StruTimIntImpl::OutputStep()
+void STR::StruTimIntImpl::OutputStep()
 {
   // this flag is passed along subroutines and prevents
   // repeated initialising of output writer, printing of
@@ -959,7 +959,7 @@ void StruTimIntImpl::OutputStep()
 /*----------------------------------------------------------------------*/
 /* write restart
  * originally mwgee 03/07 */
-void StruTimIntImpl::OutputRestart
+void STR::StruTimIntImpl::OutputRestart
 (
   bool& datawritten
 )
@@ -1031,7 +1031,7 @@ void StruTimIntImpl::OutputRestart
 /*----------------------------------------------------------------------*/
 /* output displacements, velocities and accelerations
  * originally mwgee 03/07 */
-void StruTimIntImpl::OutputState
+void STR::StruTimIntImpl::OutputState
 (
   bool& datawritten
 )
@@ -1059,15 +1059,15 @@ void StruTimIntImpl::OutputState
 /*----------------------------------------------------------------------*/
 /* stress output
  * originally by lw */
-void StruTimIntImpl::OutputStressStrain
+void STR::StruTimIntImpl::OutputStressStrain
 (
   bool& datawritten
 )
 {
   // do stress calculation and output
   if ( writestrevery_
-       and ( (writestress_ != StruTimInt::stress_none)
-             or (writestrain_ != StruTimInt::strain_none) )
+       and ( (writestress_ != stress_none)
+             or (writestrain_ != strain_none) )
        and (step_%writestrevery_ == 0) )
   {
     // create the parameters for the discretization
@@ -1079,7 +1079,7 @@ void StruTimIntImpl::OutputStressStrain
     p.set("delta time", dt_);
     
     // stress
-    if (writestress_ == StruTimInt::stress_cauchy)
+    if (writestress_ == stress_cauchy)
     {
       // output of Cauchy stresses instead of 2PK stresses
       p.set("cauchy", true);
@@ -1094,11 +1094,11 @@ void StruTimIntImpl::OutputStressStrain
     p.set("stress", stressdata);
 
     // strain
-    if (writestrain_ == StruTimInt::strain_ea)
+    if (writestrain_ == strain_ea)
     {
       p.set("iostrain", "euler_almansi");
     }
-    else if (writestrain_ == StruTimInt::strain_gl)
+    else if (writestrain_ == strain_gl)
     {
       // WILL THIS CAUSE TROUBLE ????
       // THIS STRING DOES NOT EXIST IN SO3
@@ -1126,14 +1126,14 @@ void StruTimIntImpl::OutputStressStrain
     datawritten = true;
 
     // write stress
-    if (writestress_ != StruTimInt::stress_none)
+    if (writestress_ != stress_none)
     {
       std::string stresstext = "";
-      if (writestress_ == StruTimInt::stress_cauchy)
+      if (writestress_ == stress_cauchy)
       {
         stresstext = "gauss_cauchy_stresses_xyz";
       }
-      else if (writestress_ == StruTimInt::stress_pk2)
+      else if (writestress_ == stress_pk2)
       {
         stresstext = "gauss_2PK_stresses_xyz";
       }
@@ -1142,10 +1142,10 @@ void StruTimIntImpl::OutputStressStrain
     }
 
     // write strain
-    if (writestrain_ != StruTimInt::strain_none)
+    if (writestrain_ != strain_none)
     {
       std::string straintext = "";
-      if (writestrain_ == StruTimInt::strain_ea)
+      if (writestrain_ == strain_ea)
       {
         straintext = "gauss_EA_strains_xyz";
       }

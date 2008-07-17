@@ -49,146 +49,148 @@ Maintainer: Burkhard Bornemann
 \author bborn
 \date 07/08
 */
-class StruTimAda
+namespace STR  // belongs to structure namespace
 {
 
-public:
-
-  //! List of all available auxiliar schemes
-  enum NameEnum
+  class StruTimAda
   {
-    name_zienxie,  //!< Zienkiewicz-Xie method
-    name_ab2  //!< Adams-Bashforth 2nd order
-  };
 
-  //! Constructor
-  StruTimAda
-  (
-    const Teuchos::ParameterList& sdyn,  //!< TIS input parameters
-    const Teuchos::ParameterList& tap,  //!< adaptive input flags
-    Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
-  );
+  public:
 
-  //! Destructor
-  virtual ~StruTimAda() { ; }
+    //! List of all available auxiliar schemes
+    enum NameEnum
+    {
+      name_zienxie,  //!< Zienkiewicz-Xie method
+      name_ab2  //!< Adams-Bashforth 2nd order
+    };
 
-  //! @name Actions
-  //@{
+    //! Constructor
+    StruTimAda
+    (
+      const Teuchos::ParameterList& sdyn,  //!< TIS input parameters
+      const Teuchos::ParameterList& tap,  //!< adaptive input flags
+      Teuchos::RCP<StruTimInt> tis  //!< marching time integrator
+    );
 
-  //! Integrate in time
-  //! This is the key method here, i.e. the time integration
-  //!  algorithm.
-  void Integrate();
+    //! Destructor
+    virtual ~StruTimAda() { ; }
 
-  //! Indicate error and determine new step size
-  void Indicate
-  (
-    bool& accepted,  //!< true=accpeted, false=not accepted
-    double& stpsiznew  //!< step size prediction for next or
-                       //!< step repetition
-  );
+    //! @name Actions
+    //@{
 
-  //! Provide local discretisation error specific to
-  //! marching/auxiliar time integrator pair
-  virtual void EvaluateLocalErrorVector() = 0;
+    //! Integrate in time
+    //! This is the key method here, i.e. the time integration
+    //!  algorithm.
+    void Integrate();
 
-  //@}
+    //! Indicate error and determine new step size
+    void Indicate
+    (
+      bool& accepted,  //!< true=accpeted, false=not accepted
+      double& stpsiznew  //!< step size prediction for next or
+                         //!< step repetition
+    );
 
-  //! @name Output
-  //@{
+    //! Provide local discretisation error specific to
+    //! marching/auxiliar time integrator pair
+    virtual void EvaluateLocalErrorVector() = 0;
 
-  //! Print error norm string
-  std::string PrintErrNorm() const;
+    //@}
 
-  //! Print time adapting constants
-  void PrintConstants
-  (
-    std::ostream& str  //!< output stream
-  ) const;
+    //! @name Output
+    //@{
 
-  //! Print time adapting variables
-  void PrintVariables
-  (
-    std::ostream& str  //!< output stream
-  ) const;
+    //! Print error norm string
+    std::string PrintErrNorm() const;
 
-  //! Print time adapting parameters:TimeIntegrator
-  void Print
-  (
-    std::ostream& str  //!< output stream
-  ) const;
+    //! Print time adapting constants
+    void PrintConstants
+    (
+      std::ostream& str  //!< output stream
+    ) const;
 
-  //@}
+    //! Print time adapting variables
+    void PrintVariables
+    (
+      std::ostream& str  //!< output stream
+    ) const;
 
-  //! @name Attributes
-  //@{
+    //! Print time adapting parameters:TimeIntegrator
+    void Print
+    (
+      std::ostream& str  //!< output stream
+    ) const;
 
-  //! Provide the name
-  virtual enum NameEnum MethodName() = 0;
+    //@}
 
-  //! Provide the name as string
-  virtual std::string MethodTitle() = 0;
+    //! @name Attributes
+    //@{
 
-  //! Provide local order of accuracy based upon linear test equation
-  virtual int MethodOrderOfAccuracy() = 0;
+    //! Provide the name
+    virtual enum NameEnum MethodName() = 0;
 
-  //@}
+    //! Provide the name as string
+    virtual std::string MethodTitle() = 0;
 
-protected:
+    //! Provide local order of accuracy based upon linear test equation
+    virtual int MethodOrderOfAccuracy() = 0;
 
-  //! not wanted: = operator
-  //TimeAdaptivity operator = (const TimeAdaptivity& old);
+    //@}
 
-  //! not wanted: copy constructor
-  StruTimAda(const StruTimAda& old);
+  protected:
 
-  //! @name General purpose algorithm members
-  //@{
-  Teuchos::RCP<StruTimInt> tis_;  //!< marching time integrator
-  Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
-  int mypid_;  //!< processor ID
-  Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
-  Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
-  //@}
+    //! not wanted: copy constructor
+    StruTimAda(const StruTimAda& old);
 
-  //! @name Plain time integration constants
-  //@{
-  double timeinitial_;  //!< initial time: t_0
-  double timefinal_;  //!< final time
-  int timestepinitial_;  //!< initial time step index: 0 (often)
-  int timestepfinal_;  //!< maximum time step: n_max
-  double stepsizeinitial_;  //!< initial step size: dt_n
-  //@}
+    //! @name General purpose algorithm members
+    //@{
+    Teuchos::RCP<StruTimInt> tis_;  //!< marching time integrator
+    Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
+    int mypid_;  //!< processor ID
+    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
+    Teuchos::RCP<IO::DiscretizationWriter> output_;  //!< binary output
+    //@}
 
-  //! @name Adaptive time integration constants
-  //@{
-  double stepsizemax_;  //!< maximum time step size (upper limit)
-  double stepsizemin_;  //!< minimum time step size (lower limit)
-  double sizeratiomax_;
-  double sizeratiomin_;
-  double sizeratioscale_;
-  enum StruTimIntVector::NormEnum errnorm_;
-  double errtol_;
-  int errorder_;
-  int adaptstepmax_;
-  //@}
+    //! @name Plain time integration constants
+    //@{
+    double timeinitial_;  //!< initial time: t_0
+    double timefinal_;  //!< final time
+    int timestepinitial_;  //!< initial time step index: 0 (often)
+    int timestepfinal_;  //!< maximum time step: n_max
+    double stepsizeinitial_;  //!< initial step size: dt_n
+    //@}
 
-  //! @name plain time integration variables
-  //@{
-  double time_;  //!< current time \f$t_n\f$
-  int timestep_;  //!< current time step \f$n\f$
-  //@}
+    //! @name Adaptive time integration constants
+    //@{
+    double stepsizemax_;  //!< maximum time step size (upper limit)
+    double stepsizemin_;  //!< minimum time step size (lower limit)
+    double sizeratiomax_;
+    double sizeratiomin_;
+    double sizeratioscale_;
+    enum StruTimIntVector::NormEnum errnorm_;
+    double errtol_;
+    int errorder_;
+    int adaptstepmax_;
+    //@}
 
-  //! @name Adaptive time integration variables
-  //@{
-  double stepsizepre_;  //!< previous time step size \f$\Delta t_{n-1}\f$
-  double stepsize_;  //!< current time step size \f$\Delta t_n\f$
-  Teuchos::RCP<Epetra_Vector> locerrn_;  //!< current local error 
-                                         //!< estimation \f$l_n\f$
-  int adaptstep_;
-  //@}
-};
+    //! @name plain time integration variables
+    //@{
+    double time_;  //!< current time \f$t_n\f$
+    int timestep_;  //!< current time step \f$n\f$
+    //@}
 
+    //! @name Adaptive time integration variables
+    //@{
+    double stepsizepre_;  //!< previous time step size \f$\Delta t_{n-1}\f$
+    double stepsize_;  //!< current time step size \f$\Delta t_n\f$
+    Teuchos::RCP<Epetra_Vector> locerrn_;  //!< current local error 
+                                           //!< estimation \f$l_n\f$
+    int adaptstep_;
+    //@}
+
+  }; // class StruTimAda
+
+}  // namespace STR
 
 /*======================================================================*/
 /*!
@@ -199,7 +201,7 @@ protected:
 std::ostream& operator<<
 (
   std::ostream& str,
-  const StruTimAda::StruTimAda& ta
+  const STR::StruTimAda::StruTimAda& ta
 );
 
 
