@@ -1,31 +1,29 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file elch_algorithm.cpp
+
+\brief Basis of all ELCH algorithms
+
+<pre>
+Maintainer: Georg Bauer
+            bauer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
 
 #include "elch_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
-//#include "../drt_scatra/scatra_timint_implicit.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-ELCH::Algorithm::Algorithm(Epetra_Comm& comm)
-:  FluidBaseAlgorithm(DRT::Problem::Instance()->ScalarTransportDynamicParams(),false),
-   ScaTraBaseAlgorithm(DRT::Problem::Instance()->ScalarTransportDynamicParams()),
-   comm_(comm),
-   step_(0),
-   time_(0.0)
+ELCH::Algorithm::Algorithm(Epetra_Comm& comm, ParameterList& prbdyn)
+:  ScaTraFluidCouplingAlgorithm(comm,prbdyn)
 {
-  // taking time loop control parameters out of fluid dynamics section
-  const Teuchos::ParameterList& elchdyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-  // maximum simulation time
-  maxtime_=elchdyn.get<double>("MAXTIME");
-  // maximum number of timesteps
-  nstep_ = elchdyn.get<int>("NUMSTEP");
-  // time step size
-  dt_ = elchdyn.get<double>("TIMESTEP");
-
-  // get RCP to actual velocity field (time n+1)
-  velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp());
-
+ // no ELCH specific stuff at the moment
 }
 
 
@@ -72,8 +70,7 @@ return;
 /*----------------------------------------------------------------------*/
 void ELCH::Algorithm::PrepareTimeStep()
 {
-  step_ += 1;
-  time_ += dt_;
+  IncrementTimeAndStep();
   if (Comm().MyPID()==0)
   {
     cout<<"\n******************\n   FLUID SOLVER  \n******************\n";
@@ -105,12 +102,12 @@ void ELCH::Algorithm::DoTransportStep()
   }
   
   // get new velocity from Navier-Stokes solver
-  velocitynp_=FluidField().ExtractVelocityPart(FluidField().Velnp());
+  GetCurrentFluidVelocity();
 
   // prepare time step
   ScaTraField().PrepareTimeStep();
   // transfer convective velocity
-  ScaTraField().SetVelocityField(2,velocitynp_);
+  ScaTraField().SetVelocityField(2,ConvectiveVelocity());
   //ConDifField().SetVelocityField(1,1);
 
   // solve coupled transport equations for ion concentrations and electric 

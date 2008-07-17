@@ -259,6 +259,7 @@ OBJS_DRT_ADAPT= src/drt_adapter/ale_dyn.o \
                 src/drt_adapter/adapter_utils.o \
                 src/drt_adapter/adapter_ale_resulttest.o \
                 src/drt_adapter/adapter_scatra_base_algorithm.o \
+                src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.o \
                 src/drt_adapter/adapter_coupling.o \
                 src/drt_adapter/adapter_coupling_mortar.o
 #                pss_full

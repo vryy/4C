@@ -19,9 +19,7 @@ Maintainer: Georg Bauer
 #define ELCH_ALGORITHM_H
 
 #include <Epetra_Comm.h>
-
-#include "../drt_adapter/adapter_fluid_base_algorithm.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "../drt_adapter/adapter_scatra_fluid_coupling_algorithm.H"
 
 
 /*!
@@ -42,13 +40,12 @@ namespace ELCH
     \author gjb
     \date 03/08
    */
-  class Algorithm : public ADAPTER::FluidBaseAlgorithm,
-                    public ADAPTER::ScaTraBaseAlgorithm
+  class Algorithm : public ADAPTER::ScaTraFluidCouplingAlgorithm
   {
   public:
 
-    /// constructor using a Epetra_Comm
-    explicit Algorithm(Epetra_Comm& comm);
+    /// constructor
+    explicit Algorithm(Epetra_Comm& comm, Teuchos::ParameterList& prbdyn);
 
     /// virtual destructor to support polymorph destruction
     virtual ~Algorithm();
@@ -56,19 +53,7 @@ namespace ELCH
     /// outer level ELCH time loop
     void TimeLoop();
 
-    /// communicator
-    const Epetra_Comm& Comm() const { return comm_; }
-
   protected:
-
-    /// time step size
-    double Dt() const { return dt_; }
-
-    /// time step number
-    int Step() const { return step_; }
-
-    /// tests if there are more time steps to do
-    bool NotFinished() {return ((step_ < nstep_) and (time_ <= maxtime_));}
 
     /// start a new time step
     void PrepareTimeStep();
@@ -86,26 +71,6 @@ namespace ELCH
     void Output();
 
   private:
-
-    /// communication (mainly for screen output)
-    Epetra_Comm& comm_;
-
-    /// actual velocity field at time n+1
-    RCP<const Epetra_Vector>    velocitynp_;
-
-    //! @name Time stepping variables
-
-    /// step counter
-    int step_;
-    /// maximum number of time steps
-    int nstep_;
-    /// actual time
-    double time_;
-    /// maximum simulation time
-    double maxtime_;
-    /// time step size
-    double dt_;
-    //@}
 
   };
 
