@@ -34,20 +34,6 @@ inline double XSIGN(const double a, const double b)
     return (b >= 0.0 ? fabs(a) : -fabs(a));
 }
 
-inline double XFMAX(const double maxarg1, const double maxarg2)
-{
-    return (maxarg1 > maxarg2 ? (maxarg1) : (maxarg2));
-}
-
-inline int XIMIN(const int iminarg1, const int iminarg2)
-{
-    return (iminarg1 < iminarg2 ? (iminarg1) : (iminarg2));
-}
-
-
-
-
-
 /*!
 \brief  Given a matrix A[1..m][1..n], this method computes its 
         singular value decomposition, A =U ·W ·V T .
@@ -143,7 +129,7 @@ static void svdcmp(
                     A(i,k) *= scale;
             }
         }
-        anorm=XFMAX(anorm,(fabs(W(i))+fabs(rv1(i))));
+        anorm=std::max(anorm,(fabs(W(i))+fabs(rv1(i))));
     }
     //Accumulation of right-hand transformations.
     for (int i=(n-1);i>=0;i--)
@@ -173,7 +159,7 @@ static void svdcmp(
         g=rv1(i);
     }
     //Accumulation of left-hand transformations.
-    for (int i=XIMIN((m-1),(n-1));i>=0;i--)
+    for (int i=std::min((m-1),(n-1));i>=0;i--)
     {
         const int l=i+1;
         const double g=W(i);
