@@ -215,9 +215,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   bool                                            compute_elemat
   )
 {
-#ifdef PERF
-    RefCountPtr<TimeMonitor> timeeleseteledata_ref = rcp(new TimeMonitor(*timeeleseteledata));
-#endif
+
   //------------------------------------------------------------------
   //                     BLITZ CONFIGURATION
   //------------------------------------------------------------------
@@ -232,7 +230,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   blitz::fourthIndex l;   // Placeholder for the fourth index
 
   blitz::Range       _ = blitz::Range::all();
-
 
   //------------------------------------------------------------------
   //   We use LAPACK and BLAS libraries --- get the epetra wrappers  
@@ -313,9 +310,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   {
     vstabfac = -1.0;
   }
-#ifdef PERF
-  timeeleseteledata_ref = null;
-#endif
 
   //----------------------------------------------------------------------------
   //            STABILIZATION PARAMETER, SMAGORINSKY MODEL
@@ -324,9 +318,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   // This has to be done before anything else is calculated because we use
   // the same arrays internally.
   //----------------------------------------------------------------------------
-#ifdef PERF
-    RefCountPtr<TimeMonitor> timeeletau_ref = rcp(new TimeMonitor(*timeeletau));
-#endif
 
   // use one point gauss rule to calculate tau at element center
   DRT::UTILS::GaussRule3D integrationrule_stabili=DRT::UTILS::intrule3D_undefined;
@@ -1371,9 +1362,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
     vart_ = Cs * Cs * hk * hk * rateofstrain;
   }
-#ifdef PERF
-  timeeletau_ref=null;
-#endif
 
   //----------------------------------------------------------------------------
   //
@@ -1385,21 +1373,21 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   // gaussian points
   const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
 
-#ifdef PERF
-  RefCountPtr<TimeMonitor> timeeletdextras_ref = rcp(new TimeMonitor(*timeeletdextras));
-#endif
-
   // remember whether the subscale quantities have been allocated an set to zero.
   if(tds == Fluid3::subscales_time_dependent)
   {
     // if not available, the arrays for the subscale quantities have to
     // be resized and initialised to zero
-    if(ele->sub_acc_old_.extent(blitz::firstDim) != 3 || ele->sub_acc_old_.extent(blitz::secondDim) != intpoints.nquad)
+    if(ele->sub_acc_old_.extent(blitz::firstDim) != 3 
+       ||
+       ele->sub_acc_old_.extent(blitz::secondDim) != intpoints.nquad)
     {
       ele->sub_acc_old_ .resize(3,intpoints.nquad);
       ele->sub_acc_old_  = 0.;
     }
-    if(ele->sub_vel_old_.extent(blitz::firstDim) != 3 || ele->sub_vel_old_.extent(blitz::secondDim) != intpoints.nquad)
+    if(ele->sub_vel_old_.extent(blitz::firstDim) != 3 
+       || 
+       ele->sub_vel_old_.extent(blitz::secondDim) != intpoints.nquad)
     {
       ele->sub_vel_old_ .resize(3,intpoints.nquad);
       ele->sub_vel_old_  = 0.;
@@ -1425,15 +1413,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
   blitz::Array<double,1> spren (ele->sub_pre_old_);
   blitz::Array<double,1> sprenp(ele->sub_pre_    );
 
-
-#ifdef PERF
-  timeeletdextras_ref = null;
-#endif
-
-
   // just define certain constants for conveniance
   const double afgdt  = alphaF * gamma * dt;
-
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -1446,10 +1427,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     gp(0)=intpoints.qxg[iquad][0];
     gp(1)=intpoints.qxg[iquad][1];
     gp(2)=intpoints.qxg[iquad][2];
-
-#ifdef PERF
-    RefCountPtr<TimeMonitor> timeelederxy_ref = rcp(new TimeMonitor(*timeelederxy));
-#endif
 
     if(!(distype == DRT::Element::nurbs8
           ||
@@ -1522,6 +1499,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //
     blas.GEMM('N','T',3,3,iel_,1.0,deriv_.data(),3,xyze_.data(),3,0.0,xjm_.data(),3);
 
+    // the bm as well as the other const doubles values 
+    // here will be reused later for the linear system 
+    // for the second derivatives
     bm_(3,3) = xjm_(0,0)*xjm_(1,1);
     bm_(3,4) = xjm_(0,0)*xjm_(1,2);
     bm_(3,5) = xjm_(0,1)*xjm_(1,2);
@@ -1558,7 +1538,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     }
 
     // set total integration factor
-    const double fac = intpoints.qwgt[iquad]*det;
+    double fac = intpoints.qwgt[iquad]*det;
 
     //--------------------------------------------------------------
     //             compute global first derivates
@@ -1607,17 +1587,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     //
     blas.GEMM('N','N',3,iel_,3,1.0,xji_.data(),3,deriv_.data(),3,0.0,derxy_.data(),3);	
 
-#ifdef PERF
-    timeelederxy_ref=null;
-#endif
-
     //--------------------------------------------------------------
     //             compute second global derivative
     //--------------------------------------------------------------
-
-#ifdef PERF
-    RefCountPtr<TimeMonitor> timeelederxy2_ref = rcp(new TimeMonitor(*timeelederxy2));
-#endif
 
     /*----------------------------------------------------------------------*
      |  calculate second global derivatives w.r.t. x,y,z at point r,s,t
@@ -1928,17 +1900,10 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         dserror("Unable to perform backward substitution after factorisation of jacobian");
       }
     }
-#ifdef PERF
-    timeelederxy2_ref = null;
-#endif
 
     //--------------------------------------------------------------
     //            interpolate nodal values to gausspoint
     //--------------------------------------------------------------
-
-#ifdef PERF
-    RefCountPtr<TimeMonitor> timeeleintertogp_ref = rcp(new TimeMonitor(*timeeleintertogp));
-#endif
 
     // get intermediate accelerations (n+alpha_M,i) at integration point
     //
@@ -2240,7 +2205,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       {
         resM_(rr) -= visceff*viscaf_old_(rr);
       }
-    }
+    } // end if higher order
 
     /*
       This is the operator
@@ -2249,7 +2214,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                  | resM    o nabla |
                   \    (i)        /
 
-      required for the cross and reynolds stress calculation
+      required for the cross stress linearisation
     */
     //
     //                    +----- 
@@ -2262,9 +2227,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
     {
       blas.GEMV('T',3,iel_,1.0,derxy_.data(),3,resM_.data(),0.0,conv_resM_.data(),1,1);
     }
-#ifdef PERF
-    timeeleintertogp_ref = null;
-#endif
 
     //--------------------------------------------------------------
     //--------------------------------------------------------------
@@ -2282,27 +2244,26 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       const double tauM   = tau_(0);
       const double tauC   = tau_(2);
 
-#ifdef PERF
-      timeeletdextras_ref = rcp(new TimeMonitor(*timeeletdextras));
-#endif
-
       // update estimates for the subscale quantities
 
       const double factauC                  = tauC/(tauC+dt);
       const double facMtau                  = 1./(alphaM*tauM+afgdt);
 
-      /*-------------------------------------------------------------------*
-       *                                                                   *
-       *                  update of SUBSCALE PRESSURE                      *
-       *                                                                   *
-       *-------------------------------------------------------------------*/
-
-      /*
-        ~n+1      tauC     ~n   tauC * dt            n+1
-        p    = --------- * p  - --------- * nabla o u
-         (i)   tauC + dt        tauC + dt            (i)
-      */
-      sprenp(iquad)=(spren(iquad)-dt*divunp)*factauC;
+      if (cstab == Fluid3::continuity_stab_td)
+      {
+	/*-------------------------------------------------------------------*
+	 *                                                                   *
+	 *                  update of SUBSCALE PRESSURE                      *
+	 *                                                                   *
+	 *-------------------------------------------------------------------*/
+	
+	/*
+          ~n+1      tauC     ~n   tauC * dt            n+1
+          p    = --------- * p  - --------- * nabla o u
+           (i)   tauC + dt        tauC + dt            (i)
+	*/
+	sprenp(iquad)=(spren(iquad)-dt*divunp)*factauC;
+      }
 
       /*-------------------------------------------------------------------*
        *                                                                   *
@@ -2359,7 +2320,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       */
       for (int rr=0;rr<3;++rr)
       {
-        svelaf_(rr)=alphaF*svelnp(rr,iquad)+(1.0-alphaF)*sveln(rr,iquad) ;
+        svelaf_(rr)=alphaF*svelnp(rr,iquad)+(1.0-alphaF)*sveln(rr,iquad);
       }
 
       /* the intermediate value of subscale acceleration is not needed to be
@@ -2378,18 +2339,20 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                  | u      o nabla |
                   \   (i)        /
 
-                  required for the cross and reynolds stress calculation
+        required for the cross stress linearisation
 
       */
-
-      for (int rr=0;rr<iel_;++rr)
+      if(cross == Fluid3::cross_stress_stab)
       {
-        conv_subaf_(rr) = svelaf_(0)*derxy_(0,rr);
-
-        for (int mm=1;mm<3;++mm)
-        {
-               conv_subaf_(rr) += svelaf_(mm)*derxy_(mm,rr);
-        }
+	for (int rr=0;rr<iel_;++rr)
+	{
+	  conv_subaf_(rr) = svelaf_(0)*derxy_(0,rr);
+	  
+	  for (int mm=1;mm<3;++mm)
+	  {
+	    conv_subaf_(rr) += svelaf_(mm)*derxy_(mm,rr);
+	  }
+	}
       }
 
       /* Most recent value for subgrid velocity convective term
@@ -2398,20 +2361,20 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                  | u      o nabla | u
                   \   (i)        /   (i)
       */
-      for (int rr=0;rr<3;++rr)
+      if(cross == Fluid3::cross_stress_stab_only_rhs
+	 ||
+	 cross == Fluid3::cross_stress_stab)
       {
-        convsubaf_old_(rr) = vderxyaf_(rr, 0)*svelaf_(0);
-
-        for (int mm=1;mm<3;++mm)
-        {
-          convsubaf_old_(rr) += vderxyaf_(rr, mm)*svelaf_(mm);
-        }
+	for (int rr=0;rr<3;++rr)
+	{
+	  convsubaf_old_(rr) = vderxyaf_(rr, 0)*svelaf_(0);
+	  
+	  for (int mm=1;mm<3;++mm)
+	  {
+	    convsubaf_old_(rr) += vderxyaf_(rr, mm)*svelaf_(mm);
+	  }
+	}
       }
-
-#ifdef PERF
-      timeeletdextras_ref = null;
-#endif
-
 
       //--------------------------------------------------------------
       //--------------------------------------------------------------
@@ -2422,71 +2385,62 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //--------------------------------------------------------------
       if(compute_elemat)
       {
-#ifdef PERF
-        RefCountPtr<TimeMonitor> timeelegalerkin_ref = rcp(new TimeMonitor(*timeelegalerkin));
-#endif
+
+	// scaling factors for Galerkin 1 terms
+	double fac_inertia   =fac*alphaM;
+	double fac_convection=fac*afgdt ;
+
+	// select continuity stabilisation
+	double cstabfac;
+	if(cstab == Fluid3::continuity_stab_yes)
+	{ // cstab Codina style
+	  cstabfac=fac*gamma*dt*tauC;
+	} // cstab Codina style
+	else if(cstab == Fluid3::continuity_stab_td)
+	{ // time dependent version
+	  cstabfac=fac*gamma*dt*dt*factauC;
+	} // time dependent version
+	else
+	{ // no cstab
+	  cstabfac=0;
+	} // no cstab
+	
+        const double fac_gamma_dt      = fac*gamma*dt;
+	const double fac_afgdt_visceff = fac*visceff*afgdt;
 
         //---------------------------------------------------------------
         //
-        //              TIME-DEPENDENT SUBGRID-SCALES
-        //   GALERKIN PART 1 AND SUBSCALE ACCELERATION STABILISATION
+	//          SUBSCALE ACCELERATION STABILISATION
+	//        RESCALING FACTORS FOR GALERKIN 1 TERMS AND
+	//              COMPUTATION OF EXTRA TERMS
         //
         //---------------------------------------------------------------
-        if(inertia == Fluid3::inertia_stab_keep)
-        {
-          const double fac_alphaM_tauM_facMtau    = fac*alphaM*tauM*facMtau;
-          const double fac_afgdt_afgdt_facMtau    = fac*afgdt*afgdt*facMtau;
+	  
+	if(inertia == Fluid3::inertia_stab_keep)
+	{
+	  // rescale time factors terms affected by inertia stabilisation
+	  fac_inertia   *=afgdt*facMtau;
+	  fac_convection*=afgdt*facMtau;
+	  
+	  // do inertia stabilisation terms which are not scaled
+	  // Galerkin terms since they are not partially integrated
 
-          {
-            const double fac_alphaM_afgdt_facMtau
-              =
-              fac*alphaM*afgdt*facMtau;
-
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-            {
-              const double inertia_and_conv_ui = fac_alphaM_afgdt_facMtau*funct_(ui)+fac_afgdt_afgdt_facMtau*conv_c_af_(ui);
-
-              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-              {
-                const double inertia_and_conv_ui_funct_vi=inertia_and_conv_ui*funct_(vi);
-
-                /*
-                  inertia term (intermediate)
-                  +convection (intermediate)
-
-
-                                                          /          \
-                                alphaF*gamma*dt          |            |
-                    alphaM*--------------------------- * |  Dacc , v  | +
-                           alphaM*tauM+alphaF*gamma*dt   |            |
-                                                          \          /
-
-
-                                                                  /                          \
-                                        alphaF*gamma*dt          |  / n+af       \            |
-                  +alphaF*gamma*dt*--------------------------- * | | c    o nabla | Dacc , v  |
-                                   alphaM*tauM+alphaF*gamma*dt   |  \            /            |
-                                                                  \                          /
-                */
-
-                elemat(vi*4    , ui*4    ) += inertia_and_conv_ui_funct_vi;
-                elemat(vi*4 + 1, ui*4 + 1) += inertia_and_conv_ui_funct_vi;
-                elemat(vi*4 + 2, ui*4 + 2) += inertia_and_conv_ui_funct_vi;
-
-              } // end loop rows (test functions for matrix)
-            } // end loop rows (solution for matrix, test function for vector)
-          }
-
-
-          for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-          {
-            const double fac_alphaM_gamma_dt_tauM_facMtau_funct_vi=fac_alphaM_tauM_facMtau*gamma*dt*funct_(vi);
-
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-            {
-              /* pressure (implicit) */
-
-              /*  factor:
+	  const double fac_alphaM_tauM_facMtau          = fac*alphaM*tauM*facMtau;
+	  
+	  for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	  {
+	    const int fvi    =4*vi;
+	    const int fvip   =fvi+1;
+	    const int fvipp  =fvi+2;
+	    
+	    const double fac_alphaM_gamma_dt_tauM_facMtau_funct_vi=fac_alphaM_tauM_facMtau*gamma*dt*funct_(vi);
+	    
+	    for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	    {
+	      const int fuippp  =4*ui+3;
+	      /* pressure (implicit) */
+	      
+	      /*  factor:
                              alphaM*tauM
                     ---------------------------, rescaled by gamma*dt
                     alphaM*tauM+alphaF*gamma*dt
@@ -2496,29 +2450,39 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                 |  nabla Dp ,  v  |
                 |                 |
                  \               /
-              */
-              elemat(vi*4    , ui*4 + 3) -= fac_alphaM_gamma_dt_tauM_facMtau_funct_vi*derxy_(0,ui);
-              elemat(vi*4 + 1, ui*4 + 3) -= fac_alphaM_gamma_dt_tauM_facMtau_funct_vi*derxy_(1,ui);
-              elemat(vi*4 + 2, ui*4 + 3) -= fac_alphaM_gamma_dt_tauM_facMtau_funct_vi*derxy_(2,ui);
-            } // end loop rows (test functions for matrix)
-          } // end loop rows (solution for matrix, test function for vector)
+	      */
+	      /* pressure (implicit) */
+	      
+	      elemat(fvi  ,fuippp) -= fac_alphaM_gamma_dt_tauM_facMtau_funct_vi*derxy_(0,ui);
+	      elemat(fvip ,fuippp) -= fac_alphaM_gamma_dt_tauM_facMtau_funct_vi*derxy_(1,ui);
+	      elemat(fvipp,fuippp) -= fac_alphaM_gamma_dt_tauM_facMtau_funct_vi*derxy_(2,ui);
+	    } // end loop rows (test functions for matrix)
+	  } // end loop rows (solution for matrix, test function for vector)
 
-          if(higher_order_ele)
-          {
-            const double fac_visceff_afgdt_alphaM_tauM_facMtau
-              =
-              fac*visceff*afgdt*alphaM*tauM*facMtau;
-
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              const double fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi
-                =
-                fac_visceff_afgdt_alphaM_tauM_facMtau*funct_(vi);
-
-              for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-              {
-                /* viscous term (intermediate) */
-                /*  factor:
+	  if(higher_order_ele && newton!=Fluid3::minimal)
+	  {
+	    const double fac_visceff_afgdt_alphaM_tauM_facMtau
+	      =
+	      fac*visceff*afgdt*alphaM*tauM*facMtau;
+	    
+	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	    {
+	      const int fvi    =4*vi;
+	      const int fvip   =fvi+1;
+	      const int fvipp  =fvi+2;
+		
+	      const double fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi
+		=
+		fac_visceff_afgdt_alphaM_tauM_facMtau*funct_(vi);
+		  
+	      for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	      {	  
+		const int fui    =4*ui;
+		const int fuip   =fui+1;
+		const int fuipp  =fui+2;
+	  
+		/* viscous term (intermediate) */
+		/*  factor:
                                                  alphaM*tauM
                         nu*alphaF*gamma*dt*---------------------------
                                            alphaM*tauM+alphaF*gamma*dt
@@ -2530,219 +2494,582 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                  |                 \    /      |
                   \                           /
 
-                */
-                elemat(vi*4    , ui*4    ) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(0,ui);
-                elemat(vi*4    , ui*4 + 1) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(3,ui);
-                elemat(vi*4    , ui*4 + 2) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(4,ui);
-                elemat(vi*4 + 1, ui*4    ) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(3,ui);
-                elemat(vi*4 + 1, ui*4 + 1) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(1,ui);
-                elemat(vi*4 + 1, ui*4 + 2) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(5,ui);
-                elemat(vi*4 + 2, ui*4    ) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(4,ui);
-                elemat(vi*4 + 2, ui*4 + 1) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(5,ui);
-                elemat(vi*4 + 2, ui*4 + 2) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(2,ui);
-              } // end loop rows (test functions for matrix)
-            } // end loop rows (solution for matrix, test function for vector)
-          }
+		*/
+		
+		const double a = fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(3,ui);
+		const double b = fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(4,ui);
+		const double c = fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*derxy2_(5,ui);
 
-          if (newton==Fluid3::Newton) // if inertia and newton
-          {
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-            {
-              const double fac_afgdt_afgdt_facMtau_funct_ui
-                =
-                fac_afgdt_afgdt_facMtau*funct_(ui);
-              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-              {
-                const double fac_afgdt_afgdt_facMtau_funct_ui_funct_vi
-                  =
-                  fac_afgdt_afgdt_facMtau_funct_ui*funct_(vi);
+		elemat(fvi  ,fui  ) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(0,ui);
+		elemat(fvi  ,fuip ) += a;
+		elemat(fvi  ,fuipp) += b;
+		elemat(fvip ,fui  ) += a;
+		elemat(fvip ,fuip ) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(1,ui);
+		elemat(fvip ,fuipp) += c;
+		elemat(fvipp,fui  ) += b;
+		elemat(fvipp,fuip ) += c;
+		elemat(fvipp,fuipp) += fac_visceff_afgdt_alphaM_tauM_facMtau_funct_vi*viscs2_(2,ui);
+	      } // end loop rows (test functions for matrix)
+	    } // end loop rows (solution for matrix, test function for vector)
+	  } // end higher order element and  linearisation of linear terms not supressed
+	} // extra terms for inertia stab
+	
+	//---------------------------------------------------------------
+        //
+        //              TIME-DEPENDENT SUBGRID-SCALES
+	//
+        //       GALERKIN PART 1 (INERTIA, CONVECTION, VISCOUS)
+	//                     SUPG STABILISATION
+	//                  CONTINUITY STABILISATION
+        //
+        //---------------------------------------------------------------
+
+	if(supg == Fluid3::convective_stab_supg)
+	{
+	  const double fac_afgdt_tauM_afgdt_facMtau  = fac*afgdt*afgdt*facMtau*tauM;
+
+          const double fac_afgdt_tauM_facMtau        = fac*afgdt*tauM*facMtau;
+
+	  const double fac_alphaM_afgdt_tauM_facMtau
+	    =
+	    fac*alphaM*afgdt*tauM*facMtau;
+
+	  for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	  {
+	    const int fui  =4*ui;
+	    const int fuip =fui+1;
+	    const int fuipp=fui+2;
+
+	    /* GALERKIN inertia term (intermediate) + convection (intermediate) */
+	    const double inertia_and_conv_ui 
+	      = 
+	      fac_inertia*funct_(ui)
+	      +
+	      fac_convection*conv_c_af_(ui);
+	      
+	    /* viscous term (intermediate), 'diagonal' parts */
+	    const double visc_0=fac_afgdt_visceff*derxy_(0,ui);
+	    const double visc_1=fac_afgdt_visceff*derxy_(1,ui);
+	    const double visc_2=fac_afgdt_visceff*derxy_(2,ui);
+	    
+	    /* SUPG stabilisation --- inertia and convection */
+	    const double supg_inertia_and_conv_ui
+	      =
+	      fac_alphaM_afgdt_tauM_facMtau*funct_(ui)+fac_afgdt_tauM_afgdt_facMtau*conv_c_af_(ui);
+	    
+	    /* CSTAB entries */
+	    const double cstab_0 = cstabfac*derxy_(0,ui);
+	    const double cstab_1 = cstabfac*derxy_(1,ui);
+	    const double cstab_2 = cstabfac*derxy_(2,ui);
+
+	    /* combined CSTAB/viscous entires */
+	    const double visc_and_cstab_0 = visc_0+cstab_0;
+	    const double visc_and_cstab_1 = visc_1+cstab_1;
+	    const double visc_and_cstab_2 = visc_2+cstab_2;
+	      
+	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	    {
+	      const int fvi    =4*vi;
+	      const int fvip   =fvi+1;
+	      const int fvipp  =fvi+2;
+	      
+	      const double sum =
+		inertia_and_conv_ui*funct_(vi)
+		+
+		supg_inertia_and_conv_ui*conv_c_af_(vi)
+		+
+		visc_0*derxy_(0,vi)
+		+
+		visc_1*derxy_(1,vi)
+		+
+		visc_2*derxy_(2,vi);
+		  
+	      /*
+		inertia term (intermediate)
+		
+		factor with inertia stabilisation:
+
+                                                       
+                                alphaF*gamma*dt        
+                    alphaM*--------------------------- 
+                           alphaM*tauM+alphaF*gamma*dt 
+                                                       
+
+	        factor without inertia stabilisation:
+		  
+		    alphaM
 
 
-                /* convection (intermediate)
+                              /          \
+                             |            |
+                             |  Dacc , v  | +
+                             |            |
+                              \          /
 
-                factor:
+	      */
+	      /*
 
-                                     alphaF*gamma*dt
-               +alphaF*gamma*dt*---------------------------
-                                alphaM*tauM+alphaF*gamma*dt
+		  +convection (intermediate)
+
+		  factor without inertia stabilisation: 
+
+		  +alphaF*gamma*dt
+
+
+		  factor with inertia stabilisation: 
+
+                                           alphaF*gamma*dt
+                    +alphaF*gamma*dt*---------------------------
+                                     alphaM*tauM+alphaF*gamma*dt
+
+
+                          /                          \
+                         |  / n+af       \            |
+                         | | c    o nabla | Dacc , v  |
+                         |  \            /            |
+                          \                          /
+	      */
+
+	      /* viscous term (intermediate) */
+	      
+	      /*  factor: +2*nu*alphaF*gamma*dt
+		   
+                          /                          \
+		         |       /    \         / \   |
+		         |  eps | Dacc | , eps | v |  |
+	        	 |       \    /         \ /   |
+                          \                          /
+	      */
+		  
+	      /* CONTINUITY stabilisation */
+
+	      /*
+		  Codina style: (recommended)
+		  
+                  factor: +gamma*dt*tauC
+
+		  Time dependent: (buggy)
+ 
+		                       tauC * dt
+		  factor: +gamma* dt * ---------
+                                       tauC + dt  
+
+		  No cstab:
+				      
+                  factor: 0
+		  
+                     /                          \
+                    |                            |
+                    | nabla o Dacc  , nabla o v  |
+                    |                            |
+                     \                          /
+	      */
+
+	      /* SUPG stabilisation --- inertia
+
+		     factor:
+                            alphaF*gamma*dt*tauM
+                         --------------------------- * alphaM
+                         alphaM*tauM+alphaF*gamma*dt
+
+
+                     /                           \
+                    |          / n+af       \     |
+                    |  Dacc , | c    o nabla | v  |
+                    |          \            /     |
+                     \                           /
+	      */
+		  
+	      /* SUPG stabilisation --- convection
+
+		   
+		      factor:
+                            alphaF*gamma*dt*tauM
+                         --------------------------- * alphaF * gamma * dt
+                         alphaM*tauM+alphaF*gamma*dt
+
+                     /                                               \
+                    |    / n+af        \          / n+af        \     |
+                    |   | c     o nabla | Dacc , | c     o nabla | v  |
+                    |    \             /          \             /     |
+                     \                                               /
+	      */
+
+	      const double a=visc_0*derxy_(1,vi)+cstab_1*derxy_(0,vi);
+	      const double b=visc_0*derxy_(2,vi)+cstab_2*derxy_(0,vi);
+	      const double c=visc_2*derxy_(1,vi)+cstab_1*derxy_(2,vi);
+
+	      elemat(fvi  ,fui  ) += sum+visc_and_cstab_0*derxy_(0,vi);
+	      elemat(fvip ,fuip ) += sum+visc_and_cstab_1*derxy_(1,vi);
+	      elemat(fvipp,fuipp) += sum+visc_and_cstab_2*derxy_(2,vi);
+	      
+	      elemat(fvi  ,fuip ) += a;
+	      elemat(fvi  ,fuipp) += b;
+	      elemat(fvipp,fuip ) += c;
+	      elemat(fuip ,fvipp) += c;
+	      elemat(fuipp,fvi  ) += b;
+	      elemat(fuip ,fvi  ) += a;
+	      
+	    } // vi
+	  } // ui
+
+	  if (newton==Fluid3::Newton) // if newton and supg
+	  {
+	    const double fac_afgdt_tauM_afgdt_facMtau = fac*afgdt*afgdt*facMtau*tauM;
+
+	    double temp[3][3];
+
+	    const double fac_afgdt_svelaf_0 = fac*afgdt*svelaf_(0);
+	    const double fac_afgdt_svelaf_1 = fac*afgdt*svelaf_(1);
+	    const double fac_afgdt_svelaf_2 = fac*afgdt*svelaf_(2);
+
+	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	    {
+	      const int fvi  =4*vi;
+	      const int fvip =fvi+1;
+	      const int fvipp=fvi+2;
+
+	      const double scaled_inertia_and_conv_vi 
+		= 
+		fac_convection*funct_(vi)
+		+
+		fac_afgdt_tauM_afgdt_facMtau*conv_c_af_(vi);
+	      
+	      temp[0][0]=scaled_inertia_and_conv_vi*vderxyaf_(0,0)-fac_afgdt_svelaf_0*derxy_(0,vi);
+	      temp[1][0]=scaled_inertia_and_conv_vi*vderxyaf_(0,1)-fac_afgdt_svelaf_0*derxy_(1,vi);
+	      temp[2][0]=scaled_inertia_and_conv_vi*vderxyaf_(0,2)-fac_afgdt_svelaf_0*derxy_(2,vi);
+	      temp[0][1]=scaled_inertia_and_conv_vi*vderxyaf_(1,0)-fac_afgdt_svelaf_1*derxy_(0,vi);
+	      temp[1][1]=scaled_inertia_and_conv_vi*vderxyaf_(1,1)-fac_afgdt_svelaf_1*derxy_(1,vi);
+	      temp[2][1]=scaled_inertia_and_conv_vi*vderxyaf_(1,2)-fac_afgdt_svelaf_1*derxy_(2,vi);
+	      temp[0][2]=scaled_inertia_and_conv_vi*vderxyaf_(2,0)-fac_afgdt_svelaf_2*derxy_(0,vi);
+	      temp[1][2]=scaled_inertia_and_conv_vi*vderxyaf_(2,1)-fac_afgdt_svelaf_2*derxy_(1,vi);
+	      temp[2][2]=scaled_inertia_and_conv_vi*vderxyaf_(2,2)-fac_afgdt_svelaf_2*derxy_(2,vi);
+	      
+	      for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	      {
+		const int fui  =4*ui;
+		const int fuip =fui+1;
+		const int fuipp=fui+2;
+
+		/* SUPG stabilisation --- convection
+
+
+		     factor:
+                           alphaF*gamma*dt*tauM
+                        --------------------------- * alphaF * gamma * dt
+                        alphaM*tauM+alphaF*gamma*dt
+
+                    /                                               \
+                   |    /            \   n+af    / n+af        \     |
+                   |   | Dacc o nabla | u     , | c     o nabla | v  |
+                   |    \            /           \             /     |
+                    \                                               /
+
+		*/
+
+		/* SUPG stabilisation --- subscale velocity, nonlinear part from testfunction
+
+		   factor:
+                          alphaF * gamma * dt
+
+
+                    /                            \
+                   |  ~n+af    /            \     |
+                   |  u     , | Dacc o nabla | v  |
+                   |   (i)     \            /     |
+                    \                            /
+
+		*/
+
+		/* convection (intermediate)
+
+		   factor without inertia stabilisation: 
+
+   		      +alphaF*gamma*dt
+
+
+		   factor with inertia stabilisation: 
+
+                                             alphaF*gamma*dt
+                      +alphaF*gamma*dt*---------------------------
+                                       alphaM*tauM+alphaF*gamma*dt
 
                          /                            \
                         |  /            \   n+af       |
                         | | Dacc o nabla | u      , v  |
                         |  \            /              |
                          \                            /
-                */
+		*/
+
+		elemat(fvi  ,fui  ) += temp[0][0]*funct_(ui);
+		elemat(fvi  ,fuip ) += temp[1][0]*funct_(ui);
+		elemat(fvi  ,fuipp) += temp[2][0]*funct_(ui);
+		elemat(fvip ,fui  ) += temp[0][1]*funct_(ui);
+		elemat(fvip ,fuip ) += temp[1][1]*funct_(ui);
+		elemat(fvip ,fuipp) += temp[2][1]*funct_(ui);
+		elemat(fvipp,fui  ) += temp[0][2]*funct_(ui);
+		elemat(fvipp,fuip ) += temp[1][2]*funct_(ui);
+		elemat(fvipp,fuipp) += temp[2][2]*funct_(ui);
+	      }
+	    }
+	  } // end if supg and newton
+
+	  for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	  {
+	    const int fuippp=4*ui+3;
+
+	    const double scaled_gradp_0 = fac_afgdt_tauM_facMtau*gamma*dt*derxy_(0,ui);
+	    const double scaled_gradp_1 = fac_afgdt_tauM_facMtau*gamma*dt*derxy_(1,ui);
+	    const double scaled_gradp_2 = fac_afgdt_tauM_facMtau*gamma*dt*derxy_(2,ui);
+
+	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	    {
+	      const int fvi=4*vi;
+ 
+	      /* SUPG stabilisation --- pressure
+
+               factor:
+                               alphaF*gamma*tauM*dt
+                            ---------------------------, rescaled by gamma*dt
+                            alphaM*tauM+alphaF*gamma*dt
 
 
-                elemat(vi*4    , ui*4    ) += fac_afgdt_afgdt_facMtau_funct_ui_funct_vi*vderxyaf_(0,0);
-                elemat(vi*4    , ui*4 + 1) += fac_afgdt_afgdt_facMtau_funct_ui_funct_vi*vderxyaf_(0,1);
-                elemat(vi*4    , ui*4 + 2) += fac_afgdt_afgdt_facMtau_funct_ui_funct_vi*vderxyaf_(0,2);
-                elemat(vi*4 + 1, ui*4    ) += fac_afgdt_afgdt_facMtau_funct_ui_funct_vi*vderxyaf_(1,0);
-                elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_afgdt_facMtau_funct_ui_funct_vi*vderxyaf_(1,1);
-                elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_afgdt_facMtau_funct_ui_funct_vi*vderxyaf_(1,2);
-                elemat(vi*4 + 2, ui*4    ) += fac_afgdt_afgdt_facMtau_funct_ui_funct_vi*vderxyaf_(2,0);
-                elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_afgdt_facMtau_funct_ui_funct_vi*vderxyaf_(2,1);
-                elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_afgdt_facMtau_funct_ui_funct_vi*vderxyaf_(2,2);
-              } // end loop rows (test functions for matrix)
-            } // end loop columns (solution for matrix, test function for vector)
-          } // end if inertia and newton
-        } //   end if inertia stabilisation
-        else
-        {
-          //---------------------------------------------------------------
-          //
-          //              TIME-DEPENDENT SUBGRID-SCALES
-          //    GALERKIN PART I WITH NEGLECTED SUBSCALE INERTIA TERM
-          //
-          //---------------------------------------------------------------
-
-          // if no inertia stabilisation
-          const double fac_alphaM = fac*alphaM;
-          const double fac_afgdt  = fac*afgdt;
-
-
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-          {
-            const double inertia_and_conv_ui_ = fac_alphaM*funct_(ui)+fac_afgdt*conv_c_af_(ui);
-
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              const double inertia_and_conv_ui_funct_vi = inertia_and_conv_ui_*funct_(vi);
-              /*
-
-                inertia term (intermediate)
-
-                                   /          \
-                                  |            |
-                          +alphaM*|  Dacc , v  |
-                                  |            |
-                                   \          /
-
-                convective term (intermediate)
-
-
-                                   /                          \
-                                  |  / n+af       \            |
-                 +alphaF*gamma*dt*| | c    o nabla | Dacc , v  |
-                                  |  \            /            |
-                                   \                          /
-
+                    /                               \
+                   |              / n+af       \     |
+                   |  nabla Dp , | c    o nabla | v  |
+                   |              \            /     |
+                    \                               /
               */
-              elemat(vi*4    , ui*4    ) += inertia_and_conv_ui_funct_vi;
-              elemat(vi*4 + 1, ui*4 + 1) += inertia_and_conv_ui_funct_vi;
-              elemat(vi*4 + 2, ui*4 + 2) += inertia_and_conv_ui_funct_vi;
-
+              elemat(fvi  ,fuippp) += scaled_gradp_0*conv_c_af_(vi);
+              elemat(fvi+1,fuippp) += scaled_gradp_1*conv_c_af_(vi);
+              elemat(fvi+2,fuippp) += scaled_gradp_2*conv_c_af_(vi);
+	      
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
 
-          if (newton==Fluid3::Newton) // if no inertia and newton
-          {
+	} // end supg
+	else
+	{ // no supg
 
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-            {
-              const double fac_afgdt_funct_ui = fac_afgdt*funct_(ui);
+	  for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	  {
+	    const int fui  =4*ui;
+	    const int fuip =fui+1;
+	    const int fuipp=fui+2;
 
-              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-              {
-                const double fac_afgdt_funct_ui_funct_vi = fac_afgdt_funct_ui*funct_(vi);
+	    /* GALERKIN inertia term (intermediate) + convection (intermediate) */
+	    const double inertia_and_conv_ui 
+	      = 
+	      fac_inertia*funct_(ui)
+	      +
+	      fac_convection*conv_c_af_(ui);
+	      
+	    /* viscous term (intermediate), 'diagonal' parts */
+	    const double visc_0=fac_afgdt_visceff*derxy_(0,ui);
+	    const double visc_1=fac_afgdt_visceff*derxy_(1,ui);
+	    const double visc_2=fac_afgdt_visceff*derxy_(2,ui);
 
-                /*  factor:
+	    /* CSTAB entries */
+	    const double cstab_0 = cstabfac*derxy_(0,ui);
+	    const double cstab_1 = cstabfac*derxy_(1,ui);
+	    const double cstab_2 = cstabfac*derxy_(2,ui);
 
-                +alphaF*gamma*dt
+	    /* combined CSTAB/viscous entires */
+	    const double visc_and_cstab_0 = visc_0+cstab_0;
+	    const double visc_and_cstab_1 = visc_1+cstab_1;
+	    const double visc_and_cstab_2 = visc_2+cstab_2;
+	      
+	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	    {
+	      const int fvi    =4*vi;
+	      const int fvip   =fvi+1;
+	      const int fvipp  =fvi+2;
+	      
+	      const double sum =
+		inertia_and_conv_ui*funct_(vi)
+		+
+		visc_0*derxy_(0,vi)
+		+
+		visc_1*derxy_(1,vi)
+		+
+		visc_2*derxy_(2,vi);
+		  
+	      /*
+		inertia term (intermediate)
+
+
+                              /          \
+                             |            |
+                    alphaM * |  Dacc , v  | +
+                             |            |
+                              \          /
+
+	      */
+	      /*
+
+		  +convection (intermediate)
+
+
+		  factor without inertia stabilisation: 
+
+   		      +alphaF*gamma*dt
+
+
+		  factor with inertia stabilisation: 
+
+                                             alphaF*gamma*dt
+                      +alphaF*gamma*dt*---------------------------
+                                       alphaM*tauM+alphaF*gamma*dt
+
+
+                          /                          \
+                         |  / n+af       \            |
+                         | | c    o nabla | Dacc , v  |
+                         |  \            /            |
+                          \                          /
+	      */
+
+	      /* viscous term (intermediate) */
+	      
+	      /*  factor: +2*nu*alphaF*gamma*dt
+		   
+                          /                          \
+		         |       /    \         / \   |
+		         |  eps | Dacc | , eps | v |  |
+	        	 |       \    /         \ /   |
+                          \                          /
+		  */
+		  
+	      /* CONTINUITY stabilisation */
+
+	      /*
+		Codina style: (recommended)
+		  
+                  factor: +gamma*dt*tauC
+
+		Time dependent: (buggy)
+ 
+		                       tauC * dt
+		  factor: +gamma* dt * ---------
+                                       tauC + dt  
+
+		No cstab:
+				      
+                  factor: 0
+		  
+                     /                          \
+                    |                            |
+                    | nabla o Dacc  , nabla o v  |
+                    |                            |
+                     \                          /
+	      */
+	      
+	      const double a=visc_0*derxy_(1,vi)+cstab_1*derxy_(0,vi);
+	      const double b=visc_0*derxy_(2,vi)+cstab_2*derxy_(0,vi);
+	      const double c=visc_2*derxy_(1,vi)+cstab_1*derxy_(2,vi);
+	      
+	      elemat(fvi  ,fui  ) += sum+visc_and_cstab_0*derxy_(0,vi);
+	      elemat(fvip ,fuip ) += sum+visc_and_cstab_1*derxy_(1,vi);
+	      elemat(fvipp,fuipp) += sum+visc_and_cstab_2*derxy_(2,vi);
+
+	      elemat(fvi  ,fuip ) += a;
+	      elemat(fvi  ,fuipp) += b;
+	      elemat(fvipp,fuip ) += c;
+	      elemat(fuip ,fvipp) += c;
+	      elemat(fuipp,fvi  ) += b;
+	      elemat(fuip ,fvi  ) += a;
+	      
+	    } // vi
+	  } // ui
+
+	  if (newton==Fluid3::Newton) // if no supg and newton
+	  {
+	      
+	    for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	    {
+	      const int fui    =4*ui;
+	      const int fuip   =fui+1;
+	      const int fuipp  =fui+2;
+	      
+	      const double fac_convection_funct_ui = fac_convection*funct_(ui);
+	      
+	      for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	      {
+		const int fvi    =4*vi;
+		const int fvip   =fvi+1;
+		const int fvipp  =fvi+2;
+	      
+		const double fac_convection_funct_ui_funct_vi = fac_convection_funct_ui*funct_(vi);
+		
+		/*
+
+		  factor without inertia stabilisation: 
+		  
+   		      +alphaF*gamma*dt
+
+
+		  factor with inertia stabilisation: 
+
+                                             alphaF*gamma*dt
+                      +alphaF*gamma*dt*---------------------------
+                                       alphaM*tauM+alphaF*gamma*dt
 
                          /                            \
                         |  /            \   n+af       |
                         | | Dacc o nabla | u      , v  |
                         |  \            /              |
                          \                            /
-                */
-                elemat(vi*4    , ui*4    ) += fac_afgdt_funct_ui_funct_vi*vderxyaf_(0,0);
-                elemat(vi*4    , ui*4 + 1) += fac_afgdt_funct_ui_funct_vi*vderxyaf_(0,1);
-                elemat(vi*4    , ui*4 + 2) += fac_afgdt_funct_ui_funct_vi*vderxyaf_(0,2);
-                elemat(vi*4 + 1, ui*4    ) += fac_afgdt_funct_ui_funct_vi*vderxyaf_(1,0);
-                elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_funct_ui_funct_vi*vderxyaf_(1,1);
-                elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_funct_ui_funct_vi*vderxyaf_(1,2);
-                elemat(vi*4 + 2, ui*4    ) += fac_afgdt_funct_ui_funct_vi*vderxyaf_(2,0);
-                elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_funct_ui_funct_vi*vderxyaf_(2,1);
-                elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_funct_ui_funct_vi*vderxyaf_(2,2);
-
-              } // end loop rows (test functions for matrix)
-            } // end loop columns (solution for matrix, test function for vector)
-          } // end if no inertia and newton
-        } // end if no inertia stabilisation
-
-
-        const double fac_afgdt_visceff        = fac*visceff*afgdt;
-        const double fac_gamma_dt             = fac*gamma*dt;
-
+		*/
+		elemat(fvi  ,fui  ) += fac_convection_funct_ui_funct_vi*vderxyaf_(0,0);
+		elemat(fvi  ,fuip ) += fac_convection_funct_ui_funct_vi*vderxyaf_(0,1);
+		elemat(fvi  ,fuipp) += fac_convection_funct_ui_funct_vi*vderxyaf_(0,2);
+		elemat(fvip ,fui  ) += fac_convection_funct_ui_funct_vi*vderxyaf_(1,0);
+		elemat(fvip ,fuip ) += fac_convection_funct_ui_funct_vi*vderxyaf_(1,1);
+		elemat(fvip ,fuipp) += fac_convection_funct_ui_funct_vi*vderxyaf_(1,2);
+		elemat(fvipp,fui  ) += fac_convection_funct_ui_funct_vi*vderxyaf_(2,0);
+		elemat(fvipp,fuip ) += fac_convection_funct_ui_funct_vi*vderxyaf_(2,1);
+		elemat(fvipp,fuipp) += fac_convection_funct_ui_funct_vi*vderxyaf_(2,2);
+		
+	      } // end loop rows (test functions for matrix)
+	    } // end loop columns (solution for matrix, test function for vector)
+	  } // end if no inertia and newton
+	} // no supg
+       
         //---------------------------------------------------------------
         //
-        //              TIME-DEPENDENT SUBGRID-SCALES
-        //        GALERKIN PART 2 (REMAINING EXPRESSIONS)
+        //               TIME-DEPENDENT SUBGRID-SCALES
+	//
+        //                     GALERKIN PART 2 
+	//     (REMAINING PRESSURE AND CONTINUITY EXPRESSIONS)
         //
         //---------------------------------------------------------------
-        for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-        {
-          const double fac_gamma_dt_funct_ui=fac*gamma*dt*funct_(ui);
 
-          for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-          {
+	for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	{
+	  const int fuippp  =4*ui+3;
 
-            /* pressure (implicit) */
+	  const double fac_gamma_dt_funct_ui=fac_gamma_dt*funct_(ui);
+	  
+	  for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	  {
+	    const int fvi  =4*vi;
+	    const int fvip =fvi+1;
+	    const int fvipp=fvi+2;
 
-            /*  factor: -1, rescaled by gamma*dt
+
+	    /* pressure (implicit) */
+
+	    /*  factor: -1, rescaled by gamma*dt
 
                  /                \
                 |                  |
                 |  Dp , nabla o v  |
                 |                  |
                  \                /
-            */
+	    */
 
-            elemat(vi*4    , ui*4 + 3) -= fac_gamma_dt_funct_ui*derxy_(0, vi) ;
-            elemat(vi*4 + 1, ui*4 + 3) -= fac_gamma_dt_funct_ui*derxy_(1, vi) ;
-            elemat(vi*4 + 2, ui*4 + 3) -= fac_gamma_dt_funct_ui*derxy_(2, vi) ;
-          } // end loop rows (test functions for matrix)
-        } // end loop columns (solution for matrix, test function for vector)
-
-        for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-        {
-          for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-          {
-            const double sum = derxy_(0,ui)*derxy_(0,vi)+derxy_(1,ui)*derxy_(1,vi)+derxy_(2,ui)*derxy_(2,vi);
-
-            /* viscous term (intermediate) */
-
-            /*  factor: +2*nu*alphaF*gamma*dt
-
-                 /                          \
-                |       /    \         / \   |
-                |  eps | Dacc | , eps | v |  |
-                |       \    /         \ /   |
-                 \                          /
-            */
-
-            elemat(vi*4    , ui*4    ) += fac_afgdt_visceff*(sum+derxy_(0,ui)*derxy_(0,vi));
-            elemat(vi*4    , ui*4 + 1) += fac_afgdt_visceff*derxy_(0,ui)*derxy_(1,vi) ;
-            elemat(vi*4    , ui*4 + 2) += fac_afgdt_visceff*derxy_(0,ui)*derxy_(2,vi) ;
-            elemat(vi*4 + 1, ui*4    ) += fac_afgdt_visceff*derxy_(1,ui)*derxy_(0,vi) ;
-            elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_visceff*(sum+derxy_(1,ui)*derxy_(1,vi));
-            elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_visceff*derxy_(1,ui)*derxy_(2,vi) ;
-            elemat(vi*4 + 2, ui*4    ) += fac_afgdt_visceff*derxy_(2,ui)*derxy_(0,vi) ;
-            elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_visceff*derxy_(2,ui)*derxy_(1,vi) ;
-            elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_visceff*(sum+derxy_(2,ui)*derxy_(2,vi));
-
-          } // end loop rows (test functions for matrix)
-        }
-
-        for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-        {
-          const double fac_gamma_dt_funct_vi= fac_gamma_dt*funct_(vi);
-
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-          {
             /* continuity equation (implicit) */
-
+	    
             /*  factor: +gamma*dt
 
                  /                  \
@@ -2752,43 +3079,65 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                  \                  /
             */
 
-            elemat(vi*4 + 3, ui*4    ) += fac_gamma_dt_funct_vi*derxy_(0,ui);
-            elemat(vi*4 + 3, ui*4 + 1) += fac_gamma_dt_funct_vi*derxy_(1,ui);
-            elemat(vi*4 + 3, ui*4 + 2) += fac_gamma_dt_funct_vi*derxy_(2,ui);
+	    elemat(fvi   ,fuippp) -= fac_gamma_dt_funct_ui*derxy_(0,vi);
+	    elemat(fvip  ,fuippp) -= fac_gamma_dt_funct_ui*derxy_(1,vi);
+	    elemat(fvipp ,fuippp) -= fac_gamma_dt_funct_ui*derxy_(2,vi);
 
+            elemat(fuippp,fvi   ) += fac_gamma_dt_funct_ui*derxy_(0,vi);
+            elemat(fuippp,fvip  ) += fac_gamma_dt_funct_ui*derxy_(1,vi);
+            elemat(fuippp,fvipp ) += fac_gamma_dt_funct_ui*derxy_(2,vi);
 
-          } // end loop rows (test functions for matrix)
-        } // end loop columns (solution for matrix, test function for vector)
+	  } // end loop rows (test functions for matrix)
+	} // end loop columns (solution for matrix, test function for vector)
         // end remaining Galerkin terms
 
         //---------------------------------------------------------------
         //
         //       STABILISATION PART, TIME-DEPENDENT SUBGRID-SCALES
+	//
         //                    PRESSURE STABILISATION
         //
         //---------------------------------------------------------------
         if(pspg == Fluid3::pstab_use_pspg)
         {
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelepspg_ref = rcp(new TimeMonitor(*timeelepspg));
-#endif
-          const double fac_gamma_dt_tauM_facMtau                   = fac*gamma*dt*tauM*facMtau;
+          const double fac_afgdt_gamma_dt_tauM_facMtau  = fac*afgdt*gamma*dt*tauM*facMtau;
+          const double fac_gdt_gdt_tauM_facMtau         = fac*gamma*dt*tauM*facMtau*gamma*dt;
+          const double fac_alphaM_gamma_dt_tauM_facMtau = fac*alphaM*gamma*dt*tauM*facMtau;
 
-          const double fac_afgdt_gamma_dt_tauM_facMtau             = fac*afgdt*gamma*dt*tauM*facMtau;
-
-          const double fac_alphaM_gamma_dt_tauM_facMtau            = fac*alphaM*gamma*dt*tauM*facMtau;
-
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+          if(higher_order_ele  && newton!=Fluid3::minimal)
           {
-            const double inertia_and_conv_ui
+            const double fac_visceff_afgdt_gamma_dt_tauM_facMtau
               =
-              fac_alphaM_gamma_dt_tauM_facMtau*funct_(ui)+fac_afgdt_gamma_dt_tauM_facMtau*conv_c_af_(ui);
+              fac*visceff*afgdt*gamma*dt*tauM*facMtau;
 
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
             {
-              /* pressure stabilisation --- inertia    */
+	      const int fui  =4*ui;
+	      const int fuip =fui+1;
+	      const int fuipp=fui+2;
 
-              /*
+	      const double inertia_and_conv_ui
+		=
+		fac_alphaM_gamma_dt_tauM_facMtau*funct_(ui)
+		+
+		fac_afgdt_gamma_dt_tauM_facMtau*conv_c_af_(ui);
+
+
+	      const double pspg_diffusion_inertia_convect_0_ui=fac_visceff_afgdt_gamma_dt_tauM_facMtau*viscs2_(0,ui)-inertia_and_conv_ui;
+	      const double pspg_diffusion_inertia_convect_1_ui=fac_visceff_afgdt_gamma_dt_tauM_facMtau*viscs2_(1,ui)-inertia_and_conv_ui;
+	      const double pspg_diffusion_inertia_convect_2_ui=fac_visceff_afgdt_gamma_dt_tauM_facMtau*viscs2_(2,ui)-inertia_and_conv_ui;
+
+	      const double scaled_derxy2_3_ui=fac_visceff_afgdt_gamma_dt_tauM_facMtau*derxy2_(3,ui);
+	      const double scaled_derxy2_4_ui=fac_visceff_afgdt_gamma_dt_tauM_facMtau*derxy2_(4,ui);
+	      const double scaled_derxy2_5_ui=fac_visceff_afgdt_gamma_dt_tauM_facMtau*derxy2_(5,ui);
+                 
+              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+              {
+		const int fvippp =4*vi+3;
+	      
+		/* pressure stabilisation --- inertia    */
+
+		/*
                            gamma*dt*tau_M
                      ------------------------------ * alpha_M *
                      alpha_M*tau_M+alpha_F*gamma*dt
@@ -2799,8 +3148,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                              * |  Dacc , nabla q  | +
                                |                  |
                                 \                /
-
-               pressure stabilisation --- convection
+				
+                  pressure stabilisation --- convection
 
 
                              gamma*dt*tau_M
@@ -2813,24 +3162,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                      * | | c    o nabla | Dacc , nabla q  |
                        |  \            /                  |
                         \                                /
-              */
-              elemat(vi*4 + 3, ui*4    ) += inertia_and_conv_ui*derxy_(0,vi) ;
-              elemat(vi*4 + 3, ui*4 + 1) += inertia_and_conv_ui*derxy_(1,vi) ;
-              elemat(vi*4 + 3, ui*4 + 2) += inertia_and_conv_ui*derxy_(2,vi) ;
+		*/
 
-            }
-          }
-          if(higher_order_ele)
-          {
-            const double fac_visceff_afgdt_gamma_dt_tauM_facMtau
-              =
-              fac*visceff*afgdt*gamma*dt*tauM*facMtau;
-
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-            {
-
-              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-              {
                 /* pressure stabilisation --- diffusion  */
 
 
@@ -2847,29 +3180,87 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                     \                                  /
 		*/
 
-                elemat(vi*4 + 3, ui*4    ) -= fac_visceff_afgdt_gamma_dt_tauM_facMtau*
-                                              (derxy_(0,vi)*viscs2_(0,ui)
-                                               +
-                                               derxy_(1,vi)*derxy2_(3,ui)
-                                               +
-                                               derxy_(2,vi)*derxy2_(4,ui)) ;
-                elemat(vi*4 + 3, ui*4 + 1) -= fac_visceff_afgdt_gamma_dt_tauM_facMtau*
-                                              (derxy_(0,vi)*derxy2_(3,ui)
-                                               +
-                                               derxy_(1,vi)*viscs2_(1,ui)
-                                               +
-                                               derxy_(2,vi)*derxy2_(5,ui)) ;
-                elemat(vi*4 + 3, ui*4 + 2) -= fac_visceff_afgdt_gamma_dt_tauM_facMtau*
-                                              (derxy_(0,vi)*derxy2_(4,ui)
-                                               +
-                                               derxy_(1,vi)*derxy2_(5,ui)
-                                               +
-                                               derxy_(2,vi)*viscs2_(2,ui)) ;
+                elemat(fvippp,fui  ) -= 
+		  derxy_(0,vi)*pspg_diffusion_inertia_convect_0_ui
+		  +
+		  derxy_(1,vi)*scaled_derxy2_3_ui
+		  +
+		  derxy_(2,vi)*scaled_derxy2_4_ui;
+                elemat(fvippp,fuip ) -= 
+		  derxy_(0,vi)*scaled_derxy2_3_ui
+		  +
+		  derxy_(1,vi)*pspg_diffusion_inertia_convect_1_ui
+		  +
+		  derxy_(2,vi)*scaled_derxy2_5_ui;
+                elemat(fvippp,fuipp) -= 
+		  derxy_(0,vi)*scaled_derxy2_4_ui
+		  +
+		  derxy_(1,vi)*scaled_derxy2_5_ui
+		  +
+		  derxy_(2,vi)*pspg_diffusion_inertia_convect_2_ui;
               }
             }
           }
+	  else
+	  {
+            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+            {
+	      const int fui  =4*ui;
+	      const int fuip =fui+1;
+	      const int fuipp=fui+2;
+
+	      const double inertia_and_conv_ui
+		=
+		fac_alphaM_gamma_dt_tauM_facMtau*funct_(ui)
+		+
+		fac_afgdt_gamma_dt_tauM_facMtau*conv_c_af_(ui);
+
+              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+              {
+		const int fvippp =4*vi+3;
+	      
+		/* pressure stabilisation --- inertia    */
+
+		/*
+                           gamma*dt*tau_M
+                     ------------------------------ * alpha_M *
+                     alpha_M*tau_M+alpha_F*gamma*dt
+
+
+                                /                \
+                               |                  |
+                             * |  Dacc , nabla q  | +
+                               |                  |
+                                \                /
+				
+                  pressure stabilisation --- convection
+
+
+                             gamma*dt*tau_M
+                   + ------------------------------ * alpha_F*gamma*dt *
+                     alpha_M*tau_M+alpha_F*gamma*dt
+
+
+                        /                                \
+                       |  / n+af       \                  |
+                     * | | c    o nabla | Dacc , nabla q  |
+                       |  \            /                  |
+                        \                                /
+		*/
+
+                elemat(fvippp,fui  ) +=derxy_(0,vi)*inertia_and_conv_ui;
+                elemat(fvippp,fuip ) +=derxy_(1,vi)*inertia_and_conv_ui;
+                elemat(fvippp,fuipp) +=derxy_(2,vi)*inertia_and_conv_ui;
+              }
+            }
+	  } // neglect viscous linearisations, do just inertia and convective
+
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
+	    const int fuippp=4*ui+3;
+	    const double scaled_derxy_0=fac_gdt_gdt_tauM_facMtau*derxy_(0,ui);
+	    const double scaled_derxy_1=fac_gdt_gdt_tauM_facMtau*derxy_(1,ui);
+	    const double scaled_derxy_2=fac_gdt_gdt_tauM_facMtau*derxy_(2,ui);
 
             for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
             {
@@ -2888,12 +3279,12 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                     \                    /
               */
 
-              elemat(vi*4 + 3, ui*4 + 3) += fac_gamma_dt_tauM_facMtau*gamma*dt*
-                                            (derxy_(0,ui)*derxy_(0,vi)
-                                             +
-                                             derxy_(1,ui)*derxy_(1,vi)
-                                             +
-                                             derxy_(2,ui)*derxy_(2,vi)) ;
+              elemat(vi*4+3,fuippp) += 
+		(scaled_derxy_0*derxy_(0,vi)
+		 +
+		 scaled_derxy_1*derxy_(1,vi)
+		 +
+		 scaled_derxy_2*derxy_(2,vi)) ;
 
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
@@ -2901,14 +3292,17 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           if (newton==Fluid3::Newton) // if pspg and newton
           {
 
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+            for (int vi=0; vi<iel_; ++vi) // loop columns (solution for matrix, test function for vector)
             {
-              const double fac_afgdt_gamma_dt_tauM_facMtau_funct_ui
-                =
-                fac_afgdt_gamma_dt_tauM_facMtau*funct_(ui);
+	      const int fvippp=4*vi+3;
 
-              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	      const double a=fac_afgdt_gamma_dt_tauM_facMtau*(derxy_(0,vi)*vderxyaf_(0,0)+derxy_(1,vi)*vderxyaf_(1,0)+derxy_(2,vi)*vderxyaf_(2,0));
+	      const double b=fac_afgdt_gamma_dt_tauM_facMtau*(derxy_(0,vi)*vderxyaf_(0,1)+derxy_(1,vi)*vderxyaf_(1,1)+derxy_(2,vi)*vderxyaf_(2,1));
+	      const double c=fac_afgdt_gamma_dt_tauM_facMtau*(derxy_(0,vi)*vderxyaf_(0,2)+derxy_(1,vi)*vderxyaf_(1,2)+derxy_(2,vi)*vderxyaf_(2,2));
+
+              for (int ui=0; ui<iel_; ++ui)  // loop rows (test functions for matrix)
               {
+		const int fui=4*ui;
                 /* pressure stabilisation --- convection */
 
                 /*
@@ -2924,253 +3318,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
                 */
 
-                elemat(vi*4 + 3, ui*4    ) += fac_afgdt_gamma_dt_tauM_facMtau_funct_ui*
-                                              (derxy_(0,vi)*vderxyaf_(0,0)
-                                               +
-                                               derxy_(1,vi)*vderxyaf_(1,0)
-                                               +
-                                               derxy_(2,vi)*vderxyaf_(2,0)) ;
-                elemat(vi*4 + 3, ui*4 + 1) += fac_afgdt_gamma_dt_tauM_facMtau_funct_ui*
-                                              (derxy_(0,vi)*vderxyaf_(0,1)
-                                               +
-                                               derxy_(1,vi)*vderxyaf_(1,1)
-                                               +
-                                               derxy_(2,vi)*vderxyaf_(2,1)) ;
-                elemat(vi*4 + 3, ui*4 + 2) += fac_afgdt_gamma_dt_tauM_facMtau_funct_ui*
-                                              (derxy_(0,vi)*vderxyaf_(0,2)
-                                               +
-                                               derxy_(1,vi)*vderxyaf_(1,2)
-                                               +
-                                               derxy_(2,vi)*vderxyaf_(2,2)) ;
+                elemat(fvippp,fui  ) += a*funct_(ui);
+                elemat(fvippp,fui+1) += b*funct_(ui);
+                elemat(fvippp,fui+2) += c*funct_(ui);
               } // end loop rows (test functions for matrix)
             } // end loop columns (solution for matrix, test function for vector)
           }// end if pspg and newton
-
-#ifdef PERF
-          timeelepspg_ref = null;
-#endif
-
         } // end pressure stabilisation
-
-
-        //---------------------------------------------------------------
-        //
-        //         STABILISATION PART, TIME-DEPENDENT SUBGRID-SCALES
-        //         SUPG STABILISATION FOR CONVECTION DOMINATED FLOWS
-        //
-        //---------------------------------------------------------------
-        if(supg == Fluid3::convective_stab_supg)
-        {
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelesupg_ref = rcp(new TimeMonitor(*timeelesupg));
-#endif
-
-          const double fac_alphaM_afgdt_tauM_facMtau            = fac*alphaM*afgdt*facMtau*tauM;
-          const double fac_afgdt_tauM_afgdt_facMtau             = fac*afgdt*afgdt*facMtau*tauM;
-          const double fac_afgdt_tauM_facMtau                   = fac*afgdt*tauM*facMtau;
-          const double fac_visceff_afgdt_afgdt_tauM_facMtau = fac*visceff*afgdt*afgdt*tauM*facMtau;
-
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-          {
-            const double inertia_and_conv_ui
-              =
-              fac_alphaM_afgdt_tauM_facMtau*funct_(ui)+fac_afgdt_tauM_afgdt_facMtau*conv_c_af_(ui);
-
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              const double inertia_and_conv_ui_conv_c_af_vi
-                = inertia_and_conv_ui*conv_c_af_(vi);
-
-              /* SUPG stabilisation --- inertia
-
-               factor:
-                           alphaF*gamma*dt*tauM
-                        --------------------------- * alphaM
-                        alphaM*tauM+alphaF*gamma*dt
-
-
-                    /                           \
-                   |          / n+af       \     |
-                   |  Dacc , | c    o nabla | v  |
-                   |          \            /     |
-                    \                           /
-              */
-
-              /* SUPG stabilisation --- convection
-
-
-               factor:
-                           alphaF*gamma*dt*tauM
-                        --------------------------- * alphaF * gamma * dt
-                        alphaM*tauM+alphaF*gamma*dt
-
-                    /                                               \
-                   |    / n+af        \          / n+af        \     |
-                   |   | c     o nabla | Dacc , | c     o nabla | v  |
-                   |    \             /          \             /     |
-                    \                                               /
-              */
-              elemat(vi*4    , ui*4    ) += inertia_and_conv_ui_conv_c_af_vi ;
-              elemat(vi*4 + 1, ui*4 + 1) += inertia_and_conv_ui_conv_c_af_vi ;
-              elemat(vi*4 + 2, ui*4 + 2) += inertia_and_conv_ui_conv_c_af_vi ;
-            }
-          }
-
-          if(higher_order_ele)
-          {
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              const double fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi=
-                fac_visceff_afgdt_afgdt_tauM_facMtau*conv_c_af_(vi);
-
-              for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-              {
-                /* SUPG stabilisation --- diffusion
-
-                factor:
-                               alphaF*gamma*tauM*dt
-                     -  nu  --------------------------- * alphaF * gamma * dt
-                            alphaM*tauM+alphaF*gamma*dt
-
-
-                    /                                              \
-                   |                 /     \    / n+af        \     |
-                   |  2*nabla o eps | Dacc  |, | c     o nabla | v  |
-                   |                 \     /    \             /     |
-                    \                                              /
-                */
-                elemat(vi*4, ui*4)         -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(0,ui);
-                elemat(vi*4, ui*4 + 1)     -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*derxy2_(3,ui);
-                elemat(vi*4, ui*4 + 2)     -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*derxy2_(4,ui);
-                elemat(vi*4 + 1, ui*4)     -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*derxy2_(3,ui);
-                elemat(vi*4 + 1, ui*4 + 1) -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(1,ui);
-                elemat(vi*4 + 1, ui*4 + 2) -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*derxy2_(5,ui);
-                elemat(vi*4 + 2, ui*4)     -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*derxy2_(4,ui);
-                elemat(vi*4 + 2, ui*4 + 1) -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*derxy2_(5,ui);
-                elemat(vi*4 + 2, ui*4 + 2) -= fac_visceff_afgdt_afgdt_tauM_facMtau_conv_c_af_vi*viscs2_(2,ui);
-              }
-            }
-          }
-
-          for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-          {
-            const double fac_afgdt_gamma_dt_tauM_facMtau_conv_c_af_vi
-              =
-              fac_afgdt_tauM_facMtau*gamma*dt*conv_c_af_(vi);
-
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-            {
-                /* SUPG stabilisation --- pressure
-
-               factor:
-                               alphaF*gamma*tauM*dt
-                            ---------------------------, rescaled by gamma*dt
-                            alphaM*tauM+alphaF*gamma*dt
-
-
-                    /                               \
-                   |              / n+af       \     |
-                   |  nabla Dp , | c    o nabla | v  |
-                   |              \            /     |
-                    \                               /
-              */
-              elemat(vi*4    , ui*4 + 3) += fac_afgdt_gamma_dt_tauM_facMtau_conv_c_af_vi*derxy_(0,ui);
-              elemat(vi*4 + 1, ui*4 + 3) += fac_afgdt_gamma_dt_tauM_facMtau_conv_c_af_vi*derxy_(1,ui);
-              elemat(vi*4 + 2, ui*4 + 3) += fac_afgdt_gamma_dt_tauM_facMtau_conv_c_af_vi*derxy_(2,ui);
-
-            } // end loop rows (test functions for matrix)
-          } // end loop columns (solution for matrix, test function for vector)
-
-          if (newton==Fluid3::Newton)
-          {
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-            {
-              const double fac_afgdt_tauM_afgdt_facMtau_funct_ui
-                =
-                fac_afgdt_tauM_afgdt_facMtau*funct_(ui);
-
-              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-              {
-                const double fac_afgdt_tauM_afgdt_facMtau_funct_ui_conv_c_af_vi
-                  =
-                  fac_afgdt_tauM_afgdt_facMtau_funct_ui*conv_c_af_(vi);
-
-                /* SUPG stabilisation --- convection
-
-
-               factor:
-                           alphaF*gamma*dt*tauM
-                        --------------------------- * alphaF * gamma * dt
-                        alphaM*tauM+alphaF*gamma*dt
-
-                    /                                               \
-                   |    /            \   n+af    / n+af        \     |
-                   |   | Dacc o nabla | u     , | c     o nabla | v  |
-                   |    \            /           \             /     |
-                    \                                               /
-
-                */
-
-                elemat(vi*4, ui*4)         += fac_afgdt_tauM_afgdt_facMtau_funct_ui_conv_c_af_vi*vderxyaf_(0,0);
-                elemat(vi*4, ui*4 + 1)     += fac_afgdt_tauM_afgdt_facMtau_funct_ui_conv_c_af_vi*vderxyaf_(0,1);
-                elemat(vi*4, ui*4 + 2)     += fac_afgdt_tauM_afgdt_facMtau_funct_ui_conv_c_af_vi*vderxyaf_(0,2);
-                elemat(vi*4 + 1, ui*4)     += fac_afgdt_tauM_afgdt_facMtau_funct_ui_conv_c_af_vi*vderxyaf_(1,0);
-                elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_tauM_afgdt_facMtau_funct_ui_conv_c_af_vi*vderxyaf_(1,1);
-                elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_tauM_afgdt_facMtau_funct_ui_conv_c_af_vi*vderxyaf_(1,2);
-                elemat(vi*4 + 2, ui*4)     += fac_afgdt_tauM_afgdt_facMtau_funct_ui_conv_c_af_vi*vderxyaf_(2,0);
-                elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_tauM_afgdt_facMtau_funct_ui_conv_c_af_vi*vderxyaf_(2,1);
-                elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_tauM_afgdt_facMtau_funct_ui_conv_c_af_vi*vderxyaf_(2,2);
-              }
-            }
-
-            const double fac_afgdt_svelaf_x = fac*afgdt*svelaf_(0);
-            const double fac_afgdt_svelaf_y = fac*afgdt*svelaf_(1);
-            const double fac_afgdt_svelaf_z = fac*afgdt*svelaf_(2);
-
-
-            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-            {
-
-              const double fac_afgdt_svelaf_x_funct_ui = fac_afgdt_svelaf_x*funct_(ui);
-              const double fac_afgdt_svelaf_y_funct_ui = fac_afgdt_svelaf_y*funct_(ui);
-              const double fac_afgdt_svelaf_z_funct_ui = fac_afgdt_svelaf_z*funct_(ui);
-
-              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-              {
-
-                /* SUPG stabilisation --- subscale velocity, nonlinear part from testfunction
-
-                factor:
-                          alphaF * gamma * dt
-
-
-                    /                            \
-                   |  ~n+af    /            \     |
-                   |  u     , | Dacc o nabla | v  |
-                   |   (i)     \            /     |
-                    \                            /
-
-                */
-
-                elemat(vi*4    , ui*4)     -= fac_afgdt_svelaf_x_funct_ui*derxy_(0,vi) ;
-                elemat(vi*4    , ui*4 + 1) -= fac_afgdt_svelaf_x_funct_ui*derxy_(1,vi) ;
-                elemat(vi*4    , ui*4 + 2) -= fac_afgdt_svelaf_x_funct_ui*derxy_(2,vi) ;
-                elemat(vi*4 + 1, ui*4)     -= fac_afgdt_svelaf_y_funct_ui*derxy_(0,vi) ;
-                elemat(vi*4 + 1, ui*4 + 1) -= fac_afgdt_svelaf_y_funct_ui*derxy_(1,vi) ;
-                elemat(vi*4 + 1, ui*4 + 2) -= fac_afgdt_svelaf_y_funct_ui*derxy_(2,vi) ;
-                elemat(vi*4 + 2, ui*4)     -= fac_afgdt_svelaf_z_funct_ui*derxy_(0,vi) ;
-                elemat(vi*4 + 2, ui*4 + 1) -= fac_afgdt_svelaf_z_funct_ui*derxy_(1,vi) ;
-                elemat(vi*4 + 2, ui*4 + 2) -= fac_afgdt_svelaf_z_funct_ui*derxy_(2,vi) ;
-              } // end loop rows (test functions for matrix)
-            } // end loop columns (solution for matrix, test function for vector)
-          } // end if newton and supg
-#ifdef PERF
-          timeelesupg_ref = null;
-#endif
-
-        } // end supg stabilisation
-
-
 
         //---------------------------------------------------------------
         //
@@ -3182,26 +3336,28 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         {
           if(vstab == Fluid3::viscous_stab_usfem || vstab == Fluid3::viscous_stab_gls)
           {
-#ifdef PERF
-            RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
-#endif
-            const double fac_alphaM_visc_afgdt_tauM_facMtau        = vstabfac*fac*alphaM*visc*afgdt*tauM*facMtau;
-            const double fac_afgdt_visc_afgdt_tauM_facMtau         = vstabfac*fac*afgdt*visc*afgdt*tauM*facMtau;
-            const double fac_afgdt_visceff_visc_afgdt_tauM_facMtau = vstabfac*fac*afgdt*visceff*visc*afgdt*tauM*facMtau;
-            const double fac_visc_afgdt_tauM_facMtau_gamma_dt      = vstabfac*fac*visc*afgdt*tauM*facMtau*gamma*dt;
+	    const double tauMqs = afgdt*tauM*facMtau;
+
+            const double fac_visc_tauMqs_alphaM        = vstabfac*fac*visc*tauMqs*alphaM;
+            const double fac_visc_tauMqs_afgdt         = vstabfac*fac*visc*tauMqs*afgdt;
+            const double fac_visc_tauMqs_afgdt_visceff = vstabfac*fac*visc*tauMqs*afgdt*visceff;
+            const double fac_visc_tauMqs_gamma_dt      = vstabfac*fac*visc*tauMqs*gamma*dt;
 
             for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
             {
-              const double fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui
-                =
-                fac_alphaM_visc_afgdt_tauM_facMtau*funct_(ui);
+	      const int fui    =4*ui;
+	      const int fuip   =fui+1;
+	      const int fuipp  =fuip+1;
 
-              const double fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui
+              const double inertia_and_conv
                 =
-                fac_afgdt_visc_afgdt_tauM_facMtau*conv_c_af_(ui);
+                fac_visc_tauMqs_alphaM*funct_(ui)+fac_visc_tauMqs_afgdt*conv_c_af_(ui);
 
               for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
               {
+		const int fvi   =4*vi;
+		const int fvip  =fvi+1;
+		const int fvipp =fvip+1;
                 /* viscous stabilisation --- inertia     */
 
                 /* factor:
@@ -3217,16 +3373,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                      \                      /
                 */
 
-                elemat(vi*4    , ui*4    ) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(0,vi);
-                elemat(vi*4    , ui*4 + 1) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*derxy2_(3,vi);
-                elemat(vi*4    , ui*4 + 2) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*derxy2_(4,vi);
-                elemat(vi*4 + 1, ui*4    ) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*derxy2_(3,vi);
-                elemat(vi*4 + 1, ui*4 + 1) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(1,vi);
-                elemat(vi*4 + 1, ui*4 + 2) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*derxy2_(5,vi);
-                elemat(vi*4 + 2, ui*4    ) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*derxy2_(4,vi);
-                elemat(vi*4 + 2, ui*4 + 1) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*derxy2_(5,vi);
-                elemat(vi*4 + 2, ui*4 + 2) += fac_alphaM_visc_afgdt_tauM_facMtau_funct_ui*viscs2_(2,vi);
-
                 /* viscous stabilisation --- convection */
                 /*  factor:
                                          alphaF*gamma*dt*tauM
@@ -3241,15 +3387,34 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
                 */
 
-                elemat(vi*4    , ui*4    ) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(0,vi) ;
-                elemat(vi*4    , ui*4 + 1) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*derxy2_(3,vi) ;
-                elemat(vi*4    , ui*4 + 2) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*derxy2_(4,vi) ;
-                elemat(vi*4 + 1, ui*4    ) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*derxy2_(3,vi) ;
-                elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(1,vi) ;
-                elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*derxy2_(5,vi) ;
-                elemat(vi*4 + 2, ui*4    ) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*derxy2_(4,vi) ;
-                elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*derxy2_(5,vi) ;
-                elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_visc_afgdt_tauM_facMtau_conv_c_af_ui*viscs2_(2,vi) ;
+
+ 		const double a = inertia_and_conv*derxy2_(3,vi);
+ 		const double b = inertia_and_conv*derxy2_(4,vi);
+ 		const double c = inertia_and_conv*derxy2_(5,vi);
+
+ 		elemat(fvi  ,fui  ) += inertia_and_conv*viscs2_(0,vi);
+		elemat(fvi  ,fuip ) += a;
+		elemat(fvi  ,fuipp) += b;
+		elemat(fvip ,fui  ) += a;
+		elemat(fvip ,fuip ) += inertia_and_conv*viscs2_(1,vi);
+		elemat(fvip ,fuipp) += c;
+		elemat(fvipp,fui  ) += b;
+		elemat(fvipp,fuip ) += c;
+		elemat(fvipp,fuipp) += inertia_and_conv*viscs2_(2,vi);
+	      }
+	    }
+
+            for (int ui=0;ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+            {
+	      const int fui    =4*ui;
+	      const int fuip   =fui+1;
+	      const int fuipp  =fuip+1;
+
+              for (int vi=0;vi<iel_; ++vi)  // loop rows (test functions for matrix)
+              {
+		const int fvi   =4*vi;
+		const int fvip  =fvi+1;
+		const int fvipp =fvip+1;
 
                 /* viscous stabilisation --- diffusion  */
 
@@ -3265,67 +3430,73 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                    |                  \    /                  |
                     \                                        /
 		*/
-		elemat(vi*4    , ui*4    ) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0,ui)*viscs2_(0,vi)
-                                               +
-                                               derxy2_(3,ui)*derxy2_(3,vi)
-                                               +
-                                               derxy2_(4,ui)*derxy2_(4,vi)) ;
 
-                elemat(vi*4    , ui*4 + 1) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0,vi)*derxy2_(3,ui)
-                                               +
-                                               derxy2_(3,vi)*viscs2_(1,ui)
-                                               +
-                                               derxy2_(4,vi)*derxy2_(5,ui)) ;
+		const double a = fac_visc_tauMqs_afgdt_visceff*
+                                 (viscs2_(0,vi)*derxy2_(3,ui)
+				  +
+				  derxy2_(3,vi)*viscs2_(1,ui)
+				  +
+				  derxy2_(4,vi)*derxy2_(5,ui));
 
-                elemat(vi*4    , ui*4 + 2) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0,vi)*derxy2_(4,ui)
-                                               +
-                                               derxy2_(3,vi)*derxy2_(5,ui)
-                                               +
-                                               derxy2_(4,vi)*viscs2_(2,ui)) ;
+                elemat(fvi  ,fuip ) -= a; 
+		elemat(fuip ,fvi  ) -= a;
+		
+		const double b = fac_visc_tauMqs_afgdt_visceff*
+                                 (viscs2_(0,ui)*derxy2_(4,vi)
+				  +
+				  derxy2_(3,ui)*derxy2_(5,vi)
+				  +
+				  derxy2_(4,ui)*viscs2_(2,vi));
 
-                elemat(vi*4 + 1, ui*4    ) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0,ui)*derxy2_(3,vi)
-                                               +
-                                               derxy2_(3,ui)*viscs2_(1,vi)
-                                               +
-                                               derxy2_(4,ui)*derxy2_(5,vi)) ;
+                elemat(fvipp,fui  ) -= b;
+                elemat(fui  ,fvipp) -= b;
 
-                elemat(vi*4 + 1, ui*4 + 1) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
-                                              (derxy2_(3,ui)*derxy2_(3,vi)
-                                               +
-                                               viscs2_(1,ui)*viscs2_(1,vi)
-                                               +
-                                               derxy2_(5,ui)*derxy2_(5,vi)) ;
+		const double c = fac_visc_tauMqs_afgdt_visceff*
+                                 (derxy2_(3,ui)*derxy2_(4,vi)
+				  +
+				  viscs2_(1,ui)*derxy2_(5,vi)
+				  +
+				  derxy2_(5,ui)*viscs2_(2,vi));
 
-                elemat(vi*4 + 1, ui*4 + 2) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
-                                              (derxy2_(3,vi)*derxy2_(4,ui)
-                                               +
-                                               viscs2_(1,vi)*derxy2_(5,ui)
-                                               +
-                                               derxy2_(5,vi)*viscs2_(2,ui)) ;
+                elemat(fvipp,fuip ) -= c;
+                elemat(fuip ,fvipp) -= c;
 
-                elemat(vi*4 + 2, ui*4    ) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
-                                              (viscs2_(0,ui)*derxy2_(4,vi)
-                                               +
-                                               derxy2_(3,ui)*derxy2_(5,vi)
-                                               +
-                                               derxy2_(4,ui)*viscs2_(2,vi)) ;
-                elemat(vi*4 + 2, ui*4 + 1) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
-                                              (derxy2_(3,ui)*derxy2_(4,vi)
-                                               +
-                                               viscs2_(1,ui)*derxy2_(5,vi)
-                                               +
-                                               derxy2_(5,ui)*viscs2_(2,vi)) ;
+		elemat(fvi   ,fui ) -= fac_visc_tauMqs_afgdt_visceff*
+		                       (viscs2_(0,ui)*viscs2_(0,vi)
+					+
+					derxy2_(3,ui)*derxy2_(3,vi)
+					+
+					derxy2_(4,ui)*derxy2_(4,vi));
 
-                elemat(vi*4 + 2, ui*4 + 2) -= fac_afgdt_visceff_visc_afgdt_tauM_facMtau*
-                                              (derxy2_(4,ui)*derxy2_(4,vi)
-                                               +
-                                               derxy2_(5,ui)*derxy2_(5,vi)
-                                               +
-                                               viscs2_(2,ui)*viscs2_(2,vi)) ;
+                elemat(fvip ,fuip ) -= fac_visc_tauMqs_afgdt_visceff*
+                                       (derxy2_(3,ui)*derxy2_(3,vi)
+					+
+					viscs2_(1,ui)*viscs2_(1,vi)
+					+
+					derxy2_(5,ui)*derxy2_(5,vi));
+
+                elemat(fvipp,fuipp) -= fac_visc_tauMqs_afgdt_visceff*
+                                       (derxy2_(4,ui)*derxy2_(4,vi)
+					+
+					derxy2_(5,ui)*derxy2_(5,vi)
+					+
+					viscs2_(2,ui)*viscs2_(2,vi));
+
+	      }
+	    }
+
+            for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+            {
+	      const int fui    =4*ui;
+	      const int fuip   =fui+1;
+	      const int fuipp  =fuip+1;
+	      const int fuippp =fuipp+1;
+
+              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+              {
+		const int fvi   =4*vi;
+		const int fvip  =fvi+1;
+		const int fvipp =fvip+1;
 
                 /* viscous stabilisation --- pressure   */
 
@@ -3342,37 +3513,88 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                    |                            |
                     \                          /
                 */
-                elemat(vi*4    , ui*4 + 3) += fac_visc_afgdt_tauM_facMtau_gamma_dt*
-                                              (derxy_(0,ui)*viscs2_(0,vi)
-                                               +
-                                               derxy_(1,ui)*derxy2_(3,vi)
-                                               +
-                                               derxy_(2,ui)*derxy2_(4,vi)) ;
-                elemat(vi*4 + 1, ui*4 + 3) += fac_visc_afgdt_tauM_facMtau_gamma_dt*
-                                              (derxy_(0,ui)*derxy2_(3,vi)
-                                               +
-                                               derxy_(1,ui)*viscs2_(1,vi)
-                                               +
-                                               derxy_(2,ui)*derxy2_(5,vi)) ;
-                elemat(vi*4 + 2, ui*4 + 3) += fac_visc_afgdt_tauM_facMtau_gamma_dt*
-                                              (derxy_(0,ui)*derxy2_(4,vi)
-                                               +
-                                               derxy_(1,ui)*derxy2_(5,vi)
-                                               +
-                                               derxy_(2,ui)*viscs2_(2,vi)) ;
+                elemat(fvi  ,fuippp) += fac_visc_tauMqs_gamma_dt*
+                                        (derxy_(0,ui)*viscs2_(0,vi)
+					 +
+					 derxy_(1,ui)*derxy2_(3,vi)
+					 +
+					 derxy_(2,ui)*derxy2_(4,vi)) ;
+                elemat(fvip ,fuippp) += fac_visc_tauMqs_gamma_dt*
+                                        (derxy_(0,ui)*derxy2_(3,vi)
+					 +
+					 derxy_(1,ui)*viscs2_(1,vi)
+					 +
+					 derxy_(2,ui)*derxy2_(5,vi)) ;
+                elemat(fvipp,fuippp) += fac_visc_tauMqs_gamma_dt*
+                                        (derxy_(0,ui)*derxy2_(4,vi)
+					 +
+					 derxy_(1,ui)*derxy2_(5,vi)
+					 +
+					 derxy_(2,ui)*viscs2_(2,vi)) ;
               } // end loop rows (test functions for matrix)
             } // end loop columns (solution for matrix, test function for vector)
 
             if (newton==Fluid3::Newton)
             {
-              for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-              {
-                const double fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui
-                  =
-                  fac_afgdt_visc_afgdt_tauM_facMtau*funct_(ui);
 
-                for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	      double temp[3][3];
+              for (int vi=0; vi<iel_; ++vi) // loop columns (solution for matrix, test function for vector)
+              {
+		const int fvi    =4*vi;
+		const int fvip   =fvi+1;
+		const int fvipp  =fvip+1;
+
+		temp[0][0]=(viscs2_(0,vi)*vderxyaf_(0,0)
+			    +
+			    derxy2_(3,vi)*vderxyaf_(1,0)
+			    +
+			    derxy2_(4,vi)*vderxyaf_(2,0))*fac_visc_tauMqs_afgdt;
+		temp[1][0]=(viscs2_(0,vi)*vderxyaf_(0,1)
+			    +
+			    derxy2_(3,vi)*vderxyaf_(1,1)
+			    +
+			    derxy2_(4,vi)*vderxyaf_(2,1))*fac_visc_tauMqs_afgdt;
+		temp[2][0]=(viscs2_(0,vi)*vderxyaf_(0,2)
+			    +
+			    derxy2_(3,vi)*vderxyaf_(1,2)
+			    +
+			    derxy2_(4,vi)*vderxyaf_(2,2))*fac_visc_tauMqs_afgdt;
+		temp[0][1]=(derxy2_(3,vi)*vderxyaf_(0,0)
+			    +
+			    viscs2_(1,vi)*vderxyaf_(1,0)
+			    +
+			    derxy2_(5,vi)*vderxyaf_(2,0))*fac_visc_tauMqs_afgdt;
+		temp[1][1]=(derxy2_(3,vi)*vderxyaf_(0,1)
+			    +
+			    viscs2_(1,vi)*vderxyaf_(1,1)
+			    +
+			    derxy2_(5,vi)*vderxyaf_(2,1))*fac_visc_tauMqs_afgdt;
+		temp[2][1]=(derxy2_(3,vi)*vderxyaf_(0,2)
+			    +
+			    viscs2_(1,vi)*vderxyaf_(1,2)
+			    +
+			    derxy2_(5,vi)*vderxyaf_(2,2))*fac_visc_tauMqs_afgdt;
+		temp[0][2]=(derxy2_(4,vi)*vderxyaf_(0,0)
+			    +
+			    derxy2_(5,vi)*vderxyaf_(1,0)
+			    +
+			    viscs2_(2,vi)*vderxyaf_(2,0))*fac_visc_tauMqs_afgdt;
+		temp[1][2]=(derxy2_(4,vi)*vderxyaf_(0,1)
+			    +
+			    derxy2_(5,vi)*vderxyaf_(1,1)
+			    +
+			    viscs2_(2,vi)*vderxyaf_(2,1))*fac_visc_tauMqs_afgdt;
+		temp[2][2]=(derxy2_(4,vi)*vderxyaf_(0,2)
+			    +
+			    derxy2_(5,vi)*vderxyaf_(1,2)
+			    +
+			    viscs2_(2,vi)*vderxyaf_(2,2))*fac_visc_tauMqs_afgdt;
+
+                for (int ui=0; ui<iel_; ++ui)  // loop rows (test functions for matrix)
                 {
+		  const int fui    =4*ui;
+		  const int fuip   =fui+1;
+		  const int fuipp  =fuip+1;
 
                   /* viscous stabilisation --- convection
                      factor:
@@ -3388,178 +3610,22 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
 
                   */
-                  elemat(vi*4     , ui*4    )+= fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (viscs2_(0,vi)*vderxyaf_(0, 0)
-                                                 +
-                                                 derxy2_(3,vi)*vderxyaf_(1, 0)
-                                                 +
-                                                 derxy2_(4,vi)*vderxyaf_(2, 0));
-                  elemat(vi*4     , ui*4 + 1)+= fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (viscs2_(0,vi)*vderxyaf_(0, 1)
-                                                 +
-                                                 derxy2_(3,vi)*vderxyaf_(1, 1)
-                                                 +
-                                                 derxy2_(4,vi)*vderxyaf_(2, 1));
-                  elemat(vi*4     , ui*4 + 2)+= fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (viscs2_(0,vi)*vderxyaf_(0, 2)
-                                                 +
-                                                 derxy2_(3,vi)*vderxyaf_(1, 2)
-                                                 +
-                                                 derxy2_(4,vi)*vderxyaf_(2, 2));
-                  elemat(vi*4 + 1, ui*4     )+= fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (derxy2_(3,vi)*vderxyaf_(0, 0)
-                                                 +
-                                                 viscs2_(1,vi)*vderxyaf_(1, 0)
-                                                 +
-                                                 derxy2_(5,vi)*vderxyaf_(2, 0));
-                  elemat(vi*4 + 1, ui*4 + 1) += fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (derxy2_(3,vi)*vderxyaf_(0, 1)
-                                                 +
-                                                 viscs2_(1,vi)*vderxyaf_(1, 1)
-                                                 +
-                                                 derxy2_(5,vi)*vderxyaf_(2, 1)) ;
-                  elemat(vi*4 + 1, ui*4 + 2) += fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (derxy2_(3,vi)*vderxyaf_(0, 2)
-                                                 +
-                                                 viscs2_(1,vi)*vderxyaf_(1, 2)
-                                                 +
-                                                 derxy2_(5,vi)*vderxyaf_(2, 2));
-                  elemat(vi*4 + 2, ui*4    ) += fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (derxy2_(4,vi)*vderxyaf_(0, 0)
-                                                 +
-                                                 derxy2_(5,vi)*vderxyaf_(1, 0)
-                                                 +
-                                                 viscs2_(2,vi)*vderxyaf_(2, 0)) ;
-                  elemat(vi*4 + 2, ui*4 + 1) += fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (derxy2_(4,vi)*vderxyaf_(0, 1)
-                                                 +
-                                                 derxy2_(5,vi)*vderxyaf_(1, 1)
-                                                 +
-                                                 viscs2_(2,vi)*vderxyaf_(2, 1)) ;
-                  elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_visc_afgdt_tauM_facMtau_funct_ui*
-                                                (derxy2_(4,vi)*vderxyaf_(0, 2)
-                                                 +
-                                                 derxy2_(5,vi)*vderxyaf_(1, 2)
-                                                 +
-                                                 viscs2_(2,vi)*vderxyaf_(2, 2));
+                  elemat(fvi  ,fui  ) += temp[0][0]*funct_(ui);
+                  elemat(fvi  ,fuip ) += temp[1][0]*funct_(ui);                                     
+                  elemat(fvi  ,fuipp) += temp[2][0]*funct_(ui);                                     
+                  elemat(fvip ,fui  ) += temp[0][1]*funct_(ui);                                       
+                  elemat(fvip ,fuip ) += temp[1][1]*funct_(ui);                                   
+                  elemat(fvip ,fuipp) += temp[2][1]*funct_(ui);                                   
+                  elemat(fvipp,fui  ) += temp[0][2]*funct_(ui);                                   
+                  elemat(fvipp,fuip ) += temp[1][2]*funct_(ui);		                         
+                  elemat(fvipp,fuipp) += temp[2][2]*funct_(ui);
+                                         
                 } // end loop rows (test functions for matrix)
               } // end loop columns (solution for matrix, test function for vector)
 
             } // end if (a)gls and newton
-
-#ifdef PERF
-            timeelevstab_ref = null;
-#endif
           } // end (a)gls stabilisation
         } // end higher_order_element
-
-        if(cstab == Fluid3::continuity_stab_yes)
-        {
-          //---------------------------------------------------------------
-          //
-          //  STABILISATION PART, QUASISTATIC SUBGRID-PRESSURE VERSION
-          //                  CONTINUITY STABILISATION
-          //
-          //---------------------------------------------------------------
-
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelecstab_ref = rcp(new TimeMonitor(*timeelecstab));
-#endif
-
-          const double fac_gamma_dt_tauC = fac*gamma*dt*tauC;
-
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-          {
-            const double fac_gamma_dt_tauC_derxy_x_ui=fac_gamma_dt_tauC*derxy_(0,ui);
-            const double fac_gamma_dt_tauC_derxy_y_ui=fac_gamma_dt_tauC*derxy_(1,ui);
-            const double fac_gamma_dt_tauC_derxy_z_ui=fac_gamma_dt_tauC*derxy_(2,ui);
-
-            for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              /*  factor: +gamma*dt*tauC
-
-                    /                          \
-                   |                            |
-                   | nabla o Dacc  , nabla o v  |
-                   |                            |
-                    \                          /
-              */
-
-              elemat(vi*4    , ui*4    ) += fac_gamma_dt_tauC_derxy_x_ui*derxy_(0,vi) ;
-              elemat(vi*4    , ui*4 + 1) += fac_gamma_dt_tauC_derxy_y_ui*derxy_(0,vi) ;
-              elemat(vi*4    , ui*4 + 2) += fac_gamma_dt_tauC_derxy_z_ui*derxy_(0,vi) ;
-              elemat(vi*4 + 1, ui*4    ) += fac_gamma_dt_tauC_derxy_x_ui*derxy_(1,vi) ;
-              elemat(vi*4 + 1, ui*4 + 1) += fac_gamma_dt_tauC_derxy_y_ui*derxy_(1,vi) ;
-              elemat(vi*4 + 1, ui*4 + 2) += fac_gamma_dt_tauC_derxy_z_ui*derxy_(1,vi) ;
-              elemat(vi*4 + 2, ui*4    ) += fac_gamma_dt_tauC_derxy_x_ui*derxy_(2,vi) ;
-              elemat(vi*4 + 2, ui*4 + 1) += fac_gamma_dt_tauC_derxy_y_ui*derxy_(2,vi) ;
-              elemat(vi*4 + 2, ui*4 + 2) += fac_gamma_dt_tauC_derxy_z_ui*derxy_(2,vi) ;
-            } // end loop rows vi (test functions for matrix)
-          } // end loop columns ui (solution for matrix, test function for vector)
-#ifdef PERF
-          timeelecstab_ref = null;
-#endif
-        } // end cstab
-        else if(cstab == Fluid3::continuity_stab_td)
-        {
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelecstab_ref = rcp(new TimeMonitor(*timeelecstab));
-#endif
-          //---------------------------------------------------------------
-          //
-          //  STABILISATION PART, TIME-DEPENDENT SUBGRID-PRESSURE VERSION
-          //                  CONTINUITY STABILISATION
-          //
-          //---------------------------------------------------------------
-
-          const double fac_gamma_dt_dt_factauC = fac*gamma*dt*dt*factauC;
-
-          for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-          {
-            const double fac_gamma_dt_dt_factauC_derxy_x_ui
-              =
-              fac_gamma_dt_dt_factauC*derxy_(0,ui);
-
-            const double fac_gamma_dt_dt_factauC_derxy_y_ui
-              =
-              fac_gamma_dt_dt_factauC*derxy_(1,ui);
-
-            const double fac_gamma_dt_dt_factauC_derxy_z_ui
-              =
-              fac_gamma_dt_dt_factauC*derxy_(2,ui);
-
-
-              for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-            {
-              /*
-                                 tauC * dt
-            factor: +gamma* dt * ---------
-                                 tauC + dt
-                    /                          \
-                   |                            |
-                   | nabla o Dacc  , nabla o v  |
-                   |                            |
-                    \                          /
-              */
-
-              elemat(vi*4    , ui*4    ) += fac_gamma_dt_dt_factauC_derxy_x_ui*derxy_(0,vi);
-              elemat(vi*4    , ui*4 + 1) += fac_gamma_dt_dt_factauC_derxy_y_ui*derxy_(0,vi);
-              elemat(vi*4    , ui*4 + 2) += fac_gamma_dt_dt_factauC_derxy_z_ui*derxy_(0,vi);
-              elemat(vi*4 + 1, ui*4    ) += fac_gamma_dt_dt_factauC_derxy_x_ui*derxy_(1,vi);
-              elemat(vi*4 + 1, ui*4 + 1) += fac_gamma_dt_dt_factauC_derxy_y_ui*derxy_(1,vi);
-              elemat(vi*4 + 1, ui*4 + 2) += fac_gamma_dt_dt_factauC_derxy_z_ui*derxy_(1,vi);
-              elemat(vi*4 + 2, ui*4    ) += fac_gamma_dt_dt_factauC_derxy_x_ui*derxy_(2,vi);
-              elemat(vi*4 + 2, ui*4 + 1) += fac_gamma_dt_dt_factauC_derxy_y_ui*derxy_(2,vi);
-              elemat(vi*4 + 2, ui*4 + 2) += fac_gamma_dt_dt_factauC_derxy_z_ui*derxy_(2,vi);
-
-            } // end loop rows (test functions for matrix)
-          } // end loop rows (solution for matrix, test function for vector)
-
-#ifdef PERF
-          timeelecstab_ref = null;
-#endif
-        }
-        // end continuity stabilisation
 
         //---------------------------------------------------------------
         //
@@ -3569,11 +3635,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         //---------------------------------------------------------------
         if(cross == Fluid3::cross_stress_stab)
         {
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelecrossrey_ref = rcp(new TimeMonitor(*timeelecrossrey));
-#endif
-
           const double fac_afgdt=fac*afgdt;
+	  
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
             const double fac_afgdt_conv_subaf_ui=fac_afgdt*conv_subaf_(ui);
@@ -3598,9 +3661,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               elemat(vi*4 + 2, ui*4 + 2) += fac_afgdt_conv_subaf_ui_funct_vi;
             } // end loop rows (test functions for matrix)
           } // end loop columns (solution for matrix, test function for vector)
-#ifdef PERF
-          timeelecrossrey_ref = null;
-#endif
         } // end cross
       } // end if compute_elemat
 
@@ -3611,9 +3671,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //
       //---------------------------------------------------------------
       //---------------------------------------------------------------
-#ifdef PERF
-      RefCountPtr<TimeMonitor> timeelegalerkin_ref = rcp(new TimeMonitor(*timeelegalerkin));
-#endif
+
       //---------------------------------------------------------------
       //
       // (MODIFIED) GALERKIN PART, SUBSCALE ACCELERATION STABILISATION
@@ -3642,6 +3700,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
         for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
         {
+	  const int fui=4*ui;
           //---------------------------------------------------------------
           //
           //     GALERKIN PART I AND SUBSCALE ACCELERATION STABILISATION
@@ -3683,9 +3742,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
           */
 
-          elevec[ui*4    ] -= fac_sacc_plus_resM_not_partially_integrated_x*funct_(ui) ;
-          elevec[ui*4 + 1] -= fac_sacc_plus_resM_not_partially_integrated_y*funct_(ui) ;
-          elevec[ui*4 + 2] -= fac_sacc_plus_resM_not_partially_integrated_z*funct_(ui) ;
+          elevec[fui  ] -= fac_sacc_plus_resM_not_partially_integrated_x*funct_(ui) ;
+          elevec[fui+1] -= fac_sacc_plus_resM_not_partially_integrated_y*funct_(ui) ;
+          elevec[fui+2] -= fac_sacc_plus_resM_not_partially_integrated_z*funct_(ui) ;
         }
 
         //---------------------------------------------------------------
@@ -3698,6 +3757,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
+	    const int fui =4*ui;
             /* pressure */
 
             /*  factor: -1
@@ -3709,9 +3769,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                \                  /
             */
 
-            elevec[ui*4    ] += fac_prenp_*derxy_(0,ui) ;
-            elevec[ui*4 + 1] += fac_prenp_*derxy_(1,ui) ;
-            elevec[ui*4 + 2] += fac_prenp_*derxy_(2,ui) ;
+            elevec[fui  ] += fac_prenp_*derxy_(0,ui) ;
+            elevec[fui+1] += fac_prenp_*derxy_(1,ui) ;
+            elevec[fui+2] += fac_prenp_*derxy_(2,ui) ;
           }
 
           {
@@ -3719,50 +3779,39 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
             for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
             {
+	      const int fui=4*ui;
               /* viscous term */
 
-            /*  factor: +2*nu
+	      /*  factor: +2*nu
 
                /                            \
               |       / n+af \         / \   |
               |  eps | u      | , eps | v |  |
               |       \      /         \ /   |
                \                            /
-            */
+	      */
 
-              elevec[ui*4    ] -= fac_visceff*
-                                  (derxy_(0,ui)*vderxyaf_(0,0)*2.0
-                                   +
-                                   derxy_(1,ui)*vderxyaf_(0,1)
-                                   +
-                                   derxy_(1,ui)*vderxyaf_(1,0)
-                                   +
-                                   derxy_(2,ui)*vderxyaf_(0,2)
-                                   +
-                                   derxy_(2,ui)*vderxyaf_(2,0)) ;
-              elevec[ui*4 + 1] -= fac_visceff*
-                                  (derxy_(0,ui)*vderxyaf_(0,1)
-                                   +
-                                   derxy_(0,ui)*vderxyaf_(1,0)
-                                   +
-                                   derxy_(1,ui)*vderxyaf_(1,1)*2.0
-                                   +
-                                   derxy_(2,ui)*vderxyaf_(1,2)
-                                   +
-                                   derxy_(2,ui)*vderxyaf_(2,1)) ;
-              elevec[ui*4 + 2] -= fac_visceff*
-                                  (derxy_(0,ui)*vderxyaf_(0,2)
-                                   +
-                                   derxy_(0,ui)*vderxyaf_(2,0)
-                                   +
-                                   derxy_(1,ui)*vderxyaf_(1,2)
-                                   +
-                                   derxy_(1,ui)*vderxyaf_(2,1)
-                                   +
-                                   derxy_(2,ui)*vderxyaf_(2,2)*2.0) ;
-
+              elevec[fui  ] -= fac_visceff*
+                               (derxy_(0,ui)*vderxyaf_(0,0)*2.0
+				+
+				derxy_(1,ui)*(vderxyaf_(0,1)+vderxyaf_(1,0))
+				+
+				derxy_(2,ui)*(vderxyaf_(0,2)+vderxyaf_(2,0)));
+              elevec[fui+1] -= fac_visceff*
+      		               (derxy_(0,ui)*(vderxyaf_(0,1)+vderxyaf_(1,0))
+				+
+				derxy_(1,ui)*vderxyaf_(1,1)*2.0
+				+
+				derxy_(2,ui)*(vderxyaf_(1,2)+vderxyaf_(2,1)));
+              elevec[fui+2] -= fac_visceff*
+		               (derxy_(0,ui)*(vderxyaf_(0,2)+vderxyaf_(2,0))
+				+
+				derxy_(1,ui)*(vderxyaf_(1,2)+vderxyaf_(2,1))
+				+
+				derxy_(2,ui)*vderxyaf_(2,2)*2.0);
             }
           }
+
           {
             const double fac_divunp  = fac*divunp;
 
@@ -3807,6 +3856,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
+	    const int fui=4*ui;
             /* inertia terms */
 
             /*  factor: +1
@@ -3840,9 +3890,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                \           /
             */
 
-            elevec[ui*4    ] -= funct_(ui)*fac_inertia_convection_dead_load_x;
-            elevec[ui*4 + 1] -= funct_(ui)*fac_inertia_convection_dead_load_y;
-            elevec[ui*4 + 2] -= funct_(ui)*fac_inertia_convection_dead_load_z;
+            elevec[fui  ] -= funct_(ui)*fac_inertia_convection_dead_load_x;
+            elevec[fui+1] -= funct_(ui)*fac_inertia_convection_dead_load_y;
+            elevec[fui+2] -= funct_(ui)*fac_inertia_convection_dead_load_z;
           }
         }
 
@@ -3851,7 +3901,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
-
+	    const int fui=4*ui;
             /* pressure */
 
             /*  factor: -1
@@ -3863,9 +3913,9 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                \                  /
             */
 
-            elevec[ui*4    ] += fac_prenp*derxy_(0,ui);
-            elevec[ui*4 + 1] += fac_prenp*derxy_(1,ui);
-            elevec[ui*4 + 2] += fac_prenp*derxy_(2,ui);
+            elevec[fui  ] += fac_prenp*derxy_(0,ui);
+            elevec[fui+1] += fac_prenp*derxy_(1,ui);
+            elevec[fui+2] += fac_prenp*derxy_(2,ui);
           }
         }
 
@@ -3874,6 +3924,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
+	    const int fui=4*ui;
 
             /* viscous term */
 
@@ -3886,36 +3937,24 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                \                            /
             */
 
-            elevec[ui*4    ] -= visceff_fac*
-                                (derxy_(0,ui)*vderxyaf_(0,0)*2.0
-                                 +
-                                 derxy_(1,ui)*vderxyaf_(0,1)
-                                 +
-                                 derxy_(1,ui)*vderxyaf_(1,0)
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(0,2)
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(2,0)) ;
-            elevec[ui*4 + 1] -= visceff_fac*
-                                (derxy_(0,ui)*vderxyaf_(0,1)
-                                 +
-                                 derxy_(0,ui)*vderxyaf_(1,0)
-                                 +
-                                 derxy_(1,ui)*vderxyaf_(1,1)*2.0
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(1,2)
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(2,1)) ;
-            elevec[ui*4 + 2] -= visceff_fac*
-                                (derxy_(0,ui)*vderxyaf_(0,2)
-                                 +
-                                 derxy_(0,ui)*vderxyaf_(2,0)
-                                 +
-                                 derxy_(1,ui)*vderxyaf_(1,2)
-                                 +
-                                 derxy_(1,ui)*vderxyaf_(2,1)
-                                 +
-                                 derxy_(2,ui)*vderxyaf_(2,2)*2.0) ;
+            elevec[fui   ] -= visceff_fac*
+                              (derxy_(0,ui)*vderxyaf_(0,0)*2.0
+			       +
+			       derxy_(1,ui)*(vderxyaf_(0,1)+vderxyaf_(1,0))
+			       +
+			       derxy_(2,ui)*(vderxyaf_(0,2)+vderxyaf_(2,0)));
+            elevec[fui+1] -= visceff_fac*
+	                     (derxy_(0,ui)*(vderxyaf_(0,1)+vderxyaf_(1,0))
+			      +
+			      derxy_(1,ui)*vderxyaf_(1,1)*2.0
+			      +
+			      derxy_(2,ui)*(vderxyaf_(1,2)+vderxyaf_(2,1)));
+            elevec[fui+2] -= visceff_fac*
+	                     (derxy_(0,ui)*(vderxyaf_(0,2)+vderxyaf_(2,0))
+			      +
+			      derxy_(1,ui)*(vderxyaf_(1,2)+vderxyaf_(2,1))
+			      +
+			      derxy_(2,ui)*vderxyaf_(2,2)*2.0);
           }
         }
 
@@ -3940,9 +3979,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           } // end loop rows (solution for matrix, test function for vector)
         }
       }
-#ifdef PERF
-      timeelegalerkin_ref = null;
-#endif
 
       //---------------------------------------------------------------
       //
@@ -3952,9 +3988,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //---------------------------------------------------------------
       if(pspg == Fluid3::pstab_use_pspg)
       {
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelepspg_ref = rcp(new TimeMonitor(*timeelepspg));
-#endif
 
         const double fac_svelnpx                      = fac*svelnp(0,iquad);
         const double fac_svelnpy                      = fac*svelnp(1,iquad);
@@ -3974,10 +4007,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
           elevec[ui*4 + 3] += fac_svelnpx*derxy_(0,ui)+fac_svelnpy*derxy_(1,ui)+fac_svelnpz*derxy_(2,ui);
 
         } // end loop rows (solution for matrix, test function for vector)
-
-#ifdef PERF
-          timeelepspg_ref = null;
-#endif
       }
 
       //---------------------------------------------------------------
@@ -3988,16 +4017,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //---------------------------------------------------------------
       if(supg == Fluid3::convective_stab_supg)
       {
-#ifdef PERF
-        RefCountPtr<TimeMonitor> timeelesupg_ref = rcp(new TimeMonitor(*timeelesupg));
-#endif
-
         const double fac_svelaf_x=fac*svelaf_(0);
         const double fac_svelaf_y=fac*svelaf_(1);
         const double fac_svelaf_z=fac*svelaf_(2);
 
         for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
         {
+	  const int fui=4*ui;
           /*
                   /                             \
                  |  ~n+af    / n+af        \     |
@@ -4007,15 +4033,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 
           */
 
-          elevec[ui*4    ] += fac_svelaf_x*conv_c_af_(ui);
-          elevec[ui*4 + 1] += fac_svelaf_y*conv_c_af_(ui);
-          elevec[ui*4 + 2] += fac_svelaf_z*conv_c_af_(ui);
+          elevec[fui  ] += fac_svelaf_x*conv_c_af_(ui);
+          elevec[fui+1] += fac_svelaf_y*conv_c_af_(ui);
+          elevec[fui+2] += fac_svelaf_z*conv_c_af_(ui);
 
         } // end loop rows (solution for matrix, test function for vector)
-#ifdef PERF
-        timeelesupg_ref = null;
-#endif
-
       }
 
       //---------------------------------------------------------------
@@ -4028,17 +4050,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       {
         if (vstab != Fluid3::viscous_stab_none)
         {
-#ifdef PERF
-          RefCountPtr<TimeMonitor> timeelevstab_ref = rcp(new TimeMonitor(*timeelevstab));
-#endif
-
           const double fac_visc_svelaf_x = vstabfac*fac*visc*svelaf_(0);
           const double fac_visc_svelaf_y = vstabfac*fac*visc*svelaf_(1);
           const double fac_visc_svelaf_z = vstabfac*fac*visc*svelaf_(2);
 
           for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
           {
-
+	    const int fui=4*ui;
             /*
                  /                        \
                 |  ~n+af                   |
@@ -4047,28 +4065,25 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                  \                        /
 
             */
-            elevec[ui*4    ] += fac_visc_svelaf_x*viscs2_(0,ui)
-                                +
-                                fac_visc_svelaf_y*derxy2_(3,ui)
-                                +
-                                fac_visc_svelaf_z*derxy2_(4,ui);
+            elevec[fui  ] += fac_visc_svelaf_x*viscs2_(0,ui)
+	                     +
+	                     fac_visc_svelaf_y*derxy2_(3,ui)
+                             +
+                             fac_visc_svelaf_z*derxy2_(4,ui);
 
-            elevec[ui*4 + 1] += fac_visc_svelaf_x*derxy2_(3,ui)
-                                +
-                                fac_visc_svelaf_y*viscs2_(1,ui)
-                                +
-                                fac_visc_svelaf_z*derxy2_(5,ui);
+            elevec[fui+1] += fac_visc_svelaf_x*derxy2_(3,ui)
+                             +
+                             fac_visc_svelaf_y*viscs2_(1,ui)
+                             +
+                             fac_visc_svelaf_z*derxy2_(5,ui);
 
-            elevec[ui*4 + 2] += fac_visc_svelaf_x*derxy2_(4,ui)
-                                +
-                                fac_visc_svelaf_y*derxy2_(5,ui)
-                                +
-                                fac_visc_svelaf_z*viscs2_(2,ui);
+            elevec[fui+2] += fac_visc_svelaf_x*derxy2_(4,ui)
+                             +
+                             fac_visc_svelaf_y*derxy2_(5,ui)
+                             +
+                             fac_visc_svelaf_z*viscs2_(2,ui);
 
           } // end loop rows (solution for matrix, test function for vector)
-#ifdef PERF
-          timeelevstab_ref = null;
-#endif
         } // endif (a)gls
       }// end if higher order ele
 
@@ -4081,12 +4096,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         //          (the original version proposed by Codina)
         //
         //---------------------------------------------------------------
-#ifdef PERF
-        RefCountPtr<TimeMonitor> timeelecstab_ref = rcp(new TimeMonitor(*timeelecstab));
-#endif
+
         const double fac_tauC_divunp = fac*tauC*divunp;
+
         for (int ui=0; ui<iel_; ++ui) // loop rows  (test functions)
         {
+	  const int fui=4*ui;
+
           /* factor: +tauC
 
                   /                          \
@@ -4096,14 +4112,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                   \                          /
           */
 
-          elevec[ui*4    ] -= fac_tauC_divunp*derxy_(0,ui) ;
-          elevec[ui*4 + 1] -= fac_tauC_divunp*derxy_(1,ui) ;
-          elevec[ui*4 + 2] -= fac_tauC_divunp*derxy_(2,ui) ;
+          elevec[fui  ] -= fac_tauC_divunp*derxy_(0,ui) ;
+          elevec[fui+1] -= fac_tauC_divunp*derxy_(1,ui) ;
+          elevec[fui+2] -= fac_tauC_divunp*derxy_(2,ui) ;
         } // end loop rows
-#ifdef PERF
-        timeelecstab_ref = null;
-#endif
-      }
+      } // cstab_qs
       else if (cstab == Fluid3::continuity_stab_td)
       {
         //---------------------------------------------------------------
@@ -4113,14 +4126,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
         //
         //---------------------------------------------------------------
 
-#ifdef PERF
-        RefCountPtr<TimeMonitor> timeelecstab_ref = rcp(new TimeMonitor(*timeelecstab));
-#endif
         const double fac_sprenp = fac*sprenp(iquad);
 
         for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
         {
-
+	  const int fui=4*ui;
 
           /* factor: -1
 
@@ -4130,14 +4140,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                       |   (i)              |
                        \                  /
           */
-          elevec[ui*4    ] += fac_sprenp*derxy_(0,ui) ;
-          elevec[ui*4 + 1] += fac_sprenp*derxy_(1,ui) ;
-          elevec[ui*4 + 2] += fac_sprenp*derxy_(2,ui) ;
-        } // end loop rows (solution for matrix, test function for vector)
-#ifdef PERF
-        timeelecstab_ref = null;
-#endif
-      }
+          elevec[fui  ] += fac_sprenp*derxy_(0,ui);
+          elevec[fui+1] += fac_sprenp*derxy_(1,ui);
+          elevec[fui+2] += fac_sprenp*derxy_(2,ui);
+        } // ui
+      } // cstab_td
 
 
       //---------------------------------------------------------------
@@ -4148,15 +4155,14 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //---------------------------------------------------------------
       if(cross == Fluid3::cross_stress_stab_only_rhs || cross == Fluid3::cross_stress_stab)
       {
-#ifdef PERF
-        RefCountPtr<TimeMonitor> timeelecrossrey_ref = rcp(new TimeMonitor(*timeelecrossrey));
-#endif
         const double fac_convsubaf_old_x=fac*convsubaf_old_(0);
         const double fac_convsubaf_old_y=fac*convsubaf_old_(1);
         const double fac_convsubaf_old_z=fac*convsubaf_old_(2);
 
         for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
         {
+	  const int fui=4*ui;
+
           /* factor:
 
                   /                           \
@@ -4165,14 +4171,11 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                  |    (i)            (i)       |
                   \                           /
           */
-          elevec[ui*4    ] -= fac_convsubaf_old_x*funct_(ui);
-          elevec[ui*4 + 1] -= fac_convsubaf_old_y*funct_(ui);
-          elevec[ui*4 + 2] -= fac_convsubaf_old_z*funct_(ui);
-        }
-#ifdef PERF
-          timeelecrossrey_ref = null;
-#endif
-      }
+          elevec[fui  ] -= fac_convsubaf_old_x*funct_(ui);
+          elevec[fui+1] -= fac_convsubaf_old_y*funct_(ui);
+          elevec[fui+2] -= fac_convsubaf_old_z*funct_(ui);
+        } // ui
+      } // end cross
 
       //---------------------------------------------------------------
       //
@@ -4182,15 +4185,13 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //---------------------------------------------------------------
       if(reynolds == Fluid3::reynolds_stress_stab_only_rhs)
       {
-#ifdef PERF
-        RefCountPtr<TimeMonitor> timeelecrossrey_ref = rcp(new TimeMonitor(*timeelecrossrey));
-#endif
         const double fac_svelaf_x=fac*svelaf_(0);
         const double fac_svelaf_y=fac*svelaf_(1);
         const double fac_svelaf_z=fac*svelaf_(2);
 
         for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
         {
+	  const int fui=4*ui;
 
           /* factor:
 
@@ -4200,28 +4201,25 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                  |                               |
                   \                             /
           */
-          elevec[ui*4    ] += fac_svelaf_x*(svelaf_(0)*derxy_(0,ui)
-                                            +
-                                            svelaf_(1)*derxy_(1,ui)
-                                            +
-                                            svelaf_(2)*derxy_(2,ui));
-          elevec[ui*4 + 1] += fac_svelaf_y*(svelaf_(0)*derxy_(0,ui)
-                                            +
-                                            svelaf_(1)*derxy_(1,ui)
-                                            +
-                                            svelaf_(2)*derxy_(2,ui));
-          elevec[ui*4 + 2] += fac_svelaf_z*(svelaf_(0)*derxy_(0,ui)
-                                            +
-                                            svelaf_(1)*derxy_(1,ui)
-                                            +
-                                            svelaf_(2)*derxy_(2,ui));
+          elevec[fui  ] += fac_svelaf_x*(svelaf_(0)*derxy_(0,ui)
+					 +
+					 svelaf_(1)*derxy_(1,ui)
+					 +
+					 svelaf_(2)*derxy_(2,ui));
+          elevec[fui+1] += fac_svelaf_y*(svelaf_(0)*derxy_(0,ui)
+					 +
+					 svelaf_(1)*derxy_(1,ui)
+					 +
+					 svelaf_(2)*derxy_(2,ui));
+          elevec[fui+2] += fac_svelaf_z*(svelaf_(0)*derxy_(0,ui)
+                                         +
+					 svelaf_(1)*derxy_(1,ui)
+					 +
+					 svelaf_(2)*derxy_(2,ui));
 
-        } // end loop rows (solution for matrix, test function for vector)
-#ifdef PERF
-      timeelecrossrey_ref = null;
-#endif
-      }
-    }
+        } // end ui
+      } // end reynolds
+    } // end time dependent subscales
 //--------------------------------------------------------------
 //--------------------------------------------------------------
 //--------------------------------------------------------------
@@ -4279,80 +4277,80 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
 	const double fac_gamma_dt      = fac*gamma*dt;
 	const double fac_alphaM        = fac*alphaM;
 
-	if(supg == Fluid3::convective_stab_supg 
-	   && 
-	   cstab == Fluid3::continuity_stab_yes)
-	{ // end supg and cstab
-	  const double fac_gamma_dt_tauC = fac*gamma*dt*tauC;
+	if(supg == Fluid3::convective_stab_supg)
+	{
+	  if(cstab == Fluid3::continuity_stab_yes)
+	  { // end supg and cstab
+	    const double fac_gamma_dt_tauC = fac*gamma*dt*tauC;
 
-	  for (int ui=0; ui<iel_; ++ui) // loop columns 
-	  {
-	    const int fui  =4*ui;
-	    const int fuip =fui+1;
-	    const int fuipp=fui+2;
-	    	    
-	    /* GALERKIN inertia term (intermediate) + convection (intermediate) */
-
-	    const double inertia_and_conv_ui
-	      = fac_alphaM*funct_(ui)+fac_afgdt*conv_c_af_(ui);
-
-	    /* SUPG stabilisation --- inertia and convection */
-            const double fac_tauM_inertia_and_conv
-              = tauM*inertia_and_conv_ui;
-
-	    /* viscous term (intermediate), diagonal parts */
-	    const double fac_visceff_afgdt_derxy0_ui=fac_visceff_afgdt*derxy_(0,ui);
-	    const double fac_visceff_afgdt_derxy1_ui=fac_visceff_afgdt*derxy_(1,ui);
-	    const double fac_visceff_afgdt_derxy2_ui=fac_visceff_afgdt*derxy_(2,ui);
-
-	    /* CSTAB entries */
-	    const double fac_gamma_dt_tauC_derxy_x_ui = fac_gamma_dt_tauC*derxy_(0,ui);
-	    const double fac_gamma_dt_tauC_derxy_y_ui = fac_gamma_dt_tauC*derxy_(1,ui);
-	    const double fac_gamma_dt_tauC_derxy_z_ui = fac_gamma_dt_tauC*derxy_(2,ui);
-	    
-	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	    for (int ui=0; ui<iel_; ++ui) // loop columns 
 	    {
-	      const int fvi    =4*vi;
-	      const int fvip   =fvi+1;
-	      const int fvipp  =fvi+2;
+	      const int fui  =4*ui;
+	      const int fuip =fui+1;
+	      const int fuipp=fui+2;
 	      
-	      const double sum =
-		inertia_and_conv_ui*funct_(vi)
-		+
-		fac_tauM_inertia_and_conv*conv_c_af_(vi)
-		+
-		fac_visceff_afgdt_derxy0_ui*derxy_(0,vi)
-		+
-		fac_visceff_afgdt_derxy1_ui*derxy_(1,vi)
-		+
-		fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
+	      /* GALERKIN inertia term (intermediate) + convection (intermediate) */
+	      
+	      const double inertia_and_conv_ui
+		= fac_alphaM*funct_(ui)+fac_afgdt*conv_c_af_(ui);
+	      
+	      /* SUPG stabilisation --- inertia and convection */
+	      const double fac_tauM_inertia_and_conv
+		= tauM*inertia_and_conv_ui;
+	      
+	      /* viscous term (intermediate), diagonal parts */
+	      const double fac_visceff_afgdt_derxy0_ui=fac_visceff_afgdt*derxy_(0,ui);
+	      const double fac_visceff_afgdt_derxy1_ui=fac_visceff_afgdt*derxy_(1,ui);
+	      const double fac_visceff_afgdt_derxy2_ui=fac_visceff_afgdt*derxy_(2,ui);
+	      
+	      /* CSTAB entries */
+	      const double fac_gamma_dt_tauC_derxy_x_ui = fac_gamma_dt_tauC*derxy_(0,ui);
+	      const double fac_gamma_dt_tauC_derxy_y_ui = fac_gamma_dt_tauC*derxy_(1,ui);
+	      const double fac_gamma_dt_tauC_derxy_z_ui = fac_gamma_dt_tauC*derxy_(2,ui);
+	      
+	      for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	      {
+		const int fvi    =4*vi;
+		const int fvip   =fvi+1;
+		const int fvipp  =fvi+2;
+		
+		const double sum =
+		  inertia_and_conv_ui*funct_(vi)
+		  +
+		  fac_tauM_inertia_and_conv*conv_c_af_(vi)
+		  +
+		  fac_visceff_afgdt_derxy0_ui*derxy_(0,vi)
+		  +
+		  fac_visceff_afgdt_derxy1_ui*derxy_(1,vi)
+		  +
+		  fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
 	  
-  	      /*
-		GALERKIN inertia term (intermediate) + convection (intermediate)
+		/*
+   		  GALERKIN inertia term (intermediate) + convection (intermediate)
 
-		factor:
+		  factor:
 
                           /          \                   /                          \
                          |            |                 |  / n+af       \            |
                 +alphaM *|  Dacc , v  |+alphaF*gamma*dt*| | c    o nabla | Dacc , v  |
                          |            |                 |  \            /            |
                           \          /                   \                          /
-	      */
+		*/
 
-	      /*  GALERKIN viscous term (intermediate) */
+		/*  GALERKIN viscous term (intermediate) */
 	    
-	      /*  factor: +2*nu*alphaF*gamma*dt
+		/*  factor: +2*nu*alphaF*gamma*dt
 
                  /                          \
                 |       /    \         / \   |
                 |  eps | Dacc | , eps | v |  |
                 |       \    /         \ /   |
                  \                          /
-	      */
+		*/
 		
-	      /* SUPG stabilisation --- inertia and convection */
+		/* SUPG stabilisation --- inertia and convection */
 		
-	      /* factor: +alphaM*tauM
+		/* factor: +alphaM*tauM
 
                            /                           \
                           |          / n+af       \     |
@@ -4367,99 +4365,96 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                                     |    \             /          \             /     |
                                      \                                               /
 
-	      */
+		*/
 
-	      /* CONTINUITY stabilisation */
+		/* CONTINUITY stabilisation */
 
-	      /* factor: +gamma*dt*tauC
+		/* factor: +gamma*dt*tauC
 		  
                     /                          \
                    |                            |
                    | nabla o Dacc  , nabla o v  |
                    |                            |
                     \                          /
-	      */
+		*/
 
-	      elemat(fvi  ,fui  ) += sum+(fac_visceff_afgdt_derxy0_ui+fac_gamma_dt_tauC_derxy_x_ui)*derxy_(0,vi);
-	      elemat(fvi  ,fuip ) +=      fac_visceff_afgdt_derxy0_ui*derxy_(1,vi)+fac_gamma_dt_tauC_derxy_y_ui*derxy_(0,vi);
-	      elemat(fvi  ,fuipp) +=      fac_visceff_afgdt_derxy0_ui*derxy_(2,vi)+fac_gamma_dt_tauC_derxy_z_ui*derxy_(0,vi);
-	      elemat(fvip ,fui  ) +=      fac_visceff_afgdt_derxy1_ui*derxy_(0,vi)+fac_gamma_dt_tauC_derxy_x_ui*derxy_(1,vi);
-	      elemat(fvip ,fuip ) += sum+(fac_visceff_afgdt_derxy1_ui+fac_gamma_dt_tauC_derxy_y_ui)*derxy_(1,vi);
-	      elemat(fvip ,fuipp) +=      fac_visceff_afgdt_derxy1_ui*derxy_(2,vi)+fac_gamma_dt_tauC_derxy_z_ui*derxy_(1,vi);
-	      elemat(fvipp,fui  ) +=      fac_visceff_afgdt_derxy2_ui*derxy_(0,vi)+fac_gamma_dt_tauC_derxy_x_ui*derxy_(2,vi);
-	      elemat(fvipp,fuip ) +=      fac_visceff_afgdt_derxy2_ui*derxy_(1,vi)+fac_gamma_dt_tauC_derxy_y_ui*derxy_(2,vi);
-	      elemat(fvipp,fuipp) += sum+(fac_visceff_afgdt_derxy2_ui+fac_gamma_dt_tauC_derxy_z_ui)*derxy_(2,vi);
-	    } // vi
-	  } // ui
-	} // end supg and cstab
-	else if(supg == Fluid3::convective_stab_supg 
-		&& 
-		cstab != Fluid3::continuity_stab_yes)
-	{ // supg without cstab
-
-	  for (int ui=0; ui<iel_; ++ui) // loop columns 
-	  {
-	    const int fui  =4*ui;
-	    const int fuip =fui+1;
-	    const int fuipp=fui+2;
-	    	    
-	    /* GALERKIN inertia term (intermediate) + convection (intermediate) */
-
-	    const double inertia_and_conv_ui
-	      = fac_alphaM*funct_(ui)+fac_afgdt*conv_c_af_(ui);
-
-	    /* SUPG stabilisation --- inertia and convection */
-            const double fac_tauM_inertia_and_conv
-              = tauM*inertia_and_conv_ui;
-
-	    /* viscous term (intermediate), diagonal parts */
-	    const double fac_visceff_afgdt_derxy0_ui=fac_visceff_afgdt*derxy_(0,ui);
-	    const double fac_visceff_afgdt_derxy1_ui=fac_visceff_afgdt*derxy_(1,ui);
-	    const double fac_visceff_afgdt_derxy2_ui=fac_visceff_afgdt*derxy_(2,ui);
-
-	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+		elemat(fvi  ,fui  ) += sum+(fac_visceff_afgdt_derxy0_ui+fac_gamma_dt_tauC_derxy_x_ui)*derxy_(0,vi);
+		elemat(fvi  ,fuip ) +=      fac_visceff_afgdt_derxy0_ui*derxy_(1,vi)+fac_gamma_dt_tauC_derxy_y_ui*derxy_(0,vi);
+		elemat(fvi  ,fuipp) +=      fac_visceff_afgdt_derxy0_ui*derxy_(2,vi)+fac_gamma_dt_tauC_derxy_z_ui*derxy_(0,vi);
+		elemat(fvip ,fui  ) +=      fac_visceff_afgdt_derxy1_ui*derxy_(0,vi)+fac_gamma_dt_tauC_derxy_x_ui*derxy_(1,vi);
+		elemat(fvip ,fuip ) += sum+(fac_visceff_afgdt_derxy1_ui+fac_gamma_dt_tauC_derxy_y_ui)*derxy_(1,vi);
+		elemat(fvip ,fuipp) +=      fac_visceff_afgdt_derxy1_ui*derxy_(2,vi)+fac_gamma_dt_tauC_derxy_z_ui*derxy_(1,vi);
+		elemat(fvipp,fui  ) +=      fac_visceff_afgdt_derxy2_ui*derxy_(0,vi)+fac_gamma_dt_tauC_derxy_x_ui*derxy_(2,vi);
+		elemat(fvipp,fuip ) +=      fac_visceff_afgdt_derxy2_ui*derxy_(1,vi)+fac_gamma_dt_tauC_derxy_y_ui*derxy_(2,vi);
+		elemat(fvipp,fuipp) += sum+(fac_visceff_afgdt_derxy2_ui+fac_gamma_dt_tauC_derxy_z_ui)*derxy_(2,vi);
+	      } // vi
+	    } // ui
+	  } // end supg and cstab
+	  else
+	  { // supg without cstab
+	    for (int ui=0; ui<iel_; ++ui) // loop columns 
 	    {
-	      const int fvi    =4*vi;
-	      const int fvip   =fvi+1;
-	      const int fvipp  =fvi+2;
+	      const int fui  =4*ui;
+	      const int fuip =fui+1;
+	      const int fuipp=fui+2;
 	      
-	      const double sum =
-		inertia_and_conv_ui*funct_(vi)
-		+
-		fac_tauM_inertia_and_conv*conv_c_af_(vi)
-		+
-		fac_visceff_afgdt_derxy0_ui*derxy_(0,vi)
-		+
-		fac_visceff_afgdt_derxy1_ui*derxy_(1,vi)
-		+
-		fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
-	  
-  	      /*
-		GALERKIN inertia term (intermediate) + convection (intermediate)
-
-		factor:
-
+	      /* GALERKIN inertia term (intermediate) + convection (intermediate) */
+	      
+	      const double inertia_and_conv_ui
+		= fac_alphaM*funct_(ui)+fac_afgdt*conv_c_af_(ui);
+	      
+	      /* SUPG stabilisation --- inertia and convection */
+	      const double fac_tauM_inertia_and_conv
+		= tauM*inertia_and_conv_ui;
+	      
+	      /* viscous term (intermediate), diagonal parts */
+	      const double fac_visceff_afgdt_derxy0_ui=fac_visceff_afgdt*derxy_(0,ui);
+	      const double fac_visceff_afgdt_derxy1_ui=fac_visceff_afgdt*derxy_(1,ui);
+	      const double fac_visceff_afgdt_derxy2_ui=fac_visceff_afgdt*derxy_(2,ui);
+	      
+	      for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	      {
+		const int fvi    =4*vi;
+		const int fvip   =fvi+1;
+		const int fvipp  =fvi+2;
+		
+		const double sum =
+		  inertia_and_conv_ui*funct_(vi)
+		  +
+		  fac_tauM_inertia_and_conv*conv_c_af_(vi)
+		  +
+		  fac_visceff_afgdt_derxy0_ui*derxy_(0,vi)
+		  +
+		  fac_visceff_afgdt_derxy1_ui*derxy_(1,vi)
+		  +
+		  fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
+		
+		/*
+		  GALERKIN inertia term (intermediate) + convection (intermediate)
+		  
+		  factor:
+		  
                           /          \                   /                          \
                          |            |                 |  / n+af       \            |
                 +alphaM *|  Dacc , v  |+alphaF*gamma*dt*| | c    o nabla | Dacc , v  |
                          |            |                 |  \            /            |
                           \          /                   \                          /
-	      */
+		*/
 
-	      /*  GALERKIN viscous term (intermediate) */
+		/*  GALERKIN viscous term (intermediate) */
 	    
-	      /*  factor: +2*nu*alphaF*gamma*dt
+		/*  factor: +2*nu*alphaF*gamma*dt
 
                  /                          \
                 |       /    \         / \   |
                 |  eps | Dacc | , eps | v |  |
                 |       \    /         \ /   |
                  \                          /
-	      */
+		*/
 		
-	      /* SUPG stabilisation --- inertia and convection */
+		/* SUPG stabilisation --- inertia and convection */
 		
-	      /* factor: +alphaM*tauM
+		/* factor: +alphaM*tauM
 
                            /                           \
                           |          / n+af       \     |
@@ -4474,130 +4469,81 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                                     |    \             /          \             /     |
                                      \                                               /
 
-	      */
+		*/
 
-	      elemat(fvi  ,fui  ) += sum+fac_visceff_afgdt_derxy0_ui*derxy_(0,vi);
-	      elemat(fvi  ,fuip ) +=     fac_visceff_afgdt_derxy0_ui*derxy_(1,vi);
-	      elemat(fvi  ,fuipp) +=     fac_visceff_afgdt_derxy0_ui*derxy_(2,vi);
-	      elemat(fvip ,fui  ) +=     fac_visceff_afgdt_derxy1_ui*derxy_(0,vi);
-	      elemat(fvip ,fuip ) += sum+fac_visceff_afgdt_derxy1_ui*derxy_(1,vi);
-	      elemat(fvip ,fuipp) +=     fac_visceff_afgdt_derxy1_ui*derxy_(2,vi);
-	      elemat(fvipp,fui  ) +=     fac_visceff_afgdt_derxy2_ui*derxy_(0,vi);
-	      elemat(fvipp,fuip ) +=     fac_visceff_afgdt_derxy2_ui*derxy_(1,vi);
-	      elemat(fvipp,fuipp) += sum+fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
-	    } // vi
-	  } // ui
-	} // end supg without cstab
-	else
-	{ // no supg, just galerkin
+		elemat(fvi  ,fui  ) += sum+fac_visceff_afgdt_derxy0_ui*derxy_(0,vi);
+		elemat(fvi  ,fuip ) +=     fac_visceff_afgdt_derxy0_ui*derxy_(1,vi);
+		elemat(fvi  ,fuipp) +=     fac_visceff_afgdt_derxy0_ui*derxy_(2,vi);
+		elemat(fvip ,fui  ) +=     fac_visceff_afgdt_derxy1_ui*derxy_(0,vi);
+		elemat(fvip ,fuip ) += sum+fac_visceff_afgdt_derxy1_ui*derxy_(1,vi);
+		elemat(fvip ,fuipp) +=     fac_visceff_afgdt_derxy1_ui*derxy_(2,vi);
+		elemat(fvipp,fui  ) +=     fac_visceff_afgdt_derxy2_ui*derxy_(0,vi);
+		elemat(fvipp,fuip ) +=     fac_visceff_afgdt_derxy2_ui*derxy_(1,vi);
+		elemat(fvipp,fuipp) += sum+fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
+	      } // vi
+	    } // ui
+	  } // end supg without cstab
 
-	  for (int ui=0; ui<iel_; ++ui) // loop columns 
-	  {
-	    const int fui  =4*ui;
-	    const int fuip =fui+1;
-	    const int fuipp=fui+2;
-	    	    
-	    /* GALERKIN inertia term (intermediate) + convection (intermediate) */
 
-	    const double inertia_and_conv_ui
-	      = fac_alphaM*funct_(ui)+fac_afgdt*conv_c_af_(ui);
+	  //---------------------------------------------------------------
+	  //
+	  //                  GALERKIN AND SUPG PART
+	  //    REACTIVE TYPE LINEARISATIONS, QUASISTATIC FORMULATION
+	  //
+	  //---------------------------------------------------------------
 
-	    /*  GALERKIN viscous term (intermediate), diagonal parts */
-	    const double fac_visceff_afgdt_derxy0_ui=fac_visceff_afgdt*derxy_(0,ui);
-	    const double fac_visceff_afgdt_derxy1_ui=fac_visceff_afgdt*derxy_(1,ui);
-	    const double fac_visceff_afgdt_derxy2_ui=fac_visceff_afgdt*derxy_(2,ui);
+          if (newton==Fluid3::Newton)
+          {
+	    double temp[3][3];
+	    double tauMresM[3];
 
-	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-	    {
-	      const int fvi    =4*vi;
-	      const int fvip   =fvi+1;
-	      const int fvipp  =fvi+2;
-	      
-	      const double sum =
-		inertia_and_conv_ui*funct_(vi)
-		+
-		fac_visceff_afgdt_derxy0_ui*derxy_(0,vi)
-		+
-		fac_visceff_afgdt_derxy1_ui*derxy_(1,vi)
-		+
-		fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
-	  
-  	      /*
-		GALERKIN inertia term (intermediate) + convection (intermediate)
-
-		factor:
-
-                          /          \                   /                          \
-                         |            |                 |  / n+af       \            |
-                +alphaM *|  Dacc , v  |+alphaF*gamma*dt*| | c    o nabla | Dacc , v  |
-                         |            |                 |  \            /            |
-                          \          /                   \                          /
-	      */
-
-	      /* GALERKIN viscous term (intermediate) */
-	    
-	      /*  factor: +2*nu*alphaF*gamma*dt
-
-                 /                          \
-                |       /    \         / \   |
-                |  eps | Dacc | , eps | v |  |
-                |       \    /         \ /   |
-                 \                          /
-	      */
-
-	      elemat(fvi  ,fui  ) += sum+fac_visceff_afgdt_derxy0_ui*derxy_(0,vi);
-	      elemat(fvi  ,fuip ) +=     fac_visceff_afgdt_derxy0_ui*derxy_(1,vi);
-	      elemat(fvi  ,fuipp) +=     fac_visceff_afgdt_derxy0_ui*derxy_(2,vi);
-	      elemat(fvip ,fui  ) +=     fac_visceff_afgdt_derxy1_ui*derxy_(0,vi);
-	      elemat(fvip ,fuip ) += sum+fac_visceff_afgdt_derxy1_ui*derxy_(1,vi);
-	      elemat(fvip ,fuipp) +=     fac_visceff_afgdt_derxy1_ui*derxy_(2,vi);
-	      elemat(fvipp,fui  ) +=     fac_visceff_afgdt_derxy2_ui*derxy_(0,vi);
-	      elemat(fvipp,fuip ) +=     fac_visceff_afgdt_derxy2_ui*derxy_(1,vi);
-	      elemat(fvipp,fuipp) += sum+fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
-	    } // vi
-	  } // ui
-	} // no supg, just galerkin
-
-        //---------------------------------------------------------------
-        //
-        //                      GALERKIN PART
-	//    REACTIVE TYPE LINEARISATIONS, QUASISTATIC FORMULATION
-        //
-        //---------------------------------------------------------------
-
-	if (newton==Fluid3::Newton)
-	{
-	  double fac_afgdt_vderxyaf_0_0_funct_ui=fac_afgdt*vderxyaf_(0,0);
-	  double fac_afgdt_vderxyaf_0_1_funct_ui=fac_afgdt*vderxyaf_(0,1);
-	  double fac_afgdt_vderxyaf_0_2_funct_ui=fac_afgdt*vderxyaf_(0,2);
-	  double fac_afgdt_vderxyaf_1_0_funct_ui=fac_afgdt*vderxyaf_(1,0);
-	  double fac_afgdt_vderxyaf_1_1_funct_ui=fac_afgdt*vderxyaf_(1,1);
-	  double fac_afgdt_vderxyaf_1_2_funct_ui=fac_afgdt*vderxyaf_(1,2);
-	  double fac_afgdt_vderxyaf_2_0_funct_ui=fac_afgdt*vderxyaf_(2,0);
-	  double fac_afgdt_vderxyaf_2_1_funct_ui=fac_afgdt*vderxyaf_(2,1);
-	  double fac_afgdt_vderxyaf_2_2_funct_ui=fac_afgdt*vderxyaf_(2,2);
-
-	  for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-	  {
-	    const int fui  =4*ui;
-	    const int fuip =fui+1;
-	    const int fuipp=fui+2;
-
-	    fac_afgdt_vderxyaf_0_0_funct_ui*=funct_(ui);
-	    fac_afgdt_vderxyaf_0_1_funct_ui*=funct_(ui);
-	    fac_afgdt_vderxyaf_0_2_funct_ui*=funct_(ui);
-	    fac_afgdt_vderxyaf_1_0_funct_ui*=funct_(ui);
-	    fac_afgdt_vderxyaf_1_1_funct_ui*=funct_(ui);
-	    fac_afgdt_vderxyaf_1_2_funct_ui*=funct_(ui);
-	    fac_afgdt_vderxyaf_2_0_funct_ui*=funct_(ui);
-	    fac_afgdt_vderxyaf_2_1_funct_ui*=funct_(ui);
-	    fac_afgdt_vderxyaf_2_2_funct_ui*=funct_(ui);
+ 	    tauMresM[0]=tauM*resM_(0);
+ 	    tauMresM[1]=tauM*resM_(1);
+ 	    tauMresM[2]=tauM*resM_(2);
 
 	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
 	    {
-	      int fvi  =4*vi;
+	      int fvi   =vi*4;
+	      int fvip  =fvi+1;
+	      int fvipp =fvi+2;
 
-	      /* convection (intermediate)
+	      temp[0][0]=fac_afgdt*(tauMresM[0]*derxy_(0,vi)+vderxyaf_(0,0)*(tauM*conv_c_af_(vi)+funct_(vi)));
+	      temp[0][1]=fac_afgdt*(tauMresM[0]*derxy_(1,vi)+vderxyaf_(0,1)*(tauM*conv_c_af_(vi)+funct_(vi)));
+	      temp[0][2]=fac_afgdt*(tauMresM[0]*derxy_(2,vi)+vderxyaf_(0,2)*(tauM*conv_c_af_(vi)+funct_(vi)));
+	      temp[1][0]=fac_afgdt*(tauMresM[1]*derxy_(0,vi)+vderxyaf_(1,0)*(tauM*conv_c_af_(vi)+funct_(vi)));
+	      temp[1][1]=fac_afgdt*(tauMresM[1]*derxy_(1,vi)+vderxyaf_(1,1)*(tauM*conv_c_af_(vi)+funct_(vi)));
+	      temp[1][2]=fac_afgdt*(tauMresM[1]*derxy_(2,vi)+vderxyaf_(1,2)*(tauM*conv_c_af_(vi)+funct_(vi)));
+	      temp[2][0]=fac_afgdt*(tauMresM[2]*derxy_(0,vi)+vderxyaf_(2,0)*(tauM*conv_c_af_(vi)+funct_(vi)));
+	      temp[2][1]=fac_afgdt*(tauMresM[2]*derxy_(1,vi)+vderxyaf_(2,1)*(tauM*conv_c_af_(vi)+funct_(vi)));
+	      temp[2][2]=fac_afgdt*(tauMresM[2]*derxy_(2,vi)+vderxyaf_(2,2)*(tauM*conv_c_af_(vi)+funct_(vi)));
+
+              for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+              {
+		int fui=4*ui;
+
+                /* SUPG stabilisation --- convection (reactive parts)  */
+
+		/* linearisation of testfunction
+
+                                         /                            \
+                                        |   n+af    /            \     |
+                  +alphaF*gamma*dt*tauM*|  r     , | Dacc o nabla | v  | 
+                                        |   M       \            /     |
+                                         \                            /
+		*/
+
+                /*  linearised convective term in residual
+		   
+		   factor: +alphaF*gamma*dt*tauM
+
+                    /                                               \
+                   |    /            \   n+af    / n+af        \     |
+                   |   | Dacc o nabla | u     , | c     o nabla | v  |
+                   |    \            /           \             /     |
+                    \                                               /
+                */
+
+		/* convection (intermediate)
 
                  factor:
 
@@ -4609,20 +4555,245 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
                         | | Dacc o nabla | u      , v  |
                         |  \            /              |
                          \                            /
-	      */
+		*/
 
-	      elemat(fvi  ,fui  ) += fac_afgdt_vderxyaf_0_0_funct_ui*funct_(vi);
-	      elemat(fvi  ,fuip ) += fac_afgdt_vderxyaf_0_1_funct_ui*funct_(vi);
-	      elemat(fvi++,fuipp) += fac_afgdt_vderxyaf_0_2_funct_ui*funct_(vi);
-	      elemat(fvi  ,fui  ) += fac_afgdt_vderxyaf_1_0_funct_ui*funct_(vi);
-	      elemat(fvi  ,fuip ) += fac_afgdt_vderxyaf_1_1_funct_ui*funct_(vi);
-	      elemat(fvi++,fuipp) += fac_afgdt_vderxyaf_1_2_funct_ui*funct_(vi);
-	      elemat(fvi  ,fui  ) += fac_afgdt_vderxyaf_2_0_funct_ui*funct_(vi);
-	      elemat(fvi  ,fuip ) += fac_afgdt_vderxyaf_2_1_funct_ui*funct_(vi);
-	      elemat(fvi  ,fuipp) += fac_afgdt_vderxyaf_2_2_funct_ui*funct_(vi);
-	    } // end loop rows (test functions for matrix)
-	  } // end loop rows (solution for matrix, test function for vector)
-	} // end newton
+		elemat(fvi  ,fui  ) += temp[0][0]*funct_(ui);
+		elemat(fvip ,fui  ) += temp[1][0]*funct_(ui);
+		elemat(fvipp,fui++) += temp[2][0]*funct_(ui);
+		elemat(fvi  ,fui  ) += temp[0][1]*funct_(ui);
+		elemat(fvip ,fui  ) += temp[1][1]*funct_(ui);
+		elemat(fvipp,fui++) += temp[2][1]*funct_(ui);
+		elemat(fvi  ,fui  ) += temp[0][2]*funct_(ui);
+		elemat(fvip ,fui  ) += temp[1][2]*funct_(ui);
+		elemat(fvipp,fui  ) += temp[2][2]*funct_(ui);
+	      } // ui
+	    } // vi
+          } // end newton
+	}
+	else
+	{ // no supg
+	  if(cstab == Fluid3::continuity_stab_yes)
+	  {
+	    const double fac_gamma_dt_tauC = fac*gamma*dt*tauC;
+
+	    for (int ui=0; ui<iel_; ++ui) // loop columns 
+	    {
+	      const int fui  =4*ui;
+	      const int fuip =fui+1;
+	      const int fuipp=fui+2;
+	    	    
+	      /* GALERKIN inertia term (intermediate) + convection (intermediate) */
+
+	      const double inertia_and_conv_ui
+		= fac_alphaM*funct_(ui)+fac_afgdt*conv_c_af_(ui);
+	      
+	      /* viscous term (intermediate), diagonal parts */
+	      const double fac_visceff_afgdt_derxy0_ui=fac_visceff_afgdt*derxy_(0,ui);
+	      const double fac_visceff_afgdt_derxy1_ui=fac_visceff_afgdt*derxy_(1,ui);
+	      const double fac_visceff_afgdt_derxy2_ui=fac_visceff_afgdt*derxy_(2,ui);
+	      
+	      /* CSTAB entries */
+	      const double fac_gamma_dt_tauC_derxy_x_ui = fac_gamma_dt_tauC*derxy_(0,ui);
+	      const double fac_gamma_dt_tauC_derxy_y_ui = fac_gamma_dt_tauC*derxy_(1,ui);
+	      const double fac_gamma_dt_tauC_derxy_z_ui = fac_gamma_dt_tauC*derxy_(2,ui);
+	    
+	      for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	      {
+		const int fvi    =4*vi;
+		const int fvip   =fvi+1;
+		const int fvipp  =fvi+2;
+		
+		const double sum =
+		  inertia_and_conv_ui*funct_(vi)
+		  +
+		  fac_visceff_afgdt_derxy0_ui*derxy_(0,vi)
+		  +
+		  fac_visceff_afgdt_derxy1_ui*derxy_(1,vi)
+		  +
+		  fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
+	  
+		/*
+		  GALERKIN inertia term (intermediate) + convection (intermediate)
+		
+		  factor:
+
+                          /          \                   /                          \
+                         |            |                 |  / n+af       \            |
+                +alphaM *|  Dacc , v  |+alphaF*gamma*dt*| | c    o nabla | Dacc , v  |
+                         |            |                 |  \            /            |
+                          \          /                   \                          /
+		*/
+
+		/*  GALERKIN viscous term (intermediate) */
+	    
+		/*  factor: +2*nu*alphaF*gamma*dt
+
+                 /                          \
+                |       /    \         / \   |
+                |  eps | Dacc | , eps | v |  |
+                |       \    /         \ /   |
+                 \                          /
+		*/
+
+		/* CONTINUITY stabilisation */
+
+		/* factor: +gamma*dt*tauC
+		  
+                    /                          \
+                   |                            |
+                   | nabla o Dacc  , nabla o v  |
+                   |                            |
+                    \                          /
+		*/
+
+		elemat(fvi  ,fui  ) += sum+(fac_visceff_afgdt_derxy0_ui+fac_gamma_dt_tauC_derxy_x_ui)*derxy_(0,vi);
+		elemat(fvi  ,fuip ) +=      fac_visceff_afgdt_derxy0_ui*derxy_(1,vi)+fac_gamma_dt_tauC_derxy_y_ui*derxy_(0,vi);
+		elemat(fvi  ,fuipp) +=      fac_visceff_afgdt_derxy0_ui*derxy_(2,vi)+fac_gamma_dt_tauC_derxy_z_ui*derxy_(0,vi);
+		elemat(fvip ,fui  ) +=      fac_visceff_afgdt_derxy1_ui*derxy_(0,vi)+fac_gamma_dt_tauC_derxy_x_ui*derxy_(1,vi);
+		elemat(fvip ,fuip ) += sum+(fac_visceff_afgdt_derxy1_ui+fac_gamma_dt_tauC_derxy_y_ui)*derxy_(1,vi);
+		elemat(fvip ,fuipp) +=      fac_visceff_afgdt_derxy1_ui*derxy_(2,vi)+fac_gamma_dt_tauC_derxy_z_ui*derxy_(1,vi);
+		elemat(fvipp,fui  ) +=      fac_visceff_afgdt_derxy2_ui*derxy_(0,vi)+fac_gamma_dt_tauC_derxy_x_ui*derxy_(2,vi);
+		elemat(fvipp,fuip ) +=      fac_visceff_afgdt_derxy2_ui*derxy_(1,vi)+fac_gamma_dt_tauC_derxy_y_ui*derxy_(2,vi);
+		elemat(fvipp,fuipp) += sum+(fac_visceff_afgdt_derxy2_ui+fac_gamma_dt_tauC_derxy_z_ui)*derxy_(2,vi);
+	      } // vi
+	    } // ui
+	  } // no supg but cstab
+	  else
+	  { // no supg, no cstab, just galerkin
+
+	    for (int ui=0; ui<iel_; ++ui) // loop columns 
+	    {
+	      const int fui  =4*ui;
+	      const int fuip =fui+1;
+	      const int fuipp=fui+2;
+	    	    
+	      /* GALERKIN inertia term (intermediate) + convection (intermediate) */
+
+	      const double inertia_and_conv_ui
+		= fac_alphaM*funct_(ui)+fac_afgdt*conv_c_af_(ui);
+
+	      /*  GALERKIN viscous term (intermediate), diagonal parts */
+	      const double fac_visceff_afgdt_derxy0_ui=fac_visceff_afgdt*derxy_(0,ui);
+	      const double fac_visceff_afgdt_derxy1_ui=fac_visceff_afgdt*derxy_(1,ui);
+	      const double fac_visceff_afgdt_derxy2_ui=fac_visceff_afgdt*derxy_(2,ui);
+
+	      for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	      {
+		const int fvi    =4*vi;
+		const int fvip   =fvi+1;
+		const int fvipp  =fvi+2;
+		
+		const double sum =
+		  inertia_and_conv_ui*funct_(vi)
+		  +
+		  fac_visceff_afgdt_derxy0_ui*derxy_(0,vi)
+		  +
+		  fac_visceff_afgdt_derxy1_ui*derxy_(1,vi)
+		  +
+		  fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
+		
+		/*
+		  GALERKIN inertia term (intermediate) + convection (intermediate)
+
+		  factor:
+
+                          /          \                   /                          \
+                         |            |                 |  / n+af       \            |
+                +alphaM *|  Dacc , v  |+alphaF*gamma*dt*| | c    o nabla | Dacc , v  |
+                         |            |                 |  \            /            |
+                          \          /                   \                          /
+		*/
+
+		/* GALERKIN viscous term (intermediate) */
+	    
+		/*  factor: +2*nu*alphaF*gamma*dt
+
+                 /                          \
+                |       /    \         / \   |
+                |  eps | Dacc | , eps | v |  |
+                |       \    /         \ /   |
+                 \                          /
+		*/
+
+		elemat(fvi  ,fui  ) += sum+fac_visceff_afgdt_derxy0_ui*derxy_(0,vi);
+		elemat(fvi  ,fuip ) +=     fac_visceff_afgdt_derxy0_ui*derxy_(1,vi);
+		elemat(fvi  ,fuipp) +=     fac_visceff_afgdt_derxy0_ui*derxy_(2,vi);
+		elemat(fvip ,fui  ) +=     fac_visceff_afgdt_derxy1_ui*derxy_(0,vi);
+		elemat(fvip ,fuip ) += sum+fac_visceff_afgdt_derxy1_ui*derxy_(1,vi);
+		elemat(fvip ,fuipp) +=     fac_visceff_afgdt_derxy1_ui*derxy_(2,vi);
+		elemat(fvipp,fui  ) +=     fac_visceff_afgdt_derxy2_ui*derxy_(0,vi);
+		elemat(fvipp,fuip ) +=     fac_visceff_afgdt_derxy2_ui*derxy_(1,vi);
+		elemat(fvipp,fuipp) += sum+fac_visceff_afgdt_derxy2_ui*derxy_(2,vi);
+	      } // vi
+	    } // ui
+	  } // no supg, no cstab, just galerkin
+	  
+	  //---------------------------------------------------------------
+	  //
+	  //                      GALERKIN PART
+	  //    REACTIVE TYPE LINEARISATIONS, QUASISTATIC FORMULATION
+	  //
+	  //---------------------------------------------------------------
+	  
+	  if (newton==Fluid3::Newton)
+	  {
+	    double fac_afgdt_vderxyaf_0_0_funct_ui=fac_afgdt*vderxyaf_(0,0);
+	    double fac_afgdt_vderxyaf_0_1_funct_ui=fac_afgdt*vderxyaf_(0,1);
+	    double fac_afgdt_vderxyaf_0_2_funct_ui=fac_afgdt*vderxyaf_(0,2);
+	    double fac_afgdt_vderxyaf_1_0_funct_ui=fac_afgdt*vderxyaf_(1,0);
+	    double fac_afgdt_vderxyaf_1_1_funct_ui=fac_afgdt*vderxyaf_(1,1);
+	    double fac_afgdt_vderxyaf_1_2_funct_ui=fac_afgdt*vderxyaf_(1,2);
+	    double fac_afgdt_vderxyaf_2_0_funct_ui=fac_afgdt*vderxyaf_(2,0);
+	    double fac_afgdt_vderxyaf_2_1_funct_ui=fac_afgdt*vderxyaf_(2,1);
+	    double fac_afgdt_vderxyaf_2_2_funct_ui=fac_afgdt*vderxyaf_(2,2);
+	    
+	    for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
+	    {
+	      const int fui  =4*ui;
+	      const int fuip =fui+1;
+	      const int fuipp=fui+2;
+	      
+	      fac_afgdt_vderxyaf_0_0_funct_ui*=funct_(ui);
+	      fac_afgdt_vderxyaf_0_1_funct_ui*=funct_(ui);
+	      fac_afgdt_vderxyaf_0_2_funct_ui*=funct_(ui);
+	      fac_afgdt_vderxyaf_1_0_funct_ui*=funct_(ui);
+	      fac_afgdt_vderxyaf_1_1_funct_ui*=funct_(ui);
+	      fac_afgdt_vderxyaf_1_2_funct_ui*=funct_(ui);
+	      fac_afgdt_vderxyaf_2_0_funct_ui*=funct_(ui);
+	      fac_afgdt_vderxyaf_2_1_funct_ui*=funct_(ui);
+	      fac_afgdt_vderxyaf_2_2_funct_ui*=funct_(ui);
+
+	      for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
+	      {
+		int fvi  =4*vi;
+		
+		/* convection (intermediate)
+
+		   factor:
+
+                        +alphaF*gamma*dt
+
+
+                         /                            \
+                        |  /            \   n+af       |
+                        | | Dacc o nabla | u      , v  |
+                        |  \            /              |
+                         \                            /
+		*/
+
+		elemat(fvi  ,fui  ) += fac_afgdt_vderxyaf_0_0_funct_ui*funct_(vi);
+		elemat(fvi  ,fuip ) += fac_afgdt_vderxyaf_0_1_funct_ui*funct_(vi);
+		elemat(fvi++,fuipp) += fac_afgdt_vderxyaf_0_2_funct_ui*funct_(vi);
+		elemat(fvi  ,fui  ) += fac_afgdt_vderxyaf_1_0_funct_ui*funct_(vi);
+		elemat(fvi  ,fuip ) += fac_afgdt_vderxyaf_1_1_funct_ui*funct_(vi);
+		elemat(fvi++,fuipp) += fac_afgdt_vderxyaf_1_2_funct_ui*funct_(vi);
+		elemat(fvi  ,fui  ) += fac_afgdt_vderxyaf_2_0_funct_ui*funct_(vi);
+		elemat(fvi  ,fuip ) += fac_afgdt_vderxyaf_2_1_funct_ui*funct_(vi);
+		elemat(fvi  ,fuipp) += fac_afgdt_vderxyaf_2_2_funct_ui*funct_(vi);
+	      } // end loop rows (test functions for matrix)
+	    } // end loop rows (solution for matrix, test function for vector)
+	  } // end newton
+	} // no supg
 
         //---------------------------------------------------------------
         //
@@ -4963,65 +5134,6 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
               } //end ui
             } // end vi
           }// end higher_order_ele and linearisation of viscous term
-
-          if (newton==Fluid3::Newton)
-          {
-	    double temp[3][3];
-
-	    for (int vi=0; vi<iel_; ++vi)  // loop rows (test functions for matrix)
-	    {
-	      int fvi   =vi*4;
-	      int fvip  =fvi+1;
-	      int fvipp =fvi+2;
-
-	      temp[0][0]=fac_tauM_afgdt*(resM_(0)*derxy_(0,vi)+vderxyaf_(0,0)*conv_c_af_(vi));
-	      temp[0][1]=fac_tauM_afgdt*(resM_(0)*derxy_(1,vi)+vderxyaf_(0,1)*conv_c_af_(vi));
-	      temp[0][2]=fac_tauM_afgdt*(resM_(0)*derxy_(2,vi)+vderxyaf_(0,2)*conv_c_af_(vi));
-	      temp[1][0]=fac_tauM_afgdt*(resM_(1)*derxy_(0,vi)+vderxyaf_(1,0)*conv_c_af_(vi));
-	      temp[1][1]=fac_tauM_afgdt*(resM_(1)*derxy_(1,vi)+vderxyaf_(1,1)*conv_c_af_(vi));
-	      temp[1][2]=fac_tauM_afgdt*(resM_(1)*derxy_(2,vi)+vderxyaf_(1,2)*conv_c_af_(vi));
-	      temp[2][0]=fac_tauM_afgdt*(resM_(2)*derxy_(0,vi)+vderxyaf_(2,0)*conv_c_af_(vi));
-	      temp[2][1]=fac_tauM_afgdt*(resM_(2)*derxy_(1,vi)+vderxyaf_(2,1)*conv_c_af_(vi));
-	      temp[2][2]=fac_tauM_afgdt*(resM_(2)*derxy_(2,vi)+vderxyaf_(2,2)*conv_c_af_(vi));
-
-              for (int ui=0; ui<iel_; ++ui) // loop columns (solution for matrix, test function for vector)
-              {
-		int fui=4*ui;
-
-                /* SUPG stabilisation --- convection (reactive parts)  */
-
-		/* linearisation of testfunction
-
-                                         /                            \
-                                        |   n+af    /            \     |
-                  +alphaF*gamma*dt*tauM*|  r     , | Dacc o nabla | v  | 
-                                        |   M       \            /     |
-                                         \                            /
-		*/
-
-                /*  linearised convective term in residual
-		   
-		   factor: +alphaF*gamma*dt*tauM
-
-                    /                                               \
-                   |    /            \   n+af    / n+af        \     |
-                   |   | Dacc o nabla | u     , | c     o nabla | v  |
-                   |    \            /           \             /     |
-                    \                                               /
-                */
-
-		elemat(fvi  ,fui  ) += temp[0][0]*funct_(ui);
-		elemat(fvip ,fui  ) += temp[1][0]*funct_(ui);
-		elemat(fvipp,fui++) += temp[2][0]*funct_(ui);
-		elemat(fvi  ,fui  ) += temp[0][1]*funct_(ui);
-		elemat(fvip ,fui  ) += temp[1][1]*funct_(ui);
-		elemat(fvipp,fui++) += temp[2][1]*funct_(ui);
-		elemat(fvi  ,fui  ) += temp[0][2]*funct_(ui);
-		elemat(fvip ,fui  ) += temp[1][2]*funct_(ui);
-		elemat(fvipp,fui  ) += temp[2][2]*funct_(ui);
-	      } // ui
-	    } // vi
-          } // end newton
         } // end supg
 
         //---------------------------------------------------------------
@@ -5320,8 +5432,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM::Sysmat(
       //
       //---------------------------------------------------------------
       //---------------------------------------------------------------
-
-      /* inertia, convective and dead load terms -- all tested 
+ 
+     /* inertia, convective and dead load terms -- all tested 
 	 against shapefunctions, as well as cross terms            */
       /*
 
