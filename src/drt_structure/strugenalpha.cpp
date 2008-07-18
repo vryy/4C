@@ -220,7 +220,7 @@ fsisurface_(NULL)
     discret_.GetCondition("SurfaceStress",surfstresscond);
     if (surfstresscond.size())
       surf_stress_man_=rcp(new DRT::SurfStressManager(discret_));
-    // Check for potential conditions 
+    // Check for potential conditions
     vector<DRT::Condition*> potentialcond(0);
     discret_.GetCondition("Potential",potentialcond);
     if (potentialcond.size())
@@ -391,7 +391,7 @@ void StruGenAlpha::ConstantPredictor()
       p.set("surfstr_man", surf_stress_man_);
       surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
     }
-    
+
     if (pot_man_!=null)
     {
       p.set("pot_man", pot_man_);
@@ -677,7 +677,7 @@ void StruGenAlpha::ConsistentPredictor()
       p.set("pot_man", pot_man_);
       pot_man_->EvaluatePotential(p,dism_,fint_,stiff_);
     }
-    
+
     // do NOT finalize the stiffness matrix, add mass and damping to it later
   }
 
@@ -846,7 +846,7 @@ void StruGenAlpha::ApplyExternalForce(const LINALG::MapExtractor& extractor,
       p.set("surfstr_man", surf_stress_man_);
       surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
     }
-    
+
     if (pot_man_!=null)
     {
       p.set("pot_man", pot_man_);
@@ -1304,7 +1304,7 @@ void StruGenAlpha::FullNewton()
         p.set("surfstr_man", surf_stress_man_);
         surf_stress_man_->EvaluateSurfStress(p,dism_,fint_,stiff_);
       }
-      
+
       if (pot_man_!=null)
       {
         p.set("pot_man", pot_man_);
@@ -1510,7 +1510,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
   constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
   RCP<LINALG::SparseMatrix> constrMatrix = rcp(new  LINALG::SparseMatrix(*(constrMan_->GetConstrMatrix())));
   RCP<Epetra_Vector> constrRHS = rcp(new Epetra_Vector(*(constrMan_->GetError())));
-  
+
   RCP<Epetra_Vector> lagrIncr = rcp(new Epetra_Vector(*(constrMan_->GetConstraintMap())));
   int numiter=0;
   double fresmnorm = 1.0e6;
@@ -1544,7 +1544,7 @@ void StruGenAlpha::FullNewtonLinearUzawa()
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
     lagrIncr->PutScalar(0.0);
-    
+
     // Call Uzawa algorithm to solve system with zeros on diagonal
     uzawaSolv_->Solve(stiff_,constrMatrix,disi_,lagrIncr,fresm_,constrRHS);
 
@@ -2820,7 +2820,7 @@ void StruGenAlpha::Update()
   {
     surf_stress_man_->Update();
   }
-  
+
   if (pot_man_!=null)
   {
     pot_man_->Update();
@@ -2877,7 +2877,7 @@ void StruGenAlpha::Output()
       output_.WriteVector("Aold", A);
       output_.WriteVector("conquot", con);
     }
-    
+
     if (pot_man_!=null)
     {
       RCP<Epetra_Map> surfrowmap=pot_man_->GetSurfRowmap();
@@ -3270,7 +3270,7 @@ void StruGenAlpha::ReadRestart(int step)
     reader.ReadVector(con_quot, "conquot");
     surf_stress_man_->SetHistory(A_old,con_quot);
   }
-  
+
   if (pot_man_!=null)
   {
     RCP<Epetra_Map> surfmap=pot_man_->GetSurfRowmap();

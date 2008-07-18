@@ -22,6 +22,9 @@ Maintainer: Ulrich Kuettler
 #include "fluidimplicitintegration.H"
 #include "fluid_genalpha_integration.H"
 
+namespace FLD
+{
+
 /*!
   \brief Fluid specific result test class
 
@@ -61,6 +64,7 @@ private:
   RefCountPtr<Epetra_Vector>       mytraction_;
 };
 
+}
 
 #endif /* CCADISCRET       */
 

@@ -80,7 +80,11 @@ struct _SolveMap;
 #endif
 
 // forward declarations
+// this should not be here
+namespace FLD
+{
 class VM3_Solver;
+}
 
 namespace LINALG
 {
@@ -332,7 +336,7 @@ private:
   //! an aztec solver
   RCP<AztecOO>              aztec_;
   //! a vm3 solver
-  RCP<VM3_Solver>           vm3_solver_;
+  RCP<FLD::VM3_Solver>      vm3_solver_;
 
   //! reindex linear problem for amesos
   RCP<EpetraExt::LinearProblem_Reindex> reindexer_;

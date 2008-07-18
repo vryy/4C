@@ -38,6 +38,9 @@ Maintainer: Axel Gerstenberger
 using namespace std;
 using namespace Teuchos;
 
+namespace FLD
+{
+
 //! namespace for all time discretization routines of the fluid field
 namespace TIMEINT_THETA_BDF2
 {
@@ -62,16 +65,16 @@ namespace TIMEINT_THETA_BDF2
   /*!
   \brief Set the part of the righthandside belonging to the last
          timestep.
-         
+
    set part of the rhs vector belonging to the old timestep
-  
+
            One-step-Theta:
-  
+
                    hist_ = veln_ + dta*(1-Theta)*accn_
-  
-  
+
+
            BDF2: for constant time step:
-  
+
                    hist_ = 4/3 veln_ - 1/3 velnm_
   */
   void SetOldPartOfRighthandside(
@@ -101,7 +104,7 @@ namespace TIMEINT_THETA_BDF2
       RCP<Epetra_Vector>&         accnm
   );
 }
-
+}
 
 #endif  // #ifndef TIME_INTEGRATION_SCHEME_H
 #endif  // #ifdef CCADISCRET

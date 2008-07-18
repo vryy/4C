@@ -45,11 +45,12 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actdis,
-                                           LINALG::Solver&       solver,
-                                           ParameterList&        params,
-                                           IO::DiscretizationWriter& output,
-                                           bool alefluid) :
+FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actdis,
+                                                LINALG::Solver&       solver,
+                                                ParameterList&        params,
+                                                IO::DiscretizationWriter& output,
+                                                bool alefluid)
+  :
   // call constructor for "nontrivial" objects
   discret_(actdis),
   solver_ (solver),
@@ -121,7 +122,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 
   const int numdim = params_.get<int>("number of velocity degrees of freedom");
 
-  FLUIDUTILS::SetupFluidSplit(*discret_,numdim,velpressplitter_);
+  FLD::UTILS::SetupFluidSplit(*discret_,numdim,velpressplitter_);
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -141,8 +142,8 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   }
   else
   {
-    Teuchos::RCP<LINALG::BlockSparseMatrix<FLUIDUTILS::VelPressSplitStrategy> > blocksysmat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
+    Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
     blocksysmat->SetNumdim(numdim);
     sysmat_ = blocksysmat;
   }
@@ -382,7 +383,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
   }
 
   // construct impedance bc wrapper
-  impedancebc_ = rcp(new FluidImpedanceWrapper(discret_, output_, dta_) );
+  impedancebc_ = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -400,7 +401,7 @@ FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization> actd
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::Integrate()
+void FLD::FluidImplicitTimeInt::Integrate()
 {
   // bound for the number of startsteps
   const int    numstasteps         =params_.get<int>   ("number of start steps");
@@ -470,7 +471,7 @@ void FluidImplicitTimeInt::Integrate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::TimeLoop()
+void FLD::FluidImplicitTimeInt::TimeLoop()
 {
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
@@ -637,7 +638,7 @@ void FluidImplicitTimeInt::TimeLoop()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::PrepareTimeStep()
+void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 {
   // -------------------------------------------------------------------
   //              set time dependent parameters
@@ -738,7 +739,7 @@ void FluidImplicitTimeInt::PrepareTimeStep()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::NonlinearSolve()
+void FLD::FluidImplicitTimeInt::NonlinearSolve()
 {
   inrelaxation_ = false;
   dirichletlines_ = Teuchos::null;
@@ -1364,7 +1365,7 @@ drawbacks:
 - some effort has to be made if correct nodal forces are required as this
   implementation does a total solve rather than an incremental one.
 */
-void FluidImplicitTimeInt::LinearSolve()
+void FLD::FluidImplicitTimeInt::LinearSolve()
 {
   // time measurement: linearised fluid
   TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
@@ -1459,7 +1460,7 @@ void FluidImplicitTimeInt::LinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
   sysmat_->Zero();
   if (meshmovematrix_ != Teuchos::null)
@@ -1561,7 +1562,7 @@ void FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::TimeUpdate()
+void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
 
   // update acceleration
@@ -1592,7 +1593,7 @@ void FluidImplicitTimeInt::TimeUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::Output()
+void FLD::FluidImplicitTimeInt::Output()
 {
 
   //-------------------------------------------- output of solution
@@ -1698,7 +1699,7 @@ void FluidImplicitTimeInt::Output()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::ReadRestart(int step)
+void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
@@ -1730,7 +1731,7 @@ void FluidImplicitTimeInt::ReadRestart(int step)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::UpdateGridv()
+void FLD::FluidImplicitTimeInt::UpdateGridv()
 {
   // get order of accuracy of grid velocity determination
   // from input file data
@@ -1772,7 +1773,7 @@ void FluidImplicitTimeInt::UpdateGridv()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::SetInitialFlowField(
+void FLD::FluidImplicitTimeInt::SetInitialFlowField(
   int whichinitialfield,
   int startfuncno
   )
@@ -1990,7 +1991,7 @@ void FluidImplicitTimeInt::SetInitialFlowField(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
+void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
 
   int calcerr = params_.get<int>("eval err for analyt sol");
@@ -2064,7 +2065,7 @@ void FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::SolveStationaryProblem()
+void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
 {
   // time measurement: time loop (stationary) --- start TimeMonitor tm2
   TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
@@ -2167,7 +2168,7 @@ void FluidImplicitTimeInt::SolveStationaryProblem()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-Teuchos::RCP<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
+Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcStresses()
 {
   string condstring("FluidStressCalc");
   Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
@@ -2192,7 +2193,7 @@ Teuchos::RCP<Epetra_Vector> FluidImplicitTimeInt::CalcStresses()
 /*----------------------------------------------------------------------*
  | Destructor dtor (public)                                  gammi 04/07|
  *----------------------------------------------------------------------*/
-FluidImplicitTimeInt::~FluidImplicitTimeInt()
+FLD::FluidImplicitTimeInt::~FluidImplicitTimeInt()
 {
   return;
 }
@@ -2228,7 +2229,7 @@ Notice: Angular moments obtained from lift&drag forces currently refere to the
         initial configuration, i.e. are built with the coordinates X of a particular
         node irrespective of its current position.
 */
-void FluidImplicitTimeInt::LiftDrag() const
+void FLD::FluidImplicitTimeInt::LiftDrag() const
 {
   std::map< const int, std::set<DRT::Node* > > ldnodemap;
   std::map< const int, const std::vector<double>* > ldcoordmap;
@@ -2380,7 +2381,7 @@ void FluidImplicitTimeInt::LiftDrag() const
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
+void FLD::FluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
 {
   // check plausiblity of dimension of problem --- only 3d is
   // valid for turbulence calculations
@@ -2814,7 +2815,7 @@ void FluidImplicitTimeInt::ApplyFilterForDynamicComputationOfCs()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FluidImplicitTimeInt::IntegrateInterfaceShape(std::string condname)
+Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::IntegrateInterfaceShape(std::string condname)
 {
   ParameterList eleparams;
   // set action for elements
@@ -2843,17 +2844,17 @@ Teuchos::RCP<Epetra_Vector> FluidImplicitTimeInt::IntegrateInterfaceShape(std::s
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
-                                          const LINALG::MultiMapExtractor& domainmaps,
-                                          const LINALG::MultiMapExtractor& rangemaps,
-                                          bool splitmatrix)
+void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
+                                               const LINALG::MultiMapExtractor& domainmaps,
+                                               const LINALG::MultiMapExtractor& rangemaps,
+                                               bool splitmatrix)
 {
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy> > mat;
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
 
   if (splitmatrix)
   {
     // (re)allocate system matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
     mat->SetCondElements(condelements);
     sysmat_ = mat;
   }
@@ -2862,7 +2863,7 @@ void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condeleme
   if (params_.get<bool>("mesh movement linearization"))
   {
     // allocate special mesh moving matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
     mat->SetCondElements(condelements);
     meshmovematrix_ = mat;
   }
@@ -2871,7 +2872,7 @@ void FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condeleme
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
+void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector> relax)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FluidImplicitTimeInt::LinearRelaxationSolve");
 

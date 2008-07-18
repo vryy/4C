@@ -31,7 +31,10 @@ Maintainer: Christiane Förster
 using namespace std;
 using namespace Teuchos;
 
-
+namespace FLD
+{
+namespace UTILS
+{
 
 //--------------------------------------------------------------------
 // Wrapper class (to be called from outside) for impedance bc
@@ -52,7 +55,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  FluidImpedanceWrapper( RCP<DRT::Discretization>  actdis, 
+  FluidImpedanceWrapper( RCP<DRT::Discretization>  actdis,
 			 IO::DiscretizationWriter& output,
 			 double dta);
 
@@ -120,7 +123,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  FluidImpedanceBc( RCP<DRT::Discretization>  actdis, 
+  FluidImpedanceBc( RCP<DRT::Discretization>  actdis,
 		    IO::DiscretizationWriter& output,
 		    double dta,
 		    int condid,
@@ -148,8 +151,8 @@ protected:
   void ReadRestart( IO::DiscretizationReader& reader, int condnum );
 
   /*!
-    \brief compute and store flow rate of all previous 
-    time steps belonging to one cycle 
+    \brief compute and store flow rate of all previous
+    time steps belonging to one cycle
   */
   void FlowRateCalculation( double time,
 			    double dta,
@@ -181,8 +184,8 @@ private:
   /*!
   \brief compute tree and root impedance for given frequency for artery
   */
-  std::complex<double> ArteryImpedance( int k, 
-					int generation, 
+  std::complex<double> ArteryImpedance( int k,
+					int generation,
 					double radius,
 					double termradius,
 					double density,
@@ -192,7 +195,7 @@ private:
   /*!
   \brief compute tree and root impedance for zero frequency for artery
   */
-  std::complex<double> DCArteryImpedance( int generation,  
+  std::complex<double> DCArteryImpedance( int generation,
 					  double radius,
 					  double termradius,
 					  double density,
@@ -202,7 +205,7 @@ private:
   /*!
   \brief compute tree and root impedance for given frequency for lung
   */
-  std::complex<double> LungImpedance( int k, 
+  std::complex<double> LungImpedance( int k,
 					int generation,
 					double radius,
 					double termradius,
@@ -260,6 +263,9 @@ private:
   vector<double> impvalues_;   // real impedance values
 
 };  // class FluidImpedanceBc
+
+}
+}
 
 #endif /* FLUIDIMPEDANCECONDITION_H */
 

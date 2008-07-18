@@ -28,8 +28,8 @@ o values on lines are averaged in time over all steps between two
   outputs
 
 Required parameters are the number of velocity degrees of freedom (3)
-and the basename of the statistics outfile. These parameters are 
-expected to be contained in the fluid time integration parameter list 
+and the basename of the statistics outfile. These parameters are
+expected to be contained in the fluid time integration parameter list
 given on input.
 
 This method is intended to be called every upres_ steps during fluid
@@ -62,9 +62,12 @@ Maintainer: Volker Gravemeier
 using namespace std;
 using namespace Teuchos;
 
+namespace FLD
+{
+
 class TurbulenceStatisticsSqc
 {
-  
+
 public:
   /*!
   \brief Standard Constructor (public)
@@ -90,7 +93,7 @@ public:
 
   /*!
   \brief The values of lift and drag and its squared values are added.
-   This method allows to do the time average after a certain amount of 
+   This method allows to do the time average after a certain amount of
    timesteps.
   */
   void DoLiftDragTimeSample(double dragforce, double liftforce);
@@ -122,10 +125,10 @@ protected:
 
   /*!
   \brief sort criterium for double values up to a tolerance of 10-9
-  
+
   This is used to create sets of doubles (e.g. coordinates)
 
-  */  
+  */
   class LineSortCriterion
   {
   public:
@@ -279,6 +282,8 @@ private:
   RefCountPtr<vector<double> >     cylbsumsqp_;
 
 };
+
+}
 
 #endif  // not TURBULENCE_STATISTICS_SQC_H
 

@@ -163,7 +163,7 @@ namespace ADAPTER {
   private:
 
     /// the actual fluid algorithm
-    FluidImplicitTimeInt                   fluid_;
+    FLD::FluidImplicitTimeInt              fluid_;
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor                   interface_;

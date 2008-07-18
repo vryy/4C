@@ -162,7 +162,7 @@ namespace ADAPTER {
   private:
 
     /// the actual fluid algorithm
-    FluidGenAlphaIntegration               fluid_;
+    FLD::FluidGenAlphaIntegration          fluid_;
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor                   interface_;

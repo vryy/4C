@@ -26,10 +26,13 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/linalg_mapextractor.H"
 #include "../drt_lib/linalg_systemmatrix.H"
 
+namespace FLD
+{
+
 /*!
  * \brief namespace for fluid related stuff
  */
-namespace FLUIDUTILS
+namespace UTILS
 {
 
   /// velocity-pressure block matrix split strategy
@@ -219,6 +222,7 @@ void SetupXFluidSplit(
         LINALG::MapExtractor&        extractor  ///< ready made map splitter
         );
 
+}
 }
 
 #endif  // #ifndef FLUID_UTILS_H

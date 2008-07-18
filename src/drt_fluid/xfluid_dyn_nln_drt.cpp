@@ -235,14 +235,14 @@ void xdyn_fluid_drt()
      iop == timeint_bdf2
     )
   {
-    
+
     vector<string> conditions_to_copy;
     conditions_to_copy.push_back("XFEMCoupling");
     Teuchos::RCP<DRT::Discretization> boundarydis = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "XFEMCoupling", "Boundary", "BELE3", conditions_to_copy);
     if (boundarydis->NumGlobalNodes() == 0)
       std::cout << "empty discretization detected. XFEMCoupling condition applied?" << endl;
-    
-    
+
+
     // -----------------------------------------------------------------
     // set additional parameters in list for OST/BDF2/stationary scheme
     // -----------------------------------------------------------------
@@ -261,7 +261,7 @@ void xdyn_fluid_drt()
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
     //------------------------------------------------------------------
-    XFluidImplicitTimeInt fluidimplicit(
+    FLD::XFluidImplicitTimeInt fluidimplicit(
     		fluiddis,
     		//soliddis,
     		solver,
@@ -296,7 +296,7 @@ void xdyn_fluid_drt()
 
     // do result test if required
     DRT::ResultTestManager testmanager(fluiddis->Comm());
-    testmanager.AddFieldTest(rcp(new XFluidResultTest(fluidimplicit)));
+    testmanager.AddFieldTest(rcp(new FLD::XFluidResultTest(fluidimplicit)));
     testmanager.TestAll();
 
   }

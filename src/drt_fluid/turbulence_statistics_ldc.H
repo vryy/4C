@@ -23,8 +23,8 @@ o values on centerlines are averaged in time over all steps between two
   outputs
 
 Required parameters are the number of velocity degrees of freedom (3)
-and the basename of the statistics outfile. These parameters are 
-expected to be contained in the fluid time integration parameter list 
+and the basename of the statistics outfile. These parameters are
+expected to be contained in the fluid time integration parameter list
 given on input.
 
 This method is intended to be called every upres_ steps during fluid
@@ -57,9 +57,12 @@ Maintainer: Volker Gravemeier
 using namespace std;
 using namespace Teuchos;
 
+namespace FLD
+{
+
 class TurbulenceStatisticsLdc
 {
-  
+
 public:
   /*!
   \brief Standard Constructor (public)
@@ -110,10 +113,10 @@ protected:
 
   /*!
   \brief sort criterium for double values up to a tolerance of 10-9
-  
+
   This is used to create sets of doubles (e.g. coordinates)
 
-  */  
+  */
   class LineSortCriterion
   {
   public:
@@ -166,7 +169,7 @@ private:
   RefCountPtr<vector<double> >     x2sumv_;
   RefCountPtr<vector<double> >     x3sumv_;
   //! sum over w (over the centerlines in x1-, x2- and x3-direction)
-  RefCountPtr<vector<double> >     x1sumw_; 
+  RefCountPtr<vector<double> >     x1sumw_;
   RefCountPtr<vector<double> >     x2sumw_;
   RefCountPtr<vector<double> >     x3sumw_;
   //! sum over p (over the centerlines in x1-, x2- and x3-direction)
@@ -204,6 +207,8 @@ private:
   RefCountPtr<vector<double> >     x3sumsqp_;
 
 };
+
+}
 
 #endif  // not TURBULENCE_STATISTICS_LDC_H
 

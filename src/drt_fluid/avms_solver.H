@@ -47,6 +47,8 @@ using namespace std;
 using namespace Teuchos;
 using namespace MLAPI;
 
+namespace FLD
+{
 
 /*!
 \brief An algebraic variational multiscale solver and method
@@ -138,6 +140,7 @@ private:
 
 }; // AVMS_Solver
 
+}
 
 #endif
 

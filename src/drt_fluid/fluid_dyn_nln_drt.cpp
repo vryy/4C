@@ -223,10 +223,10 @@ void dyn_fluid_drt()
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
     //------------------------------------------------------------------
-    FluidImplicitTimeInt fluidimplicit(actdis,
-                                       solver,
-                                       fluidtimeparams,
-                                       output);
+    FLD::FluidImplicitTimeInt fluidimplicit(actdis,
+                                            solver,
+                                            fluidtimeparams,
+                                            output);
 
     // initial field from restart or calculated by given function
     if (probtype.get<int>("RESTART"))
@@ -255,7 +255,7 @@ void dyn_fluid_drt()
 
     // do result test if required
     DRT::ResultTestManager testmanager(actdis->Comm());
-    testmanager.AddFieldTest(rcp(new FluidResultTest(fluidimplicit)));
+    testmanager.AddFieldTest(rcp(new FLD::FluidResultTest(fluidimplicit)));
     testmanager.TestAll();
   }
   else if (iop == timeint_gen_alpha)
@@ -282,11 +282,11 @@ void dyn_fluid_drt()
     // the only parameter from the list required here is the number of
     // velocity degrees of freedom
     //------------------------------------------------------------------
-    FluidGenAlphaIntegration genalphaint(actdis,
-                                         solver,
-                                         fluidtimeparams,
-                                         output,
-                                         false);
+    FLD::FluidGenAlphaIntegration genalphaint(actdis,
+                                              solver,
+                                              fluidtimeparams,
+                                              output,
+                                              false);
 
 
     // initial field from restart or calculated by given function
@@ -314,7 +314,7 @@ void dyn_fluid_drt()
 
     // do result test if required
     DRT::ResultTestManager testmanager(actdis->Comm());
-    testmanager.AddFieldTest(rcp(new FluidResultTest(genalphaint)));
+    testmanager.AddFieldTest(rcp(new FLD::FluidResultTest(genalphaint)));
     testmanager.TestAll();
 
   }

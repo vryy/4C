@@ -478,7 +478,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidImpl::RelaxationSolve(Teuchos::RCP<Epe
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidImpl::CreateFieldTest()
 {
-  return Teuchos::rcp(new FluidResultTest(fluid_));
+  return Teuchos::rcp(new FLD::FluidResultTest(fluid_));
 }
 
 

@@ -34,7 +34,7 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               vg 02/08|
  *----------------------------------------------------------------------*/
-VM3_Solver::VM3_Solver(RCP<LINALG::SparseMatrix> A,
+FLD::VM3_Solver::VM3_Solver(RCP<LINALG::SparseMatrix> A,
                        const RCP<Epetra_Vector> dbctoggle,
                        ParameterList& mlparams,
                        bool compute,
@@ -53,7 +53,7 @@ dbctoggle_(dbctoggle)
  |  and precomputing the unscaled matrix S^T*M*S if required            |
  |  (only called in the first timestep)                                 |
  *----------------------------------------------------------------------*/
-bool VM3_Solver::Compute(RCP<LINALG::SparseMatrix> A)
+bool FLD::VM3_Solver::Compute(RCP<LINALG::SparseMatrix> A)
 {
   // this is important to have!!!
   MLAPI::Init();
@@ -112,7 +112,7 @@ bool VM3_Solver::Compute(RCP<LINALG::SparseMatrix> A)
  |  get coarse- and fine-scale part from a vector                       |
  |  (called in every timestep for incremental formulation)              |
  *----------------------------------------------------------------------*/
-void VM3_Solver::Separate(RCP<Epetra_Vector>& csvec,
+void FLD::VM3_Solver::Separate(RCP<Epetra_Vector>& csvec,
                           RCP<Epetra_Vector>& fsvec,
                           RCP<Epetra_Vector>& vec)
 {
@@ -127,7 +127,7 @@ void VM3_Solver::Separate(RCP<Epetra_Vector>& csvec,
  |  scale precomput. matrix product by subgrid-viscosity-scaling vector |
  |  (called in every timestep)                                          |
  *----------------------------------------------------------------------*/
-void VM3_Solver::Scale(RCP<LINALG::SparseMatrix>& Msv,
+void FLD::VM3_Solver::Scale(RCP<LINALG::SparseMatrix>& Msv,
                        RCP<LINALG::SparseMatrix>& K,
                        RCP<Epetra_Vector>& r,
                        RCP<Epetra_Vector>& rplus,

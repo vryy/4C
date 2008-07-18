@@ -47,6 +47,8 @@ using namespace std;
 using namespace Teuchos;
 using namespace MLAPI;
 
+namespace FLD
+{
 
 /*!
 \brief A direct algebraic VM3 approach
@@ -99,7 +101,7 @@ public:
   /*!
   \brief scale separation routine
 
-   get coarse- and fine-scale part from a vector 
+   get coarse- and fine-scale part from a vector
    (called in every timestep for incremental formulation)
 
    \param csvec (Out)     : coarse-scale part of vector
@@ -161,6 +163,7 @@ private:
 
 }; // VM3_Solver
 
+}
 
 #endif
 

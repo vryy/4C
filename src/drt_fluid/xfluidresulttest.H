@@ -21,6 +21,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_resulttest.H"
 #include "xfluidimplicitintegration.H"
 
+namespace FLD
+{
+
 /*!
   \brief XFluid specific result test class
 
@@ -54,6 +57,7 @@ private:
   RefCountPtr<Epetra_Vector>       mysol_;
 };
 
+}
 
 #endif /* CCADISCRET       */
 

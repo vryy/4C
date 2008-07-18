@@ -39,8 +39,6 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<DRT::Discretization> dis)
   dis_ = DRT::UTILS::CreateDiscretizationFromCondition(dis,"FSICoupling","boundary","BELE3",conditions_to_copy);
   dis_->FillComplete();
 
-  dis_->Print(cout);
-
   coup_.SetupCoupling(*dis,
                       *dis_,
                       *ADAPTER::UTILS::ConditionNodeMap(*dis,"FSICoupling"),

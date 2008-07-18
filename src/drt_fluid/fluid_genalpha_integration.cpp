@@ -30,7 +30,7 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FluidGenAlphaIntegration::FluidGenAlphaIntegration(
+FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   RefCountPtr<DRT::Discretization> actdis,
   LINALG::Solver&                  solver,
   ParameterList&                   params,
@@ -121,7 +121,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
 
-  FLUIDUTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
+  FLD::UTILS::SetupFluidSplit(*discret_,numdim_,velpressplitter_);
 
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
@@ -316,7 +316,7 @@ FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 /*----------------------------------------------------------------------*
  | Destructor dtor (public)                                  gammi 06/07|
  *----------------------------------------------------------------------*/
-FluidGenAlphaIntegration::~FluidGenAlphaIntegration()
+FLD::FluidGenAlphaIntegration::~FluidGenAlphaIntegration()
 {
   return;
 }// FluidGenAlphaIntegration::~FluidGenAlphaIntegration
@@ -334,7 +334,7 @@ FluidGenAlphaIntegration::~FluidGenAlphaIntegration()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void FluidGenAlphaIntegration::GenAlphaTimeloop()
+void FLD::FluidGenAlphaIntegration::GenAlphaTimeloop()
 {
 
   // start time measurement for timeloop
@@ -453,7 +453,7 @@ void FluidGenAlphaIntegration::GenAlphaTimeloop()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
+void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   )
 {
   double            tcpu     ;
@@ -609,7 +609,7 @@ void FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaPredictNewSolutionValues()
+void FLD::FluidGenAlphaIntegration::GenAlphaPredictNewSolutionValues()
 {
 
   //       n+1    n
@@ -641,7 +641,7 @@ void FluidGenAlphaIntegration::GenAlphaPredictNewSolutionValues()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
+void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
 {
   // --------------------------------------------------
   // apply Dirichlet conditions to velnp
@@ -684,7 +684,7 @@ void FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations()
+void FLD::FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations()
 {
   // --------------------------------------------------
   // adjust accnp according to Dirichlet values of velnp
@@ -713,7 +713,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcInitialAccelerations()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol()
+void FLD::FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol()
 {
   //       n+alphaM                n+1                      n
   //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
@@ -743,7 +743,7 @@ void FluidGenAlphaIntegration::GenAlphaComputeIntermediateSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
+void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 {
   //--------------------------------------------------
   // solution of this step becomes most recent solution of the last step
@@ -803,7 +803,7 @@ void FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaOutput()
+void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
 {
   //-------------------------------------------- output of solution
   if (step_%upres_ == 0)  //write solution
@@ -924,7 +924,7 @@ void FluidGenAlphaIntegration::GenAlphaOutput()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
+void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 {
 
   // -------------------------------------------------------------------
@@ -1311,7 +1311,7 @@ void FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
+void FLD::FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 {
   bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
@@ -1337,7 +1337,7 @@ void FluidGenAlphaIntegration::GenAlphaCalcIncrement(const double nlnres)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
+void FLD::FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
 {
 
   // -------------------------------------------------------------------
@@ -1385,13 +1385,13 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
   if(numdim_==3)
   {
     // rescaled pressure to preserve symmetry of pressure
-    // and continuity part in matrix 
+    // and continuity part in matrix
     preinc->Scale(gamma_*dt_);
     velpressplitter_.AddCondVector(preinc,velnp_);
     preinc->Scale(1.0/gamma_*dt_);
   }
   else
-  {  
+  {
     velpressplitter_.AddCondVector(preinc,velnp_);
   }
   return;
@@ -1408,7 +1408,7 @@ void FluidGenAlphaIntegration::GenAlphaNonlinearUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& badestnlnnorm)
+bool FLD::FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& badestnlnnorm)
 {
   bool stopnonliniter = false;
 
@@ -1429,7 +1429,7 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& badestn
     L2incprenorm_*=gamma_*dt_;
   }
 
-  
+
   // extract velocity and pressure solutions from solution vector
   onlyvel = velpressplitter_.ExtractOtherVector(velnp_);
   onlypre = velpressplitter_.ExtractCondVector (velnp_);
@@ -1507,7 +1507,7 @@ bool FluidGenAlphaIntegration::GenAlphaNonlinearConvergenceCheck(double& badestn
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::ReadRestart(int step)
+void FLD::FluidGenAlphaIntegration::ReadRestart(int step)
 {
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble ("time");
@@ -1541,7 +1541,7 @@ void FluidGenAlphaIntegration::ReadRestart(int step)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::SetInitialFlowField(
+void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
   int whichinitialfield,
   int startfuncno
  )
@@ -1781,7 +1781,7 @@ void FluidGenAlphaIntegration::SetInitialFlowField(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
+void FLD::FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
 {
 
   int calcerr = params_.get<int>("eval err for analyt sol");
@@ -1858,7 +1858,7 @@ void FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaTakeSample()
+void FLD::FluidGenAlphaIntegration::GenAlphaTakeSample()
 {
   // --------------------------------------------------------------------
   // add up X, X^2 for velocities and pressure
@@ -2118,7 +2118,7 @@ void FluidGenAlphaIntegration::GenAlphaTakeSample()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
+void FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
 {
 
   // time measurement
@@ -2474,7 +2474,7 @@ void FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
+void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
   const string& what_to_print
   )
 {
@@ -2876,7 +2876,7 @@ void FluidGenAlphaIntegration::GenAlphaEchoToScreen(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidGenAlphaIntegration::UpdateGridv()
+void FLD::FluidGenAlphaIntegration::UpdateGridv()
 {
   /*
                              /       \     /            \
@@ -2927,7 +2927,7 @@ Notice: Angular moments obtained from lift&drag forces currently refere
         to the initial configuration, i.e. are built with the coordinates
         X of a particular node irrespective of its current position.
 */
-void FluidGenAlphaIntegration::LiftDrag() const
+void FLD::FluidGenAlphaIntegration::LiftDrag() const
 {
   std::map< const int, std::set<DRT::Node* > > ldnodemap;
   std::map< const int, const std::vector<double>* > ldcoordmap;
@@ -3086,7 +3086,7 @@ void FluidGenAlphaIntegration::LiftDrag() const
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-Teuchos::RCP<Epetra_Vector> FluidGenAlphaIntegration::CalcStresses()
+Teuchos::RCP<Epetra_Vector> FLD::FluidGenAlphaIntegration::CalcStresses()
 {
   string condstring("FluidStressCalc");
   Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
@@ -3110,7 +3110,7 @@ Teuchos::RCP<Epetra_Vector> FluidGenAlphaIntegration::CalcStresses()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FluidGenAlphaIntegration::IntegrateInterfaceShape(
+Teuchos::RCP<Epetra_Vector> FLD::FluidGenAlphaIntegration::IntegrateInterfaceShape(
   std::string condname)
 {
   ParameterList eleparams;
@@ -3142,15 +3142,15 @@ Teuchos::RCP<Epetra_Vector> FluidGenAlphaIntegration::IntegrateInterfaceShape(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
-                                              const LINALG::MultiMapExtractor& domainmaps,
-                                              const LINALG::MultiMapExtractor& rangemaps,
-                                              bool splitmatrix)
+void FLD::FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
+                                                   const LINALG::MultiMapExtractor& domainmaps,
+                                                   const LINALG::MultiMapExtractor& rangemaps,
+                                                   bool splitmatrix)
 {
   if (splitmatrix)
   {
-    Teuchos::RCP<LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy> > mat =
-      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat =
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
     mat->SetCondElements(condelements);
     sysmat_ = mat;
   }
@@ -3159,7 +3159,7 @@ void FluidGenAlphaIntegration::UseBlockMatrix(Teuchos::RCP<std::set<int> > conde
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FluidGenAlphaIntegration::LinearRelaxationSolve(
+void FLD::FluidGenAlphaIntegration::LinearRelaxationSolve(
   Teuchos::RCP<Epetra_Vector> relax
   )
 {

@@ -450,7 +450,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidGenAlpha::RelaxationSolve(Teuchos::RCP
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidGenAlpha::CreateFieldTest()
 {
-  return Teuchos::rcp(new FluidResultTest(fluid_));
+  return Teuchos::rcp(new FLD::FluidResultTest(fluid_));
 }
 
 

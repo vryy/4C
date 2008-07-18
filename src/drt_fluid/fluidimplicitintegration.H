@@ -62,6 +62,10 @@ Maintainer: Peter Gamnitzer
 using namespace std;
 using namespace Teuchos;
 
+/// fluid algorithms
+namespace FLD
+{
+
 /*!
 \brief time integration for fluid problems
 
@@ -434,7 +438,7 @@ protected:
   map<int,vector<int> >     pbcmapmastertoslave_;
 
   /// bio related special (outflow) boudaries
-  RCP<FluidImpedanceWrapper> impedancebc_;
+  RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
 
   /// @name special relaxation state
 
@@ -448,7 +452,7 @@ protected:
 
 }; // class FluidImplicitTimeInt
 
-
+}
 
 
 #endif  // #ifndef FLUIDIMPLICITINTEGRATION_H

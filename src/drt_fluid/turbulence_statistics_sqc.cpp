@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file turbulence_statistics_sqc.cpp
 
-\brief calculate pressures, mean velocity values and fluctuations for 
+\brief calculate pressures, mean velocity values and fluctuations for
 turbulent flow past a square cylinder.
 
 <pre>
@@ -40,7 +40,7 @@ Maintainer: Volker Gravemeier
 
 */
 /*----------------------------------------------------------------------*/
-TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
+FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   RefCountPtr<DRT::Discretization> actdis,
   ParameterList&                   params)
   :
@@ -720,7 +720,7 @@ TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-TurbulenceStatisticsSqc::~TurbulenceStatisticsSqc()
+FLD::TurbulenceStatisticsSqc::~TurbulenceStatisticsSqc()
 {
   return;
 }// TurbulenceStatisticsSqc::~TurbulenceStatisticsSqc()
@@ -729,7 +729,7 @@ TurbulenceStatisticsSqc::~TurbulenceStatisticsSqc()
 //----------------------------------------------------------------------
 // sampling of lift/drag values
 //----------------------------------------------------------------------
-void TurbulenceStatisticsSqc::DoLiftDragTimeSample(double dragforce,
+void FLD::TurbulenceStatisticsSqc::DoLiftDragTimeSample(double dragforce,
                                                    double liftforce)
 {
 
@@ -748,7 +748,7 @@ void TurbulenceStatisticsSqc::DoLiftDragTimeSample(double dragforce,
 //----------------------------------------------------------------------
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
-void TurbulenceStatisticsSqc::DoTimeSample(
+void FLD::TurbulenceStatisticsSqc::DoTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp
   )
 {
@@ -1479,7 +1479,7 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void TurbulenceStatisticsSqc::DumpStatistics(int step)
+void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
@@ -1834,7 +1834,7 @@ void TurbulenceStatisticsSqc::DumpStatistics(int step)
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void TurbulenceStatisticsSqc::ClearStatistics()
+void FLD::TurbulenceStatisticsSqc::ClearStatistics()
 {
   numsamp_ =0;
 
@@ -1947,7 +1947,7 @@ void TurbulenceStatisticsSqc::ClearStatistics()
     (*cyltsumuw_)[i] =0;
     (*cyltsumvw_)[i] =0;
     (*cyltsumsqp_)[i]=0;
- 
+
     (*cylbsumu_)[i]=0;
     (*cylbsumv_)[i]=0;
     (*cylbsumw_)[i]=0;

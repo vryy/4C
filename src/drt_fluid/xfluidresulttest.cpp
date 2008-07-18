@@ -36,7 +36,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-XFluidResultTest::XFluidResultTest(XFluidImplicitTimeInt& fluid)
+FLD::XFluidResultTest::XFluidResultTest(XFluidImplicitTimeInt& fluid)
 {
   fluiddis_=fluid.discret_;
   mysol_   =fluid.state_.velnp_ ;
@@ -45,7 +45,7 @@ XFluidResultTest::XFluidResultTest(XFluidImplicitTimeInt& fluid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void XFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
+void FLD::XFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
 {
   if (res->dis != 0)
     dserror("fix me: only one fluid discretization supported for testing");
@@ -106,7 +106,7 @@ void XFluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_cou
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool XFluidResultTest::Match(const RESULTDESCR* res)
+bool FLD::XFluidResultTest::Match(const RESULTDESCR* res)
 {
   return res->field==fluid;
 }

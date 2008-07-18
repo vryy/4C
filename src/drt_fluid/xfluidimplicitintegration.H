@@ -53,6 +53,9 @@ Maintainer: Axel Gerstenberger
 
 using namespace Teuchos;
 
+namespace FLD
+{
+
 /*!
 \brief time integration for fluid problems
 
@@ -170,7 +173,7 @@ public:
       const std::string name_in_gmsh,
       const bool plot_to_gnuplot
       ) const;
-  
+
   /*!
   \brief set initial flow field for analytical test problems
 
@@ -375,7 +378,7 @@ protected:
 
 }; // class FluidImplicitTimeInt
 
-
+}
 
 
 #endif  // #ifndef FLUIDIMPLICITINTEGRATION_H

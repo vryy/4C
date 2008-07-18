@@ -36,7 +36,7 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
+FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
 {
   fluiddis_= fluid.discret_;
   mysol_   = fluid.velnp_ ;
@@ -46,7 +46,7 @@ FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FluidResultTest::FluidResultTest(FluidGenAlphaIntegration& fluid)
+FLD::FluidResultTest::FluidResultTest(FluidGenAlphaIntegration& fluid)
 {
   fluiddis_= fluid.discret_;
   mysol_   = fluid.velnp_;
@@ -57,7 +57,7 @@ FluidResultTest::FluidResultTest(FluidGenAlphaIntegration& fluid)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
+void FLD::FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_count)
 {
   if (res->dis != 0)
     dserror("fix me: only one fluid discretization supported for testing");
@@ -129,7 +129,7 @@ void FluidResultTest::TestNode(const RESULTDESCR* res, int& nerr, int& test_coun
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FluidResultTest::Match(const RESULTDESCR* res)
+bool FLD::FluidResultTest::Match(const RESULTDESCR* res)
 {
   return res->field==fluid;
 }

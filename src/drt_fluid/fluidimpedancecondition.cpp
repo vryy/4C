@@ -29,9 +29,9 @@ Maintainer: Christiane Förster
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FluidImpedanceWrapper::FluidImpedanceWrapper(RefCountPtr<DRT::Discretization> actdis,
-					IO::DiscretizationWriter& output,
-					double dta) :
+FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(RefCountPtr<DRT::Discretization> actdis,
+                                                         IO::DiscretizationWriter& output,
+                                                         double dta) :
   // call constructor for "nontrivial" objects
   discret_(actdis),
   output_ (output)
@@ -87,7 +87,7 @@ FluidImpedanceWrapper::FluidImpedanceWrapper(RefCountPtr<DRT::Discretization> ac
       // sort impedance bc's in map and test, if one condition ID appears
       // more than once. Currently this case is forbidden.
       // -----------------------------------------------------------------
-      bool inserted = impmap_.insert( make_pair( condid, impedancebc ) ).second; 
+      bool inserted = impmap_.insert( make_pair( condid, impedancebc ) ).second;
       if ( !inserted )
 	dserror("There are more than one impedance condition lines with the same ID. This can not yet be handled.");
     } // end loop over condition lines from input
@@ -105,7 +105,7 @@ FluidImpedanceWrapper::FluidImpedanceWrapper(RefCountPtr<DRT::Discretization> ac
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FluidImpedanceWrapper::~FluidImpedanceWrapper()
+FLD::UTILS::FluidImpedanceWrapper::~FluidImpedanceWrapper()
 {
   return;
 }
@@ -119,7 +119,7 @@ FluidImpedanceWrapper::~FluidImpedanceWrapper()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImpedanceWrapper::FlowRateCalculation(double time, double dta)
+void FLD::UTILS::FluidImpedanceWrapper::FlowRateCalculation(double time, double dta)
 {
   // get an iterator to my map
   map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
@@ -140,7 +140,7 @@ void FluidImpedanceWrapper::FlowRateCalculation(double time, double dta)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImpedanceWrapper::OutflowBoundary(double time, double dta, double theta)
+void FLD::UTILS::FluidImpedanceWrapper::OutflowBoundary(double time, double dta, double theta)
 {
   map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
@@ -160,7 +160,7 @@ void FluidImpedanceWrapper::OutflowBoundary(double time, double dta, double thet
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImpedanceWrapper::UpdateResidual(RCP<Epetra_Vector>  residual )
+void FLD::UTILS::FluidImpedanceWrapper::UpdateResidual(RCP<Epetra_Vector>  residual )
 {
   map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
@@ -180,7 +180,7 @@ void FluidImpedanceWrapper::UpdateResidual(RCP<Epetra_Vector>  residual )
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImpedanceWrapper::WriteRestart( IO::DiscretizationWriter&  output )
+void FLD::UTILS::FluidImpedanceWrapper::WriteRestart( IO::DiscretizationWriter&  output )
 {
   map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
@@ -200,7 +200,7 @@ void FluidImpedanceWrapper::WriteRestart( IO::DiscretizationWriter&  output )
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImpedanceWrapper::ReadRestart( IO::DiscretizationReader& reader)
+void FLD::UTILS::FluidImpedanceWrapper::ReadRestart( IO::DiscretizationReader& reader)
 {
   map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
@@ -222,7 +222,7 @@ void FluidImpedanceWrapper::ReadRestart( IO::DiscretizationReader& reader)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
+FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
 				   IO::DiscretizationWriter& output,
 				   double dta,
 				   int condid,
@@ -290,7 +290,7 @@ FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> actdis,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-FluidImpedanceBc::~FluidImpedanceBc()
+FLD::UTILS::FluidImpedanceBc::~FluidImpedanceBc()
 {
   return;
 }
@@ -304,7 +304,7 @@ FluidImpedanceBc::~FluidImpedanceBc()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  output, int condnum )
+void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  output, int condnum )
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
@@ -332,7 +332,7 @@ void FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  output, int cond
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader, int condnum  )
+void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader, int condnum  )
 {
   // condnum contains the number of the present condition
   // condition Id numbers must not change at restart!!!!
@@ -365,7 +365,7 @@ void FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader, int condnu
 /*!
 
 */
-double FluidImpedanceBc::Area( double& density, double& viscosity, int condid )
+double FLD::UTILS::FluidImpedanceBc::Area( double& density, double& viscosity, int condid )
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
@@ -445,7 +445,7 @@ double FluidImpedanceBc::Area( double& density, double& viscosity, int condid )
       inverse Fourier transform
 
 */
-void FluidImpedanceBc::Impedances( double area, double density, double viscosity )
+void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, double viscosity )
 {
   // setup variables
   vector<complex<double> > frequencydomain;  // impedances in the frequency domain
@@ -560,7 +560,7 @@ void FluidImpedanceBc::Impedances( double area, double density, double viscosity
   very last cycle!
 
 */
-void FluidImpedanceBc::FlowRateCalculation(double time, double dta, int condid)
+void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, int condid)
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
@@ -640,7 +640,7 @@ void FluidImpedanceBc::FlowRateCalculation(double time, double dta, int condid)
   (2) Apply this pressure as a Neumann-load type at the outflow boundary
 
 */
-void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta,int condid)
+void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta,int condid)
 {
   // calculate outflow boundary only for cycles past the first one
   if ( time > period_ )
@@ -702,7 +702,7 @@ void FluidImpedanceBc::OutflowBoundary(double time, double dta, double theta,int
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*!
 */
-void FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
+void FLD::UTILS::FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
 {
   residual->Update(1.0,*impedancetbc_,1.0);
 }
@@ -720,7 +720,7 @@ void FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*!
-build up artery tree and calculate root impedance recursively for a given 
+build up artery tree and calculate root impedance recursively for a given
 frequency determined by the wave number k
 
 Data taken from
@@ -741,11 +741,11 @@ double  termradius  (i)   termination radius (minimal radius)
 double  density     (i)   the fluid's density
 double  viscosity   (i)   the fluid's viscosity
 
-returns impedance of present vessel, after recursive call: impedance of 
-root vessel for given frequency  
+returns impedance of present vessel, after recursive call: impedance of
+root vessel for given frequency
 
 */
-std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
+std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
 						       int generation,
 						       double radius,
 						       double termradius,
@@ -796,7 +796,7 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
       zstored.insert( make_pair( leftradius, zleft ) );
     }
 
-    iter = zstored.find(rightradius);    
+    iter = zstored.find(rightradius);
     if(iter != zstored.end()) // impedance of this right radius was already computed, is in map
       zright = iter->second;
     else                      // right hand side impedance not yet stored
@@ -871,8 +871,8 @@ std::complex<double> FluidImpedanceBc::ArteryImpedance(int k,
   This case is also called direct current component in the classical
   analogy.
 */
-std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
-							 double radius,  
+std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generation,
+							 double radius,
 							 double termradius,
 							 double density,
 							 double viscosity,
@@ -912,7 +912,7 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
       zstored.insert( make_pair( leftradius, zleft ) );
     }
 
-    iter = zstored.find(rightradius);    
+    iter = zstored.find(rightradius);
     if(iter != zstored.end()) // impedance of this right radius was already computed, is in map
       zright = iter->second;
     else                      // right hand side impedance not yet stored
@@ -952,10 +952,10 @@ std::complex<double> FluidImpedanceBc::DCArteryImpedance(int generation,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*! 
-What is supposed to happen within these lines? 
+/*!
+What is supposed to happen within these lines?
 */
-std::complex<double> FluidImpedanceBc::LungImpedance(int k, 
+std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
 						     int generation,
 						     double radius,
 						     double termradius,
@@ -967,22 +967,22 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
   double lscale = 5.8; // length to radius ratio
   double alpha = 0.876;   // right daughter vessel ratio
   double beta = 0.686;    // left daughter vessel ratio
-  
+
   // some auxiliary stuff
   complex<double> imag(0,1), Z1, Z2, Z3, ZW;
   // terminal resistance is assumed zero ff
   complex<double> zterminal (0,0);
-  
+
   double omega = 2.0*PI*k/period_;
 
   // this has to be moved!!
-  
+
 
   // build up geometry of present generation
   double area = radius*radius*PI;
   double length = lscale * radius;
   double mu = viscosity * density;
-  
+
   double h=-0.0057*radius*radius+0.2096*radius+0.0904;
   double E=0.0033;
   double c=343;
@@ -992,7 +992,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
   double rw=h*viscosity/(2.0*PI*radius*radius*radius*length);
   double lw=h*density/(2.0*PI*radius*length);
   double cw=2.0*PI*radius*radius*radius*length/(h*E);
-  
+
   // get impedances of downward vessels ...
   //*****************************************
   generation++;  // this is the next generation
@@ -1006,7 +1006,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
 
     // only if both vessels are smaller than the limit truncate
     //if (leftradius < termradius && rightradius < termradius)
-    if (generation >= 23)  
+    if (generation >= 23)
     terminated = true;
     else
     {
@@ -1023,7 +1023,7 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
       zdown = zterminal;
     else
       zdown = 1.0 / (1.0/zleft + 1.0/zright);
- 
+
   // ... and compute impedance at my upstream end!
   //*************************************************************
 
@@ -1051,17 +1051,17 @@ std::complex<double> FluidImpedanceBc::LungImpedance(int k,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*! 
-What is supposed to happen within these lines? 
+/*!
+What is supposed to happen within these lines?
 */
-std::complex<double> FluidImpedanceBc::DCLungImpedance(int generation,
+std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generation,
 								 double radius,
 								 double termradius,
 								 double density,
 								 double viscosity,
 						         std::complex<double> zparentdc)
 {
-  //general data 
+  //general data
   double lscale = 5.8; // length to radius ratio
   double alpha = 0.876;   // right daughter vessel ratio
   double beta = 0.686;    // left daughter vessel ratio

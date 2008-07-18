@@ -20,7 +20,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               vg 06/07|
  *----------------------------------------------------------------------*/
-AVMS_Solver::AVMS_Solver(RCP<LINALG::SparseMatrix> Aforfine,
+FLD::AVMS_Solver::AVMS_Solver(RCP<LINALG::SparseMatrix> Aforfine,
                          RCP<LINALG::SparseMatrix> Aforcoarse,
                          const RCP<Epetra_Vector> dbctoggle,
                          ParameterList& mlparams) :
@@ -34,7 +34,7 @@ dbctoggle_(dbctoggle)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                               vg 06/07|
  *----------------------------------------------------------------------*/
-AVMS_Solver::~AVMS_Solver()
+FLD::AVMS_Solver::~AVMS_Solver()
 {
   return;
 }
@@ -42,7 +42,7 @@ AVMS_Solver::~AVMS_Solver()
 /*----------------------------------------------------------------------*
  |  compute the preconditioner (private)                       gee 02/08|
  *----------------------------------------------------------------------*/
-bool AVMS_Solver::Compute(RCP<LINALG::SparseMatrix> Aforfine,
+bool FLD::AVMS_Solver::Compute(RCP<LINALG::SparseMatrix> Aforfine,
                           RCP<LINALG::SparseMatrix> Aforcoarse)
 {
   // this is important to have!!!
@@ -129,7 +129,7 @@ bool AVMS_Solver::Compute(RCP<LINALG::SparseMatrix> Aforfine,
 /*----------------------------------------------------------------------*
  |  multigrid solver for AVMS                                  gee 02/08|
  *----------------------------------------------------------------------*/
-int AVMS_Solver::Solve(const Epetra_Vector& B, Epetra_Vector& X,
+int FLD::AVMS_Solver::Solve(const Epetra_Vector& B, Epetra_Vector& X,
                        ParameterList& params)
 {
   // create combined vectors and export fine level guess and rhs to them

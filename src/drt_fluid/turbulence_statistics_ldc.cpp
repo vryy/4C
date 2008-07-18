@@ -36,7 +36,7 @@ Maintainer: Volker Gravemeier
 
 */
 /*----------------------------------------------------------------------*/
-TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
+FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   RefCountPtr<DRT::Discretization> actdis,
   ParameterList&                   params)
   :
@@ -445,12 +445,12 @@ TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-TurbulenceStatisticsLdc::~TurbulenceStatisticsLdc()
+FLD::TurbulenceStatisticsLdc::~TurbulenceStatisticsLdc()
 {
   return;
 }// TurbulenceStatisticsLdc::~TurbulenceStatisticsLdc()
 
-void TurbulenceStatisticsLdc::DoTimeSample(
+void FLD::TurbulenceStatisticsLdc::DoTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp
   )
 {
@@ -732,7 +732,7 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void TurbulenceStatisticsLdc::DumpStatistics(int step)
+void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
@@ -875,7 +875,7 @@ void TurbulenceStatisticsLdc::DumpStatistics(int step)
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void TurbulenceStatisticsLdc::ClearStatistics()
+void FLD::TurbulenceStatisticsLdc::ClearStatistics()
 {
   numsamp_ =0;
 

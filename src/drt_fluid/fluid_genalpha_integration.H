@@ -84,6 +84,7 @@ Maintainer: Peter Gamnitzer
 using namespace std;
 using namespace Teuchos;
 
+namespace FLD {
 
 class FluidGenAlphaIntegration
 {
@@ -920,6 +921,8 @@ private:
   //@}
 
 };
+
+}
 
 #endif  // not FLUID_GENALPHA_INTEGRATION_H
 

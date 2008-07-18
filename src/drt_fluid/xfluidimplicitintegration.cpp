@@ -54,7 +54,7 @@ extern struct _FILES  allfiles;
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-XFluidImplicitTimeInt::XFluidImplicitTimeInt(
+FLD::XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 		RCP<DRT::Discretization> actdis,
 		LINALG::Solver&       solver,
 		ParameterList&        params,
@@ -120,7 +120,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
   dofset_out_.Reset();
   dofset_out_.AssignDegreesOfFreedom(*discret_,0);
   // split based on complete fluid field
-  FLUIDUTILS::SetupFluidSplit(*discret_,dofset_out_,3,velpressplitterForOutput_);
+  FLD::UTILS::SetupFluidSplit(*discret_,dofset_out_,3,velpressplitterForOutput_);
 
   nodalDofDistributionMap_.clear();
   elementalDofDistributionMap_.clear();
@@ -141,7 +141,7 @@ XFluidImplicitTimeInt::XFluidImplicitTimeInt(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::Integrate(
+void FLD::XFluidImplicitTimeInt::Integrate(
         RCP<DRT::Discretization> cutterdiscret
         )
 {
@@ -213,7 +213,7 @@ void XFluidImplicitTimeInt::Integrate(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::TimeLoop(
+void FLD::XFluidImplicitTimeInt::TimeLoop(
         RCP<DRT::Discretization> cutterdiscret
         )
 {
@@ -359,7 +359,7 @@ void XFluidImplicitTimeInt::TimeLoop(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::PrepareTimeStep()
+void FLD::XFluidImplicitTimeInt::PrepareTimeStep()
 {
   // -------------------------------------------------------------------
   //              set time dependent parameters
@@ -383,7 +383,7 @@ void XFluidImplicitTimeInt::PrepareTimeStep()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::PrepareNonlinearSolve()
+void FLD::XFluidImplicitTimeInt::PrepareNonlinearSolve()
 {
 
   // -------------------------------------------------------------------
@@ -479,7 +479,7 @@ void XFluidImplicitTimeInt::PrepareNonlinearSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
+void FLD::XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
         RCP<DRT::Discretization>  cutterdiscret,
         const Epetra_Vector&      idispcol,
         RCP<Epetra_Vector>        ivelncol,
@@ -548,21 +548,21 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // rigid body hack - assume structure is rigid and has uniform acceleration and velocity
   BlitzVec3 rigidveln;
   BlitzVec3 rigidaccn;
-  
+
   if (not (ivelncol == null))
   {
     rigidveln(0) = (*ivelncol)[0];
     rigidveln(1) = (*ivelncol)[1];
     rigidveln(2) = (*ivelncol)[2];
     cout << "rigidveln " << rigidveln << endl;
-    
+
     rigidaccn(0) = (*iaccncol)[0];
     rigidaccn(1) = (*iaccncol)[1];
     rigidaccn(2) = (*iaccncol)[2];
     cout << "rigidaccn " << rigidaccn << endl;
   }
-  
-  
+
+
   // accelerations at time n and n-1
   dofswitch.mapVectorToNewDofDistribution(state_.accn_, rigidaccn);
   dofswitch.mapVectorToNewDofDistribution(state_.accnm_);
@@ -607,7 +607,7 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
   // contains the velocity dofs and for one vector which only contains
   // pressure degrees of freedom.
   // -------------------------------------------------------------------
-  FLUIDUTILS::SetupXFluidSplit(*discret_,dofmanager,velpressplitter_);
+  FLD::UTILS::SetupXFluidSplit(*discret_,dofmanager,velpressplitter_);
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -646,7 +646,7 @@ void XFluidImplicitTimeInt::ComputeInterfaceAndSetDOFs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::NonlinearSolve(
+void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         RCP<DRT::Discretization> cutterdiscret,
         RCP<Epetra_Vector>       idispcol,
         RCP<Epetra_Vector>       ivelcol,
@@ -659,7 +659,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
   ComputeInterfaceAndSetDOFs(cutterdiscret,*idispcol,ivelncol,iaccncol);
 
   PrepareNonlinearSolve();
-  
+
   if (timealgo_==timeint_stationary)
   {
     // interface doesn't move in the stationary case, regardless, what the FSI algorithm might compute
@@ -732,7 +732,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
       cout << "* Warning! Does not work for moving boundaries, yet! *" << endl;
       cout << "******************************************************" << endl;
     }
-    
+
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- fullres ---|-- vel-inc ---|-- pre-inc ---|-- fullinc ---|\n");
   }
@@ -788,7 +788,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
       eleparams.set("interface velocity",ivelcol);
       //cout << "interface velocity" << endl;
       //cout << *ivelcol << endl;
-      
+
       // reset interface force and let the elements fill it
       iforcecol->PutScalar(0.0);
       eleparams.set("interface force",iforcecol);
@@ -1034,7 +1034,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
     }
 
   }
-  
+
   cout << "F_x: "<< c(0) << endl;
   cout << "F_y: "<< c(1) << endl;
   cout << "F_z: "<< c(2) << endl;
@@ -1052,7 +1052,7 @@ void XFluidImplicitTimeInt::NonlinearSolve(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+void FLD::XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 {
   sysmat_->Zero();
   dserror("no monolithic FSI tested, check first!");
@@ -1133,7 +1133,7 @@ void XFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::TimeUpdate()
+void FLD::XFluidImplicitTimeInt::TimeUpdate()
 {
 
   // update acceleration
@@ -1158,7 +1158,7 @@ void XFluidImplicitTimeInt::TimeUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::Output()
+void FLD::XFluidImplicitTimeInt::Output()
 {
 
   //-------------------------------------------- output of solution
@@ -1241,7 +1241,7 @@ void XFluidImplicitTimeInt::Output()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::ReadRestart(int step)
+void FLD::XFluidImplicitTimeInt::ReadRestart(int step)
 {
   dserror("check wich data was written. one might need 2 discretization writers: \n \
            one for the output and one for the restart with changing vectors.\n \
@@ -1268,7 +1268,7 @@ void XFluidImplicitTimeInt::ReadRestart(int step)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::OutputToGmsh()
+void FLD::XFluidImplicitTimeInt::OutputToGmsh()
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1);
@@ -1589,7 +1589,7 @@ void XFluidImplicitTimeInt::OutputToGmsh()
   }
 #endif
 
-  
+
   PlotVectorFieldToGmsh(state_.velnp_, "_solution_velocity_","Velocity Solution (Physical) n+1",true);
   PlotVectorFieldToGmsh(state_.veln_,  "_solution_velocity_old_step_","Velocity Solution (Physical) n",false);
   PlotVectorFieldToGmsh(state_.velnm_, "_solution_velocity_old2_step_","Velocity Solution (Physical) n-1",false);
@@ -1598,17 +1598,17 @@ void XFluidImplicitTimeInt::OutputToGmsh()
 }
 
 
-void XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
+void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
     const RCP<Epetra_Vector>   vectorfield,
     const string filestr,
     const string name_in_gmsh,
     const bool plot_to_gnuplot
     ) const
 {
-  
+
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
   const bool gmshdebugout = (getIntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1);
-  
+
   if (gmshdebugout)
   {
 
@@ -1749,7 +1749,7 @@ void XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::SetInitialFlowField(
+void FLD::XFluidImplicitTimeInt::SetInitialFlowField(
         RCP<DRT::Discretization> cutterdiscret,
   int whichinitialfield,
   int startfuncno
@@ -1883,7 +1883,7 @@ void XFluidImplicitTimeInt::SetInitialFlowField(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
+void FLD::XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 {
 
   int calcerr = params_.get<int>("eval err for analyt sol");
@@ -1957,7 +1957,7 @@ void XFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void XFluidImplicitTimeInt::SolveStationaryProblem(
+void FLD::XFluidImplicitTimeInt::SolveStationaryProblem(
         RCP<DRT::Discretization> cutterdiscret
         )
 {
@@ -2071,7 +2071,7 @@ void XFluidImplicitTimeInt::SolveStationaryProblem(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-Teuchos::RCP<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
+Teuchos::RCP<Epetra_Vector> FLD::XFluidImplicitTimeInt::CalcStresses()
 {
   string condstring("FluidStressCalc");
   Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
@@ -2096,7 +2096,7 @@ Teuchos::RCP<Epetra_Vector> XFluidImplicitTimeInt::CalcStresses()
 /*----------------------------------------------------------------------*
  | Destructor dtor (public)                                  gammi 04/07|
  *----------------------------------------------------------------------*/
-XFluidImplicitTimeInt::~XFluidImplicitTimeInt()
+FLD::XFluidImplicitTimeInt::~XFluidImplicitTimeInt()
 {
   return;
 }
@@ -2132,7 +2132,7 @@ Notice: Angular moments obtained from lift&drag forces currently refere to the
         initial configuration, i.e. are built with the coordinates X of a particular
         node irrespective of its current position.
 */
-void XFluidImplicitTimeInt::LiftDrag() const
+void FLD::XFluidImplicitTimeInt::LiftDrag() const
 {
   std::map< const int, std::set<DRT::Node* > > ldnodemap;
   std::map< const int, const std::vector<double>* > ldcoordmap;
@@ -2268,7 +2268,7 @@ void XFluidImplicitTimeInt::LiftDrag() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> XFluidImplicitTimeInt::IntegrateInterfaceShape(std::string condname)
+Teuchos::RCP<Epetra_Vector> FLD::XFluidImplicitTimeInt::IntegrateInterfaceShape(std::string condname)
 {
   ParameterList eleparams;
   // set action for elements
@@ -2293,18 +2293,18 @@ Teuchos::RCP<Epetra_Vector> XFluidImplicitTimeInt::IntegrateInterfaceShape(std::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void XFluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
+void FLD::XFluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelements,
                                           const LINALG::MultiMapExtractor& domainmaps,
                                           const LINALG::MultiMapExtractor& rangemaps,
                                           bool splitmatrix)
 {
   dserror("not tested");
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy> > mat;
+  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
 
   if (splitmatrix)
   {
     // (re)allocate system matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
     mat->SetCondElements(condelements);
     sysmat_ = mat;
   }
@@ -2313,7 +2313,7 @@ void XFluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> > condelem
   if (params_.get<bool>("mesh movement linearization"))
   {
     // allocate special mesh moving matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLUIDUTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
     mat->SetCondElements(condelements);
     //meshmovematrix_ = mat;
   }

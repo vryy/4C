@@ -31,7 +31,7 @@ Maintainer: Axel Gerstenberger
  | set part of the residual vector belonging to the old timestep        |
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
-void TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
+void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
     const RCP<Epetra_Vector>&   veln,
     const RCP<Epetra_Vector>&   velnm,
     const RCP<Epetra_Vector>&   accn,
@@ -62,7 +62,7 @@ void TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
   case timeint_stationary: /* One step Theta time integration */
     hist->Scale(0.0);
     break;
-      
+
   case timeint_one_step_theta: /* One step Theta time integration */
     hist->Update(1.0, *veln, dta*(1.0-theta), *accn, 0.0);
     break;
@@ -82,7 +82,7 @@ void TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
  |  do explicit predictor step to start nonlinear iteration from a      |
  |  better value                                             gammi 04/07|
  *----------------------------------------------------------------------*/
-void TIMEINT_THETA_BDF2::ExplicitPredictor(
+void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
     const RCP<Epetra_Vector>&   veln,
     const RCP<Epetra_Vector>&   velnm,
     const RCP<Epetra_Vector>&   accn,
@@ -107,7 +107,7 @@ void TIMEINT_THETA_BDF2::ExplicitPredictor(
  | current solution becomes most recent solution of next timestep       |
  |                                                           gammi 04/07|
  *----------------------------------------------------------------------*/
-void TIMEINT_THETA_BDF2::CalculateAcceleration(
+void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
     const RCP<Epetra_Vector>&   velnp,
     const RCP<Epetra_Vector>&   veln,
     const RCP<Epetra_Vector>&   velnm,

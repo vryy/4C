@@ -588,7 +588,7 @@ void ScaTraImplicitTimeInt::Solve(
         LINALG::ApplyDirichlettoSystem(sysmat_sd_,phinp_,residual_,phinp_,dirichtoggle_);
 
         // call the VM3 constructor
-        vm3_solver_ = rcp(new VM3_Solver(sysmat_sd_,dirichtoggle_,mllist,true,false) );
+        vm3_solver_ = rcp(new FLD::VM3_Solver(sysmat_sd_,dirichtoggle_,mllist,true,false) );
       }
       else
       {
@@ -1099,7 +1099,7 @@ void ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
   if (init == 0) // zero_field
   { // just to be sure!
     phinp_->PutScalar(0);
-    phinm_->PutScalar(0); 
+    phinm_->PutScalar(0);
     phin_->PutScalar(0);
   }
   else if (init == 1)  // field_by_function
@@ -1134,7 +1134,7 @@ void ScaTraImplicitTimeInt::SetInitialField(int init, int startfuncno)
 
     for (unsigned i=0; i<cond.size(); ++i)
     {
-      cout<<"Applied InitialField Condition "<<i<<endl; 
+      cout<<"Applied InitialField Condition "<<i<<endl;
 
       // loop all nodes on the processor
       for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -1235,7 +1235,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTraImplicitTimeInt::CalcFlux()
 
   // clean up
   discret_->ClearState();
-  
+
   // insert values into final flux vector for visualization
   for (int i = 0;i<flux->MyLength();++i)
   {

@@ -17,7 +17,7 @@ o loop planes (e.g. plane coordinates)
 
 o in plane mean values are averaged in time over all steps between two
   outputs (by computation of the arithmetic mean)
-  
+
   - time average pointwise values
   - time average integral values
   - time average forces
@@ -27,17 +27,17 @@ o in plane mean values are averaged in time over all steps between two
 o Write pointwise and integral statistics for first and second
   order moments
   ->   .flow_statistic
-  
+
 o Write statistics for the Smagorinsky "constant" Cs if a dynamic
   procedure to determine it is applied
 
   ->  .Cs_statistic
-  
+
 o Write statistics for subscale quantitites and residuals
   (subscale quantitites and residuals are averaged over element
    layers)
   ->  .res_statistic
-  
+
 Required parameters are the number of velocity degrees of freedom (3),
 the normal direction to the plane, in which the average values in space
 should be computed, and the basename of the statistics outfile. These
@@ -46,7 +46,7 @@ parameter list given on input.
 
 This method is intended to be called every upres_ steps during fluid
 output.
-  
+
 Maintainer: Peter Gamnitzer
             gamnitzer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -86,9 +86,12 @@ extern struct _MATERIAL  *mat;
 using namespace std;
 using namespace Teuchos;
 
+namespace FLD
+{
+
 class TurbulenceStatistics
 {
-  
+
 public:
   /*!
   \brief Standard Constructor (public)
@@ -102,7 +105,7 @@ public:
   o allocate all sum_something vectors
 
   o initialise the output (open/clear files, print header)
-  
+
   </pre>
 
   */
@@ -121,14 +124,14 @@ public:
   /*!
   \brief Compute the in-plane mean values of first and second order
   moments for velocities, pressure and Cs are added to global
-  'sum' vectors. 
+  'sum' vectors.
   */
   void DoTimeSample(
     Teuchos::RefCountPtr<Epetra_Vector> velnp,
     Epetra_Vector & force
     );
 
-  
+
   /*!
   \brief Compute in plane means of u,u^2 etc.
 
@@ -140,7 +143,7 @@ public:
   Further documentation is provided in the element subroutines
   */
   void EvaluateIntegralMeanValuesInPlanes();
-  
+
   /*!
   \brief Compute in plane means of u,u^2 etc. (nodal quantities)
 
@@ -157,16 +160,16 @@ public:
 
   - apply toggle vectors to pointwise multiplied velnp.*velnp
     for second order moments
-  
-  
+
+
   The calculated values are added to the pointsum**,pointsumsq** variables
   in the component corresponding to the plane.
 
   velnp is the solution vector provided by the time integration
-  algorithm 
+  algorithm
   */
   void EvaluatePointwiseMeanValuesInPlanes();
-  
+
   //@}
 
   //! @name Miscellaneous
@@ -177,7 +180,7 @@ public:
 
   step on input is used to print the timesteps which belong to the
   statistic to the file
-  
+
   */
 
   void TimeAverageMeansAndOutputOfStatistics(int step);
@@ -192,7 +195,7 @@ public:
 
   /*!
   \brief Reset sums and number of samples to 0
-  
+
   */
 
   void ClearStatistics();
@@ -200,7 +203,7 @@ public:
   /*!
   \brief Provide the coordinates of the homogeneous planes for a
   turbulent channel flow
-  
+
   */
   vector<double> ReturnNodePlaneCoords()
     {
@@ -217,7 +220,7 @@ public:
 
   We just store it here and add it to the sum as soon as we do
   the time sample.
-  
+
   */
    void ReplaceCsIncrement(
      RefCountPtr<vector<double> > incrsumCs,
@@ -233,13 +236,13 @@ public:
       }
       return;
     };
-  
+
   /*!
   \brief Add computed sums to compute average of residuals
 
   the increments are computed during time integration
   by a call to the elements
-  
+
   */
    void AddToResAverage(
      RefCountPtr<vector<double> > incrres        ,
@@ -276,18 +279,18 @@ public:
       }
       return;
     };
-    
+
   //@}
 
-  
+
 protected:
 
   /*!
   \brief sort criterium for double values up to a tolerance of 10-9
-  
+
   This is used to create sets of doubles (e.g. coordinates)
 
-  */  
+  */
   class PlaneSortCriterion
   {
   public:
@@ -296,22 +299,22 @@ protected:
       const double& p2) const {
       return (p1 < p2 - 1E-9);
     }
-    
+
   protected:
   private:
-    
+
   };
-  
+
 private:
   //! direction normal to homogenous plane
   int                              dim_;
-  
+
   //! number of elements in sample plane
   int                              numele_;
 
   //! number of samples taken
   int                              numsamp_;
-  
+
   //! number of records written
   int                              countrecord_;
 
@@ -320,7 +323,7 @@ private:
 
   //! contains plane normal direction etc
   ParameterList&                   params_;
-  
+
    //! pointer to mean vel/pres field
   RefCountPtr<Epetra_Vector>       meanvelnp_;
 
@@ -336,7 +339,7 @@ private:
 
   //! the dim_-coordinates of the homogeneous planes containing nodes
   RefCountPtr<vector<double> >     nodeplanes_;
-  
+
   //! the dim_-coordinates of the homogeneous planes --- including
   //additional sampling planes
   RefCountPtr<vector<double> >     planecoordinates_;
@@ -346,7 +349,7 @@ private:
 
   //! viscosity to calculate l_tau, y+ etc.
   double                           visc_;
- 
+
   //!--------------------------------------------------
   //!         integration based averaging
   //!--------------------------------------------------
@@ -356,7 +359,7 @@ private:
   //! sum over v (over one plane in each component)
   RefCountPtr<vector<double> >     sumv_;
   //! sum over w (over one plane in each component)
-  RefCountPtr<vector<double> >     sumw_; 
+  RefCountPtr<vector<double> >     sumw_;
   //! sum over p (over one plane in each component)
   RefCountPtr<vector<double> >     sump_;
 
@@ -388,7 +391,7 @@ private:
   //! sum over v (over one plane in each component)
   RefCountPtr<vector<double> >     pointsumv_;
   //! sum over w (over one plane in each component)
-  RefCountPtr<vector<double> >     pointsumw_; 
+  RefCountPtr<vector<double> >     pointsumw_;
   //! sum over p (over one plane in each component)
   RefCountPtr<vector<double> >     pointsump_;
 
@@ -421,7 +424,7 @@ private:
   //! sum over (Cs*delta)^2 --- used only for dynamic Smagorinsky model
   RefCountPtr<vector<double> >     sumCs_delta_sq_;
   //! sum over effective viscosity --- used only for dynamic Smagorinsky model
-  RefCountPtr<vector<double> >     sumvisceff_;  
+  RefCountPtr<vector<double> >     sumvisceff_;
   //! increment of sumCs over in one timestep
   RefCountPtr<vector<double> >     incrsumCs_;
   //! increment of sumCs_delta_sq over in one timestep
@@ -432,7 +435,7 @@ private:
   //!--------------------------------------------------
   //!  averaged resudiuals and subscale quantities
   //!--------------------------------------------------
-  
+
   //! sum over all in plane residuals
   RefCountPtr<vector<double> >     sumres_;
   //! sum over all in plane squared residuals
@@ -458,8 +461,10 @@ private:
   RefCountPtr<vector<double> >     sumspressnp_   ;
   //! sum over all in plane squared subscale pressure values at current timestep
   RefCountPtr<vector<double> >     sumspressnp_sq_;
-  
+
 };
+
+}
 
 #endif  // not TURBULENCE_STATISTICS_H
 

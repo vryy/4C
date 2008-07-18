@@ -142,19 +142,19 @@ public:
 
   */
   void SetVelocityField(int veltype, int velfuncno);
-  
+
   /*!
   \brief set the velocity field
 
   */
   void SetVelocityField(int veltype, RCP<const Epetra_Vector> extvel);
-  
+
   /*!
   \brief set the initial scalar field phi
 
   */
   void SetInitialField(int init,int startfuncno);
-  
+
   /*!
   \brief routine to calculate mass/heat flux vectors
 
@@ -228,8 +228,8 @@ protected:
   RCP<Epetra_MultiVector>    convel_;
 
   /// vm3 and avms solver
-  RCP<VM3_Solver> vm3_solver_;
-  RCP<AVMS_Solver> avms_solver_;
+  RCP<FLD::VM3_Solver> vm3_solver_;
+  RCP<FLD::AVMS_Solver> avms_solver_;
 
   /// only necessary for vm3 solver: fine-scale subgrid-diffusivity matrix
   RCP<LINALG::SparseMatrix> sysmat_sd_;

@@ -23,7 +23,7 @@ flows.
 
 */
 /*----------------------------------------------------------------------*/
-TurbulenceStatistics::TurbulenceStatistics(
+FLD::TurbulenceStatistics::TurbulenceStatistics(
   RefCountPtr<DRT::Discretization> actdis,
   ParameterList&                   params)
   :
@@ -76,26 +76,26 @@ TurbulenceStatistics::TurbulenceStatistics(
 
 
 
-  // available planes of element nodes (polynomial)/corners 
+  // available planes of element nodes (polynomial)/corners
   // (Nurbs) of elements
   nodeplanes_ = rcp(new vector<double> );
 
 
-  // available homogeneous (sampling) planes --- there are 
-  // numsubdivisions layers per element layer between two 
+  // available homogeneous (sampling) planes --- there are
+  // numsubdivisions layers per element layer between two
   // nodes (Polynomial)/per element layer (Nurbs)
   planecoordinates_ = rcp(new vector<double> );
 
   const int numsubdivisions=5;
 
 
-  // try to cast discretisation to nurbs variant 
-  // this tells you what kind of computation of 
+  // try to cast discretisation to nurbs variant
+  // this tells you what kind of computation of
   // samples is required
   DRT::NURBS::NurbsDiscretization* nurbsdis
     =
     dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*actdis));
-  
+
   // allocate array for bounding box
   //
   //          |  x  |  y  |  z
@@ -112,8 +112,8 @@ TurbulenceStatistics::TurbulenceStatistics(
     (*boundingbox_)(1,row) = -10e+19;
   }
 
-    
-  // get fluid viscosity from material definition --- for computation 
+
+  // get fluid viscosity from material definition --- for computation
   // of ltau
   visc_ = mat->m.fluid->viscosity;
 
@@ -124,17 +124,17 @@ TurbulenceStatistics::TurbulenceStatistics(
     // is read from the parameter list
     //----------------------------------------------------------------------
     planecoordinates_ = rcp(new vector<double> );
-    
+
     // the criterion allows differences in coordinates by 1e-9
     set<double,PlaneSortCriterion> availablecoords;
-    
+
     // loop nodes, build set of planes accessible on this proc and
     // calculate bounding box
     for (int i=0; i<discret_->NumMyRowNodes(); ++i)
     {
       DRT::Node* node = discret_->lRowNode(i);
       availablecoords.insert(node->X()[dim_]);
-      
+
       for (int row = 0;row<3;++row)
       {
 	if ((*boundingbox_)(0,row)>node->X()[row])
@@ -147,25 +147,25 @@ TurbulenceStatistics::TurbulenceStatistics(
 	}
       }
     }
-    
+
     // communicate mins
     for (int row = 0;row<3;++row)
     {
       double min;
-      
+
       discret_->Comm().MinAll(&((*boundingbox_)(0,row)),&min,1);
       (*boundingbox_)(0,row)=min;
     }
-    
+
     // communicate maxs
     for (int row = 0;row<3;++row)
     {
       double max;
-      
+
       discret_->Comm().MaxAll(&((*boundingbox_)(1,row)),&max,1);
       (*boundingbox_)(1,row)=max;
     }
-    
+
     //--------------------------------------------------------------------
     // round robin loop to communicate coordinates to all procs
     //--------------------------------------------------------------------
@@ -174,21 +174,21 @@ TurbulenceStatistics::TurbulenceStatistics(
       int myrank  =discret_->Comm().MyPID();
 #endif
       int numprocs=discret_->Comm().NumProc();
-      
+
       vector<char> sblock;
       vector<char> rblock;
-      
-      
+
+
 #ifdef PARALLEL
       // create an exporter for point to point comunication
       DRT::Exporter exporter(discret_->Comm());
 #endif
-      
+
       for (int np=0;np<numprocs;++np)
       {
 	// export set to sendbuffer
 	sblock.clear();
-	
+
 	for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
 	     plane!=availablecoords.end();
 	     ++plane)
@@ -198,29 +198,29 @@ TurbulenceStatistics::TurbulenceStatistics(
 #ifdef PARALLEL
 	MPI_Request request;
 	int         tag    =myrank;
-	
+
 	int         frompid=myrank;
 	int         topid  =(myrank+1)%numprocs;
-	
+
 	int         length=sblock.size();
-	
+
 	exporter.ISend(frompid,topid,
 		       &(sblock[0]),sblock.size(),
 		       tag,request);
-	
+
 	rblock.clear();
-	
+
 	// receive from predecessor
 	frompid=(myrank+numprocs-1)%numprocs;
 	exporter.ReceiveAny(frompid,tag,rblock,length);
-	
+
 	if(tag!=(myrank+numprocs-1)%numprocs)
 	{
 	  dserror("received wrong message (ReceiveAny)");
 	}
-	
+
 	exporter.Wait(request);
-	
+
 	{
 	  // for safety
 	  exporter.Comm().Barrier();
@@ -230,14 +230,14 @@ TurbulenceStatistics::TurbulenceStatistics(
 	rblock.clear();
 	rblock=sblock;
 #endif
-	
+
 	//--------------------------------------------------
 	// Unpack received block into set of all planes.
 	{
 	  vector<double> coordsvec;
-	  
+
 	  coordsvec.clear();
-	  
+
 	  int index = 0;
 	  while (index < (int)rblock.size())
 	  {
@@ -248,30 +248,30 @@ TurbulenceStatistics::TurbulenceStatistics(
 	}
       }
     }
-    
+
     //----------------------------------------------------------------------
     // push coordinates of planes in a vector
     //----------------------------------------------------------------------
     {
       nodeplanes_ = rcp(new vector<double> );
-      
-      
+
+
       for(set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
 	  coord!=availablecoords.end();
 	  ++coord)
       {
 	nodeplanes_->push_back(*coord);
       }
-      
+
       //----------------------------------------------------------------------
       // insert additional sampling planes (to show influence of quadratic
       // shape functions)
       //----------------------------------------------------------------------
-      
+
       for(unsigned rr =0; rr < nodeplanes_->size()-1; ++rr)
       {
 	double delta = ((*nodeplanes_)[rr+1]-(*nodeplanes_)[rr])/((double) numsubdivisions);
-	
+
 	for (int mm =0; mm < numsubdivisions; ++mm)
 	{
 	  planecoordinates_->push_back((*nodeplanes_)[rr]+delta*mm);
@@ -285,15 +285,15 @@ TurbulenceStatistics::TurbulenceStatistics(
 
     // pointwise sampling does not make any sense for Nurbs
     // discretisations since shape functions are not interpolating
-    
 
-    // planecoordinates are determined by the element (cartesian) number  
+
+    // planecoordinates are determined by the element (cartesian) number
     // in y direction and the number of sampling planes in between
     // and nodeplanes are kept as the corners of elements
     // (to be able to visualise stuff on the element center later on)
 
-    // for nurbs discretisations, all vector sizes are already determined 
-    // by the knotvector size 
+    // for nurbs discretisations, all vector sizes are already determined
+    // by the knotvector size
     if(dim_!=1)
     {
       dserror("For the nurbs stuff, we require that xz is the hom. plane\n");
@@ -305,7 +305,7 @@ TurbulenceStatistics::TurbulenceStatistics(
     // get nurbs dis' element numbers
     vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele());
 
-    // get the knotvector itself 
+    // get the knotvector itself
     RefCountPtr<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
     // resize and initialise to 0
@@ -331,38 +331,38 @@ TurbulenceStatistics::TurbulenceStatistics(
 
     // get element map
     const Epetra_Map* elementmap = nurbsdis->ElementRowMap();
-  
+
     // loop all available elements
     for (int iele=0; iele<elementmap->NumMyElements(); ++iele)
     {
       DRT::Element* const actele = nurbsdis->gElement(elementmap->GID(iele));
       DRT::Node**   nodes = actele->Nodes();
-	
+
       // get gid, location in the patch
       int gid = actele->Id();
-	
+
       vector<int> ele_cart_id=knots->ConvertEleGidToKnotIds(gid);
-      
-      // want to loop all control points of the element, 
+
+      // want to loop all control points of the element,
       // so get the number of points
       const int numnp = actele->NumNode();
-      
+
 	// access elements knot span
       std::vector<blitz::Array<double,1> > knots(3);
       (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots,actele->Id());
-      
+
       // aquire weights from nodes
       blitz::Array<double,1> weights(numnp);
-      
+
       for (int inode=0; inode<numnp; ++inode)
       {
-	DRT::NURBS::ControlPoint* cp 
-	  = 
+	DRT::NURBS::ControlPoint* cp
+	  =
 	  dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
-	
+
 	weights(inode) = cp->W();
       }
-	
+
       // get shapefunctions, compute all visualisation point positions
       blitz::Array<double,1> nurbs_shape_funct(numnp);
 
@@ -372,25 +372,25 @@ TurbulenceStatistics::TurbulenceStatistics(
       case DRT::Element::nurbs27:
       {
 	// element local point position
-	blitz::Array<double,1> uv(3);   
+	blitz::Array<double,1> uv(3);
 
 	{
 	  // standard
 
 	  //               v
 	  //              /
-          //  w  7       /   8   
-	  //  ^   +---------+      
-	  //  |  /         /|        
-	  //  | /         / |         
-	  // 5|/        6/  |       
-	  //  +---------+   |     
-	  //  |         |   |     
-	  //  |         |   +      
-	  //  |         |  / 4     
-	  //  |         | /       
-	  //  |         |/         
-	  //  +---------+ ----->u    
+          //  w  7       /   8
+	  //  ^   +---------+
+	  //  |  /         /|
+	  //  | /         / |
+	  // 5|/        6/  |
+	  //  +---------+   |
+	  //  |         |   |
+	  //  |         |   +
+	  //  |         |  / 4
+	  //  |         | /
+	  //  |         |/
+	  //  +---------+ ----->u
 	  // 1           2
 	  // use v-coordinate of point 1 and 8
 	  // temporary x vector
@@ -414,7 +414,7 @@ TurbulenceStatistics::TurbulenceStatistics(
 	    }
 	    x[isd]=val;
 	  }
-	  
+
 	  (*nodeplanes_      )[ele_cart_id[1]]                    +=x[1];
 	  (*planecoordinates_)[ele_cart_id[1]*(numsubdivisions-1)]+=x[1];
 
@@ -473,7 +473,7 @@ TurbulenceStatistics::TurbulenceStatistics(
 	      }
 	      x[isd]=val;
 	    }
-	  
+
 	    (*nodeplanes_)      [ele_cart_id[1]                   +1]+=x[1];
 	    (*planecoordinates_)[(ele_cart_id[1]+1)*(numsubdivisions-1)]+=x[1];
 
@@ -493,7 +493,7 @@ TurbulenceStatistics::TurbulenceStatistics(
 	}
 	break;
       }
-      default: 
+      default:
 	dserror("Unknown element shape for a nurbs element or nurbs type not valid for turbulence calculation\n");
       }
     }
@@ -534,20 +534,20 @@ TurbulenceStatistics::TurbulenceStatistics(
     for (int row = 0;row<3;++row)
     {
       double min;
-      
+
       discret_->Comm().MinAll(&((*boundingbox_)(0,row)),&min,1);
       (*boundingbox_)(0,row)=min;
     }
-    
+
     // communicate maxs
     for (int row = 0;row<3;++row)
     {
       double max;
-      
+
       discret_->Comm().MaxAll(&((*boundingbox_)(1,row)),&max,1);
       (*boundingbox_)(1,row)=max;
     }
-    
+
   }
 
   //----------------------------------------------------------------------
@@ -557,7 +557,7 @@ TurbulenceStatistics::TurbulenceStatistics(
 
   //----------------------------------------------------------------------
   // arrays for integration based averaging
-  
+
   // first order moments
   sumu_ =  rcp(new vector<double> );
   sumu_->resize(size,0.0);
@@ -628,7 +628,7 @@ TurbulenceStatistics::TurbulenceStatistics(
 
   //----------------------------------------------------------------------
   // arrays for averaging of Smagorinsky constant etc.
-  // 
+  //
   // means for the Smagorinsky constant
   sumCs_  =  rcp(new vector<double> );
   sumCs_->resize(nodeplanes_->size()-1,0.0);
@@ -649,16 +649,16 @@ TurbulenceStatistics::TurbulenceStatistics(
 
   incrsumvisceff_  =  rcp(new vector<double> );
   incrsumvisceff_->resize(nodeplanes_->size()-1,0.0);
-  
+
   //----------------------------------------------------------------------
   // arrays for averaging of residual, subscales etc.
-  
+
   // means for comparison of of residual and subscale acceleration
   sumres_    =  rcp(new vector<double> );
   sumres_->resize(3*(nodeplanes_->size()-1),0.0);
   sumres_sq_ =  rcp(new vector<double> );
   sumres_sq_->resize(3*(nodeplanes_->size()-1),0.0);
-  
+
   sumsacc_   =  rcp(new vector<double> );
   sumsacc_->resize(3*(nodeplanes_->size()-1),0.0);
   sumsacc_sq_=  rcp(new vector<double> );
@@ -673,17 +673,17 @@ TurbulenceStatistics::TurbulenceStatistics(
   sumresC_->resize(nodeplanes_->size()-1,0.0);
   sumresC_sq_    =  rcp(new vector<double> );
   sumresC_sq_->resize(nodeplanes_->size()-1,0.0);
-  
+
   sumspresacc_   =  rcp(new vector<double> );
   sumspresacc_->resize(nodeplanes_->size()-1,0.0);
   sumspresacc_sq_=  rcp(new vector<double> );
   sumspresacc_sq_->resize(nodeplanes_->size()-1,0.0);
-  
+
   sumspressnp_   =  rcp(new vector<double> );
   sumspressnp_->resize(nodeplanes_->size()-1,0.0);
   sumspressnp_sq_=  rcp(new vector<double> );
   sumspressnp_sq_->resize(nodeplanes_->size()-1,0.0);
-  
+
   //----------------------------------------------------------------------
   // initialise output
   //----------------------------------------------------------------------
@@ -743,12 +743,12 @@ TurbulenceStatistics::TurbulenceStatistics(
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-TurbulenceStatistics::~TurbulenceStatistics()
+FLD::TurbulenceStatistics::~TurbulenceStatistics()
 {
   return;
 }// TurbulenceStatistics::~TurbulenceStatistics()
 
-void TurbulenceStatistics::DoTimeSample(
+void FLD::TurbulenceStatistics::DoTimeSample(
   Teuchos::RefCountPtr<Epetra_Vector> velnp,
   Epetra_Vector & force
   )
@@ -771,7 +771,7 @@ void TurbulenceStatistics::DoTimeSample(
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
   this->EvaluateIntegralMeanValuesInPlanes();
-  
+
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
@@ -779,8 +779,8 @@ void TurbulenceStatistics::DoTimeSample(
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
   //----------------------------------------------------------------------
-  // try to cast discretisation to nurbs variant 
-  // this tells you whether pointwise computation of 
+  // try to cast discretisation to nurbs variant
+  // this tells you whether pointwise computation of
   // samples is allowed
   DRT::NURBS::NurbsDiscretization* nurbsdis
     =
@@ -885,7 +885,7 @@ void TurbulenceStatistics::DoTimeSample(
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void TurbulenceStatistics::EvaluateIntegralMeanValuesInPlanes()
+void FLD::TurbulenceStatistics::EvaluateIntegralMeanValuesInPlanes()
 {
 
   //----------------------------------------------------------------------
@@ -1072,7 +1072,7 @@ void TurbulenceStatistics::EvaluateIntegralMeanValuesInPlanes()
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void TurbulenceStatistics::EvaluatePointwiseMeanValuesInPlanes()
+void FLD::TurbulenceStatistics::EvaluatePointwiseMeanValuesInPlanes()
 {
   int planenum = 0;
 
@@ -1186,7 +1186,7 @@ void TurbulenceStatistics::EvaluatePointwiseMeanValuesInPlanes()
     }
     planenum++;
   }
-  
+
   return;
 }// TurbulenceStatistics::EvaluatePointwiseMeanValuesInPlanes()
 
@@ -1194,7 +1194,7 @@ void TurbulenceStatistics::EvaluatePointwiseMeanValuesInPlanes()
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
+void FLD::TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
 {
   if (numsamp_ == 0)
   {
@@ -1204,7 +1204,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
   //----------------------------------------------------------------------
   // the sums are divided by the number of samples to get the time average
   int aux = numele_*numsamp_;
-  
+
   for(unsigned i=0; i<planecoordinates_->size(); ++i)
   {
 
@@ -1238,7 +1238,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
       (*pointsumv_)[i]   /=numsamp_;
       (*pointsumw_)[i]   /=numsamp_;
       (*pointsump_)[i]   /=numsamp_;
-      
+
       (*pointsumsqu_)[i] /=numsamp_;
       (*pointsumsqv_)[i] /=numsamp_;
       (*pointsumsqw_)[i] /=numsamp_;
@@ -1316,7 +1316,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     (*log) << "-------------------------------------------------point";
     (*log) << "wise---------------------------------------";
     (*log) << "------------|\n";
-    
+
     (*log) << "#     y            y+";
     (*log) << "           umean         vmean         wmean         pmean";
     (*log) << "        mean u^2      mean v^2      mean w^2";
@@ -1445,15 +1445,15 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
     for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
     {
       (*log_res)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
-      
+
       (*log_res)  << setw(11) << setprecision(4) << (*sumres_)[3*rr  ]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumres_)[3*rr+1]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumres_)[3*rr+2]/(numele_*numsamp_) << "  ";
-      
+
       (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_)[3*rr  ]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_)[3*rr+1]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_)[3*rr+2]/(numele_*numsamp_) << "  ";
-      
+
       (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_)[3*rr  ]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_)[3*rr+1]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_)[3*rr+2]/(numele_*numsamp_) << "  ";
@@ -1463,7 +1463,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
       (*log_res)  << setw(11) << setprecision(4) << (*sumspresacc_)[rr]/(numele_*numsamp_) << "  ";
 
       (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_)[rr]/(numele_*numsamp_) << "  ";
-      
+
       (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
@@ -1471,7 +1471,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
       (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumsacc_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
-      
+
       (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
       (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
@@ -1500,7 +1500,7 @@ void TurbulenceStatistics::TimeAverageMeansAndOutputOfStatistics(int step)
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void TurbulenceStatistics::DumpStatistics(int step)
+void FLD::TurbulenceStatistics::DumpStatistics(int step)
 {
   if (numsamp_ == 0)
   {
@@ -1712,7 +1712,7 @@ void TurbulenceStatistics::DumpStatistics(int step)
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void TurbulenceStatistics::ClearStatistics()
+void FLD::TurbulenceStatistics::ClearStatistics()
 {
   // reset the number of samples
   numsamp_ =0;

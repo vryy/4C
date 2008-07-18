@@ -169,9 +169,9 @@ namespace ADAPTER {
         const string filestr,
         const string name_in_gmsh
         );
-    
+
     /// the actual fluid algorithm
-    XFluidImplicitTimeInt                  fluid_;
+    FLD::XFluidImplicitTimeInt             fluid_;
 
     /// the interface map setup for interface <-> full translation
     LINALG::MapExtractor                   interface_;
