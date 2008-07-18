@@ -2764,7 +2764,7 @@ void StruGenAlpha::Update()
     // create the parameters for the discretization
     ParameterList p;
     // action for elements
-    p.set("action","calc_struct_prestress_update_green_lagrange");
+    p.set("action","calc_struct_prestress_update");
     // other parameters that might be needed by the elements
     p.set("total time",timen);
     p.set("delta time",dt);
@@ -3090,7 +3090,7 @@ void StruGenAlpha::Integrate()
       UpdateandOutput();
       double time = params_.get<double>("total time",0.0);
       if (time>=maxtime) break;
-      }
+    }
   }
   else if (equil=="line search newton")
   {
@@ -3102,7 +3102,7 @@ void StruGenAlpha::Integrate()
       UpdateandOutput();
       double time = params_.get<double>("total time",0.0);
       if (time>=maxtime) break;
-      }
+    }
   }
   else if (equil=="modified newton")
   {
