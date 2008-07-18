@@ -1705,8 +1705,8 @@ void XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             BlitzMat elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()));
             const XFEM::DomainIntCell cell(actele->Shape());
             elevalues = 0.0;
-            //              XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
-            //                  cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);
+//            XFEM::computeVectorCellNodeValues(*actele, ihForOutput_, eledofman,
+//                              cell, XFEM::PHYSICS::Velx, elementvalues, elevalues);
 
             const BlitzMat xyze_ele(DRT::UTILS::InitialPositionArrayBlitz(actele));
             gmshfilecontent << IO::GMSH::cellWithVectorFieldToString(
