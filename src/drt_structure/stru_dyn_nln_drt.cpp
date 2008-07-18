@@ -164,7 +164,9 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<string>("DYNAMICTYP",sdyn.get<string>("DYNAMICTYP"));
 
       // Rayleigh damping
-      genalphaparams.set<bool>  ("damping",Teuchos::getIntegralValue<int>(sdyn,"DAMPING"));
+      genalphaparams.set<bool>  ("damping",(not (sdyn.get<std::string>("DAMPING") == "no"
+                                                 or sdyn.get<std::string>("DAMPING") == "No"
+                                                 or sdyn.get<std::string>("DAMPING") == "NO")));
       genalphaparams.set<double>("damping factor K",sdyn.get<double>("K_DAMP"));
       genalphaparams.set<double>("damping factor M",sdyn.get<double>("M_DAMP"));
 

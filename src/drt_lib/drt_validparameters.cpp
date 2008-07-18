@@ -404,11 +404,33 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("GAMMA",0.5,"generalized alpha factors, also used by explicit time integration",&sdyn);
   DoubleParameter("ALPHA_M",0.5,"generalized alpha factors",&sdyn);
   DoubleParameter("ALPHA_F",0.5,"generalized alpha factors",&sdyn);
-  // Rayleigh damping
+  // Damping
+  setStringToIntegralParameter("DAMPING","No",
+                               "type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, (2) Material based and calculated in elements",
+                               tuple<std::string>("no",
+                                                  "No",
+                                                  "NO",
+                                                  "yes",
+                                                  "Yes",
+                                                  "YES",
+                                                  "Rayleigh",
+                                                  "Material"),
+                               tuple<int>(STRUCT_DYNAMIC::damp_none,
+                                          STRUCT_DYNAMIC::damp_none,
+                                          STRUCT_DYNAMIC::damp_none,
+                                          STRUCT_DYNAMIC::damp_rayleigh,
+                                          STRUCT_DYNAMIC::damp_rayleigh,
+                                          STRUCT_DYNAMIC::damp_rayleigh,
+                                          STRUCT_DYNAMIC::damp_rayleigh,
+                                          STRUCT_DYNAMIC::damp_material),
+                               &sdyn);
+/*
+
   setStringToIntegralParameter("DAMPING","No",
                                "build raleigh damping matrix and use it from M_DAMP x M + K_DAMP x K",
                                yesnotuple,yesnovalue,
                                &sdyn);
+*/
   DoubleParameter("M_DAMP",0.5,"",&sdyn);
   DoubleParameter("K_DAMP",0.5,"",&sdyn);
   // Iteration

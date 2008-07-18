@@ -154,9 +154,15 @@ DOUBLE             alpha_f;
 #ifdef GEMM
 DOUBLE             xsi;        /*  Parameter used by GEMM */
 #endif
-/* Rayleigh damping parameters */
-DOUBLE             m_damp;     /* factors for Raleigh damping */
-DOUBLE             k_damp;
+/* damping */
+enum _dampkind
+   {
+     damp_none = 0,            /* damping off */
+     damp_rayleigh,            /* globally applied Rayleigh damping */
+     damp_material             /* element-wise applied damping */
+   }               dampkind;   /* type of damping */
+DOUBLE             m_damp;     /* factor for Raleigh damping */
+DOUBLE             k_damp;     /* factor for Raleigh damping */
 /* time step size adaptivity --- depreciated??? */
 INT                timeadapt;  /* flag to switch adaptive time stepping on */
 INT                itwant;     /* requested number of newton iterations */
