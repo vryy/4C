@@ -44,16 +44,9 @@ THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
 ------------------------------------------------------------STATIC
-LINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ------------------------------------------------STRUCTURAL CONTACT
-CONTACT          None
-INIT_CONTACT     No
-BASISTRAFO       No
-FRICTION         None
-FRBOUND          0.0
-FRCOEFF          0.0
 -----------------------------------------------------FLUID DYNAMIC
 DYNAMICTYP       Nlin_Time_Int
 INITIALFIELD     field_by_function

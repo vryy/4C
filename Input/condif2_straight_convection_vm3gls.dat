@@ -44,6 +44,7 @@ INITIALFIELD zero_field
 FSSUGRVISC   artificial_all
 VELOCITYFIELD  function
 VELFUNCNO    1
+WRITEFLUX    No
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
 ------------------------------------------------------OPTIMIZATION
