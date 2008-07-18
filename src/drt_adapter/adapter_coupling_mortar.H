@@ -36,7 +36,7 @@ namespace ADAPTER
     \note This class is specific to FSI coupling with structure being the
     master and fluid the slave.
 
-    \node The force coupling in SlaveToMaster() expacts interface loads on the
+    \note The force coupling in SlaveToMaster() expacts interface loads on the
     fluid side and returns consistant interface forces on the structural side.
 
     \author h.kue
