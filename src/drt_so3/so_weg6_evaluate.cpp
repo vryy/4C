@@ -69,14 +69,16 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
   else if (action=="calc_struct_reset_istep")   act = So_weg6::calc_struct_reset_istep;
   else if (action=="postprocess_stress")        act = So_weg6::postprocess_stress;
 #ifdef PRESTRESS
-  else if (action=="calc_struct_prestress_update_green_lagrange") act = So_weg6::update_gl;
+  else if (action=="calc_struct_prestress_update") act = So_weg6::prestress_update;
 #endif
   else dserror("Unknown type of action for So_weg6");
 
   // what should the element do
-  switch(act) {
+  switch(act) 
+  {
     // linear stiffness
-    case calc_struct_linstiff: {
+    case calc_struct_linstiff: 
+    {
       // need current displacement and residual forces
       vector<double> mydisp(lm.size());
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
@@ -87,7 +89,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     break;
 
     // nonlinear stiffness and internal force vector
-    case calc_struct_nlnstiff: {
+    case calc_struct_nlnstiff: 
+    {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -101,7 +104,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     break;
 
     // internal force vector only
-    case calc_struct_internalforce: {
+    case calc_struct_internalforce: 
+    {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -122,7 +126,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     break;
 
     // nonlinear stiffness, internal force vector, and consistent mass matrix
-    case calc_struct_nlnstiffmass: {
+    case calc_struct_nlnstiffmass: 
+    {
       // need current displacement and residual forces
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
@@ -134,8 +139,10 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       sow6_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params);
     }
     break;
+    
     // evaluate stresses and strains at gauss points
-    case calc_struct_stress:{
+    case calc_struct_stress:
+    {
       RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
       RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
       RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
@@ -154,21 +161,6 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       if (iostrain == "euler_almansi") sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,true);
       else sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,cauchy,false);
       AddtoPack(*stressdata, stress);
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-      {
-        RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
-        if (gl==null)
-          dserror("Cannot output prestrains");
-        if (gl->M() != strain.M() || gl->N() != strain.N())
-          dserror("Mismatch in dimension");
-        // the element outputs 0.5* strains[3-5], but we have the computational quantity here
-        Epetra_SerialDenseMatrix tmp(*gl);
-        for (int i=0; i<NUMGPT_WEG6; ++i)
-          for (int j=3; j<6; ++j)
-            tmp(i,j) *= 0.5;
-        strain += tmp;
-      }
-#endif
       AddtoPack(*straindata, strain);
     }
     break;
@@ -178,7 +170,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
     // note that in the following, quantities are always referred to as
     // "stresses" etc. although they might also apply to strains
     // (depending on what this routine is called for from the post filter)
-    case postprocess_stress:{
+    case postprocess_stress:
+    {
 
       const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
         params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
@@ -282,17 +275,20 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       dserror("Case not yet implemented");
     break;
 
-    case calc_struct_update_istep: {
+    case calc_struct_update_istep: 
+    {
       ;// there is nothing to do here at the moment
     }
     break;
 
-    case calc_struct_update_imrlike: {
+    case calc_struct_update_imrlike: 
+    {
       ;// there is nothing to do here at the moment
     }
     break;
 
-    case calc_struct_reset_istep: {
+    case calc_struct_reset_istep: 
+    {
       ;// there is nothing to do here at the moment
     }
     break;
@@ -300,25 +296,31 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
 #ifdef PRESTRESS
     // in case of prestressing, make a snapshot of the current green-Lagrange strains and add them to
     // the previously stored GL strains in an incremental manner
-    case update_gl:
+    case prestress_update:
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get displacement state");
+      if (disp==null) dserror("Cannot get displacement state");
       vector<double> mydisp(lm.size());
-      vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      Epetra_SerialDenseMatrix strain(NUMGPT_WEG6,NUMSTR_WEG6);
-      sow6_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,NULL,&strain,params,false);
-      // the element outputs 0.5* strains[3-5], but we want the computational quantity here
-      for (int i=0; i<NUMGPT_WEG6; ++i)
-        for (int j=3; j<6; ++j) strain(i,j) *= 2.0;
-      RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
-      if (gl==null) dserror("Prestress array not initialized");
-      if (gl->M() != strain.M() || gl->N() != strain.N())
-        dserror("Prestress arrauy not initialized");
-      (*gl) += strain;
+
+      // build def gradient for every gauss point
+      LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_WEG6,9);
+      DefGradient(mydisp,gpdefgrd,*prestress_);
+      
+      // update deformation gradient and put back to storage
+      LINALG::SerialDenseMatrix deltaF(3,3);
+      LINALG::SerialDenseMatrix Fhist(3,3);
+      LINALG::SerialDenseMatrix Fnew(3,3);
+      for (int gp=0; gp<NUMGPT_WEG6; ++gp)
+      {
+        prestress_->StoragetoMatrix(gp,deltaF,gpdefgrd);
+        prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+        Fnew.Multiply('N','N',1.0,deltaF,Fhist,0.0);
+        prestress_->MatrixtoStorage(gp,Fnew,prestress_->FHistory());
+      }
+
+      // push-forward invJ for every gaussian point
+      UpdateJacobianMapping(mydisp,*prestress_);
     }
     break;
 #endif
@@ -380,6 +382,9 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
     invJ_[gp].Shape(NUMDIM_WEG6,NUMDIM_WEG6);
     invJ_[gp].Multiply('N','N',1.0,deriv_gp,xrefe,0.0);
     detJ_[gp] = LINALG::NonsymInverse3x3(invJ_[gp]);
+#ifdef PRESTRESS
+    prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
+#endif
   }
   return;
 }
@@ -418,6 +423,9 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
   // update element geometry
   LINALG::SerialDenseMatrix xrefe(NUMNOD_WEG6,NUMDIM_WEG6);  // material coord. of element
   LINALG::SerialDenseMatrix xcurr(NUMNOD_WEG6,NUMDIM_WEG6);  // current  coord. of element
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  LINALG::SerialDenseMatrix xdisp(NUMNOD_WEG6,NUMDIM_WEG6);
+#endif
   for (int i=0; i<NUMNOD_WEG6; ++i){
     xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];
@@ -426,20 +434,24 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_WEG6+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_WEG6+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_WEG6+2];
+
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+    xdisp(i,0) = disp[i*NODDOF_WEG6+0];
+    xdisp(i,1) = disp[i*NODDOF_WEG6+1];
+    xdisp(i,2) = disp[i*NODDOF_WEG6+2];
+#endif
   }
 
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
-  for (int gp=0; gp<NUMGPT_WEG6; ++gp) {
-
+  for (int gp=0; gp<NUMGPT_WEG6; ++gp) 
+  {
     // get submatrix of deriv at actual gp
     LINALG::SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
-    for (int m=0; m<NUMDIM_WEG6; ++m) {
-      for (int n=0; n<NUMGPT_WEG6; ++n) {
+    for (int m=0; m<NUMDIM_WEG6; ++m) 
+      for (int n=0; n<NUMGPT_WEG6; ++n) 
         deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
-      }
-    }
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -452,9 +464,36 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
     N_XYZ.Multiply('N','N',1.0,invJ_[gp],deriv_gp,0.0);
     const double detJ = detJ_[gp];
 
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     LINALG::SerialDenseMatrix defgrd(NUMDIM_WEG6,NUMDIM_WEG6);
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+    {
+      // get Jacobian mapping wrt to the stored configuration
+      LINALG::SerialDenseMatrix invJdef(3,3);
+      prestress_->StoragetoMatrix(gp,invJdef,prestress_->JHistory());
+      // get derivatives wrt to last spatial configuration
+      LINALG::SerialDenseMatrix N_xyz(NUMDIM_WEG6,NUMNOD_WEG6);
+      N_xyz.Multiply('N','N',1.0,invJdef,deriv_gp,0.0);
+      
+      // build multiplicative incremental defgrd
+      defgrd.Multiply('T','T',1.0,xdisp,N_xyz,0.0);
+      defgrd(0,0) += 1.0;
+      defgrd(1,1) += 1.0;
+      defgrd(2,2) += 1.0;
+      
+      // get stored old incremental F
+      LINALG::SerialDenseMatrix Fhist(3,3);
+      prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+
+      // build total defgrd = delta F * F_old
+      LINALG::SerialDenseMatrix Fnew(3,3);
+      Fnew.Multiply('N','N',1.0,defgrd,Fhist,0.0);
+      defgrd = Fnew;
+    }
+#else
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,0.0);
+#endif
+
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::SerialDenseMatrix cauchygreen(NUMDIM_WEG6,NUMDIM_WEG6);
@@ -510,18 +549,6 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
         (*elestrain)(gp,5) = euler_almansi(0,2);
       }
     }
-
-#if defined(PRESTRESS) || defined(POSTSTRESS)
-    {
-      // note: must be AFTER strains are output above!
-      RCP<Epetra_SerialDenseMatrix>& gl = PreStrains();
-      if (gl==null) dserror("Prestress array not initialized");
-      if (gl->M() != NUMGPT_WEG6 || gl->N() != NUMSTR_WEG6)
-        dserror("Prestress array not initialized");
-      for (int i=0; i<6; ++i)
-        glstrain(i) += (*gl)(gp,i);
-    }
-#endif
 
     /* non-linear B-operator (may so be called, meaning
     ** of B-operator is not so sharp in the non-linear realm) *
@@ -757,6 +784,110 @@ int DRT::ELEMENTS::Sow6Register::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+/*----------------------------------------------------------------------*
+ |  compute def gradient at every gaussian point (protected)   gee 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_weg6::DefGradient(const vector<double>& disp, 
+                                         Epetra_SerialDenseMatrix& gpdefgrd,
+                                         DRT::ELEMENTS::PreStress& prestress)
+{
+  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_WEG6][NUMGPT_WEG6]
+  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_WEG6*NUMDIM][NUMNOD_WEG6]
+  Epetra_SerialDenseVector* weights;  //[NUMGPT_WEG6]
+  sow6_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+
+  // update element geometry
+  LINALG::SerialDenseMatrix xdisp(NUMNOD_WEG6,NUMDIM_WEG6);  // current  coord. of element
+  for (int i=0; i<NUMNOD_WEG6; ++i)
+  {
+    xdisp(i,0) = disp[i*NODDOF_WEG6+0];
+    xdisp(i,1) = disp[i*NODDOF_WEG6+1];
+    xdisp(i,2) = disp[i*NODDOF_WEG6+2];
+  }
+
+  for (int gp=0; gp<NUMGPT_WEG6; ++gp) 
+  {
+    // get submatrix of deriv at actual gp
+    LINALG::SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
+    for (int m=0; m<NUMDIM_WEG6; ++m) 
+      for (int n=0; n<NUMGPT_WEG6; ++n) 
+        deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
+
+    // get Jacobian mapping wrt to the stored deformed configuration
+    LINALG::SerialDenseMatrix invJdef(3,3);
+    prestress.StoragetoMatrix(gp,invJdef,prestress.JHistory());
+
+    // by N_XYZ = J^-1 * N_rst
+    LINALG::SerialDenseMatrix N_xyz(NUMDIM_WEG6,NUMNOD_WEG6);
+    N_xyz.Multiply('N','N',1.0,invJdef,deriv_gp,0.0);
+
+    // build defgrd (independent of xrefe!)
+    LINALG::SerialDenseMatrix defgrd(NUMDIM_WEG6,NUMDIM_WEG6);
+    defgrd.Multiply('T','T',1.0,xdisp,N_xyz,0.0);
+    defgrd(0,0) += 1.0;
+    defgrd(1,1) += 1.0;
+    defgrd(2,2) += 1.0;
+
+    prestress.MatrixtoStorage(gp,defgrd,gpdefgrd);
+  }  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
+                                            const vector<double>& disp,
+                                            DRT::ELEMENTS::PreStress& prestress)
+{
+  Epetra_SerialDenseMatrix* shapefct; //[NUMNOD_WEG6][NUMGPT_WEG6]
+  Epetra_SerialDenseMatrix* deriv;    //[NUMGPT_WEG6*NUMDIM][NUMNOD_WEG6]
+  Epetra_SerialDenseVector* weights;  //[NUMGPT_WEG6]
+  sow6_shapederiv(&shapefct,&deriv,&weights);   // call to evaluate
+
+  // get incremental disp
+  LINALG::SerialDenseMatrix xdisp(NUMNOD_WEG6,NUMDIM_WEG6);
+  for (int i=0; i<NUMNOD_WEG6; ++i)
+  {
+    xdisp(i,0) = disp[i*NODDOF_WEG6+0];
+    xdisp(i,1) = disp[i*NODDOF_WEG6+1];
+    xdisp(i,2) = disp[i*NODDOF_WEG6+2];
+  }
+
+  LINALG::SerialDenseMatrix invJhist(NUMDIM_WEG6,NUMDIM_WEG6);
+  LINALG::SerialDenseMatrix invJ(NUMDIM_WEG6,NUMDIM_WEG6);
+  LINALG::SerialDenseMatrix defgrd(NUMDIM_WEG6,NUMDIM_WEG6);
+  LINALG::SerialDenseMatrix N_xyz(NUMDIM_WEG6,NUMNOD_WEG6);
+  LINALG::SerialDenseMatrix invJnew(NUMDIM_WEG6,NUMDIM_WEG6);
+  for (int gp=0; gp<NUMGPT_WEG6; ++gp) 
+  {
+    // get submatrix of deriv at actual gp
+    LINALG::SerialDenseMatrix deriv_gp(NUMDIM_WEG6,NUMGPT_WEG6);
+    for (int m=0; m<NUMDIM_WEG6; ++m) 
+      for (int n=0; n<NUMGPT_WEG6; ++n) 
+        deriv_gp(m,n)=(*deriv)(NUMDIM_WEG6*gp+m,n);
+
+    // get the invJ old state
+    prestress.StoragetoMatrix(gp,invJhist,prestress.JHistory());
+    // get derivatives wrt to invJhist
+    N_xyz.Multiply('N','N',1.0,invJhist,deriv_gp,0.0);
+    // build defgrd \partial x_new / \parial x_old , where x_old != X
+    defgrd.Multiply('T','T',1.0,xdisp,N_xyz,0.0);
+    defgrd(0,0) += 1.0;
+    defgrd(1,1) += 1.0;
+    defgrd(2,2) += 1.0;
+    // make inverse of this defgrd
+    LINALG::NonsymInverse3x3(defgrd);
+    // push-forward of Jinv
+    invJnew.Multiply('T','N',1.0,defgrd,invJhist,0.0);
+    // store new reference configuration
+    prestress.MatrixtoStorage(gp,invJnew,prestress.JHistory());
+  } // for (int gp=0; gp<NUMGPT_WEG6; ++gp)  
+
+  return;
+}
+#endif // #if defined(PRESTRESS) || defined(POSTSTRESS)
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_WEG6

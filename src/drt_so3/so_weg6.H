@@ -14,6 +14,11 @@ using namespace Teuchos;
 #include "../drt_lib/drt_elementregister.H"
 #include "../drt_lib/drt_node.H"
 
+// prestressing object
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+#include "prestress.H"
+#endif
+
 #include "../drt_mat/material.H"
 #include "so_surface.H"
 #include "so_line.H"
@@ -279,7 +284,7 @@ protected:
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
     postprocess_stress,
-    update_gl
+    prestress_update
   };
 
   //! kinematic types of so_weg6
@@ -298,11 +303,18 @@ protected:
   //! determinant of Jacobian in material frame
   vector<double>                                   detJ_;
 
-  //! green lagrange strains storage needed for prestressing structures
 #if defined(PRESTRESS) || defined(POSTSTRESS)
-  virtual inline Teuchos::RCP<Epetra_SerialDenseMatrix>& PreStrains()
-  { return glprestrain_; }
-  RCP<Epetra_SerialDenseMatrix>                    glprestrain_;
+  /// Prestressing object
+  RCP<DRT::ELEMENTS::PreStress>                    prestress_;
+  
+  // compute Jacobian mapping wrt to deformed configuration
+  void UpdateJacobianMapping(const vector<double>& disp, 
+                             DRT::ELEMENTS::PreStress& prestress);
+
+  // compute defgrd in all gp for given disp
+  void DefGradient(const vector<double>& disp, 
+                   Epetra_SerialDenseMatrix& gpdefgrd,
+                   DRT::ELEMENTS::PreStress& prestress);
 #endif
 
   

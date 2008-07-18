@@ -31,13 +31,15 @@ DRT::Element(id,element_so_weg6,owner),
 data_()
 {
   kintype_ = sow6_totlag;
-#if defined(PRESTRESS) || defined(POSTSTRESS)  
-  glprestrain_ = rcp(new Epetra_SerialDenseMatrix(NUMGPT_WEG6,NUMSTR_WEG6));
-#endif
   invJ_.resize(NUMGPT_WEG6);
   detJ_.resize(NUMGPT_WEG6);
   for (int i=0; i<NUMGPT_WEG6; ++i)
     invJ_[i].Shape(3,3);
+
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6,NUMGPT_WEG6));
+#endif
+
   return;
 }
 
@@ -51,15 +53,17 @@ kintype_(old.kintype_),
 data_(old.data_),
 detJ_(old.detJ_)
 {
-#if defined(PRESTRESS) || defined(POSTSTRESS)  
-  glprestrain_ = rcp(new Epetra_SerialDenseMatrix(*(old.glprestrain_)));
-#endif
   invJ_.resize(old.invJ_.size());
   for (int i=0; i<(int)invJ_.size(); ++i)
   {
     invJ_[i].Shape(old.invJ_[i].M(),old.invJ_[i].N());
     invJ_[i] = old.invJ_[i];
   }
+
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  prestress_ = rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
+#endif
+
   return;
 }
 
@@ -103,9 +107,13 @@ void DRT::ELEMENTS::So_weg6::Pack(vector<char>& data) const
   vector<char> tmp(0);
   data_.Pack(tmp);
   AddtoPack(data,tmp);
-#if defined(PRESTRESS) || defined(POSTSTRESS)  
-  AddtoPack(data,*glprestrain_);
-#endif  
+
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  // prestress_
+  vector<char> tmpprestress(0);
+  prestress_->Pack(tmpprestress);
+  AddtoPack(data,tmpprestress);
+#endif
 
   // detJ_
   AddtoPack(data,detJ_);
@@ -141,9 +149,12 @@ void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-#if defined(PRESTRESS) || defined(POSTSTRESS)  
-  ExtractfromPack(position,data,*glprestrain_);
-#endif  
+#if defined(PRESTRESS) || defined(POSTSTRESS)
+  // prestress_
+  vector<char> tmpprestress(0);
+  ExtractfromPack(position,data,tmpprestress);
+  prestress_->Unpack(tmpprestress);
+#endif
   // detJ_
   ExtractfromPack(position,data,detJ_);
   // invJ_
