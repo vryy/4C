@@ -126,10 +126,43 @@ namespace STR
     int MethodSteps() { return 1; }
 
     //! Give local order of accuracy of displacement part
-    int MethodOrderOfAccuracyDis() { return (theta_ == 1./2.) ? 2 : 1; }
+    int MethodOrderOfAccuracyDis()
+    { 
+      return fabs(MethodLinErrCoeff1()) < EPS6 ? 2 : 1;
+    }
 
     //! Give local order of accuracy of velocity part
-    int MethodOrderOfAccuracyVel() { return (theta_ == 1./2.) ? 2 : 1; }
+    int MethodOrderOfAccuracyVel()
+    { 
+      return MethodOrderOfAccuracyDis();
+    }
+
+    //! Return linear error coefficient of displacements
+    virtual double MethodLinErrCoeffDis()
+    {
+      if (MethodOrderOfAccuracyDis() == 1)
+        return MethodLinErrCoeff1();
+      else 
+        return MethodLinErrCoeff2();
+    }
+
+    //! Return linear error coefficient of velocities
+    virtual double MethodLinErrCoeffVel()
+    {
+      return MethodLinErrCoeffDis();
+    }
+
+    //! Linear error coefficent if 1st order accurate
+    double MethodLinErrCoeff1()
+    {
+      return 1./2. - theta_;
+    }
+    
+    //! Linear error coefficent if 2nd order accurate
+    double MethodLinErrCoeff2()
+    {
+      return 1./6. - theta_/2.;  // this is -1/12
+    }
 
     //! Consistent predictor with constant displacements
     //! and consistent velocities and displacements

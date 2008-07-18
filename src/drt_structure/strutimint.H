@@ -256,6 +256,12 @@ namespace STR
     //! Give local order of accuracy of velocity part
     virtual int MethodOrderOfAccuracyVel() = 0;
 
+    //! Return linear error coefficient of displacements
+    virtual double MethodLinErrCoeffDis() = 0;
+
+    //! Return linear error coefficient of velocities
+    virtual double MethodLinErrCoeffVel() = 0;
+
     //! Access dicretisation
     Teuchos::RCP<DRT::Discretization> Discretization()
     { 

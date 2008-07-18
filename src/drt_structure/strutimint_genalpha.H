@@ -27,6 +27,15 @@ namespace STR
   /*====================================================================*/
   /*!
    * \brief Generalised-alpha time integration
+   *
+   * References
+   * - [1] NM Newmark, A method of computation for structural dynamics,
+   *   Journal of Earthquake Mechanic Division, 85(EM3):67-94, 1959.
+   * - [2] HM Hilber, TJR Hughes and RL Taylor, Improved numerical
+   *   dissipation for time integration algorithms, Earthquake 
+   *   Engineering and Structural Mechanics, 5:283-292, 1977.
+   *     
+   *
    * \author bborn
    * \date 06/08
    */
@@ -91,18 +100,58 @@ namespace STR
       return 1;
     }
 
-    //! Give local order of accuracy of displacement part
-    //! DEAR SIRS ANS MADAMS, PLEASE REVISE THIS FORMULA
+    //! Give linear order of accuracy of displacement part
     int MethodOrderOfAccuracyDis()
     { 
-      return (beta_ == 1./6.) ? 3 : 2;
+      return (fabs(MethodLinErrCoeffDis2()) < EPS6) ? 3 : 2;
     }
 
-    //! Give local order of accuracy of velocity part
-    //! DEAR SIRS ANS MADAMS, PLEASE REVISE THIS FORMULA
+    //! Give linear order of accuracy of velocity part
     int MethodOrderOfAccuracyVel()
     { 
-      return (gamma_ == 1./2.) ? 2 : 1;
+      return (fabs(MethodLinErrCoeffVel1()) < EPS6) ? 2 : 1;
+    }
+
+    //! Return linear error coefficient of displacements
+    double MethodLinErrCoeffDis()
+    {
+      if (MethodOrderOfAccuracyDis() == 2)
+        return MethodLinErrCoeffDis2();
+      else 
+        return MethodLinErrCoeffDis3();
+    }
+
+    //! 2nd order linear error coefficient of displacements
+    double MethodLinErrCoeffDis2()
+    {
+      return 1./6. - beta_*(1.-alphaf_)/(1.-alpham_);
+    }
+
+    //! 3rd order linear error coefficient of displacements
+    double MethodLinErrCoeffDis3()
+    {
+      return 1./12. - beta_*(1.-alphaf_)/(1.-alpham_);
+    }
+
+    //! Return linear error coefficient of velocities
+    double MethodLinErrCoeffVel()
+    {
+      if (MethodOrderOfAccuracyVel() == 1)
+        return MethodLinErrCoeffVel1();
+      else 
+        return MethodLinErrCoeffVel2();
+    }
+
+    //! 1st order linear error coefficient of velocities
+    double MethodLinErrCoeffVel1()
+    {
+      return 1./2. - gamma_*(1.-alphaf_)/(1.-alpham_);
+    }
+
+    //! 2nd order linear error coefficient of velocities
+    double MethodLinErrCoeffVel2()
+    {
+      return 1./3. - gamma_*(1.-alphaf_)/(1.-alpham_);
     }
 
     //! Consistent predictor with constant displacements

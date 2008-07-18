@@ -38,7 +38,7 @@ STR::StruTimAdaZienXie::StruTimAdaZienXie
     tis
   )
 {
-  // check if scheme is second order accurate
+  // check if scheme is .LE. second order accurate
   if (tis_->MethodOrderOfAccuracyDis() > 2)
   {
     dserror("%s can only work with <=2nd order accurate marching scheme",

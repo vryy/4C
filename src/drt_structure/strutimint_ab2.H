@@ -82,6 +82,19 @@ namespace STR
     //! Give local order of accuracy of velocity part
     int MethodOrderOfAccuracyVel() { return 2; }
 
+    //! Return linear error coefficient of displacements
+    virtual double MethodLinErrCoeffDis()
+    {
+      const double dto = dt_;
+      return (2.*dt_ + 3.*dto)/(12.*dt_);
+    }
+
+    //! Return linear error coefficient of velocities
+    virtual double MethodLinErrCoeffVel()
+    {
+      return MethodLinErrCoeffDis();
+    }
+
     //@}
 
   protected:

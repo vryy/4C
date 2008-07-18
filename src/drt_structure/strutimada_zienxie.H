@@ -53,9 +53,10 @@ namespace STR
    *        only for lower or equal than second order accurate marching
    *        scheme
    *
-   * [1] OC Zienkiewicz and YM Xie, A simple error estimator and adaptive
-   *     time stepping procedure for dynamic analysis, Earthquake Engrg.
-   *     Structural Dynamics, 20:871-887, 1991.
+   * References
+   * - [1] OC Zienkiewicz and YM Xie, A simple error estimator and adaptive
+   *   time stepping procedure for dynamic analysis, Earthquake Engrg.
+   *   and Structural Dynamics, 20:871-887, 1991.
    *
    * \author bborn
    * \date 10/07
