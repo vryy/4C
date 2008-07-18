@@ -24,7 +24,7 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-Constraint::Constraint(RCP<DRT::Discretization> discr,
+UTILS::Constraint::Constraint(RCP<DRT::Discretization> discr,
         const string& conditionname,
         int& minID,
         int& maxID):
@@ -55,7 +55,7 @@ actdisc_(discr)
 |(private)                                                       tk 07/08|
 |Compute values defined to keep track of.                                |
 *-----------------------------------------------------------------------*/
-Constraint::ConstrType Constraint::GetConstrType(const string& name)
+UTILS::Constraint::ConstrType UTILS::Constraint::GetConstrType(const string& name)
 {
   if (name=="VolumeConstraint_3D")
     return volconstr3d;
@@ -81,7 +81,7 @@ Constraint::ConstrType Constraint::GetConstrType(const string& name)
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void Constraint::Evaluate(
+void UTILS::Constraint::Evaluate(
     ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
@@ -144,7 +144,7 @@ void Constraint::Evaluate(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void Constraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
+void UTILS::Constraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
     ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,

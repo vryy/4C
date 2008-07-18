@@ -351,8 +351,8 @@ namespace STR
     //@{
 
     //! whatever constraints
-    Teuchos::RCP<ConstrManager> conman_;  //!< constraint manager
-    Teuchos::RCP<UzawaSolver> uzawasolv_;  //!< Uzawa constraint solver
+    Teuchos::RCP<UTILS::ConstrManager> conman_;  //!< constraint manager
+    Teuchos::RCP<UTILS::UzawaSolver> uzawasolv_;  //!< Uzawa constraint solver
 
     //! surface stresses
     Teuchos::RCP<DRT::SurfStressManager> surfstressman_;

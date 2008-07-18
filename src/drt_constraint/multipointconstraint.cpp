@@ -25,11 +25,11 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
+UTILS::MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
         const string& conditionname,
         int& minID,
         int& maxID)
-: Constraint
+: UTILS::Constraint
   (
     discr,
     conditionname,
@@ -56,7 +56,7 @@ MPConstraint::MPConstraint(RCP<DRT::Discretization> discr,
 |(public)                                                        tk 07/08|
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
-void MPConstraint::Evaluate(
+void UTILS::MPConstraint::Evaluate(
     ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
@@ -108,7 +108,7 @@ void MPConstraint::Evaluate(
  |(private)                                                   tk 04/08    |
  |subroutine creating a new discretization containing constraint elements |
  *------------------------------------------------------------------------*/
-RCP<DRT::Discretization> MPConstraint::CreateDiscretizationFromCondition
+RCP<DRT::Discretization> UTILS::MPConstraint::CreateDiscretizationFromCondition
 (  
   RCP<DRT::Discretization> actdisc,
   vector< DRT::Condition* >      constrcondvec,
@@ -205,7 +205,7 @@ RCP<DRT::Discretization> MPConstraint::CreateDiscretizationFromCondition
  |(private)                                                 tk 04/08    |
  |reorder MPC nodes based on condition input                            |
  *----------------------------------------------------------------------*/
-void MPConstraint::ReorderConstraintNodes
+void UTILS::MPConstraint::ReorderConstraintNodes
 (
   vector<int>& nodeids,
   const DRT::Condition* cond
@@ -240,7 +240,7 @@ void MPConstraint::ReorderConstraintNodes
  |(private)                                                   tk 05/08  |
  |replace numdofs in elements of constraint discretization              |
  *----------------------------------------------------------------------*/
-void MPConstraint::ReplaceNumDof
+void UTILS::MPConstraint::ReplaceNumDof
 (
   const RCP<DRT::Discretization> sourcedis,
   const RCP<DRT::Discretization> constraintdis
@@ -268,7 +268,7 @@ void MPConstraint::ReplaceNumDof
  |recompute nodecolmap of standard discretization to include constrained|
  |nodes as ghosted nodes                                                |
  *----------------------------------------------------------------------*/
-RCP<Epetra_Map> MPConstraint::ComputeNodeColMap(
+RCP<Epetra_Map> UTILS::MPConstraint::ComputeNodeColMap(
         const RCP<DRT::Discretization> sourcedis,
         const RCP<DRT::Discretization> constraintdis
         ) const
@@ -301,7 +301,7 @@ RCP<Epetra_Map> MPConstraint::ComputeNodeColMap(
  |Evaluate method, calling element evaluates of a condition and          |
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
-void MPConstraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
+void UTILS::MPConstraint::EvaluateConstraint(RCP<DRT::Discretization> disc,
     ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,

@@ -214,10 +214,10 @@ STR::StruTimInt::StruTimInt
   }
 
   // initialize constraint manager
-  conman_ = Teuchos::rcp(new ConstrManager(Discretization(), 
+  conman_ = Teuchos::rcp(new UTILS::ConstrManager(Discretization(), 
                                            dis_(), sdynparams));
   // initialize Uzawa solver
-  uzawasolv_ = Teuchos::rcp(new UzawaSolver(Discretization(), solver_, 
+  uzawasolv_ = Teuchos::rcp(new UTILS::UzawaSolver(Discretization(), solver_, 
                                             dirichtoggle_, invtoggle_, 
                                             sdynparams));
   // fix pointer to #dofrowmap_, which has not really changed, but is

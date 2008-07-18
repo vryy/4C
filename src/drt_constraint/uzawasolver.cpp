@@ -24,7 +24,7 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 11/07|
  *----------------------------------------------------------------------*/
-UzawaSolver::UzawaSolver(
+UTILS::UzawaSolver::UzawaSolver(
     RCP<DRT::Discretization> discr,
     LINALG::Solver& solver,
     RCP<Epetra_Vector>    dirichtoggle,
@@ -71,7 +71,7 @@ invtoggle_(&(*invtoggle),false)
 |Compute difference between current and prescribed values.              |
 |Change Stiffnessmatrix and internal force vector                       |
 *-----------------------------------------------------------------------*/
-void UzawaSolver::Solve(
+void UTILS::UzawaSolver::Solve(
         RCP<LINALG::SparseMatrix> stiff,
         RCP<LINALG::SparseMatrix> constr,
         RCP<Epetra_Vector> dispinc,
@@ -166,7 +166,7 @@ void UzawaSolver::Solve(
       if (count_paramadapt>=2)
       {
           double quotient_neu=norm_uzawa/norm_uzawa_alt;
-          // In case of divergence the parameter must be choosen too high
+          // In case of divergence the parameter must be too high
           if (quotient_neu>1)
           {
             uzawaParam_=uzawaParam_/2.;

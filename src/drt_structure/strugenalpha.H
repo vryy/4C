@@ -42,7 +42,7 @@ Maintainer: Michael Gee
 
 // definitions in algorithm
 #define STRUGENALPHA_INCRUPDT  /* incremental update of vel and acc */
-//#define STRUGENALPHA_STRONGDBC  /* strong Dirichlet BCs, i.e. DBC reigns  */
+#define STRUGENALPHA_STRONGDBC  /* strong Dirichlet BCs, i.e. DBC reigns  */
                                 /* its displacements, velocities and acceleration */
 #ifdef STRUGENALPHA_STRONGDBC
 #ifdef STRUGENALPHA_INCRUPDT
@@ -463,8 +463,8 @@ protected:
   double                        V0_;
 
   /// whatever constraints
-  RCP<ConstrManager>   constrMan_;
-  RCP<UzawaSolver> uzawaSolv_;
+  RCP<UTILS::ConstrManager>   constrMan_;
+  RCP<UTILS::UzawaSolver> uzawaSolv_;
 
   /// surface stresses
   RCP<DRT::SurfStressManager>   surf_stress_man_;

@@ -24,7 +24,7 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 11/07|
  *----------------------------------------------------------------------*/
-ConstrManager::ConstrManager(RCP<DRT::Discretization> discr,
+UTILS::ConstrManager::ConstrManager(RCP<DRT::Discretization> discr,
         RCP<Epetra_Vector> disp,
         ParameterList params):
 actdisc_(discr)
@@ -136,7 +136,7 @@ actdisc_(discr)
 |Compute difference between current and prescribed values.              |
 |Change Stiffnessmatrix and internal force vector                       |
 *-----------------------------------------------------------------------*/
-void ConstrManager::StiffnessAndInternalForces(
+void UTILS::ConstrManager::StiffnessAndInternalForces(
         const double time,
         RCP<Epetra_Vector> disp,
         RCP<Epetra_Vector> fint,
@@ -193,7 +193,7 @@ void ConstrManager::StiffnessAndInternalForces(
 |(public)                                                       tk 01/08|
 |Compute difference between current and prescribed values.              |
 *-----------------------------------------------------------------------*/
-void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
+void UTILS::ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
 {
     vector<DRT::Condition*> constrcond(0);
     actvalues_->Scale(0.0);
@@ -224,7 +224,7 @@ void ConstrManager::ComputeError(double time,RCP<Epetra_Vector> disp)
 |(public)                                                       tk 01/08|
 |Add scaled error of constraint to Lagrange multiplier.                 |
 *-----------------------------------------------------------------------*/
-void ConstrManager::UpdateLagrMult(double factor)
+void UTILS::ConstrManager::UpdateLagrMult(double factor)
 {
   lagrMultVec_->Update(factor,*constrainterr_,1.0);
   return;
@@ -234,7 +234,7 @@ void ConstrManager::UpdateLagrMult(double factor)
 |(public)                                                       tk 01/08|
 |Add Lagrange increment to Lagrange multiplier.                         |
 *-----------------------------------------------------------------------*/
-void ConstrManager::UpdateLagrMult(RCP<Epetra_Vector> vect)
+void UTILS::ConstrManager::UpdateLagrMult(RCP<Epetra_Vector> vect)
 {
   lagrMultVec_->Update(1.0,*vect,1.0);
   return;
@@ -244,7 +244,7 @@ void ConstrManager::UpdateLagrMult(RCP<Epetra_Vector> vect)
 |(public)                                                        tk 01/08|
 |Compute values defined to keep track of.                                |
 *-----------------------------------------------------------------------*/
-void ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
+void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
 {
   vector<DRT::Condition*> monitcond(0);
   monitorvalues_->Scale(0.0);
@@ -268,7 +268,7 @@ void ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
 |(public)                                                       tk 01/08|
 |Print monitored values                                                 |
 *-----------------------------------------------------------------------*/
-void ConstrManager::PrintMonitorValues()
+void UTILS::ConstrManager::PrintMonitorValues()
 {
   for (int i = 0; i < numMonitorID_; ++i)
   {
@@ -283,7 +283,7 @@ void ConstrManager::PrintMonitorValues()
  |small subroutine to synchronize processors after evaluating the       |
  |constraints by summing them up                                        |
  *----------------------------------------------------------------------*/
-void ConstrManager::ImportResults
+void UTILS::ConstrManager::ImportResults
 (
   RCP<Epetra_Vector>& vect_dist,
   RCP<Epetra_Vector>& vect_redu
@@ -307,7 +307,7 @@ void ConstrManager::ImportResults
  |small subroutine to synchronize processors after evaluating the       |
  |constraint by finding minimum value                                   |
  *----------------------------------------------------------------------*/
-void ConstrManager::SynchronizeMinConstraint(ParameterList& params,
+void UTILS::ConstrManager::SynchronizeMinConstraint(ParameterList& params,
                                 RCP<Epetra_Vector>& vect,
                                 const char* resultstring)
 {

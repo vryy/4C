@@ -31,16 +31,16 @@ Maintainer: Thomas Kloeppel
 using namespace std;
 using namespace Teuchos;
 
-
-
-/*!
-\brief Class containing uzawa algorithm to solve linear system.
-
-\author Kloeppel (kloeppel@lnm.mw.tum.de)
-*/
-class UzawaSolver
+namespace UTILS
 {
-public:
+  /*!
+  \brief Class containing uzawa algorithm to solve linear system.
+  
+  \author Kloeppel (kloeppel@lnm.mw.tum.de)
+  */
+  class UzawaSolver
+  {
+  public:
 
     //! @name Constructors and destructors and related methods
 
@@ -130,6 +130,6 @@ private:
     //@}
 
 
-}; //class
-
+  }; //class
+}
 #endif /*CONSTRAINTMANAGER_H*/

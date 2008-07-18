@@ -212,8 +212,8 @@ fsisurface_(NULL)
   // do surface stress and constraints manager and stresses due to potentials
   // -------------------------------------------------------------------
     //initialize Constraint Manager and UzawaSolver
-    constrMan_=rcp(new ConstrManager(Discretization(), dis_, params_));
-    uzawaSolv_=rcp(new UzawaSolver(Discretization(),solver_,dirichtoggle_,invtoggle_,params_));
+    constrMan_=rcp(new UTILS::ConstrManager(Discretization(), dis_, params_));
+    uzawaSolv_=rcp(new UTILS::UzawaSolver(Discretization(),solver_,dirichtoggle_,invtoggle_,params_));
     dofrowmap = discret_.DofRowMap();
     // Check for surface stress conditions due to interfacial phenomena
     vector<DRT::Condition*> surfstresscond(0);
@@ -1449,9 +1449,9 @@ void StruGenAlpha::NonLinearUzawaFullNewton(int predictor)
         // Lagrange multiplier is increased by Uzawa_param*ConstrErr
         constrMan_->UpdateLagrMult(Uzawa_param);
         // Keep new Lagrange multiplier fixed and solve for new displacements
-        if      (predictor==1) ConstantPredictor();
-        else if (predictor==2) ConsistentPredictor();
-        constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
+//        if      (predictor==1) ConstantPredictor();
+//        else if (predictor==2) ConsistentPredictor();
+//        constrMan_->StiffnessAndInternalForces(time+dt,disn_,fint_,stiff_);
         FullNewton();
         //--------------------update end configuration
         disn_->Update(1./(1.-alphaf),*dism_,-alphaf/(1.-alphaf));

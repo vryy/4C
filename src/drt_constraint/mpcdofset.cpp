@@ -18,30 +18,16 @@ Maintainer: Thomas Kloeppel
 //#include <numeric>
 
 #include "mpcdofset.H"
-/*----------------------------------------------------------------------*
- |  ctor (public)                                             ukue 04/07|
- *----------------------------------------------------------------------*/
-MPCDofSet::MPCDofSet(RCP<DRT::Discretization> sourcedis) :
+
+UTILS::MPCDofSet::MPCDofSet(RCP<DRT::Discretization> sourcedis) :
 DRT::DofSet(),
 sourcedis_(sourcedis)
 {
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  setup everything  (public)                                ukue 04/07|
- *----------------------------------------------------------------------*/
-int MPCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
+int UTILS::MPCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int start)
 {
-  // Important remark (popp, 04/08):
-  // We explicitly set the flag "unique_and_unchanging_dofnumbers" = false!
-  // This way we have no problems dealing with an arbitrary number of
-  // contact interfaces. The idea for the flag = true comes from monolith.FSI
-  // where we have multiple discretizations and want to have a unique
-  // dof numbering across them. So, when we set the flag to false for contact
-  // at the moment, this is no problem AS LONG AS we do not want to deal
-  // with multiple discretizations! (FIXME)
   
   // first, we call the standard AssignDegreesOfFreedom from the base class
   int count = DRT::DofSet::AssignDegreesOfFreedom(dis,start);
@@ -52,7 +38,7 @@ int MPCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const int 
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
-void MPCDofSet::TransferDegreesOfFreedom(
+void UTILS::MPCDofSet::TransferDegreesOfFreedom(
         const DRT::Discretization& sourcedis,
         const DRT::Discretization& newdis,
         const int start
