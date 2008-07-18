@@ -26,7 +26,6 @@ Maintainer: Christiane Förster
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/linalg_utils.H"
 #include "../drt_io/io.H"
-#include "../drt_lib/drt_elementgroup.H"
 
 using namespace std;
 using namespace Teuchos;

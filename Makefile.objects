@@ -98,7 +98,6 @@ OBJS_DRT_LIB  = src/drt_lib/drt_discret.o \
                 src/drt_lib/drt_inputreader.o \
                 src/drt_lib/drt_element.o \
                 src/drt_lib/drt_elementregister.o \
-                src/drt_lib/drt_elementgroup.o \
                 src/drt_lib/drt_node.o \
                 src/drt_lib/drt_container.o \
                 src/drt_lib/drt_condition.o \
